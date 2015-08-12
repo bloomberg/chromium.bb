@@ -69,7 +69,7 @@ public:
     const AtomicString& dir();
     void setDir(const AtomicString&);
 
-    void click();
+    void clickForBindings();
 
     void accessKeyAction(bool sendMouseEvents) override;
 

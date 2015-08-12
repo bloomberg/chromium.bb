@@ -51,7 +51,7 @@ public:
     static bool dispatchEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
     static void dispatchScopedEvent(Node&, PassRefPtrWillBeRawPtr<EventDispatchMediator>);
 
-    static void dispatchSimulatedClick(Node&, Event* underlyingEvent, SimulatedClickMouseEventOptions);
+    static void dispatchSimulatedClick(Node&, Event* underlyingEvent, SimulatedClickMouseEventOptions, SimulatedClickCreationScope);
 
     bool dispatch();
     Node& node() const { return *m_node; }

@@ -2049,9 +2049,9 @@ bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
     return dispatchEvent(gestureEvent);
 }
 
-void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions)
+void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions, SimulatedClickCreationScope scope)
 {
-    EventDispatcher::dispatchSimulatedClick(*this, underlyingEvent, eventOptions);
+    EventDispatcher::dispatchSimulatedClick(*this, underlyingEvent, eventOptions, scope);
 }
 
 bool Node::dispatchWheelEvent(const PlatformWheelEvent& event)

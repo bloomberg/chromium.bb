@@ -584,10 +584,9 @@ void HTMLElement::setSpellcheck(bool enable)
     setAttribute(spellcheckAttr, enable ? "true" : "false");
 }
 
-
-void HTMLElement::click()
+void HTMLElement::clickForBindings()
 {
-    dispatchSimulatedClick(0, SendNoEvents);
+    dispatchSimulatedClick(0, SendNoEvents, SimulatedClickCreationScope::FromScript);
 }
 
 void HTMLElement::accessKeyAction(bool sendMouseEvents)

@@ -30,7 +30,7 @@ interface HTMLElement : Element {
 
     // user interaction
     [Reflect] attribute boolean hidden;
-    void click();
+    [ImplementedAs=clickForBindings] void click();
     [CustomElementCallbacks] attribute long tabIndex;
     void focus();
     void blur();

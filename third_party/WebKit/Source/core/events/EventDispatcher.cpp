@@ -69,7 +69,7 @@ void EventDispatcher::dispatchScopedEvent(Node& node, PassRefPtrWillBeRawPtr<Eve
     ScopedEventQueue::instance()->enqueueEventDispatchMediator(mediator);
 }
 
-void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent, SimulatedClickMouseEventOptions mouseEventOptions)
+void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent, SimulatedClickMouseEventOptions mouseEventOptions, SimulatedClickCreationScope creationScope)
 {
     // This persistent vector doesn't cause leaks, because added Nodes are removed
     // before dispatchSimulatedClick() returns. This vector is here just to prevent
@@ -85,19 +85,19 @@ void EventDispatcher::dispatchSimulatedClick(Node& node, Event* underlyingEvent,
     nodesDispatchingSimulatedClicks->add(&node);
 
     if (mouseEventOptions == SendMouseOverUpDownEvents)
-        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseover, node.document().domWindow(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseover, node.document().domWindow(), underlyingEvent, creationScope)).dispatch();
 
     if (mouseEventOptions != SendNoEvents) {
-        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mousedown, node.document().domWindow(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mousedown, node.document().domWindow(), underlyingEvent, creationScope)).dispatch();
         node.setActive(true);
-        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseup, node.document().domWindow(), underlyingEvent)).dispatch();
+        EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseup, node.document().domWindow(), underlyingEvent, creationScope)).dispatch();
     }
     // Some elements (e.g. the color picker) may set active state to true before
     // calling this method and expect the state to be reset during the call.
     node.setActive(false);
 
     // always send click
-    EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::click, node.document().domWindow(), underlyingEvent)).dispatch();
+    EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::click, node.document().domWindow(), underlyingEvent, creationScope)).dispatch();
 
     nodesDispatchingSimulatedClicks->remove(&node);
 }
