@@ -480,6 +480,11 @@ void LayerTreeHost::SetNeedsUpdateLayers() {
   NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
+void LayerTreeHost::SetPropertyTreesNeedRebuild() {
+  property_trees_.needs_rebuild = true;
+  SetNeedsUpdateLayers();
+}
+
 void LayerTreeHost::SetNeedsCommit() {
   proxy_->SetNeedsCommit();
   NotifySwapPromiseMonitorsOfSetNeedsCommit();
@@ -520,6 +525,7 @@ void LayerTreeHost::SetNextCommitWaitsForActivation() {
 
 void LayerTreeHost::SetNextCommitForcesRedraw() {
   next_commit_forces_redraw_ = true;
+  proxy_->SetNeedsUpdateLayers();
 }
 
 void LayerTreeHost::SetAnimationEvents(
@@ -588,7 +594,7 @@ void LayerTreeHost::SetViewportSize(const gfx::Size& device_viewport_size) {
 
   device_viewport_size_ = device_viewport_size;
 
-  property_trees_.needs_rebuild = true;
+  SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
 
@@ -615,7 +621,7 @@ void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(float page_scale_delta) {
   if (page_scale_delta == 1.f)
     return;
   page_scale_factor_ *= page_scale_delta;
-  property_trees_.needs_rebuild = true;
+  SetPropertyTreesNeedRebuild();
 }
 
 void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
@@ -629,7 +635,7 @@ void LayerTreeHost::SetPageScaleFactorAndLimits(float page_scale_factor,
   page_scale_factor_ = page_scale_factor;
   min_page_scale_factor_ = min_page_scale_factor;
   max_page_scale_factor_ = max_page_scale_factor;
-  property_trees_.needs_rebuild = true;
+  SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
 

@@ -30,6 +30,7 @@ class FakeLayerTreeHost : public LayerTreeHost {
   ~FakeLayerTreeHost() override;
 
   void SetNeedsCommit() override;
+  void SetNeedsUpdateLayers() override {}
   void SetNeedsFullTreeSync() override {}
 
   using LayerTreeHost::SetRootLayer;

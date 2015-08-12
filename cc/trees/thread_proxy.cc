@@ -76,15 +76,13 @@ ThreadProxy::ThreadProxy(
 ThreadProxy::MainThreadOnly::MainThreadOnly(ThreadProxy* proxy,
                                             int layer_tree_host_id)
     : layer_tree_host_id(layer_tree_host_id),
-      animate_requested(false),
-      commit_requested(false),
-      commit_request_sent_to_impl_thread(false),
+      max_requested_pipeline_stage(NO_PIPELINE_STAGE),
+      current_pipeline_stage(NO_PIPELINE_STAGE),
+      final_pipeline_stage(NO_PIPELINE_STAGE),
       started(false),
       prepare_tiles_pending(false),
-      can_cancel_commit(true),
       defer_commits(false),
-      weak_factory(proxy) {
-}
+      weak_factory(proxy) {}
 
 ThreadProxy::MainThreadOnly::~MainThreadOnly() {}
 
@@ -238,11 +236,16 @@ void ThreadProxy::SetRendererCapabilitiesMainThreadCopy(
   main().renderer_capabilities_main_thread_copy = capabilities;
 }
 
-void ThreadProxy::SendCommitRequestToImplThreadIfNeeded() {
+void ThreadProxy::SendCommitRequestToImplThreadIfNeeded(
+    CommitPipelineStage required_stage) {
   DCHECK(IsMainThread());
-  if (main().commit_request_sent_to_impl_thread)
+  DCHECK_NE(NO_PIPELINE_STAGE, required_stage);
+  bool already_posted =
+      main().max_requested_pipeline_stage != NO_PIPELINE_STAGE;
+  main().max_requested_pipeline_stage =
+      std::max(main().max_requested_pipeline_stage, required_stage);
+  if (already_posted)
     return;
-  main().commit_request_sent_to_impl_thread = true;
   Proxy::ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::SetNeedsCommitOnImplThread,
@@ -262,35 +265,34 @@ const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
 
 void ThreadProxy::SetNeedsAnimate() {
   DCHECK(IsMainThread());
-  if (main().animate_requested)
-    return;
-
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsAnimate");
-  main().animate_requested = true;
-  SendCommitRequestToImplThreadIfNeeded();
+  SendCommitRequestToImplThreadIfNeeded(ANIMATE_PIPELINE_STAGE);
 }
 
 void ThreadProxy::SetNeedsUpdateLayers() {
   DCHECK(IsMainThread());
-
-  if (main().commit_request_sent_to_impl_thread)
-    return;
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsUpdateLayers");
-
-  SendCommitRequestToImplThreadIfNeeded();
+  // If we are currently animating, make sure we also update the layers.
+  if (main().current_pipeline_stage == ANIMATE_PIPELINE_STAGE) {
+    main().final_pipeline_stage =
+        std::max(main().final_pipeline_stage, UPDATE_LAYERS_PIPELINE_STAGE);
+    return;
+  }
+  SendCommitRequestToImplThreadIfNeeded(UPDATE_LAYERS_PIPELINE_STAGE);
 }
 
 void ThreadProxy::SetNeedsCommit() {
   DCHECK(IsMainThread());
-  // Unconditionally set here to handle SetNeedsCommit calls during a commit.
-  main().can_cancel_commit = false;
-
-  if (main().commit_requested)
+  // If we are currently animating, make sure we don't skip the commit. Note
+  // that requesting a commit during the layer update stage means we need to
+  // schedule another full commit.
+  if (main().current_pipeline_stage == ANIMATE_PIPELINE_STAGE) {
+    main().final_pipeline_stage =
+        std::max(main().final_pipeline_stage, COMMIT_PIPELINE_STAGE);
     return;
+  }
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsCommit");
-  main().commit_requested = true;
-
-  SendCommitRequestToImplThreadIfNeeded();
+  SendCommitRequestToImplThreadIfNeeded(COMMIT_PIPELINE_STAGE);
 }
 
 void ThreadProxy::UpdateRendererCapabilitiesOnImplThread() {
@@ -441,12 +443,15 @@ void ThreadProxy::SetDeferCommitsOnImplThread(bool defer_commits) const {
 
 bool ThreadProxy::CommitRequested() const {
   DCHECK(IsMainThread());
-  return main().commit_requested;
+  // TODO(skyostil): Split this into something like CommitRequested() and
+  // CommitInProgress().
+  return main().current_pipeline_stage != NO_PIPELINE_STAGE ||
+         main().max_requested_pipeline_stage >= COMMIT_PIPELINE_STAGE;
 }
 
 bool ThreadProxy::BeginMainFrameRequested() const {
   DCHECK(IsMainThread());
-  return main().commit_request_sent_to_impl_thread;
+  return main().max_requested_pipeline_stage != NO_PIPELINE_STAGE;
 }
 
 void ThreadProxy::SetNeedsRedrawOnImplThread() {
@@ -680,6 +685,7 @@ void ThreadProxy::BeginMainFrame(
       begin_main_frame_state->begin_frame_id);
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
+  DCHECK_EQ(NO_PIPELINE_STAGE, main().current_pipeline_stage);
 
   if (main().defer_commits) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_DeferCommit",
@@ -696,9 +702,8 @@ void ThreadProxy::BeginMainFrame(
   // remaining swap promises.
   ScopedAbortRemainingSwapPromises swap_promise_checker(layer_tree_host());
 
-  main().commit_requested = false;
-  main().commit_request_sent_to_impl_thread = false;
-  main().animate_requested = false;
+  main().final_pipeline_stage = main().max_requested_pipeline_stage;
+  main().max_requested_pipeline_stage = NO_PIPELINE_STAGE;
 
   if (!layer_tree_host()->visible()) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NotVisible", TRACE_EVENT_SCOPE_THREAD);
@@ -720,16 +725,7 @@ void ThreadProxy::BeginMainFrame(
     return;
   }
 
-  // Do not notify the impl thread of commit requests that occur during
-  // the apply/animate/layout part of the BeginMainFrameAndCommit process since
-  // those commit requests will get painted immediately. Once we have done
-  // the paint, main().commit_requested will be set to false to allow new commit
-  // requests to be scheduled.
-  // On the other hand, the animate_requested flag should remain cleared
-  // here so that any animation requests generated by the apply or animate
-  // callbacks will trigger another frame.
-  main().commit_requested = true;
-  main().commit_request_sent_to_impl_thread = true;
+  main().current_pipeline_stage = ANIMATE_PIPELINE_STAGE;
 
   layer_tree_host()->ApplyScrollAndScale(
       begin_main_frame_state->scroll_info.get());
@@ -748,32 +744,20 @@ void ThreadProxy::BeginMainFrame(
   layer_tree_host()->Layout();
   TRACE_EVENT_SYNTHETIC_DELAY_END("cc.BeginMainFrame");
 
-  // Clear the commit flag after updating animations and layout here --- objects
-  // that only layout when painted will trigger another SetNeedsCommit inside
-  // UpdateLayers.
-  main().commit_requested = false;
-  main().commit_request_sent_to_impl_thread = false;
   bool can_cancel_this_commit =
-      main().can_cancel_commit && !begin_main_frame_state->evicted_ui_resources;
-  main().can_cancel_commit = true;
+      main().final_pipeline_stage < COMMIT_PIPELINE_STAGE &&
+      !begin_main_frame_state->evicted_ui_resources;
 
-  bool updated = layer_tree_host()->UpdateLayers();
+  main().current_pipeline_stage = UPDATE_LAYERS_PIPELINE_STAGE;
+  bool should_update_layers =
+      main().final_pipeline_stage >= UPDATE_LAYERS_PIPELINE_STAGE;
+  bool updated = should_update_layers && layer_tree_host()->UpdateLayers();
 
   layer_tree_host()->WillCommit();
   devtools_instrumentation::ScopedCommitTrace commit_task(
       layer_tree_host()->id());
 
-  // Before calling animate, we set main().animate_requested to false. If it is
-  // true now, it means SetNeedAnimate was called again, but during a state when
-  // main().commit_request_sent_to_impl_thread = true. We need to force that
-  // call to happen again now so that the commit request is sent to the impl
-  // thread.
-  if (main().animate_requested) {
-    // Forces SetNeedsAnimate to consider posting a commit task.
-    main().animate_requested = false;
-    SetNeedsAnimate();
-  }
-
+  main().current_pipeline_stage = COMMIT_PIPELINE_STAGE;
   if (!updated && can_cancel_this_commit) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
     Proxy::ImplThreadTaskRunner()->PostTask(
@@ -784,6 +768,7 @@ void ThreadProxy::BeginMainFrame(
     // Although the commit is internally aborted, this is because it has been
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
+    main().current_pipeline_stage = NO_PIPELINE_STAGE;
     layer_tree_host()->CommitComplete();
     layer_tree_host()->DidBeginMainFrame();
     layer_tree_host()->BreakSwapPromises(SwapPromise::COMMIT_NO_UPDATE);
@@ -812,6 +797,7 @@ void ThreadProxy::BeginMainFrame(
     completion.Wait();
   }
 
+  main().current_pipeline_stage = NO_PIPELINE_STAGE;
   layer_tree_host()->CommitComplete();
   layer_tree_host()->DidBeginMainFrame();
 }

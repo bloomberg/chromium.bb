@@ -421,6 +421,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void NotifySwapPromiseMonitorsOfSetNeedsCommit();
 
+  void SetPropertyTreesNeedRebuild();
+
   bool inside_begin_main_frame_;
   bool needs_full_tree_sync_;
   bool needs_meta_info_recomputation_;

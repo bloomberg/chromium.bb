@@ -570,6 +570,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
     LayerTreeHost::SetNeedsCommit();
   }
 
+  void SetNeedsUpdateLayers() override {
+    if (!test_started_)
+      return;
+    LayerTreeHost::SetNeedsUpdateLayers();
+  }
+
   void set_test_started(bool started) { test_started_ = started; }
 
  private:

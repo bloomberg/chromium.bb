@@ -681,6 +681,15 @@ void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
 
 void RenderWidgetCompositor::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
+  layer_tree_host_->SetNeedsUpdateLayers();
+}
+
+void RenderWidgetCompositor::setNeedsBeginFrame() {
+  layer_tree_host_->SetNeedsAnimate();
+}
+
+void RenderWidgetCompositor::setNeedsCompositorUpdate() {
+  layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 void RenderWidgetCompositor::didStopFlinging() {

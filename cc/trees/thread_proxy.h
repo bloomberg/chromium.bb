@@ -54,22 +54,34 @@ class CC_EXPORT ThreadProxy : public Proxy,
     bool evicted_ui_resources;
   };
 
+  // Commits between the main and impl threads are processed through a pipeline
+  // with the following stages. For efficiency we can early out at any stage if
+  // we decide that no further processing is necessary.
+  enum CommitPipelineStage {
+    NO_PIPELINE_STAGE,
+    ANIMATE_PIPELINE_STAGE,
+    UPDATE_LAYERS_PIPELINE_STAGE,
+    COMMIT_PIPELINE_STAGE,
+  };
+
   struct MainThreadOnly {
     MainThreadOnly(ThreadProxy* proxy, int layer_tree_host_id);
     ~MainThreadOnly();
 
     const int layer_tree_host_id;
 
-    // Set only when SetNeedsAnimate is called.
-    bool animate_requested;
-    // Set only when SetNeedsCommit is called.
-    bool commit_requested;
-    // Set by SetNeedsAnimate, SetNeedsUpdateLayers, and SetNeedsCommit.
-    bool commit_request_sent_to_impl_thread;
+    // The furthest pipeline stage which has been requested for the next
+    // commit.
+    CommitPipelineStage max_requested_pipeline_stage;
+    // The commit pipeline stage that is currently being processed.
+    CommitPipelineStage current_pipeline_stage;
+    // The commit pipeline stage at which processing for the current commit
+    // will stop. Only valid while we are executing the pipeline (i.e.,
+    // |current_pipeline_stage| is set to a pipeline stage).
+    CommitPipelineStage final_pipeline_stage;
 
     bool started;
     bool prepare_tiles_pending;
-    bool can_cancel_commit;
     bool defer_commits;
 
     RendererCapabilities renderer_capabilities_main_thread_copy;
@@ -243,7 +255,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void RequestNewOutputSurface();
   void DidInitializeOutputSurface(bool success,
                                   const RendererCapabilities& capabilities);
-  void SendCommitRequestToImplThreadIfNeeded();
+  void SendCommitRequestToImplThreadIfNeeded(
+      CommitPipelineStage required_stage);
   void DidCompletePageScaleAnimation();
 
   // Called on impl thread.
