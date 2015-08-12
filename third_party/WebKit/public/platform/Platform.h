@@ -271,6 +271,9 @@ public:
     // zero, if there is no limit.
     virtual size_t virtualMemoryLimitMB() { return 0; }
 
+    // True when Blink runs on low end devices.
+    virtual bool isLowEndDeviceMode() { return false; }
+
     // Return the number of of processors of the current machine.
     virtual size_t numberOfProcessors() { return 0; }
 
