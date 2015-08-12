@@ -188,7 +188,13 @@ public class NotificationMediaPlaybackControls {
 
         if (mediaNotificationInfo.equals(mMediaNotificationInfo)) return;
 
-        mMediaNotificationInfo = mediaNotificationInfo;
+        mMediaNotificationInfo = new MediaNotificationInfo(
+                sanitizeMediaTitle(mediaNotificationInfo.title),
+                mediaNotificationInfo.isPaused,
+                mediaNotificationInfo.origin,
+                mediaNotificationInfo.tabId,
+                mediaNotificationInfo.isPrivate,
+                mediaNotificationInfo.listener);
         updateNotification();
     }
 
@@ -221,6 +227,13 @@ public class NotificationMediaPlaybackControls {
         RemoteViews contentView =
                 new RemoteViews(mContext.getPackageName(), R.layout.playback_notification_bar);
         return contentView;
+    }
+
+    private String sanitizeMediaTitle(String title) {
+        // Improve the visibility of the title by removing all the leading/trailing white spaces
+        // and the quite common unicode play icon.
+        title = title.trim();
+        return title.startsWith("\u25B6") ? title.substring(1).trim() : title;
     }
 
     private String getStatus() {
