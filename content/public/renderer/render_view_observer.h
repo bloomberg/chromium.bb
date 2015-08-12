@@ -75,6 +75,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void FocusChangeComplete() {}
 
   virtual void OnStop() {}
+  virtual void OnZoomLevelChanged() {}
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

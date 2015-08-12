@@ -240,6 +240,8 @@ class RenderViewZoomer : public RenderViewVisitor {
 
   bool Visit(RenderView* render_view) override {
     WebView* webview = render_view->GetWebView();
+    RenderViewImpl* render_view_impl =
+        static_cast<RenderViewImpl*>(render_view);
     // Remote frames don't host documents.
     // TODO(wjmaclean) Although it seems likely that a frame without a
     // document can safely early-out here, we should confirm this is truly
@@ -257,10 +259,9 @@ class RenderViewZoomer : public RenderViewVisitor {
     // Empty scheme works as wildcard that matches any scheme,
     if ((net::GetHostOrSpecFromURL(url) == host_) &&
         (scheme_.empty() || scheme_ == url.scheme()) &&
-        !static_cast<RenderViewImpl*>(render_view)
-             ->uses_temporary_zoom_level()) {
+        !render_view_impl->uses_temporary_zoom_level()) {
       webview->hidePopups();
-      webview->setZoomLevel(zoom_level_);
+      render_view_impl->SetZoomLevel(zoom_level_);
     }
     return true;
   }

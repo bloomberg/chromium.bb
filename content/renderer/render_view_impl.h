@@ -228,6 +228,10 @@ class CONTENT_EXPORT RenderViewImpl
   void FrameDidStartLoading(blink::WebFrame* frame);
   void FrameDidStopLoading(blink::WebFrame* frame);
 
+  // Sets the zoom level and notifies observers. Doesn't call zoomLevelChanged,
+  // as that is only for changes that aren't initiated by the client.
+  void SetZoomLevel(double zoom_level);
+
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)

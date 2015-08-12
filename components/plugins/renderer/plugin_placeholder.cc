@@ -27,14 +27,14 @@ PluginPlaceholderBase::PluginPlaceholderBase(
     : content::RenderFrameObserver(render_frame),
       frame_(frame),
       plugin_params_(params),
-      plugin_(WebViewPlugin::Create(this,
+      plugin_(WebViewPlugin::Create(render_frame->GetRenderView(),
+                                    this,
                                     render_frame
                                         ? render_frame->GetWebkitPreferences()
                                         : content::WebPreferences(),
                                     html_data,
                                     GURL(kPluginPlaceholderDataURL))),
-      hidden_(false) {
-}
+      hidden_(false) {}
 
 PluginPlaceholderBase::~PluginPlaceholderBase() {
 }

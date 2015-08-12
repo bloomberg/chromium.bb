@@ -1768,6 +1768,11 @@ void RenderViewImpl::FrameDidStopLoading(WebFrame* frame) {
   }
 }
 
+void RenderViewImpl::SetZoomLevel(double zoom_level) {
+  webview()->setZoomLevel(zoom_level);
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnZoomLevelChanged());
+}
+
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
   Send(new InputHostMsg_ImeCancelComposition(routing_id()));
 }
@@ -2596,7 +2601,7 @@ void RenderViewImpl::OnZoom(PageZoom zoom) {
       zoom_level = static_cast<int>(old_zoom_level);
     }
   }
-  webview()->setZoomLevel(zoom_level);
+  SetZoomLevel(zoom_level);
   zoomLevelChanged();
 }
 
@@ -2615,7 +2620,7 @@ void RenderViewImpl::OnSetZoomLevelForView(bool uses_temporary_zoom_level,
   uses_temporary_zoom_level_ = uses_temporary_zoom_level;
 
   webview()->hidePopups();
-  webview()->setZoomLevel(level);
+  SetZoomLevel(level);
 }
 
 void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {
@@ -2823,7 +2828,7 @@ void RenderViewImpl::OnSetRendererPrefs(
       !ZoomValuesEqual(old_zoom_level,
                        renderer_preferences_.default_zoom_level) &&
       ZoomValuesEqual(webview()->zoomLevel(), old_zoom_level)) {
-    webview()->setZoomLevel(renderer_preferences_.default_zoom_level);
+    SetZoomLevel(renderer_preferences_.default_zoom_level);
     zoomLevelChanged();
   }
 

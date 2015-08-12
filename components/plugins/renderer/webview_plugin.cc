@@ -43,9 +43,11 @@ using blink::WebVector;
 using blink::WebView;
 using content::WebPreferences;
 
-WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
+WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
+                             WebViewPlugin::Delegate* delegate,
                              const WebPreferences& preferences)
-    : delegate_(delegate),
+    : content::RenderViewObserver(render_view),
+      delegate_(delegate),
       container_(NULL),
       web_view_(WebView::create(this)),
       finished_loading_(false),
@@ -58,12 +60,13 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate,
 }
 
 // static
-WebViewPlugin* WebViewPlugin::Create(WebViewPlugin::Delegate* delegate,
+WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
+                                     WebViewPlugin::Delegate* delegate,
                                      const WebPreferences& preferences,
                                      const std::string& html_data,
                                      const GURL& url) {
   DCHECK(url.is_valid()) << "Blink requires the WebView to have a valid URL.";
-  WebViewPlugin* plugin = new WebViewPlugin(delegate, preferences);
+  WebViewPlugin* plugin = new WebViewPlugin(render_view, delegate, preferences);
   plugin->web_view()->mainFrame()->loadHTMLString(html_data, url);
   return plugin;
 }
@@ -300,4 +303,9 @@ void WebViewPlugin::didReceiveResponse(WebLocalFrame* frame,
                                        unsigned identifier,
                                        const WebURLResponse& response) {
   WebFrameClient::didReceiveResponse(frame, identifier, response);
+}
+
+void WebViewPlugin::OnZoomLevelChanged() {
+  web_view_->setZoomLevel(
+      blink::WebView::zoomFactorToZoomLevel(container_->pageZoomFactor()));
 }

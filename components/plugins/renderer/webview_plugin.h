@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -39,7 +40,8 @@ class Size;
 
 class WebViewPlugin : public blink::WebPlugin,
                       public blink::WebViewClient,
-                      public blink::WebFrameClient {
+                      public blink::WebFrameClient,
+                      public content::RenderViewObserver {
  public:
   class Delegate {
    public:
@@ -63,7 +65,8 @@ class WebViewPlugin : public blink::WebPlugin,
   // Convenience method to set up a new WebViewPlugin using |preferences|
   // and displaying |html_data|. |url| should be a (fake) data:text/html URL;
   // it is only used for navigation and never actually resolved.
-  static WebViewPlugin* Create(Delegate* delegate,
+  static WebViewPlugin* Create(content::RenderView* render_view,
+                               Delegate* delegate,
                                const content::WebPreferences& preferences,
                                const std::string& html_data,
                                const GURL& url);
@@ -150,8 +153,13 @@ class WebViewPlugin : public blink::WebPlugin,
 
  private:
   friend class base::DeleteHelper<WebViewPlugin>;
-  WebViewPlugin(Delegate* delegate, const content::WebPreferences& preferences);
+  WebViewPlugin(content::RenderView* render_view,
+                Delegate* delegate,
+                const content::WebPreferences& preferences);
   virtual ~WebViewPlugin();
+
+  // content::RenderViewObserver methods:
+  void OnZoomLevelChanged() override;
 
   // Manages its own lifetime.
   Delegate* delegate_;
