@@ -13,6 +13,7 @@ namespace prefs {
 extern const char kAcceptLanguages[];
 extern const char kHomePage[];
 extern const char kSavingBrowserHistoryDisabled[];
+extern const char kSearchSuggestEnabled[];
 
 }  // namespace prefs
 }  // namespace ios
