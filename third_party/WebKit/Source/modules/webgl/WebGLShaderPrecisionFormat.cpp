@@ -31,9 +31,9 @@
 namespace blink {
 
 // static
-PassRefPtrWillBeRawPtr<WebGLShaderPrecisionFormat> WebGLShaderPrecisionFormat::create(GLint rangeMin, GLint rangeMax, GLint precision)
+WebGLShaderPrecisionFormat* WebGLShaderPrecisionFormat::create(GLint rangeMin, GLint rangeMax, GLint precision)
 {
-    return adoptRefWillBeNoop(new WebGLShaderPrecisionFormat(rangeMin, rangeMax, precision));
+    return new WebGLShaderPrecisionFormat(rangeMin, rangeMax, precision);
 }
 
 GLint WebGLShaderPrecisionFormat::rangeMin() const

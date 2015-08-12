@@ -49,9 +49,9 @@ WebGLExtensionName WebGLCompressedTextureS3TC::name() const
     return WebGLCompressedTextureS3TCName;
 }
 
-PassRefPtrWillBeRawPtr<WebGLCompressedTextureS3TC> WebGLCompressedTextureS3TC::create(WebGLRenderingContextBase* context)
+WebGLCompressedTextureS3TC* WebGLCompressedTextureS3TC::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new WebGLCompressedTextureS3TC(context));
+    return new WebGLCompressedTextureS3TC(context);
 }
 
 bool WebGLCompressedTextureS3TC::supported(WebGLRenderingContextBase* context)

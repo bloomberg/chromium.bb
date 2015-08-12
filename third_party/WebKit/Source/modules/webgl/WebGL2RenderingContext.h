@@ -38,16 +38,16 @@ public:
 protected:
     WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
 
-    RefPtrWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
-    RefPtrWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
-    RefPtrWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
-    RefPtrWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
-    RefPtrWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
-    RefPtrWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
-    RefPtrWillBeMember<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
-    RefPtrWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
-    RefPtrWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
-    RefPtrWillBeMember<WebGLLoseContext> m_webglLoseContext;
+    PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
+    PersistentWillBeMember<EXTTextureFilterAnisotropic> m_extTextureFilterAnisotropic;
+    PersistentWillBeMember<OESTextureFloatLinear> m_oesTextureFloatLinear;
+    PersistentWillBeMember<WebGLCompressedTextureATC> m_webglCompressedTextureATC;
+    PersistentWillBeMember<WebGLCompressedTextureETC1> m_webglCompressedTextureETC1;
+    PersistentWillBeMember<WebGLCompressedTexturePVRTC> m_webglCompressedTexturePVRTC;
+    PersistentWillBeMember<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
+    PersistentWillBeMember<WebGLDebugRendererInfo> m_webglDebugRendererInfo;
+    PersistentWillBeMember<WebGLDebugShaders> m_webglDebugShaders;
+    PersistentWillBeMember<WebGLLoseContext> m_webglLoseContext;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContext, CanvasRenderingContext, context,

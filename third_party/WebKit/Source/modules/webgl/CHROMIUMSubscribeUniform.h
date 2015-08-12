@@ -6,7 +6,6 @@
 #define CHROMIUMSubscribeUniform_h
 
 #include "modules/webgl/WebGLExtension.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -15,14 +14,14 @@ class CHROMIUMValuebuffer;
 class CHROMIUMSubscribeUniform final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CHROMIUMSubscribeUniform> create(WebGLRenderingContextBase*);
+    static CHROMIUMSubscribeUniform* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 
     ~CHROMIUMSubscribeUniform() override;
     WebGLExtensionName name() const override;
 
-    PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> createValuebufferCHROMIUM();
+    CHROMIUMValuebuffer* createValuebufferCHROMIUM();
     void deleteValuebufferCHROMIUM(CHROMIUMValuebuffer*);
     GLboolean isValuebufferCHROMIUM(CHROMIUMValuebuffer*);
     void bindValuebufferCHROMIUM(GLenum target, CHROMIUMValuebuffer*);

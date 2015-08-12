@@ -27,14 +27,13 @@
 #define OESStandardDerivatives_h
 
 #include "modules/webgl/WebGLExtension.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class OESStandardDerivatives final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<OESStandardDerivatives> create(WebGLRenderingContextBase*);
+    static OESStandardDerivatives* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

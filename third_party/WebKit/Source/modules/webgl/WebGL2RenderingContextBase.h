@@ -7,7 +7,6 @@
 
 #include "modules/webgl/WebGLExtension.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -104,16 +103,16 @@ public:
     void clearBufferfi(GLenum, GLint, GLfloat, GLint);
 
     /* Query Objects */
-    PassRefPtrWillBeRawPtr<WebGLQuery> createQuery();
+    WebGLQuery* createQuery();
     void deleteQuery(WebGLQuery*);
     GLboolean isQuery(WebGLQuery*);
     void beginQuery(GLenum, WebGLQuery*);
     void endQuery(GLenum);
-    PassRefPtrWillBeRawPtr<WebGLQuery> getQuery(GLenum, GLenum);
+    WebGLQuery* getQuery(GLenum, GLenum);
     ScriptValue getQueryParameter(ScriptState*, WebGLQuery*, GLenum);
 
     /* Sampler Objects */
-    PassRefPtrWillBeRawPtr<WebGLSampler> createSampler();
+    WebGLSampler* createSampler();
     void deleteSampler(WebGLSampler*);
     GLboolean isSampler(WebGLSampler*);
     void bindSampler(GLuint, WebGLSampler*);
@@ -122,7 +121,7 @@ public:
     ScriptValue getSamplerParameter(ScriptState*, WebGLSampler*, GLenum);
 
     /* Sync objects */
-    PassRefPtrWillBeRawPtr<WebGLSync> fenceSync(GLenum, GLbitfield);
+    WebGLSync* fenceSync(GLenum, GLbitfield);
     GLboolean isSync(WebGLSync*);
     void deleteSync(WebGLSync*);
     GLenum clientWaitSync(WebGLSync*, GLbitfield, GLint64);
@@ -131,14 +130,14 @@ public:
     ScriptValue getSyncParameter(ScriptState*, WebGLSync*, GLenum);
 
     /* Transform Feedback */
-    PassRefPtrWillBeRawPtr<WebGLTransformFeedback> createTransformFeedback();
+    WebGLTransformFeedback* createTransformFeedback();
     void deleteTransformFeedback(WebGLTransformFeedback*);
     GLboolean isTransformFeedback(WebGLTransformFeedback*);
     void bindTransformFeedback(GLenum, WebGLTransformFeedback*);
     void beginTransformFeedback(GLenum);
     void endTransformFeedback();
     void transformFeedbackVaryings(WebGLProgram*, const Vector<String>&, GLenum);
-    PassRefPtrWillBeRawPtr<WebGLActiveInfo> getTransformFeedbackVarying(WebGLProgram*, GLuint);
+    WebGLActiveInfo* getTransformFeedbackVarying(WebGLProgram*, GLuint);
     void pauseTransformFeedback();
     void resumeTransformFeedback();
 
@@ -154,7 +153,7 @@ public:
     void uniformBlockBinding(WebGLProgram*, GLuint, GLuint);
 
     /* Vertex Array Objects */
-    PassRefPtrWillBeRawPtr<WebGLVertexArrayObject> createVertexArray();
+    WebGLVertexArrayObject* createVertexArray();
     void deleteVertexArray(WebGLVertexArrayObject*);
     GLboolean isVertexArray(WebGLVertexArrayObject*);
     void bindVertexArray(WebGLVertexArrayObject*);
@@ -208,21 +207,21 @@ protected:
 
     void removeBoundBuffer(WebGLBuffer*) override;
 
-    RefPtrWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
-    RefPtrWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;
+    PersistentWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
+    PersistentWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;
     GLint m_max3DTextureSize;
     GLint m_max3DTextureLevel;
 
-    RefPtrWillBeMember<WebGLBuffer> m_boundCopyReadBuffer;
-    RefPtrWillBeMember<WebGLBuffer> m_boundCopyWriteBuffer;
-    RefPtrWillBeMember<WebGLBuffer> m_boundPixelPackBuffer;
-    RefPtrWillBeMember<WebGLBuffer> m_boundPixelUnpackBuffer;
-    RefPtrWillBeMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
-    RefPtrWillBeMember<WebGLBuffer> m_boundUniformBuffer;
+    PersistentWillBeMember<WebGLBuffer> m_boundCopyReadBuffer;
+    PersistentWillBeMember<WebGLBuffer> m_boundCopyWriteBuffer;
+    PersistentWillBeMember<WebGLBuffer> m_boundPixelPackBuffer;
+    PersistentWillBeMember<WebGLBuffer> m_boundPixelUnpackBuffer;
+    PersistentWillBeMember<WebGLBuffer> m_boundTransformFeedbackBuffer;
+    PersistentWillBeMember<WebGLBuffer> m_boundUniformBuffer;
 
-    RefPtrWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;
-    RefPtrWillBeMember<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
-    WillBeHeapVector<RefPtrWillBeMember<WebGLSampler>> m_samplerUnits;
+    PersistentWillBeMember<WebGLQuery> m_currentBooleanOcclusionQuery;
+    PersistentWillBeMember<WebGLQuery> m_currentTransformFeedbackPrimitivesWrittenQuery;
+    PersistentHeapVectorWillBeHeapVector<Member<WebGLSampler>> m_samplerUnits;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,

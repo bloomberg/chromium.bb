@@ -46,9 +46,9 @@ WebGLExtensionName WebGLCompressedTextureATC::name() const
     return WebGLCompressedTextureATCName;
 }
 
-PassRefPtrWillBeRawPtr<WebGLCompressedTextureATC> WebGLCompressedTextureATC::create(WebGLRenderingContextBase* context)
+WebGLCompressedTextureATC* WebGLCompressedTextureATC::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new WebGLCompressedTextureATC(context));
+    return new WebGLCompressedTextureATC(context);
 }
 
 bool WebGLCompressedTextureATC::supported(WebGLRenderingContextBase* context)

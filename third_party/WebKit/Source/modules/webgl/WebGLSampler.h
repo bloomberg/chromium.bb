@@ -6,7 +6,6 @@
 #define WebGLSampler_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -17,7 +16,7 @@ class WebGLSampler : public WebGLSharedPlatform3DObject {
 public:
     ~WebGLSampler() override;
 
-    static PassRefPtrWillBeRawPtr<WebGLSampler> create(WebGL2RenderingContextBase*);
+    static WebGLSampler* create(WebGL2RenderingContextBase*);
 
 protected:
     explicit WebGLSampler(WebGL2RenderingContextBase*);

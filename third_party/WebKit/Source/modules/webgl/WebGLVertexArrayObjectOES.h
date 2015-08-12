@@ -27,14 +27,13 @@
 #define WebGLVertexArrayObjectOES_h
 
 #include "modules/webgl/WebGLVertexArrayObjectBase.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class WebGLVertexArrayObjectOES final : public WebGLVertexArrayObjectBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> create(WebGLRenderingContextBase*, VaoType);
+    static WebGLVertexArrayObjectOES* create(WebGLRenderingContextBase*, VaoType);
 
 private:
     explicit WebGLVertexArrayObjectOES(WebGLRenderingContextBase*, VaoType);

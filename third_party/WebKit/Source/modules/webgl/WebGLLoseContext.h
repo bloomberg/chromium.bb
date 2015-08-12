@@ -27,7 +27,6 @@
 #define WebGLLoseContext_h
 
 #include "modules/webgl/WebGLExtension.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -36,7 +35,7 @@ class WebGLRenderingContextBase;
 class WebGLLoseContext final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<WebGLLoseContext> create(WebGLRenderingContextBase*);
+    static WebGLLoseContext* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

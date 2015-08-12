@@ -6,7 +6,6 @@
 #define CHROMIUMValuebuffer_h
 
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "wtf/PassRefPtr.h"
 
 namespace blink {
 
@@ -15,7 +14,7 @@ class CHROMIUMValuebuffer final : public WebGLSharedPlatform3DObject {
 public:
     ~CHROMIUMValuebuffer() override;
 
-    static PassRefPtrWillBeRawPtr<CHROMIUMValuebuffer> create(WebGLRenderingContextBase*);
+    static CHROMIUMValuebuffer* create(WebGLRenderingContextBase*);
 
     bool hasEverBeenBound() const { return m_hasEverBeenBound; }
 

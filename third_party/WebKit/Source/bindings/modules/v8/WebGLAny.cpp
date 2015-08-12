@@ -50,7 +50,7 @@ ScriptValue WebGLAny(ScriptState* scriptState, String value)
     return ScriptValue(scriptState, v8String(scriptState->isolate(), value));
 }
 
-ScriptValue WebGLAny(ScriptState* scriptState, PassRefPtrWillBeRawPtr<WebGLObject> value)
+ScriptValue WebGLAny(ScriptState* scriptState, WebGLObject* value)
 {
     return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
 }

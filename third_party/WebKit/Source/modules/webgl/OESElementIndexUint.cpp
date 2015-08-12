@@ -44,9 +44,9 @@ WebGLExtensionName OESElementIndexUint::name() const
     return OESElementIndexUintName;
 }
 
-PassRefPtrWillBeRawPtr<OESElementIndexUint> OESElementIndexUint::create(WebGLRenderingContextBase* context)
+OESElementIndexUint* OESElementIndexUint::create(WebGLRenderingContextBase* context)
 {
-    return adoptRefWillBeNoop(new OESElementIndexUint(context));
+    return new OESElementIndexUint(context);
 }
 
 bool OESElementIndexUint::supported(WebGLRenderingContextBase* context)

@@ -34,7 +34,7 @@ namespace blink {
 class WebGLDrawBuffers final : public WebGLExtension {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<WebGLDrawBuffers> create(WebGLRenderingContextBase*);
+    static WebGLDrawBuffers* create(WebGLRenderingContextBase*);
     static bool supported(WebGLRenderingContextBase*);
     static const char* extensionName();
 

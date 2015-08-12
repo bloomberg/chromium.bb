@@ -26,7 +26,7 @@
 [
     NoInterfaceObject,
     DoNotCheckConstants,
-    WillBeGarbageCollected,
+    GarbageCollected,
     SetWrapperReferenceFrom=canvas,
 ] interface WebGLDebugRendererInfo {
     const unsigned long UNMASKED_VENDOR_WEBGL = 0x9245;
