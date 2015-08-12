@@ -20,6 +20,7 @@
       'browser/android/mock_location_settings.cc',
       'browser/android/mock_location_settings.h',
       'browser/android/preferences/pref_service_bridge_unittest.cc',
+      'browser/android/shortcut_info_unittest.cc',
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
       'browser/app_controller_mac_unittest.mm',
       'browser/autocomplete/autocomplete_provider_unittest.cc',

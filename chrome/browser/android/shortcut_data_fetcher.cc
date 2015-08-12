@@ -69,6 +69,8 @@ void ShortcutDataFetcher::OnDidGetWebApplicationInfo(
   shortcut_info_.user_title = web_app_info.title.empty()
                                     ? web_contents()->GetTitle()
                                     : web_app_info.title;
+  shortcut_info_.short_name = shortcut_info_.user_title;
+  shortcut_info_.name = shortcut_info_.user_title;
 
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE ||
       web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
@@ -101,9 +103,8 @@ void ShortcutDataFetcher::OnDidGetManifest(const content::Manifest& manifest) {
   if (!manifest.IsEmpty()) {
       content::RecordAction(
           base::UserMetricsAction("webapps.AddShortcut.Manifest"));
+      shortcut_info_.UpdateFromManifest(manifest);
   }
-
-  shortcut_info_.UpdateFromManifest(manifest);
 
   GURL icon_src = ManifestIconSelector::FindBestMatchingIcon(
       manifest.icons,
