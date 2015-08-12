@@ -4,8 +4,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
@@ -13,6 +15,7 @@
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 
@@ -100,6 +103,23 @@ scoped_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
       make_scoped_ptr(new policy::UploadJobImpl::RandomMimeBoundaryGenerator)));
 }
 
+// Returns the system log upload frequency.
+base::TimeDelta GetUploadFrequency() {
+  base::TimeDelta upload_frequency(base::TimeDelta::FromMilliseconds(
+      policy::SystemLogUploader::kDefaultUploadDelayMs));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSystemLogUploadFrequency)) {
+    std::string string_value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kSystemLogUploadFrequency);
+    int frequency;
+    if (base::StringToInt(string_value, &frequency)) {
+      upload_frequency = base::TimeDelta::FromMilliseconds(frequency);
+    }
+  }
+  return upload_frequency;
+}
+
 }  // namespace
 
 namespace policy {
@@ -128,8 +148,7 @@ SystemLogUploader::SystemLogUploader(
     scoped_ptr<Delegate> syslog_delegate,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
     : retry_count_(0),
-      upload_frequency_(
-          base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs)),
+      upload_frequency_(GetUploadFrequency()),
       task_runner_(task_runner),
       syslog_delegate_(syslog_delegate.Pass()),
       weak_factory_(this) {

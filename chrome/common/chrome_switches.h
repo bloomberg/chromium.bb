@@ -304,6 +304,7 @@ extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncEnableClearDataOnPassphraseEncryption[];
 extern const char kSyncDisableBackup[];
 extern const char kSyncDisableRollback[];
+extern const char kSystemLogUploadFrequency[];
 extern const char kTestName[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];

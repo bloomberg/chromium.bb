@@ -1102,6 +1102,10 @@ const char kSyncDisableBackup[] = "disable-sync-backup";
 // Disable sync rollback.
 const char kSyncDisableRollback[] = "disable-sync-rollback";
 
+// Frequency in Milliseconds for system log uploads. Should only be used for
+// testing purposes.
+const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";
+
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
