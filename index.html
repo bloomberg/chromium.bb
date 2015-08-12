@@ -129,17 +129,6 @@ is rendered outside the contenteditable div if there is no text after the
 pills.</p>
 
 <h3>
-    <a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a>
-    (Shezan Baig; D34079255)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FcellInMulticol">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/cellInMulticol.html">this link</a> in Chrome and keep
-resizing the window. You will see that the table cells get split when they
-reach column boundaries.</p>
-<p>This is a rather complicated patch and requires a bunch of additional work
-before it can be sent upstream.</p>
-
-<h3>
     <a name="bugfix-cleartypecanvas">bugfix/cleartypecanvas</a>
     (Shezan Baig; D32281407; upstream: <a href="https://bugs.webkit.org/show_bug.cgi?id=86776">86776</a>)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2Fcleartypecanvas">view changes</a>]</span>
@@ -537,25 +526,6 @@ in our product, so it is unlikely that many of them will be sent upstream.</p>
 <p>
 
 <h3>
-    <a name="feature-nColumnSpan">feature/nColumnSpan</a>
-    (Shezan Baig; D33399541, D36821222)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FnColumnSpan">view changes</a>]</span>
-</h3>
-<p>This is a feature we needed in our product, so it is unlikely that we will
-send this upstream.</p>
-<p>When using the multicolumn feature, there is a way to make an element span
-across all columns (<code>-webkit-column-span: all</code>).</p>
-<p>However, we needed a way to span across a specified number of columns, (e.g.
-<code>-webkit-column-span: 2</code>).  Once CSS Regions have matured (WebKit
-bug <a href="https://bugs.webkit.org/show_bug.cgi?id=57312">57312</a>), we
-should be able to use Regions to achieve this effect, then we can get rid of
-this branch.  However, we needed this one specific feature immediately, so this
-branch just hacks it in.</p>
-<p>Open <a href="repros/nColumnSpan.html">this link</a> in Chrome.  With this
-patch applied, the title will occupy two columns.  The button allows toggling
-between two and three columns.</p>
-
-<h3>
     <a name="feature-preserveSelDirection">feature/preserveSelDirection</a>
     (Shezan Baig; D36076457)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...feature%2FpreserveSelDirection">view changes</a>]</span>
@@ -626,6 +596,14 @@ behavior with and without the patch applied.</p>
 
 <div id="retiredblock">
 <h1>Retired Branches</h1>
+
+<h2><a name="retired-44.0.2403.155">Retired at 44.0.2403.155</a></h2>
+
+<h3><a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a> (Shezan Baig; D34079255)</h3>
+<p>Retired because we no longer need the multicolumn feature.</p>
+
+<h3><a name="feature-nColumnSpan">feature/nColumnSpan</a> (Shezan Baig; D33399541, D36821222)</h3>
+<p>Retired because we no longer need the multicolumn feature.</p>
 
 <h2><a name="retired-44.0.2403.61">Retired at 44.0.2403.61</a></h2>
 
