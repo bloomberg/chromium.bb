@@ -2756,7 +2756,7 @@ def SetUpLinuxEnvMips(env):
   else:
     tc_dir = os.path.join(jail, 'bin')
     if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
-      raise UserError("\nERRROR: "
+      print ("WARNING: "
           "MIPS trusted toolchain not found - try running:\n"
           "  build/package_version/package_version.py --packages"
           " linux_x86/mips_trusted sync -x\n"
