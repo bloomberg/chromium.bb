@@ -274,7 +274,8 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @Override
     public void onFilterStateSet(EnhancedBookmarkFilter filter) {
-        // TODO(fgorski): mDelegate.getModel().getBookmarksForFilter(filter);
+        assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
+        setBookmarks(null, mDelegate.getModel().getBookmarkIDsByFilter(filter));
     }
 
     @Override

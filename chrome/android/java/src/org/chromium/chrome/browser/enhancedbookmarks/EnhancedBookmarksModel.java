@@ -16,11 +16,14 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
+import org.chromium.chrome.browser.offline_pages.OfflinePageItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,6 +52,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     private LargeIconBridge mLargeIconBridge;
     private ObserverList<EnhancedBookmarkDeleteObserver> mDeleteObservers = new ObserverList<>();
     private LruCache<String, Pair<Bitmap, Integer>> mFaviconCache;
+    private OfflinePageBridge mOfflinePageBridge;
 
     /**
      * Initialize enhanced bookmark model for last used non-incognito profile.
@@ -76,6 +80,11 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
                 return size;
             }
         };
+
+        if (OfflinePageBridge.isEnabled()) {
+            // TODO(jianli): Make sure to wait until the bridge is loaded.
+            mOfflinePageBridge = new OfflinePageBridge(profile);
+        }
     }
 
     /**
@@ -194,5 +203,22 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
      */
     public BookmarkId getDefaultFolder() {
         return getMobileFolderId();
+    }
+
+    /**
+     * Gets a list of bookmark IDs of bookmarks that match a specified filter.
+     *
+     * @param filter Filter to be applied to the bookmarks.
+     * @return A list of bookmark IDs of bookmarks matching the filter.
+     */
+    public List<BookmarkId> getBookmarkIDsByFilter(EnhancedBookmarkFilter filter) {
+        assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
+        assert mOfflinePageBridge != null;
+
+        List<BookmarkId> bookmarkIds = new ArrayList<BookmarkId>();
+        for (OfflinePageItem offlinePage : mOfflinePageBridge.getAllPages()) {
+            bookmarkIds.add(offlinePage.getBookmarkId());
+        }
+        return bookmarkIds;
     }
 }

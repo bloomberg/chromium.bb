@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkManager.UIState;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -117,6 +118,9 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
         }
         if (mDelegate.getModel().isFolderVisible(mOthersNodeId)) {
             mTopSection.add(new Item(mOthersNodeId));
+        }
+        if (OfflinePageBridge.isEnabled()) {
+            mTopSection.add(new Item(EnhancedBookmarkFilter.OFFLINE_PAGES));
         }
 
         if (mManagedAndPartnerFolderIds != null) {
