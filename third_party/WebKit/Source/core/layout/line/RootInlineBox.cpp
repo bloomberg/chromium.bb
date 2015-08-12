@@ -827,9 +827,9 @@ Node* RootInlineBox::getLogicalStartBoxWithNode(InlineBox*& startBox) const
     Vector<InlineBox*> leafBoxesInLogicalOrder;
     collectLeafBoxesInLogicalOrder(leafBoxesInLogicalOrder);
     for (size_t i = 0; i < leafBoxesInLogicalOrder.size(); ++i) {
-        if (leafBoxesInLogicalOrder[i]->layoutObject().nonPseudoNode()) {
+        if (leafBoxesInLogicalOrder[i]->lineLayoutItem().nonPseudoNode()) {
             startBox = leafBoxesInLogicalOrder[i];
-            return startBox->layoutObject().nonPseudoNode();
+            return startBox->lineLayoutItem().nonPseudoNode();
         }
     }
     startBox = nullptr;
@@ -841,9 +841,9 @@ Node* RootInlineBox::getLogicalEndBoxWithNode(InlineBox*& endBox) const
     Vector<InlineBox*> leafBoxesInLogicalOrder;
     collectLeafBoxesInLogicalOrder(leafBoxesInLogicalOrder);
     for (size_t i = leafBoxesInLogicalOrder.size(); i > 0; --i) {
-        if (leafBoxesInLogicalOrder[i - 1]->layoutObject().nonPseudoNode()) {
+        if (leafBoxesInLogicalOrder[i - 1]->lineLayoutItem().nonPseudoNode()) {
             endBox = leafBoxesInLogicalOrder[i - 1];
-            return endBox->layoutObject().nonPseudoNode();
+            return endBox->lineLayoutItem().nonPseudoNode();
         }
     }
     endBox = nullptr;

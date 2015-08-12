@@ -45,6 +45,11 @@ public:
         return m_layoutObject->node();
     }
 
+    Node* nonPseudoNode() const
+    {
+        return m_layoutObject->nonPseudoNode();
+    }
+
     LineLayoutItem parent() const
     {
         return LineLayoutItem(m_layoutObject->parent());
