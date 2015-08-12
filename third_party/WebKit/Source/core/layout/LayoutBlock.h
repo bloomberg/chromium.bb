@@ -369,24 +369,30 @@ private:
     void removeFromGlobalMaps();
     bool widthAvailableToChildrenHasChanged();
 
+public:
+    // Specify which page or column to associate with an offset, if said offset is exactly at a page
+    // or column boundary.
+    enum PageBoundaryRule { AssociateWithFormerPage, AssociateWithLatterPage };
+
+    LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
+    LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule) const;
+
 protected:
     bool isPageLogicalHeightKnown(LayoutUnit logicalOffset) const { return pageLogicalHeightForOffset(logicalOffset); }
 
-    // Returns the logicalOffset at the top of the next page. If the offset passed in is already at the top of the current page,
-    // then nextPageLogicalTop with ExcludePageBoundary will still move to the top of the next page. nextPageLogicalTop with
-    // IncludePageBoundary set will not.
+    // Returns the logical offset at the top of the next page, for a given offset.
     //
-    // For a page height of 800px, the first rule will return 800 if the value passed in is 0. The second rule will simply return 0.
-    enum PageBoundaryRule { ExcludePageBoundary, IncludePageBoundary };
-    LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
+    // If the given offset is at a page boundary, using AssociateWithLatterPage as PageBoundaryRule
+    // will move us one page ahead (since the offset is at the top of the "current" page). Using
+    // AssociateWithFormerPage instead will keep us where we are (since the offset is at the bottom
+    // of the "current" page, which is exactly the same offset as the top offset on the next page).
+    //
+    // For a page height of 800px, AssociateWithLatterPage will return 1600 if the value passed in
+    // is 800. AssociateWithFormerPage will simply return 800.
+    LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule) const;
 
     bool createsNewFormattingContext() const;
 
-public:
-    LayoutUnit pageLogicalHeightForOffset(LayoutUnit offset) const;
-    LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit offset, PageBoundaryRule = IncludePageBoundary) const;
-
-protected:
     // A page break is required at some offset due to space shortage in the current fragmentainer.
     void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage);
 

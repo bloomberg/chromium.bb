@@ -90,7 +90,7 @@ public:
     void mapRectToPaintInvalidationBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState*) const override;
 
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
-    LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule = IncludePageBoundary);
+    LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule);
 
     virtual void setPageBreak(LayoutUnit /*offset*/, LayoutUnit /*spaceShortage*/) { }
     virtual void updateMinimumPageHeight(LayoutUnit /*offset*/, LayoutUnit /*minHeight*/) { }

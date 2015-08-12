@@ -706,7 +706,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
 
     if (!unsplittableAdjustmentDelta) {
         if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(result)) {
-            LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(result, ExcludePageBoundary);
+            LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(result, AssociateWithLatterPage);
             LayoutUnit spaceShortage = childLogicalHeight - remainingLogicalHeight;
             if (spaceShortage > 0) {
                 // If the child crosses a column boundary, report a break, in case nothing inside it
@@ -797,7 +797,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         // and printing Google Docs depends on it.
         return;
     }
-    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, ExcludePageBoundary);
+    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);
 
     int lineIndex = lineCount(&lineBox);
     if (remainingLogicalHeight < lineHeight || (shouldBreakAtLineToAvoidWidow() && lineBreakToAvoidWidow() == lineIndex)) {
@@ -843,7 +843,7 @@ LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutU
     updateMinimumPageHeight(logicalOffset, childLogicalHeight);
     if (!pageLogicalHeight)
         return logicalOffset;
-    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, ExcludePageBoundary);
+    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset, AssociateWithLatterPage);
     if (remainingLogicalHeight < childLogicalHeight)
         return logicalOffset + remainingLogicalHeight;
     return logicalOffset;
@@ -1274,7 +1274,7 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child, MarginInfo& margin
     LayoutState* layoutState = view()->layoutState();
     if (layoutState->isPaginated() && isPageLogicalHeightKnown(beforeCollapseLogicalTop) && logicalTop > beforeCollapseLogicalTop) {
         LayoutUnit oldLogicalTop = logicalTop;
-        logicalTop = std::min(logicalTop, nextPageLogicalTop(beforeCollapseLogicalTop));
+        logicalTop = std::min(logicalTop, nextPageLogicalTop(beforeCollapseLogicalTop, AssociateWithLatterPage));
         setLogicalHeight(logicalHeight() + (logicalTop - oldLogicalTop));
     }
 
@@ -1490,7 +1490,7 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(LayoutBox& child, const M
     // page.
     LayoutState* layoutState = view()->layoutState();
     if (layoutState->isPaginated() && isPageLogicalHeightKnown(logicalHeight()) && logicalTopEstimate > logicalHeight())
-        logicalTopEstimate = std::min(logicalTopEstimate, nextPageLogicalTop(logicalHeight()));
+        logicalTopEstimate = std::min(logicalTopEstimate, nextPageLogicalTop(logicalHeight(), AssociateWithLatterPage));
 
     logicalTopEstimate += getClearDelta(&child, logicalTopEstimate);
 
@@ -1691,7 +1691,7 @@ LayoutUnit LayoutBlockFlow::applyBeforeBreak(LayoutBox& child, LayoutUnit logica
             if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, true, &offsetBreakAdjustment))
                 return logicalOffset + offsetBreakAdjustment;
         }
-        return nextPageLogicalTop(logicalOffset, IncludePageBoundary);
+        return nextPageLogicalTop(logicalOffset, AssociateWithFormerPage);
     }
     return logicalOffset;
 }
@@ -1713,7 +1713,7 @@ LayoutUnit LayoutBlockFlow::applyAfterBreak(LayoutBox& child, LayoutUnit logical
             if (flowThread->addForcedColumnBreak(offsetFromLogicalTopOfFirstPage() + logicalOffset, &child, false, &offsetBreakAdjustment))
                 return logicalOffset + offsetBreakAdjustment;
         }
-        return nextPageLogicalTop(logicalOffset, IncludePageBoundary);
+        return nextPageLogicalTop(logicalOffset, AssociateWithFormerPage);
     }
     return logicalOffset;
 }

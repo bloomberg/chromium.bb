@@ -2628,11 +2628,7 @@ LayoutUnit LayoutBlock::nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundar
     if (!pageLogicalHeight)
         return logicalOffset;
 
-    // The logicalOffset is in our coordinate space.  We can add in our pushed offset.
-    LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(logicalOffset);
-    if (pageBoundaryRule == ExcludePageBoundary)
-        return logicalOffset + (remainingLogicalHeight ? remainingLogicalHeight : pageLogicalHeight);
-    return logicalOffset + remainingLogicalHeight;
+    return logicalOffset + pageRemainingLogicalHeightForOffset(logicalOffset, pageBoundaryRule);
 }
 
 LayoutUnit LayoutBlock::pageLogicalHeightForOffset(LayoutUnit offset) const
@@ -2653,9 +2649,10 @@ LayoutUnit LayoutBlock::pageRemainingLogicalHeightForOffset(LayoutUnit offset, P
     if (!flowThread) {
         LayoutUnit pageLogicalHeight = layoutView->layoutState()->pageLogicalHeight();
         LayoutUnit remainingHeight = pageLogicalHeight - intMod(offset, pageLogicalHeight);
-        if (pageBoundaryRule == IncludePageBoundary) {
-            // If includeBoundaryPoint is true the line exactly on the top edge of a
-            // column will act as being part of the previous column.
+        if (pageBoundaryRule == AssociateWithFormerPage) {
+            // An offset exactly at a page boundary will act as being part of the former page in
+            // question (i.e. no remaining space), rather than being part of the latter (i.e. one
+            // whole page length of remaining space).
             remainingHeight = intMod(remainingHeight, pageLogicalHeight);
         }
         return remainingHeight;

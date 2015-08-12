@@ -81,9 +81,10 @@ LayoutUnit LayoutMultiColumnSet::pageRemainingLogicalHeightForOffset(LayoutUnit 
     LayoutUnit pageLogicalBottom = row.columnLogicalTopForOffset(offsetInFlowThread) + pageLogicalHeight;
     LayoutUnit remainingLogicalHeight = pageLogicalBottom - offsetInFlowThread;
 
-    if (pageBoundaryRule == IncludePageBoundary) {
-        // If IncludePageBoundary is set, the line exactly on the top edge of a
-        // column will act as being part of the previous column.
+    if (pageBoundaryRule == AssociateWithFormerPage) {
+        // An offset exactly at a column boundary will act as being part of the former column in
+        // question (i.e. no remaining space), rather than being part of the latter (i.e. one whole
+        // column length of remaining space).
         remainingLogicalHeight = intMod(remainingLogicalHeight, pageLogicalHeight);
     }
     return remainingLogicalHeight;

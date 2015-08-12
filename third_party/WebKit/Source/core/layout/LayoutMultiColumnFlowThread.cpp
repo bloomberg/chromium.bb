@@ -910,7 +910,7 @@ bool LayoutMultiColumnFlowThread::addForcedColumnBreak(LayoutUnit offset, Layout
     if (LayoutMultiColumnSet* multicolSet = columnSetAtBlockOffset(offset)) {
         multicolSet->addContentRun(offset);
         if (offsetBreakAdjustment)
-            *offsetBreakAdjustment = pageLogicalHeightForOffset(offset) ? pageRemainingLogicalHeightForOffset(offset, IncludePageBoundary) : LayoutUnit();
+            *offsetBreakAdjustment = pageLogicalHeightForOffset(offset) ? pageRemainingLogicalHeightForOffset(offset, AssociateWithFormerPage) : LayoutUnit();
         return true;
     }
     return false;
