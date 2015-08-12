@@ -232,7 +232,7 @@
   "networking.config": {
     "channel": "stable",
     "platforms": ["chromeos"],
-    "extension_types": ["extension"]
+    "extension_types": ["extension", "platform_app"]
   },
   "networkingPrivate": {
     "channel": "stable",
