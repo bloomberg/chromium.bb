@@ -761,6 +761,13 @@ crbug.com/507351 [ Mac ] fast/text/international/kana-voiced-sound-marks.html [ 
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]
 
+# Waiting for crrev.com/1144323003 to land before re-baselining.
+crbug.com/449197 fast/canvas/yuv-video-on-accelerated-canvas.html [ NeedsManualRebaseline ]
+crbug.com/449197 virtual/display_list_2d_canvas/fast/canvas/yuv-video-on-accelerated-canvas.html [ NeedsManualRebaseline ]
+crbug.com/449197 virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+crbug.com/449197 virtual/gpu/fast/canvas/canvas-drawImage-video.html [ NeedsManualRebaseline ]
+crbug.com/449197 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ NeedsManualRebaseline ]
+
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
 # This means that CoreGraphics may draw outside the reported glyph bounds, and in this case does.
