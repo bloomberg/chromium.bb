@@ -14,6 +14,7 @@
 #include "content/common/input/web_touch_event_traits.h"
 
 using blink::WebInputEvent;
+using blink::WebPointerProperties;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 
@@ -157,9 +158,23 @@ base::TimeTicks MotionEventWeb::GetEventTime() const {
 
 ui::MotionEvent::ToolType MotionEventWeb::GetToolType(
     size_t pointer_index) const {
-  // TODO(jdduke): Plumb tool type from the platform event, crbug.com/404128.
   DCHECK_LT(pointer_index, GetPointerCount());
-  return TOOL_TYPE_UNKNOWN;
+
+  const WebPointerProperties& pointer = event_.touches[pointer_index];
+
+  switch (pointer.pointerType) {
+    case WebPointerProperties::PointerTypeUnknown:
+      return TOOL_TYPE_UNKNOWN;
+    case WebPointerProperties::PointerTypeMouse:
+      return TOOL_TYPE_MOUSE;
+    case WebPointerProperties::PointerTypePen:
+      return TOOL_TYPE_STYLUS;
+    case WebPointerProperties::PointerTypeTouch:
+      return TOOL_TYPE_FINGER;
+    default:
+      NOTREACHED() << "Unhandled pointer type " << pointer.pointerType;
+      return TOOL_TYPE_UNKNOWN;
+  }
 }
 
 int MotionEventWeb::GetButtonState() const {
