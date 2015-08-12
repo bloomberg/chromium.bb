@@ -144,7 +144,7 @@ bool AppendMirrorRequestHeaderIfPossible(
     return false;
 
   // If signin cookies are not allowed, don't add the header.
-  if (SettingsAllowSigninCookies(cookie_settings)) {
+  if (!SettingsAllowSigninCookies(cookie_settings)) {
     return false;
   }
 
