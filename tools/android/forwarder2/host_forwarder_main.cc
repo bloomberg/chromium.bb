@@ -170,9 +170,12 @@ class HostControllersManager {
           adb_port, -device_port);
       const bool controller_did_exist = DeleteRefCountedValueInMap(
           controller_key, controllers_.get());
-      SendMessage(
-          !controller_did_exist ? "ERROR: could not unmap port" : "OK",
-          client_socket.get());
+      if (!controller_did_exist) {
+        SendMessage("ERROR: could not unmap port.", client_socket.get());
+        LogExistingControllers(client_socket);
+      } else {
+        SendMessage("OK", client_socket.get());
+      }
 
       RemoveAdbPortForDeviceIfNeeded(adb_path, device_serial);
       return;
@@ -202,6 +205,7 @@ class HostControllersManager {
     if (!host_controller.get()) {
       has_failed_ = true;
       SendMessage("ERROR: Connection to device failed.", client_socket.get());
+      LogExistingControllers(client_socket);
       return;
     }
     // Get the current allocated port.
@@ -215,6 +219,14 @@ class HostControllersManager {
     controllers_->insert(
         std::make_pair(MakeHostControllerMapKey(adb_port, device_port),
                        linked_ptr<HostController>(host_controller.release())));
+  }
+
+  void LogExistingControllers(const scoped_ptr<Socket>& client_socket) {
+    SendMessage("ERROR: Existing controllers:", client_socket.get());
+    for (const auto& controller : *controllers_) {
+      SendMessage(base::StringPrintf("ERROR:   %s", controller.first.c_str()),
+          client_socket.get());
+    }
   }
 
   void RemoveAdbPortForDeviceIfNeeded(const std::string& adb_path,
