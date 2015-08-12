@@ -14,7 +14,8 @@ namespace mojo {
 media_router::MediaSink
 TypeConverter<media_router::MediaSink, MediaSinkPtr>::Convert(
     const MediaSinkPtr& input) {
-  return media_router::MediaSink(input->sink_id, input->name);
+  return media_router::MediaSink(input->sink_id, input->name,
+                                 input->is_launching);
 }
 
 // static
@@ -23,6 +24,7 @@ MediaSinkPtr TypeConverter<MediaSinkPtr, media_router::MediaSink>::Convert(
   MediaSinkPtr output(media_router::interfaces::MediaSink::New());
   output->sink_id = input.id();
   output->name = input.name();
+  output->is_launching = input.is_launching();
   return output.Pass();
 }
 

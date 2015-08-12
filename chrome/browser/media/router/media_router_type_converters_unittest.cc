@@ -11,10 +11,11 @@
 namespace media_router {
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
-  MediaSink expected_media_sink("sinkId1", "Sink 1");
+  MediaSink expected_media_sink("sinkId1", "Sink 1", true);
   interfaces::MediaSinkPtr expected_mojo_sink(interfaces::MediaSink::New());
   expected_mojo_sink->sink_id = "sinkId1";
   expected_mojo_sink->name = "Sink 1";
+  expected_mojo_sink->is_launching = true;
 
   interfaces::MediaSinkPtr mojo_sink =
       mojo::TypeConverter<interfaces::MediaSinkPtr, MediaSink>::Convert(
@@ -29,6 +30,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   // Convert MediaSink and back should result in identical object.
   EXPECT_EQ(expected_media_sink.name(), media_sink.name());
   EXPECT_EQ(expected_media_sink.id(), media_sink.id());
+  EXPECT_EQ(expected_media_sink.is_launching(), media_sink.is_launching());
   EXPECT_TRUE(expected_media_sink.Equals(media_sink));
 }
 
@@ -70,7 +72,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   MediaRoute expected_media_route("routeId1", MediaSource(),
-                                  MediaSink("sinkId", "sinkName"),
+                                  MediaSink("sinkId", "sinkName", false),
                                   "Description", false, "");
   interfaces::MediaRoutePtr expected_mojo_route(interfaces::MediaRoute::New());
   // MediaRoute::media_source is omitted.
@@ -78,6 +80,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
   expected_mojo_route->media_sink = interfaces::MediaSink::New();
   expected_mojo_route->media_sink->sink_id = "sinkId";
   expected_mojo_route->media_sink->name = "sinkName";
+  expected_mojo_route->media_sink->is_launching = false;
   expected_mojo_route->description = "Description";
   expected_mojo_route->is_local = false;
 

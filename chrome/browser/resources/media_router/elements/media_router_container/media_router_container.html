@@ -24,7 +24,8 @@
             id="cast-mode-header-text">[[selectCastModeHeaderText_]]</span>
       </div>
       <paper-icon-button icon="[[computeArrowDropIcon_(currentView_)]]"
-          id="arrow-drop-icon" on-click="toggleCastModeHidden_">
+          disabled$="[[isLaunching_(sinkList)]]" id="arrow-drop-icon"
+          on-click="toggleCastModeHidden_">
       </paper-icon-button>
       <paper-icon-button icon="close" id="close-button"
           on-click="onCloseButtonClick_">
@@ -37,8 +38,10 @@
         hidden$="[[computeCastModeHidden_(currentView_)]]">
       <template is="dom-repeat" id="defaultCastModeList"
           items="[[computeDefaultCastModeList_(castModeList)]]">
-        <paper-item class="cast-mode" on-click="onCastModeClick_">
-          <iron-icon icon="[[computeCastModeIcon_(item)]]"></iron-icon>
+        <paper-item on-click="onCastModeClick_">
+          <iron-icon class="cast-mode-icon"
+              icon="[[computeCastModeIcon_(item)]]">
+          </iron-icon>
           <div><span>[[item.host]]</span></div>
         </paper-item>
       </template>
@@ -48,8 +51,10 @@
       </div>
       <template is="dom-repeat" id="nonDefaultCastModeList"
           items="[[computeNonDefaultCastModeList_(castModeList)]]">
-        <paper-item class="cast-mode" on-click="onCastModeClick_">
-          <iron-icon icon="[[computeCastModeIcon_(item)]]"></iron-icon>
+        <paper-item on-click="onCastModeClick_">
+          <iron-icon class="cast-mode-icon"
+              icon="[[computeCastModeIcon_(item)]]">
+          </iron-icon>
           <div><span>[[item.description]]</span></div>
         </paper-item>
       </template>
@@ -78,9 +83,13 @@
             <div class="sink-content">
               <div>
                 <!-- TODO(apacible): Show device icon based on device type. -->
-                <iron-icon icon="hardware:tv"
+                <iron-icon icon="hardware:tv" hidden$="[[item.isLaunching]]"
                     class$="[[computeSinkIconClass_(item.id, sinkToRouteMap_)]]">
                 </iron-icon>
+                <template is="dom-if" if="[[item.isLaunching]]">
+                  <paper-spinner class="sink-icon" active>
+                  </paper-spinner>
+                </template>
               </div>
               <div>
                 <div class="sink-text">

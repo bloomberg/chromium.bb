@@ -145,7 +145,8 @@ class MediaRouterUI
 
   // Callback passed to MediaRouter to receive response to route creation
   // requests.
-  void OnRouteResponseReceived(const MediaRoute* route,
+  void OnRouteResponseReceived(const MediaSink::Id& sink_id,
+                               const MediaRoute* route,
                                const std::string& presentation_id,
                                const std::string& error);
 

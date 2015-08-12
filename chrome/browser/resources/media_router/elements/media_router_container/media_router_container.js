@@ -200,7 +200,7 @@ Polymer({
 
   ready: function() {
     this.addEventListener('close-route-click', this.removeRoute);
-    this.currentView_ = this.CONTAINER_VIEW_.SINK_LIST;
+    this.showSinkList_();
   },
 
   attached: function() {
@@ -208,33 +208,6 @@ Polymer({
     this.async(function() {
       this.justOpened_ = false;
     }, 3000 /* 3 seconds */);
-  },
-
-  /**
-   * Adds |route| to |routeList|.
-   *
-   * @param {!media_router.Route} route The route to add.
-   */
-  addRoute: function(route) {
-    // Check if |route| already exists or if its associated sink
-    // does not exist.
-    if (this.routeMap_[route.id] || !this.sinkMap_[route.sinkId])
-      return;
-
-    // If there is an existing route associated with the same sink, its
-    // |sinkToRouteMap_| entry will be overwritten with that of the new route,
-    // which results in the correct sink to route mapping.
-    this.routeList.push(route);
-  },
-
-  /**
-   * Propagates extension ID to the child elements that need it.
-   *
-   * @private
-   */
-  propogateExtensionId_: function() {
-    this.$['route-details'].routeProviderExtensionId =
-        this.routeProviderExtensionId;
   },
 
   /**
@@ -383,7 +356,7 @@ Polymer({
    * @private
    */
   computeSinkIconClass_: function(sinkId, sinkToRouteMap) {
-    return sinkToRouteMap[sinkId] ? 'active-sink' : '';
+    return sinkToRouteMap[sinkId] ? 'sink-icon active-sink' : 'sink-icon';
   },
 
   /**
@@ -416,6 +389,17 @@ Polymer({
   },
 
   /**
+   * Checks if there is a sink whose isLaunching is true.
+   *
+   * @param {!Array<!media_router.Sink>} sinks
+   * @return {boolean}
+   * @private
+   */
+  isLaunching_: function(sinks) {
+    return sinks.some(function(sink) { return sink.isLaunching; });
+  },
+
+  /**
    * Updates |currentView_| if the dialog had just opened and there's
    * only one local route.
    *
@@ -423,29 +407,8 @@ Polymer({
    * @private
    */
   maybeShowRouteDetailsOnOpen_: function(route) {
-    if (this.localRouteCount_ == 1 && this.justOpened_ && route) {
-      this.currentRoute_ = route;
-      this.currentView_ = this.CONTAINER_VIEW_.ROUTE_DETAILS;
-    }
-  },
-
-  /**
-   * Creates a new route if |route| is null. Otherwise, shows the route
-   * details.
-   *
-   * @param {!media_router.Sink} sink The sink to use.
-   * @param {?media_router.Route} route The current route tied to |sink|.
-   * @private
-   */
-  showOrCreateRoute_: function(sink, route) {
-    if (route) {
-      this.showRouteDetails_();
-    } else {
-      this.fire('create-route', {
-        sinkId: sink.id,
-        selectedCastModeValue: this.selectedCastModeValue_
-      });
-    }
+    if (this.localRouteCount_ == 1 && this.justOpened_ && route)
+      this.showRouteDetails_(route);
   },
 
   /**
@@ -480,15 +443,50 @@ Polymer({
   },
 
   /**
-   * Called when a sink is clicked. Updates |currentRoute_|.
+   * Handles response of previous create route attempt.
+   *
+   * @param {string} sinkId The ID of the sink to which the Media Route was
+   *     creating a route.
+   * @param {?media_router.Route} route The newly created route to the sink
+   *     if succeeded; null otherwise.
+   */
+  onCreateRouteResponseReceived: function(sinkId, route) {
+    this.setLaunchState_(sinkId, false);
+    if (!route) {
+      // TODO(apacible) Show launch failure.
+      return;
+    }
+
+    // Check if |route| already exists or if its associated sink
+    // does not exist.
+    if (this.routeMap_[route.id] || !this.sinkMap_[route.sinkId])
+      return;
+
+    // If there is an existing route associated with the same sink, its
+    // |sinkToRouteMap_| entry will be overwritten with that of the new route,
+    // which results in the correct sink to route mapping.
+    this.routeList.push(route);
+    this.showRouteDetails_(route);
+  },
+
+  /**
+   * Called when a sink is clicked.
    *
    * @param {!Event} event The event object.
    * @private
    */
   onSinkClick_: function(event) {
-    var clickedSink = this.$.sinkList.itemForElement(event.target);
-    this.currentRoute_ = this.sinkToRouteMap_[clickedSink.id];
-    this.showOrCreateRoute_(clickedSink, this.currentRoute_);
+    this.showOrCreateRoute_(this.$.sinkList.itemForElement(event.target));
+  },
+
+  /**
+   * Propagates extension ID to the child elements that need it.
+   *
+   * @private
+   */
+  propogateExtensionId_: function() {
+    this.$['route-details'].routeProviderExtensionId =
+        this.routeProviderExtensionId;
   },
 
   /**
@@ -540,20 +538,62 @@ Polymer({
   },
 
   /**
+   * Temporarily overrides the "isLaunching" bit for a sink.
+   *
+   * @param {string} sinkId The ID of the sink.
+   * @param {boolean} isLaunching Whether or not the media router is creating
+   *    a route to the sink.
+   * @private
+   */
+  setLaunchState_: function(sinkId, isLaunching) {
+    for (var index = 0; index < this.sinkList.length; index++) {
+      if (this.sinkList[index].id == sinkId) {
+        this.set(['sinkList', index, 'isLaunching'], isLaunching);
+        return;
+      }
+    }
+  },
+
+  /**
    * Shows the cast mode list.
    *
    * @private
    */
   showCastModeList_: function() {
+    this.currentRoute_ = null;
     this.currentView_ = this.CONTAINER_VIEW_.CAST_MODE_LIST;
   },
 
   /**
-   * Shows the route details.
+   * Creates a new route if there is no route to the |sink| . Otherwise,
+   * shows the route details.
    *
+   * @param {!media_router.Sink} sink The sink to use.
    * @private
    */
-  showRouteDetails_: function() {
+  showOrCreateRoute_: function(sink) {
+    var route = this.sinkToRouteMap_[sink.id];
+    if (route) {
+      this.showRouteDetails_(route);
+    } else if (!this.isLaunching_(this.sinkList)) {
+      // Allow one launch at a time.
+      this.setLaunchState_(sink.id, true);
+      this.fire('create-route', {
+        sinkId: sink.id,
+        selectedCastModeValue: this.selectedCastModeValue_
+      });
+    }
+  },
+
+
+  /**
+   * Shows the route details.
+   *
+   * @param {!media_router.Route} route The route to show.
+   * @private
+   */
+  showRouteDetails_: function(route) {
+    this.currentRoute_ = route;
     this.currentView_ = this.CONTAINER_VIEW_.ROUTE_DETAILS;
   },
 
@@ -563,6 +603,7 @@ Polymer({
    * @private
    */
   showSinkList_: function() {
+    this.currentRoute_ = null;
     this.currentView_ = this.CONTAINER_VIEW_.SINK_LIST;
   },
 

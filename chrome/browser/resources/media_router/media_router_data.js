@@ -131,10 +131,12 @@ cr.define('media_router', function() {
    * @param {string} name The name of the sink.
    * @param {media_router.SinkStatus} status The readiness state of the sink.
    * @param {!Array<number>} castModes Cast modes compatible with the sink.
+   * @param {boolean} isLaunching True if the Media Router is creating a route
+   *                              to this sink.
    * @constructor
    * @struct
    */
-  var Sink = function(id, name, status, castModes) {
+  var Sink = function(id, name, status, castModes, isLaunching) {
     /** @type {string} */
     this.id = id;
 
@@ -146,6 +148,9 @@ cr.define('media_router', function() {
 
     /** @type {!Array<number>} */
     this.castModes = castModes;
+
+    /** @type {boolean} */
+    this.isLaunching = isLaunching;
   };
 
 

@@ -6,9 +6,14 @@
 
 namespace media_router {
 
-MediaSink::MediaSink(const MediaSink::Id& sink_id, const std::string& name)
-    : sink_id_(sink_id), name_(name) {
-}
+MediaSink::MediaSink(const MediaSink::Id& sink_id,
+                     const std::string& name)
+    : sink_id_(sink_id), name_(name), is_launching_(false) {}
+
+MediaSink::MediaSink(const MediaSink::Id& sink_id,
+                     const std::string& name,
+                     bool is_launching)
+    : sink_id_(sink_id), name_(name), is_launching_(is_launching) {}
 
 MediaSink::~MediaSink() {
 }

@@ -98,7 +98,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   EXPECT_EQ(is_local, actual_is_local);
 }
 
-TEST_F(MediaRouterWebUIMessageHandlerTest, AddRoute) {
+TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   MediaRoute::Id route_id("routeId123");
   MediaSink::Id sink_id("sinkId123");
   MediaSink sink(sink_id, "The sink");
@@ -107,13 +107,19 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, AddRoute) {
   MediaRoute route(route_id, MediaSource("mediaSource"),
                    MediaSink(sink_id, "The sink"), description, is_local, "");
 
-  handler_.AddRoute(route);
+  handler_.OnCreateRouteResponseReceived(sink_id, &route);
   EXPECT_EQ(1u, web_ui_.call_data().size());
   const content::TestWebUI::CallData& call_data = *web_ui_.call_data()[0];
-  EXPECT_EQ("media_router.ui.addRoute", call_data.function_name());
+  EXPECT_EQ("media_router.ui.onCreateRouteResponseReceived",
+            call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
+  const base::StringValue* sink_id_value = nullptr;
+  EXPECT_TRUE(arg1->GetAsString(&sink_id_value));
+  EXPECT_EQ(sink_id, sink_id_value->GetString());
+
+  const base::Value* arg2 = call_data.arg2();
   const base::DictionaryValue* route_value = nullptr;
-  EXPECT_TRUE(arg1->GetAsDictionary(&route_value));
+  EXPECT_TRUE(arg2->GetAsDictionary(&route_value));
 
   std::string value;
   EXPECT_TRUE(route_value->GetString("id", &value));

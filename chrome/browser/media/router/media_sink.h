@@ -14,12 +14,18 @@ class MediaSink {
  public:
   using Id = std::string;
 
-  MediaSink(const MediaSink::Id& sink_id, const std::string& name);
+  MediaSink(const MediaSink::Id& sink_id,
+            const std::string& name);
+
+  MediaSink(const MediaSink::Id& sink_id,
+            const std::string& name,
+            bool is_launching);
 
   ~MediaSink();
 
   const MediaSink::Id& id() const { return sink_id_; }
   const std::string& name() const { return name_; }
+  bool is_launching() const { return is_launching_; }
 
   bool Equals(const MediaSink& other) const;
   bool Empty() const;
@@ -30,6 +36,8 @@ class MediaSink {
   // Descriptive name of the MediaSink.
   // Optional, can use an empty string if no sink name is available.
   std::string name_;
+  // True when the media router is creating a route to this sink.
+  bool is_launching_;
 };
 
 }  // namespace media_router

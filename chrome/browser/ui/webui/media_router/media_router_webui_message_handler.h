@@ -35,7 +35,8 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void UpdateRoutes(const std::vector<MediaRoute>& routes);
   void UpdateCastModes(const CastModeSet& cast_modes,
                        const std::string& source_host);
-  void AddRoute(const MediaRoute& route);
+  void OnCreateRouteResponseReceived(const MediaSink::Id& sink_id,
+                                     const MediaRoute* route);
 
   // Does not take ownership of |issue|. Note that |issue| can be nullptr, when
   // there are no more issues.

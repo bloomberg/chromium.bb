@@ -10,6 +10,8 @@ struct MediaSink {
   string sink_id;
   // The human-readable name, e.g. "Janet's Chromecast".
   string name;
+  // True if a route is being created to this sink.
+  bool is_launching;
 };
 
 // Should be kept in sync with media_route.h.

@@ -285,16 +285,16 @@ void MediaRouterUI::OnRoutesUpdated(const std::vector<MediaRoute>& routes) {
     handler_->UpdateRoutes(routes_);
 }
 
-void MediaRouterUI::OnRouteResponseReceived(const MediaRoute* route,
+void MediaRouterUI::OnRouteResponseReceived(const MediaSink::Id& sink_id,
+                                            const MediaRoute* route,
                                             const std::string& presentation_id,
                                             const std::string& error) {
   DVLOG(1) << "OnRouteResponseReceived";
   // TODO(imcheng): Display error in UI. (crbug.com/490372)
   if (!route)
-    LOG(ERROR) << "MediaRouteResponse returned error: " << error;
-  else
-    handler_->AddRoute(*route);
+    DVLOG(0) << "MediaRouteResponse returned error: " << error;
 
+  handler_->OnCreateRouteResponseReceived(sink_id, route);
   has_pending_route_request_ = false;
   requesting_route_for_default_source_ = false;
 }
@@ -342,8 +342,9 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
   // treat subsequent route requests from a Presentation API-initiated dialogs
   // as browser-initiated.
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  route_response_callbacks.push_back(base::Bind(
-      &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr()));
+  route_response_callbacks.push_back(
+      base::Bind(&MediaRouterUI::OnRouteResponseReceived,
+                 weak_factory_.GetWeakPtr(), sink_id));
   if (requesting_route_for_default_source_) {
     if (presentation_request_) {
       // |presentation_request_| will be nullptr after this call, as the

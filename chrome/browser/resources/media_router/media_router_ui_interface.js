@@ -11,12 +11,15 @@ cr.define('media_router.ui', function() {
   var container = null;
 
   /**
-   * Adds a new route.
+   * Handles response of previous create route attempt.
    *
-   * @param {!media_router.Route} route
+   * @param {string} sinkId The ID of the sink to which the Media Route was
+   *     creating a route.
+   * @param {?media_router.Route} route The newly create route to the sink
+   *     if route creation succeeded; null otherwise
    */
-  function addRoute(route) {
-    container.addRoute(route);
+  function onCreateRouteResponseReceived(sinkId, route) {
+    container.onCreateRouteResponseReceived(sinkId, route);
   }
 
   /**
@@ -91,7 +94,7 @@ cr.define('media_router.ui', function() {
   }
 
   return {
-    addRoute: addRoute,
+    onCreateRouteResponseReceived: onCreateRouteResponseReceived,
     setCastModeList: setCastModeList,
     setContainer: setContainer,
     setInitialData: setInitialData,

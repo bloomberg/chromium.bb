@@ -26,7 +26,8 @@ const char kCloseDialog[] = "closeDialog";
 
 // JS function names.
 const char kSetInitialData[] = "media_router.ui.setInitialData";
-const char kAddRoute[] = "media_router.ui.addRoute";
+const char kOnCreateRouteResponseReceived[] =
+    "media_router.ui.onCreateRouteResponseReceived";
 const char kSetIssue[] = "media_router.ui.setIssue";
 const char kSetSinkList[] = "media_router.ui.setSinkList";
 const char kSetRouteList[] = "media_router.ui.setRouteList";
@@ -43,6 +44,7 @@ scoped_ptr<base::ListValue> SinksToValue(
     const MediaSink& sink = sink_with_cast_modes.sink;
     sink_val->SetString("id", sink.id());
     sink_val->SetString("name", sink.name());
+    sink_val->SetBoolean("isLaunching", sink.is_launching());
 
     scoped_ptr<base::ListValue> cast_modes_val(new base::ListValue);
     for (MediaCastMode cast_mode : sink_with_cast_modes.cast_modes)
@@ -171,10 +173,19 @@ void MediaRouterWebUIMessageHandler::UpdateCastModes(
   web_ui()->CallJavascriptFunction(kSetCastModeList, *cast_modes_val);
 }
 
-void MediaRouterWebUIMessageHandler::AddRoute(const MediaRoute& route) {
-  DVLOG(2) << "AddRoute";
-  scoped_ptr<base::DictionaryValue> route_value(RouteToValue(route));
-  web_ui()->CallJavascriptFunction(kAddRoute, *route_value);
+void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
+    const MediaSink::Id& sink_id,
+    const MediaRoute* route) {
+  DVLOG(2) << "OnCreateRouteResponseReceived";
+  if (route) {
+    scoped_ptr<base::DictionaryValue> route_value(RouteToValue(*route));
+    web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
+                                     base::StringValue(sink_id), *route_value);
+  } else {
+    web_ui()->CallJavascriptFunction(kOnCreateRouteResponseReceived,
+                                     base::StringValue(sink_id),
+                                     *base::Value::CreateNullValue());
+  }
 }
 
 void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
