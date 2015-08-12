@@ -4,9 +4,11 @@
 
 #include "base/i18n/rtl.h"
 
+#include <algorithm>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -127,22 +129,32 @@ bool IsRTL() {
 bool ICUIsRTL() {
   if (g_icu_text_direction == UNKNOWN_DIRECTION) {
     const icu::Locale& locale = icu::Locale::getDefault();
-    g_icu_text_direction = GetTextDirectionForLocale(locale.getName());
+    g_icu_text_direction = GetTextDirectionForLocaleInStartUp(locale.getName());
   }
   return g_icu_text_direction == RIGHT_TO_LEFT;
 }
 
-TextDirection GetTextDirectionForLocale(const char* locale_name) {
-  const std::string group_name =
-      FieldTrialList::FindFullName("LightSpeed");
-  // StartsWith allows flexibility for this experiment to apply to multiple
-  // group names. To start, this will apply to AvoidMMapOnStartup.
-  if (StartsWith(group_name, "AvoidMMap", CompareCase::SENSITIVE)) {
-    static const char kEnglishLocale[] = "en_";
-    if (StartsWith(locale_name, kEnglishLocale, CompareCase::SENSITIVE))
-      return LEFT_TO_RIGHT;
-  }
+TextDirection GetTextDirectionForLocaleInStartUp(const char* locale_name) {
+// On iOS, check for RTL forcing.
+#if defined(OS_IOS)
+  if (ios::IsInForcedRTL())
+    return RIGHT_TO_LEFT;
+#endif
 
+  // This list needs to be updated in alphabetical order if we add more RTL
+  // locales.
+  static const char* kRTLLanguageCodes[] = {"ar", "fa", "he", "iw", "ur"};
+  std::vector<StringPiece> locale_split =
+      SplitStringPiece(locale_name, "-_", KEEP_WHITESPACE, SPLIT_WANT_ALL);
+  const StringPiece& language_code = locale_split[0];
+  if (std::binary_search(kRTLLanguageCodes,
+                         kRTLLanguageCodes + arraysize(kRTLLanguageCodes),
+                         language_code))
+    return RIGHT_TO_LEFT;
+  return LEFT_TO_RIGHT;
+}
+
+TextDirection GetTextDirectionForLocale(const char* locale_name) {
   // On iOS, check for RTL forcing.
 #if defined(OS_IOS)
   if (ios::IsInForcedRTL())

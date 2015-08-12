@@ -61,6 +61,12 @@ BASE_I18N_EXPORT bool IsRTL();
 BASE_I18N_EXPORT bool ICUIsRTL();
 
 // Returns the text direction for |locale_name|.
+// As a startup optimization, this method checks the locale against a list of
+// Chrome-supported RTL locales.
+BASE_I18N_EXPORT TextDirection
+GetTextDirectionForLocaleInStartUp(const char* locale_name);
+
+// Returns the text direction for |locale_name|.
 BASE_I18N_EXPORT TextDirection GetTextDirectionForLocale(
     const char* locale_name);
 

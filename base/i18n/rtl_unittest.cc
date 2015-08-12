@@ -399,6 +399,28 @@ TEST_F(RTLTest, GetTextDirection) {
   EXPECT_EQ(LEFT_TO_RIGHT, GetTextDirectionForLocale("ja"));
 }
 
+TEST_F(RTLTest, GetTextDirectionForLocaleInStartUp) {
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("ar"));
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("ar_EG"));
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("he"));
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("he_IL"));
+  // iw is an obsolete code for Hebrew.
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("iw"));
+  // Although we're not yet localized to Farsi and Urdu, we
+  // do have the text layout direction information for them.
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("fa"));
+  EXPECT_EQ(RIGHT_TO_LEFT, GetTextDirectionForLocaleInStartUp("ur"));
+  EXPECT_EQ(LEFT_TO_RIGHT, GetTextDirectionForLocaleInStartUp("en"));
+  // Chinese in China with '-'.
+  EXPECT_EQ(LEFT_TO_RIGHT, GetTextDirectionForLocaleInStartUp("zh-CN"));
+  // Filipino : 3-letter code
+  EXPECT_EQ(LEFT_TO_RIGHT, GetTextDirectionForLocaleInStartUp("fil"));
+  // Russian
+  EXPECT_EQ(LEFT_TO_RIGHT, GetTextDirectionForLocaleInStartUp("ru"));
+  // Japanese that uses multiple scripts
+  EXPECT_EQ(LEFT_TO_RIGHT, GetTextDirectionForLocaleInStartUp("ja"));
+}
+
 TEST_F(RTLTest, UnadjustStringForLocaleDirection) {
   // These test strings are borrowed from WrapPathWithLTRFormatting
   const wchar_t* cases[] = {
