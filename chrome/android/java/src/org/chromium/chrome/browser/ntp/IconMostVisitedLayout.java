@@ -27,6 +27,7 @@ public class IconMostVisitedLayout extends FrameLayout {
     private int mMinHorizontalSpacing;
     private int mMaxHorizontalSpacing;
     private int mMaxWidth;
+    private int mMaxRows;
 
     /**
      * @param context The view context in which this item will be shown.
@@ -42,6 +43,14 @@ public class IconMostVisitedLayout extends FrameLayout {
         mMaxHorizontalSpacing = res.getDimensionPixelOffset(
                 R.dimen.icon_most_visited_max_horizontal_spacing);
         mMaxWidth = res.getDimensionPixelOffset(R.dimen.icon_most_visited_layout_max_width);
+    }
+
+    /**
+     * Sets the maximum number of rows to display. Any items that don't fit within these rows will
+     * be hidden.
+     */
+    public void setMaxRows(int rows) {
+        mMaxRows = rows;
     }
 
     @Override
@@ -80,11 +89,15 @@ public class IconMostVisitedLayout extends FrameLayout {
             horizontalSpacing = (float) gridWidthMinusColumns / Math.max(1, numColumns - 1);
         }
 
+        // Limit the number of rows to mMaxRows.
+        int visibleChildCount = Math.min(childCount, mMaxRows * numColumns);
+
         // Arrange the children in a grid.
         int paddingTop = getPaddingTop();
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
-        for (int i = 0; i < childCount; i++) {
+        for (int i = 0; i < visibleChildCount; i++) {
             View child = getChildAt(i);
+            child.setVisibility(View.VISIBLE);
             int row = i / numColumns;
             int column = i % numColumns;
             int childTop = row * (childHeight + mVerticalSpacing);
@@ -94,7 +107,12 @@ public class IconMostVisitedLayout extends FrameLayout {
             child.setLayoutParams(layoutParams);
         }
 
-        int numRows = (childCount + numColumns - 1) / numColumns;
+        // Hide the last row if it's incomplete.
+        for (int i = visibleChildCount; i < childCount; i++) {
+            getChildAt(i).setVisibility(View.GONE);
+        }
+
+        int numRows = (visibleChildCount + numColumns - 1) / numColumns;
         int totalHeight = paddingTop + getPaddingBottom() + numRows * childHeight
                 + (numRows - 1) * mVerticalSpacing;
 

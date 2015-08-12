@@ -271,6 +271,7 @@ public class NewTabPageView extends FrameLayout
         ViewStub mostVisitedLayoutStub = (ViewStub) findViewById(R.id.most_visited_layout_stub);
         mostVisitedLayoutStub.setLayoutResource(mMostVisitedDesign.getMostVisitedLayoutId());
         mMostVisitedLayout = (ViewGroup) mostVisitedLayoutStub.inflate();
+        mMostVisitedDesign.initMostVisitedLayout(mMostVisitedLayout, searchProviderHasLogo);
 
         mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
         mSearchBoxView = findViewById(R.id.search_box);
@@ -832,6 +833,7 @@ public class NewTabPageView extends FrameLayout
         int getNumberOfTiles(boolean searchProviderHasLogo);
         int getMostVisitedLayoutId();
         int getMostVisitedLayoutBleed();
+        void initMostVisitedLayout(ViewGroup mostVisitedLayout, boolean searchProviderHasLogo);
         void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo);
         View createMostVisitedItemView(LayoutInflater inflater, String url, String title,
                 String displayTitle, int index, boolean isInitialLoad);
@@ -876,6 +878,11 @@ public class NewTabPageView extends FrameLayout
         @Override
         public int getMostVisitedLayoutBleed() {
             return 0;
+        }
+
+        @Override
+        public void initMostVisitedLayout(ViewGroup mostVisitedLayout,
+                boolean searchProviderHasLogo) {
         }
 
         @Override
@@ -949,6 +956,8 @@ public class NewTabPageView extends FrameLayout
 
         private static final int NUM_TILES = 8;
         private static final int NUM_TILES_NO_LOGO = 12;
+        private static final int MAX_ROWS = 2;
+        private static final int MAX_ROWS_NO_LOGO = 3;
 
         private static final int ICON_CORNER_RADIUS_DP = 4;
         private static final int ICON_TEXT_SIZE_DP = 20;
@@ -991,6 +1000,13 @@ public class NewTabPageView extends FrameLayout
         @Override
         public int getMostVisitedLayoutBleed() {
             return mMostVisitedLayoutBleed;
+        }
+
+        @Override
+        public void initMostVisitedLayout(ViewGroup mostVisitedLayout,
+                boolean searchProviderHasLogo) {
+            ((IconMostVisitedLayout) mostVisitedLayout).setMaxRows(
+                    searchProviderHasLogo ? MAX_ROWS : MAX_ROWS_NO_LOGO);
         }
 
         @Override
