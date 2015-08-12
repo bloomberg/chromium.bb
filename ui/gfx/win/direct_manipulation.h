@@ -60,6 +60,8 @@ class GFX_EXPORT DirectManipulationHelper {
   void HandleMouseWheel(HWND window, UINT message, WPARAM w_param,
       LPARAM l_param);
 
+  ~DirectManipulationHelper();
+
  private:
   DirectManipulationHelper();
 

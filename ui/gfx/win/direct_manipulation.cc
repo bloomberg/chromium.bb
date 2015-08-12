@@ -23,6 +23,8 @@ DirectManipulationHelper::CreateInstance() {
 
 DirectManipulationHelper::DirectManipulationHelper() {}
 
+DirectManipulationHelper::~DirectManipulationHelper() {}
+
 void DirectManipulationHelper::Initialize(HWND window) {
   DCHECK(::IsWindow(window));
 
