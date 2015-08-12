@@ -63,7 +63,7 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   virtual const UsbConfigDescriptor* GetActiveConfiguration() = 0;
 
   // Gets all of the device's UsbConfigDescriptors.
-  const std::vector<UsbConfigDescriptor>& configurations() {
+  const std::vector<UsbConfigDescriptor>& configurations() const {
     return configurations_;
   }
 

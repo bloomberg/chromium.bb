@@ -6,6 +6,6 @@
 
 namespace device {
 
-const char kDevicesMojoAppUrl[] = "system:devices";
+const char kDevicesMojoAppUrl[] = "mojo:devices";
 
 }  // namespace device

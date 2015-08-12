@@ -26,24 +26,33 @@ namespace usb {
 namespace {
 
 void OnGetDevicesOnServiceThread(
-    const UsbService::GetDevicesCallback& callback,
+    const std::vector<UsbDeviceFilter>& filters,
+    const base::Callback<void(mojo::Array<DeviceInfoPtr>)>& callback,
     scoped_refptr<base::TaskRunner> callback_task_runner,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, devices));
+  mojo::Array<DeviceInfoPtr> mojo_devices(0);
+  for (size_t i = 0; i < devices.size(); ++i) {
+    if (UsbDeviceFilter::MatchesAny(devices[i], filters))
+      mojo_devices.push_back(DeviceInfo::From(*devices[i]));
+  }
+  callback_task_runner->PostTask(
+      FROM_HERE, base::Bind(callback, base::Passed(&mojo_devices)));
 }
 
 void GetDevicesOnServiceThread(
-    const UsbService::GetDevicesCallback& callback,
+    const std::vector<UsbDeviceFilter>& filters,
+    const base::Callback<void(mojo::Array<DeviceInfoPtr>)>& callback,
     scoped_refptr<base::TaskRunner> callback_task_runner) {
   DCHECK(DeviceClient::Get());
   UsbService* usb_service = DeviceClient::Get()->GetUsbService();
   if (!usb_service) {
-    std::vector<scoped_refptr<UsbDevice>> no_devices;
-    callback_task_runner->PostTask(FROM_HERE, base::Bind(callback, no_devices));
+    mojo::Array<DeviceInfoPtr> no_devices(0);
+    callback_task_runner->PostTask(
+        FROM_HERE, base::Bind(callback, base::Passed(&no_devices)));
     return;
   }
-  usb_service->GetDevices(
-      base::Bind(&OnGetDevicesOnServiceThread, callback, callback_task_runner));
+  usb_service->GetDevices(base::Bind(&OnGetDevicesOnServiceThread, filters,
+                                     callback, callback_task_runner));
 }
 
 void RunOpenDeviceCallback(const DeviceManager::OpenDeviceCallback& callback,
@@ -118,12 +127,13 @@ void DeviceManagerImpl::set_connection_error_handler(
 
 void DeviceManagerImpl::GetDevices(EnumerationOptionsPtr options,
                                    const GetDevicesCallback& callback) {
-  auto get_devices_callback =
-      base::Bind(&DeviceManagerImpl::OnGetDevices, weak_factory_.GetWeakPtr(),
-                 base::Passed(&options), callback);
+  auto filters = options->filters.To<std::vector<UsbDeviceFilter>>();
+  auto get_devices_callback = base::Bind(&DeviceManagerImpl::OnGetDevices,
+                                         weak_factory_.GetWeakPtr(), callback);
   service_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&GetDevicesOnServiceThread, get_devices_callback,
-                            base::ThreadTaskRunnerHandle::Get()));
+      FROM_HERE,
+      base::Bind(&GetDevicesOnServiceThread, filters, get_devices_callback,
+                 base::ThreadTaskRunnerHandle::Get()));
 }
 
 void DeviceManagerImpl::OpenDevice(
@@ -136,24 +146,14 @@ void DeviceManagerImpl::OpenDevice(
                             base::ThreadTaskRunnerHandle::Get()));
 }
 
-void DeviceManagerImpl::OnGetDevices(
-    EnumerationOptionsPtr options,
-    const GetDevicesCallback& callback,
-    const std::vector<scoped_refptr<UsbDevice>>& devices) {
-  auto filters = options->filters.To<std::vector<UsbDeviceFilter>>();
-  mojo::Array<DeviceInfoPtr> device_infos(0);
+void DeviceManagerImpl::OnGetDevices(const GetDevicesCallback& callback,
+                                     mojo::Array<DeviceInfoPtr> devices) {
+  mojo::Array<DeviceInfoPtr> allowed_devices(0);
   for (size_t i = 0; i < devices.size(); ++i) {
-    DeviceInfoPtr device_info = DeviceInfo::From(*devices[i]);
-    if (UsbDeviceFilter::MatchesAny(devices[i], filters) &&
-        delegate_->IsDeviceAllowed(*device_info)) {
-      const UsbConfigDescriptor* config = devices[i]->GetActiveConfiguration();
-      device_info->configurations = mojo::Array<ConfigurationInfoPtr>::New(0);
-      if (config)
-        device_info->configurations.push_back(ConfigurationInfo::From(*config));
-      device_infos.push_back(device_info.Pass());
-    }
+    if (delegate_->IsDeviceAllowed(*devices[i]))
+      allowed_devices.push_back(devices[i].Pass());
   }
-  callback.Run(device_infos.Pass());
+  callback.Run(allowed_devices.Pass());
 }
 
 }  // namespace usb

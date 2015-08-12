@@ -52,21 +52,25 @@ struct InterfaceInfo {
 
 struct ConfigurationInfo {
   uint8 configuration_value;
-  string? configuration;
+  string? configuration_name;
   array<InterfaceInfo> interfaces;
 };
 
 struct DeviceInfo {
   string guid;
-  uint16 usb_version;
+  uint8 usb_version_major;
+  uint8 usb_version_minor;
+  uint8 usb_version_subminor;
   uint8 class_code;
   uint8 subclass_code;
   uint8 protocol_code;
   uint16 vendor_id;
   uint16 product_id;
-  uint16 device_version;
-  string? manufacturer;
-  string? product;
+  uint8 device_version_major;
+  uint8 device_version_minor;
+  uint8 device_version_subminor;
+  string? manufacturer_name;
+  string? product_name;
   string? serial_number;
   array<ConfigurationInfo> configurations;
 };

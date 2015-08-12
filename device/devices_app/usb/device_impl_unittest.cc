@@ -54,16 +54,16 @@ class ConfigBuilder {
 void ExpectDeviceInfoAndThen(const std::string& guid,
                              uint16_t vendor_id,
                              uint16_t product_id,
-                             const std::string& manufacturer,
-                             const std::string& product,
+                             const std::string& manufacturer_name,
+                             const std::string& product_name,
                              const std::string& serial_number,
                              const base::Closure& continuation,
                              DeviceInfoPtr device_info) {
   EXPECT_EQ(guid, device_info->guid);
   EXPECT_EQ(vendor_id, device_info->vendor_id);
   EXPECT_EQ(product_id, device_info->product_id);
-  EXPECT_EQ(manufacturer, device_info->manufacturer);
-  EXPECT_EQ(product, device_info->product);
+  EXPECT_EQ(manufacturer_name, device_info->manufacturer_name);
+  EXPECT_EQ(product_name, device_info->product_name);
   EXPECT_EQ(serial_number, device_info->serial_number);
   continuation.Run();
 }

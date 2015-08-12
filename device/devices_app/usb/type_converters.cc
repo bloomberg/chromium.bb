@@ -211,9 +211,11 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
   info->guid = device.guid();
   info->vendor_id = device.vendor_id();
   info->product_id = device.product_id();
-  info->manufacturer = base::UTF16ToUTF8(device.manufacturer_string());
-  info->product = base::UTF16ToUTF8(device.product_string());
+  info->manufacturer_name = base::UTF16ToUTF8(device.manufacturer_string());
+  info->product_name = base::UTF16ToUTF8(device.product_string());
   info->serial_number = base::UTF16ToUTF8(device.serial_number());
+  info->configurations = mojo::Array<device::usb::ConfigurationInfoPtr>::From(
+      device.configurations());
   return info.Pass();
 }
 
