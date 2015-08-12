@@ -559,10 +559,6 @@ config("compiler") {
     }
 
     defines += [ "ANDROID" ]
-    if (is_clang) {
-      # GCC provides this as a built-in macro, but clang does not.
-      defines += [ "__ANDROID__" ]
-    }
 
     # The NDK has these things, but doesn't define the constants
     # to say that it does. Define them here instead.
