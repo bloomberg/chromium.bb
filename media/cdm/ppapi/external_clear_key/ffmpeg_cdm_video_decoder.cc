@@ -21,26 +21,28 @@ namespace media {
 
 static const int kDecodeThreads = 1;
 
-static cdm::VideoFormat PixelFormatToCdmVideoFormat(PixelFormat pixel_format) {
+static cdm::VideoFormat AVPixelFormatToCdmVideoFormat(
+    AVPixelFormat pixel_format) {
   switch (pixel_format) {
-    case PIX_FMT_YUV420P:
+    case AV_PIX_FMT_YUV420P:
       return cdm::kYv12;
     default:
-      DVLOG(1) << "Unsupported PixelFormat: " << pixel_format;
+      DVLOG(1) << "Unsupported AVPixelFormat: " << pixel_format;
   }
   return cdm::kUnknownVideoFormat;
 }
 
-static PixelFormat CdmVideoFormatToPixelFormat(cdm::VideoFormat video_format) {
+static AVPixelFormat CdmVideoFormatToAVPixelFormat(
+    cdm::VideoFormat video_format) {
   switch (video_format) {
     case cdm::kYv12:
     case cdm::kI420:
-      return PIX_FMT_YUV420P;
+      return AV_PIX_FMT_YUV420P;
     case cdm::kUnknownVideoFormat:
     default:
       DVLOG(1) << "Unsupported cdm::VideoFormat: " << video_format;
   }
-  return PIX_FMT_NONE;
+  return AV_PIX_FMT_NONE;
 }
 
 static AVCodecID CdmVideoCodecToCodecID(
@@ -95,7 +97,7 @@ static void CdmVideoDecoderConfigToAVCodecContext(
   codec_context->profile = CdmVideoCodecProfileToProfileID(config.profile);
   codec_context->coded_width = config.coded_size.width;
   codec_context->coded_height = config.coded_size.height;
-  codec_context->pix_fmt = CdmVideoFormatToPixelFormat(config.format);
+  codec_context->pix_fmt = CdmVideoFormatToAVPixelFormat(config.format);
 
   if (config.extra_data) {
     codec_context->extradata_size = config.extra_data_size;
@@ -267,7 +269,7 @@ cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(
 
 bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
   DCHECK(cdm_video_frame);
-  DCHECK_EQ(av_frame_->format, PIX_FMT_YUV420P);
+  DCHECK_EQ(av_frame_->format, AV_PIX_FMT_YUV420P);
   DCHECK_EQ(av_frame_->width % 2, 0);
   DCHECK_EQ(av_frame_->height % 2, 0);
 
@@ -306,8 +308,8 @@ bool FFmpegCdmVideoDecoder::CopyAvFrameTo(cdm::VideoFrame* cdm_video_frame) {
             uv_stride,
             cdm_video_frame->FrameBuffer()->Data() + y_size + uv_size);
 
-  PixelFormat format = static_cast<PixelFormat>(av_frame_->format);
-  cdm_video_frame->SetFormat(PixelFormatToCdmVideoFormat(format));
+  AVPixelFormat format = static_cast<AVPixelFormat>(av_frame_->format);
+  cdm_video_frame->SetFormat(AVPixelFormatToCdmVideoFormat(format));
 
   cdm::Size video_frame_size;
   video_frame_size.width = av_frame_->width;
