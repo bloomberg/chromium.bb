@@ -107,6 +107,9 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     @Override
     protected MediaUrlResolver.Result doInBackground(Void... params) {
         Uri uri = mDelegate.getUri();
+        if (uri == null) {
+            return new MediaUrlResolver.Result("", false);
+        }
         String url = uri.toString();
         String cookies = mDelegate.getCookies();
         // URL may already be partially percent encoded; double percent encoding will break
