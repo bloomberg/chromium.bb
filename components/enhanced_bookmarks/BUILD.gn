@@ -10,8 +10,6 @@ if (is_android) {
 # GYP: //components/enhanced_bookmarks.gypi:enhanced_bookmarks
 source_set("enhanced_bookmarks") {
   sources = [
-    "bookmark_image_service.cc",
-    "bookmark_image_service.h",
     "bookmark_server_cluster_service.cc",
     "bookmark_server_cluster_service.h",
     "bookmark_server_service.cc",

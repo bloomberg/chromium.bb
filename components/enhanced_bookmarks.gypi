@@ -27,8 +27,6 @@
         'variations',
       ],
       'sources': [
-        'enhanced_bookmarks/bookmark_image_service.cc',
-        'enhanced_bookmarks/bookmark_image_service.h',
         'enhanced_bookmarks/bookmark_server_cluster_service.cc',
         'enhanced_bookmarks/bookmark_server_cluster_service.h',
         'enhanced_bookmarks/bookmark_server_service.cc',
