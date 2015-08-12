@@ -88,12 +88,15 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     SetupTrees(pending_pile, active_pile);
   }
 
+  // This matches picture_layer_impl_unittest's ActivateTree.
   void ActivateTree() {
     host_impl_.ActivateSyncTree();
     CHECK(!host_impl_.pending_tree());
     pending_layer_ = NULL;
     active_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.active_tree()->LayerById(id_));
+    bool update_lcd_text = false;
+    host_impl_.active_tree()->UpdateDrawProperties(update_lcd_text);
   }
 
   void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,
@@ -228,14 +231,11 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->Invalidate(invalidation);
-  pending_layer_->LowResTiling()->Invalidate(invalidation);
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
   pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
                                                             Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                           Occlusion());
   active_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
                                                            Occlusion());
   active_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
@@ -250,11 +250,6 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
     all_tiles.insert(pending_high_res_tiles[i]);
     high_res_tiles.insert(pending_high_res_tiles[i]);
   }
-
-  std::vector<Tile*> pending_low_res_tiles =
-      pending_layer_->LowResTiling()->AllTilesForTesting();
-  for (size_t i = 0; i < pending_low_res_tiles.size(); ++i)
-    all_tiles.insert(pending_low_res_tiles[i]);
 
   std::vector<Tile*> active_high_res_tiles =
       active_layer_->HighResTiling()->AllTilesForTesting();
@@ -504,8 +499,6 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueueInvalidation) {
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->Invalidate(invalidation);
   pending_layer_->HighResTiling()->CreateMissingTilesInLiveTilesRect();
-  pending_layer_->LowResTiling()->Invalidate(invalidation);
-  pending_layer_->LowResTiling()->CreateMissingTilesInLiveTilesRect();
 
   // Sanity checks: Tile at 0, 0 not exist on the pending tree (it's not
   // invalidated). Tile 1, 0 should exist on both.
@@ -649,6 +642,10 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   const gfx::Size layer_bounds(1000, 1000);
   host_impl_.SetViewportSize(layer_bounds);
   SetupDefaultTrees(layer_bounds);
+  ASSERT_TRUE(active_layer_->HighResTiling());
+  ASSERT_TRUE(active_layer_->LowResTiling());
+  ASSERT_TRUE(pending_layer_->HighResTiling());
+  EXPECT_FALSE(pending_layer_->LowResTiling());
 
   scoped_ptr<EvictionTilePriorityQueue> empty_queue(
       host_impl_.BuildEvictionQueue(SAME_PRIORITY_FOR_BOTH_TREES));
@@ -696,15 +693,12 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->Invalidate(invalidation);
   pending_layer_->HighResTiling()->CreateMissingTilesInLiveTilesRect();
-  pending_layer_->LowResTiling()->Invalidate(invalidation);
-  pending_layer_->LowResTiling()->CreateMissingTilesInLiveTilesRect();
+  EXPECT_FALSE(pending_layer_->LowResTiling());
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
   pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
                                                             Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                           Occlusion());
   active_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
                                                            Occlusion());
   active_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
@@ -716,11 +710,6 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
       pending_layer_->HighResTiling()->AllTilesForTesting();
   for (size_t i = 0; i < pending_high_res_tiles.size(); ++i)
     all_tiles.insert(pending_high_res_tiles[i]);
-
-  std::vector<Tile*> pending_low_res_tiles =
-      pending_layer_->LowResTiling()->AllTilesForTesting();
-  for (size_t i = 0; i < pending_low_res_tiles.size(); ++i)
-    all_tiles.insert(pending_low_res_tiles[i]);
 
   std::vector<Tile*> active_high_res_tiles =
       active_layer_->HighResTiling()->AllTilesForTesting();
@@ -775,7 +764,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
 
   // Ensure that the distance is decreasing many more times than increasing.
   EXPECT_EQ(3, distance_increasing);
-  EXPECT_EQ(17, distance_decreasing);
+  EXPECT_EQ(16, distance_decreasing);
   EXPECT_EQ(tile_count, smoothness_tiles.size());
   EXPECT_EQ(all_tiles, smoothness_tiles);
 
@@ -816,7 +805,7 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
 
   // Ensure that the distance is decreasing many more times than increasing.
   EXPECT_EQ(3, distance_increasing);
-  EXPECT_EQ(17, distance_decreasing);
+  EXPECT_EQ(16, distance_decreasing);
   EXPECT_EQ(tile_count, new_content_tiles.size());
   EXPECT_EQ(all_tiles, new_content_tiles);
 }
@@ -870,11 +859,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   gfx::Rect viewport(layer_bounds);
   pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
                                                             Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                           Occlusion());
   pending_child_layer->HighResTiling()->ComputeTilePriorityRects(
-      viewport, 1.0f, 1.0, Occlusion());
-  pending_child_layer->LowResTiling()->ComputeTilePriorityRects(
       viewport, 1.0f, 1.0, Occlusion());
 
   active_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
@@ -893,24 +878,12 @@ TEST_F(TileManagerTilePriorityQueueTest,
   all_tiles.insert(pending_high_res_tiles.begin(),
                    pending_high_res_tiles.end());
 
-  std::vector<Tile*> pending_low_res_tiles =
-      pending_layer_->LowResTiling()->AllTilesForTesting();
-  all_tiles.insert(pending_low_res_tiles.begin(), pending_low_res_tiles.end());
-
   // Set all tiles on the pending_child_layer as occluded on the pending tree.
   std::vector<Tile*> pending_child_high_res_tiles =
       pending_child_layer->HighResTiling()->AllTilesForTesting();
   pending_child_layer->HighResTiling()->SetAllTilesOccludedForTesting();
   active_child_layer->HighResTiling()->SetAllTilesOccludedForTesting();
-  all_tiles.insert(pending_child_high_res_tiles.begin(),
-                   pending_child_high_res_tiles.end());
-
-  std::vector<Tile*> pending_child_low_res_tiles =
-      pending_child_layer->LowResTiling()->AllTilesForTesting();
-  pending_child_layer->LowResTiling()->SetAllTilesOccludedForTesting();
   active_child_layer->LowResTiling()->SetAllTilesOccludedForTesting();
-  all_tiles.insert(pending_child_low_res_tiles.begin(),
-                   pending_child_low_res_tiles.end());
 
   tile_manager()->InitializeTilesWithResourcesForTesting(
       std::vector<Tile*>(all_tiles.begin(), all_tiles.end()));
@@ -950,8 +923,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
     last_tile = prioritized_tile;
     queue->Pop();
   }
-  size_t expected_occluded_count =
-      pending_child_high_res_tiles.size() + pending_child_low_res_tiles.size();
+  size_t expected_occluded_count = pending_child_high_res_tiles.size();
   EXPECT_EQ(expected_occluded_count, occluded_count);
 }
 
@@ -989,11 +961,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   gfx::Rect viewport(layer_bounds);
   pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
                                                             Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
-                                                           Occlusion());
   pending_child_layer->HighResTiling()->ComputeTilePriorityRects(
-      viewport, 1.0f, 1.0, Occlusion());
-  pending_child_layer->LowResTiling()->ComputeTilePriorityRects(
       viewport, 1.0f, 1.0, Occlusion());
 
   // Populate all tiles directly from the tilings.
@@ -1004,24 +972,12 @@ TEST_F(TileManagerTilePriorityQueueTest,
                            pending_high_res_tiles.end());
   EXPECT_EQ(16u, pending_high_res_tiles.size());
 
-  std::vector<Tile*> pending_low_res_tiles =
-      pending_layer_->LowResTiling()->AllTilesForTesting();
-  all_pending_tiles.insert(pending_low_res_tiles.begin(),
-                           pending_low_res_tiles.end());
-  EXPECT_EQ(1u, pending_low_res_tiles.size());
-
   std::set<Tile*> all_pending_child_tiles;
   std::vector<Tile*> pending_child_high_res_tiles =
       pending_child_layer->HighResTiling()->AllTilesForTesting();
   all_pending_child_tiles.insert(pending_child_high_res_tiles.begin(),
                                  pending_child_high_res_tiles.end());
   EXPECT_EQ(16u, pending_child_high_res_tiles.size());
-
-  std::vector<Tile*> pending_child_low_res_tiles =
-      pending_child_layer->LowResTiling()->AllTilesForTesting();
-  all_pending_child_tiles.insert(pending_child_low_res_tiles.begin(),
-                                 pending_child_low_res_tiles.end());
-  EXPECT_EQ(1u, pending_child_low_res_tiles.size());
 
   std::set<Tile*> all_tiles = all_pending_tiles;
   all_tiles.insert(all_pending_child_tiles.begin(),

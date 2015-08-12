@@ -691,7 +691,7 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   SetupTreesWithFixedTileSize(pending_pile, active_pile, gfx::Size(50, 50),
                               layer_invalidation);
 
-  EXPECT_EQ(2u, pending_layer_->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
   EXPECT_EQ(3u, active_layer_->num_tilings());
 
   const PictureLayerTilingSet* tilings = pending_layer_->tilings();
@@ -842,7 +842,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesCreatesTilings) {
                   active_layer_->tilings()->tiling_at(3)->contents_scale());
 }
 
-TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
+TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighResTiling) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
 
@@ -868,11 +868,9 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     1.f,  // maximum animation scale
                                     0.f,  // starting animation scale
                                     false);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_FLOAT_EQ(6.f * low_res_factor,
-                  pending_layer_->tilings()->tiling_at(1)->contents_scale());
 
   // If we change the page scale factor, then we should get new tilings.
   SetupDrawPropertiesAndUpdateTiles(pending_layer_,
@@ -882,11 +880,9 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     1.f,   // maximum animation scale
                                     0.f,   // starting animation scale
                                     false);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(6.6f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_FLOAT_EQ(6.6f * low_res_factor,
-                  pending_layer_->tilings()->tiling_at(1)->contents_scale());
 
   // If we change the device scale factor, then we should get new tilings.
   SetupDrawPropertiesAndUpdateTiles(pending_layer_,
@@ -896,11 +892,9 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     1.f,    // maximum animation scale
                                     0.f,    // starting animation scale
                                     false);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_FLOAT_EQ(7.26f * low_res_factor,
-                  pending_layer_->tilings()->tiling_at(1)->contents_scale());
 
   // If we change the device scale factor, but end up at the same total scale
   // factor somehow, then we don't get new tilings.
@@ -911,11 +905,9 @@ TEST_F(PictureLayerImplTest, PendingLayerOnlyHasHighAndLowResTiling) {
                                     1.f,    // maximum animation scale
                                     0.f,    // starting animation scale
                                     false);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   EXPECT_FLOAT_EQ(7.26f,
                   pending_layer_->tilings()->tiling_at(0)->contents_scale());
-  EXPECT_FLOAT_EQ(7.26f * low_res_factor,
-                  pending_layer_->tilings()->tiling_at(1)->contents_scale());
 }
 
 TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
@@ -931,7 +923,7 @@ TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   SetupPendingTree(valid_pile);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
 
   ActivateTree();
   SetupPendingTree(empty_pile);
@@ -944,7 +936,7 @@ TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
   ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
 
   SetupPendingTree(valid_pile);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
   ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
 }
 
@@ -985,10 +977,11 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
   ResetTilingsAndRasterScales();
 
   SetContentsScaleOnBothLayers(2.f, 1.0f, 2.f, 1.0f, 0.f, false);
-  EXPECT_BOTH_EQ(num_tilings(), 2u);
-  EXPECT_BOTH_EQ(tilings()->tiling_at(0)->contents_scale(), 2.f);
-  EXPECT_BOTH_EQ(tilings()->tiling_at(1)->contents_scale(),
-                 2.f * low_res_factor);
+  EXPECT_EQ(active_layer_->num_tilings(), 2u);
+  EXPECT_EQ(pending_layer_->num_tilings(), 1u);
+  EXPECT_EQ(active_layer_->tilings()->tiling_at(0)->contents_scale(), 2.f);
+  EXPECT_EQ(active_layer_->tilings()->tiling_at(1)->contents_scale(),
+            2.f * low_res_factor);
 
   // Ensure UpdateTiles won't remove any tilings.
   active_layer_->MarkAllTilingsUsed();
@@ -1231,8 +1224,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 1.f);
-  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), low_res_factor);
-  EXPECT_BOTH_EQ(num_tilings(), 2u);
+  EXPECT_EQ(active_layer_->LowResTiling()->contents_scale(), low_res_factor);
+  EXPECT_EQ(active_layer_->num_tilings(), 2u);
+  EXPECT_EQ(pending_layer_->num_tilings(), 1u);
 
   // Ensure UpdateTiles won't remove any tilings.
   active_layer_->MarkAllTilingsUsed();
@@ -1259,9 +1253,10 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), 2.f);
-  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(), 2.f * low_res_factor);
+  EXPECT_EQ(active_layer_->LowResTiling()->contents_scale(),
+            2.f * low_res_factor);
   EXPECT_EQ(4u, active_layer_->num_tilings());
-  EXPECT_EQ(2u, pending_layer_->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
@@ -1309,9 +1304,11 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
                                maximum_animation_scale,
                                starting_animation_scale, animating_transform);
   EXPECT_BOTH_EQ(HighResTiling()->contents_scale(), contents_scale);
-  EXPECT_BOTH_EQ(LowResTiling()->contents_scale(),
-                 contents_scale * low_res_factor);
-  EXPECT_BOTH_EQ(num_tilings(), 2u);
+  EXPECT_EQ(active_layer_->LowResTiling()->contents_scale(),
+            contents_scale * low_res_factor);
+  EXPECT_FALSE(pending_layer_->LowResTiling());
+  EXPECT_EQ(active_layer_->num_tilings(), 2u);
+  EXPECT_EQ(pending_layer_->num_tilings(), 1u);
 
   // Mask layers dont create low res since they always fit on one tile.
   scoped_ptr<FakePictureLayerImpl> mask =
@@ -1517,7 +1514,7 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
-  EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
 
   // All tilings should be removed when losing output surface.
   active_layer_->ReleaseResources();
@@ -1537,7 +1534,7 @@ TEST_F(PictureLayerImplTest, ReleaseResources) {
                                     1.f,  // maximum animation scale
                                     0.f,  // starting animation_scale
                                     false);
-  EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
@@ -1573,7 +1570,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
-  ASSERT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
 
   pending_layer_->tilings()->tiling_at(0)->CreateAllTilesForTesting();
 
@@ -2040,10 +2037,9 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveAllReady) {
   // All active tiles ready, so pending can only activate with all high res
   // tiles.
   pending_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
-  pending_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
+  EXPECT_FALSE(pending_layer_->LowResTiling());
 
   AssertAllTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
 TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
@@ -2063,12 +2059,11 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenMissingHighResFlagOn) {
   host_impl_.SetRequiresHighResToDraw();
 
   pending_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
-  pending_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
+  EXPECT_FALSE(pending_layer_->LowResTiling());
   active_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
   active_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
 
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
-  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
   AssertAllTilesRequired(active_layer_->HighResTiling());
   AssertNoTilesRequired(active_layer_->LowResTiling());
 }
@@ -2085,7 +2080,7 @@ TEST_F(PictureLayerImplTest, AllHighResRequiredEvenIfNotChanged) {
 
   // Since there are no invalidations, pending tree should have no tiles.
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
-  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
+  EXPECT_FALSE(pending_layer_->LowResTiling());
 
   active_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
   active_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
@@ -2105,11 +2100,10 @@ TEST_F(PictureLayerImplTest, DisallowRequiredForActivation) {
   EXPECT_FALSE(some_active_tile->draw_info().IsReadyToDraw());
 
   EXPECT_TRUE(pending_layer_->HighResTiling()->AllTilesForTesting().empty());
-  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
+  EXPECT_FALSE(pending_layer_->LowResTiling());
   active_layer_->HighResTiling()->set_can_require_tiles_for_activation(false);
   active_layer_->LowResTiling()->set_can_require_tiles_for_activation(false);
   pending_layer_->HighResTiling()->set_can_require_tiles_for_activation(false);
-  pending_layer_->LowResTiling()->set_can_require_tiles_for_activation(false);
 
   // If we disallow required for activation, no tiles can be required.
   active_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
@@ -2144,10 +2138,9 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   // Since the active layer has no tiles at all, the pending layer doesn't
   // need content in order to activate.
   pending_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
-  pending_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
+  EXPECT_FALSE(pending_layer_->LowResTiling());
 
   AssertNoTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
 TEST_F(PictureLayerImplTest, HighResRequiredIfActiveCantHaveTiles) {
@@ -2168,10 +2161,9 @@ TEST_F(PictureLayerImplTest, HighResRequiredIfActiveCantHaveTiles) {
   // This can happen if a layer exists for a while and switches from
   // not being able to have content to having content.
   pending_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
-  pending_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
+  EXPECT_FALSE(pending_layer_->LowResTiling());
 
   AssertAllTilesRequired(pending_layer_->HighResTiling());
-  AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
 TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveHasDifferentBounds) {
@@ -2189,17 +2181,13 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveHasDifferentBounds) {
   // Since the active layer has different bounds, the pending layer needs all
   // high res tiles in order to activate.
   pending_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
-  pending_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
+  EXPECT_FALSE(pending_layer_->LowResTiling());
   active_layer_->HighResTiling()->UpdateAllRequiredStateForTesting();
   active_layer_->LowResTiling()->UpdateAllRequiredStateForTesting();
 
   AssertAllTilesRequired(pending_layer_->HighResTiling());
   AssertAllTilesRequired(active_layer_->HighResTiling());
   AssertNoTilesRequired(active_layer_->LowResTiling());
-  // Since the test doesn't invalidate the resized region, we expect that the
-  // same low res tile would exist (which means we don't create a new one of the
-  // pending tree).
-  EXPECT_TRUE(pending_layer_->LowResTiling()->AllTilesForTesting().empty());
 }
 
 TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
@@ -2477,8 +2465,11 @@ TEST_F(PictureLayerImplTest, LowResTilingWithoutGpuRasterization) {
 
   SetupDefaultTrees(layer_bounds);
   EXPECT_FALSE(host_impl_.use_gpu_rasterization());
-  // Should have a low-res and a high-res tiling.
-  EXPECT_EQ(2u, pending_layer_->tilings()->num_tilings());
+  // Should have only a high-res tiling.
+  EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
+  ActivateTree();
+  // Should add a high and a low res for active tree.
+  EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
@@ -2493,6 +2484,9 @@ TEST_F(PictureLayerImplTest, NoLowResTilingWithGpuRasterization) {
   EXPECT_TRUE(host_impl_.use_gpu_rasterization());
   // Should only have the high-res tiling.
   EXPECT_EQ(1u, pending_layer_->tilings()->num_tilings());
+  ActivateTree();
+  // Should only have the high-res tiling.
+  EXPECT_EQ(1u, active_layer_->tilings()->num_tilings());
 }
 
 TEST_F(PictureLayerImplTest, RequiredTilesWithGpuRasterization) {
@@ -2868,7 +2862,7 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
       FakePicturePileImpl::CreateFilledPile(recording_tile_size, layer_bounds);
 
   SetupPendingTree(pending_pile);
-  EXPECT_EQ(2u, pending_layer_->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
 
   std::set<Tile*> unique_tiles;
   bool reached_prepaint = false;
@@ -2985,26 +2979,9 @@ TEST_F(PictureLayerImplTest, TilingSetRasterQueue) {
     draw_info.SetSolidColorForTesting(SK_ColorRED);
   }
 
-  non_ideal_tile_count = 0;
-  low_res_tile_count = 0;
-  high_res_tile_count = 0;
   queue.reset(new TilingSetRasterQueueAll(
       pending_layer_->picture_layer_tiling_set(), true));
-  while (!queue->IsEmpty()) {
-    PrioritizedTile prioritized_tile = queue->Top();
-    TilePriority priority = prioritized_tile.priority();
-
-    EXPECT_TRUE(prioritized_tile.tile());
-
-    non_ideal_tile_count += priority.resolution == NON_IDEAL_RESOLUTION;
-    low_res_tile_count += priority.resolution == LOW_RESOLUTION;
-    high_res_tile_count += priority.resolution == HIGH_RESOLUTION;
-    queue->Pop();
-  }
-
-  EXPECT_EQ(0, non_ideal_tile_count);
-  EXPECT_EQ(1, low_res_tile_count);
-  EXPECT_EQ(0, high_res_tile_count);
+  EXPECT_TRUE(queue->IsEmpty());
 }
 
 TEST_F(PictureLayerImplTest, TilingSetRasterQueueActiveTree) {
@@ -3071,10 +3048,10 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
-  // TODO(vmpstr): Add a test with tilings other than high/low res on the active
-  // tree.
+  // TODO(vmpstr): Add a test with tilings other than high res on the active
+  // tree (crbug.com/519607).
   SetupPendingTree(pending_pile);
-  EXPECT_EQ(2u, pending_layer_->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
 
   std::vector<Tile*> all_tiles;
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {
@@ -3104,8 +3081,8 @@ TEST_F(PictureLayerImplTest, TilingSetEvictionQueue) {
   }
 
   // Sanity checks.
-  EXPECT_EQ(17u, all_tiles.size());
-  EXPECT_EQ(17u, all_tiles_set.size());
+  EXPECT_EQ(16u, all_tiles.size());
+  EXPECT_EQ(16u, all_tiles_set.size());
   EXPECT_GT(number_of_marked_tiles, 1u);
   EXPECT_GT(number_of_unmarked_tiles, 1u);
 
@@ -3304,7 +3281,7 @@ TEST_F(PictureLayerImplTest, LowResReadyToDrawNotEnoughToActivate) {
   EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
   // Initialize all low-res tiles.
-  pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
+  EXPECT_FALSE(pending_layer_->LowResTiling());
   pending_layer_->SetAllTilesReadyInTiling(active_layer_->LowResTiling());
 
   // Low-res tiles should not be enough.
@@ -3336,28 +3313,6 @@ TEST_F(PictureLayerImplTest, HighResReadyToDrawEnoughToActivate) {
   EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
 
-TEST_F(PictureLayerImplTest,
-       ActiveHighResReadyAndPendingLowResReadyNotEnoughToActivate) {
-  gfx::Size tile_size(100, 100);
-  gfx::Size layer_bounds(1000, 1000);
-
-  // Make sure pending tree has tiles.
-  gfx::Rect invalidation(gfx::Point(50, 50), tile_size);
-  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, invalidation);
-
-  // Initialize all high-res tiles in the active layer.
-  active_layer_->SetAllTilesReadyInTiling(active_layer_->HighResTiling());
-  // And all the low-res tiles in the pending layer.
-  pending_layer_->SetAllTilesReadyInTiling(pending_layer_->LowResTiling());
-
-  // The pending high-res tiles are not ready, so we cannot activate.
-  EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
-
-  // When the pending high-res tiles are ready, we can activate.
-  pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
-  EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
-}
-
 TEST_F(PictureLayerImplTest, ActiveHighResReadyNotEnoughToActivate) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(1000, 1000);
@@ -3372,7 +3327,7 @@ TEST_F(PictureLayerImplTest, ActiveHighResReadyNotEnoughToActivate) {
   // The pending high-res tiles are not ready, so we cannot activate.
   EXPECT_FALSE(host_impl_.tile_manager()->IsReadyToActivate());
 
-  // When the pending pending high-res tiles are ready, we can activate.
+  // When the pending high-res tiles are ready, we can activate.
   pending_layer_->SetAllTilesReadyInTiling(pending_layer_->HighResTiling());
   EXPECT_TRUE(host_impl_.tile_manager()->IsReadyToActivate());
 }
@@ -4295,9 +4250,15 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
       if (!*iter)
         continue;
       const Tile* tile = *iter;
+      EXPECT_TRUE(tile);
 
       // All tiles are unoccluded, because the pending tree has no occlusion.
       EXPECT_FALSE(prioritized_tiles[tile].is_occluded());
+
+      if (tiling->resolution() == LOW_RESOLUTION) {
+        EXPECT_FALSE(active_layer_->GetPendingOrActiveTwinTiling(tiling));
+        continue;
+      }
 
       Tile* twin_tile = active_layer_->GetPendingOrActiveTwinTiling(tiling)
                             ->TileAt(iter.i(), iter.j());
@@ -4306,12 +4267,10 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
 
       if (scaled_content_rect.Intersects(invalidation_rect)) {
         // Tiles inside the invalidation rect exist on both trees.
-        EXPECT_TRUE(tile);
         EXPECT_TRUE(twin_tile);
         EXPECT_NE(tile, twin_tile);
       } else {
         // Tiles outside the invalidation rect only exist on the active tree.
-        EXPECT_TRUE(tile);
         EXPECT_FALSE(twin_tile);
       }
     }
@@ -4361,7 +4320,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   pending_occluding_layer->SetContentsOpaque(true);
   pending_occluding_layer->SetPosition(pending_occluding_layer_position);
 
-  EXPECT_EQ(2u, pending_layer_->num_tilings());
+  EXPECT_EQ(1u, pending_layer_->num_tilings());
   EXPECT_EQ(2u, active_layer_->num_tilings());
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
@@ -4372,8 +4331,8 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   // The expected number of occluded tiles on each of the 2 tilings for each of
   // the 3 tree priorities.
   size_t expected_occluded_tile_count_on_pending[] = {4u, 0u};
-  size_t expected_occluded_tile_count_on_active[] = {12u, 1u};
-  size_t total_expected_occluded_tile_count_on_trees[] = {13u, 4u};
+  size_t expected_occluded_tile_count_on_active[] = {12u, 3u};
+  size_t total_expected_occluded_tile_count_on_trees[] = {15u, 4u};
 
   // Verify number of occluded tiles on the pending layer for each tiling.
   for (size_t i = 0; i < pending_layer_->num_tilings(); ++i) {

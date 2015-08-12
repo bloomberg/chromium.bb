@@ -405,6 +405,9 @@ bool PictureLayerImpl::UpdateTiles(bool resourceless_software_draw) {
     AddTilingsForRasterScale();
   }
 
+  if (layer_tree_impl()->IsActiveTree())
+    AddLowResolutionTilingIfNeeded();
+
   DCHECK(raster_page_scale_);
   DCHECK(raster_device_scale_);
   DCHECK(raster_source_scale_);
@@ -823,27 +826,6 @@ void PictureLayerImpl::AddTilingsForRasterScale() {
   }
   high_res->set_resolution(HIGH_RESOLUTION);
 
-  // If the low res scale is the same as the high res scale, that tiling
-  // will be treated as high res.
-  if (layer_tree_impl()->create_low_res_tiling() &&
-      raster_contents_scale_ != low_res_raster_contents_scale_) {
-    PictureLayerTiling* low_res =
-        tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
-
-    // Only create new low res tilings when the transform is static.  This
-    // prevents wastefully creating a paired low res tiling for every new high
-    // res tiling during a pinch or a CSS animation.
-    bool is_pinching = layer_tree_impl()->PinchGestureActive();
-    bool is_animating = draw_properties().screen_space_transform_is_animating;
-    if (!low_res && !is_pinching && !is_animating)
-      low_res = AddTiling(low_res_raster_contents_scale_);
-
-    if (low_res) {
-      DCHECK_NE(low_res, high_res);
-      low_res->set_resolution(LOW_RESOLUTION);
-    }
-  }
-
   if (layer_tree_impl()->IsPendingTree()) {
     // On the pending tree, drop any tilings that are non-ideal since we don't
     // need them to activate anyway.
@@ -897,6 +879,34 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
     return true;
 
   return false;
+}
+
+void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
+  DCHECK(layer_tree_impl()->IsActiveTree());
+
+  if (!layer_tree_impl()->create_low_res_tiling())
+    return;
+
+  // We should have a high resolution tiling at raster_contents_scale, so if the
+  // low res one is the same then we shouldn't try to override this tiling by
+  // marking it as a low res.
+  if (raster_contents_scale_ == low_res_raster_contents_scale_)
+    return;
+
+  PictureLayerTiling* low_res =
+      tilings_->FindTilingWithScale(low_res_raster_contents_scale_);
+  DCHECK_IMPLIES(low_res, low_res->resolution() != HIGH_RESOLUTION);
+
+  // Only create new low res tilings when the transform is static.  This
+  // prevents wastefully creating a paired low res tiling for every new high
+  // res tiling during a pinch or a CSS animation.
+  bool is_pinching = layer_tree_impl()->PinchGestureActive();
+  bool is_animating = draw_properties().screen_space_transform_is_animating;
+  if (!low_res && !is_pinching && !is_animating)
+    low_res = AddTiling(low_res_raster_contents_scale_);
+
+  if (low_res)
+    low_res->set_resolution(LOW_RESOLUTION);
 }
 
 void PictureLayerImpl::RecalculateRasterScales() {

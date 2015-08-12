@@ -108,6 +108,7 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerTiling* AddTiling(float contents_scale);
   void RemoveAllTilings();
   void AddTilingsForRasterScale();
+  void AddLowResolutionTilingIfNeeded();
   virtual bool ShouldAdjustRasterScale() const;
   virtual void RecalculateRasterScales();
   void CleanUpTilingsOnActiveLayer(
