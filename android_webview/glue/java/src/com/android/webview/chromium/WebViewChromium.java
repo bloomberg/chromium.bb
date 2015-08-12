@@ -432,6 +432,12 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return;
         }
 
+        // Make sure that we do not trigger any callbacks after destruction
+        mContentsClientAdapter.setWebChromeClient(null);
+        mContentsClientAdapter.setWebViewClient(null);
+        mContentsClientAdapter.setPictureListener(null);
+        mContentsClientAdapter.setFindListener(null);
+
         mAwContents.destroy();
         if (mGLfunctor != null) {
             mGLfunctor.destroy();

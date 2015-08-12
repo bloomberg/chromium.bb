@@ -303,4 +303,8 @@ public class AwContentsClientCallbackHelper {
         OnFormResubmissionInfo info = new OnFormResubmissionInfo(dontResend, resend);
         mHandler.sendMessage(mHandler.obtainMessage(MSG_ON_FORM_RESUBMISSION, info));
     }
+
+    void removeCallbacksAndMessages() {
+        mHandler.removeCallbacksAndMessages(null);
+    }
 }

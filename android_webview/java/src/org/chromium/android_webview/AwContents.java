@@ -1058,6 +1058,9 @@ public class AwContents implements SmartClipProvider,
         if (TRACE) Log.d(TAG, "destroy");
         if (isDestroyed()) return;
 
+        // Remove pending messages
+        mContentsClient.getCallbackHelper().removeCallbacksAndMessages();
+
         if  (mPostMessageSender != null) {
             mBrowserContext.getMessagePortService().removeObserver(mPostMessageSender);
             mPostMessageSender = null;
