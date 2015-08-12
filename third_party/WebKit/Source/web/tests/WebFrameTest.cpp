@@ -2926,6 +2926,50 @@ TEST_P(ParameterizedWebFrameTest, DivMultipleTargetZoomMultipleDivsTest)
     EXPECT_FLOAT_EQ(1, scale);
 }
 
+TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction)
+{
+    registerMockedHttpURLLoad("textbox_in_touch_action.html");
+
+    int viewportWidth = 600;
+    int viewportHeight = 1000;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "textbox_in_touch_action.html");
+    webViewHelper.webViewImpl()->setDefaultPageScaleLimits(0.25f, 4);
+    webViewHelper.webViewImpl()->enableFakePageScaleAnimationForTesting(true);
+    webViewHelper.webViewImpl()->page()->settings().setTextAutosizingEnabled(false);
+    webViewHelper.webViewImpl()->settings()->setAutoZoomFocusedNodeToLegibleScale(true);
+    webViewHelper.webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
+
+    float initialScale = webViewHelper.webViewImpl()->pageScaleFactor();
+
+    // Focus the first textbox that's in a touch-action: pan-x ancestor, this
+    // shouldn't cause an autozoom since pan-x disables pinch-zoom.
+    webViewHelper.webViewImpl()->advanceFocus(false);
+    webViewHelper.webViewImpl()->scrollFocusedNodeIntoRect(WebRect());
+    EXPECT_EQ(webViewHelper.webViewImpl()->fakePageScaleAnimationPageScaleForTesting(), 0);
+
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
+    ASSERT_EQ(initialScale, webViewHelper.webViewImpl()->pageScaleFactor());
+
+    // Focus the second textbox that's in a touch-action: manipulation ancestor,
+    // this should cause an autozoom since it allows pinch-zoom.
+    webViewHelper.webViewImpl()->advanceFocus(false);
+    webViewHelper.webViewImpl()->scrollFocusedNodeIntoRect(WebRect());
+    EXPECT_GT(webViewHelper.webViewImpl()->fakePageScaleAnimationPageScaleForTesting(), initialScale);
+
+    setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
+    ASSERT_EQ(initialScale, webViewHelper.webViewImpl()->pageScaleFactor());
+
+    // Focus the third textbox that has a touch-action: pan-x ancestor, this
+    // should cause an autozoom since it's seperated from the node with the
+    // touch-action by an overflow:scroll element.
+    webViewHelper.webView()->advanceFocus(false);
+    webViewHelper.webViewImpl()->scrollFocusedNodeIntoRect(WebRect());
+    EXPECT_GT(webViewHelper.webViewImpl()->fakePageScaleAnimationPageScaleForTesting(), initialScale);
+}
+
+
 TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 {
     registerMockedHttpURLLoad("get_scale_for_zoom_into_editable_test.html");

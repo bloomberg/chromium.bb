@@ -275,9 +275,6 @@ private:
 
     void customizedScroll(const Node& startNode, ScrollState&);
 
-    TouchAction intersectTouchAction(const TouchAction, const TouchAction);
-    TouchAction computeEffectiveTouchAction(const Node&);
-
     HitTestResult hitTestResultInFrame(LocalFrame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active);
 
     void invalidateClick();

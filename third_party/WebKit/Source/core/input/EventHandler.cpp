@@ -59,6 +59,7 @@
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/input/InputDevice.h"
+#include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
@@ -3814,7 +3815,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             // See http://crbug.com/345372.
             m_targetForTouchID.set(point.id(), node);
 
-            TouchAction effectiveTouchAction = computeEffectiveTouchAction(*node);
+            TouchAction effectiveTouchAction = TouchActionUtil::computeEffectiveTouchAction(*node);
             if (effectiveTouchAction != TouchActionAuto)
                 m_frame->page()->chromeClient().setTouchAction(effectiveTouchAction);
         }
@@ -3928,56 +3929,6 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
     }
 
     return swallowedTouchEvent;
-}
-
-TouchAction EventHandler::intersectTouchAction(TouchAction action1, TouchAction action2)
-{
-    if (action1 == TouchActionNone || action2 == TouchActionNone)
-        return TouchActionNone;
-    if (action1 == TouchActionAuto)
-        return action2;
-    if (action2 == TouchActionAuto)
-        return action1;
-    if (!(action1 & action2))
-        return TouchActionNone;
-    return action1 & action2;
-}
-
-// touch-action applies to all elements with both width AND height properties.
-// According to the CSS Box Model Spec (http://dev.w3.org/csswg/css-box/#the-width-and-height-properties)
-// width applies to all elements but non-replaced inline elements, table rows, and row groups and
-// height applies to all elements but non-replaced inline elements, table columns, and column groups.
-static inline bool supportsTouchAction(const LayoutObject& object)
-{
-    if (object.isInline() && !object.isReplaced())
-        return false;
-    if (object.isTableRow() || object.isLayoutTableCol())
-        return false;
-
-    return true;
-}
-
-TouchAction EventHandler::computeEffectiveTouchAction(const Node& node)
-{
-    // Start by permitting all actions, then walk the elements supporting
-    // touch-action from the target node up to the nearest scrollable ancestor
-    // and exclude any prohibited actions.
-    TouchAction effectiveTouchAction = TouchActionAuto;
-    for (const Node* curNode = &node; curNode; curNode = ComposedTreeTraversal::parent(*curNode)) {
-        if (LayoutObject* layoutObject = curNode->layoutObject()) {
-            if (supportsTouchAction(*layoutObject)) {
-                TouchAction action = layoutObject->style()->touchAction();
-                effectiveTouchAction = intersectTouchAction(action, effectiveTouchAction);
-                if (effectiveTouchAction == TouchActionNone)
-                    break;
-            }
-
-            // If we've reached an ancestor that supports a touch action, search no further.
-            if (layoutObject->isBox() && toLayoutBox(layoutObject)->scrollsOverflow())
-                break;
-        }
-    }
-    return effectiveTouchAction;
 }
 
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)

@@ -68,6 +68,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/input/EventHandler.h"
+#include "core/input/TouchActionUtil.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -1793,7 +1794,6 @@ void WebViewImpl::didUpdateTopControls()
     if (!view)
         return;
 
-
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
     float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
     visualViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
@@ -2934,7 +2934,19 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
     if (!frame || !frame->view() || !element)
         return false;
 
-    bool zoomInToLegibleScale = m_webSettings->autoZoomFocusedNodeToLegibleScale() && !shouldDisableDesktopWorkarounds();
+    element->document().updateLayoutIgnorePendingStylesheets();
+
+    bool zoomInToLegibleScale = m_webSettings->autoZoomFocusedNodeToLegibleScale()
+        && !shouldDisableDesktopWorkarounds();
+
+    if (zoomInToLegibleScale) {
+        // When deciding whether to zoom in on a focused text box, we should decide not to
+        // zoom in if the user won't be able to zoom out. e.g if the textbox is within a
+        // touch-action: none container the user can't zoom back out.
+        TouchAction action = TouchActionUtil::computeEffectiveTouchAction(*element);
+        if (action != TouchActionAuto && !(action & TouchActionPinchZoom))
+            zoomInToLegibleScale = false;
+    }
 
     float scale;
     IntPoint scroll;
@@ -2954,8 +2966,6 @@ void WebViewImpl::smoothScroll(int targetX, int targetY, long durationMs)
 
 void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, bool zoomInToLegibleScale, float& newScale, IntPoint& newScroll, bool& needAnimation)
 {
-    focusedNode->document().updateLayoutIgnorePendingStylesheets();
-
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
     WebRect caretInViewport, unusedEnd;

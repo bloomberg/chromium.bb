@@ -2562,6 +2562,8 @@
             'input/EventHandler.h',
             'input/InputDevice.cpp',
             'input/InputDevice.h',
+            'input/TouchActionUtil.cpp',
+            'input/TouchActionUtil.h',
         ],
         'webcore_html_files': [
             'html/ClassList.cpp',
