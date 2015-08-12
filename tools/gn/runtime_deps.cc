@@ -241,12 +241,10 @@ bool WriteRuntimeDepsFilesIfNecessary(const Builder& builder, Err* err) {
   }
   load_trace.Done();
 
-  std::vector<std::string> lines;
-  base::SplitString(list_contents, '\n', &lines);
-
   SourceDir root_dir("//");
   Label default_toolchain_label = builder.loader()->GetDefaultToolchain();
-  for (const auto& line : lines) {
+  for (const auto& line : base::SplitString(
+           list_contents, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     if (line.empty())
       continue;
     Label label = Label::Resolve(root_dir, default_toolchain_label,

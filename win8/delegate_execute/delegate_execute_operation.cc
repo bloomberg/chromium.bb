@@ -52,8 +52,8 @@ bool DelegateExecuteOperation::Init(const base::CommandLine* cmd_line) {
 }
 
 base::Process DelegateExecuteOperation::GetParent() const {
-  std::vector<base::string16> parts;
-  base::SplitString(mutex_, L'.', &parts);
+  std::vector<base::StringPiece16> parts = base::SplitStringPiece(
+      mutex_, L".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 3)
     return base::Process();
   DWORD pid;

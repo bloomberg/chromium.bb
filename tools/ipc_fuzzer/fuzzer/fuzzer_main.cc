@@ -159,8 +159,8 @@ int Mutate(base::CommandLine* cmd, Fuzzer* fuzzer) {
   bool permute = cmd->HasSwitch(kPermuteSwitch);
 
   std::string type_string_list = cmd->GetSwitchValueASCII(kTypeListSwitch);
-  std::vector<std::string> type_string_vector;
-  base::SplitString(type_string_list, ',', &type_string_vector);
+  std::vector<std::string> type_string_vector = base::SplitString(
+      type_string_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   std::set<uint32> type_set;
   for (size_t i = 0; i < type_string_vector.size(); ++i) {
     type_set.insert(atoi(type_string_vector[i].c_str()));

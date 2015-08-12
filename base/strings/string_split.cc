@@ -271,37 +271,4 @@ void SplitStringUsingSubstr(const std::string& str,
   SplitStringUsingSubstrT(str, s, r);
 }
 
-void SplitStringDontTrim(StringPiece16 str,
-                         char16 c,
-                         std::vector<string16>* result) {
-  DCHECK(CBU16_IS_SINGLE(c));
-  *result = SplitStringT<string16, string16, char16>(
-      str, c, KEEP_WHITESPACE, SPLIT_WANT_ALL);
-}
-
-void SplitStringDontTrim(StringPiece str,
-                         char c,
-                         std::vector<std::string>* result) {
-#if CHAR_MIN < 0
-  DCHECK_GE(c, 0);
-#endif
-  DCHECK_LT(c, 0x7F);
-  *result = SplitStringT<std::string, std::string, char>(
-      str, c, KEEP_WHITESPACE, SPLIT_WANT_ALL);
-}
-
-void SplitStringAlongWhitespace(const string16& str,
-                                std::vector<string16>* result) {
-  *result = SplitStringT<string16, string16, StringPiece16>(
-      str, StringPiece16(kWhitespaceASCIIAs16),
-      TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
-}
-
-void SplitStringAlongWhitespace(const std::string& str,
-                                std::vector<std::string>* result) {
-  *result = SplitStringT<std::string, std::string, StringPiece>(
-      str, StringPiece(kWhitespaceASCII),
-      TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
-}
-
 }  // namespace base

@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/cache_type.h"
@@ -137,8 +138,8 @@ scoped_ptr<Backend> CreateAndInitBackend(const CacheSpec& spec) {
 bool ParseRangeLine(const std::string& line,
                     std::vector<std::string>* tokens,
                     bool* is_anonymous_read_write) {
-  tokens->clear();
-  base::SplitStringAlongWhitespace(line, tokens);
+  *tokens = base::SplitString(line, base::kWhitespaceASCII,
+                              base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (tokens->size() == 5) {
     const std::string& mode = (*tokens)[1];
     *is_anonymous_read_write = !mode.compare(0, 3, kReadWrite);
@@ -163,8 +164,8 @@ bool ParseRangeProperty(const std::string& line,
                         std::vector<std::string>* tokens,
                         uint64* size,
                         bool* is_private_dirty) {
-  tokens->clear();
-  base::SplitStringAlongWhitespace(line, tokens);
+  *tokens = base::SplitString(line, base::kWhitespaceASCII,
+                              base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // If the line is long, attempt to parse new range outside of this scope.
   if (tokens->size() > 3)

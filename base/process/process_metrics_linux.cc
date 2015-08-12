@@ -316,8 +316,9 @@ bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
       return false;
   }
 
-  std::vector<std::string> totmaps_fields;
-  SplitStringAlongWhitespace(totmaps_data, &totmaps_fields);
+  std::vector<std::string> totmaps_fields = SplitString(
+      totmaps_data, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
+      base::SPLIT_WANT_NONEMPTY);
 
   DCHECK_EQ("Pss:", totmaps_fields[kPssIndex-1]);
   DCHECK_EQ("Private_Clean:", totmaps_fields[kPrivate_CleanIndex - 1]);

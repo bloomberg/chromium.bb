@@ -112,8 +112,8 @@ class HidServiceLinux::FileThreadHelper
       return;
     }
 
-    std::vector<std::string> parts;
-    base::SplitString(hid_id, ':', &parts);
+    std::vector<std::string> parts = base::SplitString(
+        hid_id, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (parts.size() != 3) {
       return;
     }

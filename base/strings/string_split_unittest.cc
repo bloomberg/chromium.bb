@@ -4,6 +4,7 @@
 
 #include "base/strings/string_split.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,23 +12,6 @@
 using ::testing::ElementsAre;
 
 namespace base {
-
-namespace {
-
-#if !defined(WCHAR_T_IS_UTF16)
-// Overload SplitString with a wide-char version to make it easier to
-// test the string16 version with wide character literals.
-void SplitString(const std::wstring& str,
-                 wchar_t c,
-                 std::vector<std::wstring>* result) {
-  std::vector<string16> result16;
-  SplitString(WideToUTF16(str), c, &result16);
-  for (size_t i = 0; i < result16.size(); ++i)
-    result->push_back(UTF16ToWide(result16[i]));
-}
-#endif
-
-}  // anonymous namespace
 
 class SplitStringIntoKeyValuePairsTest : public testing::Test {
  protected:
@@ -243,77 +227,6 @@ TEST(StringUtilTest, SplitString_WhitespaceAndResultType) {
   ASSERT_TRUE(r.empty());
 }
 
-TEST(StringUtilTest, SplitString_Legacy) {
-  std::vector<std::wstring> r;
-
-  SplitString(std::wstring(), L',', &r);
-  EXPECT_EQ(0U, r.size());
-  r.clear();
-
-  SplitString(L"a,b,c", L',', &r);
-  ASSERT_EQ(3U, r.size());
-  EXPECT_EQ(r[0], L"a");
-  EXPECT_EQ(r[1], L"b");
-  EXPECT_EQ(r[2], L"c");
-  r.clear();
-
-  SplitString(L"a, b, c", L',', &r);
-  ASSERT_EQ(3U, r.size());
-  EXPECT_EQ(r[0], L"a");
-  EXPECT_EQ(r[1], L"b");
-  EXPECT_EQ(r[2], L"c");
-  r.clear();
-
-  SplitString(L"a,,c", L',', &r);
-  ASSERT_EQ(3U, r.size());
-  EXPECT_EQ(r[0], L"a");
-  EXPECT_EQ(r[1], L"");
-  EXPECT_EQ(r[2], L"c");
-  r.clear();
-
-  SplitString(L"a, ,c", L',', &r);
-  ASSERT_EQ(3U, r.size());
-  EXPECT_EQ(r[0], L"a");
-  EXPECT_EQ(r[1], L"");
-  EXPECT_EQ(r[2], L"c");
-  r.clear();
-
-  SplitString(L"   ", L'*', &r);
-  EXPECT_EQ(0U, r.size());
-  r.clear();
-
-  SplitString(L"foo", L'*', &r);
-  ASSERT_EQ(1U, r.size());
-  EXPECT_EQ(r[0], L"foo");
-  r.clear();
-
-  SplitString(L"foo ,", L',', &r);
-  ASSERT_EQ(2U, r.size());
-  EXPECT_EQ(r[0], L"foo");
-  EXPECT_EQ(r[1], L"");
-  r.clear();
-
-  SplitString(L",", L',', &r);
-  ASSERT_EQ(2U, r.size());
-  EXPECT_EQ(r[0], L"");
-  EXPECT_EQ(r[1], L"");
-  r.clear();
-
-  SplitString(L"\t\ta\t", L'\t', &r);
-  ASSERT_EQ(4U, r.size());
-  EXPECT_EQ(r[0], L"");
-  EXPECT_EQ(r[1], L"");
-  EXPECT_EQ(r[2], L"a");
-  EXPECT_EQ(r[3], L"");
-  r.clear();
-
-  SplitString(L"\ta\t\nb\tcc", L'\n', &r);
-  ASSERT_EQ(2U, r.size());
-  EXPECT_EQ(r[0], L"a");
-  EXPECT_EQ(r[1], L"b\tcc");
-  r.clear();
-}
-
 TEST(SplitStringUsingSubstrTest, StringWithNoDelimiter) {
   std::vector<std::string> results;
   SplitStringUsingSubstr("alongwordwithnodelimiter", "DELIMITER", &results);
@@ -352,21 +265,23 @@ TEST(SplitStringUsingSubstrTest, TrailingDelimitersSkipped) {
       results, ElementsAre("un", "deux", "trois", "quatre", "", "", ""));
 }
 
-TEST(StringSplitTest, StringSplitDontTrim) {
+TEST(StringSplitTest, StringSplitKeepWhitespace) {
   std::vector<std::string> r;
 
-  SplitStringDontTrim("   ", '*', &r);
+  r = SplitString("   ", "*", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   ASSERT_EQ(1U, r.size());
   EXPECT_EQ(r[0], "   ");
 
-  SplitStringDontTrim("\t  \ta\t ", '\t', &r);
+  r = SplitString("\t  \ta\t ", "\t", base::KEEP_WHITESPACE,
+                  base::SPLIT_WANT_ALL);
   ASSERT_EQ(4U, r.size());
   EXPECT_EQ(r[0], "");
   EXPECT_EQ(r[1], "  ");
   EXPECT_EQ(r[2], "a");
   EXPECT_EQ(r[3], " ");
 
-  SplitStringDontTrim("\ta\t\nb\tcc", '\n', &r);
+  r = SplitString("\ta\t\nb\tcc", "\n", base::KEEP_WHITESPACE,
+                  base::SPLIT_WANT_ALL);
   ASSERT_EQ(2U, r.size());
   EXPECT_EQ(r[0], "\ta\t");
   EXPECT_EQ(r[1], "b\tcc");
@@ -394,8 +309,9 @@ TEST(StringSplitTest, SplitStringAlongWhitespace) {
     { "b\t at",  2, "b",  "at" },
   };
   for (size_t i = 0; i < arraysize(data); ++i) {
-    std::vector<std::string> results;
-    SplitStringAlongWhitespace(data[i].input, &results);
+    std::vector<std::string> results = base::SplitString(
+        data[i].input, kWhitespaceASCII, base::KEEP_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
     ASSERT_EQ(data[i].expected_result_count, results.size());
     if (data[i].expected_result_count > 0)
       ASSERT_EQ(data[i].output1, results[0]);

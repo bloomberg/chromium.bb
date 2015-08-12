@@ -424,8 +424,8 @@ void CreateEmbeddedWorkerSetup(
 
 void StringToUintVector(const std::string& str, std::vector<unsigned>* vector) {
   DCHECK(vector->empty());
-  std::vector<std::string> pieces;
-  base::SplitString(str, ',', &pieces);
+  std::vector<std::string> pieces = base::SplitString(
+      str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(pieces.size(), static_cast<size_t>(gfx::BufferFormat::LAST) + 1);
   for (size_t i = 0; i < pieces.size(); ++i) {
     unsigned number = 0;

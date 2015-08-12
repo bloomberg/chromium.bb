@@ -28,12 +28,10 @@ base::FilePath ResolveSourceRootRelativePath(const char* relative_path) {
   if (!PathService::Get(base::DIR_SOURCE_ROOT, &path))
     return base::FilePath();
 
-  std::vector<std::string> components;
-  base::SplitString(relative_path, '/', &components);
-
-  for (size_t i = 0; i < components.size(); ++i) {
-    if (!components[i].empty())
-      path = path.AppendASCII(components[i]);
+  for (const base::StringPiece& component : base::SplitStringPiece(
+           relative_path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    if (!component.empty())
+      path = path.AppendASCII(component);
   }
 
   return path;

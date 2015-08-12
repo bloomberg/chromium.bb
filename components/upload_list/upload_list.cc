@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 
@@ -60,8 +61,9 @@ void UploadList::LoadUploadList() {
   if (base::PathExists(upload_log_path_)) {
     std::string contents;
     base::ReadFileToString(upload_log_path_, &contents);
-    std::vector<std::string> log_entries;
-    base::SplitStringAlongWhitespace(contents, &log_entries);
+    std::vector<std::string> log_entries = base::SplitString(
+        contents, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
+        base::SPLIT_WANT_NONEMPTY);
     ClearUploads();
     ParseLogEntries(log_entries);
   }

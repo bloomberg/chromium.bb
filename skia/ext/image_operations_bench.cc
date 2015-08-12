@@ -119,8 +119,8 @@ class Dimensions {
   // On failure, will set its state in such a way that IsValid will return
   // false.
   void FromString(const std::string& arg) {
-    std::vector<std::string> strings;
-    base::SplitString(std::string(arg), 'x', &strings);
+    std::vector<base::StringPiece> strings = base::SplitStringPiece(
+        arg, "x", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     if (strings.size() != 2 ||
         base::StringToInt(strings[0], &width_) == false ||
         base::StringToInt(strings[1], &height_) == false) {

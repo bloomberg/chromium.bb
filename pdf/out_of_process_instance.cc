@@ -206,8 +206,9 @@ const PPP_Pdf ppp_private = {
 
 int ExtractPrintPreviewPageIndex(const std::string& src_url) {
   // Sample |src_url| format: chrome://print/id/page_index/print.pdf
-  std::vector<std::string> url_substr;
-  base::SplitString(src_url.substr(strlen(kChromePrint)), '/', &url_substr);
+  std::vector<std::string> url_substr = base::SplitString(
+      src_url.substr(strlen(kChromePrint)), "/",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (url_substr.size() != 3)
     return -1;
 

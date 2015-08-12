@@ -87,8 +87,8 @@ Value ParseValueOrScope(const Settings* settings,
 
 Value ParseList(const std::string& input, const ParseNode* origin, Err* err) {
   Value ret(origin, Value::LIST);
-  std::vector<std::string> as_lines;
-  base::SplitString(input, '\n', &as_lines);
+  std::vector<std::string> as_lines = base::SplitString(
+      input, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Trim one empty line from the end since the last line might end in a
   // newline. If the user wants more trimming, they'll specify "trim" in the

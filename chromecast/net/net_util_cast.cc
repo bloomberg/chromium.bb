@@ -22,9 +22,9 @@ base::hash_set<std::string> GetIgnoredInterfaces() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::CommandLine::StringType netifs_to_ignore_str =
       command_line->GetSwitchValueNative(switches::kNetifsToIgnore);
-  base::CommandLine::StringVector netifs_to_ignore_vector;
-  base::SplitString(netifs_to_ignore_str, ',', &netifs_to_ignore_vector);
-  for (const auto& netif : netifs_to_ignore_vector)
+  for (const std::string& netif : base::SplitString(
+           netifs_to_ignore_str, ",", base::TRIM_WHITESPACE,
+           base::SPLIT_WANT_ALL))
     ignored_interfaces.insert(netif);
 
   return ignored_interfaces;

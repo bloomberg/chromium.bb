@@ -536,11 +536,11 @@ std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
 
 std::string AboutDiscards(const std::string& path) {
   std::string output;
-  std::vector<std::string> path_split;
   int64 web_content_id;
   memory::OomPriorityManager* oom = g_browser_process->GetOomPriorityManager();
 
-  base::SplitString(path, '/', &path_split);
+  std::vector<std::string> path_split = base::SplitString(
+      path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (path_split.size() == 2 && path_split[0] == kAboutDiscardsRunCommand &&
       base::StringToInt64(path_split[1], &web_content_id)) {
     oom->DiscardTabById(web_content_id);

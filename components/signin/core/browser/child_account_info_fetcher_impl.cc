@@ -122,8 +122,9 @@ void ChildAccountInfoFetcherImpl::OnGetUserInfoSuccess(
     const UserInfoMap& data) {
   UserInfoMap::const_iterator services_iter = data.find("allServices");
   if (services_iter != data.end()) {
-    std::vector<std::string> service_flags;
-    base::SplitString(services_iter->second, ',', &service_flags);
+    std::vector<std::string> service_flags = base::SplitString(
+        services_iter->second, ",", base::TRIM_WHITESPACE,
+        base::SPLIT_WANT_ALL);
     bool is_child_account =
         std::find(service_flags.begin(), service_flags.end(),
                   AccountTrackerService::kChildAccountServiceFlag) !=

@@ -133,8 +133,8 @@ void InitContentHandlers(shell::ApplicationManager* manager,
   base::ReplaceSubstringsAfterOffset(&handlers_spec, 0, "\\,", ",");
 #endif
 
-  std::vector<std::string> parts;
-  base::SplitString(handlers_spec, ',', &parts);
+  std::vector<std::string> parts = base::SplitString(
+      handlers_spec, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() % 2 != 0) {
     LOG(ERROR) << "Invalid value for switch " << switches::kContentHandlers
                << ": must be a comma-separated list of mimetype/url pairs."
@@ -157,9 +157,9 @@ void InitContentHandlers(shell::ApplicationManager* manager,
 
 void InitNativeOptions(shell::ApplicationManager* manager,
                        const base::CommandLine& command_line) {
-  std::vector<std::string> force_in_process_url_list;
-  base::SplitString(command_line.GetSwitchValueASCII(switches::kForceInProcess),
-                    ',', &force_in_process_url_list);
+  std::vector<std::string> force_in_process_url_list = base::SplitString(
+      command_line.GetSwitchValueASCII(switches::kForceInProcess), ",",
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& force_in_process_url : force_in_process_url_list) {
     GURL gurl(force_in_process_url);
     if (!gurl.is_valid()) {

@@ -1072,8 +1072,8 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
   globals_->url_security_manager.reset(
       net::URLSecurityManager::Create(auth_filter_default_credentials,
                                       auth_filter_delegate));
-  std::vector<std::string> supported_schemes;
-  base::SplitString(auth_schemes_, ',', &supported_schemes);
+  std::vector<std::string> supported_schemes = base::SplitString(
+      auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   scoped_ptr<net::HttpAuthHandlerRegistryFactory> registry_factory(
       net::HttpAuthHandlerRegistryFactory::Create(

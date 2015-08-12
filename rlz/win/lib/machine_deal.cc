@@ -107,8 +107,8 @@ bool GetResponseValue(const std::string& response_line,
                         base::CompareCase::SENSITIVE))
     return false;
 
-  std::vector<std::string> tokens;
-  base::SplitString(response_line, ':', &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      response_line, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (tokens.size() != 2)
     return false;
 

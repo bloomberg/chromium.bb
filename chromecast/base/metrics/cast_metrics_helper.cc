@@ -54,8 +54,9 @@ bool CastMetricsHelper::DecodeAppInfoFromMetricsName(
   if (metrics_name.find(kMetricsNameAppInfoDelimiter) == std::string::npos)
     return false;
 
-  std::vector<std::string> tokens;
-  base::SplitString(metrics_name, kMetricsNameAppInfoDelimiter, &tokens);
+  std::vector<std::string> tokens = base::SplitString(
+      metrics_name, std::string(1, kMetricsNameAppInfoDelimiter),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(tokens.size(), 4u);
   // The order of tokens should match EncodeAppInfoIntoMetricsName().
   *action_name = tokens[0];

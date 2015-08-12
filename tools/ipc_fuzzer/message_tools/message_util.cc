@@ -108,9 +108,7 @@ int main(int argc, char** argv) {
   bool invert = cmd->HasSwitch(kInvertSwitch);
   bool perform_dump = cmd->HasSwitch(kDumpSwitch);
 
-  std::vector<base::FilePath::StringType> input_file_names;
   base::FilePath::StringType output_file_name;
-  base::SplitString(args[0], ',', &input_file_names);
 
   if (!perform_dump) {
     if (args.size() < 2) {
@@ -121,10 +119,11 @@ int main(int argc, char** argv) {
   }
 
   ipc_fuzzer::MessageVector input_message_vector;
-  for (std::vector<base::FilePath::StringType>::iterator
-      it = input_file_names.begin(); it != input_file_names.end(); ++it) {
+  for (const base::FilePath::StringType& name : base::SplitString(
+           args[0], base::FilePath::StringType(1, ','),
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     ipc_fuzzer::MessageVector message_vector;
-    if (!ipc_fuzzer::MessageFile::Read(base::FilePath(*it), &message_vector))
+    if (!ipc_fuzzer::MessageFile::Read(base::FilePath(name), &message_vector))
       return EXIT_FAILURE;
     input_message_vector.insert(input_message_vector.end(),
                                 message_vector.begin(), message_vector.end());
@@ -136,11 +135,10 @@ int main(int argc, char** argv) {
 
   if (has_indices) {
     indices.resize(input_message_vector.size(), false);
-    std::vector<std::string> index_strings;
-    base::SplitString(cmd->GetSwitchValueASCII(kInSwitch), ',', &index_strings);
-    for (std::vector<std::string>::iterator it = index_strings.begin();
-         it != index_strings.end(); ++it) {
-      int index = atoi(it->c_str());
+    for (const std::string& cur : base::SplitString(
+             cmd->GetSwitchValueASCII(kInSwitch), ",", base::TRIM_WHITESPACE,
+             base::SPLIT_WANT_ALL)) {
+      int index = atoi(cur.c_str());
       if (index >= 0 && static_cast<size_t>(index) < indices.size())
         indices[index] = true;
     }

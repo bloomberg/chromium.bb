@@ -38,10 +38,9 @@ void WaitForDebuggerIfNecessary() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kWaitForDebugger)) {
-    std::vector<std::string> apps_to_debug;
-    base::SplitString(
-        command_line->GetSwitchValueASCII(switches::kWaitForDebugger), ',',
-        &apps_to_debug);
+    std::vector<std::string> apps_to_debug = base::SplitString(
+        command_line->GetSwitchValueASCII(switches::kWaitForDebugger), ",",
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::string app = "launcher";
     if (command_line->HasSwitch(switches::kChildProcess)) {
       app = command_line->GetSwitchValuePath(switches::kChildProcess)

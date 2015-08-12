@@ -552,8 +552,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   // Read and parse list of experiments.
   std::string experiments;
   std::vector<std::string> experiments_list;
-  if (data.GetString("experiments", &experiments))
-    base::SplitString(experiments, ' ', &experiments_list);
+  if (data.GetString("experiments", &experiments)) {
+    experiments_list = base::SplitString(
+        experiments, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  }
 
   VLOG(0) << "Connecting to " << host_jid
           << ". Local jid: " << local_jid << ".";

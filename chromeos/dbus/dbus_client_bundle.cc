@@ -354,17 +354,14 @@ void DBusClientBundle::SetupDefaultEnvironment() {
 DBusClientBundle::DBusClientTypeMask DBusClientBundle::ParseUnstubList(
     const std::string& unstub_list) {
   DBusClientTypeMask unstub_mask = 0;
-  std::vector<std::string> unstub_components;
-  base::SplitString(unstub_list, ',', &unstub_components);
-  for (std::vector<std::string>::const_iterator iter =
-          unstub_components.begin();
-       iter != unstub_components.end(); ++iter) {
-    DBusClientBundle::DBusClientType client = GetDBusClientType(*iter);
+  for (const std::string& cur : base::SplitString(
+           unstub_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    DBusClientBundle::DBusClientType client = GetDBusClientType(cur);
     if (client != NO_CLIENT) {
-      LOG(WARNING) << "Unstubbing dbus client for " << *iter;
+      LOG(WARNING) << "Unstubbing dbus client for " << cur;
       unstub_mask |= client;
     } else {
-      LOG(ERROR) << "Unknown dbus client: " << *iter;
+      LOG(ERROR) << "Unknown dbus client: " << cur;
     }
   }
 

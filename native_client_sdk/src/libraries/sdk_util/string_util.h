@@ -15,7 +15,7 @@ namespace sdk_util {
 // or ends with |c|, then an empty string is inserted. If |str| is empty, then
 // no strings are inserted.
 //
-// NOTE: Unlike Chrome's base::SplitString, this DOES NOT trim white space.
+// NOTE: Does not trim white space.
 inline void SplitString(const std::string& str,
                         char c,
                         std::vector<std::string>* r) {

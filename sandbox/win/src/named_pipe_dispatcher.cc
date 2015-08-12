@@ -56,16 +56,15 @@ bool NamedPipeDispatcher::CreateNamedPipe(IPCInfo* ipc,
   ipc->return_info.win32_result = ERROR_ACCESS_DENIED;
   ipc->return_info.handle = INVALID_HANDLE_VALUE;
 
-  std::vector<base::string16> paths;
-  std::vector<base::string16> innerpaths;
-  base::SplitString(*name, '/', &paths);
+  base::StringPiece16 dotdot(L"..");
 
-  for (std::vector<base::string16>::const_iterator iter = paths.begin();
-       iter != paths.end(); ++iter) {
-    base::SplitString(*iter, '\\', &innerpaths);
-    for (std::vector<base::string16>::const_iterator iter2 = innerpaths.begin();
-         iter2 != innerpaths.end(); ++iter2) {
-      if (*iter2 == L"..")
+  for (const base::StringPiece16& path : base::SplitStringPiece(
+           *name, base::string16(1, '/'),
+           base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    for (const base::StringPiece16& inner : base::SplitStringPiece(
+             path, base::string16(1, '\\'),
+             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      if (inner == dotdot)
         return true;
     }
   }

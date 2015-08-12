@@ -127,8 +127,9 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
     notifier_.service_path_ = notifier_state.service_path;
     notifier_.ip_address_ = notifier_state.ip_address;
     notifier_.max_bandwidth_mbps_ = notifier_state.max_bandwidth;
-    std::vector<std::string> dns_servers;
-    base::SplitString(notifier_state.dns_servers, ',', &dns_servers);
+    std::vector<std::string> dns_servers =
+        base::SplitString(notifier_state.dns_servers, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     notifier_.dns_servers_ = dns_servers;
   }
 
@@ -137,8 +138,9 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
     EXPECT_EQ(notifier_state.service_path, notifier_.service_path_);
     EXPECT_EQ(notifier_state.ip_address, notifier_.ip_address_);
     EXPECT_EQ(notifier_state.max_bandwidth, notifier_.max_bandwidth_mbps_);
-    std::vector<std::string> dns_servers;
-    base::SplitString(notifier_state.dns_servers, ',', &dns_servers);
+    std::vector<std::string> dns_servers =
+        base::SplitString(notifier_state.dns_servers, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     EXPECT_EQ(dns_servers, notifier_.dns_servers_);
   }
 
@@ -155,8 +157,9 @@ class NetworkChangeNotifierChromeosUpdateTest : public testing::Test {
         default_network_state.network_technology;
     default_network_.path_ = default_network_state.service_path;
     default_network_.ip_address_ = default_network_state.ip_address;
-    std::vector<std::string> dns_servers;
-    base::SplitString(default_network_state.dns_servers, ',', &dns_servers);
+    std::vector<std::string> dns_servers =
+        base::SplitString(default_network_state.dns_servers, ",",
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     default_network_.dns_servers_ = dns_servers;
   }
 

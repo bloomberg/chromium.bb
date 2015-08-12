@@ -130,13 +130,13 @@ typedef base::hash_map<uint64, int> PFNMap;
 bool ParseMemoryMapLine(const std::string& line,
                         std::vector<std::string>* tokens,
                         MemoryMap* memory_map) {
-  tokens->clear();
-  base::SplitString(line, ' ', tokens);
+  *tokens = base::SplitString(
+      line, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (tokens->size() < 2)
     return false;
   const std::string& addr_range = tokens->at(0);
-  std::vector<std::string> range_tokens;
-  base::SplitString(addr_range, '-', &range_tokens);
+  std::vector<std::string> range_tokens = base::SplitString(
+      addr_range, "-", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   const std::string& start_address_token = range_tokens.at(0);
   if (!base::HexStringToUInt64(start_address_token,
                                &memory_map->start_address)) {

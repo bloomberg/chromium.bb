@@ -242,10 +242,8 @@ bool HasInternetZoneIdentifier(const FilePath& full_path) {
   if (!ReadFileToString(zone_path, &zone_path_contents))
     return false;
 
-  std::vector<std::string> lines;
-  // This call also trims whitespaces, including carriage-returns (\r).
-  SplitString(zone_path_contents, '\n', &lines);
-
+  std::vector<std::string> lines = SplitString(
+      zone_path_contents, "\n", TRIM_WHITESPACE, SPLIT_WANT_ALL);
   switch (lines.size()) {
     case 3:
       // optional empty line at end of file:

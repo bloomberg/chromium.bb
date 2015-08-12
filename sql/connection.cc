@@ -1327,7 +1327,8 @@ bool Connection::IntegrityCheckHelper(
     // it could return separate lines, so loop _and_ split.
     while (stmt.Step()) {
       std::string result(stmt.ColumnString(0));
-      base::SplitString(result, '\n', messages);
+      *messages = base::SplitString(result, "\n", base::TRIM_WHITESPACE,
+                                    base::SPLIT_WANT_ALL);
     }
     ret = stmt.Succeeded();
   }
