@@ -1134,6 +1134,22 @@ bool LayoutText::isAllCollapsibleWhitespace() const
     return true;
 }
 
+bool LayoutText::isRenderedCharacter(int offsetInNode) const
+{
+    for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
+        if (offsetInNode < static_cast<int>(box->start()) && !containsReversedText()) {
+            // The offset we're looking for is before this node
+            // this means the offset must be in content that is
+            // not laid out. Return false.
+            return false;
+        }
+        if (offsetInNode >= static_cast<int>(box->start()) && offsetInNode < static_cast<int>(box->start() + box->len()))
+            return true;
+    }
+
+    return false;
+}
+
 bool LayoutText::containsOnlyWhitespace(unsigned from, unsigned len) const
 {
     ASSERT(m_text);

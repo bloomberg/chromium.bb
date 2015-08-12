@@ -135,6 +135,7 @@ public:
     void momentarilyRevealLastTypedCharacter(unsigned lastTypedCharacterOffset);
 
     bool isAllCollapsibleWhitespace() const;
+    bool isRenderedCharacter(int offsetInNode) const;
 
     bool canUseSimpleFontCodePath() const { return m_canUseSimpleFontCodePath; }
 
