@@ -125,9 +125,11 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-class BasicURLRequestContext : public URLRequestContext {
+// Define a context class that can self-manage the ownership of its components
+// via a UrlRequestContextStorage object.
+class ContainerURLRequestContext : public URLRequestContext {
  public:
-  explicit BasicURLRequestContext(
+  explicit ContainerURLRequestContext(
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner)
       : file_task_runner_(file_task_runner), storage_(this) {}
 
@@ -153,7 +155,7 @@ class BasicURLRequestContext : public URLRequestContext {
   }
 
  protected:
-  ~BasicURLRequestContext() override { AssertNoURLRequests(); }
+  ~ContainerURLRequestContext() override { AssertNoURLRequests(); }
 
  private:
   // The thread should be torn down last.
@@ -163,7 +165,7 @@ class BasicURLRequestContext : public URLRequestContext {
   URLRequestContextStorage storage_;
   scoped_ptr<TransportSecurityPersister> transport_security_persister_;
 
-  DISALLOW_COPY_AND_ASSIGN(BasicURLRequestContext);
+  DISALLOW_COPY_AND_ASSIGN(ContainerURLRequestContext);
 };
 
 }  // namespace
@@ -252,8 +254,8 @@ void URLRequestContextBuilder::SetHttpServerProperties(
 }
 
 URLRequestContext* URLRequestContextBuilder::Build() {
-  BasicURLRequestContext* context =
-      new BasicURLRequestContext(file_task_runner_);
+  ContainerURLRequestContext* context =
+      new ContainerURLRequestContext(file_task_runner_);
   URLRequestContextStorage* storage = context->storage();
 
   storage->set_http_user_agent_settings(new StaticHttpUserAgentSettings(

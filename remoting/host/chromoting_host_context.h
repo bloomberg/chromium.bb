@@ -35,7 +35,7 @@ class ChromotingHostContext {
 #if defined(OS_CHROMEOS)
   // Attaches task runners to the relevant browser threads for the chromoting
   // host.  Must be called on the UI thread of the browser process.
-  // remoting::UrlRequestContextGetter returns BasicURLRequestContext under
+  // remoting::UrlRequestContextGetter returns ContainerURLRequestContext under
   // the hood which spawns two new threads per instance.  Since
   // ChromotingHostContext can be destroyed from any thread, as its owner
   // (It2MeHost) is ref-counted, joining the created threads during shutdown
