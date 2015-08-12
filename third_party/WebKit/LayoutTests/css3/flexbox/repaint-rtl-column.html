@@ -36,10 +36,10 @@ window.testIsAsync = true;
 window.onload = runRepaintTest;
 
 function repaintTest() {
-    // FIXME: we need a better way of waiting for layout/repainting to happen
-    setTimeout(function() {
+    requestAnimationFrame(function() {
         setFlex(4.6);
-        setTimeout(function() {
+        document.getElementById("content").offsetTop;
+        requestAnimationFrame(function() {
             setFlex(5);
             finishRepaintTest();
         }, 1)
