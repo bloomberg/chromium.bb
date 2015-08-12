@@ -11,7 +11,7 @@ binutils=c030c3cc99f3843affcf339afb01fc94a87a5487
 #
 # Three lines avoid merge conflicts.
 #
-clang=239048208dd9a33e670cad064b47b92a9f4335ec
+clang=1756cbb411142589b67bd7437ed7156c6b5042b6
 #
 # Three lines avoid merge conflicts.
 #
@@ -23,7 +23,7 @@ gcc=574429118e460375c377728420c43aad4a3103dc
 #
 # Three lines avoid merge conflicts.
 #
-libcxx=640116b36573795793453c2b0671b161deb9256f
+libcxx=c627a310c8986c42c828adab52f3826fceba802e
 #
 # Three lines avoid merge conflicts.
 #
