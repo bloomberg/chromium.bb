@@ -1024,7 +1024,12 @@ class GitRepoPatch(PatchQuery):
 
       # ret=2 handling, this deals w/ trivial conflicts; including figuring
       # out if it was trivial induced or not.
-      assert trivial
+      if not trivial:
+        logging.error('The git tree may be corrupted.')
+        logging.error('If the git error is "unable to read tree", '
+                      'please clean up this repo.')
+        raise
+
       # Here's the kicker; trivial conflicts can mask content conflicts.
       # We would rather state if it's a content conflict since in solving the
       # content conflict, the trivial conflict is solved.  Thus this
