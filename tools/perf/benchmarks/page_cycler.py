@@ -204,8 +204,9 @@ class PageCyclerToughLayoutCases(_PageCycler):
     return 'page_cycler.tough_layout_cases'
 
 
-# crbug.com/273986: This test is flakey on Windows.
-@benchmark.Disabled('win')
+# crbug.com/273986: This test is flakey on Windows Chrome.
+@benchmark.Enabled('android', 'chromeos', 'linux', 'ios', 'mac',
+                   'mandoline-release', 'mandoline-debug')
 class PageCyclerTypical25(_PageCycler):
   """Page load time benchmark for a 25 typical web pages.
 
