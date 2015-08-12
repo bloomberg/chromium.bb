@@ -100,6 +100,12 @@ component("libssl") {
     # There is a broken header guard in /usr/include/nss/secmod.h:
     # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
     cflags = [ "-Wno-header-guard" ]
+
+    if (is_ios) {
+      # libssl uses routines deprecated on iOS (sem_init/sem_destroy).
+      # https://bugzilla.mozilla.org/show_bug.cgi?id=1192500
+      cflags += [ "-Wno-deprecated-declarations" ]
+    }
   }
 
   if (is_posix) {
