@@ -28,6 +28,7 @@
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
 #include "components/view_manager/ids.h"
+#include "components/view_manager/public/cpp/scoped_view_ptr.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
@@ -174,7 +175,6 @@ HTMLFrame::HTMLFrame(const HTMLFrame::CreateParams& params)
       web_frame_(nullptr),
       web_widget_(nullptr),
       delegate_(nullptr),
-      owned_view_(nullptr),
       weak_factory_(this) {
   if (parent_)
     parent_->children_.push_back(this);
@@ -252,14 +252,7 @@ void HTMLFrame::OnViewUnembed() {
   if (!IsLocal() || frame_tree_manager_->local_root_ == this)
     return;
 
-  // TODO(sky): this may need to reset flags, such as origin.
   SwapToRemote();
-
-  // TODO(sky): this needs to be part of SwapToRemote().
-  if (view_) {
-    view_->RemoveObserver(this);
-    view_ = nullptr;
-  }
 }
 
 void HTMLFrame::Close() {
@@ -320,10 +313,7 @@ HTMLFrame::~HTMLFrame() {
 
   if (view_) {
     view_->RemoveObserver(this);
-    if (view_->view_manager()->GetRoot() == view_)
-      delete view_->view_manager();
-    else
-      view_->Destroy();
+    mojo::ScopedViewPtr::DeleteViewOrViewManager(view_);
   }
 }
 
@@ -380,12 +370,11 @@ mandoline::FrameTreeServer* HTMLFrame::GetFrameTreeServer() {
 }
 
 void HTMLFrame::SetView(mojo::View* view) {
-  // TODO(sky): figure out way to cleanup view. In particular there may already
-  // be a view. This happens if we go from local->remote->local.
   if (view_)
     view_->RemoveObserver(this);
   view_ = view;
-  view_->AddObserver(this);
+  if (view_)
+    view_->AddObserver(this);
 }
 
 void HTMLFrame::CreateRootWebWidget() {
@@ -443,6 +432,8 @@ void HTMLFrame::SwapToRemote() {
   if (web_frame_->isWebRemoteFrame())
     return;  // We already did the swap.
 
+  delegate_ = nullptr;
+
   blink::WebRemoteFrame* remote_frame =
       blink::WebRemoteFrame::create(state_.tree_scope, this);
   remote_frame->initializeFromFrame(web_frame_->toWebLocalFrame());
@@ -452,13 +443,15 @@ void HTMLFrame::SwapToRemote() {
   // TODO(sky): this isn't quite right, but WebLayerImpl is temporary.
   if (owned_view_) {
     web_layer_.reset(
-        new WebLayerImpl(owned_view_, global_state()->device_pixel_ratio()));
+        new WebLayerImpl(owned_view_->view(),
+                         global_state()->device_pixel_ratio()));
   }
   remote_frame->setRemoteWebLayer(web_layer_.get());
   remote_frame->setReplicatedName(state_.name);
   remote_frame->setReplicatedOrigin(state_.origin);
   remote_frame->setReplicatedSandboxFlags(state_.sandbox_flags);
   web_frame_ = remote_frame;
+  SetView(nullptr);
 }
 
 void HTMLFrame::SwapToLocal(
@@ -737,7 +730,7 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   child_frame->state_ = child_state;
 
   child_frame->SetView(child_view);
-  child_frame->owned_view_ = child_view;
+  child_frame->owned_view_.reset(new mojo::ScopedViewPtr(child_view));
 
   blink::WebLocalFrame* child_web_frame =
       blink::WebLocalFrame::create(scope, child_frame);
@@ -765,6 +758,8 @@ blink::WebCookieJar* HTMLFrame::cookieJar(blink::WebLocalFrame* frame) {
 
 blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
     const NavigationPolicyInfo& info) {
+  // TODO(sky): this branch basically does the same thing as the
+  // RequestNavigate() branch below. It would be nice to only have one.
   if (parent_ && parent_->IsLocal() && GetLocalRoot() != this) {
     // TODO(sky): this may be too early. I might want to wait to see if an embed
     // actually happens, and swap then.

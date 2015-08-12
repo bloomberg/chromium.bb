@@ -26,6 +26,7 @@ class WebFrame;
 
 namespace mojo {
 class Rect;
+class ScopedViewPtr;
 class View;
 }
 
@@ -289,8 +290,17 @@ class HTMLFrame : public blink::WebFrameClient,
 
   ReplicatedFrameState state_;
 
-  // Set to non-null for frames that are created locally.
-  mojo::View* owned_view_;
+  // If this frame is the result of creating a local frame
+  // (createChildFrame()), then |owned_view_| is the View initially created
+  // for the frame. While the frame is local |owned_view_| is the same as
+  // |view_|. If this frame becomes remote |view_| is set to null and
+  // |owned_view_| remains as the View initially created for the frame.
+  //
+  // This is done to ensure the View isn't prematurely deleted (it must exist
+  // as long as the frame is valid). If the View was deleted as soon as the
+  // frame was swapped to remote then the process rendering to the view would
+  // be severed.
+  scoped_ptr<mojo::ScopedViewPtr> owned_view_;
 
   blink::WebTextInputInfo text_input_info_;
 
