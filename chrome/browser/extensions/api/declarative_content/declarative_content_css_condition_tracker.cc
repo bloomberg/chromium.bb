@@ -221,10 +221,11 @@ void DeclarativeContentCssConditionTracker::OnWebContentsNavigation(
 
 void DeclarativeContentCssConditionTracker::GetMatchingCssSelectors(
     content::WebContents* contents,
-    base::hash_set<std::string>* css_selectors) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
+    base::hash_set<std::string>* css_selectors) const {
+  auto loc = per_web_contents_tracker_.find(contents);
+  DCHECK(loc != per_web_contents_tracker_.end());
   const std::vector<std::string>& matching_css_selectors =
-      per_web_contents_tracker_[contents]->matching_css_selectors();
+      loc->second->matching_css_selectors();
   css_selectors->insert(matching_css_selectors.begin(),
                         matching_css_selectors.end());
 }

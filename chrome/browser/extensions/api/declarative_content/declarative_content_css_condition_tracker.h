@@ -98,8 +98,9 @@ class DeclarativeContentCssConditionTracker
 
   // Inserts the currently-matching CSS selectors into |css_selectors|. We use
   // hash_set for maximally efficient lookup.
-  void GetMatchingCssSelectors(content::WebContents* contents,
-                               base::hash_set<std::string>* css_selectors);
+  void GetMatchingCssSelectors(
+      content::WebContents* contents,
+      base::hash_set<std::string>* css_selectors) const;
 
   // TODO(wittman): Remove once DeclarativeChromeContentRulesRegistry no longer
   // depends on concrete condition implementations. At that point

@@ -192,9 +192,10 @@ void DeclarativeContentIsBookmarkedConditionTracker::OnWebContentsNavigation(
 }
 
 bool DeclarativeContentIsBookmarkedConditionTracker::IsUrlBookmarked(
-    content::WebContents* contents) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
-  return per_web_contents_tracker_[contents]->is_url_bookmarked();
+    content::WebContents* contents) const {
+  auto loc = per_web_contents_tracker_.find(contents);
+  DCHECK(loc != per_web_contents_tracker_.end());
+  return loc->second->is_url_bookmarked();
 }
 
 void DeclarativeContentIsBookmarkedConditionTracker::BookmarkModelChanged() {}

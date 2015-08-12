@@ -168,9 +168,10 @@ void DeclarativeContentPageUrlConditionTracker::OnWebContentsNavigation(
 
 void DeclarativeContentPageUrlConditionTracker::GetMatches(
     content::WebContents* contents,
-    std::set<url_matcher::URLMatcherConditionSet::ID>* matches) {
-  DCHECK(ContainsKey(per_web_contents_tracker_, contents));
-  *matches = per_web_contents_tracker_[contents]->matches();
+    std::set<url_matcher::URLMatcherConditionSet::ID>* matches) const {
+  auto loc = per_web_contents_tracker_.find(contents);
+  DCHECK(loc != per_web_contents_tracker_.end());
+  *matches = loc->second->matches();
 }
 
 bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {

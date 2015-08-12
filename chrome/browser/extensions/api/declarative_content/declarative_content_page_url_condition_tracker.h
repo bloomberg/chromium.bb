@@ -116,8 +116,9 @@ class DeclarativeContentPageUrlConditionTracker {
                                const content::FrameNavigateParams& params);
 
   // Gets the maching IDs for the last navigation on WebContents.
-  void GetMatches(content::WebContents* contents,
-                  std::set<url_matcher::URLMatcherConditionSet::ID>* matches);
+  void GetMatches(
+      content::WebContents* contents,
+      std::set<url_matcher::URLMatcherConditionSet::ID>* matches) const;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;

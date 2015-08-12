@@ -87,7 +87,7 @@ class DeclarativeContentIsBookmarkedConditionTracker
                                const content::FrameNavigateParams& params);
 
   // Returns true if |contents| current URL is bookmarked.
-  bool IsUrlBookmarked(content::WebContents* contents);
+  bool IsUrlBookmarked(content::WebContents* contents) const;
 
  private:
   class PerWebContentsTracker : public content::WebContentsObserver {

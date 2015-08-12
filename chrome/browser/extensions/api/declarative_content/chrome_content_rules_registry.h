@@ -195,7 +195,6 @@ class ChromeContentRulesRegistry
   };
 
   class EvaluationScope;
-  struct RendererContentMatchData;
 
   // Creates a ContentRule for |extension| given a json definition.  The format
   // of each condition and action's json is up to the specific ContentCondition
@@ -216,17 +215,11 @@ class ChromeContentRulesRegistry
   // True if this object is managing the rules for |context|.
   bool ManagingRulesForBrowserContext(content::BrowserContext* context);
 
-  std::set<const ContentRule*> GetMatches(
-      const RendererContentMatchData& renderer_data,
-      bool is_incognito_renderer) const;
+  std::set<const ContentRule*> GetMatchingRules(
+      content::WebContents* tab) const;
 
   // Updates the condition evaluator with the current watched CSS selectors.
   void UpdateCssSelectorsFromRules();
-
-  // Returns true if all predicates in |condition| evaluate to true.
-  bool IsConditionFulfilled(
-      const ContentCondition& condition,
-      const RendererContentMatchData& renderer_data) const;
 
   // Evaluates the conditions for |tab| based on the tab state and matching CSS
   // selectors.
@@ -243,14 +236,6 @@ class ChromeContentRulesRegistry
                std::pair<const ContentRule*, const ContentCondition*>>;
   using RulesMap = std::map<ExtensionIdRuleIdPair,
                             linked_ptr<const ContentRule>>;
-
-  // Map that tells us which ContentRules and ContentConditions may
-  // match for a URLMatcherConditionSet::ID returned by the |url_matcher_|.
-  RuleAndConditionForURLMatcherId rule_and_conditions_for_match_id_;
-
-  // Set of conditions that participate in URL matching. Supports early-out
-  // during evaluation of conditions that have failing URL matches.
-  std::set<const ContentCondition*> url_matcher_conditions_;
 
   RulesMap content_rules_;
 
