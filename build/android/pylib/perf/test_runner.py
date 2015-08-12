@@ -307,7 +307,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       json_output = self._ReadChartjsonOutput()
     except cmd_helper.TimeoutError as e:
       exit_code = -1
-      output = str(e)
+      output = e.output
       json_output = ''
     finally:
       self._CleanupOutputDirectory()

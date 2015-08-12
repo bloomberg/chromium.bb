@@ -160,7 +160,14 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
 
 class TimeoutError(Exception):
   """Module-specific timeout exception."""
-  pass
+
+  def __init__(self, output=None):
+    super(TimeoutError, self).__init__()
+    self._output = output
+
+  @property
+  def output(self):
+    return self._output
 
 
 def _IterProcessStdout(process, timeout=None, buffer_size=4096,
@@ -175,7 +182,7 @@ def _IterProcessStdout(process, timeout=None, buffer_size=4096,
     end_time = (time.time() + timeout) if timeout else None
     while True:
       if end_time and time.time() > end_time:
-        raise TimeoutError
+        raise TimeoutError()
       read_fds, _, _ = select.select([child_fd], [], [], poll_interval)
       if child_fd in read_fds:
         data = os.read(child_fd, buffer_size)
@@ -216,10 +223,14 @@ def GetCmdStatusAndOutputWithTimeout(args, timeout, cwd=None, shell=False,
   output = StringIO.StringIO()
   process = Popen(args, cwd=cwd, shell=shell, stdout=subprocess.PIPE,
                   stderr=subprocess.STDOUT)
-  for data in _IterProcessStdout(process, timeout=timeout):
-    if logfile:
-      logfile.write(data)
-    output.write(data)
+  try:
+    for data in _IterProcessStdout(process, timeout=timeout):
+      if logfile:
+        logfile.write(data)
+      output.write(data)
+  except TimeoutError:
+    raise TimeoutError(output.getvalue())
+
   return process.returncode, output.getvalue()
 
 
