@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
+import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.shell.R;
@@ -45,7 +47,27 @@ import java.util.concurrent.Callable;
  */
 public class SyncCustomizationFragmentTest extends SyncTestBase {
     private static final String TAG = "SyncCustomizationFragmentTest";
-    private static final String TEST_ACCOUNT = "test@gmail.com";
+
+    /**
+     * Fake ProfileSyncService for test to control the value returned from
+     * isPassphraseRequiredForDecryption.
+     */
+    private static class FakeProfileSyncService extends ProfileSyncService {
+        private boolean mPassphraseRequiredForDecryption;
+
+        public FakeProfileSyncService(Context context) {
+            super(context);
+        }
+
+        @Override
+        public boolean isPassphraseRequiredForDecryption() {
+            return mPassphraseRequiredForDecryption;
+        }
+
+        public void setPassphraseRequiredForDecryption(boolean passphraseRequiredForDecryption) {
+            mPassphraseRequiredForDecryption = passphraseRequiredForDecryption;
+        }
+    }
 
     /**
      * Maps ModelTypes to their UI element IDs.
@@ -279,6 +301,41 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         // No crash means we passed.
     }
 
+    /**
+     * Test that triggering OnPassphraseAccepted dismisses PassphraseDialogFragment.
+     */
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPassphraseDialogDismissed() throws Exception {
+        final FakeProfileSyncService pss = overrideProfileSyncService(mContext);
+
+        setupTestAccountAndSignInToSync(CLIENT_ID);
+        SyncTestUtil.waitForSyncActive(mContext);
+        // Trigger PassphraseDialogFragment to be shown when taping on Encryption.
+        pss.setPassphraseRequiredForDecryption(true);
+
+        final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        Preference encryption = getEncryption(fragment);
+        clickPreference(encryption);
+
+        final PassphraseDialogFragment passphraseFragment = getPassphraseDialogFragment();
+        assertTrue(passphraseFragment.isAdded());
+
+        // Simulate OnPassphraseAccepted from external event by setting PassphraseRequired to false
+        // and triggering syncStateChanged().
+        // PassphraseDialogFragment should be dismissed.
+        pss.setPassphraseRequiredForDecryption(false);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                pss.syncStateChanged();
+                fragment.getFragmentManager().executePendingTransactions();
+                PassphraseDialogFragment passphraseFragment = getPassphraseDialogFragment();
+                assertNull(passphraseFragment);
+            }
+        });
+    }
+
     @SmallTest
     @Feature({"Sync"})
     public void testPassphraseCreation() throws Exception {
@@ -337,6 +394,18 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertFalse(pcdf.isResumed());
     }
 
+    private FakeProfileSyncService overrideProfileSyncService(final Context context) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<FakeProfileSyncService>() {
+            @Override
+            public FakeProfileSyncService call() {
+                // PSS has to be constructed on the UI thread.
+                FakeProfileSyncService fakeProfileSyncService = new FakeProfileSyncService(context);
+                ProfileSyncService.overrideForTests(fakeProfileSyncService);
+                return fakeProfileSyncService;
+            }
+        });
+    }
+
     private SyncCustomizationFragment startSyncCustomizationFragment() {
         SyncCustomizationFragment fragment = new SyncCustomizationFragment();
         Bundle args = new Bundle();
@@ -386,6 +455,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     private Preference getManageData(SyncCustomizationFragment fragment) {
         return (Preference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_SYNC_MANAGE_DATA);
+    }
+
+    private PassphraseDialogFragment getPassphraseDialogFragment() {
+        return (PassphraseDialogFragment) mActivity.getFragmentManager().findFragmentByTag(
+                SyncCustomizationFragment.FRAGMENT_ENTER_PASSPHRASE);
     }
 
     private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
