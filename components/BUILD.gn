@@ -322,6 +322,7 @@ test("components_unittests") {
     "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
+    "//components/sync_driver:unit_tests",
     "//components/undo:unit_tests",
     "//components/url_formatter:unit_tests",
     "//components/update_client:unit_tests",

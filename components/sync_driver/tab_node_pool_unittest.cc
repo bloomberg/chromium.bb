@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sessions/tab_node_pool.h"
+#include "components/sync_driver/tab_node_pool.h"
 
-#include "base/logging.h"
 #include "sync/api/sync_change.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"

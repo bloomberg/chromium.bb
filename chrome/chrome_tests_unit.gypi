@@ -267,7 +267,6 @@
       'browser/sync/profile_sync_test_util.cc',
       'browser/sync/profile_sync_test_util.h',
       'browser/sync/sessions/session_data_type_controller_unittest.cc',
-      'browser/sync/sessions/tab_node_pool_unittest.cc',
       'browser/sync/startup_controller_unittest.cc',
       'browser/sync/sync_startup_tracker_unittest.cc',
       'browser/sync/sync_stopped_reporter_unittest.cc',

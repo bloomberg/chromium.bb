@@ -2924,8 +2924,6 @@
       'browser/sync/sessions/sessions_util.h',
       'browser/sync/sessions/synced_window_delegates_getter.cc',
       'browser/sync/sessions/synced_window_delegates_getter.h',
-      'browser/sync/sessions/tab_node_pool.cc',
-      'browser/sync/sessions/tab_node_pool.h',
       'browser/sync/startup_controller.cc',
       'browser/sync/startup_controller.h',
       'browser/sync/supervised_user_signin_manager_wrapper.cc',

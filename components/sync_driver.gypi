@@ -86,6 +86,8 @@
         'sync_driver/sync_service_observer.h',
         'sync_driver/system_encryptor.cc',
         'sync_driver/system_encryptor.h',
+        'sync_driver/tab_node_pool.cc',
+        'sync_driver/tab_node_pool.h',
         'sync_driver/ui_data_type_controller.cc',
         'sync_driver/ui_data_type_controller.h',
         'sync_driver/user_selectable_sync_type.h',

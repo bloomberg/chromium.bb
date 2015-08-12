@@ -73,6 +73,8 @@ static_library("sync_driver") {
     "sync_service_observer.h",
     "system_encryptor.cc",
     "system_encryptor.h",
+    "tab_node_pool.cc",
+    "tab_node_pool.h",
     "ui_data_type_controller.cc",
     "ui_data_type_controller.h",
     "user_selectable_sync_type.h",
@@ -91,6 +93,19 @@ static_library("sync_driver") {
       "sync_policy_handler.h",
     ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "tab_node_pool_unittest.cc",
+  ]
+
+  deps = [
+    ":sync_driver",
+    "//sync",
+    "//testing/gtest",
+  ]
 }
 
 static_library("test_support") {
