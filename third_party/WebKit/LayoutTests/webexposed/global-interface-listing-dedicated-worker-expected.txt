@@ -503,6 +503,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method unregister
 [Worker]     method update
 [Worker]     setter onupdatefound
+[Worker] interface StorageManager
+[Worker]     method constructor
+[Worker]     method persistentPermission
+[Worker]     method requestPersistent
 [Worker] interface SubtleCrypto
 [Worker]     method constructor
 [Worker]     method decrypt

@@ -3410,6 +3410,7 @@ interface Navigator
     getter productSub
     getter serviceWorker
     getter services
+    getter storage
     getter storageQuota
     getter usb
     getter userAgent
@@ -5258,6 +5259,10 @@ interface StorageEvent
     getter url
     method constructor
     method initStorageEvent
+interface StorageManager
+    method constructor
+    method persistentPermission
+    method requestPersistent
 interface Stream
     getter type
     method constructor

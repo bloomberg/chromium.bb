@@ -40,6 +40,7 @@ namespace blink {
 
 class LocalFrame;
 class Navigator;
+class StorageManager;
 class StorageQuota;
 
 class NavigatorStorageQuota final : public GarbageCollectedFinalized<NavigatorStorageQuota>, public HeapSupplement<Navigator>, public DOMWindowProperty {
@@ -51,10 +52,12 @@ public:
     static StorageQuota* storageQuota(Navigator&);
     static DeprecatedStorageQuota* webkitTemporaryStorage(Navigator&);
     static DeprecatedStorageQuota* webkitPersistentStorage(Navigator&);
+    static StorageManager* storage(Navigator&);
 
     StorageQuota* storageQuota() const;
     DeprecatedStorageQuota* webkitTemporaryStorage() const;
     DeprecatedStorageQuota* webkitPersistentStorage() const;
+    StorageManager* storage() const;
 
     DECLARE_TRACE();
 
@@ -65,6 +68,7 @@ private:
     mutable Member<StorageQuota> m_storageQuota;
     mutable Member<DeprecatedStorageQuota> m_temporaryStorage;
     mutable Member<DeprecatedStorageQuota> m_persistentStorage;
+    mutable Member<StorageManager> m_storageManager;
 };
 
 } // namespace blink

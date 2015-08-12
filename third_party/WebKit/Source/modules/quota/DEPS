@@ -4,6 +4,8 @@ include_rules = [
     "+heap",
     "-modules",
     "+modules/ModulesExport.h",
+    # Can modules/permissions be removed when https://crbug.com/510948 is fixed?
+    "+modules/permissions",
     "+modules/quota",
     "+platform",
     "+public/platform",

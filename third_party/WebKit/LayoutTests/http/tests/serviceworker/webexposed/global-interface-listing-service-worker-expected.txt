@@ -918,6 +918,10 @@ interface Set
     method has
     method keys
     method values
+interface StorageManager
+    method constructor
+    method persistentPermission
+    method requestPersistent
 interface String
     attribute length
     method anchor
