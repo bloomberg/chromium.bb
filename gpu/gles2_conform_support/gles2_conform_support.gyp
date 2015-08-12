@@ -40,7 +40,6 @@
         '../../gpu/gpu.gyp:gpu',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
         '../../ui/base/ui_base.gyp:ui_base',
-        '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/gl/gl.gyp:gl',
       ],
