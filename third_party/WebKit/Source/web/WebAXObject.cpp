@@ -1098,7 +1098,7 @@ WebAXObject WebAXObject::titleUIElement() const
     return deprecatedTitleUIElement();
 }
 
-WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& outNameObjects)
+WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& outNameObjects) const
 {
     if (isDetached())
         return WebString();
@@ -1116,7 +1116,7 @@ WebString WebAXObject::name(WebAXNameFrom& outNameFrom, WebVector<WebAXObject>& 
     return result;
 }
 
-WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom& outDescriptionFrom, WebVector<WebAXObject>& outDescriptionObjects)
+WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom& outDescriptionFrom, WebVector<WebAXObject>& outDescriptionObjects) const
 {
     if (isDetached())
         return WebString();
@@ -1134,7 +1134,7 @@ WebString WebAXObject::description(WebAXNameFrom nameFrom, WebAXDescriptionFrom&
     return result;
 }
 
-WebString WebAXObject::placeholder(WebAXNameFrom nameFrom, WebAXDescriptionFrom descriptionFrom)
+WebString WebAXObject::placeholder(WebAXNameFrom nameFrom, WebAXDescriptionFrom descriptionFrom) const
 {
     if (isDetached())
         return WebString();

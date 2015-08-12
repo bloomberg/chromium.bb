@@ -35,6 +35,7 @@
 #include "core/html/HTMLDListElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
+#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLLegendElement.h"
@@ -42,6 +43,7 @@
 #include "core/html/HTMLMeterElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/HTMLTableRowElement.h"
@@ -644,7 +646,7 @@ bool AXNodeObject::isGenericFocusableElement() const
     return true;
 }
 
-HTMLLabelElement* AXNodeObject::labelForElement(Element* element) const
+HTMLLabelElement* AXNodeObject::labelForElement(const Element* element) const
 {
     if (!element->isHTMLElement() || !toHTMLElement(element)->isLabelable())
         return 0;
@@ -1776,7 +1778,7 @@ String AXNodeObject::computedName() const
 // New AX name calculation.
 //
 
-String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom& nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects, NameSources* nameSources)
+String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector& nameObjects, NameSources* nameSources) const
 {
     bool alreadyVisited = visited.contains(this);
     bool foundTextAlternative = false;
@@ -1847,6 +1849,12 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     }
 
     // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
+    textAlternative = nativeTextAlternative(visited, nameFrom, nameObjects, nameSources, &foundTextAlternative);
+    if (!textAlternative.isNull() && !nameSources)
+        return textAlternative;
+
+    // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
+
 
     // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
     if (recursive || nameFromContents()) {
@@ -1874,7 +1882,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
 
     if (nameSources && !nameSources->isEmpty()) {
         for (size_t i = 0; i < nameSources->size(); ++i) {
-            if (!(*nameSources)[i].text.isNull()) {
+            if (!(*nameSources)[i].text.isNull() && !(*nameSources)[i].superseded) {
                 nameFrom = (*nameSources)[i].type;
                 nameObjects = (*nameSources)[i].nameObjects;
                 return (*nameSources)[i].text;
@@ -1885,7 +1893,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     return String();
 }
 
-String AXNodeObject::textFromDescendants(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited)
+String AXNodeObject::textFromDescendants(AXObjectSet& visited) const
 {
     StringBuilder accumulatedText;
     AXObject* previous = nullptr;
@@ -1901,7 +1909,7 @@ String AXNodeObject::textFromDescendants(WillBeHeapHashSet<RawPtrWillBeMember<AX
         }
 
         AXNameFrom nameFrom;
-        WillBeHeapVector<RawPtrWillBeMember<AXObject>> nameObjects;
+        AXObjectVector nameObjects;
         String result = child->textAlternative(true, false, visited, nameFrom, nameObjects, nullptr);
         accumulatedText.append(result);
         previous = child;
@@ -1910,19 +1918,19 @@ String AXNodeObject::textFromDescendants(WillBeHeapHashSet<RawPtrWillBeMember<AX
     return accumulatedText.toString();
 }
 
-String AXNodeObject::textFromElements(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects)
+String AXNodeObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXObjectVector& nameObjects) const
 {
     StringBuilder accumulatedText;
     bool foundValidElement = false;
+    AXObjectVector localNameObjects;
+
     for (const auto& element : elements) {
         RefPtrWillBeRawPtr<AXObject> axElement = axObjectCache().getOrCreate(element);
         if (axElement) {
             foundValidElement = true;
-            nameObjects.append(axElement.get());
+            localNameObjects.append(axElement.get());
 
-            AXNameFrom tmpNameFrom;
-            WillBeHeapVector<RawPtrWillBeMember<AXObject>> tmpNameObjects;
-            String result = axElement->textAlternative(true, true, visited, tmpNameFrom, tmpNameObjects, nullptr);
+            String result = recursiveTextAlternative(*axElement, inAriaLabelledbyTraversal, visited);
             if (!result.isEmpty()) {
                 if (!accumulatedText.isEmpty())
                     accumulatedText.append(" ");
@@ -1932,14 +1940,15 @@ String AXNodeObject::textFromElements(WillBeHeapHashSet<RawPtrWillBeMember<AXObj
     }
     if (!foundValidElement)
         return String();
+    nameObjects = localNameObjects;
     return accumulatedText.toString();
 }
 
-String AXNodeObject::textFromAriaLabelledby(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects)
+String AXNodeObject::textFromAriaLabelledby(AXObjectSet& visited, AXObjectVector& nameObjects) const
 {
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     ariaLabelledbyElements(elements);
-    return textFromElements(visited, elements, nameObjects);
+    return textFromElements(true, visited, elements, nameObjects);
 }
 
 LayoutRect AXNodeObject::elementRect() const
@@ -2444,9 +2453,231 @@ void AXNodeObject::deprecatedAriaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMem
     }
 }
 
-String AXNodeObject::nativeTextAlternative(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects)
+// Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector& nameObjects, NameSources* nameSources, bool* foundTextAlternative) const
 {
-    return String();
+    if (!node())
+        return String();
+
+    String textAlternative;
+    AXObjectVector localNameObjects;
+
+    const HTMLInputElement* inputElement = nullptr;
+    if (isHTMLInputElement(node()))
+        inputElement = toHTMLInputElement(node());
+
+    // 5.2 input type="button", input type="submit" and input type="reset"
+    if (inputElement && inputElement->isTextButton()) {
+        // value attribue
+        nameFrom = AXNameFromAttribute;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative, valueAttr));
+            nameSources->last().type = nameFrom;
+        }
+        String value = inputElement->value();
+        if (!value.isNull()) {
+            textAlternative = value;
+            if (nameSources) {
+                NameSource& source = nameSources->last();
+                source.text = textAlternative;
+                *foundTextAlternative = true;
+            } else {
+                return textAlternative;
+            }
+        }
+
+        // localised default value ("Submit" or "Reset")
+        String defaultValue = inputElement->defaultValue();
+        if (!defaultValue.isNull()) {
+            // defaultValue is always set for submit and reset buttons, and never set for anything else.
+            nameFrom = AXNameFromAttribute;
+            textAlternative = defaultValue;
+            if (nameSources) {
+                nameSources->append(NameSource(*foundTextAlternative, typeAttr));
+                NameSource& source = nameSources->last();
+                source.attributeValue = inputElement->getAttribute(typeAttr);
+                source.text = textAlternative;
+                *foundTextAlternative = true;
+            } else {
+                return textAlternative;
+            }
+        }
+        return textAlternative;
+    }
+
+    // 5.3 input type="image"
+    if (inputElement && inputElement->getAttribute(typeAttr) == InputTypeNames::image) {
+        // alt attr
+        nameFrom = AXNameFromAttribute;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative, altAttr));
+            nameSources->last().type = nameFrom;
+        }
+        if (inputElement->hasAttribute(altAttr)) {
+            AtomicString alt = inputElement->getAttribute(altAttr);
+            textAlternative = alt;
+            if (nameSources) {
+                NameSource& source = nameSources->last();
+                source.attributeValue = alt;
+                source.text = textAlternative;
+                *foundTextAlternative = true;
+            } else {
+                return textAlternative;
+            }
+        }
+
+        // value attr
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative, valueAttr));
+            nameSources->last().type = nameFrom;
+        }
+        nameFrom = AXNameFromAttribute;
+        String value = inputElement->value();
+        if (!value.isNull()) {
+            textAlternative = value;
+            if (nameSources) {
+                NameSource& source = nameSources->last();
+                source.text = textAlternative;
+                *foundTextAlternative = true;
+            } else {
+                return textAlternative;
+            }
+        }
+
+        return textAlternative;
+    }
+
+    // 5.5 Other labelable Elements
+    if (node()->isHTMLElement() && toHTMLElement(node())->isLabelable()) {
+        // label
+        nameFrom = AXNameFromRelatedElement;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative));
+            nameSources->last().type = nameFrom;
+            nameSources->last().nativeSource = AXTextFromNativeHTMLLabel;
+        }
+        HTMLLabelElement* label = labelForElement(toHTMLElement(node()));
+        if (label) {
+            RefPtrWillBeRawPtr<AXObject> labelAXObject = axObjectCache().getOrCreate(label);
+            if (labelAXObject) {
+                localNameObjects.append(labelAXObject.get());
+                nameObjects = localNameObjects;
+                localNameObjects.clear();
+
+                textAlternative = recursiveTextAlternative(*labelAXObject, false, visited);
+
+                if (nameSources) {
+                    NameSource& source = nameSources->last();
+                    source.nameObjects = nameObjects;
+                    source.text = textAlternative;
+                    if (label->getAttribute(forAttr).isNull())
+                        source.nativeSource = AXTextFromNativeHTMLLabelWrapped;
+                    else
+                        source.nativeSource = AXTextFromNativeHTMLLabelFor;
+                    *foundTextAlternative = true;
+                } else {
+                    return textAlternative;
+                }
+            }
+        }
+        return textAlternative;
+    }
+
+    // 5.7 figure and figcaption Elements
+    if (node()->hasTagName(figureTag)) {
+        // figcaption
+        nameFrom = AXNameFromRelatedElement;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative));
+            nameSources->last().type = nameFrom;
+            nameSources->last().nativeSource = AXTextFromNativeHTMLFigcaption;
+        }
+        Element* figcaption = nullptr;
+        for (Element& element : ElementTraversal::descendantsOf(*(node()))) {
+            if (element.hasTagName(figcaptionTag)) {
+                figcaption = &element;
+                break;
+            }
+        }
+        if (figcaption) {
+            RefPtrWillBeRawPtr<AXObject> figcaptionAXObject = axObjectCache().getOrCreate(figcaption);
+            if (figcaptionAXObject) {
+                localNameObjects.append(figcaptionAXObject.get());
+                nameObjects = localNameObjects;
+                localNameObjects.clear();
+
+                textAlternative = recursiveTextAlternative(*figcaptionAXObject, false, visited);
+
+                if (nameSources) {
+                    NameSource& source = nameSources->last();
+                    source.nameObjects = nameObjects;
+                    source.text = textAlternative;
+                } else {
+                    return textAlternative;
+                }
+            }
+        }
+        return textAlternative;
+    }
+
+    // 5.8 img Element
+    if (isHTMLImageElement(node())) {
+        HTMLImageElement* imgElement = toHTMLImageElement(node());
+
+        // alt
+        nameFrom = AXNameFromAttribute;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative, altAttr));
+            nameSources->last().type = nameFrom;
+        }
+        if (imgElement->hasAttribute(altAttr)) {
+            AtomicString alt = imgElement->getAttribute(altAttr);
+            textAlternative = alt;
+            if (nameSources) {
+                NameSource& source = nameSources->last();
+                source.attributeValue = alt;
+                source.text = textAlternative;
+                *foundTextAlternative = true;
+            } else {
+                return textAlternative;
+            }
+        }
+        return textAlternative;
+    }
+
+    // 5.9 table Element
+    if (isHTMLTableElement(node())) {
+        HTMLTableElement* tableElement = toHTMLTableElement(node());
+
+        // caption
+        nameFrom = AXNameFromRelatedElement;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative));
+            nameSources->last().type = nameFrom;
+            nameSources->last().nativeSource = AXTextFromNativeHTMLTableCaption;
+        }
+        HTMLTableCaptionElement* caption = tableElement->caption();
+        if (caption) {
+            RefPtrWillBeRawPtr<AXObject> captionAXObject = axObjectCache().getOrCreate(caption);
+            if (captionAXObject) {
+                localNameObjects.append(captionAXObject.get());
+                nameObjects = localNameObjects;
+                localNameObjects.clear();
+
+                textAlternative = recursiveTextAlternative(*captionAXObject, false, visited);
+                if (nameSources) {
+                    NameSource& source = nameSources->last();
+                    source.nameObjects = nameObjects;
+                    source.text = textAlternative;
+                } else {
+                    return textAlternative;
+                }
+            }
+        }
+        return textAlternative;
+    }
+
+    return textAlternative;
 }
 
 DEFINE_TRACE(AXNodeObject)

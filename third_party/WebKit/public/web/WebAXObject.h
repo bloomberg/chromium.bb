@@ -185,16 +185,16 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of related objects that were used to derive the name, if any.
-    BLINK_EXPORT WebString name(WebAXNameFrom&, WebVector<WebAXObject>& nameObjects);
+    BLINK_EXPORT WebString name(WebAXNameFrom&, WebVector<WebAXObject>& nameObjects) const;
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    BLINK_EXPORT WebString description(WebAXNameFrom, WebAXDescriptionFrom&, WebVector<WebAXObject>& descriptionObjects);
+    BLINK_EXPORT WebString description(WebAXNameFrom, WebAXDescriptionFrom&, WebVector<WebAXObject>& descriptionObjects) const;
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
     // exposed by one of the two functions above.
-    BLINK_EXPORT WebString placeholder(WebAXNameFrom, WebAXDescriptionFrom);
+    BLINK_EXPORT WebString placeholder(WebAXNameFrom, WebAXDescriptionFrom) const;
 
     // The following selection functions get or set the global document
     // selection and can be called on any object in the tree.

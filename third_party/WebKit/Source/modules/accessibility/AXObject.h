@@ -325,6 +325,17 @@ enum AXNameFrom {
     AXNameFromRelatedElement,
 };
 
+// The potential native HTML-based text (name, description or placeholder) sources for an element.
+// See http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+enum AXTextFromNativeHTML {
+    AXTextFromNativeHTMLUninitialized = -1,
+    AXTextFromNativeHTMLFigcaption,
+    AXTextFromNativeHTMLLabel,
+    AXTextFromNativeHTMLLabelFor,
+    AXTextFromNativeHTMLLabelWrapped,
+    AXTextFromNativeHTMLTableCaption,
+};
+
 // The source of the accessible description of an element. This is needed
 // because on some platforms this determines how the accessible description
 // is exposed.
@@ -375,6 +386,7 @@ public:
     }
 };
 
+typedef WillBeHeapVector<RawPtrWillBeMember<AXObject>> AXObjectVector;
 class NameSource {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -384,7 +396,8 @@ public:
     AXNameFrom type = AXNameFromUninitialized;
     const QualifiedName& attribute;
     AtomicString attributeValue;
-    WillBeHeapVector<RawPtrWillBeMember<AXObject>> nameObjects;
+    AXTextFromNativeHTML nativeSource = AXTextFromNativeHTMLUninitialized;
+    AXObjectVector nameObjects;
 
     explicit NameSource(bool superseded, const QualifiedName& attr)
         : superseded(superseded)
@@ -620,18 +633,18 @@ public:
 
     // Retrieves the accessible name of the object, an enum indicating where the name
     // was derived from, and a list of objects that were used to derive the name, if any.
-    virtual String name(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
+    virtual String name(AXNameFrom&, AXObjectVector& nameObjects) const;
 
     typedef WillBeHeapVector<NameSource> NameSources;
     // Retrieves the accessible name of the object and a list of all potential sources
     // for the name, indicating which were used.
-    virtual String name(NameSources*);
+    virtual String name(NameSources*) const;
 
     // Takes the result of nameFrom from calling |name|, above, and retrieves the
     // accessible description of the object, which is secondary to |name|, an enum indicating
     // where the description was derived from, and a list of objects that were used to
     // derive the description, if any.
-    virtual String description(AXNameFrom, AXDescriptionFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& descriptionObjects) { return String(); }
+    virtual String description(AXNameFrom, AXDescriptionFrom&, AXObjectVector& descriptionObjects) { return String(); }
 
     // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
     // above, and retrieves the placeholder of the object, if present and if it wasn't already
@@ -639,7 +652,8 @@ public:
     virtual String placeholder(AXNameFrom, AXDescriptionFrom) { return String(); }
 
     // Internal function used by name and description, above.
-    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom& nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects, NameSources* nameSources) { return String(); }
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<const AXObject>> AXObjectSet;
+    virtual String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom& nameFrom, AXObjectVector& nameObjects, NameSources* nameSources) const { return String(); }
 
     // Returns result of Accessible Name Calculation algorithm.
     // This is a simpler high-level interface to |name| used by Inspector.
@@ -862,6 +876,9 @@ protected:
     AccessibilityRole m_role;
     AXObjectInclusion m_lastKnownIsIgnoredValue;
     LayoutRect m_explicitElementRect;
+
+    // Used only in recursive calls from textAlternative()
+    static String recursiveTextAlternative(const AXObject&, bool inAriaLabelledByTraversal, AXObjectSet& visited);
 
     virtual const AXObject* inheritsPresentationalRoleFrom() const { return 0; }
 

@@ -671,20 +671,26 @@ bool AXObject::isPresentationalChild() const
     return m_cachedIsPresentationalChild;
 }
 
-String AXObject::name(AXNameFrom& nameFrom, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects)
+String AXObject::name(AXNameFrom& nameFrom, AXObjectVector& nameObjects) const
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<AXObject>> visited;
+    WillBeHeapHashSet<RawPtrWillBeMember<const AXObject>> visited;
     return textAlternative(false, false, visited, nameFrom, nameObjects, nullptr);
 }
 
-String AXObject::name(NameSources* nameSources)
+String AXObject::name(NameSources* nameSources) const
 {
-    WillBeHeapHashSet<RawPtrWillBeMember<AXObject>> visited;
+    AXObjectSet visited;
     AXNameFrom tmpNameFrom;
-    WillBeHeapVector<RawPtrWillBeMember<AXObject>> tmpNameObjects;
+    AXObjectVector tmpNameObjects;
     return textAlternative(false, false, visited, tmpNameFrom, tmpNameObjects, nameSources);
 }
 
+String AXObject::recursiveTextAlternative(const AXObject& axObj, bool inAriaLabelledByTraversal, AXObjectSet& visited)
+{
+    AXNameFrom unusedRecursiveNameFrom;
+    AXObjectVector unusedRecursiveNameObjects;
+    return axObj.textAlternative(true, inAriaLabelledByTraversal, visited, unusedRecursiveNameFrom, unusedRecursiveNameObjects, nullptr);
+}
 
 // In ARIA 1.1, the default value for aria-orientation changed from horizontal to undefined.
 AccessibilityOrientation AXObject::orientation() const
@@ -1447,6 +1453,7 @@ bool AXObject::nameFromContents() const
     case CellRole:
     case ColumnHeaderRole:
     case DirectoryRole:
+    case DisclosureTriangleRole:
     case LinkRole:
     case ListItemRole:
     case MenuItemRole:

@@ -77,7 +77,7 @@ protected:
     bool allowsTextRanges() const { return isTextControl(); }
     // This returns true if it's focusable but it's not content editable and it's not a control or ARIA control.
     bool isGenericFocusableElement() const;
-    HTMLLabelElement* labelForElement(Element*) const;
+    HTMLLabelElement* labelForElement(const Element*) const;
     AXObject* menuButtonForMenu() const;
     Element* menuItemElementForMenu() const;
     Element* mouseButtonListener() const;
@@ -168,7 +168,7 @@ protected:
     String computedName() const override;
 
     // New AX name calculation.
-    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects, NameSources*) override;
+    String textAlternative(bool recursive, bool inAriaLabelledByTraversal, AXObjectSet& visited, AXNameFrom&, AXObjectVector& nameObjects, NameSources*) const override;
 
     // Location and click point in frame-relative coordinates.
     LayoutRect elementRect() const override;
@@ -216,10 +216,10 @@ private:
     void deprecatedAlternativeText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
     void deprecatedAriaLabelledbyText(WillBeHeapVector<OwnPtrWillBeMember<AccessibilityText>>&) const;
 
-    String textFromDescendants(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited);
-    String textFromElements(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
-    String textFromAriaLabelledby(WillBeHeapHashSet<RawPtrWillBeMember<AXObject>>& visited, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
-    String nativeTextAlternative(AXNameFrom&, WillBeHeapVector<RawPtrWillBeMember<AXObject>>& nameObjects);
+    String textFromDescendants(AXObjectSet& visited) const;
+    String textFromElements(bool inAriaLabelledByTraversal, AXObjectSet& visited, WillBeHeapVector<RawPtrWillBeMember<Element>>& elements, AXObjectVector& nameObjects) const;
+    String textFromAriaLabelledby(AXObjectSet& visited, AXObjectVector& nameObjects) const;
+    String nativeTextAlternative(AXObjectSet& visited, AXNameFrom&, AXObjectVector& nameObjects, NameSources*, bool* foundTextAlternative) const;
     float stepValueForRange() const;
     AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
     bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
