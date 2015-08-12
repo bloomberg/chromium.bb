@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 
 #if defined(OS_MACOSX)
@@ -75,28 +76,6 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
 GpuMemoryBufferImpl* GpuMemoryBufferImpl::FromClientBuffer(
     ClientBuffer buffer) {
   return reinterpret_cast<GpuMemoryBufferImpl*>(buffer);
-}
-
-// static
-size_t GpuMemoryBufferImpl::NumberOfPlanesForGpuMemoryBufferFormat(
-    gfx::BufferFormat format) {
-  switch (format) {
-    case gfx::BufferFormat::ATC:
-    case gfx::BufferFormat::ATCIA:
-    case gfx::BufferFormat::DXT1:
-    case gfx::BufferFormat::DXT5:
-    case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::R_8:
-    case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
-    case gfx::BufferFormat::BGRA_8888:
-      return 1;
-    case gfx::BufferFormat::YUV_420:
-      return 3;
-  }
-  NOTREACHED();
-  return 0;
 }
 
 // static
@@ -176,7 +155,7 @@ bool GpuMemoryBufferImpl::BufferSizeInBytes(const gfx::Size& size,
                                             gfx::BufferFormat format,
                                             size_t* size_in_bytes) {
   base::CheckedNumeric<size_t> checked_size = 0;
-  size_t num_planes = NumberOfPlanesForGpuMemoryBufferFormat(format);
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
   for (size_t i = 0; i < num_planes; ++i) {
     size_t row_size_in_bytes = 0;
     if (!RowSizeInBytes(size.width(), format, i, &row_size_in_bytes))

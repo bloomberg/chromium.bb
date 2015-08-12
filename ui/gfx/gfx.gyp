@@ -127,6 +127,8 @@
         'blit.cc',
         'blit.h',
         'break_list.h',
+        'buffer_format_util.cc',
+        'buffer_format_util.h',
         'canvas.cc',
         'canvas.h',
         'canvas_notimplemented.cc',
