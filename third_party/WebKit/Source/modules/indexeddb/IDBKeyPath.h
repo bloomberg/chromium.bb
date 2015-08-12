@@ -36,9 +36,7 @@ namespace blink {
 
 enum IDBKeyPathParseError {
     IDBKeyPathParseErrorNone,
-    IDBKeyPathParseErrorStart,
     IDBKeyPathParseErrorIdentifier,
-    IDBKeyPathParseErrorDot,
 };
 
 MODULES_EXPORT void IDBParseKeyPath(const String&, Vector<String>&, IDBKeyPathParseError&);

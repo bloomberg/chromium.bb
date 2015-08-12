@@ -57,7 +57,7 @@ TEST(IDBKeyPathTest, ValidKeyPath0)
 {
     Vector<String> expected;
     String keyPath("");
-    checkKeyPath(keyPath, expected, 0);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorNone);
 }
 
 TEST(IDBKeyPathTest, ValidKeyPath1)
@@ -65,7 +65,7 @@ TEST(IDBKeyPathTest, ValidKeyPath1)
     Vector<String> expected;
     String keyPath("foo");
     expected.append(String("foo"));
-    checkKeyPath(keyPath, expected, 0);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorNone);
 }
 
 TEST(IDBKeyPathTest, ValidKeyPath2)
@@ -75,21 +75,21 @@ TEST(IDBKeyPathTest, ValidKeyPath2)
     expected.append(String("foo"));
     expected.append(String("bar"));
     expected.append(String("baz"));
-    checkKeyPath(keyPath, expected, 0);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorNone);
 }
 
 TEST(IDBKeyPathTest, InvalidKeyPath0)
 {
     Vector<String> expected;
     String keyPath(" ");
-    checkKeyPath(keyPath, expected, 1);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorIdentifier);
 }
 
 TEST(IDBKeyPathTest, InvalidKeyPath1)
 {
     Vector<String> expected;
     String keyPath("+foo.bar.baz");
-    checkKeyPath(keyPath, expected, 1);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorIdentifier);
 }
 
 TEST(IDBKeyPathTest, InvalidKeyPath2)
@@ -97,7 +97,7 @@ TEST(IDBKeyPathTest, InvalidKeyPath2)
     Vector<String> expected;
     String keyPath("foo bar baz");
     expected.append(String("foo"));
-    checkKeyPath(keyPath, expected, 2);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorIdentifier);
 }
 
 TEST(IDBKeyPathTest, InvalidKeyPath3)
@@ -105,7 +105,7 @@ TEST(IDBKeyPathTest, InvalidKeyPath3)
     Vector<String> expected;
     String keyPath("foo .bar .baz");
     expected.append(String("foo"));
-    checkKeyPath(keyPath, expected, 2);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorIdentifier);
 }
 
 TEST(IDBKeyPathTest, InvalidKeyPath4)
@@ -113,7 +113,7 @@ TEST(IDBKeyPathTest, InvalidKeyPath4)
     Vector<String> expected;
     String keyPath("foo. bar. baz");
     expected.append(String("foo"));
-    checkKeyPath(keyPath, expected, 3);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorIdentifier);
 }
 
 TEST(IDBKeyPathTest, InvalidKeyPath5)
@@ -121,7 +121,7 @@ TEST(IDBKeyPathTest, InvalidKeyPath5)
     Vector<String> expected;
     String keyPath("foo..bar..baz");
     expected.append(String("foo"));
-    checkKeyPath(keyPath, expected, 3);
+    checkKeyPath(keyPath, expected, IDBKeyPathParseErrorIdentifier);
 }
 
 } // namespace
