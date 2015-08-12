@@ -63,6 +63,7 @@
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
+#include "content/browser/compositor/browser_compositor_overlay_candidate_validator_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #endif
 
@@ -172,6 +173,9 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
         new BrowserCompositorOverlayCandidateValidatorOzone(
             widget, overlay_candidates.Pass()));
   }
+#elif defined(OS_MACOSX)
+  return make_scoped_ptr(
+      new BrowserCompositorOverlayCandidateValidatorMac(widget));
 #endif
   return scoped_ptr<BrowserCompositorOverlayCandidateValidator>();
 }

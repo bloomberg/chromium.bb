@@ -1633,6 +1633,8 @@
       'browser/compositor/browser_compositor_output_surface.cc',
       'browser/compositor/browser_compositor_output_surface.h',
       'browser/compositor/browser_compositor_overlay_candidate_validator.h',
+      'browser/compositor/browser_compositor_overlay_candidate_validator_mac.h',
+      'browser/compositor/browser_compositor_overlay_candidate_validator_mac.mm',
       'browser/compositor/browser_compositor_overlay_candidate_validator_ozone.cc',
       'browser/compositor/browser_compositor_overlay_candidate_validator_ozone.h',
       'browser/compositor/browser_compositor_view_mac.h',
