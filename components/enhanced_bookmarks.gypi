@@ -72,6 +72,7 @@
         '..',
       ],
       'dependencies': [
+        '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         'enhanced_bookmarks',
       ],
