@@ -1686,7 +1686,11 @@ EntryImpl* BackendImpl::MatchEntry(const std::string& key, uint32 hash,
   if (cache_entry.get() && (find_parent || !found))
     cache_entry = NULL;
 
-  find_parent ? parent_entry.swap(&tmp) : cache_entry.swap(&tmp);
+  if (find_parent)
+    parent_entry.swap(&tmp);
+  else
+    cache_entry.swap(&tmp);
+
   FlushIndex();
   return tmp;
 }
