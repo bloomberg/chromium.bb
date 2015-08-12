@@ -42942,6 +42942,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Error codes returned by sqlite for the history db.</summary>
 </histogram>
 
+<histogram name="Sqlite.MemoryKB.OneDay" units="KB">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    SQLite memory footprint from sqlite3_memory_used() recorded 1 day after
+    first database is opened by sql::Connection.
+  </summary>
+</histogram>
+
+<histogram name="Sqlite.MemoryKB.OneHour" units="KB">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    SQLite memory footprint from sqlite3_memory_used() recorded 1 hour after
+    first database is opened by sql::Connection.
+  </summary>
+</histogram>
+
+<histogram name="Sqlite.MemoryKB.TenMinutes" units="KB">
+  <owner>shess@chromium.org</owner>
+  <summary>
+    SQLite memory footprint from sqlite3_memory_used() recorded 10 minutes after
+    first database is opened by sql::Connection.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.Migration.History" units="milliseconds">
   <owner>shess@chromium.org</owner>
   <summary>
