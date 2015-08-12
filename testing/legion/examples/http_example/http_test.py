@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import argparse
+import logging
 import os
 import sys
 
@@ -60,6 +61,8 @@ class HttpTest(legion_test_case.TestCase):
           ['python', 'http_client.py', '--server', server_ip,
            '--port', server_port])
       client_proc.Wait()
+      logging.info('client_proc.stdout: %s', client_proc.ReadStdout())
+      logging.info('client_proc.stderr: %s', client_proc.ReadStderr())
       self.assertEqual(client_proc.GetReturncode(), 0)
     finally:
       if server_proc:

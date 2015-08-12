@@ -20,8 +20,8 @@ def main():
   args = GetArgs()
   conn = httplib.HTTPConnection(args.server, args.port)
   conn.request('GET', '/')
-  response = conn.getresponse()
-  assert response.read() == 'SUCCESS!'
+  response = conn.getresponse().read()
+  assert response == 'SUCCESS!', '%s != SUCCESS!' % response
 
 
 if __name__ == '__main__':
