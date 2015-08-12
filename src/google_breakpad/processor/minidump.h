@@ -892,7 +892,7 @@ class MinidumpLinuxMaps : public MinidumpObject {
   const string GetPathname() const { return valid_ ? region_.path : ""; }
 
   // Print the contents of this mapping.
-  void Print();
+  void Print() const;
 
  private:
   // These objects are managed by MinidumpLinuxMapsList.
@@ -920,7 +920,7 @@ class MinidumpLinuxMapsList : public MinidumpStream {
   const MinidumpLinuxMaps *GetLinuxMapsAtIndex(unsigned int index) const;
 
   // Print the contents of /proc/self/maps to stdout.
-  void Print();
+  void Print() const;
 
  private:
   friend class Minidump;

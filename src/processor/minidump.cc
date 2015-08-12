@@ -3999,7 +3999,7 @@ MinidumpLinuxMaps::MinidumpLinuxMaps(Minidump *minidump)
     : MinidumpObject(minidump) {
 }
 
-void MinidumpLinuxMaps::Print() {
+void MinidumpLinuxMaps::Print() const {
   if (!valid_) {
     BPLOG(ERROR) << "MinidumpLinuxMaps cannot print invalid data";
     return;
@@ -4125,7 +4125,7 @@ bool MinidumpLinuxMapsList::Read(uint32_t expected_size) {
   return true;
 }
 
-void MinidumpLinuxMapsList::Print() {
+void MinidumpLinuxMapsList::Print() const {
   if (!valid_ || (maps_ == NULL)) {
     BPLOG(ERROR) << "MinidumpLinuxMapsList cannot print valid data";
     return;
