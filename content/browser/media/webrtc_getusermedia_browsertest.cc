@@ -29,6 +29,19 @@ using trace_analyzer::TraceEventVector;
 
 namespace {
 
+// TODO(phoglund): hackhackhack: work around error with result reporting.
+// Remove this when http://crbug.com/517977 is solved.
+
+class WebRtcHack : public content::WebRtcContentBrowserTest {
+};
+
+IN_PROC_BROWSER_TEST_F(WebRtcHack, PrintSomeResults) {
+  printf("*RESULT VideoCaptureDeviceClient: sample_duration= [0, 0,] us\n");
+  printf("*RESULT VideoCaptureDeviceClient: interarrival_time= [0, 0,] us\n");
+}
+
+// TODO(phoglund): end hackhackhack.
+
 static const char kGetUserMediaAndStop[] = "getUserMediaAndStop";
 static const char kGetUserMediaAndGetStreamUp[] = "getUserMediaAndGetStreamUp";
 static const char kGetUserMediaAndAnalyseAndStop[] =
