@@ -1,22 +1,25 @@
 AXWebArea
 ++AXGroup
 ++++AXGroup
-++++++AXStaticText AXValue='Contentditable with '
+++++++AXStaticText AXValue='A contenteditable with a '
 ++++++AXLink AXTitle='link'
 ++++++++AXStaticText AXValue='link'
-++++++AXStaticText AXValue=' and '
+++++++AXStaticText AXValue=' and an '
 ++++++AXImage
-++++++AXStaticText AXValue=' and '
-++++++AXButton AXTitle='button'
+++++++AXStaticText AXValue=' and a '
+++++++AXButton AXTitle='Button'
+++++++AXStaticText AXValue='.'
 ++++AXTable
 ++++++AXRow
 ++++++++AXCell
-++++++++++AXStaticText AXValue='Always expose editable tables as tables'
+++++++++++AXStaticText AXValue='Always expose editable tables as tables.'
 ++++++AXColumn
 ++++++AXGroup
 ++++AXList
-++++++AXGroup AXTitle='Editable list item'
+++++++AXGroup
 ++++++++AXListMarker AXValue='1'
-++++++++AXStaticText AXValue='Editable list item'
+++++++++AXStaticText AXValue='Editable list item.'
 ++AXGroup
-++++AXStaticText AXValue='Keep the role, just change the state'
+++++AXStaticText AXValue='Non-editable paragraph.'
+++AXGroup AXValue='Should keep the role but change the state.'
+++++AXStaticText AXValue='Should keep the role but change the state.'

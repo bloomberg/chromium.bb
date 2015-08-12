@@ -32,6 +32,7 @@ const char* ALL_ATTRIBUTES[] = {
     "states",
     "attributes",
     "role_name",
+    "ia2_hypertext",
     "currentValue",
     "minimumValue",
     "maximumValue",
@@ -55,6 +56,67 @@ const char* ALL_ATTRIBUTES[] = {
     "selection_start",
     "selection_end"
 };
+
+namespace {
+
+base::string16 GetIA2Hypertext(BrowserAccessibilityWin& ax_object) {
+  base::win::ScopedBstr text_bstr;
+  HRESULT hr;
+
+  hr = ax_object.get_text(0, IA2_TEXT_OFFSET_LENGTH, text_bstr.Receive());
+  if (FAILED(hr))
+    return base::string16();
+
+  base::string16 ia2_hypertext(text_bstr, text_bstr.Length());
+  // IA2 Spec calls embedded objects hyperlinks. We stick to embeds for clarity.
+  LONG number_of_embeds;
+  hr = ax_object.get_nHyperlinks(&number_of_embeds);
+  if (FAILED(hr) || number_of_embeds == 0)
+    return ia2_hypertext;
+
+  // Replace all embedded characters with the child indices of the accessibility
+  // objects they refer to.
+  base::string16 embedded_character(1,
+      BrowserAccessibilityWin::kEmbeddedCharacter);
+  size_t character_index = 0;
+  size_t hypertext_index = 0;
+  while (hypertext_index < ia2_hypertext.length()) {
+    if (ia2_hypertext[hypertext_index] !=
+        BrowserAccessibilityWin::kEmbeddedCharacter) {
+      ++character_index;
+      ++hypertext_index;
+      continue;
+    }
+
+    LONG index_of_embed;
+    hr = ax_object.get_hyperlinkIndex(character_index, &index_of_embed);
+    // S_FALSE will be returned if no embedded object is found at the given
+    // embedded character offset. Exclude child index from such cases.
+    LONG child_index = -1;
+    if (hr == S_OK) {
+      DCHECK_GE(index_of_embed, 0);
+      base::win::ScopedComPtr<IAccessibleHyperlink> embedded_object;
+      DCHECK(SUCCEEDED(ax_object.get_hyperlink(
+             index_of_embed, embedded_object.Receive())));
+      base::win::ScopedComPtr<IAccessible2> ax_embed;
+      DCHECK(SUCCEEDED(embedded_object.QueryInterface(ax_embed.Receive())));
+      DCHECK(SUCCEEDED(ax_embed->get_indexInParent(&child_index)));
+    }
+
+    base::string16 child_index_str = base::StringPrintf(L"<obj%d>",
+        child_index);
+    base::ReplaceFirstSubstringAfterOffset(&ia2_hypertext, hypertext_index,
+        embedded_character, child_index_str);
+    ++character_index;
+    hypertext_index += child_index_str.length();
+    --number_of_embeds;
+  }
+  DCHECK_EQ(number_of_embeds, 0);
+
+  return ia2_hypertext;
+}
+
+} // Namespace
 
 void AccessibilityTreeFormatter::Initialize() {
   ui::win::CreateATLModuleIfNeeded();
@@ -105,6 +167,7 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->Set("attributes", attributes);
 
   dict->SetString("role_name", ax_object->role_name());
+  dict->SetString("ia2_hypertext", GetIA2Hypertext(*ax_object));
 
   VARIANT currentValue;
   if (ax_object->get_currentValue(&currentValue) == S_OK)

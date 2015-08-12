@@ -1,11 +1,20 @@
 <!--
 @WIN-ALLOW:IA2_STATE_EDITABLE
 @WIN-ALLOW:LINKED
-@WIN-ALLOW:UNAVAILABLE
+@WIN-ALLOW:ia2_hypertext=*
 -->
 <div contenteditable>
-   <p>Contentditable with <a href="#">link</a> and <img src="./bullet.png" alt="image"> and <input type="button" value="button"/></p>
-   <table><td>Always expose editable tables as tables</td></table>
-   <ol><li>Editable list item</li></ol>
+  <p>A contenteditable with a
+    <a href="#">link</a> and an
+    <img alt="Image"> and a
+    <input type="button" value="Button">.
+  </p>
+  <table>
+    <td>Always expose editable tables as tables.</td>
+  </table>
+  <ol>
+    <li>Editable list item.</li>
+  </ol>
 </div>
-<p contenteditable>Keep the role, just change the state</p>
+<p>Non-editable paragraph.</p>
+<p contenteditable>Should keep the role but change the state.</p>
