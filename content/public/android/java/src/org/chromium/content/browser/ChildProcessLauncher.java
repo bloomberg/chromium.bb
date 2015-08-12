@@ -337,7 +337,9 @@ public class ChildProcessLauncher {
     private static final long FREE_CONNECTION_DELAY_MILLIS = 1;
 
     private static void freeConnection(ChildProcessConnection connection) {
-        if (connection.equals(sSpareSandboxedConnection)) sSpareSandboxedConnection = null;
+        synchronized (ChildProcessLauncher.class) {
+            if (connection.equals(sSpareSandboxedConnection)) sSpareSandboxedConnection = null;
+        }
 
         // Freeing a service should be delayed. This is so that we avoid immediately reusing the
         // freed service (see http://crbug.com/164069): the framework might keep a service process
