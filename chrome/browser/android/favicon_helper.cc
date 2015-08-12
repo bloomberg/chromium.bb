@@ -287,8 +287,8 @@ void FaviconHelper::EnsureFaviconIsAvailable(
                  profile, web_contents, page_url, favicon_url);
   favicon::FaviconService* service = FaviconServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
-  service->GetFaviconImage(favicon_url, callback_runner,
-                           cancelable_task_tracker_.get());
+  service->GetFaviconImageForPageURL(page_url, callback_runner,
+                                     cancelable_task_tracker_.get());
 }
 
 FaviconHelper::~FaviconHelper() {}
