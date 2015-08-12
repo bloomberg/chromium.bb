@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -90,6 +91,17 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
         }
         removeContextualSearchHooks(mBaseContentViewCore);
         mBaseContentViewCore = null;
+    }
+
+    @Override
+    public void onToggleFullscreenMode(Tab tab, boolean enable) {
+        ContentViewCore cvc = tab.getContentViewCore();
+        if (cvc != null) {
+            ContextualSearchManager manager = getContextualSearchManager(cvc);
+            if (manager != null) {
+                manager.hideContextualSearch(StateChangeReason.UNKNOWN);
+            }
+        }
     }
 
     /**
