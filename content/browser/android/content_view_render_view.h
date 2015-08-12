@@ -18,8 +18,6 @@ class Layer;
 
 namespace content {
 class Compositor;
-class LayerTreeBuildHelper;
-class UIResourceProvider;
 
 class ContentViewRenderView : public CompositorClient {
  public:
@@ -38,7 +36,6 @@ class ContentViewRenderView : public CompositorClient {
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
   void SurfaceChanged(JNIEnv* env, jobject obj,
                       jint format, jint width, jint height, jobject surface);
-  jboolean Composite(JNIEnv* env, jobject obj);
   void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
   void SetNeedsComposite(JNIEnv* env, jobject obj);
 

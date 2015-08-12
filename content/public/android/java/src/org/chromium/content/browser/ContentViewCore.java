@@ -112,10 +112,6 @@ public class ContentViewCore implements
     // produce little visible difference.
     private static final float ZOOM_CONTROLS_EPSILON = 0.007f;
 
-    // Used to represent gestures for long press and long tap.
-    private static final int IS_LONG_PRESS = 1;
-    private static final int IS_LONG_TAP = 2;
-
     /**
      * TODO(sgurun) remove these and use public API. crbug/512264
      */
