@@ -30,6 +30,7 @@ void AddTiling(float scale,
                std::vector<Tile*>* all_tiles) {
   PictureLayerTiling* tiling = layer->AddTiling(scale);
 
+  tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
   std::vector<Tile*> tiling_tiles = tiling->AllTilesForTesting();
   std::copy(

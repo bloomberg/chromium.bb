@@ -89,6 +89,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
         FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
     tiling_ = TestablePictureLayerTiling::Create(
         PENDING_TREE, contents_scale, pile, &client_, LayerTreeSettings());
+    tiling_->set_resolution(HIGH_RESOLUTION);
   }
 
   void InitializeActive(const gfx::Size& tile_size,
@@ -99,6 +100,7 @@ class PictureLayerTilingIteratorTest : public testing::Test {
         FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
     tiling_ = TestablePictureLayerTiling::Create(
         ACTIVE_TREE, contents_scale, pile, &client_, LayerTreeSettings());
+    tiling_->set_resolution(HIGH_RESOLUTION);
   }
 
   void SetLiveRectAndVerifyTiles(const gfx::Rect& live_tiles_rect) {
@@ -803,6 +805,7 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 0.25f, pile, &client,
                                          settings);
+  tiling->set_resolution(HIGH_RESOLUTION);
   gfx::Rect viewport_in_content_space =
       gfx::ToEnclosedRect(gfx::ScaleRect(viewport, 0.25f));
 
@@ -961,6 +964,7 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   // Test additional scales.
   tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 0.2f, pile, &client,
                                               LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
   tiling->ComputeTilePriorityRects(viewport, 1.0f, 4.0, Occlusion());
   prioritized_tiles = tiling->UpdateAndGetAllPrioritizedTilesForTesting();
 
@@ -1075,6 +1079,7 @@ TEST_F(PictureLayerTilingIteratorTest,
       FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
   tiling_ = TestablePictureLayerTiling::Create(PENDING_TREE, 1.f, pile,
                                                &client_, settings);
+  tiling_->set_resolution(HIGH_RESOLUTION);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
   VerifyTiles(1.f, gfx::Rect(layer_bounds), base::Bind(&TileExists, false));
 
@@ -1112,6 +1117,7 @@ TEST(ComputeTilePriorityRectsTest, VisibleTiles) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
                                    current_layer_contents_scale,
@@ -1167,6 +1173,7 @@ TEST(ComputeTilePriorityRectsTest, OffscreenTiles) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
                                    current_layer_contents_scale,
@@ -1232,6 +1239,7 @@ TEST(ComputeTilePriorityRectsTest, PartiallyOffscreenLayer) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
                                    current_layer_contents_scale,
@@ -1291,6 +1299,7 @@ TEST(ComputeTilePriorityRectsTest, PartiallyOffscreenRotatedLayer) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
                                    current_layer_contents_scale,
@@ -1375,6 +1384,7 @@ TEST(ComputeTilePriorityRectsTest, PerspectiveLayer) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
                                    current_layer_contents_scale,
@@ -1469,6 +1479,7 @@ TEST(ComputeTilePriorityRectsTest, PerspectiveLayerClippedByW) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
                                    current_layer_contents_scale,
@@ -1533,6 +1544,7 @@ TEST(ComputeTilePriorityRectsTest, BasicMotion) {
   scoped_ptr<TestablePictureLayerTiling> tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                          settings);
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   // previous ("last") frame
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1610,6 +1622,7 @@ TEST(ComputeTilePriorityRectsTest, RotationMotion) {
           current_layer_bounds);
   tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
                                               LayerTreeSettings());
+  tiling->set_resolution(HIGH_RESOLUTION);
 
   // previous ("last") frame
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1662,6 +1675,7 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
   scoped_ptr<TestablePictureLayerTiling> active_tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile,
                                          &active_client, settings);
+  active_tiling->set_resolution(HIGH_RESOLUTION);
   // Create all tiles on this tiling.
   active_tiling->ComputeTilePriorityRects(gfx::Rect(0, 0, 100, 100), 1.0f, 1.0f,
                                           Occlusion());
@@ -1675,6 +1689,7 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
   scoped_ptr<TestablePictureLayerTiling> recycle_tiling =
       TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, pile,
                                          &recycle_client, settings);
+  recycle_tiling->set_resolution(HIGH_RESOLUTION);
 
   // Create all tiles on the second tiling. All tiles should be shared.
   recycle_tiling->ComputeTilePriorityRects(gfx::Rect(0, 0, 100, 100), 1.0f,
@@ -1713,6 +1728,7 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   scoped_ptr<TestablePictureLayerTiling> active_tiling =
       TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile,
                                          &active_client, LayerTreeSettings());
+  active_tiling->set_resolution(HIGH_RESOLUTION);
   // Create all tiles on this tiling.
   active_tiling->ComputeTilePriorityRects(gfx::Rect(0, 0, 100, 100), 1.0f, 1.0f,
                                           Occlusion());
@@ -1728,6 +1744,7 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   scoped_ptr<TestablePictureLayerTiling> recycle_tiling =
       TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, pile,
                                          &recycle_client, settings);
+  recycle_tiling->set_resolution(HIGH_RESOLUTION);
 
   // Create all tiles on the recycle tiling. All tiles should be shared.
   recycle_tiling->ComputeTilePriorityRects(gfx::Rect(0, 0, 100, 100), 1.0f,

@@ -682,6 +682,7 @@ TEST_F(PictureLayerImplTest, ClonePartialInvalidation) {
   ActivateTree();
   // Add a unique tiling on the active tree.
   PictureLayerTiling* tiling = active_layer_->AddTiling(3.f);
+  tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
 
   // Ensure UpdateTiles won't remove any tilings.
@@ -4140,11 +4141,11 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
 
   pending_layer_->tilings()->RemoveAllTilings();
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
-  pending_layer_->AddTiling(low_res_factor);
-  pending_layer_->AddTiling(0.3f);
-  pending_layer_->AddTiling(0.7f);
-  pending_layer_->AddTiling(1.0f);
-  pending_layer_->AddTiling(2.0f);
+  pending_layer_->AddTiling(low_res_factor)->set_resolution(LOW_RESOLUTION);
+  pending_layer_->AddTiling(0.3f)->set_resolution(HIGH_RESOLUTION);
+  pending_layer_->AddTiling(0.7f)->set_resolution(HIGH_RESOLUTION);
+  pending_layer_->AddTiling(1.0f)->set_resolution(HIGH_RESOLUTION);
+  pending_layer_->AddTiling(2.0f)->set_resolution(HIGH_RESOLUTION);
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   // UpdateDrawProperties with the occluding layer.

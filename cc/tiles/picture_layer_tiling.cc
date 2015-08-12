@@ -698,6 +698,14 @@ void PictureLayerTiling::SetLiveTilesRect(
     RemoveTileAt(iter.index_x(), iter.index_y());
   }
 
+  // We don't rasterize non ideal resolution tiles, so there is no need to
+  // create any new tiles.
+  if (resolution_ == NON_IDEAL_RESOLUTION) {
+    live_tiles_rect_.Intersect(new_live_tiles_rect);
+    VerifyLiveTilesRect(false);
+    return;
+  }
+
   // Iterate to allocate new tiles for all regions with newly exposed area.
   for (TilingData::DifferenceIterator iter(&tiling_data_, new_live_tiles_rect,
                                            live_tiles_rect_);

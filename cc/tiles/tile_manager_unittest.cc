@@ -1380,8 +1380,8 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
 
   auto* tiling = tiling_set->AddTiling(1.0f, pile);
 
-  tiling->CreateAllTilesForTesting();
   tiling->set_resolution(HIGH_RESOLUTION);
+  tiling->CreateAllTilesForTesting();
 
   // The tile is (0, 0, 1, 1), create an intersecting and non-intersecting
   // rectangle to test the advance phase with. The tile size is (64, 64), so
@@ -1508,8 +1508,8 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
 
     auto* tiling = tiling_set->AddTiling(1.0f, raster);
-    tiling->CreateAllTilesForTesting();
     tiling->set_resolution(resolutions[i]);
+    tiling->CreateAllTilesForTesting();
     tiling->SetTilePriorityRectsForTesting(
         gfx::Rect(size),   // Visible rect.
         gfx::Rect(size),   // Skewport rect.

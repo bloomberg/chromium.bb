@@ -177,6 +177,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
   PictureLayerTiling* tiling =
       tiling_set->AddTiling(1.f, layer->GetRasterSource());
+  tiling->set_resolution(HIGH_RESOLUTION);
   tiling->CreateAllTilesForTesting();
   RasterSource* raster_source = tiling->raster_source();
   for (PictureLayerTiling::CoverageIterator it(tiling, 1.f,

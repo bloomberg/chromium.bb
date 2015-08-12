@@ -229,6 +229,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
       PictureLayerTiling* tiling = set->AddTiling(scale, pile);
+      tiling->set_resolution(HIGH_RESOLUTION);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       client.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
