@@ -472,9 +472,6 @@ group("both_gn_and_gyp") {
       "//ui/snapshot:snapshot_unittests",
       "//ui/views/examples:views_examples_with_content_exe",
 
-      # "//v8:v8_snapshot",  # TODO(GYP): visibility?
-      # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
-
       "//third_party/codesighs:nm2tsv",
       "//third_party/sqlite:sqlite_shell",
     ]
@@ -743,8 +740,8 @@ group("gn_visibility") {
 
     "//ui/resources:repack_ui_test_mac_locale_pack",
 
-    # "//v8:v8_snapshot",  # TODO(GYP): visibility?
-    # "//v8:postmortem-metadata",  # TODO(GYP): visibility?
+    "//v8:v8_snapshot",
+    "//v8:postmortem-metadata",
   ]
 }
 
