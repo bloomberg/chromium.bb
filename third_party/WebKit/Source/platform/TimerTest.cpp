@@ -41,10 +41,10 @@ private:
 
 class DelayedTask {
 public:
-    DelayedTask(WebThread::Task* task, double delaySecs)
+    DelayedTask(WebThread::Task* task, long long delayMs)
         : m_task(adoptRef(new RefCountedTaskContainer(task)))
-        , m_runTimeSecs(monotonicallyIncreasingTime() + delaySecs)
-        , m_delaySecs(delaySecs) { }
+        , m_runTimeSecs(monotonicallyIncreasingTime() + 0.001 * static_cast<double>(delayMs))
+        , m_delayMs(delayMs) { }
 
     bool operator<(const DelayedTask& other) const
     {
@@ -61,15 +61,15 @@ public:
         return m_runTimeSecs;
     }
 
-    double delaySecs() const
+    long long delayMs() const
     {
-        return m_delaySecs;
+        return m_delayMs;
     }
 
 private:
     RefPtr<RefCountedTaskContainer> m_task;
     double m_runTimeSecs;
-    double m_delaySecs;
+    long long m_delayMs;
 };
 
 class MockWebScheduler : public WebScheduler {
@@ -103,9 +103,9 @@ public:
     {
     }
 
-    void postTimerTask(const WebTraceLocation&, WebThread::Task* task, double delaySecs) override
+    void postTimerTask(const WebTraceLocation&, WebThread::Task* task, long long delayMs) override
     {
-        m_timerTasks.push(DelayedTask(task, delaySecs));
+        m_timerTasks.push(DelayedTask(task, delayMs));
     }
 
     void postTimerTaskAt(const WebTraceLocation&, WebThread::Task* task, double monotonicTime) override
@@ -135,23 +135,15 @@ public:
         }
     }
 
-    void runPendingTasks()
-    {
-        while (!m_timerTasks.empty() && m_timerTasks.top().runTimeSecs() <= gCurrentTimeSecs) {
-            m_timerTasks.top().run();
-            m_timerTasks.pop();
-        }
-    }
-
     bool hasOneTimerTask() const
     {
         return m_timerTasks.size() == 1;
     }
 
-    double nextTimerTaskDelaySecs() const
+    long nextTimerTaskDelayMillis() const
     {
         ASSERT(hasOneTimerTask());
-        return m_timerTasks.top().delaySecs();
+        return m_timerTasks.top().delayMs();
     }
 
 private:
@@ -232,11 +224,6 @@ public:
         mockScheduler()->runUntilIdle();
     }
 
-    void runPendingTasks()
-    {
-        mockScheduler()->runPendingTasks();
-    }
-
     void runUntilIdleOrDeadlinePassed(double deadline)
     {
         mockScheduler()->runUntilIdleOrDeadlinePassed(deadline);
@@ -247,9 +234,9 @@ public:
         return mockScheduler()->hasOneTimerTask();
     }
 
-    double nextTimerTaskDelaySecs() const
+    long nextTimerTaskDelayMillis() const
     {
-        return mockScheduler()->nextTimerTaskDelaySecs();
+        return mockScheduler()->nextTimerTaskDelayMillis();
     }
 
 private:
@@ -285,11 +272,6 @@ public:
         m_runTimes.push_back(monotonicallyIncreasingTime());
     }
 
-    void recordNextFireTimeTask(Timer<TimerTest>* timer)
-    {
-        m_nextFireTimes.push_back(monotonicallyIncreasingTime() + timer->nextFireInterval());
-    }
-
     void advanceTimeBy(double timeSecs)
     {
         gCurrentTimeSecs += timeSecs;
@@ -298,11 +280,6 @@ public:
     void runUntilIdle()
     {
         m_platform->runUntilIdle();
-    }
-
-    void runPendingTasks()
-    {
-        m_platform->runPendingTasks();
     }
 
     void runUntilIdleOrDeadlinePassed(double deadline)
@@ -315,15 +292,14 @@ public:
         return m_platform->hasOneTimerTask();
     }
 
-    double nextTimerTaskDelaySecs() const
+    long nextTimerTaskDelayMillis() const
     {
-        return m_platform->nextTimerTaskDelaySecs();
+        return m_platform->nextTimerTaskDelayMillis();
     }
 
 protected:
     double m_startTime;
     std::vector<double> m_runTimes;
-    std::vector<double> m_nextFireTimes;
 
 private:
     OwnPtr<TimerTestPlatform> m_platform;
@@ -336,7 +312,7 @@ TEST_F(TimerTest, StartOneShot_Zero)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
@@ -348,7 +324,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancel)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
 
     timer.stop();
 
@@ -362,7 +338,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
 
     timer.stop();
 
@@ -372,7 +348,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
@@ -384,7 +360,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
@@ -392,7 +368,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime, m_startTime));
@@ -404,7 +380,7 @@ TEST_F(TimerTest, StartOneShot_NonZero)
     timer.startOneShot(10.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -416,7 +392,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancel)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
 
     timer.stop();
 
@@ -430,7 +406,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
 
     timer.stop();
 
@@ -441,7 +417,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(secondPostTime + 10.0));
@@ -453,7 +429,7 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -461,7 +437,7 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
     timer.startOneShot(20, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(20.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(20000ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0, m_startTime + 30.0));
@@ -474,7 +450,7 @@ TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -506,7 +482,7 @@ TEST_F(TimerTest, StartRepeatingTask)
     timer.startRepeating(1.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(1.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(1000ll, nextTimerTaskDelayMillis());
 
     runUntilIdleOrDeadlinePassed(m_startTime + 5.5);
     EXPECT_THAT(m_runTimes, ElementsAre(
@@ -519,7 +495,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenCancel)
     timer.startRepeating(1.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(1.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(1000ll, nextTimerTaskDelayMillis());
 
     runUntilIdleOrDeadlinePassed(m_startTime + 2.5);
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
@@ -536,7 +512,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot)
     timer.startRepeating(1.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(1.0, nextTimerTaskDelaySecs());
+    EXPECT_EQ(1000ll, nextTimerTaskDelayMillis());
 
     runUntilIdleOrDeadlinePassed(m_startTime + 2.5);
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
@@ -760,42 +736,6 @@ TEST_F(TimerTest, DidChangeAlignmentInterval)
     EXPECT_FLOAT_EQ(m_startTime, timer.lastFireTime());
 }
 
-TEST_F(TimerTest, RepeatingTimerDoesNotDrift)
-{
-    Timer<TimerTest> timer(this, &TimerTest::recordNextFireTimeTask);
-    timer.startRepeating(2.0, FROM_HERE);
-
-    ASSERT(hasOneTimerTask());
-    recordNextFireTimeTask(&timer); // Scheduled to run at m_startTime + 2.0
-
-    advanceTimeBy(2.0);
-    runPendingTasks(); // Scheduled to run at m_startTime + 4.0
-
-    advanceTimeBy(2.1);
-    runPendingTasks(); // Scheduled to run at m_startTime + 6.0
-
-    advanceTimeBy(2.9);
-    runPendingTasks(); // Scheduled to run at m_startTime + 8.0
-
-    advanceTimeBy(3.1);
-    runPendingTasks(); // Scheduled to run at m_startTime + 12.0 (skips a beat)
-
-    advanceTimeBy(4.0);
-    runPendingTasks(); // Scheduled to run at m_startTime + 16.0 (skips a beat)
-
-    advanceTimeBy(10.0); // Scheduled to run at m_startTime + 22.0 (skips a few beats)
-    runPendingTasks();
-
-    runUntilIdleOrDeadlinePassed(m_startTime + 5.5);
-    EXPECT_THAT(m_nextFireTimes, ElementsAre(
-        m_startTime + 2.0,
-        m_startTime + 4.0,
-        m_startTime + 6.0,
-        m_startTime + 8.0,
-        m_startTime + 12.0,
-        m_startTime + 16.0,
-        m_startTime + 26.0));
-}
 
 } // namespace
 } // namespace blink

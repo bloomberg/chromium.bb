@@ -66,7 +66,7 @@ public:
     // tasks usually have the default priority, but may be delayed
     // when the user is interacting with the device.
     // Takes ownership of |WebThread::Task|. Can be called from any thread.
-    virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, double delaySecs) {}
+    virtual void postTimerTask(const WebTraceLocation&, WebThread::Task*, long long delayMs) {}
 
     // Schedule a timer task to be run on the the associated WebThread. Timer Tasks
     // tasks usually have the default priority, but may be delayed

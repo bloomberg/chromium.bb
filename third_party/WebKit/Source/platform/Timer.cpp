@@ -105,7 +105,12 @@ void TimerBase::setNextFireTime(double now, double delay)
             // TODO(skyostil): Move timer alignment into the scheduler.
             m_webScheduler->postTimerTaskAt(m_location, m_cancellableTimerTask, m_nextFireTime);
         } else {
-            m_webScheduler->postTimerTask(m_location, m_cancellableTimerTask, newTime - now);
+            // Round the delay up to the nearest millisecond to be consistant with the
+            // previous behavior of BlinkPlatformImpl::setSharedTimerFireInterval.
+            long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
+            if (delayMs < 0)
+                delayMs = 0;
+            m_webScheduler->postTimerTask(m_location, m_cancellableTimerTask, delayMs);
         }
     }
 }
@@ -121,14 +126,10 @@ void TimerBase::runInternal()
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "BlinkInternal");
 
     m_nextFireTime = 0;
-    if (m_repeatInterval) {
-        double now = monotonicallyIncreasingTime();
-        ASSERT(now >= m_unalignedNextFireTime);
-        // This computation should be drift free, and it will cope if we miss a beat,
-        // which can easily happen if the thread is busy.
-        double intervalToNextFireTime = m_repeatInterval - fmod(now - m_unalignedNextFireTime, m_repeatInterval);
-        setNextFireTime(now, intervalToNextFireTime);
-    }
+    // Note: repeating timers drift, but this is preserving the functionality of the old timer heap.
+    // See crbug.com/328700.
+    if (m_repeatInterval)
+        setNextFireTime(monotonicallyIncreasingTime(), m_repeatInterval);
     fired();
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "Sleeping");
 }
