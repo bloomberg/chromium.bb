@@ -449,7 +449,6 @@ FloatRect ShapeResult::selectionRect(Vector<RefPtr<ShapeResult>>& results,
 int ShapeResult::offsetForPosition(Vector<RefPtr<ShapeResult>>& results,
     const TextRun& run, float targetX)
 {
-    RefPtr<ShapeResult> wordResult;
     unsigned totalOffset;
     if (run.rtl()) {
         totalOffset = run.length();
