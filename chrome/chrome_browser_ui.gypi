@@ -309,10 +309,6 @@
       'browser/ui/webui/chromeos/cryptohome_web_ui_handler.h',
       'browser/ui/webui/chromeos/drive_internals_ui.cc',
       'browser/ui/webui/chromeos/drive_internals_ui.h',
-      'browser/ui/webui/chromeos/emulator/device_emulator_message_handler.cc',
-      'browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h',
-      'browser/ui/webui/chromeos/emulator/device_emulator_ui.cc',
-      'browser/ui/webui/chromeos/emulator/device_emulator_ui.h',
       'browser/ui/webui/chromeos/first_run/first_run_actor.cc',
       'browser/ui/webui/chromeos/first_run/first_run_actor.h',
       'browser/ui/webui/chromeos/first_run/first_run_handler.cc',
@@ -2872,6 +2868,14 @@
             'safe_browsing_chunk_proto',
             'safe_browsing_proto',
             'safe_browsing_report_proto',
+          ],
+        }],
+        ['buildtype!="Official" and chromeos==1', {
+          'sources': [
+            'browser/ui/webui/chromeos/emulator/device_emulator_message_handler.cc',
+            'browser/ui/webui/chromeos/emulator/device_emulator_message_handler.h',
+            'browser/ui/webui/chromeos/emulator/device_emulator_ui.cc',
+            'browser/ui/webui/chromeos/emulator/device_emulator_ui.h',
           ],
         }],
         ['chromeos==1', {
