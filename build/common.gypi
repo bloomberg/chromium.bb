@@ -3691,7 +3691,7 @@
       },
     }],
     # -Wl,-z,-defs doesn't work with the sanitiziers, http://crbug.com/452065
-    ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_vptr==0', {
+    ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_vptr==0 and cfi_diag==0', {
       'target_defaults': {
         'ldflags': [
           '-Wl,-z,defs',
@@ -6159,6 +6159,12 @@
             'cflags': [
               '-fno-sanitize-trap=cfi',
               '-fsanitize-recover=cfi',
+            ],
+            'cflags_cc!': [
+              '-fno-rtti',
+            ],
+            'cflags!': [
+              '-fno-rtti',
             ],
             'ldflags': [
               '-fno-sanitize-trap=cfi',
