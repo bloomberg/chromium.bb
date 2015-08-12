@@ -121,10 +121,11 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::O
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
-V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
+V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgent::Client* client)
     : InspectorBaseAgent<V8DebuggerAgent, InspectorFrontend::Debugger>("Debugger")
     , m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
+    , m_client(client)
     , m_isolate(debugger->isolate())
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
@@ -134,7 +135,6 @@ V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V
     , m_steppingFromFramework(false)
     , m_pausingOnNativeEvent(false)
     , m_pausingOnAsyncOperation(false)
-    , m_listener(nullptr)
     , m_skippedStepFrameCount(0)
     , m_recursionLevelForStepOut(0)
     , m_recursionLevelForStepFrame(0)
@@ -178,11 +178,9 @@ void V8DebuggerAgent::enable()
     // startListeningV8Debugger may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
-    startListeningV8Debugger();
+    m_client->startListeningV8Debugger();
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
-    if (m_listener)
-        m_listener->debuggerWasEnabled();
 }
 
 void V8DebuggerAgent::disable()
@@ -194,12 +192,8 @@ void V8DebuggerAgent::disable()
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
 
-    stopListeningV8Debugger();
+    m_client->stopListeningV8Debugger();
     clear();
-
-    if (m_listener)
-        m_listener->debuggerWasDisabled();
-
     m_skipAllPauses = false;
 }
 
@@ -752,7 +746,7 @@ void V8DebuggerAgent::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context,
 
 bool V8DebuggerAgent::v8PromiseEventsEnabled() const
 {
-    return promiseTracker().isEnabled() || (m_listener && m_listener->canPauseOnPromiseEvent());
+    return promiseTracker().isEnabled() || m_client->canPauseOnPromiseEvent();
 }
 
 void V8DebuggerAgent::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
@@ -760,16 +754,14 @@ void V8DebuggerAgent::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v
     ScriptState* scriptState = ScriptState::from(context);
     if (promiseTracker().isEnabled())
         promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
-    if (!m_listener)
-        return;
     if (!parentPromise.IsEmpty() && parentPromise->IsObject())
         return;
     if (status < 0)
-        m_listener->didRejectPromise();
+        m_client->didRejectPromise();
     else if (status > 0)
-        m_listener->didResolvePromise();
+        m_client->didResolvePromise();
     else
-        m_listener->didCreatePromise();
+        m_client->didCreatePromise();
 }
 
 void V8DebuggerAgent::pause(ErrorString* errorString)
@@ -921,15 +913,23 @@ void V8DebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         if (previousPauseOnExceptionsState != V8Debugger::DontPauseOnExceptions)
             debugger().setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
-        muteConsole();
+        m_client->muteConsole();
     }
 
     injectedScript.evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
-        unmuteConsole();
+        m_client->unmuteConsole();
         if (debugger().pauseOnExceptionsState() != previousPauseOnExceptionsState)
             debugger().setPauseOnExceptionsState(previousPauseOnExceptionsState);
     }
+}
+
+InjectedScript V8DebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
+{
+    InjectedScript injectedScript = executionContextId ? m_injectedScriptManager->injectedScriptForId(*executionContextId) : m_client->defaultInjectedScript();
+    if (injectedScript.isEmpty())
+        *errorString = "Execution context with given id not found.";
+    return injectedScript;
 }
 
 void V8DebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
@@ -977,7 +977,7 @@ void V8DebuggerAgent::runScript(ErrorString* errorString, const ScriptId& script
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
         if (previousPauseOnExceptionsState != V8Debugger::DontPauseOnExceptions)
             debugger().setPauseOnExceptionsState(V8Debugger::DontPauseOnExceptions);
-        muteConsole();
+        m_client->muteConsole();
     }
 
     if (!m_compiledScripts.Contains(scriptId)) {
@@ -1013,7 +1013,7 @@ void V8DebuggerAgent::runScript(ErrorString* errorString, const ScriptId& script
     result = injectedScript.wrapObject(scriptValue, objectGroup ? *objectGroup : "");
 
     if (asBool(doNotPauseOnExceptionsAndMuteConsole)) {
-        unmuteConsole();
+        m_client->unmuteConsole();
         if (debugger().pauseOnExceptionsState() != previousPauseOnExceptionsState)
             debugger().setPauseOnExceptionsState(previousPauseOnExceptionsState);
     }
@@ -1740,7 +1740,6 @@ DEFINE_TRACE(V8DebuggerAgent)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_listener);
     visitor->trace(m_v8AsyncCallTracker);
     visitor->trace(m_promiseTracker);
     visitor->trace(m_asyncOperations);

@@ -33,7 +33,8 @@
 namespace blink {
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
-    : V8DebuggerAgent(injectedScriptManager, debugger)
+    : V8DebuggerAgent(injectedScriptManager, debugger, this)
+    , m_listener(nullptr)
 {
 }
 
@@ -44,21 +45,54 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 #endif
 }
 
+DEFINE_TRACE(InspectorDebuggerAgent)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_listener);
+#endif
+    V8DebuggerAgent::trace(visitor);
+}
+
 void InspectorDebuggerAgent::enable(ErrorString* errorString)
 {
     V8DebuggerAgent::enable(errorString);
 }
 
-void InspectorDebuggerAgent::enable()
+void InspectorDebuggerAgent::startListeningV8Debugger()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(this);
-    V8DebuggerAgent::enable();
+    if (m_listener)
+        m_listener->debuggerWasEnabled();
 }
 
-void InspectorDebuggerAgent::disable()
+void InspectorDebuggerAgent::stopListeningV8Debugger()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
-    V8DebuggerAgent::disable();
+    if (m_listener)
+        m_listener->debuggerWasDisabled();
+}
+
+bool InspectorDebuggerAgent::canPauseOnPromiseEvent()
+{
+    return m_listener && m_listener->canPauseOnPromiseEvent();
+}
+
+void InspectorDebuggerAgent::didCreatePromise()
+{
+    if (m_listener)
+        m_listener->didCreatePromise();
+}
+
+void InspectorDebuggerAgent::didResolvePromise()
+{
+    if (m_listener)
+        m_listener->didResolvePromise();
+}
+
+void InspectorDebuggerAgent::didRejectPromise()
+{
+    if (m_listener)
+        m_listener->didRejectPromise();
 }
 
 } // namespace blink

@@ -65,11 +65,8 @@ public:
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
-protected:
-    void enable() override;
-    void disable() override;
-
 private:
+    // V8DebuggerAgent::Client implemntation.
     void startListeningV8Debugger() override;
     void stopListeningV8Debugger() override;
     void muteConsole() override;
@@ -79,7 +76,7 @@ private:
     void overlayResumed() override;
     void overlaySteppedOver() override;
 
-    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
+    InjectedScript defaultInjectedScript() override;
     bool canExecuteScripts() const;
 
     PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);

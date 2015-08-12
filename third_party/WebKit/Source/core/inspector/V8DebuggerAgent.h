@@ -54,6 +54,21 @@ public:
 
     static const char backtraceObjectGroup[];
 
+    class CORE_EXPORT Client {
+    public:
+        virtual ~Client() { }
+        virtual void startListeningV8Debugger() = 0;
+        virtual void stopListeningV8Debugger() = 0;
+        virtual void muteConsole() = 0;
+        virtual void unmuteConsole() = 0;
+        virtual InjectedScript defaultInjectedScript() = 0;
+
+        virtual bool canPauseOnPromiseEvent() = 0;
+        virtual void didCreatePromise() = 0;
+        virtual void didResolvePromise() = 0;
+        virtual void didRejectPromise() = 0;
+    };
+
     ~V8DebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -125,18 +140,6 @@ public:
     void didEvaluateScript();
     bool getEditedScript(const String& url, String* content);
 
-    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
-    public:
-        virtual ~Listener() { }
-        virtual void debuggerWasEnabled() = 0;
-        virtual void debuggerWasDisabled() = 0;
-        virtual bool canPauseOnPromiseEvent() = 0;
-        virtual void didCreatePromise() = 0;
-        virtual void didResolvePromise() = 0;
-        virtual void didRejectPromise() = 0;
-    };
-    void setListener(Listener* listener) { m_listener = listener; }
-
     bool enabled();
     V8Debugger& debugger() { return *m_debugger; }
 
@@ -165,18 +168,12 @@ public:
     // PromiseTracker::Listener
     void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) final;
 
+    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
+
 protected:
-    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*);
+    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*);
 
-    virtual void startListeningV8Debugger() = 0;
-    virtual void stopListeningV8Debugger() = 0;
-    virtual void muteConsole() = 0;
-    virtual void unmuteConsole() = 0;
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-    virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
-
-    virtual void enable();
-    virtual void disable();
 
     void didContinue() final;
     void reset();
@@ -184,6 +181,8 @@ protected:
 
 private:
     bool checkEnabled(ErrorString*);
+    void enable();
+    void disable();
 
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
 
@@ -241,6 +240,7 @@ private:
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     V8Debugger* m_debugger;
+    Client* m_client;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;
     v8::Global<v8::Object> m_currentCallStack;
@@ -256,7 +256,6 @@ private:
     bool m_steppingFromFramework;
     bool m_pausingOnNativeEvent;
     bool m_pausingOnAsyncOperation;
-    RawPtrWillBeMember<Listener> m_listener;
 
     int m_skippedStepFrameCount;
     int m_recursionLevelForStepOut;

@@ -98,28 +98,20 @@ void PageDebuggerAgent::restore()
         InspectorDebuggerAgent::restore();
 }
 
-void PageDebuggerAgent::enable()
-{
-    ASSERT(canExecuteScripts());
-    InspectorDebuggerAgent::enable();
-    m_instrumentingAgents->setPageDebuggerAgent(this);
-}
-
-void PageDebuggerAgent::disable()
-{
-    InspectorDebuggerAgent::disable();
-    m_instrumentingAgents->setPageDebuggerAgent(0);
-    m_compiledScriptURLs.clear();
-}
-
 void PageDebuggerAgent::startListeningV8Debugger()
 {
+    ASSERT(canExecuteScripts());
     m_mainThreadDebugger->addListener(this, m_pageAgent->inspectedFrame());
+    m_instrumentingAgents->setPageDebuggerAgent(this);
+    InspectorDebuggerAgent::startListeningV8Debugger();
 }
 
 void PageDebuggerAgent::stopListeningV8Debugger()
 {
     m_mainThreadDebugger->removeListener(this, m_pageAgent->inspectedFrame());
+    m_instrumentingAgents->setPageDebuggerAgent(nullptr);
+    m_compiledScriptURLs.clear();
+    InspectorDebuggerAgent::stopListeningV8Debugger();
 }
 
 void PageDebuggerAgent::muteConsole()
@@ -144,19 +136,10 @@ void PageDebuggerAgent::overlaySteppedOver()
     stepOver(&error);
 }
 
-InjectedScript PageDebuggerAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)
+InjectedScript PageDebuggerAgent::defaultInjectedScript()
 {
-    if (!executionContextId) {
-        ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
-        InjectedScript result = injectedScriptManager()->injectedScriptFor(scriptState);
-        if (result.isEmpty())
-            *errorString = "Internal error: main world execution context not found.";
-        return result;
-    }
-    InjectedScript injectedScript = injectedScriptManager()->injectedScriptForId(*executionContextId);
-    if (injectedScript.isEmpty())
-        *errorString = "Execution context with given id not found.";
-    return injectedScript;
+    ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
+    return injectedScriptManager()->injectedScriptFor(scriptState);
 }
 
 void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)

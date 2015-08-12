@@ -63,22 +63,18 @@ DEFINE_TRACE(WorkerDebuggerAgent)
 void WorkerDebuggerAgent::startListeningV8Debugger()
 {
     m_workerThreadDebugger->addListener(this);
+    InspectorDebuggerAgent::startListeningV8Debugger();
 }
 
 void WorkerDebuggerAgent::stopListeningV8Debugger()
 {
     m_workerThreadDebugger->removeListener(this);
+    InspectorDebuggerAgent::stopListeningV8Debugger();
 }
 
-InjectedScript WorkerDebuggerAgent::injectedScriptForEval(ErrorString* error, const int* executionContextId)
+InjectedScript WorkerDebuggerAgent::defaultInjectedScript()
 {
-    if (!executionContextId)
-        return injectedScriptManager()->injectedScriptFor(m_inspectedWorkerGlobalScope->script()->scriptState());
-
-    InjectedScript injectedScript = injectedScriptManager()->injectedScriptForId(*executionContextId);
-    if (injectedScript.isEmpty())
-        *error = "Execution context with given id not found.";
-    return injectedScript;
+    return injectedScriptManager()->injectedScriptFor(m_inspectedWorkerGlobalScope->script()->scriptState());
 }
 
 void WorkerDebuggerAgent::muteConsole()
