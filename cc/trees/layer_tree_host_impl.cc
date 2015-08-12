@@ -2696,13 +2696,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   if (!CurrentlyScrollingLayer())
     return InputHandlerScrollResult();
 
-  if (pinch_gesture_active_ && settings().invert_viewport_scroll_order) {
-    // Scrolls during a pinch gesture should pan the visual viewport, rather
-    // than a typical bubbling scroll.
-    viewport()->Pan(scroll_delta);
-    return InputHandlerScrollResult();
-  }
-
   float initial_top_controls_offset =
       top_controls_manager_->ControlsTopOffset();
   ScrollState scroll_state(

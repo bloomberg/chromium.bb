@@ -1193,7 +1193,10 @@ TEST_F(LayerTreeHostImplTest, ViewportScrollOrder) {
       outer_scroll_layer->CurrentScrollOffset());
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
+// Tests that scrolls during a pinch gesture (i.e. "two-finger" scrolls) work
+// as expected. That is, scrolling during a pinch should bubble from the inner
+// to the outer viewport.
+TEST_F(LayerTreeHostImplTest, ScrollDuringPinchGesture) {
   LayerTreeSettings settings = DefaultSettings();
   settings.invert_viewport_scroll_order = true;
   CreateHostImpl(settings,
@@ -1213,17 +1216,38 @@ TEST_F(LayerTreeHostImplTest, ScrollDuringPinchScrollsInnerViewport) {
 
   host_impl_->ScrollBegin(gfx::Point(250, 250), InputHandler::GESTURE);
   host_impl_->PinchGestureBegin();
-  host_impl_->PinchGestureUpdate(2, gfx::Point(250, 250));
-  host_impl_->ScrollBy(gfx::Point(250, 250), gfx::Vector2dF(10.f, 10.f));
-  host_impl_->PinchGestureEnd();
-  host_impl_->ScrollEnd();
 
+  host_impl_->PinchGestureUpdate(2, gfx::Point(250, 250));
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(0, 0),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(125, 125),
+      inner_scroll_layer->CurrentScrollOffset());
+
+  // Needed so that the pinch is accounted for in draw properties.
+  DrawFrame();
+
+  host_impl_->ScrollBy(gfx::Point(250, 250), gfx::Vector2dF(10.f, 10.f));
   EXPECT_VECTOR_EQ(
       gfx::Vector2dF(0, 0),
       outer_scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(
       gfx::Vector2dF(130, 130),
       inner_scroll_layer->CurrentScrollOffset());
+
+  DrawFrame();
+
+  host_impl_->ScrollBy(gfx::Point(250, 250), gfx::Vector2dF(400.f, 400.f));
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(80, 80),
+      outer_scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(
+      gfx::Vector2dF(250, 250),
+      inner_scroll_layer->CurrentScrollOffset());
+
+  host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
 }
 
 // Tests the "snapping" of pinch-zoom gestures to the screen edge. That is, when
