@@ -11,7 +11,6 @@
     </output>
     <output filename="grit/keyboard_resources_map.h" type="resource_map_header" />
     <output filename="keyboard_resources.pak" type="data_package" />
-    <output filename="keyboard_resources.rc" type="rc_all" />
   </outputs>
   <release seq="1">
     <includes>

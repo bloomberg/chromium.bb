@@ -1473,7 +1473,6 @@
                 # from direct_dependent_settings in their various targets, but
                 # that causes errors in other targets when resulting .res files
                 # get referenced multiple times.
-                '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
               ],
               'dependencies': [

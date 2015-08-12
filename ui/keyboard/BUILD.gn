@@ -61,7 +61,6 @@ grit("resources_grit") {
     "grit/keyboard_resources.h",
     "grit/keyboard_resources_map.h",
     "keyboard_resources.pak",
-    "keyboard_resources.rc",
   ]
 
   input_tools_root_dir = "//third_party/google_input_tools/src/chrome/os"

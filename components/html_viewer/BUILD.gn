@@ -18,7 +18,6 @@ grit("html_viewer_resources_grit") {
   outputs = [
     "grit/html_viewer_resources.h",
     "html_viewer_resources.pak",
-    "html_viewer_resources.rc",
   ]
 }
 
