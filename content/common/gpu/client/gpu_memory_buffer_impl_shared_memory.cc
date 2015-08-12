@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_math.h"
+#include "base/process/memory.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -34,11 +35,11 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplSharedMemory::Create(
     const DestructionCallback& callback) {
   size_t buffer_size = 0u;
   if (!BufferSizeInBytes(size, format, &buffer_size))
-    return scoped_ptr<GpuMemoryBufferImpl>();
+    return nullptr;
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAndMapAnonymous(buffer_size))
-    return scoped_ptr<GpuMemoryBufferImpl>();
+    return nullptr;
 
   return make_scoped_ptr(new GpuMemoryBufferImplSharedMemory(
       id, size, format, callback, shared_memory.Pass()));
@@ -74,16 +75,16 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     gfx::BufferFormat format,
     const DestructionCallback& callback) {
   if (!base::SharedMemory::IsHandleValid(handle.handle))
-    return scoped_ptr<GpuMemoryBufferImpl>();
+    return nullptr;
 
   size_t buffer_size = 0u;
-  if (!BufferSizeInBytes(size, format, &buffer_size))
-    return scoped_ptr<GpuMemoryBufferImpl>();
+  bool result = BufferSizeInBytes(size, format, &buffer_size);
+  DCHECK(result);
 
   scoped_ptr<base::SharedMemory> shared_memory(
       new base::SharedMemory(handle.handle, false));
   if (!shared_memory->Map(buffer_size))
-    return scoped_ptr<GpuMemoryBufferImpl>();
+    base::TerminateBecauseOutOfMemory(buffer_size);
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(
       new GpuMemoryBufferImplSharedMemory(
