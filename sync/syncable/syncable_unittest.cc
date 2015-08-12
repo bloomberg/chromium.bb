@@ -122,7 +122,13 @@ TestDirectory::TestDirectory(
 
 TestDirectory::~TestDirectory() { }
 
-TEST(OnDiskSyncableDirectory, FailInitialWrite) {
+// crbug.com/144422
+#if defined(OS_ANDROID)
+#define MAYBE_FailInitialWrite DISABLED_FailInitialWrite
+#else
+#define MAYBE_FailInitialWrite FailInitialWrite
+#endif
+TEST(OnDiskSyncableDirectory, MAYBE_FailInitialWrite) {
   base::MessageLoop message_loop;
   FakeEncryptor encryptor;
   TestUnrecoverableErrorHandler handler;
