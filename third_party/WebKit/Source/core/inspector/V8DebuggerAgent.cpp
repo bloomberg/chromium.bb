@@ -151,18 +151,12 @@ V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V
     , m_compiledScripts(debugger->isolate())
 {
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
+    m_promiseTracker = PromiseTracker::create(this, m_isolate);
+    clearBreakDetails();
 }
 
 V8DebuggerAgent::~V8DebuggerAgent()
 {
-}
-
-void V8DebuggerAgent::init()
-{
-    m_promiseTracker = PromiseTracker::create(this, m_isolate);
-    // FIXME: make breakReason optional so that there was no need to init it with "other".
-    clearBreakDetails();
-    m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
 }
 
 bool V8DebuggerAgent::checkEnabled(ErrorString* errorString)
@@ -255,7 +249,7 @@ void V8DebuggerAgent::restore()
     if (enabled()) {
         frontend()->globalObjectCleared();
         enable();
-        long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState);
+        long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
         String error;
         setPauseOnExceptionsImpl(&error, pauseState);
         m_cachedSkipStackRegExp = compileSkipCallFramePattern(m_state->getString(DebuggerAgentState::skipStackPattern));

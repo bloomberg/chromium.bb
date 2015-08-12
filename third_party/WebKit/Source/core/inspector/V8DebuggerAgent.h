@@ -69,12 +69,10 @@ public:
         virtual void didRejectPromise() = 0;
     };
 
+    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*);
     ~V8DebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void canSetScriptSource(ErrorString*, bool* result) final { *result = true; }
-
-    void init() final;
     void restore() override;
     void disable(ErrorString*) final;
 
@@ -92,6 +90,7 @@ public:
     void getStepInPositions(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& positions) final;
     void getBacktrace(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>&, RefPtr<TypeBuilder::Debugger::StackTrace>&) final;
     void searchInContent(ErrorString*, const String& scriptId, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>>&) final;
+    void canSetScriptSource(ErrorString*, bool* result) final { *result = true; }
     void setScriptSource(ErrorString*, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, const String& scriptId, const String& newContent, const bool* preview, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>& newCallFrames, TypeBuilder::OptOutput<bool>* stackChanged, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) final;
     void restartFrame(ErrorString*, const String& callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>& newCallFrames, RefPtr<TypeBuilder::Debugger::StackTrace>& asyncStackTrace) final;
     void getScriptSource(ErrorString*, const String& scriptId, String* scriptSource) final;
@@ -169,13 +168,7 @@ public:
     void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) final;
 
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
-
-protected:
-    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*);
-
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
-
-    void didContinue() final;
     void reset();
     void resetModifiedSources();
 
@@ -185,6 +178,7 @@ private:
     void disable();
 
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
+    void didContinue() final;
 
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
