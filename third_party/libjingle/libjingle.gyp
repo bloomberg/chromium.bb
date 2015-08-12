@@ -331,8 +331,6 @@
             '<(libjingle_source)/talk/app/webrtc/audiotrackrenderer.h',
             '<(libjingle_source)/talk/app/webrtc/datachannel.cc',
             '<(libjingle_source)/talk/app/webrtc/datachannel.h',
-            '<(libjingle_source)/talk/app/webrtc/dtlsidentityservice.cc',
-            '<(libjingle_source)/talk/app/webrtc/dtlsidentityservice.h',
             '<(libjingle_source)/talk/app/webrtc/dtlsidentitystore.cc',
             '<(libjingle_source)/talk/app/webrtc/dtlsidentitystore.h',
             '<(libjingle_source)/talk/app/webrtc/dtmfsender.cc',
