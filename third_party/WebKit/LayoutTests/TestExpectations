@@ -49,7 +49,6 @@ crbug.com/520177 [ Android ] fast/images/style-access-during-imageChanged-crash.
 crbug.com/520178 fast/loader/form-submit-aborts-parsing.html [ Failure Pass ]
 crbug.com/520179 fast/preloader/document-write-noscript.html [ Failure Pass ]
 crbug.com/520180 [ Linux ] fast/text/basic/001.html [ Pass Timeout ]
-crbug.com/520181 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout ]
 crbug.com/520183 http/tests/fouc/scroll-left-while-loading.html [ Pass Timeout ]
 crbug.com/520184 http/tests/history/frameset-repeated-name.html [ Failure Pass ]
 crbug.com/520185 http/tests/inspector/elements/styles/selector-line-sourcemap-header.html [ Failure Pass Timeout ]
@@ -70,8 +69,6 @@ crbug.com/520199 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure Pas
 crbug.com/520200 [ XP ] svg/batik/text/smallFonts.svg [ Failure Timeout ]
 crbug.com/520201 svg/custom/js-late-mask-and-object-creation.svg [ Failure Pass ]
 crbug.com/520203 webaudio/audiobuffersource-late-start.html [ Failure Pass Timeout ]
-crbug.com/518965 [ XP ] http/tests/cachestorage/window/cache-put.html [ Pass Timeout ]
-crbug.com/518965 [ XP ] http/tests/cachestorage/window/cache-storage-match.html [ Failure Pass Timeout ]
 crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nested.html [ Failure Pass Timeout ]
 crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
@@ -151,9 +148,6 @@ crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.
 crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
-crbug.com/510002 crbug.com/518965 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure Timeout ]
-crbug.com/510002 crbug.com/518965 [ Win ] http/tests/cachestorage/worker/cache-match.html [ Pass Failure ]
-crbug.com/433727 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Timeout Failure ]
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
 crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure Timeout ]
@@ -958,6 +952,16 @@ crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/o
 crbug.com/505415 [ XP ] accessibility/canvas-fallback-content-labels.html [ Failure ]
 
 crbug.com/506312 imported/csswg-test/css-pseudo-4/first-letter-001.html [ ImageOnlyFailure ]
+
+crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-match.html [ Pass Failure ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-put.html [ Pass Failure Timeout ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/window/cache-storage-match.html [ Pass Failure Timeout ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-match.html [ Pass Failure ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-storage-match.html [ Pass Failure Timeout ]
+crbug.com/510002 [ XP ] http/tests/cachestorage/worker/cache-storage-keys.html [ Pass Failure Timeout ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-put.html [ Pass Failure Timeout ]
+crbug.com/510002 [ Win ] http/tests/cachestorage/worker/cache-add.html [ Pass Failure Timeout ]
+crbug.com/510002 [ XP ] http/tests/cachestorage/serviceworker/cache-put.html [ Pass Timeout ]
 
 # Yosemite-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
