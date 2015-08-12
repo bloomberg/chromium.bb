@@ -438,7 +438,8 @@ class HarfBuzzLineBreaker {
       end_pos++;
     }
 
-    const size_t valid_end_pos = FindValidBoundaryBefore(text_, end_pos);
+    const size_t valid_end_pos = std::max(
+        segment.char_range.start(), FindValidBoundaryBefore(text_, end_pos));
     if (end_pos != valid_end_pos) {
       end_pos = valid_end_pos;
       width = run.GetGlyphWidthForCharRange(
@@ -449,8 +450,10 @@ class HarfBuzzLineBreaker {
     // need to put at least one character in the line. Note that, we should
     // not separate surrogate pair or combining characters.
     // See RenderTextTest.Multiline_MinWidth for an example.
-    if (width == 0 && available_width_ == max_width_)
-      end_pos = FindValidBoundaryAfter(text_, end_pos + 1);
+    if (width == 0 && available_width_ == max_width_) {
+      end_pos = std::min(segment.char_range.end(),
+                         FindValidBoundaryAfter(text_, end_pos + 1));
+    }
 
     return end_pos;
   }
