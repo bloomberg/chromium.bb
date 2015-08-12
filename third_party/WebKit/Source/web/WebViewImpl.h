@@ -186,6 +186,7 @@ public:
     bool scrollFocusedNodeIntoRect(const WebRect&) override;
     void smoothScroll(int targetX, int targetY, long durationMs) override;
     void zoomToFindInPageRect(const WebRect&);
+    void advanceFocusInForm(WebFocusType) override;
     void advanceFocus(bool reverse) override;
     double zoomLevel() override;
     double setZoomLevel(double) override;
@@ -557,6 +558,8 @@ private:
 
     WebTextInputType textInputType();
     int textInputFlags();
+    Element* nextFocusableElementInForm(Element*, WebFocusType);
+    bool isListeningToKeyboardEvents(Element*);
 
     WebString inputModeOfFocusedElement();
 

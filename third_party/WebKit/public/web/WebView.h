@@ -33,6 +33,7 @@
 
 #include "../platform/WebColor.h"
 #include "../platform/WebDisplayMode.h"
+#include "../platform/WebFocusType.h"
 #include "../platform/WebPageVisibilityState.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
@@ -178,6 +179,12 @@ public:
 
     // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
     virtual void smoothScroll(int targetX, int targetY, long durationMs) { }
+
+    // Advance the focus of the WebView to next text input element from current
+    // input field wrt sequential navigation with TAB or Shift + TAB
+    // WebFocusTypeForward simulates TAB and WebFocusTypeBackward simulates
+    // Shift + TAB. (Will be extended to other form Controls like Select element, Checkbox, Radio etc.)
+    virtual void advanceFocusInForm(WebFocusType focusType) {}
 
     // Advance the focus of the WebView forward to the next element or to the
     // previous element in the tab sequence (if reverse is true).
