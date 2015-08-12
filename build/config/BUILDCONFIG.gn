@@ -559,9 +559,6 @@ template("component") {
           "//build/config/sanitizers:deps",
         ]
       }
-      if (defined(invoker.direct_dependent_configs)) {
-        direct_dependent_configs = invoker.direct_dependent_configs
-      }
       if (defined(invoker.forward_dependent_configs_from)) {
         forward_dependent_configs_from = invoker.forward_dependent_configs_from
       }
@@ -646,9 +643,6 @@ template("component") {
       }
       if (defined(invoker.deps)) {
         deps = invoker.deps
-      }
-      if (defined(invoker.direct_dependent_configs)) {
-        direct_dependent_configs = invoker.direct_dependent_configs
       }
       if (defined(invoker.forward_dependent_configs_from)) {
         forward_dependent_configs_from = invoker.forward_dependent_configs_from
@@ -749,9 +743,6 @@ template("test") {
       if (defined(invoker.deps)) {
         deps = invoker.deps
       }
-      if (defined(invoker.direct_dependent_configs)) {
-        direct_dependent_configs = invoker.direct_dependent_configs
-      }
       if (defined(invoker.forward_dependent_configs_from)) {
         forward_dependent_configs_from = invoker.forward_dependent_configs_from
       }
@@ -842,9 +833,6 @@ template("test") {
         deps = [
           "//build/config/sanitizers:deps",
         ]
-      }
-      if (defined(invoker.direct_dependent_configs)) {
-        direct_dependent_configs = invoker.direct_dependent_configs
       }
       if (defined(invoker.forward_dependent_configs_from)) {
         forward_dependent_configs_from = invoker.forward_dependent_configs_from

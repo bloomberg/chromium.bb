@@ -163,7 +163,7 @@ template("generate_library_loader") {
   }
 
   source_set(target_name) {
-    direct_dependent_configs = [ invoker.config ]
+    public_configs = [ invoker.config ]
     sources = [
       output_h,
       output_cc,
