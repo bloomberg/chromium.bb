@@ -1653,14 +1653,6 @@ Hit the back button to exit.
         Stop
       </message>
 
-      <!-- Messages for local media playback -->
-      <message name="IDS_MEDIA_PLAYBACK_NOTIFICATION_PLAYING_FOR_MEDIA" desc="Notification text when playing media locally. [CHAR LIMIT=40]">
-        Playing “<ph name="MEDIA_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
-      </message>
-      <message name="IDS_MEDIA_PLAYBACK_NOTIFICATION_PAUSED_FOR_MEDIA" desc="Notification text when paused media locally. [CHAR LIMIT=40]">
-        Paused “<ph name="MEDIA_TITLE">%1$s<ex>Psy - Gangnam Style - YouTube</ex></ph>”
-      </message>
-
       <!-- New Tab Page strings -->
       <message name="IDS_NTP_BOOKMARKS" desc="Text for bookmarks button [CHAR-LIMIT=20]">
         Bookmarks

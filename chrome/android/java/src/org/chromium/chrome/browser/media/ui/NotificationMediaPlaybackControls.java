@@ -231,16 +231,6 @@ public class NotificationMediaPlaybackControls {
         return mContext.getString(R.string.media_notification_text_no_link);
     }
 
-    private String getTitle() {
-        String mediaTitle = mMediaNotificationInfo.title;
-        if (mMediaNotificationInfo.isPaused) {
-            return mContext.getString(
-                    R.string.media_playback_notification_paused_for_media, mediaTitle);
-        }
-        return mContext.getString(
-                R.string.media_playback_notification_playing_for_media, mediaTitle);
-    }
-
     private PendingIntent createContentIntent() {
         int tabId = mMediaNotificationInfo.tabId;
         Intent intent = new Intent(Intent.ACTION_MAIN);
@@ -278,7 +268,7 @@ public class NotificationMediaPlaybackControls {
 
         RemoteViews contentView = createContentView();
 
-        contentView.setTextViewText(R.id.title, getTitle());
+        contentView.setTextViewText(R.id.title, mMediaNotificationInfo.title);
         contentView.setTextViewText(R.id.status, getStatus());
         if (mNotificationIconBitmap != null) {
             contentView.setImageViewBitmap(R.id.icon, mNotificationIconBitmap);
