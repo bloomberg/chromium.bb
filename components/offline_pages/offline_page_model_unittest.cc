@@ -580,4 +580,37 @@ TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnRemove) {
   EXPECT_EQ(DeletePageResult::STORE_FAILURE, last_delete_result());
 }
 
+TEST_F(OfflinePageModelTest, GetPageByBookmarkId) {
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  scoped_ptr<OfflinePageTestArchiver> archiver2(
+      BuildArchiver(kTestUrl2,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl2, kTestPageBookmarkId2, archiver2.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  OfflinePageItem page;
+  EXPECT_TRUE(model()->GetPageByBookmarkId(kTestPageBookmarkId1, &page));
+  EXPECT_EQ(kTestUrl, page.url);
+  EXPECT_EQ(kTestPageBookmarkId1, page.bookmark_id);
+  EXPECT_EQ(kTestFileSize, page.file_size);
+
+  EXPECT_TRUE(model()->GetPageByBookmarkId(kTestPageBookmarkId2, &page));
+  EXPECT_EQ(kTestUrl2, page.url);
+  EXPECT_EQ(kTestPageBookmarkId2, page.bookmark_id);
+  EXPECT_EQ(kTestFileSize, page.file_size);
+
+  EXPECT_FALSE(model()->GetPageByBookmarkId(-42, &page));
+}
+
 }  // namespace offline_pages

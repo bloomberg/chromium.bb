@@ -118,6 +118,12 @@ class OfflinePageModel : public KeyedService {
   // Gets all available offline pages. Requires that the model is loaded.
   const std::vector<OfflinePageItem>& GetAllPages() const;
 
+  // Gets an offline page associated with a specified |bookmark_id|. Returns
+  // true if a matching offline page exists, and |offline_page| will be updated
+  // with corresponding value, or false, if no offline page was found.
+  bool GetPageByBookmarkId(int64 bookmark_id,
+                           OfflinePageItem* offline_page) const;
+
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 

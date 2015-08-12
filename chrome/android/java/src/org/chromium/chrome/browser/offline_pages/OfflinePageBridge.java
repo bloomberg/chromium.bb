@@ -120,6 +120,18 @@ public final class OfflinePageBridge {
     }
 
     /**
+     * Gets an offline page associated with a provided bookmark ID.
+     *
+     * @param bookmarkId Id of the bookmark associated with an offline page.
+     * @return An {@link OfflinePageItem} matching the bookmark Id or <code>null</code> if none
+     * exist.
+     */
+    @VisibleForTesting
+    public OfflinePageItem getPageByBookmarkId(BookmarkId bookmarkId) {
+        return nativeGetPageByBookmarkId(mNativeOfflinePageBridge, bookmarkId.getId());
+    }
+
+    /**
      * Saves the web page loaded into web contents offline.
      *
      * @param webContents Contents of the page to save.
@@ -152,7 +164,13 @@ public final class OfflinePageBridge {
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
             String url, long bookmarkId, String offlineUrl, long fileSize) {
-        offlinePagesList.add(new OfflinePageItem(url, bookmarkId, offlineUrl, fileSize));
+        offlinePagesList.add(createOfflinePageItem(url, bookmarkId, offlineUrl, fileSize));
+    }
+
+    @CalledByNative
+    private static OfflinePageItem createOfflinePageItem(
+            String url, long bookmarkId, String offlineUrl, long fileSize) {
+        return new OfflinePageItem(url, bookmarkId, offlineUrl, fileSize);
     }
 
     private static native boolean nativeIsOfflinePagesEnabled();
@@ -161,6 +179,8 @@ public final class OfflinePageBridge {
     private native void nativeDestroy(long nativeOfflinePageBridge);
     private native void nativeGetAllPages(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
+    private native OfflinePageItem nativeGetPageByBookmarkId(
+            long nativeOfflinePageBridge, long bookmarkId);
     private native void nativeSavePage(long nativeOfflinePageBridge, OfflinePageCallback callback,
             WebContents webContents, long bookmarkId);
 }

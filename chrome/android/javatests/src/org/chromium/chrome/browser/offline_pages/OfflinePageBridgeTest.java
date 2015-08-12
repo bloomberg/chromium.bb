@@ -85,6 +85,23 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         assertTrue("Offline page item size is incorrect: " + size, size == 626 || size == 627);
     }
 
+    @MediumTest
+    public void testGetPageByBookmarkId() throws Exception {
+        loadUrl(TEST_PAGE);
+        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        OfflinePageItem offlinePage = mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID);
+        assertEquals("Offline page item url incorrect.", TEST_PAGE, offlinePage.getUrl());
+        assertEquals("Offline page item bookmark ID incorrect.", BOOKMARK_ID,
+                offlinePage.getBookmarkId());
+        assertTrue("Offline page item offline file url doesn't start properly.",
+                offlinePage.getOfflineUrl().startsWith("file:///"));
+        assertTrue("Offline page item offline file doesn't have the right name.",
+                offlinePage.getOfflineUrl().endsWith("About.mhtml"));
+
+        assertNull("Offline page is not supposed to exist",
+                mOfflinePageBridge.getPageByBookmarkId(new BookmarkId(-42, BookmarkType.NORMAL)));
+    }
+
     private void savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
         final Semaphore semaphore = new Semaphore(0);

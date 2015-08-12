@@ -38,6 +38,9 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
                    jobject obj,
                    jobject j_result_obj);
 
+  base::android::ScopedJavaLocalRef<jobject>
+  GetPageByBookmarkId(JNIEnv* env, jobject obj, jlong bookmark_id);
+
   void SavePage(JNIEnv* env,
                 jobject obj,
                 jobject j_callback_obj,

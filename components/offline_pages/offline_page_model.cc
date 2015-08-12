@@ -116,6 +116,20 @@ const std::vector<OfflinePageItem>& OfflinePageModel::GetAllPages() const {
   return offline_pages_;
 }
 
+bool OfflinePageModel::GetPageByBookmarkId(
+    int64 bookmark_id,
+    OfflinePageItem* offline_page) const {
+  DCHECK(offline_page);
+
+  for (const auto& page : offline_pages_) {
+    if (page.bookmark_id == bookmark_id) {
+      *offline_page = page;
+      return true;
+    }
+  }
+  return false;
+}
+
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
 }
