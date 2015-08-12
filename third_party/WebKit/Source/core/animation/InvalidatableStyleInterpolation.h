@@ -32,6 +32,8 @@ public:
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        visitor->trace(m_startKeyframe);
+        visitor->trace(m_endKeyframe);
         visitor->trace(m_cachedConversion);
         visitor->trace(m_conversionCheckers);
         visitor->trace(m_cachedValue);
@@ -54,8 +56,8 @@ private:
     void setFlagIfInheritUsed(StyleResolverState&) const;
 
     const Vector<const InterpolationType*>& m_interpolationTypes;
-    const CSSPropertySpecificKeyframe& m_startKeyframe;
-    const CSSPropertySpecificKeyframe& m_endKeyframe;
+    RawPtrWillBeMember<const CSSPropertySpecificKeyframe> m_startKeyframe;
+    RawPtrWillBeMember<const CSSPropertySpecificKeyframe> m_endKeyframe;
     double m_currentFraction;
     mutable OwnPtrWillBeMember<PrimitiveInterpolation> m_cachedConversion;
     mutable InterpolationType::ConversionCheckers m_conversionCheckers;
