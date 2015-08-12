@@ -345,6 +345,9 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
                "InputRouterImpl::FilterAndSendWebInputEvent",
                "type",
                WebInputEventTraits::GetName(input_event.type));
+  TRACE_EVENT_FLOW_STEP0("input,benchmark", "LatencyInfo.Flow",
+                         TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
+                         "SendInputEventUI");
 
   // Any input event cancels a pending mouse move event.
   next_mouse_move_.reset();
