@@ -286,7 +286,7 @@ void WebRuntimeFeatures::enableCredentialManagerAPI(bool enable)
 
 void WebRuntimeFeatures::enableTextBlobs(bool enable)
 {
-    RuntimeEnabledFeatures::setTextBlobEnabled(enable);
+    // TODO(jbroman): Remove this method once Chromium no longer calls it.
 }
 
 void WebRuntimeFeatures::enableCSSViewport(bool enable)

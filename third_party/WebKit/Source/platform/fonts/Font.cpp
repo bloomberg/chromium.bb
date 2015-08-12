@@ -144,7 +144,6 @@ void Font::drawText(SkCanvas* canvas, const TextRunPaintInfo& runInfo,
         return;
 
     if (runInfo.cachedTextBlob && runInfo.cachedTextBlob->get()) {
-        ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
         // we have a pre-cached blob -- happy joy!
         drawTextBlob(canvas, paint, runInfo.cachedTextBlob->get(), point.data());
         return;
@@ -237,8 +236,6 @@ float Font::width(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFo
 
 PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer) const
 {
-    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
-
     SkTextBlobBuilder builder;
     bool hasVerticalOffsets = glyphBuffer.hasVerticalOffsets();
 
@@ -688,8 +685,6 @@ void Font::drawGlyphs(SkCanvas* canvas, const SkPaint& paint, const SimpleFontDa
 
 void Font::drawTextBlob(SkCanvas* canvas, const SkPaint& paint, const SkTextBlob* blob, const SkPoint& origin) const
 {
-    ASSERT(RuntimeEnabledFeatures::textBlobEnabled());
-
     canvas->drawTextBlob(blob, origin.x(), origin.y(), paint);
 }
 
@@ -721,16 +716,13 @@ void Font::drawGlyphBuffer(SkCanvas* canvas, const SkPaint& paint, const TextRun
     if (glyphBuffer.isEmpty())
         return;
 
-    if (RuntimeEnabledFeatures::textBlobEnabled()) {
-        // Enabling text-blobs forces the blob rendering path even for uncacheable blobs.
-        TextBlobPtr uncacheableTextBlob;
-        TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
-
-        textBlob = buildTextBlob(glyphBuffer);
-        if (textBlob) {
-            drawTextBlob(canvas, paint, textBlob.get(), point.data());
-            return;
-        }
+    // Always try to draw a text blob, even for uncacheable blobs.
+    TextBlobPtr uncacheableTextBlob;
+    TextBlobPtr& textBlob = runInfo.cachedTextBlob ? *runInfo.cachedTextBlob : uncacheableTextBlob;
+    textBlob = buildTextBlob(glyphBuffer);
+    if (textBlob) {
+        drawTextBlob(canvas, paint, textBlob.get(), point.data());
+        return;
     }
 
     // Draw each contiguous run of glyphs that use the same font data.

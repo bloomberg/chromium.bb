@@ -214,7 +214,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         // FIXME: This cache should probably ultimately be held somewhere else.
         // A hashmap is convenient to avoid a memory hit when the
         // RuntimeEnabledFeature is off.
-        bool textBlobIsCacheable = RuntimeEnabledFeatures::textBlobEnabled() && startOffset == 0 && endOffset == length;
+        bool textBlobIsCacheable = startOffset == 0 && endOffset == length;
         TextBlobPtr* cachedTextBlob = 0;
         if (textBlobIsCacheable)
             cachedTextBlob = addToTextBlobCache(m_inlineTextBox);
@@ -223,7 +223,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     if ((paintSelectedTextOnly || paintSelectedTextSeparately) && selectionStart < selectionEnd) {
         // paint only the text that is selected
-        bool textBlobIsCacheable = RuntimeEnabledFeatures::textBlobEnabled() && selectionStart == 0 && selectionEnd == length;
+        bool textBlobIsCacheable = selectionStart == 0 && selectionEnd == length;
         TextBlobPtr* cachedTextBlob = 0;
         if (textBlobIsCacheable)
             cachedTextBlob = addToTextBlobCache(m_inlineTextBox);

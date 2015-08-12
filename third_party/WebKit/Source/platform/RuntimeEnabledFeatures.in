@@ -160,7 +160,6 @@ StaleWhileRevalidateCacheControl
 ExperimentalStream status=experimental
 ReferrerPolicyAttribute status=experimental
 Suborigins status=experimental
-TextBlob
 ThreadedParserDataReceiver
 // Many websites disable mouse support when touch APIs are available.  We'd
 // like to enable this always but can't until more websites fix this bug.
