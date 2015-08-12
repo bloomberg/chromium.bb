@@ -10,7 +10,6 @@ grit("strings") {
   source = "content_strings.grd"
   outputs = [
     "grit/content_strings.h",
-    "content_strings_en-US.rc",
     "content_strings_am.pak",
     "content_strings_ar.pak",
     "content_strings_bg.pak",

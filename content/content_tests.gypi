@@ -1450,11 +1450,6 @@
               ],
               'sources': [
                 '<@(content_browsertests_win_sources)',
-                # TODO: It would be nice to have these pulled in automatically
-                # from direct_dependent_settings in their various targets but
-                # that causes errors in other targets when resulting .res files
-                # get referenced multiple times.
-                '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.rc',
                 'shell/app/resource.h',
                 'shell/app/shell.rc',
               ],

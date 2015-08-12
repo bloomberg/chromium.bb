@@ -45,9 +45,6 @@ below:
     <output filename="grit/content_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
-    <!-- TODO(tony): Get rid of this .rc file. -->
-    <output filename="content_strings_en-US.rc" type="rc_all" lang="en" />
-
     <output filename="content_strings_am.pak" type="data_package" lang="am" />
     <output filename="content_strings_ar.pak" type="data_package" lang="ar" />
     <if expr="use_third_party_translations">

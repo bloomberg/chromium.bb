@@ -71,7 +71,6 @@ grit("resources") {
   outputs = [
     "grit/shell_resources.h",
     "shell_resources.pak",
-    "shell_resources.rc",
   ]
 }
 

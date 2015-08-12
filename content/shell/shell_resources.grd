@@ -5,7 +5,6 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="shell_resources.pak" type="data_package" />
-    <output filename="shell_resources.rc" type="rc_all" />
   </outputs>
   <translations />
   <release seq="1">

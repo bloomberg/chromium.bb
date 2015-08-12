@@ -68,7 +68,6 @@ grit("resources") {
   outputs = [
     "grit/content_resources.h",
     "content_resources.pak",
-    "content_resources.rc",
   ]
 }
 
