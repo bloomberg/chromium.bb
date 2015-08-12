@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
@@ -823,20 +822,6 @@ public class ChromeTab extends Tab {
             @Override
             public void didFailLoad(boolean isProvisionalLoad, boolean isMainFrame, int errorCode,
                     String description, String failingUrl, boolean wasIgnoredByHandler) {
-                if (isMainFrame) {
-                    if (failingUrl.startsWith("chrome://newtab/")
-                            || failingUrl.startsWith("chrome://welcome/")) {
-                        // If a tab was showing the old NTP or welcome page in a previous version
-                        // of Chrome, that tab will appear as a blank page after Chrome updates.
-                        // To fix this, these obsolete URLs are redirected to the NTP.
-                        // TODO(newt): remove this once most users have upgraded past M39.
-                        // http://crbug.com/491878
-                        loadUrl(new LoadUrlParams(UrlConstants.NTP_URL,
-                                PageTransition.AUTO_TOPLEVEL));
-                        return;
-                    }
-                }
-
                 PolicyAuditor auditor =
                         ((ChromeApplication) getApplicationContext()).getPolicyAuditor();
                 auditor.notifyAuditEvent(getApplicationContext(), AuditEvent.OPEN_URL_FAILURE,
