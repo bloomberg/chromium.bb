@@ -799,8 +799,11 @@ VideoCaptureManager::GetDeviceEntryForController(
 
 void VideoCaptureManager::DestroyDeviceEntryIfNoClients(DeviceEntry* entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Removal of the last client stops the device.
-  if (entry->video_capture_controller()->GetClientCount() == 0) {
+  // Removal of the last active client stops the device. It is important to only
+  // check active clients and not all clients, because otherwise this class gets
+  // into a bad state and might crash next time VideoCaptureManager::Open() is
+  // called.
+  if (entry->video_capture_controller()->GetActiveClientCount() == 0) {
     DVLOG(1) << "VideoCaptureManager stopping device (type = "
              << entry->stream_type << ", id = " << entry->id << ")";
 
