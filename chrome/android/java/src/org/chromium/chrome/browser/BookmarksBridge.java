@@ -4,9 +4,12 @@
 
 package org.chromium.chrome.browser;
 
+import android.util.Pair;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.enhancedbookmarks.BookmarkMatch;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -378,6 +381,20 @@ public class BookmarksBridge {
     }
 
     /**
+     * Synchronously gets a list of bookmarks that match the specified search query.
+     * @param query Keyword used for searching bookmarks.
+     * @param maxNumberOfResult Maximum number of result to fetch.
+     * @return List of bookmarks that are related to the given query.
+     */
+    public List<BookmarkMatch> searchBookmarks(String query, int maxNumberOfResult) {
+        List<BookmarkMatch> bookmarkMatches = new ArrayList<BookmarkMatch>();
+        nativeSearchBookmarks(mNativeBookmarksBridge, bookmarkMatches, query,
+                maxNumberOfResult);
+        return bookmarkMatches;
+    }
+
+
+    /**
      * Set title of the given bookmark.
      */
     public void setBookmarkTitle(BookmarkId id, String title) {
@@ -666,6 +683,25 @@ public class BookmarksBridge {
         depthList.add(depth);
     }
 
+    @CalledByNative
+    private static void addToBookmarkMatchList(List<BookmarkMatch> bookmarkMatchList,
+            long id, int type, int[] titleMatchStartPositions,
+            int[] titleMatchEndPositions, int[] urlMatchStartPositions,
+            int[] urlMatchEndPositions) {
+        bookmarkMatchList.add(new BookmarkMatch(new BookmarkId(id, type),
+                createPairsList(titleMatchStartPositions, titleMatchEndPositions),
+                createPairsList(urlMatchStartPositions, urlMatchEndPositions)));
+    }
+
+    private static List<Pair<Integer, Integer>> createPairsList(int[] left, int[] right) {
+        List<Pair<Integer, Integer>> pairList = new ArrayList<Pair<Integer, Integer>>();
+        for (int i = 0; i < left.length; i++) {
+            pairList.add(new Pair<Integer, Integer>(left[i], right[i]));
+        }
+        return pairList;
+    }
+
+
     private native BookmarkItem nativeGetBookmarkByID(long nativeBookmarksBridge, long id,
             int type);
     private native void nativeGetPermanentNodeIDs(long nativeBookmarksBridge,
@@ -710,7 +746,8 @@ public class BookmarksBridge {
     private native void nativeEndGroupingUndos(long nativeBookmarksBridge);
     private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
     private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarksBridge);
-
+    private native void nativeSearchBookmarks(long nativeBookmarksBridge,
+            List<BookmarkMatch> bookmarkMatches, String query, int maxNumber);
     private native long nativeInit(Profile profile);
     private native boolean nativeIsDoingExtensiveChanges(long nativeBookmarksBridge);
     private native void nativeDestroy(long nativeBookmarksBridge);

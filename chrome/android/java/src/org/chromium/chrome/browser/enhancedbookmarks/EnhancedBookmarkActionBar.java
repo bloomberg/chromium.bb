@@ -85,6 +85,9 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         } else if (menuItem.getItemId() == R.id.close_menu_id) {
             mDelegate.finishActivityOnPhone();
             return true;
+        } else if (menuItem.getItemId() == R.id.search_menu_id) {
+            mDelegate.openSearchUI();
+            return true;
         } else if (menuItem.getItemId() == R.id.selection_mode_edit_menu_id) {
             List<BookmarkId> list = mDelegate.getSelectedBookmarks();
             assert list.size() == 1;
@@ -180,6 +183,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     void showLoadingUi() {
         setTitle(null);
         setNavigationButton(NAVIGATION_BUTTON_NONE);
+        getMenu().findItem(R.id.search_menu_id).setVisible(false);
         getMenu().findItem(R.id.edit_menu_id).setVisible(false);
     }
 
@@ -202,6 +206,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     public void onAllBookmarksStateSet() {
         setTitle(R.string.enhanced_bookmark_title_bar_all_items);
         setNavigationButton(NAVIGATION_BUTTON_MENU);
+        getMenu().findItem(R.id.search_menu_id).setVisible(true);
         getMenu().findItem(R.id.edit_menu_id).setVisible(false);
     }
 
@@ -209,6 +214,7 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     public void onFolderStateSet(BookmarkId folder) {
         mCurrentFolder = mDelegate.getModel().getBookmarkById(folder);
 
+        getMenu().findItem(R.id.search_menu_id).setVisible(false);
         getMenu().findItem(R.id.edit_menu_id).setVisible(mCurrentFolder.isEditable());
 
         // If the parent folder is a top level node, we don't go up anymore.

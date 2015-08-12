@@ -18,6 +18,16 @@
         android:divider="@null"
         android:dividerHeight="0dp" />
 
-    <include layout="@layout/eb_main_content" />
+    <ViewSwitcher
+        android:id="@+id/eb_view_switcher"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:inAnimation="@android:anim/fade_in"
+        android:outAnimation="@android:anim/fade_out" >
+
+        <include layout="@layout/eb_main_content" />
+
+        <include layout="@layout/eb_search" />
+    </ViewSwitcher>
 
 </LinearLayout>

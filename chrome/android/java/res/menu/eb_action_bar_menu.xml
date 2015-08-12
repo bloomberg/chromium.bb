@@ -14,6 +14,12 @@
             android:visible="false"
             chrome:showAsAction="ifRoom"/>
         <item
+            android:id="@+id/search_menu_id"
+            android:icon="@drawable/ic_search"
+            android:title="@string/enhanced_bookmark_action_bar_search"
+            android:visible="false"
+            chrome:showAsAction="ifRoom"/>
+        <item
             android:id="@+id/close_menu_id"
             android:icon="@drawable/btn_close"
             android:title="@string/enhanced_bookmark_action_bar_close"

@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ViewSwitcher;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
@@ -49,6 +50,8 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     private Set<BookmarkId> mSelectedBookmarks = new HashSet<>();
     private EnhancedBookmarkStateChangeListener mUrlChangeListener;
     private EnhancedBookmarkContentView mContentView;
+    private EnhancedBookmarkSearchView mSearchView;
+    private ViewSwitcher mViewSwitcher;
     private DrawerLayout mDrawer;
     private EnhancedBookmarkDrawerListView mDrawerListView;
     private final Stack<UIState> mStateStack = new Stack<>();
@@ -105,8 +108,10 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
         mDrawerListView = (EnhancedBookmarkDrawerListView) mMainView.findViewById(
                 R.id.eb_drawer_list);
         mContentView = (EnhancedBookmarkContentView) mMainView.findViewById(R.id.eb_content_view);
+        mViewSwitcher = (ViewSwitcher) mMainView.findViewById(R.id.eb_view_switcher);
         mUndoController = new EnhancedBookmarkUndoController(activity, mEnhancedBookmarksModel,
                 ((SnackbarManageable) activity).getSnackbarManager());
+        mSearchView = (EnhancedBookmarkSearchView) getView().findViewById(R.id.eb_search_view);
         mEnhancedBookmarksModel.addObserver(mBookmarkModelObserver);
         initializeIfBookmarkModelLoaded();
 
@@ -207,6 +212,7 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
      */
     private void initializeIfBookmarkModelLoaded() {
         if (mEnhancedBookmarksModel.isBookmarkModelLoaded()) {
+            mSearchView.onEnhancedBookmarkDelegateInitialized(this);
             mDrawerListView.onEnhancedBookmarkDelegateInitialized(this);
             mContentView.onEnhancedBookmarkDelegateInitialized(this);
             if (mStateStack.isEmpty()) {
@@ -292,11 +298,13 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
 
     @Override
     public void openFolder(BookmarkId folder) {
+        closeSearchUI();
         setState(UIState.createFolderState(folder, mEnhancedBookmarksModel));
     }
 
     @Override
     public void openAllBookmarks() {
+        closeSearchUI();
         setState(UIState.createAllBookmarksState(mEnhancedBookmarksModel));
     }
 
@@ -393,6 +401,18 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
                     mEnhancedBookmarksModel.getBookmarkById(bookmark).getUrl());
             finishActivityOnPhone();
         }
+    }
+
+    @Override
+    public void openSearchUI() {
+        // Give search view focus, because it needs to handle back key event.
+        mViewSwitcher.showNext();
+    }
+
+    @Override
+    public void closeSearchUI() {
+        if (mSearchView.getVisibility() != View.VISIBLE) return;
+        mViewSwitcher.showPrevious();
     }
 
     @Override

@@ -103,6 +103,16 @@ interface EnhancedBookmarkDelegate {
     void openBookmark(BookmarkId bookmark, int launchLocation);
 
     /**
+     * Shows the search UI.
+     */
+    void openSearchUI();
+
+    /**
+     * Dismisses the search UI.
+     */
+    void closeSearchUI();
+
+    /**
      * Closes the EnhancedBookmark Activity on Phone. Does nothing on tablet.
      */
     void finishActivityOnPhone();

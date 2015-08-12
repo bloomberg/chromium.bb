@@ -36,7 +36,7 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
 
     protected ImageView mIconImageView;
     protected TextView mTitleView;
-    private TintedImageButton mMoreIcon;
+    protected TintedImageButton mMoreIcon;
     private EnhancedBookmarkItemHighlightView mHighlightView;
 
     protected EnhancedBookmarkDelegate mDelegate;
@@ -58,7 +58,7 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
     BookmarkItem setBookmarkId(BookmarkId bookmarkId) {
         mBookmarkId = bookmarkId;
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(bookmarkId);
-        mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
+        mMoreIcon.setVisibility(bookmarkItem.isEditable() && isSelectable() ? VISIBLE : GONE);
         setChecked(mDelegate.isBookmarkSelected(bookmarkId));
         return bookmarkItem;
     }
@@ -83,6 +83,13 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
 
     private void updateSelectionState() {
         mMoreIcon.setClickable(!mDelegate.isSelectionEnabled());
+    }
+
+    /**
+     * @return Whether this row is selectable.
+     */
+    protected boolean isSelectable() {
+        return true;
     }
 
     /**
@@ -164,13 +171,15 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
         mMoreIcon = (TintedImageButton) findViewById(R.id.more);
         mHighlightView = (EnhancedBookmarkItemHighlightView) findViewById(R.id.highlight);
 
-        mMoreIcon.setColorFilterMode(PorterDuff.Mode.MULTIPLY);
-        mMoreIcon.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showMenu(view);
-            }
-        });
+        if (isSelectable()) {
+            mMoreIcon.setColorFilterMode(PorterDuff.Mode.MULTIPLY);
+            mMoreIcon.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    showMenu(view);
+                }
+            });
+        }
 
         setOnClickListener(this);
         setOnLongClickListener(this);
@@ -196,7 +205,7 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
     public final void onClick(View view) {
         assert view == this;
 
-        if (mDelegate.isSelectionEnabled()) {
+        if (mDelegate.isSelectionEnabled() && isSelectable()) {
             onLongClick(view);
         } else {
             onClick();
@@ -208,7 +217,7 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
     @Override
     public boolean onLongClick(View view) {
         assert view == this;
-
+        if (!isSelectable()) return false;
         setChecked(mDelegate.toggleSelectionForBookmark(mBookmarkId));
         return true;
     }
