@@ -51,27 +51,27 @@ layer at (0,0) size 800x600
             LayoutTableCell {TD} at (28,2) size 755x22 [r=0 c=3 rs=1 cs=1]
               LayoutText {#text} at (1,1) size 4x19
                 text run at (1,1) width 4: " "
-layer at (14,33) size 0x16 scrollWidth 54
+layer at (14,33) size 0x16 scrollWidth 53
   LayoutBlockFlow {DIV} at (0,0) size 0x16
     LayoutText {#text} at (0,0) size 53x16
       text run at (0,0) width 53: "New Mail"
-layer at (23,33) size 0x16 scrollWidth 34
+layer at (23,33) size 0x16 scrollWidth 33
   LayoutBlockFlow {DIV} at (0,0) size 0x16
     LayoutText {#text} at (0,0) size 33x16
       text run at (0,0) width 33: "Reply"
-layer at (32,33) size 0x16 scrollWidth 53
+layer at (32,33) size 0x16 scrollWidth 52
   LayoutBlockFlow {DIV} at (0,0) size 0x16
     LayoutText {#text} at (0,0) size 52x16
       text run at (0,0) width 52: "Reply All"
-layer at (31,99) size 0x16 scrollWidth 54
+layer at (31,99) size 0x16 scrollWidth 53
   LayoutBlockFlow {DIV} at (0,0) size 0x16
     LayoutText {#text} at (0,0) size 53x16
       text run at (0,0) width 53: "New Mail"
-layer at (40,99) size 0x16 scrollWidth 34
+layer at (40,99) size 0x16 scrollWidth 33
   LayoutBlockFlow {DIV} at (0,0) size 0x16
     LayoutText {#text} at (0,0) size 33x16
       text run at (0,0) width 33: "Reply"
-layer at (49,99) size 0x16 scrollWidth 53
+layer at (49,99) size 0x16 scrollWidth 52
   LayoutBlockFlow {DIV} at (0,0) size 0x16
     LayoutText {#text} at (0,0) size 52x16
       text run at (0,0) width 52: "Reply All"
