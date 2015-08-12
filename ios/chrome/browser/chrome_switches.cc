@@ -31,7 +31,4 @@ const char kEnableIOSWKWebView[] = "enable-wkwebview";
 // Enables context-sensitive reader mode button in the toolbar.
 const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
 
-// Defines the value in MB of the memory wedge to insert at cold launch.
-const char kIOSMemoryWedgeSize[] = "ios-memory-wedge-size-mb";
-
 }  // namespace switches

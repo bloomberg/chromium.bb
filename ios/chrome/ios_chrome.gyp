@@ -261,8 +261,6 @@
         'browser/memory/memory_debugger_manager.mm',
         'browser/memory/memory_metrics.cc',
         'browser/memory/memory_metrics.h',
-        'browser/memory/memory_wedge.cc',
-        'browser/memory/memory_wedge.h',
         'browser/metrics/ios_stability_metrics_provider.h',
         'browser/metrics/ios_stability_metrics_provider.mm',
         'browser/metrics/previous_session_info.h',
