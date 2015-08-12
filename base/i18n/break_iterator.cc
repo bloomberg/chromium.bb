@@ -138,10 +138,14 @@ bool BreakIterator::SetText(const base::char16* text, const size_t length) {
 }
 
 bool BreakIterator::IsWord() const {
+  return GetWordBreakStatus() == IS_WORD_BREAK;
+}
+
+BreakIterator::WordBreakStatus BreakIterator::GetWordBreakStatus() const {
   int32_t status = ubrk_getRuleStatus(static_cast<UBreakIterator*>(iter_));
   if (break_type_ != BREAK_WORD && break_type_ != RULE_BASED)
-    return false;
-  return status != UBRK_WORD_NONE;
+    return IS_LINE_OR_CHAR_BREAK;
+  return status == UBRK_WORD_NONE ? IS_SKIPPABLE_WORD : IS_WORD_BREAK;
 }
 
 bool BreakIterator::IsEndOfWord(size_t position) const {

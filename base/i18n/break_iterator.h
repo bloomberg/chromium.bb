@@ -71,6 +71,19 @@ class BASE_I18N_EXPORT BreakIterator {
     RULE_BASED,
   };
 
+  enum WordBreakStatus {
+    // The end of text that the iterator recognizes as word characters.
+    // Non-word characters are things like punctuation and spaces.
+    IS_WORD_BREAK,
+    // Characters that the iterator can skip past, such as punctuation,
+    // whitespace, and, if using RULE_BASED mode, characters from another
+    // character set.
+    IS_SKIPPABLE_WORD,
+    // Only used if not in BREAK_WORD or RULE_BASED mode. This is returned for
+    // newlines, line breaks, and character breaks.
+    IS_LINE_OR_CHAR_BREAK
+  };
+
   // Requires |str| to live as long as the BreakIterator does.
   BreakIterator(const StringPiece16& str, BreakType break_type);
   // Make a rule-based iterator. BreakType == RULE_BASED is implied.
@@ -100,6 +113,20 @@ class BASE_I18N_EXPORT BreakIterator {
   // whitespace or punctuation.)  Under BREAK_LINE and BREAK_NEWLINE modes,
   // this distinction doesn't apply and it always returns false.
   bool IsWord() const;
+
+  // Under BREAK_WORD mode:
+  //  - Returns IS_SKIPPABLE_WORD if non-word characters, such as punctuation or
+  //    spaces, are found.
+  //  - Returns IS_WORD_BREAK if the break we just hit is the end of a sequence
+  //    of word characters.
+  // Under RULE_BASED mode:
+  //  - Returns IS_SKIPPABLE_WORD if characters outside the rules' character set
+  //    or non-word characters, such as punctuation or spaces, are found.
+  //  - Returns IS_WORD_BREAK if the break we just hit is the end of a sequence
+  //    of word characters that are in the rules' character set.
+  // Not under BREAK_WORD or RULE_BASED mode:
+  //  - Returns IS_LINE_OR_CHAR_BREAK.
+  BreakIterator::WordBreakStatus GetWordBreakStatus() const;
 
   // Under BREAK_WORD mode, returns true if |position| is at the end of word or
   // at the start of word. It always returns false under BREAK_LINE and

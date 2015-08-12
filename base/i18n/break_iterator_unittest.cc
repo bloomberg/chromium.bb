@@ -369,5 +369,90 @@ TEST(BreakIteratorTest, GetStringPiece) {
   EXPECT_EQ(StringPiece16(ASCIIToUTF16("string")), iter.GetStringPiece());
 }
 
+// Make sure that when not in RULE_BASED or BREAK_WORD mode we're getting
+// IS_LINE_OR_CHAR_BREAK.
+TEST(BreakIteratorTest, GetWordBreakStatusBreakLine) {
+  // A string containing the English word "foo", followed by two Khmer
+  // characters, the English word "Can", and then two Russian characters and
+  // punctuation.
+  base::string16 text(
+      base::WideToUTF16(L"foo \x1791\x17C1 \nCan \x041C\x0438..."));
+  BreakIterator iter(text, BreakIterator::BREAK_LINE);
+  ASSERT_TRUE(iter.Init());
+
+  EXPECT_TRUE(iter.Advance());
+  // Finds "foo" and the space.
+  EXPECT_EQ(base::UTF8ToUTF16("foo "), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_LINE_OR_CHAR_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds the Khmer characters, the next space, and the newline.
+  EXPECT_EQ(base::WideToUTF16(L"\x1791\x17C1 \n"), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_LINE_OR_CHAR_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds "Can" and the space.
+  EXPECT_EQ(base::UTF8ToUTF16("Can "), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_LINE_OR_CHAR_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds the Russian characters and periods.
+  EXPECT_EQ(base::WideToUTF16(L"\x041C\x0438..."), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_LINE_OR_CHAR_BREAK);
+  EXPECT_FALSE(iter.Advance());
+}
+
+// Make sure that in BREAK_WORD mode we're getting IS_WORD_BREAK and
+// IS_SKIPPABLE_WORD when we should be. IS_WORD_BREAK should be returned when we
+// finish going over non-punctuation characters while IS_SKIPPABLE_WORD should
+// be returned on punctuation and spaces.
+TEST(BreakIteratorTest, GetWordBreakStatusBreakWord) {
+  // A string containing the English word "foo", followed by two Khmer
+  // characters, the English word "Can", and then two Russian characters and
+  // punctuation.
+  base::string16 text(
+      base::WideToUTF16(L"foo \x1791\x17C1 \nCan \x041C\x0438..."));
+  BreakIterator iter(text, BreakIterator::BREAK_WORD);
+  ASSERT_TRUE(iter.Init());
+
+  EXPECT_TRUE(iter.Advance());
+  // Finds "foo".
+  EXPECT_EQ(base::UTF8ToUTF16("foo"), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds the space, and the Khmer characters.
+  EXPECT_EQ(base::UTF8ToUTF16(" "), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_EQ(base::WideToUTF16(L"\x1791\x17C1"), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds the space and the newline.
+  EXPECT_EQ(base::UTF8ToUTF16(" "), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_EQ(base::UTF8ToUTF16("\n"), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_TRUE(iter.Advance());
+  // Finds "Can".
+  EXPECT_EQ(base::UTF8ToUTF16("Can"), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds the space and the Russian characters.
+  EXPECT_EQ(base::UTF8ToUTF16(" "), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_EQ(base::WideToUTF16(L"\x041C\x0438"), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
+  EXPECT_TRUE(iter.Advance());
+  // Finds the trailing periods.
+  EXPECT_EQ(base::UTF8ToUTF16("."), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_EQ(base::UTF8ToUTF16("."), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_TRUE(iter.Advance());
+  EXPECT_EQ(base::UTF8ToUTF16("."), iter.GetString());
+  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
+  EXPECT_FALSE(iter.Advance());
+}
+
 }  // namespace i18n
 }  // namespace base
