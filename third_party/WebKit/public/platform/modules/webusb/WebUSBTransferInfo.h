@@ -17,7 +17,7 @@ struct WebUSBTransferInfo {
     };
 
     WebUSBTransferInfo()
-        : status(StatusOk)
+        : status(Status::Ok)
         , bytesWritten(0)
     {
     }

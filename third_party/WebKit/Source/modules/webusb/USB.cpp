@@ -55,9 +55,9 @@ void convertDeviceEnumerationOptions(const USBDeviceEnumerationOptions& options,
 class DeviceArray {
     WTF_MAKE_NONCOPYABLE(DeviceArray);
 public:
-    using WebType = WebVector<WebUSBDevice*>;
+    using WebType = OwnPtr<WebVector<WebUSBDevice*>>;
 
-    static HeapVector<Member<USBDevice>> take(ScriptPromiseResolver*, PassOwnPtr<WebType> webDevices)
+    static HeapVector<Member<USBDevice>> take(ScriptPromiseResolver*, PassOwnPtr<WebVector<WebUSBDevice*>> webDevices)
     {
         HeapVector<Member<USBDevice>> devices;
         for (const auto webDevice : *webDevices)
@@ -87,12 +87,7 @@ ScriptPromise USB::getDevices(ScriptState* scriptState, const USBDeviceEnumerati
 
     WebUSBDeviceEnumerationOptions webOptions;
     convertDeviceEnumerationOptions(options, &webOptions);
-
-    // TODO(rockot): Re-enable this after CPA changes land.
-    // That's https://codereview.chromium.org/1240763002/ and dependent patches.
-    // client->getDevices(webOptions, new CallbackPromiseAdapter<DeviceArray, USBError>(resolver));
-    ASSERT_NOT_REACHED();
-
+    client->getDevices(webOptions, new CallbackPromiseAdapter<DeviceArray, USBError>(resolver));
     return promise;
 }
 

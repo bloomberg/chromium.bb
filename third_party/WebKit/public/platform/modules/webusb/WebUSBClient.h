@@ -14,7 +14,7 @@ class WebUSBDevice;
 struct WebUSBDeviceEnumerationOptions;
 struct WebUSBError;
 
-using WebUSBClientGetDevicesCallbacks = WebCallbacks<WebVector<WebUSBDevice*>*, WebUSBError*>;
+using WebUSBClientGetDevicesCallbacks = WebCallbacks<WebPassOwnPtr<WebVector<WebUSBDevice*>>, const WebUSBError&>;
 
 class WebUSBClient {
 public:

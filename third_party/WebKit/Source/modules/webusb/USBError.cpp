@@ -11,15 +11,15 @@
 
 namespace blink {
 
-DOMException* USBError::take(ScriptPromiseResolver*, PassOwnPtr<WebUSBError> webError)
+DOMException* USBError::take(ScriptPromiseResolver*, const WebUSBError& webError)
 {
-    switch (webError->error) {
+    switch (webError.error) {
     case WebUSBError::Error::Device:
     case WebUSBError::Error::Security:
     case WebUSBError::Error::Service:
     case WebUSBError::Error::Transfer:
         // TODO(rockot): Differentiate between different error types.
-        return DOMException::create(AbortError, webError->message);
+        return DOMException::create(AbortError, webError.message);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);

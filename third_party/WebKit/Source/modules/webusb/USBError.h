@@ -20,8 +20,8 @@ class USBError {
     WTF_MAKE_NONCOPYABLE(USBError);
 public:
     // Interface required by CallbackPromiseAdapter:
-    using WebType = WebUSBError;
-    static DOMException* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBError>);
+    using WebType = const WebUSBError&;
+    static DOMException* take(ScriptPromiseResolver*, const WebUSBError&);
 
 private:
     USBError() = delete;
