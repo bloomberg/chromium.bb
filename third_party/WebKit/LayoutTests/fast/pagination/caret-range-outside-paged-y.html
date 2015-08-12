@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="../../resources/ahem.js"></script>
 <style>
     body {
 	margin:0;
@@ -25,6 +26,7 @@
 <div id="pagedContainer">xxx xxx xxx xxx xxx xxx xxx xxx xxx</div>
 <script src="../../resources/js-test.js"></script>
 <script>
+onload = function() {
     description("Test that hitting areas outside a paged container takes us to the right text content on some page.");
 
     // FIXME: We should ideally test above and below every page, but we get bogus results,
@@ -72,4 +74,5 @@
     shouldBe("document.caretRangeFromPoint(400,60).startOffset", "27");
     shouldBe("document.caretRangeFromPoint(400,100).startOffset", "31");
     shouldBe("document.caretRangeFromPoint(400,140).startOffset", "35");
+};
 </script>

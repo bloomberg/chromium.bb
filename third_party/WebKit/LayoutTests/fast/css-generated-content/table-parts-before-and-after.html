@@ -1,3 +1,4 @@
+<script src="../../resources/ahem.js"></script>
 <style>
     body {
         font-family: Ahem;
@@ -32,8 +33,11 @@
 <div id="target-2" class="row-group-before">22</div>
 <div class="row-before">22</div>
 <div id="target-3" class="row-before">22</div>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
+runAfterLayoutAndPaint(function() {
     document.getElementById("target-1").style.color = "blue";
     document.getElementById("target-2").style.color = "blue";
     document.getElementById("target-3").style.color = "blue";
+}, true);
 </script>

@@ -16,6 +16,7 @@
 <div id="console"></div>
  
 <script>
+onload = function() {
     description("Ensures that this snippet does not lead to a crash. Bug 86029.");
 
     function walkAccessibilityTree(accessibilityObject) {
@@ -32,6 +33,7 @@
 
         document.getElementById('console').innerHTML += "PASS. WebKit did not crash.<br>";
     }
+};
 </script>
 
 </body>
