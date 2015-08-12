@@ -1979,7 +1979,8 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 		count++;
 	}
 
-	xcb_flush(wm->conn);
+	if (count != 0)
+		xcb_flush(wm->conn);
 
 	return count;
 }
