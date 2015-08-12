@@ -633,6 +633,8 @@ static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos)
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
 {
+    TRACE_EVENT0("blink", "Position::upstream");
+
     Node* startNode = anchorNode();
     if (!startNode)
         return PositionAlgorithm<Strategy>();
@@ -755,6 +757,8 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
+    TRACE_EVENT0("blink", "Position::downstream");
+
     Node* startNode = anchorNode();
     if (!startNode)
         return PositionAlgorithm<Strategy>();
