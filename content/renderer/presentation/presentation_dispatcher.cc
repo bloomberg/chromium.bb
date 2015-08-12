@@ -512,9 +512,10 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
 }
 
 PresentationDispatcher::AvailabilityStatus::AvailabilityStatus(
-    const std::string& availability_url) :
-  url(availability_url), last_known_availability(false) {
-}
+    const std::string& availability_url)
+    : url(availability_url),
+      last_known_availability(false),
+      listening_state(ListeningState::INACTIVE) {}
 
 PresentationDispatcher::AvailabilityStatus::~AvailabilityStatus() {
 }
