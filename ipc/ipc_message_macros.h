@@ -8,7 +8,7 @@
 // header file.  Most of the time, the system can automatically generate all
 // of messaging mechanism from these definitions, but sometimes some manual
 // coding is required.  In these cases, you will also have an XXX_messages.cc
-// implemation file as well.
+// implementation file as well.
 //
 // The senders of your messages will include your XXX_messages.h file to
 // get the full set of definitions they need to send your messages.
@@ -33,7 +33,7 @@
 // in /chrome/common), but there are circumstances where you may add a
 // new one.
 //
-// In the rare cicrucmstances where you can't re-use an existing file,
+// In the rare circumstances where you can't re-use an existing file,
 // your YYY_message_generator.cc file for a component YYY would contain
 // the following code:
 //     // Get basic type definitions.
@@ -72,7 +72,7 @@
 // The XXX_messages.h file will be multiply-included by the
 // YYY_message_generator.cc file, so your XXX_messages file can't be
 // guarded in the usual manner.  Ideally, there will be no need for any
-// inclusion guard, since the XXX_messages.h file should consist soley
+// inclusion guard, since the XXX_messages.h file should consist solely
 // of inclusions of other headers (which are self-guarding) and IPC
 // macros (which are multiply evaluating).
 //
@@ -87,7 +87,7 @@
 //
 // It is generally a bad idea to have type definitions in a XXX_messages.h
 // file; most likely the typedef will then be used in the message, as opposed
-// to the struct iself.  Later, an IPC message dispatcher wil need to call
+// to the struct itself.  Later, an IPC message dispatcher will need to call
 // a function taking that type, and that function is declared in some other
 // header.  Thus, in order to get the type definition, the other header
 // would have to include the XXX_messages.h file, violating the rule above
@@ -105,7 +105,7 @@
 // class type declaration to avoid pulling in a long chain of headers is
 // acceptable when your XXX_messages.h header is being included by the
 // message sending caller's code, but not when the YYY_message_generator.c
-// is building the messages. In addtion, due to the multiple inclusion
+// is building the messages. In addition, due to the multiple inclusion
 // restriction, these type ought to be guarded.  Follow a convention like:
 //      #ifndef SOME_GUARD_MACRO
 //      #define SOME_GUARD_MACRO
@@ -132,7 +132,7 @@
 // IPC_STRUCT_MEMBER() is only permitted inside matching calls to
 // IPC_STRUCT_BEGIN() / IPC_STRUCT_END(). There is also an
 // IPC_STRUCT_BEGIN_WITH_PARENT(), which behaves like IPC_STRUCT_BEGIN(),
-// but also accomodates structs that inherit from other structs.
+// but also accommodates structs that inherit from other structs.
 //
 // Externally-defined structs are registered with IPC_STRUCT_TRAITS_BEGIN(),
 // IPC_STRUCT_TRAITS_MEMBER(), and IPC_STRUCT_TRAITS_END() macros. These
