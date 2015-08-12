@@ -273,7 +273,10 @@ public class ImeAdapter {
         attach(nativeImeAdapter, TextInputType.NONE, WebTextInputFlags.None, false);
     }
 
-    private void showSoftKeyboard() {
+    /**
+     * Show soft keyboard only if it is the current keyboard configuration.
+     */
+    public void showSoftKeyboard() {
         Log.d(TAG, "showKeyboard");
         mIsShowWithoutHideOutstanding = true;
         mInputMethodManagerWrapper.showSoftInput(

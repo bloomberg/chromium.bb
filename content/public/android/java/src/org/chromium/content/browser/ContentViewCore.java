@@ -192,7 +192,7 @@ public class ContentViewCore implements
          * List of anchor views stored in the order in which they were acquired mapped
          * to their position.
          */
-        private Map<View, Position> mAnchorViews = new LinkedHashMap<View, Position>();
+        private final Map<View, Position> mAnchorViews = new LinkedHashMap<View, Position>();
 
         ContentViewAndroidDelegate(ViewGroup containerView, RenderCoordinates renderCoordinates) {
             mRenderCoordinates = renderCoordinates;
@@ -581,7 +581,7 @@ public class ContentViewCore implements
     private int mPotentiallyActiveFlingCount;
 
     private SmartClipDataListener mSmartClipDataListener = null;
-    private ObserverList<ContainerViewObserver> mContainerViewObservers;
+    private final ObserverList<ContainerViewObserver> mContainerViewObservers;
 
     // This holds the state of editable text (e.g. contents of <input>, contenteditable) of
     // a focused element.
@@ -616,6 +616,9 @@ public class ContentViewCore implements
 
     // The client that implements Contextual Search functionality, or null if none exists.
     private ContextualSearchClient mContextualSearchClient;
+
+    // Keep the current configuration to detect the change when onConfigurationChanged() is called.
+    private Configuration mCurrentConfig;
 
     /**
      * @param webContents The {@link WebContents} to find a {@link ContentViewCore} of.
@@ -656,6 +659,7 @@ public class ContentViewCore implements
         mEditable = Editable.Factory.getInstance().newEditable("");
         Selection.setSelection(mEditable, 0);
         mContainerViewObservers = new ObserverList<ContainerViewObserver>();
+        mCurrentConfig = getContext().getResources().getConfiguration();
     }
 
     /**
@@ -1578,11 +1582,16 @@ public class ContentViewCore implements
         try {
             TraceEvent.begin("ContentViewCore.onConfigurationChanged");
 
-            if (newConfig.keyboard != Configuration.KEYBOARD_NOKEYS) {
+            if (mCurrentConfig.keyboard != newConfig.keyboard
+                    || mCurrentConfig.keyboardHidden != newConfig.keyboardHidden
+                    || mCurrentConfig.hardKeyboardHidden != newConfig.hardKeyboardHidden) {
                 if (mNativeContentViewCore != 0) {
                     mImeAdapter.attach(nativeGetNativeImeAdapter(mNativeContentViewCore));
                 }
                 mInputMethodManagerWrapper.restartInput(mContainerView);
+                // By default, we show soft keyboard on keyboard changes. This is useful
+                // when the user transitions from hardware keyboard to software keyboard.
+                mImeAdapter.showSoftKeyboard();
             }
             mContainerViewInternals.super_onConfigurationChanged(newConfig);
 
@@ -1590,6 +1599,7 @@ public class ContentViewCore implements
             // onConfigurationChange and layout has to be changed in most case.
             mContainerView.requestLayout();
         } finally {
+            mCurrentConfig = newConfig;
             TraceEvent.end("ContentViewCore.onConfigurationChanged");
         }
     }
