@@ -587,6 +587,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Manages observation of Windows Session Change messages.
   scoped_ptr<WindowsSessionChangeObserver> windows_session_change_observer_;
 
+  // This class provides functionality to register the legacy window as a
+  // Direct Manipulation consumer. This allows us to support smooth scroll
+  // in Chrome on Windows 10.
+  scoped_ptr<gfx::win::DirectManipulationHelper> direct_manipulation_helper_;
+
   // The WeakPtrFactories below must occur last in the class definition so they
   // get destroyed last.
 
@@ -595,11 +600,6 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // The factory used with BEGIN_SAFE_MSG_MAP_EX.
   base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
-
-  // This class provides functionality to register the legacy window as a
-  // Direct Manipulation consumer. This allows us to support smooth scroll
-  // in Chrome on Windows 10.
-  scoped_ptr<gfx::win::DirectManipulationHelper> direct_manipulation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
