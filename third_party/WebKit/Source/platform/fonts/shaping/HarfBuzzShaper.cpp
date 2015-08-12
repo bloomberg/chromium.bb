@@ -603,7 +603,7 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
         // Don't normalize tabs as they are not treated as spaces for word-end.
         if (run.normalizeSpace() && Character::isNormalizedCanvasSpaceCharacter(character))
             character = spaceCharacter;
-        else if (Character::treatAsSpace(character) && character != tabulationCharacter)
+        else if (Character::treatAsSpace(character))
             character = spaceCharacter;
         else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
             character = zeroWidthSpaceCharacter;
