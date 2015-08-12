@@ -138,6 +138,8 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
 
     @Override
     public void onBackPressed() {
+        if (isFinishing()) return;
+
         String newTitle = mTitleEditText.getTrimmedText();
         String newUrl = mUrlEditText.getTrimmedText();
         newUrl = UrlUtilities.fixupUrl(newUrl);

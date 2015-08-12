@@ -204,6 +204,8 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
 
     @Override
     public void onBackPressed() {
+        if (isFinishing()) return;
+
         if (!mIsAddMode) {
             if (save()) finish();
         } else {
