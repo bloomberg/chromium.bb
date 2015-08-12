@@ -30,7 +30,10 @@ namespace gfx {
 class Canvas;
 class ImageSkia;
 class Insets;
-}
+namespace win {
+class DirectManipulationHelper;
+}  // namespace win
+}  // namespace gfx
 
 namespace ui  {
 class ViewProp;
@@ -592,6 +595,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // The factory used with BEGIN_SAFE_MSG_MAP_EX.
   base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
+
+  // This class provides functionality to register the legacy window as a
+  // Direct Manipulation consumer. This allows us to support smooth scroll
+  // in Chrome on Windows 10.
+  scoped_ptr<gfx::win::DirectManipulationHelper> direct_manipulation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };

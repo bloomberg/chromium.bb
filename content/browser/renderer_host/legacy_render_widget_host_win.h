@@ -11,9 +11,16 @@
 #include <oleacc.h>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
+
+namespace gfx {
+namespace win {
+class DirectManipulationHelper;
+}  // namespace win
+}  // namespace gfx
 
 namespace ui {
 class WindowEventTarget;
@@ -142,6 +149,11 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   bool mouse_tracking_enabled_;
 
   RenderWidgetHostViewAura* host_;
+
+  // This class provides functionality to register the legacy window as a
+  // Direct Manipulation consumer. This allows us to support smooth scroll
+  // in Chrome on Windows 10.
+  scoped_ptr<gfx::win::DirectManipulationHelper> direct_manipulation_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyRenderWidgetHostHWND);
 };

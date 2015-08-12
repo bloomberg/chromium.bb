@@ -32,6 +32,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_win.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/win/direct_manipulation.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/gfx/win/hwnd_util.h"
 #include "ui/native_theme/native_theme_win.h"
@@ -372,6 +373,13 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   prop_window_target_.reset(new ui::ViewProp(hwnd(),
                             ui::WindowEventTarget::kWin32InputEventTarget,
                             static_cast<ui::WindowEventTarget*>(this)));
+
+  // Direct Manipulation is enabled on Windows 10+. The CreateInstance function
+  // returns NULL if Direct Manipulation is not available.
+  direct_manipulation_helper_ =
+      gfx::win::DirectManipulationHelper::CreateInstance();
+  if (direct_manipulation_helper_)
+    direct_manipulation_helper_->Initialize(hwnd());
 }
 
 void HWNDMessageHandler::InitModalType(ui::ModalType modal_type) {
@@ -513,6 +521,9 @@ void HWNDMessageHandler::SetBounds(const gfx::Rect& bounds_in_pixels,
     delegate_->HandleClientSizeChanged(GetClientAreaBounds().size());
     ResetWindowRegion(false, true);
   }
+
+  if (direct_manipulation_helper_)
+    direct_manipulation_helper_->SetBounds(bounds_in_pixels);
 }
 
 void HWNDMessageHandler::SetSize(const gfx::Size& size) {
@@ -554,6 +565,8 @@ void HWNDMessageHandler::Show() {
       ShowWindowWithState(ui::SHOW_STATE_INACTIVE);
     }
   }
+  if (direct_manipulation_helper_)
+    direct_manipulation_helper_->Activate(hwnd());
 }
 
 void HWNDMessageHandler::ShowWindowWithState(ui::WindowShowState show_state) {
@@ -2671,6 +2684,13 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
 
   if (!ref.get())
     return 0;
+
+  if (direct_manipulation_helper_ && track_mouse &&
+      (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)) {
+    direct_manipulation_helper_->HandleMouseWheel(hwnd(), message, w_param,
+        l_param);
+  }
+
   if (!handled && message == WM_NCLBUTTONDOWN && w_param != HTSYSMENU &&
       delegate_->IsUsingCustomFrame()) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.

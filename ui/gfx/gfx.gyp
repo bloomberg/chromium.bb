@@ -296,6 +296,8 @@
         'utf16_indexing.cc',
         'utf16_indexing.h',
         'vsync_provider.h',
+        'win/direct_manipulation.cc',
+        'win/direct_manipulation.h',
         'win/direct_write.cc',
         'win/direct_write.h',
         'win/dpi.cc',
