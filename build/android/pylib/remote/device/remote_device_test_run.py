@@ -14,6 +14,8 @@ import tempfile
 import time
 import zipfile
 
+
+from pylib.base import base_test_result
 from pylib.base import test_run
 from pylib.remote.device import appurify_constants
 from pylib.remote.device import appurify_sanitized
@@ -21,6 +23,8 @@ from pylib.remote.device import remote_device_helper
 from pylib.utils import zip_utils
 
 _DEVICE_OFFLINE_RE = re.compile('error: device not found')
+_LONG_MSG_RE = re.compile('longMsg=')
+_SHORT_MSG_RE = re.compile('shortMsg=')
 
 
 class RemoteDeviceTestRun(test_run.TestRun):
@@ -359,3 +363,27 @@ class RemoteDeviceTestRun(test_run.TestRun):
       if any(_DEVICE_OFFLINE_RE.search(l) for l in adb_trace_log.splitlines()):
         return True
     return False
+
+  def _DetectPlatformErrors(self, results):
+    if not self._results['results']['pass']:
+      if any(_SHORT_MSG_RE.search(l)
+          for l in self._results['results']['output'].splitlines()):
+        self._LogLogcat()
+        for line in self._results['results']['output'].splitlines():
+          if _LONG_MSG_RE.search(line):
+            results.AddResult(base_test_result.BaseTestResult(
+                line.split('=')[1], base_test_result.ResultType.CRASH))
+            break
+        else:
+          results.AddResult(base_test_result.BaseTestResult(
+              'Unknown platform error detected.',
+              base_test_result.ResultType.UNKNOWN))
+      elif self._DidDeviceGoOffline():
+        self._LogLogcat()
+        self._LogAdbTraceLog()
+        raise remote_device_helper.RemoteDeviceError(
+            'Remote service unable to reach device.', is_infra_error=True)
+      else:
+        results.AddResult(base_test_result.BaseTestResult(
+            'Remote Service detected error.',
+            base_test_result.ResultType.UNKNOWN))

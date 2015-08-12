@@ -71,4 +71,5 @@ class RemoteDeviceInstrumentationTestRun(
     else:
       raise Exception('Unexpected result type: %s' % type(result).__name__)
 
+    self._DetectPlatformErrors(r)
     return r

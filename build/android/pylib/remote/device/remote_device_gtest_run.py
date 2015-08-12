@@ -6,7 +6,6 @@
 
 import logging
 import os
-import re
 import tempfile
 
 from pylib import constants
@@ -17,7 +16,6 @@ from pylib.remote.device import remote_device_helper
 
 _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
-_NATIVE_CRASH_RE = re.compile('native crash', re.IGNORECASE)
 
 
 class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
@@ -74,22 +72,6 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
     results.AddResults(results_list)
     if self._env.only_output_failures:
       logging.info('See logcat for more results information.')
-    if not self._results['results']['pass']:
-      if any(_NATIVE_CRASH_RE.search(l)
-          for l in self._results['results']['output'].splitlines()):
-        logging.critical('Native crash detected. Printing Logcat.')
-        self._LogLogcat()
-        results.AddResult(base_test_result.BaseTestResult(
-            'Remote Service detected native crash.',
-            base_test_result.ResultType.CRASH))
-      elif self._DidDeviceGoOffline():
-        self._LogLogcat()
-        self._LogAdbTraceLog()
-        raise remote_device_helper.RemoteDeviceError(
-            'Remote service unable to reach device.', is_infra_error=True)
-      else:
-        results.AddResult(base_test_result.BaseTestResult(
-            'Remote Service detected error.',
-            base_test_result.ResultType.UNKNOWN))
 
+    self._DetectPlatformErrors(results)
     return results
