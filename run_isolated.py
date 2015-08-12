@@ -14,7 +14,7 @@ file. All content written to this directory will be uploaded upon termination
 and the .isolated file describing this directory will be printed to stdout.
 """
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 import logging
 import optparse
@@ -130,7 +130,8 @@ def process_command(command, out_dir):
   return filtered
 
 
-def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
+def run_tha_test(
+    isolated_hash, storage, cache, leak_temp_dir, result_json, extra_args):
   """Downloads the dependencies in the cache, hardlinks them into a temporary
   directory and runs the executable from there.
 
@@ -149,6 +150,7 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
            in-memory.
     leak_temp_dir: if true, the temporary directory will be deliberately leaked
                    for later examination.
+    result_json: file path to dump result metadata into.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file.
   """
@@ -249,16 +251,23 @@ def run_tha_test(isolated_hash, storage, cache, leak_temp_dir, extra_args):
             results = None
 
         if results:
-          # TODO(maruel): Implement side-channel to publish this information.
           output_data = {
             'hash': results[0][0],
             'namespace': storage.namespace,
             'storage': storage.location,
           }
           sys.stdout.flush()
-          print(
-              '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
-              tools.format_json(output_data, dense=True))
+          # TODO(maruel): Skip this when result_json is set. swarming.py needs
+          # to be updated first.
+          data = tools.format_json(output_data, dense=True)
+          print('[run_isolated_out_hack]%s[/run_isolated_out_hack]' % data)
+          if result_json:
+            output_data = {
+              'isolated': results[0][0],
+              'isolateserver': storage.location,
+              'namespace': storage.namespace,
+            }
+            tools.write_json(result_json, output_data, dense=True)
 
     finally:
       try:
@@ -284,6 +293,7 @@ def main(args):
       version=__version__,
       log_file=RUN_ISOLATED_LOG_FILE)
 
+  parser.add_option('--json', help='dump output metadata to json file')
   data_group = optparse.OptionGroup(parser, 'Data source')
   data_group.add_option(
       '-s', '--isolated',
@@ -317,7 +327,8 @@ def main(args):
     # Hashing schemes used by |storage| and |cache| MUST match.
     assert storage.hash_algo == cache.hash_algo
     return run_tha_test(
-        options.isolated, storage, cache, options.leak_temp_dir, args)
+        options.isolated, storage, cache, options.leak_temp_dir, options.json,
+        args)
 
 
 if __name__ == '__main__':

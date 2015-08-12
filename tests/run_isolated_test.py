@@ -44,6 +44,8 @@ def json_dumps(data):
 class StorageFake(object):
   def __init__(self, files):
     self._files = files.copy()
+    self.namespace = 'default-gzip'
+    self.location = 'http://localhost:1'
 
   def __enter__(self, *_):
     return self
@@ -58,6 +60,9 @@ class StorageFake(object):
   def async_fetch(self, channel, _priority, digest, _size, sink):
     sink([self._files[digest]])
     channel.send_result(digest)
+
+  def upload_items(self, *args, **kwargs):
+    pass
 
 
 class RunIsolatedTestBase(auto_stub.TestCase):
@@ -181,6 +186,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         StorageFake(files),
         isolateserver.MemoryCache(),
         False,
+        None,
         [])
     self.assertEqual(0, ret)
     return make_tree_call
@@ -347,6 +353,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           store,
           isolateserver.MemoryCache(),
           False,
+          None,
           [])
       self.assertEqual(0, ret)
 
@@ -382,6 +389,70 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
       self.assertEqual(expected, sys.stdout.getvalue())
     finally:
       server.close()
+
+
+class RunIsolatedJsonTest(RunIsolatedTestBase):
+  # Similar to RunIsolatedTest but adds the hacks to process ISOLATED_OUTDIR to
+  # generate a json result file.
+  def setUp(self):
+    super(RunIsolatedJsonTest, self).setUp()
+    self.popen_calls = []
+
+    # pylint: disable=no-self-argument
+    class Popen(object):
+      def __init__(self2, args, **kwargs):
+        kwargs.pop('cwd', None)
+        kwargs.pop('env', None)
+        self.popen_calls.append((args, kwargs))
+        # Assume ${ISOLATED_OUTDIR} is the last one for testing purpose.
+        self2._path = args[-1]
+        self2.returncode = None
+
+      def communicate(self):
+        self.returncode = 0
+        with open(self._path, 'wb') as f:
+          f.write('generated data\n')
+        return ('', None)
+
+      def kill(self):
+        pass
+
+    self.mock(subprocess42, 'Popen', Popen)
+
+  def test_main_json(self):
+    # Instruct the Popen mock to write a file in ISOLATED_OUTDIR so it will be
+    # archived back on termination.
+    self.mock(tools, 'disable_buffering', lambda: None)
+    sub_cmd = [
+      self.temp_join(u'foo.exe'), u'cmd with space',
+      '${ISOLATED_OUTDIR}/out.txt',
+    ]
+    isolated = json_dumps({'command': sub_cmd})
+    isolated_hash = isolateserver_mock.hash_content(isolated)
+    def get_storage(_isolate_server, _namespace):
+      return StorageFake({isolated_hash:isolated})
+    self.mock(isolateserver, 'get_storage', get_storage)
+
+    out = os.path.join(self.tempdir, 'res.json')
+    cmd = [
+        '--no-log',
+        '--isolated', isolated_hash,
+        '--cache', self.tempdir,
+        '--isolate-server', 'https://localhost:1',
+        '--json', out,
+    ]
+    ret = run_isolated.main(cmd)
+    self.assertEqual(0, ret)
+    # Replace ${ISOLATED_OUTDIR} with the temporary directory.
+    sub_cmd[2] = self.popen_calls[0][0][2]
+    self.assertNotIn('ISOLATED_OUTDIR', sub_cmd[2])
+    self.assertEqual([(sub_cmd, {'detached': True})], self.popen_calls)
+    expected = {
+      u'isolated': u'e0a0fffa0910dd09e7ef4c89496116f60317e6c4',
+      u'isolateserver': u'http://localhost:1',
+      u'namespace': u'default-gzip',
+    }
+    self.assertEqual(expected, tools.read_json(out))
 
 
 if __name__ == '__main__':
