@@ -114,7 +114,10 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
         {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::MAP},
         {gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::PERSISTENT_MAP},
         {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP},
-        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP}};
+        {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
+        {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::MAP},
+        {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::PERSISTENT_MAP},
+    };
     for (auto& configuration : kNativeConfigurations) {
       if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
         configurations.push_back(configuration);
@@ -124,7 +127,9 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
 #if defined(USE_OZONE) || defined(OS_MACOSX)
   const GpuMemoryBufferFactory::Configuration kScanoutConfigurations[] = {
       {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-      {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT}};
+      {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT},
+      {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::SCANOUT},
+  };
   for (auto& configuration : kScanoutConfigurations) {
     if (IsGpuMemoryBufferFactoryConfigurationSupported(type, configuration))
       configurations.push_back(configuration);

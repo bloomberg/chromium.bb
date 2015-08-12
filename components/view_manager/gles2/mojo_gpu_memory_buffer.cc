@@ -31,6 +31,11 @@ size_t SubsamplingFactor(gfx::BufferFormat format, int plane) {
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
     }
+    case gfx::BufferFormat::YUV_420_BIPLANAR: {
+      static size_t factor[] = {1, 2};
+      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
+      return factor[plane];
+    }
   }
   NOTREACHED();
   return 0;
@@ -60,6 +65,8 @@ size_t StrideInBytes(size_t width, gfx::BufferFormat format, int plane) {
       return width * 4;
     case gfx::BufferFormat::YUV_420:
       return width / SubsamplingFactor(format, plane);
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return width;
   }
   NOTREACHED();
   return 0;

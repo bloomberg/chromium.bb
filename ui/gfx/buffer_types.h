@@ -21,8 +21,9 @@ enum class BufferFormat {
   RGBX_8888,
   BGRA_8888,
   YUV_420,
+  YUV_420_BIPLANAR,
 
-  LAST = YUV_420
+  LAST = YUV_420_BIPLANAR
 };
 
 // The usage mode affects how a buffer can be used. Only buffers created with

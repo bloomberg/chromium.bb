@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/mac/io_surface_manager.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_image_io_surface.h"
 
 namespace content {
@@ -23,12 +25,18 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
   CFDictionaryAddValue(dictionary, key, number.get());
 }
 
-int32 BytesPerPixel(gfx::BufferFormat format) {
+int32 BytesPerElement(gfx::BufferFormat format, int plane) {
   switch (format) {
     case gfx::BufferFormat::R_8:
+      DCHECK_EQ(plane, 0);
       return 1;
     case gfx::BufferFormat::BGRA_8888:
+      DCHECK_EQ(plane, 0);
       return 4;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      static int32 bytes_per_element[] = {1, 2};
+      DCHECK_LT(static_cast<size_t>(plane), arraysize(bytes_per_element));
+      return bytes_per_element[plane];
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
@@ -52,6 +60,8 @@ int32 PixelFormat(gfx::BufferFormat format) {
       return 'L008';
     case gfx::BufferFormat::BGRA_8888:
       return 'BGRA';
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return '420v';
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
@@ -74,7 +84,10 @@ const GpuMemoryBufferFactory::Configuration kSupportedConfigurations[] = {
     {gfx::BufferFormat::R_8, gfx::BufferUsage::PERSISTENT_MAP},
     {gfx::BufferFormat::R_8, gfx::BufferUsage::MAP},
     {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::PERSISTENT_MAP},
-    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP}};
+    {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::MAP},
+    {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::MAP},
+    {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::PERSISTENT_MAP},
+};
 
 }  // namespace
 
@@ -111,15 +124,33 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     int client_id,
     gfx::PluginWindowHandle surface_handle) {
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
-  properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
-                                             0,
-                                             &kCFTypeDictionaryKeyCallBacks,
-                                             &kCFTypeDictionaryValueCallBacks));
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  base::ScopedCFTypeRef<CFMutableArrayRef> planes(CFArrayCreateMutable(
+      kCFAllocatorDefault, num_planes, &kCFTypeArrayCallBacks));
+
+  for (size_t plane = 0; plane < num_planes; ++plane) {
+    size_t factor = GpuMemoryBufferImpl::SubsamplingFactor(format, plane);
+
+    base::ScopedCFTypeRef<CFMutableDictionaryRef> plane_info(
+        CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                  &kCFTypeDictionaryKeyCallBacks,
+                                  &kCFTypeDictionaryValueCallBacks));
+    AddIntegerValue(plane_info, kIOSurfacePlaneWidth, size.width() / factor);
+    AddIntegerValue(plane_info, kIOSurfacePlaneHeight, size.height() / factor);
+    AddIntegerValue(plane_info, kIOSurfacePlaneBytesPerElement,
+                    BytesPerElement(format, plane));
+
+    CFArrayAppendValue(planes, plane_info);
+  }
+
+  base::ScopedCFTypeRef<CFMutableDictionaryRef> properties(
+      CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
+                                &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks));
   AddIntegerValue(properties, kIOSurfaceWidth, size.width());
   AddIntegerValue(properties, kIOSurfaceHeight, size.height());
-  AddIntegerValue(properties, kIOSurfaceBytesPerElement, BytesPerPixel(format));
   AddIntegerValue(properties, kIOSurfacePixelFormat, PixelFormat(format));
+  CFDictionaryAddValue(properties, kIOSurfacePlaneInfo, planes);
 
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(IOSurfaceCreate(properties));
   if (!io_surface)

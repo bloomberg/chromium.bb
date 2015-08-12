@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/common/mac/io_surface_manager.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace content {
 namespace {
@@ -61,7 +62,9 @@ bool GpuMemoryBufferImplIOSurface::Map(void** data) {
   IOReturn status = IOSurfaceLock(io_surface_, lock_flags_, NULL);
   DCHECK_NE(status, kIOReturnCannotLock);
   mapped_ = true;
-  *data = IOSurfaceGetBaseAddress(io_surface_);
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(GetFormat());
+  for (size_t plane = 0; plane < num_planes; ++plane)
+    data[plane] = IOSurfaceGetBaseAddressOfPlane(io_surface_, plane);
   return true;
 }
 
@@ -71,8 +74,10 @@ void GpuMemoryBufferImplIOSurface::Unmap() {
   mapped_ = false;
 }
 
-void GpuMemoryBufferImplIOSurface::GetStride(int* stride) const {
-  *stride = IOSurfaceGetBytesPerRow(io_surface_);
+void GpuMemoryBufferImplIOSurface::GetStride(int* strides) const {
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(GetFormat());
+  for (size_t plane = 0; plane < num_planes; ++plane)
+    strides[plane] = IOSurfaceGetBytesPerRowOfPlane(io_surface_, plane);
 }
 
 gfx::GpuMemoryBufferHandle GpuMemoryBufferImplIOSurface::GetHandle() const {

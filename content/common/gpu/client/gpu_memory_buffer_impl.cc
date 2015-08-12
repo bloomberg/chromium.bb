@@ -98,6 +98,11 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(gfx::BufferFormat format,
       DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
       return factor[plane];
     }
+    case gfx::BufferFormat::YUV_420_BIPLANAR: {
+      static size_t factor[] = {1, 2};
+      DCHECK_LT(static_cast<size_t>(plane), arraysize(factor));
+      return factor[plane];
+    }
   }
   NOTREACHED();
   return 0;
@@ -144,6 +149,10 @@ bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
     case gfx::BufferFormat::YUV_420:
       DCHECK_EQ(width % 2, 0u);
       *size_in_bytes = width / SubsamplingFactor(format, plane);
+      return true;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      DCHECK_EQ(width % 2, 0u);
+      *size_in_bytes = width;
       return true;
   }
   NOTREACHED();
