@@ -13,6 +13,7 @@
 #include "cc/raster/raster_buffer.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
@@ -34,6 +35,8 @@ class RasterBufferImpl : public RasterBuffer {
     gfx::GpuMemoryBuffer* gpu_memory_buffer = lock_.GetGpuMemoryBuffer();
     if (!gpu_memory_buffer)
       return;
+    DCHECK_EQ(
+        1u, gfx::NumberOfPlanesForBufferFormat(gpu_memory_buffer->GetFormat()));
     void* data = NULL;
     bool rv = gpu_memory_buffer->Map(&data);
     DCHECK(rv);

@@ -17,6 +17,7 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace cc {
@@ -338,6 +339,8 @@ OneCopyTileTaskWorkerPool::PlaybackAndScheduleCopyOnWorkerThread(
   gfx::GpuMemoryBuffer* gpu_memory_buffer =
       raster_resource_write_lock->GetGpuMemoryBuffer();
   if (gpu_memory_buffer) {
+    DCHECK_EQ(
+        1u, gfx::NumberOfPlanesForBufferFormat(gpu_memory_buffer->GetFormat()));
     void* data = NULL;
     bool rv = gpu_memory_buffer->Map(&data);
     DCHECK(rv);
