@@ -10,11 +10,19 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
+namespace {
+
+const std::string kDummyFrameUrl =
+    "data:text/html,<!--chromedriver dummy frame-->";
+
+}  // namespace
+
 NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      const BrowserInfo* browser_info)
     : client_(client),
       loading_state_(kUnknown),
-      browser_info_(browser_info) {
+      browser_info_(browser_info),
+      dummy_execution_context_id_(0) {
   client_->AddListener(this);
 }
 
@@ -23,7 +31,8 @@ NavigationTracker::NavigationTracker(DevToolsClient* client,
                                      const BrowserInfo* browser_info)
     : client_(client),
       loading_state_(known_state),
-      browser_info_(browser_info) {
+      browser_info_(browser_info),
+      dummy_execution_context_id_(0) {
   client_->AddListener(this);
 }
 
@@ -54,12 +63,12 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     // received until all frames are loaded.  Loading is forced to start by
     // attaching a temporary iframe.  Forcing loading to start is not
     // necessary if the main frame is not yet loaded.
-    const char kStartLoadingIfMainFrameNotLoading[] =
+    const std::string kStartLoadingIfMainFrameNotLoading =
        "var isLoaded = document.readyState == 'complete' ||"
        "    document.readyState == 'interactive';"
        "if (isLoaded) {"
        "  var frame = document.createElement('iframe');"
-       "  frame.src = 'about:blank';"
+       "  frame.src = '" + kDummyFrameUrl + "';"
        "  document.body.appendChild(frame);"
        "  window.setTimeout(function() {"
        "    document.body.removeChild(frame);"
@@ -163,14 +172,23 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     // Note: in some cases Page.frameNavigated may be received for subframes
     // without a frameStoppedLoading (for example cnn.com).
 
-    // If the main frame just navigated, discard any pending scheduled
-    // navigations. For some reasons at times the cleared event is not
-    // received when navigating.
-    // See crbug.com/180742.
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value)) {
+      // If the main frame just navigated, discard any pending scheduled
+      // navigations. For some reasons at times the cleared event is not
+      // received when navigating.
+      // See crbug.com/180742.
       pending_frame_set_.clear();
       scheduled_frame_set_.clear();
+    } else {
+      // If a child frame just navigated, check if it is the dummy frame that
+      // was attached by IsPendingNavigation(). We don't want to track execution
+      // contexts created and destroyed for this dummy frame.
+      std::string url;
+      if (!params.GetString("frame.url", &url))
+        return Status(kUnknownError, "missing or invalid 'frame.url'");
+      if (url == kDummyFrameUrl)
+        params.GetString("frame.id", &dummy_frame_id_);
     }
   } else if (method == "Runtime.executionContextsCleared") {
     if (!IsExpectingFrameLoadingEvents()) {
@@ -182,7 +200,13 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       int execution_context_id;
       if (!params.GetInteger("context.id", &execution_context_id))
         return Status(kUnknownError, "missing or invalid 'context.id'");
-      execution_context_set_.insert(execution_context_id);
+      std::string frame_id;
+      if (!params.GetString("context.frameId", &frame_id))
+        return Status(kUnknownError, "missing or invalid 'context.frameId'");
+      if (frame_id == dummy_frame_id_)
+        dummy_execution_context_id_ = execution_context_id;
+      else
+        execution_context_set_.insert(execution_context_id);
     }
   } else if (method == "Runtime.executionContextDestroyed") {
     if (!IsExpectingFrameLoadingEvents()) {
@@ -190,8 +214,13 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       if (!params.GetInteger("executionContextId", &execution_context_id))
         return Status(kUnknownError, "missing or invalid 'context.id'");
       execution_context_set_.erase(execution_context_id);
-      if (execution_context_set_.empty())
-        loading_state_ = kLoading;
+      if (execution_context_id != dummy_execution_context_id_) {
+        if (execution_context_set_.empty()) {
+          loading_state_ = kLoading;
+          dummy_frame_id_ = std::string();
+          dummy_execution_context_id_ = 0;
+        }
+      }
     }
   } else if (method == "Page.loadEventFired") {
     if (!IsExpectingFrameLoadingEvents())

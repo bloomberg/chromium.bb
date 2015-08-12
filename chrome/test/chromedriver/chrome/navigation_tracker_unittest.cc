@@ -258,6 +258,7 @@ TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
 
   base::DictionaryValue params_navigated;
   params_navigated.SetString("frame.parentId", "something");
+  params_navigated.SetString("frame.url", "http://abc.xyz");
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(&client, "Page.frameNavigated", params_navigated).code());
