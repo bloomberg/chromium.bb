@@ -77,24 +77,26 @@ class CONTENT_EXPORT StoragePartition {
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
   virtual BackgroundSyncContext* GetBackgroundSyncContext() = 0;
 
-  static const uint32 REMOVE_DATA_MASK_APPCACHE        = 1 << 0;
-  static const uint32 REMOVE_DATA_MASK_COOKIES         = 1 << 1;
-  static const uint32 REMOVE_DATA_MASK_FILE_SYSTEMS    = 1 << 2;
-  static const uint32 REMOVE_DATA_MASK_INDEXEDDB       = 1 << 3;
-  static const uint32 REMOVE_DATA_MASK_LOCAL_STORAGE   = 1 << 4;
-  static const uint32 REMOVE_DATA_MASK_SHADER_CACHE    = 1 << 5;
-  static const uint32 REMOVE_DATA_MASK_WEBSQL          = 1 << 6;
-  static const uint32 REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7;
-  static const uint32 REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 8;
-  static const uint32 REMOVE_DATA_MASK_ALL             = 0xFFFFFFFF;
+  enum : uint32 {
+    REMOVE_DATA_MASK_APPCACHE = 1 << 0,
+    REMOVE_DATA_MASK_COOKIES = 1 << 1,
+    REMOVE_DATA_MASK_FILE_SYSTEMS = 1 << 2,
+    REMOVE_DATA_MASK_INDEXEDDB = 1 << 3,
+    REMOVE_DATA_MASK_LOCAL_STORAGE = 1 << 4,
+    REMOVE_DATA_MASK_SHADER_CACHE = 1 << 5,
+    REMOVE_DATA_MASK_WEBSQL = 1 << 6,
+    REMOVE_DATA_MASK_WEBRTC_IDENTITY = 1 << 7,
+    REMOVE_DATA_MASK_SERVICE_WORKERS = 1 << 8,
+    REMOVE_DATA_MASK_ALL = 0xFFFFFFFF,
 
-  // Corresponds to storage::kStorageTypeTemporary.
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_TEMPORARY  = 1 << 0;
-  // Corresponds to storage::kStorageTypePersistent.
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1;
-  // Corresponds to storage::kStorageTypeSyncable.
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_SYNCABLE   = 1 << 2;
-  static const uint32 QUOTA_MANAGED_STORAGE_MASK_ALL        = 0xFFFFFFFF;
+    // Corresponds to storage::kStorageTypeTemporary.
+    QUOTA_MANAGED_STORAGE_MASK_TEMPORARY = 1 << 0,
+    // Corresponds to storage::kStorageTypePersistent.
+    QUOTA_MANAGED_STORAGE_MASK_PERSISTENT = 1 << 1,
+    // Corresponds to storage::kStorageTypeSyncable.
+    QUOTA_MANAGED_STORAGE_MASK_SYNCABLE = 1 << 2,
+    QUOTA_MANAGED_STORAGE_MASK_ALL = 0xFFFFFFFF,
+  };
 
   // Starts an asynchronous task that does a best-effort clear the data
   // corresponding to the given |remove_mask| and |quota_storage_remove_mask|

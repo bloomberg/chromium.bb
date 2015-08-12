@@ -68,28 +68,6 @@
 #endif  // COMPILER_MSVC
 
 
-// The C++ standard requires that static const members have an out-of-class
-// definition (in a single compilation unit), but MSVC chokes on this (when
-// language extensions, which are required, are enabled). (You're only likely to
-// notice the need for a definition if you take the address of the member or,
-// more commonly, pass it to a function that takes it as a reference argument --
-// probably an STL function.) This macro makes MSVC do the right thing. See
-// http://msdn.microsoft.com/en-us/library/34h23df8(v=vs.100).aspx for more
-// information. Use like:
-//
-// In .h file:
-//   struct Foo {
-//     static const int kBar = 5;
-//   };
-//
-// In .cc file:
-//   STATIC_CONST_MEMBER_DEFINITION const int Foo::kBar;
-#if defined(COMPILER_MSVC)
-#define STATIC_CONST_MEMBER_DEFINITION __declspec(selectany)
-#else
-#define STATIC_CONST_MEMBER_DEFINITION
-#endif
-
 // Annotate a variable indicating it's ok if the variable is not used.
 // (Typically used to silence a compiler warning when the assignment
 // is important for some other reason.)
