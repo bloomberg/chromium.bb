@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/debug/alias.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
@@ -2067,7 +2068,25 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
   // but will be valid in general too.
   PAINTSTRUCT ps;
   HDC display_dc = BeginPaint(hwnd(), &ps);
-  CHECK(display_dc);
+
+  if (!display_dc) {
+    // Collect some information as to why this may have happened and preserve
+    // it on the stack so it shows up in a dump.
+    // This is temporary data collection code in service of
+    // http://crbug.com/512945
+    DWORD last_error = GetLastError();
+    size_t current_gdi_objects =
+        GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
+    size_t peak_gdi_objects = GetGuiResources(
+        GetCurrentProcess(), GR_GDIOBJECTS_PEAK);
+    base::debug::Alias(&last_error);
+    base::debug::Alias(&current_gdi_objects);
+    base::debug::Alias(&peak_gdi_objects);
+
+    LOG(FATAL) << "Failed to create DC in BeginPaint(). GLE = " << last_error
+               << ", GDI object count: " << current_gdi_objects
+               << ", GDI peak count: " << peak_gdi_objects;
+  }
 
   if (!IsRectEmpty(&ps.rcPaint))
     delegate_->HandlePaintAccelerated(gfx::Rect(ps.rcPaint));
