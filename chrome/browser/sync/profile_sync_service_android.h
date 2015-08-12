@@ -138,13 +138,16 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   // synced. Note that control types are always included here.
   // Returns a bit map of the values from
   // profile_sync_service_android.cc.
-  jlong GetActiveDataTypes(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(JNIEnv* env,
+                                                                  jobject obj);
 
   // Get the set of preferred data types. These are the types that the user
   // has requested be synced.
   // Returns a bit map of the values from
   // profile_sync_service_android.cc.
-  jlong GetPreferredDataTypes(JNIEnv* env, jobject obj);
+  base::android::ScopedJavaLocalRef<jintArray> GetPreferredDataTypes(
+      JNIEnv* env,
+      jobject obj);
 
   // Enables the passed data types.
   // If |sync_everything| is true, then all data types are enabled and the
@@ -155,7 +158,7 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   void SetPreferredDataTypes(JNIEnv* env,
                              jobject obj,
                              jboolean sync_everything,
-                             jlong model_type_selection);
+                             jintArray model_type_selection);
 
   // Tells sync that we're currently configuring so no data types should be
   // downloaded yet.
@@ -210,12 +213,8 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
                                        jlong network_resources);
 
   // Public for tests.
-  static jlong ModelTypeSetToSelection(syncer::ModelTypeSet model_types);
-
-  // Converts a bitmap of model types to a set of Java ModelTypes, and returns
-  // their string descriptions separated by commas.
-  static std::string ModelTypeSelectionToStringForTest(
-      jlong model_type_selection);
+  static base::android::ScopedJavaLocalRef<jintArray>
+  ModelTypeSetToJavaIntArray(JNIEnv* env, syncer::ModelTypeSet model_types);
 
   static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
 

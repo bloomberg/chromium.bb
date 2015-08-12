@@ -224,6 +224,7 @@
           'dependencies': [
             'invalidation_java',
             '../base/base.gyp:base_java_test_support',
+            '../content/content_shell_and_tests.gyp:content_java_test_support',
           ],
           'variables': {
             'java_in_dir': 'invalidation/impl/android/javatests',

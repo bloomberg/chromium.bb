@@ -3982,15 +3982,6 @@
         },
         {
           # GN: //chrome/android:chrome_android_java_enums_srcjar
-          'target_name': 'profile_sync_service_model_type_selection_java',
-          'type': 'none',
-          'variables': {
-            'source_file': 'browser/sync/profile_sync_service_android.cc',
-          },
-          'includes': [ '../build/android/java_cpp_enum.gypi' ],
-        },
-        {
-          # GN: //chrome/android:chrome_android_java_enums_srcjar
           'target_name': 'connection_security_security_levels_java',
           'type': 'none',
           'variables': {

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/profile_sync_service_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
@@ -43,33 +44,6 @@ using base::android::ScopedJavaLocalRef;
 using content::BrowserThread;
 
 namespace {
-
-// This enum contains the list of sync ModelTypes that Android can register for
-// invalidations for.
-//
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.sync
-enum ModelTypeSelection {
-  AUTOFILL = 1 << 0,
-  BOOKMARK = 1 << 1,
-  PASSWORD = 1 << 2,
-  SESSION = 1 << 3,
-  TYPED_URL = 1 << 4,
-  AUTOFILL_PROFILE = 1 << 5,
-  HISTORY_DELETE_DIRECTIVE = 1 << 6,
-  PROXY_TABS = 1 << 7,
-  FAVICON_IMAGE = 1 << 8,
-  FAVICON_TRACKING = 1 << 9,
-  NIGORI = 1 << 10,
-  DEVICE_INFO = 1 << 11,
-  EXPERIMENTS = 1 << 12,
-  SUPERVISED_USER_SETTING = 1 << 13,
-  SUPERVISED_USER_WHITELIST = 1 << 14,
-  AUTOFILL_WALLET = 1 << 15,
-  AUTOFILL_WALLET_METADATA = 1 << 16,
-  PREFERENCE = 1 << 17,
-  PRIORITY_PREFERENCE = 1 << 18,
-};
 
 // Native callback for the JNI GetAllNodes method. When
 // ProfileSyncService::GetAllNodes completes, this method is called and the
@@ -358,40 +332,32 @@ jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
   return is_status_valid && !status.keystore_migration_time.is_null();
 }
 
-jlong ProfileSyncServiceAndroid::GetActiveDataTypes(
+ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(
       JNIEnv* env, jobject obj) {
   syncer::ModelTypeSet types = sync_service_->GetActiveDataTypes();
   types.PutAll(syncer::ControlTypes());
-  return ModelTypeSetToSelection(types);
+  return ModelTypeSetToJavaIntArray(env, types);
 }
 
-jlong ProfileSyncServiceAndroid::GetPreferredDataTypes(
+ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetPreferredDataTypes(
       JNIEnv* env, jobject obj) {
   syncer::ModelTypeSet types = sync_service_->GetPreferredDataTypes();
   types.PutAll(syncer::ControlTypes());
-  return ModelTypeSetToSelection(types);
+  return ModelTypeSetToJavaIntArray(env, types);
 }
 
 void ProfileSyncServiceAndroid::SetPreferredDataTypes(
     JNIEnv* env, jobject obj,
     jboolean sync_everything,
-    jlong model_type_selection) {
+    jintArray model_type_array) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::vector<int> types_vector;
+  base::android::JavaIntArrayToIntVector(env, model_type_array, &types_vector);
   syncer::ModelTypeSet types;
-  // Note: only user selectable types should be included here.
-  if (model_type_selection & AUTOFILL)
-    types.Put(syncer::AUTOFILL);
-  if (model_type_selection & BOOKMARK)
-    types.Put(syncer::BOOKMARKS);
-  if (model_type_selection & PASSWORD)
-    types.Put(syncer::PASSWORDS);
-  if (model_type_selection & PROXY_TABS)
-    types.Put(syncer::PROXY_TABS);
-  if (model_type_selection & TYPED_URL)
-    types.Put(syncer::TYPED_URLS);
-  if (model_type_selection & PREFERENCE)
-    types.Put(syncer::PREFERENCES);
-  DCHECK(syncer::UserSelectableTypes().HasAll(types));
+  for (size_t i = 0; i < types_vector.size(); i++) {
+    types.Put(static_cast<syncer::ModelType>(types_vector[i]));
+  }
+  types.RetainAll(syncer::UserSelectableTypes());
   sync_service_->OnUserChoseDatatypes(sync_everything, types);
 }
 
@@ -474,76 +440,15 @@ void ProfileSyncServiceAndroid::OverrideNetworkResourcesForTest(
 }
 
 // static
-jlong ProfileSyncServiceAndroid::ModelTypeSetToSelection(
+ScopedJavaLocalRef<jintArray>
+ProfileSyncServiceAndroid::ModelTypeSetToJavaIntArray(
+    JNIEnv* env,
     syncer::ModelTypeSet types) {
-  jlong model_type_selection = 0;
-  if (types.Has(syncer::BOOKMARKS)) {
-    model_type_selection |= BOOKMARK;
+  std::vector<int> type_vector;
+  for (syncer::ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+    type_vector.push_back(it.Get());
   }
-  if (types.Has(syncer::AUTOFILL)) {
-    model_type_selection |= AUTOFILL;
-  }
-  if (types.Has(syncer::AUTOFILL_PROFILE)) {
-    model_type_selection |= AUTOFILL_PROFILE;
-  }
-  if (types.Has(syncer::AUTOFILL_WALLET_DATA)) {
-    model_type_selection |= AUTOFILL_WALLET;
-  }
-  if (types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
-    model_type_selection |= AUTOFILL_WALLET_METADATA;
-  }
-  if (types.Has(syncer::PASSWORDS)) {
-    model_type_selection |= PASSWORD;
-  }
-  if (types.Has(syncer::PREFERENCES)) {
-    model_type_selection |= PREFERENCE;
-  }
-  if (types.Has(syncer::PRIORITY_PREFERENCES)) {
-    model_type_selection |= PRIORITY_PREFERENCE;
-  }
-  if (types.Has(syncer::TYPED_URLS)) {
-    model_type_selection |= TYPED_URL;
-  }
-  if (types.Has(syncer::SESSIONS)) {
-    model_type_selection |= SESSION;
-  }
-  if (types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
-    model_type_selection |= HISTORY_DELETE_DIRECTIVE;
-  }
-  if (types.Has(syncer::PROXY_TABS)) {
-    model_type_selection |= PROXY_TABS;
-  }
-  if (types.Has(syncer::FAVICON_IMAGES)) {
-    model_type_selection |= FAVICON_IMAGE;
-  }
-  if (types.Has(syncer::FAVICON_TRACKING)) {
-    model_type_selection |= FAVICON_TRACKING;
-  }
-  if (types.Has(syncer::DEVICE_INFO)) {
-    model_type_selection |= DEVICE_INFO;
-  }
-  if (types.Has(syncer::NIGORI)) {
-    model_type_selection |= NIGORI;
-  }
-  if (types.Has(syncer::EXPERIMENTS)) {
-    model_type_selection |= EXPERIMENTS;
-  }
-  if (types.Has(syncer::SUPERVISED_USER_SETTINGS)) {
-    model_type_selection |= SUPERVISED_USER_SETTING;
-  }
-  if (types.Has(syncer::SUPERVISED_USER_WHITELISTS)) {
-    model_type_selection |= SUPERVISED_USER_WHITELIST;
-  }
-  return model_type_selection;
-}
-
-// static
-std::string ProfileSyncServiceAndroid::ModelTypeSelectionToStringForTest(
-    jlong model_type_selection) {
-  ScopedJavaLocalRef<jstring> string =
-      Java_ProfileSyncService_modelTypeSelectionToStringForTest(
-          AttachCurrentThread(), model_type_selection);
-  return ConvertJavaStringToUTF8(string);
+  return base::android::ToJavaIntArray(env, type_vector);
 }
 
 // static

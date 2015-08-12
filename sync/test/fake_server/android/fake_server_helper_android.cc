@@ -64,14 +64,9 @@ jboolean FakeServerHelperAndroid::VerifyEntityCountByTypeAndName(
     jobject obj,
     jlong fake_server,
     jlong count,
-    jstring model_type_string,
+    jint model_type_int,
     jstring name) {
-  syncer::ModelType model_type;
-  if (!NotificationTypeToRealModelType(base::android::ConvertJavaStringToUTF8(
-      env, model_type_string), &model_type)) {
-    LOG(WARNING) << "Invalid ModelType string.";
-    return false;
-  }
+  syncer::ModelType model_type = static_cast<syncer::ModelType>(model_type_int);
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   fake_server::FakeServerVerifier fake_server_verifier(fake_server_ptr);
@@ -114,17 +109,11 @@ base::android::ScopedJavaLocalRef<jobjectArray>
 FakeServerHelperAndroid::GetSyncEntitiesByModelType(JNIEnv* env,
                                                     jobject obj,
                                                     jlong fake_server,
-                                                    jstring model_type_string) {
+                                                    jint model_type_int) {
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
 
-  syncer::ModelType model_type;
-  if (!NotificationTypeToRealModelType(
-      base::android::ConvertJavaStringToUTF8(env, model_type_string),
-      &model_type)) {
-    LOG(WARNING) << "Invalid ModelType string.";
-    NOTREACHED();
-  }
+  syncer::ModelType model_type = static_cast<syncer::ModelType>(model_type_int);
 
   std::vector<sync_pb::SyncEntity> entities =
       fake_server_ptr->GetSyncEntitiesByModelType(model_type);

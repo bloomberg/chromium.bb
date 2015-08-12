@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.sync;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
@@ -32,12 +33,12 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.internal_api.pub.PassphraseType;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -45,6 +46,7 @@ import java.util.concurrent.Callable;
 /**
  * Tests for SyncCustomizationFragment.
  */
+@SuppressLint("UseSparseArrays")
 public class SyncCustomizationFragmentTest extends SyncTestBase {
     private static final String TAG = "SyncCustomizationFragmentTest";
 
@@ -72,17 +74,17 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     /**
      * Maps ModelTypes to their UI element IDs.
      */
-    private static final Map<ModelType, String> UI_DATATYPES;
+    private static final Map<Integer, String> UI_DATATYPES;
 
     static {
-        UI_DATATYPES = new HashMap<ModelType, String>();
+        UI_DATATYPES = new HashMap<Integer, String>();
         UI_DATATYPES.put(ModelType.AUTOFILL, SyncCustomizationFragment.PREFERENCE_SYNC_AUTOFILL);
-        UI_DATATYPES.put(ModelType.BOOKMARK, SyncCustomizationFragment.PREFERENCE_SYNC_BOOKMARKS);
-        UI_DATATYPES.put(ModelType.TYPED_URL, SyncCustomizationFragment.PREFERENCE_SYNC_OMNIBOX);
-        UI_DATATYPES.put(ModelType.PASSWORD, SyncCustomizationFragment.PREFERENCE_SYNC_PASSWORDS);
+        UI_DATATYPES.put(ModelType.BOOKMARKS, SyncCustomizationFragment.PREFERENCE_SYNC_BOOKMARKS);
+        UI_DATATYPES.put(ModelType.TYPED_URLS, SyncCustomizationFragment.PREFERENCE_SYNC_OMNIBOX);
+        UI_DATATYPES.put(ModelType.PASSWORDS, SyncCustomizationFragment.PREFERENCE_SYNC_PASSWORDS);
         UI_DATATYPES.put(ModelType.PROXY_TABS,
                 SyncCustomizationFragment.PREFERENCE_SYNC_RECENT_TABS);
-        UI_DATATYPES.put(ModelType.PREFERENCE,
+        UI_DATATYPES.put(ModelType.PREFERENCES,
                 SyncCustomizationFragment.PREFERENCE_SYNC_SETTINGS);
     }
 
@@ -198,7 +200,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         SyncTestUtil.waitForSyncActive(mContext);
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
-        Map<ModelType, CheckBoxPreference> dataTypes = getDataTypes(fragment);
+        Map<Integer, CheckBoxPreference> dataTypes = getDataTypes(fragment);
 
         assertDefaultSyncOnState(fragment);
         togglePreference(syncEverything);
@@ -207,19 +209,19 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             assertTrue(dataType.isEnabled());
         }
 
-        Set<ModelType> expectedTypes = EnumSet.copyOf(dataTypes.keySet());
+        Set<Integer> expectedTypes = new HashSet<Integer>(dataTypes.keySet());
         // TODO(zea): update this once preferences are supported.
-        expectedTypes.remove(ModelType.PREFERENCE);
-        expectedTypes.add(ModelType.PRIORITY_PREFERENCE);
+        expectedTypes.remove(ModelType.PREFERENCES);
+        expectedTypes.add(ModelType.PRIORITY_PREFERENCES);
         assertDataTypesAre(expectedTypes);
         togglePreference(dataTypes.get(ModelType.AUTOFILL));
-        togglePreference(dataTypes.get(ModelType.PASSWORD));
+        togglePreference(dataTypes.get(ModelType.PASSWORDS));
         // Nothing should have changed before the fragment closes.
         assertDataTypesAre(expectedTypes);
 
         closeFragment(fragment);
         expectedTypes.remove(ModelType.AUTOFILL);
-        expectedTypes.remove(ModelType.PASSWORD);
+        expectedTypes.remove(ModelType.PASSWORDS);
         assertDataTypesAre(expectedTypes);
     }
 
@@ -436,11 +438,11 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 SyncCustomizationFragment.PREFERENCE_SYNC_EVERYTHING);
     }
 
-    private Map<ModelType, CheckBoxPreference> getDataTypes(SyncCustomizationFragment fragment) {
-        Map<ModelType, CheckBoxPreference> dataTypes =
-                new HashMap<ModelType, CheckBoxPreference>();
-        for (Map.Entry<ModelType, String> uiDataType : UI_DATATYPES.entrySet()) {
-            ModelType modelType = uiDataType.getKey();
+    private Map<Integer, CheckBoxPreference> getDataTypes(SyncCustomizationFragment fragment) {
+        Map<Integer, CheckBoxPreference> dataTypes =
+                new HashMap<Integer, CheckBoxPreference>();
+        for (Map.Entry<Integer, String> uiDataType : UI_DATATYPES.entrySet()) {
+            Integer modelType = uiDataType.getKey();
             String prefId = uiDataType.getValue();
             dataTypes.put(modelType, (CheckBoxPreference) fragment.findPreference(prefId));
         }
@@ -506,16 +508,16 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 getManageData(fragment).isEnabled());
     }
 
-    private void assertDataTypesAre(final Set<ModelType> enabledDataTypes) {
-        final Set<ModelType> disabledDataTypes = EnumSet.copyOf(UI_DATATYPES.keySet());
+    private void assertDataTypesAre(final Set<Integer> enabledDataTypes) {
+        final Set<Integer> disabledDataTypes = new HashSet<Integer>(UI_DATATYPES.keySet());
         disabledDataTypes.removeAll(enabledDataTypes);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Set<ModelType> actualDataTypes = mProfileSyncService.getPreferredDataTypes();
+                Set<Integer> actualDataTypes = mProfileSyncService.getPreferredDataTypes();
                 assertTrue(actualDataTypes.containsAll(enabledDataTypes));
                 // There is no Set.containsNone(), sadly.
-                for (ModelType disabledDataType : disabledDataTypes) {
+                for (Integer disabledDataType : disabledDataTypes) {
                     assertFalse(actualDataTypes.contains(disabledDataType));
                 }
             }

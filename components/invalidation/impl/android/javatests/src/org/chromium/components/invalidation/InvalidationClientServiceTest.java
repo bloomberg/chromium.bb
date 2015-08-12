@@ -17,9 +17,12 @@ import com.google.ipc.invalidation.external.client.types.Invalidation;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
+import org.chromium.sync.ModelTypeHelper;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
@@ -59,6 +62,7 @@ public class InvalidationClientServiceTest extends
                 return new ComponentName(this, InvalidationClientServiceTest.class);
             }
         });
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(getContext());
         setupService();
     }
 
@@ -84,10 +88,8 @@ public class InvalidationClientServiceTest extends
 
         // Empty existing and desired registrations should yield empty operation sets.
         InvalidationClientService.computeRegistrationOps(
-                ModelType.modelTypesToObjectIds(
-                        CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION)),
-                ModelType.modelTypesToObjectIds(
-                        CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION)),
+                toObjectIdSet(ModelType.BOOKMARKS, ModelType.SESSIONS),
+                toObjectIdSet(ModelType.BOOKMARKS, ModelType.SESSIONS),
                 regAccumulator, unregAccumulator);
         assertEquals(0, regAccumulator.size());
         assertEquals(0, unregAccumulator.size());
@@ -100,31 +102,26 @@ public class InvalidationClientServiceTest extends
 
         // Empty existing and non-empty desired registrations should yield desired registrations
         // as the registration operations to do and no unregistrations.
-        Set<ObjectId> desiredTypes =
-                CollectionUtil.newHashSet(
-                        ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId());
+        Set<ObjectId> desiredTypes = toObjectIdSet(ModelType.BOOKMARKS, ModelType.SESSIONS);
         InvalidationClientService.computeRegistrationOps(
                 new HashSet<ObjectId>(),
                 desiredTypes,
                 regAccumulator, unregAccumulator);
         assertEquals(
-                CollectionUtil.newHashSet(
-                        ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId()),
+                toObjectIdSet(ModelType.BOOKMARKS, ModelType.SESSIONS),
                 new HashSet<ObjectId>(regAccumulator));
         assertEquals(0, unregAccumulator.size());
         regAccumulator.clear();
 
         // Unequal existing and desired registrations should yield both registrations and
-        // unregistrations. We should unregister TYPED_URL and register BOOKMARK, keeping SESSION.
+        // unregistrations. We should unregister TYPED_URLS and register BOOKMARKS, keeping
+        // SESSIONS.
         InvalidationClientService.computeRegistrationOps(
-                CollectionUtil.newHashSet(
-                        ModelType.SESSION.toObjectId(), ModelType.TYPED_URL.toObjectId()),
-                CollectionUtil.newHashSet(
-                        ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId()),
+                toObjectIdSet(ModelType.SESSIONS, ModelType.TYPED_URLS),
+                toObjectIdSet(ModelType.BOOKMARKS, ModelType.SESSIONS),
                 regAccumulator, unregAccumulator);
-        assertEquals(CollectionUtil.newHashSet(ModelType.BOOKMARK.toObjectId()), regAccumulator);
-        assertEquals(CollectionUtil.newHashSet(ModelType.TYPED_URL.toObjectId()),
-                unregAccumulator);
+        assertEquals(toObjectIdSet(ModelType.BOOKMARKS), regAccumulator);
+        assertEquals(toObjectIdSet(ModelType.TYPED_URLS), unregAccumulator);
         regAccumulator.clear();
         unregAccumulator.clear();
     }
@@ -154,7 +151,7 @@ public class InvalidationClientServiceTest extends
 
         // Verify registrations issued.
         assertEquals(CollectionUtil.newHashSet(
-                ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId(), objectId),
+                toObjectId(ModelType.BOOKMARKS), toObjectId(ModelType.SESSIONS), objectId),
                 new HashSet<ObjectId>(getService().mRegistrations.get(0)));
     }
 
@@ -184,7 +181,7 @@ public class InvalidationClientServiceTest extends
         getService().reissueRegistrations(CLIENT_ID);
         assertEquals(1, getService().mRegistrations.size());
         assertEquals(CollectionUtil.newHashSet(
-                ModelType.BOOKMARK.toObjectId(), ModelType.SESSION.toObjectId(), objectId),
+                toObjectId(ModelType.BOOKMARKS), toObjectId(ModelType.SESSIONS), objectId),
                 new HashSet<ObjectId>(getService().mRegistrations.get(0)));
     }
 
@@ -210,11 +207,11 @@ public class InvalidationClientServiceTest extends
         assertTrue(invPrefs.commit(editContext));
 
         // Cases 1 and 2: calls matching desired state cause no actions.
-        getService().informRegistrationStatus(CLIENT_ID, ModelType.SESSION.toObjectId(),
+        getService().informRegistrationStatus(CLIENT_ID, toObjectId(ModelType.SESSIONS),
                 RegistrationState.REGISTERED);
         getService().informRegistrationStatus(CLIENT_ID, desiredObjectId,
                 RegistrationState.REGISTERED);
-        getService().informRegistrationStatus(CLIENT_ID, ModelType.BOOKMARK.toObjectId(),
+        getService().informRegistrationStatus(CLIENT_ID, toObjectId(ModelType.BOOKMARKS),
                 RegistrationState.UNREGISTERED);
         getService().informRegistrationStatus(CLIENT_ID, undesiredObjectId,
                 RegistrationState.UNREGISTERED);
@@ -222,25 +219,25 @@ public class InvalidationClientServiceTest extends
         assertTrue(getService().mUnregistrations.isEmpty());
 
         // Case 3: registration of undesired object triggers an unregistration.
-        getService().informRegistrationStatus(CLIENT_ID, ModelType.BOOKMARK.toObjectId(),
+        getService().informRegistrationStatus(CLIENT_ID, toObjectId(ModelType.BOOKMARKS),
                 RegistrationState.REGISTERED);
         getService().informRegistrationStatus(CLIENT_ID, undesiredObjectId,
                 RegistrationState.REGISTERED);
         assertEquals(2, getService().mUnregistrations.size());
         assertEquals(0, getService().mRegistrations.size());
-        assertEquals(CollectionUtil.newArrayList(ModelType.BOOKMARK.toObjectId()),
+        assertEquals(CollectionUtil.newArrayList(toObjectId(ModelType.BOOKMARKS)),
                 getService().mUnregistrations.get(0));
         assertEquals(CollectionUtil.newArrayList(undesiredObjectId),
                 getService().mUnregistrations.get(1));
 
         // Case 4: unregistration of a desired object triggers a registration.
-        getService().informRegistrationStatus(CLIENT_ID, ModelType.SESSION.toObjectId(),
+        getService().informRegistrationStatus(CLIENT_ID, toObjectId(ModelType.SESSIONS),
                 RegistrationState.UNREGISTERED);
         getService().informRegistrationStatus(CLIENT_ID, desiredObjectId,
                 RegistrationState.UNREGISTERED);
         assertEquals(2, getService().mUnregistrations.size());
         assertEquals(2, getService().mRegistrations.size());
-        assertEquals(CollectionUtil.newArrayList(ModelType.SESSION.toObjectId()),
+        assertEquals(CollectionUtil.newArrayList(toObjectId(ModelType.SESSIONS)),
                 getService().mRegistrations.get(0));
         assertEquals(CollectionUtil.newArrayList(desiredObjectId),
                 getService().mRegistrations.get(1));
@@ -271,9 +268,9 @@ public class InvalidationClientServiceTest extends
         assertTrue(invPrefs.commit(editContext));
 
         // Cases 2 and 4: permanent registration failures never cause calls to be made.
-        getService().informRegistrationFailure(CLIENT_ID, ModelType.SESSION.toObjectId(), false,
+        getService().informRegistrationFailure(CLIENT_ID, toObjectId(ModelType.SESSIONS), false,
                 "");
-        getService().informRegistrationFailure(CLIENT_ID, ModelType.BOOKMARK.toObjectId(), false,
+        getService().informRegistrationFailure(CLIENT_ID, toObjectId(ModelType.BOOKMARKS), false,
                 "");
         getService().informRegistrationFailure(CLIENT_ID, desiredObjectId, false, "");
         getService().informRegistrationFailure(CLIENT_ID, undesiredObjectId, false, "");
@@ -281,22 +278,22 @@ public class InvalidationClientServiceTest extends
         assertTrue(getService().mUnregistrations.isEmpty());
 
         // Case 1: transient failure of a desired registration results in re-registration.
-        getService().informRegistrationFailure(CLIENT_ID, ModelType.SESSION.toObjectId(), true, "");
+        getService().informRegistrationFailure(CLIENT_ID, toObjectId(ModelType.SESSIONS), true, "");
         getService().informRegistrationFailure(CLIENT_ID, desiredObjectId, true, "");
         assertEquals(2, getService().mRegistrations.size());
         assertTrue(getService().mUnregistrations.isEmpty());
-        assertEquals(CollectionUtil.newArrayList(ModelType.SESSION.toObjectId()),
+        assertEquals(CollectionUtil.newArrayList(toObjectId(ModelType.SESSIONS)),
                 getService().mRegistrations.get(0));
         assertEquals(CollectionUtil.newArrayList(desiredObjectId),
                 getService().mRegistrations.get(1));
 
         // Case 3: transient failure of an undesired registration results in unregistration.
-        getService().informRegistrationFailure(CLIENT_ID, ModelType.BOOKMARK.toObjectId(), true,
+        getService().informRegistrationFailure(CLIENT_ID, toObjectId(ModelType.BOOKMARKS), true,
                 "");
         getService().informRegistrationFailure(CLIENT_ID, undesiredObjectId, true, "");
         assertEquals(2, getService().mRegistrations.size());
         assertEquals(2, getService().mUnregistrations.size());
-        assertEquals(CollectionUtil.newArrayList(ModelType.BOOKMARK.toObjectId()),
+        assertEquals(CollectionUtil.newArrayList(toObjectId(ModelType.BOOKMARKS)),
                 getService().mUnregistrations.get(0));
         assertEquals(CollectionUtil.newArrayList(undesiredObjectId),
                 getService().mUnregistrations.get(1));
@@ -524,8 +521,8 @@ public class InvalidationClientServiceTest extends
         getService().onCreate();
 
         // Send register Intent.
-        Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
-                ModelType.BOOKMARK, ModelType.SESSION);
+        Set<Integer> desiredRegistrations = CollectionUtil.newHashSet(
+                ModelType.BOOKMARKS, ModelType.SESSIONS);
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
         Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
@@ -534,17 +531,17 @@ public class InvalidationClientServiceTest extends
         assertTrue(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
+        assertEquals(modelTypesToNotificationTypes(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertNull(invPrefs.getSavedObjectIds());
         assertEquals(1, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
 
         // Send a registration-change intent with different types to register for.
-        desiredRegistrations = CollectionUtil.newHashSet(ModelType.PASSWORD);
+        desiredRegistrations = CollectionUtil.newHashSet(ModelType.PASSWORDS);
         getService().onHandleIntent(createRegisterIntent(account, desiredRegistrations));
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
+        assertEquals(modelTypesToNotificationTypes(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertEquals(1, mStartServiceIntents.size());
 
@@ -568,10 +565,10 @@ public class InvalidationClientServiceTest extends
      * @param expectedObjectIds The additional object ids expected to be registered.
      * @param isReady Whether the client is ready to register/unregister.
      */
-    private boolean expectedObjectIdsRegistered(Set<ModelType> expectedTypes,
+    private boolean expectedObjectIdsRegistered(Set<Integer> expectedTypes,
             Set<ObjectId> expectedObjectIds, boolean isReady) {
         // Get synced types saved to preferences.
-        Set<String> expectedSyncTypes = ModelType.modelTypesToSyncTypesForTest(expectedTypes);
+        Set<String> expectedSyncTypes = modelTypesToNotificationTypes(expectedTypes);
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         Set<String> actualSyncTypes = invPrefs.getSavedSyncedTypes();
         if (actualSyncTypes == null) {
@@ -587,7 +584,7 @@ public class InvalidationClientServiceTest extends
         // Get expected registered object ids.
         Set<ObjectId> expectedRegisteredIds = new HashSet<ObjectId>();
         if (isReady) {
-            expectedRegisteredIds.addAll(ModelType.modelTypesToObjectIds(expectedTypes));
+            expectedRegisteredIds.addAll(modelTypesToObjectIds(expectedTypes));
             expectedRegisteredIds.addAll(expectedObjectIds);
         }
 
@@ -609,7 +606,7 @@ public class InvalidationClientServiceTest extends
 
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
         Set<ObjectId> objectIds = new HashSet<ObjectId>();
-        Set<ModelType> types = new HashSet<ModelType>();
+        Set<Integer> types = new HashSet<Integer>();
 
         // Register for some object ids.
         objectIds.add(ObjectId.newInstance(1, "obj1".getBytes()));
@@ -620,8 +617,8 @@ public class InvalidationClientServiceTest extends
         assertTrue(expectedObjectIdsRegistered(types, objectIds, false /* isReady */));
 
         // Register for some types.
-        types.add(ModelType.BOOKMARK);
-        types.add(ModelType.SESSION);
+        types.add(ModelType.BOOKMARKS);
+        types.add(ModelType.SESSIONS);
         registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, false /* isReady */));
@@ -638,7 +635,7 @@ public class InvalidationClientServiceTest extends
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change type registration with object ids registered.
-        types.remove(ModelType.BOOKMARK);
+        types.remove(ModelType.BOOKMARKS);
         registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
@@ -663,8 +660,8 @@ public class InvalidationClientServiceTest extends
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change type registration with no object ids registered.
-        types.add(ModelType.BOOKMARK);
-        types.add(ModelType.PASSWORD);
+        types.add(ModelType.BOOKMARKS);
+        types.add(ModelType.PASSWORDS);
         registrationIntent = createRegisterIntent(account, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
@@ -679,7 +676,7 @@ public class InvalidationClientServiceTest extends
         // Send register Intent.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
         Intent registrationIntent = createRegisterIntent(
-                account, CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSION));
+                account, CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSIONS));
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -697,7 +694,7 @@ public class InvalidationClientServiceTest extends
 
         // Ensure registrations are correct.
         Set<ObjectId> expectedRegistrations =
-                ModelType.modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSION));
+                modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSIONS));
         assertEquals(expectedRegistrations,
                      new HashSet<ObjectId>(getService().mRegistrations.get(0)));
     }
@@ -710,7 +707,7 @@ public class InvalidationClientServiceTest extends
 
         // Send register Intent with no desired types.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent = createRegisterIntent(account, new HashSet<ModelType>());
+        Intent registrationIntent = createRegisterIntent(account, new HashSet<Integer>());
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -727,13 +724,13 @@ public class InvalidationClientServiceTest extends
 
         // Send register Intent for SESSIONS and PROXY_TABS in an already ready client.
         registrationIntent = createRegisterIntent(account,
-                CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSION));
+                CollectionUtil.newHashSet(ModelType.PROXY_TABS, ModelType.SESSIONS));
         getService().onHandleIntent(registrationIntent);
 
         // Ensure that PROXY_TABS registration request is ignored.
         assertEquals(1, getService().mRegistrations.size());
         Set<ObjectId> expectedTypes =
-                ModelType.modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSION));
+                modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSIONS));
         assertEquals(expectedTypes, new HashSet<ObjectId>(getService().mRegistrations.get(0)));
     }
 
@@ -748,8 +745,8 @@ public class InvalidationClientServiceTest extends
 
         // Send register Intent.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
-                ModelType.BOOKMARK, ModelType.SESSION);
+        Set<Integer> desiredRegistrations = CollectionUtil.newHashSet(
+                ModelType.BOOKMARKS, ModelType.SESSIONS);
         Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
 
@@ -757,7 +754,7 @@ public class InvalidationClientServiceTest extends
         assertFalse(InvalidationClientService.getIsClientStartedForTest());
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
         assertEquals(account, invPrefs.getSavedSyncedAccount());
-        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
+        assertEquals(modelTypesToNotificationTypes(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertEquals(0, mStartServiceIntents.size());
     }
@@ -775,9 +772,9 @@ public class InvalidationClientServiceTest extends
 
         // Send register Intent. Verify client started but no registrations issued.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
-                ModelType.BOOKMARK, ModelType.SESSION);
-        Set<ObjectId> desiredObjectIds = ModelType.modelTypesToObjectIds(desiredRegistrations);
+        Set<Integer> desiredRegistrations = CollectionUtil.newHashSet(
+                ModelType.BOOKMARKS, ModelType.SESSIONS);
+        Set<ObjectId> desiredObjectIds = modelTypesToObjectIds(desiredRegistrations);
 
         Intent registrationIntent = createRegisterIntent(account, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
@@ -785,7 +782,7 @@ public class InvalidationClientServiceTest extends
         assertEquals(1, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
         InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
-        assertEquals(ModelType.modelTypesToSyncTypesForTest(desiredRegistrations),
+        assertEquals(modelTypesToNotificationTypes(desiredRegistrations),
                 invPrefs.getSavedSyncedTypes());
         assertEquals(desiredObjectIds, getService().readRegistrationsFromPrefs());
 
@@ -828,6 +825,34 @@ public class InvalidationClientServiceTest extends
         // Bug: https://code.google.com/p/chromium/issues/detail?id=172398
     }
 
+    private ObjectId toObjectId(int modelType) {
+        return ModelTypeHelper.toObjectId(modelType);
+    }
+
+    private Set<ObjectId> toObjectIdSet(int... modelTypes) {
+        Set<ObjectId> objectIds = new HashSet<ObjectId>(modelTypes.length);
+        for (int i = 0; i < modelTypes.length; i++) {
+            objectIds.add(toObjectId(modelTypes[i]));
+        }
+        return objectIds;
+    }
+
+    private Set<ObjectId> modelTypesToObjectIds(Set<Integer> modelTypes) {
+        Set<ObjectId> objectIds = new HashSet<ObjectId>();
+        for (Integer modelType : modelTypes) {
+            objectIds.add(toObjectId(modelType));
+        }
+        return objectIds;
+    }
+
+    private Set<String> modelTypesToNotificationTypes(Set<Integer> modelTypes) {
+        Set<String> strings = new HashSet<String>();
+        for (Integer modelType : modelTypes) {
+            strings.add(ModelTypeHelper.toNotificationType(modelType));
+        }
+        return strings;
+    }
+
     /** Creates an intent to start the InvalidationClientService. */
     private Intent createStartIntent() {
         Intent intent = new Intent();
@@ -842,7 +867,7 @@ public class InvalidationClientServiceTest extends
     }
 
     /** Creates an intent to register some types with the InvalidationClientService. */
-    private Intent createRegisterIntent(Account account, Set<ModelType> types) {
+    private Intent createRegisterIntent(Account account, Set<Integer> types) {
         Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, types);
         return intent;
     }

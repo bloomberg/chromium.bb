@@ -16,7 +16,8 @@ import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.components.invalidation.InvalidationService;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
+import org.chromium.sync.ModelTypeHelper;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
@@ -45,7 +46,7 @@ public class InvalidationServiceTest extends NativeLibraryTestBase {
     @Feature({"Sync"})
     public void testSetRegisteredObjectIds() {
         InvalidationService service = InvalidationServiceFactory.getForTest(mContext);
-        ObjectId bookmark = ModelType.BOOKMARK.toObjectId();
+        ObjectId bookmark = ModelTypeHelper.toObjectId(ModelType.BOOKMARKS);
         service.setRegisteredObjectIds(new int[] {1, 2, bookmark.getSource()},
                                           new String[] {"a", "b", new String(bookmark.getName())});
         assertEquals(1, mContext.getNumStartedIntents());

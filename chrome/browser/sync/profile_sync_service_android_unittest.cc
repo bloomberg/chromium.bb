@@ -20,19 +20,6 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-int NumberOfSetBits(jlong bitmask) {
-  int num = 0;
-  while (bitmask > 0) {
-    num += (bitmask & 1);
-    bitmask >>= 1;
-  }
-  return num;
-}
-
-}  // namespace
-
 class ProfileSyncServiceAndroidTest : public testing::Test {
  public:
   ProfileSyncServiceAndroidTest()
@@ -77,27 +64,3 @@ class ProfileSyncServiceAndroidTest : public testing::Test {
   TestingProfile profile_;
   scoped_ptr<ProfileSyncService> sync_service_;
 };
-
-TEST_F(ProfileSyncServiceAndroidTest, ModelTypesToInvalidationNames) {
-  syncer::ModelTypeSet model_types = GetRegisteredDataTypes();
-
-  jlong model_type_selection =
-      ProfileSyncServiceAndroid::ModelTypeSetToSelection(model_types);
-  // The number of set bits in the model type bitmask should be equal to the
-  // number of model types.
-  EXPECT_EQ(static_cast<int>(model_types.Size()),
-            NumberOfSetBits(model_type_selection));
-
-  std::vector<std::string> invalidation_names;
-  for (syncer::ModelTypeSet::Iterator it = model_types.First(); it.Good();
-       it.Inc()) {
-    std::string notification_type;
-    if (syncer::RealModelTypeToNotificationType(it.Get(), &notification_type))
-      invalidation_names.push_back(notification_type);
-  }
-
-  std::sort(invalidation_names.begin(), invalidation_names.end());
-  EXPECT_EQ(base::JoinString(invalidation_names, ", "),
-            ProfileSyncServiceAndroid::ModelTypeSelectionToStringForTest(
-                model_type_selection));
-}

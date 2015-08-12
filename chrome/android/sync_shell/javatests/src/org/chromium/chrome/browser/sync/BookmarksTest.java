@@ -15,7 +15,7 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.protocol.BookmarkSpecifics;
 import org.chromium.sync.protocol.SyncEntity;
 import org.json.JSONException;
@@ -329,7 +329,7 @@ public class BookmarksTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDisabledNoDownloadBookmark() throws Exception {
-        disableDataType(ModelType.BOOKMARK);
+        disableDataType(ModelType.BOOKMARKS);
         addServerBookmark(TITLE, URL);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForServerBookmarkCountWithName(1, TITLE);
@@ -341,7 +341,7 @@ public class BookmarksTest extends SyncTestBase {
     @LargeTest
     @Feature({"Sync"})
     public void testDisabledNoUploadBookmark() throws Exception {
-        disableDataType(ModelType.BOOKMARK);
+        disableDataType(ModelType.BOOKMARKS);
         addClientBookmark(TITLE, URL);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         assertServerBookmarkCountWithName(0, TITLE);
@@ -435,7 +435,7 @@ public class BookmarksTest extends SyncTestBase {
 
     private List<Bookmark> getServerBookmarks() throws Exception {
         List<SyncEntity> entities =
-                mFakeServerHelper.getSyncEntitiesByModelType(ModelType.BOOKMARK);
+                mFakeServerHelper.getSyncEntitiesByModelType(ModelType.BOOKMARKS);
         List<Bookmark> bookmarks = new ArrayList<Bookmark>(entities.size());
         for (SyncEntity entity : entities) {
             String id = entity.idString;
@@ -454,7 +454,7 @@ public class BookmarksTest extends SyncTestBase {
     private void assertServerBookmarkCountWithName(int count, String name) {
         assertTrue("There should be " + count + " remote bookmarks with name " + name + ".",
                 mFakeServerHelper.verifyEntityCountByTypeAndName(
-                            count, ModelType.BOOKMARK, name));
+                            count, ModelType.BOOKMARKS, name));
     }
 
     private void waitForClientBookmarkCount(final int n) throws InterruptedException {
@@ -478,7 +478,7 @@ public class BookmarksTest extends SyncTestBase {
             public boolean isSatisfied() {
                 try {
                     return mFakeServerHelper.verifyEntityCountByTypeAndName(
-                            count, ModelType.BOOKMARK, name);
+                            count, ModelType.BOOKMARKS, name);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

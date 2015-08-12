@@ -10,7 +10,6 @@ import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
 import com.google.protobuf.nano.MessageNano;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.protocol.EntitySpecifics;
 import org.chromium.sync.protocol.SyncEntity;
 
@@ -147,7 +146,7 @@ public class FakeServerHelper {
      *
      * @return whether the number of specified entities exist
      */
-    public boolean verifyEntityCountByTypeAndName(final int count, final ModelType modelType,
+    public boolean verifyEntityCountByTypeAndName(final int count, final int modelType,
             final String name) {
         checkFakeServerInitialized(
                 "useFakeServer must be called before data verification.");
@@ -155,7 +154,7 @@ public class FakeServerHelper {
             @Override
             public Boolean call() {
                 return nativeVerifyEntityCountByTypeAndName(mNativeFakeServerHelperAndroid,
-                        sNativeFakeServer, count, modelType.toString(), name);
+                        sNativeFakeServer, count, modelType, name);
             }
         });
     }
@@ -186,14 +185,14 @@ public class FakeServerHelper {
      *
      * @return a list of all the SyncEntity protos for that type.
      */
-    public List<SyncEntity> getSyncEntitiesByModelType(final ModelType modelType)
+    public List<SyncEntity> getSyncEntitiesByModelType(final int modelType)
             throws ExecutionException {
         checkFakeServerInitialized("useFakeServer must be called before getting sync entities.");
         return ThreadUtils.runOnUiThreadBlocking(new Callable<List<SyncEntity>>() {
             @Override
             public List<SyncEntity> call() throws InvalidProtocolBufferNanoException {
                 byte[][] serializedEntities = nativeGetSyncEntitiesByModelType(
-                        mNativeFakeServerHelperAndroid, sNativeFakeServer, modelType.toString());
+                        mNativeFakeServerHelperAndroid, sNativeFakeServer, modelType);
                 List<SyncEntity> entities = new ArrayList<SyncEntity>(serializedEntities.length);
                 for (int i = 0; i < serializedEntities.length; i++) {
                     SyncEntity entity = new SyncEntity();
@@ -376,12 +375,12 @@ public class FakeServerHelper {
     private native void nativeDeleteFakeServer(
             long nativeFakeServerHelperAndroid, long nativeFakeServer);
     private native boolean nativeVerifyEntityCountByTypeAndName(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, String modelType,
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, int count, int modelType,
             String name);
     private native boolean nativeVerifySessions(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String[] urlArray);
     private native byte[][] nativeGetSyncEntitiesByModelType(
-            long nativeFakeServerHelperAndroid, long nativeFakeServer, String modelType);
+            long nativeFakeServerHelperAndroid, long nativeFakeServer, int modelType);
     private native void nativeInjectUniqueClientEntity(
             long nativeFakeServerHelperAndroid, long nativeFakeServer, String name,
             byte[] serializedEntitySpecifics);

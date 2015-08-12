@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockAccountManager;
@@ -187,11 +186,11 @@ public class SyncTestBase extends ChromeShellTestBase {
         });
     }
 
-    protected void disableDataType(final ModelType modelType) {
+    protected void disableDataType(final int modelType) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Set<ModelType> preferredTypes = mProfileSyncService.getPreferredDataTypes();
+                Set<Integer> preferredTypes = mProfileSyncService.getPreferredDataTypes();
                 preferredTypes.remove(modelType);
                 mProfileSyncService.setPreferredDataTypes(false, preferredTypes);
             }

@@ -11,7 +11,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.protocol.AutofillProfileSpecifics;
 import org.chromium.sync.protocol.EntitySpecifics;
 import org.json.JSONException;

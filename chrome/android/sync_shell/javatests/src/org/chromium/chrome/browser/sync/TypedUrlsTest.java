@@ -13,7 +13,7 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.protocol.EntitySpecifics;
 import org.chromium.sync.protocol.SyncEnums;
 import org.chromium.sync.protocol.TypedUrlSpecifics;
@@ -138,7 +138,7 @@ public class TypedUrlsTest extends SyncTestBase {
     private void assertServerTypedUrlCountWithName(int count, String name) {
         assertTrue("Expected " + count + " server typed URLs with name " + name + ".",
                 mFakeServerHelper.verifyEntityCountByTypeAndName(
-                        count, ModelType.TYPED_URL, name));
+                        count, ModelType.TYPED_URLS, name));
     }
 
     private void waitForClientTypedUrlCount(final int count) throws InterruptedException {
@@ -162,7 +162,7 @@ public class TypedUrlsTest extends SyncTestBase {
             public boolean isSatisfied() {
                 try {
                     return mFakeServerHelper.verifyEntityCountByTypeAndName(
-                            count, ModelType.TYPED_URL, name);
+                            count, ModelType.TYPED_URLS, name);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

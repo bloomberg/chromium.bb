@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -233,7 +232,7 @@ public class SigninHelper {
 
         // Before signing out, remember the current sync state and data types.
         final boolean isSyncWanted = AndroidSyncSettings.isChromeSyncEnabled(mContext);
-        final Set<ModelType> dataTypes = mProfileSyncService.getPreferredDataTypes();
+        final Set<Integer> dataTypes = mProfileSyncService.getPreferredDataTypes();
 
         // TODO(acleung): Deal with passphrase or just prompt user to re-enter it?
 
@@ -253,7 +252,7 @@ public class SigninHelper {
 
     private void performResignin(String newName,
                                  final boolean isSyncWanted,
-                                 final Set<ModelType> dataTypes) {
+                                 final Set<Integer> dataTypes) {
         // This is the correct account now.
         final Account account = AccountManagerHelper.createAccountFromName(newName);
 

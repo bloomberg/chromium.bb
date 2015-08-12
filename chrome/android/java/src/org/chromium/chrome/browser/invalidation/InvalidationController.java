@@ -16,7 +16,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -160,12 +160,12 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
         // may be scheduled far into the future.
         mEnableSessionInvalidationsTimer.resume();
 
-        HashSet<ModelType> typesToRegister = new HashSet<ModelType>();
+        HashSet<Integer> typesToRegister = new HashSet<Integer>();
         typesToRegister.addAll(ProfileSyncService.get(mContext).getPreferredDataTypes());
         if (!mSessionInvalidationsEnabled) {
-            typesToRegister.remove(ModelType.SESSION);
+            typesToRegister.remove(ModelType.SESSIONS);
             typesToRegister.remove(ModelType.FAVICON_TRACKING);
-            typesToRegister.remove(ModelType.FAVICON_IMAGE);
+            typesToRegister.remove(ModelType.FAVICON_IMAGES);
         }
 
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(

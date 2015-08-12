@@ -14,10 +14,8 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -32,20 +30,6 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         mContext = new AdvancedMockContext(getInstrumentation().getContext());
-    }
-
-    @SmallTest
-    @Feature({"Sync"})
-    public void testTranslateBasicSyncTypes() throws Exception {
-        /*
-         * Test plan: convert three strings to model types, one of which is invalid. Verify that
-         * the two valid strings are properly converted and that the invalid string is dropped.
-         */
-        HashSet<ModelType> expectedTypes = CollectionUtil.newHashSet(
-                ModelType.BOOKMARK, ModelType.SESSION);
-        Set<ModelType> actualTypes = ModelType.syncTypesToModelTypes(
-                CollectionUtil.newHashSet("BOOKMARK", "SESSION", "0!!!INVALID"));
-        assertEquals(expectedTypes, actualTypes);
     }
 
     @SmallTest

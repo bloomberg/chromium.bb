@@ -33,8 +33,8 @@ import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.internal_api.pub.PassphraseType;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -323,14 +323,14 @@ public class SyncCustomizationFragment extends PreferenceFragment
         invController.ensureStartedAndUpdateRegisteredTypes();
     }
 
-    private Set<ModelType> getSelectedModelTypes() {
-        Set<ModelType> types = new HashSet<ModelType>();
+    private Set<Integer> getSelectedModelTypes() {
+        Set<Integer> types = new HashSet<Integer>();
         if (mSyncAutofill.isChecked()) types.add(ModelType.AUTOFILL);
-        if (mSyncBookmarks.isChecked()) types.add(ModelType.BOOKMARK);
-        if (mSyncOmnibox.isChecked()) types.add(ModelType.TYPED_URL);
-        if (mSyncPasswords.isChecked()) types.add(ModelType.PASSWORD);
+        if (mSyncBookmarks.isChecked()) types.add(ModelType.BOOKMARKS);
+        if (mSyncOmnibox.isChecked()) types.add(ModelType.TYPED_URLS);
+        if (mSyncPasswords.isChecked()) types.add(ModelType.PASSWORDS);
         if (mSyncRecentTabs.isChecked()) types.add(ModelType.PROXY_TABS);
-        if (mSyncSettings.isChecked()) types.add(ModelType.PREFERENCE);
+        if (mSyncSettings.isChecked()) types.add(ModelType.PREFERENCES);
         return types;
     }
 
@@ -518,16 +518,16 @@ public class SyncCustomizationFragment extends PreferenceFragment
             pref.setEnabled(isSyncEnabled && !syncEverything && canSyncType);
         }
         if (isSyncEnabled && !syncEverything) {
-            Set<ModelType> syncTypes = mProfileSyncService.getPreferredDataTypes();
+            Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
             mSyncAutofill.setChecked(syncTypes.contains(ModelType.AUTOFILL));
-            mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARK));
-            mSyncOmnibox.setChecked(syncTypes.contains(ModelType.TYPED_URL));
+            mSyncBookmarks.setChecked(syncTypes.contains(ModelType.BOOKMARKS));
+            mSyncOmnibox.setChecked(syncTypes.contains(ModelType.TYPED_URLS));
             mSyncPasswords.setChecked(passwordSyncConfigurable
-                    && syncTypes.contains(ModelType.PASSWORD));
+                    && syncTypes.contains(ModelType.PASSWORDS));
             mSyncRecentTabs.setChecked(syncTypes.contains(ModelType.PROXY_TABS));
             // TODO(zea): Switch this to PREFERENCE once that datatype is
             // supported on Android.
-            mSyncSettings.setChecked(syncTypes.contains(ModelType.PRIORITY_PREFERENCE));
+            mSyncSettings.setChecked(syncTypes.contains(ModelType.PRIORITY_PREFERENCES));
         }
     }
 

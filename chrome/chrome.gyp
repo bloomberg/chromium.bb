@@ -581,7 +581,6 @@
             'content_setting_java',
             'content_settings_type_java',
             'page_info_connection_type_java',
-            'profile_sync_service_model_type_selection_java',
             'resource_id_java',
             'tab_load_status_java',
             'shortcut_source_java',

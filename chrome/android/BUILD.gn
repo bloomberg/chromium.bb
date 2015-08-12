@@ -181,7 +181,6 @@ android_library("chrome_java") {
 # GYP: //chrome/chrome_browser.gypi:connectivity_check_result_java
 # GYP: //chrome/chrome_browser.gypi:shortcut_source_java
 # GYP: //chrome/chrome_browser.gypi:profile_account_management_metrics_java
-# GYP: //chrome/chrome_browser.gypi:profile_sync_service_model_type_selection_java
 # GYP: //chrome/chrome_browser.gypi:connection_security_security_levels_java
 # GYP: //chrome/chrome_browser.gypi:tab_load_status_java
 java_cpp_enum("chrome_android_java_enums_srcjar") {
@@ -192,7 +191,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/android/tab_android.h",
     "//chrome/browser/profiles/profile_metrics.h",
     "//chrome/browser/ssl/connection_security.h",
-    "//chrome/browser/sync/profile_sync_service_android.cc",
   ]
   outputs = [
     "org/chromium/chrome/browser/ActivityTypeIds.java",
@@ -201,7 +199,6 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "org/chromium/chrome/browser/TabLoadStatus.java",
     "org/chromium/chrome/browser/profiles/ProfileAccountManagementMetrics.java",
     "org/chromium/chrome/browser/ssl/ConnectionSecurityLevel.java",
-    "org/chromium/chrome/browser/sync/ModelTypeSelection.java",
   ]
 }
 

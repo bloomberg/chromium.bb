@@ -16,17 +16,14 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
+import org.chromium.sync.ModelType;
 import org.chromium.sync.internal_api.pub.PassphraseType;
-import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -72,6 +69,15 @@ public class ProfileSyncService {
 
     @VisibleForTesting
     public static final String SESSION_TAG_PREFIX = "session_sync";
+
+    private static final int[] ALL_SELECTABLE_TYPES = new int[] {
+        ModelType.AUTOFILL,
+        ModelType.BOOKMARKS,
+        ModelType.PASSWORDS,
+        ModelType.PREFERENCES,
+        ModelType.PROXY_TABS,
+        ModelType.TYPED_URLS
+    };
 
     private static ProfileSyncService sProfileSyncService;
 
@@ -345,9 +351,9 @@ public class ProfileSyncService {
      *
      * @return Set of active data types.
      */
-    public Set<ModelType> getActiveDataTypes() {
-        long modelTypeSelection = nativeGetActiveDataTypes(mNativeProfileSyncServiceAndroid);
-        return modelTypeSelectionToSet(modelTypeSelection);
+    public Set<Integer> getActiveDataTypes() {
+        int[] activeDataTypes = nativeGetActiveDataTypes(mNativeProfileSyncServiceAndroid);
+        return modelTypeArrayToSet(activeDataTypes);
     }
 
     /**
@@ -357,72 +363,26 @@ public class ProfileSyncService {
      *
      * @return Set of preferred types.
      */
-    public Set<ModelType> getPreferredDataTypes() {
-        long modelTypeSelection = nativeGetPreferredDataTypes(mNativeProfileSyncServiceAndroid);
-        return modelTypeSelectionToSet(modelTypeSelection);
+    public Set<Integer> getPreferredDataTypes() {
+        int[] modelTypeArray = nativeGetPreferredDataTypes(mNativeProfileSyncServiceAndroid);
+        return modelTypeArrayToSet(modelTypeArray);
     }
 
-    @VisibleForTesting
-    public static Set<ModelType> modelTypeSelectionToSet(long modelTypeSelection) {
-        Set<ModelType> syncTypes = new HashSet<ModelType>();
-        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL) != 0) {
-            syncTypes.add(ModelType.AUTOFILL);
+    private static Set<Integer> modelTypeArrayToSet(int[] modelTypeArray) {
+        Set<Integer> modelTypeSet = new HashSet<Integer>();
+        for (int i = 0; i < modelTypeArray.length; i++) {
+            modelTypeSet.add(modelTypeArray[i]);
         }
-        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_PROFILE) != 0) {
-            syncTypes.add(ModelType.AUTOFILL_PROFILE);
+        return modelTypeSet;
+    }
+
+    private static int[] modelTypeSetToArray(Set<Integer> modelTypeSet) {
+        int[] modelTypeArray = new int[modelTypeSet.size()];
+        int i = 0;
+        for (int modelType : modelTypeSet) {
+            modelTypeArray[i++] = modelType;
         }
-        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_WALLET) != 0) {
-            syncTypes.add(ModelType.AUTOFILL_WALLET);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.AUTOFILL_WALLET_METADATA) != 0) {
-            syncTypes.add(ModelType.AUTOFILL_WALLET_METADATA);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.BOOKMARK) != 0) {
-            syncTypes.add(ModelType.BOOKMARK);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.DEVICE_INFO) != 0) {
-            syncTypes.add(ModelType.DEVICE_INFO);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.EXPERIMENTS) != 0) {
-            syncTypes.add(ModelType.EXPERIMENTS);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.FAVICON_IMAGE) != 0) {
-            syncTypes.add(ModelType.FAVICON_IMAGE);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.FAVICON_TRACKING) != 0) {
-            syncTypes.add(ModelType.FAVICON_TRACKING);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.HISTORY_DELETE_DIRECTIVE) != 0) {
-            syncTypes.add(ModelType.HISTORY_DELETE_DIRECTIVE);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.NIGORI) != 0) {
-            syncTypes.add(ModelType.NIGORI);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.PASSWORD) != 0) {
-            syncTypes.add(ModelType.PASSWORD);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.PREFERENCE) != 0) {
-            syncTypes.add(ModelType.PREFERENCE);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.PRIORITY_PREFERENCE) != 0) {
-            syncTypes.add(ModelType.PRIORITY_PREFERENCE);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.PROXY_TABS) != 0) {
-            syncTypes.add(ModelType.PROXY_TABS);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.SESSION) != 0) {
-            syncTypes.add(ModelType.SESSION);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.SUPERVISED_USER_SETTING) != 0) {
-            syncTypes.add(ModelType.MANAGED_USER_SETTING);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.SUPERVISED_USER_WHITELIST) != 0) {
-            syncTypes.add(ModelType.MANAGED_USER_WHITELIST);
-        }
-        if ((modelTypeSelection & ModelTypeSelection.TYPED_URL) != 0) {
-            syncTypes.add(ModelType.TYPED_URL);
-        }
-        return syncTypes;
+        return modelTypeArray;
     }
 
     public boolean hasKeepEverythingSynced() {
@@ -437,28 +397,9 @@ public class ProfileSyncService {
      * @param enabledTypes   The set of types to enable. Ignored (can be null) if
      *                       syncEverything is true.
      */
-    public void setPreferredDataTypes(boolean syncEverything, Set<ModelType> enabledTypes) {
-        long modelTypeSelection = 0;
-        if (syncEverything || enabledTypes.contains(ModelType.AUTOFILL)) {
-            modelTypeSelection |= ModelTypeSelection.AUTOFILL;
-        }
-        if (syncEverything || enabledTypes.contains(ModelType.BOOKMARK)) {
-            modelTypeSelection |= ModelTypeSelection.BOOKMARK;
-        }
-        if (syncEverything || enabledTypes.contains(ModelType.PASSWORD)) {
-            modelTypeSelection |= ModelTypeSelection.PASSWORD;
-        }
-        if (syncEverything || enabledTypes.contains(ModelType.PREFERENCE)) {
-            modelTypeSelection |= ModelTypeSelection.PREFERENCE;
-        }
-        if (syncEverything || enabledTypes.contains(ModelType.PROXY_TABS)) {
-            modelTypeSelection |= ModelTypeSelection.PROXY_TABS;
-        }
-        if (syncEverything || enabledTypes.contains(ModelType.TYPED_URL)) {
-            modelTypeSelection |= ModelTypeSelection.TYPED_URL;
-        }
-        nativeSetPreferredDataTypes(
-                mNativeProfileSyncServiceAndroid, syncEverything, modelTypeSelection);
+    public void setPreferredDataTypes(boolean syncEverything, Set<Integer> enabledTypes) {
+        nativeSetPreferredDataTypes(mNativeProfileSyncServiceAndroid, syncEverything, syncEverything
+                ? ALL_SELECTABLE_TYPES : modelTypeSetToArray(enabledTypes));
     }
 
     public void setSyncSetupCompleted() {
@@ -567,32 +508,12 @@ public class ProfileSyncService {
         nativeOverrideNetworkResourcesForTest(mNativeProfileSyncServiceAndroid, networkResources);
     }
 
-    @CalledByNative
-    private static String modelTypeSelectionToStringForTest(long modelTypeSelection) {
-        SortedSet<String> set = new TreeSet<String>();
-        Set<ModelType> filteredTypes = ModelType.filterOutNonInvalidationTypes(
-                modelTypeSelectionToSet(modelTypeSelection));
-        for (ModelType type : filteredTypes) {
-            set.add(type.toString());
-        }
-        StringBuilder sb = new StringBuilder();
-        Iterator<String> it = set.iterator();
-        if (it.hasNext()) {
-            sb.append(it.next());
-            while (it.hasNext()) {
-                sb.append(", ");
-                sb.append(it.next());
-            }
-        }
-        return sb.toString();
-    }
-
     /**
      * @return Whether sync is enabled to sync urls or open tabs with a non custom passphrase.
      */
     public boolean isSyncingUrlsWithKeystorePassphrase() {
         return isSyncInitialized()
-            && getPreferredDataTypes().contains(ModelType.TYPED_URL)
+            && getPreferredDataTypes().contains(ModelType.TYPED_URLS)
             && getPassphraseType().equals(PassphraseType.KEYSTORE_PASSPHRASE);
     }
 
@@ -673,10 +594,10 @@ public class ProfileSyncService {
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncKeystoreMigrationDone(long nativeProfileSyncServiceAndroid);
-    private native long nativeGetActiveDataTypes(long nativeProfileSyncServiceAndroid);
-    private native long nativeGetPreferredDataTypes(long nativeProfileSyncServiceAndroid);
+    private native int[] nativeGetActiveDataTypes(long nativeProfileSyncServiceAndroid);
+    private native int[] nativeGetPreferredDataTypes(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPreferredDataTypes(
-            long nativeProfileSyncServiceAndroid, boolean syncEverything, long modelTypeSelection);
+            long nativeProfileSyncServiceAndroid, boolean syncEverything, int[] modelTypeArray);
     private native void nativeSetSetupInProgress(
             long nativeProfileSyncServiceAndroid, boolean inProgress);
     private native void nativeSetSyncSetupCompleted(long nativeProfileSyncServiceAndroid);

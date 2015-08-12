@@ -17,7 +17,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.sync.AndroidSyncSettings;
-import org.chromium.sync.internal_api.pub.base.ModelType;
+import org.chromium.sync.ModelType;
+import org.chromium.sync.ModelTypeHelper;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
@@ -45,13 +46,13 @@ public class InvalidationControllerTest {
      * {@link ProfileSyncService#getPreferredDataTypes()}
      */
     private static class ProfileSyncServiceStub extends ProfileSyncService {
-        private Set<ModelType> mPreferredDataTypes;
+        private Set<Integer> mPreferredDataTypes;
 
         public ProfileSyncServiceStub(Context context) {
             super(context);
         }
 
-        public void setPreferredDataTypes(Set<ModelType> types) {
+        public void setPreferredDataTypes(Set<Integer> types) {
             mPreferredDataTypes = types;
         }
 
@@ -61,7 +62,7 @@ public class InvalidationControllerTest {
         }
 
         @Override
-        public Set<ModelType> getPreferredDataTypes() {
+        public Set<Integer> getPreferredDataTypes() {
             return mPreferredDataTypes;
         }
     }
@@ -88,12 +89,21 @@ public class InvalidationControllerTest {
         mShadowActivity = Robolectric.shadowOf(activity);
         mContext = activity;
 
+        ModelTypeHelper.setTestDelegate(new ModelTypeHelper.TestDelegate() {
+            public String toNotificationType(int modelType) {
+                return Integer.toString(modelType);
+            }
+        });
+
         ProfileSyncServiceStub profileSyncServiceStub = new ProfileSyncServiceStub(mContext);
         ProfileSyncService.overrideForTests(profileSyncServiceStub);
         profileSyncServiceStub.setPreferredDataTypes(
-                CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
-        mAllTypes = CollectionUtil.newHashSet(ModelType.BOOKMARK.name(), ModelType.SESSION.name());
-        mNonSessionTypes = CollectionUtil.newHashSet(ModelType.BOOKMARK.name());
+                CollectionUtil.newHashSet(ModelType.BOOKMARKS, ModelType.SESSIONS));
+        mAllTypes = CollectionUtil.newHashSet(
+                ModelTypeHelper.toNotificationType(ModelType.BOOKMARKS),
+                ModelTypeHelper.toNotificationType(ModelType.SESSIONS));
+        mNonSessionTypes = CollectionUtil.newHashSet(ModelTypeHelper.toNotificationType(
+                ModelType.BOOKMARKS));
 
         // We don't want to use the system content resolver, so we override it.
         MockSyncContentResolverDelegate delegate = new MockSyncContentResolverDelegate();

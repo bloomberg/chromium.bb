@@ -24,6 +24,14 @@ import java.util.Set;
  */
 @JNINamespace("syncer")
 public class ModelTypeHelper {
+    /**
+     * Implement this class to override the behavior of
+     * {@link ModelTypeHelper#toNotificationType()} for tests.
+     */
+    public interface TestDelegate {
+        public String toNotificationType(int modelType);
+    }
+
     private static final String TAG = "ModelTypeHelper";
 
     private static final Object sLock = new Object();
@@ -31,6 +39,8 @@ public class ModelTypeHelper {
     private static final int[] NON_INVALIDATION_TYPES_ARRAY = new int[] {
         ModelType.PROXY_TABS
     };
+
+    private static TestDelegate sDelegate = null;
 
     // Convenience sets for checking whether a type can have invalidations. Some ModelTypes
     // such as PROXY_TABS are not real types and can't be registered. Initializing these
@@ -84,6 +94,8 @@ public class ModelTypeHelper {
      * @return the string representation of the model type constant.
      */
     public static String toNotificationType(int modelType) {
+        if (sDelegate != null) return sDelegate.toNotificationType(modelType);
+
         // Because PROXY_TABS isn't an invalidation type, it doesn't have a string from native,
         // but for backwards compatibility we need to keep its pref value the same as the old
         // ModelType enum name value.
@@ -108,6 +120,11 @@ public class ModelTypeHelper {
             }
         }
         return objectIds;
+    }
+
+    @VisibleForTesting
+    public static void setTestDelegate(TestDelegate delegate) {
+        sDelegate = delegate;
     }
 
     private static native String nativeModelTypeToNotificationType(int modelType);
