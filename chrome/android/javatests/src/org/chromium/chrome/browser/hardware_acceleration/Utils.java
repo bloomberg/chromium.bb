@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.hardware_acceleration;
 
+import android.app.Dialog;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
@@ -27,7 +28,20 @@ public class Utils {
      * Asserts that activity is hardware accelerated only on high-end devices.
      * I.e. on low-end devices hardware acceleration must be off.
      */
-    public static void assertHardwareAcceleration(final ChromeActivity activity) throws Exception {
+    public static void assertHardwareAcceleration(ChromeActivity activity) throws Exception {
+        assertActivityAcceleration(activity);
+        assertChildWindowAcceleration(activity);
+    }
+
+    /**
+     * Asserts that there is no thread named 'RenderThread' (which is essential
+     * for hardware acceleration).
+     */
+    public static void assertNoRenderThread() {
+        Assert.assertFalse(collectThreadNames().contains("RenderThread"));
+    }
+
+    private static void assertActivityAcceleration(final ChromeActivity activity) throws Exception {
         final AtomicBoolean accelerated = new AtomicBoolean();
         final CallbackHelper listenerCalled = new CallbackHelper();
 
@@ -57,12 +71,34 @@ public class Utils {
         }
     }
 
-    /**
-     * Asserts that there is no thread named 'RenderThread' (which is essential
-     * for hardware acceleration).
-     */
-    public static void assertNoRenderThread() {
-        Assert.assertFalse(collectThreadNames().contains("RenderThread"));
+    private static void assertChildWindowAcceleration(final ChromeActivity activity)
+            throws Exception {
+        final AtomicBoolean accelerated = new AtomicBoolean();
+        final CallbackHelper listenerCalled = new CallbackHelper();
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                final Dialog dialog = new Dialog(activity);
+                dialog.setContentView(new View(activity) {
+                    @Override
+                    public void onAttachedToWindow() {
+                        accelerated.set(isHardwareAccelerated());
+                        listenerCalled.notifyCalled();
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+
+        listenerCalled.waitForCallback(0);
+
+        if (SysUtils.isLowEndDevice()) {
+            Assert.assertFalse(accelerated.get());
+        } else {
+            Assert.assertTrue(accelerated.get());
+        }
     }
 
     private static Set<String> collectThreadNames() {

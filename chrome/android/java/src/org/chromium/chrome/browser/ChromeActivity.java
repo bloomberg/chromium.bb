@@ -223,6 +223,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
     };
 
+    // See enableHardwareAcceleration()
+    private boolean mSetWindowHWA;
+
     /**
      * @param The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
      */
@@ -1459,10 +1462,37 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onSceneChange(Layout layout) { }
 
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        // See enableHardwareAcceleration()
+        if (mSetWindowHWA) {
+            mSetWindowHWA = false;
+            getWindow().setWindowManager(
+                    getWindow().getWindowManager(),
+                    getWindow().getAttributes().token,
+                    getComponentName().flattenToString(),
+                    true /* hardwareAccelerated */);
+        }
+    }
+
     private void enableHardwareAcceleration() {
         // HW acceleration is disabled in the manifest. Enable it only on high-end devices.
         if (!SysUtils.isLowEndDevice()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+
+            // When HW acceleration is enabled manually for an activity, child windows (e.g.
+            // dialogs) don't inherit HW acceleration state. However, when HW acceleration is
+            // enabled in the manifest, child windows do inherit HW acceleration state. That
+            // looks like a bug, so I filed b/23036374
+            //
+            // In the meanwhile the workaround is to call
+            //   window.setWindowManager(..., hardwareAccelerated=true)
+            // to let the window know that it's HW accelerated. However, since there is no way
+            // to know 'appToken' argument until window's view is attached to the window (!!),
+            // we have to do the workaround in onAttachedToWindow()
+            mSetWindowHWA = true;
         }
     }
 }
