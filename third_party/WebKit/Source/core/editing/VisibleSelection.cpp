@@ -30,7 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/geometry/LayoutPoint.h"

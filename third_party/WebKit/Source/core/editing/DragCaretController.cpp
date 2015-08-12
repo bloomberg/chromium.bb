@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/DragCaretController.h"
 
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 

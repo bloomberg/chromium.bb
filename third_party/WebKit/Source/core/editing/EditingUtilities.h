@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef htmlediting_h
-#define htmlediting_h
+#ifndef EditingUtilities_h
+#define EditingUtilities_h
 
 #include "core/CoreExport.h"
 #include "core/dom/Position.h"

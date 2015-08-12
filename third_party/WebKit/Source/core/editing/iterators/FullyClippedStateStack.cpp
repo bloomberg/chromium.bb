@@ -7,7 +7,7 @@
 
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 

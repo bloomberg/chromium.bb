@@ -32,11 +32,11 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/DocumentType.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/SpellChecker.h"
-#include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"

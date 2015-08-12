@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLSpanElement.h"
 #include "wtf/Assertions.h"

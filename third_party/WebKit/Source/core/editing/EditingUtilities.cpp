@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 
 #include "core/HTMLElementFactory.h"
 #include "core/HTMLNames.h"
@@ -1192,10 +1192,10 @@ Position trailingWhitespacePosition(const Position& position, EAffinity, Whitesp
 unsigned numEnclosingMailBlockquotes(const Position& p)
 {
     unsigned num = 0;
-    for (Node* n = p.anchorNode(); n; n = n->parentNode())
+    for (Node* n = p.anchorNode(); n; n = n->parentNode()) {
         if (isMailHTMLBlockquoteElement(n))
             num++;
-
+    }
     return num;
 }
 
@@ -1287,17 +1287,19 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // if the start of the selection is inside that table, then the last paragraph
     // that we'll want modify is the last one inside the table, not the table itself
     // (a table is itself a paragraph).
-    if (Element* table = isFirstPositionAfterTable(endOfSelection))
+    if (Element* table = isFirstPositionAfterTable(endOfSelection)) {
         if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection, endOfSelection.previous(CannotCrossEditingBoundary));
+    }
 
     // If the start of the selection to modify is just before a table,
     // and if the end of the selection is inside that table, then the first paragraph
     // we'll want to modify is the first one inside the table, not the paragraph
     // containing the table itself.
-    if (Element* table = isLastPositionBeforeTable(startOfSelection))
+    if (Element* table = isLastPositionBeforeTable(startOfSelection)) {
         if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
             newSelection = VisibleSelection(startOfSelection.next(CannotCrossEditingBoundary), endOfSelection);
+    }
 
     return newSelection;
 }

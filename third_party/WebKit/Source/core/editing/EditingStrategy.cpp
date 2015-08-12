@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/editing/EditingStrategy.h"
 
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -61,8 +61,9 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
         return 0;
 
     // editingIgnoresContent uses the same logic in
-    // isEmptyNonEditableNodeInEditable (htmlediting.cpp). We don't understand
-    // why this function returns 1 even when the node doesn't have children.
+    // isEmptyNonEditableNodeInEditable (EditingUtilities.cpp). We don't
+    // understand why this function returns 1 even when the node doesn't have
+    // children.
     return 1;
 }
 

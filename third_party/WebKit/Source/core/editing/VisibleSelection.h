@@ -233,8 +233,8 @@ private:
     // computed from the respective positions at validate(). To have selections
     // work on the composed tree more accurately, we need to compute the DOM
     // positions from the composed tree positions. To do this, we need to add
-    // considable amount of fixes (including htmlediting.cpp, VisibleUnit.cpp,
-    // and VisiblePosition.cpp). We'll do that in the future.
+    // considable amount of fixes (including EditingUtilities.cpp,
+    // VisibleUnit.cpp, and VisiblePosition.cpp). We'll do that in the future.
     PositionInComposedTree m_baseInComposedTree;
     PositionInComposedTree m_extentInComposedTree;
     PositionInComposedTree m_startInComposedTree;

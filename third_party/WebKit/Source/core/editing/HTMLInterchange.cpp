@@ -27,7 +27,7 @@
 #include "core/editing/HTMLInterchange.h"
 
 #include "core/dom/Text.h"
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "wtf/text/CharacterNames.h"

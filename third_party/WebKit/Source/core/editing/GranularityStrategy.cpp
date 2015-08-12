@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/editing/GranularityStrategy.h"
 
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/htmlediting.h"
 
 namespace blink {
 

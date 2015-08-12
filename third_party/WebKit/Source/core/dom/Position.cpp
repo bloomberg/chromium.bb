@@ -31,9 +31,9 @@
 #include "core/dom/PositionIterator.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/htmlediting.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -61,7 +61,7 @@ static bool canBeAnchorNode(Node* node)
 }
 #endif
 
-// TODO(yosin) We should move |nextRenderedEditable()| to "htmlediting.cpp" with
+// TODO(yosin) We should move |nextRenderedEditable()| to "EditingUtilities.cpp" with
 // |rendersInDifferentPosition()|.
 static Node* nextRenderedEditable(Node* node)
 {
@@ -77,7 +77,7 @@ static Node* nextRenderedEditable(Node* node)
     return 0;
 }
 
-// TODO(yosin) We should move |previousRenderedEditable()| to "htmlediting.cpp"
+// TODO(yosin) We should move |previousRenderedEditable()| to "EditingUtilities.cpp"
 // with |rendersInDifferentPosition()|.
 static Node* previousRenderedEditable(Node* node)
 {
@@ -551,7 +551,7 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
     return !Strategy::parent(*anchorNode()) && m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
-// TODO(yosin) We should move |renderedOffsetOf()| to "htmlediting.cpp" with
+// TODO(yosin) We should move |renderedOffsetOf()| to "EditingUtilities.cpp" with
 // |rendersInDifferentPosition()|.
 static int renderedOffsetOf(const Position& position)
 {
@@ -1030,7 +1030,7 @@ bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
     return false;
 }
 
-// TODO(yosin) We should move |rendersInDifferentPosition()to "htmlediting.cpp"
+// TODO(yosin) We should move |rendersInDifferentPosition()to "EditingUtilities.cpp"
 // with |renderedOffsetOf()|.
 bool rendersInDifferentPosition(const Position& position1, const Position& position2)
 {

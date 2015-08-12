@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/Caret.h"
 
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/htmlediting.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"

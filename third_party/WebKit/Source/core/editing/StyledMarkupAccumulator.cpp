@@ -31,7 +31,7 @@
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Text.h"
-#include "core/editing/htmlediting.h"
+#include "core/editing/EditingUtilities.h"
 #include "core/editing/iterators/TextIterator.h"
 #include "wtf/text/StringBuilder.h"
 
