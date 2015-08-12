@@ -318,15 +318,19 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
     return skia::AdoptRef(emptyRecorder.endRecording());
   }
 
-  // Reset scroll back to the origin, will go back to the old
-  // value when scroll_reset is out of scope.
-  base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
-                                               gfx::Vector2dF());
-
   SkPictureRecorder recorder;
   SkCanvas* rec_canvas = recorder.beginRecording(width, height, NULL, 0);
-  if (compositor_)
-    CompositeSW(rec_canvas);
+  if (compositor_) {
+    {
+      // Reset scroll back to the origin, will go back to the old
+      // value when scroll_reset is out of scope.
+      base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_dip_,
+                                                   gfx::Vector2dF());
+      compositor_->DidChangeRootLayerScrollOffset();
+      CompositeSW(rec_canvas);
+    }
+    compositor_->DidChangeRootLayerScrollOffset();
+  }
   return skia::AdoptRef(recorder.endRecording());
 }
 
