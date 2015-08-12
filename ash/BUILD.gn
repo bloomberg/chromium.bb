@@ -371,8 +371,8 @@ test("ash_unittests") {
   #['OS=="linux" and component=="shared_library" and use_allocator!="none"', {
   # ldflags = "-rdynamic"
 
-  if (!is_chromeos || use_ozone) {
-    sources -= [ "sticky_keys/sticky_keys_unittest.cc" ]  # crbug.com/354035
+  if (!is_chromeos) {
+    sources -= [ "sticky_keys/sticky_keys_unittest.cc" ]
   }
 }
 

@@ -1227,11 +1227,6 @@
             'ldflags': ['-rdynamic'],
           },
         }],
-        ['use_ozone==1', {
-          'sources!': [
-            'sticky_keys/sticky_keys_unittest.cc',  # crbug.com/354035
-          ],
-        }],
       ],
     },
     {
