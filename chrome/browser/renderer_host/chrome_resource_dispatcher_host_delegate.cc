@@ -25,7 +25,8 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
+#include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
+#include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -497,23 +498,24 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
     ResourceType resource_type,
     ScopedVector<content::ResourceThrottle>* throttles) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-#if defined(SAFE_BROWSING_SERVICE)
-  // Insert safe browsing at the front of the list, so it gets to decide on
-  // policies first.
-  if (io_data->safe_browsing_enabled()->GetValue()
-#if defined(OS_ANDROID)
-      || io_data->IsDataReductionProxyEnabled()
-#endif
-  ) {
-    content::ResourceThrottle* throttle =
-        SafeBrowsingResourceThrottleFactory::Create(request,
-                                                    resource_context,
-                                                    resource_type,
-                                                    safe_browsing_.get());
-    if (throttle)
-      throttles->push_back(throttle);
+
+  // Insert either safe browsing or data reduction proxy throttle at the front
+  // of the list, so one of them gets to decide if the resource is safe.
+  content::ResourceThrottle* first_throttle = NULL;
+#if defined(OS_ANDROID) && defined(SAFE_BROWSING_SERVICE)
+  first_throttle = DataReductionProxyResourceThrottle::MaybeCreate(
+      request, resource_context, resource_type, safe_browsing_.get());
+#endif  // defined(OS_ANDROID) && defined(SAFE_BROWSING_SERVICE)
+
+#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+  if (!first_throttle && io_data->safe_browsing_enabled()->GetValue()) {
+    first_throttle = SafeBrowsingResourceThrottle::MaybeCreate(
+        request, resource_type, safe_browsing_.get());
   }
-#endif
+#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+
+  if (first_throttle)
+    throttles->push_back(first_throttle);
 
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
   scoped_ptr<content::ResourceThrottle> data_reduction_proxy_throttle =

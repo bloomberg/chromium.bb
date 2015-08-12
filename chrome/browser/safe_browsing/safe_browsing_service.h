@@ -89,6 +89,14 @@ class SafeBrowsingService
   // Create an instance of the safe browsing service.
   static SafeBrowsingService* CreateSafeBrowsingService();
 
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  // Field trial for Android Safe Browsing.  This is checked separately in
+  // SafeBrowsingFieldTrial.java for controlling the UI.
+  bool IsAndroidFieldTrialEnabled() const {
+    return is_android_field_trial_enabled_;
+  }
+#endif  // defined(SAFE_BROWSING_DB_REMOTE)
+
   // Called on the UI thread to initialize the service.
   void Initialize();
 
@@ -264,6 +272,10 @@ class SafeBrowsingService
   // Whether SafeBrowsing is enabled by the current set of profiles.
   // Accessed on UI thread.
   bool enabled_by_prefs_;
+
+#if defined(SAFE_BROWSING_DB_REMOTE)
+  bool is_android_field_trial_enabled_;
+#endif  // defined(SAFE_BROWSING_DB_REMOTE)
 
   // Tracks existing PrefServices, and the safe browsing preference on each.
   // This is used to determine if any profile is currently using the safe

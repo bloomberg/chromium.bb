@@ -26,10 +26,6 @@ class ChromeMainDelegateStagingAndroid : public ChromeMainDelegateAndroid {
  private:
   bool BasicStartupComplete(int* exit_code) override;
   void ProcessExiting(const std::string& process_type) override;
-#if defined(SAFE_BROWSING_SERVICE)
-  scoped_ptr<DataReductionProxyResourceThrottleFactory>
-      data_reduction_proxy_throttle_factory_;
-#endif
 
 #if defined(SAFE_BROWSING_DB_REMOTE)
   scoped_ptr<SafeBrowsingApiHandler> safe_browsing_api_handler_;

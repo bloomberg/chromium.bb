@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -18,11 +18,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
-
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-#include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
-#endif
 
 using content::BrowserThread;
 using content::ResourceThrottle;
@@ -36,25 +31,22 @@ using content::ResourceThrottle;
 const char* DataReductionProxyResourceThrottle::kUnsafeUrlProceedHeader =
       "X-Unsafe-Url-Proceed";
 
-ResourceThrottle*
-DataReductionProxyResourceThrottleFactory::CreateResourceThrottle(
+// static
+DataReductionProxyResourceThrottle*
+DataReductionProxyResourceThrottle::MaybeCreate(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
     content::ResourceType resource_type,
-    SafeBrowsingService* service) {
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  // Send requests through Safe Browsing if we can't process them.
+    SafeBrowsingService* sb_service) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  // Don't create the throttle if we can't handle the request.
   if (io_data->IsOffTheRecord() || !io_data->IsDataReductionProxyEnabled() ||
       request->url().SchemeIsSecure()) {
-    // *this is already registered as the SafeBrowsingResourceThrottleFactory,
-    // so need to bypass that and use its base implementation.
-    return SafeBrowsingResourceThrottleFactory::CreateWithoutRegisteredFactory(
-        request, resource_type, service);
+    return NULL;
   }
-#endif
+
   return new DataReductionProxyResourceThrottle(request, resource_type,
-                                                service);
+                                                sb_service);
 }
 
 DataReductionProxyResourceThrottle::DataReductionProxyResourceThrottle(

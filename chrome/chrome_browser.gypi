@@ -2412,8 +2412,6 @@
     'chrome_browser_safe_browsing_basic_sources': [
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.cc',
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.h',
-      'browser/renderer_host/safe_browsing_resource_throttle_factory.cc',
-      'browser/renderer_host/safe_browsing_resource_throttle_factory.h',
       'browser/safe_browsing/malware_details.cc',
       'browser/safe_browsing/malware_details.h',
       'browser/safe_browsing/malware_details_cache.cc',

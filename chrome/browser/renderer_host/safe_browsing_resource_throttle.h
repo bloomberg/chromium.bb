@@ -63,9 +63,16 @@ class SafeBrowsingResourceThrottle
       public SafeBrowsingDatabaseManager::Client,
       public base::SupportsWeakPtr<SafeBrowsingResourceThrottle> {
  public:
+  // Will construct a SafeBrowsingResourceThrottle, or return NULL
+  // if on Android and not in the field trial.
+  static SafeBrowsingResourceThrottle* MaybeCreate(
+      net::URLRequest* request,
+      content::ResourceType resource_type,
+      SafeBrowsingService* sb_service);
+
   SafeBrowsingResourceThrottle(const net::URLRequest* request,
                                content::ResourceType resource_type,
-                               SafeBrowsingService* safe_browsing,
+                               SafeBrowsingService* sb_service,
                                bool defer_at_start);
 
   // content::ResourceThrottle implementation (called on IO thread):

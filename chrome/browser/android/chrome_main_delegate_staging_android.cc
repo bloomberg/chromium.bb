@@ -14,10 +14,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
 #endif
 
-#if defined(SAFE_BROWSING_SERVICE)
-#include "chrome/browser/renderer_host/data_reduction_proxy_resource_throttle_android.h"
-#endif
-
 ChromeMainDelegateStagingAndroid::ChromeMainDelegateStagingAndroid() {
 }
 
@@ -30,12 +26,6 @@ bool ChromeMainDelegateStagingAndroid::BasicStartupComplete(int* exit_code) {
   SafeBrowsingApiHandler::SetInstance(safe_browsing_api_handler_.get());
 #endif
 
-#if defined(SAFE_BROWSING_SERVICE)
-  data_reduction_proxy_throttle_factory_.reset(
-      new DataReductionProxyResourceThrottleFactory());
-  SafeBrowsingResourceThrottleFactory::RegisterFactory(
-      data_reduction_proxy_throttle_factory_.get());
-#endif
   policy::android::AndroidCombinedPolicyProvider::SetShouldWaitForPolicy(true);
 
   return ChromeMainDelegateAndroid::BasicStartupComplete(exit_code);
@@ -73,9 +63,6 @@ int ChromeMainDelegateStagingAndroid::RunProcess(
 
 void ChromeMainDelegateStagingAndroid::ProcessExiting(
     const std::string& process_type) {
-#if defined(SAFE_BROWSING_SERVICE)
-  SafeBrowsingResourceThrottleFactory::RegisterFactory(NULL);
-#endif
 #if defined(SAFE_BROWSING_DB_REMOTE)
   SafeBrowsingApiHandler::SetInstance(NULL);
 #endif

@@ -25,17 +25,39 @@ static const int kCheckUrlTimeoutMs = 5000;
 // TODO(eroman): Downgrade these CHECK()s to DCHECKs once there is more
 //               unit test coverage.
 
+// static
+SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
+    net::URLRequest* request,
+    content::ResourceType resource_type,
+    SafeBrowsingService* sb_service) {
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  // Throttle consults a local database before starting the resource request.
+  return new SafeBrowsingResourceThrottle(request, resource_type, sb_service,
+                                          true /* defer_at_start */);
+#elif defined(SAFE_BROWSING_DB_REMOTE)
+  if (sb_service->IsAndroidFieldTrialEnabled()) {
+    // Throttle consults a remote database before processing the response.
+    return new SafeBrowsingResourceThrottle(request, resource_type, sb_service,
+                                            false /* defer_at_start */);
+  } else {
+    return nullptr;
+  }
+#else
+#error "Incompatible compile flags for safe_browsing_resource_throttle"
+#endif
+}
+
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
     const net::URLRequest* request,
     content::ResourceType resource_type,
-    SafeBrowsingService* safe_browsing,
+    SafeBrowsingService* sb_service,
     bool defer_at_start)
     : defer_at_start_(defer_at_start),
       state_(STATE_NONE),
       defer_state_(DEFERRED_NONE),
       threat_type_(SB_THREAT_TYPE_SAFE),
-      database_manager_(safe_browsing->database_manager()),
-      ui_manager_(safe_browsing->ui_manager()),
+      database_manager_(sb_service->database_manager()),
+      ui_manager_(sb_service->ui_manager()),
       request_(request),
       is_subresource_(resource_type != content::RESOURCE_TYPE_MAIN_FRAME),
       is_subframe_(resource_type == content::RESOURCE_TYPE_SUB_FRAME) {
