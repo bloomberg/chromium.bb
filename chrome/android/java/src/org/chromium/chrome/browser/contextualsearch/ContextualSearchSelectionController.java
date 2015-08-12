@@ -51,7 +51,6 @@ public class ContextualSearchSelectionController {
     private String mSelectedText;
     private SelectionType mSelectionType;
     private boolean mWasTapGestureDetected;
-    private boolean mIsSelectionBeingModified;
     private boolean mWasLastTapValid;
     private boolean mIsWaitingForInvalidTapDetection;
     private boolean mIsSelectionEstablished;
@@ -169,14 +168,15 @@ public class ContextualSearchSelectionController {
         if (selection != null && !selection.isEmpty()) {
             unscheduleInvalidTapNotification();
         }
-        if (mIsSelectionBeingModified) {
-            mSelectedText = selection;
-            mHandler.handleSelectionModification(selection, mX, mY);
-        } else if (mWasTapGestureDetected) {
-            mSelectedText = selection;
+
+        mSelectedText = selection;
+
+        if (mWasTapGestureDetected) {
             mSelectionType = SelectionType.TAP;
             handleSelection(selection, mSelectionType);
             mWasTapGestureDetected = false;
+        } else {
+            mHandler.handleSelectionModification(selection, mX, mY);
         }
     }
 
@@ -198,11 +198,7 @@ public class ContextualSearchSelectionController {
                 mHandler.handleSelectionDismissal();
                 resetAllStates();
                 break;
-            case SelectionEventType.SELECTION_HANDLE_DRAG_STARTED:
-                mIsSelectionBeingModified = true;
-                break;
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                mIsSelectionBeingModified = false;
                 shouldHandleSelection = mShouldHandleSelectionModification;
                 break;
             case SelectionEventType.SELECTION_ESTABLISHED:
@@ -255,7 +251,6 @@ public class ContextualSearchSelectionController {
         mSelectedText = null;
 
         mWasTapGestureDetected = false;
-        mIsSelectionBeingModified = false;
     }
 
     /**
