@@ -451,6 +451,14 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
     mojo::Array<interfaces::RouteMessagePtr> messages) {
   DVLOG(1) << "OnRouteMessagesReceived";
 
+  // Empty |messages| means no more messages will come from this route. We can
+  // stop listening.
+  if (messages.storage().empty()) {
+    DVLOG(2) << "Received empty messages for " << route_id;
+    route_ids_listening_for_messages_.erase(route_id);
+    return;
+  }
+
   // Check if there are any observers remaining. If not, the messages
   // can be discarded and we can stop listening for the next batch of messages.
   auto* observer_list = messages_observers_.get(route_id);
@@ -459,24 +467,17 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
     return;
   }
 
-  // Empty |messages| means we told the extension that we were no longer
-  // listening for messages on that route. But since now we have observers
-  // again, we should keep listening.
-  if (messages.storage().empty()) {
-    DVLOG(2) << "Received empty messages for " << route_id;
-  } else {
-    ScopedVector<content::PresentationSessionMessage> session_messages;
-    session_messages.reserve(messages.size());
-    for (size_t i = 0; i < messages.size(); ++i) {
-      session_messages.push_back(
-          ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
-    }
-
-    // TODO(imcheng): If there is only 1 observer, we should be able to pass
-    // the messages to avoid additional copies. (crbug.com/517234)
-    FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
-                      OnMessagesReceived(session_messages));
+  ScopedVector<content::PresentationSessionMessage> session_messages;
+  session_messages.reserve(messages.size());
+  for (size_t i = 0; i < messages.size(); ++i) {
+    session_messages.push_back(
+        ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
   }
+
+  // TODO(imcheng): If there is only 1 observer, we should be able to pass
+  // the messages to avoid additional copies. (crbug.com/517234)
+  FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
+                    OnMessagesReceived(session_messages));
 
   // Listen for more messages.
   media_route_provider_->ListenForRouteMessages(

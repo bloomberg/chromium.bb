@@ -162,6 +162,9 @@ interface MediaRouteProvider {
 
   // Called when the MediaRouter is ready to get the next batch of messages
   // associated with |route_id|.
+  // |messages| returned will contain the batch of messages. If |messages| is
+  // empty, then there are no more messages for |route_id|, and subsequent calls
+  // will continue to return empty.
   ListenForRouteMessages(string route_id) => (array<RouteMessage> messages);
 };
 
