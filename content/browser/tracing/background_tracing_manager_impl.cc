@@ -612,6 +612,10 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
       return "benchmark,toplevel";
     case BackgroundTracingConfig::CategoryPreset::BENCHMARK_DEEP:
       return "*,disabled-by-default-benchmark.detailed";
+    case BackgroundTracingConfig::CategoryPreset::BENCHMARK_GPU:
+      return "benchmark,toplevel,gpu";
+    case BackgroundTracingConfig::CategoryPreset::BENCHMARK_IPC:
+      return "benchmark,toplevel,ipc";
   }
   NOTREACHED();
   return "";

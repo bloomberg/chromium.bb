@@ -26,6 +26,8 @@ struct CONTENT_EXPORT BackgroundTracingConfig {
   enum CategoryPreset {
     BENCHMARK,
     BENCHMARK_DEEP,
+    BENCHMARK_GPU,
+    BENCHMARK_IPC
   };
 
   Mode mode;
