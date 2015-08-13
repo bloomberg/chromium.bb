@@ -1372,6 +1372,8 @@
       'cert/ev_root_ca_metadata_unittest.cc',
       'cert/internal/extended_key_usage_unittest.cc',
       'cert/internal/signature_algorithm_unittest.cc',
+      'cert/internal/test_helpers.cc',
+      'cert/internal/test_helpers.h',
       'cert/internal/verify_name_match_unittest.cc',
       'cert/internal/verify_signed_data_unittest.cc',
       'cert/jwk_serializer_unittest.cc',
