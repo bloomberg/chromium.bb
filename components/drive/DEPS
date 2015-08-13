@@ -29,6 +29,13 @@ specific_include_rules = {
     "+content/public/test/test_utils.h",
   ],
 
+  # The following test dependencies should be removed to fully componentize this
+  # directory. crbug.com/498951
+  r"(job_scheduler_unittest.cc"
+  r")": [
+    "+content/public/test/test_browser_thread_bundle.h",
+  ],
+
   # The dependency below is ok and can stay here for the long-term, because it
   # is guarded by #if defined(OS_CHROMEOS) in the source code.
   "drive_test_util\.h": [

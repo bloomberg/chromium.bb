@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "components/drive/event_logger.h"
+#include "components/drive/job_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace drive {

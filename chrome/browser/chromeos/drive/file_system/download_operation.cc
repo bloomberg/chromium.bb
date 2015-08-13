@@ -12,11 +12,11 @@
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_errors.h"
+#include "components/drive/job_scheduler.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
 namespace drive {

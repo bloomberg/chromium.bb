@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
+#ifndef COMPONENTS_DRIVE_JOB_SCHEDULER_H_
+#define COMPONENTS_DRIVE_JOB_SCHEDULER_H_
 
 #include <string>
 #include <vector>
@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/drive/job_list.h"
-#include "chrome/browser/chromeos/drive/job_queue.h"
 #include "components/drive/drive_uploader.h"
+#include "components/drive/job_list.h"
+#include "components/drive/job_queue.h"
 #include "components/drive/service/drive_service_interface.h"
 #include "net/base/network_change_notifier.h"
 
@@ -408,4 +408,4 @@ class JobScheduler
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
+#endif  // COMPONENTS_DRIVE_JOB_SCHEDULER_H_

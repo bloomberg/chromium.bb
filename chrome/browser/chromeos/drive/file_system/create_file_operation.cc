@@ -8,10 +8,10 @@
 
 #include "base/files/file_util.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_change.h"
+#include "components/drive/job_scheduler.h"
 #include "net/base/mime_util.h"
 
 namespace drive {

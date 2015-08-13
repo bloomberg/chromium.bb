@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_QUEUE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_QUEUE_H_
+#ifndef COMPONENTS_DRIVE_JOB_QUEUE_H_
+#define COMPONENTS_DRIVE_JOB_QUEUE_H_
 
 #include <deque>
 #include <set>
 #include <vector>
 
-#include "chrome/browser/chromeos/drive/job_list.h"
+#include "components/drive/job_list.h"
 
 namespace drive {
 
@@ -85,4 +85,4 @@ class JobQueue {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_JOB_QUEUE_H_
+#endif  // COMPONENTS_DRIVE_JOB_QUEUE_H_

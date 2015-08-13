@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/drive/file_system/truncate_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
@@ -32,6 +31,7 @@
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
+#include "components/drive/job_scheduler.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/file_errors.h"
+#include "components/drive/job_scheduler.h"
 
 namespace base {
 class SequencedTaskRunner;

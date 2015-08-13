@@ -13,8 +13,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "components/drive/job_list.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "url/gurl.h"
 

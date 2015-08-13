@@ -1122,6 +1122,8 @@
     'chrome_unit_tests_chromeos_sources': [
       # TODO(lukasza): Move Drive tests outside of CrOS (crbug.com/498951).
       '../components/drive/file_change_unittest.cc',
+      '../components/drive/job_queue_unittest.cc',
+      '../components/drive/job_scheduler_unittest.cc',
       '../components/drive/local_file_reader_unittest.cc',
       'browser/chromeos/accessibility/magnification_manager_unittest.cc',
       'browser/chromeos/accessibility/spoken_feedback_event_rewriter_unittest.cc',
@@ -1167,8 +1169,6 @@
       'browser/chromeos/drive/file_write_watcher_unittest.cc',
       'browser/chromeos/drive/fileapi/fileapi_worker_unittest.cc',
       'browser/chromeos/drive/fileapi/webkit_file_stream_reader_impl_unittest.cc',
-      'browser/chromeos/drive/job_queue_unittest.cc',
-      'browser/chromeos/drive/job_scheduler_unittest.cc',
       'browser/chromeos/drive/remove_stale_cache_files_unittest.cc',
       'browser/chromeos/drive/resource_entry_conversion_unittest.cc',
       'browser/chromeos/drive/resource_metadata_storage_unittest.cc',
