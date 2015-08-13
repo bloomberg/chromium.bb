@@ -102,11 +102,6 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   return [[configuration_ copy] autorelease];
 }
 
-bool WKWebViewConfigurationProvider::HasWebViewConfiguration() const {
-  DCHECK([NSThread isMainThread]);
-  return configuration_;
-}
-
 void WKWebViewConfigurationProvider::Purge() {
   DCHECK([NSThread isMainThread]);
 #if !defined(NDEBUG) || !defined(DCHECK_ALWAYS_ON)  // Matches DCHECK_IS_ON.

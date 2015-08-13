@@ -99,33 +99,6 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
             provider.GetWebViewConfiguration().userContentController);
 }
 
-// Tests that |HasWebViewConfiguration| returns false by default.
-TEST_F(WKWebViewConfigurationProviderTest, NoConfigurationByDefault) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
-  EXPECT_FALSE(GetProvider().HasWebViewConfiguration());
-}
-
-// Tests that |HasWebViewConfiguration| returns true after
-// |GetWebViewConfiguration| call and false after |Purge| call.
-TEST_F(WKWebViewConfigurationProviderTest, HasWebViewConfiguration) {
-  CR_TEST_REQUIRES_WK_WEB_VIEW();
-
-  // Valid configuration after |GetWebViewConfiguration| call.
-  @autoreleasepool {  // Make sure that resulting copy is deallocated.
-    GetProvider().GetWebViewConfiguration();
-  }
-  EXPECT_TRUE(GetProvider().HasWebViewConfiguration());
-
-  // No configuration after |Purge| call.
-  GetProvider().Purge();
-  EXPECT_FALSE(GetProvider().HasWebViewConfiguration());
-
-  // Valid configuration after |GetWebViewConfiguration| call.
-  GetProvider().GetWebViewConfiguration();
-  EXPECT_TRUE(GetProvider().HasWebViewConfiguration());
-}
-
 // Tests that configuration is deallocated after |Purge| call.
 TEST_F(WKWebViewConfigurationProviderTest, Purge) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
