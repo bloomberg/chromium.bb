@@ -259,22 +259,12 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewAddTwoTwice', function() {
   taskQueue.run(true);
 });
 
-// Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN)');
-GEN('# define MAYBE_netInternalsDnsViewIncognitoClears \\');
-GEN('     DISABLED_netInternalsDnsViewIncognitoClears');
-GEN('#else');
-GEN('# define MAYBE_netInternalsDnsViewIncognitoClears \\');
-GEN('     netInternalsDnsViewIncognitoClears');
-GEN('#endif');
-
 /**
  * Makes sure that openning and then closing an incognito window clears the
  * DNS cache.  To keep things simple, we add a fake cache entry ourselves,
  * rather than having the incognito browser create one.
  */
-TEST_F('NetInternalsTest',
-       'MAYBE_netInternalsDnsViewIncognitoClears', function() {
+TEST_F('NetInternalsTest', 'netInternalsDnsViewIncognitoClears', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new NetInternalsTest.CreateIncognitoBrowserTask());

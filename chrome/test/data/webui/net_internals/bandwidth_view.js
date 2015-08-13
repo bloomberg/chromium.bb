@@ -239,20 +239,10 @@ DataReductionProxyTask.prototype = {
   }
 };
 
-// Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN)');
-GEN('# define MAYBE_netInternalsSessionBandwidthSucceed \\');
-GEN('     DISABLED_netInternalsSessionBandwidthSucceed');
-GEN('#else');
-GEN('# define MAYBE_netInternalsSessionBandwidthSucceed \\');
-GEN('     netInternalsSessionBandwidthSucceed');
-GEN('#endif');
-
 /**
  * Loads a page and checks bandwidth statistics.
  */
-TEST_F('NetInternalsTest',
-       'MAYBE_netInternalsSessionBandwidthSucceed', function() {
+TEST_F('NetInternalsTest', 'netInternalsSessionBandwidthSucceed', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask('files/title1.html'));

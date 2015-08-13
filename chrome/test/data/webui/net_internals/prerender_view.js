@@ -181,20 +181,10 @@ PrerenderTask.prototype = {
   }
 };
 
-// Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN)');
-GEN('# define MAYBE_netInternalsPrerenderViewSucceed \\');
-GEN('     DISABLED_netInternalsPrerenderViewSucceed');
-GEN('#else');
-GEN('# define MAYBE_netInternalsPrerenderViewSucceed \\');
-GEN('     netInternalsPrerenderViewSucceed');
-GEN('#endif');
-
 /**
  * Prerender a page and navigate to it, once prerendering starts.
  */
-TEST_F('NetInternalsTest',
-       'MAYBE_netInternalsPrerenderViewSucceed', function() {
+TEST_F('NetInternalsTest', 'netInternalsPrerenderViewSucceed', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask('files/title1.html'));
@@ -202,19 +192,10 @@ TEST_F('NetInternalsTest',
   taskQueue.run();
 });
 
-// Flaky on Win Debug build - crbug.com/517484
-GEN('#if defined(OS_WIN)');
-GEN('# define MAYBE_netInternalsPrerenderViewFail \\');
-GEN('     DISABLED_netInternalsPrerenderViewFail');
-GEN('#else');
-GEN('# define MAYBE_netInternalsPrerenderViewFail \\');
-GEN('     netInternalsPrerenderViewFail');
-GEN('#endif');
-
 /**
  * Prerender a page that is expected to fail.
  */
-TEST_F('NetInternalsTest', 'MAYBE_netInternalsPrerenderViewFail', function() {
+TEST_F('NetInternalsTest', 'netInternalsPrerenderViewFail', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(
       new NetInternalsTest.GetTestServerURLTask('files/download-test1.lib'));

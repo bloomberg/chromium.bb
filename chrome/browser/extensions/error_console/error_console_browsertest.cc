@@ -419,15 +419,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
                   1u);
 }
 
-// Catch an error from a BrowserAction; this is more complex than a content
-// script error, since browser actions are routed through our own code.
-#if defined(OS_WIN)  // Flakes on XP. http://crbug.com/517029
-#define MAYBE_BrowserActionRuntimeError DISABLED_BrowserActionRuntimeError
-#else
-#define MAYBE_BrowserActionRuntimeError BrowserActionRuntimeError
-#endif
-IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest,
-                       MAYBE_BrowserActionRuntimeError) {
+IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, BrowserActionRuntimeError) {
   const Extension* extension = NULL;
   LoadExtensionAndCheckErrors(
       "browser_action_runtime_error",
