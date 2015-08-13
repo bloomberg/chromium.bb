@@ -68,5 +68,13 @@
         {
             "group_name": "DefaultEnabled"
         }
+    ],
+    "VarationsServiceControl": [
+        {
+            "group_name": "Interval_30min",
+            "params": {
+                "fetch_period_min": "30"
+            }
+        }
     ]
 }
