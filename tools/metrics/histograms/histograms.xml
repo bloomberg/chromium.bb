@@ -10439,6 +10439,62 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Events.Dispatch" enum="ExtensionEvents">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>Recorded every time an event is dispatched to an extension.</summary>
+</histogram>
+
+<histogram name="Extensions.Events.DispatchToComponent" enum="ExtensionEvents">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Recorded every time an event is dispatched to a *component* extension.
+    Otherwise identical to Extensions.Events.Dispatched.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Events.DispatchWithPersistentBackgroundPage"
+    enum="ExtensionEvents">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Recorded every time an event is dispatched to an extension with a persistent
+    background page. The event may or may not have been dispatched to the
+    background page itself, for example it may have been dispatched to its
+    popup. When this metric is recorded, Extensions.Events.Dispatch will also be
+    recorded.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Events.DispatchWithRunningEventPage"
+    enum="ExtensionEvents">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Recorded every time an event is dispatched to an extension with an event
+    page that was already running (i.e. at some point had been woken from its
+    suspended state, see Extensions.Events.DispatchWithSuspendedEventPage). The
+    event may or may not have been dispatched to the event page itself, for
+    example it may have been dispatched to its popup. When this metric is
+    recorded, Extensions.Events.Dispatch will also be recorded.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Events.DispatchWithSuspendedEventPage"
+    enum="ExtensionEvents">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Recorded every time an event is dispatched to an extension with an event
+    page that was suspended. This implies that firing this event woke up the
+    event page. The event may or may not have been dispatched to the event page
+    itself, for example it may have been dispatched to its popup, but regardless
+    it will wake the event page.  When this metric is recorded,
+    Extensions.Events.Dispatch will also be recorded.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ExtensionCacheCount">
   <owner>dpolukhin@chromium.org</owner>
   <summary>

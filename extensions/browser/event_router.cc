@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "content/public/browser/notification_service.h"
@@ -755,26 +756,42 @@ void EventRouter::ReportEvent(events::HistogramValue histogram_value,
                               bool did_enqueue) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(kalman): UMA for dispatched event.
-  // TODO(kalman): UMA specifically for component extensions.
+  // Record every event fired.
+  UMA_HISTOGRAM_ENUMERATION("Extensions.Events.Dispatch", histogram_value,
+                            events::ENUM_BOUNDARY);
 
-  // Note: for these, all we know is that the extension *has* a persistent or
-  // event page, not that the event is being dispatched *to* such a page.
+  // Record events for component extensions. These should be kept to a minimum,
+  // especially if they wake its event page. Component extensions should use
+  // declarative APIs as much as possible.
+  if (Manifest::IsComponentLocation(extension->location())) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.Events.DispatchToComponent",
+                              histogram_value, events::ENUM_BOUNDARY);
+  }
+
+  // Record events for background pages, if any. The most important statistic
+  // is DispatchWithSuspendedEventPage. Events reported there woke an event
+  // page. Implementing either filtered or declarative versions of these events
+  // should be prioritised.
   //
-  // However, this is an academic distinction, since extensions with any
-  // background page have that background page running (or in the case of
-  // dormant event pages, must be started) regardless of where the event is
-  // being dispatched. Events are dispatched to a *process* not a *frame*.
+  // Note: all we know is that the extension *has* a persistent or event page,
+  // not that the event is being dispatched *to* such a page. However, this is
+  // academic, since extensions with any background page have that background
+  // page running (or in the case of suspended event pages, must be started)
+  // regardless of where the event is being dispatched. Events are dispatched
+  // to a *process* not a *frame*.
   if (BackgroundInfo::HasPersistentBackgroundPage(extension)) {
-    // TODO(kalman): UMA for dispatched event to an extension with a persistent
-    // background page.
+    UMA_HISTOGRAM_ENUMERATION(
+        "Extensions.Events.DispatchWithPersistentBackgroundPage",
+        histogram_value, events::ENUM_BOUNDARY);
   } else if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
     if (did_enqueue) {
-      // TODO(kalman): UMA for dispatched event to an extension with an event
-      // page, and the event page was woken up to do so.
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.Events.DispatchWithSuspendedEventPage", histogram_value,
+          events::ENUM_BOUNDARY);
     } else {
-      // TODO(kalman): UMA for dispatched event to an extension with an event
-      // page that was already running.
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.Events.DispatchWithRunningEventPage", histogram_value,
+          events::ENUM_BOUNDARY);
     }
   }
 }
