@@ -165,7 +165,8 @@ void InsertListCommand::doApply()
 
                 // Save and restore endOfSelection and startOfLastParagraph when necessary
                 // since moveParagraph and movePragraphWithClones can remove nodes.
-                doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection);
+                if (!doApplyForSingleParagraph(forceListCreation, listTag, *currentSelection))
+                    break;
                 if (endOfSelection.isNull() || endOfSelection.isOrphan() || startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
                     endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scopeForEndOfSelection.get());
                     // If endOfSelection is null, then some contents have been deleted from the document.
@@ -200,7 +201,7 @@ void InsertListCommand::doApply()
     doApplyForSingleParagraph(false, listTag, *endingSelection().firstRange());
 }
 
-void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection)
+bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName& listTag, Range& currentSelection)
 {
     // FIXME: This will produce unexpected results for a selection that starts just before a
     // table and ends inside the first cell, selectionForParagraphIteration should probably
@@ -209,7 +210,9 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
     Node* listChildNode = enclosingListChild(selectionNode);
     bool switchListType = false;
     if (listChildNode) {
-        // Remove the list chlild.
+        if (!listChildNode->parentNode()->hasEditableStyle())
+            return false;
+        // Remove the list child.
         RefPtrWillBeRawPtr<HTMLElement> listElement = enclosingList(listChildNode);
         if (!listElement) {
             listElement = fixOrphanedListChild(listChildNode);
@@ -221,7 +224,7 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
 
         // If the list is of the desired type, and we are not removing the list, then exit early.
         if (!switchListType && forceCreateList)
-            return;
+            return true;
 
         // If the entire list is selected, then convert the whole list.
         if (switchListType && isNodeVisiblyContainedWithin(*listElement, currentSelection)) {
@@ -253,7 +256,7 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
 
             setEndingSelection(VisiblePosition(firstPositionInNode(newList.get())));
 
-            return;
+            return true;
         }
 
         unlistifyParagraph(endingSelection().visibleStart(), listElement.get(), listChildNode);
@@ -261,6 +264,8 @@ void InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
 
     if (!listChildNode || switchListType || forceCreateList)
         m_listElement = listifyParagraph(endingSelection().visibleStart(), listTag);
+
+    return true;
 }
 
 void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listElement, Node* listChildNode)
