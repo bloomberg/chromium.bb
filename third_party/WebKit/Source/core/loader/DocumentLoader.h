@@ -42,7 +42,6 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
-#include "platform/SharedBuffer.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -178,7 +177,6 @@ private:
     void updateRequest(Resource*, const ResourceRequest&) final;
     void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
     void dataReceived(Resource*, const char* data, unsigned length) final;
-    void processData(const char* data, unsigned length);
     void notifyFinished(Resource*) final;
 
     bool maybeLoadEmpty();
@@ -235,10 +233,6 @@ private:
         MainResourceDone
     };
     State m_state;
-
-    // Used to protect against reentrancy into dataReceived().
-    bool m_inDataReceived;
-    RefPtr<SharedBuffer> m_dataBuffer;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

@@ -72,7 +72,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
 #include "wtf/Assertions.h"
-#include "wtf/TemporaryChange.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -94,8 +93,6 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_timeOfLastDataReceived(0.0)
     , m_applicationCacheHost(ApplicationCacheHost::create(this))
     , m_state(NotStarted)
-    , m_inDataReceived(false)
-    , m_dataBuffer(SharedBuffer::create())
 {
 }
 
@@ -557,41 +554,11 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned
     ASSERT(!m_response.isNull());
     ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading());
 
-    if (m_inDataReceived) {
-        // If this function is reentered, defer processing of the additional
-        // data to the top-level invocation. Reentrant calls can occur because
-        // of web platform (mis-)features that require running a nested message
-        // loop:
-        // - alert(), confirm(), prompt()
-        // - Detach of plugin elements.
-        // - Synchronous XMLHTTPRequest
-        m_dataBuffer->append(data, length);
-        return;
-    }
-    TemporaryChange<bool> reentrancyProtector(m_inDataReceived, true);
-
     // Both unloading the old page and parsing the new page may execute JavaScript which destroys the datasource
     // by starting a new load, so retain temporarily.
     RefPtrWillBeRawPtr<LocalFrame> protectFrame(m_frame.get());
     RefPtrWillBeRawPtr<DocumentLoader> protectLoader(this);
 
-    processData(data, length);
-
-    // Process data received in reentrant invocations. Note that the
-    // invocations of processData() may queue more data in reentrant
-    // invocations, so iterate until it's empty.
-    const char* segment;
-    unsigned pos = 0;
-    while (unsigned length = m_dataBuffer->getSomeData(segment, pos)) {
-        processData(segment, length);
-        pos += length;
-    }
-    // All data has been consumed, so flush the buffer.
-    m_dataBuffer->clear();
-}
-
-void DocumentLoader::processData(const char* data, unsigned length)
-{
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
 
