@@ -32,6 +32,15 @@
             "group_name": "Disabled"
         }
     ],
+    "DataCompressionProxyLoFi": [
+        {
+            "group_name": "Enabled",
+            "params": {
+                "rtt_msec": "2000",
+                "hysteresis_period_seconds": "300"
+            }            
+        }
+    ],
     "DataReductionProxyUseQuic": [
         {
             "group_name": "Enabled"
