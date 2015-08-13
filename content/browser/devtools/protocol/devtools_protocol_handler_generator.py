@@ -132,6 +132,8 @@ ${methods}\
 
  private:
   friend struct ${declared_name}Builder<0>;
+  friend class base::RefCounted<${declared_name}Builder<MASK>>;
+  ~${declared_name}Builder() {}
 
   ${declared_name}Builder() : dict_(new base::DictionaryValue()) {
   }
