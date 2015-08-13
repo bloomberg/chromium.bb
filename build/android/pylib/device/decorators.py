@@ -17,12 +17,6 @@ from pylib.device import device_errors
 from pylib.utils import reraiser_thread
 from pylib.utils import timeout_retry
 
-# TODO(jbudorick) Remove once the DeviceUtils implementations are no longer
-#                 backed by AndroidCommands / android_testrunner.
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
-                             'android_testrunner'))
-import errors as old_errors
-
 DEFAULT_TIMEOUT_ATTR = '_default_timeout'
 DEFAULT_RETRIES_ATTR = '_default_retries'
 
@@ -55,12 +49,6 @@ def _TimeoutRetryWrapper(f, timeout_func, retries_func, pass_values=False):
         return impl()
       else:
         return timeout_retry.Run(impl, timeout, retries)
-    except old_errors.WaitForResponseTimedOutError as e:
-      raise device_errors.CommandTimeoutError(str(e)), None, (
-          sys.exc_info()[2])
-    except old_errors.DeviceUnresponsiveError as e:
-      raise device_errors.DeviceUnreachableError(str(e)), None, (
-          sys.exc_info()[2])
     except reraiser_thread.TimeoutError as e:
       raise device_errors.CommandTimeoutError(str(e)), None, (
           sys.exc_info()[2])

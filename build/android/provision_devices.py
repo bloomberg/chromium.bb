@@ -29,11 +29,6 @@ from pylib.device import device_utils
 from pylib.utils import run_tests_helper
 from pylib.utils import timeout_retry
 
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
-                             'third_party', 'android_testrunner'))
-import errors
-
-
 _SYSTEM_WEBVIEW_PATHS = ['/system/app/webview', '/system/app/WebViewGoogle']
 
 
@@ -106,8 +101,7 @@ def ProvisionDevice(device, options):
     if should_run_phase(_PHASES.FINISH):
       run_phase(FinishProvisioning, reboot=False)
 
-  except (errors.WaitForResponseTimedOutError,
-          device_errors.CommandTimeoutError):
+  except device_errors.CommandTimeoutError:
     logging.exception('Timed out waiting for device %s. Adding to blacklist.',
                       str(device))
     device_blacklist.ExtendBlacklist([str(device)])

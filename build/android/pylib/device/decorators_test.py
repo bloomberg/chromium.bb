@@ -19,12 +19,6 @@ from pylib.device import decorators
 from pylib.device import device_errors
 from pylib.utils import reraiser_thread
 
-# TODO(jbudorick) Remove once the DeviceUtils implementations are no longer
-#                 backed by AndroidCommands / android_testrunner.
-sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
-                             'android_testrunner'))
-import errors as old_errors
-
 _DEFAULT_TIMEOUT = 30
 _DEFAULT_RETRIES = 3
 
@@ -77,26 +71,6 @@ class DecoratorsTest(unittest.TestCase):
                                           retries=expected_retries))
     self.assertEquals(expected_timeout, actual_timeout)
     self.assertEquals(expected_retries, actual_retries)
-
-  def testFunctionDecoratorTranslatesOldExceptions(self):
-    """Tests that the explicit decorator translates old exceptions."""
-    @decorators.WithTimeoutAndRetries
-    def alwaysRaisesProvidedException(exception, timeout=None, retries=None):
-      raise exception
-
-    exception_desc = 'Old response timeout error'
-    with self.assertRaises(device_errors.CommandTimeoutError) as e:
-      alwaysRaisesProvidedException(
-          old_errors.WaitForResponseTimedOutError(exception_desc),
-          timeout=10, retries=1)
-    self.assertEquals(exception_desc, str(e.exception))
-
-    exception_desc = 'Old device error'
-    with self.assertRaises(device_errors.DeviceUnreachableError) as e:
-      alwaysRaisesProvidedException(
-          old_errors.DeviceUnresponsiveError(exception_desc),
-          timeout=10, retries=1)
-    self.assertEquals(exception_desc, str(e.exception))
 
   def testFunctionDecoratorTranslatesReraiserExceptions(self):
     """Tests that the explicit decorator translates reraiser exceptions."""
@@ -166,24 +140,6 @@ class DecoratorsTest(unittest.TestCase):
     self.assertEquals(10, alwaysReturnsRetries())
     self.assertEquals(1, alwaysReturnsRetries(retries=1))
 
-  def testDefaultsFunctionDecoratorTranslatesOldExceptions(self):
-    """Tests that the explicit decorator translates old exceptions."""
-    @decorators.WithTimeoutAndRetriesDefaults(30, 10)
-    def alwaysRaisesProvidedException(exception, timeout=None, retries=None):
-      raise exception
-
-    exception_desc = 'Old response timeout error'
-    with self.assertRaises(device_errors.CommandTimeoutError) as e:
-      alwaysRaisesProvidedException(
-          old_errors.WaitForResponseTimedOutError(exception_desc))
-    self.assertEquals(exception_desc, str(e.exception))
-
-    exception_desc = 'Old device error'
-    with self.assertRaises(device_errors.DeviceUnreachableError) as e:
-      alwaysRaisesProvidedException(
-          old_errors.DeviceUnresponsiveError(exception_desc))
-    self.assertEquals(exception_desc, str(e.exception))
-
   def testDefaultsFunctionDecoratorTranslatesReraiserExceptions(self):
     """Tests that the explicit decorator translates reraiser exceptions."""
     @decorators.WithTimeoutAndRetriesDefaults(30, 10)
@@ -222,24 +178,6 @@ class DecoratorsTest(unittest.TestCase):
     with self.assertRaises(device_errors.CommandFailedError):
       alwaysRaisesCommandFailedError()
     self.assertEquals(11, DecoratorsTest._decorated_function_called_count)
-
-  def testExplicitDecoratorTranslatesOldExceptions(self):
-    """Tests that the explicit decorator translates old exceptions."""
-    @decorators.WithExplicitTimeoutAndRetries(30, 10)
-    def alwaysRaisesProvidedException(exception):
-      raise exception
-
-    exception_desc = 'Old response timeout error'
-    with self.assertRaises(device_errors.CommandTimeoutError) as e:
-      alwaysRaisesProvidedException(
-          old_errors.WaitForResponseTimedOutError(exception_desc))
-    self.assertEquals(exception_desc, str(e.exception))
-
-    exception_desc = 'Old device error'
-    with self.assertRaises(device_errors.DeviceUnreachableError) as e:
-      alwaysRaisesProvidedException(
-          old_errors.DeviceUnresponsiveError(exception_desc))
-    self.assertEquals(exception_desc, str(e.exception))
 
   def testExplicitDecoratorTranslatesReraiserExceptions(self):
     """Tests that the explicit decorator translates reraiser exceptions."""
@@ -335,21 +273,6 @@ class DecoratorsTest(unittest.TestCase):
     self.assertEquals(41, test_obj.alwaysReturnsTimeout(timeout=41))
     self.assertEquals(31, test_obj.alwaysReturnsRetries())
     self.assertEquals(32, test_obj.alwaysReturnsRetries(retries=32))
-
-  def testMethodDecoratorTranslatesOldExceptions(self):
-    test_obj = self._MethodDecoratorTestObject(self)
-
-    exception_desc = 'Old response timeout error'
-    with self.assertRaises(device_errors.CommandTimeoutError) as e:
-      test_obj.alwaysRaisesProvidedException(
-          old_errors.WaitForResponseTimedOutError(exception_desc))
-    self.assertEquals(exception_desc, str(e.exception))
-
-    exception_desc = 'Old device error'
-    with self.assertRaises(device_errors.DeviceUnreachableError) as e:
-      test_obj.alwaysRaisesProvidedException(
-          old_errors.DeviceUnresponsiveError(exception_desc))
-    self.assertEquals(exception_desc, str(e.exception))
 
   def testMethodDecoratorTranslatesReraiserExceptions(self):
     test_obj = self._MethodDecoratorTestObject(self)

@@ -21,11 +21,6 @@ from pylib.device import device_utils
 from pylib.device import device_utils_test
 from pylib.utils import mock_calls
 
-# RunCommand from third_party/android_testrunner/run_command.py is mocked
-# below, so its path needs to be in sys.path.
-sys.path.append(os.path.join(
-    constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
-
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
 import mock # pylint: disable=F0401

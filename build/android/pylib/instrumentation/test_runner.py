@@ -96,8 +96,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
                       str(self.device))
     else:
       if self.device.SetJavaAsserts(self.options.set_asserts):
-        # TODO(jbudorick) How to best do shell restart after the
-        #                 android_commands refactor?
         self.device.RunShellCommand('stop')
         self.device.RunShellCommand('start')
         self.device.WaitUntilFullyBooted()

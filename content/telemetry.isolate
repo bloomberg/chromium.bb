@@ -21,7 +21,6 @@
           '../build/util/',
           '../third_party/WebKit/PerformanceTests/resources/jquery.tablesorter.min.js',
           '../third_party/WebKit/PerformanceTests/resources/statistics.js',
-          '../third_party/android_testrunner/',
           '../third_party/flot/jquery.flot.min.js',
           '../third_party/webpagereplay/',
           '../tools/telemetry/',
