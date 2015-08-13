@@ -2235,7 +2235,7 @@ IntRect CompositedDeprecatedPaintLayerMapping::pixelSnappedCompositedBounds() co
     return pixelSnappedIntRect(bounds);
 }
 
-void CompositedDeprecatedPaintLayerMapping::clearLayerGroupingIfNoPrecedingEntry(size_t indexToClear)
+bool CompositedDeprecatedPaintLayerMapping::invalidateLayerIfNoPrecedingEntry(size_t indexToClear)
 {
     DeprecatedPaintLayer* layerToRemove = m_squashedLayers[indexToClear].paintLayer;
     size_t previousIndex = 0;
@@ -2243,11 +2243,11 @@ void CompositedDeprecatedPaintLayerMapping::clearLayerGroupingIfNoPrecedingEntry
         if (m_squashedLayers[previousIndex].paintLayer == layerToRemove)
             break;
     }
-    if (previousIndex == indexToClear) {
-        // Assert on incorrect mappings between layers and groups
-        ASSERT(layerToRemove->groupedMapping() == this);
-        layerToRemove->setGroupedMapping(nullptr, DeprecatedPaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
+    if (previousIndex == indexToClear && layerToRemove->groupedMapping() == this) {
+        compositor()->paintInvalidationOnCompositingChange(layerToRemove);
+        return true;
     }
+    return false;
 }
 
 bool CompositedDeprecatedPaintLayerMapping::updateSquashingLayerAssignment(DeprecatedPaintLayer* squashedLayer, size_t nextSquashedLayerIndex)
@@ -2265,6 +2265,10 @@ bool CompositedDeprecatedPaintLayerMapping::updateSquashingLayerAssignment(Depre
 
         // Must invalidate before adding the squashed layer to the mapping.
         compositor()->paintInvalidationOnCompositingChange(squashedLayer);
+
+        // If the layer which was previously at |nextSquashedLayerIndex| is not earlier in the grouped mapping, invalidate its current
+        // backing now, since it will move later or be removed from the squashing layer.
+        invalidateLayerIfNoPrecedingEntry(nextSquashedLayerIndex);
 
         m_squashedLayers.insert(nextSquashedLayerIndex, paintInfo);
     } else {
@@ -2310,8 +2314,11 @@ void CompositedDeprecatedPaintLayerMapping::finishAccumulatingSquashingLayers(si
         // Any additional squashed Layers in the array no longer belong here, but they might have been
         // added already at an earlier index. Clear pointers on those that do not appear in the valid set
         // before removing all the extra entries.
-        for (size_t i = nextSquashedLayerIndex; i < m_squashedLayers.size(); ++i)
-            clearLayerGroupingIfNoPrecedingEntry(i);
+        for (size_t i = nextSquashedLayerIndex; i < m_squashedLayers.size(); ++i) {
+            if (invalidateLayerIfNoPrecedingEntry(i))
+                m_squashedLayers[i].paintLayer->setGroupedMapping(nullptr, DeprecatedPaintLayer::DoNotInvalidateLayerAndRemoveFromMapping);
+        }
+
         m_squashedLayers.remove(nextSquashedLayerIndex, m_squashedLayers.size() - nextSquashedLayerIndex);
     }
 }

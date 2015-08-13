@@ -300,7 +300,7 @@ private:
 
     // Clear the groupedMapping entry on the layer at the given index, only if that layer does
     // not appear earlier in the set of layers for this object.
-    void clearLayerGroupingIfNoPrecedingEntry(size_t);
+    bool invalidateLayerIfNoPrecedingEntry(size_t);
 
     DeprecatedPaintLayer& m_owningLayer;
 
