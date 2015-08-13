@@ -423,7 +423,7 @@ Output.RULES = {
           '@describe_index($indexInParent, $parentChildCount)'
     },
     paragraph: {
-      speak: '$value'
+      speak: '$descendants'
     },
     popUpButton: {
       speak: '$value $name $role @aria_has_popup ' +

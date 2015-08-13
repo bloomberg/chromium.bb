@@ -180,8 +180,8 @@ TEST_F('BackgroundTest', 'LiveRegionAddElement', function() {
     function(rootNode) {
       var go = rootNode.find({ role: chrome.automation.RoleType.button });
       go.doDefault();
-      cvox.ChromeVox.tts.expectSpeech('Hello, world', testDone);
-      cvox.ChromeVox.tts.finishExpectations();
+      cvox.ChromeVox.tts.expectSpeech('Hello, world');
+      cvox.ChromeVox.tts.finishExpectations(this.newCallback());
     }.bind(this));
 });
 
@@ -201,11 +201,13 @@ TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
       var go = rootNode.find({ role: chrome.automation.RoleType.button });
       go.doDefault();
       cvox.ChromeVox.tts.expectSpeech('removed:');
-      cvox.ChromeVox.tts.expectSpeech('Hello, world', testDone);
-      cvox.ChromeVox.tts.finishExpectations();
+      cvox.ChromeVox.tts.expectSpeech('Hello, world');
+      cvox.ChromeVox.tts.finishExpectations(this.newCallback());
     }.bind(this));
 });
 
+// TODO(plundblad): This test finishes prematurely and breaks if that gets
+// fixed.
 TEST_F('BackgroundTest', 'ShowContextMenu', function() {
   this.runWithLoadedTree('<a href="a">a</a>',
     function(rootNode) {
@@ -219,6 +221,8 @@ TEST_F('BackgroundTest', 'ShowContextMenu', function() {
     }.bind(this));
 });
 
+// TODO(plundblad): This test finishes prematurely and breaks if that gets
+// fixed.
 TEST_F('BackgroundTest', 'InitialFocus', function() {
   this.runWithLoadedTree('<a href="a">a</a>',
     function(rootNode) {
@@ -228,6 +232,8 @@ TEST_F('BackgroundTest', 'InitialFocus', function() {
     }.bind(this));
 });
 
+// TODO(plundblad): This test finishes prematurely and breaks if that gets
+// fixed.
 TEST_F('BackgroundTest', 'AriaLabel', function() {
   this.runWithLoadedTree('<a aria-label="foo" href="a">a</a>',
     function(rootNode) {
