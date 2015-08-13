@@ -56,7 +56,7 @@ private:
     bool m_originalSlimmingPaintV2Enabled;
 };
 
-class TestDisplayItem : public DisplayItem {
+class TestDisplayItem final : public DisplayItem {
 public:
     TestDisplayItem(const DisplayItemClientWrapper& client, Type type) : DisplayItem(client, type, sizeof(*this)) { }
 

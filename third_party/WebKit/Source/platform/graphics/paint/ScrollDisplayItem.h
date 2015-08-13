@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginScrollDisplayItem : public PairedBeginDisplayItem {
+class PLATFORM_EXPORT BeginScrollDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginScrollDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntSize& currentOffset)
         : PairedBeginDisplayItem(client, type, sizeof(*this))
@@ -32,7 +32,7 @@ private:
     const IntSize m_currentOffset;
 };
 
-class PLATFORM_EXPORT EndScrollDisplayItem : public PairedEndDisplayItem {
+class PLATFORM_EXPORT EndScrollDisplayItem final : public PairedEndDisplayItem {
 public:
     EndScrollDisplayItem(const DisplayItemClientWrapper& client, Type type)
         : PairedEndDisplayItem(client, type, sizeof(*this))

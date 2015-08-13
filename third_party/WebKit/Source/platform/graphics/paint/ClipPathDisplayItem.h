@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginClipPathDisplayItem : public PairedBeginDisplayItem {
+class PLATFORM_EXPORT BeginClipPathDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginClipPathDisplayItem(const DisplayItemClientWrapper& client, const Path& clipPath)
         : PairedBeginDisplayItem(client, BeginClipPath, sizeof(*this))
@@ -29,7 +29,7 @@ private:
 #endif
 };
 
-class PLATFORM_EXPORT EndClipPathDisplayItem : public PairedEndDisplayItem {
+class PLATFORM_EXPORT EndClipPathDisplayItem final : public PairedEndDisplayItem {
 public:
     EndClipPathDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndClipPath, sizeof(*this)) { }

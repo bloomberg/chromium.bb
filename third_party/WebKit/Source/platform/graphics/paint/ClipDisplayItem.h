@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT ClipDisplayItem : public PairedBeginDisplayItem {
+class PLATFORM_EXPORT ClipDisplayItem final : public PairedBeginDisplayItem {
 public:
     ClipDisplayItem(const DisplayItemClientWrapper& client, Type type, const IntRect& clipRect)
         : PairedBeginDisplayItem(client, type, sizeof(*this))
@@ -41,7 +41,7 @@ private:
     Vector<FloatRoundedRect> m_roundedRectClips;
 };
 
-class PLATFORM_EXPORT EndClipDisplayItem : public PairedEndDisplayItem {
+class PLATFORM_EXPORT EndClipDisplayItem final : public PairedEndDisplayItem {
 public:
     EndClipDisplayItem(const DisplayItemClientWrapper& client, Type type)
         : PairedEndDisplayItem(client, type, sizeof(*this))

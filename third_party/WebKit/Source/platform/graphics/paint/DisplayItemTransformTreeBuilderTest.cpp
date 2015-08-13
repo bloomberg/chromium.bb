@@ -24,7 +24,7 @@ struct DummyClient {
     String debugName() const { return "DummyClient"; }
 };
 
-class DummyDisplayItem : public DisplayItem {
+class DummyDisplayItem final : public DisplayItem {
 public:
     DummyDisplayItem(const DummyClient& client) : DisplayItem(client, DisplayItem::DrawingFirst, sizeof(*this)) { }
 };

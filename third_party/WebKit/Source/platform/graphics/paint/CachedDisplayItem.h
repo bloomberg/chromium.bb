@@ -13,7 +13,7 @@ namespace blink {
 // A placeholder of DisplayItem in the new paint list of DisplayItemList, to indicate that
 // the DisplayItem has not been changed and should be replaced with the cached DisplayItem
 // when merging new paint list to cached paint list.
-class PLATFORM_EXPORT CachedDisplayItem : public DisplayItem {
+class PLATFORM_EXPORT CachedDisplayItem final : public DisplayItem {
 public:
     CachedDisplayItem(const DisplayItemClientWrapper& client, Type type)
         : DisplayItem(client, type, sizeof(*this))

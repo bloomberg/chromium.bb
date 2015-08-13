@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT BeginFilterDisplayItem : public PairedBeginDisplayItem {
+class PLATFORM_EXPORT BeginFilterDisplayItem final : public PairedBeginDisplayItem {
 public:
     BeginFilterDisplayItem(const DisplayItemClientWrapper& client, PassRefPtr<SkImageFilter> imageFilter, const FloatRect& bounds, PassOwnPtr<WebFilterOperations> filterOperations = nullptr)
         : PairedBeginDisplayItem(client, BeginFilter, sizeof(*this))
@@ -39,7 +39,7 @@ private:
     const FloatRect m_bounds;
 };
 
-class PLATFORM_EXPORT EndFilterDisplayItem : public PairedEndDisplayItem {
+class PLATFORM_EXPORT EndFilterDisplayItem final : public PairedEndDisplayItem {
 public:
     EndFilterDisplayItem(const DisplayItemClientWrapper& client)
         : PairedEndDisplayItem(client, EndFilter, sizeof(*this)) { }
