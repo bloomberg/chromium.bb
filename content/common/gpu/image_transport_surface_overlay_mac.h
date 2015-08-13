@@ -13,6 +13,7 @@
 #include "content/common/gpu/image_transport_surface.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gpu_switching_observer.h"
 
 @class CAContext;
 @class CALayer;
@@ -20,7 +21,8 @@
 namespace content {
 
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
-                                        public ImageTransportSurface {
+                                        public ImageTransportSurface,
+                                        public ui::GpuSwitchingObserver {
  public:
   ImageTransportSurfaceOverlayMac(GpuChannelManager* manager,
                                   GpuCommandBufferStub* stub,
@@ -35,6 +37,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   bool SupportsPostSubBuffer() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
+  bool OnMakeCurrent(gfx::GLContext* context) override;
 
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
@@ -49,6 +52,9 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   void OnResize(gfx::Size pixel_size, float scale_factor) override;
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
   void WakeUpGpu() override;
+
+  // ui::GpuSwitchingObserver implementation.
+  void OnGpuSwitched() override;
 
  private:
   class PendingSwap;
@@ -84,6 +90,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   gfx::Size pixel_size_;
   float scale_factor_;
   std::vector<ui::LatencyInfo> latency_info_;
+
+  // The renderer ID that all contexts made current to this surface should be
+  // targeting.
+  GLint gl_renderer_id_;
 
   // Weak pointer to the image provided when ScheduleOverlayPlane is called. Is
   // consumed and reset when SwapBuffers is called. For now, only one overlay

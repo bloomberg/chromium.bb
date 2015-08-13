@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/gl/gpu_switching_observer.h"
 #include "ui/gl/scoped_cgl.h"
 
@@ -33,7 +34,8 @@ class IOSurfaceContext
   // Get or create a GL context of the specified type. Share these GL contexts
   // as much as possible because creating and destroying them can be expensive.
   // http://crbug.com/180463
-  static scoped_refptr<IOSurfaceContext> Get(Type type);
+  ACCELERATED_WIDGET_MAC_EXPORT static scoped_refptr<IOSurfaceContext> Get(
+      Type type);
 
   // Mark that all the GL contexts in the same sharegroup as this context as
   // invalid, so they shouldn't be returned anymore by Get, but rather, new
