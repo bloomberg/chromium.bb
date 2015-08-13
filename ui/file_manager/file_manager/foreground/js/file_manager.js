@@ -933,8 +933,10 @@ FileManager.prototype = /** @struct */ {
 
     this.appStateController_.initialize(this.ui_, this.directoryModel_);
 
-    this.columnVisibilityController_ = new ColumnVisibilityController(
-        this.ui_, this.directoryModel_, this.volumeManager_);
+    if (this.dialogType === DialogType.FULL_PAGE) {
+      this.columnVisibilityController_ = new ColumnVisibilityController(
+          this.ui_, this.directoryModel_, this.volumeManager_);
+    }
 
     // Create metadata update controller.
     this.metadataUpdateController_ = new MetadataUpdateController(

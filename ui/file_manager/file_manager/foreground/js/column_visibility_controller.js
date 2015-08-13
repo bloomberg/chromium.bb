@@ -37,7 +37,9 @@ ColumnVisibilityController.prototype.onDirectoryChanged_ = function(event) {
   // remove this and have the underlying UI determine its own status using
   // metadata.
   var isImportEligible =
-      importer.isBeneathMediaDir(event.newDirEntry, this.volumeManager_);
+      importer.isBeneathMediaDir(event.newDirEntry, this.volumeManager_) &&
+      !!this.volumeManager_.getCurrentProfileVolumeInfo(
+          VolumeManagerCommon.VolumeType.DRIVE);
   this.ui_.listContainer.table.setImportStatusVisible(isImportEligible);
   this.ui_.listContainer.grid.setImportStatusVisible(isImportEligible);
 };
