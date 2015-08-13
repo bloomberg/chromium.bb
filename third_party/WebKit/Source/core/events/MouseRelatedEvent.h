@@ -30,68 +30,68 @@
 
 namespace blink {
 
-    // Internal only: Helper class for what's common between mouse and wheel events.
-    class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
-    public:
-        // Note that these values are adjusted to counter the effects of zoom, so that values
-        // exposed via DOM APIs are invariant under zooming.
-        int screenX() const { return m_screenLocation.x(); }
-        int screenY() const { return m_screenLocation.y(); }
-        const IntPoint& screenLocation() const { return m_screenLocation; }
-        int clientX() const { return m_clientLocation.x(); }
-        int clientY() const { return m_clientLocation.y(); }
-        int movementX() const { return m_movementDelta.x(); }
-        int movementY() const { return m_movementDelta.y(); }
-        const LayoutPoint& clientLocation() const { return m_clientLocation; }
-        int layerX();
-        int layerY();
-        int offsetX();
-        int offsetY();
-        // FIXME: rename isSimulated to fromKeyboard() and replace m_isSimulated with a new value
-        // in PlatformMouseEvent::SyntheticEventType. isSimulated() is only true for synthetic
-        // mouse events that derive from keyboard input, which do not have a position.
-        bool isSimulated() const { return m_isSimulated; }
-        int pageX() const;
-        int pageY() const;
-        int x() const;
-        int y() const;
+// Internal only: Helper class for what's common between mouse and wheel events.
+class CORE_EXPORT MouseRelatedEvent : public UIEventWithKeyState {
+public:
+    // Note that these values are adjusted to counter the effects of zoom, so that values
+    // exposed via DOM APIs are invariant under zooming.
+    int screenX() const { return m_screenLocation.x(); }
+    int screenY() const { return m_screenLocation.y(); }
+    const IntPoint& screenLocation() const { return m_screenLocation; }
+    int clientX() const { return m_clientLocation.x(); }
+    int clientY() const { return m_clientLocation.y(); }
+    int movementX() const { return m_movementDelta.x(); }
+    int movementY() const { return m_movementDelta.y(); }
+    const LayoutPoint& clientLocation() const { return m_clientLocation; }
+    int layerX();
+    int layerY();
+    int offsetX();
+    int offsetY();
+    // FIXME: rename isSimulated to fromKeyboard() and replace m_isSimulated with a new value
+    // in PlatformMouseEvent::SyntheticEventType. isSimulated() is only true for synthetic
+    // mouse events that derive from keyboard input, which do not have a position.
+    bool isSimulated() const { return m_isSimulated; }
+    int pageX() const;
+    int pageY() const;
+    int x() const;
+    int y() const;
 
-        // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative coords,
-        // usable with LayoutObject::absoluteToLocal).
-        const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
-        void setAbsoluteLocation(const LayoutPoint& p) { m_absoluteLocation = p; }
+    // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative coords,
+    // usable with LayoutObject::absoluteToLocal).
+    const LayoutPoint& absoluteLocation() const { return m_absoluteLocation; }
+    void setAbsoluteLocation(const LayoutPoint& p) { m_absoluteLocation = p; }
 
-        DECLARE_VIRTUAL_TRACE();
+    DECLARE_VIRTUAL_TRACE();
 
-    protected:
-        MouseRelatedEvent();
-        // TODO(lanwei): Will make this argument non-optional and all the callers need to provide
-        // sourceDevice even when it is null, see https://crbug.com/476530.
-        MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
-            PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
-            const IntPoint& rootFrameLocation, const IntPoint& movementDelta, bool ctrlKey, bool altKey,
-            bool shiftKey, bool metaKey, bool isSimulated = false, InputDevice* sourceDevice = nullptr);
+protected:
+    MouseRelatedEvent();
+    // TODO(lanwei): Will make this argument non-optional and all the callers need to provide
+    // sourceDevice even when it is null, see https://crbug.com/476530.
+    MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
+        PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
+        const IntPoint& rootFrameLocation, const IntPoint& movementDelta, bool ctrlKey, bool altKey,
+        bool shiftKey, bool metaKey, bool isSimulated = false, InputDevice* sourceDevice = nullptr);
 
-        void initCoordinates();
-        void initCoordinates(const LayoutPoint& clientLocation);
-        void receivedTarget() final;
+    void initCoordinates();
+    void initCoordinates(const LayoutPoint& clientLocation);
+    void receivedTarget() final;
 
-        void computePageLocation();
-        void computeRelativePosition();
+    void computePageLocation();
+    void computeRelativePosition();
 
-        // Expose these so MouseEvent::initMouseEvent can set them.
-        IntPoint m_screenLocation;
-        LayoutPoint m_clientLocation;
-        LayoutPoint m_movementDelta;
+    // Expose these so MouseEvent::initMouseEvent can set them.
+    IntPoint m_screenLocation;
+    LayoutPoint m_clientLocation;
+    LayoutPoint m_movementDelta;
 
-    private:
-        LayoutPoint m_pageLocation;
-        LayoutPoint m_layerLocation;
-        LayoutPoint m_offsetLocation;
-        LayoutPoint m_absoluteLocation;
-        bool m_isSimulated;
-        bool m_hasCachedRelativePosition;
-    };
+private:
+    LayoutPoint m_pageLocation;
+    LayoutPoint m_layerLocation;
+    LayoutPoint m_offsetLocation;
+    LayoutPoint m_absoluteLocation;
+    bool m_isSimulated;
+    bool m_hasCachedRelativePosition;
+};
 
 } // namespace blink
 
