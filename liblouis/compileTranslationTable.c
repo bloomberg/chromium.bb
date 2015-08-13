@@ -3857,9 +3857,15 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 	int esc;
 	int i;
 
-	rnxt = icrs = 0;
+	icrs = iend = inxt = 0;
 	rcrs = 1;
+	rnxt = rcnt = 0;
 	expr[rnxt] = PTN_LAST;
+	
+	/*   no pattern   */
+	if(input[0] == '-' && input_max == 1)
+		return 1;
+	
 	while(icrs < input_max)
 	{
 		if(rcrs >= expr_max)
