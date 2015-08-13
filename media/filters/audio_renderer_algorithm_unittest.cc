@@ -666,6 +666,7 @@ TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
     ASSERT_EQ(kHalfSize, frames_filled);
     ASSERT_TRUE(VerifyAudioData(bus.get(), 0, kHalfSize, 0));
     ASSERT_FALSE(VerifyAudioData(bus.get(), kHalfSize, kHalfSize, 0));
+    FillAlgorithmQueue();
   }
 
   const float kMutedRates[] = {5.0f, 0.25f};
@@ -679,6 +680,7 @@ TEST_F(AudioRendererAlgorithmTest, FillBufferOffset) {
     ASSERT_EQ(kHalfSize, frames_filled);
     ASSERT_FALSE(VerifyAudioData(bus.get(), 0, kHalfSize, 0));
     ASSERT_TRUE(VerifyAudioData(bus.get(), kHalfSize, kHalfSize, 0));
+    FillAlgorithmQueue();
   }
 }
 

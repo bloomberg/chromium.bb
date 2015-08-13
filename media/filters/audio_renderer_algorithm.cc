@@ -61,20 +61,14 @@ static const int kWsolaSearchIntervalMs = 30;
 // The maximum size in seconds for the |audio_buffer_|. Arbitrarily determined.
 static const int kMaxCapacityInSeconds = 3;
 
-// The starting size in frames for |audio_buffer_|. Previous usage maintained a
-// queue of 16 AudioBuffers, each of 512 frames. This worked well, so we
-// maintain this number of frames.
-static const int kStartingBufferSizeInFrames = 16 * 512;
-
-static_assert(kStartingBufferSizeInFrames <
-              (kMaxCapacityInSeconds * limits::kMinSampleRate),
-              "max capacity smaller than starting buffer size");
+// The minimum size in ms for the |audio_buffer_|. Arbitrarily determined.
+static const int kStartingCapacityInMs = 200;
 
 AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
       samples_per_second_(0),
       muted_partial_frame_(0),
-      capacity_(kStartingBufferSizeInFrames),
+      capacity_(0),
       output_time_(0.0),
       search_block_center_offset_(0),
       search_block_index_(0),
@@ -92,8 +86,9 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params) {
 
   channels_ = params.channels();
   samples_per_second_ = params.sample_rate();
-  num_candidate_blocks_ = (kWsolaSearchIntervalMs * samples_per_second_) / 1000;
-  ola_window_size_ = kOlaWindowSizeMs * samples_per_second_ / 1000;
+  capacity_ = ConvertMillisecondsToFrames(kStartingCapacityInMs);
+  num_candidate_blocks_ = ConvertMillisecondsToFrames(kWsolaSearchIntervalMs);
+  ola_window_size_ = ConvertMillisecondsToFrames(kOlaWindowSizeMs);
 
   // Make sure window size in an even number.
   ola_window_size_ += ola_window_size_ & 1;
@@ -206,9 +201,9 @@ void AudioRendererAlgorithm::FlushBuffers() {
   wsola_output_->Zero();
   num_complete_frames_ = 0;
 
-  // Reset |capacity_| so growth triggered by underflows doesn't penalize
-  // seek time.
-  capacity_ = kStartingBufferSizeInFrames;
+  // Reset |capacity_| so growth triggered by underflows doesn't penalize seek
+  // time.
+  capacity_ = ConvertMillisecondsToFrames(kStartingCapacityInMs);
 }
 
 void AudioRendererAlgorithm::EnqueueBuffer(
@@ -233,6 +228,11 @@ bool AudioRendererAlgorithm::CanPerformWsola() const {
   const int frames = audio_buffer_.frames();
   return target_block_index_ + ola_window_size_ <= frames &&
       search_block_index_ + search_block_size <= frames;
+}
+
+int AudioRendererAlgorithm::ConvertMillisecondsToFrames(int ms) const {
+  return ms * (samples_per_second_ /
+               static_cast<double>(base::Time::kMillisecondsPerSecond));
 }
 
 bool AudioRendererAlgorithm::RunOneWsolaIteration(double playback_rate) {

@@ -118,6 +118,9 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   // Do we have enough data to perform one round of WSOLA?
   bool CanPerformWsola() const;
 
+  // Converts a time in milliseconds to frames using |samples_per_second_|.
+  int ConvertMillisecondsToFrames(int ms) const;
+
   // Number of channels in audio stream.
   int channels_;
 
