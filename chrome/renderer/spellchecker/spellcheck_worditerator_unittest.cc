@@ -441,12 +441,13 @@ TEST(SpellcheckWordIteratorTest, FindSkippableWordsRussian) {
 }
 
 // This test uses Khmer rules to check that different character set combinations
-// properly find word breaks and skippable characters.
+// properly find word breaks and skippable characters. Khmer does not use spaces
+// between words and uses a dictionary to determine word breaks instead.
 TEST(SpellcheckWordIteratorTest, FindSkippableWordsKhmer) {
-  // A string containing two Russian characters followed by two, three, and two
-  // Khmer characters, and then English characters and punctuation.
+  // A string containing two Russian characters followed by two, three, and
+  // two-character Khmer words, and then English characters and punctuation.
   base::string16 text(base::WideToUTF16(
-      L"\x041C\x0438 \x178F\x17BE \x179B\x17C4\x1780 \x1798\x1780zoo. ,"));
+      L"\x041C\x0438 \x178F\x17BE\x179B\x17C4\x1780\x1798\x1780zoo. ,"));
   BreakIterator iter(text, GetRulesForLanguage("km"));
   ASSERT_TRUE(iter.Init());
 
@@ -461,22 +462,16 @@ TEST(SpellcheckWordIteratorTest, FindSkippableWordsKhmer) {
   EXPECT_EQ(base::UTF8ToUTF16(" "), iter.GetString());
   EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
   EXPECT_TRUE(iter.Advance());
-  // Finds the first two Khmer characters and the space.
+  // Finds the first two-character Khmer word.
   EXPECT_EQ(base::WideToUTF16(L"\x178F\x17BE"), iter.GetString());
   EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
   EXPECT_TRUE(iter.Advance());
-  EXPECT_EQ(base::UTF8ToUTF16(" "), iter.GetString());
-  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
-  EXPECT_TRUE(iter.Advance());
-  // Finds the next three Khmer characters and the space.
-  EXPECT_EQ(base::WideToUTF16(L"\x179B\x17C4\x1780"), iter.GetString());
-  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
-  EXPECT_TRUE(iter.Advance());
-  EXPECT_EQ(base::UTF8ToUTF16(" "), iter.GetString());
-  EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_SKIPPABLE_WORD);
-  EXPECT_TRUE(iter.Advance());
-  // Finds the last two Khmer characters.
-  EXPECT_EQ(base::WideToUTF16(L"\x1798\x1780"), iter.GetString());
+  // Finds the three-character Khmer word and then the next two-character word.
+  // Note: Technically these are two different Khmer words so the Khmer language
+  // rule should find a break between them but due to the heuristic/statistical
+  // nature of the Khmer word breaker it does not.
+  EXPECT_EQ(base::WideToUTF16(L"\x179B\x17C4\x1780\x1798\x1780"),
+            iter.GetString());
   EXPECT_EQ(iter.GetWordBreakStatus(), BreakIterator::IS_WORD_BREAK);
   EXPECT_TRUE(iter.Advance());
   // Finds each character in "zoo".
