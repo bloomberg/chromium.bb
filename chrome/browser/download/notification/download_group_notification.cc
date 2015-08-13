@@ -114,6 +114,7 @@ void DownloadGroupNotification::OnDownloadRemoved(
   // The given |download| may be already free'd.
   if (items_.find(download) != items_.end()) {
     items_.erase(download);
+    truncated_filename_cache_.erase(download);
     if (items_.size() <= 1)
       Hide();
   }
@@ -183,9 +184,19 @@ void DownloadGroupNotification::UpdateNotificationData() {
   std::vector<message_center::NotificationItem> subitems;
   for (auto download : items_) {
     DownloadItemModel model(download);
+    auto it = truncated_filename_cache_.find(download);
+    auto original_filename = download->GetFileNameToReportUser();
+    if (it == truncated_filename_cache_.end() ||
+        it->second.truncated_filename.empty() ||
+        it->second.original_filename != original_filename) {
+      truncated_filename_cache_[download].original_filename = original_filename;
+      truncated_filename_cache_[download].truncated_filename =
+          TruncateFilename(original_filename);
+    }
+
     // TODO(yoshiki): Use emplace_back when C++11 becomes allowed.
     subitems.push_back(message_center::NotificationItem(
-        TruncateFilename(download->GetFileNameToReportUser()),
+        truncated_filename_cache_[download].truncated_filename,
         model.GetStatusText()));
 
     if (!download->IsDone())

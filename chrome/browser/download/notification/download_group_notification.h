@@ -34,6 +34,11 @@ class DownloadGroupNotification : public DownloadNotification {
   bool visible() const { return visible_; }
 
  private:
+  struct FilenameCache {
+    base::FilePath original_filename;
+    base::string16 truncated_filename;
+  };
+
   void Update();
   void UpdateNotificationData();
 
@@ -52,6 +57,7 @@ class DownloadGroupNotification : public DownloadNotification {
 
   scoped_ptr<Notification> notification_;
   std::set<content::DownloadItem*> items_;
+  std::map<content::DownloadItem*, FilenameCache> truncated_filename_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadGroupNotification);
 };
