@@ -287,6 +287,17 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-3/styles-disable-then-delete
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles/undo-set-selector-text.html [ Failure Pass ]
 
+# https://codereview.chromium.org/1289833002/
+crbug.com/509199 fast/backgrounds/svg-as-mask.html [ NeedsRebaseline ]
+crbug.com/509199 inspector/layers/layer-canvas-log.html [ NeedsRebaseline ]
+crbug.com/509199 svg/as-background-image/svg-as-background-5.html [ NeedsRebaseline ]
+crbug.com/509199 svg/as-background-image/svg-as-background-6.html [ NeedsRebaseline ]
+crbug.com/509199 svg/batik/text/textAnchor.svg [ NeedsRebaseline ]
+crbug.com/509199 svg/custom/container-opacity-clip-viewBox.svg [ NeedsRebaseline ]
+crbug.com/509199 svg/custom/js-update-bounce.svg [ NeedsRebaseline ]
+crbug.com/509199 svg/custom/marker-opacity.svg [ NeedsRebaseline ]
+crbug.com/509199 svg/custom/use-transform.svg [ NeedsRebaseline ]
+
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
 crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
