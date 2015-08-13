@@ -400,8 +400,8 @@ TrimPositions TrimWhitespace(const string16& input,
   return TrimStringT(input, StringPiece16(kWhitespaceUTF16), positions, output);
 }
 
-StringPiece16 TrimWhitespaceASCII(StringPiece16 input,
-                                  TrimPositions positions) {
+StringPiece16 TrimWhitespace(StringPiece16 input,
+                             TrimPositions positions) {
   return TrimStringPieceT(input, StringPiece16(kWhitespaceUTF16), positions);
 }
 

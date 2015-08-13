@@ -83,7 +83,7 @@ using StringPairs = std::vector<std::pair<std::string, std::string>>;
 // removes whitespace leading each key and trailing each value. Returns true
 // only if each pair has a non-empty key and value. |key_value_pairs| will
 // include ("","") pairs for entries without |key_value_delimiter|.
-BASE_EXPORT bool SplitStringIntoKeyValuePairs(const std::string& line,
+BASE_EXPORT bool SplitStringIntoKeyValuePairs(StringPiece input,
                                               char key_value_delimiter,
                                               char key_value_pair_delimiter,
                                               StringPairs* key_value_pairs);
@@ -94,12 +94,12 @@ BASE_EXPORT bool SplitStringIntoKeyValuePairs(const std::string& line,
 // TODO(brettw) this should probably be changed and expanded to provide a
 // mirror of the SplitString[Piece] API above, just with the different
 // delimiter handling.
-BASE_EXPORT void SplitStringUsingSubstr(const string16& str,
-                                        const string16& s,
-                                        std::vector<string16>* r);
-BASE_EXPORT void SplitStringUsingSubstr(const std::string& str,
-                                        const std::string& s,
-                                        std::vector<std::string>* r);
+BASE_EXPORT void SplitStringUsingSubstr(StringPiece16 input,
+                                        StringPiece16 delimiter,
+                                        std::vector<string16>* result);
+BASE_EXPORT void SplitStringUsingSubstr(StringPiece input,
+                                        StringPiece delimiter,
+                                        std::vector<std::string>* result);
 
 }  // namespace base
 
