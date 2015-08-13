@@ -15,6 +15,9 @@ const int kMaxTimeToConnectMs = 2000;
 namespace remoting {
 namespace test {
 
+// Note: Make sure to restart the host before running this test. Connecting to
+// a previously connected host will output the time to reconnect versus the time
+// to connect.
 TEST_F(ChromotingTestFixture, TestMeasurePinBasedAuthentication) {
   bool connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
   EXPECT_TRUE(connected);
@@ -38,6 +41,9 @@ TEST_F(ChromotingTestFixture, TestMeasurePinBasedAuthentication) {
   connection_time_observer_->DisplayConnectionStats();
 }
 
+// Note: Make sure to restart the host before running this test. If the host
+// is not restarted after a previous connection, then the first connection will
+// be a reconnect and the second connection will be a second reconnect.
 TEST_F(ChromotingTestFixture, TestMeasureReconnectPerformance) {
   bool connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
   EXPECT_TRUE(connected);
@@ -57,8 +63,6 @@ TEST_F(ChromotingTestFixture, TestMeasureReconnectPerformance) {
           protocol::ConnectionToHost::State::AUTHENTICATED,
           protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
   EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
-
-  connection_time_observer_->DisplayConnectionStats();
 
   // Begin reconnection to same host.
   connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
