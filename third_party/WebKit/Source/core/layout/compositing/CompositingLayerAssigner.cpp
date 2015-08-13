@@ -172,8 +172,9 @@ CompositingReasons CompositingLayerAssigner::getReasonsPreventingSquashing(const
     if (layer->hasFilter() || compositingInputs.filterAncestor != squashingLayerCompositingInputs.filterAncestor)
         return CompositingReasonSquashingFilterMismatch;
 
-    if (layer->layoutObject()->style()->position() == FixedPosition)
-        return CompositingReasonSquashingPositionFixedIsDisallowed;
+    if (compositingInputs.nearestFixedPositionLayer != squashingLayerCompositingInputs.nearestFixedPositionLayer)
+        return CompositingReasonSquashingNearestFixedPositionMismatch;
+    ASSERT(layer->layoutObject()->style()->position() != FixedPosition);
 
     return CompositingReasonNone;
 }

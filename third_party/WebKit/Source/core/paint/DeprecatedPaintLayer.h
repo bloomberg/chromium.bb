@@ -413,6 +413,7 @@ public:
             , filterAncestor(0)
             , clippingContainer(0)
             , ancestorScrollingLayer(0)
+            , nearestFixedPositionLayer(0)
             , scrollParent(0)
             , clipParent(0)
             , hasAncestorWithClipPath(false)
@@ -424,6 +425,7 @@ public:
         const DeprecatedPaintLayer* filterAncestor;
         const LayoutObject* clippingContainer;
         const DeprecatedPaintLayer* ancestorScrollingLayer;
+        const DeprecatedPaintLayer* nearestFixedPositionLayer;
 
         // A scroll parent is a compositor concept. It's only needed in blink
         // because we need to use it as a promotion trigger. A layer has a
@@ -477,6 +479,7 @@ public:
     const DeprecatedPaintLayer* filterAncestor() const { return ancestorDependentCompositingInputs().filterAncestor; }
     const LayoutObject* clippingContainer() const { return ancestorDependentCompositingInputs().clippingContainer; }
     const DeprecatedPaintLayer* ancestorScrollingLayer() const { return ancestorDependentCompositingInputs().ancestorScrollingLayer; }
+    const DeprecatedPaintLayer* nearestFixedPositionLayer() const { return ancestorDependentCompositingInputs().nearestFixedPositionLayer; }
     DeprecatedPaintLayer* scrollParent() const { return const_cast<DeprecatedPaintLayer*>(ancestorDependentCompositingInputs().scrollParent); }
     DeprecatedPaintLayer* clipParent() const { return const_cast<DeprecatedPaintLayer*>(ancestorDependentCompositingInputs().clipParent); }
     bool hasAncestorWithClipPath() const { return ancestorDependentCompositingInputs().hasAncestorWithClipPath; }

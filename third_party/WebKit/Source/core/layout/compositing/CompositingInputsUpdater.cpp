@@ -127,6 +127,8 @@ void CompositingInputsUpdater::updateRecursive(DeprecatedPaintLayer* layer, Upda
             properties.opacityAncestor = parent->isTransparent() ? parent : parent->opacityAncestor();
             properties.transformAncestor = parent->hasTransformRelatedProperty() ? parent : parent->transformAncestor();
             properties.filterAncestor = parent->hasFilter() ? parent : parent->filterAncestor();
+            bool layerIsFixedPosition = layer->layoutObject()->style()->position() == FixedPosition;
+            properties.nearestFixedPositionLayer = layerIsFixedPosition ? layer : parent->nearestFixedPositionLayer();
 
             if (info.hasAncestorWithClipOrOverflowClip) {
                 const DeprecatedPaintLayer* parentLayerOnClippingContainerChain = findParentLayerOnClippingContainerChain(layer);

@@ -46,7 +46,7 @@ const uint64_t CompositingReasonSquashedLayerClipsCompositingDescendants = UINT6
 const uint64_t CompositingReasonSquashingLayoutPartIsDisallowed          = UINT64_C(1) << 26;
 const uint64_t CompositingReasonSquashingReflectionIsDisallowed          = UINT64_C(1) << 27;
 const uint64_t CompositingReasonSquashingBlendingIsDisallowed            = UINT64_C(1) << 28;
-const uint64_t CompositingReasonSquashingPositionFixedIsDisallowed       = UINT64_C(1) << 29;
+const uint64_t CompositingReasonSquashingNearestFixedPositionMismatch    = UINT64_C(1) << 29;
 const uint64_t CompositingReasonScrollChildWithCompositedDescendants     = UINT64_C(1) << 30;
 
 // Subtree reasons that require knowing what the status of your subtree is before knowing the answer
@@ -160,7 +160,7 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     | CompositingReasonBlendingWithCompositedDescendants
     | CompositingReasonIsolateCompositedDescendants
     | CompositingReasonPreserve3DWith3DDescendants // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
-    | CompositingReasonSquashingPositionFixedIsDisallowed
+    | CompositingReasonSquashingNearestFixedPositionMismatch
     | CompositingReasonScrollChildWithCompositedDescendants;
 
 const uint64_t CompositingReasonComboSquashableReasons =

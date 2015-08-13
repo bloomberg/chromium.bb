@@ -77,7 +77,12 @@ body {
 
 <body onload="runTest()">
   <div id="description">
-    <p>This scenario verifies that the cyan "container" element scrolls properly with squashing enabled.</p>
+    <p>
+      This scenario verifies that the cyan "container" element scrolls properly with squashing enabled.
+      The "container" element should not squash into a composited layer mapping owned by the fixed
+      position layer or its descendant, since this would make it behave like a fixed position
+      element during composited scrolling.
+    </p>
   </div>
 
   <div id="fixed">
