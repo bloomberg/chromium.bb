@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.IBinder;
+import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -221,6 +222,14 @@ public class CustomTabActivity extends ChromeActivity {
             RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
                     externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
         }
+    }
+
+
+    @Override
+    public void onPauseWithNative() {
+        super.onPauseWithNative();
+        CustomTabsConnection.getInstance(getApplication()).notifyNavigationEvent(
+                mSession, CustomTabsCallback.TAB_HIDDEN);
     }
 
     @Override

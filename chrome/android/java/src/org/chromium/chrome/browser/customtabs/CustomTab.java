@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -78,9 +79,19 @@ public class CustomTab extends ChromeTab {
             if (mCurrentState == STATE_WAITING_LOAD_START) {
                 mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
                 mCurrentState = STATE_WAITING_LOAD_FINISH;
+            } else if (mCurrentState == STATE_WAITING_LOAD_FINISH) {
+                mCustomTabsConnection.notifyNavigationEvent(
+                        mSession, CustomTabsCallback.NAVIGATION_ABORTED);
+                mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
             }
             mCustomTabsConnection.notifyNavigationEvent(
                     mSession, CustomTabsCallback.NAVIGATION_STARTED);
+        }
+
+        @Override
+        public void onShown(Tab tab) {
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.TAB_SHOWN);
         }
 
         @Override
@@ -108,8 +119,18 @@ public class CustomTab extends ChromeTab {
         }
 
         @Override
+        public void onDidAttachInterstitialPage(Tab tab) {
+            if (tab.getSecurityLevel() != ConnectionSecurityLevel.SECURITY_ERROR) return;
+            resetPageLoadTracking();
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_FAILED);
+        }
+
+        @Override
         public void onPageLoadFailed(Tab tab, int errorCode) {
             resetPageLoadTracking();
+            mCustomTabsConnection.notifyNavigationEvent(
+                    mSession, CustomTabsCallback.NAVIGATION_FAILED);
         }
 
         private void resetPageLoadTracking() {
