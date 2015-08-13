@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
@@ -23,9 +23,10 @@
                 label="Path" on-input="validatePath"></paper-input>
             <paper-input value="{{currentEditableObject.name}}"
                 label="Name"></paper-input>
-            <paper-input id="deviceAddressInput" on-input="validateAddress"
+            <paper-input id="deviceAddressInput" on-input="handleAddressInput"
                 value="{{currentEditableObject.address}}"
-                label="Address (xx:xx:xx:xx:xx:xx)"></paper-input>
+                label="Address (xx:xx:xx:xx:xx:xx)"
+                maxlength="17"></paper-input>
           </div>
           <div class="form-field-section">
             <span class="toggle-button-label">Trusted</span>
@@ -92,7 +93,7 @@
 
     <div class="layout vertical">
       <div class="element-label">
-        <paper-icon-button icon="settings-bluetooth"></paper-icon-button>
+        <paper-icon-button icon="device:bluetooth"></paper-icon-button>
         <span>[[title]]</span>
       </div>
       <table class="devices-table">

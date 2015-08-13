@@ -138,6 +138,13 @@ Polymer({
 
   ready: function() { this.title = 'Bluetooth'; },
 
+  initialize: function() {
+    if (!this.initialized) {
+      this.initialized = true;
+      chrome.send('requestBluetoothInfo');
+    }
+  },
+
   observers: ['currentEditableObjectChanged(currentEditableObject.*)'],
 
   /**
@@ -162,6 +169,24 @@ Polymer({
   editDialogOpened: function() {
     this.validateAddress();
     this.validatePath();
+  },
+
+  handleAddressInput: function() {
+    this.autoFormatAddress();
+    this.validateAddress();
+  },
+
+  autoFormatAddress: function() {
+    var input = this.$.deviceAddressInput;
+    var regex = /([a-f0-9]{2})([a-f0-9]{2})/i;
+    // Remove things that aren't hex characters from the string.
+    var val = input.value.replace(/[^a-f0-9]/ig, '');
+
+    // Insert a ':' in the middle of every four hex characters.
+    while (regex.test(val))
+      val = val.replace(regex, '$1:$2');
+
+    input.value = val;
   },
 
   /**

@@ -75,8 +75,8 @@ paper-dialog {
   text-align: center;
 }
 
-.devices-table paper-checkbox::shadow #checkbox {
-  border-color: rgb(82, 101, 162);
+.devices-table paper-checkbox {
+  --paper-checkbox-unchecked-color: rgb(82, 101, 162);
 }
 
 .devices-table td {

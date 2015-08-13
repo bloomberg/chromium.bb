@@ -80,7 +80,14 @@ var BatterySettings = Polymer({
   },
 
   ready: function() {
-    this.title = 'Power Settings';
+    this.title = 'Power';
+  },
+
+  initialize: function() {
+    if (!this.initialized) {
+      chrome.send('requestPowerInfo');
+      this.initialized = true;
+    }
   },
 
   batteryPercentChanged: function(percent, oldPercent) {

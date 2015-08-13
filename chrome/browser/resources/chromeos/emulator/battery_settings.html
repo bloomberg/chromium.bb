@@ -1,5 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
@@ -9,7 +11,11 @@
   <link rel="import" type="css" href="battery_settings.css">
   <template>
     <div class="layout vertical">
-      <div class="element-label">{{title}}</div>
+      <div class="element-label">
+        <paper-icon-button icon="device:battery-charging-full">
+        </paper-icon-button>
+        <span>{{title}}</span>
+      </div>
       <form id="power-settings-form">
         <div>
           <p>

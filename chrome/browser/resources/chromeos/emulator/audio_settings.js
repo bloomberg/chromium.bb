@@ -111,7 +111,14 @@ Polymer({
   },
 
   ready: function() {
-    this.title = 'Audio Settings';
+    this.title = 'Audio';
+  },
+
+  initialize: function() {
+    if (!this.initialized) {
+      chrome.send('requestAudioNodes');
+      this.initialized = true;
+    }
   },
 
   /**

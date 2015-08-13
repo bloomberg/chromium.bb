@@ -15,11 +15,14 @@
   <link rel="import" href="bluetooth_settings.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html"
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
   <style is="custom-style">
     paper-drawer-panel {
       --paper-drawer-panel-main-container: {
@@ -28,7 +31,7 @@
     }
 
     paper-drawer-panel .bold { font-weight: bolder; }
-    paper-drawer-panel .menu-item span { padding-right: 15px; }
+    paper-drawer-panel .menu-item { margin: 20px 15px; }
 
     paper-drawer-panel .cards-container {
       overflow: scroll;
@@ -62,26 +65,30 @@
       <div>
         <paper-item>
           <div class="menu-item">
-            <span>Audio Settings</span>
-            <paper-checkbox checked
+            <paper-checkbox
                 class="menu-item-toggle"
                 data-content-id="audio-settings-card"></paper-checkbox>
+            <paper-icon-button icon="av:volume-up"></paper-icon-button>
+            <span>Audio</span>
           </div>
         </paper-item>
         <paper-item>
           <div class="menu-item">
-            <span>Battery/Power Settings</span>
-            <paper-checkbox checked
+            <paper-checkbox
                 data-content-id="battery-settings-card"
                 class="menu-item-toggle"></paper-checkbox>
+            <paper-icon-button icon="device:battery-charging-full">
+            </paper-icon-button>
+            <span>Battery/Power</span>
           </div>
         </paper-item>
         <paper-item>
           <div class="menu-item">
-            <span>Bluetooth Settings</span>
-            <paper-checkbox checked
+            <paper-checkbox
                 class="menu-item-toggle"
                 data-content-id="bluetooth-settings-card"></paper-checkbox>
+            <paper-icon-button icon="device:bluetooth"></paper-icon-button>
+            <span>Bluetooth</span>
           </div>
         </paper-item>
       </div>
@@ -91,18 +98,18 @@
       </paper-toolbar>
       <div>
         <div id="cards-container">
-          <div class="card" id="audio-settings-card">
+          <div class="card" hidden id="audio-settings-card">
             <div class="card-body">
               <audio-settings id="audio-settings"></audio-settings>
             </div>
           </div>
-          <div class="card" id="battery-settings-card">
+          <div class="card" hidden id="battery-settings-card">
             <div class="card-body">
               <battery-settings id="battery-settings">
               </battery-settings>
             </div>
           </div>
-          <div class="card" id="bluetooth-settings-card">
+          <div class="card" hidden id="bluetooth-settings-card">
             <div class="card-body">
               <bluetooth-settings id="bluetooth-settings"></bluetooth-settings>
             </div>

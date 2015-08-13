@@ -10,10 +10,9 @@ cr.define('device_emulator', function() {
   var bluetoothSettings = $('bluetooth-settings');
 
   function initialize() {
-    chrome.send('requestAudioNodes');
-    chrome.send('requestBluetoothInfo');
-    chrome.send('requestPowerInfo');
-
+    audioSettings.initialize();
+    batterySettings.initialize();
+    bluetoothSettings.initialize();
 
     var toggles = document.getElementsByClassName('menu-item-toggle');
     for (var i = 0; i < toggles.length; ++i) {
@@ -28,8 +27,9 @@ cr.define('device_emulator', function() {
    * @param {Event} e Contains information about the event which was fired.
    */
   function handleDrawerItemClick(e) {
-    var content = $(e.target.dataset.contentId);
-    content.hidden = !content.hidden;
+    var contentId = e.target.dataset.contentId;
+    var card = $(contentId);
+    card.hidden = !card.hidden;
   }
 
   // Return an object with all of the exports.
