@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Can send empty strings across a WebRTC data channel. Failed to execute 'createOffer' on 'RTCPeerConnection': 1 argument required, but only 0 present.
+Harness: the test ran to completion.
+
