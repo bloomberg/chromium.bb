@@ -5961,7 +5961,7 @@ bool WebGLRenderingContextBase::validateBlendEquation(const char* functionName, 
         return true;
     case GL_MIN_EXT:
     case GL_MAX_EXT:
-        if (extensionEnabled(EXTBlendMinMaxName))
+        if (extensionEnabled(EXTBlendMinMaxName) || isWebGL2OrHigher())
             return true;
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid mode");
         return false;
