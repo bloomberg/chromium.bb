@@ -404,29 +404,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
     RefPtrWillBeRawPtr<Range> misspellingRange = nullptr;
     markMisspellings(VisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary)), misspellingRange);
 
-    // Autocorrect the misspelled word.
-    if (!misspellingRange)
-        return;
-
-    // Get the misspelled word.
-    const String misspelledWord = plainText(EphemeralRange(misspellingRange.get()));
-    String autocorrectedString = textChecker().getAutoCorrectSuggestionForMisspelledWord(misspelledWord);
-
-    // If autocorrected word is non empty, replace the misspelled word by this word.
-    if (!autocorrectedString.isEmpty()) {
-        VisibleSelection newSelection(misspellingRange.get(), DOWNSTREAM);
-        if (!VisibleSelection::InDOMTree::equalSelections(newSelection, frame().selection().selection())) {
-            frame().selection().setSelection(newSelection);
-        }
-
-        frame().editor().replaceSelectionWithText(autocorrectedString, false, false);
-
-        // Reset the charet one character further.
-        frame().selection().moveTo(frame().selection().selection().visibleEnd());
-        frame().selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
-    }
-
-    if (!isGrammarCheckingEnabled())
+    if (!misspellingRange || !isGrammarCheckingEnabled())
         return;
 
     // Check grammar of entire sentence
