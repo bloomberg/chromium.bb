@@ -218,6 +218,16 @@ public class TabPersistentStore extends TabPersister {
         mTabContentManager = cache;
     }
 
+    private void saveTabList() {
+        if (mSaveListTask == null || (mSaveListTask.cancel(false) && !mSaveListTask.mStateSaved)) {
+            try {
+                saveListToFile(serializeTabMetadata());
+            } catch (IOException e) {
+                logSaveException(e);
+            }
+        }
+    }
+
     public void saveState() {
         // Temporarily allowing disk access. TODO: Fix. See http://b/5518024
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
@@ -255,6 +265,9 @@ public class TabPersistentStore extends TabPersister {
                 mSaveTabTask = null;
             }
 
+            // The list of tabs should be saved first in case our activity is terminated early.
+            saveTabList();
+
             // Synchronously save any remaining unsaved tabs (hopefully very few).
             for (Tab tab : mTabsToSave) {
                 int id = tab.getId();
@@ -270,15 +283,6 @@ public class TabPersistentStore extends TabPersister {
                 }
             }
             mTabsToSave.clear();
-
-            if (mSaveListTask == null
-                    || (mSaveListTask.cancel(false) && !mSaveListTask.mStateSaved)) {
-                try {
-                    saveListToFile(serializeTabMetadata());
-                } catch (IOException e) {
-                    logSaveException(e);
-                }
-            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
