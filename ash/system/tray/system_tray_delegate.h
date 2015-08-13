@@ -337,12 +337,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns VPNDelegate. May return nullptr.
   virtual VPNDelegate* GetVPNDelegate() const;
-
-  // For ChromeOS login screen updates focused POD clock type.
-  // TODO (alemate): Move all clock-related stuff to a separate file.
-  // See https://crbug.com/513120 .
-  virtual void SetLastFocusedPodHourClockType(
-      base::HourClockType hour_clock_type);
 };
 
 }  // namespace ash

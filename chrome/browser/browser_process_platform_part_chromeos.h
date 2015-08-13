@@ -25,6 +25,7 @@ namespace system {
 class AutomaticRebootManager;
 class DeviceDisablingManager;
 class DeviceDisablingManagerDefaultDelegate;
+class SystemClock;
 }
 }
 
@@ -94,6 +95,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   scoped_ptr<policy::BrowserPolicyConnector> CreateBrowserPolicyConnector()
       override;
 
+  chromeos::system::SystemClock* GetSystemClock();
+
  private:
   void CreateProfileHelper();
 
@@ -113,6 +116,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
       device_disabling_manager_;
 
   scoped_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
+
+  scoped_ptr<chromeos::system::SystemClock> system_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserProcessPlatformPart);
 };

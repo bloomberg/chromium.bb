@@ -23,12 +23,13 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
+#include "chrome/browser/chromeos/system/system_clock.h"
+#include "chrome/browser/chromeos/system/system_clock_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/login/login_state.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -55,7 +56,6 @@ class SystemTrayDelegateChromeOS
       public SessionManagerClient::Observer,
       public content::NotificationObserver,
       public input_method::InputMethodManager::Observer,
-      public chromeos::LoginState::Observer,
       public chromeos::CrasAudioHandler::AudioObserver,
       public device::BluetoothAdapter::Observer,
       public policy::CloudPolicyStore::Observer,
@@ -64,7 +64,8 @@ class SystemTrayDelegateChromeOS
       public extensions::AppWindowRegistry::Observer,
       public user_manager::UserManager::UserSessionStateObserver,
       public SupervisedUserServiceObserver,
-      public ShutdownPolicyHandler::Delegate  {
+      public ShutdownPolicyHandler::Delegate,
+      public system::SystemClockObserver {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -147,8 +148,6 @@ class SystemTrayDelegateChromeOS
   void ShouldRebootOnShutdown(
       const ash::RebootOnShutdownCallback& callback) override;
   ash::VPNDelegate* GetVPNDelegate() const override;
-  void SetLastFocusedPodHourClockType(
-      base::HourClockType hour_clock_type) override;
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserAddedToSession(const user_manager::User* active_user) override;
@@ -159,10 +158,10 @@ class SystemTrayDelegateChromeOS
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;
 
+  // chromeos::system::SystemClockObserver implementation.
+  void OnSystemClockChanged(system::SystemClock*) override;
+
  private:
-  // Should be the same as CrosSettings::ObserverSubscription.
-  typedef base::CallbackList<void(void)>::Subscription
-      CrosSettingsObserverSubscription;
 
   ash::SystemTray* GetPrimarySystemTray();
 
@@ -173,8 +172,6 @@ class SystemTrayDelegateChromeOS
   bool UnsetProfile(Profile* profile);
 
   bool ShouldUse24HourClock() const;
-
-  void UpdateClockType();
 
   void UpdateShowLogoutButtonInTray();
 
@@ -191,9 +188,6 @@ class SystemTrayDelegateChromeOS
   // Notify observers if the current user has no more open browser or app
   // windows.
   void NotifyIfLastWindowClosed();
-
-  // LoginState::Observer overrides.
-  void LoggedInStateChanged() override;
 
   // Overridden from SessionManagerClient::Observer.
   void ScreenIsLocked() override;
@@ -297,7 +291,6 @@ class SystemTrayDelegateChromeOS
   scoped_ptr<ash::CastConfigDelegate> cast_config_delegate_;
   scoped_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
-  scoped_ptr<CrosSettingsObserverSubscription> device_settings_observer_;
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
   base::ScopedPtrHashMap<std::string,
                          scoped_ptr<ash::tray::UserAccountsDelegate>>
@@ -309,9 +302,6 @@ class SystemTrayDelegateChromeOS
       custodian_info_changed_observers_;
 
   base::ObserverList<ash::ShutdownPolicyObserver> shutdown_policy_observers_;
-
-  bool user_pod_was_focused_;
-  base::HourClockType last_focused_pod_hour_clock_type_;
 
   base::WeakPtrFactory<SystemTrayDelegateChromeOS> weak_ptr_factory_;
 

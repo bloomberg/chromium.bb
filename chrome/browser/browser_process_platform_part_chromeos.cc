@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
+#include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -126,6 +127,12 @@ chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
   return timezone_resolver_.get();
 }
 
+chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {
+  if (!system_clock_.get())
+    system_clock_.reset(new chromeos::system::SystemClock());
+
+  return system_clock_.get();
+}
 void BrowserProcessPlatformPart::StartTearDown() {
   // interactive_ui_tests check for memory leaks before this object is
   // destroyed.  So we need to destroy |timezone_resolver_| here.

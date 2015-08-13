@@ -4,8 +4,6 @@
 
 #include "ash/system/tray/system_tray_delegate.h"
 
-#include "base/logging.h"
-
 namespace ash {
 
 NetworkIconInfo::NetworkIconInfo()
@@ -287,10 +285,6 @@ void SystemTrayDelegate::ShouldRebootOnShutdown(
 
 VPNDelegate* SystemTrayDelegate::GetVPNDelegate() const {
   return nullptr;
-}
-
-void SystemTrayDelegate::SetLastFocusedPodHourClockType(
-    base::HourClockType user_hour_clock_type) {
 }
 
 }  // namespace ash
