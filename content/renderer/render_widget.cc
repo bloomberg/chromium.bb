@@ -161,30 +161,26 @@ ui::TextInputMode ConvertInputMode(const blink::WebString& input_mode) {
 // be spent in input hanlders before input starts getting throttled.
 const int kInputHandlingTimeThrottlingThresholdMicroseconds = 4166;
 
-int64 GetEventLatencyMicros(const WebInputEvent& event, base::TimeTicks now) {
-  return (now - base::TimeDelta::FromSecondsD(event.timeStampSeconds))
+int64 GetEventLatencyMicros(double event_timestamp, base::TimeTicks now) {
+  return (now - base::TimeDelta::FromSecondsD(event_timestamp))
       .ToInternalValue();
 }
 
-void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Event.AggregatedLatency.Renderer2",
-      GetEventLatencyMicros(event, now),
-      1,
-      10000000,
-      100);
+void LogInputEventLatencyUmaImpl(WebInputEvent::Type event_type,
+                                 double event_timestamp,
+                                 base::TimeTicks now) {
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.AggregatedLatency.Renderer2",
+                              GetEventLatencyMicros(event_timestamp, now), 1,
+                              10000000, 100);
 
-#define CASE_TYPE(t) \
-    case WebInputEvent::t: \
-      UMA_HISTOGRAM_CUSTOM_COUNTS( \
-          "Event.Latency.Renderer2." #t, \
-          GetEventLatencyMicros(event, now), \
-          1, \
-          10000000, \
-          100); \
-      break;
+#define CASE_TYPE(t)                                                         \
+  case WebInputEvent::t:                                                     \
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Renderer2." #t,               \
+                                GetEventLatencyMicros(event_timestamp, now), \
+                                1, 10000000, 100);                           \
+    break;
 
-  switch(event.type) {
+  switch (event_type) {
     CASE_TYPE(Undefined);
     CASE_TYPE(MouseDown);
     CASE_TYPE(MouseUp);
@@ -221,11 +217,22 @@ void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now) {
     default:
       // Must include default to let blink::WebInputEvent add new event types
       // before they're added here.
-      DLOG(WARNING) << "Unhandled WebInputEvent type: " << event.type;
+      DLOG(WARNING) << "Unhandled WebInputEvent type: " << event_type;
       break;
   }
 
 #undef CASE_TYPE
+}
+
+void LogInputEventLatencyUma(const WebInputEvent& event, base::TimeTicks now,
+                             const ui::LatencyInfo& latency_info) {
+  LogInputEventLatencyUmaImpl(event.type, event.timeStampSeconds, now);
+  for (size_t i = 0; i < latency_info.coalesced_events_size(); i++) {
+    LogInputEventLatencyUmaImpl(
+        event.type,
+        latency_info.timestamps_of_coalesced_events()[i],
+        now);
+  }
 }
 
 }  // namespace
@@ -1129,7 +1136,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   // If we don't have a high res timer, these metrics won't be accurate enough
   // to be worth collecting. Note that this does introduce some sampling bias.
   if (!start_time.is_null())
-    LogInputEventLatencyUma(*input_event, start_time);
+    LogInputEventLatencyUma(*input_event, start_time, latency_info);
 
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);

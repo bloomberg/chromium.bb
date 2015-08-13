@@ -38,14 +38,17 @@ class EventWithLatencyInfo {
   }
 
   void CoalesceWith(const EventWithLatencyInfo& other) {
+    double old_timestamp = event.timeStampSeconds;
     WebInputEventTraits::Coalesce(other.event, &event);
     // When coalescing two input events, we keep the oldest LatencyInfo
     // for Telemetry latency test since it will represent the longest
     // latency.
     if (other.latency.trace_id() >= 0 &&
         (latency.trace_id() < 0 ||
-         other.latency.trace_id() < latency.trace_id()))
+         other.latency.trace_id() < latency.trace_id())) {
       latency = other.latency;
+    }
+    latency.AddCoalescedEventTimestamp(old_timestamp);
   }
 };
 

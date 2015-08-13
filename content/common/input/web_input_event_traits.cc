@@ -185,8 +185,6 @@ void Coalesce(const WebMouseWheelEvent& event_to_coalesce,
       GetAccelerationRatio(event->deltaX, unaccelerated_x);
   event->accelerationRatioY =
       GetAccelerationRatio(event->deltaY, unaccelerated_y);
-  DCHECK_GE(event_to_coalesce.timeStampSeconds, event->timeStampSeconds);
-  event->timeStampSeconds = event_to_coalesce.timeStampSeconds;
 }
 
 // Returns |kInvalidTouchIndex| iff |event| lacks a touch with an ID of |id|.
@@ -344,8 +342,22 @@ struct WebInputEventCoalesce {
   template <class EventType>
   bool Execute(const WebInputEvent& event_to_coalesce,
                WebInputEvent* event) const {
+    // New events get coalesced into older events, and the newer timestamp
+    // should always be preserved.
+    // On Windows sometimes there could be wild timestamp value, so ignore the
+    // check on Windows.
+    // TODO(miletus): Make it work on Windows. crbug.com/517921.
+#if !defined(OS_WIN)
+      // In some test cases, due to clock precision and data conversion loss,
+      // we allow a small epsilon.
+      DCHECK_GE(event_to_coalesce.timeStampSeconds - event->timeStampSeconds,
+                -2.0e-3);
+#endif  // !defined(OS_WIN)
+
+    const double time_stamp_seconds = event_to_coalesce.timeStampSeconds;
     Coalesce(static_cast<const EventType&>(event_to_coalesce),
              static_cast<EventType*>(event));
+    event->timeStampSeconds = time_stamp_seconds;
     return true;
   }
 };

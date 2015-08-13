@@ -282,10 +282,12 @@ class TestView : public TestRenderWidgetHostView {
     // Simulate the mouse exit event dispatched when an aura window is
     // destroyed. (MakeWebMouseEventFromAuraEvent translates ET_MOUSE_EXITED
     // into WebInputEvent::MouseMove.)
+    WebMouseEvent event =
+        SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove);
+    event.timeStampSeconds =
+        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
     rwh_->input_router()->SendMouseEvent(
-        MouseEventWithLatencyInfo(
-            SyntheticWebMouseEventBuilder::Build(WebInputEvent::MouseMove),
-            ui::LatencyInfo()));
+        MouseEventWithLatencyInfo(event, ui::LatencyInfo()));
   }
 #endif
 

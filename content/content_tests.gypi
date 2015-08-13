@@ -507,6 +507,7 @@
       'browser/quota/usage_tracker_unittest.cc',
       'browser/renderer_host/begin_frame_observer_proxy_unittest.cc',
       'browser/renderer_host/clipboard_message_filter_unittest.cc',
+      'browser/renderer_host/event_with_latency_info_unittest.cc',
       'browser/renderer_host/input/gesture_event_queue_unittest.cc',
       'browser/renderer_host/input/input_router_impl_unittest.cc',
       'browser/renderer_host/input/mock_input_ack_handler.cc',

@@ -198,6 +198,18 @@ TEST_F(WebInputEventTraitsTest, WebMouseWheelEventCoalescing) {
   EXPECT_FALSE(WebInputEventTraits::CanCoalesce(mouse_wheel_0, mouse_wheel_1));
 }
 
+// Coalescing preserves the newer timestamp.
+TEST_F(WebInputEventTraitsTest, TimestampCoalescing) {
+  WebMouseWheelEvent mouse_wheel_0 = CreateMouseWheel(1, 1, true);
+  mouse_wheel_0.timeStampSeconds = 5.0;
+  WebMouseWheelEvent mouse_wheel_1 = CreateMouseWheel(2, 2, true);
+  mouse_wheel_1.timeStampSeconds = 10.0;
+
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(mouse_wheel_0, mouse_wheel_1));
+  WebInputEventTraits::Coalesce(mouse_wheel_1, &mouse_wheel_0);
+  EXPECT_EQ(10.0, mouse_wheel_0.timeStampSeconds);
+}
+
 // Very basic smoke test to ensure stringification doesn't explode.
 TEST_F(WebInputEventTraitsTest, ToString) {
   WebKeyboardEvent key;

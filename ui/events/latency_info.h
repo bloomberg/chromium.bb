@@ -119,6 +119,7 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   // Empirically determined constant based on a typical scroll sequence.
   enum { kTypicalMaxComponentsPerLatencyInfo = 10 };
 
+  enum { kMaxCoalescedEventTimestamps = 2 };
   enum { kMaxInputCoordinates = 2 };
 
   // Map a Latency Component (with a component-specific int64 id) to a
@@ -188,6 +189,16 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   const InputCoordinate* input_coordinates() const {
     return input_coordinates_;
   }
+
+  // Returns true if there is still room for keeping the |timestamp|,
+  // false otherwise.
+  bool AddCoalescedEventTimestamp(double timestamp);
+
+  uint32 coalesced_events_size() const { return coalesced_events_size_; }
+  const double* timestamps_of_coalesced_events() const {
+    return timestamps_of_coalesced_events_;
+  }
+
   const LatencyMap& latency_components() const { return latency_components_; }
 
   bool terminated() const { return terminated_; }
@@ -214,12 +225,14 @@ class EVENTS_BASE_EXPORT LatencyInfo {
   uint32 input_coordinates_size_;
   InputCoordinate input_coordinates_[kMaxInputCoordinates];
 
+  uint32 coalesced_events_size_;
+  double timestamps_of_coalesced_events_[kMaxCoalescedEventTimestamps];
+
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64 trace_id_;
   // Whether a terminal component has been added.
   bool terminated_;
 
-  FRIEND_TEST_ALL_PREFIXES(LatencyInfoParamTraitsTest, Basic);
   friend struct IPC::ParamTraits<ui::LatencyInfo>;
 };
 
