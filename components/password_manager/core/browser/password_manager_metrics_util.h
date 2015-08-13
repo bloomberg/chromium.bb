@@ -77,6 +77,16 @@ enum PasswordSyncState {
   NUM_SYNC_STATES
 };
 
+// Metrics: "PasswordGeneration.SubmissionEvent"
+enum PasswordSubmissionEvent {
+  PASSWORD_SUBMITTED,
+  PASSWORD_SUBMISSION_FAILED,
+  PASSWORD_NOT_SUBMITTED,
+  PASSWORD_OVERRIDDEN,
+  PASSWORD_USED,
+  SUBMISSION_EVENT_ENUM_COUNT
+};
+
 // We monitor the performance of the save password heuristic for a handful of
 // domains. For privacy reasons we are not reporting UMA signals by domain, but
 // by a domain group. A domain group can contain multiple domains, and a domain
@@ -130,6 +140,9 @@ void LogFilledCredentialIsFromAndroidApp(bool from_android);
 
 // Log what's preventing passwords from syncing.
 void LogPasswordSyncState(PasswordSyncState state);
+
+// Log submission events related to generation.
+void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event);
 
 }  // namespace metrics_util
 

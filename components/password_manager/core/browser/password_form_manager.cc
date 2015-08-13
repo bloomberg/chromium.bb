@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
@@ -21,6 +22,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/store_result_filter.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -37,35 +39,6 @@ typedef autofill::SavePasswordProgressLogger Logger;
 namespace password_manager {
 
 namespace {
-
-enum PasswordGenerationSubmissionEvent {
-  // Generated password was submitted and saved.
-  PASSWORD_SUBMITTED,
-
-  // Generated password submission failed. These passwords aren't saved.
-  PASSWORD_SUBMISSION_FAILED,
-
-  // Generated password was not submitted before navigation. Currently these
-  // passwords are not saved.
-  PASSWORD_NOT_SUBMITTED,
-
-  // Generated password was overridden by a non-generated one. This generally
-  // signals that the user was unhappy with the generated password for some
-  // reason.
-  PASSWORD_OVERRIDDEN,
-
-  // A generated password was used.
-  PASSWORD_USED,
-
-  // Number of enum entries, used for UMA histogram reporting macros.
-  SUBMISSION_EVENT_ENUM_COUNT
-};
-
-void LogPasswordGenerationSubmissionEvent(
-    PasswordGenerationSubmissionEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordGeneration.SubmissionEvent", event,
-                            SUBMISSION_EVENT_ENUM_COUNT);
-}
 
 PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
                                       bool ssl_valid) {
@@ -127,7 +100,8 @@ PasswordFormManager::~PasswordFormManager() {
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ActionsTakenV3", GetActionsTaken(), kMaxNumActionsTaken);
   if (has_generated_password_ && submit_result_ == kSubmitResultNotSubmitted)
-    LogPasswordGenerationSubmissionEvent(PASSWORD_NOT_SUBMITTED);
+    metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::PASSWORD_NOT_SUBMITTED);
   if (form_type_ != kFormTypeUnspecified) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
                               kFormTypeMax);
@@ -287,17 +261,19 @@ void PasswordFormManager::Save() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK(!client_->IsOffTheRecord());
 
-  // This is not in UpdateLogin() to catch PSL matched credentials.
-  if (pending_credentials_.times_used != 0 &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
-    LogPasswordGenerationSubmissionEvent(PASSWORD_USED);
-  }
-
   if (IsNewLogin()) {
     SaveAsNewLogin(true);
     DeleteEmptyUsernameCredentials();
-  } else
+  } else {
     UpdateLogin();
+  }
+
+  // This is not in UpdateLogin() to catch PSL matched credentials.
+  if (pending_credentials_.times_used != 0 &&
+      pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
+    metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::PASSWORD_USED);
+  }
 }
 
 void PasswordFormManager::Update(
@@ -927,7 +903,8 @@ void PasswordFormManager::CreatePendingCredentials() {
   if (user_action_ == kUserActionOverridePassword &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
       !has_generated_password_) {
-    LogPasswordGenerationSubmissionEvent(PASSWORD_OVERRIDDEN);
+    metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::PASSWORD_OVERRIDDEN);
     pending_credentials_.type = PasswordForm::TYPE_MANUAL;
   }
 
@@ -1043,13 +1020,15 @@ PasswordForm* PasswordFormManager::FindBestMatchForUpdatePassword(
 void PasswordFormManager::SubmitPassed() {
   submit_result_ = kSubmitResultPassed;
   if (has_generated_password_)
-    LogPasswordGenerationSubmissionEvent(PASSWORD_SUBMITTED);
+    metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::PASSWORD_SUBMITTED);
 }
 
 void PasswordFormManager::SubmitFailed() {
   submit_result_ = kSubmitResultFailed;
   if (has_generated_password_)
-    LogPasswordGenerationSubmissionEvent(PASSWORD_SUBMISSION_FAILED);
+    metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::PASSWORD_SUBMISSION_FAILED);
 }
 
 void PasswordFormManager::WipeStoreCopyIfOutdated() {
