@@ -33,14 +33,20 @@ DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent()
 
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page& page)
     : InspectorBaseAgent<DeviceOrientationInspectorAgent, InspectorFrontend::DeviceOrientation>("DeviceOrientation")
-    , m_page(page)
+    , m_page(&page)
 {
+}
+
+DEFINE_TRACE(DeviceOrientationInspectorAgent)
+{
+    visitor->trace(m_page);
+    InspectorBaseAgent<DeviceOrientationInspectorAgent, InspectorFrontend::DeviceOrientation>::trace(visitor);
 }
 
 DeviceOrientationController& DeviceOrientationInspectorAgent::controller()
 {
-    ASSERT(toLocalFrame(m_page.mainFrame())->document());
-    return DeviceOrientationController::from(*m_page.deprecatedLocalMainFrame()->document());
+    ASSERT(toLocalFrame(m_page->mainFrame())->document());
+    return DeviceOrientationController::from(*m_page->deprecatedLocalMainFrame()->document());
 }
 
 void DeviceOrientationInspectorAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)
@@ -77,7 +83,7 @@ void DeviceOrientationInspectorAgent::restore()
 void DeviceOrientationInspectorAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
     // FIXME(dgozman): adapt this for out-of-process iframes.
-    if (frame != m_page.mainFrame())
+    if (frame != m_page->mainFrame())
         return;
 
     // New document in main frame - apply override there.

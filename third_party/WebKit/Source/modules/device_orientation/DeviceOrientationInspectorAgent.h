@@ -23,6 +23,7 @@ public:
     static PassOwnPtrWillBeRawPtr<DeviceOrientationInspectorAgent> create(Page*);
 
     ~DeviceOrientationInspectorAgent() override;
+    DECLARE_VIRTUAL_TRACE();
 
     // Protocol methods.
     void setDeviceOrientationOverride(ErrorString*, double, double, double) override;
@@ -36,7 +37,7 @@ public:
 private:
     explicit DeviceOrientationInspectorAgent(Page&);
     DeviceOrientationController& controller();
-    Page& m_page;
+    RawPtrWillBeMember<Page> m_page;
 };
 
 } // namespace blink
