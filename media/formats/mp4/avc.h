@@ -20,7 +20,9 @@ struct AVCDecoderConfigurationRecord;
 
 class MEDIA_EXPORT AVC {
  public:
-  static bool ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer);
+  static bool ConvertFrameToAnnexB(int length_size,
+                                   std::vector<uint8>* buffer,
+                                   std::vector<SubsampleEntry>* subsamples);
 
   // Inserts the SPS & PPS data from |avc_config| into |buffer|.
   // |buffer| is expected to contain AnnexB conformant data.

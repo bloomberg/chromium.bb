@@ -227,7 +227,7 @@ TEST_P(AVCConversionTest, ParseCorrectly) {
   std::vector<uint8> buf;
   std::vector<SubsampleEntry> subsamples;
   MakeInputForLength(GetParam(), &buf);
-  EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf));
+  EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, &subsamples));
   EXPECT_TRUE(AVC::IsValidAnnexB(buf, subsamples));
   EXPECT_EQ(buf.size(), sizeof(kExpected));
   EXPECT_EQ(0, memcmp(kExpected, &buf[0], sizeof(kExpected)));
@@ -239,7 +239,7 @@ TEST_P(AVCConversionTest, NALUSizeTooLarge) {
   std::vector<uint8> buf;
   WriteLength(GetParam(), 10 * sizeof(kNALU1), &buf);
   buf.insert(buf.end(), kNALU1, kNALU1 + sizeof(kNALU1));
-  EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf));
+  EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, nullptr));
 }
 
 TEST_P(AVCConversionTest, NALUSizeIsZero) {
@@ -254,26 +254,66 @@ TEST_P(AVCConversionTest, NALUSizeIsZero) {
   WriteLength(GetParam(), sizeof(kNALU2), &buf);
   buf.insert(buf.end(), kNALU2, kNALU2 + sizeof(kNALU2));
 
-  EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf));
+  EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, nullptr));
+}
+
+TEST_P(AVCConversionTest, SubsampleSizesUpdatedAfterAnnexBConversion) {
+  std::vector<uint8> buf;
+  std::vector<SubsampleEntry> subsamples;
+  SubsampleEntry subsample;
+
+  // Write the first subsample, consisting of only one NALU
+  WriteLength(GetParam(), sizeof(kNALU1), &buf);
+  buf.insert(buf.end(), kNALU1, kNALU1 + sizeof(kNALU1));
+
+  subsample.clear_bytes = GetParam() + sizeof(kNALU1);
+  subsample.cypher_bytes = 0;
+  subsamples.push_back(subsample);
+
+  // Write the second subsample, containing two NALUs
+  WriteLength(GetParam(), sizeof(kNALU1), &buf);
+  buf.insert(buf.end(), kNALU1, kNALU1 + sizeof(kNALU1));
+  WriteLength(GetParam(), sizeof(kNALU2), &buf);
+  buf.insert(buf.end(), kNALU2, kNALU2 + sizeof(kNALU2));
+
+  subsample.clear_bytes = 2*GetParam() + sizeof(kNALU1) + sizeof(kNALU2);
+  subsample.cypher_bytes = 0;
+  subsamples.push_back(subsample);
+
+  // Write the third subsample, containing a single one-byte NALU
+  WriteLength(GetParam(), 1, &buf);
+  buf.push_back(0);
+  subsample.clear_bytes = GetParam() + 1;
+  subsample.cypher_bytes = 0;
+  subsamples.push_back(subsample);
+
+  EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, &subsamples));
+  EXPECT_EQ(subsamples.size(), 3u);
+  EXPECT_EQ(subsamples[0].clear_bytes, 4 + sizeof(kNALU1));
+  EXPECT_EQ(subsamples[0].cypher_bytes, 0u);
+  EXPECT_EQ(subsamples[1].clear_bytes, 8 + sizeof(kNALU1) + sizeof(kNALU2));
+  EXPECT_EQ(subsamples[1].cypher_bytes, 0u);
+  EXPECT_EQ(subsamples[2].clear_bytes, 4 + 1u);
+  EXPECT_EQ(subsamples[2].cypher_bytes, 0u);
 }
 
 TEST_P(AVCConversionTest, ParsePartial) {
   std::vector<uint8> buf;
   MakeInputForLength(GetParam(), &buf);
   buf.pop_back();
-  EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf));
+  EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, nullptr));
   // This tests a buffer ending in the middle of a NAL length. For length size
   // of one, this can't happen, so we skip that case.
   if (GetParam() != 1) {
     MakeInputForLength(GetParam(), &buf);
     buf.erase(buf.end() - (sizeof(kNALU2) + 1), buf.end());
-    EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf));
+    EXPECT_FALSE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, nullptr));
   }
 }
 
 TEST_P(AVCConversionTest, ParseEmpty) {
   std::vector<uint8> buf;
-  EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf));
+  EXPECT_TRUE(AVC::ConvertFrameToAnnexB(GetParam(), &buf, nullptr));
   EXPECT_EQ(0u, buf.size());
 }
 

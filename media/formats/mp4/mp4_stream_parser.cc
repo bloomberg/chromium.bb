@@ -396,15 +396,8 @@ bool MP4StreamParser::PrepareAVCBuffer(
   // update the clear byte count for each subsample if encryption is used to
   // account for the difference in size between the length prefix and Annex B
   // start code.
-  RCHECK(AVC::ConvertFrameToAnnexB(avc_config.length_size, frame_buf));
-  if (!subsamples->empty()) {
-    const int nalu_size_diff = 4 - avc_config.length_size;
-    size_t expected_size = runs_->sample_size() +
-        subsamples->size() * nalu_size_diff;
-    RCHECK(frame_buf->size() == expected_size);
-    for (size_t i = 0; i < subsamples->size(); i++)
-      (*subsamples)[i].clear_bytes += nalu_size_diff;
-  }
+  RCHECK(AVC::ConvertFrameToAnnexB(avc_config.length_size, frame_buf,
+                                   subsamples));
 
   if (runs_->is_keyframe()) {
     // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of

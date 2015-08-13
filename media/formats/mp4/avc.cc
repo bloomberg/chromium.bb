@@ -22,19 +22,19 @@ static bool ConvertAVCToAnnexBInPlaceForLengthSize4(std::vector<uint8>* buf) {
   const int kLengthSize = 4;
   size_t pos = 0;
   while (pos + kLengthSize < buf->size()) {
-    uint32 nal_size = (*buf)[pos];
-    nal_size = (nal_size << 8) + (*buf)[pos+1];
-    nal_size = (nal_size << 8) + (*buf)[pos+2];
-    nal_size = (nal_size << 8) + (*buf)[pos+3];
+    uint32 nal_length = (*buf)[pos];
+    nal_length = (nal_length << 8) + (*buf)[pos+1];
+    nal_length = (nal_length << 8) + (*buf)[pos+2];
+    nal_length = (nal_length << 8) + (*buf)[pos+3];
 
-    if (nal_size == 0) {
-      DVLOG(1) << "nal_size is 0";
+    if (nal_length == 0) {
+      DVLOG(1) << "nal_length is 0";
       return false;
     }
 
     std::copy(kAnnexBStartCode, kAnnexBStartCode + kAnnexBStartCodeSize,
               buf->begin() + pos);
-    pos += kLengthSize + nal_size;
+    pos += kLengthSize + nal_length;
   }
   return pos == buf->size();
 }
@@ -59,7 +59,8 @@ int AVC::FindSubsampleIndex(const std::vector<uint8>& buffer,
 }
 
 // static
-bool AVC::ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer) {
+bool AVC::ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer,
+                               std::vector<SubsampleEntry>* subsamples) {
   RCHECK(length_size == 1 || length_size == 2 || length_size == 4);
 
   if (length_size == 4)
@@ -71,21 +72,28 @@ bool AVC::ConvertFrameToAnnexB(int length_size, std::vector<uint8>* buffer) {
 
   size_t pos = 0;
   while (pos + length_size < temp.size()) {
-    int nal_size = temp[pos];
-    if (length_size == 2) nal_size = (nal_size << 8) + temp[pos+1];
+    int nal_length = temp[pos];
+    if (length_size == 2) nal_length = (nal_length << 8) + temp[pos+1];
     pos += length_size;
 
-    if (nal_size == 0) {
-      DVLOG(1) << "nal_size is 0";
+    if (nal_length == 0) {
+      DVLOG(1) << "nal_length is 0";
       return false;
     }
 
-    RCHECK(pos + nal_size <= temp.size());
+    RCHECK(pos + nal_length <= temp.size());
     buffer->insert(buffer->end(), kAnnexBStartCode,
                    kAnnexBStartCode + kAnnexBStartCodeSize);
+    if (subsamples && !subsamples->empty()) {
+      uint8* buffer_pos = &(*(buffer->end() - kAnnexBStartCodeSize));
+      int subsample_index = FindSubsampleIndex(*buffer, subsamples, buffer_pos);
+      // We've replaced NALU size value with an AnnexB start code.
+      int size_adjustment = kAnnexBStartCodeSize - length_size;
+      (*subsamples)[subsample_index].clear_bytes += size_adjustment;
+    }
     buffer->insert(buffer->end(), temp.begin() + pos,
-                   temp.begin() + pos + nal_size);
-    pos += nal_size;
+                   temp.begin() + pos + nal_length);
+    pos += nal_length;
   }
   return pos == temp.size();
 }
