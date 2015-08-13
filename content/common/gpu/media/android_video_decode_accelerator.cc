@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
+#include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
@@ -43,6 +44,26 @@ enum { kNumPictureBuffers = media::limits::kMaxVideoFrames + 1 };
 // Max number of bitstreams notified to the client with
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
 enum { kMaxBitstreamsNotifiedInAdvance = 32 };
+
+#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+// MediaCodec is only guaranteed to support baseline, but some devices may
+// support others. Advertise support for all H264 profiles and let the
+// MediaCodec fail when decoding if it's not actually supported. It's assumed
+// that consumers won't have software fallback for H264 on Android anyway.
+static const media::VideoCodecProfile kSupportedH264Profiles[] = {
+  media::H264PROFILE_BASELINE,
+  media::H264PROFILE_MAIN,
+  media::H264PROFILE_EXTENDED,
+  media::H264PROFILE_HIGH,
+  media::H264PROFILE_HIGH10PROFILE,
+  media::H264PROFILE_HIGH422PROFILE,
+  media::H264PROFILE_HIGH444PREDICTIVEPROFILE,
+  media::H264PROFILE_SCALABLEBASELINE,
+  media::H264PROFILE_SCALABLEHIGH,
+  media::H264PROFILE_STEREOHIGH,
+  media::H264PROFILE_MULTIVIEWHIGH
+};
+#endif
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
 // has no callback mechanism (b/11990118), we must drive it by polling for
@@ -88,18 +109,26 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   client_ = client;
+  codec_ = VideoCodecProfileToVideoCodec(profile);
 
-  if (profile == media::VP8PROFILE_ANY) {
-    codec_ = media::kCodecVP8;
-  } else {
-    // TODO(dwkang): enable H264 once b/8125974 is fixed.
+  bool profile_supported = codec_ == media::kCodecVP8;
+#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+  profile_supported |=
+      (codec_ == media::kCodecVP9 || codec_ == media::kCodecH264);
+#endif
+
+  if (!profile_supported) {
     LOG(ERROR) << "Unsupported profile: " << profile;
     return false;
   }
 
-  // Only consider using MediaCodec if it's likely backed by hardware.
-  if (media::VideoCodecBridge::IsKnownUnaccelerated(
+  // Only use MediaCodec for VP8/9 if it's likely backed by hardware.
+  if ((codec_ == media::kCodecVP8 || codec_ == media::kCodecVP9) &&
+      media::VideoCodecBridge::IsKnownUnaccelerated(
           codec_, media::MEDIA_CODEC_DECODER)) {
+    DVLOG(1) << "Initialization failed: "
+             << (codec_ == media::kCodecVP8 ? "vp8" : "vp9")
+             << " is not hardware accelerated";
     return false;
   }
 
@@ -558,15 +587,38 @@ void AndroidVideoDecodeAccelerator::NotifyError(
 media::VideoDecodeAccelerator::SupportedProfiles
 AndroidVideoDecodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
-  if (media::VideoCodecBridge::IsKnownUnaccelerated(
+
+  if (!media::VideoCodecBridge::IsKnownUnaccelerated(
           media::kCodecVP8, media::MEDIA_CODEC_DECODER)) {
-    return profiles;
+    SupportedProfile profile;
+    profile.profile = media::VP8PROFILE_ANY;
+    profile.min_resolution.SetSize(0, 0);
+    profile.max_resolution.SetSize(1920, 1088);
+    profiles.push_back(profile);
   }
-  SupportedProfile profile;
-  profile.profile = media::VP8PROFILE_ANY;
-  profile.min_resolution.SetSize(16, 16);
-  profile.max_resolution.SetSize(1920, 1088);
-  profiles.push_back(profile);
+
+#if defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
+  if (!media::VideoCodecBridge::IsKnownUnaccelerated(
+          media::kCodecVP9, media::MEDIA_CODEC_DECODER)) {
+    SupportedProfile profile;
+    profile.profile = media::VP9PROFILE_ANY;
+    profile.min_resolution.SetSize(0, 0);
+    profile.max_resolution.SetSize(1920, 1088);
+    profiles.push_back(profile);
+  }
+
+  for (const auto& supported_profile : kSupportedH264Profiles) {
+    SupportedProfile profile;
+    profile.profile = supported_profile;
+    profile.min_resolution.SetSize(0, 0);
+    // Advertise support for 4k and let the MediaCodec fail when decoding if it
+    // doesn't support the resolution. It's assumed that consumers won't have
+    // software fallback for H264 on Android anyway.
+    profile.max_resolution.SetSize(3840, 2160);
+    profiles.push_back(profile);
+  }
+#endif
+
   return profiles;
 }
 

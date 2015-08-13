@@ -67,6 +67,9 @@ enum VideoCodecProfile {
   VIDEO_CODEC_PROFILE_MAX = VP9PROFILE_MAX,
 };
 
+MEDIA_EXPORT VideoCodec
+VideoCodecProfileToVideoCodec(VideoCodecProfile profile);
+
 class MEDIA_EXPORT VideoDecoderConfig {
  public:
   // Constructs an uninitialized object. Clients should call Initialize() with

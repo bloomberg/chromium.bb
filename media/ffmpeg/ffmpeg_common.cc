@@ -394,6 +394,15 @@ void AVStreamToVideoDecoderConfig(
   else
     profile = ProfileIDToVideoCodecProfile(stream->codec->profile);
 
+  // Without the FFmpeg h264 decoder, AVFormat is unable to get the profile, so
+  // default to baseline and let the VDA fail later if it doesn't support the
+  // real profile. This is alright because if the FFmpeg h264 decoder isn't
+  // enabled, there is no fallback if the VDA fails.
+#if defined(DISABLE_FFMPEG_VIDEO_DECODERS)
+  if (codec == kCodecH264)
+    profile = H264PROFILE_BASELINE;
+#endif
+
   gfx::Size natural_size = GetNaturalSize(
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
 

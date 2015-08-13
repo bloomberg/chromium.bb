@@ -10,6 +10,32 @@
 
 namespace media {
 
+VideoCodec VideoCodecProfileToVideoCodec(VideoCodecProfile profile) {
+  switch (profile) {
+    case VIDEO_CODEC_PROFILE_UNKNOWN:
+      return kUnknownVideoCodec;
+    case H264PROFILE_BASELINE:
+    case H264PROFILE_MAIN:
+    case H264PROFILE_EXTENDED:
+    case H264PROFILE_HIGH:
+    case H264PROFILE_HIGH10PROFILE:
+    case H264PROFILE_HIGH422PROFILE:
+    case H264PROFILE_HIGH444PREDICTIVEPROFILE:
+    case H264PROFILE_SCALABLEBASELINE:
+    case H264PROFILE_SCALABLEHIGH:
+    case H264PROFILE_STEREOHIGH:
+    case H264PROFILE_MULTIVIEWHIGH:
+      return kCodecH264;
+    case VP8PROFILE_ANY:
+      return kCodecVP8;
+    case VP9PROFILE_ANY:
+      return kCodecVP9;
+  }
+  NOTREACHED();
+  return kUnknownVideoCodec;
+}
+
+
 VideoDecoderConfig::VideoDecoderConfig()
     : codec_(kUnknownVideoCodec),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
