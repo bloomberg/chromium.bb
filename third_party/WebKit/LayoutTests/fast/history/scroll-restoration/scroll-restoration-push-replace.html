@@ -58,8 +58,8 @@
       }
       console.log(`verifying ${key}`);
       assert_equals(history.state.key, key, `state should have key: ${key}`);
-      assert_equals(document.body.scrollLeft, entry.expectedScroll[0], `scrollLeft is correct for ${key}`);
-      assert_equals(document.body.scrollTop, entry.expectedScroll[1], `scrollTop is correct ${key}`);
+      assert_equals(document.scrollingElement.scrollLeft, entry.expectedScroll[0], `scrollLeft is correct for ${key}`);
+      assert_equals(document.scrollingElement.scrollTop, entry.expectedScroll[1], `scrollTop is correct ${key}`);
 
       window.history.back();
     }));
