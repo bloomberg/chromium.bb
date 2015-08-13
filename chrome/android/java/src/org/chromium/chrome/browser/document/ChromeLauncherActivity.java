@@ -27,6 +27,7 @@ import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -132,7 +133,11 @@ public class ChromeLauncherActivity extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        // This Activity is only transient. It launches another activity and
+        // terminates itself. However, some of the work is performed outside of
+        // {@link Activity#onCreate()}. To capture this, the TraceEvent starts
+        // in onCreate(), and ends in onPause().
+        TraceEvent.begin("ChromeLauncherActivity");
         // Needs to be called as early as possible, to accurately capture the
         // time at which the intent was received.
         IntentHandler.addTimestampToIntent(getIntent());
@@ -185,6 +190,12 @@ public class ChromeLauncherActivity extends Activity
         // Launch a DocumentActivity to handle the Intent.
         handleDocumentActivityIntent();
         if (!mIsFinishNeeded) ApiCompatibilityUtils.finishAndRemoveTask(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        TraceEvent.end("ChromeLauncherActivity");
     }
 
     @Override
