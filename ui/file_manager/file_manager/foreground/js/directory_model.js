@@ -1028,7 +1028,7 @@ DirectoryModel.prototype.onVolumeChanged_ = function(volumeInfo) {
               case VolumeManagerCommon.VolumeType.PROVIDED:
                 var extensionId = volumeInfo.extensionId;
                 var extensionName =
-                    metrics.getFileSystemProviderName(extensionId, 'unknown');
+                    metrics.getFileSystemProviderName(extensionId);
                 // Make note of an unrecognized extension id. When we see
                 // high counts for a particular id, we should add it to the
                 // whitelist in metrics_events.js.

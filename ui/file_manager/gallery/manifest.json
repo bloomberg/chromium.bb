@@ -57,6 +57,7 @@
   "app": {
     "background": {
       "scripts": [
+        "chrome://resources/js/analytics.js",
         "chrome://resources/js/cr.js",
         "chrome://resources/js/cr/event_target.js",
         "chrome://resources/js/cr/ui/array_data_model.js",
@@ -65,6 +66,9 @@
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/async_util.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_base.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics_events.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/metrics.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_common.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/app_window_wrapper.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/background_base.js",

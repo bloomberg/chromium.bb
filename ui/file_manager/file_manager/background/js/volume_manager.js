@@ -234,6 +234,18 @@ VolumeInfo.prototype.resolveDisplayRoot = function(opt_onSuccess,
 var volumeManagerUtil = {};
 
 /**
+ * @const {string}
+ */
+volumeManagerUtil.TIMEOUT_STR_REQUEST_FILE_SYSTEM =
+    'timeout(requestFileSystem)';
+
+/**
+ * @const {string}
+ */
+volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES =
+    'timeout(resolveIsolatedEntries)';
+
+/**
  * Throws an Error when the given error is not in
  * VolumeManagerCommon.VolumeError.
  *
@@ -286,7 +298,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             });
       }),
       VolumeManager.TIMEOUT,
-      'requestFileSystem timeout: ' + volumeMetadata.volumeId)
+      volumeManagerUtil.TIMEOUT_STR_REQUEST_FILE_SYSTEM +
+          ': ' + volumeMetadata.volumeId)
   .then(
       /**
        * @param {!FileSystem} isolatedFileSystem
@@ -309,7 +322,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                   });
             }),
             VolumeManager.TIMEOUT,
-            'resolveIsolatedEntries timeout: ' + volumeMetadata.volumeId);
+            volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES +
+                ': ' + volumeMetadata.volumeId);
        })
   .then(
       /**
@@ -358,6 +372,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
         console.error('Failed to mount a file system: ' +
             volumeMetadata.volumeId + ' because of: ' +
             (error.stack || error));
+        volumeManagerUtil.reportMountError(volumeMetadata, error);
+
         return new VolumeInfo(
             /** @type {VolumeManagerCommon.VolumeType} */
             (volumeMetadata.volumeType),
@@ -376,6 +392,43 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
             /** @type {VolumeManagerCommon.Source} */
             (volumeMetadata.source));
       });
+};
+
+
+/**
+ * Reports a mount error to analytics in the form of
+ * "mount {errorType} {volumeType}", like
+ * "mount timeout(resolveIsolatedEntries) provided:ZipUnpacker".
+ * Note that errorType and volumeType must be an element of fixed set of strings
+ * to avoid sending dynamic strings to analytics.
+ *
+ * @param {VolumeMetadata} volumeMetadata
+ * @param {*} error
+ */
+volumeManagerUtil.reportMountError = function(volumeMetadata, error) {
+  var errorType = 'error';
+  if (error instanceof Error) {
+    if (error.message.startsWith(
+        volumeManagerUtil.TIMEOUT_STR_REQUEST_FILE_SYSTEM)) {
+      errorType = volumeManagerUtil.TIMEOUT_STR_REQUEST_FILE_SYSTEM;
+    }
+    if (error.message.startsWith(
+        volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES)) {
+      errorType = volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES;
+    }
+  }
+  var volumeType = volumeMetadata.volumeType;
+  if (volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
+    volumeType += ':' + metrics.getFileSystemProviderName(
+        volumeMetadata.extensionId);
+  }
+  var description = 'mount ' + errorType + ' ' + volumeType;
+  var fatal =
+      volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS ||
+      volumeMetadata.volumeType === VolumeManagerCommon.VolumeType.DRIVE;
+
+  if (window.background && window.background.tracker)
+    window.background.tracker.sendException(description, fatal);
 };
 
 /**

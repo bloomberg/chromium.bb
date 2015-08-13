@@ -54,17 +54,19 @@ metrics.FileSystemProviders = {
   iibcngmpkgghccnakicfmgajlkhnohep: 'TED Talks (FB)',
   hmckflbfniicjijmdoffagjkpnjgbieh: 'WebDAV File System (YT)',
   ibfbhbegfkamboeglpnianlggahglbfi: 'Cloud Storage (FB)',
-  pmnllmkmjilbojkpgplbdmckghmaocjh: 'Scan (FB)'
+  pmnllmkmjilbojkpgplbdmckghmaocjh: 'Scan (FB)',
+  mfhnnfciefdpolbelmfkpmhhmlkehbdf: 'File System for SMB/CIFS (YT)',
+  plmanjiaoflhcilcfdnjeffklbgejmje: 'Add MY Documents (KA)'
 };
 
 /**
- * Returns a new "screen" name for a provided file system type.
+ * Returns a new "screen" name for a provided file system type. Returns
+ * 'unknown' for unknown providers.
  * @param {string|undefined} extensionId The FSP provider extension ID.
- * @param {string} defaultName
- * @return {string} Name or undefined if extension is unrecognized.
+ * @return {string} Name or 'unknown' if extension is unrecognized.
  */
-metrics.getFileSystemProviderName = function(extensionId, defaultName) {
-  return metrics.FileSystemProviders[extensionId] || defaultName;
+metrics.getFileSystemProviderName = function(extensionId) {
+  return metrics.FileSystemProviders[extensionId] || 'unknown';
 };
 
 /**
