@@ -25,18 +25,25 @@ class BrowsingDataCounter {
   // Name of the preference associated with this counter.
   virtual const std::string& GetPrefName() const = 0;
 
+  // The profile associated with this counter.
+  Profile* GetProfile() const;
+
  protected:
+  // Called when some conditions have changed and the counting should be
+  // restarted, e.g. when the deletion preference changed state or when
+  // we were notified of data changes.
+  void RestartCounting();
+
   // Should be called from |Count| by any overriding class to indicate that
   // counting is finished and report the |result|.
   void ReportResult(uint32 result);
 
  private:
-  // Called when the boolean preference indicating whether this data type
-  // is to be deleted changes.
-  void OnPrefChanged();
+  // Called after the class is initialized by calling |Init|.
+  virtual void OnInitialized();
 
   // Count the data.
-  virtual void Count();
+  virtual void Count() = 0;
 
   // The profile for which we will count the data volume.
   Profile* profile_;

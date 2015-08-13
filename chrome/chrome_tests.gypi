@@ -79,6 +79,7 @@
       'browser/browsing_data/browsing_data_remover_browsertest.cc',
       'browser/browsing_data/browsing_data_remover_test_util.cc',
       'browser/browsing_data/browsing_data_remover_test_util.h',
+      'browser/browsing_data/passwords_counter_browsertest.cc',
       'browser/chrome_content_browser_client_browsertest.cc',
       'browser/chrome_main_browsertest.cc',
       'browser/chrome_plugin_browsertest.cc',

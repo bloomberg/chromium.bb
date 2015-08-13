@@ -24,14 +24,22 @@ void BrowsingDataCounter::Init(
   pref_.Init(
       GetPrefName(),
       profile_->GetPrefs(),
-      base::Bind(&BrowsingDataCounter::OnPrefChanged,
+      base::Bind(&BrowsingDataCounter::RestartCounting,
                  base::Unretained(this)));
 
   initialized_ = true;
-  OnPrefChanged();
+  OnInitialized();
+  RestartCounting();
 }
 
-void BrowsingDataCounter::OnPrefChanged() {
+Profile* BrowsingDataCounter::GetProfile() const {
+  return profile_;
+}
+
+void BrowsingDataCounter::OnInitialized() {
+}
+
+void BrowsingDataCounter::RestartCounting() {
   DCHECK(initialized_);
 
   // If this data type was unchecked for deletion, we do not need to count it.
@@ -46,10 +54,6 @@ void BrowsingDataCounter::OnPrefChanged() {
 
   counting_ = true;
   Count();
-}
-
-// virtual
-void BrowsingDataCounter::Count() {
 }
 
 void BrowsingDataCounter::ReportResult(uint32 value) {
