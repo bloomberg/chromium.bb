@@ -7,17 +7,29 @@
 
 RENDERER_PID_RE='Renderer \(([0-9]+)\) paused waiting for debugger'
 TARGET_FLAGS="--no-sandbox --renderer-startup-dialog"
-DEBUGGER="gdb -q"
 TARGET=$1
 shift
 
 if [ -z "$TARGET" ]; then
   echo "usage: $(basename $0) <path-to-content-shell> [more-args...]"
-  exit
+  exit 1
 fi
 
-OUTPUT=$(mktemp --tmpdir $(basename $0).XXXXX)
-$TARGET $TARGET_FLAGS "$@" 2>&1 | tee $OUTPUT &
+if [ -z "$DEBUGGER" ]; then
+  if which lldb > /dev/null; then
+    DEBUGGER="lldb"
+    CONTINUE="continue"
+  elif which gdb > /dev/null; then
+    DEBUGGER="gdb -q"
+    CONTINUE="signal SIGUSR1"
+  else
+    echo "no debugger found"
+    exit 1
+  fi
+fi
+
+OUTPUT=$(mktemp "${TMPDIR:-/tmp}"/"$(basename $0)".XXXXX)
+"$TARGET" $TARGET_FLAGS "$@" 2>&1 | tee $OUTPUT &
 BROWSER_PID=$!
 
 wait_renderer_pid() {
@@ -35,7 +47,7 @@ renderer_pid() { [[ "$(cat $OUTPUT)" =~ $RENDERER_PID_RE ]] && echo ${BASH_REMAT
 wait_renderer_pid
 if [ -n "$RENDERER_PID" ]; then
   # print yellow message
-  echo -e "\n\e[1;33mDebugging renderer, use 'signal SIGUSR1' to run.\e[0m\n"
+  echo -e "\n\033[1;33mDebugging renderer, use '$CONTINUE' to run.\033[0m\n"
   $DEBUGGER -p $RENDERER_PID
 fi
 
