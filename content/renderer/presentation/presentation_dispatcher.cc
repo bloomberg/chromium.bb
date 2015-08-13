@@ -14,7 +14,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/presentation/presentation_session_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
@@ -239,11 +238,19 @@ void PresentationDispatcher::getAvailability(
 
 void PresentationDispatcher::startListening(
     blink::WebPresentationAvailabilityObserver* observer) {
-  const std::string& availability_url = observer->url().string().utf8();
-  auto status_it = availability_status_.find(availability_url);
+  if (default_presentation_url_.empty())
+    return;
+  startListening(blink::WebString::fromUTF8(default_presentation_url_),
+                 observer);
+}
+
+void PresentationDispatcher::startListening(
+    const blink::WebString& availabilityUrl,
+    blink::WebPresentationAvailabilityObserver* observer) {
+  auto status_it = availability_status_.find(availabilityUrl.utf8());
   if (status_it == availability_status_.end()) {
     DLOG(WARNING) << "Start listening for availability for unknown URL "
-                  << availability_url;
+                  << availabilityUrl.utf8();
     return;
   }
   status_it->second->availability_observers.insert(observer);
@@ -252,11 +259,19 @@ void PresentationDispatcher::startListening(
 
 void PresentationDispatcher::stopListening(
     blink::WebPresentationAvailabilityObserver* observer) {
-  const std::string& availability_url = observer->url().string().utf8();
-  auto status_it = availability_status_.find(availability_url);
+  if (default_presentation_url_.empty())
+    return;
+  stopListening(blink::WebString::fromUTF8(default_presentation_url_),
+                observer);
+}
+
+void PresentationDispatcher::stopListening(
+    const blink::WebString& availabilityUrl,
+    blink::WebPresentationAvailabilityObserver* observer) {
+  auto status_it = availability_status_.find(availabilityUrl.utf8());
   if (status_it == availability_status_.end()) {
     DLOG(WARNING) << "Stop listening for availability for unknown URL "
-                  << availability_url;
+                  << availabilityUrl.utf8();
     return;
   }
   status_it->second->availability_observers.erase(observer);
@@ -265,8 +280,9 @@ void PresentationDispatcher::stopListening(
 
 void PresentationDispatcher::setDefaultPresentationUrl(
     const blink::WebString& url) {
+  default_presentation_url_ = url.utf8();
   ConnectToPresentationServiceIfNeeded();
-  presentation_service_->SetDefaultPresentationURL(url.utf8());
+  presentation_service_->SetDefaultPresentationURL(default_presentation_url_);
 }
 
 void PresentationDispatcher::DidCommitProvisionalLoad(
