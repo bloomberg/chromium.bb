@@ -1406,6 +1406,7 @@ void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state)
         if (m_networkState < NETWORK_LOADING || m_networkState == NETWORK_NO_SOURCE)
             startProgressEventTimer();
         m_networkState = NETWORK_LOADING;
+        m_completelyLoaded = false;
     }
 
     if (state == WebMediaPlayer::NetworkStateLoaded) {
@@ -3117,6 +3118,7 @@ void HTMLMediaElement::stop()
         layoutObject()->updateFromElement();
 
     stopPeriodicTimers();
+
     // Ensure that hasPendingActivity() is not preventing garbage collection, since otherwise this
     // media element will simply leak.
     ASSERT(!hasPendingActivity());
