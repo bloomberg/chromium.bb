@@ -3895,17 +3895,15 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 			esc = 0;
 			for(iend = icrs; input[iend]; iend++)
 			{
-				if(input[iend] == '\\')
-				if(esc)
-					esc = 0;
-				else
+				if(input[iend] == '\\' && !esc)
 				{
 					esc = 1;
 					continue;
 				}
 
-				if(!esc && input[iend] == ']')
+				if(input[iend] == ']' && !esc)
 					break;
+				esc = 0;
 			}
 			if(input[iend] != ']')
 				return 0;
@@ -3922,7 +3920,6 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 				inxt++;
 			}
 
-
 			expr[rcrs++] = PTN_CHARS;
 			rcnt = rcrs++;
 
@@ -3930,15 +3927,13 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 			esc = 0;
 			for(i = icrs; i < iend; i++)
 			{
-				if(input[i] == '\\')
-				if(esc)
-					esc = 0;
-				else
+				if(input[i] == '\\' && !esc)
 				{
 					esc = 1;
 					continue;
 				}
 
+				esc = 0;
 				expr[rcrs++] = (widechar)input[i];
 				expr[rcnt]++;
 			}
