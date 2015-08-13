@@ -20,6 +20,7 @@
     'android_gyp_release_bot': ['android', 'gyp', 'release_bot'],
     'android_gyp_release_trybot': ['android', 'gyp', 'release_trybot'],
     'cast_gyp_release_bot': ['cast', 'gyp', 'release_bot'],
+    'cast_gyp_release_trybot': ['cast', 'gyp', 'release_trybot'],
     'chromeos_gn_debug_bot': ['chromeos', 'gn', 'debug_bot'],
     'chromeos_gn_release_bot': ['chromeos', 'gn', 'release_bot'],
     'chromeos_gn_release_trybot': ['chromeos', 'gn', 'release_trybot'],
@@ -27,6 +28,7 @@
     'dev_gn_release': ['gn', 'release', 'shared'],
     'dev_gyp_debug': ['gyp', 'debug', 'shared', 'full_symbols'],
     'dev_gyp_release': ['gyp', 'release', 'shared'],
+    'embedded_gyp_debug_bot': ['embedded', 'gyp', 'debug_bot'],
     'gn_debug_bot': ['gn', 'debug_bot'],
     'gn_debug_bot_minimal_symbols': ['gn', 'debug_bot_minimal_symbols'],
     'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
@@ -38,15 +40,27 @@
     'gn_release_trybot': ['gn', 'release_trybot'],
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
     'gyp_debug_bot_no_symbols_x86': ['gyp', 'debug_bot', 'no_symbols', 'x86'],
+    'gyp_debug_bot': ['gyp', 'debug_bot'],
+    'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
     'gyp_release_bot': ['gyp', 'release_bot'],
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
+
+    # This is just for completeness; any bot that uses this config should never actually run MB.
+    'none': ['none'],
+
+    'swarming_asan_lsan_gyp_release_trybot': ['swarming', 'asan', 'lsan', 'release_trybot'],
+    'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
+    'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
+    'swarming_gpu_tests_gyp_release_trybot': ['swarming', 'gpu_tests', 'gyp', 'release_trybot'],
     'swarming_gyp_debug_bot': ['swarming', 'gyp', 'debug_bot'],
     'swarming_gyp_debug_trybot': ['swarming', 'gyp', 'debug_trybot'],
     'swarming_gyp_debug_trybot_x86': ['swarming', 'gyp', 'debug_trybot', 'x86'],
     'swarming_gyp_release_bot': ['swarming', 'gyp', 'release_bot'],
     'swarming_gyp_release_trybot': ['swarming', 'gyp', 'release_trybot'],
-    'swarming_gpu_tests_gyp_release_trybot': ['swarming', 'gpu_tests', 'gyp', 'release_trybot'],
+    'swarming_gyp_release_trybot_arm': ['swarming', 'gyp', 'release_trybot', 'arm'],
+    'swarming_gyp_release_trybot_arm_float': ['swarming', 'gyp', 'release_trybot', 'arm_float'],
+    'swarming_tsan_gyp_release_trybot': ['swarming', 'disable_nacl', 'tsan', 'gyp', 'release_trybot'],
 
     # clang/win doesn't work with goma yet, so this can't use debug_bot:
     'win_clang_debug_bot': ['gn', 'clang', 'debug', 'shared', 'minimal_symbols'],
@@ -86,6 +100,11 @@
     'arm': {
       'gn_args': 'target_cpu="arm"',
       'gyp_defines': 'target_arch=arm',
+    },
+
+    'arm_float': {
+      'gn_args': 'error',
+      'gyp_defines': 'target_arch=arm arm_float_abi=hard',
     },
 
     'arm64': {
@@ -139,6 +158,21 @@
       'mixins': ['debug_bot_minimal_symbols'],
     },
 
+    'deterministic': {
+      'gn_args': 'error',
+      'gyp_defines': 'dont_embed_build_metadata=1',
+    },
+
+    'disable_nacl': {
+      'gn_args': 'enable_nacl=false',
+      'gyp_defines': 'disable_nacl=1',
+    },
+
+    'embedded': {
+      'gn_args': 'error',
+      'gyp_defines': 'embedded=1',
+    },
+
     'full_symbols': {
       'gn_args': 'symbol_level=2',
       'gyp_defines': 'fastbuild=0',
@@ -168,14 +202,33 @@
 
     'gyp': {'type': 'gyp'},
 
+    'lsan': {
+      'gn_args': 'use_lsan=true',
+      'gyp_defines': 'lsan=1',
+    },
+
     'minimal_symbols': {
       'gn_args': 'symbol_level=1',
       'gyp_defines': 'fastbuild=1',
     },
 
+    'msan': {
+      'gn_args': 'use_msan=true',
+      'gyp_defines': 'msan=1 msan_track_origins=2 use_prebuilt_instrumented_libraries=1',
+    },
+
     'no_symbols': {
       'gn_args': 'symbol_level=0',
       'gyp_defines': 'fastbuild=2',
+    },
+
+    # This config is used by bots that aren't building Chromium and should
+    # never be running MB. It is used for tracking purposes. These values
+    # were picked such that if someone did try to run MB, both GN and GYP
+    # should error out.
+    'none': {
+      'gn_args': 'error',
+      'gyp_defines': 'target_arch=unknown',
     },
 
     'release': {
@@ -208,6 +261,11 @@
     'swarming': {
       'gn_args': '',
       'gyp_defines': 'test_isolation_mode=prepare',
+    },
+
+    'tsan': {
+      'gn_args': 'use_tsan=true',
+      'gyp_defines': 'tsan=1',
     },
 
     'x86': {
@@ -298,7 +356,9 @@
       'linux_chromium_gn_rel': 'gn_release_bot',
     },
     'tryserver.chromium.linux': {
+      'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_full_bisect_builder': 'swarming_gyp_release_bot',
+      'linux_site_isolation': 'gyp_release_trybot',
       'linux_chromium_compile_rel_ng': 'swarming_gyp_release_trybot',
       'linux_chromium_rel_ng': 'swarming_gpu_tests_gyp_release_trybot',
       'linux_chromium_gn_rel': 'gn_release_trybot',
@@ -306,13 +366,24 @@
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'linux_chromium_compile_dbg_ng': 'swarming_gyp_debug_trybot',
       'linux_chromium_dbg_ng': 'swarming_gyp_debug_trybot',
+      'linux_chromium_trusty_dbg': 'gyp_debug_bot',
+      'linux_chromium_trusty32_dbg': 'gyp_debug_bot_x86',
       'linux_chromium_gn_dbg': 'gn_debug_bot',
       'linux_chromium_gn_chromeos_dbg': 'chromeos_gn_debug_bot',
       'android_chromium_gn_compile_dbg': 'android_gn_debug_bot',
+      'linux_chromium_msan_rel_ng': 'swarming_msan_gyp_release_trybot',
+      'linux_chromium_tsan_rel_ng': 'swarming_tsan_gyp_release_trybot',
+      'linux_chromium_practice_rel_ng': 'gyp_release_trybot',
+      'linux_arm_compile': 'swarming_gyp_release_trybot_arm',
+      'linux_arm': 'swarming_gyp_release_trybot_arm_float',
+      'linux_arm_tester': 'none',
       'linux_chromium_compile_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_dbg_32_ng': 'swarming_gyp_debug_trybot_x86',
       'linux_chromium_clobber_rel_ng': 'gyp_release_trybot',
       'linux_chromium_gn_upload': 'gn_linux_upload',
+      'cast_shell_linux': 'cast_gyp_release_trybot',
+      'linux_deterministic': 'swarming_deterministic_gyp_release_bot',
+      'linux_ecs_ozone': 'embedded_gyp_debug_bot',
     },
     'tryserver.chromium.mac': {
       'mac_chromium_gn_dbg': 'gn_debug_static_bot',
