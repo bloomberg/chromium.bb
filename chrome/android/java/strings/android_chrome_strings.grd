@@ -1420,16 +1420,10 @@ Hit the back button to exit.
       </message>
 
       <!-- Download UI -->
-      <message name="IDS_DOWNLOAD_NO_SDCARD_DLG_TITLE_product_nosdcard" desc="Dialog title [CHAR LIMIT=25]">
-        USB storage unavailable
-      </message>
-      <message name="IDS_DOWNLOAD_NO_SDCARD_DLG_TITLE_product_default" desc="Dialog title [CHAR LIMIT=25]">
+      <message name="IDS_DOWNLOAD_NO_SDCARD_DLG_TITLE" desc="Dialog title [CHAR LIMIT=25]">
         No SD card
       </message>
-      <message name="IDS_DOWNLOAD_SDCARD_BUSY_DLG_TITLE_product_nosdcard" desc="Title for a dialog informing the user that the SD card used for external storage is busy so they cannot download anything [CHAR LIMIT=30]">
-        USB storage unavailable
-      </message>
-      <message name="IDS_DOWNLOAD_SDCARD_BUSY_DLG_TITLE_product_default" desc="Title for a dialog informing the user that the SD card used for external storage is busy so they cannot download anything [CHAR-LIMIT=30]">
+      <message name="IDS_DOWNLOAD_SDCARD_BUSY_DLG_TITLE" desc="Title for a dialog informing the user that the SD card used for external storage is busy so they cannot download anything [CHAR-LIMIT=30]">
         SD card unavailable
       </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_FAILED" desc="Download notification to be displayed when a download fails.">
@@ -1438,10 +1432,7 @@ Hit the back button to exit.
       <message name="IDS_CANNOT_ADD_DOWNLOADED_ITEM_TO_MANAGER" desc="Toast for a download which has completed but cannot be added to the download manager">
         Failed to add downloaded item to the download manager.
       </message>
-      <message name="IDS_CANNOT_CREATE_DOWNLOAD_DIRECTORY_TITLE_product_nosdcard" desc="Message for a dialog informing the user that download directory cannot be created on external storage [CHAR LIMIT=75]">
-        Cannot create download directory on USB storage.
-      </message>
-      <message name="IDS_CANNOT_CREATE_DOWNLOAD_DIRECTORY_TITLE_product_default" desc="Message for a dialog informing the user that download directory cannot be created on external storage [CHAR LIMIT=75]">
+      <message name="IDS_CANNOT_CREATE_DOWNLOAD_DIRECTORY_TITLE" desc="Message for a dialog informing the user that download directory cannot be created on external storage [CHAR LIMIT=75]">
         Cannot create download directory on SD card.
       </message>
       <message name="IDS_CANNOT_DOWNLOAD_HTTP_OR_HTTPS" desc="Toast for a download which cannot begin because the URL is not http or https">
