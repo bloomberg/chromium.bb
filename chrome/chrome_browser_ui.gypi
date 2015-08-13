@@ -1647,8 +1647,6 @@
       'browser/ui/panels/stacked_panel_collection.h',
       'browser/ui/panels/stacked_panel_drag_handler.cc',
       'browser/ui/panels/stacked_panel_drag_handler.h',
-      'browser/ui/passwords/save_account_more_combobox_model.cc',
-      'browser/ui/passwords/save_account_more_combobox_model.h',
       'browser/ui/pdf/adobe_reader_info_win.cc',
       'browser/ui/pdf/adobe_reader_info_win.h',
       'browser/ui/pdf/chrome_pdf_web_contents_helper_client.cc',
