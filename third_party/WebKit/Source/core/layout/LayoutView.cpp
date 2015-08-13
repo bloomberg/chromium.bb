@@ -124,6 +124,13 @@ bool LayoutView::hitTestNoLifecycleUpdate(HitTestResult& result)
     return hitLayer;
 }
 
+void LayoutView::clearHitTestCache()
+{
+    m_hitTestCache->clear();
+    if (LayoutPart* frameLayoutObject = frame()->ownerLayoutObject())
+        frameLayoutObject->view()->clearHitTestCache();
+}
+
 void LayoutView::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit, LogicalExtentComputedValues& computedValues) const
 {
     computedValues.m_extent = (!shouldUsePrintingLayout() && m_frameView) ? LayoutUnit(viewLogicalHeightForBoxSizing()) : logicalHeight;

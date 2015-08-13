@@ -60,7 +60,7 @@ public:
     unsigned hitTestCount() const { return m_hitTestCount; }
     unsigned hitTestCacheHits() const { return m_hitTestCacheHits; }
 
-    void clearHitTestCache() { m_hitTestCache->clear(); }
+    void clearHitTestCache();
 
     const char* name() const override { return "LayoutView"; }
 
