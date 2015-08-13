@@ -2435,7 +2435,7 @@
     { "name": "blablacar.rs", "include_subdomains": true, "mode": "force-https" },
     { "name": "blablacar.ru", "include_subdomains": true, "mode": "force-https" },
     { "name": "canhazip.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "carbonmade.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "carbonmade.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "collinmbarrett.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "coloradocomputernetworking.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "copperhead.co", "include_subdomains": true, "mode": "force-https" },
