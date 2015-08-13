@@ -188,6 +188,21 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
 
     self.assertEqual(urls, EXPECTED)
 
+  def testBasic_RealBoardName(self):
+    """Runs a simple smoke test using a real board name."""
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/x86-alex/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-x86-alex.instructions')],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/x86-alex/5126.0.0/'
+             'ChromeOS-recovery-R34-5126.0.0-x86-alex.instructions')],
+    }
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'x86-alex', 'R34-5126.0.0')
+
+    self.assertEqual(urls, EXPECTED)
+
   def testBasicMock(self):
     """Simple smoke test in mock mode"""
     with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
@@ -215,9 +230,28 @@ class PushImageTests(gs_unittest.AbstractGSContextTest):
              'ChromeOS-recovery-R34-5126.0.0-test.board.instructions')],
     }
 
-    urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
-                               sign_types=['recovery'])
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                                 sign_types=['recovery'])
     self.assertEqual(self.gs_mock.call_count, 20)
+    self.assertTrue(self.mark_mock.called)
+    self.assertEqual(urls, EXPECTED)
+
+  def testSignTypesBase(self):
+    """Only sign the requested recovery type"""
+    EXPECTED = {
+        'canary': [
+            ('gs://chromeos-releases/canary-channel/test.board/5126.0.0/'
+             'ChromeOS-base-R34-5126.0.0-test.board.instructions')],
+        'dev': [
+            ('gs://chromeos-releases/dev-channel/test.board/5126.0.0/'
+             'ChromeOS-base-R34-5126.0.0-test.board.instructions')],
+    }
+
+    with mock.patch.object(gs.GSContext, 'Exists', return_value=True):
+      urls = pushimage.PushImage('/src', 'test.board', 'R34-5126.0.0',
+                                 sign_types=['base'])
+    self.assertEqual(self.gs_mock.call_count, 22)
     self.assertTrue(self.mark_mock.called)
     self.assertEqual(urls, EXPECTED)
 
