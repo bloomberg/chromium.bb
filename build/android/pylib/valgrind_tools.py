@@ -103,10 +103,6 @@ class AddressSanitizerTool(BaseTool):
   def __init__(self, device):
     super(AddressSanitizerTool, self).__init__()
     self._device = device
-    # Configure AndroidCommands to run utils (such as md5sum_bin) under ASan.
-    # This is required because ASan is a compiler-based tool, and md5sum
-    # includes instrumented code from base.
-    device.old_interface.SetUtilWrapper(self.GetUtilWrapper())
 
   @classmethod
   def CopyFiles(cls, device):

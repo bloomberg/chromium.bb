@@ -14,7 +14,6 @@ import sys
 import tempfile
 import time
 
-from pylib import android_commands
 from pylib import constants
 from pylib import pexpect
 from pylib.device import device_errors
@@ -71,8 +70,7 @@ class TestPackageApk(TestPackage):
     else:
       raise device_errors.DeviceUnreachableError(
           'Unable to find fifo on device %s ' % self._GetFifo())
-    args = shlex.split(device.old_interface.Adb()._target_arg)
-    args += ['shell', 'cat', self._GetFifo()]
+    args = ['-s', device.adb.GetDeviceSerial(), 'shell', 'cat', self._GetFifo()]
     return pexpect.spawn('adb', args, timeout=timeout, logfile=logfile)
 
   def _StartActivity(self, device, force_stop=True):
@@ -143,8 +141,19 @@ class TestPackageApk(TestPackage):
       self._StartActivity(device, force_stop=False)
     finally:
       self.tool.CleanUpEnvironment()
-    logfile = android_commands.NewLineNormalizer(sys.stdout)
+    logfile = self._NewLineNormalizer(sys.stdout)
     return self._WatchFifo(device, timeout=10, logfile=logfile)
+
+  class _NewLineNormalizer(object):
+    def __init__(self, output):
+      self._output = output
+
+    def write(self, data):
+      data = data.replace('\r\r\n', '\n')
+      self._output.write(data)
+
+    def flush(self):
+      self._output.flush()
 
   #override
   def Install(self, device):

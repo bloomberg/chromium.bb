@@ -16,11 +16,14 @@ from util import build_utils
 BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.append(BUILD_ANDROID_DIR)
 
-from pylib import android_commands
+from pylib.device import adb_wrapper
 from pylib.device import device_errors
 from pylib.device import device_utils
 
-GetAttachedDevices = android_commands.GetAttachedDevices
+
+def GetAttachedDevices():
+  return [a.GetDeviceSerial()
+          for a in adb_wrapper.Devices()]
 
 
 class BuildDevice(object):
