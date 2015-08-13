@@ -28,8 +28,8 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpParams;
 
 import org.chromium.base.test.BaseInstrumentationTestRunner;
-import org.chromium.base.test.BaseInstrumentationTestRunner.BaseTestResult;
-import org.chromium.base.test.BaseInstrumentationTestRunner.SkipCheck;
+import org.chromium.base.test.BaseTestResult;
+import org.chromium.base.test.BaseTestResult.SkipCheck;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
