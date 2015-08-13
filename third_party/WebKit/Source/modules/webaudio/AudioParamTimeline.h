@@ -85,7 +85,7 @@ private:
         {
         }
 
-        unsigned type() const { return m_type; }
+        Type type() const { return m_type; }
         float value() const { return m_value; }
         double time() const { return m_time; }
         double timeConstant() const { return m_timeConstant; }
@@ -93,7 +93,7 @@ private:
         DOMFloat32Array* curve() { return m_curve.get(); }
 
     private:
-        unsigned m_type;
+        Type m_type;
         float m_value;
         double m_time;
         double m_timeConstant;
@@ -101,9 +101,11 @@ private:
         RefPtr<DOMFloat32Array> m_curve;
     };
 
-    void insertEvent(const ParamEvent&);
+    void insertEvent(const ParamEvent&, ExceptionState&);
     float valuesForTimeRangeImpl(double startTime, double endTime, float defaultValue, float* values, unsigned numberOfValues, double sampleRate, double controlRate);
 
+    // Produce a nice string describing the event in human-readable form.
+    String eventToString(const ParamEvent&);
     Vector<ParamEvent> m_events;
 
     Mutex m_eventsLock;
