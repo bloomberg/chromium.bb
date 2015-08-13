@@ -57,9 +57,8 @@
           that was previously opened by a Wayland server. The server socket must
           be placed in <envar>XDG_RUNTIME_DIR</envar> for this function to
           find it. The <varname>name</varname> argument specifies the name of
-          the socket or <constant>NULL</constant> to use the default (which is
-          <constant>"wayland-0"</constant>). The environment variable
-          <envar>WAYLAND_DISPLAY</envar> replaces the default value. If
+          the socket or <constant>NULL</constant> to use the default
+          (which is the value of <envar>WAYLAND_DISPLAY</envar>). If
           <envar>WAYLAND_SOCKET</envar> is set, this function behaves like
           <function>wl_display_connect_to_fd</function> with the file-descriptor
           number taken from the environment variable.</para>

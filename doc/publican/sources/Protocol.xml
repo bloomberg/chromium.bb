@@ -60,10 +60,10 @@
     <title>Wire Format</title>
     <para>
       The protocol is sent over a UNIX domain stream socket, where the endpoint
-      usually is named <systemitem class="service">wayland-0</systemitem>
-      (although it can be changed via <emphasis>WAYLAND_DISPLAY</emphasis>
-      in the environment).  The protocol is message-based.  A
-      message sent by a client to the server is called request.  A message
+      name is determined by the <emphasis>WAYLAND_DISPLAY</emphasis>
+      environment variable.  Its value will usually be
+      <systemitem class="service">wayland-0</systemitem>.  The protocol is message-based.
+      A message sent by a client to the server is called request.  A message
       from the server to a client is called event.  Every message is
       structured as 32-bit words, values are represented in the host's
       byte-order.
