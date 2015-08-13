@@ -23,17 +23,23 @@ void Vp9RawBitsReader::Initialize(const uint8_t* data, size_t size) {
 
 bool Vp9RawBitsReader::ReadBool() {
   DCHECK(reader_);
+  if (!valid_)
+    return false;
+
   int value = 0;
-  valid_ = valid_ && reader_->ReadBits(1, &value);
-  return value == 1;
+  valid_ = reader_->ReadBits(1, &value);
+  return valid_ ? value == 1 : false;
 }
 
 int Vp9RawBitsReader::ReadLiteral(int bits) {
   DCHECK(reader_);
+  if (!valid_)
+    return 0;
+
   int value = 0;
   DCHECK_LT(static_cast<size_t>(bits), sizeof(value) * 8);
-  valid_ = valid_ && reader_->ReadBits(bits, &value);
-  return value;
+  valid_ = reader_->ReadBits(bits, &value);
+  return valid_ ? value : 0;
 }
 
 int Vp9RawBitsReader::ReadSignedLiteral(int bits) {
