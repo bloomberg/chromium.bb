@@ -645,12 +645,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_HISTORY_IN_CONTENT_PACK" desc="Text that shows that an entry is in a content pack.">
         In content pack
       </message>
-      <message name="IDS_HISTORY_UNLOCK_BUTTON" desc="The text on the button that is used by a supervised user to unlock the controls.">
-        Unlock
-      </message>
-      <message name="IDS_HISTORY_LOCK_BUTTON" desc="The text on the button that is used by a supervised user to lock the controls.">
-        Lock
-      </message>
       <message name="IDS_HISTORY_BLOCKED_VISIT_TEXT" desc="Text that describes an attempted visit.">
         Blocked attempt <ph name="BEGIN_LINK">&lt;a target="_top" href="$1" id="$2"&gt;</ph> to visit a page on <ph name="DOMAIN">$3<ex>google.com</ex></ph><ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
