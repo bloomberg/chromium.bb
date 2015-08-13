@@ -14,11 +14,52 @@ function checkBrailleOutput(expectedText, expectedSpans, output) {
   // Remove string annotations.  These are tested in the speech output and
   // there's no need to clutter the tests with the corresponding braille
   // annotations.
-  actualOutput.spans_ = actualOutput.spans_.filter(function(span) {
+  var actualSpans = actualOutput.spans_.filter(function(span) {
     return (typeof span.value !== 'string');
   });
-  assertEqualsJSON({string_: expectedText, spans_: expectedSpans},
-                   actualOutput);
+  assertEquals(expectedText, actualOutput.toString());
+
+  function describeSpan(span) {
+    var obj = {value: span.value, start: span.start, end: span.end};
+    if (obj.value instanceof Output.NodeSpan) {
+      obj.value.node = (obj.value.node.name || '') + ' ' +
+          obj.value.node.toString();
+    }
+    return JSON.stringify(obj);
+  }
+
+  function describeActualSpans() {
+    return '\nAll actual spans:\n' + actualSpans.map(describeSpan).join('\n');
+  }
+
+  for (var i = 0, max = Math.max(expectedSpans.length, actualSpans.length);
+       i < max; ++i) {
+    var expectedSpan = expectedSpans[i];
+    var actualSpan = actualSpans[i];
+    if (!expectedSpan)
+      throw Error('Unexpected span in ' + expectedText + ': ' +
+          describeSpan(actualSpan) + describeActualSpans());
+    if (!actualSpan)
+      throw Error('Missing expected span in ' + expectedText + ': ' +
+          describeSpan(expectedSpan) + describeActualSpans());
+    var equal = true;
+    if (expectedSpan.start !== actualSpan.start ||
+        expectedSpan.end !== actualSpan.end) {
+      equal = false;
+    } else if (expectedSpan.value instanceof Output.NodeSpan &&
+        (!(actualSpan.value instanceof Output.NodeSpan) ||
+        expectedSpan.value.node !== actualSpan.value.node)) {
+      equal = false;
+    } else {
+      equal = (JSON.stringify(expectedSpan.value) ===
+          JSON.stringify(actualSpan.value));
+    }
+    if (!equal) {
+      throw Error('Spans differ in ' + expectedText + ':\n' +
+          'Expected: ' + describeSpan(expectedSpan) + '\n' +
+          'Got     : ' + describeSpan(actualSpan) + describeActualSpans());
+    }
+  }
 }
 
 /**
@@ -54,7 +95,10 @@ TEST_F('OutputE2ETest', 'Links', function() {
 
         {value: 'role', start: 11, end: 15}
       ]}, o.speechOutputForTest);
-      checkBrailleOutput('Click here lnk', [], o);
+      checkBrailleOutput(
+          'Click here lnk',
+          [{value: new Output.NodeSpan(el), start: 0, end: 14}],
+          o);
   });
 });
 
@@ -73,7 +117,10 @@ TEST_F('OutputE2ETest', 'Checkbox', function() {
         // Checkbox earcon (based on the state).
         {value: {earconId: 'CHECK_OFF'}, start: 11, end: 22}
       ]}, o.speechOutputForTest);
-      checkBrailleOutput('chk ( )', [], o);
+      checkBrailleOutput(
+          'chk ( )',
+          [{value: new Output.NodeSpan(el), start: 0, end: 7}],
+          o);
   });
 });
 
@@ -88,7 +135,10 @@ TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
         // Attributes.
         {value: 'name', start: 0, end: 2}
       ]}, o.speechOutputForTest);
-      checkBrailleOutput('OK', [], o);
+      checkBrailleOutput(
+          'OK',
+          [{value: new Output.NodeSpan(el), start: 0, end: 2}],
+          o);
 
       el = root.firstChild.firstChild;
       assertEquals('staticText', el.role);
@@ -101,7 +151,10 @@ TEST_F('OutputE2ETest', 'InLineTextBoxValueGetsIgnored', function() {
         // The name is an empty string.
         {value: 'name', start: 3, end: 3}
       ]}, o.speechOutputForTest);
-      checkBrailleOutput('OK', [], o);
+      checkBrailleOutput(
+          'OK',
+          [{value: new Output.NodeSpan(el), start: 0, end: 2}],
+          o);
   });
 });
 
@@ -119,7 +172,10 @@ TEST_F('OutputE2ETest', 'Headings', function() {
           // Attributes.
           {value: 'nameOrDescendants', start: 10, end: 11}
         ]}, o.speechOutputForTest);
-        checkBrailleOutput('h' + i + ' ' + letter, [], o);
+        checkBrailleOutput(
+            'h' + i + ' ' + letter,
+            [{value: new Output.NodeSpan(el), start: 0, end: 4}],
+            o);
         el = el.nextSibling;
       }
 
@@ -131,7 +187,11 @@ TEST_F('OutputE2ETest', 'Headings', function() {
         {value: {earconId: "LINK"}, start: 10, end: 11},
         {value: 'role', start: 12, end: 16}
       ]}, o.speechOutputForTest);
-      checkBrailleOutput('h1 b lnk', [], o);
+      checkBrailleOutput(
+          'h1 b lnk',
+          [{value: new Output.NodeSpan(el), start: 0, end: 2},
+           {value: new Output.NodeSpan(el.firstChild), start: 3, end: 8}],
+          o);
   });
 });
 
@@ -157,7 +217,11 @@ TEST_F('OutputE2ETest', 'Audio', function() {
               {value: 'help', start: 30, end: 44},
               {value: 'role', start: 45, end: 51}]
           }, o.speechOutputForTest);
-      checkBrailleOutput('media control tlbar play begin playback btn', [], o);
+      checkBrailleOutput(
+          'media control tlbar play begin playback btn',
+          [{value: new Output.NodeSpan(el.parent), start: 0, end: 19},
+           {value: new Output.NodeSpan(el), start: 20, end: 43}],
+          o);
 
       el = el.nextSibling;
       var prevRange = range;
@@ -168,7 +232,10 @@ TEST_F('OutputE2ETest', 'Audio', function() {
               [{value: 'help', start: 12, end: 31}]
           }, o.speechOutputForTest);
       // TODO(plundblad): Investigate this.
-      checkBrailleOutput('0, , slider audio time scrubber', [], o);
+      checkBrailleOutput(
+          '0, , slider audio time scrubber',
+          [{value: new Output.NodeSpan(el), start: 0, end: 31}],
+          o);
   });
 });
 
@@ -214,13 +281,13 @@ TEST_F('OutputE2ETest', 'Input', function() {
       // TODO(plundblad): Some of these are wrong, there should be an initial
       // space for the cursor in edit fields.
       var expectedBrailleValues = [
-        'ed',
-        '@ed',
-        'pwded',
-        '#ed',
-        'spnbtn',
-        {string_: 'time', spans_: []},
-        {string_: 'date', spans_: []}
+        ' ed',
+        ' @ed',
+        ' pwded',
+        ' #ed',
+        ' spnbtn',
+        {string_: 'time'},
+        {string_: 'date'}
       ];
       assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
@@ -242,12 +309,18 @@ TEST_F('OutputE2ETest', 'Input', function() {
         var range = cursors.Range.fromNode(el);
         var o = new Output().withBraille(range, null, 'navigate');
         if (typeof expectedValue === 'string') {
-          checkBrailleOutput(expectedValue,
-                             [{'value': {'startIndex': 0, 'endIndex':0},
-                               'start': 0,
-                               'end': 0}], o);
+          checkBrailleOutput(
+              expectedValue,
+              [{value: {startIndex: 0, endIndex: 0}, start: 0, end: 0},
+               {value: new Output.NodeSpan(el), start: 0,
+                end: expectedValue.length}],
+              o);
         } else {
-          checkBrailleOutput(expectedValue.string_, expectedValue.spans_, o);
+          checkBrailleOutput(
+              expectedValue.string_,
+              [{value: new Output.NodeSpan(el), start: 0,
+                end: expectedValue.string_.length}],
+              o);
         }
         el = el.nextSibling;
       });
@@ -267,9 +340,13 @@ TEST_F('OutputE2ETest', 'List', function() {
           {value: 'value', start:20, end: 20},
           {value: 'role', start: 21, end: 30}
       ]}, o.speechOutputForTest);
-      // TODO(0lundblad): This output is wrong.  Add special handling for
+      // TODO(plundblad): This output is wrong.  Add special handling for
       // braille here.
-      checkBrailleOutput('list + a lstitm', [], o);
+      checkBrailleOutput(
+          'list +3 a lstitm',
+          [{value: new Output.NodeSpan(el.parent), start: 0, end: 7},
+           {value: new Output.NodeSpan(el), start: 8, end: 16}],
+          o);
   });
 });
 
@@ -299,7 +376,12 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           {value: 'name', start: 59, end: 59}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
-    checkBrailleOutput('tree + tritm - 1/3  level 1  a', [], o);
+    checkBrailleOutput(
+        'tree +3 tritm - 1/3  level 1  a',
+        [{value: new Output.NodeSpan(el.parent.parent), start: 0, end: 7},
+         {value: new Output.NodeSpan(el.parent), start: 8, end: 29},
+         {value: new Output.NodeSpan(el), start: 30, end: 31}],
+        o);
 
     el = root.firstChild.children[1].firstChild;
     var range = cursors.Range.fromNode(el);
@@ -317,7 +399,12 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           {value: 'name', start: 50, end: 50}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
-    checkBrailleOutput('tree + tritm 2/3  level 1  b', [], o);
+    checkBrailleOutput(
+        'tree +3 tritm 2/3  level 1  b',
+        [{value: new Output.NodeSpan(el.parent.parent), start: 0, end: 7},
+         {value: new Output.NodeSpan(el.parent), start: 8, end: 27},
+         {value: new Output.NodeSpan(el), start: 28, end: 29}],
+        o);
 
     el = root.firstChild.children[2].firstChild;
     var range = cursors.Range.fromNode(el);
@@ -336,7 +423,12 @@ TEST_F('OutputE2ETest', 'Tree', function() {
           {value: 'name', start: 60, end: 60}
     ]}, o.speechOutputForTest);
     // TODO(plundblad): Braille output is wrong.
-    checkBrailleOutput('tree + tritm + 3/3  level 1  c', [], o);
+    checkBrailleOutput(
+        'tree +3 tritm + 3/3  level 1  c',
+        [{value: new Output.NodeSpan(el.parent.parent), start: 0, end: 7},
+         {value: new Output.NodeSpan(el.parent), start: 8, end: 29},
+         {value: new Output.NodeSpan(el), start: 30, end: 31}],
+        o);
   });
 });
 
@@ -355,7 +447,11 @@ TEST_F('OutputE2ETest', 'Menu', function() {
         {value: 'name', start: 18, end: 19},
         {value: 'role', start:20, end: 29}
     ]}, o.speechOutputForTest);
-    checkBrailleOutput('mnu + a mnuitm 1/1', [], o);
+    checkBrailleOutput(
+        'mnu +1 a mnuitm 1/1',
+        [{value: new Output.NodeSpan(el.parent), start: 0, end: 6},
+         {value: new Output.NodeSpan(el), start: 7, end: 19}],
+        o);
   });
 });
 
@@ -383,7 +479,11 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
 
           {value: 'role', start:24, end: 33}
     ]}, o.speechOutputForTest);
-    checkBrailleOutput('lstbx + lstitm 1/2', [], o);
+    checkBrailleOutput(
+        'lstbx +2 lstitm 1/2',
+        [{value: new Output.NodeSpan(el.parent), start: 0, end: 8},
+         {value: new Output.NodeSpan(el), start: 9, end: 19}],
+        o);
   });
 });
 

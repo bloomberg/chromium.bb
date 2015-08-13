@@ -116,15 +116,19 @@ cvox.BrailleBackground.prototype.setContent_ = function(
 
 
 /**
- * Handles braille key events by dispatching either to the input handler or
- * a content script.
+ * Handles braille key events by dispatching either to the input handler,
+ * ChromeVox next's background object or ChromeVox classic's content script.
  * @param {!cvox.BrailleKeyEvent} brailleEvt The event.
- * @param {cvox.NavBraille} content Content of display when event fired.
+ * @param {!cvox.NavBraille} content Content of display when event fired.
  * @private
  */
 cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
     brailleEvt, content) {
   if (this.inputHandler_.onBrailleKeyEvent(brailleEvt)) {
+    return;
+  }
+  if (global.backgroundObj &&
+      global.backgroundObj.onBrailleKeyEvent(brailleEvt, content)) {
     return;
   }
   this.sendCommand_(brailleEvt, content);
@@ -139,9 +143,6 @@ cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
  */
 cvox.BrailleBackground.prototype.sendCommand_ =
     function(brailleEvt, content) {
-  if (global.backgroundObj &&
-      global.backgroundObj.onGotBrailleCommand(brailleEvt))
-    return;
   var msg = {
     'message': 'BRAILLE',
     'args': brailleEvt

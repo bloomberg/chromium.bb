@@ -19,6 +19,7 @@ goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.ExtensionBridge');
+goog.require('cvox.NavBraille');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -275,10 +276,10 @@ Background.prototype = {
         current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
         break;
       case 'goToBeginning':
-      var node =
-          AutomationUtil.findNodePost(current.start.node.root,
-                                      Dir.FORWARD,
-                                      AutomationPredicate.leaf);
+        var node =
+            AutomationUtil.findNodePost(current.start.node.root,
+                                        Dir.FORWARD,
+                                        AutomationPredicate.leaf);
         if (node)
           current = cursors.Range.fromNode(node);
         break;
@@ -369,9 +370,10 @@ Background.prototype = {
   /**
    * Handles a braille command.
    * @param {!cvox.BrailleKeyEvent} evt
+   * @param {!cvox.NavBraille} content
    * @return {boolean} True if evt was processed.
    */
-  onGotBrailleCommand: function(evt) {
+  onBrailleKeyEvent: function(evt, content) {
     if (this.mode_ === ChromeVoxMode.CLASSIC)
       return false;
 
@@ -393,6 +395,12 @@ Background.prototype = {
         break;
       case cvox.BrailleKeyCommand.BOTTOM:
         this.onGotCommand('goToEnd', true);
+        break;
+      case cvox.BrailleKeyCommand.ROUTING:
+        this.brailleRoutingCommand_(
+            content.text,
+            // Cast ok since displayPosition is always defined in this case.
+            /** @type {number} */ (evt.displayPosition));
         break;
       default:
         return false;
@@ -689,6 +697,36 @@ Background.prototype = {
     }.bind(this));
 
     this.mode_ = mode;
+  },
+
+  /**
+   * @param {!cvox.Spannable} text
+   * @param {number} position
+   * @private
+   */
+  brailleRoutingCommand_: function(text, position) {
+    var actionNode = null;
+    var selectionSpan = null;
+    text.getSpans(position).forEach(function(span) {
+      if (span instanceof Output.SelectionSpan) {
+        selectionSpan = span;
+      } else if (span instanceof Output.NodeSpan) {
+        if (!actionNode ||
+            (text.getSpanEnd(actionNode) - text.getSpanStart(actionNode) >
+            text.getSpanEnd(span) - text.getSpanStart(span))) {
+          actionNode = span.node;
+        }
+      }
+    });
+    if (!actionNode)
+      return;
+    if (actionNode.role === chrome.automation.RoleType.inlineTextBox)
+      actionNode = actionNode.parent;
+    actionNode.doDefault();
+    if (selectionSpan) {
+      var start = text.getSpanStart(selectionSpan);
+      actionNode.setSelection(position - start, position - start);
+    }
   }
 };
 

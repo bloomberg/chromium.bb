@@ -55,7 +55,7 @@ cvox.BrailleDisplayManager = function(translatorManager) {
    */
   this.panStrategy_ = new cvox.WrappingPanStrategy();
   /**
-   * @type {function(!cvox.BrailleKeyEvent, cvox.NavBraille)}
+   * @type {function(!cvox.BrailleKeyEvent, !cvox.NavBraille)}
    * @private
    */
   this.commandListener_ = function() {};
@@ -143,7 +143,7 @@ cvox.BrailleDisplayManager.prototype.setContent = function(
  * that was present on the display when the command was invoked.  The content
  * is guaranteed to be identical to an object previously used as the parameter
  * to cvox.BrailleDisplayManager.setContent, or null if no content was set.
- * @param {function(!cvox.BrailleKeyEvent, cvox.NavBraille)} func The listener.
+ * @param {function(!cvox.BrailleKeyEvent, !cvox.NavBraille)} func The listener.
  */
 cvox.BrailleDisplayManager.prototype.setCommandListener = function(func) {
   this.commandListener_ = func;

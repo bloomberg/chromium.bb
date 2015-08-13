@@ -51,11 +51,11 @@ var Dir = AutomationUtil.Dir;
  */
 Output = function() {
   // TODO(dtseng): Include braille specific rules.
-  /** @type {!Array<cvox.Spannable>} */
+  /** @type {!Array<!cvox.Spannable>} */
   this.speechBuffer_ = [];
-  /** @type {!Array<cvox.Spannable>} */
+  /** @type {!Array<!cvox.Spannable>} */
   this.brailleBuffer_ = [];
-  /** @type {!Array<Object>} */
+  /** @type {!Array<!Object>} */
   this.locations_ = [];
   /** @type {function(?)} */
   this.speechEndCallback_;
@@ -540,6 +540,18 @@ Output.SelectionSpan = function(startIndex, endIndex) {
 };
 
 /**
+ * Wrapper for automation nodes as annotations.  Since the
+ * {@code chrome.automation.AutomationNode} constructor isn't exposed in
+ * the API, this class is used to allow isntanceof checks on these
+ * annotations.
+ @ @param {chrome.automation.AutomationNode} node
+ * @constructor
+ */
+Output.NodeSpan = function(node) {
+  this.node = node;
+};
+
+/**
  * Possible events handled by ChromeVox internally.
  * @enum {string}
  */
@@ -758,6 +770,11 @@ Output.prototype = {
       if (options.isUnique)
         token = token.substring(0, token.length - 1);
 
+      // Annotate braille output with the corresponding automation nodes
+      // to support acting on nodes based on location in the output.
+      if (this.formatOptions_.braille)
+        options.annotation.push(new Output.NodeSpan(node));
+
       // Process token based on prefix.
       var prefix = token[0];
       token = token.slice(1);
@@ -956,7 +973,7 @@ Output.prototype = {
         } catch(e) {}
 
         if (!msg) {
-          console.log('Could not get message ' + msgId);
+          console.error('Could not get message ' + msgId);
           return;
         }
 
@@ -1151,16 +1168,14 @@ Output.prototype = {
       spannableToAdd.setSpan(a, 0, spannableToAdd.getLength());
     });
 
-    // Early return if the buffer is empty.
-    if (buff.length == 0) {
-      buff.push(spannableToAdd);
-      return;
-    }
-
     // |isUnique| specifies an annotation that cannot be duplicated.
     if (opt_options.isUnique) {
+      var annotationSansNodes = opt_options.annotation.filter(
+          function(annotation) {
+            return !(annotation instanceof Output.NodeSpan);
+          });
       var alreadyAnnotated = buff.some(function(s) {
-        return opt_options.annotation.some(function(annotation) {
+        return annotationSansNodes.some(function(annotation) {
           return s.getSpanStart(annotation) != undefined;
         });
       });
@@ -1217,12 +1232,61 @@ Output.prototype = {
    * @private
    */
   createBrailleOutput_: function() {
-    return this.brailleBuffer_.reduce(function(prev, cur) {
-      if (prev.getLength() > 0 && cur.getLength() > 0)
-        prev.append(Output.SPACE);
-      prev.append(cur);
-      return prev;
-    }, new cvox.Spannable());
+    var result = new cvox.Spannable();
+    var separator = '';  // Changes to space as appropriate.
+    this.brailleBuffer_.forEach(function(cur) {
+      // If this chunk is empty, don't add it since it won't result
+      // in any output on the braille display, but node spans would
+      // start before the separator in that case, which is not desired.
+      // The exception is if this chunk contains a selectionm, in which
+      // case it will result in a cursor which has to be preserved.
+      // In this case, having separators, potentially both before and after
+      // the empty string is correct.
+      if (cur.getLength() == 0 && !cur.getSpanInstanceOf(Output.SelectionSpan))
+        return;
+      var spansToExtend = [];
+      var spansToRemove = [];
+      // Nodes that have node spans both on the character to the left
+      // of the separator and to the right should also cover the separator.
+      // We extend the left span to cover both the separator and what the
+      // right span used to cover, removing the right span, mostly for
+      // ease of writing tests and debug.
+      // Note that getSpan(position) never returns zero length spans
+      // (because they don't cover any position).  Still, we want to include
+      // these because they can be included (the selection span in an empty
+      // text field is an example), which is why we write the below code
+      // using getSpansInstanceOf and check the endpoints (isntead of doing
+      // the opposite).
+      result.getSpansInstanceOf(Output.NodeSpan).forEach(function(leftSpan) {
+        if (result.getSpanEnd(leftSpan) < result.getLength())
+          return;
+        var newEnd = result.getLength();
+        cur.getSpansInstanceOf(Output.NodeSpan).forEach(function(rightSpan) {
+          if (cur.getSpanStart(rightSpan) == 0 &&
+              leftSpan.node === rightSpan.node) {
+            newEnd = Math.max(
+                newEnd,
+                result.getLength() + separator.length +
+                    cur.getSpanEnd(rightSpan));
+            spansToRemove.push(rightSpan);
+          }
+        });
+        if (newEnd > result.getLength())
+          spansToExtend.push({span: leftSpan, end: newEnd});
+      });
+      result.append(separator);
+      result.append(cur);
+      spansToExtend.forEach(function(elem) {
+        result.setSpan(
+            elem.span,
+            // Cast ok, since span is known to exist.
+            /** @type {number} */ (result.getSpanStart(elem.span)),
+            elem.end);
+      });
+      spansToRemove.forEach(result.removeSpan.bind(result));
+      separator = Output.SPACE;
+    });
+    return result;
   }
 };
 

@@ -548,6 +548,14 @@ chrome.automation.AutomationNode.prototype.focus = function() {};
 chrome.automation.AutomationNode.prototype.showContextMenu = function() {};
 
 
+/**
+ * @param {number} start
+ * @param {number} end
+ */
+chrome.automation.AutomationNode.prototype.setSelection =
+    function(start, end) {};
+
+
 /** @type {string} */
 chrome.automation.AutomationNode.prototype.containerLiveStatus;
 

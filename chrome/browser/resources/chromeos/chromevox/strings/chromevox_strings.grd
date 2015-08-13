@@ -1779,7 +1779,7 @@
         with {COUNT, plural, =1 {# item}other {# items}}
       </message>
       <message desc="Further describes a list-like element with a number of items in braille." name="IDS_CHROMEVOX_LIST_WITH_ITEMS_BRL">
-        +<ph name="num">$1</ph>
+        +{COUNT, plural, =1 {#}other {#}}
       </message>
       <message desc="Describes the state of a progress bar, in percent." name="IDS_CHROMEVOX_STATE_PERCENT">
         <ph name="num">$1</ph>%
