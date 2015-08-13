@@ -254,9 +254,6 @@ const char kDisableSpeechAPI[]              = "disable-speech-api";
 // Disables SVG 1.1 DOM.
 const char kDisableSVG1DOM[]                = "disable-svg1dom";
 
-// Disable text blob rendering.
-const char kDisableTextBlobs[]              = "disable-text-blobs";
-
 // Disable multithreaded GPU compositing of web content.
 const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 
