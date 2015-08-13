@@ -148,7 +148,7 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
   autofill::ConstPasswordFormMap current_forms;
   current_forms.insert(form_manager_->best_matches().begin(),
                        form_manager_->best_matches().end());
-  current_forms[form_manager_->associated_username()] =
+  current_forms[form_manager_->pending_credentials().username_value] =
       &form_manager_->pending_credentials();
   current_forms_weak_ = MapToVector(current_forms);
   origin_ = form_manager_->pending_credentials().origin;

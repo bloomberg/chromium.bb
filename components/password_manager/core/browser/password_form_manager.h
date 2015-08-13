@@ -179,11 +179,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
     has_generated_password_ = generated_password;
   }
 
-  // Returns the username associated with the credentials.
-  const base::string16& associated_username() const {
-    return pending_credentials_.username_value;
-  }
-
   // Returns the pending credentials.
   const autofill::PasswordForm& pending_credentials() const {
     return pending_credentials_;
@@ -197,9 +192,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   const autofill::PasswordForm* preferred_match() const {
     return preferred_match_;
   }
-
-  // Returns the realm URL for the form managed my this manager.
-  const std::string& realm() const { return pending_credentials_.signon_realm; }
 
 #if defined(UNIT_TEST)
   void SimulateFetchMatchingLoginsFromPasswordStore() {

@@ -677,8 +677,9 @@ void PasswordManager::OnLoginSuccessful() {
 
   if (ShouldDropSyncCredential() &&
       client_->IsSyncAccountCredential(
-          base::UTF16ToUTF8(provisional_save_manager_->associated_username()),
-          provisional_save_manager_->realm())) {
+          base::UTF16ToUTF8(
+              provisional_save_manager_->pending_credentials().username_value),
+          provisional_save_manager_->pending_credentials().signon_realm)) {
     provisional_save_manager_->WipeStoreCopyIfOutdated();
     RecordFailure(SYNC_CREDENTIAL,
                   provisional_save_manager_->observed_form().origin,

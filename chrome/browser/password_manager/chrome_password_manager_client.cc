@@ -211,7 +211,7 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(
-                form_to_save->realm(), GetPrefs())));
+                form_to_save->pending_credentials().signon_realm, GetPrefs())));
     SavePasswordInfoBarDelegate::Create(
         web_contents(), form_to_save.Pass(), uma_histogram_suffix, type);
   }
