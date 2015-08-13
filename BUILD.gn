@@ -533,6 +533,7 @@ group("both_gn_and_gyp") {
       "//third_party/qcms",
       "//third_party/smhasher:murmurhash3",
       "//third_party/webrtc/system_wrappers",
+      "//ui/app_list:app_list_unittests",
       "//ui/gfx:gfx_unittests",
       "//ui/native_theme",
       "//ui/snapshot",
@@ -560,7 +561,6 @@ group("both_gn_and_gyp") {
       "//third_party/WebKit/Source/platform:heap_unittests",
       "//third_party/WebKit/Source/platform:platform_unittests",
       "//third_party/WebKit/Source/web:webkit_unit_tests",
-      "//ui/app_list:app_list_unittests",  # TODO(GYP)
     ]
   }
 
