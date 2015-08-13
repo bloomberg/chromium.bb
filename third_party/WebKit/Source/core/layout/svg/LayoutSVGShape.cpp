@@ -61,6 +61,8 @@ void LayoutSVGShape::updateShapeFromElement()
     if (!m_path)
         m_path = adoptPtr(new Path());
     *m_path = toSVGGeometryElement(element())->asPath();
+    if (m_rareData.get())
+        m_rareData->m_cachedNonScalingStrokePath.clear();
 }
 
 void LayoutSVGShape::updateStrokeAndFillBoundingBoxes()
@@ -196,17 +198,23 @@ void LayoutSVGShape::layout()
 
 Path* LayoutSVGShape::nonScalingStrokePath(const Path* path, const AffineTransform& strokeTransform) const
 {
-    DEFINE_STATIC_LOCAL(Path, tempPath, ());
+    LayoutSVGShapeRareData& rareData = ensureRareData();
+    if (!rareData.m_cachedNonScalingStrokePath.isEmpty() && strokeTransform == rareData.m_cachedNonScalingStrokeTransform)
+        return &rareData.m_cachedNonScalingStrokePath;
 
-    tempPath = *path;
-    tempPath.transform(strokeTransform);
-
-    return &tempPath;
+    rareData.m_cachedNonScalingStrokePath = *path;
+    rareData.m_cachedNonScalingStrokePath.transform(strokeTransform);
+    rareData.m_cachedNonScalingStrokeTransform = strokeTransform;
+    return &rareData.m_cachedNonScalingStrokePath;
 }
 
 AffineTransform LayoutSVGShape::nonScalingStrokeTransform() const
 {
-    return toSVGGraphicsElement(element())->getScreenCTM(SVGGraphicsElement::DisallowStyleUpdate);
+    AffineTransform t = toSVGGraphicsElement(element())->getScreenCTM(SVGGraphicsElement::DisallowStyleUpdate);
+    // Width of non-scaling stroke is independent of translation, so zero it out here.
+    t.setE(0);
+    t.setF(0);
+    return t;
 }
 
 void LayoutSVGShape::paint(const PaintInfo& paintInfo, const LayoutPoint&)
@@ -279,6 +287,13 @@ LayoutRect LayoutSVGShape::clippedOverflowRectForPaintInvalidation(
     const float strokeWidthForHairlinePadding = style()->svgStyle().hasStroke() ? strokeWidth() : 0;
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this,
         paintInvalidationContainer, paintInvalidationState, strokeWidthForHairlinePadding);
+}
+
+LayoutSVGShapeRareData& LayoutSVGShape::ensureRareData() const
+{
+    if (!m_rareData)
+        m_rareData = adoptPtr(new LayoutSVGShapeRareData());
+    return *m_rareData.get();
 }
 
 }

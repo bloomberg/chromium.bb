@@ -45,6 +45,15 @@ enum ShapeGeometryCodePath {
     EllipseGeometryFastPath
 };
 
+struct LayoutSVGShapeRareData {
+    WTF_MAKE_NONCOPYABLE(LayoutSVGShapeRareData);
+    WTF_MAKE_FAST_ALLOCATED(LayoutSVGShapeRareData);
+public:
+    LayoutSVGShapeRareData() {}
+    Path m_cachedNonScalingStrokePath;
+    AffineTransform m_cachedNonScalingStrokeTransform;
+};
+
 class LayoutSVGShape : public LayoutSVGModelObject {
 public:
     explicit LayoutSVGShape(SVGGeometryElement*);
@@ -98,6 +107,7 @@ protected:
 
     FloatRect m_fillBoundingBox;
     FloatRect m_strokeBoundingBox;
+    LayoutSVGShapeRareData& ensureRareData() const;
 
 private:
     // Hit-detection separated for the fill and the stroke
@@ -123,6 +133,7 @@ private:
 private:
     OwnPtr<AffineTransform> m_localTransform;
     OwnPtr<Path> m_path;
+    mutable OwnPtr<LayoutSVGShapeRareData> m_rareData;
 
     bool m_needsBoundariesUpdate : 1;
     bool m_needsShapeUpdate : 1;
