@@ -122,8 +122,6 @@ static_library("util") {
       "google_chrome_sxs_distribution.h",
       "google_update_constants.cc",
       "google_update_constants.h",
-      "google_update_experiment_util.cc",
-      "google_update_experiment_util.h",
       "google_update_settings.cc",
       "google_update_settings.h",
       "google_update_util.cc",
@@ -167,8 +165,6 @@ static_library("util") {
     ]
   } else {
     sources = [
-      "google_update_experiment_util.cc",
-      "google_update_experiment_util.h",
       "master_preferences.cc",
       "master_preferences.h",
       "master_preferences_constants.cc",
@@ -273,6 +269,7 @@ if (is_win) {
       "//chrome:other_version",
       "//chrome/common",
       "//chrome/installer/test:alternate_version_generator_lib",
+      "//components/variations",
       "//content/public/common",
 
       # TODO(rockot): Remove this hack when we fix mojo environment deps.

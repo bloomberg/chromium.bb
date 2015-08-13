@@ -24,7 +24,6 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/google_update_experiment_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/product.h"

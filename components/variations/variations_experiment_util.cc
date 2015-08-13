@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/installer/util/google_update_experiment_util.h"
+#include "components/variations/variations_experiment_util.h"
 
 #include <vector>
 
@@ -11,28 +11,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 
-namespace google_update {
-
-#if defined(OS_WIN)
-const wchar_t kExperimentLabels[] = L"experiment_labels";
-#endif
+namespace variations {
 
 const base::char16 kExperimentLabelSeparator = ';';
 
-}  // namespace google_update
-
-namespace installer {
-
 namespace {
 
-const char* const kDays[] =
-    { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+const char* const kDays[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-const char* const kMonths[] =
-    { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep",
-      "Oct", "Nov", "Dec"};
+const char* const kMonths[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
-}
+}  // namespace
 
 base::string16 BuildExperimentDateString(const base::Time& current_time) {
   // The Google Update experiment_labels timestamp format is:
@@ -61,5 +51,4 @@ base::string16 BuildExperimentDateString(const base::Time& current_time) {
                          then.second));
 }
 
-}  // namespace installer
-
+}  // namespace variations

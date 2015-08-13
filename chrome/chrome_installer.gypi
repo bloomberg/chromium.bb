@@ -33,6 +33,7 @@
             'installer_util',
             '../base/base.gyp:base',
             '../chrome/chrome.gyp:launcher_support',
+            '../components/components.gyp:variations',
             '../google_update/google_update.gyp:google_update',
           ],
           'include_dirs': [
@@ -59,6 +60,7 @@
             'installer_util',
             '../base/base.gyp:base',
             '../base/base.gyp:test_support_base',
+            '../components/components.gyp:variations',
             '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -87,6 +89,7 @@
             '../base/base.gyp:base_i18n',
             '../base/base.gyp:test_support_base',
             '../chrome/chrome.gyp:chrome_version_resources',
+            '../components/components.gyp:variations',
             '../content/content.gyp:content_common',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',

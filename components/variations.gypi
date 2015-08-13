@@ -44,6 +44,8 @@
         'variations/study_filtering.h',
         'variations/variations_associated_data.cc',
         'variations/variations_associated_data.h',
+        'variations/variations_experiment_util.cc',
+        'variations/variations_experiment_util.h',
         'variations/variations_seed_processor.cc',
         'variations/variations_seed_processor.h',
         'variations/variations_seed_simulator.cc',

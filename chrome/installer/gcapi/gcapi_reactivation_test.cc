@@ -13,7 +13,6 @@
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 #include "chrome/installer/gcapi/gcapi_test_registry_overrider.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/google_update_experiment_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
