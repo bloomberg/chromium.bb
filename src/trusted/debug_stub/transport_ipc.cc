@@ -51,7 +51,11 @@ class TransportIPC : public ITransport {
       handle_(fd) { }
 
   ~TransportIPC() {
-    Disconnect();
+    if (handle_ != NACL_INVALID_HANDLE) {
+      if (::close(handle_))
+        NaClLog(LOG_FATAL,
+                "TransportIPC::Disconnect: Failed to close handle.\n");
+    }
   }
 
   // Read from this transport, return true on success.
@@ -80,7 +84,7 @@ class TransportIPC : public ITransport {
         len -= result;
       } else if (result == 0 || errno != EINTR) {
         NaClLog(LOG_FATAL,
-                "TransportIPC::Write: Pipe closed from other process");
+                "TransportIPC::Write: Pipe closed from other process.\n");
       }
     }
     return true;
@@ -145,7 +149,7 @@ class TransportIPC : public ITransport {
     if (ret < 0) {
       NaClLog(LOG_FATAL,
               "TransportIPC::WaitForDebugStubEvent: Failed to wait for "
-              "debug stub event\n");
+              "debug stub event.\n");
     }
 
     if (ret > 0) {
@@ -154,7 +158,7 @@ class TransportIPC : public ITransport {
         if (read(nap->faulted_thread_fd_read, &buf, sizeof(buf)) < 0) {
           NaClLog(LOG_FATAL,
                   "TransportIPC::WaitForDebugStubEvent: Failed to read from "
-                  "debug stub event pipe fd\n");
+                  "debug stub event pipe fd.\n");
         }
       }
       if (FD_ISSET(handle_, &fds))
@@ -163,14 +167,19 @@ class TransportIPC : public ITransport {
   }
 
   virtual void Disconnect() {
-    // Close the handle.  This should always succeed,
-    // and nothing we can do if this fails.
-    if (handle_ != NACL_INVALID_HANDLE) {
-      if (::close(handle_))
-        NaClLog(LOG_FATAL,
-                "TransportIPC::Disconnect: Failed to close handle.");
-      handle_ = NACL_INVALID_HANDLE;
+    // If we are being marked as disconnected then we should also
+    // receive the disconnect marker so the next connection is in
+    // a proper state.
+    if (IsConnected()) {
+      do {
+        unconsumed_bytes_ = 0;
+        // FillBufferIfEmpty() returns false on disconnect or a
+        // Fatal error, and in both cases we want to exit the loop.
+      } while (FillBufferIfEmpty());
     }
+
+    // Throw away unused data.
+    unconsumed_bytes_ = 0;
   }
 
   // Block until we have new data on the pipe, new data means the
@@ -220,7 +229,7 @@ class TransportIPC : public ITransport {
   // successful, otherwise if the buffer has data it returns true immediately.
   // Returns false if we got the disconnect marker from the other end of the
   // pipe meaning there was a server disconnect on the other side and we need
-  // to wait for a new connection.
+  // to wait for a new connection. Also return false on a fatal error.
   bool FillBufferIfEmpty() {
     if (unconsumed_bytes_ > 0)
       return true;
@@ -231,7 +240,10 @@ class TransportIPC : public ITransport {
                       sizeof(bytes_to_read_))) {
         NaClLog(LOG_FATAL,
                 "TransportIPC::FillBufferIfEmpty: "
-                "Pipe closed from other process");
+                "Pipe closed from other process.\n");
+        // We want to mark ourselves as disconnected on an error.
+        bytes_to_read_ = kServerSocketDisconnect;
+        return false;
       }
 
       // If we got the disconnect flag mark it as such.
@@ -247,7 +259,10 @@ class TransportIPC : public ITransport {
     } else if (result == 0 || errno != EINTR) {
       NaClLog(LOG_FATAL,
               "TransportIPC::FillBufferIfEmpty: "
-              "Pipe closed from other process");
+              "Pipe closed from other process.\n");
+      // We want to mark ourselves as disconnected on an error.
+      bytes_to_read_ = kServerSocketDisconnect;
+      return false;
     }
 
     return true;

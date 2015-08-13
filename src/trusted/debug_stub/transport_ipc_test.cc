@@ -179,13 +179,25 @@ TEST_F(TransportIPCTests, TestWrite) {
 
 // Test disconnect.
 TEST_F(TransportIPCTests, TestDisconnect) {
+  // Write initial data and accept connection.
+  EXPECT_TRUE(WriteNBytes(fd[0], packet, sizeof(packet)));
+  EXPECT_TRUE(transport->AcceptConnection());
+
+  // Write -1 so transport can disconnect.
+  EXPECT_TRUE(WriteNBytes(fd[0], &kDisconnectFlag, sizeof(kDisconnectFlag)));
+
+  // Disconnect and throw away the unread packet.
   transport->Disconnect();
 
-  // Try writing and expect failure of SIGPIPE.
-  EXPECT_EXIT({
-      int n = write(fd[0], packet, sizeof(packet));
-      (void) n;
-    }, ::testing::KilledBySignal(SIGPIPE), ".*");
+  // Write data so AcceptConnection() wont block.
+  EXPECT_TRUE(WriteNBytes(fd[0], packet, sizeof(packet)));
+  EXPECT_TRUE(transport->AcceptConnection());
+
+  // Read packet.
+  EXPECT_TRUE(transport->Read(buf, sizeof(packet) - 4));
+
+  // Second packet should have been thrown away.
+  EXPECT_FALSE(transport->IsDataAvailable());
 }
 
 int main(int argc, char *argv[]) {
