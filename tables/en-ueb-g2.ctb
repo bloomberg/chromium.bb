@@ -168,11 +168,20 @@ class lowerdotspunc +=*,.?!-—‐‑–—"'“”‘’
 
 # be
 
-before uppercase begword be 12-15   10.6.3
-begword be 23                       10.6.2
-word be 23
-always be 12-15
-always ber 12-12456                 10.10.4
+#before uppercase begword be 12-15   10.6.3
+#begword be 23                       10.6.2
+#word be 23
+#always be 12-15
+#always ber 12-12456                 10.10.4
+#always be 23
+
+pattern [-—‐‑–—]["'“”‘’({[]* be [abcdefghijklmnopqrstuvwxyz] 23
+pattern [-—‐‑–—]["'“”‘’({[]* be ["'“”‘’({[]*[-—‐‑–—] 23
+pattern [-—‐‑–—]["'“”‘’({[]* be ["'“”‘’({[]*~ 23
+
+pattern ~["'“”‘’({[]* be [abcdefghijklmnopqrstuvwxyz] 23
+pattern ~["'“”‘’({[]* be ["'“”‘’({[]*[-—‐‑–—] 23
+pattern ~["'“”‘’({[]* be ["'“”‘’({[]*~ 23
 
 # enough
 
