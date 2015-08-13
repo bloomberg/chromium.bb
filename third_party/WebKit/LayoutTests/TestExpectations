@@ -36,6 +36,17 @@ crbug.com/481269 [ Win ] fast/dom/gc-treescope.html [ Pass Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
+crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
+crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ ImageOnlyFailure Pass Timeout ]
+crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+
+crbug.com/520735 [ Linux Win ] inspector-protocol/debugger/domdebugger-setInnerHTML.html [ Pass Timeout ]
+crbug.com/520735 inspector/sources/debugger-breakpoints/event-listener-breakpoints-after-suspension.html [ Pass Timeout ]
+crbug.com/520735 inspector/sources/debugger-breakpoints/event-listener-breakpoints-script-first-stmt.html [ Pass Timeout ]
+crbug.com/520735 inspector/sources/debugger-breakpoints/event-listener-breakpoints.html [ Pass Timeout ]
+crbug.com/520735 inspector/sources/debugger-frameworks/frameworks-skip-break-program.html [ Pass Timeout ]
+crbug.com/520735 inspector/sources/debugger-step/step-through-event-listeners.html [ Pass Timeout ]
+
 crbug.com/520164 [ Linux ] accessibility/is-richly-editable.html [ Failure Pass ]
 crbug.com/520166 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure Pass ]
 crbug.com/520167 css3/flexbox/repaint-rtl-column.html [ Failure Pass ]
