@@ -61,7 +61,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     , m_documentOrderIndexesDirty(false)
     , m_wakeupTimer(this, &SMILTimeContainer::wakeupTimerFired)
     , m_animationPolicyOnceTimer(this, &SMILTimeContainer::animationPolicyTimerFired)
-    , m_ownerSVGElement(owner)
+    , m_ownerSVGElement(&owner)
 #if ENABLE(ASSERT)
     , m_preventScheduledAnimationsChanges(false)
 #endif
@@ -183,7 +183,7 @@ void SMILTimeContainer::begin()
     // In this case pass on 'seekToTime=true' to updateAnimations().
     m_beginTime = now - m_presetStartTime;
 #if !ENABLE(OILPAN)
-    DiscardScope discardScope(m_ownerSVGElement);
+    DiscardScope discardScope(ownerSVGElement());
 #endif
     SMILTime earliestFireTime = updateAnimations(SMILTime(m_presetStartTime), m_presetStartTime ? true : false);
     m_presetStartTime = 0;
@@ -379,7 +379,7 @@ bool SMILTimeContainer::handleAnimationPolicy(AnimationPolicyOnceAction onceActi
 void SMILTimeContainer::updateDocumentOrderIndexes()
 {
     unsigned timingElementCount = 0;
-    for (SVGSMILElement& element : Traversal<SVGSMILElement>::descendantsOf(m_ownerSVGElement))
+    for (SVGSMILElement& element : Traversal<SVGSMILElement>::descendantsOf(ownerSVGElement()))
         element.setDocumentOrderIndex(timingElementCount++);
     m_documentOrderIndexesDirty = false;
 }
@@ -401,9 +401,14 @@ struct PriorityCompare {
     SMILTime m_elapsed;
 };
 
+SVGSVGElement& SMILTimeContainer::ownerSVGElement() const
+{
+    return *m_ownerSVGElement;
+}
+
 Document& SMILTimeContainer::document() const
 {
-    return m_ownerSVGElement.document();
+    return ownerSVGElement().document();
 }
 
 double SMILTimeContainer::currentTime() const
@@ -434,7 +439,7 @@ void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapse
         return;
 
 #if !ENABLE(OILPAN)
-    DiscardScope discardScope(m_ownerSVGElement);
+    DiscardScope discardScope(ownerSVGElement());
 #endif
     SMILTime earliestFireTime = updateAnimations(elapsed, seekToTime);
     // If updateAnimations() ended up triggering a synchronization (most likely
@@ -549,6 +554,7 @@ DEFINE_TRACE(SMILTimeContainer)
 #if ENABLE(OILPAN)
     visitor->trace(m_scheduledAnimations);
 #endif
+    visitor->trace(m_ownerSVGElement);
 }
 
 }
