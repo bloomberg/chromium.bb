@@ -560,57 +560,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
   return ACTION_NONE;
 }
 
-void SchedulerStateMachine::UpdateState(Action action) {
-  switch (action) {
-    case ACTION_NONE:
-      return;
-
-    case ACTION_ACTIVATE_SYNC_TREE:
-      UpdateStateOnActivation();
-      return;
-
-    case ACTION_ANIMATE:
-      UpdateStateOnAnimate();
-      return;
-
-    case ACTION_SEND_BEGIN_MAIN_FRAME:
-      UpdateStateOnSendBeginMainFrame();
-      return;
-
-    case ACTION_COMMIT: {
-      bool commit_has_no_updates = false;
-      UpdateStateOnCommit(commit_has_no_updates);
-      return;
-    }
-
-    case ACTION_DRAW_AND_SWAP_FORCED:
-    case ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
-      bool did_request_swap = true;
-      UpdateStateOnDraw(did_request_swap);
-      return;
-    }
-
-    case ACTION_DRAW_AND_SWAP_ABORT: {
-      bool did_request_swap = false;
-      UpdateStateOnDraw(did_request_swap);
-      return;
-    }
-
-    case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
-      UpdateStateOnBeginOutputSurfaceCreation();
-      return;
-
-    case ACTION_PREPARE_TILES:
-      UpdateStateOnPrepareTiles();
-      return;
-
-    case ACTION_INVALIDATE_OUTPUT_SURFACE:
-      UpdateStateOnInvalidateOutputSurface();
-      return;
-  }
-}
-
-void SchedulerStateMachine::UpdateStateOnAnimate() {
+void SchedulerStateMachine::WillAnimate() {
   DCHECK(!animate_funnel_);
   last_frame_number_animate_performed_ = current_frame_number_;
   animate_funnel_ = true;
@@ -619,7 +569,7 @@ void SchedulerStateMachine::UpdateStateOnAnimate() {
   SetNeedsRedraw();
 }
 
-void SchedulerStateMachine::UpdateStateOnSendBeginMainFrame() {
+void SchedulerStateMachine::WillSendBeginMainFrame() {
   DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled);
   DCHECK(visible_);
   DCHECK(!send_begin_main_frame_funnel_);
@@ -629,7 +579,7 @@ void SchedulerStateMachine::UpdateStateOnSendBeginMainFrame() {
   last_frame_number_begin_main_frame_sent_ = current_frame_number_;
 }
 
-void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
+void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   commit_count_++;
 
   // Animate after commit even if we've already animated.
@@ -683,7 +633,7 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
   last_commit_had_no_updates_ = commit_has_no_updates;
 }
 
-void SchedulerStateMachine::UpdateStateOnActivation() {
+void SchedulerStateMachine::WillActivate() {
   if (begin_main_frame_state_ ==
       BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION) {
     begin_main_frame_state_ = settings_.commit_to_active_tree
@@ -703,7 +653,7 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
   needs_redraw_ = true;
 }
 
-void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
+void SchedulerStateMachine::WillDraw(bool did_request_swap) {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
 
@@ -721,11 +671,11 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
   }
 }
 
-void SchedulerStateMachine::UpdateStateOnPrepareTiles() {
+void SchedulerStateMachine::WillPrepareTiles() {
   needs_prepare_tiles_ = false;
 }
 
-void SchedulerStateMachine::UpdateStateOnBeginOutputSurfaceCreation() {
+void SchedulerStateMachine::WillBeginOutputSurfaceCreation() {
   DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_LOST);
   output_surface_state_ = OUTPUT_SURFACE_CREATING;
 
@@ -737,7 +687,7 @@ void SchedulerStateMachine::UpdateStateOnBeginOutputSurfaceCreation() {
   DCHECK(!active_tree_needs_first_draw_);
 }
 
-void SchedulerStateMachine::UpdateStateOnInvalidateOutputSurface() {
+void SchedulerStateMachine::WillInvalidateOutputSurface() {
   DCHECK(!invalidate_output_surface_funnel_);
   invalidate_output_surface_funnel_ = true;
   last_frame_number_invalidate_output_surface_performed_ =
@@ -1101,7 +1051,7 @@ void SchedulerStateMachine::BeginMainFrameAborted(CommitEarlyOutReason reason) {
       return;
     case CommitEarlyOutReason::FINISHED_NO_UPDATES:
       bool commit_has_no_updates = true;
-      UpdateStateOnCommit(commit_has_no_updates);
+      WillCommit(commit_has_no_updates);
       return;
   }
 }

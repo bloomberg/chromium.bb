@@ -40,7 +40,7 @@
     EXPECT_IMPL_FRAME_STATE(                                                \
         SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE);     \
   }                                                                         \
-  state.UpdateState(action);                                                \
+  WillPerformAction(&state, action);                                        \
   if (action == SchedulerStateMachine::ACTION_NONE) {                       \
     if (state.begin_impl_frame_state() ==                                   \
         SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING) \
@@ -50,16 +50,69 @@
       state.OnBeginImplFrameIdle();                                         \
   }
 
-#define SET_UP_STATE(state)                                    \
-  state.SetCanStart();                                         \
-  state.UpdateState(state.NextAction());                       \
-  state.CreateAndInitializeOutputSurfaceWithActivatedCommit(); \
-  state.SetVisible(true);                                      \
+#define SET_UP_STATE(state)                                         \
+  state.SetCanStart();                                              \
+  EXPECT_ACTION_UPDATE_STATE(                                       \
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION); \
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);   \
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();      \
+  state.SetVisible(true);                                           \
   state.SetCanDraw(true);
 
 namespace cc {
 
 namespace {
+
+void WillPerformAction(SchedulerStateMachine* sm,
+                       SchedulerStateMachine::Action action) {
+  switch (action) {
+    case SchedulerStateMachine::ACTION_NONE:
+      return;
+
+    case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
+      sm->WillActivate();
+      return;
+
+    case SchedulerStateMachine::ACTION_ANIMATE:
+      sm->WillAnimate();
+      return;
+
+    case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
+      sm->WillSendBeginMainFrame();
+      return;
+
+    case SchedulerStateMachine::ACTION_COMMIT: {
+      bool commit_has_no_updates = false;
+      sm->WillCommit(commit_has_no_updates);
+      return;
+    }
+
+    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
+    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE: {
+      bool did_request_swap = true;
+      sm->WillDraw(did_request_swap);
+      return;
+    }
+
+    case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT: {
+      bool did_request_swap = false;
+      sm->WillDraw(did_request_swap);
+      return;
+    }
+
+    case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
+      sm->WillBeginOutputSurfaceCreation();
+      return;
+
+    case SchedulerStateMachine::ACTION_PREPARE_TILES:
+      sm->WillPrepareTiles();
+      return;
+
+    case SchedulerStateMachine::ACTION_INVALIDATE_OUTPUT_SURFACE:
+      sm->WillInvalidateOutputSurface();
+      return;
+  }
+}
 
 const SchedulerStateMachine::BeginImplFrameState all_begin_impl_frame_states[] =
     {SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE,
@@ -146,7 +199,7 @@ class StateMachine : public SchedulerStateMachine {
 
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
   using SchedulerStateMachine::ProactiveBeginFrameWanted;
-  using SchedulerStateMachine::UpdateStateOnCommit;
+  using SchedulerStateMachine::WillCommit;
 };
 
 TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
@@ -154,7 +207,8 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
   EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION)
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
@@ -202,7 +256,8 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     StateMachine state(default_scheduler_settings);
     state.SetCanStart();
     EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION)
+        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
     state.SetBeginMainFrameState(
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
@@ -246,7 +301,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetBeginMainFrameState(
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetCanStart();
-    state.UpdateState(state.NextAction());
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
@@ -272,7 +329,9 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     state.SetBeginMainFrameState(
         SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
     state.SetCanStart();
-    state.UpdateState(state.NextAction());
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
@@ -662,7 +721,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
     for (size_t j = 0; j < num_begin_impl_frame_states; ++j) {
       StateMachine state(default_scheduler_settings);
       state.SetCanStart();
-      state.UpdateState(state.NextAction());
+      EXPECT_ACTION_UPDATE_STATE(
+          SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
       state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetBeginImplFrameState(all_begin_impl_frame_states[j]);
@@ -688,7 +749,9 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
   for (size_t i = 0; i < num_begin_main_frame_states; ++i) {
     StateMachine state(default_scheduler_settings);
     state.SetCanStart();
-    state.UpdateState(state.NextAction());
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+    EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
     state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
     state.SetCanDraw(true);
     state.SetBeginMainFrameState(begin_main_frame_states[i]);
@@ -704,8 +767,7 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnBeginImplFrame) {
       expected_action = SchedulerStateMachine::ACTION_COMMIT;
     } else {
       expected_action = SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE;
-      EXPECT_ACTION(SchedulerStateMachine::ACTION_ANIMATE);
-      state.UpdateState(state.NextAction());
+      EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
     }
 
     // Case 1: needs_begin_main_frame=false.
@@ -728,7 +790,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameStatesRedrawWhenInvisible) {
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
       state.SetCanStart();
-      state.UpdateState(state.NextAction());
+      EXPECT_ACTION_UPDATE_STATE(
+          SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
       state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetVisible(false);
@@ -762,7 +826,9 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
       state.SetCanStart();
-      state.UpdateState(state.NextAction());
+      EXPECT_ACTION_UPDATE_STATE(
+          SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+      EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
       state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
       state.SetBeginMainFrameState(begin_main_frame_states[i]);
       state.SetVisible(false);
@@ -782,7 +848,9 @@ TEST(SchedulerStateMachineTest,
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
 
   state.SetActiveTreeNeedsFirstDraw(true);
@@ -1125,7 +1193,9 @@ TEST(SchedulerStateMachineTest, TestRequestCommitInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetNeedsBeginMainFrame();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1189,7 +1259,9 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.DidCreateAndInitializeOutputSurface();
   state.SetVisible(true);
   state.SetCanDraw(true);
@@ -1270,8 +1342,9 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle) {
             state.NextAction());
   state.DidLoseOutputSurface();
 
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Once context recreation begins, nothing should happen.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1566,8 +1639,9 @@ TEST(SchedulerStateMachineTest, DontDrawBeforeCommitAfterLostOutputSurface) {
 
   // Cause a lost output surface, and restore it.
   state.DidLoseOutputSurface();
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.DidCreateAndInitializeOutputSurface();
 
   EXPECT_FALSE(state.RedrawPending());
@@ -1602,7 +1676,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginFrameNeededWhenInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetVisible(true);
 
@@ -1621,7 +1697,9 @@ TEST(SchedulerStateMachineTest, TestNoBeginMainFrameWhenInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetVisible(false);
   state.SetNeedsBeginMainFrame();
@@ -1640,23 +1718,24 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
   state.SetCanStart();
-  state.UpdateState(state.NextAction());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetVisible(false);
   state.SetBeginMainFrameState(
       SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
   state.SetNeedsBeginMainFrame();
 
+  // After the commit completes, activation and draw happen immediately
+  // because we are not visible.
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_COMMIT);
-  state.UpdateState(state.NextAction());
-  state.NotifyReadyToActivate();
-  EXPECT_ACTION(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
-  state.UpdateState(state.NextAction());
-
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
   EXPECT_TRUE(state.active_tree_needs_first_draw());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
 TEST(SchedulerStateMachineTest, TestInitialActionsWhenContextLost) {
@@ -1982,7 +2061,7 @@ TEST(SchedulerStateMachineTest, EarlyOutCommitWantsProactiveBeginFrame) {
 
   EXPECT_FALSE(state.ProactiveBeginFrameWanted());
   bool commit_has_no_updates = true;
-  state.UpdateStateOnCommit(commit_has_no_updates);
+  state.WillCommit(commit_has_no_updates);
   EXPECT_TRUE(state.ProactiveBeginFrameWanted());
   state.OnBeginImplFrame();
   EXPECT_FALSE(state.ProactiveBeginFrameWanted());

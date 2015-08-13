@@ -629,17 +629,18 @@ void Scheduler::ProcessScheduledActions() {
                  "SchedulerStateMachine",
                  "state",
                  AsValue());
-    state_machine_.UpdateState(action);
     base::AutoReset<SchedulerStateMachine::Action>
         mark_inside_action(&inside_action_, action);
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;
       case SchedulerStateMachine::ACTION_ANIMATE:
+        state_machine_.WillAnimate();
         client_->ScheduledActionAnimate();
         break;
       case SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME:
         compositor_timing_history_->WillBeginMainFrame();
+        state_machine_.WillSendBeginMainFrame();
         client_->ScheduledActionSendBeginMainFrame();
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {
@@ -648,11 +649,14 @@ void Scheduler::ProcessScheduledActions() {
         tracked_objects::ScopedTracker tracking_profile4(
             FROM_HERE_WITH_EXPLICIT_FUNCTION(
                 "461509 Scheduler::ProcessScheduledActions4"));
+        bool commit_has_no_updates = false;
+        state_machine_.WillCommit(commit_has_no_updates);
         client_->ScheduledActionCommit();
         break;
       }
       case SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE:
         compositor_timing_history_->WillActivate();
+        state_machine_.WillActivate();
         client_->ScheduledActionActivateSyncTree();
         compositor_timing_history_->DidActivate();
         break;
@@ -662,23 +666,34 @@ void Scheduler::ProcessScheduledActions() {
         tracked_objects::ScopedTracker tracking_profile6(
             FROM_HERE_WITH_EXPLICIT_FUNCTION(
                 "461509 Scheduler::ProcessScheduledActions6"));
+        bool did_request_swap = true;
+        state_machine_.WillDraw(did_request_swap);
         DrawAndSwapIfPossible();
         break;
       }
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED: {
+        bool did_request_swap = true;
+        state_machine_.WillDraw(did_request_swap);
         DrawAndSwapForced();
         break;
-      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
+      }
+      case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT: {
         // No action is actually performed, but this allows the state machine to
         // advance out of its waiting to draw state without actually drawing.
+        bool did_request_swap = false;
+        state_machine_.WillDraw(did_request_swap);
         break;
+      }
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
+        state_machine_.WillBeginOutputSurfaceCreation();
         client_->ScheduledActionBeginOutputSurfaceCreation();
         break;
       case SchedulerStateMachine::ACTION_PREPARE_TILES:
+        state_machine_.WillPrepareTiles();
         client_->ScheduledActionPrepareTiles();
         break;
       case SchedulerStateMachine::ACTION_INVALIDATE_OUTPUT_SURFACE: {
+        state_machine_.WillInvalidateOutputSurface();
         client_->ScheduledActionInvalidateOutputSurface();
         break;
       }

@@ -122,7 +122,14 @@ class CC_EXPORT SchedulerStateMachine {
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   Action NextAction() const;
-  void UpdateState(Action action);
+  void WillAnimate();
+  void WillSendBeginMainFrame();
+  void WillCommit(bool commit_had_no_updates);
+  void WillActivate();
+  void WillDraw(bool did_request_swap);
+  void WillBeginOutputSurfaceCreation();
+  void WillPrepareTiles();
+  void WillInvalidateOutputSurface();
 
   // Indicates whether the impl thread needs a BeginImplFrame callback in order
   // to make progress.
@@ -283,15 +290,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldCommit() const;
   bool ShouldPrepareTiles() const;
   bool ShouldInvalidateOutputSurface() const;
-
-  void UpdateStateOnAnimate();
-  void UpdateStateOnSendBeginMainFrame();
-  void UpdateStateOnCommit(bool commit_had_no_updates);
-  void UpdateStateOnActivation();
-  void UpdateStateOnDraw(bool did_request_swap);
-  void UpdateStateOnBeginOutputSurfaceCreation();
-  void UpdateStateOnPrepareTiles();
-  void UpdateStateOnInvalidateOutputSurface();
 
   const SchedulerSettings settings_;
 
