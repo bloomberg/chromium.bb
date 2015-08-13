@@ -7,22 +7,16 @@ package org.chromium.chrome.browser.services;
 import android.content.Context;
 import android.util.Log;
 
-import com.google.android.gms.auth.GoogleAuthException;
-import com.google.android.gms.auth.GoogleAuthUtil;
-
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.sync.signin.ChromeSigninController;
-
-import java.io.IOException;
 
 /**
  * Starts and monitors various sync and Google services related tasks.
@@ -88,22 +82,6 @@ public class GoogleServicesManager implements ApplicationStateListener {
             if (!mChromeSigninController.isSignedIn() && signinManager.isSignedInOnNative()) {
                 Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
                 signinManager.signOut(null, null);
-            }
-
-            // AccountIdProvider might be already set in tests.
-            if (AccountIdProvider.getInstance() == null) {
-                // Register account Id provider.
-                AccountIdProvider.setInstance(new AccountIdProvider() {
-                    @Override
-                    public String getAccountId(Context ctx, String accountName) {
-                        try {
-                            return GoogleAuthUtil.getAccountId(ctx, accountName);
-                        } catch (IOException | GoogleAuthException ex) {
-                            Log.e(TAG, "AccountIdProvider.getAccountId", ex);
-                            return null;
-                        }
-                    }
-                });
             }
 
             // Initialize sync.

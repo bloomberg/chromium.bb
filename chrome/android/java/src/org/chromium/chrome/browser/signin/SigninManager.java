@@ -15,11 +15,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.FieldTrialList;
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -67,7 +67,7 @@ public class SigninManager {
 
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
-    private static final String TAG = "SigninManager";
+    private static final String TAG = "cr.SigninManager";
 
     private static SigninManager sSigninManager;
 
@@ -370,27 +370,23 @@ public class SigninManager {
 
         // Get mapping from account names to account ids.
         final AccountIdProvider provider = AccountIdProvider.getInstance();
-        if (provider != null) {
-            new AsyncTask<Void, Void, AccountIdsAndNames>() {
-                @Override
-                public AccountIdsAndNames doInBackground(Void... params) {
-                    Log.d(TAG, "Getting id/email mapping");
-                    String[] accountNames = OAuth2TokenService.getSystemAccounts(mContext);
-                    assert accountNames.length > 0;
-                    String[] accountIds = new String[accountNames.length];
-                    for (int i = 0; i < accountIds.length; ++i) {
-                        accountIds[i] = provider.getAccountId(mContext, accountNames[i]);
-                    }
-                    return new AccountIdsAndNames(accountIds, accountNames);
+        new AsyncTask<Void, Void, AccountIdsAndNames>() {
+            @Override
+            public AccountIdsAndNames doInBackground(Void... params) {
+                Log.d(TAG, "Getting id/email mapping");
+                String[] accountNames = OAuth2TokenService.getSystemAccounts(mContext);
+                assert accountNames.length > 0;
+                String[] accountIds = new String[accountNames.length];
+                for (int i = 0; i < accountIds.length; ++i) {
+                    accountIds[i] = provider.getAccountId(mContext, accountNames[i]);
                 }
-                @Override
-                public void onPostExecute(AccountIdsAndNames accountIdsAndNames) {
-                    finishSignIn(accountIdsAndNames);
-                }
-            }.execute();
-        } else {
-            finishSignIn(new AccountIdsAndNames(null, null));
-        }
+                return new AccountIdsAndNames(accountIds, accountNames);
+            }
+            @Override
+            public void onPostExecute(AccountIdsAndNames accountIdsAndNames) {
+                finishSignIn(accountIdsAndNames);
+            }
+        }.execute();
     }
 
     private void finishSignIn(AccountIdsAndNames accountIdsAndNames) {

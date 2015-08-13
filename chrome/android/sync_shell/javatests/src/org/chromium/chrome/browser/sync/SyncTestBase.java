@@ -95,11 +95,7 @@ public class SyncTestBase extends ChromeShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                if (AccountIdProvider.getInstance() != null) {
-                    return;
-                }
-
-                AccountIdProvider.setInstance(new AccountIdProvider() {
+                AccountIdProvider.setInstanceForTest(new AccountIdProvider() {
                     @Override
                     public String getAccountId(Context ctx, String accountName) {
                         return "gaia-id-" + accountName;

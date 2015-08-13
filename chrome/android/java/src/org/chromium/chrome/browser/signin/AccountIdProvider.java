@@ -6,8 +6,14 @@ package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
 
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
+
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+
+import java.io.IOException;
 
 /**
  * Returns a stable id that can be used to identify a Google Account.  This
@@ -15,8 +21,12 @@ import org.chromium.base.VisibleForTesting;
  * nor does it change depending on whether the email has dots or varying
  * capitalization.
  */
-public abstract class AccountIdProvider {
+public class AccountIdProvider {
     private static AccountIdProvider sProvider;
+
+    protected AccountIdProvider() {
+        // should not be initialized outside getInstance().
+    }
 
     /**
      * Returns a stable id for the account associated with the given email address.
@@ -27,19 +37,13 @@ public abstract class AccountIdProvider {
      *
      * @param accountName The email address of a Google account.
      */
-    public abstract String getAccountId(Context ctx, String accountName);
-
-    /**
-     * Sets the global account Id provider.  Trying to set a new provider when
-     * one is already set throws IllegalArgumentException.  The provider can only
-     * be set on the UI thread.
-     */
-    public static void setInstance(AccountIdProvider provider) {
-        ThreadUtils.assertOnUiThread();
-        if (sProvider != null) {
-            throw new IllegalArgumentException("Provider already set");
+    public String getAccountId(Context ctx, String accountName) {
+        try {
+            return GoogleAuthUtil.getAccountId(ctx, accountName);
+        } catch (IOException | GoogleAuthException ex) {
+            Log.e("cr.AccountIdProvider", "AccountIdProvider.getAccountId", ex);
+            return null;
         }
-        sProvider = provider;
     }
 
     /**
@@ -47,6 +51,7 @@ public abstract class AccountIdProvider {
      */
     public static AccountIdProvider getInstance() {
         ThreadUtils.assertOnUiThread();
+        if (sProvider == null) sProvider = new AccountIdProvider();
         return sProvider;
     }
 
@@ -56,6 +61,7 @@ public abstract class AccountIdProvider {
      */
     @VisibleForTesting
     public static void setInstanceForTest(AccountIdProvider provider) {
+        ThreadUtils.assertOnUiThread();
         sProvider = provider;
     }
 }

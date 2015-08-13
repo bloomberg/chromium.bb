@@ -148,30 +148,24 @@ void SigninManagerAndroid::OnSignInCompleted(JNIEnv* env,
                                              jobjectArray accountNames) {
   DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
   // Seed the account tracker with id/email information if provided.
-  if (accountIds && accountNames) {
-    std::vector<std::string> gaia_ids;
-    std::vector<std::string> emails;
-    base::android::AppendJavaStringArrayToStringVector(env, accountIds,
-                                                       &gaia_ids);
-    base::android::AppendJavaStringArrayToStringVector(env, accountNames,
-                                                       &emails);
-    DCHECK_EQ(emails.size(), gaia_ids.size());
-    DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding "
-             << emails.size() << " accounts";
+  DCHECK(accountIds && accountNames);
+  std::vector<std::string> gaia_ids;
+  std::vector<std::string> emails;
+  base::android::AppendJavaStringArrayToStringVector(env, accountIds,
+                                                     &gaia_ids);
+  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
+                                                     &emails);
+  DCHECK_EQ(emails.size(), gaia_ids.size());
+  DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding "
+           << emails.size() << " accounts";
 
-    AccountTrackerService* tracker =
-        AccountTrackerServiceFactory::GetForProfile(profile_);
-    for (size_t i = 0; i < emails.size(); ++i) {
-      DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding"
-               << " gaia_id=" << gaia_ids[i]
-               << " email=" << emails[i];
-      if (!gaia_ids[i].empty() && !emails[i].empty())
-        tracker->SeedAccountInfo(gaia_ids[i], emails[i]);
-    }
-  } else {
-    DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: missing ids/email"
-             << " ids=" << (void*) accountIds
-             << " emails=" << (void*) accountNames;
+  AccountTrackerService* tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile_);
+  for (size_t i = 0; i < emails.size(); ++i) {
+    DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding"
+             << " gaia_id=" << gaia_ids[i] << " email=" << emails[i];
+    if (!gaia_ids[i].empty() && !emails[i].empty())
+      tracker->SeedAccountInfo(gaia_ids[i], emails[i]);
   }
 
   SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
