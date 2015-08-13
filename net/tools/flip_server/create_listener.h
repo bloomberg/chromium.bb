@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H__
-#define NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H__
+#ifndef NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H_
+#define NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H_
 
-#include <iosfwd>
 #include <string>
 
 namespace net {
@@ -51,6 +50,7 @@ int CreateConnectedSocket(int* connect_fd,
                           const std::string& port,
                           bool is_numeric_host_address,
                           bool disable_nagle);
+
 }  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H__
+#endif  // NET_TOOLS_FLIP_SERVER_CREATE_LISTENER_H_
