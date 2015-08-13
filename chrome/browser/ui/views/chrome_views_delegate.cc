@@ -178,9 +178,8 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
   if (!prefs)
     return false;
 
-  DCHECK(prefs->FindPreference(window_name.c_str()));
-  const base::DictionaryValue* dictionary =
-      prefs->GetDictionary(window_name.c_str());
+  DCHECK(prefs->FindPreference(window_name));
+  const base::DictionaryValue* dictionary = prefs->GetDictionary(window_name);
   int left = 0;
   int top = 0;
   int right = 0;

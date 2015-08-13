@@ -634,7 +634,7 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
     return false;
 
   const base::DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(GetWindowName().c_str());
+      g_browser_process->local_state()->GetDictionary(GetWindowName());
   return dictionary &&
       dictionary->GetBoolean("always_on_top", always_on_top) && always_on_top;
 }

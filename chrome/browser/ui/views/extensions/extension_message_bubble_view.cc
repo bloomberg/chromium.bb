@@ -174,7 +174,7 @@ void ExtensionMessageBubbleView::Init() {
   layout->AddView(learn_more_);
 
   if (!action_button.empty()) {
-    action_button_ = new views::LabelButton(this, action_button.c_str());
+    action_button_ = new views::LabelButton(this, action_button);
     action_button_->SetStyle(views::Button::STYLE_BUTTON);
     layout->AddView(action_button_);
   }
