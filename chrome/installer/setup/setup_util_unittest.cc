@@ -26,10 +26,8 @@
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
-#include "chrome/installer/setup/update_active_setup_version_work_item.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
@@ -88,90 +86,6 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
 }
 
 }  // namespace
-
-TEST(SetupUtilTest, UpdateLastOSUpgradeHandledByActiveSetup) {
-  registry_util::RegistryOverrideManager registry_override_manager;
-  registry_override_manager.OverrideRegistry(HKEY_CURRENT_USER);
-  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
-
-  BrowserDistribution* chrome_dist =
-      BrowserDistribution::GetSpecificDistribution(
-          BrowserDistribution::CHROME_BROWSER);
-  const base::string16 active_setup_path(
-      InstallUtil::GetActiveSetupPath(chrome_dist));
-
-  base::win::RegKey test_key;
-  base::string16 unused_tmp;
-
-  EXPECT_EQ(ERROR_FILE_NOT_FOUND,
-            test_key.Open(HKEY_LOCAL_MACHINE, active_setup_path.c_str(),
-                          KEY_QUERY_VALUE));
-  // The WorkItem assume the ActiveSetup key itself already exists and only
-  // handles the Version entry, create it now, but don't fill the "Version"
-  // entry just yet.
-  EXPECT_EQ(ERROR_SUCCESS,
-            test_key.Create(HKEY_LOCAL_MACHINE, active_setup_path.c_str(),
-                            KEY_QUERY_VALUE));
-  EXPECT_EQ(ERROR_FILE_NOT_FOUND, test_key.ReadValue(L"Version", &unused_tmp));
-
-  // Test returns false when no Active Setup version present (and doesn't alter
-  // that state).
-  EXPECT_FALSE(
-      installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
-  EXPECT_EQ(ERROR_FILE_NOT_FOUND, test_key.ReadValue(L"Version", &unused_tmp));
-
-  {
-    UpdateActiveSetupVersionWorkItem active_setup_work_item(
-        active_setup_path, UpdateActiveSetupVersionWorkItem::UPDATE);
-    active_setup_work_item.Do();
-    EXPECT_EQ(ERROR_SUCCESS, test_key.ReadValue(L"Version", &unused_tmp));
-  }
-
-  // Test returns false with default Active Setup version.
-  EXPECT_FALSE(
-      installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
-  EXPECT_EQ(ERROR_SUCCESS, test_key.ReadValue(L"Version", &unused_tmp));
-
-  // Run through |kIterations| sequences of bumping the OS upgrade version |i|
-  // times and simulating a regular update |kIterations-i| times, confirming
-  // that handling any number of OS upgrades only results in a single hit and
-  // that no amount of regular updates after that result in any hit.
-  const size_t kIterations = 4U;
-  for (size_t i = 0U; i < kIterations; ++i) {
-    SCOPED_TRACE(i);
-    // Bump the OS_UPGRADES component |i| times.
-    for (size_t j = 0; j < i; ++j) {
-      UpdateActiveSetupVersionWorkItem active_setup_work_item(
-          active_setup_path, UpdateActiveSetupVersionWorkItem::
-                                 UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT);
-      active_setup_work_item.Do();
-    }
-
-    // There should be a single OS upgrade to handle if the OS_UPGRADES
-    // component was bumped at least once.
-    EXPECT_EQ(i > 0, installer::UpdateLastOSUpgradeHandledByActiveSetup(
-                         chrome_dist));
-
-    // We should only be told to handle the latest OS upgrade once above.
-    EXPECT_FALSE(
-        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
-    EXPECT_FALSE(
-        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
-
-    // Run |kIterations-i| regular updates.
-    for (size_t j = i; j < kIterations; ++j) {
-      UpdateActiveSetupVersionWorkItem active_setup_work_item(
-          active_setup_path, UpdateActiveSetupVersionWorkItem::UPDATE);
-      active_setup_work_item.Do();
-    }
-
-    // No amount of regular updates should trigger an OS upgrade to be handled.
-    EXPECT_FALSE(
-        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
-    EXPECT_FALSE(
-        installer::UpdateLastOSUpgradeHandledByActiveSetup(chrome_dist));
-  }
-}
 
 // Test that we are parsing Chrome version correctly.
 TEST(SetupUtilTest, GetMaxVersionFromArchiveDirTest) {

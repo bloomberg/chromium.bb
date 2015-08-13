@@ -7,7 +7,6 @@
 #include "chrome/installer/setup/setup_util.h"
 
 #include <windows.h>
-#include <stdint.h>
 
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -18,21 +17,15 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "chrome/installer/setup/setup_constants.h"
-#include "chrome/installer/setup/update_active_setup_version_work_item.h"
-#include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/copy_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
@@ -101,104 +94,6 @@ bool SupportsSingleInstall(BrowserDistribution::Type type) {
 }
 
 }  // namespace
-
-bool UpdateLastOSUpgradeHandledByActiveSetup(BrowserDistribution* dist) {
-  // FIRST: Find the value of the latest OS upgrade registered in the Active
-  // Setup version (bumped on every major OS upgrade), defaults to 0 if no OS
-  // upgrade was ever encountered by this install.
-  DWORD latest_os_upgrade = 0;
-
-  {
-    const base::string16 active_setup_key_path(
-        InstallUtil::GetActiveSetupPath(dist));
-
-    base::win::RegKey active_setup_key;
-    if (active_setup_key.Open(HKEY_LOCAL_MACHINE, active_setup_key_path.c_str(),
-                              KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-      base::string16 existing_version;
-      if (active_setup_key.ReadValue(L"Version",
-                                     &existing_version) == ERROR_SUCCESS) {
-        std::vector<base::string16> version_components =
-            base::SplitString(existing_version, L",", base::TRIM_WHITESPACE,
-                              base::SPLIT_WANT_NONEMPTY);
-        uint32_t latest_os_upgrade_uint = 0;
-        if (version_components.size() == 4U &&
-            base::StringToUint(
-                version_components[UpdateActiveSetupVersionWorkItem::
-                                       VersionComponent::OS_UPGRADES],
-                &latest_os_upgrade_uint)) {
-          latest_os_upgrade = static_cast<DWORD>(latest_os_upgrade_uint);
-        } else {
-          LOG(ERROR) << "Failed to parse OS_UPGRADES component of "
-                     << existing_version;
-        }
-      }
-    }
-  }
-
-  // Whether the read failed or the existing value is 0, do not proceed.
-  if (latest_os_upgrade == 0U)
-    return false;
-
-  static const wchar_t kLastOSUpgradeHandledRegName[] = L"LastOSUpgradeHandled";
-
-  // SECOND: Find out the value of the last OS upgrade handled, defaults to 0 if
-  // none was ever handled.
-  DWORD last_os_upgrade_handled = 0;
-
-  base::string16 last_upgrade_handled_key_path =
-      dist->GetAppRegistrationData().GetStateMediumKey();
-  last_upgrade_handled_key_path.push_back(L'\\');
-  last_upgrade_handled_key_path.append(kLastOSUpgradeHandledRegName);
-
-  base::string16 user_specific_value;
-  // This should never fail. If it does, the beacon will be written in the key's
-  // default value, which is okay since the majority case is likely a machine
-  // with a single user.
-  if (!base::win::GetUserSidString(&user_specific_value))
-    NOTREACHED();
-
-  base::win::RegKey last_upgrade_key;
-  if (last_upgrade_key.Create(
-          HKEY_LOCAL_MACHINE, last_upgrade_handled_key_path.c_str(),
-          KEY_WOW64_32KEY | KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS) {
-    LOG(ERROR) << "Failed to create LastOSUpgradeHandled value @ "
-               << last_upgrade_handled_key_path;
-    // If the key is not read/writeable, do not proceed as this could result in
-    // handling an OS upgrade twice.
-    return false;
-  }
-
-  // It's okay for this read to fail (i.e. there is an OS upgrade available but
-  // this user never handled one yet).
-  last_upgrade_key.ReadValueDW(user_specific_value.c_str(),
-                               &last_os_upgrade_handled);
-
-  // THIRD: Figure out whether the latest OS upgrade has been handled already.
-
-  if (last_os_upgrade_handled >= latest_os_upgrade) {
-    LOG_IF(ERROR, last_os_upgrade_handled > latest_os_upgrade)
-        << "Last OS upgrade handled is somehow ahead of the latest OS upgrade?";
-    VLOG_IF(1, last_os_upgrade_handled == latest_os_upgrade)
-        << "Latest OS upgrade already handled.";
-    return false;
-  }
-
-  // At this point |last_os_upgrade_handled < latest_os_upgrade| so,
-  // FOURTH: store the fact that the latest OS upgrade has been handled and
-  // return true for the caller to act accordingly.
-
-  if (last_upgrade_key.WriteValue(user_specific_value.c_str(),
-                                  latest_os_upgrade) != ERROR_SUCCESS) {
-    LOG(ERROR) << "Failed to save latest_os_upgrade value ("
-               << latest_os_upgrade << ") to " << last_upgrade_handled_key_path;
-    // Do not proceed if the write fails as this could otherwise result in
-    // handling this OS upgrade multiple times.
-    return false;
-  }
-
-  return true;
-}
 
 int CourgettePatchFiles(const base::FilePath& src,
                         const base::FilePath& patch,
