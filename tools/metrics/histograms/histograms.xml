@@ -2743,7 +2743,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Bluetooth.RequestDevice.Outcome"
-    enum="BluetoothRequestDeviceOutcome">
+    enum="WebBluetoothRequestDeviceOutcome">
+  <obsolete>
+    Deprecated 08/2015 and replaced by Bluetooth.Web.RequestDevice.Outcome.
+  </obsolete>
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>scheib@chromium.org</owner>
@@ -2760,6 +2763,88 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>scheib@chromium.org</owner>
   <summary>
     Counts the number of times each call to a WebBluetooth function is done.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.Filters.Count" units="filters">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records how many filters are used when scanning. These results will help us
+    better understand the uses of the API and make changes according to
+    developers' behavior.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.Filters.Services"
+    enum="GATTServiceHash">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records a 31-bit hash of the GATT Service UUIDs used when scanning. This
+    will help us know if we should build an API for specific services rather
+    than a general Bluetooth API.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.FilterSize" units="services">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records how many services are used in a filter. These results will help us
+    better understand the uses of the API and make changes according to
+    developers' behavior.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.OptionalServices.Count"
+    units="filters">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records how many optional services are used when scanning. These results
+    will help us better understand the uses of the API and make changes
+    according to developers' behavior.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.OptionalServices.Services"
+    units="GATTServiceHash">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records what optional services are used. The recorded value is a 31-bit hash
+    of the Service UUID. These results will help us better understand the uses
+    of the API and make changes according to developers' behavior.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.Outcome"
+    enum="WebBluetoothRequestDeviceOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the result of a navigator.bluetooth.requestDevice() call. Used to
+    understand what errors developers are getting so we can target efforts
+    toward the most common ones.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.RequestDevice.UnionOfServices.Count"
+    units="services">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records how many services are used when scanning. This results will help us
+    better understand the uses of the API and make changes according to
+    developers' behavior.
   </summary>
 </histogram>
 
@@ -52161,17 +52246,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="Unknown or unhandler error"/>
 </enum>
 
-<enum name="BluetoothRequestDeviceOutcome" type="int">
-  <int value="0" label="Success"/>
-  <int value="1" label="No Bluetooth adapter"/>
-  <int value="2" label="No RenderFrameHost for message source"/>
-  <int value="3" label="Discovery start failed"/>
-  <int value="4" label="Discovery stop failed"/>
-  <int value="5" label="No matching devices found"/>
-  <int value="6" label="Bluetooth Adapter not present"/>
-  <int value="7" label="Bluetooth Adapter was off"/>
-</enum>
-
 <enum name="BookmarksExperimentState" type="int">
   <int value="0" label="No experiment"/>
   <int value="1" label="Experiment enabled (sync)"/>
@@ -59416,6 +59490,41 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="6" label="ListAccounts call failed"/>
   <int value="7" label="No restore needed, fresh cookies found"/>
   <int value="8" label="Overflow"/>
+</enum>
+
+<enum name="GATTServiceHash" type="int">
+  <int value="7464675" label="pulse_oximeter"/>
+  <int value="81094401" label="link_loss"/>
+  <int value="217781951" label="human_interface_device"/>
+  <int value="272218751" label="automation_io"/>
+  <int value="381944619" label="continuous_glucose_monitoring"/>
+  <int value="594122172" label="health_thermometer"/>
+  <int value="690691504" label="bond_management"/>
+  <int value="805645044" label="glucose"/>
+  <int value="836214784" label="cycling_power"/>
+  <int value="869059214" label="next_dst_change"/>
+  <int value="876407493" label="location_and_navigation"/>
+  <int value="890629650" label="running_speed_and_cadence"/>
+  <int value="1029767622" label="internet_protocol_support"/>
+  <int value="1107293675" label="cycling_speed_and_cadence"/>
+  <int value="1188875912" label="phone_alert_status"/>
+  <int value="1219993345" label="device_information"/>
+  <int value="1239202871" label="generic_attribute"/>
+  <int value="1265172773" label="indoor_positioning"/>
+  <int value="1280998251" label="blood_pressure"/>
+  <int value="1369789354" label="current_time"/>
+  <int value="1398099241" label="user_data"/>
+  <int value="1415105941" label="scan_parameters"/>
+  <int value="1424865940" label="alert_notification"/>
+  <int value="1569655226" label="generic_access"/>
+  <int value="1660904097" label="immediate_alert"/>
+  <int value="1663141542" label="battery_service"/>
+  <int value="1696287138" label="weight_scale"/>
+  <int value="1753170093" label="environmental_sensing"/>
+  <int value="1823176820" label="body_composition"/>
+  <int value="1970234661" label="reference_time_update"/>
+  <int value="2075745564" label="heart_rate"/>
+  <int value="2086529225" label="tx_power"/>
 </enum>
 
 <enum name="GCMCheckinRequestStatus" type="int">
@@ -71716,6 +71825,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="getCharacteristic()"/>
   <int value="4" label="Characteristic.readValue()"/>
   <int value="5" label="Characteristic.writeValue()"/>
+</enum>
+
+<enum name="WebBluetoothRequestDeviceOutcome" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="No Bluetooth adapter"/>
+  <int value="2" label="No RenderFrameHost for message source"/>
+  <int value="3" label="Discovery start failed"/>
+  <int value="4" label="Discovery stop failed"/>
+  <int value="5" label="No matching devices found"/>
+  <int value="6" label="Bluetooth Adapter not present"/>
+  <int value="7" label="Bluetooth Adapter was off"/>
 </enum>
 
 <enum name="WebFontCacheHit" type="int">

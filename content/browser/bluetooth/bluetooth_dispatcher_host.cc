@@ -10,7 +10,9 @@
 
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
-#include "base/metrics/histogram.h"
+#include "base/hash.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -58,9 +60,61 @@ enum class UMARequestDeviceOutcome {
 };
 
 void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.RequestDevice.Outcome",
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.RequestDevice.Outcome",
                             static_cast<int>(outcome),
                             static_cast<int>(UMARequestDeviceOutcome::COUNT));
+}
+// TODO(ortuno): Remove once we have a macro to histogram strings.
+// http://crbug.com/520284
+int HashUUID(const std::string& uuid) {
+  uint32 data = base::SuperFastHash(uuid.data(), uuid.size());
+
+  // Strip off the signed bit because UMA doesn't support negative values,
+  // but takes a signed int as input.
+  return static_cast<int>(data & 0x7fffffff);
+}
+
+void RecordRequestDeviceFilters(
+    const std::vector<content::BluetoothScanFilter>& filters) {
+  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.Filters.Count",
+                           filters.size());
+  for (const content::BluetoothScanFilter& filter : filters) {
+    UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.FilterSize",
+                             filter.services.size());
+    for (const BluetoothUUID& service : filter.services) {
+      // TODO(ortuno): Use a macro to histogram strings.
+      // http://crbug.com/520284
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "Bluetooth.Web.RequestDevice.Filters.Services",
+          HashUUID(service.canonical_value()));
+    }
+  }
+}
+
+void RecordRequestDeviceOptionalServices(
+    const std::vector<BluetoothUUID>& optional_services) {
+  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.OptionalServices.Count",
+                           optional_services.size());
+  for (const BluetoothUUID& service : optional_services) {
+    // TODO(ortuno): Use a macro to histogram strings.
+    // http://crbug.com/520284
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Bluetooth.Web.RequestDevice.OptionalServices.Services",
+        HashUUID(service.canonical_value()));
+  }
+}
+
+void RecordUnionOfServices(
+    const std::vector<content::BluetoothScanFilter>& filters,
+    const std::vector<BluetoothUUID>& optional_services) {
+  std::set<BluetoothUUID> union_of_services(optional_services.begin(),
+                                            optional_services.end());
+
+  for (const content::BluetoothScanFilter& filter : filters)
+    union_of_services.insert(filter.services.begin(), filter.services.end());
+
+  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.UnionOfServices.Count",
+                           union_of_services.size());
 }
 
 enum class UMAWebBluetoothFunction {
@@ -271,6 +325,21 @@ void BluetoothDispatcherHost::OnRequestDevice(
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
+  RecordRequestDeviceFilters(filters);
+  RecordRequestDeviceOptionalServices(optional_services);
+  RecordUnionOfServices(filters, optional_services);
+
+  VLOG(1) << "requestDevice called with the following filters: ";
+  for (const BluetoothScanFilter& filter : filters) {
+    VLOG(1) << "\t[";
+    for (const BluetoothUUID& service : filter.services)
+      VLOG(1) << "\t\t" << service.value();
+    VLOG(1) << "\t]";
+  }
+
+  VLOG(1) << "requestDevice called with the following optional services: ";
+  for (const BluetoothUUID& service : optional_services)
+    VLOG(1) << "\t" << service.value();
 
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
@@ -329,7 +398,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
         base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
                    weak_ptr_factory_.GetWeakPtr(), thread_id, request_id));
   } else {
-    DLOG(WARNING) << "No BluetoothAdapter. Can't serve requestDevice.";
+    VLOG(1) << "No BluetoothAdapter. Can't serve requestDevice.";
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_BLUETOOTH_ADAPTER);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::NoBluetoothAdapter));
@@ -639,6 +708,7 @@ void BluetoothDispatcherHost::OnDiscoverySessionStopped(int thread_id,
   }
   RecordRequestDeviceOutcome(
       UMARequestDeviceOutcome::NO_MATCHING_DEVICES_FOUND);
+  VLOG(1) << "No matching Bluetooth Devices found";
   Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
                                            WebBluetoothError::NoDevicesFound));
   request_device_sessions_.erase(session);
