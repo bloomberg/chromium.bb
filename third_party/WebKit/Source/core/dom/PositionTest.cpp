@@ -102,29 +102,6 @@ TEST_F(PositionTest, NodeAsRangeLastNodeShadow)
     EXPECT_EQ(t1, PositionInComposedTree::afterNode(host).nodeAsRangeLastNode());
 }
 
-TEST_F(PositionTest, rendersInDifferentPositionAfterAnchor)
-{
-    const char* bodyContent = "<p id='sample'>00</p>";
-    setBodyContent(bodyContent);
-    updateLayoutAndStyleForPainting();
-    RefPtrWillBeRawPtr<Element> sample = document().getElementById("sample");
-
-    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample.get()), Position(sample.get(), 1)));
-    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample.get()), Position(sample.get(), 1)));
-}
-
-TEST_F(PositionTest, renderedOffset)
-{
-    const char* bodyContent = "<div contenteditable><span id='sample1'>1</span><span id='sample2'>22</span></div>";
-    setBodyContent(bodyContent);
-    updateLayoutAndStyleForPainting();
-    RefPtrWillBeRawPtr<Element> sample1 = document().getElementById("sample1");
-    RefPtrWillBeRawPtr<Element> sample2 = document().getElementById("sample2");
-
-    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
-    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
-}
-
 TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";

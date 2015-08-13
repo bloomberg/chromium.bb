@@ -457,10 +457,6 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
     return toPositionInComposedTree(position);
 }
 
-// TODO(yosin) We should move |rendersInDifferentPosition()| into
-// "EditingUtilities.cpp", since it is used only in "editing/".
-CORE_EXPORT bool rendersInDifferentPosition(const Position&, const Position&);
-
 } // namespace blink
 
 #ifndef NDEBUG

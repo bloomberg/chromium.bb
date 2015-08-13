@@ -110,6 +110,8 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&)
 // coordinates.
 CORE_EXPORT VisiblePosition visiblePositionForContentsPoint(const IntPoint&, LocalFrame*);
 
+CORE_EXPORT bool rendersInDifferentPosition(const Position&, const Position&);
+
 } // namespace blink
 
 #endif // VisibleUnits_h

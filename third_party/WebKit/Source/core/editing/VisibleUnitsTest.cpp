@@ -52,4 +52,27 @@ TEST_F(VisibleUnitsTest, inSameLine)
     EXPECT_TRUE(inSameLine(positionWithAffinityInComposedTree(*two->firstChild(), 0), positionWithAffinityInComposedTree(*four->firstChild(), 0)));
 }
 
+TEST_F(VisibleUnitsTest, rendersInDifferentPositionAfterAnchor)
+{
+    const char* bodyContent = "<p id='sample'>00</p>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> sample = document().getElementById("sample");
+
+    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample.get()), Position(sample.get(), 1)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample.get()), Position(sample.get(), 1)));
+}
+
+TEST_F(VisibleUnitsTest, renderedOffset)
+{
+    const char* bodyContent = "<div contenteditable><span id='sample1'>1</span><span id='sample2'>22</span></div>";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+    RefPtrWillBeRawPtr<Element> sample1 = document().getElementById("sample1");
+    RefPtrWillBeRawPtr<Element> sample2 = document().getElementById("sample2");
+
+    EXPECT_FALSE(rendersInDifferentPosition(Position::afterNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
+    EXPECT_FALSE(rendersInDifferentPosition(Position::lastPositionInNode(sample1->firstChild()), Position(sample2->firstChild(), 0)));
+}
+
 } // namespace blink

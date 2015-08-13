@@ -50,6 +50,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/DeprecatedPaintLayer.h"
+#include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
@@ -1456,6 +1457,148 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
     if (Node* node = result.innerNode())
         return frame->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
     return VisiblePosition();
+}
+
+static Node* nextRenderedEditable(Node* node)
+{
+    for (node = nextAtomicLeafNode(*node); node; node = nextAtomicLeafNode(*node)) {
+        LayoutObject* layoutObject = node->layoutObject();
+        if (!layoutObject)
+            continue;
+        if (!node->hasEditableStyle())
+            continue;
+        // TODO(yosin) We should have a function to check |InlineBox| types
+        // in layout rather than using |InlineBox| here. See also
+        // |previousRenderedEditable()| which has a same condition.
+        if ((layoutObject->isBox() && toLayoutBox(layoutObject)->inlineBoxWrapper()) || (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()))
+            return node;
+    }
+    return 0;
+}
+
+static Node* previousRenderedEditable(Node* node)
+{
+    for (node = previousAtomicLeafNode(*node); node; node = previousAtomicLeafNode(*node)) {
+        LayoutObject* layoutObject = node->layoutObject();
+        if (!layoutObject)
+            continue;
+        if (!node->hasEditableStyle())
+            continue;
+        // TODO(yosin) We should have a function to check |InlineBox| types
+        // in layout rather than using |InlineBox| here. See also
+        // |nextRenderedEditable()| which has a same condition.
+        if ((layoutObject->isBox() && toLayoutBox(layoutObject)->inlineBoxWrapper()) || (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()))
+            return node;
+    }
+    return 0;
+}
+
+static int renderedOffsetOf(const Position& position)
+{
+    const int offset = position.computeEditingOffset();
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode->isTextNode() || !anchorNode->layoutObject())
+        return offset;
+
+    // TODO(yosin) We should have a function to compute offset in |LayoutText|
+    // to avoid using |InlineBox| in "editing/".
+    int result = 0;
+    LayoutText* textLayoutObject = toLayoutText(anchorNode->layoutObject());
+    for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+        int start = box->start();
+        int end = box->start() + box->len();
+        if (offset < start)
+            return result;
+        if (offset <= end) {
+            result += offset - start;
+            return result;
+        }
+        result += box->len();
+    }
+    return result;
+}
+
+// TODO(yosin) We should move |rendersInDifferentPosition()to "EditingUtilities.cpp"
+// with |renderedOffsetOf()|.
+bool rendersInDifferentPosition(const Position& position1, const Position& position2)
+{
+    if (position1.isNull() || position2.isNull())
+        return false;
+
+    LayoutObject* layoutObject = position1.anchorNode()->layoutObject();
+    if (!layoutObject)
+        return false;
+
+    LayoutObject* posLayoutObject = position2.anchorNode()->layoutObject();
+    if (!posLayoutObject)
+        return false;
+
+    if (layoutObject->style()->visibility() != VISIBLE
+        || posLayoutObject->style()->visibility() != VISIBLE)
+        return false;
+
+    if (position1.anchorNode() == position2.anchorNode()) {
+        if (isHTMLBRElement(*position1.anchorNode()))
+            return false;
+
+        if (position1.deprecatedEditingOffset() == position2.deprecatedEditingOffset())
+            return false;
+
+        if (!position1.anchorNode()->isTextNode() && !position2.anchorNode()->isTextNode())
+            return true;
+    }
+
+    if (isHTMLBRElement(*position1.anchorNode()) && position2.isCandidate())
+        return true;
+
+    if (isHTMLBRElement(*position2.anchorNode()) && position1.isCandidate())
+        return true;
+
+    if (!inSameContainingBlockFlowElement(position1.anchorNode(), position2.anchorNode()))
+        return true;
+
+    if (position1.anchorNode()->isTextNode() && !position1.inRenderedText())
+        return false;
+
+    if (position2.anchorNode()->isTextNode() && !position2.inRenderedText())
+        return false;
+
+    const int renderedOffset1 = renderedOffsetOf(position1);
+    const int renderedOffset2 = renderedOffsetOf(position2);
+
+    if (layoutObject == posLayoutObject && renderedOffset1 == renderedOffset2)
+        return false;
+
+    InlineBoxPosition boxPosition1 = position1.computeInlineBoxPosition(DOWNSTREAM);
+    InlineBoxPosition boxPosition2 = position2.computeInlineBoxPosition(DOWNSTREAM);
+
+    WTF_LOG(Editing, "layoutObject1:   %p [%p]\n", layoutObject, boxPosition1.inlineBox);
+    WTF_LOG(Editing, "renderedOffset1: %d\n", renderedOffset1);
+    WTF_LOG(Editing, "layoutObject2:   %p [%p]\n", posLayoutObject, boxPosition2.inlineBox);
+    WTF_LOG(Editing, "renderedOffset2: %d\n", renderedOffset2);
+    WTF_LOG(Editing, "node1 min/max:   %d:%d\n", caretMinOffset(position1.anchorNode()), caretMaxOffset(position1.anchorNode()));
+    WTF_LOG(Editing, "node2 min/max:   %d:%d\n", caretMinOffset(position2.anchorNode()), caretMaxOffset(position2.anchorNode()));
+    WTF_LOG(Editing, "----------------------------------------------------------------------\n");
+
+    if (!boxPosition1.inlineBox || !boxPosition2.inlineBox) {
+        return false;
+    }
+
+    if (boxPosition1.inlineBox->root() != boxPosition2.inlineBox->root()) {
+        return true;
+    }
+
+    if (nextRenderedEditable(position1.anchorNode()) == position2.anchorNode()
+        && renderedOffset1 == caretMaxOffset(position1.anchorNode()) && !renderedOffset2) {
+        return false;
+    }
+
+    if (previousRenderedEditable(position1.anchorNode()) == position2.anchorNode()
+        && !renderedOffset1 && renderedOffset2 == caretMaxOffset(position2.anchorNode())) {
+        return false;
+    }
+
+    return true;
 }
 
 }
