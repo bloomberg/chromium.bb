@@ -12,6 +12,7 @@
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+#include "third_party/libyuv/include/libyuv/row.h"
 
 namespace media {
 #if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
@@ -64,6 +65,27 @@ class YUVConvertPerfTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(YUVConvertPerfTest);
 };
 
+TEST_F(YUVConvertPerfTest, I422ToARGBRow_SSSE3) {
+  ASSERT_TRUE(base::CPU().has_ssse3());
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  for (int i = 0; i < kPerfTestIterations; ++i) {
+    for (int row = 0; row < kSourceHeight; ++row) {
+      int chroma_row = row / 2;
+      libyuv::I422ToARGBRow_SSSE3(
+          yuv_bytes_.get() + row * kSourceWidth,
+          yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
+          yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
+          rgb_bytes_converted_.get(),
+          kWidth);
+    }
+  }
+  double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
+  perf_test::PrintResult(
+      "yuv_convert_perftest", "", "I422ToARGBRow_SSSE3",
+      kPerfTestIterations / total_time_seconds, "runs/s", true);
+}
+
 TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
   ASSERT_TRUE(base::CPU().has_sse());
 
@@ -80,11 +102,35 @@ TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
+  media::EmptyRegisterState();
   double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ConvertYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
+}
+
+TEST_F(YUVConvertPerfTest, ConvertYUVAToARGBRow_MMX) {
+  ASSERT_TRUE(base::CPU().has_sse());
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  for (int i = 0; i < kPerfTestIterations; ++i) {
+    for (int row = 0; row < kSourceHeight; ++row) {
+      int chroma_row = row / 2;
+      ConvertYUVAToARGBRow_MMX(
+          yuv_bytes_.get() + row * kSourceWidth,
+          yuv_bytes_.get() + kSourceUOffset + (chroma_row * kSourceWidth / 2),
+          yuv_bytes_.get() + kSourceVOffset + (chroma_row * kSourceWidth / 2),
+          yuv_bytes_.get() + row * kSourceWidth,  // hack: use luma for alpha
+          rgb_bytes_converted_.get(),
+          kWidth,
+          GetLookupTable(YV12));
+    }
+  }
   media::EmptyRegisterState();
+  double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
+  perf_test::PrintResult(
+      "yuv_convert_perftest", "", "ConvertYUVAToARGBRow_MMX",
+      kPerfTestIterations / total_time_seconds, "runs/s", true);
 }
 
 // 64-bit release + component builds on Windows are too smart and optimizes
@@ -109,11 +155,11 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
+  media::EmptyRegisterState();
   double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ScaleYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
-  media::EmptyRegisterState();
 }
 
 TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_SSE) {
@@ -135,11 +181,11 @@ TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
+  media::EmptyRegisterState();
   double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "LinearScaleYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
-  media::EmptyRegisterState();
 }
 #endif  // defined(OS_WIN) && (ARCH_CPU_X86 || COMPONENT_BUILD)
 
