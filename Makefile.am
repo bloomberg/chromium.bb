@@ -190,8 +190,6 @@ src_libbreakpad_a_SOURCES = \
 	src/processor/basic_code_modules.h \
 	src/processor/basic_source_line_resolver_types.h \
 	src/processor/basic_source_line_resolver.cc \
-	src/processor/binarystream.h \
-	src/processor/binarystream.cc \
 	src/processor/call_stack.cc \
 	src/processor/cfi_frame_info.cc \
 	src/processor/cfi_frame_info.h \
@@ -330,7 +328,6 @@ if !DISABLE_PROCESSOR
 check_PROGRAMS += \
 	src/common/test_assembler_unittest \
 	src/processor/address_map_unittest \
-	src/processor/binarystream_unittest \
 	src/processor/basic_source_line_resolver_unittest \
 	src/processor/cfi_frame_info_unittest \
 	src/processor/contained_range_map_unittest \
@@ -631,20 +628,6 @@ src_processor_address_map_unittest_LDADD = \
 	src/processor/logging.o \
 	src/processor/pathname_stripper.o
 
-src_processor_binarystream_unittest_SOURCES = \
-	src/processor/binarystream_unittest.cc \
-	src/testing/gtest/src/gtest-all.cc \
-	src/testing/src/gmock-all.cc
-src_processor_binarystream_unittest_CPPFLAGS = \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/testing/include \
-	-I$(top_srcdir)/src/testing/gtest/include \
-	-I$(top_srcdir)/src/testing/gtest \
-	-I$(top_srcdir)/src/testing
-src_processor_binarystream_unittest_LDADD = \
-	src/processor/binarystream.o \
-	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
-
 src_processor_basic_source_line_resolver_unittest_SOURCES = \
 	src/processor/basic_source_line_resolver_unittest.cc \
 	src/testing/gtest/src/gtest-all.cc \
@@ -823,7 +806,7 @@ src_processor_microdump_processor_unittest_LDADD = \
 	src/processor/stackwalker_sparc.o \
 	src/processor/stackwalker_x86.o \
 	src/processor/tokenize.o \
- 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 
 src_processor_minidump_processor_unittest_SOURCES = \
 	src/processor/minidump_processor_unittest.cc \
@@ -1169,7 +1152,6 @@ src_processor_microdump_stackwalk_SOURCES = \
 src_processor_microdump_stackwalk_LDADD = \
 	src/processor/basic_code_modules.o \
 	src/processor/basic_source_line_resolver.o \
-	src/processor/binarystream.o \
 	src/processor/call_stack.o \
 	src/processor/cfi_frame_info.o \
 	src/processor/disassembler_x86.o \
@@ -1203,7 +1185,6 @@ src_processor_minidump_stackwalk_SOURCES = \
 src_processor_minidump_stackwalk_LDADD = \
 	src/processor/basic_code_modules.o \
 	src/processor/basic_source_line_resolver.o \
-	src/processor/binarystream.o \
 	src/processor/call_stack.o \
 	src/processor/cfi_frame_info.o \
 	src/processor/disassembler_x86.o \
