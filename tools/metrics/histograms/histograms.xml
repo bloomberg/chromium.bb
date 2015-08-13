@@ -2798,6 +2798,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Web.GetPrimaryService.Outcome"
+    enum="WebBluetoothGetPrimaryServiceOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the result of a GATTServer.getPrimaryService() call. Used to
+    understand what errors developers are getting so we can target efforts
+    toward the most common ones.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.GetPrimaryService.Services"
+    enum="GATTServiceHash">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records what GATT Services are used when connected. The record value is a
+    31-bit hash of the Service UUID. This will help us know if we should build
+    an API for specific services rather than a general Bluetooth API.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.Web.RequestDevice.Filters.Count" units="filters">
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
@@ -71870,6 +71894,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="getCharacteristic()"/>
   <int value="4" label="Characteristic.readValue()"/>
   <int value="5" label="Characteristic.writeValue()"/>
+</enum>
+
+<enum name="WebBluetoothGetPrimaryServiceOutcome" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Device no longer in range."/>
+  <int value="2" label="No services with provided UUID."/>
 </enum>
 
 <enum name="WebBluetoothRequestDeviceOutcome" type="int">

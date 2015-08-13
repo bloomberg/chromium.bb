@@ -117,6 +117,27 @@ void RecordUnionOfServices(
                            union_of_services.size());
 }
 
+enum class UMAGetPrimaryServiceOutcome {
+  SUCCESS,
+  NO_DEVICE,
+  NOT_FOUND,
+  // Note: Add new GetPrimaryService outcomes immediately above this line. Make
+  // sure to update the enum list in tools/metrics/histograms/histograms.xml
+  // accordingly.
+  COUNT
+};
+
+void RecordGetPrimaryServiceService(const BluetoothUUID& service) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetPrimaryService.Services",
+                              HashUUID(service.canonical_value()));
+}
+
+void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.Web.GetPrimaryService.Outcome", static_cast<int>(outcome),
+      static_cast<int>(UMAGetPrimaryServiceOutcome::COUNT));
+}
+
 enum class UMAConnectGATTOutcome {
   SUCCESS,
   NO_DEVICE,
@@ -481,6 +502,7 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
     const std::string& service_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_PRIMARY_SERVICE);
+  RecordGetPrimaryServiceService(BluetoothUUID(service_uuid));
 
   // TODO(ortuno): Check if device_instance_id is in "allowed devices"
   // https://crbug.com/493459
@@ -804,6 +826,8 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
 
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NO_DEVICE);
+    VLOG(1) << "Bluetooth Device is no longer in range.";
     Send(new BluetoothMsg_GetPrimaryServiceError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -820,11 +844,14 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
       if (!insert_result.second)
         DCHECK(insert_result.first->second == device_instance_id);
 
+      RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::SUCCESS);
       Send(new BluetoothMsg_GetPrimaryServiceSuccess(thread_id, request_id,
                                                      service_identifier));
       return;
     }
   }
+  RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
+  VLOG(1) << "No GATT services with UUID: " << service_uuid;
   Send(new BluetoothMsg_GetPrimaryServiceError(
       thread_id, request_id, WebBluetoothError::ServiceNotFound));
 }
