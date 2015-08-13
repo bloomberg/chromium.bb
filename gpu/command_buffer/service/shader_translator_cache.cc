@@ -31,13 +31,10 @@ scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
     sh::GLenum shader_type,
     ShShaderSpec shader_spec,
     const ShBuiltInResources* resources,
-    ShaderTranslatorInterface::GlslImplementationType
-        glsl_implementation_type,
+    ShShaderOutput shader_output_language,
     ShCompileOptions driver_bug_workarounds) {
-  ShaderTranslatorInitParams params(shader_type,
-                                    shader_spec,
-                                    *resources,
-                                    glsl_implementation_type,
+  ShaderTranslatorInitParams params(shader_type, shader_spec, *resources,
+                                    shader_output_language,
                                     driver_bug_workarounds);
 
   Cache::iterator it = cache_.find(params);
@@ -46,8 +43,7 @@ scoped_refptr<ShaderTranslator> ShaderTranslatorCache::GetTranslator(
 
   ShaderTranslator* translator = new ShaderTranslator();
   if (translator->Init(shader_type, shader_spec, resources,
-                       glsl_implementation_type,
-                       driver_bug_workarounds)) {
+                       shader_output_language, driver_bug_workarounds)) {
     cache_[params] = translator;
     translator->AddDestructionObserver(this);
     return translator;

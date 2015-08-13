@@ -15,6 +15,10 @@
 #include "gpu/gpu_export.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
+namespace gfx {
+struct GLVersionInfo;
+}
+
 namespace gpu {
 namespace gles2 {
 
@@ -31,19 +35,14 @@ class ShaderTranslatorInterface
     : public base::RefCounted<ShaderTranslatorInterface> {
  public:
   ShaderTranslatorInterface() {}
-  enum GlslImplementationType {
-    kGlsl,
-    kGlslES
-  };
 
   // Initializes the translator.
   // Must be called once before using the translator object.
-  virtual bool Init(
-      sh::GLenum shader_type,
-      ShShaderSpec shader_spec,
-      const ShBuiltInResources* resources,
-      GlslImplementationType glsl_implementation_type,
-      ShCompileOptions driver_bug_workarounds) = 0;
+  virtual bool Init(sh::GLenum shader_type,
+                    ShShaderSpec shader_spec,
+                    const ShBuiltInResources* resources,
+                    ShShaderOutput shader_output_language,
+                    ShCompileOptions driver_bug_workarounds) = 0;
 
   // Translates the given shader source.
   // Returns true if translation is successful, false otherwise.
@@ -88,11 +87,15 @@ class GPU_EXPORT ShaderTranslator
 
   ShaderTranslator();
 
+  // Return shader output lanaguage type based on the context version.
+  static ShShaderOutput GetShaderOutputLanguageForContext(
+      const gfx::GLVersionInfo& context_version);
+
   // Overridden from ShaderTranslatorInterface.
   bool Init(sh::GLenum shader_type,
             ShShaderSpec shader_spec,
             const ShBuiltInResources* resources,
-            GlslImplementationType glsl_implementation_type,
+            ShShaderOutput shader_output_language,
             ShCompileOptions driver_bug_workarounds) override;
 
   // Overridden from ShaderTranslatorInterface.
@@ -116,7 +119,6 @@ class GPU_EXPORT ShaderTranslator
   int GetCompileOptions() const;
 
   ShHandle compiler_;
-  bool implementation_is_glsl_es_;
   ShCompileOptions driver_bug_workarounds_;
   base::ObserverList<DestructionObserver> destruction_observers_;
 };

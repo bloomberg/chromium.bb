@@ -3273,9 +3273,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     resources.HashFunction = &CityHash64;
   else
     resources.HashFunction = NULL;
-  ShaderTranslatorInterface::GlslImplementationType implementation_type =
-      gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 ?
-          ShaderTranslatorInterface::kGlslES : ShaderTranslatorInterface::kGlsl;
+
   int driver_bug_workarounds = 0;
   if (workarounds().needs_glsl_built_in_function_emulation)
     driver_bug_workarounds |= SH_EMULATE_BUILT_IN_FUNCTIONS;
@@ -3299,11 +3297,12 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
           switches::kEmulateShaderPrecision))
     resources.WEBGL_debug_shader_precision = true;
 
+  ShShaderOutput shader_output_language =
+      ShaderTranslator::GetShaderOutputLanguageForContext(
+          feature_info_->gl_version_info());
+
   vertex_translator_ = shader_translator_cache()->GetTranslator(
-      GL_VERTEX_SHADER,
-      shader_spec,
-      &resources,
-      implementation_type,
+      GL_VERTEX_SHADER, shader_spec, &resources, shader_output_language,
       static_cast<ShCompileOptions>(driver_bug_workarounds));
   if (!vertex_translator_.get()) {
     LOG(ERROR) << "Could not initialize vertex shader translator.";
@@ -3312,10 +3311,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   fragment_translator_ = shader_translator_cache()->GetTranslator(
-      GL_FRAGMENT_SHADER,
-      shader_spec,
-      &resources,
-      implementation_type,
+      GL_FRAGMENT_SHADER, shader_spec, &resources, shader_output_language,
       static_cast<ShCompileOptions>(driver_bug_workarounds));
   if (!fragment_translator_.get()) {
     LOG(ERROR) << "Could not initialize fragment shader translator.";

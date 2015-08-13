@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_version_info.h"
 
 namespace gpu {
 namespace gles2 {
@@ -90,6 +91,50 @@ void GetNameHashingInfo(ShHandle compiler, NameMap* name_map) {
 
 }  // namespace
 
+ShShaderOutput ShaderTranslator::GetShaderOutputLanguageForContext(
+    const gfx::GLVersionInfo& version_info) {
+  if (version_info.is_es) {
+    return SH_ESSL_OUTPUT;
+  }
+
+  // Determine the GLSL version based on OpenGL specification.
+
+  unsigned context_version =
+      version_info.major_version * 100 + version_info.minor_version * 10;
+  if (context_version >= 450) {
+    // OpenGL specs from 4.2 on specify that the core profile is "also
+    // guaranteed to support all previous versions of the OpenGL Shading
+    // Language back to version 1.40". For simplicity, we assume future
+    // specs do not unspecify this. If they did, they could unspecify
+    // glGetStringi(GL_SHADING_LANGUAGE_VERSION, k), too.
+    // Since current context >= 4.5, use GLSL 4.50 core.
+    return SH_GLSL_450_CORE_OUTPUT;
+  } else if (context_version == 440) {
+    return SH_GLSL_440_CORE_OUTPUT;
+  } else if (context_version == 430) {
+    return SH_GLSL_430_CORE_OUTPUT;
+  } else if (context_version == 420) {
+    return SH_GLSL_420_CORE_OUTPUT;
+  } else if (context_version == 410) {
+    return SH_GLSL_410_CORE_OUTPUT;
+  } else if (context_version == 400) {
+    return SH_GLSL_400_CORE_OUTPUT;
+  } else if (context_version == 330) {
+    return SH_GLSL_330_CORE_OUTPUT;
+  } else if (context_version == 320) {
+    return SH_GLSL_150_CORE_OUTPUT;
+  } else if (context_version == 310) {
+    return SH_GLSL_140_OUTPUT;
+  } else if (context_version == 300) {
+    return SH_GLSL_130_OUTPUT;
+  }
+
+  // Before OpenGL 3.0 we use compatibility profile. Also for future
+  // specs between OpenGL 3.3 and OpenGL 4.0, at the time of writing,
+  // we use compatibility profile.
+  return SH_GLSL_COMPATIBILITY_OUTPUT;
+}
+
 ShaderTranslator::DestructionObserver::DestructionObserver() {
 }
 
@@ -98,16 +143,14 @@ ShaderTranslator::DestructionObserver::~DestructionObserver() {
 
 ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),
-      implementation_is_glsl_es_(false),
       driver_bug_workarounds_(static_cast<ShCompileOptions>(0)) {
 }
 
-bool ShaderTranslator::Init(
-    GLenum shader_type,
-    ShShaderSpec shader_spec,
-    const ShBuiltInResources* resources,
-    ShaderTranslatorInterface::GlslImplementationType glsl_implementation_type,
-    ShCompileOptions driver_bug_workarounds) {
+bool ShaderTranslator::Init(GLenum shader_type,
+                            ShShaderSpec shader_spec,
+                            const ShBuiltInResources* resources,
+                            ShShaderOutput shader_output_language,
+                            ShCompileOptions driver_bug_workarounds) {
   // Make sure Init is called only once.
   DCHECK(compiler_ == NULL);
   DCHECK(shader_type == GL_FRAGMENT_SHADER || shader_type == GL_VERTEX_SHADER);
@@ -117,27 +160,12 @@ bool ShaderTranslator::Init(
 
   g_translator_initializer.Get();
 
-  ShShaderOutput shader_output;
-  if (glsl_implementation_type == kGlslES) {
-    shader_output = SH_ESSL_OUTPUT;
-  } else {
-    // TODO(kbr): clean up the tests of shader_spec and
-    // gfx::GetGLImplementation(). crbug.com/471960
-    if (shader_spec == SH_WEBGL2_SPEC ||
-        gfx::GetGLImplementation() ==
-            gfx::kGLImplementationDesktopGLCoreProfile) {
-      shader_output = SH_GLSL_410_CORE_OUTPUT;
-    } else {
-      shader_output = SH_GLSL_COMPATIBILITY_OUTPUT;
-    }
-  }
 
   {
     TRACE_EVENT0("gpu", "ShConstructCompiler");
-    compiler_ = ShConstructCompiler(
-        shader_type, shader_spec, shader_output, resources);
+    compiler_ = ShConstructCompiler(shader_type, shader_spec,
+                                    shader_output_language, resources);
   }
-  implementation_is_glsl_es_ = (glsl_implementation_type == kGlslES);
   driver_bug_workarounds_ = driver_bug_workarounds;
   return compiler_ != NULL;
 }

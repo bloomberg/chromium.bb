@@ -30,17 +30,11 @@ TEST(ShaderTranslatorCacheTest, InitParamComparable) {
   memset(a_storage, 55, sizeof(a_storage));
   ShaderTranslatorCache::ShaderTranslatorInitParams* a =
       new (&a_storage) ShaderTranslatorCache::ShaderTranslatorInitParams(
-          GL_VERTEX_SHADER,
-          SH_GLES2_SPEC,
-          a_resources,
-          ShaderTranslatorInterface::kGlslES,
+          GL_VERTEX_SHADER, SH_GLES2_SPEC, a_resources, SH_ESSL_OUTPUT,
           driver_bug_workarounds);
 
   ShaderTranslatorCache::ShaderTranslatorInitParams b(
-      GL_VERTEX_SHADER,
-      SH_GLES2_SPEC,
-      b_resources,
-      ShaderTranslatorInterface::kGlslES,
+      GL_VERTEX_SHADER, SH_GLES2_SPEC, b_resources, SH_ESSL_OUTPUT,
       driver_bug_workarounds);
 
   EXPECT_TRUE(*a == b);
