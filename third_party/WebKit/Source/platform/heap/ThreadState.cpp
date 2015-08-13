@@ -569,6 +569,11 @@ void ThreadState::updatePersistentCounters()
     m_persistentFreed = 0;
 }
 
+size_t ThreadState::currentObjectSize()
+{
+    return Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+}
+
 size_t ThreadState::estimatedLiveObjectSize()
 {
     // We estimate the live object size with the following equations.
@@ -591,57 +596,52 @@ size_t ThreadState::estimatedLiveObjectSize()
     size_t estimatedSize = 0;
     if (currentHeapSize > heapSizeRetainedByCollectedPersistents)
         estimatedSize = currentHeapSize - heapSizeRetainedByCollectedPersistents;
-    TRACE_COUNTER1("blink_gc", "ThreadState::currentHeapSizeKB", std::min(currentHeapSize / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "ThreadState::estimatedLiveObjectSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "ThreadState::heapGrowingRate", static_cast<int>(100.0 * currentHeapSize / estimatedSize));
     return estimatedSize;
 }
 
-size_t ThreadState::currentObjectSize()
+double ThreadState::heapGrowingRate()
 {
-    return Heap::allocatedObjectSize() + Heap::markedObjectSize() + WTF::Partitions::totalSizeOfCommittedPages();
+    size_t currentSize = currentObjectSize();
+    size_t estimatedSize = estimatedLiveObjectSize();
+    double growingRate = 1.0 * currentSize / estimatedSize;
+    TRACE_COUNTER1("blink_gc", "ThreadState::currentHeapSizeKB", std::min(currentSize / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "ThreadState::estimatedLiveObjectSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "ThreadState::heapGrowingRate", static_cast<int>(100 * growingRate));
+    return growingRate;
+}
+
+// TODO(haraken): We should improve the GC heuristics.
+// The heuristics affect performance significantly.
+bool ThreadState::judgeGCThreshold(size_t allocatedObjectSizeThreshold, double heapGrowingRateThreshold)
+{
+    // If the allocated object size is small enough, don't trigger a GC.
+    if (Heap::allocatedObjectSize() < allocatedObjectSizeThreshold)
+        return false;
+    // If the heap growing rate is large enough, trigger a GC.
+    return heapGrowingRate() >= heapGrowingRateThreshold;
 }
 
 bool ThreadState::shouldForceMemoryPressureGC()
 {
-    // Avoid potential overflow by truncating to Kb.
-    size_t currentObjectSizeKb = currentObjectSize() >> 10;
-    if (currentObjectSizeKb < 300 * 1024)
+    if (currentObjectSize() < 300 * 1024 * 1024)
         return false;
 
-    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
     // If we're consuming too much memory, trigger a conservative GC
     // aggressively. This is a safe guard to avoid OOM.
-    return currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
+    return judgeGCThreshold(0, 1.5);
 }
 
-// TODO(haraken): We should improve the GC heuristics.
-// These heuristics affect performance significantly.
 bool ThreadState::shouldScheduleIdleGC()
 {
     if (gcState() != NoGCScheduled)
         return false;
 #if ENABLE(IDLE_GC)
-    // Avoid potential overflow by truncating to Kb.
-    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
-    // The estimated size is updated when the main thread finishes lazy
-    // sweeping. If this thread reaches here before the main thread finishes
-    // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
-    // Heap::markedObjectSize() may be underestimated if any thread has not
-    // finished completeSweep().
-    size_t currentObjectSizeKb = currentObjectSize() >> 10;
-    // Schedule an idle GC if Oilpan has allocated more than 1 MB since
-    // the last GC and the current memory usage is >50% larger than
-    // the estimated live memory usage.
-    return allocatedObjectSizeKb >= 1024 && currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
+    return judgeGCThreshold(1024 * 1024, 1.5);
 #else
     return false;
 #endif
 }
 
-// TODO(haraken): We should improve the GC heuristics.
-// These heuristics affect performance significantly.
 bool ThreadState::shouldSchedulePreciseGC()
 {
     if (gcState() != NoGCScheduled)
@@ -649,19 +649,7 @@ bool ThreadState::shouldSchedulePreciseGC()
 #if ENABLE(IDLE_GC)
     return false;
 #else
-    // Avoid potential overflow by truncating to Kb.
-    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
-    // The estimated size is updated when the main thread finishes lazy
-    // sweeping. If this thread reaches here before the main thread finishes
-    // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
-    // Heap::markedObjectSize() may be underestimated if any thread has not
-    // finished completeSweep().
-    size_t currentObjectSizeKb = currentObjectSize() >> 10;
-    // Schedule a precise GC if Oilpan has allocated more than 1 MB since
-    // the last GC and the current memory usage is >50% larger than
-    // the estimated live memory usage.
-    return allocatedObjectSizeKb >= 1024 && currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
+    return judgeGCThreshold(1024 * 1024, 1.5);
 #endif
 }
 
@@ -673,19 +661,19 @@ bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
     if (shouldForceMemoryPressureGC())
         return true;
 
-    // Avoid potential overflow by truncating to Kb.
-    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
-    // The estimated size is updated when the main thread finishes lazy
-    // sweeping. If this thread reaches here before the main thread finishes
-    // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = (estimatedLiveObjectSize() >> 10) * (1 - estimatedRemovalRatio);
-    // Heap::markedObjectSize() may be underestimated if any thread has not
-    // finished completeSweep().
-    size_t currentObjectSizeKb = currentObjectSize() >> 10;
-    // Schedule a precise GC if Oilpan has allocated more than 1 MB since
-    // the last GC and the current memory usage is >50% larger than
-    // the estimated live memory usage.
-    return allocatedObjectSizeKb >= 1024 && currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
+    return judgeGCThreshold(1024 * 1024, 1.5);
+}
+
+bool ThreadState::shouldForceConservativeGC()
+{
+    if (UNLIKELY(isGCForbidden()))
+        return false;
+
+    if (shouldForceMemoryPressureGC())
+        return true;
+
+    // TODO(haraken): 400% is too large. Lower the heap growing factor.
+    return judgeGCThreshold(32 * 1024 * 1024, 5.0);
 }
 
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
@@ -708,32 +696,6 @@ void ThreadState::schedulePageNavigationGC()
     ASSERT(checkThread());
     ASSERT(!isSweepingInProgress());
     setGCState(PageNavigationGCScheduled);
-}
-
-// TODO(haraken): We should improve the GC heuristics.
-// These heuristics affect performance significantly.
-bool ThreadState::shouldForceConservativeGC()
-{
-    if (UNLIKELY(isGCForbidden()))
-        return false;
-
-    if (shouldForceMemoryPressureGC())
-        return true;
-
-    // Avoid potential overflow by truncating to Kb.
-    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
-    // The estimated size is updated when the main thread finishes lazy
-    // sweeping. If this thread reaches here before the main thread finishes
-    // lazy sweeping, the thread will use the estimated size of the last GC.
-    size_t estimatedLiveObjectSizeKb = estimatedLiveObjectSize() >> 10;
-    // Heap::markedObjectSize() may be underestimated if any thread has not
-    // finished completeSweep().
-    size_t currentObjectSizeKb = currentObjectSize() >> 10;
-    // Schedule a conservative GC if Oilpan has allocated more than 32 MB since
-    // the last GC and the current memory usage is >400% larger than
-    // the estimated live memory usage.
-    // TODO(haraken): 400% is too large. Lower the heap growing factor.
-    return allocatedObjectSizeKb >= 32 * 1024 && currentObjectSizeKb > 5 * estimatedLiveObjectSizeKb;
 }
 
 void ThreadState::scheduleGCIfNeeded()

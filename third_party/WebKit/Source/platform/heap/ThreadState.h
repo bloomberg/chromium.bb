@@ -700,6 +700,8 @@ private:
     bool shouldForceMemoryPressureGC();
     size_t estimatedLiveObjectSize();
     size_t currentObjectSize();
+    double heapGrowingRate();
+    bool judgeGCThreshold(size_t allocatedObjectSizeThreshold, double heapGrowingRateThreshold);
 
     void runScheduledGC(StackState);
 
