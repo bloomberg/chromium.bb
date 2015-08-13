@@ -43,8 +43,13 @@ class ChromotingTestFixture
 
  private:
   // testing::Test overrides.
-  void SetUp() override;
   void TearDown() override;
+
+  // Creates |connection_time_observer_| to attach to |test_chromoting_client_|.
+  void CreateObserver();
+
+  // Detaches |connection_time_observer_| and destroys it.
+  void DestroyObserver();
 
   // Creates and manages the connection to the remote host.
   scoped_ptr<TestChromotingClient> test_chromoting_client_;

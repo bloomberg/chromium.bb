@@ -27,6 +27,26 @@ void ChromotingTestFixture::Disconnect() {
   test_chromoting_client_->EndConnection();
 }
 
+void ChromotingTestFixture::CreateObserver() {
+  if (connection_time_observer_) {
+    DestroyObserver();
+  }
+
+  connection_time_observer_.reset(new ConnectionTimeObserver());
+  test_chromoting_client_->AddRemoteConnectionObserver(
+      connection_time_observer_.get());
+}
+
+void ChromotingTestFixture::DestroyObserver() {
+  if (!connection_time_observer_) {
+    return;
+  }
+
+  test_chromoting_client_->RemoveRemoteConnectionObserver(
+      connection_time_observer_.get());
+  connection_time_observer_.reset();
+}
+
 bool ChromotingTestFixture::ConnectToHost(
     const base::TimeDelta& max_time_to_connect) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -38,6 +58,8 @@ bool ChromotingTestFixture::ConnectToHost(
 
   // Host is online and ready, initiate a remote session.
   base::RunLoop run_loop;
+
+  CreateObserver();
 
   base::Timer timer(true, false);
   timer.Start(FROM_HERE, max_time_to_connect, run_loop.QuitClosure());
@@ -65,18 +87,11 @@ bool ChromotingTestFixture::ConnectToHost(
   return true;
 }
 
-void ChromotingTestFixture::SetUp() {
-  connection_time_observer_.reset(new ConnectionTimeObserver());
-  test_chromoting_client_->AddRemoteConnectionObserver(
-      connection_time_observer_.get());
-}
-
 void ChromotingTestFixture::TearDown() {
   // If a chromoting connection is still connected, we want to end the
   // connection before starting the next test.
   Disconnect();
-  test_chromoting_client_->RemoveRemoteConnectionObserver(
-      connection_time_observer_.get());
+  DestroyObserver();
 }
 
 }  // namespace test

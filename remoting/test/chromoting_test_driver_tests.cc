@@ -2,21 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/test/chromoting_test_driver_environment.h"
 #include "remoting/test/chromoting_test_fixture.h"
 #include "remoting/test/connection_time_observer.h"
 
 namespace {
 const base::TimeDelta kPinBasedMaxConnectionTimeInSeconds =
-    base::TimeDelta::FromSeconds(5);
-const int kPinBasedMaxAuthenticationTimeMs = 4000;
-const int kMaxTimeToConnectMs = 1000;
+    base::TimeDelta::FromSeconds(4);
+const int kPinBasedMaxAuthenticationTimeMs = 2000;
+const int kMaxTimeToConnectMs = 2000;
 }
 
 namespace remoting {
 namespace test {
 
-TEST_F(ChromotingTestFixture, DISABLED_TestMeasurePinBasedAuthentication) {
+TEST_F(ChromotingTestFixture, TestMeasurePinBasedAuthentication) {
   bool connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
   EXPECT_TRUE(connected);
 
@@ -35,9 +34,11 @@ TEST_F(ChromotingTestFixture, DISABLED_TestMeasurePinBasedAuthentication) {
           protocol::ConnectionToHost::State::AUTHENTICATED,
           protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
   EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
+
+  connection_time_observer_->DisplayConnectionStats();
 }
 
-TEST_F(ChromotingTestFixture, DISABLED_TestMeasureReconnectPerformance) {
+TEST_F(ChromotingTestFixture, TestMeasureReconnectPerformance) {
   bool connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
   EXPECT_TRUE(connected);
 
@@ -56,6 +57,8 @@ TEST_F(ChromotingTestFixture, DISABLED_TestMeasureReconnectPerformance) {
           protocol::ConnectionToHost::State::AUTHENTICATED,
           protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
   EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
+
+  connection_time_observer_->DisplayConnectionStats();
 
   // Begin reconnection to same host.
   connected = ConnectToHost(kPinBasedMaxConnectionTimeInSeconds);
@@ -76,13 +79,8 @@ TEST_F(ChromotingTestFixture, DISABLED_TestMeasureReconnectPerformance) {
           protocol::ConnectionToHost::State::AUTHENTICATED,
           protocol::ConnectionToHost::State::CONNECTED).InMilliseconds();
   EXPECT_LE(authenticated_to_connected_time, kMaxTimeToConnectMs);
-}
 
-// TODO(TonyChun): Remove #include "chromoting_test_driver_environment.h" and
-// this test once connecting to the lab's Linux host is working.
-TEST(HostListTest, VerifyRequestedHostIsInHostList) {
-  EXPECT_TRUE(g_chromoting_shared_data);
-  EXPECT_TRUE(g_chromoting_shared_data->host_info().IsReadyForConnection());
+  connection_time_observer_->DisplayConnectionStats();
 }
 
 }  // namespace test
