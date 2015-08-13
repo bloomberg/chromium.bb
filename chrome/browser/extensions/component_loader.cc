@@ -665,9 +665,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_FIRST_RUN_DIALOG_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/first_run/app")));
 
-    Add(IDR_NETWORK_CONFIGURATION_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("chromeos/network_configuration")));
-
     Add(IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
         base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
     Add(IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST,

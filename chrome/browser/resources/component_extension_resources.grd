@@ -143,18 +143,6 @@
         <include name="IDR_FIRST_RUN_DIALOG_ICON_128" file="chromeos/first_run/app/icon/128.png" type="BINDATA" />
         <include name="IDR_FIRST_RUN_DIALOG_ICON_256" file="chromeos/first_run/app/icon/256.png" type="BINDATA" />
       </if>
-      <if expr="chromeos">
-        <!-- Network status. -->
-        <include name="IDR_NETWORK_CONFIGURATION_STATUS_HTML" file="chromeos/network_configuration/status.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_NETWORK_CONFIGURATION_STATUS_CSS" file="chromeos/network_configuration/css/status.css" type="BINDATA" />
-        <include name="IDR_NETWORK_CONFIGURATION_NETWORK_STATUS_JS" file="chromeos/network_configuration/js/network_status.js" type="BINDATA" />
-        <include name="IDR_NETWORK_CONFIGURATION_MAIN_STATUS_JS" file="chromeos/network_configuration/js/main_status.js" type="BINDATA" />
-        <!-- Network configuration. -->
-        <include name="IDR_NETWORK_CONFIGURATION_CONFIG_HTML" file="chromeos/network_configuration/config.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_NETWORK_CONFIGURATION_CONFIG_CSS" file="chromeos/network_configuration/css/config.css" type="BINDATA" />
-        <include name="IDR_NETWORK_CONFIGURATION_NETWORK_CONFIG_JS" file="chromeos/network_configuration/js/network_config.js" type="BINDATA" />
-        <include name="IDR_NETWORK_CONFIGURATION_MAIN_CONFIG_JS" file="chromeos/network_configuration/js/main_config.js" type="BINDATA" />
-      </if>
       <if expr="enable_settings_app">
         <include name="IDR_SETTINGS_APP_JS" file="settings_app/settings_app.js" type="BINDATA" />
       </if>
