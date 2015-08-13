@@ -617,13 +617,17 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
 
         if (elementAnimations)
             elementAnimations->updateBaseComputedStyle(state.style());
+    } else {
+        INCREMENT_STYLE_STATS_COUNTER(*this, baseStylesUsed, 1);
     }
 
     // FIXME: The CSSWG wants to specify that the effects of animations are applied before
     // important rules, but this currently happens here as we require adjustment to have happened
     // before deciding which properties to transition.
-    if (applyAnimatedProperties(state, element))
+    if (applyAnimatedProperties(state, element)) {
+        INCREMENT_STYLE_STATS_COUNTER(*this, stylesAnimated, 1);
         adjustComputedStyle(state, element);
+    }
 
     if (isHTMLBodyElement(*element))
         document().textLinkColors().setTextColor(state.style()->color());

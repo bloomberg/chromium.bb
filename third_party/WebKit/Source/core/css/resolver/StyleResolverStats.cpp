@@ -51,8 +51,10 @@ void StyleResolverStats::reset()
     rulesMatched = 0;
     stylesChanged = 0;
     stylesUnchanged = 0;
+    stylesAnimated = 0;
     elementsStyled = 0;
     pseudoElementsStyled = 0;
+    baseStylesUsed = 0;
 }
 
 bool StyleResolverStats::allCountersEnabled() const
@@ -82,8 +84,10 @@ PassRefPtr<TracedValue> StyleResolverStats::toTracedValue() const
     tracedValue->setInteger("rulesMatched", rulesMatched);
     tracedValue->setInteger("stylesChanged", stylesChanged);
     tracedValue->setInteger("stylesUnchanged", stylesUnchanged);
+    tracedValue->setInteger("stylesAnimated", stylesAnimated);
     tracedValue->setInteger("elementsStyled", elementsStyled);
     tracedValue->setInteger("pseudoElementsStyled", pseudoElementsStyled);
+    tracedValue->setInteger("baseStylesUsed", baseStylesUsed);
     return tracedValue.release();
 }
 

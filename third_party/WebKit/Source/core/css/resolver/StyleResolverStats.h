@@ -64,8 +64,10 @@ public:
     unsigned rulesMatched;
     unsigned stylesChanged;
     unsigned stylesUnchanged;
+    unsigned stylesAnimated;
     unsigned elementsStyled;
     unsigned pseudoElementsStyled;
+    unsigned baseStylesUsed;
 
 private:
     StyleResolverStats()
