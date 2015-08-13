@@ -146,8 +146,6 @@ public:
 
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);
 
-    BLINK_EXPORT static void enableTextBlobs(bool);
-
     BLINK_EXPORT static void enableCSSViewport(bool);
 
     BLINK_EXPORT static void enableV8IdleTasks(bool);
