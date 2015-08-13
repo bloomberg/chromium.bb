@@ -312,15 +312,6 @@ TEST_F(SkCanvasVideoRendererTest, NoTimestamp) {
   EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
 }
 
-TEST_F(SkCanvasVideoRendererTest, SameVideoFrame) {
-  Paint(natural_frame(), target_canvas(), kRed);
-  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
-
-  // Slow paints can get cached, expect the old color value.
-  Paint(natural_frame(), target_canvas(), kBlue);
-  EXPECT_EQ(SK_ColorRED, GetColor(target_canvas()));
-}
-
 TEST_F(SkCanvasVideoRendererTest, CroppedFrame) {
   Paint(cropped_frame(), target_canvas(), kNone);
   // Check the corners.

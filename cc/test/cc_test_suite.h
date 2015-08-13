@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 
 namespace base {
@@ -28,6 +29,7 @@ class CCTestSuite : public base::TestSuite {
  private:
   scoped_ptr<base::MessageLoop> message_loop_;
 
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
   DISALLOW_COPY_AND_ASSIGN(CCTestSuite);
 };
 

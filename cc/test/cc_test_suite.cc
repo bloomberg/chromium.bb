@@ -26,6 +26,8 @@ void CCTestSuite::Initialize() {
   base::ThreadIdNameManager::GetInstance()->SetName(
       base::PlatformThread::CurrentId(),
       "Main");
+
+  base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 }
 
 void CCTestSuite::Shutdown() {
