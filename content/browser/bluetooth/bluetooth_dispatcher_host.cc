@@ -411,6 +411,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     RecordRequestDeviceOutcome(UMARequestDeviceOutcome::NO_RENDER_FRAME);
     Send(new BluetoothMsg_RequestDeviceError(
         thread_id, request_id, WebBluetoothError::RequestDeviceWithoutFrame));
+    return;
   }
 
   // TODO(scheib): Device selection UI: crbug.com/436280
