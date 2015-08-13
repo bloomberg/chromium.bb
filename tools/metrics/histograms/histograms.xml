@@ -70172,7 +70172,7 @@ To add a new entry, add it with any value and run test to compute valid value.
     case is not recorded if the host name is not a known TLD.
   </int>
   <int value="4"
-      label="SUBDOMAIN_INVERSE_MATCH: The DNS is a subdomian of the URL">
+      label="SUBDOMAIN_INVERSE_MATCH: The DNS is a subdomain of the URL">
     This cause is recorded if the ssl error is CERT_COMMON_NAME_INVALID and the
     difference between the DNS name and the URL is not &quot;www&quot;. This
     case is not recorded if the host name is not a known TLD.
