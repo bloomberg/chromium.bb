@@ -1,4 +1,8 @@
 include_rules = [
+  "+components/clipboard/public/interfaces",
+  "+components/devtools_service/public/interfaces",
+  "+components/font_service/public/interfaces",
+  "+components/resource_provider/public/interfaces",
   "+components/view_manager/public",
   "+mojo/application/public",
   "+mojo/services/network/public/interfaces",

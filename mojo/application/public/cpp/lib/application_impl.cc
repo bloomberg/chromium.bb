@@ -59,8 +59,14 @@ ApplicationImpl::~ApplicationImpl() {
 }
 
 scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
-    mojo::URLRequestPtr request,
-    CapabilityFilterPtr filter) {
+    URLRequestPtr request) {
+  return ConnectToApplicationWithCapabilityFilter(request.Pass(), nullptr);
+}
+
+scoped_ptr<ApplicationConnection>
+    ApplicationImpl::ConnectToApplicationWithCapabilityFilter(
+        URLRequestPtr request,
+        CapabilityFilterPtr filter) {
   if (!shell_)
     return nullptr;
   ServiceProviderPtr local_services;

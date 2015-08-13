@@ -14,6 +14,21 @@
 namespace mojo {
 namespace shell {
 
+// It's valid to specify mojo: URLs in the filter either as mojo:foo or
+// mojo://foo/ - but we store the filter in the latter form.
+CapabilityFilter CanonicalizeFilter(const CapabilityFilter& filter) {
+  CapabilityFilter canonicalized;
+  for (CapabilityFilter::const_iterator it = filter.begin();
+       it != filter.end();
+       ++it) {
+    if (it->first == "*")
+      canonicalized[it->first] = it->second;
+    else
+      canonicalized[GURL(it->first).spec()] = it->second;
+  }
+  return canonicalized;
+}
+
 ApplicationInstance::QueuedClientRequest::QueuedClientRequest()
     : originator(nullptr) {}
 
@@ -30,7 +45,7 @@ ApplicationInstance::ApplicationInstance(
     : manager_(manager),
       originator_identity_(originator_identity),
       identity_(identity),
-      filter_(filter),
+      filter_(CanonicalizeFilter(filter)),
       allow_any_application_(filter.size() == 1 && filter.count("*") == 1),
       on_application_end_(on_application_end),
       application_(application.Pass()),
@@ -95,11 +110,12 @@ void ApplicationInstance::ConnectToApplication(
     ServiceProviderPtr exposed_services,
     CapabilityFilterPtr filter) {
   std::string url_string = app_request->url.To<std::string>();
-  if (!GURL(url_string).is_valid()) {
+  GURL url(url_string);
+  if (!url.is_valid()) {
     LOG(ERROR) << "Error: invalid URL: " << url_string;
     return;
   }
-  if (allow_any_application_ || filter_.find(url_string) != filter_.end()) {
+  if (allow_any_application_ || filter_.find(url.spec()) != filter_.end()) {
     CapabilityFilter capability_filter = GetPermissiveCapabilityFilter();
     if (!filter.is_null())
       capability_filter = filter->filter.To<CapabilityFilter>();
@@ -108,8 +124,8 @@ void ApplicationInstance::ConnectToApplication(
                                    exposed_services.Pass(), capability_filter,
                                    base::Closure());
   } else {
-    DVLOG(1) << "CapabilityFilter prevented connection from: " <<
-        identity_.url << " to: " << url_string;
+    LOG(WARNING) << "CapabilityFilter prevented connection from: " <<
+        identity_.url << " to: " << url.spec();
   }
 }
 

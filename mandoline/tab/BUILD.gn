@@ -18,7 +18,11 @@ source_set("tab") {
 
   deps = [
     "//base",
+    "//components/clipboard/public/interfaces",
+    "//components/devtools_service/public/interfaces",
+    "//components/resource_provider/public/interfaces",
     "//components/view_manager/public/cpp",
+    "//components/view_manager/public/interfaces",
     "//mojo/application/public/cpp:sources",
     "//mojo/application/public/interfaces",
     "//mojo/services/network/public/interfaces",
@@ -28,6 +32,10 @@ source_set("tab") {
   public_deps = [
     "//mandoline/tab/public/interfaces",
   ]
+
+  if (is_linux && !is_android) {
+    deps += [ "//components/font_service/public/interfaces" ]
+  }
 }
 
 source_set("test_support") {

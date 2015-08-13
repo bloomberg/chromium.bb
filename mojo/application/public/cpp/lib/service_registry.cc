@@ -51,7 +51,7 @@ bool ServiceRegistry::SetServiceConnectorForName(
                                                            interface_name);
     return true;
   }
-  DVLOG(2) << "CapabilityFilter prevented connection to interface: " <<
+  LOG(WARNING) << "CapabilityFilter prevented connection to interface: " <<
       interface_name;
   return false;
 }

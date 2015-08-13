@@ -94,11 +94,10 @@ class ApplicationImpl : public Application {
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller takes ownership.
-  // TODO(beng): consider replacing default value in a separate CL per style
-  //             guide.
-  scoped_ptr<ApplicationConnection> ConnectToApplication(
+  scoped_ptr<ApplicationConnection> ConnectToApplication(URLRequestPtr request);
+  scoped_ptr<ApplicationConnection> ConnectToApplicationWithCapabilityFilter(
       URLRequestPtr request,
-      CapabilityFilterPtr filter = nullptr);
+      CapabilityFilterPtr filter);
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
