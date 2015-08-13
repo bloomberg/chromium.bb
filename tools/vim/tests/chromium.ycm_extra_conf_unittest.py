@@ -142,8 +142,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
     command_line = self.ycm_extra_conf.GetClangCommandLineFromNinjaForSource(
         self.out_dir, os.path.join(self.chrome_root, 'one.cpp'))
     self.assertEquals(
-        command_line,
-        '../../fake-clang++ -Ia -Itag-one ../../one.cpp -o obj/one.o')
+        command_line, ('../../fake-clang++ -Ia -isysroot /mac.sdk -Itag-one '
+                       '../../one.cpp -o obj/one.o'))
 
   def testCommandLineForUnknownCppFile(self):
     command_line = self.ycm_extra_conf.GetClangCommandLineFromNinjaForSource(
@@ -158,6 +158,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-one'
         ])
 
@@ -175,6 +177,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-one'
         ])
 
@@ -192,6 +196,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-default'
         ])
 
@@ -209,6 +215,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-default'
         ])
 
@@ -226,6 +234,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-three'
         ])
 
@@ -256,6 +266,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-four'
         ])
 
@@ -273,6 +285,8 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[SRC]',
         '-Wno-unknown-warning-option',
         '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
         '-I[OUT]/tag-default'
         ])
 

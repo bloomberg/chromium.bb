@@ -10,7 +10,7 @@ link = echo Link
 default_file = ../../base/logging.cc
 
 rule cxx
-  command = $cxx -Ia -Itag-$tag $in -o $out
+  command = $cxx -Ia -isysroot /mac.sdk -Itag-$tag $in -o $out
 
 rule link
   command = $link $in $out
