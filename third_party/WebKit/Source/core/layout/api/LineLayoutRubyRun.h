@@ -35,11 +35,6 @@ public:
         return toRubyRun()->rubyText();
     }
 
-    LayoutRubyBase* rubyBase() const
-    {
-        return toRubyRun()->rubyBase();
-    }
-
 private:
     LayoutRubyRun* toRubyRun()
     {

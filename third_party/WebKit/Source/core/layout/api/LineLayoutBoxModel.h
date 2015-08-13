@@ -33,56 +33,6 @@ public:
         return toBoxModel()->layer();
     }
 
-    bool hasSelfPaintingLayer() const
-    {
-        return toBoxModel()->hasSelfPaintingLayer();
-    }
-
-    LayoutUnit paddingTop() const
-    {
-        return toBoxModel()->paddingTop();
-    }
-
-    LayoutUnit paddingRight() const
-    {
-        return toBoxModel()->paddingRight();
-    }
-
-    int borderTop() const
-    {
-        return toBoxModel()->borderTop();
-    }
-
-    int borderRight() const
-    {
-        return toBoxModel()->borderRight();
-    }
-
-    LayoutUnit borderAndPaddingLogicalHeight() const
-    {
-        return toBoxModel()->borderAndPaddingLogicalHeight();
-    }
-
-    LayoutUnit marginTop() const
-    {
-        return toBoxModel()->marginTop();
-    }
-
-    LayoutUnit marginBottom() const
-    {
-        return toBoxModel()->marginBottom();
-    }
-
-    LayoutUnit marginLeft() const
-    {
-        return toBoxModel()->marginLeft();
-    }
-
-    LayoutUnit marginRight() const
-    {
-        return toBoxModel()->marginRight();
-    }
-
     LayoutUnit lineHeight(bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode) const
     {
         return toBoxModel()->lineHeight(firstLine, lineDirectionMode, linePositionMode);

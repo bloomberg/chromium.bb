@@ -240,11 +240,6 @@ public:
         return m_layoutObject->isText();
     }
 
-    bool isInlineElementContinuation() const
-    {
-        return m_layoutObject->isInlineElementContinuation();
-    }
-
     bool hasLayer() const
     {
         return m_layoutObject->hasLayer();
