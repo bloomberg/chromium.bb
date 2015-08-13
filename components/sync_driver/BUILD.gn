@@ -71,6 +71,8 @@ static_library("sync_driver") {
     "sync_service.h",
     "sync_service_observer.cc",
     "sync_service_observer.h",
+    "sync_service_utils.cc",
+    "sync_service_utils.h",
     "system_encryptor.cc",
     "system_encryptor.h",
     "tab_node_pool.cc",

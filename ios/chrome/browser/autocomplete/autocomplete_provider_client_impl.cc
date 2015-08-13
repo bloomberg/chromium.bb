@@ -10,8 +10,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/sync_driver/sync_prefs.h"
-#include "components/sync_driver/sync_service.h"
+#include "components/sync_driver/sync_service_utils.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "ios/chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "ios/chrome/browser/autocomplete/shortcuts_backend_factory.h"
@@ -139,18 +138,10 @@ bool AutocompleteProviderClientImpl::BookmarkBarIsVisible() const {
 }
 
 bool AutocompleteProviderClientImpl::TabSyncEnabledAndUnencrypted() const {
-  // Check field trials and settings allow sending the URL on suggest requests.
-  // TODO(sdefresne): there is much duplication between this implementation and
-  // ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted, try to use
-  // an helper function to share it, http://crbug.com/519555
-  sync_driver::SyncService* sync_service =
+  return sync_driver::IsTabSyncEnabledAndUnencrypted(
       ios::GetKeyedServiceProvider()->GetSyncServiceForBrowserState(
-          browser_state_);
-  sync_driver::SyncPrefs sync_prefs(browser_state_->GetPrefs());
-  return sync_service && sync_service->CanSyncStart() &&
-         sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
-             .Has(syncer::PROXY_TABS) &&
-         !sync_service->GetEncryptedDataTypes().Has(syncer::SESSIONS);
+          browser_state_),
+      browser_state_->GetPrefs());
 }
 
 void AutocompleteProviderClientImpl::Classify(
