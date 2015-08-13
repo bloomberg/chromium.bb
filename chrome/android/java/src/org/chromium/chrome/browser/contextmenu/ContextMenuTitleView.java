@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -16,6 +17,8 @@ import org.chromium.chrome.R;
 public class ContextMenuTitleView extends ScrollView {
     private static final int MAX_HEIGHT_DP = 70;
     private static final int PADDING_DP = 16;
+    private static final int MAX_TITLE_CHARS = 1024;
+    private static final String ELLIPSIS = "\u2026";
 
     private final float mDpToPx;
 
@@ -30,6 +33,12 @@ public class ContextMenuTitleView extends ScrollView {
         setPadding(padding, padding, padding, 0);
 
         TextView titleView = new TextView(context);
+        if (!TextUtils.isEmpty(title) && title.length() > MAX_TITLE_CHARS) {
+            StringBuilder sb = new StringBuilder(MAX_TITLE_CHARS + ELLIPSIS.length());
+            sb.append(title, 0, MAX_TITLE_CHARS);
+            sb.append(ELLIPSIS);
+            title = sb.toString();
+        }
         titleView.setText(title);
         titleView.setTextColor(getResources().getColor(R.color.default_text_color));
         titleView.setPadding(0, 0, 0, padding);
