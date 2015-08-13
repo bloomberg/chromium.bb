@@ -49,7 +49,6 @@ CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSMotionPath status=stable
 CSSOMSmoothScroll status=experimental
-CSSScrollBlocksOn status=experimental
 CSSStickyPosition
 CSSTouchActionPanDirections status=experimental
 CSSViewport status=experimental

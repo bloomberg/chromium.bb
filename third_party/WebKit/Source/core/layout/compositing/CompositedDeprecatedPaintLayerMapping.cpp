@@ -232,8 +232,6 @@ void CompositedDeprecatedPaintLayerMapping::createPrimaryGraphicsLayer()
         updateLayerBlendMode(layoutObject()->styleRef());
         updateIsRootForIsolatedGroup();
     }
-
-    updateScrollBlocksOn(layoutObject()->styleRef());
 }
 
 void CompositedDeprecatedPaintLayerMapping::destroyGraphicsLayers()
@@ -291,18 +289,6 @@ void CompositedDeprecatedPaintLayerMapping::updateIsRootForIsolatedGroup()
     ASSERT(m_owningLayer.stackingNode()->isStackingContext() || !isolate);
 
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
-}
-
-void CompositedDeprecatedPaintLayerMapping::updateScrollBlocksOn(const ComputedStyle& style)
-{
-    // Note that blink determines the default scroll blocking policy, even
-    // when the scroll-blocks-on CSS feature isn't enabled.
-    WebScrollBlocksOn blockingMode = WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent;
-
-    if (RuntimeEnabledFeatures::cssScrollBlocksOnEnabled())
-        blockingMode = style.scrollBlocksOn();
-
-    m_graphicsLayer->setScrollBlocksOn(blockingMode);
 }
 
 void CompositedDeprecatedPaintLayerMapping::updateContentsOpaque()
@@ -734,8 +720,6 @@ void CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerGeometry(const De
     updateChildrenTransform();
     updateScrollParent(scrollParent());
     registerScrollingLayers();
-
-    updateScrollBlocksOn(layoutObject()->styleRef());
 
     updateCompositingReasons();
 }

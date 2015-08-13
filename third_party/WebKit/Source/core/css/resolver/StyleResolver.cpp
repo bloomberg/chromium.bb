@@ -470,7 +470,6 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     // so that the common case doesn't need to create a new ComputedStyle in
     // Document::inheritHtmlAndBodyElementStyles.
     documentStyle->setDisplay(BLOCK);
-    documentStyle->setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
     documentStyle->setPosition(AbsolutePosition);
 
     document.setupFontBuilder(*documentStyle);

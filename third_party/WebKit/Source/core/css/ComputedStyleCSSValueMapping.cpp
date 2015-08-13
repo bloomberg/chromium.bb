@@ -656,23 +656,6 @@ static LayoutRect sizingBox(const LayoutObject* layoutObject)
     return box->style()->boxSizing() == BORDER_BOX ? box->borderBoxRect() : box->computedCSSContentBoxRect();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> scrollBlocksOnFlagsToCSSValue(WebScrollBlocksOn scrollBlocksOn)
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-
-    if (scrollBlocksOn == WebScrollBlocksOnNone)
-        return cssValuePool().createIdentifierValue(CSSValueNone);
-
-    if (scrollBlocksOn & WebScrollBlocksOnStartTouch)
-        list->append(cssValuePool().createIdentifierValue(CSSValueStartTouch));
-    if (scrollBlocksOn & WebScrollBlocksOnWheelEvent)
-        list->append(cssValuePool().createIdentifierValue(CSSValueWheelEvent));
-    if (scrollBlocksOn & WebScrollBlocksOnScrollEvent)
-        list->append(cssValuePool().createIdentifierValue(CSSValueScrollEvent));
-    ASSERT(list->length());
-    return list.release();
-}
-
 static PassRefPtrWillBeRawPtr<CSSValue> renderTextDecorationFlagsToCSSValue(int textDecoration)
 {
     // Blink value is ignored.
@@ -1936,8 +1919,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
         return cssValuePool().createValue(style.rubyPosition());
     case CSSPropertyScrollBehavior:
         return cssValuePool().createValue(style.scrollBehavior());
-    case CSSPropertyScrollBlocksOn:
-        return scrollBlocksOnFlagsToCSSValue(style.scrollBlocksOn());
     case CSSPropertyTableLayout:
         return cssValuePool().createValue(style.tableLayout());
     case CSSPropertyTextAlign:

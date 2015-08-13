@@ -253,7 +253,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseTextEmphasisStyle();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTouchAction();
-    PassRefPtrWillBeRawPtr<CSSValue> parseScrollBlocksOn();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseTextDecoration();
 

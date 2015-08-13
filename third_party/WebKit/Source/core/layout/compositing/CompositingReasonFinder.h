@@ -37,7 +37,6 @@ private:
 
     bool requiresCompositingForTransform(LayoutObject*) const;
     bool requiresCompositingForPositionFixed(const DeprecatedPaintLayer*) const;
-    bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 
     LayoutView& m_layoutView;
     CompositingTriggerFlags m_compositingTriggers;

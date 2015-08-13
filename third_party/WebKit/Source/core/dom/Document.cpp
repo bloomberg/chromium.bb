@@ -1636,8 +1636,6 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         columnGap = overflowStyle->columnGap();
     }
 
-    WebScrollBlocksOn scrollBlocksOn = documentElementStyle->scrollBlocksOn();
-
     RefPtr<ComputedStyle> documentStyle = layoutView()->mutableStyle();
     if (documentStyle->writingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
@@ -1646,8 +1644,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         || documentStyle->imageRendering() != imageRendering
         || documentStyle->overflowX() != overflowX
         || documentStyle->overflowY() != overflowY
-        || documentStyle->columnGap() != columnGap
-        || documentStyle->scrollBlocksOn() != scrollBlocksOn) {
+        || documentStyle->columnGap() != columnGap) {
         RefPtr<ComputedStyle> newStyle = ComputedStyle::clone(*documentStyle);
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
@@ -1657,7 +1654,6 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         newStyle->setOverflowX(overflowX);
         newStyle->setOverflowY(overflowY);
         newStyle->setColumnGap(columnGap);
-        newStyle->setScrollBlocksOn(scrollBlocksOn);
         layoutView()->setStyle(newStyle);
         setupFontBuilder(*newStyle);
     }

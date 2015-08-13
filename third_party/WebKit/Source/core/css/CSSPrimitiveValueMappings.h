@@ -51,7 +51,6 @@
 #include "platform/text/UnicodeBidi.h"
 #include "platform/text/WritingMode.h"
 #include "public/platform/WebBlendMode.h"
-#include "public/platform/WebScrollBlocksOn.h"
 #include "wtf/MathExtras.h"
 
 namespace blink {
@@ -4332,25 +4331,6 @@ template<> inline CSSPrimitiveValue::operator EIsolation() const
 
     ASSERT_NOT_REACHED();
     return IsolationAuto;
-}
-
-template<> inline CSSPrimitiveValue::operator WebScrollBlocksOn() const
-{
-    switch (m_value.valueID) {
-    case CSSValueNone:
-        return WebScrollBlocksOnNone;
-    case CSSValueStartTouch:
-        return WebScrollBlocksOnStartTouch;
-    case CSSValueWheelEvent:
-        return WebScrollBlocksOnWheelEvent;
-    case CSSValueScrollEvent:
-        return WebScrollBlocksOnScrollEvent;
-    default:
-        break;
-    }
-
-    ASSERT_NOT_REACHED();
-    return WebScrollBlocksOnNone;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(CSSBoxType cssBox)

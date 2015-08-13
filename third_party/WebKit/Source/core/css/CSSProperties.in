@@ -256,7 +256,6 @@ r interpolable, svg, converter=convertLength
 rx interpolable, svg, converter=convertLength
 ry interpolable, svg, converter=convertLength
 scroll-behavior runtime_flag=CSSOMSmoothScroll, type_name=ScrollBehavior
-scroll-blocks-on runtime_flag=CSSScrollBlocksOn, converter=convertFlags<WebScrollBlocksOn>
 scroll-snap-type runtime_flag=CSSScrollSnapPoints, type_name=ScrollSnapType
 scroll-snap-points-x runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints
 scroll-snap-points-y runtime_flag=CSSScrollSnapPoints, converter=convertSnapPoints

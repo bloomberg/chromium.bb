@@ -107,15 +107,6 @@ DeprecatedPaintLayerType LayoutBox::layerTypeRequired() const
         || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
         return NormalDeprecatedPaintLayer;
 
-    // Ensure that explicit use of scroll-blocks-on creates a Layer (since we might need
-    // it to be composited).
-    if (style()->hasScrollBlocksOn()) {
-        if (isDocumentElement()) {
-            ASSERT(style()->scrollBlocksOn() == view()->style()->scrollBlocksOn());
-            return NoDeprecatedPaintLayer;
-        }
-        return NormalDeprecatedPaintLayer;
-    }
     if (hasOverflowClip())
         return OverflowClipDeprecatedPaintLayer;
 

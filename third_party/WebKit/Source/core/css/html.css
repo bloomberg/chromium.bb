@@ -27,10 +27,6 @@ html {
     display: block
 }
 
-:root {
-    scroll-blocks-on: start-touch wheel-event
-}
-
 /* children of the <head> element all have display:none */
 head {
     display: none

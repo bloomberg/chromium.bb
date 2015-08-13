@@ -1532,13 +1532,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parsedValue = parseTouchAction();
         break;
 
-    case CSSPropertyScrollBlocksOn:
-        if (id == CSSValueNone)
-            validPrimitive = true;
-        else
-            parsedValue = parseScrollBlocksOn();
-        break;
-
     case CSSPropertyAlignContent:
         parsedValue = parseContentDistributionOverflowPosition();
         break;
@@ -7157,31 +7150,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTouchAction()
         return list.release();
 
     return nullptr;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseScrollBlocksOn()
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-    CSSParserValue* value = m_valueList->current();
-    while (value) {
-        switch (value->id) {
-        case CSSValueStartTouch:
-        case CSSValueWheelEvent:
-        case CSSValueScrollEvent: {
-            RefPtrWillBeRawPtr<CSSValue> flagValue = cssValuePool().createIdentifierValue(value->id);
-            if (list->hasValue(flagValue.get()))
-                return nullptr;
-            list->append(flagValue.release());
-            break;
-        }
-        default:
-            return nullptr;
-        }
-        value = m_valueList->next();
-    }
-
-    ASSERT(list->length());
-    return list.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTextDecoration()

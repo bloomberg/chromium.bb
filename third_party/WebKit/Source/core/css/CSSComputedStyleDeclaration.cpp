@@ -154,7 +154,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyResize,
     CSSPropertyRight,
     CSSPropertyScrollBehavior,
-    CSSPropertyScrollBlocksOn,
     CSSPropertySpeak,
     CSSPropertyTableLayout,
     CSSPropertyTabSize,

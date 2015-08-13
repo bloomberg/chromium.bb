@@ -119,6 +119,9 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
     m_layer->layer()->setWebLayerClient(this);
     m_layer->setAutomaticallyComputeRasterScale(true);
+
+    // TODO(rbyers): Expose control over this to the web - crbug.com/489802:
+    setScrollBlocksOn(WebScrollBlocksOnStartTouch | WebScrollBlocksOnWheelEvent);
 }
 
 GraphicsLayer::~GraphicsLayer()
@@ -596,17 +599,6 @@ PassRefPtr<JSONObject> GraphicsLayer::layerTreeAsJSON(LayerTreeFlags flags, Rend
 
     if (m_blendMode != WebBlendModeNormal)
         json->setString("blendMode", compositeOperatorName(CompositeSourceOver, m_blendMode));
-
-    if ((flags & LayerTreeIncludesScrollBlocksOn) && m_scrollBlocksOn) {
-        RefPtr<JSONArray> scrollBlocksOnJSON = adoptRef(new JSONArray);
-        if (m_scrollBlocksOn & WebScrollBlocksOnStartTouch)
-            scrollBlocksOnJSON->pushString("StartTouch");
-        if (m_scrollBlocksOn & WebScrollBlocksOnWheelEvent)
-            scrollBlocksOnJSON->pushString("WheelEvent");
-        if (m_scrollBlocksOn & WebScrollBlocksOnScrollEvent)
-            scrollBlocksOnJSON->pushString("ScrollEvent");
-        json->setArray("scrollBlocksOn", scrollBlocksOnJSON);
-    }
 
     if (m_isRootForIsolatedGroup)
         json->setBoolean("isolate", m_isRootForIsolatedGroup);

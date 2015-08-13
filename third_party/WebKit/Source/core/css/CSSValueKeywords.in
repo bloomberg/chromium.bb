@@ -926,12 +926,6 @@ markers
 // auto
 isolate
 
-// scroll-blocks-on
-// none
-start-touch
-wheel-event
-scroll-event
-
 // touch-action
 pan-x
 pan-y

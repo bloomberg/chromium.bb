@@ -212,7 +212,6 @@ rx
 ry
 scale
 scrollBehavior
-scrollBlocksOn
 scrollSnapCoordinate
 scrollSnapDestination
 scrollSnapPointsX

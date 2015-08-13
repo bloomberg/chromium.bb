@@ -263,7 +263,6 @@ private:
     void updateTransform(const ComputedStyle&);
     void updateLayerBlendMode(const ComputedStyle&);
     void updateIsRootForIsolatedGroup();
-    void updateScrollBlocksOn(const ComputedStyle&);
     // Return the opacity value that this layer should use for compositing.
     float compositingOpacity(float layoutObjectOpacity) const;
 

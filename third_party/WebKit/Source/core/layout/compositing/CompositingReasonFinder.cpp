@@ -53,10 +53,6 @@ CompositingReasons CompositingReasonFinder::directReasons(const DeprecatedPaintL
     ASSERT(potentialCompositingReasonsFromStyle(layer->layoutObject()) == layer->potentialCompositingReasonsFromStyle());
     CompositingReasons styleDeterminedDirectCompositingReasons = layer->potentialCompositingReasonsFromStyle() & CompositingReasonComboAllDirectStyleDeterminedReasons;
 
-    // Apply optimizations for scroll-blocks-on which require comparing style between objects.
-    if ((styleDeterminedDirectCompositingReasons & CompositingReasonScrollBlocksOn) && !requiresCompositingForScrollBlocksOn(layer->layoutObject()))
-        styleDeterminedDirectCompositingReasons &= ~CompositingReasonScrollBlocksOn;
-
     return styleDeterminedDirectCompositingReasons | nonStyleDeterminedDirectReasons(layer);
 }
 
@@ -103,12 +99,6 @@ CompositingReasons CompositingReasonFinder::potentialCompositingReasonsFromStyle
 
     if (style.hasPerspective())
         reasons |= CompositingReasonPerspectiveWith3DDescendants;
-
-    // Ignore scroll-blocks-on on the document element, because it will get propagated to
-    // the LayoutView (by Document::inheritHtmlAndBodyElementStyles) and we don't want to
-    // create two composited layers.
-    if (style.hasScrollBlocksOn() && !layoutObject->isDocumentElement())
-        reasons |= CompositingReasonScrollBlocksOn;
 
     if (style.hasCompositorProxy())
         reasons |= CompositingReasonCompositorProxy;
@@ -191,49 +181,6 @@ bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Deprecat
     // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
     // They will stay fixed wrt the container rather than the enclosing frame.
     return layer->scrollsWithViewport() && m_layoutView.frameView()->isScrollable();
-}
-
-bool CompositingReasonFinder::requiresCompositingForScrollBlocksOn(const LayoutObject* layoutObject) const
-{
-    // Note that the other requires* functions run at LayoutObject::styleDidChange time and so can rely
-    // only on the style of their object.  This function runs at CompositingRequirementsUpdater::update
-    // time, and so can consider the style of other objects.
-    const ComputedStyle& style = layoutObject->styleRef();
-
-    // We should only get here by CompositingReasonScrollBlocksOn being a potential compositing reason.
-    ASSERT(style.hasScrollBlocksOn() && !layoutObject->isDocumentElement());
-
-    // scroll-blocks-on style is propagated from the document element to the document.
-    ASSERT(!layoutObject->isLayoutView()
-        || !layoutObject->document().documentElement()
-        || !layoutObject->document().documentElement()->layoutObject()
-        || layoutObject->document().documentElement()->layoutObject()->style()->scrollBlocksOn() == style.scrollBlocksOn());
-
-    // When a scroll occurs, it's the union of all bits set on the target element's containing block
-    // chain that determines the behavior.  Thus we really only need a new layer if this object contains
-    // additional bits from those set by all objects in it's containing block chain.  But determining
-    // this fully is probably more expensive than it's worth.  Instead we just have fast-paths here for
-    // the most common cases of unnecessary layer creation.
-    // Optimizing this fully would avoid layer explosion in pathological cases like '*' rules.
-    // We could consider tracking the current state in CompositingRequirementsUpdater::update.
-
-    // Ensure iframes don't get composited when they require no more blocking than their parent.
-    if (layoutObject->isLayoutView()) {
-        if (const FrameView* parentFrame = toLayoutView(layoutObject)->frameView()->parentFrameView()) {
-            if (const LayoutView* parentLayoutObject = parentFrame->layoutView()) {
-                // Does this frame contain only blocks-on bits already present in the parent frame?
-                if (!(style.scrollBlocksOn() & ~parentLayoutObject->style()->scrollBlocksOn()))
-                    return false;
-            }
-        } else {
-            // The root frame will either always already be composited, or compositing will be disabled.
-            // Either way, we don't need to require compositing for scroll blocks on.  This avoids
-            // enabling compositing by default, and avoids cluttering the root layers compositing reasons.
-            return false;
-        }
-    }
-
-    return true;
 }
 
 }

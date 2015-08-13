@@ -238,7 +238,6 @@ rx: 0px
 ry: 0px
 scale: 1
 scroll-behavior: auto
-scroll-blocks-on: none
 scroll-snap-coordinate: none
 scroll-snap-destination: 0px 0px
 scroll-snap-points-x: none

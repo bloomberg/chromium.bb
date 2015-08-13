@@ -189,8 +189,6 @@ public:
     // value (that can only be specified using CSSOM scroll APIs) so 2 bits are needed.
     unsigned m_scrollBehavior: 2;
 
-    unsigned m_scrollBlocksOn: 3; // WebScrollBlocksOn
-
     unsigned m_scrollSnapType: 2; // ScrollSnapType
 
     // Plugins require accelerated compositing for reasons external to blink.
