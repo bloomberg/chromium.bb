@@ -69,7 +69,7 @@ def _IsRetryableException(e):
       e_orig = e_orig.orig
     error_code = e_orig.args[0] if len(e_orig.args) > 0 else -1
     if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
-      logging.info('Encountered retryable cidb exception %s, retrying....', e)
+      logging.info('RETRYING cidb query due to %s.', e)
       return True
 
   return False
