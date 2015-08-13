@@ -34,16 +34,6 @@ typedef std::vector<content_settings::Rule> Rules;
 
 typedef std::pair<std::string, std::string> StringPair;
 
-// TODO(bauerb): Expose constants.
-const char* kProviderNames[] = {
-  "platform_app",
-  "policy",
-  "supervised_user",
-  "extension",
-  "preference",
-  "default"
-};
-
 // These constants are copied from extensions/common/extension_constants.h and
 // content/public/common/url_constants.h to avoid complicated dependencies.
 // TODO(vabr): Get these constants through the ContentSettingsClient.
@@ -54,17 +44,24 @@ const char kChromeUIScheme[] = "chrome";
 const char kExtensionScheme[] = "chrome-extension";
 #endif
 
-content_settings::SettingSource kProviderSourceMap[] = {
-  content_settings::SETTING_SOURCE_EXTENSION,
-  content_settings::SETTING_SOURCE_POLICY,
-  content_settings::SETTING_SOURCE_SUPERVISED,
-  content_settings::SETTING_SOURCE_EXTENSION,
-  content_settings::SETTING_SOURCE_USER,
-  content_settings::SETTING_SOURCE_USER,
+struct ProviderNamesSourceMapEntry {
+  const char* provider_name;
+  content_settings::SettingSource provider_source;
 };
-static_assert(arraysize(kProviderSourceMap) ==
-                   HostContentSettingsMap::NUM_PROVIDER_TYPES,
-              "kProviderSourceMap should have NUM_PROVIDER_TYPES elements");
+
+const ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
+    {"platform_app", content_settings::SETTING_SOURCE_EXTENSION},
+    {"policy", content_settings::SETTING_SOURCE_POLICY},
+    {"supervised_user", content_settings::SETTING_SOURCE_SUPERVISED},
+    {"extension", content_settings::SETTING_SOURCE_EXTENSION},
+    {"preference", content_settings::SETTING_SOURCE_USER},
+    {"default", content_settings::SETTING_SOURCE_USER},
+};
+
+static_assert(
+    arraysize(kProviderNamesSourceMap) ==
+        HostContentSettingsMap::NUM_PROVIDER_TYPES,
+    "kProviderNamesSourceMap should have NUM_PROVIDER_TYPES elements");
 
 // Returns true if the |content_type| supports a resource identifier.
 // Resource identifiers are supported (but not required) for plugins.
@@ -160,7 +157,7 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
         GetDefaultContentSettingFromProvider(content_type, provider->second);
     if (default_setting != CONTENT_SETTING_DEFAULT) {
       if (provider_id)
-        *provider_id = kProviderNames[provider->first];
+        *provider_id = kProviderNamesSourceMap[provider->first].provider_name;
       return default_setting;
     }
   }
@@ -577,10 +574,8 @@ void HostContentSettingsMap::AddSettingsForOneType(
       setting_value = content_settings::ValueToContentSetting(rule.value.get());
     }
     settings->push_back(ContentSettingPatternSource(
-        rule.primary_pattern, rule.secondary_pattern,
-        setting_value,
-        kProviderNames[provider_type],
-        incognito));
+        rule.primary_pattern, rule.secondary_pattern, setting_value,
+        kProviderNamesSourceMap[provider_type].provider_name, incognito));
   }
 }
 
@@ -662,8 +657,8 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSetting(
 // static
 HostContentSettingsMap::ProviderType
 HostContentSettingsMap::GetProviderTypeFromSource(const std::string& source) {
-  for (size_t i = 0; i < arraysize(kProviderNames); ++i) {
-    if (source == kProviderNames[i])
+  for (size_t i = 0; i < arraysize(kProviderNamesSourceMap); ++i) {
+    if (source == kProviderNamesSourceMap[i].provider_name)
       return static_cast<ProviderType>(i);
   }
 
@@ -711,7 +706,7 @@ scoped_ptr<base::Value> HostContentSettingsMap::GetWebsiteSettingInternal(
                                                             secondary_pattern));
     if (value) {
       if (info)
-        info->source = kProviderSourceMap[provider->first];
+        info->source = kProviderNamesSourceMap[provider->first].provider_source;
       return value.Pass();
     }
   }
