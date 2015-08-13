@@ -63,26 +63,52 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
     if (request.priority() != ResourceLoadPriorityUnresolved)
         return request.priority();
 
+    // An image fetch is used to distinguish between "early" and "late" scripts in a document
+    if (type == Resource::Image)
+        m_imageFetched = true;
+
+    // Runtime experiment that change how we prioritize resources.
+    // The toggles do not depend on each other and can be flipped individually
+    // though the cumulative result will depend on the interaction between them.
+    // Background doc: https://docs.google.com/document/d/1bCDuq9H1ih9iNjgzyAL0gpwNFiEP4TZS-YLRp_RuMlc/edit?usp=sharing
+    bool deferLateScripts = context().fetchDeferLateScripts();
+    bool increaseFontPriority = context().fetchIncreaseFontPriority();
+    bool increaseAsyncScriptPriority = context().fetchIncreaseAsyncScriptPriority();
+    // Increases the priorities for CSS, Scripts, Fonts and Images all by one level
+    // and parser-blocking scripts and visible images by 2.
+    // This is used in conjunction with logic on the Chrome side to raise the threshold
+    // of "layout-blocking" resources and provide a boost to resources that are needed
+    // as soon as possible for something currently on the screen.
+    bool increasePriorities = context().fetchIncreasePriorities();
+
     switch (type) {
     case Resource::MainResource:
         return context().isLowPriorityIframe() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityVeryHigh;
     case Resource::CSSStyleSheet:
-        return ResourceLoadPriorityHigh;
+        return increasePriorities ? ResourceLoadPriorityVeryHigh : ResourceLoadPriorityHigh;
     case Resource::Raw:
         return request.options().synchronousPolicy == RequestSynchronously ? ResourceLoadPriorityVeryHigh : ResourceLoadPriorityMedium;
     case Resource::Script:
-        // Async scripts do not block the parser so they get the lowest priority and can be
-        // loaded in parser order with images.
+        // Async/Defer scripts.
         if (FetchRequest::LazyLoad == request.defer())
-            return ResourceLoadPriorityLow;
-        return ResourceLoadPriorityMedium;
+            return increaseAsyncScriptPriority ? ResourceLoadPriorityMedium : ResourceLoadPriorityLow;
+        // Reduce the priority of late-body scripts.
+        if (deferLateScripts && request.forPreload() && m_imageFetched)
+            return increasePriorities ? ResourceLoadPriorityMedium : ResourceLoadPriorityLow;
+        // Parser-blocking scripts.
+        if (!request.forPreload())
+            return increasePriorities ? ResourceLoadPriorityVeryHigh : ResourceLoadPriorityMedium;
+        // Non-async/defer scripts discovered by the preload scanner (only early scripts if deferLateScripts is active).
+        return increasePriorities ? ResourceLoadPriorityHigh : ResourceLoadPriorityMedium;
     case Resource::Font:
+        if (increaseFontPriority)
+            return increasePriorities ? ResourceLoadPriorityVeryHigh : ResourceLoadPriorityHigh;
+        return increasePriorities ? ResourceLoadPriorityHigh : ResourceLoadPriorityMedium;
     case Resource::ImportResource:
         return ResourceLoadPriorityMedium;
     case Resource::Image:
-        // Default images to VeryLow, and promote whatever is visible. This improves
-        // speed-index by ~5% on average, ~14% at the 99th percentile.
-        return ResourceLoadPriorityVeryLow;
+        // Default images to VeryLow, and promote when they become visible.
+        return increasePriorities ? ResourceLoadPriorityLow : ResourceLoadPriorityVeryLow;
     case Resource::Media:
         return ResourceLoadPriorityLow;
     case Resource::XSLStyleSheet:
@@ -98,6 +124,7 @@ ResourceLoadPriority ResourceFetcher::loadPriority(Resource::Type type, const Fe
     case Resource::TextTrack:
         return ResourceLoadPriorityLow;
     }
+
     ASSERT_NOT_REACHED();
     return ResourceLoadPriorityUnresolved;
 }
@@ -162,6 +189,7 @@ ResourceFetcher::ResourceFetcher(FetchContext* context)
     , m_autoLoadImages(true)
     , m_imagesEnabled(true)
     , m_allowStaleResources(false)
+    , m_imageFetched(false)
 {
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);

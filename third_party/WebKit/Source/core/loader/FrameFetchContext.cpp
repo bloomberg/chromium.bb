@@ -675,6 +675,27 @@ bool FrameFetchContext::isLowPriorityIframe() const
     return !frame()->isMainFrame() && frame()->settings() && frame()->settings()->lowPriorityIframes();
 }
 
+bool FrameFetchContext::fetchDeferLateScripts() const
+{
+    return frame()->settings() && frame()->settings()->fetchDeferLateScripts();
+}
+
+bool FrameFetchContext::fetchIncreaseFontPriority() const
+{
+    return frame()->settings() && frame()->settings()->fetchIncreaseFontPriority();
+}
+
+bool FrameFetchContext::fetchIncreaseAsyncScriptPriority() const
+{
+    return frame()->settings() && frame()->settings()->fetchIncreaseAsyncScriptPriority();
+}
+
+bool FrameFetchContext::fetchIncreasePriorities() const
+{
+    return frame()->settings() && frame()->settings()->fetchIncreasePriorities();
+}
+
+
 DEFINE_TRACE(FrameFetchContext)
 {
     visitor->trace(m_document);

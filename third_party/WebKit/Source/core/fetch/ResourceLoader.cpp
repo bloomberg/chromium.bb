@@ -218,6 +218,11 @@ void ResourceLoader::didChangePriority(ResourceLoadPriority loadPriority, int in
     }
 }
 
+bool ResourceLoader::shouldUseIncreasedPriorities()
+{
+    return m_fetcher->context().fetchIncreasePriorities();
+}
+
 void ResourceLoader::cancelIfNotFinishing()
 {
     if (m_state != Initialized)

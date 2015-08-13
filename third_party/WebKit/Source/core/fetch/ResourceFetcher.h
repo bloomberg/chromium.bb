@@ -215,10 +215,11 @@ private:
     };
     DeadResourceStatsRecorder m_deadStatsRecorder;
 
-    // 29 bits left
+    // 28 bits left
     bool m_autoLoadImages : 1;
     bool m_imagesEnabled : 1;
     bool m_allowStaleResources : 1;
+    bool m_imageFetched : 1;
 };
 
 class ResourceCacheValidationSuppressor {

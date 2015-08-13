@@ -30,6 +30,8 @@
 
 #include "config.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
+
+#include "core/fetch/ResourceLoader.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/TraceEvent.h"
 
@@ -97,6 +99,11 @@ void ResourceLoadPriorityOptimizer::updateImageResourcesWithLoadPriority()
     for (const auto& resource : m_imageResources) {
         ResourceLoadPriority priority = resource.value->status == Visible ?
             ResourceLoadPriorityLow : ResourceLoadPriorityVeryLow;
+
+        if (resource.value->imageResource->loader() && resource.value->imageResource->loader()->shouldUseIncreasedPriorities()) {
+            priority = resource.value->status == Visible ?
+                ResourceLoadPriorityHigh : ResourceLoadPriorityLow;
+        }
 
         if (priority != resource.value->imageResource->resourceRequest().priority()) {
             resource.value->imageResource->mutableResourceRequest().setPriority(priority, resource.value->screenArea);

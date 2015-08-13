@@ -108,6 +108,11 @@ public:
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
     virtual bool isLowPriorityIframe() const { return false; }
 
+    virtual bool fetchDeferLateScripts() const { return false; }
+    virtual bool fetchIncreaseFontPriority() const { return false; }
+    virtual bool fetchIncreaseAsyncScriptPriority() const { return false; }
+    virtual bool fetchIncreasePriorities() const { return false; }
+
 protected:
     FetchContext() { }
 };

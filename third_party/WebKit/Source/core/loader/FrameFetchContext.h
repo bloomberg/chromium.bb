@@ -106,6 +106,11 @@ public:
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
     bool isLowPriorityIframe() const override;
 
+    bool fetchDeferLateScripts() const override;
+    bool fetchIncreaseFontPriority() const override;
+    bool fetchIncreaseAsyncScriptPriority() const override;
+    bool fetchIncreasePriorities() const override;
+
     void countClientHintsDPR() override;
     void countClientHintsResourceWidth() override;
     void countClientHintsViewportWidth() override;
