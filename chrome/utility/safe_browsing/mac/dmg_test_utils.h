@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_UTILITY_SAFE_BROWSING_MAC_TEST_UTILS_H_
-#define CHROME_UTILITY_SAFE_BROWSING_MAC_TEST_UTILS_H_
+#ifndef CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_TEST_UTILS_H_
+#define CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_TEST_UTILS_H_
 
 #include <vector>
 
@@ -21,4 +21,4 @@ bool ReadEntireStream(ReadStream* stream, std::vector<uint8_t>* data);
 }  // namespace dmg
 }  // namespace safe_browsing
 
-#endif  // CHROME_UTILITY_SAFE_BROWSING_MAC_TEST_UTILS_H_
+#endif  // CHROME_UTILITY_SAFE_BROWSING_MAC_DMG_TEST_UTILS_H_

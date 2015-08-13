@@ -1039,8 +1039,8 @@
       'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
       'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
       'renderer/safe_browsing/scorer_unittest.cc',
+      'utility/safe_browsing/mac/dmg_test_utils.cc',
       'utility/safe_browsing/mac/read_stream_unittest.cc',
-      'utility/safe_browsing/mac/test_utils.cc',
     ],
     # These are the enable_autofill_dialog = 1 sources. Some autofill tests
     # are always compiled.
