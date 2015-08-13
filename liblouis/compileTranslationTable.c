@@ -4100,21 +4100,15 @@ doOpcode:
 			widechar patterns[512], buffer[256];
 			TranslationTableOffset offset;
 			int len, mrk;
-			
-			//noback = 1;
-			getToken(nested, &ptn_before, "before pattern");
-			getToken(nested, &ruleChars, "chars pattern");
-			getToken(nested, &ptn_after, "after pattern");
-			getToken(nested, &ruleDots, "dots pattern");
-			
-			if(!parseDots(nested, &cells, &ruleDots))
-			{
+
+			noback = 1;
+			getRuleCharsText(nested, &ptn_before);
+			getRuleCharsText(nested, &ruleChars);
+			getRuleCharsText(nested, &ptn_after);
+			getRuleDotsPattern(nested, &ruleDots);
+
+			if(!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0))
 				ok = 0;
-				break;
-			}			
-			if(!addRule(nested, opcode, &ruleChars, &cells, 0, 0))
-				ok = 0;
-			
 			len = pattern_compile(&ptn_before.chars[0], ptn_before.length, buffer, 256);
 			if(!len)
 			{
@@ -4123,7 +4117,7 @@ doOpcode:
 			}
 			mrk = patterns[0] = len + 1;
 			pattern_reverse(buffer, &patterns[1]);
-			
+
 			len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 256);
 			if(!len)
 			{
@@ -4131,16 +4125,16 @@ doOpcode:
 				break;
 			}
 			len += mrk;
-			
+
 			if(!allocateSpaceInTable(nested, &offset, len * sizeof(widechar)))
 			{
 				ok = 0;
 				break;
 			}
-			
+
 			memcpy(&table->ruleArea[offset], patterns, len * sizeof(widechar));
 			newRule->patterns = offset;
-				
+
 			break;
 		}
 
