@@ -902,11 +902,11 @@ void PictureLayerImpl::AddLowResolutionTilingIfNeeded() {
   // res tiling during a pinch or a CSS animation.
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   bool is_animating = draw_properties().screen_space_transform_is_animating;
-  if (!low_res && !is_pinching && !is_animating)
-    low_res = AddTiling(low_res_raster_contents_scale_);
-
-  if (low_res)
+  if (!is_pinching && !is_animating) {
+    if (!low_res)
+      low_res = AddTiling(low_res_raster_contents_scale_);
     low_res->set_resolution(LOW_RESOLUTION);
+  }
 }
 
 void PictureLayerImpl::RecalculateRasterScales() {
