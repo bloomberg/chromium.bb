@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/congestion_control/pacing_sender.h"
@@ -655,12 +654,8 @@ bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
     MarkForRetransmission(sequence_number, TLP_RETRANSMISSION);
     return true;
   }
-#if defined(NDEBUG)
-  base::debug::DumpWithoutCrashing();
-#else
   DLOG(FATAL)
     << "No retransmittable packets, so RetransmitOldestPacket failed.";
-#endif
   return false;
 }
 
