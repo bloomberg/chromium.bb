@@ -886,6 +886,7 @@
       'fetch/Body.h',
       'fetch/BodyStreamBuffer.cpp',
       'fetch/BodyStreamBuffer.h',
+      'fetch/CrossThreadHolder.h',
       'fetch/DataConsumerTee.cpp',
       'fetch/DataConsumerTee.h',
       'fetch/FetchBlobDataConsumerHandle.cpp',
