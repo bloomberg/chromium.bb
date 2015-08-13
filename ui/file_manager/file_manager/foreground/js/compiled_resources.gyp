@@ -153,6 +153,7 @@
           '../../../externs/chrome_test.js',
           '../../../externs/connection.js',
           '../../../externs/css_rule.js',
+          '../../../externs/es6_workaround.js',
           '../../../externs/files_elements.js',
           '../../../externs/html_menu_item_element.js',
           '../../../externs/launcher_search_provider.js',
