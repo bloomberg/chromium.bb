@@ -99,9 +99,12 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Called when a new surrounding text is set. The |text| is surrounding text
   // and |cursor_pos| is 0 based index of cursor position in |text|. If there is
   // selection range, |anchor_pos| represents opposite index from |cursor_pos|.
-  // Otherwise |anchor_pos| is equal to |cursor_pos|.
-  virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
-                                  uint32 anchor_pos) = 0;
+  // Otherwise |anchor_pos| is equal to |cursor_pos|. If not all surrounding
+  // text is given |offset_pos| indicates the starting offset of |text|.
+  virtual void SetSurroundingText(const std::string& text,
+                                  uint32 cursor_pos,
+                                  uint32 anchor_pos,
+                                  uint32 offset_pos) = 0;
 
   // Called when the composition bounds changed.
   virtual void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) = 0;

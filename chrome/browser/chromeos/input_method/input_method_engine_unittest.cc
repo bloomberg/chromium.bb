@@ -95,7 +95,8 @@ class TestObserver : public InputMethodEngineInterface::Observer {
   void OnSurroundingTextChanged(const std::string& engine_id,
                                 const std::string& text,
                                 int cursor_pos,
-                                int anchor_pos) override {}
+                                int anchor_pos,
+                                int offset) override {}
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
     calls_bitmap_ |= ONCOMPOSITIONBOUNDSCHANGED;

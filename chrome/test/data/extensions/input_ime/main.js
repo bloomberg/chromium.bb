@@ -17,7 +17,7 @@ IMEBase.prototype = {
   onKeyEvent: function(context, engine, keyData) { return false; },
   onCandidateClicked: function(candidateID, button) {},
   onMenuItemActivated: function(name) {},
-  onSurroundingTextChanged: function(text, focus, anchor) {},
+  onSurroundingTextChanged: function(text, focus, anchor, offset) {},
   onReset: function(engineID) {}
 };
 
@@ -208,7 +208,7 @@ EngineBridge.prototype = {
    **/
   onSurroundingTextChanged_: function(engineID, object) {
     this.engineInstance_[engineID].onSurroundingTextChanged(
-        object.text, object.focus, object.anchor);
+        object.text, object.focus, object.anchor, object.offset);
     chrome.test.sendMessage('onSurroundingTextChanged');
   },
 

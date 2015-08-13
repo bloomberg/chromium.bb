@@ -265,7 +265,8 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
   void OnSurroundingTextChanged(const std::string& component_id,
                                 const std::string& text,
                                 int cursor_pos,
-                                int anchor_pos) override {
+                                int anchor_pos,
+                                int offset_pos) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnSurroundingTextChanged::kEventName))
       return;
@@ -274,6 +275,7 @@ class ImeObserver : public InputMethodEngineInterface::Observer {
     info.text = text;
     info.focus = cursor_pos;
     info.anchor = anchor_pos;
+    info.offset = offset_pos;
     scoped_ptr<base::ListValue> args(
         input_ime::OnSurroundingTextChanged::Create(component_id, info));
 

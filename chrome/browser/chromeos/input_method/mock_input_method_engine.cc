@@ -130,8 +130,8 @@ void MockInputMethodEngine::CandidateClicked(uint32 index) {
 
 void MockInputMethodEngine::SetSurroundingText(const std::string& text,
                                                uint32 cursor_pos,
-                                               uint32 anchor_pos) {
-}
+                                               uint32 anchor_pos,
+                                               uint32 offset_pos) {}
 
 void MockInputMethodEngine::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {

@@ -171,7 +171,8 @@ class InputMethodEngineInterface : public IMEEngineHandlerInterface {
     virtual void OnSurroundingTextChanged(const std::string& engine_id,
                                           const std::string& text,
                                           int cursor_pos,
-                                          int anchor_pos) = 0;
+                                          int anchor_pos,
+                                          int offset_pos) = 0;
 
     // Called when composition bounds are changed.
     virtual void OnCompositionBoundsChanged(

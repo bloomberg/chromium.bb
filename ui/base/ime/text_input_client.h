@@ -99,7 +99,7 @@ class UI_BASE_IME_EXPORT TextInputClient {
 
   // Document content operations ----------------------------------------------
 
-  // Retrieves the UTF-16 based character range containing accessibled text in
+  // Retrieves the UTF-16 based character range containing accessible text in
   // the View. It must cover the composition and selection range.
   // Returns false if the information cannot be retrieved right now.
   virtual bool GetTextRange(gfx::Range* range) const = 0;

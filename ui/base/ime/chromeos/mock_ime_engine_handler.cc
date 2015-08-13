@@ -66,7 +66,8 @@ void MockIMEEngineHandler::CandidateClicked(uint32 index) {
 
 void MockIMEEngineHandler::SetSurroundingText(const std::string& text,
                                               uint32 cursor_pos,
-                                              uint32 anchor_pos) {
+                                              uint32 anchor_pos,
+                                              uint32 offset_pos) {
   ++set_surrounding_text_call_count_;
   last_set_surrounding_text_ = text;
   last_set_surrounding_cursor_pos_ = cursor_pos;

@@ -241,7 +241,8 @@ void InputMethodChromeOS::OnCaretBoundsChanged(const TextInputClient* client) {
     return;
   GetEngine()->SetSurroundingText(base::UTF16ToUTF8(surrounding_text),
                                   selection_range.start() - text_range.start(),
-                                  selection_range.end() - text_range.start());
+                                  selection_range.end() - text_range.start(),
+                                  text_range.start());
 }
 
 void InputMethodChromeOS::CancelComposition(const TextInputClient* client) {

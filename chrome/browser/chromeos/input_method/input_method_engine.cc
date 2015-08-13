@@ -658,13 +658,13 @@ void InputMethodEngine::CandidateClicked(uint32 index) {
 
 void InputMethodEngine::SetSurroundingText(const std::string& text,
                                            uint32 cursor_pos,
-                                           uint32 anchor_pos) {
+                                           uint32 anchor_pos,
+                                           uint32 offset_pos) {
   if (!CheckProfile())
     return;
-  observer_->OnSurroundingTextChanged(active_component_id_,
-                                      text,
-                                      static_cast<int>(cursor_pos),
-                                      static_cast<int>(anchor_pos));
+  observer_->OnSurroundingTextChanged(
+      active_component_id_, text, static_cast<int>(cursor_pos),
+      static_cast<int>(anchor_pos), static_cast<int>(offset_pos));
 }
 
 bool InputMethodEngine::CheckProfile() const {

@@ -693,7 +693,7 @@
             "properties": {
               "text": {
                 "type": "string",
-                "description": "The text around cursor."
+                "description": "The text around the cursor. This is only a subset of all text in the input field."
               },
               "focus": {
                 "type": "integer",
@@ -701,7 +701,11 @@
               },
               "anchor": {
                 "type": "integer",
-                "description": "The beginning position of the selection. This value indicates caret position if is no selection."
+                "description": "The beginning position of the selection. This value indicates caret position if there is no selection."
+              },
+              "offset": {
+                "type": "integer",
+                "description": "The offset position of <code>text</code>. Since <code>text</code> only includes a subset of text around the cursor, offset indicates the absolute position of the first character of <code>text</code>."
               }
             }
           }
