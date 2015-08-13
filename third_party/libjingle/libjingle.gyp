@@ -294,28 +294,6 @@
         '<(webrtc_p2p)/base/constants.h',
       ],
     },  # target libjingle_p2p_constants
-    # GN version: //third_party/libjingle:peerconnection_server
-    {
-      'target_name': 'peerconnection_server',
-      'type': 'executable',
-      'sources': [
-        '<(libjingle_source)/talk/examples/peerconnection/server/data_socket.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/data_socket.h',
-        '<(libjingle_source)/talk/examples/peerconnection/server/main.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/peer_channel.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/peer_channel.h',
-        '<(libjingle_source)/talk/examples/peerconnection/server/utils.cc',
-        '<(libjingle_source)/talk/examples/peerconnection/server/utils.h',
-      ],
-      'include_dirs': [
-        '<(libjingle_source)',
-      ],
-      'dependencies': [
-        'libjingle',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4309, ],
-    }, # target peerconnection_server
   ],
   'conditions': [
     ['enable_webrtc==1', {
