@@ -1152,7 +1152,7 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 		
 		if(expr[rcrs] == PTN_DELIMIT)
 		if(icrs >= max)
-			return !not;//1
+			return !not;//1;
 		else switch(input[icrs])
 		{
 		case 0:
@@ -1245,12 +1245,12 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 		
 		if(expr[rcrs] == PTN_DELIMIT)
 		if(icrs <= min)
-			return !not;//1;;
+			return !not;//1;
 		else switch(input[icrs])
 		{
 		case 0:
-		case ' ':  return !not;//1;;
-		default:   return not;//1;;
+		case ' ':  return !not;//1;
+		default:   return not;//0;
 		}
 		
 		if(icrs <= min)
