@@ -116,4 +116,8 @@ void SolidColorScrollbarLayerImpl::AppendQuads(
       shared_quad_state, thumb_quad_rect, visible_quad_rect, color_, false);
 }
 
+const char* SolidColorScrollbarLayerImpl::LayerTypeAsString() const {
+  return "cc::SolidColorScrollbarLayerImpl";
+}
+
 }  // namespace cc
