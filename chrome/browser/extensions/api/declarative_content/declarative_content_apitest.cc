@@ -810,8 +810,16 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 }
 
 // https://crbug.com/517492
+#if defined(OS_WIN)
+// Fails on XP: http://crbug.com/515717
+#define MAYBE_RemoveAllRulesAfterExtensionUninstall \
+  DISABLED_RemoveAllRulesAfterExtensionUninstall
+#else
+#define MAYBE_RemoveAllRulesAfterExtensionUninstall \
+  RemoveAllRulesAfterExtensionUninstall
+#endif
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       RemoveAllRulesAfterExtensionUninstall) {
+                       MAYBE_RemoveAllRulesAfterExtensionUninstall) {
   ext_dir_.WriteManifest(kDeclarativeContentManifest);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
 
@@ -863,4 +871,3 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
 }  // namespace
 }  // namespace extensions
-
