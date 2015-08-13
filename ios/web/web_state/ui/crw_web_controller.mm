@@ -50,6 +50,7 @@
 #include "ios/web/public/url_util.h"
 #include "ios/web/public/user_metrics.h"
 #include "ios/web/public/web_client.h"
+#include "ios/web/public/web_kit_constants.h"
 #include "ios/web/public/web_state/credential.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
@@ -515,19 +516,6 @@ const CGFloat kLongPressMoveDeltaPixels = 10.0;
 // The duration of the period following a screen touch during which the user is
 // still considered to be interacting with the page.
 const NSTimeInterval kMaximumDelayForUserInteractionInSeconds = 2;
-
-// Define missing symbols from WebKit.
-// See WebKitErrors.h on Mac SDK.
-NSString* const WebKitErrorDomain = @"WebKitErrorDomain";
-
-enum {
-  WebKitErrorCannotShowMIMEType = 100,
-  WebKitErrorCannotShowURL = 101,
-  WebKitErrorFrameLoadInterruptedByPolicyChange = 102,
-  // iOS-specific WebKit error that isn't documented but seen on 4.0
-  // devices.
-  WebKitErrorPlugInLoadFailed = 204,
-};
 
 // URLs that are fed into UIWebView as history push/replace get escaped,
 // potentially changing their format. Code that attempts to determine whether a
@@ -2841,9 +2829,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([error code] == NSURLErrorUnsupportedURL)
     return;
   // In cases where a Plug-in handles the load do not take any further action.
-  if ([[error domain] isEqual:WebKitErrorDomain] &&
-      ([error code] == WebKitErrorPlugInLoadFailed ||
-       [error code] == WebKitErrorCannotShowURL))
+  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      (error.code == web::kWebKitErrorPlugInLoadFailed ||
+       error.code == web::kWebKitErrorCannotShowUrl))
     return;
 
   // Continue processing only if the error is on the main request or is the
@@ -2881,8 +2869,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   const GURL errorGURL = net::GURLWithNSURL(errorURL);
 
   // Handles Frame Load Interrupted errors from WebView.
-  if ([[error domain] isEqualToString:WebKitErrorDomain] &&
-      [error code] == WebKitErrorFrameLoadInterruptedByPolicyChange) {
+  if ([error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorFrameLoadInterruptedByPolicyChange) {
     // See if the delegate wants to handle this case.
     if (errorGURL.is_valid() &&
         [_delegate
