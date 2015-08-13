@@ -1139,14 +1139,10 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 	int not;
 
 	icrs = off;
-
-	if(expr[0] == PTN_LAST)
-		return 1;
-
 	not = 0;
 	rnxt = 0;
 	rcrs = 1;
-	while(expr[rnxt])
+	while(expr[rnxt] != PTN_LAST)
 	{
 		if(expr[rcrs] == PTN_DELIMIT)
 		if(icrs >= max)
@@ -1157,9 +1153,19 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 		case ' ':  return 1;
 		default:   return 0;
 		}
-		
+
 		if(icrs >= max)
+		{
+			/*   there could still be ZERO_OR_MORE   */
+			if(expr[rcrs] == PTN_ZERO_MORE)
+			{
+				rcrs = rnxt + expr[rnxt];
+				rnxt = rcrs;
+				rcrs++;
+				continue;
+			}
 			return 0;
+		}
 
 		if(expr[rcrs] == PTN_NOT)
 		{
@@ -1226,14 +1232,10 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 	int not;
 	
 	icrs = off;
-
-	if(expr[0] == PTN_LAST)
-		return 1;
-
 	not = 0;
 	rnxt = 0;
 	rcrs = 1;
-	while(expr[rnxt])
+	while(expr[rnxt] != PTN_LAST)
 	{
 		if(expr[rcrs] == PTN_DELIMIT)
 		if(icrs <= min)
@@ -1246,7 +1248,17 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 		}
 		
 		if(icrs <= min)
+		{
+			/*   there could still be ZERO_OR_MORE   */
+			if(expr[rcrs] == PTN_ZERO_MORE)
+			{
+				rcrs = rnxt + expr[rnxt];
+				rnxt = rcrs;
+				rcrs++;
+				continue;
+			}
 			return 0;
+		}
 
 		if(expr[rcrs] == PTN_NOT)
 		{
