@@ -15,12 +15,15 @@ import multiprocessing
 import os
 import re
 import shutil
+import sys
 import tempfile
 
 from chromite.cbuildbot import autotest_rpc_errors
 from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
+from chromite.cbuildbot import swarming_lib
+from chromite.cbuildbot import topology
 from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -54,6 +57,12 @@ STATEFUL_FILE = 'stateful.tgz'
 _TEST_REPORT_FILENAME = 'test_report.log'
 _TEST_PASSED = 'PASSED'
 _TEST_FAILED = 'FAILED'
+# For swarming proxy
+_SWARMING_ADDITIONAL_TIMEOUT = 60 * 60
+_DEFAULT_HWTEST_TIMEOUT_MINS = 1440
+_SWARMING_EXPIRATION = 20 * 60
+_RUN_SUITE_PATH = '/usr/local/autotest/site_utils/run_suite.py'
+
 
 # =========================== Command Helpers =================================
 
@@ -860,7 +869,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                    retry=None, max_retries=None,
                    minimum_duts=0, suite_min_duts=0,
                    offload_failures_only=None, debug=True,
-                   subsystems=None):
+                   subsystems=None, use_swarming_proxy=False):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -889,12 +898,104 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     debug: Whether we are in debug mode.
     subsystems: A set of subsystems that the relevant changes affect, for
                 testing purposes.
+    use_swarming_proxy: If True, use the new swarming proxy.
   """
-  cmd = _CreateRunSuiteCommand(build, suite, board, pool, num, file_bugs,
-                               wait_for_results, priority, timeout_mins, retry,
-                               max_retries, minimum_duts, suite_min_duts,
-                               offload_failures_only, subsystems)
+  args = (build, suite, board, pool, num, file_bugs, wait_for_results,
+          priority, timeout_mins, retry, max_retries, minimum_duts,
+          suite_min_duts, offload_failures_only, debug, subsystems)
+  if use_swarming_proxy:
+    _RunHWTestSuiteSwarming(*args)
+  else:
+    _RunHWTestSuite(*args)
+
+
+# pylint: disable=docstring-missing-args
+def _RunHWTestSuiteSwarming(
+    build, suite, board, pool=None, num=None, file_bugs=None,
+    wait_for_results=None, priority=None, timeout_mins=None,
+    retry=None, max_retries=None, minimum_duts=0, suite_min_duts=0,
+    offload_failures_only=None, debug=True, subsystems=None):
+  """Run the test suite in the Autotest lab using swarming proxy.
+
+  Args:
+    See RunHWTestSuite.
+  """
   try:
+    cmd = [_RUN_SUITE_PATH]
+    cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
+                            wait_for_results, priority, timeout_mins, retry,
+                            max_retries, minimum_duts, suite_min_duts,
+                            offload_failures_only, subsystems)
+    swarming_args = _CreateSwarmingArgs(build, suite, timeout_mins)
+    HWTestCreateAndWaitSwarming(cmd, swarming_args, debug)
+  except cros_build_lib.RunCommandError as e:
+    result = e.result
+    if not result.task_summary_json:
+      # swarming client has failed.
+      logging.error('No task summary json generated, output:%s', result.output)
+      raise failures_lib.SwarmingProxyFailure(
+          '** Failed to fullfill request with proxy server, code(%d) **'
+          % result.returncode)
+    elif result.task_summary_json['shards'][0]['internal_failure']:
+      logging.error('Encountered swarming internal error:\n'
+                    'stdout: \n%s\n'
+                    'summary json content:\n%s',
+                    result.output, str(result.task_summary_json))
+      raise failures_lib.SwarmingProxyFailure(
+          '** Failed to fullfill request with proxy server, code(%d) **'
+          % result.returncode)
+    else:
+      logging.debug('swarming info: name: %s, bot_id: %s, created_ts: %s',
+                    result.task_summary_json['shards'][0]['name'],
+                    result.task_summary_json['shards'][0]['bot_id'],
+                    result.task_summary_json['shards'][0]['created_ts'])
+      for output in result.task_summary_json['shards'][0]['outputs']:
+        sys.stdout.write(output)
+      sys.stdout.flush()
+      # swarming client has submitted task and returned task information.
+      lab_warning_codes = (2,)
+      infra_error_codes = (3,)
+      timeout_codes = (4,)
+      board_not_available_codes = (5,)
+      proxy_failure_codes = (241,)
+
+      if result.returncode in lab_warning_codes:
+        raise failures_lib.TestWarning('** Suite passed with a warning code **')
+      elif (result.returncode in infra_error_codes or
+            result.returncode in proxy_failure_codes):
+        raise failures_lib.TestLabFailure(
+            '** HWTest did not complete due to infrastructure issues '
+            '(code %d) **' % result.returncode)
+      elif result.returncode in timeout_codes:
+        raise failures_lib.SuiteTimedOut(
+            '** Suite timed out before completion **')
+      elif result.returncode in board_not_available_codes:
+        raise failures_lib.BoardNotAvailable(
+            '** Board was not availble in the lab **')
+      elif result.returncode != 0:
+        raise failures_lib.TestFailure(
+            '** HWTest failed (code %d) **' % result.returncode)
+
+# TODO(fdeng): To be deprecated
+# pylint: disable=docstring-missing-args
+def _RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
+                    wait_for_results=None, priority=None, timeout_mins=None,
+                    retry=None, max_retries=None,
+                    minimum_duts=0, suite_min_duts=0,
+                    offload_failures_only=None, debug=True,
+                    subsystems=None):
+  """Run the test suite in the Autotest lab using old golo proxy.
+
+  Args:
+    See RunHWTestSuite.
+  """
+
+  try:
+    cmd = [_AUTOTEST_RPC_CLIENT, _AUTOTEST_RPC_HOSTNAME, 'RunSuite']
+    cmd += _GetRunSuiteArgs(build, suite, board, pool, num, file_bugs,
+                            wait_for_results, priority, timeout_mins, retry,
+                            max_retries, minimum_duts, suite_min_duts,
+                            offload_failures_only, subsystems)
     HWTestCreateAndWait(cmd, debug)
   except cros_build_lib.RunCommandError as e:
     result = e.result
@@ -931,65 +1032,62 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
           '** HWTest failed (code %d) **' % result.returncode)
 
 
-# pylint: disable=docstring-missing-args
-def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
-                           file_bugs=None, wait_for_results=None,
-                           priority=None, timeout_mins=None,
-                           retry=None, max_retries=None, minimum_duts=0,
-                           suite_min_duts=0, offload_failures_only=None,
-                           subsystems=None):
-  """Create a proxied run_suite command for the given arguments.
+def _GetRunSuiteArgs(build, suite, board, pool=None, num=None,
+                     file_bugs=None, wait_for_results=None,
+                     priority=None, timeout_mins=None,
+                     retry=None, max_retries=None, minimum_duts=0,
+                     suite_min_duts=0, offload_failures_only=None,
+                     subsystems=None):
+  """Get a list of args for run_suite.
 
   Args:
     See RunHWTestSuite.
 
   Returns:
-    Proxied run_suite command.
+    A list of args for run_suite
   """
-  cmd = [_AUTOTEST_RPC_CLIENT,
-         _AUTOTEST_RPC_HOSTNAME,
-         'RunSuite',
-         '--build', build,
-         '--suite_name', suite,
-         '--board', board]
+  args = ['--build', build, '--board', board]
+
+  if subsystems:
+    args += ['--suite_name', 'suite_attr_wrapper']
+  else:
+    args += ['--suite_name', suite]
 
   # Add optional arguments to command, if present.
   if pool is not None:
-    cmd += ['--pool', pool]
+    args += ['--pool', pool]
 
   if num is not None:
-    cmd += ['--num', str(num)]
+    args += ['--num', str(num)]
 
   if file_bugs is not None:
-    cmd += ['--file_bugs', str(file_bugs)]
+    args += ['--file_bugs', str(file_bugs)]
 
   if wait_for_results is not None:
-    cmd += ['--no_wait', str(not wait_for_results)]
+    args += ['--no_wait', str(not wait_for_results)]
 
   if priority is not None:
-    cmd += ['--priority', priority]
+    args += ['--priority', priority]
 
   if timeout_mins is not None:
-    cmd += ['--timeout_mins', str(timeout_mins)]
+    args += ['--timeout_mins', str(timeout_mins)]
 
   if retry is not None:
-    cmd += ['--retry', str(retry)]
+    args += ['--retry', str(retry)]
 
   if max_retries is not None:
-    cmd += ['--max_retries', str(max_retries)]
+    args += ['--max_retries', str(max_retries)]
 
   if minimum_duts != 0:
-    cmd += ['--minimum_duts', str(minimum_duts)]
+    args += ['--minimum_duts', str(minimum_duts)]
 
   if suite_min_duts != 0:
-    cmd += ['--suite_min_duts', str(suite_min_duts)]
+    args += ['--suite_min_duts', str(suite_min_duts)]
 
   if offload_failures_only is not None:
-    cmd += ['--offload_failures_only', str(offload_failures_only)]
+    args += ['--offload_failures_only', str(offload_failures_only)]
 
   if subsystems:
-    # set the suite name to suite_attr_wrapper
-    cmd[6] = 'suite_attr_wrapper'
     subsystem_attr = ['subsystem:%s' % x for x in subsystems]
     subsystems_attr_str = ' or '.join(subsystem_attr)
 
@@ -1004,15 +1102,89 @@ def _CreateRunSuiteCommand(build, suite, board, pool=None, num=None,
       attr_value = subsystems_attr_str
 
     suite_args_dict = repr({'attr_filter' : attr_value})
-    cmd += ['--suite_args', suite_args_dict]
+    args += ['--suite_args', suite_args_dict]
 
-  return cmd
-# pylint: enable=docstring-missing-args
+  return args
+
+
+# pylint: disable=docstring-missing-args
+def _CreateSwarmingArgs(build, suite, timeout_mins=None):
+  """Create args for swarming client.
+
+  Args:
+    build: Name of the build, will be part of the swarming task name.
+    suite: Name of the suite, will be part of the swarming task name.
+    timeout_mins: run_suite timeout mins, will be used to figure out
+                  timeouts for swarming task.
+
+  Returns:
+    A dictionary of args for swarming client.
+  """
+
+  swarming_timeout = timeout_mins or _DEFAULT_HWTEST_TIMEOUT_MINS
+  swarming_timeout = swarming_timeout * 60 + _SWARMING_ADDITIONAL_TIMEOUT
+
+  swarming_args = {
+      'swarming_server': topology.topology.get(
+          topology.SWARMING_PROXY_HOST_KEY),
+      'task_name': '-'.join([build, suite]),
+      'dimension': ('os', 'Linux'),
+      'print_status_updates': True,
+      'timeout_secs': swarming_timeout,
+      'io_timeout_secs': swarming_timeout,
+      'hard_timeout_secs': swarming_timeout,
+      'expiration_secs': _SWARMING_EXPIRATION}
+  return swarming_args
+
+
+def HWTestCreateAndWaitSwarming(cmd, swarming_args, debug=False):
+  """Start and wait on HWTest suite in the lab.
+
+  This method first run a command to create the suite.
+  And then run a second command to wait for the suite result.
+  Since we are using swarming client, which contiuously send
+  request to swarming server to poll task result, there is
+  no need to retry on any network related failures.
+
+  Args:
+    cmd: Proxied run_suite command.
+    debug: If True, log command rather than running it.
+    swarming_args: A dictionary of args to passed to RunSwarmingCommand.
+  """
+  # Start the suite
+  start_cmd = list(cmd) + ['-c']
+
+  if debug:
+    logging.info('RunHWTestSuite would run: %s',
+                 cros_build_lib.CmdToStr(start_cmd))
+  else:
+    result = swarming_lib.RunSwarmingCommand(
+        start_cmd, capture_output=True, combine_stdout_stderr=True,
+        **swarming_args)
+    # If the command succeeds, result.task_summary_json
+    # should have the right content.
+    for output in result.task_summary_json['shards'][0]['outputs']:
+      sys.stdout.write(output)
+    sys.stdout.flush()
+    m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
+                  result.output)
+    if m:
+      job_id = m.group('job_id')
+      # Wait on the suite
+      wait_cmd = list(cmd) + ['-m', str(job_id)]
+      result = swarming_lib.RunSwarmingCommand(
+          wait_cmd, capture_output=True, combine_stdout_stderr=True,
+          **swarming_args)
+      for output in result.task_summary_json['shards'][0]['outputs']:
+        sys.stdout.write(output)
+      sys.stdout.flush()
 
 
 # TODO(akeshet): This function exists solely to support a caller in
 # paygen_build_lib. That caller should be refactored to use RunHWTestSuite, at
 # which point this can be folded into RunHWTestSuite.
+
+# TODO(fdeng): To be removed
 def HWTestCreateAndWait(cmd, debug=False):
   """Start and wait on HWTest suite in the lab, retrying on proxy failures.
 
@@ -1025,6 +1197,7 @@ def HWTestCreateAndWait(cmd, debug=False):
     _HWTestWait(cmd, job_id)
 
 
+# TODO(fdeng): To be removed
 def _HWTestStart(cmd, debug=True):
   """Start a suite in the HWTest lab, and return its id.
 
@@ -1060,6 +1233,7 @@ def _HWTestStart(cmd, debug=True):
       return m.group('job_id')
 
 
+# TODO(fdeng): To be removed
 def _HWTestWait(cmd, job_id):
   """Wait for HWTest suite to complete, retrying rpc failures.
 

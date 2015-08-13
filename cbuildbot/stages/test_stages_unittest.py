@@ -9,6 +9,7 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import config_lib
@@ -395,6 +396,10 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testPerformStage(self):
     """Tests that we correctly generate a tarball and archive it."""
+    # pylint: disable=protected-access
+    # TODO(fdeng): remove this when we start running with swarming in prod.
+    self.PatchObject(cbuildbot_run._BuilderRunBase,
+                     'InProduction', return_value=True)
     stage = self.ConstructStage()
     stage.PerformStage()
     cmd = ['site_utils/autoupdate/full_release_test.py', '--npo', '--dump',

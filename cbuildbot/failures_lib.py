@@ -251,6 +251,10 @@ class BoardNotAvailable(TestLabFailure):
   """Raised if the board is not available in the lab."""
 
 
+class SwarmingProxyFailure(TestLabFailure):
+  """Raised when error related to swarming proxy occurs."""
+
+
 # Gerrit-on-Borg failures.
 class GoBFailure(InfrastructureFailure):
   """Raised if a stage fails due to Gerrit-on-Borg (GoB) issues."""
