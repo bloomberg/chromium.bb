@@ -815,6 +815,22 @@ void InlineTextBoxPainter::paintTextMatchMarker(GraphicsContext* pt, const Layou
         GraphicsContextStateSaver stateSaver(*pt);
         pt->clip(FloatRect(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat(), m_inlineTextBox.logicalWidth().toFloat(), selHeight));
         pt->drawHighlightForText(font, run, FloatPoint(boxOrigin.x().toFloat(), (boxOrigin.y() - deltaY).toFloat()), selHeight, color, sPos, ePos);
+
+        // Also Highlight the text with color:transparent
+        if (style.visitedDependentColor(CSSPropertyColor) == Color::transparent) {
+            int length = m_inlineTextBox.len();
+            TextPainter::Style textStyle;
+            // When we use the text as a clip, we only care about the alpha, thus we make all the colors black.
+            textStyle.currentColor = textStyle.fillColor = textStyle.strokeColor = textStyle.emphasisMarkColor = Color::black;
+            textStyle.strokeWidth = style.textStrokeWidth();
+            textStyle.shadow = 0;
+
+            LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(), m_inlineTextBox.logicalHeight()));
+            LayoutPoint textOrigin(boxOrigin.x(), boxOrigin.y() + font.fontMetrics().ascent());
+            TextPainter textPainter(pt, font, run, textOrigin, boxRect, m_inlineTextBox.isHorizontal());
+
+            textPainter.paint(sPos, ePos, length, textStyle, 0);
+        }
     }
 }
 
