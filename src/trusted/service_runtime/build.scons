@@ -822,39 +822,6 @@ if env.Bit('build_x86_64'):
       )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_hello_x32_test')
 
-# ----------------------------------------------------------
-# Integration Tests With Canned x86 Binaries
-# ----------------------------------------------------------
-# To update the canned tests run:
-# ./scons platform=x86-64
-# cp scons-out/nacl-x86-64/staging/{mandel.nexe,fib_*} \
-#     src/trusted/service_runtime/testdata/x86_64/
-# ./scons platform=x86-32
-# cp scons-out/nacl-x86-32/staging/{mandel.nexe,fib_*} \
-#     src/trusted/service_runtime/testdata/x86_32/
-
-# TODO: Create integration test nexes for arm.
-INTEGRATION_TESTS_X86 = [ 'mandel',
-                          'fib_scalar',
-                          'fib_array' ]
-INTEGRATION_TESTS_X86_STDIN_OUT = ['$SCONSTRUCT_DIR/tests/mandel/test',
-                                   '$SCONSTRUCT_DIR/tests/fib/fib_scalar_test',
-                                   '$SCONSTRUCT_DIR/tests/fib/fib_array_test' ]
-
-def AddIntegrationTest(test, location):
-  if not test or not location:
-    return
-
-  node = env.SelUniversalTest(
-      test + '_canned.out',
-      env.File(arch_testdata_dir + '/' + test + '.nexe'),
-      stdin = location + '.stdin',
-      stdout_golden = location + '.stdout',
-      )
-  env.AddNodeToTestSuite(node,
-                         ['medium_tests'],
-                         'run_%s_integration_test' % test)
-
 if env.Bit('build_x86') and env.Bit('nacl_static_link'):
   RE_HELLO = '^(Hello, World!)$'
   RE_IDENT = '^\[[0-9,:.]*\] (e_ident\+1 = ELF)$'
@@ -869,11 +836,6 @@ if env.Bit('build_x86') and env.Bit('nacl_static_link'):
       )
   env.AddNodeToTestSuite(node, ['medium_tests'],
                          'run_service_runtime_hello_world_test')
-
-  assert len(INTEGRATION_TESTS_X86) == len(INTEGRATION_TESTS_X86_STDIN_OUT)
-  map(AddIntegrationTest,
-      INTEGRATION_TESTS_X86,
-      INTEGRATION_TESTS_X86_STDIN_OUT)
 
 # ----------------------------------------------------------
 # Death Tests With Canned x86 Binaries
