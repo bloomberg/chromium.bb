@@ -368,6 +368,17 @@ void HistoryService::TopHosts(int num_hosts,
       callback);
 }
 
+void HistoryService::HostRankIfAvailable(
+    const GURL& url,
+    const base::Callback<void(int)>& callback) const {
+  DCHECK(thread_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  PostTaskAndReplyWithResult(thread_->task_runner().get(), FROM_HERE,
+                             base::Bind(&HistoryBackend::HostRankIfAvailable,
+                                        history_backend_.get(), url),
+                             callback);
+}
+
 void HistoryService::AddPage(const GURL& url,
                              Time time,
                              ContextID context_id,

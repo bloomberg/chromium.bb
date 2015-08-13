@@ -4,4 +4,6 @@ include_rules = [
   # http://www.chromium.org/developers/design-documents/layered-components-design
   "-components/precache",
   "+components/precache/core",
+
+  "+components/history/core/browser",
 ]

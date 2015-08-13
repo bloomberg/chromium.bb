@@ -32633,6 +32633,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Latency.NonPrefetch.NonTopHosts" units="milliseconds">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Like Precache.Latency.NonPrefetch, but limited to requests with a referer
+    not in the user's top visited hosts. See History.TopHostsVisitsByRank for
+    details on the top hosts computation.
+  </summary>
+</histogram>
+
+<histogram name="Precache.Latency.NonPrefetch.TopHosts" units="milliseconds">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Like Precache.Latency.NonPrefetch, but limited to requests with a referer in
+    the user's top visited hosts. See History.TopHostsVisitsByRank for details
+    on the top hosts computation.
+  </summary>
+</histogram>
+
 <histogram name="Precache.Latency.Prefetch" units="milliseconds">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

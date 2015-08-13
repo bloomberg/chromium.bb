@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_base.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -80,6 +81,11 @@ class PrecacheDatabaseTest : public testing::Test {
                               base::TimeDelta latency,
                               const base::Time& fetch_time,
                               int64 size);
+  void RecordFetchFromNetwork(const GURL& url,
+                              base::TimeDelta latency,
+                              const base::Time& fetch_time,
+                              int64 size,
+                              int host_rank);
   void RecordFetchFromNetworkCellular(const GURL& url,
                                       base::TimeDelta latency,
                                       const base::Time& fetch_time,
@@ -131,8 +137,18 @@ void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
                                                   base::TimeDelta latency,
                                                   const base::Time& fetch_time,
                                                   int64 size) {
+  precache_database_->RecordURLNonPrefetch(
+      url, latency, fetch_time, size, false /* was_cached */,
+      history::kMaxTopHosts, false /* is_connection_cellular */);
+}
+
+void PrecacheDatabaseTest::RecordFetchFromNetwork(const GURL& url,
+                                                  base::TimeDelta latency,
+                                                  const base::Time& fetch_time,
+                                                  int64 size,
+                                                  int host_rank) {
   precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, size,
-                                           false /* was_cached */,
+                                           false /* was_cached */, host_rank,
                                            false /* is_connection_cellular */);
 }
 
@@ -141,9 +157,9 @@ void PrecacheDatabaseTest::RecordFetchFromNetworkCellular(
     base::TimeDelta latency,
     const base::Time& fetch_time,
     int64 size) {
-  precache_database_->RecordURLNonPrefetch(url, latency, fetch_time, size,
-                                           false /* was_cached */,
-                                           true /* is_connection_cellular */);
+  precache_database_->RecordURLNonPrefetch(
+      url, latency, fetch_time, size, false /* was_cached */,
+      history::kMaxTopHosts, true /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCache(const GURL& url,
@@ -151,14 +167,16 @@ void PrecacheDatabaseTest::RecordFetchFromCache(const GURL& url,
                                                 int64 size) {
   precache_database_->RecordURLNonPrefetch(
       url, base::TimeDelta() /* latency */, fetch_time, size,
-      true /* was_cached */, false /* is_connection_cellular */);
+      true /* was_cached */, history::kMaxTopHosts,
+      false /* is_connection_cellular */);
 }
 
 void PrecacheDatabaseTest::RecordFetchFromCacheCellular(
     const GURL& url, const base::Time& fetch_time, int64 size) {
   precache_database_->RecordURLNonPrefetch(
       url, base::TimeDelta() /* latency */, fetch_time, size,
-      true /* was_cached */, true /* is_connection_cellular */);
+      true /* was_cached */, history::kMaxTopHosts,
+      true /* is_connection_cellular */);
 }
 
 namespace {
@@ -201,6 +219,20 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular) {
 
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
+  ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts",
+                  kLatency.InMilliseconds());
+  ExpectNoOtherSamples();
+}
+
+TEST_F(PrecacheDatabaseTest, FetchOverNetwork_NonCellular_TopHosts) {
+  RecordFetchFromNetwork(kURL, kLatency, kFetchTime, kSize, 0 /* host_rank */);
+
+  EXPECT_TRUE(GetActualURLTableMap().empty());
+
+  ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
+  ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
+  ExpectNewSample("Precache.Latency.NonPrefetch.TopHosts",
+                  kLatency.InMilliseconds());
   ExpectNoOtherSamples();
 }
 
@@ -212,6 +244,8 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNewSample("Precache.DownloadedNonPrecache.Cellular", kSize);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
+  ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts",
+                  kLatency.InMilliseconds());
   ExpectNoOtherSamples();
 }
 
@@ -224,6 +258,8 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
 
   ExpectNewSample("Precache.DownloadedNonPrecache", kSize);
   ExpectNewSample("Precache.Latency.NonPrefetch", kLatency.InMilliseconds());
+  ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts",
+                  kLatency.InMilliseconds());
   ExpectNoOtherSamples();
 }
 
@@ -235,6 +271,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
+  ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNoOtherSamples();
 }
@@ -247,6 +284,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
+  ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
   ExpectNewSample("Precache.Saved", kSize);
   ExpectNewSample("Precache.Saved.Cellular", kSize);
   ExpectNoOtherSamples();
@@ -258,6 +296,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithoutURLTableEntry) {
   EXPECT_TRUE(GetActualURLTableMap().empty());
 
   ExpectNewSample("Precache.Latency.NonPrefetch", 0);
+  ExpectNewSample("Precache.Latency.NonPrefetch.NonTopHosts", 0);
   ExpectNoOtherSamples();
 }
 

@@ -3263,6 +3263,27 @@ TEST_F(HistoryBackendTest, TopHosts_IgnoreUnusualURLs) {
   EXPECT_THAT(backend_->TopHosts(5), ElementsAre(std::make_pair("cnn.com", 3)));
 }
 
+TEST_F(HistoryBackendTest, HostRankIfAvailable) {
+  std::vector<GURL> urls;
+  urls.push_back(GURL("http://cnn.com/us"));
+  urls.push_back(GURL("http://cnn.com/intl"));
+  urls.push_back(GURL("http://dogtopia.com/"));
+  for (const auto& url : urls) {
+    backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
+                           history::SOURCE_BROWSED);
+  }
+
+  EXPECT_EQ(kMaxTopHosts,
+            backend_->HostRankIfAvailable(GURL("http://cnn.com/")));
+
+  backend_->TopHosts(3);
+
+  EXPECT_EQ(0, backend_->HostRankIfAvailable(GURL("http://cnn.com/")));
+  EXPECT_EQ(1, backend_->HostRankIfAvailable(GURL("http://dogtopia.com/")));
+  EXPECT_EQ(kMaxTopHosts,
+            backend_->HostRankIfAvailable(GURL("http://catsylvania.com/")));
+}
+
 TEST_F(HistoryBackendTest, RecordTopHostsMetrics) {
   base::HistogramTester histogram;
 

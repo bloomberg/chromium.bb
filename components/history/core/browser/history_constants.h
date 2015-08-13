@@ -16,6 +16,9 @@ extern const base::FilePath::CharType kHistoryFilename[];
 extern const base::FilePath::CharType kThumbnailsFilename[];
 extern const base::FilePath::CharType kTopSitesFilename[];
 
+// The maximum size of the list returned by history::HistoryService::TopHosts().
+extern const int kMaxTopHosts;
+
 }  // namespace history
 
 #endif  // COMPONENTS_HISTORY_CORE_BROWSER_HISTORY_CONSTANTS_H_

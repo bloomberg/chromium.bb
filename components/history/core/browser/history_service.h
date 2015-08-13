@@ -166,6 +166,16 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Note: Virtual needed for mocking.
   virtual void TopHosts(int num_hosts, const TopHostsCallback& callback) const;
 
+  // Returns, for the given URL, a 0-based index into the list produced by
+  // TopHosts(), corresponding to that URL's host. If TopHosts() has not
+  // previously been run, or the host is not in the top kMaxTopHosts, returns
+  // kMaxTopHosts.
+  //
+  // Note: Virtual needed for mocking.
+  virtual void HostRankIfAvailable(
+      const GURL& url,
+      const base::Callback<void(int)>& callback) const;
+
   // Navigation ----------------------------------------------------------------
 
   // Adds the given canonical URL to history with the given time as the visit

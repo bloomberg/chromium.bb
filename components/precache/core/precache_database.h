@@ -64,6 +64,7 @@ class PrecacheDatabase : public base::RefCountedThreadSafe<PrecacheDatabase> {
                             const base::Time& fetch_time,
                             int64 size,
                             bool was_cached,
+                            int host_rank,
                             bool is_connection_cellular);
 
  private:

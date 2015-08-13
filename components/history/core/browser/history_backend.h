@@ -212,6 +212,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // generating internal metrics.
   TopHostsList TopHosts(int num_hosts) const;
 
+  // Returns, for the given URL, a 0-based index into the list produced by
+  // TopHosts(), corresponding to that URL's host. If TopHosts() has not
+  // previously been run, or the host is not in the top kMaxTopHosts, returns
+  // kMaxTopHosts.
+  int HostRankIfAvailable(const GURL& url) const;
+
   // Navigation ----------------------------------------------------------------
 
   // |request.time| must be unique with high probability.
@@ -541,6 +547,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, TopHosts_OnlyLast30Days);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, TopHosts_MaxNumHosts);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, TopHosts_IgnoreUnusualURLs);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, HostRankIfAvailable);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RecordTopHostsMetrics);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, UpdateVisitDuration);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, ExpireHistoryForTimes);

@@ -90,8 +90,6 @@ const int kMaxRedirectCount = 32;
 // and is deleted.
 const int kExpireDaysThreshold = 90;
 
-const int kMaxTopHostsForMetrics = 50;
-
 // Converts from PageUsageData to MostVisitedURL. |redirects| is a
 // list of redirects for this URL. Empty list means no redirects.
 MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
@@ -430,6 +428,11 @@ TopHostsList HistoryBackend::TopHosts(int num_hosts) const {
   return top_hosts;
 }
 
+int HistoryBackend::HostRankIfAvailable(const GURL& url) const {
+  auto it = host_ranks_.find(HostForTopHosts(url));
+  return it != host_ranks_.end() ? it->second : kMaxTopHosts;
+}
+
 void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
   if (!db_)
     return;
@@ -743,12 +746,9 @@ void HistoryBackend::CloseAllDatabases() {
 }
 
 void HistoryBackend::RecordTopHostsMetrics(const GURL& url) {
-  auto it = host_ranks_.find(HostForTopHosts(url));
-  int host_rank = it != host_ranks_.end() ? it->second : kMaxTopHostsForMetrics;
-
   // Convert index from 0-based to 1-based.
-  UMA_HISTOGRAM_ENUMERATION("History.TopHostsVisitsByRank", host_rank + 1,
-                            kMaxTopHostsForMetrics + 2);
+  UMA_HISTOGRAM_ENUMERATION("History.TopHostsVisitsByRank",
+                            HostRankIfAvailable(url) + 1, kMaxTopHosts + 2);
 }
 
 std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(

@@ -106,6 +106,7 @@ void ForceGoogleSafeSearchCallbackWrapper(
 
 #if defined(OS_ANDROID)
 void RecordPrecacheStatsOnUIThread(const GURL& url,
+                                   const GURL& referrer,
                                    base::TimeDelta latency,
                                    const base::Time& fetch_time,
                                    int64 size,
@@ -123,8 +124,8 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
   if (!precache_manager || !precache_manager->WouldRun())
     return;
 
-  precache_manager->RecordStatsForFetch(url, latency, fetch_time, size,
-                                        was_cached);
+  precache_manager->RecordStatsForFetch(url, referrer, latency, fetch_time,
+                                        size, was_cached);
 }
 #endif  // defined(OS_ANDROID)
 
@@ -509,9 +510,9 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
     // precaching is allowed.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&RecordPrecacheStatsOnUIThread, request->url(), latency,
-                   base::Time::Now(), received_content_length,
-                   request->was_cached(), profile_));
+        base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
+                   GURL(request->referrer()), latency, base::Time::Now(),
+                   received_content_length, request->was_cached(), profile_));
 #endif  // defined(OS_ANDROID)
     extensions_delegate_->OnCompleted(request, started);
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||

@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/history_constants.h"
 #include "sql/connection.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"
@@ -135,8 +136,19 @@ void PrecacheDatabase::RecordURLNonPrefetch(const GURL& url,
                                             const base::Time& fetch_time,
                                             int64 size,
                                             bool was_cached,
+                                            int host_rank,
                                             bool is_connection_cellular) {
   UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch", latency);
+
+  if (host_rank != history::kMaxTopHosts) {
+    // The resource was loaded on a page that could have been affected by
+    // precaching.
+    UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch.TopHosts", latency);
+  } else {
+    // The resource was loaded on a page that could NOT have been affected by
+    // precaching.
+    UMA_HISTOGRAM_TIMES("Precache.Latency.NonPrefetch.NonTopHosts", latency);
+  }
 
   if (!IsDatabaseAccessible()) {
     // Don't track anything if unable to access the database.

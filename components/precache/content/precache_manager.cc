@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/precache/core/precache_database.h"
@@ -30,6 +31,7 @@ namespace {
 
 const char kPrecacheFieldTrialName[] = "Precache";
 const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
+const char kPrecacheFieldTrialControlGroup[] = "Control";
 const char kManifestURLPrefixParam[] = "manifest_url_prefix";
 const int kNumTopHosts = 100;
 
@@ -73,10 +75,20 @@ bool PrecacheManager::WouldRun() const {
   return PrecachingAllowed() == AllowedType::ALLOWED;
 }
 
+bool PrecacheManager::InControlGroup() const {
+  // Verify PrecachingAllowed() before calling FindFullName(). See
+  // PrecacheManager::ShouldRun() for an explanation of why.
+  return PrecachingAllowed() == AllowedType::ALLOWED &&
+         base::StartsWith(
+             base::FieldTrialList::FindFullName(kPrecacheFieldTrialName),
+             kPrecacheFieldTrialControlGroup, base::CompareCase::SENSITIVE);
+}
+
 // static
 bool PrecacheManager::IsPrecachingEnabled() {
-  return base::FieldTrialList::FindFullName(kPrecacheFieldTrialName) ==
-             kPrecacheFieldTrialEnabledGroup ||
+  return base::StartsWith(
+             base::FieldTrialList::FindFullName(kPrecacheFieldTrialName),
+             kPrecacheFieldTrialEnabledGroup, base::CompareCase::SENSITIVE) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kEnablePrecache);
 }
@@ -118,6 +130,15 @@ void PrecacheManager::StartPrecaching(
     history_service_->TopHosts(
         NumTopHosts(),
         base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
+  } else if (InControlGroup() && history_service_) {
+    // Set is_precaching_ so that the longer delay is placed between calls to
+    // TopHosts.
+    is_precaching_ = true;
+
+    // Calculate TopHosts solely for metrics purposes.
+    history_service_->TopHosts(
+        NumTopHosts(),
+        base::Bind(&PrecacheManager::OnHostsReceivedThenDone, AsWeakPtr()));
   } else {
     if (PrecachingAllowed() != AllowedType::PENDING) {
       // We are not waiting on the sync backend to be initialized. The user
@@ -153,6 +174,7 @@ bool PrecacheManager::IsPrecaching() const {
 }
 
 void PrecacheManager::RecordStatsForFetch(const GURL& url,
+                                          const GURL& referrer,
                                           const base::TimeDelta& latency,
                                           const base::Time& fetch_time,
                                           int64 size,
@@ -164,6 +186,22 @@ void PrecacheManager::RecordStatsForFetch(const GURL& url,
     return;
   }
 
+  if (!history_service_)
+    return;
+
+  history_service_->HostRankIfAvailable(
+      referrer,
+      base::Bind(&PrecacheManager::RecordStatsForFetchInternal, AsWeakPtr(),
+                 url, latency, fetch_time, size, was_cached));
+}
+
+void PrecacheManager::RecordStatsForFetchInternal(
+    const GURL& url,
+    const base::TimeDelta& latency,
+    const base::Time& fetch_time,
+    int64 size,
+    bool was_cached,
+    int host_rank) {
   if (is_precaching_) {
     // Assume that precache is responsible for all requests made while
     // precaching is currently in progress.
@@ -182,7 +220,7 @@ void PrecacheManager::RecordStatsForFetch(const GURL& url,
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
         base::Bind(&PrecacheDatabase::RecordURLNonPrefetch, precache_database_,
-                   url, latency, fetch_time, size, was_cached,
+                   url, latency, fetch_time, size, was_cached, host_rank,
                    is_connection_cellular));
   }
 }
@@ -233,6 +271,11 @@ void PrecacheManager::OnHostsReceived(
                               kPrecacheFieldTrialName, kManifestURLPrefixParam),
                           this));
   precache_fetcher_->Start();
+}
+
+void PrecacheManager::OnHostsReceivedThenDone(
+    const history::TopHostsList& host_counts) {
+  OnDone();
 }
 
 }  // namespace precache

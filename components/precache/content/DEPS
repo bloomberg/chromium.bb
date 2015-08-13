@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/history/core/browser",
   "+components/keyed_service",
   "+components/sync_driver",
   "+components/variations",

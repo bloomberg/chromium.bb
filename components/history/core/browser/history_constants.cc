@@ -20,4 +20,6 @@ const base::FilePath::CharType kThumbnailsFilename[] =
 const base::FilePath::CharType kTopSitesFilename[] =
     FILE_PATH_LITERAL("Top Sites");
 
+const int kMaxTopHosts = 50;
+
 }  // namespace history

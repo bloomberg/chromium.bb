@@ -86,6 +86,7 @@ class PrecacheManager : public KeyedService,
 
   // Update precache-related metrics in response to a URL being fetched.
   void RecordStatsForFetch(const GURL& url,
+                           const GURL& referrer,
                            const base::TimeDelta& latency,
                            const base::Time& fetch_time,
                            int64 size,
@@ -111,14 +112,31 @@ class PrecacheManager : public KeyedService,
   // From history::HistoryService::TopHosts.
   void OnHostsReceived(const history::TopHostsList& host_counts);
 
+  // From history::HistoryService::TopHosts. Used for the control group, which
+  // gets the list of TopHosts for metrics purposes, but otherwise does nothing.
+  void OnHostsReceivedThenDone(const history::TopHostsList& host_counts);
+
   // Returns true if precaching is enabled as part of a field trial or by the
   // command line flag. This has a different meaning from the
   // "is_precaching_enabled" pref set in PrecacheServiceLauncher. This method
   // can be called on any thread.
   static bool IsPrecachingEnabled();
 
+  // Returns true if the client is placed into the control group as part of the
+  // field trial.
+  bool InControlGroup() const;
+
   // Returns true if precaching is allowed for the browser context.
   AllowedType PrecachingAllowed() const;
+
+  // Update precache-related metrics in response to a URL being fetched. Called
+  // by RecordStatsForFetch() by way of an asynchronous HistoryService callback.
+  void RecordStatsForFetchInternal(const GURL& url,
+                                   const base::TimeDelta& latency,
+                                   const base::Time& fetch_time,
+                                   int64 size,
+                                   bool was_cached,
+                                   int host_rank);
 
   // The browser context that owns this PrecacheManager.
   content::BrowserContext* const browser_context_;
