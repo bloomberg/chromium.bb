@@ -509,6 +509,8 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfoTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/TransportControlTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterTest.java",
+    "junit/src/org/chromium/chrome/browser/media/router/cast/DiscoveryCallbackTest.java",
   ]
   deps = [
     ":chrome_java",

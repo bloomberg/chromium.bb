@@ -8,7 +8,10 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "base/containers/scoped_ptr_hash_map.h"
+#include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/media/router/media_router.h"
 
 namespace content {
@@ -47,6 +50,10 @@ class MediaRouterAndroid : public MediaRouter {
       const SendRouteMessageCallback& callback) override;
   void ClearIssue(const Issue::Id& issue_id) override;
 
+  // JNI functions.
+  void OnSinksReceived(
+      JNIEnv* env, jobject obj, jstring source_urn, jint count);
+
  private:
   friend class MediaRouterFactory;
 
@@ -65,6 +72,11 @@ class MediaRouterAndroid : public MediaRouter {
       PresentationSessionMessagesObserver* observer) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_media_router_;
+
+  using MediaSinkObservers = base::ScopedPtrHashMap<
+      MediaSource::Id,
+      scoped_ptr<base::ObserverList<MediaSinksObserver>>>;
+  MediaSinkObservers sinks_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);
 };
