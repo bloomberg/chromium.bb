@@ -163,6 +163,14 @@ source_set("ui") {
       "//chrome/browser/safe_browsing:report_proto",
     ]
   }
+
+  if (is_chromeos && !is_official_build) {
+    sources +=
+        rebase_path(gypi_values.chrome_browser_ui_chromeos_non_official_sources,
+                    ".",
+                    "//chrome")
+  }
+
   if (is_chromeos) {
     sources += rebase_path(gypi_values.chrome_browser_ui_chromeos_sources,
                            ".",
