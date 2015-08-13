@@ -742,6 +742,8 @@ crbug.com/30536 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-c
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
+crbug.com/517711 fast/repaint/table-section-repaint.html [ NeedsRebaseline ]
+
 # Assertion failures seen only on Slow Leopard.
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-skip-step-in.html [ Crash ]
 crbug.com/374961 [ SnowLeopard Debug ] inspector/sources/debugger-frameworks/frameworks-steppings.html [ Crash ]

@@ -672,13 +672,6 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
     return LayoutFlowThread::locateFlowThreadContainingBlockOf(*this);
 }
 
-// FIXME: This could be used when changing the size of a layoutObject without children to skip some invalidations.
-// FIXME: This is incorrect for document element. Remove this when we enable slimming paint.
-static inline bool layoutObjectHasNoBoxEffectObsolete(const LayoutObject& object)
-{
-    return !object.style()->hasVisualOverflowingEffect() && !object.style()->hasBorderDecoration() && !object.style()->hasBackground();
-}
-
 bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
 {
     if (!neededLayoutBecauseOfChildren())
@@ -694,10 +687,7 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
     if (hasNonCompositedScrollbars())
         return false;
 
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && isDocumentElement())
-        return !hasBoxEffect();
-
-    return layoutObjectHasNoBoxEffectObsolete(*this);
+    return !hasBoxEffect();
 }
 
 LayoutBlock* LayoutObject::firstLineBlock() const
