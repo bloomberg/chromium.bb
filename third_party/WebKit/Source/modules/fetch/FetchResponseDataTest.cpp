@@ -78,4 +78,15 @@ TEST_F(FetchResponseDataTest, ToWebServiceWorkerOpaqueType)
     CheckHeaders(webResponse);
 }
 
+TEST_F(FetchResponseDataTest, ToWebServiceWorkerOpaqueRedirectType)
+{
+    WebServiceWorkerResponse webResponse;
+    FetchResponseData* internalResponse = createInternalResponse();
+    FetchResponseData* opaqueRedirectResponseData = internalResponse->createOpaqueRedirectFilteredResponse();
+
+    opaqueRedirectResponseData->populateWebServiceWorkerResponse(webResponse);
+    EXPECT_EQ(WebServiceWorkerResponseTypeOpaqueRedirect, webResponse.responseType());
+    CheckHeaders(webResponse);
+}
+
 } // namespace WebCore

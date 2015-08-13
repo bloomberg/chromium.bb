@@ -4,7 +4,7 @@
 
 // http://fetch.spec.whatwg.org/#response-class
 
-enum ResponseType { "basic", "cors", "default", "error", "opaque" };
+enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredirect" };
 
 // FIXME: Add union type: URLSearchParams
 typedef (Blob or ArrayBuffer or ArrayBufferView or FormData or USVString) BodyInit;
