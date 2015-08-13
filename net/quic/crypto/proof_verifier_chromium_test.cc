@@ -302,7 +302,9 @@ TEST(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
   ASSERT_TRUE(details.get());
   ProofVerifyDetailsChromium* verify_details =
       static_cast<ProofVerifyDetailsChromium*>(details.get());
-  EXPECT_EQ(0u, verify_details->cert_verify_result.cert_status);
+  EXPECT_EQ(CERT_STATUS_CT_COMPLIANCE_FAILED,
+            verify_details->cert_verify_result.cert_status &
+                (CERT_STATUS_CT_COMPLIANCE_FAILED | CERT_STATUS_IS_EV));
 }
 
 // Tests that the certificate policy enforcer is not consulted if

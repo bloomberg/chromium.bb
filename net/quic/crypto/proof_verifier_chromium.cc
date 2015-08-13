@@ -259,6 +259,8 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
             cert_verify_result.verified_cert.get(),
             SSLConfigService::GetEVCertsWhitelist().get(), empty_ct_result,
             net_log_)) {
+      verify_details_->cert_verify_result.cert_status |=
+          CERT_STATUS_CT_COMPLIANCE_FAILED;
       verify_details_->cert_verify_result.cert_status &= ~CERT_STATUS_IS_EV;
     }
   }

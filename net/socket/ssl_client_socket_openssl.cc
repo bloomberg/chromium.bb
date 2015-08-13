@@ -1339,6 +1339,8 @@ void SSLClientSocketOpenSSL::VerifyCT() {
               << server_cert_verify_result_.verified_cert->subject()
                      .GetDisplayName()
               << " does not conform to CT policy, removing EV status.";
+      server_cert_verify_result_.cert_status |=
+          CERT_STATUS_CT_COMPLIANCE_FAILED;
       server_cert_verify_result_.cert_status &= ~CERT_STATUS_IS_EV;
     }
   }
