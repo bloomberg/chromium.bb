@@ -40,6 +40,9 @@ class FakeTab(object):
   def __init__(self):
     self.browser = FakeBrowser()
 
+  def CollectGarbage(self):
+    pass
+
   def ExecuteJavaScript(self, js):
     pass
 
