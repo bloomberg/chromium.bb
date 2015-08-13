@@ -405,6 +405,7 @@ action("aggregate_vector_icons") {
   script = "vector_icons/aggregate_vector_icons.py"
   sources = [
     "vector_icon_types.h",
+    "vector_icons/account_box.icon",
     "vector_icons/account_child_invert.icon",
     "vector_icons/check_circle.icon",
     "vector_icons/extension.icon",
@@ -417,14 +418,17 @@ action("aggregate_vector_icons") {
     "vector_icons/find_prev.icon",
     "vector_icons/help_outline.icon",
     "vector_icons/location_on.icon",
+    "vector_icons/mode_edit.icon",
     "vector_icons/notifications.icon",
     "vector_icons/photo_camera.icon",
+    "vector_icons/remove_box.icon",
     "vector_icons/supervisor_account.icon",
     "vector_icons/tab_audio.1x.icon",
     "vector_icons/tab_audio.icon",
     "vector_icons/tab_audio_muting.1x.icon",
     "vector_icons/tab_audio_muting.icon",
     "vector_icons/translate.icon",
+    "vector_icons/warning.icon",
   ]
   outputs = [
     vector_icons_cc_file,

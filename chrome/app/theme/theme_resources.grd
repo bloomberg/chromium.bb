@@ -325,22 +325,20 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_HOTWORD_NOTIFICATION_ICON" file="common/notification_hotword_icon.png" />
       <if expr="not is_android and not is_ios">
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR" file="common/avatar_menu_auth_error.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ADD_USER" file="common/icon_add_user.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR" file="common/avatar_button_auth_error.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_BROWSE_GUEST" file="common/icon_browse_as_guest.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_CHILD" file="common/icon_child.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_HOVER" file="common/edit_button_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="common/edit_button_pressed.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="common/avatar_menu_profile.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_DISCONNECT" file="common/avatar_menu_disconnect.png" />
+        <!-- TODO(estade): replace with vector image when one's available. -->
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_INCOGNITO" file="common/incognito.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LOCK" file="common/avatar_menu_lock.png" />
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LEGACY_SUPERVISED" file="common/icon_legacy_supervised.png" />
         <if expr="is_macosx">
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR" file="common/avatar_menu_auth_error.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR" file="common/avatar_button_auth_error.png" />
           <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_CAMERA" file="common/edit_camera.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_HOVER" file="common/edit_button_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_EDIT_PRESSED" file="common/edit_button_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_LEGACY_SUPERVISED" file="common/icon_legacy_supervised.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_AVATAR" file="common/avatar_menu_profile.png" />
           <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_CHILD" file="common/avatar_menu_child.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_DISCONNECT" file="common/avatar_menu_disconnect.png" />
           <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LEGACY_SUPERVISED" file="common/avatar_menu_legacy_supervised.png" />
+          <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_LOCK" file="common/avatar_menu_lock.png" />
         </if>
       </if>
       <if expr="not is_android and not is_ios and not chromeos">
