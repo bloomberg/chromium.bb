@@ -55,8 +55,6 @@ public:
     class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
     public:
         virtual ~Listener() { }
-        virtual void debuggerWasEnabled() = 0;
-        virtual void debuggerWasDisabled() = 0;
         virtual bool canPauseOnPromiseEvent() = 0;
         virtual void didCreatePromise() = 0;
         virtual void didResolvePromise() = 0;

@@ -146,14 +146,6 @@ public:
     void getRelayoutBoundary(ErrorString*, int nodeId, int* relayoutBoundaryNodeId) override;
     void getHighlightObjectForTest(ErrorString*, int nodeId, RefPtr<JSONObject>&) override;
 
-    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
-    public:
-        virtual ~Listener() { }
-        virtual void domAgentWasEnabled() = 0;
-        virtual void domAgentWasDisabled() = 0;
-    };
-    void setListener(Listener* listener) { m_listener = listener; }
-
     bool enabled() const;
     void releaseDanglingNodes();
 
@@ -269,7 +261,6 @@ private:
     OwnPtrWillBeMember<InspectorHistory> m_history;
     OwnPtrWillBeMember<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;
-    RawPtrWillBeMember<Listener> m_listener;
     int m_backendNodeIdToInspect;
 };
 

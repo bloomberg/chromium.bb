@@ -61,15 +61,11 @@ void InspectorDebuggerAgent::enable(ErrorString* errorString)
 void InspectorDebuggerAgent::startListeningV8Debugger()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(this);
-    if (m_listener)
-        m_listener->debuggerWasEnabled();
 }
 
 void InspectorDebuggerAgent::stopListeningV8Debugger()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
-    if (m_listener)
-        m_listener->debuggerWasDisabled();
 }
 
 bool InspectorDebuggerAgent::canPauseOnPromiseEvent()

@@ -88,6 +88,7 @@ static const char eventListenerBreakpoints[] = "eventListenerBreakpoints";
 static const char eventTargetAny[] = "*";
 static const char pauseOnAllXHRs[] = "pauseOnAllXHRs";
 static const char xhrBreakpoints[] = "xhrBreakpoints";
+static const char enabled[] = "enabled";
 }
 
 PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::create(InjectedScriptManager* injectedScriptManager, InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
@@ -102,7 +103,6 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InjectedScriptManager* inje
     , m_debuggerAgent(debuggerAgent)
 {
     m_debuggerAgent->setListener(this);
-    m_domAgent->setListener(this);
 }
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
@@ -125,29 +125,6 @@ DEFINE_TRACE(InspectorDOMDebuggerAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-// Browser debugger agent enabled only when JS debugger is enabled.
-void InspectorDOMDebuggerAgent::debuggerWasEnabled()
-{
-    if (m_domAgent->enabled() && m_debuggerAgent->enabled())
-        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
-}
-
-void InspectorDOMDebuggerAgent::debuggerWasDisabled()
-{
-    disable(nullptr);
-}
-
-void InspectorDOMDebuggerAgent::domAgentWasEnabled()
-{
-    if (m_domAgent->enabled() && m_debuggerAgent->enabled())
-        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
-}
-
-void InspectorDOMDebuggerAgent::domAgentWasDisabled()
-{
-    disable(nullptr);
-}
-
 bool InspectorDOMDebuggerAgent::checkEnabled(ErrorString* errorString)
 {
     if (!m_domAgent->enabled()) {
@@ -164,14 +141,22 @@ bool InspectorDOMDebuggerAgent::checkEnabled(ErrorString* errorString)
 void InspectorDOMDebuggerAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
-    clear();
+    m_domBreakpoints.clear();
+    m_state->remove(DOMDebuggerAgentState::eventListenerBreakpoints);
+    m_state->remove(DOMDebuggerAgentState::xhrBreakpoints);
+    m_state->remove(DOMDebuggerAgentState::pauseOnAllXHRs);
+}
+
+void InspectorDOMDebuggerAgent::restore()
+{
+    if (m_state->getBoolean(DOMDebuggerAgentState::enabled))
+        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
 }
 
 void InspectorDOMDebuggerAgent::discardAgent()
 {
     m_debuggerAgent->setListener(nullptr);
     m_debuggerAgent = nullptr;
-    m_domAgent->setListener(nullptr);
     m_domAgent = nullptr;
 }
 
@@ -212,6 +197,7 @@ void InspectorDOMDebuggerAgent::setBreakpoint(ErrorString* error, const String& 
     else
         breakpointsByTarget->setBoolean(targetName->lower(), true);
     m_state->setObject(DOMDebuggerAgentState::eventListenerBreakpoints, eventListenerBreakpoints.release());
+    didAddBreakpoint();
 }
 
 void InspectorDOMDebuggerAgent::removeEventListenerBreakpoint(ErrorString* error, const String& eventName, const String* targetName)
@@ -238,6 +224,7 @@ void InspectorDOMDebuggerAgent::removeBreakpoint(ErrorString* error, const Strin
     else
         breakpointsByTarget->remove(targetName->lower());
     m_state->setObject(DOMDebuggerAgentState::eventListenerBreakpoints, eventListenerBreakpoints.release());
+    didRemoveBreakpoint();
 }
 
 void InspectorDOMDebuggerAgent::didInvalidateStyleAttr(Node* node)
@@ -318,6 +305,7 @@ void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString, int n
         for (Node* child = InspectorDOMAgent::innerFirstChild(node); child; child = InspectorDOMAgent::innerNextSibling(child))
             updateSubtreeBreakpoints(child, rootBit, true);
     }
+    didAddBreakpoint();
 }
 
 void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString, int nodeId, const String& typeString)
@@ -342,6 +330,7 @@ void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString, in
         for (Node* child = InspectorDOMAgent::innerFirstChild(node); child; child = InspectorDOMAgent::innerNextSibling(child))
             updateSubtreeBreakpoints(child, rootBit, false);
     }
+    didRemoveBreakpoint();
 }
 
 void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, const String& objectId, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
@@ -484,6 +473,8 @@ void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpo
 
 bool InspectorDOMDebuggerAgent::hasBreakpoint(Node* node, int type)
 {
+    if (!m_domAgent->enabled() || !m_debuggerAgent->enabled())
+        return false;
     uint32_t rootBit = 1 << type;
     uint32_t derivedBit = rootBit << domBreakpointDerivedTypeShift;
     return m_domBreakpoints.get(node) & (rootBit | derivedBit);
@@ -510,6 +501,8 @@ void InspectorDOMDebuggerAgent::updateSubtreeBreakpoints(Node* node, uint32_t ro
 void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous)
 {
     if (!eventData)
+        return;
+    if (!m_debuggerAgent->enabled())
         return;
     if (synchronous)
         m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::EventListener, eventData);
@@ -639,24 +632,24 @@ void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString* errorString, const
         return;
     if (url.isEmpty()) {
         m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllXHRs, true);
-        return;
+    } else {
+        RefPtr<JSONObject> xhrBreakpoints = m_state->getObject(DOMDebuggerAgentState::xhrBreakpoints);
+        xhrBreakpoints->setBoolean(url, true);
+        m_state->setObject(DOMDebuggerAgentState::xhrBreakpoints, xhrBreakpoints.release());
     }
-
-    RefPtr<JSONObject> xhrBreakpoints = m_state->getObject(DOMDebuggerAgentState::xhrBreakpoints);
-    xhrBreakpoints->setBoolean(url, true);
-    m_state->setObject(DOMDebuggerAgentState::xhrBreakpoints, xhrBreakpoints.release());
+    didAddBreakpoint();
 }
 
 void InspectorDOMDebuggerAgent::removeXHRBreakpoint(ErrorString* errorString, const String& url)
 {
     if (url.isEmpty()) {
         m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllXHRs, false);
-        return;
+    } else {
+        RefPtr<JSONObject> xhrBreakpoints = m_state->getObject(DOMDebuggerAgentState::xhrBreakpoints);
+        xhrBreakpoints->remove(url);
+        m_state->setObject(DOMDebuggerAgentState::xhrBreakpoints, xhrBreakpoints.release());
     }
-
-    RefPtr<JSONObject> xhrBreakpoints = m_state->getObject(DOMDebuggerAgentState::xhrBreakpoints);
-    xhrBreakpoints->remove(url);
-    m_state->setObject(DOMDebuggerAgentState::xhrBreakpoints, xhrBreakpoints.release());
+    didRemoveBreakpoint();
 }
 
 void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
@@ -676,6 +669,8 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
 
     if (breakpointURL.isNull())
         return;
+    if (!m_debuggerAgent->enabled())
+        return;
 
     RefPtr<JSONObject> eventData = JSONObject::create();
     eventData->setString("breakpointURL", breakpointURL);
@@ -683,9 +678,31 @@ void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
     m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::XHR, eventData.release());
 }
 
-void InspectorDOMDebuggerAgent::clear()
+void InspectorDOMDebuggerAgent::didAddBreakpoint()
 {
-    m_domBreakpoints.clear();
+    if (m_state->getBoolean(DOMDebuggerAgentState::enabled))
+        return;
+    m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
+    m_state->setBoolean(DOMDebuggerAgentState::enabled, true);
+}
+
+static bool isEmpty(PassRefPtr<JSONObject> object)
+{
+    return object->begin() == object->end();
+}
+
+void InspectorDOMDebuggerAgent::didRemoveBreakpoint()
+{
+    if (!m_domBreakpoints.isEmpty())
+        return;
+    if (!isEmpty(m_state->getObject(DOMDebuggerAgentState::eventListenerBreakpoints)))
+        return;
+    if (!isEmpty(m_state->getObject(DOMDebuggerAgentState::xhrBreakpoints)))
+        return;
+    if (m_state->getBoolean(DOMDebuggerAgentState::pauseOnAllXHRs))
+        return;
+    m_state->remove(DOMDebuggerAgentState::enabled);
+    m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
 }
 
 } // namespace blink

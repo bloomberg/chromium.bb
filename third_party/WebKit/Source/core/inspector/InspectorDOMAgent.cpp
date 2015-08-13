@@ -316,7 +316,6 @@ InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScri
     , m_lastNodeId(1)
     , m_searchingForNode(NotSearching)
     , m_suppressAttributeModifiedEvent(false)
-    , m_listener(nullptr)
     , m_backendNodeIdToInspect(0)
 {
 }
@@ -553,8 +552,6 @@ void InspectorDOMAgent::innerEnable()
     m_domEditor = adoptPtrWillBeNoop(new DOMEditor(m_history.get()));
     m_document = m_pageAgent->inspectedFrame()->document();
     m_instrumentingAgents->setInspectorDOMAgent(this);
-    if (m_listener)
-        m_listener->domAgentWasEnabled();
     if (m_backendNodeIdToInspect)
         frontend()->inspectNodeRequested(m_backendNodeIdToInspect);
     m_backendNodeIdToInspect = 0;
@@ -585,8 +582,6 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
     m_history.clear();
     m_domEditor.clear();
     setDocument(nullptr);
-    if (m_listener)
-        m_listener->domAgentWasDisabled();
 }
 
 void InspectorDOMAgent::getDocument(ErrorString* errorString, RefPtr<TypeBuilder::DOM::Node>& root)
@@ -2246,7 +2241,6 @@ DEFINE_TRACE(InspectorDOMAgent)
     visitor->trace(m_hoveredNodeForInspectMode);
     visitor->trace(m_history);
     visitor->trace(m_domEditor);
-    visitor->trace(m_listener);
     InspectorBaseAgent::trace(visitor);
 }
 

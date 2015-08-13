@@ -58,7 +58,6 @@ typedef String ErrorString;
 class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<InspectorDOMDebuggerAgent, InspectorFrontend::DOMDebugger>
     , public InspectorDebuggerAgent::Listener
-    , public InspectorDOMAgent::Listener
     , public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorDOMDebuggerAgent);
@@ -101,6 +100,7 @@ public:
     void willCloseWindow();
 
     void disable(ErrorString*) override;
+    void restore() override;
     void discardAgent() override;
 
 private:
@@ -110,13 +110,7 @@ private:
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
-    // InspectorDOMAgent::Listener implementation.
-    void domAgentWasEnabled() override;
-    void domAgentWasDisabled() override;
-
     // InspectorDebuggerAgent::Listener implementation.
-    void debuggerWasEnabled() override;
-    void debuggerWasDisabled() override;
     bool canPauseOnPromiseEvent() override;
     void didCreatePromise() override;
     void didResolvePromise() override;
@@ -128,9 +122,9 @@ private:
     void setBreakpoint(ErrorString*, const String& eventName, const String* targetName);
     void removeBreakpoint(ErrorString*, const String& eventName, const String* targetName);
 
+    void didAddBreakpoint();
+    void didRemoveBreakpoint();
     PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(const RegisteredEventListener&, const AtomicString& eventType, EventTarget*, const String& objectGroupId);
-
-    void clear();
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
