@@ -164,7 +164,7 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
 void DisplayListRasterSource::GatherPixelRefs(
     const gfx::Rect& content_rect,
     float contents_scale,
-    std::vector<SkPixelRef*>* pixel_refs) const {
+    std::vector<skia::PositionPixelRef>* pixel_refs) const {
   DCHECK_EQ(0u, pixel_refs->size());
 
   gfx::Rect layer_rect =

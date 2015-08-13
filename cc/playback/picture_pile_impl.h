@@ -49,9 +49,10 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
       const gfx::Rect& content_rect,
       float contents_scale,
       RasterSource::SolidColorAnalysis* analysis) const override;
-  void GatherPixelRefs(const gfx::Rect& content_rect,
-                       float contents_scale,
-                       std::vector<SkPixelRef*>* pixel_refs) const override;
+  void GatherPixelRefs(
+      const gfx::Rect& content_rect,
+      float contents_scale,
+      std::vector<skia::PositionPixelRef>* pixel_refs) const override;
   bool CoversRect(const gfx::Rect& content_rect,
                   float contents_scale) const override;
   void SetShouldAttemptToUseDistanceFieldText() override;
@@ -78,8 +79,12 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
                      const PicturePileImpl* picture_pile);
     ~PixelRefIterator();
 
-    SkPixelRef* operator->() const { return *pixel_ref_iterator_; }
-    SkPixelRef* operator*() const { return *pixel_ref_iterator_; }
+    const skia::PositionPixelRef* operator->() const {
+      return &(*pixel_ref_iterator_);
+    }
+    const skia::PositionPixelRef& operator*() const {
+      return *pixel_ref_iterator_;
+    }
     PixelRefIterator& operator++();
     operator bool() const { return pixel_ref_iterator_; }
 

@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/traced_value.h"
+#include "skia/ext/pixel_ref_utils.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -71,9 +72,10 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Populate the given list with all SkPixelRefs that may overlap the given
   // rect at given scale.
-  virtual void GatherPixelRefs(const gfx::Rect& content_rect,
-                               float contents_scale,
-                               std::vector<SkPixelRef*>* pixel_refs) const = 0;
+  virtual void GatherPixelRefs(
+      const gfx::Rect& content_rect,
+      float contents_scale,
+      std::vector<skia::PositionPixelRef>* pixel_refs) const = 0;
 
   // Return true iff this raster source can raster the given rect at given
   // scale.

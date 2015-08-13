@@ -60,14 +60,15 @@ ImageDecodeController::ImageDecodeController() {}
 ImageDecodeController::~ImageDecodeController() {}
 
 scoped_refptr<ImageDecodeTask> ImageDecodeController::GetTaskForPixelRef(
-    SkPixelRef* pixel_ref,
+    const skia::PositionPixelRef& pixel_ref,
     int layer_id,
     uint64_t prepare_tiles_id) {
-  uint32_t generation_id = pixel_ref->getGenerationID();
+  uint32_t generation_id = pixel_ref.pixel_ref->getGenerationID();
   scoped_refptr<ImageDecodeTask>& decode_task =
       image_decode_tasks_[layer_id][generation_id];
   if (!decode_task)
-    decode_task = CreateTaskForPixelRef(pixel_ref, layer_id, prepare_tiles_id);
+    decode_task =
+        CreateTaskForPixelRef(pixel_ref.pixel_ref, layer_id, prepare_tiles_id);
   return decode_task;
 }
 

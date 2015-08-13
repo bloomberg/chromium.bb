@@ -40,9 +40,10 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   bool IsSolidColor() const override;
   SkColor GetSolidColor() const override;
   gfx::Size GetSize() const override;
-  void GatherPixelRefs(const gfx::Rect& content_rect,
-                       float contents_scale,
-                       std::vector<SkPixelRef*>* pixel_refs) const override;
+  void GatherPixelRefs(
+      const gfx::Rect& content_rect,
+      float contents_scale,
+      std::vector<skia::PositionPixelRef>* pixel_refs) const override;
   bool CoversRect(const gfx::Rect& content_rect,
                   float contents_scale) const override;
   bool HasRecordings() const override;

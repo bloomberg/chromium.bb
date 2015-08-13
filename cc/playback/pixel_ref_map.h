@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "skia/ext/pixel_ref_utils.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -24,7 +25,7 @@ class Picture;
 class DisplayItemList;
 
 typedef std::pair<int, int> PixelRefMapKey;
-typedef std::vector<SkPixelRef*> PixelRefs;
+typedef std::vector<skia::PositionPixelRef> PixelRefs;
 typedef base::hash_map<PixelRefMapKey, PixelRefs> PixelRefHashmap;
 
 // This class is used and owned by cc Picture class. It is used to gather pixel
@@ -34,7 +35,8 @@ class CC_EXPORT PixelRefMap {
  public:
   explicit PixelRefMap(const gfx::Size& cell_size);
   ~PixelRefMap();
-  void GatherPixelRefsFromPicture(SkPicture* picture);
+  void GatherPixelRefsFromPicture(SkPicture* picture,
+                                  const gfx::Rect& layer_rect);
 
   bool empty() const { return data_hash_map_.empty(); }
 
@@ -50,12 +52,12 @@ class CC_EXPORT PixelRefMap {
     Iterator(const gfx::Rect& layer_rect, const DisplayItemList* picture);
     ~Iterator();
 
-    SkPixelRef* operator->() const {
+    const skia::PositionPixelRef* operator->() const {
       DCHECK_LT(current_index_, current_pixel_refs_->size());
-      return (*current_pixel_refs_)[current_index_];
+      return &(*current_pixel_refs_)[current_index_];
     }
 
-    SkPixelRef* operator*() const {
+    const skia::PositionPixelRef& operator*() const {
       DCHECK_LT(current_index_, current_pixel_refs_->size());
       return (*current_pixel_refs_)[current_index_];
     }

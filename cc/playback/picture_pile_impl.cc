@@ -301,7 +301,7 @@ void PicturePileImpl::PerformSolidColorAnalysis(
 void PicturePileImpl::GatherPixelRefs(
     const gfx::Rect& content_rect,
     float contents_scale,
-    std::vector<SkPixelRef*>* pixel_refs) const {
+    std::vector<skia::PositionPixelRef>* pixel_refs) const {
   DCHECK_EQ(0u, pixel_refs->size());
   for (PixelRefIterator iter(content_rect, contents_scale, this); iter;
        ++iter) {

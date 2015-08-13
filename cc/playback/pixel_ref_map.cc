@@ -21,7 +21,8 @@ PixelRefMap::PixelRefMap(const gfx::Size& cell_size) : cell_size_(cell_size) {
 PixelRefMap::~PixelRefMap() {
 }
 
-void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture) {
+void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture,
+                                             const gfx::Rect& layer_rect) {
   DCHECK(picture);
 
   int min_x = std::numeric_limits<int>::max();
@@ -45,10 +46,23 @@ void PixelRefMap::GatherPixelRefsFromPicture(SkPicture* picture) {
                        static_cast<int>(std::ceil(it->pixel_ref_rect.bottom())),
                        cell_size_.height()));
 
+    // We recorded the picture as if it was at (0, 0) by translating by layer
+    // rect origin. Add the rect origin back here. It really doesn't make much
+    // of a difference, since the query for pixel refs doesn't use this
+    // information. However, since picture pile / display list also returns this
+    // information, it would be nice to express it relative to the layer, not
+    // relative to the particular implementation of the raster source.
+    skia::PositionPixelRef position_pixel_ref = *it;
+    position_pixel_ref.pixel_ref_rect.setXYWH(
+        position_pixel_ref.pixel_ref_rect.x() + layer_rect.x(),
+        position_pixel_ref.pixel_ref_rect.y() + layer_rect.y(),
+        position_pixel_ref.pixel_ref_rect.width(),
+        position_pixel_ref.pixel_ref_rect.height());
+
     for (int y = min.y(); y <= max.y(); y += cell_size_.height()) {
       for (int x = min.x(); x <= max.x(); x += cell_size_.width()) {
         PixelRefMapKey key(x, y);
-        data_hash_map_[key].push_back(it->pixel_ref);
+        data_hash_map_[key].push_back(position_pixel_ref);
       }
     }
 

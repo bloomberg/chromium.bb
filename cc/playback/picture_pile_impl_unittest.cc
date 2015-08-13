@@ -193,21 +193,27 @@ TEST(PicturePileImplTest, PixelRefIteratorDiscardableRefsOneTile) {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 0, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 0, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 0, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
@@ -215,21 +221,27 @@ TEST(PicturePileImplTest, PixelRefIteratorDiscardableRefsOneTile) {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(260, 260, 256, 256), 1.0, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 260, 32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(520, 520, 512, 512), 2.0, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 260, 32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(130, 130, 128, 128), 0.5, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 260, 32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   // Ensure there's no discardable pixel refs in the empty cell
@@ -243,56 +255,86 @@ TEST(PicturePileImplTest, PixelRefIteratorDiscardableRefsOneTile) {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 0, 512, 512), 1.0, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(32, 32).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 0, 32, 32).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 260, 32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 0, 1024, 1024), 2.0, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(32, 32).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 0, 32, 32).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString(),
+              gfx::RectF(260, 260, 32, 32).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
     PicturePileImpl::PixelRefIterator iterator(
         gfx::Rect(0, 0, 256, 256), 0.5, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][1].pixelRef());
+    EXPECT_EQ(gfx::RectF(260, 0, 32, 32).ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::RectF(260, 260, 32, 32).ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_FALSE(++iterator);
   }
 
-  // Copy test.
-  PicturePileImpl::PixelRefIterator iterator(
-      gfx::Rect(0, 0, 512, 512), 1.0, pile.get());
-  EXPECT_TRUE(iterator);
-  EXPECT_TRUE(*iterator == discardable_bitmap[0][0].pixelRef());
-  EXPECT_TRUE(++iterator);
-  EXPECT_TRUE(*iterator == discardable_bitmap[0][1].pixelRef());
+  {
+    // Copy test.
+    PicturePileImpl::PixelRefIterator iterator(gfx::Rect(0, 0, 512, 512), 1.0,
+                                               pile.get());
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][0].pixelRef());
+    EXPECT_EQ(gfx::RectF(32, 32).ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0][1].pixelRef());
+    EXPECT_EQ(gfx::RectF(260, 0, 32, 32).ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
 
-  // copy now points to the same spot as iterator,
-  // but both can be incremented independently.
-  PicturePileImpl::PixelRefIterator copy = iterator;
-  EXPECT_TRUE(++iterator);
-  EXPECT_TRUE(*iterator == discardable_bitmap[1][1].pixelRef());
-  EXPECT_FALSE(++iterator);
+    // copy now points to the same spot as iterator,
+    // but both can be incremented independently.
+    PicturePileImpl::PixelRefIterator copy = iterator;
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::RectF(260, 260, 32, 32).ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
+    EXPECT_FALSE(++iterator);
 
-  EXPECT_TRUE(copy);
-  EXPECT_TRUE(*copy == discardable_bitmap[0][1].pixelRef());
-  EXPECT_TRUE(++copy);
-  EXPECT_TRUE(*copy == discardable_bitmap[1][1].pixelRef());
-  EXPECT_FALSE(++copy);
+    EXPECT_TRUE(copy);
+    EXPECT_TRUE(copy->pixel_ref == discardable_bitmap[0][1].pixelRef());
+    EXPECT_EQ(gfx::RectF(260, 0, 32, 32).ToString(),
+              gfx::SkRectToRectF(copy->pixel_ref_rect).ToString());
+    EXPECT_TRUE(++copy);
+    EXPECT_TRUE(copy->pixel_ref == discardable_bitmap[1][1].pixelRef());
+    EXPECT_EQ(gfx::RectF(260, 260, 32, 32).ToString(),
+              gfx::SkRectToRectF(copy->pixel_ref_rect).ToString());
+    EXPECT_FALSE(++copy);
+  }
 }
 
 TEST(PicturePileImplTest, RasterFullContents) {
@@ -480,6 +522,11 @@ TEST(PicturePileImplTest, PixelRefIteratorBorders) {
       recording_source->tiling().TileBounds(1, 0),
       recording_source->tiling().TileBounds(2, 0),
   };
+  gfx::RectF expected_rects[] = {
+      gfx::RectF(recording_source->tiling().TileBounds(0, 0)),
+      gfx::RectF(recording_source->tiling().TileBounds(1, 0)),
+      gfx::RectF(recording_source->tiling().TileBounds(2, 0)),
+  };
   SkBitmap discardable_bitmap[arraysize(bitmap_rects)];
 
   for (size_t i = 0; i < arraysize(bitmap_rects); ++i) {
@@ -516,9 +563,13 @@ TEST(PicturePileImplTest, PixelRefIteratorBorders) {
     PicturePileImpl::PixelRefIterator iterator(
         pile->tiling().TileBounds(0, 0), 1.f, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0].pixelRef());
+    EXPECT_EQ(expected_rects[0].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1].pixelRef());
+    EXPECT_EQ(expected_rects[1].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
@@ -526,11 +577,17 @@ TEST(PicturePileImplTest, PixelRefIteratorBorders) {
     PicturePileImpl::PixelRefIterator iterator(
         pile->tiling().TileBounds(1, 0), 1.f, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[0].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[0].pixelRef());
+    EXPECT_EQ(expected_rects[0].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1].pixelRef());
+    EXPECT_EQ(expected_rects[1].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[2].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[2].pixelRef());
+    EXPECT_EQ(expected_rects[2].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_FALSE(++iterator);
   }
   {
@@ -539,9 +596,13 @@ TEST(PicturePileImplTest, PixelRefIteratorBorders) {
     PicturePileImpl::PixelRefIterator iterator(
         pile->tiling().TileBounds(2, 0), 1.f, pile.get());
     EXPECT_TRUE(iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[1].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[1].pixelRef());
+    EXPECT_EQ(expected_rects[1].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(*iterator == discardable_bitmap[2].pixelRef());
+    EXPECT_TRUE(iterator->pixel_ref == discardable_bitmap[2].pixelRef());
+    EXPECT_EQ(expected_rects[2].ToString(),
+              gfx::SkRectToRectF(iterator->pixel_ref_rect).ToString());
     EXPECT_FALSE(++iterator);
   }
 }

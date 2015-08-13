@@ -27,7 +27,8 @@ class SK_API PixelRefUtils {
       std::vector<PositionPixelRef>* pixel_refs);
 };
 
-typedef std::vector<PixelRefUtils::PositionPixelRef> DiscardablePixelRefList;
+using PositionPixelRef = PixelRefUtils::PositionPixelRef;
+using DiscardablePixelRefList = std::vector<PositionPixelRef>;
 
 }  // namespace skia
 

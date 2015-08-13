@@ -302,7 +302,7 @@ void DisplayItemList::GatherPixelRefs(const gfx::Size& grid_cell_size) {
   if (!picture_->willPlayBackBitmaps())
     return;
 
-  pixel_refs_->GatherPixelRefsFromPicture(picture_.get());
+  pixel_refs_->GatherPixelRefsFromPicture(picture_.get(), layer_rect_);
 }
 
 void* DisplayItemList::GetSidecar(DisplayItem* display_item) {

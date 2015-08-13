@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/raster/tile_task_runner.h"
+#include "skia/ext/pixel_ref_utils.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
@@ -19,9 +20,10 @@ class ImageDecodeController {
   ImageDecodeController();
   ~ImageDecodeController();
 
-  scoped_refptr<ImageDecodeTask> GetTaskForPixelRef(SkPixelRef* pixel_ref,
-                                                    int layer_id,
-                                                    uint64_t prepare_tiles_id);
+  scoped_refptr<ImageDecodeTask> GetTaskForPixelRef(
+      const skia::PositionPixelRef& pixel_ref,
+      int layer_id,
+      uint64_t prepare_tiles_id);
 
   // Note that this function has to remain thread safe.
   void DecodePixelRef(SkPixelRef* pixel_ref);

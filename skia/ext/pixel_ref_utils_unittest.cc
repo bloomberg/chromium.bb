@@ -183,7 +183,7 @@ TEST(PixelRefUtilsTest, DrawPoints) {
   canvas->save();
 
   canvas->clipRect(SkRect::MakeWH(50, 50));
-  // (10, 10, 40, 40).
+  // (10, 10, 90, 90).
   canvas->drawPoints(SkCanvas::kPolygon_PointMode, 3, points, second_paint);
 
   canvas->restore();
@@ -205,7 +205,7 @@ TEST(PixelRefUtilsTest, DrawPoints) {
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 40, 40),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 90, 90),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
@@ -246,7 +246,7 @@ TEST(PixelRefUtilsTest, DrawRect) {
 
   canvas->clipRect(SkRect::MakeXYWH(50, 50, 50, 50));
   canvas->translate(20, 20);
-  // (50, 50, 50, 50)
+  // (20, 20, 100, 100)
   canvas->drawRect(SkRect::MakeXYWH(0, 0, 100, 100), third_paint);
 
   skia::RefPtr<SkPicture> picture =
@@ -264,7 +264,7 @@ TEST(PixelRefUtilsTest, DrawRect) {
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(20, 20, 100, 100),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
@@ -306,7 +306,7 @@ TEST(PixelRefUtilsTest, DrawRRect) {
   canvas->clipRect(SkRect::MakeXYWH(50, 50, 50, 50));
   canvas->translate(20, 20);
   rrect.setRect(SkRect::MakeXYWH(0, 0, 100, 100));
-  // (50, 50, 50, 50)
+  // (20, 20, 100, 100)
   canvas->drawRRect(rrect, third_paint);
 
   skia::RefPtr<SkPicture> picture =
@@ -324,7 +324,7 @@ TEST(PixelRefUtilsTest, DrawRRect) {
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(20, 20, 100, 100),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
@@ -365,7 +365,7 @@ TEST(PixelRefUtilsTest, DrawOval) {
 
   canvas->clipRect(SkRect::MakeXYWH(50, 50, 50, 50));
   canvas->translate(20, 20);
-  // (50, 50, 50, 50)
+  // (20, 20, 100, 100).
   canvas->drawRect(SkRect::MakeXYWH(0, 0, 100, 100), third_paint);
 
   skia::RefPtr<SkPicture> picture =
@@ -383,7 +383,7 @@ TEST(PixelRefUtilsTest, DrawOval) {
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(50, 50, 50, 50),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(20, 20, 100, 100),
                        gfx::SkRectToRectF(pixel_refs[2].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[2].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[2].filter_quality);
@@ -414,7 +414,8 @@ TEST(PixelRefUtilsTest, DrawPath) {
   canvas->save();
   canvas->clipRect(SkRect::MakeWH(50, 50));
 
-  // (12, 13, 38, 37).
+  // (12, 13, 38, 88), since clips are ignored as long as the shape is in the
+  // clip.
   canvas->drawPath(path, second_paint);
 
   canvas->restore();
@@ -430,7 +431,7 @@ TEST(PixelRefUtilsTest, DrawPath) {
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(12, 13, 38, 37),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(12, 13, 38, 88),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);
@@ -517,7 +518,7 @@ TEST(PixelRefUtilsTest, DrawBitmap) {
                        gfx::SkRectToRectF(pixel_refs[4].pixel_ref_rect));
   VerifyScales(5.f, 6.f, pixel_refs[4].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[4].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(0, 0, 29.403214f, 18.545712f),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-1.8159621f, 0, 31.219175f, 18.545712f),
                        gfx::SkRectToRectF(pixel_refs[5].pixel_ref_rect));
   VerifyScales(3.3f, 0.4f, pixel_refs[5].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[5].filter_quality);
@@ -737,7 +738,8 @@ TEST(PixelRefUtilsTest, DrawVertices) {
   canvas->save();
 
   canvas->clipRect(SkRect::MakeWH(50, 50));
-  // (10, 10, 40, 40).
+  // (10, 10, 90, 90), since clips are ignored as long as the draw object is
+  // within clip.
   canvas->drawVertices(SkCanvas::kTriangles_VertexMode,
                        3,
                        points,
@@ -775,7 +777,7 @@ TEST(PixelRefUtilsTest, DrawVertices) {
                        gfx::SkRectToRectF(pixel_refs[0].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[0].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[0].filter_quality);
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 40, 40),
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(10, 10, 90, 90),
                        gfx::SkRectToRectF(pixel_refs[1].pixel_ref_rect));
   VerifyScales(1.f, 1.f, pixel_refs[1].matrix, __LINE__);
   EXPECT_EQ(kNone_SkFilterQuality, pixel_refs[1].filter_quality);

@@ -100,7 +100,7 @@ class GatherPixelRefDevice : public SkBitmapDevice {
     if (GetBitmapFromPaint(paint, &bitmap)) {
       SkRect mapped_rect;
       draw.fMatrix->mapRect(&mapped_rect, rect);
-      if (mapped_rect.intersect(SkRect::Make(draw.fRC->getBounds()))) {
+      if (mapped_rect.intersects(SkRect::Make(draw.fRC->getBounds()))) {
         AddBitmap(bitmap, mapped_rect, *draw.fMatrix, paint.getFilterQuality());
       }
     }
@@ -355,10 +355,8 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                  const SkMatrix& matrix,
                  SkFilterQuality filter_quality) {
     SkRect canvas_rect = SkRect::MakeWH(width(), height());
-    SkRect paint_rect = SkRect::MakeEmpty();
-    if (paint_rect.intersect(rect, canvas_rect)) {
-      pixel_ref_set_->Add(bm.pixelRef(), paint_rect, matrix,
-                          filter_quality);
+    if (rect.intersects(canvas_rect)) {
+      pixel_ref_set_->Add(bm.pixelRef(), rect, matrix, filter_quality);
     }
   }
 
@@ -385,14 +383,14 @@ void PixelRefUtils::GatherDiscardablePixelRefs(
   SkRect picture_bounds = picture->cullRect();
   SkIRect picture_ibounds = picture_bounds.roundOut();
   SkBitmap empty_bitmap;
-  empty_bitmap.setInfo(SkImageInfo::MakeUnknown(picture_ibounds.width(),
-                                                picture_ibounds.height()));
+  // Use right/bottom as the size so that we don't need a translate and, as a
+  // result, the information is returned relative to the picture's origin.
+  empty_bitmap.setInfo(SkImageInfo::MakeUnknown(picture_ibounds.right(),
+                                                picture_ibounds.bottom()));
 
   GatherPixelRefDevice device(empty_bitmap, &pixel_ref_set);
   SkNoSaveLayerCanvas canvas(&device);
 
-  // Draw the picture pinned against our top/left corner.
-  canvas.translate(-picture_bounds.left(), -picture_bounds.top());
   canvas.drawPicture(picture);
 }
 

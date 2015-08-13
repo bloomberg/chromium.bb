@@ -242,7 +242,7 @@ void Picture::GatherPixelRefs() {
   if (!WillPlayBackBitmaps())
     return;
 
-  pixel_refs_.GatherPixelRefsFromPicture(picture_.get());
+  pixel_refs_.GatherPixelRefsFromPicture(picture_.get(), layer_rect_);
 }
 
 int Picture::Raster(SkCanvas* canvas,
