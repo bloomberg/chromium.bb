@@ -135,8 +135,9 @@ class ScrollingToughAdCasesPageSet(story.StorySet):
         'reduce-data-use-turn-on-data-compression-in-chrome-630064/', self))
     self.AddStory(ScrollingPage('http://www.cnn.com/2015/01/09/politics/'
         'nebraska-keystone-pipeline/index.html', self, top_start_ratio=0))
-    self.AddStory(ScrollingPage('http://time.com/3977891/'
-        'donald-trump-debate-republican/', self))
+    # Disabled: crbug.com/520509
+    #self.AddStory(ScrollingPage('http://time.com/3977891/'
+    #    'donald-trump-debate-republican/', self))
     self.AddStory(ScrollingPage('http://www.theguardian.com/uk', self))
     self.AddStory(ScrollingPage('http://m.tmz.com', self))
     self.AddStory(ScrollingPage('http://androidpolice.com', self,
