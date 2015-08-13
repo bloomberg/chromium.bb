@@ -786,6 +786,15 @@ bool isListItem(const Node* n)
     return n && n->layoutObject() && n->layoutObject()->isListItem();
 }
 
+Element* associatedElementOf(const Position& position)
+{
+    Node* node = position.anchorNode();
+    if (!node || node->isElementNode())
+        return toElement(node);
+    ContainerNode* parent = NodeTraversal::parent(*node);
+    return parent && parent->isElementNode() ? toElement(parent) : nullptr;
+}
+
 Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName)
 {
     if (p.isNull())

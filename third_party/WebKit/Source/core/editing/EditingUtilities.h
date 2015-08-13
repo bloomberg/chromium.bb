@@ -69,6 +69,7 @@ Element* enclosingBlock(Node*, EditingBoundaryCrossingRule = CannotCrossEditingB
 Element* enclosingBlockFlowElement(Node&); // Deprecated, use enclosingBlock instead.
 bool inSameContainingBlockFlowElement(Node*, Node*);
 Element* enclosingTableCell(const Position&);
+Element* associatedElementOf(const Position&);
 Node* enclosingEmptyListItem(const VisiblePosition&);
 Element* enclosingAnchorElement(const Position&);
 Element* enclosingElementWithTag(const Position&, const QualifiedName&);

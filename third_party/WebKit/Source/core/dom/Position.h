@@ -258,10 +258,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
-// TODO(yosin) We should move |associatedElementOf()| to "hemltediting.cpp",
-// since it is used only in "editing/"
-CORE_EXPORT Element* associatedElementOf(const Position&);
-
 inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
 {
     return Position::createLegacyEditingPosition(node, offset);

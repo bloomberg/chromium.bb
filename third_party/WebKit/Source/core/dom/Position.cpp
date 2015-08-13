@@ -303,15 +303,6 @@ Node* PositionAlgorithm<Strategy>::commonAncestorContainer(const PositionAlgorit
     return Strategy::commonAncestor(*computeContainerNode(), *other.computeContainerNode());
 }
 
-Element* associatedElementOf(const Position& position)
-{
-    Node* node = position.anchorNode();
-    if (!node || node->isElementNode())
-        return toElement(node);
-    ContainerNode* parent = NodeTraversal::parent(*node);
-    return parent && parent->isElementNode() ? toElement(parent) : nullptr;
-}
-
 int comparePositions(const PositionInComposedTree& positionA, const PositionInComposedTree& positionB)
 {
     ASSERT(positionA.isNotNull());
