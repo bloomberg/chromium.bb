@@ -3,7 +3,7 @@
 <body>
 <script src="script-tests/focus-event-input-device.js"></script>
 <script type="text/javascript">
-description("Test that focus events from a touch device should have a sourceDevice and its firesTouchEvents should be true.");
+description("Test that focus events from a touch device should have a sourceCapabilities and its firesTouchEvents should be true.");
 function sendGestureTapEvent(x, y) {
     if (window.eventSender) {
         eventSender.gestureTap(x, y);

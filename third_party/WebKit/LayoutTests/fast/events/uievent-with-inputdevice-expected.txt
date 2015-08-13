@@ -1,32 +1,32 @@
-This tests that UIEvent and its subclass will have sourceDevice set to be null by default, and it can also be passed when initialization.
+This tests that UIEvent and its subclass will have sourceCapabilities set to be null by default, and it can also be passed when initialization.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 PASS uievent is non-null.
-PASS uievent.sourceDevice is null
-PASS uievent.sourceDevice is non-null.
-PASS uievent.sourceDevice.firesTouchEvents is false
-PASS uievent.sourceDevice is non-null.
-PASS uievent.sourceDevice.firesTouchEvents is true
+PASS uievent.sourceCapabilities is null
+PASS uievent.sourceCapabilities is non-null.
+PASS uievent.sourceCapabilities.firesTouchEvents is false
+PASS uievent.sourceCapabilities is non-null.
+PASS uievent.sourceCapabilities.firesTouchEvents is true
 PASS touchevent is non-null.
-PASS touchevent.sourceDevice is null
+PASS touchevent.sourceCapabilities is null
 PASS mouseevent is non-null.
-PASS mouseevent.sourceDevice is null
-PASS mouseevent.sourceDevice is non-null.
-PASS mouseevent.sourceDevice.firesTouchEvents is false
+PASS mouseevent.sourceCapabilities is null
+PASS mouseevent.sourceCapabilities is non-null.
+PASS mouseevent.sourceCapabilities.firesTouchEvents is false
 PASS keyboardevent is non-null.
-PASS keyboardevent.sourceDevice is null
-PASS keyboardevent.sourceDevice is non-null.
-PASS keyboardevent.sourceDevice.firesTouchEvents is false
+PASS keyboardevent.sourceCapabilities is null
+PASS keyboardevent.sourceCapabilities is non-null.
+PASS keyboardevent.sourceCapabilities.firesTouchEvents is false
 PASS focusevent is non-null.
-PASS focusevent.sourceDevice is null
-PASS focusevent.sourceDevice is non-null.
-PASS focusevent.sourceDevice.firesTouchEvents is false
+PASS focusevent.sourceCapabilities is null
+PASS focusevent.sourceCapabilities is non-null.
+PASS focusevent.sourceCapabilities.firesTouchEvents is false
 PASS compositionevent is non-null.
-PASS compositionevent.sourceDevice is null
-PASS compositionevent.sourceDevice is non-null.
-PASS compositionevent.sourceDevice.firesTouchEvents is false
+PASS compositionevent.sourceCapabilities is null
+PASS compositionevent.sourceCapabilities is non-null.
+PASS compositionevent.sourceCapabilities.firesTouchEvents is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

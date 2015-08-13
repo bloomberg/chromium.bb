@@ -39,7 +39,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
 public:
     ~TouchEvent() override;
 
-    // We only initialize sourceDevice when we create TouchEvent from EventHandler, null if it is from JavaScript.
+    // We only initialize sourceCapabilities when we create TouchEvent from EventHandler, null if it is from JavaScript.
     static PassRefPtrWillBeRawPtr<TouchEvent> create()
     {
         return adoptRefWillBeNoop(new TouchEvent);

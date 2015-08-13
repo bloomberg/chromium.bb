@@ -66,11 +66,11 @@ public:
 protected:
     MouseRelatedEvent();
     // TODO(lanwei): Will make this argument non-optional and all the callers need to provide
-    // sourceDevice even when it is null, see https://crbug.com/476530.
+    // sourceCapabilities even when it is null, see https://crbug.com/476530.
     MouseRelatedEvent(const AtomicString& type, bool canBubble, bool cancelable,
         PassRefPtrWillBeRawPtr<AbstractView>, int detail, const IntPoint& screenLocation,
         const IntPoint& rootFrameLocation, const IntPoint& movementDelta, bool ctrlKey, bool altKey,
-        bool shiftKey, bool metaKey, bool isSimulated = false, InputDevice* sourceDevice = nullptr);
+        bool shiftKey, bool metaKey, bool isSimulated = false, InputDeviceCapabilities* sourceCapabilities = nullptr);
 
     void initCoordinates();
     void initCoordinates(const LayoutPoint& clientLocation);

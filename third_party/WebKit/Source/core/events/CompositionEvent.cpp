@@ -34,7 +34,7 @@ CompositionEvent::CompositionEvent()
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
-    : UIEvent(type, true, true, view, 0, InputDevice::doesntFireTouchEventsInputDevice())
+    : UIEvent(type, true, true, view, 0, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_data(data)
 {
 }

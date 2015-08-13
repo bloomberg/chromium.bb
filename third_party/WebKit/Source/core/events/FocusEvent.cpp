@@ -45,8 +45,8 @@ FocusEvent::FocusEvent()
 {
 }
 
-FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail, EventTarget* relatedTarget, InputDevice* sourceDevice)
-    : UIEvent(type, canBubble, cancelable, view, detail, sourceDevice)
+FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail, EventTarget* relatedTarget, InputDeviceCapabilities* sourceCapabilities)
+    : UIEvent(type, canBubble, cancelable, view, detail, sourceCapabilities)
     , m_relatedTarget(relatedTarget)
 {
 }

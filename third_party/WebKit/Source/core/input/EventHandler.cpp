@@ -58,7 +58,7 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/input/InputDevice.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
@@ -963,8 +963,9 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     // the same behavior and it's more compatible with other browsers.
     selectionController().initializeSelectionState();
     HitTestResult hitTestResult = hitTestResultInFrame(m_frame, mouseEvent.position(), HitTestRequest::ReadOnly);
-    InputDevice* sourceDevice = mouseEvent.syntheticEventType() == PlatformMouseEvent::FromTouch ? InputDevice::firesTouchEventsInputDevice() : InputDevice::doesntFireTouchEventsInputDevice();
-    swallowEvent = swallowEvent || handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult), sourceDevice);
+    InputDeviceCapabilities* sourceCapabilities = mouseEvent.syntheticEventType() == PlatformMouseEvent::FromTouch ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() :
+        InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
+    swallowEvent = swallowEvent || handleMouseFocus(MouseEventWithHitTestResults(mouseEvent, hitTestResult), sourceCapabilities);
     m_capturesDragging = !swallowEvent || mev.scrollbar();
 
     // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
@@ -1620,7 +1621,7 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
 }
 
 // The return value means 'swallow event' (was handled), as for other handle* functions.
-bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDevice* sourceDevice)
+bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
 {
     const PlatformMouseEvent& mouseEvent = targetedEvent.event();
 
@@ -1668,14 +1669,14 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
         if (element) {
             if (slideFocusOnShadowHostIfNecessary(*element))
                 return true;
-            if (!page->focusController().setFocusedElement(element, m_frame, WebFocusTypeMouse, sourceDevice))
+            if (!page->focusController().setFocusedElement(element, m_frame, WebFocusTypeMouse, sourceCapabilities))
                 return true;
         } else {
             // We call setFocusedElement even with !element in order to blur
             // current focus element when a link is clicked; this is expected by
             // some sites that rely on onChange handlers running from form
             // fields before the button click is processed.
-            if (!page->focusController().setFocusedElement(0, m_frame, WebFocusTypeNone, sourceDevice))
+            if (!page->focusController().setFocusedElement(0, m_frame, WebFocusTypeNone, sourceCapabilities))
                 return true;
         }
     }
@@ -2026,7 +2027,7 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
     selectionController().initializeSelectionState();
     if (!swallowMouseDownEvent)
-        swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest), InputDevice::firesTouchEventsInputDevice());
+        swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest), InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
 
@@ -3398,7 +3399,7 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
     if (m_frame->document()->inDesignMode())
         return;
 
-    if (page->focusController().advanceFocus(focusType, InputDevice::doesntFireTouchEventsInputDevice()))
+    if (page->focusController().advanceFocus(focusType, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()))
         event->setDefaultHandled();
 }
 

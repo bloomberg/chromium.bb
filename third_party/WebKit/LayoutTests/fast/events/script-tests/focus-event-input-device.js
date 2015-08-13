@@ -5,8 +5,8 @@ function runFocusTestWithEventGenerator(generateEvent, expectedFiresTouchEvents)
     var testElement = function(ele) {
         var focusEventHandler = function(event) {
             debug(event.type);
-            shouldBeNonNull("event.sourceDevice");
-            shouldBe("event.sourceDevice.firesTouchEvents", expectedFiresTouchEvents);
+            shouldBeNonNull("event.sourceCapabilities");
+            shouldBe("event.sourceCapabilities.firesTouchEvents", expectedFiresTouchEvents);
         }
 
         var e = document.createElement(ele);

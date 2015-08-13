@@ -2268,7 +2268,7 @@ bool Element::hasAttributeNS(const AtomicString& namespaceURI, const AtomicStrin
     return elementData()->attributes().find(qName);
 }
 
-void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDevice* sourceDevice)
+void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     if (!inDocument())
         return;
@@ -2296,7 +2296,7 @@ void Element::focus(bool restorePreviousSelection, WebFocusType type, InputDevic
     }
 
     RefPtrWillBeRawPtr<Node> protect(this);
-    if (!document().page()->focusController().setFocusedElement(this, document().frame(), type, sourceDevice))
+    if (!document().page()->focusController().setFocusedElement(this, document().frame(), type, sourceCapabilities))
         return;
 
     // Setting the focused node above might have invalidated the layout due to scripts.
@@ -2405,28 +2405,28 @@ bool Element::isFocusedElementInDocument() const
     return this == document().focusedElement();
 }
 
-void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
-    dispatchEvent(FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement, sourceDevice));
+    dispatchEvent(FocusEvent::create(EventTypeNames::focus, false, false, document().domWindow(), 0, oldFocusedElement, sourceCapabilities));
 }
 
-void Element::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void Element::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
-    dispatchEvent(FocusEvent::create(EventTypeNames::blur, false, false, document().domWindow(), 0, newFocusedElement, sourceDevice));
+    dispatchEvent(FocusEvent::create(EventTypeNames::blur, false, false, document().domWindow(), 0, newFocusedElement, sourceCapabilities));
 }
 
-void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice)
+void Element::dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(eventType == EventTypeNames::focusin || eventType == EventTypeNames::DOMFocusIn);
-    dispatchScopedEvent(FocusEvent::create(eventType, true, false, document().domWindow(), 0, oldFocusedElement, sourceDevice));
+    dispatchScopedEvent(FocusEvent::create(eventType, true, false, document().domWindow(), 0, oldFocusedElement, sourceCapabilities));
 }
 
-void Element::dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement, InputDevice* sourceDevice)
+void Element::dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement, InputDeviceCapabilities* sourceCapabilities)
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
     ASSERT(eventType == EventTypeNames::focusout || eventType == EventTypeNames::DOMFocusOut);
-    dispatchScopedEvent(FocusEvent::create(eventType, true, false, document().domWindow(), 0, newFocusedElement, sourceDevice));
+    dispatchScopedEvent(FocusEvent::create(eventType, true, false, document().domWindow(), 0, newFocusedElement, sourceCapabilities));
 }
 
 String Element::innerHTML() const

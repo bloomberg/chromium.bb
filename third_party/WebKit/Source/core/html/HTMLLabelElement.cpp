@@ -205,13 +205,13 @@ bool HTMLLabelElement::willRespondToMouseClickEvents()
     return HTMLElement::willRespondToMouseClickEvents();
 }
 
-void HTMLLabelElement::focus(bool, WebFocusType type, InputDevice* sourceDevice)
+void HTMLLabelElement::focus(bool, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     // to match other browsers, always restore previous selection
     if (HTMLElement* element = control())
-        element->focus(true, type, sourceDevice);
+        element->focus(true, type, sourceCapabilities);
     if (isFocusable())
-        HTMLElement::focus(true, type, sourceDevice);
+        HTMLElement::focus(true, type, sourceCapabilities);
 }
 
 void HTMLLabelElement::accessKeyAction(bool sendMouseEvents)

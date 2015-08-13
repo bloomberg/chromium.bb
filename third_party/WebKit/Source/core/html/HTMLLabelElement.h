@@ -69,7 +69,7 @@ private:
     // Overridden to either click() or focus() the corresponding control.
     void defaultEventHandler(Event*) override;
 
-    void focus(bool restorePreviousSelection, WebFocusType, InputDevice* sourceDevice) override;
+    void focus(bool restorePreviousSelection, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
 
     // FormAssociatedElement methods
     bool isFormControlElement() const override { return false; }

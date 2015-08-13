@@ -1,17 +1,17 @@
-Test that keyboard events should have a sourceDevice and its firesTouchEvents should be false.
+Test that keyboard events should have a sourceCapabilities and its firesTouchEvents should be false.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
 keydown
-PASS event.sourceDevice is non-null.
-PASS event.sourceDevice.firesTouchEvents is false
+PASS event.sourceCapabilities is non-null.
+PASS event.sourceCapabilities.firesTouchEvents is false
 keypress
-PASS event.sourceDevice is non-null.
-PASS event.sourceDevice.firesTouchEvents is false
+PASS event.sourceCapabilities is non-null.
+PASS event.sourceCapabilities.firesTouchEvents is false
 keyup
-PASS event.sourceDevice is non-null.
-PASS event.sourceDevice.firesTouchEvents is false
+PASS event.sourceCapabilities is non-null.
+PASS event.sourceCapabilities.firesTouchEvents is false
 PASS successfullyParsed is true
 
 TEST COMPLETE

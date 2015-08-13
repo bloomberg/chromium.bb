@@ -1034,23 +1034,23 @@ int HTMLSelectElement::listToOptionIndex(int listIndex) const
     return optionIndex;
 }
 
-void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during blur event dispatch.
     if (usesMenuList())
         saveLastSelection();
-    HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedElement, type, sourceDevice);
+    HTMLFormControlElementWithState::dispatchFocusEvent(oldFocusedElement, type, sourceCapabilities);
 }
 
-void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     // We only need to fire change events here for menu lists, because we fire
     // change events for list boxes whenever the selection change is actually made.
     // This matches other browsers' behavior.
     if (usesMenuList())
         dispatchInputAndChangeEventForMenuList();
-    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type, sourceDevice);
+    HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type, sourceCapabilities);
 }
 
 void HTMLSelectElement::deselectItemsWithoutValidation(HTMLElement* excludeElement)
@@ -1325,8 +1325,8 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
     }
 
     if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
-        InputDevice* sourceDevice = toMouseEvent(event)->fromTouch() ? InputDevice::firesTouchEventsInputDevice() : InputDevice::doesntFireTouchEventsInputDevice();
-        focus(true, WebFocusTypeNone, sourceDevice);
+        InputDeviceCapabilities* sourceCapabilities = toMouseEvent(event)->fromTouch() ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() : InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities();
+        focus(true, WebFocusTypeNone, sourceCapabilities);
         if (layoutObject() && layoutObject()->isMenuList() && !isDisabledFormControl()) {
             if (popupIsVisible()) {
                 hidePopup();
@@ -1336,7 +1336,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
                 // from valueChanged, which gets called after the user makes a
                 // selection from the menu.
                 saveLastSelection();
-                // TODO(lanwei): Will check if we need to add InputDevice here
+                // TODO(lanwei): Will check if we need to add InputDeviceCapabilities here
                 // when select menu list gets focus, see https://crbug.com/476530.
                 showPopup();
             }

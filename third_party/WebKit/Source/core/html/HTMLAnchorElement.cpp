@@ -74,18 +74,18 @@ bool HTMLAnchorElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || HTMLElement::supportsFocus();
 }
 
-void HTMLAnchorElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void HTMLAnchorElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = type == WebFocusTypeMouse;
-    HTMLElement::dispatchFocusEvent(oldFocusedElement, type, sourceDevice);
+    HTMLElement::dispatchFocusEvent(oldFocusedElement, type, sourceCapabilities);
 }
 
-void HTMLAnchorElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void HTMLAnchorElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = false;
-    HTMLElement::dispatchBlurEvent(newFocusedElement, type, sourceDevice);
+    HTMLElement::dispatchBlurEvent(newFocusedElement, type, sourceCapabilities);
 }
 
 bool HTMLAnchorElement::isMouseFocusable() const

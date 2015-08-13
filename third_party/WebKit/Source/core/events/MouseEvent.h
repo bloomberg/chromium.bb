@@ -67,7 +67,7 @@ public:
     void initMouseEventInternal(ScriptState*, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,
         int detail, int screenX, int screenY, int clientX, int clientY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-        short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDevice* sourceDevice, unsigned short buttons = 0);
+        short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDeviceCapabilities* sourceCapabilities, unsigned short buttons = 0);
 
 
     // WinIE uses 1,4,2 for left/middle/right but not for click (just for mousedown/up, maybe others),

@@ -53,8 +53,8 @@ private:
 
     bool supportsFocus() const override;
     bool shouldHaveFocusAppearance() const final;
-    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice) override;
-    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDevice* sourceDevice) override;
+    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
+    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
     bool isMouseFocusable() const override;
     bool isKeyboardFocusable() const override;
     bool isURLAttribute(const Attribute&) const override;

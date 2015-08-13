@@ -141,8 +141,8 @@ private:
     int computeSelectionEnd() const;
     TextFieldSelectionDirection computeSelectionDirection() const;
 
-    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice) final;
-    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDevice* sourceDevice) final;
+    void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) final;
+    void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities) final;
     void scheduleSelectEvent();
 
     // Returns true if user-editable value is empty. Used to check placeholder visibility.

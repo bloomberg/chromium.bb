@@ -3057,7 +3057,7 @@ interface ImageData
     getter height
     getter width
     method constructor
-interface InputDevice
+interface InputDeviceCapabilities
     getter firesTouchEvents
     method constructor
 interface KeyboardEvent
@@ -5458,7 +5458,7 @@ interface TreeWalker
     setter currentNode
 interface UIEvent
     getter detail
-    getter sourceDevice
+    getter sourceCapabilities
     getter view
     getter which
     method constructor

@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <script src="../../resources/js-test.js"></script>
 <script type="text/javascript">
-description('Test that synthetic mouse events from touch events should have a sourceDevice and its firesTouchEvents should be true.');
+description('Test that synthetic mouse events from touch events should have a sourceCapabilities and its firesTouchEvents should be true.');
 
 function mouseHandler(event) {
     debug(event.type);
-    shouldBeNonNull("event.sourceDevice");
-    shouldBeTrue("event.sourceDevice.firesTouchEvents");
+    shouldBeNonNull("event.sourceCapabilities");
+    shouldBeTrue("event.sourceCapabilities.firesTouchEvents");
 }
 
 if (window.eventSender) {

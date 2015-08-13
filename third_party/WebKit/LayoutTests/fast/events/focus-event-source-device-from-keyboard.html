@@ -3,7 +3,7 @@
 <body>
 <script src="script-tests/focus-event-input-device.js"></script>
 <script type="text/javascript">
-description("Test that focus events from keyboard taps should have a sourceDevice and its firesTouchEvents should be false.");
+description("Test that focus events from keyboard taps should have a sourceCapabilities and its firesTouchEvents should be false.");
 function sendKeyboardTabEvent() {
     if (window.eventSender) {
         eventSender.keyDown('\t');

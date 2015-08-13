@@ -386,12 +386,12 @@ bool HTMLFormControlElement::shouldHaveFocusAppearance() const
     return !m_wasFocusedByMouse || shouldShowFocusRingOnMouseFocus();
 }
 
-void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void HTMLFormControlElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = type == WebFocusTypeMouse;
     // ContainerNode::handleStyleChangeOnFocusStateChange() will inform LayoutTheme about the focus state change.
-    HTMLElement::dispatchFocusEvent(oldFocusedElement, type, sourceDevice);
+    HTMLElement::dispatchFocusEvent(oldFocusedElement, type, sourceCapabilities);
 }
 
 void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event)
@@ -604,11 +604,11 @@ void HTMLFormControlElement::setCustomValidity(const String& error)
     setNeedsValidityCheck();
 }
 
-void HTMLFormControlElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDevice* sourceDevice)
+void HTMLFormControlElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     if (type != WebFocusTypePage)
         m_wasFocusedByMouse = false;
-    HTMLElement::dispatchBlurEvent(newFocusedElement, type, sourceDevice);
+    HTMLElement::dispatchBlurEvent(newFocusedElement, type, sourceCapabilities);
     hideVisibleValidationMessage();
 }
 

@@ -2,12 +2,12 @@
 <script src="../../resources/js-test.js"></script>
 <input id="input" type="input">
 <script type="text/javascript">
-description('Test that composition events should have a sourceDevice and its firesTouchEvents should always be false.');
+description('Test that composition events should have a sourceCapabilities and its firesTouchEvents should always be false.');
 
 function compositionHandler() {
     debug(event.type);
-    shouldBeNonNull("event.sourceDevice");
-    shouldBeFalse("event.sourceDevice.firesTouchEvents");
+    shouldBeNonNull("event.sourceCapabilities");
+    shouldBeFalse("event.sourceCapabilities.firesTouchEvents");
 }
 
 if (window.eventSender) {

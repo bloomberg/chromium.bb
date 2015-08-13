@@ -39,7 +39,7 @@ namespace blink {
 struct FocusCandidate;
 class Element;
 class Frame;
-class InputDevice;
+class InputDeviceCapabilities;
 class Node;
 class Page;
 
@@ -54,10 +54,10 @@ public:
     Frame* focusedOrMainFrame() const;
 
     bool setInitialFocus(WebFocusType);
-    bool advanceFocus(WebFocusType type, InputDevice* sourceDevice = nullptr) { return advanceFocus(type, false, sourceDevice); }
+    bool advanceFocus(WebFocusType type, InputDeviceCapabilities* sourceCapabilities = nullptr) { return advanceFocus(type, false, sourceCapabilities); }
     Element* findFocusableElement(WebFocusType, Node&);
 
-    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone, InputDevice* sourceDevice = nullptr);
+    bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone, InputDeviceCapabilities* sourceCapabilities = nullptr);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }
@@ -70,9 +70,9 @@ public:
 private:
     explicit FocusController(Page*);
 
-    bool advanceFocus(WebFocusType, bool initialFocus, InputDevice* sourceDevice = nullptr);
+    bool advanceFocus(WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities = nullptr);
     bool advanceFocusDirectionally(WebFocusType);
-    bool advanceFocusInDocumentOrder(WebFocusType, bool initialFocus, InputDevice* sourceDevice);
+    bool advanceFocusInDocumentOrder(WebFocusType, bool initialFocus, InputDeviceCapabilities* sourceCapabilities);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, WebFocusType);
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, WebFocusType, FocusCandidate& closest);

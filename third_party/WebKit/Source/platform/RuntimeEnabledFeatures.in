@@ -80,7 +80,7 @@ ImageColorProfiles
 ImageOrientation status=test
 ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
-InputDevice status=experimental
+InputDeviceCapabilities status=experimental
 InputModeAttribute status=experimental
 KeyboardEventCode status=experimental
 KeyboardEventKey status=test

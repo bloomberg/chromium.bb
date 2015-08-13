@@ -90,7 +90,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
         IntPoint(windowX, windowY),
         IntPoint(movementX, movementY),
         ctrlKey, altKey, shiftKey, metaKey, isSimulated,
-        syntheticEventType == PlatformMouseEvent::FromTouch ? InputDevice::firesTouchEventsInputDevice() : InputDevice::doesntFireTouchEventsInputDevice())
+        syntheticEventType == PlatformMouseEvent::FromTouch ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities() : InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_button(button)
     , m_buttons(buttons)
     , m_relatedTarget(relatedTarget)
@@ -104,7 +104,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, const MouseEventInit& init
     : MouseRelatedEvent(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), IntPoint(initializer.screenX(), initializer.screenY()),
         IntPoint(0 /* pageX */, 0 /* pageY */),
         IntPoint(initializer.movementX(), initializer.movementY()),
-        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), false /* isSimulated */, initializer.sourceDevice())
+        initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), false /* isSimulated */, initializer.sourceCapabilities())
     , m_button(initializer.button())
     , m_buttons(initializer.buttons())
     , m_relatedTarget(initializer.relatedTarget())
@@ -142,7 +142,7 @@ void MouseEvent::initMouseEvent(ScriptState* scriptState, const AtomicString& ty
 
 void MouseEvent::initMouseEventInternal(ScriptState* scriptState, const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view,
     int detail, int screenX, int screenY, int clientX, int clientY, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey,
-    short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDevice* sourceDevice, unsigned short buttons)
+    short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDeviceCapabilities* sourceCapabilities, unsigned short buttons)
 {
     if (dispatched())
         return;
@@ -150,7 +150,7 @@ void MouseEvent::initMouseEventInternal(ScriptState* scriptState, const AtomicSt
     if (scriptState && scriptState->world().isIsolatedWorld())
         UIEventWithKeyState::didCreateEventInIsolatedWorld(ctrlKey, altKey, shiftKey, metaKey);
 
-    initUIEventInternal(type, canBubble, cancelable, view, detail, sourceDevice);
+    initUIEventInternal(type, canBubble, cancelable, view, detail, sourceCapabilities);
 
     m_screenLocation = IntPoint(screenX, screenY);
     m_ctrlKey = ctrlKey;
@@ -302,7 +302,7 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) cons
     doubleClickEvent->initMouseEventInternal(nullptr, EventTypeNames::dblclick, event().bubbles(), event().cancelable(), event().view(),
         event().detail(), event().screenX(), event().screenY(), event().clientX(), event().clientY(),
         event().ctrlKey(), event().altKey(), event().shiftKey(), event().metaKey(),
-        event().button(), relatedTarget, event().sourceDevice(), event().buttons());
+        event().button(), relatedTarget, event().sourceCapabilities(), event().buttons());
 
     // Inherit the trusted status from the original event.
     doubleClickEvent->setTrusted(event().isTrusted());

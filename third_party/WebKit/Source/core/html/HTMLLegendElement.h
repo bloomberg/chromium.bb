@@ -44,7 +44,7 @@ private:
     HTMLFormControlElement* associatedControl();
 
     void accessKeyAction(bool sendMouseEvents) override;
-    void focus(bool restorePreviousSelection, WebFocusType, InputDevice* sourceDevice) override;
+    void focus(bool restorePreviousSelection, WebFocusType, InputDeviceCapabilities* sourceCapabilities) override;
 };
 
 } // namespace blink

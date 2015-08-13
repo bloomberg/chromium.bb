@@ -3,7 +3,7 @@
 <body>
 <script src="script-tests/focus-event-input-device.js"></script>
 <script type="text/javascript">
-description("Test that focus events from a mouse device should have a sourceDevice and its firesTouchEvents should be false.");
+description("Test that focus events from a mouse device should have a sourceCapabilities and its firesTouchEvents should be false.");
 function sendMouseEvent(x, y) {
     if (window.eventSender) {
         eventSender.mouseMoveTo(x, y);

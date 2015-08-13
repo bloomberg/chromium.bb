@@ -101,7 +101,7 @@ KeyboardEvent::KeyboardEvent()
 }
 
 KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* view)
-    : UIEventWithKeyState(eventTypeForKeyboardEventType(key.type()), true, true, view, 0, key.ctrlKey(), key.altKey(), key.shiftKey(), key.metaKey(), InputDevice::doesntFireTouchEventsInputDevice())
+    : UIEventWithKeyState(eventTypeForKeyboardEventType(key.type()), true, true, view, 0, key.ctrlKey(), key.altKey(), key.shiftKey(), key.metaKey(), InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_keyEvent(adoptPtr(new PlatformKeyboardEvent(key)))
     , m_keyIdentifier(key.keyIdentifier())
     , m_code(key.code())
@@ -113,7 +113,7 @@ KeyboardEvent::KeyboardEvent(const PlatformKeyboardEvent& key, AbstractView* vie
 }
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventInit& initializer)
-    : UIEventWithKeyState(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), initializer.sourceDevice())
+    : UIEventWithKeyState(eventType, initializer.bubbles(), initializer.cancelable(), initializer.view(), initializer.detail(), initializer.ctrlKey(), initializer.altKey(), initializer.shiftKey(), initializer.metaKey(), initializer.sourceCapabilities())
     , m_keyIdentifier(initializer.keyIdentifier())
     , m_location(initializer.location())
     , m_isAutoRepeat(initializer.repeat())
@@ -122,7 +122,7 @@ KeyboardEvent::KeyboardEvent(const AtomicString& eventType, const KeyboardEventI
 
 KeyboardEvent::KeyboardEvent(const AtomicString& eventType, bool canBubble, bool cancelable, AbstractView *view,
     const String& keyIdentifier, const String& code, const String& key, unsigned location, bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
-    : UIEventWithKeyState(eventType, canBubble, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey, InputDevice::doesntFireTouchEventsInputDevice())
+    : UIEventWithKeyState(eventType, canBubble, cancelable, view, 0, ctrlKey, altKey, shiftKey, metaKey, InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities())
     , m_keyIdentifier(keyIdentifier)
     , m_code(code)
     , m_key(key)

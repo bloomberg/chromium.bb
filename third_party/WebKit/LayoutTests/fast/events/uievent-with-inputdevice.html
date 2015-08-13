@@ -1,60 +1,60 @@
 <script src="../../resources/js-test.js"></script>
 <script>
-    description("This tests that UIEvent and its subclass will have sourceDevice set to be null by default, and it can also be passed when initialization.")
+    description("This tests that UIEvent and its subclass will have sourceCapabilities set to be null by default, and it can also be passed when initialization.")
 
     // Creating UIEvent.
     var uievent = document.createEvent('UIEvent');
     shouldBeNonNull("uievent");
-    shouldBeNull("uievent.sourceDevice");  
+    shouldBeNull("uievent.sourceCapabilities");  
     
-    uievent = new UIEvent('eventType', { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
-    shouldBeNonNull("uievent.sourceDevice");
-    shouldBeFalse("uievent.sourceDevice.firesTouchEvents");
+    uievent = new UIEvent('eventType', { sourceCapabilities: new InputDeviceCapabilities({ firesTouchEvents: false }) });
+    shouldBeNonNull("uievent.sourceCapabilities");
+    shouldBeFalse("uievent.sourceCapabilities.firesTouchEvents");
     
-    uievent = new UIEvent('eventType', { sourceDevice: new InputDevice({ firesTouchEvents: true }) });
-    shouldBeNonNull("uievent.sourceDevice");
-    shouldBeTrue("uievent.sourceDevice.firesTouchEvents");
+    uievent = new UIEvent('eventType', { sourceCapabilities: new InputDeviceCapabilities({ firesTouchEvents: true }) });
+    shouldBeNonNull("uievent.sourceCapabilities");
+    shouldBeTrue("uievent.sourceCapabilities.firesTouchEvents");
     
     // Creating TouchEvent.
     var touchevent = document.createEvent("TouchEvent");
     shouldBeNonNull("touchevent");
-    shouldBeNull("touchevent.sourceDevice");
+    shouldBeNull("touchevent.sourceCapabilities");
     
     // Creating MouseEvent.
     var mouseevent = new MouseEvent('mousedown');
     shouldBeNonNull("mouseevent");
-    shouldBeNull("mouseevent.sourceDevice");
+    shouldBeNull("mouseevent.sourceCapabilities");
     
-    var mouseevent = new MouseEvent('mousedown', { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
-    shouldBeNonNull("mouseevent.sourceDevice");
-    shouldBeFalse("mouseevent.sourceDevice.firesTouchEvents");
+    var mouseevent = new MouseEvent('mousedown', { sourceCapabilities: new InputDeviceCapabilities({ firesTouchEvents: false }) });
+    shouldBeNonNull("mouseevent.sourceCapabilities");
+    shouldBeFalse("mouseevent.sourceCapabilities.firesTouchEvents");
 
     
     // Creating KeyboardEvent.
     var keyboardevent = new KeyboardEvent("keydown");
     shouldBeNonNull("keyboardevent");
-    shouldBeNull("keyboardevent.sourceDevice");
+    shouldBeNull("keyboardevent.sourceCapabilities");
     
-    keyboardevent = new KeyboardEvent("keydown", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
-    shouldBeNonNull("keyboardevent.sourceDevice");
-    shouldBeFalse("keyboardevent.sourceDevice.firesTouchEvents");
+    keyboardevent = new KeyboardEvent("keydown", { sourceCapabilities: new InputDeviceCapabilities({ firesTouchEvents: false }) });
+    shouldBeNonNull("keyboardevent.sourceCapabilities");
+    shouldBeFalse("keyboardevent.sourceCapabilities.firesTouchEvents");
     
     // Creating FocusEvent.
     var focusevent = new FocusEvent("focusevent");
     shouldBeNonNull("focusevent");
-    shouldBeNull("focusevent.sourceDevice");
+    shouldBeNull("focusevent.sourceCapabilities");
 
-    focusevent = new FocusEvent("focusevent", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
-    shouldBeNonNull("focusevent.sourceDevice");
-    shouldBeFalse("focusevent.sourceDevice.firesTouchEvents");
+    focusevent = new FocusEvent("focusevent", { sourceCapabilities: new InputDeviceCapabilities({ firesTouchEvents: false }) });
+    shouldBeNonNull("focusevent.sourceCapabilities");
+    shouldBeFalse("focusevent.sourceCapabilities.firesTouchEvents");
 
     // Creating CompositionEvent.
     var compositionevent = new CompositionEvent("compositionstart");
     shouldBeNonNull("compositionevent");
-    shouldBeNull("compositionevent.sourceDevice");
+    shouldBeNull("compositionevent.sourceCapabilities");
     
-    compositionevent = new CompositionEvent("compositionstart", { sourceDevice: new InputDevice({ firesTouchEvents: false }) });
-    shouldBeNonNull("compositionevent.sourceDevice");
-    shouldBeFalse("compositionevent.sourceDevice.firesTouchEvents");
+    compositionevent = new CompositionEvent("compositionstart", { sourceCapabilities: new InputDeviceCapabilities({ firesTouchEvents: false }) });
+    shouldBeNonNull("compositionevent.sourceCapabilities");
+    shouldBeFalse("compositionevent.sourceCapabilities.firesTouchEvents");
 
 </script>

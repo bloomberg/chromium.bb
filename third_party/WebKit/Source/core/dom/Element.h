@@ -377,7 +377,7 @@ public:
     virtual const AtomicString imageSourceURL() const;
     virtual Image* imageContents() { return nullptr; }
 
-    virtual void focus(bool restorePreviousSelection = true, WebFocusType = WebFocusTypeNone, InputDevice* sourceDevice = nullptr);
+    virtual void focus(bool restorePreviousSelection = true, WebFocusType = WebFocusTypeNone, InputDeviceCapabilities* sourceCapabilities = nullptr);
     virtual void updateFocusAppearance(bool restorePreviousSelection);
     virtual void blur();
     // Whether this element can receive focus at all. Most elements are not
@@ -390,10 +390,10 @@ public:
     bool isFocusedElementInDocument() const;
     virtual bool isKeyboardFocusable() const;
     virtual bool isMouseFocusable() const;
-    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice = nullptr);
-    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDevice* sourceDevice = nullptr);
-    virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType, InputDevice* sourceDevice = nullptr);
-    void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement, InputDevice* sourceDevice = nullptr);
+    virtual void dispatchFocusEvent(Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    virtual void dispatchBlurEvent(Element* newFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType, InputDeviceCapabilities* sourceCapabilities = nullptr);
+    void dispatchFocusOutEvent(const AtomicString& eventType, Element* newFocusedElement, InputDeviceCapabilities* sourceCapabilities = nullptr);
 
     String innerText();
     String outerText();

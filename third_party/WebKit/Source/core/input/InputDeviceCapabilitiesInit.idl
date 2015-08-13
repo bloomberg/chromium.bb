@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=InputDevice,
-] dictionary InputDeviceInit {
+    RuntimeEnabled=InputDeviceCapabilities,
+] dictionary InputDeviceCapabilitiesInit {
     boolean firesTouchEvents = false;
 };
