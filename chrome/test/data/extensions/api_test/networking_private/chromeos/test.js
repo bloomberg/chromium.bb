@@ -498,11 +498,7 @@ var availableTests = [
             UserPolicy: 'My WiFi Network'
           },
           Source: 'UserPolicy',
-          Type: {
-            Active: NetworkType.WI_FI,
-            Effective: 'UserPolicy',
-            UserPolicy: NetworkType.WI_FI
-          },
+          Type: NetworkType.WI_FI,
           WiFi: {
             AutoConnect: {
               Active: false,

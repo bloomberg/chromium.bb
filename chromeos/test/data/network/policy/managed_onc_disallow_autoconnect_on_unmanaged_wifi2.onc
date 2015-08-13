@@ -3,9 +3,7 @@
       "Active": "wifi2"
    },
    "Source": "User",
-   "Type": {
-      "Active": "WiFi"
-   },
+   "Type": "WiFi",
    "WiFi": {
       "AutoConnect": {
          "Active": false,

@@ -55,13 +55,7 @@
          "UserSetting": "Direct"
       }
    },
-   "Type": {
-      "Active": "VPN",
-      "DevicePolicy": "VPN",
-      "Effective": "UserPolicy",
-      "UserPolicy": "VPN",
-      "UserSetting": "Ethernet"
-   },
+   "Type": "VPN",
    "VPN": {
       "Host": {
          "DeviceEditable": true,

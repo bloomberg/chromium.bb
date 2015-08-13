@@ -178,14 +178,10 @@ base::DictionaryValue* GetOrCreateNestedDictionary(
 void ApplyGlobalAutoconnectPolicy(
     NetworkProfile::Type profile_type,
     base::DictionaryValue* augmented_onc_network) {
-  base::DictionaryValue* type_dictionary = NULL;
-  augmented_onc_network->GetDictionaryWithoutPathExpansion(
-      ::onc::network_config::kType, &type_dictionary);
   std::string type;
-  if (!type_dictionary ||
-      !type_dictionary->GetStringWithoutPathExpansion(
-          ::onc::kAugmentationActiveSetting, &type) ||
-      type.empty()) {
+  augmented_onc_network->GetStringWithoutPathExpansion(
+      ::onc::network_config::kType, &type);
+  if (type.empty()) {
     LOG(ERROR) << "ONC dictionary with no Type.";
     return;
   }

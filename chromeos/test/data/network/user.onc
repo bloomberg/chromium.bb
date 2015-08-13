@@ -1,4 +1,4 @@
-{ "Type": "Ethernet",
+{ "Type": "VPN",
   "Name": "testopenvpn",
   "VPN": {
     "Host": "users host",

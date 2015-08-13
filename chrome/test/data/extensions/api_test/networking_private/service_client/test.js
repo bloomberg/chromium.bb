@@ -271,11 +271,7 @@ var availableTests = [
                      "UserPolicy": "My WiFi Network"
                    },
                    "Source": "UserPolicy",
-                   "Type": {
-                     "Active": "WiFi",
-                     "Effective": "UserPolicy",
-                     "UserPolicy": "WiFi"
-                   },
+                   "Type": "WiFi",
                    "WiFi": {
                      "AutoConnect": {
                        "Active": false,
