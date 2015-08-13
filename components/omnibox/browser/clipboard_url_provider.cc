@@ -39,7 +39,7 @@ void ClipboardURLProvider::Start(const AutocompleteInput& input,
   DCHECK(url.is_valid());
   // Adds a default match. This match will be opened when the user presses "Go".
   AutocompleteMatch verbatim_match = VerbatimMatchForURL(
-      client_, input.text(), input.current_page_classification(), 0);
+      client_, input.text(), input.current_page_classification(), -1);
   if (verbatim_match.destination_url.is_valid())
     matches_.push_back(verbatim_match);
 

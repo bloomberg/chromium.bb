@@ -13,7 +13,7 @@ class AutocompleteProviderClient;
 
 // Returns a verbatim match for |input_text| with |classification| and a
 // relevance of |verbatim_relevance|. If |verbatim_relevance| is negative
-// or null, then a default value is used.
+// then a default value is used.
 AutocompleteMatch VerbatimMatchForURL(
     AutocompleteProviderClient* client,
     const base::string16& input_text,
