@@ -133,6 +133,15 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
   }
 
   client_->DidSwapBuffers();
+
+  // TODO(oshima): sync with the reflector's SwapBuffersComplete
+  // (crbug.com/520567).
+  // The original implementation had a flickering issue (crbug.com/515332).
+  uint32_t sync_point =
+      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
+  context_provider_->ContextSupport()->SignalSyncPoint(
+      sync_point, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
@@ -142,8 +151,7 @@ void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
 
 base::Closure
 OffscreenBrowserCompositorOutputSurface::CreateCompositionStartedCallback() {
-  return base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                    weak_ptr_factory_.GetWeakPtr());
+  return base::Closure();
 }
 
 #if defined(OS_MACOSX)
