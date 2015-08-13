@@ -22,16 +22,14 @@ class AnimationEffectInputTest : public ::testing::Test {
 protected:
     AnimationEffectInputTest()
         : pageHolder(DummyPageHolder::create())
-        , document(pageHolder->document())
-        , element(document.createElement("foo", ASSERT_NO_EXCEPTION))
+        , element(pageHolder->document().createElement("foo", ASSERT_NO_EXCEPTION))
         , m_isolate(v8::Isolate::GetCurrent())
         , m_scope(m_isolate)
     {
-        document.documentElement()->appendChild(element.get());
+        pageHolder->document().documentElement()->appendChild(element.get());
     }
 
     OwnPtr<DummyPageHolder> pageHolder;
-    Document& document;
     RefPtrWillBePersistent<Element> element;
     TrackExceptionState exceptionState;
     v8::Isolate* m_isolate;
