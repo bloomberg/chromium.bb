@@ -117,6 +117,37 @@ void RecordUnionOfServices(
                            union_of_services.size());
 }
 
+enum class UMAConnectGATTOutcome {
+  SUCCESS,
+  NO_DEVICE,
+  UNKNOWN,
+  IN_PROGRESS,
+  FAILED,
+  AUTH_FAILED,
+  AUTH_CANCELED,
+  AUTH_REJECTED,
+  AUTH_TIMEOUT,
+  UNSUPPORTED_DEVICE,
+  // Note: Add new ConnectGATT outcomes immediately above this line. Make sure
+  // to update the enum list in tools/metrisc/histogram/histograms.xml
+  // accordingly.
+  COUNT
+};
+
+void RecordConnectGATTOutcome(UMAConnectGATTOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.ConnectGATT.Outcome",
+                            static_cast<int>(outcome),
+                            static_cast<int>(UMAConnectGATTOutcome::COUNT));
+}
+
+void RecordConnectGATTTimeSuccess(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Bluetooth.Web.ConnectGATT.TimeSuccess", duration);
+}
+
+void RecordConnectGATTTimeFailed(const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Bluetooth.Web.ConnectGATT.TimeFailed", duration);
+}
+
 enum class UMAWebBluetoothFunction {
   REQUEST_DEVICE,
   CONNECT_GATT,
@@ -177,20 +208,28 @@ WebBluetoothError TranslateConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   switch (error_code) {
     case device::BluetoothDevice::ERROR_UNKNOWN:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNKNOWN);
       return WebBluetoothError::ConnectUnknownError;
     case device::BluetoothDevice::ERROR_INPROGRESS:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::IN_PROGRESS);
       return WebBluetoothError::ConnectAlreadyInProgress;
     case device::BluetoothDevice::ERROR_FAILED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::FAILED);
       return WebBluetoothError::ConnectUnknownFailure;
     case device::BluetoothDevice::ERROR_AUTH_FAILED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_FAILED);
       return WebBluetoothError::ConnectAuthFailed;
     case device::BluetoothDevice::ERROR_AUTH_CANCELED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_CANCELED);
       return WebBluetoothError::ConnectAuthCanceled;
     case device::BluetoothDevice::ERROR_AUTH_REJECTED:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_REJECTED);
       return WebBluetoothError::ConnectAuthRejected;
     case device::BluetoothDevice::ERROR_AUTH_TIMEOUT:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::AUTH_TIMEOUT);
       return WebBluetoothError::ConnectAuthTimeout;
     case device::BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
+      RecordConnectGATTOutcome(UMAConnectGATTOutcome::UNSUPPORTED_DEVICE);
       return WebBluetoothError::ConnectUnsupportedDevice;
   }
   NOTREACHED();
@@ -412,6 +451,7 @@ void BluetoothDispatcherHost::OnConnectGATT(
     const std::string& device_instance_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
+  const base::TimeTicks start_time = base::TimeTicks::Now();
 
   // TODO(ortuno): Right now it's pointless to check if the domain has access to
   // the device, because any domain can connect to any device. But once
@@ -419,6 +459,8 @@ void BluetoothDispatcherHost::OnConnectGATT(
   // the device. https://crbug.com/484745
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    RecordConnectGATTOutcome(UMAConnectGATTOutcome::NO_DEVICE);
+    VLOG(1) << "Bluetooth Device no longer in range.";
     Send(new BluetoothMsg_ConnectGATTError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -426,10 +468,10 @@ void BluetoothDispatcherHost::OnConnectGATT(
   device->CreateGattConnection(
       base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
-                 device_instance_id),
+                 device_instance_id, start_time),
       base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
                  weak_ptr_factory_.GetWeakPtr(), thread_id, request_id,
-                 device_instance_id));
+                 device_instance_id, start_time));
 }
 
 void BluetoothDispatcherHost::OnGetPrimaryService(
@@ -728,9 +770,12 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     int thread_id,
     int request_id,
     const std::string& device_instance_id,
+    base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
   // TODO(ortuno): Save the BluetoothGattConnection so we can disconnect
   // from it.
+  RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
+  RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
   Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
                                            device_instance_id));
 }
@@ -739,10 +784,13 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
     int thread_id,
     int request_id,
     const std::string& device_instance_id,
+    base::TimeTicks start_time,
     device::BluetoothDevice::ConnectErrorCode error_code) {
   // There was an error creating the ATT Bearer so we reject with
   // NetworkError.
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
+  RecordConnectGATTTimeFailed(base::TimeTicks::Now() - start_time);
+  // RecordConnectGATTOutcome is called by TranslateConnectError.
   Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
                                          TranslateConnectError(error_code)));
 }

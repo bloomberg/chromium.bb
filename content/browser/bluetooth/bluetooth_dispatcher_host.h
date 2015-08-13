@@ -104,11 +104,13 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int thread_id,
       int request_id,
       const std::string& device_instance_id,
+      base::TimeTicks start_time,
       scoped_ptr<device::BluetoothGattConnection> connection);
   void OnCreateGATTConnectionError(
       int thread_id,
       int request_id,
       const std::string& device_instance_id,
+      base::TimeTicks start_time,
       device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Callback for future BluetoothAdapter::ServicesDiscovered callback:
