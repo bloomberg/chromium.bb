@@ -202,6 +202,21 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
 
     @SmallTest
     @Feature({"TextInput"})
+    public void testPastePopupDismissedOnDestroy() throws Throwable {
+        copyStringToClipboard("SampleTextToCopy");
+        DOMUtils.longPressNode(this, mContentViewCore, "empty_input_text");
+        assertWaitForPastePopupStatus(true);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mContentViewCore.destroy();
+            }
+        });
+        assertWaitForPastePopupStatus(false);
+    }
+
+    @SmallTest
+    @Feature({"TextInput"})
     public void testActionBarConfiguredCorrectlyForInput() throws Throwable {
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForSelectActionBarVisible(true);

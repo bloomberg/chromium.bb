@@ -1026,6 +1026,8 @@ public class ContentViewCore implements
         ScreenOrientationListener.getInstance().removeObserver(this);
         mPositionObserver.clearListener();
         mContainerViewObservers.clear();
+        hidePopupsAndPreserveSelection();
+        mPastePopupMenu = null;
 
         // See warning in javadoc before adding more clean up code here.
     }
@@ -2599,14 +2601,15 @@ public class ContentViewCore implements
     }
 
     private void hidePastePopup() {
-        if (!mHasInsertion) return;
-        if (supportsFloatingActionMode()) {
-            mUnselectAllOnActionModeDismiss = false;
-            hideSelectActionMode();
+        if (mPastePopupMenu != null) {
+            assert !supportsFloatingActionMode();
+            mPastePopupMenu.hide();
             return;
         }
-        if (mPastePopupMenu == null) return;
-        mPastePopupMenu.hide();
+        if (supportsFloatingActionMode() && mHasInsertion) {
+            mUnselectAllOnActionModeDismiss = false;
+            hideSelectActionMode();
+        }
     }
 
     private PastePopupMenu getPastePopup() {
