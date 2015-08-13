@@ -20,6 +20,7 @@ namespace blink {
 namespace {
 
 class PathBuilder {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(PathBuilder);
 public:
     PathBuilder() : m_path(TypeBuilder::Array<JSONValue>::create()) { }
@@ -85,7 +86,7 @@ void PathBuilder::appendPathElement(const PathElement* pathElement)
 class ShapePathBuilder : public PathBuilder {
 public:
     ShapePathBuilder(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo)
-        : m_view(view)
+        : m_view(&view)
         , m_layoutObject(layoutObject)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
@@ -100,11 +101,11 @@ protected:
     virtual FloatPoint translatePoint(const FloatPoint& point)
     {
         FloatPoint layoutObjectPoint = m_shapeOutsideInfo.shapeToLayoutObjectPoint(point);
-        return m_view.contentsToViewport(roundedIntPoint(m_layoutObject.localToAbsolute(layoutObjectPoint)));
+        return m_view->contentsToViewport(roundedIntPoint(m_layoutObject.localToAbsolute(layoutObjectPoint)));
     }
 
 private:
-    FrameView& m_view;
+    RawPtrWillBeMember<FrameView> m_view;
     LayoutObject& m_layoutObject;
     const ShapeOutsideInfo& m_shapeOutsideInfo;
 };
