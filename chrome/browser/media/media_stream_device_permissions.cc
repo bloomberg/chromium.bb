@@ -12,6 +12,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 
@@ -53,11 +54,7 @@ bool ShouldPersistContentSetting(ContentSetting setting,
     return true;
 
   // We persist requests from secure origins.
-  if (origin.SchemeIsSecure())
-    return true;
-
-  // We persist requests from extensions.
-  if (origin.SchemeIs(extensions::kExtensionScheme))
+  if (content::IsOriginSecure(origin))
     return true;
 
   return false;

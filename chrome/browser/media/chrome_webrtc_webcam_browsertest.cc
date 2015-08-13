@@ -56,7 +56,8 @@ class WebRtcWebcamBrowserTest : public WebRtcTestBase,
   std::string GetUserMediaAndGetStreamSize(content::WebContents* tab,
                                            const std::string& constraints) {
     std::string actual_stream_size;
-    if (GetUserMediaWithSpecificConstraintsAndAccept(tab, constraints)) {
+    if (GetUserMediaWithSpecificConstraintsAndAcceptIfPrompted(tab,
+                                                               constraints)) {
       StartDetectingVideo(tab, "local-view");
       if (WaitForVideoToPlay(tab))
         actual_stream_size = GetStreamSize(tab, "local-view");
