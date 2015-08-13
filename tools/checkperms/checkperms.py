@@ -176,6 +176,7 @@ IGNORED_PATHS = (
       '__init__.py',
   'out/',
   # TODO(maruel): Fix these.
+  'third_party/android_testrunner/',
   'third_party/bintrees/',
   'third_party/closure_linter/',
   'third_party/devscripts/licensecheck.pl.vanilla',

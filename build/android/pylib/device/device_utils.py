@@ -23,6 +23,7 @@ import threading
 import time
 import zipfile
 
+import pylib.android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import device_signal
@@ -173,10 +174,16 @@ class DeviceUtils(object):
                        value is provided.
     """
     self.adb = None
+    self.old_interface = None
     if isinstance(device, basestring):
       self.adb = adb_wrapper.AdbWrapper(device)
+      self.old_interface = pylib.android_commands.AndroidCommands(device)
     elif isinstance(device, adb_wrapper.AdbWrapper):
       self.adb = device
+      self.old_interface = pylib.android_commands.AndroidCommands(str(device))
+    elif isinstance(device, pylib.android_commands.AndroidCommands):
+      self.adb = adb_wrapper.AdbWrapper(device.GetDevice())
+      self.old_interface = device
     else:
       raise ValueError('Unsupported device value: %r' % device)
     self._commands_installed = None

@@ -19,6 +19,7 @@ import re
 import sys
 import unittest
 
+from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import device_signal
@@ -28,6 +29,11 @@ from pylib.device import device_utils
 from pylib.device import intent
 from pylib.sdk import split_select
 from pylib.utils import mock_calls
+
+# RunCommand from third_party/android_testrunner/run_command.py is mocked
+# below, so its path needs to be in sys.path.
+sys.path.append(os.path.join(
+    constants.DIR_SOURCE_ROOT, 'third_party', 'android_testrunner'))
 
 sys.path.append(os.path.join(
     constants.DIR_SOURCE_ROOT, 'third_party', 'pymock'))
@@ -49,6 +55,12 @@ class DeviceUtilsInitTest(unittest.TestCase):
   def testInitWithAdbWrapper(self):
     serial = '123456789abcdef0'
     a = adb_wrapper.AdbWrapper(serial)
+    d = device_utils.DeviceUtils(a)
+    self.assertEqual(serial, d.adb.GetDeviceSerial())
+
+  def testInitWithAndroidCommands(self):
+    serial = '0fedcba987654321'
+    a = android_commands.AndroidCommands(device=serial)
     d = device_utils.DeviceUtils(a)
     self.assertEqual(serial, d.adb.GetDeviceSerial())
 

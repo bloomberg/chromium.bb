@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir,
                              'build',
                              'android'))
+from pylib import android_commands
 from pylib.device import device_errors
 from pylib.device import device_utils
 
@@ -105,8 +106,7 @@ class DeviceHelper(object):
     """Returns a device serial to connect to.  If |preset| is specified it will
     return |preset| if it is connected and |None| otherwise.  If |preset| is not
     specified it will return the first connected device."""
-    devices = [d.adb.GetDeviceSerial()
-               for d in device_utils.DeviceUtils.HealthyDevices()]
+    devices = android_commands.GetAttachedDevices()
     if not devices:
       return None
 
