@@ -1505,11 +1505,6 @@ class CRWWKWebControllerWebProcessTest
 TEST_F(CRWWKWebControllerWebProcessTest, Crash) {
   CR_TEST_REQUIRES_WK_WEB_VIEW();
 
-  // TODO(eugenebut): This test is failing on iOS 9. crbug.com/518924
-  if (base::ios::IsRunningOnOrLater(9, 0, 0)) {
-    return;
-  }
-
   id delegate = [OCMockObject niceMockForProtocol:@protocol(CRWWebDelegate)];
   [[delegate expect] webControllerWebProcessDidCrash:this->webController_];
 
