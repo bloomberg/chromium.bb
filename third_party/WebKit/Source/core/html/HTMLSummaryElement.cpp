@@ -63,9 +63,12 @@ void HTMLSummaryElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
 HTMLDetailsElement* HTMLSummaryElement::detailsElement() const
 {
-    Node* parent = ComposedTreeTraversal::parent(*this);
+    Node* parent = parentNode();
     if (isHTMLDetailsElement(parent))
         return toHTMLDetailsElement(parent);
+    Element* host = shadowHost();
+    if (isHTMLDetailsElement(host))
+        return toHTMLDetailsElement(host);
     return nullptr;
 }
 
@@ -100,7 +103,6 @@ bool HTMLSummaryElement::supportsFocus() const
 
 void HTMLSummaryElement::defaultEventHandler(Event* event)
 {
-    updateDistribution();
     if (isMainSummary() && layoutObject()) {
         if (event->type() == EventTypeNames::DOMActivate && !isClickableControl(event->target()->toNode())) {
             if (HTMLDetailsElement* details = detailsElement())
