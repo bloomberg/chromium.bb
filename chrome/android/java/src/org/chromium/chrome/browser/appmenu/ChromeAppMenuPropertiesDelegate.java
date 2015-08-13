@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -116,6 +117,12 @@ public class ChromeAppMenuPropertiesDelegate implements AppMenuPropertiesDelegat
             MenuItem recentTabsMenuItem = menu.findItem(R.id.recent_tabs_menu_id);
             recentTabsMenuItem.setVisible(!isIncognito && FeatureUtilities.canAllowSync(mActivity));
             recentTabsMenuItem.setTitle(R.string.menu_recent_tabs);
+
+            if (OfflinePageBridge.isEnabled()) {
+                MenuItem allBookmarksMenuItem = menu.findItem(R.id.all_bookmarks_menu_id);
+                allBookmarksMenuItem.setTitle(mActivity.getString(
+                        R.string.menu_bookmarks_offline_pages));
+            }
 
             // Don't allow "chrome://" pages to be shared.
             menu.findItem(R.id.share_row_menu_id).setVisible(!isChromeScheme);

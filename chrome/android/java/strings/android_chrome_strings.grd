@@ -1738,6 +1738,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_MENU_BOOKMARKS" desc="Menu item for opening the bookmarks page that contains all the user's bookmarks. [CHAR-LIMIT=27]">
         Bookmarks
       </message>
+      <message name="IDS_MENU_BOOKMARKS_OFFLINE_PAGES" desc="Menu item for opening the saved pages page that contains all the user's saved pages (bookmarks and offline). [CHAR-LIMIT=27]">
+        Saved pages
+      </message>
       <message name="IDS_MENU_RECENT_TABS" desc="Menu item for opening the 'Recent tabs' page that shows recently closed tabs and pages the user has opened on his/her other devices. [CHAR-LIMIT=27]">
         Recent tabs
       </message>
@@ -1817,8 +1820,11 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS" desc="Title bar text for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=32]">
         Bookmarks
       </message>
-      <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS_OFFLINE_PAGES" desc="Title bar text for showing all offline pages bookmarks UI [CHAR-LIMIT=32]">
+      <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_ALL_ITEMS_OFFLINE_PAGES" desc="Title bar text for showing all items in the enhanced bookmarks UI when offline pages functionality is enabled [CHAR-LIMIT=32]">
         All saved pages
+      </message>
+      <message name="IDS_ENHANCED_BOOKMARK_TITLE_BAR_FILTER_OFFLINE_PAGES" desc="Title bar text for showing all save pages with offline copy in the enhanced bookmarks UI. [CHAR-LIMIT=24]">
+        Saved offline
       </message>
       <message name="IDS_ENHANCED_BOOKMARK_PARENT_FOLDER" desc="Header text for title of parent folder of the bookmark [CHAR-LIMIT=32]">
         Parent folder
