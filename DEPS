@@ -31,7 +31,7 @@ vars = {
   # Use this googlecode_url variable only if there is an internal mirror for it.
   # If you do not know, use the full path while defining your new deps entry.
   'googlecode_url': 'http://%s.googlecode.com/svn',
-  'webkit_revision': '2aacfa304125c4b4d7ec8dbc96dcc0d72fc9526a', # from svn revision 200492
+  'webkit_revision': '32de48fcd7cea1690a736b78efb79a9481e14444', # from svn revision 200499
   'chromium_git': 'https://chromium.googlesource.com',
   'libvpx_revision': '19bcff869995b401194074278634e6b5cf391333',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
