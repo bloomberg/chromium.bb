@@ -74,7 +74,7 @@ void ShortcutDataFetcher::OnDidGetWebApplicationInfo(
 
   if (web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE ||
       web_app_info.mobile_capable == WebApplicationInfo::MOBILE_CAPABLE_APPLE) {
-    shortcut_info_.display = content::Manifest::DISPLAY_MODE_STANDALONE;
+    shortcut_info_.display = blink::WebDisplayModeStandalone;
   }
 
   // Record what type of shortcut was added by the user.

@@ -85,9 +85,9 @@ class CONTENT_EXPORT ManifestParser {
 
   // Parses the 'display' field of the manifest, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-display-member
-  // Returns the parsed DisplayMode if any, DISPLAY_MODE_UNSPECIFIED if the
+  // Returns the parsed DisplayMode if any, WebDisplayModeUndefined if the
   // parsing failed.
-  Manifest::DisplayMode ParseDisplay(const base::DictionaryValue& dictionary);
+  blink::WebDisplayMode ParseDisplay(const base::DictionaryValue& dictionary);
 
   // Parses the 'orientation' field of the manifest, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-orientation-member

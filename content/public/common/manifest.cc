@@ -29,7 +29,7 @@ Manifest::RelatedApplication::~RelatedApplication() {
 }
 
 Manifest::Manifest()
-    : display(DISPLAY_MODE_UNSPECIFIED),
+    : display(blink::WebDisplayModeUndefined),
       orientation(blink::WebScreenOrientationLockDefault),
       prefer_related_applications(false),
       theme_color(Manifest::kInvalidOrMissingThemeColor) {
@@ -42,7 +42,7 @@ bool Manifest::IsEmpty() const {
   return name.is_null() &&
          short_name.is_null() &&
          start_url.is_empty() &&
-         display == DISPLAY_MODE_UNSPECIFIED &&
+         display == blink::WebDisplayModeUndefined &&
          orientation == blink::WebScreenOrientationLockDefault &&
          icons.empty() &&
          related_applications.empty() &&

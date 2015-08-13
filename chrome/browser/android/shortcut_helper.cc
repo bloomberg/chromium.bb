@@ -166,7 +166,7 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       java_name.obj(),
       java_short_name.obj(),
       java_bitmap.obj(),
-      info.display == content::Manifest::DISPLAY_MODE_STANDALONE,
+      info.display == blink::WebDisplayModeStandalone,
       info.orientation,
       info.source,
       info.theme_color);

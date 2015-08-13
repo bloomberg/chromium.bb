@@ -84,7 +84,7 @@ TEST_F(ManifestParserTest, EmptyStringNull) {
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
-  ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  ASSERT_EQ(manifest.display, blink::WebDisplayModeUndefined);
   ASSERT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
   ASSERT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingThemeColor);
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
@@ -101,7 +101,7 @@ TEST_F(ManifestParserTest, ValidNoContentParses) {
   ASSERT_TRUE(manifest.name.is_null());
   ASSERT_TRUE(manifest.short_name.is_null());
   ASSERT_TRUE(manifest.start_url.is_empty());
-  ASSERT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+  ASSERT_EQ(manifest.display, blink::WebDisplayModeUndefined);
   ASSERT_EQ(manifest.orientation, blink::WebScreenOrientationLockDefault);
   ASSERT_EQ(manifest.theme_color, Manifest::kInvalidOrMissingThemeColor);
   ASSERT_TRUE(manifest.gcm_sender_id.is_null());
@@ -286,7 +286,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   // Smoke test.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"browser\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeBrowser);
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ(0u, GetErrorCount());
   }
@@ -294,14 +294,14 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   // Trim whitespaces.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"  browser  \" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if name isn't a string.
   {
     Manifest manifest = ParseManifest("{ \"display\": {} }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("Manifest parsing error: property 'display' ignored,"
               " type string expected.",
@@ -311,7 +311,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   // Don't parse if name isn't a string.
   {
     Manifest manifest = ParseManifest("{ \"display\": 42 }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("Manifest parsing error: property 'display' ignored,"
               " type string expected.",
@@ -321,7 +321,7 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   // Parse fails if string isn't known.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"browser_something\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_UNSPECIFIED);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeUndefined);
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("Manifest parsing error: unknown 'display' value ignored.",
               errors()[0]);
@@ -330,35 +330,35 @@ TEST_F(ManifestParserTest, DisplayParserRules) {
   // Accept 'fullscreen'.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"fullscreen\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_FULLSCREEN);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeFullscreen);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'fullscreen'.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"standalone\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_STANDALONE);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeStandalone);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'minimal-ui'.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"minimal-ui\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_MINIMAL_UI);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeMinimalUi);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Accept 'browser'.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"browser\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Case insensitive.
   {
     Manifest manifest = ParseManifest("{ \"display\": \"BROWSER\" }");
-    EXPECT_EQ(manifest.display, Manifest::DISPLAY_MODE_BROWSER);
+    EXPECT_EQ(manifest.display, blink::WebDisplayModeBrowser);
     EXPECT_EQ(0u, GetErrorCount());
   }
 }

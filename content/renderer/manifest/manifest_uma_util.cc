@@ -40,7 +40,7 @@ void ManifestUmaUtil::ParseSucceeded(const Manifest& manifest) {
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.start_url",
       !manifest.start_url.is_empty());
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.display",
-      manifest.display != Manifest::DISPLAY_MODE_UNSPECIFIED);
+      manifest.display != blink::WebDisplayModeUndefined);
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.orientation",
       manifest.orientation != blink::WebScreenOrientationLockDefault);
   UMA_HISTOGRAM_BOOLEAN("Manifest.HasProperty.icons", !manifest.icons.empty());

@@ -9,6 +9,7 @@
 
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebDisplayMode.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -19,14 +20,6 @@ namespace content {
 // described in the "Manifest for Web Application" document:
 // http://w3c.github.io/manifest/
 struct CONTENT_EXPORT Manifest {
-  enum DisplayMode {
-    DISPLAY_MODE_UNSPECIFIED,
-    DISPLAY_MODE_FULLSCREEN,
-    DISPLAY_MODE_STANDALONE,
-    DISPLAY_MODE_MINIMAL_UI,
-    DISPLAY_MODE_BROWSER
-  };
-
   // Structure representing an icon as per the Manifest specification, see:
   // http://w3c.github.io/manifest/#dfn-icon-object
   struct CONTENT_EXPORT Icon {
@@ -90,9 +83,9 @@ struct CONTENT_EXPORT Manifest {
   // Empty if the parsing failed or the field was not present.
   GURL start_url;
 
-  // Set to DISPLAY_MODE_UNSPECIFIED if the parsing failed or the field was not
+  // Set to WebDisplayModeUndefined if the parsing failed or the field was not
   // present.
-  DisplayMode display;
+  blink::WebDisplayMode display;
 
   // Set to blink::WebScreenOrientationLockDefault if the parsing failed or the
   // field was not present.

@@ -220,23 +220,23 @@ GURL ManifestParser::ParseStartURL(const base::DictionaryValue& dictionary) {
   return start_url;
 }
 
-Manifest::DisplayMode ManifestParser::ParseDisplay(
+blink::WebDisplayMode ManifestParser::ParseDisplay(
     const base::DictionaryValue& dictionary) {
   base::NullableString16 display = ParseString(dictionary, "display", Trim);
   if (display.is_null())
-    return Manifest::DISPLAY_MODE_UNSPECIFIED;
+    return blink::WebDisplayModeUndefined;
 
   if (base::LowerCaseEqualsASCII(display.string(), "fullscreen"))
-    return Manifest::DISPLAY_MODE_FULLSCREEN;
+    return blink::WebDisplayModeFullscreen;
   else if (base::LowerCaseEqualsASCII(display.string(), "standalone"))
-    return Manifest::DISPLAY_MODE_STANDALONE;
+    return blink::WebDisplayModeStandalone;
   else if (base::LowerCaseEqualsASCII(display.string(), "minimal-ui"))
-    return Manifest::DISPLAY_MODE_MINIMAL_UI;
+    return blink::WebDisplayModeMinimalUi;
   else if (base::LowerCaseEqualsASCII(display.string(), "browser"))
-    return Manifest::DISPLAY_MODE_BROWSER;
+    return blink::WebDisplayModeBrowser;
   else {
     errors_.push_back(GetErrorPrefix() + "unknown 'display' value ignored.");
-    return Manifest::DISPLAY_MODE_UNSPECIFIED;
+    return blink::WebDisplayModeUndefined;
   }
 }
 
