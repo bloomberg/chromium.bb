@@ -67,7 +67,14 @@ bool SpellcheckLanguage::SpellCheckWord(
 
   text_iterator_.SetText(in_word, in_word_len);
   DCHECK(platform_spelling_engine_.get());
-  while (text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
+  for (SpellcheckWordIterator::WordIteratorStatus status =
+           text_iterator_.GetNextWord(&word, &word_start, &word_length);
+       status != SpellcheckWordIterator::IS_END_OF_TEXT;
+       status = text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
+    // Found a character that is not able to be spellchecked so skip it.
+    if (status == SpellcheckWordIterator::IS_SKIPPABLE)
+      continue;
+
     // Found a word (or a contraction) that the spellchecker can check the
     // spelling of.
     if (platform_spelling_engine_->CheckSpelling(word, tag))
@@ -112,7 +119,14 @@ bool SpellcheckLanguage::IsValidContraction(const base::string16& contraction,
   int word_length;
 
   DCHECK(platform_spelling_engine_.get());
-  while (contraction_iterator_.GetNextWord(&word, &word_start, &word_length)) {
+  for (SpellcheckWordIterator::WordIteratorStatus status =
+           contraction_iterator_.GetNextWord(&word, &word_start, &word_length);
+       status != SpellcheckWordIterator::IS_END_OF_TEXT;
+       status = contraction_iterator_.GetNextWord(&word, &word_start,
+                                                  &word_length)) {
+    if (status == SpellcheckWordIterator::IS_SKIPPABLE)
+      continue;
+
     if (!platform_spelling_engine_->CheckSpelling(word, tag))
       return false;
   }

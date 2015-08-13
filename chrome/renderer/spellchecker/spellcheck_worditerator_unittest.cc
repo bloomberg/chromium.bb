@@ -31,13 +31,15 @@ base::string16 GetRulesForLanguage(const std::string& language) {
 
 }  // namespace
 
-// Tests whether or not our SpellcheckWordIterator can extract only words used
-// by the specified language from a multi-language text.
+// Tests whether or not our SpellcheckWordIterator can extract words used by the
+// specified language from a multi-language text.
 TEST(SpellcheckWordIteratorTest, SplitWord) {
   // An input text. This text includes words of several languages. (Some words
   // are not separated with whitespace characters.) Our SpellcheckWordIterator
-  // should extract only the words used by the specified language from this text
-  // and normalize them so our spell-checker can check their spellings.
+  // should extract the words used by the specified language from this text and
+  // normalize them so our spell-checker can check their spellings. If
+  // characters are found that are not from the specified language the test
+  // skips them.
   const wchar_t kTestText[] =
       // Graphic characters
       L"!@#$%^&*()"
@@ -141,7 +143,14 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
     base::string16 actual_word;
     int actual_start, actual_end;
     size_t index = 0;
-    while (iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
+    for (SpellcheckWordIterator::WordIteratorStatus status =
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
+         status != SpellcheckWordIterator::IS_END_OF_TEXT;
+         status =
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
+      if (status == SpellcheckWordIterator::WordIteratorStatus::IS_SKIPPABLE)
+        continue;
+
       EXPECT_TRUE(index < expected_words.size());
       if (index < expected_words.size())
         EXPECT_EQ(expected_words[index], actual_word);
@@ -165,11 +174,19 @@ TEST(SpellcheckWordIteratorTest, RuleSetConsistency) {
   EXPECT_TRUE(iterator.SetText(input.c_str(), input.length()));
 
   // When SpellcheckWordIterator uses an inconsistent ICU ruleset, the following
-  // iterator.GetNextWord() call gets stuck in an infinite loop. Therefore, this
+  // iterator.GetNextWord() calls get stuck in an infinite loop. Therefore, this
   // test succeeds if this call returns without timeouts.
   base::string16 actual_word;
   int actual_start, actual_end;
-  EXPECT_FALSE(iterator.GetNextWord(&actual_word, &actual_start, &actual_end));
+  SpellcheckWordIterator::WordIteratorStatus status;
+  for (status = iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
+       status == SpellcheckWordIterator::IS_SKIPPABLE;
+       status =
+           iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
+    continue;
+  }
+
+  EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_END_OF_TEXT, status);
   EXPECT_EQ(0, actual_start);
   EXPECT_EQ(0, actual_end);
 }
@@ -230,7 +247,16 @@ TEST(SpellcheckWordIteratorTest, TreatNumbersAsWordCharacters) {
 
     base::string16 actual_word;
     int actual_start, actual_end;
-    EXPECT_TRUE(iterator.GetNextWord(&actual_word, &actual_start, &actual_end));
+    SpellcheckWordIterator::WordIteratorStatus status;
+    for (status =
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
+         status == SpellcheckWordIterator::IS_SKIPPABLE;
+         status =
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
+      continue;
+    }
+
+    EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_WORD, status);
     if (kTestCases[i].left_to_right)
       EXPECT_EQ(input_word, actual_word);
     else
@@ -278,7 +304,15 @@ TEST(SpellcheckWordIteratorTest, TypographicalApostropheIsPartOfWord) {
 
     base::string16 actual_word;
     int actual_start, actual_end;
-    EXPECT_TRUE(iterator.GetNextWord(&actual_word, &actual_start, &actual_end));
+    SpellcheckWordIterator::WordIteratorStatus status;
+    for (status =
+             iterator.GetNextWord(&actual_word, &actual_start, &actual_end);
+         status == SpellcheckWordIterator::IS_SKIPPABLE;
+         iterator.GetNextWord(&actual_word, &actual_start, &actual_end)) {
+      continue;
+    }
+
+    EXPECT_EQ(SpellcheckWordIterator::WordIteratorStatus::IS_WORD, status);
     EXPECT_EQ(input_word, actual_word);
     EXPECT_EQ(0, actual_start);
     EXPECT_EQ(input_word.length(),
