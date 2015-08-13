@@ -40,6 +40,9 @@ var ActionLink = document.registerElement('action-link', {
       // Action links can start disabled (e.g. <a is="action-link" disabled>).
       this.tabIndex = this.disabled ? -1 : 0;
 
+      if (!this.hasAttribute('role'))
+        this.setAttribute('role', 'link');
+
       this.addEventListener('keydown', function(e) {
         if (!this.disabled && e.keyIdentifier == 'Enter') {
           // Schedule a click asynchronously because other 'keydown' handlers
