@@ -16,11 +16,14 @@ cr.define('print_preview', function() {
    *     only ticket item.
    * @param {!print_preview.ticket_items.HeaderFooter} headerFooter Header
    *     footer ticket item.
+   * @param {!print_preview.ticket_items.DistillPage} distillPage Print
+   *     distill page ticket item.
    * @constructor
    * @extends {print_preview.SettingsSection}
    */
   function OtherOptionsSettings(
-      duplex, fitToPage, cssBackground, selectionOnly, headerFooter) {
+      duplex, fitToPage, cssBackground, selectionOnly,
+      headerFooter, distillPage) {
     print_preview.SettingsSection.call(this);
 
     /**
@@ -59,6 +62,27 @@ cr.define('print_preview', function() {
     this.headerFooterTicketItem_ = headerFooter;
 
     /**
+     * Distill page ticket item, used to read/write.
+     * @type {!print_preview.ticket_items.DistillPage}
+     * @private
+     */
+    this.distillPageTicketItem_ = distillPage;
+
+     /**
+     * Distill page container element.
+     * @type {HTMLElement}
+     * @private
+     */
+    this.distillPageContainer_ = null;
+
+    /**
+     * Distill page checkbox.
+     * @type {HTMLInputElement}
+     * @private
+     */
+    this.distillPageCheckbox_ = null;
+
+     /**
      * Header footer container element.
      * @type {HTMLElement}
      * @private
@@ -134,7 +158,8 @@ cr.define('print_preview', function() {
 
     /** @override */
     isAvailable: function() {
-      return this.headerFooterTicketItem_.isCapabilityAvailable() ||
+      return this.distillPageTicketItem_.isCapabilityAvailable() ||
+             this.headerFooterTicketItem_.isCapabilityAvailable() ||
              this.fitToPageTicketItem_.isCapabilityAvailable() ||
              this.duplexTicketItem_.isCapabilityAvailable() ||
              this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
@@ -154,12 +179,17 @@ cr.define('print_preview', function() {
       this.headerFooterCheckbox_.disabled = !isEnabled;
       this.fitToPageCheckbox_.disabled = !isEnabled;
       this.duplexCheckbox_.disabled = !isEnabled;
+      this.distillPageCheckbox_.disabled = !isEnabled;
       this.cssBackgroundCheckbox_.disabled = !isEnabled;
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
+      this.tracker.add(
+          this.distillPageCheckbox_,
+          'click',
+          this.onDistillPageCheckboxClick_.bind(this));
       this.tracker.add(
           this.headerFooterCheckbox_,
           'click',
@@ -200,11 +230,17 @@ cr.define('print_preview', function() {
           this.headerFooterTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onHeaderFooterChange_.bind(this));
+      this.tracker.add(
+          this.distillPageTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onDistillPageChange_.bind(this));
     },
 
     /** @override */
     exitDocument: function() {
       print_preview.SettingsSection.prototype.exitDocument.call(this);
+      this.distillPageContainer_ = null;
+      this.distillPageCheckbox_ = null;
       this.headerFooterContainer_ = null;
       this.headerFooterCheckbox_ = null;
       this.fitToPageContainer_ = null;
@@ -219,6 +255,10 @@ cr.define('print_preview', function() {
 
     /** @override */
     decorateInternal: function() {
+      this.distillPageContainer_ = this.getElement().querySelector(
+          '.distill-page-container');
+      this.distillPageCheckbox_ = this.distillPageContainer_.querySelector(
+          '.distill-page-checkbox');
       this.headerFooterContainer_ = this.getElement().querySelector(
           '.header-footer-container');
       this.headerFooterCheckbox_ = this.headerFooterContainer_.querySelector(
@@ -244,6 +284,8 @@ cr.define('print_preview', function() {
     /** @override */
     updateUiStateInternal: function() {
       if (this.isAvailable()) {
+        setIsVisible(this.distillPageContainer_,
+                     this.distillPageTicketItem_.isCapabilityAvailable());
         setIsVisible(this.headerFooterContainer_,
                      this.headerFooterTicketItem_.isCapabilityAvailable() &&
                      !this.collapseContent);
@@ -264,11 +306,25 @@ cr.define('print_preview', function() {
 
     /** @override */
     isSectionVisibleInternal: function() {
-      return this.collapseContent ?
-          this.duplexTicketItem_.isCapabilityAvailable() : this.isAvailable();
+      if (this.collapseContent) {
+        return this.distillPageTicketItem_.isCapabilityAvailable() ||
+               this.duplexTicketItem_.isCapabilityAvailable();
+      }
+
+      return this.isAvailable();
     },
 
     /**
+     * Called when the distill-page checkbox is clicked. Updates the print
+     * ticket.
+     * @private
+     */
+    onDistillPageCheckboxClick_: function() {
+      this.distillPageTicketItem_.updateValue(
+          this.distillPageCheckbox_.checked);
+    },
+
+     /**
      * Called when the header-footer checkbox is clicked. Updates the print
      * ticket.
      * @private
@@ -365,6 +421,17 @@ cr.define('print_preview', function() {
     onHeaderFooterChange_: function() {
       this.headerFooterCheckbox_.checked =
           this.headerFooterTicketItem_.getValue();
+      this.updateUiStateInternal();
+    },
+
+    /**
+     * Called when the distill-page ticket item has changed. Updates the
+     * distill-page checkbox.
+     * @private
+     */
+    onDistillPageChange_: function() {
+      this.distillPageCheckbox_.checked =
+          this.distillPageTicketItem_.getValue();
       this.updateUiStateInternal();
     }
   };

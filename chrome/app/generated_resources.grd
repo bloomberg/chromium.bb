@@ -7887,7 +7887,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
           Update password
-        </message>       
+        </message>
         <message name="IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON" desc="Buton text to re-enable the password manager after blacklisting.">
           Undo
         </message>
@@ -8864,6 +8864,9 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_PRINT_PREVIEW_OPTIONS_LABEL" desc="Options label currently providing the choice to print headers and footers.">
           Options
+        </message>
+        <message name="IDS_PRINT_PREVIEW_OPTION_DISTILL_PAGE" desc="Checkbox label that provides a choice to print a simplified version of the page.">
+          Simplify page
         </message>
         <message name="IDS_PRINT_PREVIEW_OPTION_HEADER_FOOTER" desc="Checkbox label that provides a choice to print the headers and footers.">
           Headers and footers

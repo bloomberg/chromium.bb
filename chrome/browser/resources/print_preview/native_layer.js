@@ -67,6 +67,8 @@ cr.define('print_preview', function() {
         this.onEnableManipulateSettingsForTest_.bind(this);
     global.printPresetOptionsFromDocument =
         this.onPrintPresetOptionsFromDocument_.bind(this);
+   global.detectDistillablePage =
+        this.detectDistillablePage_.bind(this);
     global.onProvisionalPrinterResolved =
         this.onProvisionalDestinationResolved_.bind(this);
     global.failedToResolveProvisionalPrinter =
@@ -80,6 +82,7 @@ cr.define('print_preview', function() {
    */
   NativeLayer.EventType = {
     ACCESS_TOKEN_READY: 'print_preview.NativeLayer.ACCESS_TOKEN_READY',
+    ALLOW_DISTILL_PAGE: 'print_preview.NativeLayer.ALLOW_DISTILL_PAGE',
     CAPABILITIES_SET: 'print_preview.NativeLayer.CAPABILITIES_SET',
     CLOUD_PRINT_ENABLE: 'print_preview.NativeLayer.CLOUD_PRINT_ENABLE',
     DESTINATIONS_RELOAD: 'print_preview.NativeLayer.DESTINATIONS_RELOAD',
@@ -273,6 +276,7 @@ cr.define('print_preview', function() {
         'landscape': printTicketStore.landscape.getValue(),
         'color': this.getNativeColorModel_(destination, printTicketStore.color),
         'headerFooterEnabled': printTicketStore.headerFooter.getValue(),
+        'distillPage': printTicketStore.distillPage.getValue(),
         'marginsType': printTicketStore.marginsType.getValue(),
         'isFirstRequest': requestId == 0,
         'requestID': requestId,
@@ -734,6 +738,19 @@ cr.define('print_preview', function() {
       printPresetOptionsEvent.optionsFromDocument = options;
       this.dispatchEvent(printPresetOptionsEvent);
     },
+
+    /**
+      * Updates the interface to show the "Distill Page" option
+      * when PrintPreviewHandler::HandleIsPageDistillableResult
+      * determines that this page can be distilled with the
+      * DOM Distiller.
+      * @private
+      */
+     detectDistillablePage_: function() {
+       var allowDistillPageEvent = new Event(
+           NativeLayer.EventType.ALLOW_DISTILL_PAGE);
+       this.dispatchEvent(allowDistillPageEvent);
+     },
 
     /**
      * Simulates a user click on the print preview dialog cancel button. Used

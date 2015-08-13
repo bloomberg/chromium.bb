@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
+#include "chrome/browser/ui/webui/print_preview/print_preview_distiller.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -333,6 +334,11 @@ class PrintPreviewHandler
   //     error.
   void OnExtensionPrintResult(bool success, const std::string& status);
 
+  // Called when the DOM Distiller determines whether or not this page can
+  // be distilled.
+  // |distillable|: Whether or not this page can be distilled.
+  void HandleIsPageDistillableResult(bool distillable);
+
   // Register/unregister from notifications of changes done to the GAIA
   // cookie.
   void RegisterForGaiaCookieChanges();
@@ -388,6 +394,10 @@ class PrintPreviewHandler
   // Notifies tests that want to know if the PDF has been saved. This doesn't
   // notify the test if it was a successful save, only that it was attempted.
   base::Closure pdf_file_saved_closure_;
+
+  // A print preview that is responsible for rendering the page after
+  // being processed by the DOM Distiller.
+  scoped_ptr<PrintPreviewDistiller> print_preview_distiller_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 

@@ -2696,6 +2696,8 @@
     'chrome_browser_ui_print_preview_sources': [
       'browser/ui/webui/print_preview/extension_printer_handler.cc',
       'browser/ui/webui/print_preview/extension_printer_handler.h',
+      'browser/ui/webui/print_preview/print_preview_distiller.cc',
+      'browser/ui/webui/print_preview/print_preview_distiller.h',
       'browser/ui/webui/print_preview/print_preview_handler.cc',
       'browser/ui/webui/print_preview/print_preview_handler.h',
       'browser/ui/webui/print_preview/print_preview_ui.cc',

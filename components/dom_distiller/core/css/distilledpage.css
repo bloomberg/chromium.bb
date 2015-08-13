@@ -255,6 +255,12 @@ h6 {
   width: 100%;
 }
 
+@media print {
+  #closeReaderView {
+    display: none;
+  }
+}
+
 #content {
   margin: 24px 16px 24px 16px;
 }

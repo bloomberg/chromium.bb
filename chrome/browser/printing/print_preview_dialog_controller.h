@@ -79,6 +79,11 @@ class PrintPreviewDialogController
     return is_creating_print_preview_dialog_;
   }
 
+  void AddProxyDialogForWebContents(content::WebContents* source,
+                                    content::WebContents* target);
+
+  void RemoveProxyDialogForWebContents(content::WebContents* source);
+
  private:
   friend class base::RefCounted<PrintPreviewDialogController>;
 
@@ -121,6 +126,8 @@ class PrintPreviewDialogController
 
   // Mapping between print preview dialog and the corresponding initiator.
   PrintPreviewDialogMap preview_dialog_map_;
+
+  PrintPreviewDialogMap proxied_dialog_map_;
 
   // A registrar for listening to notifications.
   content::NotificationRegistrar registrar_;

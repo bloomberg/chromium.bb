@@ -10,6 +10,14 @@ function addToPage(html) {
   div.innerHTML = html;
   document.getElementById('content').appendChild(div);
   fillYouTubePlaceholders();
+
+  if (typeof navigate_on_initial_content_load !== 'undefined' &&
+      navigate_on_initial_content_load) {
+    navigate_on_initial_content_load = false;
+    setTimeout(function() {
+        window.location = window.location + "#loaded";
+    }, 0);
+  }
 }
 
 function fillYouTubePlaceholders() {
@@ -131,6 +139,16 @@ function showFeedbackForm(questionText, yesText, noText) {
 
   document.getElementById('contentWrap').style.paddingBottom = '120px';
   document.getElementById('feedbackContainer').style.display = 'block';
+  var mediaQuery = window.matchMedia("print");
+  mediaQuery.addListener(function (query) {
+    if (query.matches) {
+      document.getElementById('contentWrap').style.paddingBottom = '0px';
+      document.getElementById('feedbackContainer').style.display = 'none';
+    } else {
+      document.getElementById('contentWrap').style.paddingBottom = '120px';
+      document.getElementById('feedbackContainer').style.display = 'block';
+    }
+  });
 }
 
 /**

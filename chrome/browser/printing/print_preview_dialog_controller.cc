@@ -183,6 +183,14 @@ WebContents* PrintPreviewDialogController::GetOrCreatePreviewDialog(
 
 WebContents* PrintPreviewDialogController::GetPrintPreviewForContents(
     WebContents* contents) const {
+  // If this WebContents relies on another for its preview dialog, we
+  // need to act as if we are looking for the proxied content's dialog.
+  PrintPreviewDialogMap::const_iterator proxied =
+      proxied_dialog_map_.find(contents);
+  if (proxied != proxied_dialog_map_.end()) {
+    contents = proxied->second;
+  }
+
   // |preview_dialog_map_| is keyed by the preview dialog, so if find()
   // succeeds, then |contents| is the preview dialog.
   PrintPreviewDialogMap::const_iterator it = preview_dialog_map_.find(contents);
@@ -376,6 +384,17 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   AddObservers(preview_dialog);
 
   return preview_dialog;
+}
+
+void PrintPreviewDialogController::AddProxyDialogForWebContents(
+    WebContents* source,
+    WebContents* target) {
+  proxied_dialog_map_[source] = target;
+}
+
+void PrintPreviewDialogController::RemoveProxyDialogForWebContents(
+    WebContents* source) {
+  proxied_dialog_map_.erase(source);
 }
 
 void PrintPreviewDialogController::SaveInitiatorTitle(

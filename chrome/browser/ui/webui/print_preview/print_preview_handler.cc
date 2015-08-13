@@ -30,6 +30,7 @@
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
@@ -57,6 +58,9 @@
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils.h"
+#include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -839,8 +843,28 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   }
 
   VLOG(1) << "Print preview request start";
-  RenderViewHost* rvh = initiator->GetRenderViewHost();
-  rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
+
+  bool distill_page = false;
+  if (!settings->GetBoolean(printing::kSettingDistillPageEnabled,
+                            &distill_page)) {
+    NOTREACHED();
+  }
+
+  bool selection_only = false;
+  if (!settings->GetBoolean(printing::kSettingShouldPrintSelectionOnly,
+                            &selection_only)) {
+    NOTREACHED();
+  }
+
+  if (distill_page && !selection_only) {
+    print_preview_distiller_.reset(new PrintPreviewDistiller(
+        initiator, base::Bind(&PrintPreviewUI::OnPrintPreviewFailed,
+                              print_preview_ui()->GetWeakPtr()),
+        settings.Pass()));
+  } else {
+    RenderViewHost* rvh = initiator->GetRenderViewHost();
+    rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
+  }
 }
 
 void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
@@ -1256,6 +1280,22 @@ void PrintPreviewHandler::SendInitialSettings(
   if (print_preview_ui()->source_is_modifiable())
     GetNumberFormatAndMeasurementSystem(&initial_settings);
   web_ui()->CallJavascriptFunction("setInitialSettings", initial_settings);
+
+  WebContents* initiator = GetInitiator();
+  if (initiator && cmdline->HasSwitch(switches::kEnableDomDistiller) &&
+      dom_distiller::url_utils::IsUrlDistillable(
+          initiator->GetLastCommittedURL())) {
+    dom_distiller::IsDistillablePage(
+        initiator, false,
+        base::Bind(&PrintPreviewHandler::HandleIsPageDistillableResult,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
+void PrintPreviewHandler::HandleIsPageDistillableResult(bool distillable) {
+  VLOG(1) << "Distillable page detection finished";
+  if (distillable)
+    web_ui()->CallJavascriptFunction("detectDistillablePage");
 }
 
 void PrintPreviewHandler::ClosePreviewDialog() {

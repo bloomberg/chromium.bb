@@ -350,6 +350,10 @@ cr.define('print_preview', function() {
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
+          this.printTicketStore_.distillPage,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
+      this.tracker.add(
           this.printTicketStore_.headerFooter,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
