@@ -724,7 +724,6 @@ const char kMakeDefaultBrowser[]            = "make-default-browser";
 // Use to opt-in to marking HTTP as non-secure.
 const char kMarkNonSecureAs[]               = "mark-non-secure-as";
 const char kMarkNonSecureAsNeutral[]        = "neutral";
-const char kMarkNonSecureAsDubious[]        = "dubious";
 const char kMarkNonSecureAsNonSecure[]      = "non-secure";
 
 // Forces the maximum disk space to be used by the media cache, in bytes.

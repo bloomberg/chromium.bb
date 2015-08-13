@@ -47,17 +47,11 @@ connection_security::SecurityLevel GetSecurityLevelForNonSecureFieldTrial() {
   if (choice == switches::kMarkNonSecureAsNeutral) {
     status = NEUTRAL;
     level = connection_security::NONE;
-  } else if (choice == switches::kMarkNonSecureAsDubious) {
-    status = DUBIOUS;
-    level = connection_security::NONE;
   } else if (choice == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;
     level = connection_security::SECURITY_ERROR;
   } else if (group == switches::kMarkNonSecureAsNeutral) {
     status = NEUTRAL;
-    level = connection_security::NONE;
-  } else if (group == switches::kMarkNonSecureAsDubious) {
-    status = DUBIOUS;
     level = connection_security::NONE;
   } else if (group == switches::kMarkNonSecureAsNonSecure) {
     status = NON_SECURE;

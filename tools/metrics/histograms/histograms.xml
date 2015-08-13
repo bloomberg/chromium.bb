@@ -63408,8 +63408,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="MarkNonSecureAsStatus" type="int">
   <int value="0" label="Neutral"/>
-  <int value="1" label="Dubious"/>
-  <int value="2" label="non-Secure"/>
+  <int value="1" label="Dubious (deprecated August 2015)"/>
+  <int value="2" label="Non-Secure"/>
 </enum>
 
 <enum name="MediaContainers" type="int">

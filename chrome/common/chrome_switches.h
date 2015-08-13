@@ -205,7 +205,6 @@ extern const char kManualEnhancedBookmarks[];
 extern const char kManualEnhancedBookmarksOptout[];
 extern const char kMarkNonSecureAs[];
 extern const char kMarkNonSecureAsNeutral[];
-extern const char kMarkNonSecureAsDubious[];
 extern const char kMarkNonSecureAsNonSecure[];
 extern const char kMediaCacheSize[];
 extern const char kMessageLoopHistogrammer[];

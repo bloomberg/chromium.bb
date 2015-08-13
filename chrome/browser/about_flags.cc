@@ -218,9 +218,7 @@ const Experiment::Choice kMarkNonSecureAsChoices[] = {
     { IDS_MARK_NON_SECURE_AS_NEUTRAL,
         switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNeutral},
     { IDS_MARK_NON_SECURE_AS_NON_SECURE,
-        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNonSecure},
-    { IDS_MARK_NON_SECURE_AS_DUBIOUS,
-        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsDubious}
+        switches::kMarkNonSecureAs, switches::kMarkNonSecureAsNonSecure}
 };
 
 const Experiment::Choice kDataReductionProxyLoFiChoices[] = {
