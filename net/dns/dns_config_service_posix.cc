@@ -30,7 +30,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include <sys/system_properties.h>
+#include "base/android/java_system.h"
 #include "net/base/network_change_notifier.h"
 #endif
 
@@ -154,22 +154,14 @@ ConfigParsePosixResult ReadDnsConfig(DnsConfig* config) {
   return result;
 }
 #else  // defined(OS_ANDROID)
-// Theoretically, this is bad. __system_property_get is not a supported API
-// (but it's currently visible to anyone using Bionic), and the properties
-// are implementation details that may disappear in future Android releases.
-// Practically, libcutils provides property_get, which is a public API, and the
-// DNS code (and its clients) are already robust against failing to get the DNS
+// Theoretically, this is bad. The DNS system properties are implementation
+// details that may disappear in future Android releases. Practically, the DNS
+// code (and its clients) are already robust against failing to get the DNS
 // config for whatever reason, so the properties can disappear and the world
 // won't end.
-// TODO(ttuttle): Depend on libcutils, then switch this (and other uses of
-//                __system_property_get) to property_get.
 ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
-   std::string dns1_string, dns2_string;
-  char property_value[PROP_VALUE_MAX];
-  __system_property_get("net.dns1", property_value);
-  dns1_string = property_value;
-  __system_property_get("net.dns2", property_value);
-  dns2_string = property_value;
+  std::string dns1_string = base::android::JavaSystem::GetProperty("net.dns1");
+  std::string dns2_string = base::android::JavaSystem::GetProperty("net.dns2");
   if (dns1_string.length() == 0 && dns2_string.length() == 0)
     return CONFIG_PARSE_POSIX_NO_NAMESERVERS;
 

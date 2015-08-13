@@ -96,6 +96,8 @@ component("base") {
     "android/java_handler_thread.h",
     "android/java_runtime.cc",
     "android/java_runtime.h",
+    "android/java_system.cc",
+    "android/java_system.h",
     "android/jni_android.cc",
     "android/jni_android.h",
     "android/jni_array.cc",
@@ -1562,6 +1564,7 @@ if (is_android) {
 
     deps = [
       ":android_runtime_jni_headers",
+      ":android_system_jni_headers",
     ]
 
     jni_package = "base"
@@ -1571,6 +1574,12 @@ if (is_android) {
   generate_jar_jni("android_runtime_jni_headers") {
     jni_package = "base"
     classes = [ "java/lang/Runtime.class" ]
+  }
+
+  # GYP: //base.gyp:android_system_jni_headers
+  generate_jar_jni("android_system_jni_headers") {
+    jni_package = "base"
+    classes = [ "java/lang/System.class" ]
   }
 
   # GYP: //base.gyp:base_java
