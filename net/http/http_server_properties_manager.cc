@@ -578,22 +578,39 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
 
   // Expiration is optional, defaults to one day.
   base::Time expiration;
-  if (alternative_service_dict.HasKey(kExpirationKey)) {
-    double expiration_double;
-    if (!alternative_service_dict.GetDoubleWithoutPathExpansion(
-            kExpirationKey, &expiration_double)) {
+  if (!alternative_service_dict.HasKey(kExpirationKey)) {
+    alternative_service_info->expiration =
+        base::Time::Now() + base::TimeDelta::FromDays(1);
+    return true;
+  }
+
+  std::string expiration_string;
+  if (alternative_service_dict.GetStringWithoutPathExpansion(
+          kExpirationKey, &expiration_string)) {
+    int64 expiration_int64 = 0;
+    if (!base::StringToInt64(expiration_string, &expiration_int64)) {
       DVLOG(1) << "Malformed alternative service expiration for server: "
                << server_str;
       return false;
     }
     alternative_service_info->expiration =
-        base::Time::FromDoubleT(expiration_double);
-  } else {
-    alternative_service_info->expiration =
-        base::Time::Now() + base::TimeDelta::FromDays(1);
+        base::Time::FromInternalValue(expiration_int64);
+    return true;
   }
 
-  return true;
+  // Early release 46 Dev and Canary versions stored expiration as double.
+  // TODO(bnc) Remove the following code parsing double around 2015-10-01.
+  double expiration_double;
+  if (alternative_service_dict.GetDoubleWithoutPathExpansion(
+          kExpirationKey, &expiration_double)) {
+    alternative_service_info->expiration =
+        base::Time::FromDoubleT(expiration_double);
+    return true;
+  }
+
+  DVLOG(1) << "Malformed alternative service expiration for server: "
+           << server_str;
+  return false;
 }
 
 bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
@@ -1002,8 +1019,11 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
         kProtocolKey, AlternateProtocolToString(alternative_service.protocol));
     alternative_service_dict->SetDouble(kProbabilityKey,
                                         alternative_service_info.probability);
-    alternative_service_dict->SetDouble(
-        kExpirationKey, alternative_service_info.expiration.ToDoubleT());
+    // JSON cannot store int64, so expiration is converted to a string.
+    alternative_service_dict->SetString(
+        kExpirationKey,
+        base::Int64ToString(
+            alternative_service_info.expiration.ToInternalValue()));
     alternative_service_list->Append(alternative_service_dict);
   }
   if (alternative_service_list->GetSize() == 0)

@@ -5,6 +5,7 @@
 #include "net/http/http_server_properties_manager.h"
 
 #include "base/basictypes.h"
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
@@ -99,6 +100,8 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
 };
+
+}  // namespace
 
 class HttpServerPropertiesManagerTest : public testing::Test {
  protected:
@@ -841,12 +844,14 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Set alternate protocol.
   AlternativeServiceInfoVector alternative_service_info_vector;
   AlternativeService www_alternative_service1(NPN_HTTP_2, "", 443);
-  base::Time expiration1 = base::Time::FromDoubleT(4200000001.0);
+  base::Time expiration1;
+  ASSERT_TRUE(base::Time::FromUTCString("2036-12-01 10:00:00", &expiration1));
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(www_alternative_service1, 1.0, expiration1));
   AlternativeService www_alternative_service2(NPN_HTTP_2, "www.google.com",
                                               1234);
-  base::Time expiration2 = base::Time::FromDoubleT(4200000002.0);
+  base::Time expiration2;
+  ASSERT_TRUE(base::Time::FromUTCString("2036-12-31 10:00:00", &expiration2));
   alternative_service_info_vector.push_back(
       AlternativeServiceInfo(www_alternative_service2, 0.7, expiration2));
   http_server_props_manager_->SetAlternativeServices(
@@ -854,7 +859,7 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
 
   AlternativeService mail_alternative_service(NPN_SPDY_3_1, "foo.google.com",
                                               444);
-  base::Time expiration3 = base::Time::FromDoubleT(4200000003.0);
+  base::Time expiration3 = base::Time::Max();
   http_server_props_manager_->SetAlternativeService(
       server_mail, mail_alternative_service, 0.2, expiration3);
 
@@ -877,14 +882,15 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   // Verify preferences.
   const char expected_json[] =
       "{\"servers\":{\"mail.google.com:80\":{\"alternative_service\":[{"
-      "\"expiration\":4200000003.0,\"host\":\"foo.google.com\",\"port\":444,"
-      "\"probability\":0.2,\"protocol_str\":\"npn-spdy/3.1\"}],"
+      "\"expiration\":\"9223372036854775807\",\"host\":\"foo.google.com\","
+      "\"port\":444,\"probability\":0.2,\"protocol_str\":\"npn-spdy/3.1\"}],"
       "\"network_stats\":{\"srtt\":42}},\"www.google.com:80\":{"
-      "\"alternative_service\":[{\"expiration\":4200000001.0,\"port\":443,"
-      "\"probability\":1.0,\"protocol_str\":\"npn-h2\"},{\"expiration\":"
-      "4200000002.0,\"host\":\"www.google.com\",\"port\":1234,\"probability\":"
-      "0.7,\"protocol_str\":\"npn-h2\"}]}},\"supports_quic\":{\"address\":"
-      "\"127.0.0.1\",\"used_quic\":true},\"version\":3}";
+      "\"alternative_service\":[{\"expiration\":\"13756212000000000\","
+      "\"port\":443,\"probability\":1.0,\"protocol_str\":\"npn-h2\"},"
+      "{\"expiration\":\"13758804000000000\",\"host\":\"www.google.com\","
+      "\"port\":1234,\"probability\":0.7,\"protocol_str\":\"npn-h2\"}]}},"
+      "\"supports_quic\":{\"address\":\"127.0.0.1\",\"used_quic\":true},"
+      "\"version\":3}";
 
   const base::Value* http_server_properties =
       pref_service_.GetUserPref(kTestHttpServerProperties);
@@ -893,6 +899,95 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   EXPECT_TRUE(
       base::JSONWriter::Write(*http_server_properties, &preferences_json));
   EXPECT_EQ(expected_json, preferences_json);
+}
+
+TEST_F(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
+  scoped_ptr<base::Value> server_value = base::JSONReader::Read(
+      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"npn-h2\"},"
+      "{\"port\":123,\"protocol_str\":\"quic\",\"probability\":0.7,"
+      "\"expiration\":\"9223372036854775807\"},{\"host\":\"example.org\","
+      "\"port\":1234,\"protocol_str\":\"npn-h2\",\"probability\":0.2,"
+      "\"expiration\":\"13758804000000000\"}]}");
+  ASSERT_TRUE(server_value);
+  base::DictionaryValue* server_dict;
+  ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
+
+  const HostPortPair host_port_pair("example.com", 443);
+  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
+      host_port_pair, *server_dict, &alternative_service_map));
+
+  AlternativeServiceMap::iterator it =
+      alternative_service_map.Get(host_port_pair);
+  ASSERT_NE(alternative_service_map.end(), it);
+  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
+  ASSERT_EQ(3u, alternative_service_info_vector.size());
+
+  EXPECT_EQ(NPN_HTTP_2,
+            alternative_service_info_vector[0].alternative_service.protocol);
+  EXPECT_EQ("", alternative_service_info_vector[0].alternative_service.host);
+  EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service.port);
+  // Probability defaults to 1.0.
+  EXPECT_DOUBLE_EQ(1.0, alternative_service_info_vector[0].probability);
+  // Expiration defaults to one day from now, testing with tolerance.
+  const base::Time now = base::Time::Now();
+  const base::Time expiration = alternative_service_info_vector[0].expiration;
+  EXPECT_LE(now + base::TimeDelta::FromHours(23), expiration);
+  EXPECT_GE(now + base::TimeDelta::FromDays(1), expiration);
+
+  EXPECT_EQ(QUIC,
+            alternative_service_info_vector[1].alternative_service.protocol);
+  EXPECT_EQ("", alternative_service_info_vector[1].alternative_service.host);
+  EXPECT_EQ(123, alternative_service_info_vector[1].alternative_service.port);
+  EXPECT_DOUBLE_EQ(0.7, alternative_service_info_vector[1].probability);
+  // numeric_limits<int64>::max() represents base::Time::Max().
+  EXPECT_EQ(base::Time::Max(), alternative_service_info_vector[1].expiration);
+
+  EXPECT_EQ(NPN_HTTP_2,
+            alternative_service_info_vector[2].alternative_service.protocol);
+  EXPECT_EQ("example.org",
+            alternative_service_info_vector[2].alternative_service.host);
+  EXPECT_EQ(1234, alternative_service_info_vector[2].alternative_service.port);
+  EXPECT_DOUBLE_EQ(0.2, alternative_service_info_vector[2].probability);
+  base::Time expected_expiration;
+  ASSERT_TRUE(
+      base::Time::FromUTCString("2036-12-31 10:00:00", &expected_expiration));
+  EXPECT_EQ(expected_expiration, alternative_service_info_vector[2].expiration);
+}
+
+// Early release 46 Dev and Canary builds serialized alternative service
+// expiration as double.  Test that they are properly parsed.
+// TODO(bnc) Remove this test around 2015-10-01,
+// and remove corresponding FRIEND macro from header file.
+TEST_F(HttpServerPropertiesManagerTest, AlternativeServiceExpirationDouble) {
+  scoped_ptr<base::Value> server_value = base::JSONReader::Read(
+      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"npn-h2\","
+      "\"expiration\":1234567890.0}]}");
+  ASSERT_TRUE(server_value);
+  base::DictionaryValue* server_dict;
+  ASSERT_TRUE(server_value->GetAsDictionary(&server_dict));
+
+  const HostPortPair host_port_pair("example.com", 443);
+  AlternativeServiceMap alternative_service_map(/*max_size=*/5);
+  EXPECT_TRUE(http_server_props_manager_->AddToAlternativeServiceMap(
+      host_port_pair, *server_dict, &alternative_service_map));
+
+  AlternativeServiceMap::iterator it =
+      alternative_service_map.Get(host_port_pair);
+  ASSERT_NE(alternative_service_map.end(), it);
+  AlternativeServiceInfoVector alternative_service_info_vector = it->second;
+  ASSERT_EQ(1u, alternative_service_info_vector.size());
+
+  EXPECT_EQ(NPN_HTTP_2,
+            alternative_service_info_vector[0].alternative_service.protocol);
+  EXPECT_EQ("", alternative_service_info_vector[0].alternative_service.host);
+  EXPECT_EQ(443, alternative_service_info_vector[0].alternative_service.port);
+  // Probability defaults to 1.0.
+  EXPECT_DOUBLE_EQ(1.0, alternative_service_info_vector[0].probability);
+  base::Time expected_expiration;
+  ASSERT_TRUE(
+      base::Time::FromUTCString("2009-02-13 23:31:30", &expected_expiration));
+  EXPECT_EQ(expected_expiration, alternative_service_info_vector[0].expiration);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
@@ -966,7 +1061,5 @@ TEST_F(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs2) {
   http_server_props_manager_.reset();
   base::RunLoop().RunUntilIdle();
 }
-
-}  // namespace
 
 }  // namespace net
