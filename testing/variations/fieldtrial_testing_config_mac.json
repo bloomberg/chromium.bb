@@ -76,5 +76,15 @@
                 "fetch_period_min": "30"
             }
         }
+    ],
+    "ExtensionInstallVerification": [
+        {
+            "group_name": "Enforce"
+        }
+    ],
+    "ExtensionDeveloperModeWarning": [
+        {
+            "group_name": "Enabled"
+        }
     ]
 }
