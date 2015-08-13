@@ -75,8 +75,10 @@ struct FormElements {
 
 typedef std::vector<FormElements*> FormElementsList;
 
-bool FillDataContainsUsername(const PasswordFormFillData& fill_data) {
-  return !fill_data.username_field.name.empty();
+bool FillDataContainsFillableUsername(const PasswordFormFillData& fill_data) {
+  return !fill_data.username_field.name.empty() &&
+         (!fill_data.additional_logins.empty() ||
+          !fill_data.username_field.value.empty());
 }
 
 // Utility function to find the unique entry of the |form_element| for the
@@ -180,7 +182,7 @@ bool FindFormInputElements(blink::WebFormElement* form_element,
                            const PasswordFormFillData& data,
                            FormElements* result) {
   return FindFormInputElement(form_element, data.password_field, result) &&
-         (!FillDataContainsUsername(data) ||
+         (!FillDataContainsFillableUsername(data) ||
           FindFormInputElement(form_element, data.username_field, result));
 }
 
@@ -466,7 +468,8 @@ bool FillFormOnPasswordReceived(
   if (!IsElementAutocompletable(password_element))
     return false;
 
-  bool form_contains_username_field = FillDataContainsUsername(fill_data);
+  bool form_contains_fillable_username_field =
+      FillDataContainsFillableUsername(fill_data);
   // If the form contains an autocompletable username field, try to set the
   // username to the preferred name, but only if:
   //   (a) The fill-on-account-select flag is not set, and
@@ -483,7 +486,7 @@ bool FillFormOnPasswordReceived(
   // in the "no highlighting" group.
   //
   // In all other cases, do nothing.
-  bool form_has_fillable_username = form_contains_username_field &&
+  bool form_has_fillable_username = form_contains_fillable_username_field &&
                                     IsElementAutocompletable(username_element);
 
   if (ShouldFillOnAccountSelect()) {
@@ -1173,8 +1176,9 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     blink::WebInputElement username_element, password_element;
 
     // Check whether the password form has a username input field.
-    bool form_contains_username_field = FillDataContainsUsername(form_data);
-    if (form_contains_username_field) {
+    bool form_contains_fillable_username_field =
+        FillDataContainsFillableUsername(form_data);
+    if (form_contains_fillable_username_field) {
       username_element =
           form_elements->input_elements[form_data.username_field.name];
     }

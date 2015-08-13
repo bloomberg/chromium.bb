@@ -1948,4 +1948,26 @@ TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
   ASSERT_FALSE(message);
 }
 
+// Tests that only the password field is autocompleted when the browser sends
+// back data with only one credentials and empty username.
+TEST_F(PasswordAutofillAgentTest, NotAutofillNoUsername) {
+  fill_data_.username_field.value.clear();
+  fill_data_.additional_logins.clear();
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsState("", false, kAlicePassword, true);
+}
+
+// Tests that both the username and the password fields are autocompleted
+// despite the empty username, when the browser sends back data more than one
+// credential.
+TEST_F(PasswordAutofillAgentTest,
+       AutofillNoUsernameWhenOtherCredentialsStored) {
+  fill_data_.username_field.value.clear();
+  ASSERT_FALSE(fill_data_.additional_logins.empty());
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsState("", true, kAlicePassword, true);
+}
+
 }  // namespace autofill
