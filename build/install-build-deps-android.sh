@@ -97,4 +97,32 @@ if test "$skip_inst_sdk_packages" != 1; then
   "$(dirname "${BASH_SOURCE[0]}")/install-android-sdks.sh"
 fi
 
+DownloadFromBucket() {
+  bin=$1
+  path=$2
+  gs_url=$3
+  known_hash=$4
+  tmpfile=${bin}_$(/bin/date +%s)
+  if [ ! -x ${path}/${bin} ]; then
+      /b/build/scripts/slave/gsutil cp ${gs_url} ${tmpfile}
+      md5=$(md5sum ${tmpfile} | cut -d' ' -f 1)
+      if [[ $known_hash == $md5 ]]; then
+        /usr/bin/sudo /bin/mv ${tmpfile} ${path}/${bin}
+        /usr/bin/sudo /bin/chmod a+x ${path}/${bin}
+        /usr/bin/sudo /bin/chown root:root ${path}/${bin}
+      else
+        echo 'ERROR: Bad md5sum. Not installing' ${bin}
+        exit 1
+      fi
+  fi
+}
+
+DownloadFromBucket apktool /usr/local/bin \
+'gs://chromium-apktool-bucket/apktool_1_5_2/apktool' \
+89d099df9f8b12c043dc74f6f1368f36
+
+DownloadFromBucket apktool.jar /usr/local/bin \
+'gs://chromium-apktool-bucket/apktool_1_5_2/apktool.jar' \
+2d616934a8eaa37c4501868f05c62871
+
 echo "install-build-deps-android.sh complete."
