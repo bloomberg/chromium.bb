@@ -17,7 +17,7 @@ testGridDefinitionsValues(document.getElementById("gridWithCalcCalc"), "200px 10
 testGridDefinitionsValues(document.getElementById("gridWithCalcAndFixed"), "50% 80px", "88px 25%");
 testGridDefinitionsValues(document.getElementById("gridWithCalcAndMinMax"), "calc(30px + 20%) minmax(min-content, 80px)", "minmax(25%, max-content) calc(-7px + 10%)");
 testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMax"), "minmax(calc(23px + 10%), 400px) 120px", "150px minmax(5%, calc(-125px + 50%))");
-testGridDefinitionsValues(document.getElementById("gridWithAutoInsideMinMax"), "minmax(auto, 20px) 10%", "max-content minmax(min-content, max-content)");
+testGridDefinitionsValues(document.getElementById("gridWithAutoInsideMinMax"), "minmax(auto, 20px) 10%", "max-content minmax(min-content, auto)");
 
 debug("");
 debug("Test the initial value");
@@ -35,7 +35,7 @@ testNonGridDefinitionsSetJSValues("auto 16em 22px", "56% 10em auto", "auto 160px
 testNonGridDefinitionsSetJSValues("16em minmax(16px, 20px)", "minmax(10%, 15%) auto", "160px minmax(16px, 20px)");
 testNonGridDefinitionsSetJSValues("16em 2fr", "14fr auto", "160px 2fr");
 testNonGridDefinitionsSetJSValues("50% 12vw", "5% 85vh", "50% 96px", "5% 510px");
-testNonGridDefinitionsSetJSValues("auto minmax(16px, auto)", "minmax(auto, 15%) 10vw", "auto minmax(16px, max-content)", "minmax(auto, 15%) 80px");
+testNonGridDefinitionsSetJSValues("auto minmax(16px, auto)", "minmax(auto, 15%) 10vw", "auto minmax(16px, auto)", "minmax(auto, 15%) 80px");
 
 debug("");
 debug("Test getting wrong values set from CSS");

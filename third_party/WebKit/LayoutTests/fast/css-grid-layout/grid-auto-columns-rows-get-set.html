@@ -53,7 +53,7 @@ debug("Test getting grid-auto-columns and grid-auto-rows set through CSS");
 testGridAutoDefinitionsValues(document.getElementById("gridAutoFixedFixed"), "30px", "50px");
 testGridAutoDefinitionsValues(document.getElementById("gridAutoMinMax"), "minmax(10%, 15px)", "minmax(30%, 100px)");
 testGridAutoDefinitionsValues(document.getElementById("gridAutoMinMaxContent"), "min-content", "max-content");
-testGridAutoDefinitionsValues(document.getElementById("gridAutoAutoInMinMax"), "minmax(auto, 48px)", "minmax(80px, max-content)");
+testGridAutoDefinitionsValues(document.getElementById("gridAutoAutoInMinMax"), "minmax(auto, 48px)", "minmax(80px, auto)");
 
 debug("");
 debug("Test that getting grid-template-columns and grid-template-rows set through CSS lists every track listed whether implicitly or explicitly created");

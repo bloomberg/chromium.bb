@@ -11,7 +11,7 @@ PASS window.getComputedStyle(gridAutoMinMax, '').getPropertyValue('grid-auto-col
 PASS window.getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-rows') is "min-content"
 PASS window.getComputedStyle(gridAutoMinMaxContent, '').getPropertyValue('grid-auto-columns') is "max-content"
 PASS window.getComputedStyle(gridAutoAutoInMinMax, '').getPropertyValue('grid-auto-rows') is "minmax(auto, 48px)"
-PASS window.getComputedStyle(gridAutoAutoInMinMax, '').getPropertyValue('grid-auto-columns') is "minmax(80px, max-content)"
+PASS window.getComputedStyle(gridAutoAutoInMinMax, '').getPropertyValue('grid-auto-columns') is "minmax(80px, auto)"
 
 Test that getting grid-template-columns and grid-template-rows set through CSS lists every track listed whether implicitly or explicitly created
 PASS window.getComputedStyle(gridAutoFixedFixedWithChildren, '').getPropertyValue('grid-auto-rows') is "30px"

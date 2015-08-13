@@ -33,7 +33,7 @@ PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('gri
 PASS window.getComputedStyle(gridWithCalcComplexInsideMinMax, '').getPropertyValue('grid-template-columns') is "minmax(10%, calc(15px + 50%))"
 PASS window.getComputedStyle(gridWithCalcComplexInsideMinMax, '').getPropertyValue('grid-template-rows') is "minmax(calc(20px + 10%), 50%)"
 PASS window.getComputedStyle(gridWithAutoInsideMinMax, '').getPropertyValue('grid-template-columns') is "minmax(auto, 20px)"
-PASS window.getComputedStyle(gridWithAutoInsideMinMax, '').getPropertyValue('grid-template-rows') is "minmax(min-content, max-content)"
+PASS window.getComputedStyle(gridWithAutoInsideMinMax, '').getPropertyValue('grid-template-rows') is "minmax(min-content, auto)"
 
 Test getting wrong values for grid-template-columns and grid-template-rows through CSS (they should resolve to the default: 'none')
 PASS window.getComputedStyle(gridWithFitContentElement, '').getPropertyValue('grid-template-columns') is "none"
@@ -108,7 +108,7 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "4f
 PASS element.style.gridTemplateRows is "4fr"
 PASS getComputedStyle(element, '').getPropertyValue('grid-template-columns') is "minmax(auto, 48px)"
 PASS element.style.gridTemplateColumns is "minmax(auto, 8vh)"
-PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "minmax(80px, max-content)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-template-rows') is "minmax(80px, auto)"
 PASS element.style.gridTemplateRows is "minmax(10vw, auto)"
 
 Test setting grid-template-columns and grid-template-rows to bad values through JS

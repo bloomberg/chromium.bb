@@ -511,14 +511,13 @@ LayoutUnit LayoutGrid::computeUsedBreadthOfMaxLength(GridTrackSizingDirection di
         return usedBreadth;
 
     const Length& trackLength = gridLength.length();
-    ASSERT(!trackLength.isAuto());
     if (trackLength.isSpecified()) {
         LayoutUnit computedBreadth = computeUsedBreadthOfSpecifiedLength(direction, trackLength);
         ASSERT(computedBreadth != infinity);
         return computedBreadth;
     }
 
-    ASSERT(trackLength.isMinContent() || trackLength.isMaxContent());
+    ASSERT(trackLength.isMinContent() || trackLength.isAuto() || trackLength.isMaxContent());
     return infinity;
 }
 
@@ -790,7 +789,7 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForNonSpanningItems(Grid
 
     if (trackSize.hasMinContentMaxTrackBreadth())
         track.setGrowthLimit(std::max(track.growthLimit(), minContentForChild(gridItem, direction, columnTracks)));
-    else if (trackSize.hasMaxContentMaxTrackBreadth())
+    else if (trackSize.hasMaxContentOrAutoMaxTrackBreadth())
         track.setGrowthLimit(std::max(track.growthLimit(), maxContentForChild(gridItem, direction, columnTracks)));
 }
 
@@ -826,7 +825,7 @@ static bool shouldProcessTrackForTrackSizeComputationPhase(TrackSizeComputationP
     case ResolveIntrinsicMaximums:
         return trackSize.hasMinOrMaxContentMaxTrackBreadth();
     case ResolveMaxContentMaximums:
-        return trackSize.hasMaxContentMaxTrackBreadth();
+        return trackSize.hasMaxContentOrAutoMaxTrackBreadth();
     case MaximizeTracks:
         ASSERT_NOT_REACHED();
         return false;
