@@ -334,7 +334,8 @@ public class CronetHttpURLConnection extends HttpURLConnection {
                 // Cronet does not support adding multiple headers
                 // of the same key, see crbug.com/432719 for more details.
                 throw new UnsupportedOperationException(
-                        "Cannot add multiple headers of the same key. crbug.com/432719.");
+                        "Cannot add multiple headers of the same key, " + key
+                        + ". crbug.com/432719.");
             }
         }
         // Adds the new header at the end of mRequestHeaders.

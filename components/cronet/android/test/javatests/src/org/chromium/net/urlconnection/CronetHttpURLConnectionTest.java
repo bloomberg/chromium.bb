@@ -343,7 +343,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             fail();
         } catch (UnsupportedOperationException e) {
             assertEquals(e.getMessage(),
-                    "Cannot add multiple headers of the same key. "
+                    "Cannot add multiple headers of the same key, header-Name. "
                     + "crbug.com/432719.");
         }
     }
