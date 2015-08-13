@@ -8,8 +8,6 @@ import android.support.v7.media.MediaRouteSelector;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
-import org.chromium.base.VisibleForTesting;
-
 import java.util.Locale;
 
 import javax.annotation.Nullable;
@@ -47,15 +45,7 @@ public class MediaSource {
                 .build();
     }
 
-    /**
-     * @return the Cast application id corresponding to the source.
-     */
-    public String getApplicationId() {
-        return mApplicationId;
-    }
-
-    @VisibleForTesting
-    public MediaSource(String applicationId) {
+    private MediaSource(String applicationId) {
         mApplicationId = applicationId;
     }
 
