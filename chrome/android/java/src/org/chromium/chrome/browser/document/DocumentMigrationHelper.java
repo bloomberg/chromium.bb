@@ -204,12 +204,6 @@ public class DocumentMigrationHelper {
             mFinalizeMode = finalizeMode;
         }
 
-        protected void finalize() throws Throwable {
-            // TODO(dfalcantara): Remove this log.  crbug.com/513130
-            Log.w(TAG, "Finalizing MigrationImageCallback: " + this);
-            super.finalize();
-        }
-
         @Override
         public void onFaviconAvailable(final Bitmap favicon, String iconUrl) {
             mFavicon = favicon;
