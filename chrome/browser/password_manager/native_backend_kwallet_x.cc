@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -646,6 +647,30 @@ bool NativeBackendKWallet::GetLoginsList(
   if (!GetAllLogins(wallet_handle, &all_forms))
     return false;
 
+  // Remove the duplicate sync tags.
+  ScopedVector<autofill::PasswordForm> duplicates;
+  password_manager_util::FindDuplicates(&all_forms, &duplicates, nullptr);
+  if (!duplicates.empty()) {
+    // Fill the signon realms to be updated.
+    std::map<std::string, std::vector<autofill::PasswordForm*>> update_forms;
+    for (autofill::PasswordForm* form : duplicates) {
+      update_forms.insert(std::make_pair(
+          form->signon_realm, std::vector<autofill::PasswordForm*>()));
+    }
+
+    // Fill the actual forms to be saved.
+    for (autofill::PasswordForm* form : all_forms) {
+      auto it = update_forms.find(form->signon_realm);
+      if (it != update_forms.end())
+        it->second.push_back(form);
+    }
+
+    // Update the backend.
+    for (const auto& forms : update_forms) {
+      if (!SetLoginsList(forms.second, forms.first, wallet_handle))
+        return false;
+    }
+  }
   // We have to read all the entries, and then filter them here.
   forms->reserve(all_forms.size());
   for (auto& saved_form : all_forms) {

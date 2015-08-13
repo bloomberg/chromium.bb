@@ -293,8 +293,13 @@ struct PasswordForm {
 
 // True if the unique keys for the forms are the same. The unique key is
 // (origin, username_element, username_value, password_element, signon_realm).
-bool ArePasswordFormUniqueKeyEqual(const autofill::PasswordForm& left,
-                                   const autofill::PasswordForm& right);
+bool ArePasswordFormUniqueKeyEqual(const PasswordForm& left,
+                                   const PasswordForm& right);
+
+// A comparator for the unique key.
+struct LessThanUniqueKey {
+  bool operator()(const PasswordForm* left, const PasswordForm* right) const;
+};
 
 // Map username to PasswordForm* for convenience. See password_form_manager.h.
 typedef base::ScopedPtrMap<base::string16, scoped_ptr<PasswordForm>>
@@ -305,8 +310,8 @@ typedef std::map<base::string16, const PasswordForm*> ConstPasswordFormMap;
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);
-std::ostream& operator<<(std::ostream& os, const autofill::PasswordForm& form);
-std::ostream& operator<<(std::ostream& os, autofill::PasswordForm* form);
+std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
+std::ostream& operator<<(std::ostream& os, PasswordForm* form);
 
 }  // namespace autofill
 

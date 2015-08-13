@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -726,6 +727,23 @@ bool NativeBackendGnome::GetLoginsList(bool autofillable,
     LOG(ERROR) << "Keyring find failed: "
                << gnome_keyring_result_to_message(result);
     return false;
+  }
+
+  // Get rid of the forms with the same sync tags.
+  ScopedVector<autofill::PasswordForm> duplicates;
+  std::vector<std::vector<autofill::PasswordForm*>> tag_groups;
+  password_manager_util::FindDuplicates(forms, &duplicates, &tag_groups);
+  if (duplicates.empty())
+    return true;
+  for (const auto& group : tag_groups) {
+    if (group.size() > 1) {
+      // There are duplicates. Readd the first form. AddLogin() is smart enough
+      // to clean the previous ones.
+      password_manager::PasswordStoreChangeList changes = AddLogin(*group[0]);
+      if (changes.empty() ||
+          changes.back().type() != password_manager::PasswordStoreChange::ADD)
+        return false;
+    }
   }
   return true;
 }

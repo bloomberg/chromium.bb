@@ -1153,4 +1153,54 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(SYNCED);
 }
 
+TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {
+  NativeBackendGnome backend(42);
+  backend.Init();
+
+  // Add 2 slightly different password forms.
+  const char unique_string[] = "unique_unique_string";
+  const char unique_string_replacement[] = "uniKue_unique_string";
+  form_google_.origin =
+      GURL(std::string("http://www.google.com/") + unique_string);
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+  form_google_.origin =
+      GURL(std::string("http://www.google.com/") + unique_string_replacement);
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
+                 base::Unretained(&backend), form_google_));
+  RunBothThreads();
+
+  // Read the raw value back. Change the |unique_string| to
+  // |unique_string_replacement| so the forms become unique.
+  ASSERT_EQ(2u, mock_keyring_items.size());
+  MockKeyringItem::attribute_map::iterator it =
+      mock_keyring_items[0].attributes.find("origin_url");
+  ASSERT_NE(mock_keyring_items[0].attributes.end(), it);
+  size_t position = it->second.value_string.find(unique_string);
+  ASSERT_NE(std::string::npos, position) << it->second.value_string;
+  it->second.value_string.replace(
+      position, std::string(unique_string_replacement).length(),
+      unique_string_replacement);
+
+  // Now test that GetAutofillableLogins returns only one form.
+  ScopedVector<autofill::PasswordForm> form_list;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&NativeBackendGnome::GetAutofillableLogins,
+                 base::Unretained(&backend), &form_list),
+      base::Bind(&CheckTrue));
+  RunBothThreads();
+
+  EXPECT_EQ(1u, form_list.size());
+  EXPECT_EQ(form_google_, *form_list[0]);
+
+  EXPECT_EQ(1u, mock_keyring_items.size());
+  if (mock_keyring_items.size() > 0)
+    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
+}
+
 // TODO(mdm): add more basic tests here at some point.

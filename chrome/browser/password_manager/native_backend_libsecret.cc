@@ -15,16 +15,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
-using namespace password_manager::metrics_util;
 
 namespace {
 const char kEmptyString[] = "";
 const int kMaxPossibleTimeTValue = std::numeric_limits<int>::max();
-}
+}  // namespace
 
 typeof(&::secret_password_store_sync)
     LibsecretLoader::secret_password_store_sync;
@@ -197,7 +197,9 @@ scoped_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   if (!encoded_form_data.empty()) {
     bool success = DeserializeFormDataFromBase64String(encoded_form_data,
                                                        &form->form_data);
-    FormDeserializationStatus status = success ? GNOME_SUCCESS : GNOME_FAILURE;
+    password_manager::metrics_util::FormDeserializationStatus status =
+        success ? password_manager::metrics_util::GNOME_SUCCESS
+                : password_manager::metrics_util::GNOME_FAILURE;
     LogFormDataDeserializationStatus(status);
   }
   return form.Pass();
@@ -517,6 +519,25 @@ bool NativeBackendLibsecret::GetLoginsList(
   }
 
   *forms = ConvertFormList(found, lookup_form);
+  if (lookup_form)
+    return true;
+
+  // Get rid of the forms with the same sync tags.
+  ScopedVector<autofill::PasswordForm> duplicates;
+  std::vector<std::vector<autofill::PasswordForm*>> tag_groups;
+  password_manager_util::FindDuplicates(forms, &duplicates, &tag_groups);
+  if (duplicates.empty())
+    return true;
+  for (const auto& group : tag_groups) {
+    if (group.size() > 1) {
+      // There are duplicates. Readd the first form. AddLogin() is smart enough
+      // to clean the previous ones.
+      password_manager::PasswordStoreChangeList changes = AddLogin(*group[0]);
+      if (changes.empty() ||
+          changes.back().type() != password_manager::PasswordStoreChange::ADD)
+        return false;
+    }
+  }
   return true;
 }
 

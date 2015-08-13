@@ -7,8 +7,13 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace autofill {
+struct PasswordForm;
+}
 
 namespace sync_driver {
 class SyncService;
@@ -43,6 +48,17 @@ void GetOsPasswordStatus(const base::Callback<void(OsPasswordStatus)>& reply);
 // null |sync_service| returns NOT_SYNCING_PASSWORDS.
 password_manager::PasswordSyncState GetPasswordSyncState(
     const sync_driver::SyncService* sync_service);
+
+// Finds the forms with a duplicate sync tags in |forms|. The first one of
+// the duplicated entries stays in |forms|, the others are moved to
+// |duplicates|.
+// |tag_groups| is optional. It will contain |forms| and |duplicates| grouped by
+// the sync tag. The first element in each group is one from |forms|. It's
+// followed by the duplicates.
+void FindDuplicates(
+    ScopedVector<autofill::PasswordForm>* forms,
+    ScopedVector<autofill::PasswordForm>* duplicates,
+    std::vector<std::vector<autofill::PasswordForm*>>* tag_groups);
 
 }  // namespace password_manager_util
 
