@@ -220,9 +220,6 @@
          var curveEndFrame = Math.floor((config.curveStartTime + config.curveDuration) * sampleRate);
          var fullGainFrame = config.fullGainTime * sampleRate;
 
-         // TODO(crbug.com/517491): setValueAtTime is off by one rendering quantum.
-         fullGainFrame += 128;
-
          var k;
 
          // Zero out the start.
