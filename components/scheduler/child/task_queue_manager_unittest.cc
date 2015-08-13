@@ -181,53 +181,6 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskDoesntExecuteInNestedLoop) {
   EXPECT_THAT(run_order, ElementsAre(1, 2, 4, 5, 3));
 }
 
-void RepostOnceTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner,
-                       int value, std::vector<int>* out_result) {
-  out_result->push_back(value);
-  runner->PostTask(FROM_HERE, base::Bind(&NullTask));
-}
-
-void PostFromNestedRunloopWithAfterWakeupQueue(
-    base::MessageLoop* message_loop,
-    base::SingleThreadTaskRunner* after_wakeup_runner,
-    base::SingleThreadTaskRunner* wakeup_runner,
-    std::vector<std::pair<base::Closure, bool>>* tasks) {
-  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
-  for (std::pair<base::Closure, bool>& pair : *tasks) {
-    if (pair.second) {
-      after_wakeup_runner->PostTask(FROM_HERE, pair.first);
-    } else {
-      after_wakeup_runner->PostNonNestableTask(FROM_HERE, pair.first);
-    }
-  }
-  // Post a task to wake up the after wakeup queue.
-  wakeup_runner->PostTask(FROM_HERE, base::Bind(&NullTask));
-  message_loop->RunUntilIdle();
-}
-
-TEST_F(TaskQueueManagerTest, NonNestableTaskUsesPreviousTaskForUpdateQueues) {
-  InitializeWithRealMessageLoop(2u);
-  runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP);
-
-  std::vector<int> run_order;
-  std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
-  // This task posts a task, so that there is something in the incoming queue
-  // of the after wakeup task queue when the non-nestable task runs.
-  tasks_to_post_from_nested_loop.push_back(std::make_pair(
-      base::Bind(&RepostOnceTestTask, runners_[0], 1, &run_order), true));
-  tasks_to_post_from_nested_loop.push_back(
-      std::make_pair(base::Bind(&TestTask, 2, &run_order), false));
-
-  runners_[1]->PostTask(
-      FROM_HERE,
-      base::Bind(&PostFromNestedRunloopWithAfterWakeupQueue,
-                 message_loop_.get(), runners_[0], runners_[1],
-                 base::Unretained(&tasks_to_post_from_nested_loop)));
-
-  message_loop_->RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
-}
-
 TEST_F(TaskQueueManagerTest, QueuePolling) {
   Initialize(1u);
 

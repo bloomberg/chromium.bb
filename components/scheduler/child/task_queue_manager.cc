@@ -283,9 +283,6 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     // arbitrarily delayed so the additional delay should not be a problem.
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,
                                            pending_task.task);
-    // Even although we haven't actually run this task yet, we do set it as
-    // the out_previous_task below because it might be our only chance to
-    // wake up an after-wakeup queue.
   } else {
     TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
                          pending_task);
@@ -304,10 +301,10 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
       FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
                         DidProcessTask(pending_task));
     }
-  }
 
-  pending_task.task.Reset();
-  *out_previous_task = pending_task;
+    pending_task.task.Reset();
+    *out_previous_task = pending_task;
+  }
   return false;
 }
 
