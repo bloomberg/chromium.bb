@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Process;
 import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
@@ -124,5 +125,20 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
         mCustomTabsConnection.cleanupAll();
         assertWarmupAndMayLaunchUrl(cb, URL, false);
+    }
+
+    /**
+     * Tests that CPU cgroup exists and is either root or background.
+     */
+    @SmallTest
+    public void testGetSchedulerGroup() {
+        assertNotNull(CustomTabsConnection.getSchedulerGroup(Process.myPid()));
+        String cgroup = CustomTabsConnection.getSchedulerGroup(Process.myPid());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // TODO(lizeb): Really test with background processes, as this
+            // process doesn't run in the background.
+            assertTrue(cgroup.equals("/") || cgroup.equals("/bg_non_interactive") // L MR1+
+                    || cgroup.equals("/apps") || cgroup.equals("/apps//bg_non_interactive"));
+        }
     }
 }

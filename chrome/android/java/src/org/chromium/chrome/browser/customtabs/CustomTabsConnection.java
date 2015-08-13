@@ -17,6 +17,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Process;
@@ -46,6 +47,9 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content_public.browser.WebContents;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -229,7 +233,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     @Override
     public boolean warmup(long flags) {
         // Here and in mayLaunchUrl(), don't do expensive work for background applications.
-        if (!isUidForegroundOrSelf(Binder.getCallingUid())) return false;
+        if (!isCallerForegroundOrSelf()) return false;
         if (!mWarmupHasBeenCalled.compareAndSet(false, true)) return true;
         // The call is non-blocking and this must execute on the UI thread, post a task.
         ThreadUtils.postOnUiThread(new Runnable() {
@@ -267,11 +271,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         // allowed, as we allow "www.example.com".
         String scheme = url.normalizeScheme().getScheme();
         if (scheme != null && !scheme.equals("http") && !scheme.equals("https")) return false;
-        int uid = Binder.getCallingUid();
-        if (!isUidForegroundOrSelf(uid)) return false;
+        if (!isCallerForegroundOrSelf()) return false;
 
         final IBinder session = callback.asBinder();
         final String urlString = url.toString();
+        int uid = Binder.getCallingUid();
         synchronized (mLock) {
             SessionParams sessionParams = mSessionParams.get(session);
             if (sessionParams == null || sessionParams.mUid != uid) return false;
@@ -479,20 +483,64 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /**
-     * @return true if the |uid| is associated with a process having a
-     * foreground importance, or self.
+     * @return the CPU cgroup of a given process, identified by its PID, or null.
      */
-    private boolean isUidForegroundOrSelf(int uid) {
-        if (uid == Process.myUid()) return true;
-        ActivityManager am =
-                (ActivityManager) mApplication.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> running = am.getRunningAppProcesses();
-        for (ActivityManager.RunningAppProcessInfo rpi : running) {
-            boolean isForeground =
-                    rpi.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-            if (rpi.uid == uid && isForeground) return true;
+    @VisibleForTesting
+    static String getSchedulerGroup(int pid) {
+        // Android uses two cgroups for the processes: the root cgroup, and the
+        // "/bg_non_interactive" one for background processes. The list of
+        // cgroups a process is part of can be queried by reading
+        // /proc/<pid>/cgroup, which is world-readable.
+        String cgroupFilename = "/proc/" + pid + "/cgroup";
+        try {
+            FileReader fileReader = new FileReader(cgroupFilename);
+            BufferedReader reader = new BufferedReader(fileReader);
+            try {
+                String line = null;
+                while ((line = reader.readLine()) != null) {
+                    // line format: 2:cpu:/bg_non_interactive
+                    String fields[] = line.trim().split(":");
+                    if (fields.length == 3 && fields[1].equals("cpu")) return fields[2];
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (IOException e) {
+            return null;
         }
-        return false;
+        return null;
+    }
+
+    private static boolean isBackgroundProcess(int pid) {
+        String schedulerGroup = getSchedulerGroup(pid);
+        // "/bg_non_interactive" is from L MR1, "/apps/bg_non_interactive" before.
+        return "/bg_non_interactive".equals(schedulerGroup)
+                || "/apps/bg_non_interactive".equals(schedulerGroup);
+    }
+
+    /**
+     * @return true when inside a Binder transaction and the caller is in the
+     * foreground or self. Don't use outside a Binder transaction.
+     */
+    private boolean isCallerForegroundOrSelf() {
+        int uid = Binder.getCallingUid();
+        if (uid == Process.myUid()) return true;
+        // Starting with L MR1, AM.getRunningAppProcesses doesn't return all the
+        // processes. We use a workaround in this case.
+        boolean useWorkaround = true;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP_MR1) {
+            ActivityManager am =
+                    (ActivityManager) mApplication.getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> running = am.getRunningAppProcesses();
+            for (ActivityManager.RunningAppProcessInfo rpi : running) {
+                boolean matchingUid = rpi.uid == uid;
+                boolean isForeground = rpi.importance
+                        == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+                useWorkaround &= !matchingUid;
+                if (matchingUid && isForeground) return true;
+            }
+        }
+        return useWorkaround ? isBackgroundProcess(Binder.getCallingPid()) : false;
     }
 
     @VisibleForTesting
