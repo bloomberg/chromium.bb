@@ -665,6 +665,51 @@ bool ThreadState::shouldSchedulePreciseGC()
 #endif
 }
 
+bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
+{
+    if (UNLIKELY(isGCForbidden()))
+        return false;
+
+    if (shouldForceMemoryPressureGC())
+        return true;
+
+    // Avoid potential overflow by truncating to Kb.
+    size_t allocatedObjectSizeKb = Heap::allocatedObjectSize() >> 10;
+    // The estimated size is updated when the main thread finishes lazy
+    // sweeping. If this thread reaches here before the main thread finishes
+    // lazy sweeping, the thread will use the estimated size of the last GC.
+    size_t estimatedLiveObjectSizeKb = (estimatedLiveObjectSize() >> 10) * (1 - estimatedRemovalRatio);
+    // Heap::markedObjectSize() may be underestimated if any thread has not
+    // finished completeSweep().
+    size_t currentObjectSizeKb = currentObjectSize() >> 10;
+    // Schedule a precise GC if Oilpan has allocated more than 1 MB since
+    // the last GC and the current memory usage is >50% larger than
+    // the estimated live memory usage.
+    return allocatedObjectSizeKb >= 1024 && currentObjectSizeKb > (estimatedLiveObjectSizeKb * 3) / 2;
+}
+
+void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
+{
+    ASSERT(checkThread());
+    // Finish on-going lazy sweeping.
+    // TODO(haraken): It might not make sense to force completeSweep() for all
+    // page navigations.
+    completeSweep();
+    ASSERT(!isSweepingInProgress());
+    ASSERT(!sweepForbidden());
+
+    Heap::reportMemoryUsageForTracing();
+    if (shouldSchedulePageNavigationGC(estimatedRemovalRatio))
+        schedulePageNavigationGC();
+}
+
+void ThreadState::schedulePageNavigationGC()
+{
+    ASSERT(checkThread());
+    ASSERT(!isSweepingInProgress());
+    setGCState(PageNavigationGCScheduled);
+}
+
 // TODO(haraken): We should improve the GC heuristics.
 // These heuristics affect performance significantly.
 bool ThreadState::shouldForceConservativeGC()
@@ -853,8 +898,9 @@ void ThreadState::setGCState(GCState gcState)
     case IdleGCScheduled:
     case PreciseGCScheduled:
     case FullGCScheduled:
+    case PageNavigationGCScheduled:
         ASSERT(checkThread());
-        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == FullGCScheduled || m_gcState == PageNavigationGCScheduled || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case GCRunning:
@@ -924,6 +970,9 @@ void ThreadState::runScheduledGC(StackState stackState)
         break;
     case PreciseGCScheduled:
         Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep, Heap::PreciseGC);
+        break;
+    case PageNavigationGCScheduled:
+        Heap::collectGarbage(NoHeapPointersOnStack, GCWithSweep, Heap::PreciseGC);
         break;
     case IdleGCScheduled:
         // Idle time GC will be scheduled by Blink Scheduler.

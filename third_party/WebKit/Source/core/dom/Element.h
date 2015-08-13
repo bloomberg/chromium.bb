@@ -798,8 +798,10 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
     ASSERT(!childNeedsStyleInvalidation());
     ASSERT(!needsStyleInvalidation());
     ASSERT(insertionPoint->inDocument() || isContainerNode());
-    if (insertionPoint->inDocument())
+    if (insertionPoint->inDocument()) {
         setFlag(InDocumentFlag);
+        insertionPoint->document().incrementNodeCount();
+    }
     if (parentOrShadowHostNode()->isInShadowTree())
         setFlag(IsInShadowTreeFlag);
     if (childNeedsDistributionRecalc() && !insertionPoint->childNeedsDistributionRecalc())
@@ -810,8 +812,10 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 inline void Node::removedFrom(ContainerNode* insertionPoint)
 {
     ASSERT(insertionPoint->inDocument() || isContainerNode() || isInShadowTree());
-    if (insertionPoint->inDocument())
+    if (insertionPoint->inDocument()) {
         clearFlag(InDocumentFlag);
+        insertionPoint->document().decrementNodeCount();
+    }
     if (isInShadowTree() && !treeScope().rootNode().isShadowRoot())
         clearFlag(IsInShadowTreeFlag);
     if (AXObjectCache* cache = document().existingAXObjectCache())

@@ -335,14 +335,11 @@ static bool acceptsEditingFocus(const Element& element)
 
 uint64_t Document::s_globalTreeVersion = 0;
 
-#ifndef NDEBUG
-using WeakDocumentSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Document>>;
-static WeakDocumentSet& liveDocumentSet()
+Document::WeakDocumentSet& Document::liveDocumentSet()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WeakDocumentSet>, set, (adoptPtrWillBeNoop(new WeakDocumentSet())));
     return *set;
 }
-#endif
 
 // This class doesn't work with non-Document ExecutionContext.
 class AutofocusTask final : public ExecutionContextTask {
@@ -435,6 +432,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
+    , m_nodeCount(0)
 {
     if (m_frame) {
         ASSERT(m_frame->page());
@@ -480,9 +478,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     // ignoring the defersLoading flag.
     ASSERT(!parentDocument() || !parentDocument()->activeDOMObjectsAreSuspended());
 
-#ifndef NDEBUG
     liveDocumentSet().add(this);
-#endif
 }
 
 Document::~Document()
@@ -543,9 +539,7 @@ Document::~Document()
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); ++i)
         ASSERT(!m_nodeListCounts[i]);
 
-#ifndef NDEBUG
     liveDocumentSet().remove(this);
-#endif
 #endif
 
     InstanceCounters::decrementCounter(InstanceCounters::DocumentCounter);
@@ -597,6 +591,7 @@ void Document::dispose()
     DocumentLifecycleNotifier::notifyDocumentWasDisposed();
 
     m_canvasFontCache.clear();
+    m_nodeCount = 0;
 }
 #endif
 
@@ -5778,7 +5773,7 @@ template class CORE_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;
 using namespace blink;
 void showLiveDocumentInstances()
 {
-    WeakDocumentSet& set = liveDocumentSet();
+    Document::WeakDocumentSet& set = Document::liveDocumentSet();
     fprintf(stderr, "There are %u documents currently alive:\n", set.size());
     for (Document* document : set)
         fprintf(stderr, "- Document %p URL: %s\n", document, document->url().string().utf8().data());

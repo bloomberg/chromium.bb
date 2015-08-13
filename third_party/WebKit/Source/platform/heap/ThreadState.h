@@ -185,6 +185,7 @@ public:
         IdleGCScheduled,
         PreciseGCScheduled,
         FullGCScheduled,
+        PageNavigationGCScheduled,
         GCRunning,
         EagerSweepScheduled,
         LazySweepScheduled,
@@ -329,6 +330,8 @@ public:
     void scheduleIdleGC();
     void scheduleIdleLazySweep();
     void schedulePreciseGC();
+    void schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio);
+    void schedulePageNavigationGC();
     void scheduleGCIfNeeded();
     void setGCState(GCState);
     GCState gcState() const;
@@ -688,6 +691,9 @@ private:
     bool shouldScheduleIdleGC();
     bool shouldSchedulePreciseGC();
     bool shouldForceConservativeGC();
+    // estimatedRemovalRatio is the estimated ratio of objects that will be no
+    // longer necessary due to the navigation.
+    bool shouldSchedulePageNavigationGC(float estimatedRemovalRatio);
 
     // Internal helper for GC policy handling code. Returns true if
     // an urgent conservative GC is now needed due to memory pressure.

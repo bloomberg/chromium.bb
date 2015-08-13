@@ -1038,6 +1038,17 @@ public:
 
     CanvasFontCache* canvasFontCache();
 
+    void incrementNodeCount() { m_nodeCount++; }
+    void decrementNodeCount()
+    {
+        ASSERT(m_nodeCount > 0);
+        m_nodeCount--;
+    }
+    int nodeCount() const { return m_nodeCount; }
+
+    using WeakDocumentSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Document>>;
+    static WeakDocumentSet& liveDocumentSet();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1384,6 +1395,8 @@ private:
     ClientHintsPreferences m_clientHintsPreferences;
 
     PersistentWillBeMember<CanvasFontCache> m_canvasFontCache;
+
+    int m_nodeCount;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Document>;
