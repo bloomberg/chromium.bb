@@ -44,17 +44,22 @@ namespace blink {
 // Delay time in second for start autoscroll if pointer is in border edge of scrollable element.
 static double autoscrollDelay = 0.2;
 
-PassOwnPtr<AutoscrollController> AutoscrollController::create(Page& page)
+PassOwnPtrWillBeRawPtr<AutoscrollController> AutoscrollController::create(Page& page)
 {
-    return adoptPtr(new AutoscrollController(page));
+    return adoptPtrWillBeNoop(new AutoscrollController(page));
 }
 
 AutoscrollController::AutoscrollController(Page& page)
-    : m_page(page)
+    : m_page(&page)
     , m_autoscrollLayoutObject(nullptr)
     , m_autoscrollType(NoAutoscroll)
     , m_dragAndDropAutoscrollStartTime(0)
 {
+}
+
+DEFINE_TRACE(AutoscrollController)
+{
+    visitor->trace(m_page);
 }
 
 bool AutoscrollController::autoscrollInProgress() const
@@ -254,12 +259,12 @@ void AutoscrollController::animate(double)
 #endif
     }
     if (m_autoscrollType != NoAutoscroll)
-        m_page.chromeClient().scheduleAnimation();
+        m_page->chromeClient().scheduleAnimation();
 }
 
 void AutoscrollController::startAutoscroll()
 {
-    m_page.chromeClient().scheduleAnimation();
+    m_page->chromeClient().scheduleAnimation();
 }
 
 #if OS(WIN)

@@ -212,7 +212,7 @@ private:
     void settingsChanged(SettingsDelegate::ChangeType) override;
 
     RefPtrWillBeMember<PageAnimator> m_animator;
-    const OwnPtr<AutoscrollController> m_autoscrollController;
+    const OwnPtrWillBeMember<AutoscrollController> m_autoscrollController;
     ChromeClient* m_chromeClient;
     const OwnPtrWillBeMember<DragCaretController> m_dragCaretController;
     const OwnPtrWillBeMember<DragController> m_dragController;

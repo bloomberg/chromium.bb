@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/geometry/IntPoint.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -51,9 +52,10 @@ enum AutoscrollType {
 };
 
 // AutscrollController handels autoscroll and pan scroll for EventHandler.
-class CORE_EXPORT AutoscrollController {
+class CORE_EXPORT AutoscrollController final : public NoBaseWillBeGarbageCollected<AutoscrollController> {
 public:
-    static PassOwnPtr<AutoscrollController> create(Page&);
+    static PassOwnPtrWillBeRawPtr<AutoscrollController> create(Page&);
+    DECLARE_TRACE();
 
     static const int noPanScrollRadius = 15;
 
@@ -80,7 +82,7 @@ private:
     void updatePanScrollState(FrameView*, const IntPoint& lastKnownMousePosition);
 #endif
 
-    Page& m_page;
+    RawPtrWillBeMember<Page> m_page;
     LayoutBox* m_autoscrollLayoutObject;
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
