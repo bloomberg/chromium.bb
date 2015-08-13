@@ -340,7 +340,8 @@ component("gfx") {
     sources += [
       "paint_vector_icon.cc",
       "paint_vector_icon.h",
-      "vector_icons_public.h",
+      "vector_icon_types.h",
+      "vector_icons_public2.h",
       vector_icons_cc_file,
       vector_icons_h_file,
     ]
@@ -403,6 +404,7 @@ component("gfx") {
 action("aggregate_vector_icons") {
   script = "vector_icons/aggregate_vector_icons.py"
   sources = [
+    "vector_icon_types.h",
     "vector_icons/account_child_invert.icon",
     "vector_icons/check_circle.icon",
     "vector_icons/extension.icon",
@@ -418,6 +420,10 @@ action("aggregate_vector_icons") {
     "vector_icons/notifications.icon",
     "vector_icons/photo_camera.icon",
     "vector_icons/supervisor_account.icon",
+    "vector_icons/tab_audio.1x.icon",
+    "vector_icons/tab_audio.icon",
+    "vector_icons/tab_audio_muting.1x.icon",
+    "vector_icons/tab_audio_muting.icon",
     "vector_icons/translate.icon",
   ]
   outputs = [

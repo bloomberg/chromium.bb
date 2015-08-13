@@ -16,6 +16,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/multi_animation.h"
+#include "ui/gfx/vector_icons_public2.h"
+#include "ui/native_theme/common_theme.h"
+#include "ui/native_theme/native_theme.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "ui/gfx/paint_vector_icon.h"
+#endif
 
 struct LastMuteMetadata
     : public content::WebContentsUserData<LastMuteMetadata> {
@@ -153,13 +160,27 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
   return TAB_MEDIA_STATE_NONE;
 }
 
-const gfx::Image& GetTabMediaIndicatorImage(TabMediaState media_state) {
+gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (media_state) {
+#if defined(TOOLKIT_VIEWS)
+    case TAB_MEDIA_STATE_AUDIO_PLAYING:
+    case TAB_MEDIA_STATE_AUDIO_MUTING: {
+      SkColor icon_color;
+      ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
+                                    &icon_color);
+      return gfx::Image(
+          gfx::CreateVectorIcon(media_state == TAB_MEDIA_STATE_AUDIO_PLAYING
+                                    ? gfx::VectorIconId::TAB_AUDIO
+                                    : gfx::VectorIconId::TAB_AUDIO_MUTING,
+                                16, icon_color));
+    }
+#else
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
       return rb.GetNativeImageNamed(IDR_TAB_AUDIO_INDICATOR);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
       return rb.GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
+#endif
     case TAB_MEDIA_STATE_RECORDING:
       return rb.GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
     case TAB_MEDIA_STATE_CAPTURING:
@@ -171,12 +192,10 @@ const gfx::Image& GetTabMediaIndicatorImage(TabMediaState media_state) {
   return rb.GetNativeImageNamed(IDR_SAD_FAVICON);
 }
 
-const gfx::Image& GetTabMediaIndicatorAffordanceImage(
-    TabMediaState media_state) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state) {
   switch (media_state) {
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
-      return rb.GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
+      return GetTabMediaIndicatorImage(TAB_MEDIA_STATE_AUDIO_MUTING);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
     case TAB_MEDIA_STATE_NONE:
     case TAB_MEDIA_STATE_RECORDING:

@@ -45,6 +45,8 @@ enum CommandType {
   // Sets a bounding rect for the path. This allows fine adjustment because it
   // can tweak edge anti-aliasing. Args are x, y, w, h.
   CLIP,
+  // Disables anti-aliasing for this path.
+  DISABLE_AA,
   // Marks the end of the list of commands.
   END
 };

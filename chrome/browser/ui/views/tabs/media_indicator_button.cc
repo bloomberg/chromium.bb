@@ -72,14 +72,14 @@ void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
     return;
 
   if (next_state != TAB_MEDIA_STATE_NONE) {
-    const gfx::ImageSkia* const indicator_image =
-        chrome::GetTabMediaIndicatorImage(next_state).ToImageSkia();
-    SetImage(views::CustomButton::STATE_NORMAL, indicator_image);
-    SetImage(views::CustomButton::STATE_DISABLED, indicator_image);
-    const gfx::ImageSkia* const affordance_image =
-        chrome::GetTabMediaIndicatorAffordanceImage(next_state).ToImageSkia();
-    SetImage(views::CustomButton::STATE_HOVERED, affordance_image);
-    SetImage(views::CustomButton::STATE_PRESSED, affordance_image);
+    gfx::ImageSkia indicator_image =
+        chrome::GetTabMediaIndicatorImage(next_state).AsImageSkia();
+    SetImage(views::CustomButton::STATE_NORMAL, &indicator_image);
+    SetImage(views::CustomButton::STATE_DISABLED, &indicator_image);
+    gfx::ImageSkia affordance_image =
+        chrome::GetTabMediaIndicatorAffordanceImage(next_state).AsImageSkia();
+    SetImage(views::CustomButton::STATE_HOVERED, &affordance_image);
+    SetImage(views::CustomButton::STATE_PRESSED, &affordance_image);
   }
 
   if ((media_state_ == TAB_MEDIA_STATE_AUDIO_PLAYING &&

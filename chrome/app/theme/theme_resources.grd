@@ -862,8 +862,10 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_H" file="common/close_1_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_MASK" file="common/close_1_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_1_P" file="common/close_1_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_INDICATOR" file="common/tab_audio_indicator.png" />
-      <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_MUTING_INDICATOR" file="common/tab_audio_muting_indicator.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_INDICATOR" file="common/tab_audio_indicator.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_AUDIO_MUTING_INDICATOR" file="common/tab_audio_muting_indicator.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_TAB_CAPTURE_INDICATOR" file="common/tab_capture_indicator.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
       <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />

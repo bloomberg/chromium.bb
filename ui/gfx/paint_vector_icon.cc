@@ -42,6 +42,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(CLOSE);
   RETURN_IF_IS(CANVAS_DIMENSIONS);
   RETURN_IF_IS(CLIP);
+  RETURN_IF_IS(DISABLE_AA);
   RETURN_IF_IS(END);
 #undef RETURN_IF_IS
 
@@ -70,27 +71,28 @@ void PaintPath(Canvas* canvas,
   SkPath path;
   path.setFillType(SkPath::kEvenOdd_FillType);
 
-  std::vector<SkPath> paths;
-  paths.push_back(SkPath());
-  paths.back().setFillType(SkPath::kEvenOdd_FillType);
   size_t canvas_size = kReferenceSizeDip;
-
+  std::vector<SkPath> paths;
   std::vector<SkPaint> paints;
-  paints.push_back(SkPaint());
-  paints.back().setColor(color);
-
   SkRect clip_rect = SkRect::MakeEmpty();
 
   for (size_t i = 0; path_elements[i].type != END; i++) {
+    if (paths.empty() || path_elements[i].type == NEW_PATH) {
+      paths.push_back(SkPath());
+      paths.back().setFillType(SkPath::kEvenOdd_FillType);
+
+      paints.push_back(SkPaint());
+      paints.back().setColor(color);
+      paints.back().setAntiAlias(true);
+      paints.back().setStrokeCap(SkPaint::kRound_Cap);
+    }
+
     SkPath& path = paths.back();
     SkPaint& paint = paints.back();
     switch (path_elements[i].type) {
-      case NEW_PATH: {
-        paths.push_back(SkPath());
-        paints.push_back(SkPaint());
-        paints.back().setColor(color);
-        break;
-      }
+      // Handled above.
+      case NEW_PATH:
+        continue;
 
       case PATH_COLOR_ARGB: {
         int a = SkScalarFloorToInt(path_elements[++i].arg);
@@ -214,6 +216,11 @@ void PaintPath(Canvas* canvas,
         break;
       }
 
+      case DISABLE_AA: {
+        paint.setAntiAlias(false);
+        break;
+      }
+
       case END:
         NOTREACHED();
         break;
@@ -229,12 +236,8 @@ void PaintPath(Canvas* canvas,
     canvas->sk_canvas()->clipRect(clip_rect);
 
   DCHECK_EQ(paints.size(), paths.size());
-  for (size_t i = 0; i < paths.size(); ++i) {
-    paints[i].setAntiAlias(true);
-    paints[i].setStrokeCap(SkPaint::kRound_Cap);
-    paths[i].setFillType(SkPath::kEvenOdd_FillType);
+  for (size_t i = 0; i < paths.size(); ++i)
     canvas->DrawPath(paths[i], paints[i]);
-  }
 }
 
 class VectorIconSource : public CanvasImageSource {
