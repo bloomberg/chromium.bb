@@ -62,6 +62,14 @@ crbug.com/520193 [ XP ] http/tests/serviceworker/fetch-canvas-tainting.html [ Pa
 crbug.com/520193 [ XP ] http/tests/serviceworker/fetch-cors-xhr.html [ Pass Timeout ]
 crbug.com/520193 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Timeout ]
 crbug.com/520193 [ XP ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
+crbug.com/520193 [ XP ] http/tests/serviceworker/fetch-event-async-respond-with.html [ Failure Pass ]
+crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
+crbug.com/520612 [ Linux ] fullscreen/anonymous-block-merge-crash.html [ Pass Timeout ]
+crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
+crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_buffer_size_restriction.html [ Failure Pass ]
+crbug.com/520615 http/tests/websocket/bufferedAmount-after-send.html [ Failure Pass ]
+crbug.com/520617 [ Mac ] webaudio/audiochannelmerger-disconnect.html [ Failure Pass ]
+crbug.com/520619 [ Debug ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520195 [ Trusty ] inspector-protocol/json-parse.html [ Pass Timeout ]
 crbug.com/520197 inspector/elements/elements-inspect-iframe-from-different-domain.html [ Pass Timeout ]
@@ -382,7 +390,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
+crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Crash Failure Timeout ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-video-black.html [ Skip ]
