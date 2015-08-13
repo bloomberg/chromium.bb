@@ -282,6 +282,17 @@ placed into separate lists, but they should be on the same list.  Note that
 this doesn't happen if the first and second items are selected instead.</p>
 
 <h3>
+    <a name="bugfix-mouseLeaveOverlappingWindow">bugfix/mouseLeaveOverlappingWindow</a>
+    (Shezan Baig)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FmouseLeaveOverlappingWindow">view changes</a>]</span>
+</h3>
+<p>Open <a href="repros/mouseLeaveOverlappingWindow.html">this link</a> in
+Chrome.  Then drag another window so that it partially overlaps the green box.
+Move the mouse over to the green box, it will turn red.  Now move the mouse to
+the overlapping window.  It should turn back to green, but because of a bug, it
+doesn't.</p>
+
+<h3>
     <a name="bugfix-noBRAtStartOfPara">bugfix/noBRAtStartOfPara</a>
     (Shezan Baig; D36813987)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FnoBRAtStartOfPara">view changes</a>]</span>
