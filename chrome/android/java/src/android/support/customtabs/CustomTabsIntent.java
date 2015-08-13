@@ -39,6 +39,12 @@ public class CustomTabsIntent {
             "android.support.customtabs.extra.TOOLBAR_COLOR";
 
     /**
+     * Boolean extra that enables the url bar to hide as the user scrolls down the page
+     */
+    public static final String EXTRA_ENABLE_URLBAR_HIDING =
+            "android.support.customtabs.extra.ENABLE_URLBAR_HIDING";
+
+    /**
      * Bundle used for adding a custom action button to the custom tab toolbar. The client can
      * provide an icon {@link Bitmap} and a {@link PendingIntent} for the button.
      */

@@ -169,7 +169,8 @@ public class CustomTabActivity extends ChromeActivity {
                     .takePrerenderedUrl(mSession, "", null);
         }
 
-        mTab = new CustomTab(this, getWindowAndroid(), mSession, url, referrer, Tab.INVALID_TAB_ID);
+        mTab = new CustomTab(this, getWindowAndroid(), mSession, url, referrer,
+                Tab.INVALID_TAB_ID, mIntentDataProvider.shouldEnableUrlBarHiding());
         getTabModelSelector().setTab(mTab);
 
         ToolbarControlContainer controlContainer = (ToolbarControlContainer) findViewById(

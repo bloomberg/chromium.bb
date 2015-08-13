@@ -79,6 +79,7 @@ public class CustomTabIntentDataProvider {
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
     private int mToolbarColor;
+    private boolean mEnableUrlBarHiding;
     private Drawable mCustomButtonIcon;
     private String mCustomButtonDescription;
     private PendingIntent mCustomButtonPendingIntent;
@@ -96,6 +97,8 @@ public class CustomTabIntentDataProvider {
 
         mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
         retrieveToolbarColor(intent, context);
+        mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
+                intent, CustomTabsIntent.EXTRA_ENABLE_URLBAR_HIDING, false);
         mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_KEEP_ALIVE);
 
         Bundle actionButtonBundle =
@@ -181,6 +184,13 @@ public class CustomTabIntentDataProvider {
      */
     public Intent getKeepAliveServiceIntent() {
         return mKeepAliveServiceIntent;
+    }
+
+    /**
+     * @return Whether url bar hiding should be enabled in the custom tab. Default is false.
+     */
+    public boolean shouldEnableUrlBarHiding() {
+        return mEnableUrlBarHiding;
     }
 
     /**

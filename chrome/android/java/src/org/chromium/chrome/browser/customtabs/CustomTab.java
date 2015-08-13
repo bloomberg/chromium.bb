@@ -151,15 +151,17 @@ public class CustomTab extends ChromeTab {
             };
 
     private CustomTabObserver mTabObserver;
+    private final boolean mEnableUrlBarHiding;
 
     /**
      * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
      * {@link CustomTabsConnectionService} has successfully warmed up for the url.
      */
     public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid, IBinder session,
-            String url, String referrer, int parentTabId) {
+            String url, String referrer, int parentTabId, boolean enableUrlBarHiding) {
         super(TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID), activity, false,
                 windowAndroid, TabLaunchType.FROM_EXTERNAL_APP, parentTabId, null, null);
+        mEnableUrlBarHiding = enableUrlBarHiding;
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(activity.getApplication());
         WebContents webContents = customTabsConnection.takePrerenderedUrl(session, url, referrer);
@@ -197,6 +199,11 @@ public class CustomTab extends ChromeTab {
     @VisibleForTesting
     ExternalNavigationHandler getExternalNavigationHandler() {
         return mNavigationHandler;
+    }
+
+    @Override
+    protected boolean isHidingTopControlsEnabled() {
+        return mEnableUrlBarHiding && super.isHidingTopControlsEnabled();
     }
 
     /**
