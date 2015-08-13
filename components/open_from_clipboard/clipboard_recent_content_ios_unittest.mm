@@ -46,12 +46,12 @@ class ClipboardRecentContentIOSTest : public ::testing::Test {
   }
 
   void SetStoredPasteboardChangeDate(NSDate* changeDate) {
-    clipboard_content_->lastPasteboardChangeDate_.reset([changeDate copy]);
+    clipboard_content_->last_pasteboard_change_date_.reset([changeDate copy]);
     clipboard_content_->SaveToUserDefaults();
   }
 
   void SetStoredPasteboardChangeCount(NSInteger newChangeCount) {
-    clipboard_content_->lastPasteboardChangeCount_ = newChangeCount;
+    clipboard_content_->last_pasteboard_change_count_ = newChangeCount;
     clipboard_content_->SaveToUserDefaults();
   }
 

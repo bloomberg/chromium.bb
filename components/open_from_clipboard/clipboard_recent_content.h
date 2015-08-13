@@ -33,6 +33,9 @@ class ClipboardRecentContent {
   // be null.
   virtual bool GetRecentURLFromClipboard(GURL* url) const = 0;
 
+  // Reports that the URL contained in the pasteboard was displayed.
+  virtual void RecentURLDisplayed() = 0;
+
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;
 

@@ -21,6 +21,7 @@ class FakeClipboardRecentContent : public ClipboardRecentContent {
   bool GetRecentURLFromClipboard(GURL* url) const override;
   base::TimeDelta GetClipboardContentAge() const override;
   void SuppressClipboardContent() override;
+  void RecentURLDisplayed() override;
 
   // Sets the URL and clipboard content age.
   void SetClipboardContent(const GURL& url, base::TimeDelta content_age);

@@ -28,6 +28,8 @@ void FakeClipboardRecentContent::SuppressClipboardContent() {
   suppress_content_ = true;
 }
 
+void FakeClipboardRecentContent::RecentURLDisplayed() {}
+
 void FakeClipboardRecentContent::SetClipboardContent(
     const GURL& url,
     base::TimeDelta content_age) {
