@@ -27,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_comptr.h"
@@ -1078,9 +1079,18 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
         installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER);
     installer::InstallStatus status = installer::INVALID_STATE_FOR_OPTION;
     if (chrome_install) {
-      installer::HandleOsUpgradeForBrowser(*installer_state,
-                                           *chrome_install);
-      status = installer::INSTALL_REPAIRED;
+      scoped_ptr<FileVersionInfo> version_info(
+          FileVersionInfo::CreateFileVersionInfo(setup_exe));
+      const base::Version installed_version(
+          base::UTF16ToUTF8(version_info->product_version()));
+      if (installed_version.IsValid()) {
+        installer::HandleOsUpgradeForBrowser(*installer_state, *chrome_install,
+                                             installed_version);
+        status = installer::INSTALL_REPAIRED;
+      } else {
+        LOG(DFATAL) << "Failed to extract product version from "
+                    << setup_exe.value();
+      }
     } else {
       LOG(DFATAL) << "Chrome product not found.";
     }

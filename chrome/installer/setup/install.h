@@ -19,6 +19,7 @@
 
 namespace base {
 class FilePath;
+class Version;
 }
 
 namespace installer {
@@ -118,8 +119,10 @@ InstallStatus InstallOrUpdateProduct(
 
 // Performs installation-related tasks following an OS upgrade.
 // |chrome| The installed product (must be a browser).
+// |installed_version| the current version of this install.
 void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
-                               const Product& chrome);
+                               const Product& chrome,
+                               const base::Version& installed_version);
 
 // Performs per-user installation-related tasks on Active Setup (ran on first
 // login for each user post system-level Chrome install).
