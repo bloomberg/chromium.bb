@@ -242,7 +242,7 @@ class ResourceSchedulerTest : public testing::Test {
   TestRequest* NewRequestWithRoute(const char* url,
                                    net::RequestPriority priority,
                                    int route_id) {
-    return NewRequestWithChildAndRoute(url, priority, route_id, kChildId);
+    return NewRequestWithChildAndRoute(url, priority, kChildId, route_id);
   }
 
   TestRequest* NewRequestWithChildAndRoute(const char* url,
