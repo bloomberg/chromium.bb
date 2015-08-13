@@ -116,7 +116,7 @@ private:
 
     bool isUpdating() const;
 
-    PassOwnPtr<WebSourceBuffer> createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState&);
+    PassOwnPtr<WebSourceBuffer> createWebSourceBuffer(const String& type, const String& codecs, ExceptionState&);
     void scheduleEvent(const AtomicString& eventName);
     void endOfStreamInternal(const WebMediaSource::EndOfStreamStatus, ExceptionState&);
 

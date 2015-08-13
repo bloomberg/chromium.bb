@@ -141,7 +141,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
 
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
-    Vector<String> codecs = contentType.codecs();
+    String codecs = contentType.parameter("codecs");
     OwnPtr<WebSourceBuffer> webSourceBuffer = createWebSourceBuffer(contentType.type(), codecs, exceptionState);
 
     if (!webSourceBuffer) {
@@ -561,7 +561,7 @@ void MediaSource::stop()
     m_webMediaSource.clear();
 }
 
-PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState& exceptionState)
+PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& type, const String& codecs, ExceptionState& exceptionState)
 {
     WebSourceBuffer* webSourceBuffer = 0;
 
