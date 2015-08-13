@@ -251,8 +251,8 @@ public class AwTestBase
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                awContents.loadUrl(LoadUrlParams.createLoadDataParamsWithBaseUrl(
-                        data, mimeType, isBase64Encoded, baseUrl, historyUrl));
+                awContents.loadDataWithBaseURL(
+                        baseUrl, data, mimeType, isBase64Encoded ? "base64" : null, historyUrl);
             }
         });
     }

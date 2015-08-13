@@ -237,6 +237,8 @@ class AwContents : public FindHelper::Listener,
       jstring message, jstring target_origin, jintArray sent_ports);
   void CreateMessageChannel(JNIEnv* env, jobject obj, jobjectArray ports);
 
+  void GrantFileSchemeAccesstoChildProcess(JNIEnv* env, jobject obj);
+
  private:
   void InitDataReductionProxyIfNecessary();
   void InitAutofillIfNecessary(bool enabled);

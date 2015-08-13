@@ -53,6 +53,7 @@
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/message_port_provider.h"
 #include "content/public/browser/navigation_entry.h"
@@ -1203,6 +1204,11 @@ void AwContents::CreateMessageChannel(JNIEnv* env, jobject obj,
 
   AwMessagePortServiceImpl::GetInstance()->CreateMessageChannel(env, ports,
       GetMessagePortMessageFilter());
+}
+
+void AwContents::GrantFileSchemeAccesstoChildProcess(JNIEnv* env, jobject obj) {
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      web_contents_->GetRenderProcessHost()->GetID(), url::kFileScheme);
 }
 
 void SetShouldDownloadFavicons(JNIEnv* env, jclass jclazz) {

@@ -1414,6 +1414,9 @@ public class AwContents implements SmartClipProvider,
                 Log.wtf(TAG, "Unable to load data string " + data, e);
                 return;
             }
+            // When loading data with a non-data: base URL, WebView must allow renderers
+            // to access file: URLs.
+            nativeGrantFileSchemeAccesstoChildProcess(mNativeAwContents);
         }
         loadUrl(loadUrlParams);
     }
@@ -3149,4 +3152,6 @@ public class AwContents implements SmartClipProvider,
             String message, String targetOrigin, int[] msgPorts);
 
     private native void nativeCreateMessageChannel(long nativeAwContents, AwMessagePort[] ports);
+
+    private native void nativeGrantFileSchemeAccesstoChildProcess(long nativeAwContents);
 }

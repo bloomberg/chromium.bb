@@ -168,6 +168,12 @@ AwContentBrowserClient::GetWebContentsViewDelegate(
 
 void AwContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
+  // Grant content: scheme access to the whole renderer process, since we impose
+  // per-view access checks, and access is granted by default (see
+  // AwSettings.mAllowContentUrlAccess).
+  content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      host->GetID(), url::kContentScheme);
+
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
   host->AddFilter(new AwPrintingMessageFilter(host->GetID()));
@@ -195,6 +201,37 @@ AwContentBrowserClient::CreateRequestContextForStoragePartition(
   return browser_context_->CreateRequestContextForStoragePartition(
       partition_path, in_memory, protocol_handlers,
       request_interceptors.Pass());
+}
+
+bool AwContentBrowserClient::IsHandledURL(const GURL& url) {
+  if (!url.is_valid()) {
+    // We handle error cases.
+    return true;
+  }
+
+  const std::string scheme = url.scheme();
+  DCHECK_EQ(scheme, base::ToLowerASCII(scheme));
+  // See CreateJobFactory in aw_url_request_context_getter.cc for the
+  // list of protocols that are handled.
+  // TODO(mnaganov): Make this automatic.
+  static const char* const kProtocolList[] = {
+    url::kDataScheme,
+    url::kBlobScheme,
+    url::kFileSystemScheme,
+    content::kChromeUIScheme,
+    content::kChromeDevToolsScheme,
+    url::kContentScheme,
+  };
+  if (scheme == url::kFileScheme) {
+    // Return false for the "special" file URLs, so they can be loaded
+    // even if access to file: scheme is not granted to the child process.
+    return !IsAndroidSpecialFileUrl(url);
+  }
+  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
+    if (scheme == kProtocolList[i])
+      return true;
+  }
+  return net::URLRequest::IsHandledProtocol(scheme);
 }
 
 std::string AwContentBrowserClient::GetCanonicalEncodingNameByAliasName(
