@@ -404,12 +404,6 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
 
     WarmupWindowsLocales(permissions);
 
-#if defined(ADDRESS_SANITIZER)
-    // Bind and leak dbghelp.dll before the token is lowered, otherwise
-    // AddressSanitizer will crash when trying to symbolize a report.
-    LoadLibraryA("dbghelp.dll");
-#endif
-
     g_target_services->LowerToken();
   }
 #endif
