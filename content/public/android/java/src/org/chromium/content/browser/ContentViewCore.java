@@ -2194,11 +2194,11 @@ public class ContentViewCore implements
         return mHasSelection;
     }
 
-     /**
+    /**
      * @return Whether the page has an active, touch-controlled insertion handle.
      */
     @VisibleForTesting
-    protected boolean hasInsertion() {
+    public boolean hasInsertion() {
         return mHasInsertion;
     }
 
@@ -2285,8 +2285,6 @@ public class ContentViewCore implements
     }
 
     private void dismissTextHandles() {
-        mHasSelection = false;
-        mHasInsertion = false;
         if (mNativeContentViewCore != 0) nativeDismissTextHandles(mNativeContentViewCore);
     }
 
