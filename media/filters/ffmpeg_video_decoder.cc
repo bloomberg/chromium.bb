@@ -115,12 +115,10 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
     return AVERROR(EINVAL);
   }
 
+  // FFmpeg expects the initialize allocation to be zero-initialized.  Failure
+  // to do so can lead to unitialized value usage.  See http://crbug.com/390941
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(
       format, coded_size, gfx::Rect(size), natural_size, kNoTimestamp());
-#if defined(MEMORY_SANITIZER)
-  MSAN_UNPOISON(video_frame->data(0),
-                VideoFrame::AllocationSize(format, coded_size));
-#endif
 
   // Prefer the color space from the codec context. If it's not specified (or is
   // set to an unsupported value), fall back on the value from the config.
@@ -131,7 +129,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   video_frame->metadata()->SetInteger(VideoFrameMetadata::COLOR_SPACE,
                                       color_space);
 
-  for (int i = 0; i < 3; i++) {
+  for (size_t i = 0; i < VideoFrame::NumPlanes(video_frame->format()); i++) {
     frame->data[i] = video_frame->data(i);
     frame->linesize[i] = video_frame->stride(i);
   }

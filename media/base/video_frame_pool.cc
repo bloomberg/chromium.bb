@@ -17,9 +17,7 @@ class VideoFramePool::PoolImpl
  public:
   PoolImpl();
 
-  // Returns a frame from the pool that matches the specified
-  // parameters or creates a new frame if no suitable frame exists in
-  // the pool. The pool is drained if no matching frame is found.
+  // See VideoFramePool::CreateFrame() for usage.
   scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
                                         const gfx::Size& coded_size,
                                         const gfx::Rect& visible_rect,
@@ -81,8 +79,18 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   }
 
   if (!frame.get()) {
-    frame = VideoFrame::CreateFrame(
-        format, coded_size, visible_rect, natural_size, timestamp);
+    frame = VideoFrame::CreateFrame(format, coded_size, visible_rect,
+                                    natural_size, timestamp);
+
+    // Zero-initialize each plane of the buffer.
+    const size_t num_planes = VideoFrame::NumPlanes(frame->format());
+    for (size_t i = 0; i < num_planes; ++i) {
+      memset(frame->data(i),
+             0,
+             VideoFrame::PlaneSize(frame->format(),
+                                   i,
+                                   frame->coded_size()).GetArea());
+    }
   }
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(

@@ -39,6 +39,14 @@ class VideoFramePoolTest : public ::testing::Test {
   scoped_ptr<VideoFramePool> pool_;
 };
 
+TEST_F(VideoFramePoolTest, FrameInitializedAndZeroed) {
+  scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_YV12, 10);
+
+  // Verify that frame is initialized with zeros.
+  for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
+    EXPECT_EQ(0, frame->data(i)[0]);
+}
+
 TEST_F(VideoFramePoolTest, SimpleFrameReuse) {
   scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_YV12, 10);
   const uint8* old_y_data = frame->data(VideoFrame::kYPlane);
