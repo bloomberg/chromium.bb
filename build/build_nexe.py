@@ -422,8 +422,13 @@ class Builder(CommandRunner):
       return {}
 
     gomacc_base = 'gomacc.exe' if pynacl.platform.IsWindows() else 'gomacc'
+    # TODO(yyanagisawa): not to set gomadir on use_goma=0.
+    gomacc = os.path.join(gomadir, gomacc_base)
+    if not os.path.exists(gomacc):
+      return {}
+
     goma_config = {
-        'gomacc': os.path.join(gomadir, gomacc_base),
+        'gomacc': gomacc,
         'burst': IsEnvFlagTrue('NACL_GOMA_BURST'),
     }
     default_processes = 100 if pynacl.platform.IsLinux() else 10
