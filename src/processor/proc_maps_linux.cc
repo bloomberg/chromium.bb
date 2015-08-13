@@ -61,10 +61,10 @@ bool ParseProcMaps(const std::string& input,
     // The final %n term captures the offset in the input string, which is used
     // to determine the path name. It *does not* increment the return value.
     // Refer to man 3 sscanf for details.
-    if (sscanf(line, "%lx-%lx %4c %lx %hhx:%hhx %ld %n",
-               &region.start, &region.end, permissions, &region.offset,
-               &region.major_device, &region.minor_device, &region.inode,
-               &path_index) < 7) {
+    if (sscanf(line, "%" SCNx64 "-%" SCNx64 " %4c %" SCNx64" %hhx:%hhx %"
+               SCNd64 " %n", &region.start, &region.end, permissions,
+               &region.offset, &region.major_device, &region.minor_device,
+               &region.inode, &path_index) < 7) {
       BPLOG(ERROR) << "sscanf failed for line: " << line;
       return false;
     }

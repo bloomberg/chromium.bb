@@ -23,8 +23,8 @@ struct MappedMemoryRegion {
   };
 
   // The address range [start,end) of mapped memory.
-  uintptr_t start;
-  uintptr_t end;
+  uint64_t start;
+  uint64_t end;
 
   // Byte offset into |path| of the range mapped into memory.
   uint64_t offset;
