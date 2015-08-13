@@ -58,8 +58,12 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
                 if (mModel.doesBookmarkExist(mParentId)) updateParent(mParentId);
                 else updateParent(mModel.getDefaultFolder());
             } else {
-                assert mModel.doesBookmarkExist(mFolderId);
-                updateParent(mModel.getBookmarkById(mFolderId).getParentId());
+                // Partner bookmark deletion is notified via bookmarkModelChanged().
+                if (mModel.doesBookmarkExist(mFolderId)) {
+                    updateParent(mModel.getBookmarkById(mFolderId).getParentId());
+                } else {
+                    finish();
+                }
             }
         }
 
@@ -149,6 +153,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
             updateParent(bookmarkItem.getParentId());
             mFolderTitle.setText(bookmarkItem.getTitle());
             mFolderTitle.setSelection(mFolderTitle.getText().length());
+            mParentTextView.setEnabled(bookmarkItem.isMovable());
         }
 
         mParentTextView.setText(mModel.getBookmarkTitle(mParentId));

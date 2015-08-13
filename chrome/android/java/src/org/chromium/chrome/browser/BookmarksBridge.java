@@ -807,6 +807,16 @@ public class BookmarksBridge {
             return mIsEditable;
         }
 
+        /**@return Whether this bookmark's URL can be edited */
+        public boolean isUrlEditable() {
+            return isEditable() && mId.getType() == BookmarkType.NORMAL;
+        }
+
+        /**@return Whether this bookmark can be moved */
+        public boolean isMovable() {
+            return isEditable() && mId.getType() == BookmarkType.NORMAL;
+        }
+
         /** @return Whether this is a managed bookmark. */
         public boolean isManaged() {
             return mIsManaged;

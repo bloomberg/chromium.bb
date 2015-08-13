@@ -24,7 +24,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.bookmarks.BookmarkType;
 
 import java.util.List;
 
@@ -106,7 +105,7 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
                             getContext().getString(R.string.enhanced_bookmark_item_edit),
                             getContext().getString(R.string.enhanced_bookmark_item_move),
                             getContext().getString(R.string.enhanced_bookmark_item_delete)}) {
-                private static final int MOVE_POSITION = 1;
+                private static final int MOVE_POSITION = 2;
 
                 @Override
                 public boolean areAllItemsEnabled() {
@@ -115,9 +114,10 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
 
                 @Override
                 public boolean isEnabled(int position) {
-                    // Partner bookmarks can't move, so disable that.
-                    return mBookmarkId.getType() != BookmarkType.PARTNER
-                            || position != MOVE_POSITION;
+                    if (position == MOVE_POSITION) {
+                        return mDelegate.getModel().getBookmarkById(mBookmarkId).isMovable();
+                    }
+                    return true;
                 }
 
                 @Override
