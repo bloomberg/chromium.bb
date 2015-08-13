@@ -67,6 +67,10 @@
       'utility/profile_import_handler.cc',
       'utility/profile_import_handler.h',
     ],
+    'chrome_utility_safe_browsing_sources': [
+      'utility/safe_browsing/mac/read_stream.cc',
+      'utility/safe_browsing/mac/read_stream.h',
+    ],
     'chrome_utility_shared_media_sources': [
       'utility/media_galleries/image_metadata_extractor.cc',
       'utility/media_galleries/image_metadata_extractor.h',
@@ -198,6 +202,9 @@
             'utility/local_discovery/service_discovery_message_handler.cc',
             'utility/local_discovery/service_discovery_message_handler.h',
           ]
+        }],
+        ['safe_browsing==1', {
+          'sources': [ '<@(chrome_utility_safe_browsing_sources)' ],
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

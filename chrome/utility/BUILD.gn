@@ -107,4 +107,9 @@ static_library("utility") {
       "local_discovery/service_discovery_message_handler.h",
     ]
   }
+
+  if (safe_browsing_mode == 1) {
+    sources +=
+        rebase_path(gypi_values.chrome_utility_safe_browsing_sources, ".", "..")
+  }
 }
