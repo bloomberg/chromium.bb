@@ -26,6 +26,8 @@ namespace nacl_io {
 
 namespace {
 
+const int kEmptyDirSize = 4096;
+
 struct OutputBuffer {
   void* data;
   int element_count;
@@ -156,6 +158,8 @@ Error Html5FsNode::GetStat(struct stat* stat) {
   // Fill in known info here.
   memcpy(stat, &stat_, sizeof(stat_));
 
+  stat->st_size = static_cast<off_t>(info.size);
+
   // Fill in the additional info from ppapi.
   switch (info.type) {
     case PP_FILETYPE_REGULAR:
@@ -163,12 +167,15 @@ Error Html5FsNode::GetStat(struct stat* stat) {
       break;
     case PP_FILETYPE_DIRECTORY:
       stat->st_mode |= S_IFDIR;
+      // Hack the directory size
+      // In Linux, even a empty directory has size 4096
+      // info.size is always zero for directories
+      stat->st_size = kEmptyDirSize;
       break;
     case PP_FILETYPE_OTHER:
     default:
       break;
   }
-  stat->st_size = static_cast<off_t>(info.size);
   stat->st_atime = info.last_access_time;
   stat->st_mtime = info.last_modified_time;
   stat->st_ctime = info.creation_time;

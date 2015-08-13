@@ -411,7 +411,7 @@ TEST_F(Html5FsTest, GetStat) {
   EXPECT_EQ(0, node->GetStat(&statbuf));
   EXPECT_TRUE(S_ISDIR(statbuf.st_mode));
   EXPECT_EQ(S_IRALL | S_IWALL | S_IXALL, statbuf.st_mode & S_MODEBITS);
-  EXPECT_EQ(0, statbuf.st_size);
+  EXPECT_EQ(4096, statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
   EXPECT_EQ(modified_time, statbuf.st_mtime);
