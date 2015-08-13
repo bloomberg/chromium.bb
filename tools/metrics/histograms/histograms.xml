@@ -4297,6 +4297,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContextMenu.SelectedOption" enum="ContextMenuOption">
+  <owner>newt@chromium.org</owner>
+  <summary>The option that the user selected from a context menu.</summary>
+</histogram>
+
 <histogram name="Cookie.BackingStoreUpdateResults" enum="BackingStoreResults">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -53611,6 +53616,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="11" label="CONTEXT_LOST_MAKECURRENT_FAILED"/>
 </enum>
 
+<enum name="ContextMenuOption" type="int">
+  <summary>The item selected from a context menu</summary>
+  <int value="0" label="Open in new tab"/>
+  <int value="1" label="Open in incognito tab"/>
+  <int value="2" label="Copy link address"/>
+  <int value="3" label="Copy email address"/>
+  <int value="4" label="Copy link text"/>
+  <int value="5" label="Save link"/>
+  <int value="6" label="Save image"/>
+  <int value="7" label="Open image"/>
+  <int value="8" label="Open image in new tab"/>
+  <int value="9" label="Copy image"/>
+  <int value="10" label="Copy image URL"/>
+  <int value="11" label="Search by image"/>
+  <int value="12" label="Load images"/>
+  <int value="13" label="Load original image"/>
+  <int value="14" label="Save video"/>
+</enum>
+
 <enum name="CookieDeletionCause" type="int">
   <summary>Reason why a cookie was removed from the cookie store</summary>
   <int value="0" label="explicit">
@@ -72692,6 +72716,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.LoadType"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ContextMenuType" separator=".">
+  <suffix name="Link" label="The context menu was shown for a link"/>
+  <suffix name="Image" label="The context menu was shown for an image"/>
+  <suffix name="ImageLink"
+      label="The context menu was shown for an image which is also a link"/>
+  <suffix name="Video" label="The context menu was shown for a video"/>
+  <affected-histogram name="ContextMenu.SelectedOption"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ContextType" separator=".">
