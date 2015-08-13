@@ -23,6 +23,11 @@
         '../src/untrusted/pthread/pthread.gyp:pthread_lib',
       ],
       'conditions': [
+        ['target_arch=="arm"', {
+          'dependencies': [
+            '../src/untrusted/elf_loader/elf_loader.gyp:elf_loader_nexe',
+          ],
+        }],
         ['(target_arch!="arm" and target_arch!="mipsel") or (OS=="linux" and disable_cross_trusted!=1)', {
           # cross compiling trusted binaries such as sel_ldr is only currently
           # supported on linux, and requires specific cross compilers to be
