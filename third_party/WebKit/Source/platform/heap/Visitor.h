@@ -388,6 +388,7 @@ private:
 
 template<typename T>
 struct TypenameStringTrait {
+    // This method is not thread safe.
     static const String& get()
     {
         DEFINE_STATIC_LOCAL(String, typenameString, (WTF::extractTypeNameFromFunctionName(WTF::extractNameFunction<T>())));
