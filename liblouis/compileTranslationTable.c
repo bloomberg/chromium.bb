@@ -3873,20 +3873,21 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 
 		switch(input[icrs])
 		{
-		
-		case '~':
-
-			icrs++;
-			expr[rcrs++] = PTN_DELIMIT;
-			expr[rnxt] = 1;
-			rnxt = rcrs++;
-			expr[rnxt] = PTN_LAST;
-			break;
 			
 		case '!':
 
 			icrs++;
 			expr[rcrs++] = PTN_NOT;
+			break;
+		
+		case '~':
+
+			icrs++;
+			expr[rcrs++] = PTN_DELIMIT;
+			//expr[rnxt] = 1;
+			expr[rnxt] = rcrs - rnxt;
+			rnxt = rcrs++;
+			expr[rnxt] = PTN_LAST;
 			break;
 
 		case '[':
