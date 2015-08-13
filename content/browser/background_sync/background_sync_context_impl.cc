@@ -5,7 +5,9 @@
 #include "content/browser/background_sync/background_sync_context_impl.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "content/browser/background_sync/background_sync_manager.h"
+#include "content/browser/background_sync/background_sync_service_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -16,6 +18,8 @@ BackgroundSyncContextImpl::BackgroundSyncContextImpl() {
 }
 
 BackgroundSyncContextImpl::~BackgroundSyncContextImpl() {
+  DCHECK(!background_sync_manager_);
+  DCHECK(services_.empty());
 }
 
 void BackgroundSyncContextImpl::Init(
@@ -36,6 +40,25 @@ void BackgroundSyncContextImpl::Shutdown() {
       base::Bind(&BackgroundSyncContextImpl::ShutdownOnIO, this));
 }
 
+void BackgroundSyncContextImpl::CreateService(
+    mojo::InterfaceRequest<BackgroundSyncService> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&BackgroundSyncContextImpl::CreateServiceOnIOThread, this,
+                 base::Passed(&request)));
+}
+
+void BackgroundSyncContextImpl::ServiceHadConnectionError(
+    BackgroundSyncServiceImpl* service) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ContainsValue(services_, service));
+
+  services_.erase(service);
+  delete service;
+}
+
 BackgroundSyncManager* BackgroundSyncContextImpl::background_sync_manager()
     const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -51,9 +74,17 @@ void BackgroundSyncContextImpl::CreateBackgroundSyncManager(
   background_sync_manager_ = BackgroundSyncManager::Create(context);
 }
 
+void BackgroundSyncContextImpl::CreateServiceOnIOThread(
+    mojo::InterfaceRequest<BackgroundSyncService> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(background_sync_manager_);
+  services_.insert(new BackgroundSyncServiceImpl(this, request.Pass()));
+}
+
 void BackgroundSyncContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  STLDeleteElements(&services_);
   background_sync_manager_.reset();
 }
 

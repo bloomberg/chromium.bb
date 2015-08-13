@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/common/background_sync_service.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 
@@ -19,8 +19,8 @@ class BackgroundSyncContextImpl;
 class CONTENT_EXPORT BackgroundSyncServiceImpl
     : public NON_EXPORTED_BASE(BackgroundSyncService) {
  public:
-  static void Create(
-      const scoped_refptr<BackgroundSyncContextImpl>& background_sync_context,
+  BackgroundSyncServiceImpl(
+      BackgroundSyncContextImpl* background_sync_context,
       mojo::InterfaceRequest<BackgroundSyncService> request);
 
   ~BackgroundSyncServiceImpl() override;
@@ -28,13 +28,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
  private:
   friend class BackgroundSyncServiceImplTest;
 
-  static void CreateOnIOThread(
-      const scoped_refptr<BackgroundSyncContextImpl>& background_sync_context,
-      mojo::InterfaceRequest<BackgroundSyncService> request);
-
-  explicit BackgroundSyncServiceImpl(
-      const scoped_refptr<BackgroundSyncContextImpl>& background_sync_context,
-      mojo::InterfaceRequest<BackgroundSyncService> request);
 
   // BackgroundSyncService methods:
   void Register(content::SyncRegistrationPtr options,
@@ -67,8 +60,13 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
       BackgroundSyncStatus status,
       const std::vector<BackgroundSyncRegistration>& result);
 
-  scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
-  mojo::StrongBinding<BackgroundSyncService> binding_;
+  // Called when an error is detected on binding_.
+  void OnConnectionError();
+
+  // background_sync_context_ owns this.
+  BackgroundSyncContextImpl* background_sync_context_;
+
+  mojo::Binding<BackgroundSyncService> binding_;
 
   base::WeakPtrFactory<BackgroundSyncServiceImpl> weak_ptr_factory_;
 

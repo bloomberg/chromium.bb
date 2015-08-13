@@ -86,38 +86,27 @@ COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_ONE_SHOT,
 COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_MAX,
                              SyncPeriodicity::SYNC_ONE_SHOT);
 
-// static
-void BackgroundSyncServiceImpl::Create(
-    const scoped_refptr<BackgroundSyncContextImpl>& background_sync_context,
-    mojo::InterfaceRequest<BackgroundSyncService> request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&BackgroundSyncServiceImpl::CreateOnIOThread,
-                 background_sync_context, base::Passed(&request)));
-}
-
 BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
-  // Should always be destroyed on the IO thread, but can't check that with
-  // DCHECK_CURRENTLY_ON because this class could be destroyed during thread
-  // shutdown, at which point that check doesn't work.
-}
-
-// static
-void BackgroundSyncServiceImpl::CreateOnIOThread(
-    const scoped_refptr<BackgroundSyncContextImpl>& background_sync_context,
-    mojo::InterfaceRequest<BackgroundSyncService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  new BackgroundSyncServiceImpl(background_sync_context, request.Pass());
 }
 
 BackgroundSyncServiceImpl::BackgroundSyncServiceImpl(
-    const scoped_refptr<BackgroundSyncContextImpl>& background_sync_context,
+    BackgroundSyncContextImpl* background_sync_context,
     mojo::InterfaceRequest<BackgroundSyncService> request)
     : background_sync_context_(background_sync_context),
       binding_(this, request.Pass()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(background_sync_context);
+
+  binding_.set_connection_error_handler(
+      base::Bind(&BackgroundSyncServiceImpl::OnConnectionError,
+                 base::Unretained(this) /* the channel is owned by this */));
+}
+
+void BackgroundSyncServiceImpl::OnConnectionError() {
+  background_sync_context_->ServiceHadConnectionError(this);
+  // |this| is now deleted.
 }
 
 void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,

@@ -964,7 +964,7 @@ void RenderProcessHostImpl::RegisterMojoServices() {
                  base::Unretained(permission_service_context_.get())));
 
   mojo_application_host_->service_registry()->AddService(base::Bind(
-      &content::BackgroundSyncServiceImpl::Create,
+      &BackgroundSyncContextImpl::CreateService,
       base::Unretained(storage_partition_impl_->GetBackgroundSyncContext())));
 
   mojo_application_host_->service_registry()->AddService(base::Bind(

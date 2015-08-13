@@ -106,6 +106,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     // This must be explicitly destroyed here to ensure that destruction
     // of both the BackgroundSyncContext and the BackgroundSyncManager occurs on
     // the correct thread.
+    background_sync_context_->Shutdown();
+    base::RunLoop().RunUntilIdle();
     background_sync_context_ = nullptr;
   }
 
@@ -169,8 +171,8 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     mojo::InterfaceRequest<BackgroundSyncService> service_request =
         mojo::GetProxy(&service_ptr_);
     // Create a new BackgroundSyncServiceImpl bound to the dummy channel
-    service_impl_.reset(new BackgroundSyncServiceImpl(background_sync_context_,
-                                                      service_request.Pass()));
+    service_impl_.reset(new BackgroundSyncServiceImpl(
+        background_sync_context_.get(), service_request.Pass()));
     base::RunLoop().RunUntilIdle();
   }
 
