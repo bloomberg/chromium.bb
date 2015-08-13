@@ -74,7 +74,9 @@ public:
     void handleEvent(ExecutionContext*, Event*) final;
     virtual void handleEvent(ScriptState*, Event*);
 
-    // Returns the listener object, either a function or an object.
+    // Returns the listener object, either a function or an object, or the empty
+    // handle if the user script is not compilable.  No exception will be thrown
+    // even if the user script is not compilable.
     v8::Local<v8::Object> getListenerObject(ExecutionContext* executionContext)
     {
         // prepareListenerObject can potentially deref this event listener

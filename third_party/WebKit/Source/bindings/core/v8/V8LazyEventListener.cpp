@@ -42,11 +42,12 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/events/ErrorEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
-
+#include "core/inspector/ScriptCallStack.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -162,10 +163,18 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
         v8::True(isolate()));
     v8::ScriptCompiler::Source source(v8String(isolate(), m_code), origin);
 
-    v8::Local<v8::Function> wrappedFunction = v8::ScriptCompiler::CompileFunctionInContext(isolate(), &source, v8Context, 1, &parameterName, 3, scopes);
-
-    if (wrappedFunction.IsEmpty())
-        return;
+    v8::Local<v8::Function> wrappedFunction;
+    {
+        // JavaScript compilation error shouldn't be reported as a runtime
+        // exception because we're not running any program code.  Instead,
+        // it should be reported as an ErrorEvent.
+        v8::TryCatch block(isolate());
+        wrappedFunction = v8::ScriptCompiler::CompileFunctionInContext(isolate(), &source, v8Context, 1, &parameterName, 3, scopes);
+        if (block.HasCaught()) {
+            fireErrorEvent(v8Context, executionContext, block.Message());
+            return;
+        }
+    }
 
     // Change the toString function on the wrapper function to avoid it
     // returning the source for the actual wrapper function. Instead it
@@ -195,6 +204,25 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
     // m_eventParameterName = String();
     // m_sourceURL = String();
     setListenerObject(wrappedFunction);
+}
+
+void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, ExecutionContext* executionContext, v8::Local<v8::Message> message)
+{
+    String messageText = toCoreStringWithNullCheck(message->Get());
+    int lineNumber = 0;
+    int columnNumber = 0;
+    if (v8Call(message->GetLineNumber(v8Context), lineNumber)
+        && v8Call(message->GetStartColumn(v8Context), columnNumber))
+        ++columnNumber;
+    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(messageText, m_sourceURL, lineNumber, columnNumber, &world());
+
+    AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
+    if (message->IsOpaque())
+        accessControlStatus = OpaqueResource;
+    else if (message->IsSharedCrossOrigin())
+        accessControlStatus = SharableCrossOrigin;
+
+    executionContext->reportException(event.release(), 0, nullptr, accessControlStatus);
 }
 
 } // namespace blink

@@ -70,6 +70,8 @@ private:
     // SVGUseElement::transferEventListenersToShadowTree
     bool wasCreatedFromMarkup() const override { return true; }
 
+    void fireErrorEvent(v8::Local<v8::Context>, ExecutionContext*, v8::Local<v8::Message>);
+
     AtomicString m_functionName;
     AtomicString m_eventParameterName;
     String m_code;

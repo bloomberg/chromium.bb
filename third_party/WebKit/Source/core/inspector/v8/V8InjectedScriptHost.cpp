@@ -269,15 +269,12 @@ static v8::Local<v8::Array> getJSListenerFunctions(v8::Isolate* isolate, Executi
         // Hide listeners from other contexts.
         if (context != isolate->GetCurrentContext())
             continue;
-        v8::Local<v8::Object> function;
-        {
-            // getListenerObject() may cause JS in the event attribute to get compiled, potentially unsuccessfully.
-            v8::TryCatch block;
-            function = v8Listener->getListenerObject(executionContext);
-            if (block.HasCaught())
-                continue;
-        }
-        ASSERT(!function.IsEmpty());
+        // getListenerObject() may cause JS in the event attribute to get
+        // compiled, potentially unsuccessfully.  In that case, the function
+        // returns the empty handle without an exception.
+        v8::Local<v8::Object> function = v8Listener->getListenerObject(executionContext);
+        if (function.IsEmpty())
+            continue;
         v8::Local<v8::Object> listenerEntry = v8::Object::New(isolate);
         listenerEntry->Set(v8AtomicString(isolate, "listener"), function);
         listenerEntry->Set(v8AtomicString(isolate, "useCapture"), v8::Boolean::New(isolate, listenerInfo.eventListenerVector[i].useCapture));
