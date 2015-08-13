@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_RESULT_FILTER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_RESULT_FILTER_H_
 
+#include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace password_manager {
@@ -16,8 +17,10 @@ class StoreResultFilter {
   StoreResultFilter() {}
   virtual ~StoreResultFilter() {}
 
-  // Should |form| be ignored for any password manager-related purposes?
-  virtual bool ShouldIgnore(const autofill::PasswordForm& form) = 0;
+  // Removes from |results| all forms which should be ignored for any password
+  // manager-related purposes, and returns the rest.
+  virtual ScopedVector<autofill::PasswordForm> FilterResults(
+      ScopedVector<autofill::PasswordForm> results) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StoreResultFilter);

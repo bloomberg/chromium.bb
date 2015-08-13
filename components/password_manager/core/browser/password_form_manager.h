@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_FORM_MANAGER_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
 #include "build/build_config.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/common/password_form.h"
@@ -278,11 +280,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // Takes ownership of the elements in |result|.
   void OnRequestDone(ScopedVector<autofill::PasswordForm> result);
 
-  // Helper for OnGetPasswordStoreResults to determine whether or not
-  // the given result form is worth scoring.
-  bool ShouldIgnoreResult(const autofill::PasswordForm& form,
-                          StoreResultFilter* filter) const;
-
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
   // has opted to 'Save Password'. If |reset_preferred_login| is set,
@@ -291,7 +288,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for OnGetPasswordStoreResults to score an individual result
   // against the observed_form_.
-  int ScoreResult(const autofill::PasswordForm& form) const;
+  uint32_t ScoreResult(const autofill::PasswordForm& form) const;
 
   // Helper for Save in the case that best_matches.size() > 0, meaning
   // we have at least one match for this form/username/password. This
@@ -383,7 +380,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // The origin url path of observed_form_ tokenized, for convenience when
   // scoring.
-  std::vector<std::string> form_path_tokens_;
+  const std::vector<std::string> form_path_segments_;
 
   // Stores updated credentials when the form was submitted but success is
   // still unknown.

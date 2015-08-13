@@ -4,6 +4,8 @@
 
 #include "components/password_manager/sync/browser/sync_store_result_filter.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -13,6 +15,8 @@
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+
+using autofill::PasswordForm;
 
 namespace password_manager {
 
@@ -34,39 +38,41 @@ bool LastLoadWasTransactionalReauthPage(const GURL& last_load_url) {
 
 SyncStoreResultFilter::SyncStoreResultFilter(
     const PasswordManagerClient* client)
-    : client_(client),
-      autofill_sync_state_(SetUpAutofillSyncState()),
-      sync_credential_was_filtered_(false) {}
+    : client_(client) {}
 
 SyncStoreResultFilter::~SyncStoreResultFilter() {
-  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
-                        sync_credential_was_filtered_);
 }
 
-bool SyncStoreResultFilter::ShouldIgnore(const autofill::PasswordForm& form) {
-  // TODO(vabr) Move IsSyncAccountCredential here.
-  if (!client_->IsSyncAccountCredential(base::UTF16ToUTF8(form.username_value),
-                                        form.signon_realm))
-    return false;
+ScopedVector<PasswordForm> SyncStoreResultFilter::FilterResults(
+    ScopedVector<PasswordForm> results) const {
+  const AutofillForSyncCredentialsState autofill_sync_state =
+      GetAutofillForSyncCredentialsState();
 
-  if (autofill_sync_state_ == DISALLOW_SYNC_CREDENTIALS) {
-    sync_credential_was_filtered_ = true;
-    return true;
+  if (autofill_sync_state != DISALLOW_SYNC_CREDENTIALS &&
+      (autofill_sync_state != DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH ||
+       !LastLoadWasTransactionalReauthPage(
+           client_->GetLastCommittedEntryURL()))) {
+    return results.Pass();
   }
 
-  const GURL last_load_url = client_->GetLastCommittedEntryURL();
-  if (autofill_sync_state_ == DISALLOW_SYNC_CREDENTIALS_FOR_REAUTH &&
-      LastLoadWasTransactionalReauthPage(last_load_url)) {
-    sync_credential_was_filtered_ = true;
-    return true;
-  }
+  const PasswordManagerClient* client = client_;
+  auto begin_of_removed = std::remove_if(
+      results.begin(), results.end(), [client](PasswordForm* form) -> bool {
+        return client->IsSyncAccountCredential(
+            base::UTF16ToUTF8(form->username_value), form->signon_realm);
+      });
 
-  return false;
+  UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
+                        begin_of_removed != results.end());
+
+  results.erase(begin_of_removed, results.end());
+
+  return results.Pass();
 }
 
 // static
 SyncStoreResultFilter::AutofillForSyncCredentialsState
-SyncStoreResultFilter::SetUpAutofillSyncState() {
+SyncStoreResultFilter::GetAutofillForSyncCredentialsState() {
   std::string group_name =
       base::FieldTrialList::FindFullName("AutofillSyncCredential");
 

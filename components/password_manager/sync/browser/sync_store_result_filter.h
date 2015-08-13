@@ -18,7 +18,8 @@ class SyncStoreResultFilter : public StoreResultFilter {
   ~SyncStoreResultFilter() override;
 
   // StoreResultFilter
-  bool ShouldIgnore(const autofill::PasswordForm& form) override;
+  ScopedVector<autofill::PasswordForm> FilterResults(
+      ScopedVector<autofill::PasswordForm> results) const override;
 
  private:
   enum AutofillForSyncCredentialsState {
@@ -28,15 +29,9 @@ class SyncStoreResultFilter : public StoreResultFilter {
   };
 
   // Determines autofill state based on experiment and flag values.
-  static AutofillForSyncCredentialsState SetUpAutofillSyncState();
+  static AutofillForSyncCredentialsState GetAutofillForSyncCredentialsState();
 
   const PasswordManagerClient* const client_;
-
-  // How to handle the sync credential in ShouldFilterAutofillResult().
-  const AutofillForSyncCredentialsState autofill_sync_state_;
-
-  // For statistics about filtering the sync credential during autofill.
-  bool sync_credential_was_filtered_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncStoreResultFilter);
 };

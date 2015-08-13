@@ -17,8 +17,9 @@ namespace {
 // the filter interface.
 class PassThroughStoreResultFilter : public StoreResultFilter {
  public:
-  bool ShouldIgnore(const autofill::PasswordForm& form) override {
-    return false;
+  ScopedVector<autofill::PasswordForm> FilterResults(
+      ScopedVector<autofill::PasswordForm> results) const override {
+    return results.Pass();
   }
 };
 }

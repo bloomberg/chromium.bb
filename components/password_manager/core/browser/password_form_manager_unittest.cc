@@ -52,6 +52,10 @@ MATCHER_P(CheckUsername, username_value, "Username incorrect") {
   return arg.username_value == username_value;
 }
 
+void ClearVector(ScopedVector<PasswordForm>* results) {
+  results->clear();
+}
+
 class MockAutofillManager : public autofill::AutofillManager {
  public:
   MockAutofillManager(autofill::AutofillDriver* driver,
@@ -95,7 +99,15 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
 class MockStoreResultFilter : public StoreResultFilter {
  public:
-  MOCK_METHOD1(ShouldIgnore, bool(const autofill::PasswordForm& form));
+  MOCK_CONST_METHOD1(FilterResultsPtr,
+                     void(ScopedVector<autofill::PasswordForm>* results));
+
+  // GMock cannot handle move-only arguments.
+  ScopedVector<autofill::PasswordForm> FilterResults(
+      ScopedVector<autofill::PasswordForm> results) const override {
+    FilterResultsPtr(&results);
+    return results.Pass();
+  }
 };
 
 class TestPasswordManagerClient : public StubPasswordManagerClient {
@@ -103,15 +115,25 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   explicit TestPasswordManagerClient(PasswordStore* password_store)
       : password_store_(password_store),
         driver_(new NiceMock<MockPasswordManagerDriver>),
-        is_update_password_ui_enabled_(false) {
+        is_update_password_ui_enabled_(false),
+        filter_all_results_(false) {
     prefs_.registry()->RegisterBooleanPref(prefs::kPasswordManagerSavingEnabled,
                                            true);
   }
 
+  // After this method is called, the filter returned by CreateStoreResultFilter
+  // will filter out all forms.
+  void FilterAllResults() { filter_all_results_ = true; }
+
   scoped_ptr<StoreResultFilter> CreateStoreResultFilter() const override {
     scoped_ptr<NiceMock<MockStoreResultFilter>> stub_filter(
         new NiceMock<MockStoreResultFilter>);
-    ON_CALL(*stub_filter, ShouldIgnore(_)).WillByDefault(Return(false));
+    if (filter_all_results_) {
+      // EXPECT_CALL rather than ON_CALL, because if the test needs the
+      // filtering, then it needs it called.
+      EXPECT_CALL(*stub_filter, FilterResultsPtr(_))
+          .WillRepeatedly(testing::Invoke(ClearVector));
+    }
     return stub_filter.Pass();
   }
 
@@ -140,6 +162,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   PasswordStore* password_store_;
   scoped_ptr<MockPasswordManagerDriver> driver_;
   bool is_update_password_ui_enabled_;
+  bool filter_all_results_;
 };
 
 class TestPasswordManager : public PasswordManager {
@@ -246,12 +269,6 @@ class PasswordFormManagerTest : public testing::Test {
 
   void SanitizePossibleUsernames(PasswordFormManager* p, PasswordForm* form) {
     p->SanitizePossibleUsernames(form);
-  }
-
-  bool IgnoredResult(PasswordFormManager* p,
-                     PasswordForm* form,
-                     StoreResultFilter* filter) {
-    return p->ShouldIgnoreResult(*form, filter);
   }
 
   // Save saved_match() for observed_form() where |observed_form_data|,
@@ -598,26 +615,75 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
 }
 
-TEST_F(PasswordFormManagerTest, TestIgnoreResult) {
-  PasswordFormManager form_manager(nullptr, client(), kNoDriver,
-                                   *observed_form(), false);
+TEST_F(PasswordFormManagerTest, TestIgnoreResult_SSL) {
+  PasswordForm observed(*observed_form());
+  observed.origin = GURL("https://accounts.google.com/a/LoginAuth");
+  observed.action = GURL("https://accounts.google.com/a/Login");
+  observed.signon_realm = "https://accounts.google.com";
+  const bool kObservedFormSSLValid = false;
+  observed.ssl_valid = kObservedFormSSLValid;
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), observed,
+                                   kObservedFormSSLValid);
+
+  PasswordForm saved_form = observed;
+  saved_form.ssl_valid = true;
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
 
   // Make sure we don't match a PasswordForm if it was originally saved on
   // an SSL-valid page and we are now on a page with invalid certificate.
-  saved_match()->ssl_valid = true;
-  scoped_ptr<MockStoreResultFilter> filter(new MockStoreResultFilter);
-  EXPECT_TRUE(IgnoredResult(&form_manager, saved_match(), filter.get()));
+  EXPECT_TRUE(form_manager.best_matches().empty());
+}
 
-  saved_match()->ssl_valid = false;
+TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
+  PasswordForm observed(*observed_form());
+  observed.origin = GURL("https://accounts.google.com/a/LoginAuth");
+  observed.action = GURL("https://accounts.google.com/a/Login");
+  observed.signon_realm = "https://accounts.google.com";
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), observed, false);
+
+  PasswordForm saved_form = observed;
+  saved_form.origin = GURL("https://accounts.google.com/a/OtherLoginAuth");
+  saved_form.action = GURL("https://accounts.google.com/a/OtherLogin");
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+
   // Different paths for action / origin are okay.
-  saved_match()->action = GURL("http://www.google.com/b/Login");
-  saved_match()->origin = GURL("http://www.google.com/foo");
-  EXPECT_FALSE(IgnoredResult(&form_manager, saved_match(), filter.get()));
+  EXPECT_FALSE(form_manager.best_matches().empty());
+}
+
+TEST_F(PasswordFormManagerTest, TestIgnoreResult_IgnoredCredentials) {
+  PasswordForm observed(*observed_form());
+  observed.origin = GURL("https://accounts.google.com/a/LoginAuth");
+  observed.action = GURL("https://accounts.google.com/a/Login");
+  observed.signon_realm = "https://accounts.google.com";
+
+  TestPasswordManagerClient client_with_store(mock_store());
+  TestPasswordManager password_manager(&client_with_store);
+  PasswordFormManager form_manager(&password_manager, &client_with_store,
+                                   client_with_store.driver(), observed, false);
+  client_with_store.FilterAllResults();
+
+  PasswordForm saved_form = observed;
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
 
   // Results should be ignored if the client requests it.
-  PasswordForm filtered_form(*saved_match());
-  EXPECT_CALL(*filter, ShouldIgnore(filtered_form)).WillOnce(Return(true));
-  EXPECT_TRUE(IgnoredResult(&form_manager, saved_match(), filter.get()));
+  EXPECT_TRUE(form_manager.best_matches().empty());
 }
 
 TEST_F(PasswordFormManagerTest, TestEmptyAction) {

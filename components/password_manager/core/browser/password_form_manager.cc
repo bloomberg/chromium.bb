@@ -88,6 +88,11 @@ bool DoesUsenameAndPasswordMatchCredentials(
   return false;
 }
 
+std::vector<std::string> SplitPathToSegments(const std::string& path) {
+  return base::SplitString(path, "/", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_ALL);
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -100,6 +105,10 @@ PasswordFormManager::PasswordFormManager(
       provisionally_saved_form_(nullptr),
       other_possible_username_action_(
           PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
+      form_path_segments_(
+          observed_form_.origin.is_valid()
+              ? SplitPathToSegments(observed_form_.origin.path())
+              : std::vector<std::string>()),
       is_new_login_(true),
       has_generated_password_(false),
       password_manager_(password_manager),
@@ -112,11 +121,6 @@ PasswordFormManager::PasswordFormManager(
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified) {
   drivers_.push_back(driver);
-  if (observed_form_.origin.is_valid()) {
-    form_path_tokens_ =
-        base::SplitString(observed_form_.origin.path(), "/",
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  }
 }
 
 PasswordFormManager::~PasswordFormManager() {
@@ -376,27 +380,33 @@ void PasswordFormManager::OnRequestDone(
     logger->LogMessage(Logger::STRING_ON_REQUEST_DONE_METHOD);
   }
 
-  // First, compute scores for credentials in |login_result|.
-  std::vector<int> credential_scores;
-  credential_scores.reserve(logins_result.size());
-  int best_score = 0;
-  scoped_ptr<StoreResultFilter> result_filter =
-      client_->CreateStoreResultFilter();
-  for (const PasswordForm* login : logins_result) {
-    if (ShouldIgnoreResult(*login, result_filter.get())) {
-      credential_scores.push_back(-1);
-      continue;
-    }
+  // Remove credentials which need to be ignored from |logins_result|.
+  if (!observed_form_.ssl_valid) {
+    logins_result.erase(
+        std::remove_if(
+            logins_result.begin(), logins_result.end(),
+            [](PasswordForm* form) -> bool { return form->ssl_valid; }),
+        logins_result.end());
+  }
+  logins_result =
+      client_->CreateStoreResultFilter()->FilterResults(logins_result.Pass());
 
-    int current_score = ScoreResult(*login);
+  // Now compute scores for the remaining credentials in |login_result|.
+  std::vector<uint32_t> credential_scores;
+  credential_scores.reserve(logins_result.size());
+  uint32_t best_score = 0;
+  for (const PasswordForm* login : logins_result) {
+    uint32_t current_score = ScoreResult(*login);
     if (current_score > best_score)
       best_score = current_score;
     credential_scores.push_back(current_score);
   }
 
-  if (best_score <= 0) {
-    if (logger)
-      logger->LogNumber(Logger::STRING_BEST_SCORE, best_score);
+  if (best_score == 0) {
+    if (logger) {
+      logger->LogNumber(Logger::STRING_BEST_SCORE,
+                        static_cast<size_t>(best_score));
+    }
     return;
   }
 
@@ -408,8 +418,6 @@ void PasswordFormManager::OnRequestDone(
     scoped_ptr<PasswordForm> login(logins_result[i]);
     logins_result[i] = nullptr;
 
-    if (credential_scores[i] < 0)
-      continue;
     if (credential_scores[i] < best_score) {
       // Empty path matches are most commonly imports from Firefox, and
       // generally useful to autofill. Blacklisted entries are only meaningful
@@ -548,18 +556,6 @@ void PasswordFormManager::OnGetPasswordStoreResults(
       ProcessFrame(driver);
   }
   drivers_.clear();
-}
-
-bool PasswordFormManager::ShouldIgnoreResult(const PasswordForm& form,
-                                             StoreResultFilter* filter) const {
-  // Don't match an invalid SSL form with one saved under secure circumstances.
-  if (form.ssl_valid && !observed_form_.ssl_valid)
-    return true;
-
-  if (filter->ShouldIgnore(form))
-    return true;
-
-  return false;
 }
 
 void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
@@ -941,7 +937,7 @@ void PasswordFormManager::CreatePendingCredentials() {
   provisionally_saved_form_.reset();
 }
 
-int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
+uint32_t PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
   DCHECK_EQ(state_, MATCHING_PHASE);
   // For scoring of candidate login data:
   // The most important element that should match is the signon_realm followed
@@ -955,42 +951,49 @@ int PasswordFormManager::ScoreResult(const PasswordForm& candidate) const {
   // That way, a partial match cannot trump an exact match even if
   // the partial one matches all other attributes (action, elements) (and
   // regardless of the matching depth in the URL path).
-  int score = 0;
+
+  // When comparing path segments, only consider at most 63 of them, so that the
+  // potential gain from shared path prefix is not more than from an exact
+  // origin match.
+  const size_t kSegmentCountCap = 63;
+  const size_t capped_form_path_segment_count =
+      std::min(form_path_segments_.size(), kSegmentCountCap);
+
+  uint32_t score = 0u;
   if (!candidate.IsPublicSuffixMatch()) {
-    score += 1 << 7;
+    score += 1u << 7;
   }
   if (candidate.origin == observed_form_.origin) {
     // This check is here for the most common case which
     // is we have a single match in the db for the given host,
     // so we don't generally need to walk the entire URL path (the else
     // clause).
-    score += (1 << 6) + static_cast<int>(form_path_tokens_.size());
+    score += (1u << 6) + static_cast<uint32_t>(capped_form_path_segment_count);
   } else {
     // Walk the origin URL paths one directory at a time to see how
     // deep the two match.
-    std::vector<std::string> candidate_path_tokens =
-        base::SplitString(candidate.origin.path(), "/", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_ALL);
-    size_t depth = 0;
-    size_t max_dirs =
-        std::min(form_path_tokens_.size(), candidate_path_tokens.size());
+    std::vector<std::string> candidate_path_segments =
+        SplitPathToSegments(candidate.origin.path());
+    size_t depth = 0u;
+    const size_t max_dirs = std::min(capped_form_path_segment_count,
+                                     candidate_path_segments.size());
     while ((depth < max_dirs) &&
-           (form_path_tokens_[depth] == candidate_path_tokens[depth])) {
+           (form_path_segments_[depth] == candidate_path_segments[depth])) {
       depth++;
       score++;
     }
     // do we have a partial match?
-    score += (depth > 0) ? 1 << 5 : 0;
+    score += (depth > 0u) ? 1u << 5 : 0u;
   }
   if (observed_form_.scheme == PasswordForm::SCHEME_HTML) {
     if (candidate.action == observed_form_.action)
-      score += 1 << 3;
+      score += 1u << 3;
     if (candidate.password_element == observed_form_.password_element)
-      score += 1 << 2;
+      score += 1u << 2;
     if (candidate.submit_element == observed_form_.submit_element)
-      score += 1 << 1;
+      score += 1u << 1;
     if (candidate.username_element == observed_form_.username_element)
-      score += 1 << 0;
+      score += 1u << 0;
   }
 
   return score;
