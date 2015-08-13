@@ -126,7 +126,7 @@ ManageAccountsParams::ManageAccountsParams()
 }
 
 bool SettingsAllowSigninCookies(
-    content_settings::CookieSettings* cookie_settings) {
+    const content_settings::CookieSettings* cookie_settings) {
   GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
   GURL google_url = GaiaUrls::GetInstance()->google_url();
   return cookie_settings &&
@@ -134,18 +134,17 @@ bool SettingsAllowSigninCookies(
          cookie_settings->IsSettingCookieAllowed(google_url, google_url);
 }
 
-bool AppendMirrorRequestHeaderIfPossible(
-    net::URLRequest* request,
-    const GURL& redirect_url,
+std::string BuildMirrorRequestHeaderIfPossible(
+    const GURL& url,
     const std::string& account_id,
-    content_settings::CookieSettings* cookie_settings,
+    const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
   if (account_id.empty())
-    return false;
+    return std::string();
 
   // If signin cookies are not allowed, don't add the header.
   if (!SettingsAllowSigninCookies(cookie_settings)) {
-    return false;
+    return std::string();
   }
 
   // Only set the header for Drive and Gaia always, and other Google properties
@@ -155,7 +154,6 @@ bool AppendMirrorRequestHeaderIfPossible(
   // need the header to tell if the current user is connected. The drive path is
   // a temporary workaround until the more generic chrome.principals API is
   // available.
-  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
   bool is_enable_account_consistency = switches::IsEnableAccountConsistency();
   bool is_google_url = is_enable_account_consistency &&
@@ -167,14 +165,27 @@ bool AppendMirrorRequestHeaderIfPossible(
                             google_util::DISALLOW_NON_STANDARD_PORTS));
   if (!is_google_url && !IsDriveOrigin(origin) &&
       !gaia::IsGaiaSignonRealm(origin)) {
-    return false;
+    return std::string();
   }
 
-  std::string header_value(base::StringPrintf(
-      "%s=%s,%s=%s,%s=%s", kGaiaIdAttrName, account_id.c_str(),
-      kProfileModeAttrName, base::IntToString(profile_mode_mask).c_str(),
-      kEnableAccountConsistencyAttrName,
-      is_enable_account_consistency ? "true" : "false"));
+  return base::StringPrintf("%s=%s,%s=%s,%s=%s", kGaiaIdAttrName,
+                            account_id.c_str(), kProfileModeAttrName,
+                            base::IntToString(profile_mode_mask).c_str(),
+                            kEnableAccountConsistencyAttrName,
+                            is_enable_account_consistency ? "true" : "false");
+}
+
+bool AppendMirrorRequestHeaderIfPossible(
+    net::URLRequest* request,
+    const GURL& redirect_url,
+    const std::string& account_id,
+    const content_settings::CookieSettings* cookie_settings,
+    int profile_mode_mask) {
+  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
+  std::string header_value = BuildMirrorRequestHeaderIfPossible(
+      url, account_id, cookie_settings, profile_mode_mask);
+  if (header_value.empty())
+    return false;
   request->SetExtraRequestHeaderByName(kChromeConnectedHeader, header_value,
                                        false);
   return true;
