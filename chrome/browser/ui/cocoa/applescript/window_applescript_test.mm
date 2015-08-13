@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -172,6 +173,7 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, WindowOrder) {
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
   base::scoped_nsobject<WindowAppleScript> window1(
       [[WindowAppleScript alloc] init]);
+  chrome::testing::NSRunLoopRunAllPending();
   EXPECT_EQ([window1.get() windowComparator:window2.get()], NSOrderedAscending);
   EXPECT_EQ([window2.get() windowComparator:window1.get()],
             NSOrderedDescending);

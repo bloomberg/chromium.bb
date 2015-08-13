@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/applescript/browsercrapplication+applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/window_applescript.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -54,6 +55,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCrApplicationAppleScriptTest, InsertWindow) {
   [aWindow.get() setValue:[NSNumber numberWithBool:YES] forKey:@"isVisible"];
 
   [NSApp insertInAppleScriptWindows:aWindow.get()];
+  chrome::testing::NSRunLoopRunAllPending();
 
   // Represents the window after it is added.
   WindowAppleScript* window = [[NSApp appleScriptWindows] objectAtIndex:0];

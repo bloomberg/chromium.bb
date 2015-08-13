@@ -17,7 +17,7 @@
 #import "chrome/browser/ui/cocoa/panels/panel_cocoa.h"
 #import "chrome/browser/ui/cocoa/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/panels/panel_window_controller_cocoa.h"
-#import "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -396,10 +396,12 @@ TEST_F(PanelCocoaTest, ActivatePanel) {
   // focus outside of interactive UI tests. BrowserWindowController uses the
   // same way of testing this.
   native_window->ActivatePanel();
+  chrome::testing::NSRunLoopRunAllPending();
   NSWindow* frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
   EXPECT_NSEQ(frontmostWindow, [native_window->controller_ window]);
 
   native_window2->ActivatePanel();
+  chrome::testing::NSRunLoopRunAllPending();
   frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
   EXPECT_NSEQ(frontmostWindow, [native_window2->controller_ window]);
 

@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/run_loop_testing.h"
+#include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/site_instance.h"
 
