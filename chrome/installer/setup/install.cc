@@ -37,7 +37,6 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
-#include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -636,7 +635,7 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
         ALL_USERS : CURRENT_USER;
     base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
     CreateOrUpdateShortcuts(chrome_exe, chrome, prefs, level,
-                            INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
+                            INSTALL_SHORTCUT_REPLACE_EXISTING);
     RegisterChromeOnMachine(installer_state, chrome, false);
 
     UpdateOsUpgradeBeacon(installer_state.system_install(),
@@ -661,18 +660,13 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
 }
 
 // NOTE: Should the work done here, on Active Setup, change: kActiveSetupVersion
-// in install_worker.cc needs to be increased for Active Setup to invoke this
-// again for all users of this install.
+// in update_active_setup_version_work_item.cc needs to be increased for Active
+// Setup to invoke this again for all users of this install. It may also be
+// invoked again when a system-level chrome install goes through an OS upgrade.
 void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
                                  const installer::Product& chrome,
                                  bool force) {
   DCHECK(chrome.is_chrome());
-
-  // If the shortcuts are not being forcefully created we may want to forcefully
-  // create them anyways if this Active Setup trigger is in response to an OS
-  // update.
-  force = force || installer::UpdateLastOSUpgradeHandledByActiveSetup(
-                       chrome.distribution());
 
   // Only create shortcuts on Active Setup if the first run sentinel is not
   // present for this user (as some shortcuts used to be installed on first
@@ -682,9 +676,9 @@ void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
   // shortcuts; if the decision is to create them, only shortcuts whose matching
   // all-users shortcut isn't present on the system will be created.
   InstallShortcutOperation install_operation =
-      (!force && InstallUtil::IsFirstRunSentinelPresent() ?
-           INSTALL_SHORTCUT_REPLACE_EXISTING :
-           INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
+      (!force && InstallUtil::IsFirstRunSentinelPresent())
+          ? INSTALL_SHORTCUT_REPLACE_EXISTING
+          : INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL;
 
   // Read master_preferences copied beside chrome.exe at install.
   MasterPreferences prefs(installation_root.AppendASCII(kDefaultMasterPrefs));
