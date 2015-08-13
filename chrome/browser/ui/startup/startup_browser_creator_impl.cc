@@ -16,7 +16,7 @@
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -79,6 +79,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/notification_observer.h"
@@ -325,6 +326,10 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
                                        const std::vector<GURL>& urls_to_open,
                                        bool process_startup,
                                        chrome::HostDesktopType desktop_type) {
+  UMA_HISTOGRAM_COUNTS_100("Startup.BrowserLaunchURLCount",
+      static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
+  RecordRapporOnStartupURLs(urls_to_open);
+
   DCHECK(profile);
   profile_ = profile;
 
@@ -1014,4 +1019,12 @@ void StartupBrowserCreatorImpl::InitializeWelcomeRunType(
   if (first_run::ShouldShowWelcomePage())
     welcome_run_type_ = WelcomeRunType::FIRST_RUN_LAST_TAB;
 #endif  // !OS_WIN
+}
+
+void StartupBrowserCreatorImpl::RecordRapporOnStartupURLs(
+    const std::vector<GURL>& urls_to_open) {
+  for (const GURL& url : urls_to_open) {
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "Startup.BrowserLaunchURL", url);
+  }
 }

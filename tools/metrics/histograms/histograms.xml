@@ -43405,6 +43405,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.BrowserLaunchURLCount" units="urls">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    Measured when Chrome is invoked, this counts the number of URLs passed via
+    command line. Note that this handles the case of a URL passed to Chrome
+    starting up, or when a running Chrome is given the message to open a new
+    URL.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount" units="faults">
   <owner>chrisha@chromium.org</owner>
   <summary>

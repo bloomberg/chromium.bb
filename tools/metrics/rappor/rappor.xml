@@ -31,7 +31,7 @@ components/rappor/rappor_service.cc.
 <rappor-parameters name="ETLD_PLUS_ONE">
   <summary>
     Deprecated parameters for collecting the domain and registry of a URL from
-    UMA opt-in users.
+    UMA opt-in users. Should use UMA_RAPPOR_TYPE instead.
   </summary>
   <parameters num-cohorts="128" bytes="16" hash-functions="2" fake-prob="0.5"
       fake-one-prob="0.5" one-coin-prob="0.75" zero-coin-prob="0.25"
@@ -542,6 +542,16 @@ components/rappor/rappor_service.cc.
   <owner>mad@chromium.org</owner>
   <summary>
     The IDs of unwanted software found by the software reporter tool.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Startup.BrowserLaunchURL" type="UMA_RAPPOR_TYPE">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL that was passed in from the command line when Chrome
+    is invoked. Note that this handles the case of a URL passed to Chrome
+    starting up, or when a running Chrome is given the message to open a new
+    URL.
   </summary>
 </rappor-metric>
 

@@ -151,6 +151,9 @@ class StartupBrowserCreatorImpl {
   // suppress injecting the welcome page for future launches.
   void InitializeWelcomeRunType(const std::vector<GURL>& urls_to_open);
 
+  // Record Rappor metrics on startup URLs.
+  void RecordRapporOnStartupURLs(const std::vector<GURL>& urls_to_open);
+
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;
   Profile* profile_;
