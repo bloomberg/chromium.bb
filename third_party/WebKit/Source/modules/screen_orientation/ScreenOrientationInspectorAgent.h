@@ -23,6 +23,8 @@ public:
 
     ~ScreenOrientationInspectorAgent() override;
 
+    DECLARE_VIRTUAL_TRACE();
+
     // Protocol methods.
     void setScreenOrientationOverride(ErrorString*, int, const String&) override;
     void clearScreenOrientationOverride(ErrorString*) override;
@@ -33,7 +35,7 @@ public:
 
 private:
     explicit ScreenOrientationInspectorAgent(LocalFrame&);
-    LocalFrame& m_frame;
+    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 } // namespace blink

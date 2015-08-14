@@ -48,8 +48,14 @@ ScreenOrientationInspectorAgent::~ScreenOrientationInspectorAgent()
 
 ScreenOrientationInspectorAgent::ScreenOrientationInspectorAgent(LocalFrame& frame)
     : InspectorBaseAgent<ScreenOrientationInspectorAgent, InspectorFrontend::ScreenOrientation>("ScreenOrientation")
-    , m_frame(frame)
+    , m_frame(&frame)
 {
+}
+
+DEFINE_TRACE(ScreenOrientationInspectorAgent)
+{
+    visitor->trace(m_frame);
+    InspectorBaseAgent<ScreenOrientationInspectorAgent, InspectorFrontend::ScreenOrientation>::trace(visitor);
 }
 
 void ScreenOrientationInspectorAgent::setScreenOrientationOverride(ErrorString* error, int angle, const String& typeString)
@@ -63,7 +69,7 @@ void ScreenOrientationInspectorAgent::setScreenOrientationOverride(ErrorString* 
         *error = "Wrong type value";
         return;
     }
-    ScreenOrientationController* controller = ScreenOrientationController::from(m_frame);
+    ScreenOrientationController* controller = ScreenOrientationController::from(*m_frame);
     if (!controller) {
         *error = "Cannot connect to orientation controller";
         return;
@@ -76,7 +82,7 @@ void ScreenOrientationInspectorAgent::setScreenOrientationOverride(ErrorString* 
 
 void ScreenOrientationInspectorAgent::clearScreenOrientationOverride(ErrorString* error)
 {
-    ScreenOrientationController* controller = ScreenOrientationController::from(m_frame);
+    ScreenOrientationController* controller = ScreenOrientationController::from(*m_frame);
     if (!controller) {
         *error = "Cannot connect to orientation controller";
         return;
@@ -88,7 +94,7 @@ void ScreenOrientationInspectorAgent::clearScreenOrientationOverride(ErrorString
 void ScreenOrientationInspectorAgent::disable(ErrorString*)
 {
     m_state->setBoolean(ScreenOrientationInspectorAgentState::overrideEnabled, false);
-    if (ScreenOrientationController* controller = ScreenOrientationController::from(m_frame))
+    if (ScreenOrientationController* controller = ScreenOrientationController::from(*m_frame))
         controller->clearOverride();
 }
 
@@ -97,7 +103,7 @@ void ScreenOrientationInspectorAgent::restore()
     if (m_state->getBoolean(ScreenOrientationInspectorAgentState::overrideEnabled)) {
         WebScreenOrientationType type = static_cast<WebScreenOrientationType>(m_state->getLong(ScreenOrientationInspectorAgentState::type));
         int angle = m_state->getLong(ScreenOrientationInspectorAgentState::angle);
-        if (ScreenOrientationController* controller = ScreenOrientationController::from(m_frame))
+        if (ScreenOrientationController* controller = ScreenOrientationController::from(*m_frame))
             controller->setOverride(type, angle);
     }
 }
