@@ -73,9 +73,12 @@ public class ContextualSearchSelectionController {
         @Override
         public void onSingleTap(boolean consumed, int x, int y) {
             // We may be notified that a tap has happened even when the system consumed the event.
-            // This is being considered for support for tapping an existing selection to show the
-            // pins.  We should only process this tap if it has not been consumed by the system.
-            if (!consumed) scheduleInvalidTapNotification();
+            // This is being used to support tapping on an existing selection to show the selection
+            // handles.  We should process this tap unless we have already shown the selection
+            // handles (have a long-press selection) and the tap was consumed.
+            if (!(consumed && mSelectionType == SelectionType.LONG_PRESS)) {
+                scheduleInvalidTapNotification();
+            }
         }
     }
 
