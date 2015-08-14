@@ -51,8 +51,6 @@ public:
         return adoptPtrWillBeNoop(new ScopedStyleResolver(scope));
     }
 
-    static TreeScope* treeScopeFor(Document&, const CSSStyleSheet*);
-
     const TreeScope& treeScope() const { return *m_scope; }
     ScopedStyleResolver* parent() const;
 

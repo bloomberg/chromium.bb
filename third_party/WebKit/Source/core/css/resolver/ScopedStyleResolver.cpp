@@ -46,23 +46,6 @@
 
 namespace blink {
 
-TreeScope* ScopedStyleResolver::treeScopeFor(Document& document, const CSSStyleSheet* sheet)
-{
-    ASSERT(sheet);
-
-    if (!sheet->ownerDocument())
-        return 0;
-
-    Node* ownerNode = sheet->ownerNode();
-    if (!isHTMLStyleElement(ownerNode) && !isSVGStyleElement(ownerNode))
-        return &document;
-
-    Element& styleElement = toElement(*ownerNode);
-    if (styleElement.isInShadowTree())
-        return styleElement.containingShadowRoot();
-    return &document;
-}
-
 ScopedStyleResolver* ScopedStyleResolver::parent() const
 {
     for (TreeScope* scope = treeScope().parentTreeScope(); scope; scope = scope->parentTreeScope()) {

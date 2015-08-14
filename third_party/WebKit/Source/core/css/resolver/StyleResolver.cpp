@@ -187,13 +187,18 @@ void StyleResolver::removePendingAuthorStyleSheets(const WillBeHeapVector<RefPtr
 void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet)
 {
     ASSERT(!cssSheet.disabled());
+    ASSERT(cssSheet.ownerDocument());
+    ASSERT(cssSheet.ownerNode());
+    ASSERT(isHTMLStyleElement(cssSheet.ownerNode()) || isSVGStyleElement(cssSheet.ownerNode()) || cssSheet.ownerNode()->treeScope() == cssSheet.ownerDocument());
+
     if (cssSheet.mediaQueries() && !m_medium->eval(cssSheet.mediaQueries(), &m_viewportDependentMediaQueryResults))
         return;
 
-    TreeScope* treeScope = ScopedStyleResolver::treeScopeFor(document(), &cssSheet);
-    if (!treeScope)
-        return;
-
+    TreeScope* treeScope = &cssSheet.ownerNode()->treeScope();
+    // Sheets in the document scope of HTML imports apply to the main document
+    // (m_document), so we override it for all document scoped sheets.
+    if (treeScope->rootNode().isDocumentNode())
+        treeScope = m_document;
     treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(cssSheet, *m_medium);
 }
 
