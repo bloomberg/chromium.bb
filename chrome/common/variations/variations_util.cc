@@ -9,7 +9,6 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
-#include "chrome/common/child_process_logging.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/variations/fieldtrial_testing_config.h"
 #include "components/variations/active_field_trials.h"
