@@ -184,6 +184,8 @@ class MEDIA_EXPORT VideoRendererImpl
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 
+  scoped_refptr<MediaLog> media_log_;
+
   // Flag indicating low-delay mode.
   bool low_delay_;
 

@@ -17215,6 +17215,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoRenderer.LowDelay" enum="Boolean">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Indicates whether video is rendering in low delay mode. It's recorded when a
+    video starts playing.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoRotation" enum="VideoRotation">
   <owner>suderman@chromium.org</owner>
   <summary>Metadata rotation in mp4 videos. Emitted during demuxing.</summary>

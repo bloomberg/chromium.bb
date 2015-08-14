@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
@@ -17,6 +18,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/pipeline.h"
 #include "media/base/video_frame.h"
@@ -56,6 +58,7 @@ VideoRendererImpl::VideoRendererImpl(
           new VideoFrameStream(task_runner, decoders.Pass(), media_log)),
       gpu_memory_buffer_pool_(
           new GpuMemoryBufferVideoFramePool(task_runner, gpu_factories)),
+      media_log_(media_log),
       low_delay_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
@@ -168,6 +171,9 @@ void VideoRendererImpl::Initialize(
   DCHECK(!time_progressing_);
 
   low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoRenderer.LowDelay", low_delay_);
+  if (low_delay_)
+    MEDIA_LOG(DEBUG, media_log_) << "Video rendering in low delay mode.";
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
   // failed.
