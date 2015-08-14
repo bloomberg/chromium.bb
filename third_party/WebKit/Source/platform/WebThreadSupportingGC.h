@@ -65,12 +65,6 @@ private:
     explicit WebThreadSupportingGC(const char*);
 
     OwnPtr<PendingGCRunner> m_pendingGCRunner;
-
-    // FIXME: This has to be last because of crbug.com/401397.
-    // A WorkerThread might get deleted before it had a chance to properly
-    // shut down. By deleting the WebThread first, we can guarantee that
-    // no pending tasks on the thread might want to access any of the other
-    // members during the WorkerThread's destruction.
     OwnPtr<WebThread> m_thread;
 };
 
