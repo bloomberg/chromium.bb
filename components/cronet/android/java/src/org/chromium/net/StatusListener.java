@@ -9,10 +9,10 @@ package org.chromium.net;
  */
 public interface StatusListener {
     /**
-     * Called on {@link UrlRequest} executor's thread when request status is
-     * obtained.
+     * Called on {@link UrlRequest}'s {@link java.util.concurrent.Executor}'s
+     * thread when request status is obtained.
      * @param status integer representing the status of the request. It is
-     *     one of the values defined in {@link RequestStatus}.
+     *         one of the values defined in {@link RequestStatus}.
      */
     public void onStatus(int status);
 }

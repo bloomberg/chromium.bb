@@ -22,11 +22,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * UrlRequest context using Chromium HTTP stack implementation.
+ * UrlRequestContext using Chromium HTTP stack implementation.
  */
 @JNINamespace("cronet")
 @UsedByReflection("UrlRequestContext.java")
-public class CronetUrlRequestContext extends UrlRequestContext  {
+class CronetUrlRequestContext extends UrlRequestContext {
     private static final int LOG_NONE = 3;  // LOG(FATAL), no VLOG.
     private static final int LOG_DEBUG = -1;  // LOG(FATAL...INFO), VLOG(1)
     private static final int LOG_VERBOSE = -2;  // LOG(FATAL...INFO), VLOG(2)

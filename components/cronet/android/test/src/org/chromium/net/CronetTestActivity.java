@@ -177,7 +177,7 @@ public class CronetTestActivity extends Activity {
 
     private UrlRequestContextConfig initializeContextConfig() {
         UrlRequestContextConfig config = new UrlRequestContextConfig();
-        config.enableSPDY(true).enableQUIC(true);
+        config.enableHTTP2(true).enableQUIC(true);
 
         // Override config if it is passed from the launcher.
         String configString = getCommandLineArg(CONFIG_KEY);
@@ -194,12 +194,12 @@ public class CronetTestActivity extends Activity {
         String cacheString = getCommandLineArg(CACHE_KEY);
         if (CACHE_DISK.equals(cacheString)) {
             config.setStoragePath(getTestStorage());
-            config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK, 1000 * 1024);
+            config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_DISK, 1000 * 1024);
         } else if (CACHE_DISK_NO_HTTP.equals(cacheString)) {
             config.setStoragePath(getTestStorage());
-            config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK_NO_HTTP, 1000 * 1024);
+            config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
         } else if (CACHE_IN_MEMORY.equals(cacheString)) {
-            config.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024);
+            config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY, 100 * 1024);
         }
 
         String sdchString = getCommandLineArg(SDCH_KEY);

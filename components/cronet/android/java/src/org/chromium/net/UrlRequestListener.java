@@ -7,8 +7,14 @@ package org.chromium.net;
 import java.nio.ByteBuffer;
 
 /**
- * Note:  All methods will be called on the thread of the Executor used during
- * construction of the UrlRequest.
+ * Users of Cronet implement this interface to receive callbacks indicating the
+ * progress of a {@link UrlRequest} being processed. An instance of this class
+ * is passed in when the {@code UrlRequest} is created by
+ * {@link UrlRequestContext#createRequest}
+ * <p>
+ * Note:  All methods will be called on the thread of the
+ * {@link java.util.concurrent.Executor} used during construction of the
+ * {@code UrlRequest}.
  */
 public interface UrlRequestListener {
     /**
@@ -75,8 +81,8 @@ public interface UrlRequestListener {
     public void onSucceeded(UrlRequest request, ExtendedResponseInfo info);
 
     /**
-     * Called if request failed for any reason after start().  Once
-     * called, no other functions can be called.  UrlRequestException
+     * Called if request failed for any reason after start(). Once
+     * called, no other functions can be called. UrlRequestException
      * provides information about error.
      *
      * @param request Request that failed.

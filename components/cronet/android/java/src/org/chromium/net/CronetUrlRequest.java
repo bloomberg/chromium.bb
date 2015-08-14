@@ -49,9 +49,9 @@ final class CronetUrlRequest implements UrlRequest {
     private final Executor mExecutor;
 
     /*
-     * Url chain contans the URL currently being requested, and
-     * all URLs previously requested.  New URLs are only added after it is
-     * decided a redirect will be followed.
+     * URL chain contains the URL currently being requested, and
+     * all URLs previously requested. New URLs are added before
+     * mListener.onReceivedRedirect is called.
      */
     private final List<String> mUrlChain = new ArrayList<String>();
 
@@ -67,14 +67,13 @@ final class CronetUrlRequest implements UrlRequest {
 
     /*
      * Listener callback is repeatedly called when each read is completed, so it
-     * is cached as member variable.
+     * is cached as a member variable.
      */
     private OnReadCompletedRunnable mOnReadCompletedTask;
 
     private Runnable mOnDestroyedCallbackForTests;
 
-    static final class HeadersList extends ArrayList<Pair<String, String>> {
-    }
+    private static final class HeadersList extends ArrayList<Pair<String, String>> {}
 
     private final class OnReadCompletedRunnable implements Runnable {
         ByteBuffer mByteBuffer;
@@ -91,7 +90,7 @@ final class CronetUrlRequest implements UrlRequest {
                     }
                     mWaitingOnRead = true;
                 }
-                // Null out mByteBuffer, out of paranoia.  Has to be done before
+                // Null out mByteBuffer, out of paranoia. Has to be done before
                 // mListener call, to avoid any race when there are multiple
                 // executor threads.
                 ByteBuffer buffer = mByteBuffer;
@@ -104,14 +103,14 @@ final class CronetUrlRequest implements UrlRequest {
         }
     }
 
-    static final class NativeResponseInfo implements ResponseInfo {
+    private static final class NativeResponseInfo implements ResponseInfo {
         private final String[] mResponseInfoUrlChain;
         private final int mHttpStatusCode;
         private final String mHttpStatusText;
-        private final HeadersList mAllHeaders = new HeadersList();
         private final boolean mWasCached;
         private final String mNegotiatedProtocol;
         private final String mProxyServer;
+        private final HeadersList mAllHeaders = new HeadersList();
         private Map<String, List<String>> mResponseHeaders;
         private List<Pair<String, String>> mUnmodifiableAllHeaders;
 
@@ -190,8 +189,7 @@ final class CronetUrlRequest implements UrlRequest {
         }
     };
 
-    static final class NativeExtendedResponseInfo implements
-            ExtendedResponseInfo {
+    private static final class NativeExtendedResponseInfo implements ExtendedResponseInfo {
         private final ResponseInfo mResponseInfo;
         private final long mTotalReceivedBytes;
 
@@ -349,13 +347,13 @@ final class CronetUrlRequest implements UrlRequest {
                 return;
             }
 
-            // Indicate buffer has no new data.  This is primarily to make it
+            // Indicate buffer has no new data. This is primarily to make it
             // clear the buffer has no data in the failure and completion cases.
             buffer.limit(buffer.position());
 
             if (!nativeReadData(mUrlRequestAdapter, buffer, buffer.position(),
                     buffer.capacity())) {
-                // Still waiting on read.  This is just to have consistent
+                // Still waiting on read. This is just to have consistent
                 // behavior with the other error cases.
                 mWaitingOnRead = true;
                 // Since accessing byteBuffer's memory failed, it's presumably
@@ -412,7 +410,7 @@ final class CronetUrlRequest implements UrlRequest {
     }
 
     /**
-     * Post task to application Executor. Used for Listener callbacks
+     * Posts task to application Executor. Used for Listener callbacks
      * and other tasks that should not be executed on network thread.
      */
     private void postTaskToExecutor(Runnable task) {
@@ -726,7 +724,7 @@ final class CronetUrlRequest implements UrlRequest {
         postTaskToExecutor(task);
     }
 
-    // Native methods are implemented in cronet_url_request.cc.
+    // Native methods are implemented in cronet_url_request_adapter.cc.
 
     private native long nativeCreateRequestAdapter(
             long urlRequestContextAdapter, String url, int priority);

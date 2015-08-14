@@ -6,21 +6,24 @@ package org.chromium.net;
 
 import java.lang.reflect.Constructor;
 
-
 /**
- * Controls UMA histograms in native library.
+ * Controls user metrics analysis (UMA) histograms.
  */
 public abstract class HistogramManager {
     private static final String CRONET_HISTOGRAM_MANAGER =
             "org.chromium.net.CronetHistogramManager";
 
+    // Don't expose public constructor. Use createHistogramManager() instead.
+    HistogramManager() {}
+
     /**
-     * Get histogram deltas serialized as protobuf.
+     * Get histogram deltas serialized as
+     * <a href=https://developers.google.com/protocol-buffers>protobuf</a>.
      */
     public abstract byte[] getHistogramDeltas();
 
     /**
-     * Creates Histogram Manager if native library is loaded, returns null if not.
+     * Creates Histogram Manager if native library is loaded, returns {@code null} if not.
      */
     public static HistogramManager createHistogramManager() {
         HistogramManager histogramManager = null;

@@ -15,12 +15,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
-import org.chromium.net.CronetUrlRequestContext;
 import org.chromium.net.ExtendedResponseInfo;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlRequest;
+import org.chromium.net.UrlRequestContext;
 import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlRequestListener;
@@ -39,7 +39,7 @@ import java.util.concurrent.Executors;
 public class CronetSampleActivity extends Activity {
     private static final String TAG = "cr.CronetSample";
 
-    private CronetUrlRequestContext mRequestContext;
+    private UrlRequestContext mRequestContext;
 
     private String mUrl;
     private boolean mLoading = false;
@@ -158,11 +158,11 @@ public class CronetSampleActivity extends Activity {
         mReceiveDataText = (TextView) findViewById(R.id.dataView);
 
         UrlRequestContextConfig myConfig = new UrlRequestContextConfig();
-        myConfig.enableHttpCache(UrlRequestContextConfig.HttpCache.IN_MEMORY, 100 * 1024)
-                .enableSPDY(true)
+        myConfig.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY, 100 * 1024)
+                .enableHTTP2(true)
                 .enableQUIC(true);
 
-        mRequestContext = new CronetUrlRequestContext(this, myConfig);
+        mRequestContext = UrlRequestContext.createContext(this, myConfig);
 
         String appUrl = (getIntent() != null ? getIntent().getDataString() : null);
         if (appUrl == null) {

@@ -7,17 +7,15 @@ package org.chromium.net;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * Controls UMA histograms.
+ * The implementation of {@link HistogramManager}. Controls UMA histograms.
  */
 @JNINamespace("cronet")
-public final class CronetHistogramManager extends HistogramManager {
+final class CronetHistogramManager extends HistogramManager {
     public CronetHistogramManager() {
         nativeEnsureInitialized();
     }
 
-    /**
-     * Get histogram deltas serialized as protobuf.
-     */
+    @Override
     public byte[] getHistogramDeltas() {
         return nativeGetHistogramDeltas();
     }

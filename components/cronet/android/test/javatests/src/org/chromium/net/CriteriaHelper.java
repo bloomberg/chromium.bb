@@ -33,9 +33,10 @@ public class CriteriaHelper {
      *
      * @param criteria The Criteria that will be checked.
      * @param maxTimeoutMs The maximum number of ms that this check will be
-     *            performed for before timeout.
+     *         performed for before timeout.
      * @param checkIntervalMs The number of ms between checks.
-     * @return true iff checking has ended with the criteria being satisfied.
+     * @return {@code true} if checking has ended with the criteria being
+     *         satisfied.
      * @throws InterruptedException
      */
     public static boolean pollForCriteria(Criteria criteria, long maxTimeoutMs,
@@ -55,7 +56,8 @@ public class CriteriaHelper {
      * interval.
      *
      * @param criteria The Criteria that will be checked.
-     * @return iff checking has ended with the criteria being satisfied.
+     * @return {@code true} if checking has ended with the criteria being
+     *         satisfied.
      * @throws InterruptedException
      * @see #pollForCriteria(Criteria, long, long)
      */

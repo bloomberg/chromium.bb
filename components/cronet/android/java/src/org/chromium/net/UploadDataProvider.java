@@ -18,8 +18,9 @@ import java.nio.ByteBuffer;
  */
 public interface UploadDataProvider {
     /**
-     * @return if this is a non-chunked upload, returns the length of the
-     *         upload. Must always return -1 if this is a chunked upload.
+     * If this is a non-chunked upload, returns the length of the upload. Must
+     * always return -1 if this is a chunked upload.
+     * @return the length of the upload for non-chunked uploads, -1 otherwise.
      */
     public long getLength();
 

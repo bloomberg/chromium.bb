@@ -8,25 +8,40 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 
 /**
- * HTTP request (GET, PUT or POST).
- * Note:  All methods must be called on the Executor passed in during creation.
+ * Controls an HTTP request (GET, PUT, POST etc).
+ * Created using {@link UrlRequestContext#createRequest UrlRequestContext.createRequest()}.
+ * Note:  All methods must be called on the {@link Executor} passed in during creation.
  */
 public interface UrlRequest {
+    /**
+     * Lowest request priority. Passed to {@link UrlRequestContext#createRequest(String,
+     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
+     */
     public static final int REQUEST_PRIORITY_IDLE = 0;
-
+    /**
+     * Very low request priority. Passed to {@link UrlRequestContext#createRequest(String,
+     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
+     */
     public static final int REQUEST_PRIORITY_LOWEST = 1;
-
+    /**
+     * Low request priority. Passed to {@link UrlRequestContext#createRequest(String,
+     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
+     */
     public static final int REQUEST_PRIORITY_LOW = 2;
-
+    /**
+     * Medium request priority. Passed to {@link UrlRequestContext#createRequest(String,
+     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
+     */
     public static final int REQUEST_PRIORITY_MEDIUM = 3;
-
+    /**
+     * Highest request priority. Passed to {@link UrlRequestContext#createRequest(String,
+     * UrlRequestListener, Executor, int) UrlRequestContext.createRequest()}.
+     */
     public static final int REQUEST_PRIORITY_HIGHEST = 4;
 
-    /**
-     * More setters go here.  They may only be called before start (Maybe
-     * also allow during redirects).  Could optionally instead use arguments
-     * to URLRequestFactory when creating the request.
-     */
+    // More setters go here. They may only be called before start (Maybe
+    // also allow during redirects). Could optionally instead use arguments
+    // to URLRequestFactory when creating the request.
 
     /**
      * Sets the HTTP method verb to use for this request. Must be done before
@@ -42,13 +57,13 @@ public interface UrlRequest {
     /**
      * Adds a request header. Must be done before request has started.
      *
-     * @param header Header name
-     * @param value Header value
+     * @param header header name.
+     * @param value header value.
      */
     public void addHeader(String header, String value);
 
     /**
-     * Sets upload data. Must be done before request has started. May only be
+     * Sets upload data provider. Must be done before request has started. May only be
      * invoked once per request. Switches method to "POST" if not explicitly
      * set. Starting the request will throw an exception if a Content-Type
      * header is not set.
@@ -62,14 +77,14 @@ public interface UrlRequest {
 
     /**
      * Starts the request, all callbacks go to listener. May only be called
-     * once. May not be called if cancel has been called on the request.
+     * once. May not be called if {@link #cancel} has been called.
      */
     public void start();
 
     /**
      * Follows a pending redirect. Must only be called at most once for each
-     * invocation of the {@link UrlRequestListener#onRedirect onRedirect} method
-     * of the {@link UrlRequestListener}.
+     * invocation of {@link UrlRequestListener#onReceivedRedirect
+     * UrlRequestListener.onReceivedRedirect()}.
      */
     public void followRedirect();
 
@@ -101,17 +116,19 @@ public interface UrlRequest {
     /**
      * Cancels the request.
      *
-     * Can be called at any time.  If the Executor passed to UrlRequest on
-     * construction runs tasks on a single thread, and cancel is called on that
-     * thread, no listener methods will be invoked after cancel is called.
-     * Otherwise, at most one listener method may be made after cancel has
-     * completed.
+     * Can be called at any time. If the {@link Executor} passed in during
+     * {@code UrlRequest} construction runs tasks on a single thread, and cancel
+     * is called on that thread, no listener methods will be invoked after
+     * cancel is called. Otherwise, at most one listener method may be made
+     * after cancel has completed.
      */
     public void cancel();
 
     /**
-     * @return True if the request was successfully started and is now done
-     * with its work (completed, canceled, or failed).
+     * Returns {@code true} if the request was successfully started and is now
+     * done (completed, canceled, or failed).
+     * @return {@code true} if the request was successfully started and is now
+     *         done (completed, canceled, or failed).
      */
     public boolean isDone();
 
@@ -123,15 +140,15 @@ public interface UrlRequest {
 
     /**
      * Queries the status of the request.
-     * @param listener a {@link StatusListener} that will be used to notify
-     *     the caller when result is ready.
+     * @param listener a {@link StatusListener} that will be called back with
+     *         the request's current status. {@code listener} will be called
+     *         back on the {@link Executor} passed in when the request was
+     *         created.
      */
     public void getStatus(final StatusListener listener);
 
-    /**
-     * Note:  There are deliberately no accessors for the results of the request
-     * here.  Having none removes any ambiguity over when they are populated,
-     * particularly in the redirect case.
-     */
+    // Note:  There are deliberately no accessors for the results of the request
+    // here. Having none removes any ambiguity over when they are populated,
+    // particularly in the redirect case.
 }
 

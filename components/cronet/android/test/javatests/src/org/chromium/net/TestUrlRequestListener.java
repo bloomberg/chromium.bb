@@ -223,7 +223,8 @@ class TestUrlRequestListener implements UrlRequestListener {
     }
 
     /**
-     * Returns false if the listener should continue to advance the request.
+     * Returns {@code false} if the listener should continue to advance the
+     * request.
      */
     private boolean maybeThrowCancelOrPause(final UrlRequest request) {
         if (mResponseStep != mFailureStep || mFailureType == FailureType.NONE) {

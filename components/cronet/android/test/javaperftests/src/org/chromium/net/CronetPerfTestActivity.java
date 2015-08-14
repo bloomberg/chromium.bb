@@ -240,7 +240,7 @@ public class CronetPerfTestActivity extends Activity {
          * Transfer {@code mLength} bytes through HttpURLConnection in {@code mDirection} direction.
          * @param connection The HttpURLConnection to use for transfer.
          * @param buffer A buffer of length |mBufferSize| to use for transfer.
-         * @return true if transfer completed successfully.
+         * @return {@code true} if transfer completed successfully.
          */
         private boolean exerciseHttpURLConnection(URLConnection urlConnection, byte[] buffer)
                 throws IOException {

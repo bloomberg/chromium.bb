@@ -16,7 +16,7 @@ public interface ExtendedResponseInfo {
 
     /**
      * Returns the total amount of data received from network after SSL
-     * decoding and proxy handling but before gzip and sdch decompression.
+     * decoding and proxy handling but before gzip and SDCH decompression.
      * Available on request completion.
      */
     long getTotalReceivedBytes();

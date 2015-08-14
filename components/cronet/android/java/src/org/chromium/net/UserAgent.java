@@ -18,11 +18,19 @@ import java.util.Locale;
 public final class UserAgent {
     private static final Object sLock = new Object();
 
-    private static int sVersionCode;
+    private static final int VERSION_CODE_UNINITIALIZED = 0;
+    private static int sVersionCode = VERSION_CODE_UNINITIALIZED;
 
     private UserAgent() {
     }
 
+    /**
+     * Constructs a User-Agent string including Cronet version, and application
+     * name and version.
+     * @param context the context to fetch the application name and version
+     *         from.
+     * @return User-Agent string.
+     */
     public static String from(Context context) {
         StringBuilder builder = new StringBuilder();
 
@@ -59,7 +67,7 @@ public final class UserAgent {
 
     private static int versionFromContext(Context context) {
         synchronized (sLock) {
-            if (sVersionCode == 0) {
+            if (sVersionCode == VERSION_CODE_UNINITIALIZED) {
                 PackageManager packageManager = context.getPackageManager();
                 String packageName = context.getPackageName();
                 try {

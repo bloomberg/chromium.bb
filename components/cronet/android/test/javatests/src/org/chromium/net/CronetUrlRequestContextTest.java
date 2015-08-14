@@ -463,14 +463,13 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         }
     }
 
-    private void enableCache(UrlRequestContextConfig.HttpCache cacheType)
-            throws Exception {
+    private void enableCache(int cacheType) throws Exception {
         String cacheTypeString = "";
-        if (cacheType == UrlRequestContextConfig.HttpCache.DISK) {
+        if (cacheType == UrlRequestContextConfig.HTTP_CACHE_DISK) {
             cacheTypeString = CronetTestActivity.CACHE_DISK;
-        } else if (cacheType == UrlRequestContextConfig.HttpCache.DISK_NO_HTTP) {
+        } else if (cacheType == UrlRequestContextConfig.HTTP_CACHE_DISK_NO_HTTP) {
             cacheTypeString = CronetTestActivity.CACHE_DISK_NO_HTTP;
-        } else if (cacheType == UrlRequestContextConfig.HttpCache.IN_MEMORY) {
+        } else if (cacheType == UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY) {
             cacheTypeString = CronetTestActivity.CACHE_IN_MEMORY;
         }
         String[] commandLineArgs = {CronetTestActivity.CACHE_KEY, cacheTypeString};
@@ -500,7 +499,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisabled() throws Exception {
-        enableCache(UrlRequestContextConfig.HttpCache.DISABLED);
+        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
@@ -510,7 +509,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheInMemory() throws Exception {
-        enableCache(UrlRequestContextConfig.HttpCache.IN_MEMORY);
+        enableCache(UrlRequestContextConfig.HTTP_CACHE_IN_MEMORY);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
@@ -521,7 +520,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDisk() throws Exception {
-        enableCache(UrlRequestContextConfig.HttpCache.DISK);
+        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);
@@ -532,7 +531,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDiskNoHttp() throws Exception {
-        enableCache(UrlRequestContextConfig.HttpCache.DISABLED);
+        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISABLED);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, false);
@@ -542,7 +541,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testDisableCache() throws Exception {
-        enableCache(UrlRequestContextConfig.HttpCache.DISK);
+        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
 
         // When cache is disabled, making a request does not write to the cache.
@@ -572,7 +571,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testEnableHttpCacheDiskNewContext() throws Exception {
-        enableCache(UrlRequestContextConfig.HttpCache.DISK);
+        enableCache(UrlRequestContextConfig.HTTP_CACHE_DISK);
         String url = NativeTestServer.getFileURL("/cacheable.txt");
         checkRequestCaching(url, false);
         checkRequestCaching(url, true);

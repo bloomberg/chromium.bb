@@ -160,17 +160,16 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
     @Feature({"Cronet"})
     public void testEnableHttpCache() {
         HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISABLED, 0);
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY, 0);
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISABLED, 0);
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_IN_MEMORY, 0);
         try {
-            config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK, 0);
+            config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must be set", e.getMessage());
         }
         try {
-            config.enableHttpCache(
-                    HttpUrlRequestFactoryConfig.HttpCache.DISK_NO_HTTP, 0);
+            config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK_NO_HTTP, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must be set", e.getMessage());
@@ -181,10 +180,10 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
                 "disk_cache_dir", Context.MODE_PRIVATE);
         String path = dir.getPath();
         config.setStoragePath(path);
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK, 100);
-        config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.DISK_NO_HTTP, 100);
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK, 100);
+        config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_DISK_NO_HTTP, 100);
         try {
-            config.enableHttpCache(HttpUrlRequestFactoryConfig.HttpCache.IN_MEMORY, 0);
+            config.enableHttpCache(HttpUrlRequestFactoryConfig.HTTP_CACHE_IN_MEMORY, 0);
             fail("IllegalArgumentException must be thrown");
         } catch (IllegalArgumentException e) {
             assertEquals("Storage path must be empty", e.getMessage());

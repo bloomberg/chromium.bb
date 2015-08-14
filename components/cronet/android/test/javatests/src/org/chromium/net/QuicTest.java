@@ -109,7 +109,7 @@ public class QuicTest extends CronetTestBase {
         // Make another request using a new context but with no QUIC hints.
         UrlRequestContextConfig config = new UrlRequestContextConfig();
         config.setStoragePath(mActivity.getTestStorage());
-        config.enableHttpCache(UrlRequestContextConfig.HttpCache.DISK, 1000 * 1024);
+        config.enableHttpCache(UrlRequestContextConfig.HTTP_CACHE_DISK, 1000 * 1024);
         config.enableQUIC(true);
         CronetUrlRequestContext newContext =
                 new CronetUrlRequestContext(getInstrumentation().getTargetContext(), config);

@@ -13,7 +13,14 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
 /**
- * An {@code URLStreamHandler} that handles http and https connections.
+ * A {@link URLStreamHandler} that handles HTTP and HTTPS connections. One can use this class to
+ * create {@link java.net.HttpURLConnection} instances implemented by Cronet; for example: <pre>
+ *
+ * CronetHttpURLStreamHandler streamHandler = new CronetHttpURLStreamHandler(myContext);
+ * HttpURLConnection connection = (HttpURLConnection)streamHandler.openConnection(
+ *         new URL("http://chromium.org"));</pre>
+ * <b>Note:</b> Cronet's {@code HttpURLConnection} implementation is subject to some limitations
+ * listed {@link CronetURLStreamHandlerFactory here}.
  */
 public class CronetHttpURLStreamHandler extends URLStreamHandler {
     private final UrlRequestContext mUrlRequestContext;
@@ -23,7 +30,8 @@ public class CronetHttpURLStreamHandler extends URLStreamHandler {
     }
 
     /**
-     * Establishes a new connection to the resource specified by the URL url.
+     * Establishes a new connection to the resource specified by the {@link URL} {@code url}.
+     * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
      */
     @Override
     public URLConnection openConnection(URL url) throws IOException {
@@ -36,8 +44,9 @@ public class CronetHttpURLStreamHandler extends URLStreamHandler {
     }
 
     /**
-     * Establishes a new connection to the resource specified by the URL url
+     * Establishes a new connection to the resource specified by the {@link URL} {@code url}
      * using the given proxy.
+     * @return an {@link java.net.HttpURLConnection} instance implemented by Cronet.
      */
     @Override
     public URLConnection openConnection(URL url, Proxy proxy) {

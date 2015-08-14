@@ -35,15 +35,15 @@ public class CriteriaHelper {
      * @param maxTimeoutMs The maximum number of ms that this check will be
      *            performed for before timeout.
      * @param checkIntervalMs The number of ms between checks.
-     * @return true iff checking has ended with the criteria being satisfied.
+     * @return {@code true} iff checking has ended with the criteria being
+     *            satisfied.
      * @throws InterruptedException
      */
     public static boolean pollForCriteria(Criteria criteria, long maxTimeoutMs,
             long checkIntervalMs) throws InterruptedException {
         boolean isSatisfied = criteria.isSatisfied();
         long startTime = SystemClock.uptimeMillis();
-        while (!isSatisfied &&
-               SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
+        while (!isSatisfied && SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
             Thread.sleep(checkIntervalMs);
             isSatisfied = criteria.isSatisfied();
         }

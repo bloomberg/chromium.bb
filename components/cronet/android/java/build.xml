@@ -6,6 +6,8 @@
                nohelp="yes"
                notree="yes"
                nodeprecated="yes"
+               linkoffline="http://developer.android.com/reference ."
+               bootclasspath="../../../../third_party/android_tools/sdk/platforms/android-22/android.jar"
                >
         <fileset dir="${source.dir}" defaultexcludes="yes">
           <include name="**/*.java"/>

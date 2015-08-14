@@ -21,12 +21,16 @@ public abstract class UrlRequestContext {
 
     /**
      * Creates a {@link UrlRequest} object. All callbacks will
-     * be called on the Executor's thread. Executor must not run tasks on the
-     * current thread to prevent network jank and exception during shutdown.
+     * be called on {@code executor}'s thread. {@code executor} must not run
+     * tasks on the current thread to prevent blocking networking operations
+     * and causing exceptions during shutdown. Request is given medium priority,
+     * see {@link UrlRequest#REQUEST_PRIORITY_MEDIUM}. To specify other
+     * priorities see {@link #createRequest(String, UrlRequestListener,
+     * Executor, int priority)}.
      *
-     * @param url URL for the request.
-     * @param listener Callback interface that gets called on different events.
-     * @param executor Executor on which all callbacks will be called.
+     * @param url {@link java.net.URL} for the request.
+     * @param listener callback interface that gets called on different events.
+     * @param executor {@link Executor} on which all callbacks will be called.
      * @return new request.
      */
     public abstract UrlRequest createRequest(String url,
@@ -34,23 +38,25 @@ public abstract class UrlRequestContext {
 
     /**
      * Creates a {@link UrlRequest} object. All callbacks will
-     * be called on the Executor's thread. Executor must not run tasks on the
-     * current thread to prevent network jank and exception during shutdown.
+     * be called on {@code executor}'s thread. {@code executor} must not run
+     * tasks on the current thread to prevent blocking networking operations
+     * and causing exceptions during shutdown.
      *
-     * @param url URL for the request.
-     * @param listener Callback interface that gets called on different events.
-     * @param executor Executor on which all callbacks will be called.
-     * @param priority Priority of the request which should be one of the
-                  REQUEST_PRIORITY_* values in {@link UrlRequest}.
+     * @param url {@link java.net.URL} for the request.
+     * @param listener callback interface that gets called on different events.
+     * @param executor {@link Executor} on which all callbacks will be called.
+     * @param priority priority of the request which should be one of the
+     *         {@link UrlRequest#REQUEST_PRIORITY_IDLE REQUEST_PRIORITY_*}
+     *         values.
      * @return new request.
      */
     public abstract UrlRequest createRequest(String url,
             UrlRequestListener listener, Executor executor, int priority);
 
     /**
-     * @return true if the context is enabled.
+     * @return {@code true} if the context is enabled.
      */
-    public abstract boolean isEnabled();
+    abstract boolean isEnabled();
 
     /**
      * @return a human-readable version string of the context.
@@ -58,27 +64,26 @@ public abstract class UrlRequestContext {
     public abstract String getVersionString();
 
     /**
-     * Shuts down the UrlRequestContext if there are no active requests,
+     * Shuts down the {@link UrlRequestContext} if there are no active requests,
      * otherwise throws an exception.
      *
-     * Cannot be called on network thread - the thread  Cronet calls into
+     * Cannot be called on network thread - the thread Cronet calls into
      * Executor on (which is different from the thread the Executor invokes
-     * callbacks on).  May block until all the Context's resources have been
-     * cleaned up.
+     * callbacks on). May block until all the {@code UrlRequestContext}'s
+     * resources have been cleaned up.
      */
     public abstract void shutdown();
 
     /**
-     * Starts NetLog logging to a file. The NetLog capture mode used is either
-     * NetLogCaptureMode::Default() or NetLogCaptureMode::IncludeSocketBytes().
-     * The IncludeSocketBytes() mode includes basic events, user cookies,
-     * credentials and all transferred bytes in the log.
-     * @param fileName The complete file path. It must not be empty. If file
+     * Starts NetLog logging to a file. The NetLog is useful for debugging.
+     * The file can be viewed using a Chrome browser navigated to
+     * chrome://net-internals/#import
+     * @param fileName the complete file path. It must not be empty. If the file
      *            exists, it is truncated before starting. If actively logging,
      *            this method is ignored.
-     * @param logAll {@code true} to use the
-     *            NetLogCaptureMode::IncludeSocketBytes() logging level. If
-     *            false, NetLogCaptureMode::Default() is used instead.
+     * @param logAll {@code true} to include basic events, user cookies,
+     *            credentials and all transferred bytes in the log.
+     *            {@code false} to just include basic events.
      */
     public abstract void startNetLogToFile(String fileName, boolean logAll);
 
@@ -89,10 +94,9 @@ public abstract class UrlRequestContext {
     public abstract void stopNetLog();
 
     /**
-     * Create context with given config. If config.legacyMode is true, or
-     * native library is not available, then creates HttpUrlConnection-based
-     * context.
-     * @param context application context.
+     * Creates a {@link UrlRequestContext} with the given
+     * {@link UrlRequestContextConfig}.
+     * @param context Android {@link Context}.
      * @param config context configuration.
      */
     public static UrlRequestContext createContext(Context context,
