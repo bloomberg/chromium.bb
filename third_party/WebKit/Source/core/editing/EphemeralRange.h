@@ -5,7 +5,7 @@
 #ifndef EphemeralRange_h
 #define EphemeralRange_h
 
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 
 namespace blink {
 

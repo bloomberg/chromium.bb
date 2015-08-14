@@ -32,7 +32,7 @@
 #define RenderedPosition_h
 
 #include "core/CoreExport.h"
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "core/editing/TextAffinity.h"
 #include "core/layout/line/InlineBox.h"
 

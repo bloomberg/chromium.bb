@@ -30,9 +30,9 @@
 #define StyledMarkupSerializer_h
 
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/Position.h"
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingStyle.h"
+#include "core/editing/Position.h"
 #include "core/editing/StyledMarkupAccumulator.h"
 #include "wtf/Forward.h"
 

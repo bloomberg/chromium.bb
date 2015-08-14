@@ -5,7 +5,7 @@
 #ifndef CoreTestHelpers_h
 #define CoreTestHelpers_h
 
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 
 namespace blink {
 

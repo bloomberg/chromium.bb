@@ -28,7 +28,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 
 namespace blink {
 

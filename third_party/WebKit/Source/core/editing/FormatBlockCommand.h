@@ -26,10 +26,10 @@
 #ifndef FormatBlockCommand_h
 #define FormatBlockCommand_h
 
-#include "core/dom/Position.h"
 #include "core/dom/QualifiedName.h"
 #include "core/editing/ApplyBlockElementCommand.h"
 #include "core/editing/EditAction.h"
+#include "core/editing/Position.h"
 
 namespace blink {
 

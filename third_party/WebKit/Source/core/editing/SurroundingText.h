@@ -32,7 +32,7 @@
 #define SurroundingText_h
 
 #include "core/CoreExport.h"
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 

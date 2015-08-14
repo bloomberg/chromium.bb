@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/html/HTMLTextFormControlElement.h"
 
-#include "core/dom/Position.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/Position.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"

@@ -5,7 +5,7 @@
 #ifndef EditingTestBase_h
 #define EditingTestBase_h
 
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "core/testing/CoreTestHelpers.h"
 #include "wtf/Forward.h"
 #include <gtest/gtest.h>

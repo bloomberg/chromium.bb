@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/editing/RenderedPosition.h"
 
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/paint/DeprecatedPaintLayer.h"

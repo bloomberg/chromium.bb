@@ -33,8 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/Position.h"
 #include "core/dom/Range.h"
+#include "core/editing/Position.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 #include "core/editing/iterators/CharacterIterator.h"
 

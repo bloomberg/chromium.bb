@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 
 #include "core/editing/EditingTestBase.h"
 

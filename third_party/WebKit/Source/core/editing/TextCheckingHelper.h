@@ -21,7 +21,7 @@
 #ifndef TextCheckingHelper_h
 #define TextCheckingHelper_h
 
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
 #include "wtf/text/WTFString.h"

@@ -62,8 +62,8 @@ struct InlineBoxPosition {
 };
 
 enum PositionMoveType {
-    CodePoint,       // Move by a single code point.
-    Character,       // Move to the next Unicode character break.
+    CodePoint, // Move by a single code point.
+    Character, // Move to the next Unicode character break.
     BackwardDeletion // Subject to platform conventions.
 };
 
@@ -110,7 +110,7 @@ public:
     // will return img->parentNode() and img->nodeIndex() from these functions.
     Node* computeContainerNode() const; // null for a before/after position anchored to a node with no parent
 
-    int computeOffsetInContainerNode() const;  // O(n) for before/after-anchored positions, O(1) for parent-anchored positions
+    int computeOffsetInContainerNode() const; // O(n) for before/after-anchored positions, O(1) for parent-anchored positions
     PositionAlgorithm<Strategy> parentAnchoredEquivalent() const; // Convenience method for DOM positions that also fixes up some positions for editing
 
     // Returns |PositionIsAnchor| type |Position| which is compatible with

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/dom/PositionIterator.h"
+#include "core/editing/PositionIterator.h"
 
 namespace blink {
 

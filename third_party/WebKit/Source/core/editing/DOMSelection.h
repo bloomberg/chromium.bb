@@ -32,7 +32,7 @@
 #define DOMSelection_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"

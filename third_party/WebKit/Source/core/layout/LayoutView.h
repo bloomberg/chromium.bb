@@ -23,7 +23,7 @@
 #define LayoutView_h
 
 #include "core/CoreExport.h"
-#include "core/dom/Position.h"
+#include "core/editing/Position.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/HitTestCache.h"
 #include "core/layout/HitTestResult.h"
