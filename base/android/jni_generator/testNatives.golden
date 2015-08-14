@@ -25,31 +25,16 @@ jclass g_TestJni_clazz = NULL;
 
 }  // namespace
 
+// Step 2: method stubs.
+
 static jint Init(JNIEnv* env, jobject jcaller);
 
-static jstring GetDomainAndRegistry(JNIEnv* env, jclass jcaller,
-    jstring url);
+static jint Java_org_chromium_TestJni_nativeInit(JNIEnv* env, jobject jcaller) {
+  return Init(env, jcaller);
+}
 
-static void CreateHistoricalTabFromState(JNIEnv* env, jclass jcaller,
-    jbyteArray state,
-    jint tab_index);
-
-static jbyteArray GetStateAsByteArray(JNIEnv* env, jobject jcaller,
-    jobject view);
-
-static jobjectArray GetAutofillProfileGUIDs(JNIEnv* env, jclass jcaller);
-
-static void SetRecognitionResults(JNIEnv* env, jobject jcaller,
-    jint sessionId,
-    jobjectArray results);
-
-static jint FindAll(JNIEnv* env, jobject jcaller,
-    jstring find);
-
-static jobject GetInnerClass(JNIEnv* env, jclass jcaller);
-
-// Step 2: method stubs.
-static void Destroy(JNIEnv* env, jobject jcaller,
+static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
+    jobject jcaller,
     jint nativeChromeBrowserProvider) {
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
@@ -57,7 +42,8 @@ static void Destroy(JNIEnv* env, jobject jcaller,
   return native->Destroy(env, jcaller);
 }
 
-static jlong AddBookmark(JNIEnv* env, jobject jcaller,
+static jlong Java_org_chromium_TestJni_nativeAddBookmark(JNIEnv* env,
+    jobject jcaller,
     jint nativeChromeBrowserProvider,
     jstring url,
     jstring title,
@@ -69,7 +55,56 @@ static jlong AddBookmark(JNIEnv* env, jobject jcaller,
   return native->AddBookmark(env, jcaller, url, title, isFolder, parentId);
 }
 
-static jlong AddBookmarkFromAPI(JNIEnv* env, jobject jcaller,
+static jstring GetDomainAndRegistry(JNIEnv* env, jclass jcaller,
+    jstring url);
+
+static jstring Java_org_chromium_TestJni_nativeGetDomainAndRegistry(JNIEnv* env,
+    jclass jcaller,
+    jstring url) {
+  return GetDomainAndRegistry(env, jcaller, url);
+}
+
+static void CreateHistoricalTabFromState(JNIEnv* env, jclass jcaller,
+    jbyteArray state,
+    jint tab_index);
+
+static void Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState(JNIEnv*
+    env, jclass jcaller,
+    jbyteArray state,
+    jint tab_index) {
+  return CreateHistoricalTabFromState(env, jcaller, state, tab_index);
+}
+
+static jbyteArray GetStateAsByteArray(JNIEnv* env, jobject jcaller,
+    jobject view);
+
+static jbyteArray Java_org_chromium_TestJni_nativeGetStateAsByteArray(JNIEnv*
+    env, jobject jcaller,
+    jobject view) {
+  return GetStateAsByteArray(env, jcaller, view);
+}
+
+static jobjectArray GetAutofillProfileGUIDs(JNIEnv* env, jclass jcaller);
+
+static jobjectArray
+    Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs(JNIEnv* env, jclass
+    jcaller) {
+  return GetAutofillProfileGUIDs(env, jcaller);
+}
+
+static void SetRecognitionResults(JNIEnv* env, jobject jcaller,
+    jint sessionId,
+    jobjectArray results);
+
+static void Java_org_chromium_TestJni_nativeSetRecognitionResults(JNIEnv* env,
+    jobject jcaller,
+    jint sessionId,
+    jobjectArray results) {
+  return SetRecognitionResults(env, jcaller, sessionId, results);
+}
+
+static jlong Java_org_chromium_TestJni_nativeAddBookmarkFromAPI(JNIEnv* env,
+    jobject jcaller,
     jint nativeChromeBrowserProvider,
     jstring url,
     jobject created,
@@ -85,7 +120,24 @@ static jlong AddBookmarkFromAPI(JNIEnv* env, jobject jcaller,
       date, favicon, title, visits);
 }
 
-static jobject QueryBitmap(JNIEnv* env, jobject jcaller,
+static jint FindAll(JNIEnv* env, jobject jcaller,
+    jstring find);
+
+static jint Java_org_chromium_TestJni_nativeFindAll(JNIEnv* env, jobject
+    jcaller,
+    jstring find) {
+  return FindAll(env, jcaller, find);
+}
+
+static jobject GetInnerClass(JNIEnv* env, jclass jcaller);
+
+static jobject Java_org_chromium_TestJni_nativeGetInnerClass(JNIEnv* env, jclass
+    jcaller) {
+  return GetInnerClass(env, jcaller);
+}
+
+static jobject Java_org_chromium_TestJni_nativeQueryBitmap(JNIEnv* env,
+    jobject jcaller,
     jint nativeChromeBrowserProvider,
     jobjectArray projection,
     jstring selection,
@@ -98,7 +150,8 @@ static jobject QueryBitmap(JNIEnv* env, jobject jcaller,
       sortOrder).Release();
 }
 
-static void GotOrientation(JNIEnv* env, jobject jcaller,
+static void Java_org_chromium_TestJni_nativeGotOrientation(JNIEnv* env,
+    jobject jcaller,
     jint nativeDataFetcherImplAndroid,
     jdouble alpha,
     jdouble beta,
@@ -115,12 +168,12 @@ static const JNINativeMethod kMethodsTestJni[] = {
     { "nativeInit",
 "("
 ")"
-"I", reinterpret_cast<void*>(Init) },
+"I", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeInit) },
     { "nativeDestroy",
 "("
 "I"
 ")"
-"V", reinterpret_cast<void*>(Destroy) },
+"V", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeDestroy) },
     { "nativeAddBookmark",
 "("
 "I"
@@ -129,33 +182,43 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "Z"
 "J"
 ")"
-"J", reinterpret_cast<void*>(AddBookmark) },
+"J", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeAddBookmark) },
     { "nativeGetDomainAndRegistry",
 "("
 "Ljava/lang/String;"
 ")"
-"Ljava/lang/String;", reinterpret_cast<void*>(GetDomainAndRegistry) },
+"Ljava/lang/String;",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeGetDomainAndRegistry)
+    },
     { "nativeCreateHistoricalTabFromState",
 "("
 "[B"
 "I"
 ")"
-"V", reinterpret_cast<void*>(CreateHistoricalTabFromState) },
+"V",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeCreateHistoricalTabFromState)
+    },
     { "nativeGetStateAsByteArray",
 "("
 "Landroid/view/View;"
 ")"
-"[B", reinterpret_cast<void*>(GetStateAsByteArray) },
+"[B",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeGetStateAsByteArray)
+    },
     { "nativeGetAutofillProfileGUIDs",
 "("
 ")"
-"[Ljava/lang/String;", reinterpret_cast<void*>(GetAutofillProfileGUIDs) },
+"[Ljava/lang/String;",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeGetAutofillProfileGUIDs)
+    },
     { "nativeSetRecognitionResults",
 "("
 "I"
 "[Ljava/lang/String;"
 ")"
-"V", reinterpret_cast<void*>(SetRecognitionResults) },
+"V",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeSetRecognitionResults)
+    },
     { "nativeAddBookmarkFromAPI",
 "("
 "I"
@@ -167,17 +230,18 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "Ljava/lang/String;"
 "Ljava/lang/Integer;"
 ")"
-"J", reinterpret_cast<void*>(AddBookmarkFromAPI) },
+"J", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeAddBookmarkFromAPI)
+    },
     { "nativeFindAll",
 "("
 "Ljava/lang/String;"
 ")"
-"I", reinterpret_cast<void*>(FindAll) },
+"I", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeFindAll) },
     { "nativeGetInnerClass",
 "("
 ")"
 "Lorg/chromium/example/jni_generator/SampleForTests$OnFrameAvailableListener;",
-    reinterpret_cast<void*>(GetInnerClass) },
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeGetInnerClass) },
     { "nativeQueryBitmap",
 "("
 "I"
@@ -186,7 +250,8 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "[Ljava/lang/String;"
 "Ljava/lang/String;"
 ")"
-"Landroid/graphics/Bitmap;", reinterpret_cast<void*>(QueryBitmap) },
+"Landroid/graphics/Bitmap;",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeQueryBitmap) },
     { "nativeGotOrientation",
 "("
 "I"
@@ -194,7 +259,7 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "D"
 "D"
 ")"
-"V", reinterpret_cast<void*>(GotOrientation) },
+"V", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeGotOrientation) },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

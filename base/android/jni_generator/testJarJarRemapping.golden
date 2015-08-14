@@ -25,19 +25,43 @@ jclass g_Example_clazz = NULL;
 
 }  // namespace
 
+// Step 2: method stubs.
+
 static void Test(JNIEnv* env, jclass jcaller,
     jobject t);
+
+static void Java_com_test_jni_1generator_Example_nativeTest(JNIEnv* env, jclass
+    jcaller,
+    jobject t) {
+  return Test(env, jcaller, t);
+}
 
 static void Test2(JNIEnv* env, jclass jcaller,
     jobject t);
 
+static void Java_com_test_jni_1generator_Example_nativeTest2(JNIEnv* env, jclass
+    jcaller,
+    jobject t) {
+  return Test2(env, jcaller, t);
+}
+
 static void Test3(JNIEnv* env, jclass jcaller,
     jobject t);
+
+static void Java_com_test_jni_1generator_Example_nativeTest3(JNIEnv* env, jclass
+    jcaller,
+    jobject t) {
+  return Test3(env, jcaller, t);
+}
 
 static void Test4(JNIEnv* env, jclass jcaller,
     jobject t);
 
-// Step 2: method stubs.
+static void Java_com_test_jni_1generator_Example_nativeTest4(JNIEnv* env, jclass
+    jcaller,
+    jobject t) {
+  return Test4(env, jcaller, t);
+}
 
 // Step 3: RegisterNatives.
 
@@ -46,22 +70,25 @@ static const JNINativeMethod kMethodsExample[] = {
 "("
 "Lorg/test2/Test;"
 ")"
-"V", reinterpret_cast<void*>(Test) },
+"V", reinterpret_cast<void*>(Java_com_test_jni_1generator_Example_nativeTest) },
     { "nativeTest2",
 "("
 "Lorg/chromium/example3/PrefixFoo;"
 ")"
-"V", reinterpret_cast<void*>(Test2) },
+"V", reinterpret_cast<void*>(Java_com_test_jni_1generator_Example_nativeTest2)
+    },
     { "nativeTest3",
 "("
 "Lorg/test3/Test;"
 ")"
-"V", reinterpret_cast<void*>(Test3) },
+"V", reinterpret_cast<void*>(Java_com_test_jni_1generator_Example_nativeTest3)
+    },
     { "nativeTest4",
 "("
 "Lorg/test3/TestBar$Inner;"
 ")"
-"V", reinterpret_cast<void*>(Test4) },
+"V", reinterpret_cast<void*>(Java_com_test_jni_1generator_Example_nativeTest4)
+    },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

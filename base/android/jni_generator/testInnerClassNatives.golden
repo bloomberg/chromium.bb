@@ -26,9 +26,14 @@ jclass g_TestJni_clazz = NULL;
 
 }  // namespace
 
+// Step 2: method stubs.
+
 static jint Init(JNIEnv* env, jobject jcaller);
 
-// Step 2: method stubs.
+static jint Java_org_chromium_TestJni_00024MyInnerClass_nativeInit(JNIEnv* env,
+    jobject jcaller) {
+  return Init(env, jcaller);
+}
 
 // Step 3: RegisterNatives.
 
@@ -36,7 +41,9 @@ static const JNINativeMethod kMethodsMyInnerClass[] = {
     { "nativeInit",
 "("
 ")"
-"I", reinterpret_cast<void*>(Init) },
+"I",
+    reinterpret_cast<void*>(Java_org_chromium_TestJni_00024MyInnerClass_nativeInit)
+    },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

@@ -26,32 +26,8 @@ base::subtle::AtomicWord g_SampleForTests_clazz __attribute__((unused)) = 0;
 
 }  // namespace
 
-extern "C" {
-
-static jint Init(JNIEnv* env, jobject jcaller);
-
-__attribute__((visibility("default")))
-jint
-    Java_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass_nativeInit(JNIEnv*
-    env, jobject jcaller) {
-  return Init(env, jcaller);
-}
-
-static jint Init(JNIEnv* env, jobject jcaller);
-
-__attribute__((visibility("default")))
-jint
-    Java_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_nativeInit(JNIEnv*
-    env, jobject jcaller) {
-  return Init(env, jcaller);
-}
-
-};  // extern "C"
-
 // Step 2: method stubs.
-
-extern "C" {
-__attribute__((visibility("default")))
+extern "C" __attribute__((visibility("default")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeStaticMethod(JNIEnv*
     env,
@@ -63,7 +39,7 @@ jint
   return native->StaticMethod(env, jcaller, arg1);
 }
 
-__attribute__((visibility("default")))
+extern "C" __attribute__((visibility("default")))
 jint
     Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethod(JNIEnv*
     env,
@@ -73,6 +49,24 @@ jint
   Test* native = reinterpret_cast<Test*>(nativeTest);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
   return native->Method(env, jcaller, arg1);
+}
+
+static jint Init(JNIEnv* env, jobject jcaller);
+
+extern "C" __attribute__((visibility("default")))
+jint
+    Java_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass_nativeInit(JNIEnv*
+    env, jobject jcaller) {
+  return Init(env, jcaller);
+}
+
+static jint Init(JNIEnv* env, jobject jcaller);
+
+extern "C" __attribute__((visibility("default")))
+jint
+    Java_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_nativeInit(JNIEnv*
+    env, jobject jcaller) {
+  return Init(env, jcaller);
 }
 
 static base::subtle::AtomicWord g_SampleForTests_testMethodWithParam = 0;
@@ -198,7 +192,6 @@ static_cast<jstring>(env->CallStaticObjectMethod(SampleForTests_clazz(env),
   jni_generator::CheckException(env);
   return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
-};  // extern "C"
 
 // Step 3: RegisterNatives.
 

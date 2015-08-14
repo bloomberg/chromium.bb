@@ -39,34 +39,76 @@ jclass g_InnerStructB_clazz = NULL;
 namespace base {
 namespace android {
 
+// Step 2: method stubs.
+
 static jlong Init(JNIEnv* env, jobject jcaller,
     jstring param);
 
-static jdouble GetDoubleFunction(JNIEnv* env, jobject jcaller);
+static jlong
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeInit(JNIEnv*
+    env, jobject jcaller,
+    jstring param) {
+  return Init(env, jcaller, param);
+}
 
-static jfloat GetFloatFunction(JNIEnv* env, jclass jcaller);
-
-static void SetNonPODDatatype(JNIEnv* env, jobject jcaller,
-    jobject rect);
-
-static jobject GetNonPODDatatype(JNIEnv* env, jobject jcaller);
-
-// Step 2: method stubs.
-static void Destroy(JNIEnv* env, jobject jcaller,
+static void
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeDestroy(JNIEnv*
+    env,
+    jobject jcaller,
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
   return native->Destroy(env, jcaller);
 }
 
-static jint Method(JNIEnv* env, jobject jcaller,
+static jdouble GetDoubleFunction(JNIEnv* env, jobject jcaller);
+
+static jdouble
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetDoubleFunction(JNIEnv*
+    env, jobject jcaller) {
+  return GetDoubleFunction(env, jcaller);
+}
+
+static jfloat GetFloatFunction(JNIEnv* env, jclass jcaller);
+
+static jfloat
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetFloatFunction(JNIEnv*
+    env, jclass jcaller) {
+  return GetFloatFunction(env, jcaller);
+}
+
+static void SetNonPODDatatype(JNIEnv* env, jobject jcaller,
+    jobject rect);
+
+static void
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeSetNonPODDatatype(JNIEnv*
+    env, jobject jcaller,
+    jobject rect) {
+  return SetNonPODDatatype(env, jcaller, rect);
+}
+
+static jobject GetNonPODDatatype(JNIEnv* env, jobject jcaller);
+
+static jobject
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype(JNIEnv*
+    env, jobject jcaller) {
+  return GetNonPODDatatype(env, jcaller);
+}
+
+static jint
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethod(JNIEnv*
+    env,
+    jobject jcaller,
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
   return native->Method(env, jcaller);
 }
 
-static jdouble MethodOtherP0(JNIEnv* env, jobject jcaller,
+static jdouble
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethodOtherP0(JNIEnv*
+    env,
+    jobject jcaller,
     jlong nativePtr) {
   CPPClass::InnerClass* native =
       reinterpret_cast<CPPClass::InnerClass*>(nativePtr);
@@ -74,7 +116,10 @@ static jdouble MethodOtherP0(JNIEnv* env, jobject jcaller,
   return native->MethodOtherP0(env, jcaller);
 }
 
-static void AddStructB(JNIEnv* env, jobject jcaller,
+static void
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeAddStructB(JNIEnv*
+    env,
+    jobject jcaller,
     jlong nativeCPPClass,
     jobject b) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
@@ -82,14 +127,20 @@ static void AddStructB(JNIEnv* env, jobject jcaller,
   return native->AddStructB(env, jcaller, b);
 }
 
-static void IterateAndDoSomethingWithStructB(JNIEnv* env, jobject jcaller,
+static void
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeIterateAndDoSomethingWithStructB(JNIEnv*
+    env,
+    jobject jcaller,
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "IterateAndDoSomethingWithStructB");
   return native->IterateAndDoSomethingWithStructB(env, jcaller);
 }
 
-static jstring ReturnAString(JNIEnv* env, jobject jcaller,
+static jstring
+    Java_org_chromium_example_jni_1generator_SampleForTests_nativeReturnAString(JNIEnv*
+    env,
+    jobject jcaller,
     jlong nativeCPPClass) {
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
   CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
@@ -321,55 +372,77 @@ static const JNINativeMethod kMethodsSampleForTests[] = {
 "("
 "Ljava/lang/String;"
 ")"
-"J", reinterpret_cast<void*>(Init) },
+"J",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeInit)
+    },
     { "nativeDestroy",
 "("
 "J"
 ")"
-"V", reinterpret_cast<void*>(Destroy) },
+"V",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeDestroy)
+    },
     { "nativeGetDoubleFunction",
 "("
 ")"
-"D", reinterpret_cast<void*>(GetDoubleFunction) },
+"D",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetDoubleFunction)
+    },
     { "nativeGetFloatFunction",
 "("
 ")"
-"F", reinterpret_cast<void*>(GetFloatFunction) },
+"F",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetFloatFunction)
+    },
     { "nativeSetNonPODDatatype",
 "("
 "Landroid/graphics/Rect;"
 ")"
-"V", reinterpret_cast<void*>(SetNonPODDatatype) },
+"V",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeSetNonPODDatatype)
+    },
     { "nativeGetNonPODDatatype",
 "("
 ")"
-"Ljava/lang/Object;", reinterpret_cast<void*>(GetNonPODDatatype) },
+"Ljava/lang/Object;",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeGetNonPODDatatype)
+    },
     { "nativeMethod",
 "("
 "J"
 ")"
-"I", reinterpret_cast<void*>(Method) },
+"I",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethod)
+    },
     { "nativeMethodOtherP0",
 "("
 "J"
 ")"
-"D", reinterpret_cast<void*>(MethodOtherP0) },
+"D",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeMethodOtherP0)
+    },
     { "nativeAddStructB",
 "("
 "J"
 "Lorg/chromium/example/jni_generator/SampleForTests$InnerStructB;"
 ")"
-"V", reinterpret_cast<void*>(AddStructB) },
+"V",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeAddStructB)
+    },
     { "nativeIterateAndDoSomethingWithStructB",
 "("
 "J"
 ")"
-"V", reinterpret_cast<void*>(IterateAndDoSomethingWithStructB) },
+"V",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeIterateAndDoSomethingWithStructB)
+    },
     { "nativeReturnAString",
 "("
 "J"
 ")"
-"Ljava/lang/String;", reinterpret_cast<void*>(ReturnAString) },
+"Ljava/lang/String;",
+    reinterpret_cast<void*>(Java_org_chromium_example_jni_1generator_SampleForTests_nativeReturnAString)
+    },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {

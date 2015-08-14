@@ -26,7 +26,8 @@ jclass g_TestJni_clazz = NULL;
 }  // namespace
 
 // Step 2: method stubs.
-static void Destroy(JNIEnv* env, jobject jcaller,
+static void Java_org_chromium_TestJni_nativeDestroy(JNIEnv* env,
+    jobject jcaller,
     jlong nativeChromeBrowserProvider) {
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
@@ -41,7 +42,7 @@ static const JNINativeMethod kMethodsTestJni[] = {
 "("
 "J"
 ")"
-"V", reinterpret_cast<void*>(Destroy) },
+"V", reinterpret_cast<void*>(Java_org_chromium_TestJni_nativeDestroy) },
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
