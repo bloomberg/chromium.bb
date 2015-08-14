@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "components/view_manager/gles2/command_buffer_type_conversions.h"
+#include "components/view_manager/gles2/gpu_memory_tracker.h"
 #include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/gles2/mojo_buffer_backing.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -31,29 +32,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gles2 {
-
-namespace {
-
-class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
- public:
-  MemoryTrackerStub() {}
-
-  void TrackMemoryAllocatedChange(
-      size_t old_size,
-      size_t new_size,
-      gpu::gles2::MemoryTracker::Pool pool) override {}
-
-  bool EnsureGPUMemoryAvailable(size_t size_needed) override { return true; };
-  uint64_t ClientTracingId() const override { return 0; }
-  int ClientId() const override { return 0; }
-
- private:
-  ~MemoryTrackerStub() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryTrackerStub);
-};
-
-}  // anonymous namespace
 
 CommandBufferDriver::Client::~Client() {
 }
@@ -138,7 +116,7 @@ bool CommandBufferDriver::DoInitialize(
   bool bind_generates_resource = false;
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
       new gpu::gles2::ContextGroup(
-          gpu_state_->mailbox_manager(), new MemoryTrackerStub,
+          gpu_state_->mailbox_manager(), new GpuMemoryTracker,
           new gpu::gles2::ShaderTranslatorCache, nullptr, nullptr, nullptr,
           bind_generates_resource);
 

@@ -16,6 +16,8 @@ source_set("gles2") {
     "command_buffer_impl_observer.h",
     "gpu_impl.cc",
     "gpu_impl.h",
+    "gpu_memory_tracker.cc",
+    "gpu_memory_tracker.h",
     "gpu_state.cc",
     "gpu_state.h",
   ]
