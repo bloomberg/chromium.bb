@@ -1155,13 +1155,17 @@ void ThreadState::postSweep()
     Heap::reportMemoryUsageForTracing();
 
     if (isMainThread()) {
+        double collectionRate = 0;
+        if (Heap::objectSizeAtLastGC() > 0)
+            collectionRate = 1 - 1.0 * Heap::markedObjectSize() / Heap::objectSizeAtLastGC();
+        TRACE_COUNTER1("blink_gc", "ThreadState::collectionRate", static_cast<int>(100 * collectionRate));
+
         // See the comment in estimatedLiveObjectSize() for what we're
         // calculating here.
         //
         // Heap::markedObjectSize() may be underestimated here if any other
         // thread has not yet finished lazy sweeping.
         if (Heap::persistentCountAtLastGC() > 0) {
-            TRACE_EVENT1("blink_gc", "ThreadState::postSweep", "collection rate", 1.0 * Heap::markedObjectSize() / Heap::objectSizeAtLastGC());
             Heap::setHeapSizePerPersistent((Heap::markedObjectSize() + Heap::partitionAllocSizeAtLastGC()) / Heap::persistentCountAtLastGC());
         }
     }
