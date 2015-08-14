@@ -62,27 +62,33 @@
       <div class="button-spacer">
         <!-- Use button element for edit button to implement toggle button with
           -- custom ripple effect. -->
-        <button class="edit" i18n-values="title:GALLERY_EDIT">
+        <button class="edit icon-button" i18n-values="title:GALLERY_EDIT">
           <div class="icon"></div>
           <files-toggle-ripple></files-toggle-ripple>
         </button>
-        <paper-button class="print" i18n-values="title:GALLERY_PRINT" disabled></paper-button>
-        <paper-button class="delete" i18n-values="title:GALLERY_DELETE"></paper-button>
-        <!-- Use button element for mode button to implement toggle switch button. -->
-        <button class="mode">
+        <paper-button class="print icon-button"
+                      i18n-values="title:GALLERY_PRINT"
+                      disabled></paper-button>
+        <paper-button class="delete icon-button"
+                      i18n-values="title:GALLERY_DELETE"></paper-button>
+        <!-- Use button element for mode button to implement toggle switch
+          -- button. -->
+        <button class="mode icon-button">
           <div class="icon slide-mode" i18n-values="title:GALLERY_SLIDE"></div>
-          <div class="icon thumbnail-mode" i18n-values="title:GALLERY_THUMBNAIL"></div>
+          <div class="icon thumbnail-mode"
+               i18n-values="title:GALLERY_THUMBNAIL"></div>
           <paper-ripple></paper-ripple>
         </button>
-        <paper-button class="slideshow" i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
-        <paper-button class="share" i18n-values="title:GALLERY_SHARE"></paper-button>
+        <paper-button class="slideshow icon-button"
+                      i18n-values="title:GALLERY_SLIDESHOW"></paper-button>
+        <paper-button class="share icon-button"
+                      i18n-values="title:GALLERY_SHARE"></paper-button>
       </div>
     </div>
     <div id="bottom-toolbar" class="toolbar bottom tool dimmable">
       <div class="slide-mode-toolbar">
         <div class="ribbon-spacer"></div>
       </div>
-
       <div class="edit-mode-toolbar">
         <div class="options">
           <paper-checkbox class="overwrite-original"
@@ -91,6 +97,9 @@
           <div class="saved" i18n-content="GALLERY_SAVED" hidden></div>
         </div>
         <div class="edit-bar-spacer"></div>
+        <div class="exit-button-spacer">
+          <paper-button class="exit" i18n-content="GALLERY_EXIT"></paper-button>
+        </div>
       </div>
     </div>
     <div class="prompt-wrapper" pos="center">

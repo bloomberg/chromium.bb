@@ -437,6 +437,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
       },
       SlideMode.EDITOR_MODES,
       this.displayStringFunction_);
+  this.editor_.addEventListener('exit-clicked', this.onExitClicked_.bind(this));
 
   /**
    * @type {!TouchHandler}
@@ -477,6 +478,15 @@ SlideMode.KEY_OFFSET_MAP = {
  * SlideMode extends cr.EventTarget.
  */
 SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
+ * Handles exit-clicked event.
+ * @private
+ */
+SlideMode.prototype.onExitClicked_ = function() {
+  if (this.isEditing())
+    this.toggleEditor();
+};
 
 /**
  * @return {string} Mode name.
@@ -1534,6 +1544,11 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   if (this.isEditing()) { // isEditing has just been flipped to a new value.
     // Reset zoom.
     this.viewport_.resetView();
+
+    // Scale the screen so that it doesn't overlap the toolbars.
+    this.viewport_.setScreenTop(ImageEditor.Toolbar.HEIGHT);
+    this.viewport_.setScreenBottom(ImageEditor.Toolbar.HEIGHT);
+
     this.imageView_.applyViewportChange();
 
     // TODO(yawano): Integarate this warning message to the non writable format
@@ -1557,6 +1572,11 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
   } else {
     this.editor_.getPrompt().hide();
     this.editor_.leaveModeGently();
+
+    this.viewport_.setScreenTop(0);
+    this.viewport_.setScreenBottom(0);
+    this.imageView_.applyViewportChange();
+
     this.touchHandlers_.enabled = true;
   }
 };

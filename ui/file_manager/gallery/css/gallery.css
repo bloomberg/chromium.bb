@@ -36,7 +36,8 @@ input[type='checkbox']:checked {
       -1px -1px;
 }
 
-paper-ripple {
+paper-ripple,
+paper-button::shadow paper-ripple {
   color: black;
 }
 
@@ -445,14 +446,27 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 
 /* Editor toolbar. */
 
-.gallery .edit-mode-toolbar .options {
+.gallery .edit-mode-toolbar .options,
+.gallery .edit-mode-toolbar .exit-button-spacer {
   align-items: center;
   display: flex;
   height: 100%;
   opacity: 0;
   position: absolute;
+  top: 0;
   visibility: hidden;
   width: 100%;
+}
+
+.gallery .edit-mode-toolbar .exit-button-spacer {
+  justify-content: flex-end;
+}
+
+.gallery .edit-mode-toolbar .exit-button-spacer paper-button {
+  -webkit-margin-end: 8px;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 .gallery .edit-mode-toolbar .edit-bar-spacer {
@@ -463,7 +477,8 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   visibility: hidden;
 }
 
-.gallery[editing] .edit-mode-toolbar .options {
+.gallery[editing] .edit-mode-toolbar .options,
+.gallery[editing] .edit-mode-toolbar .exit-button-spacer {
   opacity: 1;
   visibility: visible;
 }
@@ -529,10 +544,13 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 
 .gallery > .toolbar paper-button,
 .gallery > .toolbar button {
+  margin: 0 8px;
+}
+
+.gallery > .toolbar .icon-button {
   background-position: center;
   background-repeat: no-repeat;
   height: 32px;
-  margin: 0 8px;
   min-width: 32px;
   width: 32px;
 }

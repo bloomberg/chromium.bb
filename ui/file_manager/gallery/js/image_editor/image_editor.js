@@ -15,10 +15,15 @@
  * @param {function(string, ...string)} displayStringFunction String
  *     formatting function.
  * @constructor
+ * @extends {cr.EventTarget}
  * @struct
+ *
+ * TODO(yawano): Remove displayStringFunction from arguments.
  */
 function ImageEditor(
     viewport, imageView, prompt, DOMContainers, modes, displayStringFunction) {
+  cr.EventTarget.call(this);
+
   this.rootContainer_ = DOMContainers.root;
   this.container_ = DOMContainers.image;
   this.modes_ = modes;
@@ -100,11 +105,30 @@ function ImageEditor(
   this.registerAction_('redo');
 
   /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.exitButton_ = /** @type {!HTMLElement} */
+      (queryRequiredElement(document, '.edit-mode-toolbar paper-button.exit'));
+  this.exitButton_.addEventListener('click', this.onExitClicked_.bind(this));
+
+  /**
    * @private {!FilesToast}
    */
   this.filesToast_ = /** @type {!FilesToast}*/
       (queryRequiredElement(document, 'files-toast'));
 }
+
+ImageEditor.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
+ * Handles click event of exit button.
+ * @private
+ */
+ImageEditor.prototype.onExitClicked_ = function() {
+  var event = new Event('exit-clicked');
+  this.dispatchEvent(event);
+};
 
 /**
  * Creates a toolbar button.
@@ -567,6 +591,8 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
     return;
   }
 
+  this.exitButton_.hidden = true;
+
   this.modeToolbar_.clear();
   this.currentMode_.createTools(this.modeToolbar_);
   this.modeToolbar_.show(true);
@@ -613,6 +639,8 @@ ImageEditor.prototype.leaveMode = function(commit) {
     var paperRipple = this.currentTool_.querySelector('paper-ripple');
     paperRipple.upAction();
   }
+
+  this.exitButton_.hidden = false;
 
   this.currentMode_.cleanUpCaches();
   this.currentMode_ = null;

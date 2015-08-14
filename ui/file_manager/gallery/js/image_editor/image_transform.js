@@ -234,8 +234,8 @@ ImageEditor.Mode.Crop.prototype.cleanUpUI = function() {
   this.onViewportResizedBound_ = null;
 
   // Restore the screen to the full size of window.
-  this.getViewport().setScreenTop(0);
-  this.getViewport().setScreenBottom(0);
+  this.getViewport().setScreenTop(ImageEditor.Toolbar.HEIGHT);
+  this.getViewport().setScreenBottom(ImageEditor.Toolbar.HEIGHT);
   this.getImageView().applyViewportChange();
 };
 
