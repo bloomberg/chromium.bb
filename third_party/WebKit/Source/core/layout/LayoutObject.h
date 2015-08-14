@@ -997,9 +997,13 @@ public:
 
     bool isRelayoutBoundaryForInspector() const;
 
-    // The previous paint invalidation rect in the object's previous paint backing.
-    const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
+    // The previous paint invalidation rect, in the the space of the paint invalidation container (*not* the graphics layer that paints
+    // this object).
+    LayoutRect previousPaintInvalidationRectIncludingCompositedScrolling(const LayoutBoxModelObject& paintInvalidationContainer) const;
     void setPreviousPaintInvalidationRect(const LayoutRect& rect) { m_previousPaintInvalidationRect = rect; }
+
+    // Only adjusts if the paint invalidation container is not a composited scroller.
+    void adjustPreviousPaintInvalidationForScrollIfNeeded(const DoubleSize& scrollDelta);
 
     // The previous position of the top-left corner of the object in its previous paint backing.
     const LayoutPoint& previousPositionFromPaintInvalidationBacking() const { return m_previousPositionFromPaintInvalidationBacking; }
@@ -1190,6 +1194,13 @@ protected:
     void setIsSlowRepaintObject(bool);
 
 private:
+    const LayoutRect& previousPaintInvalidationRect() const { return m_previousPaintInvalidationRect; }
+
+    // Adjusts a paint invalidation rect in the space of |m_previousPaintInvalidationRect| and |m_previousPositionFromPaintInvalidationBacking|
+    // to be in the space of the |paintInvalidationContainer|,
+    // if needed. They can be different only if |paintInvalidationContainer| is a composited scroller.
+    void adjustInvalidationRectForCompositedScrolling(LayoutRect&, const LayoutBoxModelObject& paintInvalidationContainer) const;
+
     void clearLayoutRootIfNeeded() const;
 
     bool isInert() const;
@@ -1426,11 +1437,13 @@ private:
     // Store state between styleWillChange and styleDidChange
     static bool s_affectsParentBlock;
 
-    // This stores the paint invalidation rect from the previous frame.
+    // This stores the paint invalidation rect from the previous frame. This rect does *not* account for composited scrolling. See
+    // adjustInvalidationRectForCompositedScrolling().
     LayoutRect m_previousPaintInvalidationRect;
 
     // This stores the position in the paint invalidation backing's coordinate.
     // It is used to detect layoutObject shifts that forces a full invalidation.
+    // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
     LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 

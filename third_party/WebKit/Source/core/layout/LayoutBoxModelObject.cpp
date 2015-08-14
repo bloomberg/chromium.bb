@@ -118,6 +118,11 @@ LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
 {
 }
 
+bool LayoutBoxModelObject::usesCompositedScrolling() const
+{
+    return hasOverflowClip() && hasLayer() && layer()->scrollableArea()->usesCompositedScrolling();
+}
+
 LayoutBoxModelObject::~LayoutBoxModelObject()
 {
     // Our layer should have been destroyed and cleared by now

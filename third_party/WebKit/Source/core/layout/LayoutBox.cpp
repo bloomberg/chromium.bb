@@ -737,11 +737,6 @@ bool LayoutBox::canBeProgramaticallyScrolled() const
     return node && node->hasEditableStyle();
 }
 
-bool LayoutBox::usesCompositedScrolling() const
-{
-    return hasOverflowClip() && hasLayer() && layer()->scrollableArea()->usesCompositedScrolling();
-}
-
 void LayoutBox::autoscroll(const IntPoint& positionInRootFrame)
 {
     LocalFrame* frame = this->frame();
@@ -1393,7 +1388,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
     }
 
     // This is for the next invalidatePaintIfNeeded so must be at the end.
-    savePreviousBoxSizesIfNeeded();
+    savePreviousBoxSizesIfNeeded(newPaintInvalidationContainer);
     return reason;
 }
 
@@ -4571,13 +4566,13 @@ void LayoutBox::setPageLogicalOffset(LayoutUnit offset)
     ensureRareData().m_pageLogicalOffset = offset;
 }
 
-bool LayoutBox::needToSavePreviousBoxSizes()
+bool LayoutBox::needToSavePreviousBoxSizes(const LayoutBoxModelObject& paintInvalidationContainer)
 {
     // If m_rareData is already created, always save.
     if (m_rareData)
         return true;
 
-    LayoutSize paintInvalidationSize = previousPaintInvalidationRect().size();
+    LayoutSize paintInvalidationSize = previousPaintInvalidationRectIncludingCompositedScrolling(paintInvalidationContainer).size();
     // Don't save old box sizes if the paint rect is empty because we'll
     // full invalidate once the paint rect becomes non-empty.
     if (paintInvalidationSize.isEmpty())
@@ -4601,9 +4596,9 @@ bool LayoutBox::needToSavePreviousBoxSizes()
     return false;
 }
 
-void LayoutBox::savePreviousBoxSizesIfNeeded()
+void LayoutBox::savePreviousBoxSizesIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer)
 {
-    if (!needToSavePreviousBoxSizes())
+    if (!needToSavePreviousBoxSizes(paintInvalidationContainer))
         return;
 
     LayoutBoxRareData& rareData = ensureRareData();

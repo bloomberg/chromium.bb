@@ -191,7 +191,7 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(const LayoutObject& oldChil
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
     const LayoutBoxModelObject& paintInvalidationContainer = *oldChild.containerForPaintInvalidation();
-    oldChild.invalidatePaintUsingContainer(paintInvalidationContainer, oldChild.previousPaintInvalidationRect(), PaintInvalidationLayoutObjectRemoval);
+    oldChild.invalidatePaintUsingContainer(paintInvalidationContainer, oldChild.previousPaintInvalidationRectIncludingCompositedScrolling(paintInvalidationContainer), PaintInvalidationLayoutObjectRemoval);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled())
         oldChild.invalidateDisplayItemClients(paintInvalidationContainer);
 }

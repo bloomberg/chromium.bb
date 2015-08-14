@@ -327,9 +327,7 @@ void DeprecatedPaintLayer::updateLayerPositionsAfterScrollRecursive(const Double
         // the current bounds rect, as the LayoutObject may have moved since the last invalidation.
         // FIXME(416535): Ideally, pending invalidations of scrolling content should be stored in
         // the coordinate space of the scrolling content layer, so that they need no adjustment.
-        LayoutRect invalidationRect = m_layoutObject->previousPaintInvalidationRect();
-        invalidationRect.move(LayoutSize(scrollDelta));
-        m_layoutObject->setPreviousPaintInvalidationRect(invalidationRect);
+        m_layoutObject->adjustPreviousPaintInvalidationForScrollIfNeeded(scrollDelta);
     }
     for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         child->updateLayerPositionsAfterScrollRecursive(scrollDelta,

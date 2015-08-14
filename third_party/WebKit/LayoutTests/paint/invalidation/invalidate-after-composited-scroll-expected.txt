@@ -7,29 +7,27 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [10, 60],
-          "bounds": [700, 400],
+          "position": [300, 300],
+          "bounds": [200, 200],
           "drawsContent": true,
           "repaintRects": [
-            [300, 100, 120, 50],
-            [50, 100, 120, 50]
+            [0, 50, 100, 100]
           ],
           "paintInvalidationClients": [
-            "LayoutBlockFlow (positioned) DIV id='block'"
+            "LayoutBlockFlow DIV id='target'"
           ],
           "children": [
             {
-              "bounds": [685, 385],
+              "bounds": [185, 200],
               "children": [
                 {
-                  "bounds": [685, 600],
+                  "bounds": [185, 4900],
                   "drawsContent": true,
                   "repaintRects": [
-                    [300, 200, 120, 50],
-                    [50, 200, 120, 50]
+                    [0, 2400, 100, 100]
                   ],
                   "paintInvalidationClients": [
-                    "LayoutBlockFlow (positioned) DIV id='block'"
+                    "LayoutBlockFlow DIV id='target'"
                   ],
                   "children": [
                     {
@@ -42,25 +40,15 @@
             {
               "children": [
                 {
-                  "position": [0, 385],
-                  "bounds": [685, 15],
-                  "drawsContent": true
-                },
-                {
-                  "position": [685, 0],
-                  "bounds": [15, 385],
+                  "position": [185, 0],
+                  "bounds": [15, 200],
                   "drawsContent": true,
                   "repaintRects": [
-                    [0, 0, 15, 385]
+                    [0, 0, 15, 200]
                   ],
                   "paintInvalidationClients": [
                     "##ALL##"
                   ]
-                },
-                {
-                  "position": [685, 385],
-                  "bounds": [15, 15],
-                  "drawsContent": true
                 }
               ]
             }

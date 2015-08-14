@@ -105,6 +105,7 @@ public:
     // Checks if this box, or any of it's descendants, or any of it's continuations,
     // will take up space in the layout of the page.
     bool hasNonEmptyLayoutSize() const;
+    bool usesCompositedScrolling() const;
 
     // These return the CSS computed padding values.
     LayoutUnit computedCSSPaddingTop() const { return computedCSSPadding(style()->paddingTop()); }

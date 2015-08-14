@@ -1309,8 +1309,17 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
     const LayoutPoint oldLocation = previousPositionFromPaintInvalidationBacking();
-    const LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
-    const LayoutPoint newLocation = DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+    LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
+    LayoutPoint newLocation = DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+
+    // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
+    // does not move on scroll.
+    if (paintInvalidationContainer.usesCompositedScrolling() && &paintInvalidationContainer != this) {
+        LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
+        newLocation.move(inverseOffset);
+        newBounds.move(inverseOffset);
+    }
+
     setPreviousPaintInvalidationRect(newBounds);
     setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
@@ -1412,29 +1421,66 @@ PaintInvalidationReason LayoutObject::paintInvalidationReason(const LayoutBoxMod
     return PaintInvalidationIncremental;
 }
 
+void LayoutObject::adjustInvalidationRectForCompositedScrolling(LayoutRect& rect, const LayoutBoxModelObject& paintInvalidationContainer) const
+{
+    if (paintInvalidationContainer.usesCompositedScrolling() && &paintInvalidationContainer != this) {
+        LayoutSize offset(-toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
+        rect.move(offset);
+    }
+}
+
+LayoutRect LayoutObject::previousPaintInvalidationRectIncludingCompositedScrolling(const LayoutBoxModelObject& paintInvalidationContainer) const
+{
+    LayoutRect invalidationRect = previousPaintInvalidationRect();
+    adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+    return invalidationRect;
+}
+
+void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(const DoubleSize& scrollDelta)
+{
+    if (containerForPaintInvalidation()->usesCompositedScrolling())
+        return;
+    m_previousPaintInvalidationRect.move(LayoutSize(scrollDelta));
+}
+
 void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, const LayoutRect& oldBounds, const LayoutRect& newBounds, const LayoutPoint& positionFromPaintInvalidationBacking)
 {
     ASSERT(oldBounds.location() == newBounds.location());
 
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
-    if (deltaRight > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), PaintInvalidationIncremental);
-    else if (deltaRight < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), PaintInvalidationIncremental);
+    if (deltaRight > 0) {
+        LayoutRect invalidationRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height());
+        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
+    } else if (deltaRight < 0) {
+        LayoutRect invalidationRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height());
+        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
+    }
 
     LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
-    if (deltaBottom > 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), PaintInvalidationIncremental);
-    else if (deltaBottom < 0)
-        invalidatePaintUsingContainer(paintInvalidationContainer, LayoutRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), PaintInvalidationIncremental);
+    if (deltaBottom > 0) {
+        LayoutRect invalidationRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom);
+        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
+    } else if (deltaBottom < 0) {
+        LayoutRect invalidationRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom);
+        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
+    }
 }
 
 void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect& oldBounds, const LayoutRect& newBounds)
 {
     // Otherwise do full paint invalidation.
-    invalidatePaintUsingContainer(paintInvalidationContainer, oldBounds, invalidationReason);
-    if (newBounds != oldBounds)
-        invalidatePaintUsingContainer(paintInvalidationContainer, newBounds, invalidationReason);
+    LayoutRect invalidationRect = oldBounds;
+    adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+    invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
+    if (newBounds != oldBounds) {
+        invalidationRect = newBounds;
+        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
+        invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
+    }
 }
 
 void LayoutObject::invalidatePaintForOverflow()
@@ -3277,7 +3323,9 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
         explicit Functor(const LayoutBoxModelObject& paintInvalidationContainer) : m_paintInvalidationContainer(paintInvalidationContainer) { }
         void operator()(LayoutObject& object) const override
         {
-            object.invalidatePaintUsingContainer(m_paintInvalidationContainer, object.previousPaintInvalidationRect(), PaintInvalidationLayer);
+            LayoutRect invalidationRect = object.previousPaintInvalidationRect();
+            object.adjustInvalidationRectForCompositedScrolling(invalidationRect, m_paintInvalidationContainer);
+            object.invalidatePaintUsingContainer(m_paintInvalidationContainer, invalidationRect, PaintInvalidationLayer);
             if (RuntimeEnabledFeatures::slimmingPaintEnabled())
                 object.invalidateDisplayItemClients(m_paintInvalidationContainer);
         }

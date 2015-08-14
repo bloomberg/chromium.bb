@@ -570,7 +570,6 @@ public:
     bool hasScrollableOverflowY() const { return scrollsOverflowY() && pixelSnappedScrollHeight() != pixelSnappedClientHeight(); }
     virtual bool scrollsOverflowX() const { return hasOverflowClip() && (style()->overflowX() == OSCROLL || hasAutoHorizontalScrollbar()); }
     virtual bool scrollsOverflowY() const { return hasOverflowClip() && (style()->overflowY() == OSCROLL || hasAutoVerticalScrollbar()); }
-    bool usesCompositedScrolling() const;
 
     // Elements such as the <input> field override this to specify that they are scrollable
     // outside the context of the CSS overflow style
@@ -815,8 +814,8 @@ private:
         return *m_rareData.get();
     }
 
-    bool needToSavePreviousBoxSizes();
-    void savePreviousBoxSizesIfNeeded();
+    bool needToSavePreviousBoxSizes(const LayoutBoxModelObject& paintInvalidationContainer);
+    void savePreviousBoxSizesIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer);
     LayoutSize computePreviousBorderBoxSize(const LayoutSize& previousBoundsSize) const;
 
     bool logicalHeightComputesAsNone(SizeType) const;
