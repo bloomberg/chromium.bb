@@ -126,9 +126,9 @@ void SVGUseElement::removedFrom(ContainerNode* rootParent)
 
 TreeScope* SVGUseElement::referencedScope() const
 {
-    if (!isExternalURIReference(hrefString(), document()))
-        return &treeScope();
-    return externalDocument();
+    if (isStructurallyExternal())
+        return externalDocument();
+    return &treeScope();
 }
 
 Document* SVGUseElement::externalDocument() const
@@ -222,8 +222,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
         SVGElement::InvalidationGuard invalidationGuard(this);
-        bool isExternalReference = isExternalURIReference(hrefString(), document());
-        if (isExternalReference) {
+        if (isStructurallyExternal()) {
             KURL url = document().completeURL(hrefString());
             if (url.hasFragmentIdentifier()) {
                 FetchRequest request(ResourceRequest(url), localName());
@@ -297,7 +296,7 @@ static bool subtreeContainsDisallowedElement(Node* start)
 
 void SVGUseElement::scheduleShadowTreeRecreation()
 {
-    if (!referencedScope() || inUseShadowTree())
+    if (inUseShadowTree())
         return;
     m_needsShadowTreeRecreation = true;
     document().scheduleUseShadowTreeUpdate(*this);
@@ -320,10 +319,10 @@ void SVGUseElement::clearResourceReferences()
 
 void SVGUseElement::buildPendingResource()
 {
-    if (!referencedScope() || inUseShadowTree())
+    if (inUseShadowTree())
         return;
     clearResourceReferences();
-    if (!inDocument())
+    if (!referencedScope() || !inDocument())
         return;
 
     AtomicString id;
