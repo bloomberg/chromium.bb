@@ -37,7 +37,7 @@ namespace {
 // take.
 const int kMaxResponseBytes = 500 * 1024 * 1024;
 
-GURL GetConfigURL() {
+GURL GetDefaultConfigURL() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kPrecacheConfigSettingsURL)) {
@@ -187,10 +187,12 @@ void PrecacheFetcher::Fetcher::OnURLFetchComplete(const URLFetcher* source) {
 PrecacheFetcher::PrecacheFetcher(
     const std::vector<std::string>& starting_hosts,
     net::URLRequestContextGetter* request_context,
+    const GURL& config_url,
     const std::string& manifest_url_prefix,
     PrecacheFetcher::PrecacheDelegate* precache_delegate)
     : starting_hosts_(starting_hosts),
       request_context_(request_context),
+      config_url_(config_url),
       manifest_url_prefix_(manifest_url_prefix),
       precache_delegate_(precache_delegate),
       total_response_bytes_(0),
@@ -199,7 +201,7 @@ PrecacheFetcher::PrecacheFetcher(
   DCHECK(request_context_.get());  // Request context must be non-NULL.
   DCHECK(precache_delegate_);  // Precache delegate must be non-NULL.
 
-  DCHECK_NE(GURL(), GetConfigURL())
+  DCHECK_NE(GURL(), GetDefaultConfigURL())
       << "Could not determine the precache config settings URL.";
   DCHECK_NE(std::string(), GetDefaultManifestURLPrefix())
       << "Could not determine the default precache manifest URL prefix.";
@@ -232,8 +234,11 @@ PrecacheFetcher::~PrecacheFetcher() {
 void PrecacheFetcher::Start() {
   DCHECK(!fetcher_);  // Start shouldn't be called repeatedly.
 
-  GURL config_url = GetConfigURL();
-  DCHECK(config_url.is_valid());
+  GURL config_url =
+      config_url_.is_empty() ? GetDefaultConfigURL() : config_url_;
+
+  DCHECK(config_url.is_valid()) << "Config URL not valid: "
+                                << config_url.possibly_invalid_spec();
 
   // Fetch the precache configuration settings from the server.
   fetcher_.reset(new Fetcher(request_context_.get(), config_url,

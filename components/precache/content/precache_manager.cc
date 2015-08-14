@@ -32,6 +32,7 @@ namespace {
 const char kPrecacheFieldTrialName[] = "Precache";
 const char kPrecacheFieldTrialEnabledGroup[] = "Enabled";
 const char kPrecacheFieldTrialControlGroup[] = "Control";
+const char kConfigURLParam[] = "config_url";
 const char kManifestURLPrefixParam[] = "manifest_url_prefix";
 const int kNumTopHosts = 100;
 
@@ -267,6 +268,8 @@ void PrecacheManager::OnHostsReceived(
   // Start precaching.
   precache_fetcher_.reset(
       new PrecacheFetcher(hosts, browser_context_->GetRequestContext(),
+                          GURL(variations::GetVariationParamValue(
+                              kPrecacheFieldTrialName, kConfigURLParam)),
                           variations::GetVariationParamValue(
                               kPrecacheFieldTrialName, kManifestURLPrefixParam),
                           this));
