@@ -13,35 +13,30 @@
 (allow mach-lookup (global-name "com.apple.FontServer"))
 
 (allow file-read*
-  (regex #"^/System/Library/ColorSync($|/)")  ; http://crbug.com/46648
-  (regex #"^/System/Library/Keyboard Layouts($|/)")  ; http://crbug.com/152566
-  (literal "/Library/Preferences/.GlobalPreferences.plist") ; http://crbug.com/60917
-  (literal (user-homedir-path "/Library/Preferences/.GlobalPreferences.plist"))
-)
+  (regex #"^/System/Library/ColorSync($|/)")  ; https://crbug.com/46648
+  (regex #"^/System/Library/Keyboard Layouts($|/)")  ; https://crbug.com/152566
+  (literal "/Library/Preferences/.GlobalPreferences.plist") ; https://crbug.com/60917
+  (literal (user-homedir-path "/Library/Preferences/.GlobalPreferences.plist")))
 
-; http://crbug.com/11269
+; https://crbug.com/11269
 (allow file-read* (subpath (user-homedir-path "/Library/Fonts")))
 
-; http://crbug.com/60917
+; https://crbug.com/60917
 (allow file-read-metadata
   (literal "/")
-  (literal "/var")
-)
+  (literal "/var"))
 
-; http://crbug.com/288697
+; https://crbug.com/288697
 (allow file-read*
   (regex #"^/(private/)?etc/localtime$")
-  (regex #"^/usr/share/zoneinfo/")
-)
-(allow file-read-metadata
-  (regex #"^/(private/)?etc$")
-)
+  (regex #"^/usr/share/zoneinfo/"))
 
-; http://crbug.com/508935
+(allow file-read-metadata (regex #"^/(private/)?etc$"))
+
+; https://crbug.com/508935
 (if (param-true? elcap-or-later)
   (allow file-read*
     (literal "/usr/lib/libcsfde.dylib")
     (literal "/usr/lib/libcurl.4.dylib")
     (literal "/usr/lib/libCoreStorage.dylib")
-    (literal "/usr/lib/libutil.dylib")
-))
+    (literal "/usr/lib/libutil.dylib")))

@@ -23,3 +23,7 @@
     (iokit-user-client-class "RootDomainUserClient")
     (iokit-user-client-class "IOSurfaceRootUserClient")
     (iokit-user-client-class "IOSurfaceSendRight")))
+
+; https://crbug.com/515280
+(if (param-true? elcap-or-later)
+  (allow file-read* (regex #"^/System/Library/Extensions($|/)")))

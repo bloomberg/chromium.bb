@@ -14,5 +14,5 @@
 (allow mach-lookup (global-name "com.apple.FontObjectsServer"))
 (allow mach-lookup (global-name "com.apple.FontServer"))
 
-; http://crbug.com/11269
+; https://crbug.com/11269
 (allow file-read* (subpath (user-homedir-path "/Library/Fonts")))

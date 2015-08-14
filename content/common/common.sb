@@ -33,10 +33,10 @@
 ; Support for programmatically enabling verbose debugging.
 (if (param-true? enable-logging) (debug deny))
 
-; Allow sending signals to self - http://crbug.com/20370
+; Allow sending signals to self - https://crbug.com/20370
 (allow signal (target self))
 
-; Needed for full-page-zoomed controls - http://crbug.com/11325
+; Needed for full-page-zoomed controls - https://crbug.com/11325
 (allow sysctl-read)
 
 ; Loading System Libraries.
@@ -52,7 +52,7 @@
 (allow file-read-data file-read-metadata (literal "/dev/urandom"))
 
 ; Enables reading file metadata for the Chrome bundle and its parent paths.
-; http://crbug.com/127465
+; https://crbug.com/127465
 (if (and (param-defined? component-build-workaround)
          (param-true? component-build-workaround))
   (allow file-read-metadata ))
