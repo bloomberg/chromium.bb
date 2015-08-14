@@ -28946,6 +28946,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.LoginDatabaseFailedVersion">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The version of LoginDatabase if the migration to a new one failed.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.LoginDatabaseInit"
+    enum="LoginDatabaseInitError">
+  <owner>vasilii@chromium.org</owner>
+  <summary>An error on LoginDatabase initialization.</summary>
+</histogram>
+
 <histogram name="PasswordManager.NumPasswordsDeletedByBulkDelete">
   <owner>vabr@chromium.org</owner>
   <summary>
@@ -62667,6 +62680,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2122876605" label="enable-bleeding-edge-rendering-fast-paths"/>
   <int value="2137347307" label="enable-drive-apps-in-app-list"/>
   <int value="2137599770" label="enable-win32k-renderer-lockdown"/>
+</enum>
+
+<enum name="LoginDatabaseInitError" type="int">
+  <int value="0" label="Init success"/>
+  <int value="1" label="Can't open file"/>
+  <int value="2" label="Start transaction error"/>
+  <int value="3" label="Meta table failed initialization"/>
+  <int value="4" label="Incompatible current version"/>
+  <int value="5" label="Logins table failed initialization"/>
+  <int value="6" label="Stats table failed initialization"/>
+  <int value="7" label="Migration error"/>
+  <int value="8" label="Commit transaction error"/>
 </enum>
 
 <enum name="LoginFailureReason" type="int">

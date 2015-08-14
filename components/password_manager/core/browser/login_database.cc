@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/pickle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -84,6 +85,21 @@ enum LoginTableColumns {
 
 enum class HistogramSize { SMALL, LARGE };
 
+// An enum for UMA reporting. Add values to the end only.
+enum DatabaseInitError {
+  INIT_OK,
+  OPEN_FILE_ERROR,
+  START_TRANSACTION_ERROR,
+  META_TABLE_INIT_ERROR,
+  INCOMPATIBLE_VERSION,
+  INIT_LOGINS_ERROR,
+  INIT_STATS_ERROR,
+  MIGRATION_ERROR,
+  COMMIT_TRANSACTION_ERROR,
+
+  DATABASE_INIT_ERROR_COUNT,
+};
+
 void BindAddStatement(const PasswordForm& form,
                       const std::string& encrypted_password,
                       sql::Statement* s) {
@@ -136,6 +152,11 @@ bool DoesMatchConstraints(const PasswordForm& form) {
     return false;
   }
   return true;
+}
+
+void LogDatabaseInitError(DatabaseInitError error) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.LoginDatabaseInit", error,
+                            DATABASE_INIT_ERROR_COUNT);
 }
 
 // UMA_* macros assume that the name never changes. This is a helper function
@@ -297,12 +318,14 @@ bool LoginDatabase::Init() {
   db_.set_histogram_tag("Passwords");
 
   if (!db_.Open(db_path_)) {
+    LogDatabaseInitError(OPEN_FILE_ERROR);
     LOG(ERROR) << "Unable to open the password store database.";
     return false;
   }
 
   sql::Transaction transaction(&db_);
   if (!transaction.Begin()) {
+    LogDatabaseInitError(START_TRANSACTION_ERROR);
     LOG(ERROR) << "Unable to start a transaction.";
     db_.Close();
     return false;
@@ -311,11 +334,13 @@ bool LoginDatabase::Init() {
   // Check the database version.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber)) {
+    LogDatabaseInitError(META_TABLE_INIT_ERROR);
     LOG(ERROR) << "Unable to create the meta table.";
     db_.Close();
     return false;
   }
   if (meta_table_.GetCompatibleVersionNumber() > kCurrentVersionNumber) {
+    LogDatabaseInitError(INCOMPATIBLE_VERSION);
     LOG(ERROR) << "Password store database is too new, kCurrentVersionNumber="
                << kCurrentVersionNumber << ", GetCompatibleVersionNumber="
                << meta_table_.GetCompatibleVersionNumber();
@@ -325,12 +350,14 @@ bool LoginDatabase::Init() {
 
   // Initialize the tables.
   if (!InitLoginsTable()) {
+    LogDatabaseInitError(INIT_LOGINS_ERROR);
     LOG(ERROR) << "Unable to initialize the logins table.";
     db_.Close();
     return false;
   }
 
   if (!stats_table_.Init(&db_)) {
+    LogDatabaseInitError(INIT_STATS_ERROR);
     LOG(ERROR) << "Unable to initialize the stats table.";
     db_.Close();
     return false;
@@ -338,6 +365,9 @@ bool LoginDatabase::Init() {
 
   // If the file on disk is an older database version, bring it up to date.
   if (!MigrateOldVersionsAsNeeded()) {
+    LogDatabaseInitError(MIGRATION_ERROR);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("PasswordManager.LoginDatabaseFailedVersion",
+                                meta_table_.GetVersionNumber());
     LOG(ERROR) << "Unable to migrate database from "
                << meta_table_.GetVersionNumber() << " to "
                << kCurrentVersionNumber;
@@ -346,11 +376,13 @@ bool LoginDatabase::Init() {
   }
 
   if (!transaction.Commit()) {
+    LogDatabaseInitError(COMMIT_TRANSACTION_ERROR);
     LOG(ERROR) << "Unable to commit a transaction.";
     db_.Close();
     return false;
   }
 
+  LogDatabaseInitError(INIT_OK);
   return true;
 }
 
