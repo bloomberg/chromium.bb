@@ -33,6 +33,10 @@ void ChannelDispatcherBase::Init(Session* session,
       channel_factory_ = session->GetMultiplexedChannelFactory();
       break;
 
+    case ChannelConfig::TRANSPORT_QUIC_STREAM:
+      channel_factory_ = session->GetQuicChannelFactory();
+      break;
+
     case ChannelConfig::TRANSPORT_STREAM:
       channel_factory_ = session->GetTransportChannelFactory();
       break;

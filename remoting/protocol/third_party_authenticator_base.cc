@@ -86,6 +86,12 @@ scoped_ptr<buzz::XmlElement> ThirdPartyAuthenticatorBase::GetNextMessage() {
   return message.Pass();
 }
 
+const std::string& ThirdPartyAuthenticatorBase::GetAuthKey() const {
+  DCHECK_EQ(state(), ACCEPTED);
+
+  return underlying_->GetAuthKey();
+}
+
 scoped_ptr<ChannelAuthenticator>
 ThirdPartyAuthenticatorBase::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);

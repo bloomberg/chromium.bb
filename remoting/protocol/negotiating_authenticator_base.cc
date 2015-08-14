@@ -103,6 +103,11 @@ void NegotiatingAuthenticatorBase::AddMethod(
   methods_.push_back(method);
 }
 
+const std::string& NegotiatingAuthenticatorBase::GetAuthKey() const {
+  DCHECK_EQ(state(), ACCEPTED);
+  return current_authenticator_->GetAuthKey();
+}
+
 scoped_ptr<ChannelAuthenticator>
 NegotiatingAuthenticatorBase::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);

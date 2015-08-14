@@ -66,6 +66,7 @@ class NegotiatingAuthenticatorBase : public Authenticator {
   State state() const override;
   bool started() const override;
   RejectionReason rejection_reason() const override;
+  const std::string& GetAuthKey() const override;
   scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
   // Calls |current_authenticator_| to process |message|, passing the supplied

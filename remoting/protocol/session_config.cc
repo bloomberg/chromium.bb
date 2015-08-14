@@ -5,6 +5,7 @@
 #include "remoting/protocol/session_config.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/logging.h"
 
@@ -31,6 +32,19 @@ bool SelectCommonChannelConfig(const std::list<ChannelConfig>& host_configs,
     }
   }
   return false;
+}
+
+void UpdateConfigListToPreferTransport(std::list<ChannelConfig>* configs,
+                                       ChannelConfig::TransportType transport) {
+  std::vector<ChannelConfig> sorted(configs->begin(), configs->end());
+  std::stable_sort(sorted.begin(), sorted.end(),
+                   [transport](const ChannelConfig& a, const ChannelConfig& b) {
+                     // |a| must precede |b| if |a| uses preferred transport and
+                     // |b| doesn't.
+                     return a.transport == transport &&
+                            b.transport != transport;
+                   });
+  configs->assign(sorted.begin(), sorted.end());
 }
 
 }  // namespace
@@ -122,13 +136,13 @@ scoped_ptr<SessionConfig> SessionConfig::GetFinalConfig(
 // static
 scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   scoped_ptr<SessionConfig> result(new SessionConfig());
-  result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+  result->control_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                                           kControlStreamVersion,
                                           ChannelConfig::CODEC_UNDEFINED);
-  result->event_config_ = ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+  result->event_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_UNDEFINED);
-  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
+  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                                         kDefaultStreamVersion,
                                         ChannelConfig::CODEC_VP8);
   result->audio_config_ = ChannelConfig(ChannelConfig::TRANSPORT_NONE,
@@ -182,10 +196,18 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
                     kControlStreamVersion,
                     ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_control_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+                    kControlStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
 
   // Event channel.
   result->mutable_event_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_UNDEFINED));
+  result->mutable_event_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_UNDEFINED));
 
@@ -198,10 +220,22 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
       ChannelConfig(ChannelConfig::TRANSPORT_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_VP8));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP9));
+  result->mutable_video_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_VP8));
 
   // Audio channel.
   result->mutable_audio_configs()->push_back(
       ChannelConfig(ChannelConfig::TRANSPORT_MUX_STREAM,
+                    kDefaultStreamVersion,
+                    ChannelConfig::CODEC_OPUS));
+  result->mutable_audio_configs()->push_back(
+      ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
                     kDefaultStreamVersion,
                     ChannelConfig::CODEC_OPUS));
   result->mutable_audio_configs()->push_back(ChannelConfig::None());
@@ -212,6 +246,14 @@ scoped_ptr<CandidateSessionConfig> CandidateSessionConfig::CreateDefault() {
 void CandidateSessionConfig::DisableAudioChannel() {
   mutable_audio_configs()->clear();
   mutable_audio_configs()->push_back(ChannelConfig());
+}
+
+void CandidateSessionConfig::PreferTransport(
+    ChannelConfig::TransportType transport) {
+  UpdateConfigListToPreferTransport(&control_configs_, transport);
+  UpdateConfigListToPreferTransport(&event_configs_, transport);
+  UpdateConfigListToPreferTransport(&video_configs_, transport);
+  UpdateConfigListToPreferTransport(&audio_configs_, transport);
 }
 
 }  // namespace protocol

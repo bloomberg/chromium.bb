@@ -181,6 +181,10 @@ scoped_ptr<buzz::XmlElement> V2Authenticator::GetNextMessage() {
   return message.Pass();
 }
 
+const std::string& V2Authenticator::GetAuthKey() const {
+  return auth_key_;
+}
+
 scoped_ptr<ChannelAuthenticator>
 V2Authenticator::CreateChannelAuthenticator() const {
   DCHECK_EQ(state(), ACCEPTED);

@@ -402,7 +402,7 @@ TEST_F(JingleSessionTest, TestIncompatibleProtocol) {
 
   scoped_ptr<CandidateSessionConfig> config =
       CandidateSessionConfig::CreateDefault();
-  // Disable all video codecs so the host will reject connection
+  // Disable all video codecs so the host will reject connection.
   config->mutable_video_configs()->clear();
   client_server_->set_protocol_config(config.Pass());
   client_session_ = client_server_->Connect(kHostJid, authenticator.Pass());
@@ -509,6 +509,44 @@ TEST_F(JingleSessionTest, TestMuxStreamChannel) {
       .WillOnce(QuitThreadOnCounter(&counter));
   EXPECT_CALL(host_channel_callback_, OnDone(_))
       .WillOnce(QuitThreadOnCounter(&counter));
+  message_loop_->Run();
+
+  EXPECT_TRUE(client_socket_.get());
+  EXPECT_TRUE(host_socket_.get());
+
+  StreamConnectionTester tester(host_socket_.get(), client_socket_.get(),
+                                kMessageSize, kMessages);
+  tester.Start();
+  message_loop_->Run();
+  tester.CheckResults();
+}
+
+// Verify that data can be sent over a QUIC channel.
+TEST_F(JingleSessionTest, TestQuicStreamChannel) {
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+
+  scoped_ptr<CandidateSessionConfig> config =
+      CandidateSessionConfig::CreateDefault();
+  config->PreferTransport(ChannelConfig::TRANSPORT_QUIC_STREAM);
+  client_server_->set_protocol_config(config.Pass());
+
+  ASSERT_NO_FATAL_FAILURE(
+      InitiateConnection(1, FakeAuthenticator::ACCEPT, false));
+
+  int counter = 2;
+  ExpectRouteChange(kQuicChannelName);
+  EXPECT_CALL(client_channel_callback_, OnDone(_))
+      .WillOnce(QuitThreadOnCounter(&counter));
+  EXPECT_CALL(host_channel_callback_, OnDone(_))
+      .WillOnce(QuitThreadOnCounter(&counter));
+
+  client_session_->GetQuicChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnClientChannelCreated,
+                               base::Unretained(this)));
+  host_session_->GetQuicChannelFactory()->CreateChannel(
+      kChannelName, base::Bind(&JingleSessionTest::OnHostChannelCreated,
+                               base::Unretained(this)));
+
   message_loop_->Run();
 
   EXPECT_TRUE(client_socket_.get());

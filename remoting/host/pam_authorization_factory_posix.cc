@@ -29,6 +29,7 @@ class PamAuthorizer : public protocol::Authenticator {
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
   scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  const std::string& GetAuthKey() const override;
   scoped_ptr<protocol::ChannelAuthenticator> CreateChannelAuthenticator()
       const override;
 
@@ -93,6 +94,10 @@ scoped_ptr<buzz::XmlElement> PamAuthorizer::GetNextMessage() {
   scoped_ptr<buzz::XmlElement> result(underlying_->GetNextMessage());
   MaybeCheckLocalLogin();
   return result.Pass();
+}
+
+const std::string& PamAuthorizer::GetAuthKey() const {
+  return underlying_->GetAuthKey();
 }
 
 scoped_ptr<protocol::ChannelAuthenticator>

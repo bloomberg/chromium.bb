@@ -19,6 +19,7 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pseudotcp_channel_factory.h"
+#include "remoting/protocol/quic_channel_factory.h"
 #include "remoting/protocol/secure_channel_factory.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/stream_channel_factory.h"
@@ -78,6 +79,7 @@ JingleSession::JingleSession(JingleSessionManager* session_manager)
 
 JingleSession::~JingleSession() {
   channel_multiplexer_.reset();
+  quic_channel_factory_.reset();
   STLDeleteContainerPointers(pending_requests_.begin(),
                              pending_requests_.end());
   STLDeleteContainerPointers(transport_info_requests_.begin(),
@@ -114,13 +116,16 @@ void JingleSession::StartConnection(const std::string& peer_jid,
   // clients generate the same session ID concurrently.
   session_id_ = base::Int64ToString(base::RandGenerator(kint64max));
 
+  quic_channel_factory_.reset(new QuicChannelFactory(session_id_, false));
+
   // Send session-initiate message.
   JingleMessage message(peer_jid_, JingleMessage::SESSION_INITIATE,
                         session_id_);
   message.initiator = session_manager_->signal_strategy_->GetLocalJid();
-  message.description.reset(
-      new ContentDescription(session_manager_->protocol_config_->Clone(),
-                             authenticator_->GetNextMessage()));
+  message.description.reset(new ContentDescription(
+      session_manager_->protocol_config_->Clone(),
+      authenticator_->GetNextMessage(),
+      quic_channel_factory_->CreateSessionInitiateConfigMessage()));
   SendMessage(message);
 
   SetState(CONNECTING);
@@ -147,6 +152,15 @@ void JingleSession::InitializeIncomingConnection(
     LOG(WARNING) << "Rejecting connection from " << peer_jid_
                  << " because no compatible configuration has been found.";
     CloseInternal(INCOMPATIBLE_PROTOCOL);
+    return;
+  }
+
+  if (config_->is_using_quic()) {
+    quic_channel_factory_.reset(new QuicChannelFactory(session_id_, true));
+    if (!quic_channel_factory_->ProcessSessionInitiateConfigMessage(
+            initiate_message.description->quic_config_message())) {
+      CloseInternal(INCOMPATIBLE_PROTOCOL);
+    }
   }
 }
 
@@ -186,9 +200,12 @@ void JingleSession::ContinueAcceptIncomingConnection() {
   if (authenticator_->state() == Authenticator::MESSAGE_READY)
     auth_message = authenticator_->GetNextMessage();
 
+  std::string quic_config;
+  if (config_->is_using_quic())
+    quic_config = quic_channel_factory_->CreateSessionAcceptConfigMessage();
   message.description.reset(
       new ContentDescription(CandidateSessionConfig::CreateFrom(*config_),
-                             auth_message.Pass()));
+                             auth_message.Pass(), quic_config));
   SendMessage(message);
 
   // Update state.
@@ -226,6 +243,11 @@ StreamChannelFactory* JingleSession::GetMultiplexedChannelFactory() {
         new ChannelMultiplexer(GetTransportChannelFactory(), kMuxChannelName));
   }
   return channel_multiplexer_.get();
+}
+
+StreamChannelFactory* JingleSession::GetQuicChannelFactory() {
+  DCHECK(CalledOnValidThread());
+  return quic_channel_factory_.get();
 }
 
 void JingleSession::Close() {
@@ -482,6 +504,16 @@ void JingleSession::OnAccept(const JingleMessage& message,
     return;
   }
 
+  if (config_->is_using_quic()) {
+    if (!quic_channel_factory_->ProcessSessionAcceptConfigMessage(
+            message.description->quic_config_message())) {
+      CloseInternal(INCOMPATIBLE_PROTOCOL);
+      return;
+    }
+  } else {
+    quic_channel_factory_.reset();
+  }
+
   SetState(CONNECTED);
 
   DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
@@ -644,6 +676,9 @@ void JingleSession::OnAuthenticated() {
   secure_channel_factory_.reset(
       new SecureChannelFactory(pseudotcp_channel_factory_.get(),
                                authenticator_.get()));
+
+  if (quic_channel_factory_)
+    quic_channel_factory_->Start(this, authenticator_->GetAuthKey());
 
   SetState(AUTHENTICATED);
 }

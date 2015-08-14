@@ -25,10 +25,11 @@
 namespace remoting {
 namespace protocol {
 
-class SecureChannelFactory;
 class ChannelMultiplexer;
 class JingleSessionManager;
 class PseudoTcpChannelFactory;
+class QuicChannelFactory;
+class SecureChannelFactory;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. Instances of this class are
@@ -47,6 +48,7 @@ class JingleSession : public base::NonThreadSafe,
   const SessionConfig& config() override;
   StreamChannelFactory* GetTransportChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
+  StreamChannelFactory* GetQuicChannelFactory() override;
   void Close() override;
 
   // DatagramChannelFactory interface.
@@ -171,6 +173,7 @@ class JingleSession : public base::NonThreadSafe,
   scoped_ptr<PseudoTcpChannelFactory> pseudotcp_channel_factory_;
   scoped_ptr<SecureChannelFactory> secure_channel_factory_;
   scoped_ptr<ChannelMultiplexer> channel_multiplexer_;
+  scoped_ptr<QuicChannelFactory> quic_channel_factory_;
 
   scoped_ptr<JingleMessage> pending_transport_info_message_;
   base::OneShotTimer<JingleSession> transport_info_timer_;

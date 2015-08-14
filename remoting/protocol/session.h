@@ -68,7 +68,6 @@ class Session {
                                       const TransportRoute& route) = 0;
   };
 
-
   Session() {}
   virtual ~Session() {}
 
@@ -91,6 +90,7 @@ class Session {
   // share a single underlying transport channel
   virtual StreamChannelFactory* GetTransportChannelFactory() = 0;
   virtual StreamChannelFactory* GetMultiplexedChannelFactory() = 0;
+  virtual StreamChannelFactory* GetQuicChannelFactory() = 0;
 
   // Closes connection. Callbacks are guaranteed not to be called
   // after this method returns. Must be called before the object is

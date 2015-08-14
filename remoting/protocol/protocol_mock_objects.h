@@ -204,6 +204,7 @@ class MockSession : public Session {
   MOCK_METHOD0(error, ErrorCode());
   MOCK_METHOD0(GetTransportChannelFactory, StreamChannelFactory*());
   MOCK_METHOD0(GetMultiplexedChannelFactory, StreamChannelFactory*());
+  MOCK_METHOD0(GetQuicChannelFactory, StreamChannelFactory*());
   MOCK_METHOD0(jid, const std::string&());
   MOCK_METHOD0(candidate_config, const CandidateSessionConfig*());
   MOCK_METHOD0(config, const SessionConfig&());

@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/content_description.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
@@ -32,6 +33,7 @@ const char kVideoTag[] = "video";
 const char kAudioTag[] = "audio";
 const char kVp9ExperimentTag[] = "vp9-experiment";
 const char kDeprecatedResolutionTag[] = "initial-resolution";
+const char kQuicConfigTag[] = "quic-config";
 
 const char kTransportAttr[] = "transport";
 const char kVersionAttr[] = "version";
@@ -42,6 +44,7 @@ const char kDeprecatedHeightAttr[] = "height";
 const NameMapElement<ChannelConfig::TransportType> kTransports[] = {
   { ChannelConfig::TRANSPORT_STREAM, "stream" },
   { ChannelConfig::TRANSPORT_MUX_STREAM, "mux-stream" },
+  { ChannelConfig::TRANSPORT_QUIC_STREAM, "quic-stream" },
   { ChannelConfig::TRANSPORT_DATAGRAM, "datagram" },
   { ChannelConfig::TRANSPORT_NONE, "none" },
 };
@@ -116,9 +119,11 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 
 ContentDescription::ContentDescription(
     scoped_ptr<CandidateSessionConfig> config,
-    scoped_ptr<buzz::XmlElement> authenticator_message)
+    scoped_ptr<buzz::XmlElement> authenticator_message,
+    const std::string& quic_config_message)
     : candidate_config_(config.Pass()),
-      authenticator_message_(authenticator_message.Pass()) {
+      authenticator_message_(authenticator_message.Pass()),
+      quic_config_message_(quic_config_message) {
 }
 
 ContentDescription::~ContentDescription() { }
@@ -168,9 +173,18 @@ XmlElement* ContentDescription::ToXml() const {
   resolution_tag->AddAttr(QName(kDefaultNs, kDeprecatedHeightAttr), "480");
   root->AddElement(resolution_tag);
 
-  if (authenticator_message_.get()) {
+  if (authenticator_message_) {
     DCHECK(Authenticator::IsAuthenticatorMessage(authenticator_message_.get()));
     root->AddElement(new XmlElement(*authenticator_message_));
+  }
+
+  if (!quic_config_message_.empty()) {
+    XmlElement* quic_config_tag =
+        new XmlElement(QName(kChromotingXmlNamespace, kQuicConfigTag));
+    root->AddElement(quic_config_tag);
+    std::string config_base64;
+    base::Base64Encode(quic_config_message_, &config_base64);
+    quic_config_tag->SetBodyText(config_base64);
   }
 
   if (config()->vp9_experiment_enabled()) {
@@ -241,8 +255,19 @@ scoped_ptr<ContentDescription> ContentDescription::ParseXml(
   if (child)
     authenticator_message.reset(new XmlElement(*child));
 
-  return make_scoped_ptr(
-      new ContentDescription(config.Pass(), authenticator_message.Pass()));
+  std::string quic_config_message;
+  const XmlElement* quic_config_tag =
+      element->FirstNamed(QName(kChromotingXmlNamespace, kQuicConfigTag));
+  if (quic_config_tag) {
+    if (!base::Base64Decode(quic_config_tag->BodyText(),
+                            &quic_config_message)) {
+      LOG(ERROR) << "Failed to parse QUIC config.";
+      return nullptr;
+    }
+  }
+
+  return make_scoped_ptr(new ContentDescription(
+      config.Pass(), authenticator_message.Pass(), quic_config_message));
 }
 
 }  // namespace protocol

@@ -60,7 +60,7 @@ void HostStatusLogger::OnClientRouteChange(
     const protocol::TransportRoute& route) {
   // Store connection type for the video channel. It is logged later
   // when client authentication is finished.
-  if (channel_name == kVideoChannelName) {
+  if (channel_name == kVideoChannelName || channel_name == kQuicChannelName) {
     connection_route_type_[jid] = route.type;
   }
 }

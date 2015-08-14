@@ -42,6 +42,10 @@ StreamChannelFactory* FakeSession::GetMultiplexedChannelFactory() {
   return &channel_factory_;
 }
 
+StreamChannelFactory* FakeSession::GetQuicChannelFactory() {
+  return &channel_factory_;
+}
+
 void FakeSession::Close() {
   closed_ = true;
 }

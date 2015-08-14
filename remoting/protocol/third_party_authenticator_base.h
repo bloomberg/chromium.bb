@@ -41,6 +41,7 @@ class ThirdPartyAuthenticatorBase : public Authenticator {
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
   scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  const std::string& GetAuthKey() const override;
   scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
  protected:

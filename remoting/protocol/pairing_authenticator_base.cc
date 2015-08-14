@@ -94,6 +94,10 @@ scoped_ptr<buzz::XmlElement> PairingAuthenticatorBase::GetNextMessage() {
   return result.Pass();
 }
 
+const std::string& PairingAuthenticatorBase::GetAuthKey() const {
+  return v2_authenticator_->GetAuthKey();
+}
+
 scoped_ptr<ChannelAuthenticator>
 PairingAuthenticatorBase::CreateChannelAuthenticator() const {
   return v2_authenticator_->CreateChannelAuthenticator();

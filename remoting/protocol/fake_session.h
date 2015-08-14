@@ -40,6 +40,7 @@ class FakeSession : public Session {
   const SessionConfig& config() override;
   StreamChannelFactory* GetTransportChannelFactory() override;
   StreamChannelFactory* GetMultiplexedChannelFactory() override;
+  StreamChannelFactory* GetQuicChannelFactory() override;
   void Close() override;
 
  public:

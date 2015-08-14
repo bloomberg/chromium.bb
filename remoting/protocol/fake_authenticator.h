@@ -70,6 +70,7 @@ class FakeAuthenticator : public Authenticator {
   void ProcessMessage(const buzz::XmlElement* message,
                       const base::Closure& resume_callback) override;
   scoped_ptr<buzz::XmlElement> GetNextMessage() override;
+  const std::string& GetAuthKey() const override;
   scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override;
 
  protected:
@@ -83,6 +84,8 @@ class FakeAuthenticator : public Authenticator {
   // Number of messages that the authenticator needs to process before started()
   // returns true.  Default to 0.
   int messages_till_started_;
+
+  std::string auth_key_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAuthenticator);
 };

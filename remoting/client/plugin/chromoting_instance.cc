@@ -647,6 +647,10 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
       experiments_list.end()) {
     config->set_vp9_experiment_enabled(true);
   }
+  if (std::find(experiments_list.begin(), experiments_list.end(), "quic") !=
+      experiments_list.end()) {
+    config->PreferTransport(protocol::ChannelConfig::TRANSPORT_QUIC_STREAM);
+  }
   client_->set_protocol_config(config.Pass());
 
   // Kick off the connection.

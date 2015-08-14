@@ -47,6 +47,11 @@ class RejectingAuthenticator : public Authenticator {
     return nullptr;
   }
 
+  const std::string& GetAuthKey() const override {
+    NOTREACHED();
+    return auth_key_;
+  };
+
   scoped_ptr<ChannelAuthenticator> CreateChannelAuthenticator() const override {
     NOTREACHED();
     return nullptr;
@@ -54,6 +59,7 @@ class RejectingAuthenticator : public Authenticator {
 
  protected:
   State state_;
+  std::string auth_key_;
 };
 
 }  // namespace

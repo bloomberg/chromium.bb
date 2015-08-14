@@ -4,8 +4,10 @@
 
 #include "remoting/protocol/fake_authenticator.h"
 
+#include "base/base64.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -88,8 +90,10 @@ void FakeChannelAuthenticator::CallDoneCallback() {
   base::ResetAndReturn(&done_callback_).Run(result_, socket_.Pass());
 }
 
-FakeAuthenticator::FakeAuthenticator(
-    Type type, int round_trips, Action action, bool async)
+FakeAuthenticator::FakeAuthenticator(Type type,
+                                     int round_trips,
+                                     Action action,
+                                     bool async)
     : type_(type),
       round_trips_(round_trips),
       action_(action),
@@ -146,6 +150,15 @@ void FakeAuthenticator::ProcessMessage(const buzz::XmlElement* message,
   std::string id =
       message->TextNamed(buzz::QName(kChromotingXmlNamespace, "id"));
   EXPECT_EQ(id, base::IntToString(messages_));
+
+  // On the client receive the key in the last message.
+  if (type_ == CLIENT && messages_ == round_trips_ * 2 - 1) {
+    std::string key_base64 =
+        message->TextNamed(buzz::QName(kChromotingXmlNamespace, "key"));
+    EXPECT_TRUE(!key_base64.empty());
+    EXPECT_TRUE(base::Base64Decode(key_base64, &auth_key_));
+  }
+
   ++messages_;
   resume_callback.Run();
 }
@@ -160,8 +173,24 @@ scoped_ptr<buzz::XmlElement> FakeAuthenticator::GetNextMessage() {
   id->AddText(base::IntToString(messages_));
   result->AddElement(id);
 
+  // Add authentication key in the last message sent from host to client.
+  if (type_ == HOST && messages_ == round_trips_ * 2 - 1) {
+    auth_key_ =  base::RandBytesAsString(16);
+    buzz::XmlElement* key = new buzz::XmlElement(
+        buzz::QName(kChromotingXmlNamespace, "key"));
+    std::string key_base64;
+    base::Base64Encode(auth_key_, &key_base64);
+    key->AddText(key_base64);
+    result->AddElement(key);
+  }
+
   ++messages_;
   return result.Pass();
+}
+
+const std::string& FakeAuthenticator::GetAuthKey() const {
+  EXPECT_EQ(ACCEPTED, state());
+  return auth_key_;
 }
 
 scoped_ptr<ChannelAuthenticator>
