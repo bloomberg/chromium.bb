@@ -12,6 +12,7 @@
 #include "chrome/browser/notifications/notification_permission_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_context_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/storage/durable_storage_permission_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -137,6 +138,11 @@ void PermissionQueueController::PendingInfobarRequest::CreateInfoBar(
           display_languages);
       break;
 #endif
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      infobar_ = DurableStoragePermissionInfoBarDelegate::Create(
+          GetInfoBarService(id_), controller, id_, requesting_frame_,
+          display_languages, type_);
+      break;
     default:
       NOTREACHED();
       break;

@@ -13,6 +13,7 @@ enum PermissionName {
   MIDI,
   MIDI_SYSEX,
   PROTECTED_MEDIA_IDENTIFIER,
+  DURABLE_STORAGE,
 };
 
 // The Permission service provides permission handling capabilities by exposing

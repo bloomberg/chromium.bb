@@ -49,6 +49,7 @@ gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {
     case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
 #endif
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
       // TODO(estade): add vector icons for these.
       return gfx::VectorIconId::VECTOR_ICON_NONE;
     default:
@@ -79,6 +80,10 @@ int PermissionBubbleRequestImpl::GetIconID() const {
       icon_id = IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
       break;
 #endif
+    // TODO(dgrogan): Get a real icon. https://crbug.com/516069
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      icon_id = IDR_INFOBAR_WARNING;
+      break;
     default:
       NOTREACHED();
       return IDR_INFOBAR_WARNING;
@@ -143,6 +148,9 @@ base::string16 PermissionBubbleRequestImpl::GetMessageTextFragment() const {
       message_id = IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT;
       break;
 #endif
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      message_id = IDS_DURABLE_STORAGE_BUBBLE_FRAGMENT;
+      break;
     default:
       NOTREACHED();
       return base::string16();

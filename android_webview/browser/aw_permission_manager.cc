@@ -210,6 +210,7 @@ void AwPermissionManager::RequestPermission(
       break;
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
+    case PermissionType::DURABLE_STORAGE:
       NOTIMPLEMENTED() << "RequestPermission is not implemented for "
                        << static_cast<int>(permission);
       callback.Run(content::PERMISSION_STATUS_DENIED);
@@ -257,6 +258,7 @@ void AwPermissionManager::CancelPermissionRequest(
       break;
     case PermissionType::NOTIFICATIONS:
     case PermissionType::PUSH_MESSAGING:
+    case PermissionType::DURABLE_STORAGE:
       NOTIMPLEMENTED() << "CancelPermission not implemented for "
                        << static_cast<int>(permission);
       break;

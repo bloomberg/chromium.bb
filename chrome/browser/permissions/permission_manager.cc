@@ -58,6 +58,8 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       NOTIMPLEMENTED();
       break;
 #endif
+    case PermissionType::DURABLE_STORAGE:
+      return CONTENT_SETTINGS_TYPE_DURABLE_STORAGE;
     case PermissionType::MIDI:
       // This will hit the NOTREACHED below.
       break;

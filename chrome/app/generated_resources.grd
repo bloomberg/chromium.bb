@@ -15818,6 +15818,16 @@ After you create a new supervised user, you can manage their settings at any tim
         Allows users to opt in to the collection of invalid TLS/SSL certificate chains.
       </message>
 
+      <message name="IDS_DURABLE_STORAGE_INFOBAR_QUESTION" desc="">
+        <ph name="URL">
+          $1<ex>www.google.com</ex>
+        </ph> wants to store files on this device.
+      </message>
+
+      <message name="IDS_DURABLE_STORAGE_BUBBLE_FRAGMENT" desc="Permission fragment presented in the permission bubble when the webapp requests to be exempt from low-storage driven disk cleanup. Follows a 'This site would like to:' prompt.">
+        Store files on this device
+      </message>
+
       <!-- Printer detected notification -->
       <if expr="chromeos">
         <message name="IDS_PRINTER_DETECTED_NOTIFICATION_TITLE" desc="Title for notification shown to the user when a printer gets plugged in to a Chrome OS device.">

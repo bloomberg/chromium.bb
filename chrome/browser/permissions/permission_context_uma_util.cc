@@ -131,6 +131,13 @@ void RecordPermissionAction(ContentSettingsType permission,
             action);
         break;
 #endif
+      case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+        PERMISSION_ACTION_UMA(
+            secure_origin, "ContentSettings.PermissionActions_DurableStorage",
+            "ContentSettings.PermissionActionsSecureOrigin_DurableStorage",
+            "ContentSettings.PermissionActionsInsecureOrigin_DurableStorage",
+            action);
+        break;
       default:
         NOTREACHED() << "PERMISSION " << permission << " not accounted for";
     }
@@ -154,6 +161,8 @@ std::string PermissionTypeToString(PermissionType permission_type) {
       return "Geolocation";
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       return "ProtectedMediaIdentifier";
+    case PermissionType::DURABLE_STORAGE:
+      return "DurableStorage";
     case PermissionType::MIDI:
       return "Midi";
     case PermissionType::NUM:
@@ -195,6 +204,9 @@ void RecordPermissionRequest(ContentSettingsType permission,
       type = PermissionType::PROTECTED_MEDIA_IDENTIFIER;
       break;
 #endif
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      type = content::PermissionType::DURABLE_STORAGE;
+      break;
     default:
       NOTREACHED() << "PERMISSION " << permission << " not accounted for";
       return;

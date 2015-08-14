@@ -19,6 +19,7 @@ enum class PermissionType {
   GEOLOCATION = 4,
   PROTECTED_MEDIA_IDENTIFIER = 5,
   MIDI = 6,
+  DURABLE_STORAGE = 7,
 
   // Always keep this at the end.
   NUM,

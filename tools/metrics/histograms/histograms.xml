@@ -66397,6 +66397,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="PERMISSION_NOTIFICATIONS"/>
   <int value="4" label="PERMISSION_GEOLOCATION"/>
   <int value="5" label="PERMISSION_PROTECTED_MEDIA_IDENTIFIER"/>
+  <int value="6" label="PERMISSION_DURABLE_STORAGE"/>
 </enum>
 
 <enum name="PhotoEditorFileType" type="int">
@@ -75950,6 +75951,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Notifications" label="Notification permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
   <suffix name="ProtectedMedia" label="Protected media permission actions"/>
+  <suffix name="DurableStorage" label="Durable Storage permission actions"/>
   <affected-histogram name="ContentSettings.PermissionActions"/>
   <affected-histogram name="ContentSettings.PermissionActionsInsecureOrigin"/>
   <affected-histogram name="ContentSettings.PermissionActionsSecureOrigin"/>

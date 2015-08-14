@@ -27,6 +27,8 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
       return PermissionType::MIDI_SYSEX;
     case PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER:
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
+    case PERMISSION_NAME_DURABLE_STORAGE:
+      return PermissionType::DURABLE_STORAGE;
   }
 
   NOTREACHED();

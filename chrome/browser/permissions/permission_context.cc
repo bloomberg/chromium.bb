@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 #include "chrome/browser/push_messaging/push_messaging_permission_context_factory.h"
+#include "chrome/browser/storage/durable_storage_permission_context.h"
+#include "chrome/browser/storage/durable_storage_permission_context_factory.h"
 #include "content/public/browser/permission_type.h"
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -41,6 +43,8 @@ PermissionContextBase* PermissionContext::Get(Profile* profile,
       return ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
           profile);
 #endif
+    case content::PermissionType::DURABLE_STORAGE:
+      return DurableStoragePermissionContextFactory::GetForProfile(profile);
     case PermissionType::MIDI:
       // PermissionType::MIDI is a valid permission but does not have a
       // permission context. It has a constant value instead.
@@ -68,6 +72,7 @@ const std::list<KeyedServiceBaseFactory*>& PermissionContext::GetFactories() {
     factories.push_back(
         ProtectedMediaIdentifierPermissionContextFactory::GetInstance());
 #endif
+    factories.push_back(DurableStoragePermissionContextFactory::GetInstance());
   }
 
   return factories;

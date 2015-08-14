@@ -1,0 +1,10 @@
+<!DOCTYPE HTML>
+<script>
+
+function requestPermission() {
+  navigator.storage.requestPersistent().then(function(permission) {
+    window.domAutomationController.send(permission);
+  });
+}
+
+</script>
