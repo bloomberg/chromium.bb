@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.net.qualityprovider;
 import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.util.NonThreadSafe;
 
@@ -14,6 +15,7 @@ import org.chromium.chrome.browser.util.NonThreadSafe;
  * This class provides a base class implementation and may be overridden on operating systems that
  * provide more useful APIs. This class is not thread safe.
  */
+@JNINamespace("chrome::android")
 public class NetworkQualityProvider {
     /**
      * Value to return if a valid value is unavailable.
@@ -42,15 +44,6 @@ public class NetworkQualityProvider {
      */
     public NetworkQualityProvider() {
         assert sThreadCheck.calledOnValidThread();
-    }
-
-    /**
-     * @return True if the network quality estimate is available.
-     */
-    @CalledByNative
-    protected boolean isEstimateAvailable() {
-        assert sThreadCheck.calledOnValidThread();
-        return false;
     }
 
     /**

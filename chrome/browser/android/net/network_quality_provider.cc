@@ -8,7 +8,10 @@
 
 #include "jni/NetworkQualityProvider_jni.h"
 
-NetworkQualityProvider::NetworkQualityProvider() {
+namespace chrome {
+namespace android {
+
+NetworkQualityProvider::NetworkQualityProvider() : delegate_(nullptr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(j_network_quality_provider_.is_null());
   j_network_quality_provider_.Reset(Java_NetworkQualityProvider_create(
@@ -23,21 +26,14 @@ NetworkQualityProvider::~NetworkQualityProvider() {
   net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
-bool NetworkQualityProvider::IsEstimateAvailable() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_NetworkQualityProvider_isEstimateAvailable(
-      env, j_network_quality_provider_.obj());
-}
-
-void NetworkQualityProvider::RequestUpdate() {
+void NetworkQualityProvider::RequestUpdate() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_NetworkQualityProvider_requestUpdate(env,
                                             j_network_quality_provider_.obj());
 }
 
-bool NetworkQualityProvider::GetRTT(base::TimeDelta* rtt) {
+bool NetworkQualityProvider::GetRTT(base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t milliseconds = Java_NetworkQualityProvider_getRTTMilliseconds(
@@ -50,7 +46,7 @@ bool NetworkQualityProvider::GetRTT(base::TimeDelta* rtt) {
 }
 
 bool NetworkQualityProvider::GetDownstreamThroughputKbps(
-    int32_t* downstream_throughput_kbps) {
+    int32_t* downstream_throughput_kbps) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t kbps = Java_NetworkQualityProvider_getDownstreamThroughputKbps(
@@ -63,7 +59,7 @@ bool NetworkQualityProvider::GetDownstreamThroughputKbps(
 }
 
 bool NetworkQualityProvider::GetUpstreamThroughputKbps(
-    int32_t* upstream_throughput_kbps) {
+    int32_t* upstream_throughput_kbps) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t kbps = Java_NetworkQualityProvider_getUpstreamThroughputKbps(
@@ -76,7 +72,7 @@ bool NetworkQualityProvider::GetUpstreamThroughputKbps(
 }
 
 bool NetworkQualityProvider::GetTimeSinceLastUpdate(
-    base::TimeDelta* time_since_last_update) {
+    base::TimeDelta* time_since_last_update) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   int32_t seconds = Java_NetworkQualityProvider_getTimeSinceLastUpdateSeconds(
@@ -98,3 +94,11 @@ void NetworkQualityProvider::OnConnectionTypeChanged(
 bool RegisterNetworkQualityProvider(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+void NetworkQualityProvider::SetUpdatedEstimateDelegate(
+    net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate) {
+  delegate_ = delegate;
+}
+
+}  // namespace android
+}  // namespace chrome

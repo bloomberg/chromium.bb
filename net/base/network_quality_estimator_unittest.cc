@@ -16,6 +16,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -30,7 +31,10 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(variation_params, true, true) {}
+      : NetworkQualityEstimator(scoped_ptr<net::ExternalEstimateProvider>(),
+                                variation_params,
+                                true,
+                                true) {}
 
   ~TestNetworkQualityEstimator() override {}
 
@@ -205,7 +209,7 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
 // percentiles must be in increasing order.
 TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
   std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimator estimator(variation_params);
+  TestNetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
 
   // Network quality should be unavailable when no observations are available.
@@ -263,7 +267,7 @@ TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
 // order. RTT percentiles must be in increasing order.
 TEST(NetworkQualityEstimatorTest, PercentileDifferentTimestamps) {
   std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimator estimator(variation_params);
+  TestNetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks very_old = base::TimeTicks::UnixEpoch();
 
@@ -316,7 +320,7 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
   ASSERT_TRUE(embedded_test_server.InitializeAndWaitUntilReady());
 
   std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimator estimator(variation_params, true, true);
+  TestNetworkQualityEstimator estimator(variation_params);
 
   EXPECT_EQ(NetworkQualityEstimator::InvalidRTT(),
             estimator.GetRTTEstimateInternal(base::TimeTicks(), 100));
@@ -443,7 +447,7 @@ TEST(NetworkQualityEstimatorTest, HalfLifeParam) {
   {
     // Half life parameter is not set. Default value of
     // |weight_multiplier_per_second_| should be used.
-    NetworkQualityEstimator estimator(variation_params, true, true);
+    TestNetworkQualityEstimator estimator(variation_params);
     EXPECT_NEAR(0.988, estimator.downstream_throughput_kbps_observations_
                            .weight_multiplier_per_second_,
                 0.001);
@@ -453,7 +457,7 @@ TEST(NetworkQualityEstimatorTest, HalfLifeParam) {
   {
     // Half life parameter is set to a negative value.  Default value of
     // |weight_multiplier_per_second_| should be used.
-    NetworkQualityEstimator estimator(variation_params, true, true);
+    TestNetworkQualityEstimator estimator(variation_params);
     EXPECT_NEAR(0.988, estimator.downstream_throughput_kbps_observations_
                            .weight_multiplier_per_second_,
                 0.001);
@@ -463,7 +467,7 @@ TEST(NetworkQualityEstimatorTest, HalfLifeParam) {
   {
     // Half life parameter is set to zero.  Default value of
     // |weight_multiplier_per_second_| should be used.
-    NetworkQualityEstimator estimator(variation_params, true, true);
+    TestNetworkQualityEstimator estimator(variation_params);
     EXPECT_NEAR(0.988, estimator.downstream_throughput_kbps_observations_
                            .weight_multiplier_per_second_,
                 0.001);
@@ -472,7 +476,7 @@ TEST(NetworkQualityEstimatorTest, HalfLifeParam) {
   variation_params["HalfLifeSeconds"] = "10";
   {
     // Half life parameter is set to a valid value.
-    NetworkQualityEstimator estimator(variation_params, true, true);
+    TestNetworkQualityEstimator estimator(variation_params);
     EXPECT_NEAR(0.933, estimator.downstream_throughput_kbps_observations_
                            .weight_multiplier_per_second_,
                 0.001);
@@ -616,7 +620,7 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
 
 TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
   std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimator estimator(variation_params);
+  TestNetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks old =
       base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1);

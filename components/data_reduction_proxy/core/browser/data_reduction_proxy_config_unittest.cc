@@ -22,6 +22,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/external_estimate_provider.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/http/http_status_code.h"
 #include "net/log/test_net_log.h"
@@ -985,7 +986,8 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
  public:
   explicit TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params)
-      : NetworkQualityEstimator(variation_params),
+      : NetworkQualityEstimator(scoped_ptr<net::ExternalEstimateProvider>(),
+                                variation_params),
         rtt_estimate_(base::TimeDelta()),
         downstream_throughput_kbps_estimate_(INT32_MAX) {}
 

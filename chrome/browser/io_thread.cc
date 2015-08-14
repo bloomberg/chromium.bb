@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/user_agent.h"
+#include "net/base/external_estimate_provider.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
 #include "net/base/network_quality_estimator.h"
@@ -105,6 +106,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "chrome/browser/android/net/network_quality_provider.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -652,8 +654,15 @@ void IOThread::Init() {
   std::map<std::string, std::string> network_quality_estimator_params;
   variations::GetVariationParams(kNetworkQualityEstimatorFieldTrialName,
                                  &network_quality_estimator_params);
-  globals_->network_quality_estimator.reset(
-      new net::NetworkQualityEstimator(network_quality_estimator_params));
+
+  scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider;
+#if defined(OS_ANDROID)
+  external_estimate_provider.reset(
+      new chrome::android::NetworkQualityProvider());
+#endif
+  // Pass ownership.
+  globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
+      external_estimate_provider.Pass(), network_quality_estimator_params));
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.

@@ -428,6 +428,7 @@
       'base/elements_upload_data_stream.cc',
       'base/elements_upload_data_stream.h',
       'base/expiring_cache.h',
+      'base/external_estimate_provider.h',
       'base/file_stream.cc',
       'base/file_stream.h',
       'base/file_stream_context.cc',

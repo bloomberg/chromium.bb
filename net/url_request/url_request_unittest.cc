@@ -39,6 +39,7 @@
 #include "base/values.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -4097,7 +4098,8 @@ TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
   ASSERT_TRUE(test_server_.Start());
   // Enable requests to local host to be used for network quality estimation.
   std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimator estimator(variation_params, true, true);
+  NetworkQualityEstimator estimator(scoped_ptr<net::ExternalEstimateProvider>(),
+                                    variation_params, true, true);
 
   TestDelegate d;
   TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
