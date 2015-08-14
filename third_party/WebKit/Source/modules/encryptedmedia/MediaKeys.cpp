@@ -94,6 +94,7 @@ MediaKeys::MediaKeys(ExecutionContext* context, const WebVector<WebEncryptedMedi
     , m_supportedSessionTypes(supportedSessionTypes)
     , m_cdm(cdm)
     , m_mediaElement(nullptr)
+    , m_reservedForMediaElement(false)
     , m_timer(this, &MediaKeys::timerFired)
 {
     WTF_LOG(Media, "MediaKeys(%p)::MediaKeys", this);
@@ -165,14 +166,26 @@ ScriptPromise MediaKeys::setServerCertificate(ScriptState* scriptState, const DO
     return promise;
 }
 
-bool MediaKeys::setMediaElement(HTMLMediaElement* mediaElement)
+bool MediaKeys::reserveForMediaElement(HTMLMediaElement* mediaElement)
 {
     // If some other HtmlMediaElement already has a reference to us, fail.
     if (m_mediaElement)
         return false;
 
     m_mediaElement = mediaElement;
+    m_reservedForMediaElement = true;
     return true;
+}
+
+void MediaKeys::acceptReservation()
+{
+    m_reservedForMediaElement = false;
+}
+
+void MediaKeys::cancelReservation()
+{
+    m_reservedForMediaElement = false;
+    m_mediaElement.clear();
 }
 
 void MediaKeys::clearMediaElement()
@@ -240,11 +253,12 @@ void MediaKeys::contextDestroyed()
 bool MediaKeys::hasPendingActivity() const
 {
     // Remain around if there are pending events.
-    WTF_LOG(Media, "MediaKeys(%p)::hasPendingActivity %s%s", this,
+    WTF_LOG(Media, "MediaKeys(%p)::hasPendingActivity %s%s%s", this,
         ActiveDOMObject::hasPendingActivity() ? " ActiveDOMObject::hasPendingActivity()" : "",
-        !m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "");
+        !m_pendingActions.isEmpty() ? " !m_pendingActions.isEmpty()" : "",
+        m_reservedForMediaElement ? " m_reservedForMediaElement" : "");
 
-    return ActiveDOMObject::hasPendingActivity() || !m_pendingActions.isEmpty();
+    return ActiveDOMObject::hasPendingActivity() || !m_pendingActions.isEmpty() || m_reservedForMediaElement;
 }
 
 void MediaKeys::stop()

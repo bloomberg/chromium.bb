@@ -72,7 +72,7 @@ private:
     // Keep media element alive until promise is fulfilled
     RefPtrWillBeMember<HTMLMediaElement> m_element;
     Member<MediaKeys> m_newMediaKeys;
-    bool m_tookOwnership;
+    bool m_madeReservation;
     Timer<SetMediaKeysHandler> m_timer;
 };
 
@@ -137,7 +137,7 @@ SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* scriptState, HTMLMediaElem
     : ScriptPromiseResolver(scriptState)
     , m_element(element)
     , m_newMediaKeys(mediaKeys)
-    , m_tookOwnership(false)
+    , m_madeReservation(false)
     , m_timer(this, &SetMediaKeysHandler::timerFired)
 {
     WTF_LOG(Media, "SetMediaKeysHandler::SetMediaKeysHandler");
@@ -165,13 +165,13 @@ void SetMediaKeysHandler::clearExistingMediaKeys()
     //     reject promise with a new DOMException whose name is
     //     "QuotaExceededError".
     if (m_newMediaKeys) {
-        if (!m_newMediaKeys->setMediaElement(m_element.get())) {
+        if (!m_newMediaKeys->reserveForMediaElement(m_element.get())) {
             fail(QuotaExceededError, "The MediaKeys object is already in use by another media element.");
             return;
         }
-        // Note that |m_newMediaKeys| is considered owned by |m_element|, so
-        // it needs to be reset if any of these steps fail.
-        m_tookOwnership = true;
+        // Note that |m_newMediaKeys| is now considered reserved for
+        // |m_element|, so it needs to be accepted or cancelled.
+        m_madeReservation = true;
     }
 
     // 3.2 If the mediaKeys attribute is not null, run the following steps:
@@ -241,6 +241,8 @@ void SetMediaKeysHandler::finish()
     if (thisElement.m_mediaKeys)
         thisElement.m_mediaKeys->clearMediaElement();
     thisElement.m_mediaKeys = m_newMediaKeys;
+    if (m_madeReservation)
+        m_newMediaKeys->acceptReservation();
 
     // 3.5 Resolve promise with undefined.
     resolve();
@@ -249,8 +251,8 @@ void SetMediaKeysHandler::finish()
 void SetMediaKeysHandler::fail(ExceptionCode code, const String& errorMessage)
 {
     // Reset ownership of |m_newMediaKeys|.
-    if (m_tookOwnership)
-        m_newMediaKeys->clearMediaElement();
+    if (m_madeReservation)
+        m_newMediaKeys->cancelReservation();
 
     // Reject promise with an appropriate error.
     reject(DOMException::create(code, errorMessage));
