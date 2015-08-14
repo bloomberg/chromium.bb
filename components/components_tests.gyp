@@ -655,6 +655,7 @@
       'variations/active_field_trials_unittest.cc',
       'variations/caching_permuted_entropy_provider_unittest.cc',
       'variations/entropy_provider_unittest.cc',
+      'variations/experiment_labels_unittest.cc',
       'variations/metrics_util_unittest.cc',
       'variations/net/variations_http_header_provider_unittest.cc',
       'variations/study_filtering_unittest.cc',

@@ -119,8 +119,6 @@
       'common/url_constants.h',
       'common/v8_breakpad_support_win.cc',
       'common/v8_breakpad_support_win.h',
-      'common/variations/experiment_labels.cc',
-      'common/variations/experiment_labels.h',
       'common/variations/variations_util.cc',
       'common/variations/variations_util.h',
       'common/web_application_info.cc',

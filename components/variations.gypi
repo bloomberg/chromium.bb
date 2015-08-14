@@ -30,6 +30,8 @@
         'variations/caching_permuted_entropy_provider.h',
         'variations/entropy_provider.cc',
         'variations/entropy_provider.h',
+        'variations/experiment_labels.cc',
+        'variations/experiment_labels.h',
         'variations/metrics_util.cc',
         'variations/metrics_util.h',
         'variations/pref_names.cc',

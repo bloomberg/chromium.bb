@@ -9,9 +9,9 @@
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/common/variations/experiment_labels.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
+#include "components/variations/experiment_labels.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chrome_variations {
