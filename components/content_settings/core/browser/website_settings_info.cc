@@ -10,8 +10,8 @@
 
 namespace {
 
-const char* kPrefPrefix = "profile.content_settings.exceptions.";
-const char* kDefaultPrefPrefix = "profile.default_content_setting_values.";
+const char kPrefPrefix[] = "profile.content_settings.exceptions.";
+const char kDefaultPrefPrefix[] = "profile.default_content_setting_values.";
 
 std::string GetPrefName(const std::string& name, const char* prefix) {
   std::string pref_name = name;

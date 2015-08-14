@@ -75,8 +75,7 @@ bool CookieSettings::IsCookieSessionOnly(const GURL& origin) const {
 
 void CookieSettings::GetCookieSettings(
     ContentSettingsForOneType* settings) const {
-  // TODO(dgrogan): Why is this returning a value in a void function?
-  return host_content_settings_map_->GetSettingsForOneType(
+  host_content_settings_map_->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_COOKIES, std::string(), settings);
 }
 
