@@ -4,8 +4,6 @@
 
 #include "net/dns/dns_query.h"
 
-#include "base/bind.h"
-#include "net/base/dns_util.h"
 #include "net/base/io_buffer.h"
 #include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
