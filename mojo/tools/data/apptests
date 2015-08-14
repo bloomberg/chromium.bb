@@ -56,21 +56,13 @@ if config.target_os != config.OS_ANDROID:
       'test': 'mojo:html_viewer_apptests',
       'name': 'mojo:html_viewer_apptests',
       'type': 'gtest_isolated',
-      'args': ['--use-test-config']
+      'args': ['--use-test-config', '--enable-html-viewer-test-interface']
     },
     {
       'test': 'mojo:html_viewer_apptests',
-      'name': 'mojo:html_viewer_apptests OOPIFS',
+      'name': 'mojo:html_viewer_apptests new frame',
       'type': 'gtest_isolated',
-      'args': ['--use-test-config', '--oopifs',
-               '--enable-html-viewer-test-interface']
-    },
-    {
-      'test': 'mojo:html_viewer_apptests',
-      'name': 'mojo:html_viewer_apptests OOPIFS new frame',
-      'type': 'gtest_isolated',
-      'args': ['--use-test-config', '--oopifs',
-               '--oopif-always-create-new-frame-tree',
+      'args': ['--use-test-config', '--oopif-always-create-new-frame-tree',
                '--enable-html-viewer-test-interface']
     },
     {

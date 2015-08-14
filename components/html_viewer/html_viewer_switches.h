@@ -8,8 +8,8 @@
 namespace html_viewer {
 namespace switches {
 
-// Switch to enable out of process iframes.
-extern const char kOOPIF[];
+// Switch to disable out of process iframes.
+extern const char kDisableOOPIF[];
 
 // If true a new HTMLFrameTreeManager is always created, even if a matching
 // HTMLFrameTreeManager is found. This is useful for tests (or debugging) that

@@ -32,7 +32,7 @@ namespace mojo {
 namespace {
 
 // Switch to enable out of process iframes.
-const char kOOPIF[] = "oopifs";
+const char kDisableOOPIF[] = "disable--oopifs";
 
 const char kAddFrameWithEmptyPageScript[] =
     "var iframe = document.createElement(\"iframe\");"
@@ -40,7 +40,9 @@ const char kAddFrameWithEmptyPageScript[] =
     "document.body.appendChild(iframe);";
 
 bool EnableOOPIFs() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kOOPIF);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableOOPIF))
+    return false;
+  return true;
 }
 
 mojo::ApplicationConnection* ApplicationConnectionForFrame(Frame* frame) {

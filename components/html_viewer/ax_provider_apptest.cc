@@ -30,11 +30,13 @@ bool AxTreeContainsText(const Array<AxNodePtr>& tree, const String& text) {
   return false;
 }
 
-// Switch to enable out of process iframes.
-const char kOOPIF[] = "oopifs";
+// Switch to disable out of process iframes.
+const char kDisableOOPIF[] = "disable--oopifs";
 
 bool EnableOOPIFs() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kOOPIF);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableOOPIF))
+    return false;
+  return true;
 }
 
 class TestFrameTreeServer : public mandoline::FrameTreeServer {

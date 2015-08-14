@@ -7,7 +7,7 @@
 namespace html_viewer {
 namespace switches {
 
-const char kOOPIF[] = "oopifs";
+const char kDisableOOPIF[] = "disable--oopifs";
 
 const char kOOPIFAlwaysCreateNewFrameTree[] =
     "oopif-always-create-new-frame-tree";

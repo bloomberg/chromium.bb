@@ -19,7 +19,11 @@ namespace html_viewer {
 namespace {
 
 bool EnableOOPIFs() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kOOPIF);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOOPIF)) {
+    return false;
+  }
+  return true;
 }
 
 HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) {
