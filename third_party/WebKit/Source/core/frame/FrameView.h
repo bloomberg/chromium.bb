@@ -747,7 +747,6 @@ private:
     unsigned m_nestedLayoutCount;
     Timer<FrameView> m_postLayoutTasksTimer;
     Timer<FrameView> m_updateWidgetsTimer;
-    bool m_firstLayoutCallbackPending;
 
     bool m_firstLayout;
     bool m_isTransparent;

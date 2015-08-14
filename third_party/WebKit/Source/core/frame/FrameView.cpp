@@ -201,7 +201,6 @@ void FrameView::reset()
     m_postLayoutTasksTimer.stop();
     m_updateWidgetsTimer.stop();
     m_firstLayout = true;
-    m_firstLayoutCallbackPending = false;
     m_safeToPropagateScrollToParent = true;
     m_lastViewportSize = IntSize();
     m_lastZoomFactor = 1.0f;
@@ -984,7 +983,6 @@ void FrameView::layout()
 
                 m_doFullPaintInvalidation = true;
                 m_firstLayout = false;
-                m_firstLayoutCallbackPending = true;
                 m_lastViewportSize = layoutSize(IncludeScrollbars);
                 m_lastZoomFactor = layoutView()->style()->zoom();
 
@@ -1971,9 +1969,6 @@ void FrameView::performPostLayoutTasks()
 
     ASSERT(m_frame->document());
     if (m_nestedLayoutCount <= 1) {
-        if (m_firstLayoutCallbackPending)
-            m_firstLayoutCallbackPending = false;
-
         // Ensure that we always send this eventually.
         if (!m_frame->document()->parsing() && m_frame->loader().stateMachine()->committedFirstRealDocumentLoad())
             m_isVisuallyNonEmpty = true;
