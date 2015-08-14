@@ -6,14 +6,18 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cert_store.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "net/cert/x509_cert_types.h"
+#include "net/cert/x509_certificate.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -276,6 +280,35 @@ Response NetworkHandler::EmulateNetworkConditions(bool offline,
                                                   double download_throughput,
                                                   double upload_throughput) {
   return Response::FallThrough();
+}
+
+Response NetworkHandler::GetCertificateDetails(
+    int certificate_id,
+    scoped_refptr<CertificateDetails>* result) {
+  scoped_refptr<net::X509Certificate> cert;
+  content::CertStore* cert_store = CertStore::GetInstance();
+  cert_store->RetrieveCert(certificate_id, &cert);
+  if (!cert.get())
+    return Response::InvalidParams("certificateId");
+
+  std::string name(cert->subject().GetDisplayName());
+  std::string issuer(cert->issuer().GetDisplayName());
+  base::Time valid_from = cert->valid_start();
+  base::Time valid_to = cert->valid_expiry();
+
+  std::vector<std::string> dns_names;
+  std::vector<std::string> ip_addrs;
+  cert->GetSubjectAltName(&dns_names, &ip_addrs);
+
+  *result = CertificateDetails::Create()
+                    ->set_subject(CertificateSubject::Create()
+                                  ->set_name(name)
+                                  ->set_san_dns_names(dns_names)
+                                  ->set_san_ip_addresses(ip_addrs))
+                    ->set_issuer(issuer)
+                    ->set_valid_from(valid_from.ToDoubleT())
+                    ->set_valid_to(valid_to.ToDoubleT());
+  return Response::OK();
 }
 
 }  // namespace dom
