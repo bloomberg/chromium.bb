@@ -221,6 +221,15 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # https://github.com/jcgregorio/httplib2/issues/307
+    # MIT license.
+    'third_party/catapult/third_party/httplib2': [
+        'UNKNOWN',
+    ],
+    'third_party/catapult/dashboard/third_party/httplib2': [
+        'UNKNOWN',
+    ],
+
     # https://github.com/GoogleCloudPlatform/appengine-mapreduce/issues/71
     # Apache (v2.0)
     'third_party/catapult/third_party/mapreduce': [
