@@ -307,6 +307,13 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // may not handle the flush request in time causing lost of unflushed events.
   void SetCurrentThreadBlocksMessageLoop();
 
+#if defined(OS_WIN)
+  // This function is called by the ETW exporting module whenever the ETW
+  // keyword (flags) changes. This keyword indicates which categories should be
+  // exported, so whenever it changes, we adjust accordingly.
+  void UpdateETWCategoryGroupEnabledFlags();
+#endif
+
  private:
   typedef unsigned int InternalTraceOptions;
 

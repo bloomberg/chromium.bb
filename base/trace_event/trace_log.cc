@@ -1707,6 +1707,25 @@ TraceBuffer* TraceLog::CreateTraceBuffer() {
       kTraceEventVectorBufferChunks);
 }
 
+#if defined(OS_WIN)
+void TraceLog::UpdateETWCategoryGroupEnabledFlags() {
+  AutoLock lock(lock_);
+  size_t category_index = base::subtle::NoBarrier_Load(&g_category_index);
+  // Go through each category and set/clear the ETW bit depending on whether the
+  // category is enabled.
+  for (size_t i = 0; i < category_index; i++) {
+    const char* category_group = g_category_groups[i];
+    DCHECK(category_group);
+    if (base::trace_event::TraceEventETWExport::IsCategoryGroupEnabled(
+            category_group)) {
+      g_category_group_enabled[category_index] |= ENABLED_FOR_ETW_EXPORT;
+    } else {
+      g_category_group_enabled[category_index] &= ~ENABLED_FOR_ETW_EXPORT;
+    }
+  }
+}
+#endif  // defined(OS_WIN)
+
 void ConvertableToTraceFormat::EstimateTraceMemoryOverhead(
     TraceEventMemoryOverhead* overhead) {
   overhead->Add("ConvertableToTraceFormat(Unknown)", sizeof(*this));

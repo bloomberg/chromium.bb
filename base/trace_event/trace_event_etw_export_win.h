@@ -16,6 +16,10 @@
 template <typename Type>
 struct StaticMemorySingletonTraits;
 
+namespace {
+class ETWKeywordUpdateThread;
+}
+
 namespace base {
 namespace trace_event {
 
@@ -67,6 +71,8 @@ class BASE_EXPORT TraceEventETWExport {
  private:
   // Ensure only the provider can construct us.
   friend struct StaticMemorySingletonTraits<TraceEventETWExport>;
+  // To have access to UpdateKeyword().
+  friend class ETWKeywordUpdateThread;
   TraceEventETWExport();
 
   // Updates the list of enabled categories by consulting the ETW keyword.
@@ -76,6 +82,10 @@ class BASE_EXPORT TraceEventETWExport {
   // Returns true if the category is enabled.
   bool IsCategoryEnabled(const char* category_name) const;
 
+  // Called back by the update thread to check for potential changes to the
+  // keyword.
+  static void UpdateETWKeyword();
+
   // True if ETW is enabled. Allows hiding the exporting behind a flag.
   bool etw_export_enabled_;
 
@@ -84,6 +94,11 @@ class BASE_EXPORT TraceEventETWExport {
 
   // Local copy of the ETW keyword.
   uint64 etw_match_any_keyword_;
+
+  // Background thread that monitors changes to the ETW keyword and updates
+  // the enabled categories when a change occurs.
+  scoped_ptr<ETWKeywordUpdateThread> keyword_update_thread_;
+  PlatformThreadHandle keyword_update_thread_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventETWExport);
 };
