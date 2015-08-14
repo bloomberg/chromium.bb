@@ -65,8 +65,8 @@ DesktopUI::DesktopUI(Browser* browser, mojo::ApplicationImpl* application_impl)
       omnibox_launcher_(nullptr),
       progress_bar_(nullptr),
       root_(nullptr),
-      client_binding_(browser) {
-}
+      content_(nullptr),
+      omnibox_(nullptr) {}
 
 DesktopUI::~DesktopUI() {}
 
@@ -75,6 +75,8 @@ DesktopUI::~DesktopUI() {}
 
 void DesktopUI::Init(mojo::View* root) {
   root_ = root;
+  omnibox_ = root_->view_manager()->CreateView();
+  root_->AddChild(omnibox_);
 
   views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
   widget_delegate->GetContentsView()->set_background(
@@ -97,6 +99,18 @@ void DesktopUI::Init(mojo::View* root) {
   widget->Init(params);
   widget->Show();
   root_->SetFocus();
+}
+
+void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
+  mojo::ViewManagerClientPtr view_manager_client;
+  connection->ConnectToService(&view_manager_client);
+  omnibox_->Embed(view_manager_client.Pass());
+
+  // TODO(beng): This should be handled sufficiently by
+  //             OmniboxImpl::ShowWindow() but unfortunately view manager policy
+  //             currently prevents the embedded app from changing window z for
+  //             its own window.
+  omnibox_->MoveToFront();
 }
 
 void DesktopUI::OnURLChanged() {
@@ -136,30 +150,16 @@ void DesktopUI::Layout(views::View* host) {
   content_bounds_mojo.height =
       host->bounds().height() - content_bounds_mojo.y - 10;
   browser_->content()->SetBounds(content_bounds_mojo);
-
-  if (browser_->omnibox()) {
-    browser_->omnibox()->SetBounds(
-        mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(host->bounds()));
-  }
+  omnibox_->SetBounds(
+      mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(host->bounds()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopUI, views::ButtonListener implementation:
 
 void DesktopUI::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (!omnibox_.get()) {
-    DCHECK(!client_binding_.is_bound());
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:omnibox");
-    omnibox_connection_ =
-        application_impl_->ConnectToApplication(request.Pass());
-    omnibox_connection_->AddService<ViewEmbedder>(browser_);
-    omnibox_connection_->ConnectToService(&omnibox_);
-    OmniboxClientPtr client;
-    client_binding_.Bind(&client);
-    omnibox_->SetClient(client.Pass());
-  }
-  omnibox_->ShowForURL(mojo::String::From(browser_->current_url().spec()));
+  DCHECK_EQ(sender, omnibox_launcher_);
+  browser_->ShowOmnibox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

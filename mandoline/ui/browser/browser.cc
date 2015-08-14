@@ -39,7 +39,6 @@ Browser::Browser(mojo::ApplicationImpl* app,
     : view_manager_init_(app, this, this),
       root_(nullptr),
       content_(nullptr),
-      omnibox_(nullptr),
       default_url_(default_url),
       navigator_host_(this),
       app_(app),
@@ -56,6 +55,23 @@ Browser::~Browser() {
 
 void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
   Embed(request.Pass());
+}
+
+void Browser::ShowOmnibox() {
+  if (!omnibox_.get()) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:omnibox");
+    omnibox_connection_ = app_->ConnectToApplication(request.Pass());
+    omnibox_connection_->AddService<ViewEmbedder>(this);
+    omnibox_connection_->ConnectToService(&omnibox_);
+    omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
+        [this]() {
+          // This will cause the connection to be re-established the next time
+          // we come through this codepath.
+          omnibox_.reset();
+        });
+  }
+  omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
 }
 
 mojo::ApplicationConnection* Browser::GetViewManagerConnectionForTesting() {
@@ -142,17 +158,12 @@ void Browser::OnAccelerator(mojo::EventPtr event) {
   navigator_host_.RequestNavigateHistory(-1);
 }
 
-void Browser::OpenURL(const mojo::String& url) {
-  omnibox_->SetVisible(false);
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(url);
-  ReplaceContentWithRequest(request.Pass());
-}
-
+// TODO(beng): Consider moving this to the UI object as well once the frame tree
+//             stuff is better encapsulated.
 void Browser::Embed(mojo::URLRequestPtr request) {
   const std::string string_url = request->url.To<std::string>();
   if (string_url == "mojo:omnibox") {
-    ShowOmnibox(request.Pass());
+    ui_->EmbedOmnibox(omnibox_connection_.get());
     return;
   }
 
@@ -206,21 +217,6 @@ void Browser::Create(mojo::ApplicationConnection* connection,
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<ViewEmbedder> request) {
   view_embedder_bindings_.AddBinding(this, request.Pass());
-}
-
-void Browser::ShowOmnibox(mojo::URLRequestPtr request) {
-  if (!omnibox_) {
-    omnibox_ = root_->view_manager()->CreateView();
-    root_->AddChild(omnibox_);
-    omnibox_->SetBounds(root_->bounds());
-  }
-  mojo::ViewManagerClientPtr view_manager_client;
-  scoped_ptr<mojo::ApplicationConnection> connection =
-      app_->ConnectToApplication(request.Pass());
-  connection->AddService<ViewEmbedder>(this);
-  connection->ConnectToService(&view_manager_client);
-  omnibox_->Embed(view_manager_client.Pass());
-  omnibox_->SetVisible(true);
 }
 
 void Browser::RequestNavigate(Frame* source,

@@ -36,7 +36,6 @@ class FrameTree;
 
 class Browser : public mojo::ViewManagerDelegate,
                 public mojo::ViewManagerRootClient,
-                public OmniboxClient,
                 public ViewEmbedder,
                 public FrameTreeDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
@@ -50,9 +49,11 @@ class Browser : public mojo::ViewManagerDelegate,
   void ReplaceContentWithRequest(mojo::URLRequestPtr request);
 
   mojo::View* content() { return content_; }
-  mojo::View* omnibox() { return omnibox_; }
 
   const GURL& current_url() const { return current_url_; }
+
+  // Starts the Omnibox application (if necessary) and shows it.
+  void ShowOmnibox();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, ClosingBrowserClosesAppConnection);
@@ -74,9 +75,6 @@ class Browser : public mojo::ViewManagerDelegate,
 
   // Overridden from ViewManagerRootClient:
   void OnAccelerator(mojo::EventPtr event) override;
-
-  // Overridden from OmniboxClient:
-  void OpenURL(const mojo::String& url) override;
 
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
@@ -100,15 +98,12 @@ class Browser : public mojo::ViewManagerDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
 
-  void ShowOmnibox(mojo::URLRequestPtr request);
-
   mojo::ViewManagerInit view_manager_init_;
 
   // Only support being embedded once, so both application-level
   // and embedding-level state are shared on the same object.
   mojo::View* root_;
   mojo::View* content_;
-  mojo::View* omnibox_;
   GURL default_url_;
   mojo::URLRequestPtr pending_request_;
 
@@ -117,6 +112,9 @@ class Browser : public mojo::ViewManagerDelegate,
   NavigatorHostImpl navigator_host_;
 
   GURL current_url_;
+
+  OmniboxPtr omnibox_;
+  scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
 
   scoped_ptr<BrowserUI> ui_;
   mojo::ApplicationImpl* app_;

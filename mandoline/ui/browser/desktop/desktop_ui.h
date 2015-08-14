@@ -35,6 +35,7 @@ class DesktopUI : public BrowserUI,
  private:
   // Overridden from BrowserUI
   void Init(mojo::View* root) override;
+  void EmbedOmnibox(mojo::ApplicationConnection* connection) override;
   void OnURLChanged() override;
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
@@ -46,15 +47,15 @@ class DesktopUI : public BrowserUI,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void ShowOmnibox();
+
   Browser* browser_;
   mojo::ApplicationImpl* application_impl_;
   views::LabelButton* omnibox_launcher_;
   ProgressView* progress_bar_;
   mojo::View* root_;
   mojo::View* content_;
-  OmniboxPtr omnibox_;
-  mojo::Binding<OmniboxClient> client_binding_;
-  scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
+  mojo::View* omnibox_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopUI);
 };

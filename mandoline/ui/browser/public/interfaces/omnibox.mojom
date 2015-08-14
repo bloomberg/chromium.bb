@@ -6,15 +6,7 @@ module mandoline;
 
 // TODO(beng): Could this be generalized as a "Chooser" with a specific type??
 
-// Interface implemented by the browser to respond to input from the omnibox
-// app.
-interface OmniboxClient {
-  OpenURL(string url);
-};
-
 // Interface implemented by an application providing a method for URL input.
 interface Omnibox {
-  SetClient(OmniboxClient client);
-
   ShowForURL(string url);
 };

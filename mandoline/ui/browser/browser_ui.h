@@ -6,6 +6,7 @@
 #define MANDOLINE_UI_BROWSER_BROWSER_UI_H_
 
 namespace mojo {
+class ApplicationConnection;
 class ApplicationImpl;
 class View;
 }
@@ -25,6 +26,11 @@ class BrowserUI {
   // BrowserUI implementations can assume |root| is never deleted out from under
   // them.
   virtual void Init(mojo::View* root) = 0;
+
+  // Embeds the Omnibox UI. The connection object passed is an existing
+  // connection to the Omnibox application from which a ViewManagerClient can be
+  // obtained.
+  virtual void EmbedOmnibox(mojo::ApplicationConnection* connection) = 0;
 
   virtual void OnURLChanged() = 0;
 

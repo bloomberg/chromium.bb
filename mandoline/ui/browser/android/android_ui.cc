@@ -29,6 +29,7 @@ void AndroidUI::Init(mojo::View* root) {
   browser_->content()->SetBounds(root_->bounds());
 }
 
+void AndroidUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {}
 void AndroidUI::OnURLChanged() {}
 void AndroidUI::LoadingStateChanged(bool loading) {}
 void AndroidUI::ProgressChanged(double progress) {}

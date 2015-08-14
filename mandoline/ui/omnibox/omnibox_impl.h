@@ -57,12 +57,14 @@ class OmniboxImpl : public mojo::ApplicationDelegate,
               mojo::InterfaceRequest<Omnibox> request) override;
 
   // Overridden from Omnibox:
-  void SetClient(OmniboxClientPtr client) override;
   void ShowForURL(const mojo::String& url) override;
 
-  OmniboxClientPtr client_;
+  void HideWindow();
+  void ShowWindow();
+
   scoped_ptr<AuraInit> aura_init_;
   mojo::ApplicationImpl* app_impl_;
+  mojo::View* root_;
   mojo::String url_;
   views::Textfield* edit_;
   mojo::WeakBindingSet<Omnibox> bindings_;

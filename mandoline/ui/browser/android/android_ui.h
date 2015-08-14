@@ -27,6 +27,7 @@ class AndroidUI : public BrowserUI,
  private:
   // Overridden from BrowserUI:
   void Init(mojo::View* root) override;
+  void EmbedOmnibox(mojo::ApplicationConnection* connection) override;
   void OnURLChanged() override;
   void LoadingStateChanged(bool loading) override;
   void ProgressChanged(double progress) override;
