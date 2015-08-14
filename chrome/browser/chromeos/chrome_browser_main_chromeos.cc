@@ -737,6 +737,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Clean up dependency on CrosSettings and stop pending data fetches.
   KioskAppManager::Shutdown();
 
+  // Make sure that there is no pending URLRequests.
+  UserSessionManager::GetInstance()->Shutdown();
+
   // Give BrowserPolicyConnectorChromeOS a chance to unregister any observers
   // on services that are going to be deleted later but before its Shutdown()
   // is called.
@@ -762,9 +765,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   NetworkPortalDetector::Shutdown();
 
   g_browser_process->platform_part()->DestroyChromeUserManager();
-
-  // Make sure that there is no pending URLRequests.
-  UserSessionManager::GetInstance()->Shutdown();
 
   g_browser_process->platform_part()->ShutdownSessionManager();
 }
