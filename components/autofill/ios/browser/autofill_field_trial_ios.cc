@@ -15,6 +15,11 @@ const char kFullFormFieldTrialName[] = "FullFormAutofill";
 
 // static
 bool AutofillFieldTrialIOS::IsFullFormAutofillEnabled() {
+  // Query the field trial state first to ensure that UMA reports the correct
+  // group.
+  std::string field_trial_state =
+      base::FieldTrialList::FindFullName(kFullFormFieldTrialName);
+
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(autofill::switches::kDisableFullFormAutofillIOS))
@@ -22,8 +27,6 @@ bool AutofillFieldTrialIOS::IsFullFormAutofillEnabled() {
   if (command_line->HasSwitch(autofill::switches::kEnableFullFormAutofillIOS))
     return true;
 
-  std::string field_trial_state =
-      base::FieldTrialList::FindFullName(kFullFormFieldTrialName);
   return !field_trial_state.empty() && field_trial_state != "Disabled";
 }
 

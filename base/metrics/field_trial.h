@@ -404,8 +404,10 @@ class BASE_EXPORT FieldTrialList {
   // FieldTrial::kNotFinalized if the trial does not exist.
   static int FindValue(const std::string& name);
 
-  // Returns the group name chosen for the named trial, or the
-  // empty string if the trial does not exist.
+  // Returns the group name chosen for the named trial, or the empty string if
+  // the trial does not exist. The first call of this function on a given field
+  // trial will mark it as active, so that its state will be reported with usage
+  // metrics, crashes, etc.
   static std::string FindFullName(const std::string& name);
 
   // Returns true if the named trial has been registered.
