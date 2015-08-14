@@ -59,11 +59,6 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id,
   }
   headers_block_buffer_.clear();
 
-  // Emit the Cookie header, if any crumbles were encountered.
-  if (!cookie_value_.empty()) {
-    decoded_block_[kCookieKey] = cookie_value_;
-    cookie_value_.clear();
-  }
   return true;
 }
 
@@ -81,11 +76,13 @@ bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
   }
 
   if (name == kCookieKey) {
-    if (cookie_value_.empty()) {
-      cookie_value_.assign(value.data(), value.size());
+    // Create new cookie header, or append to existing.
+    auto it = decoded_block_.find(kCookieKey);
+    if (it == decoded_block_.end()) {
+      decoded_block_[kCookieKey].assign(value.data(), value.size());
     } else {
-      cookie_value_ += "; ";
-      cookie_value_.insert(cookie_value_.end(), value.begin(), value.end());
+      decoded_block_[kCookieKey].append("; ");
+      value.AppendToString(&decoded_block_[kCookieKey]);
     }
   } else {
     auto result = decoded_block_.insert(

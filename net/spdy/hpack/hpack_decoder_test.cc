@@ -34,8 +34,6 @@ class HpackDecoderPeer {
     return decoder_->DecodeNextName(in, out);
   }
   HpackHeaderTable* header_table() { return &decoder_->header_table_; }
-  void set_cookie_value(string value) { decoder_->cookie_value_ = value; }
-  string cookie_value() { return decoder_->cookie_value_; }
   const SpdyHeaderBlock& decoded_block() const {
     return decoder_->decoded_block_;
   }
@@ -106,19 +104,6 @@ TEST_F(HpackDecoderTest, HandleControlFrameHeadersData) {
 
   EXPECT_EQ(decoder_peer_.headers_block_buffer(),
             "small string onesmall string two");
-}
-
-TEST_F(HpackDecoderTest, HandleControlFrameHeadersComplete) {
-  decoder_peer_.set_cookie_value("foobar=baz");
-
-  // Incremental cookie buffer should be emitted and cleared.
-  decoder_.HandleControlFrameHeadersData(0, "\x82\x85", 2);
-  decoder_.HandleControlFrameHeadersComplete(0, nullptr);
-
-  EXPECT_THAT(decoded_block(),
-              ElementsAre(Pair(":method", "GET"), Pair(":path", "/index.html"),
-                          Pair("cookie", "foobar=baz")));
-  EXPECT_EQ(decoder_peer_.cookie_value(), "");
 }
 
 TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
