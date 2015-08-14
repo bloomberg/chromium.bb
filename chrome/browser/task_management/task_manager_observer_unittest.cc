@@ -14,7 +14,13 @@ namespace {
 // TaskManagerInterface in response to adding and removing observers.
 class TestTaskManager : public TaskManagerInterface {
  public:
-  TestTaskManager() : TaskManagerInterface() {
+  TestTaskManager()
+      : TaskManagerInterface(),
+        handle_(),
+        id_(),
+        title_(),
+        icon_(),
+        ids_() {
     set_timer_for_testing(scoped_ptr<base::Timer>(new base::MockTimer(true,
                                                                       true)));
   }
@@ -61,6 +67,12 @@ class TestTaskManager : public TaskManagerInterface {
       blink::WebCache::ResourceTypeStats* stats) const override {
     return false;
   }
+  const TaskIdList& GetTaskIdsList() const override {
+    return ids_;
+  }
+  size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override {
+    return 1;
+  }
 
   base::TimeDelta GetRefreshTime() {
     return GetCurrentRefreshTime();
@@ -73,12 +85,15 @@ class TestTaskManager : public TaskManagerInterface {
  protected:
   // task_management::TaskManager:
   void Refresh() override {}
+  void StartUpdating() override {}
+  void StopUpdating() override {}
 
  private:
   base::ProcessHandle handle_;
   base::ProcessId id_;
   base::string16 title_;
   gfx::ImageSkia icon_;
+  TaskIdList ids_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTaskManager);
 };

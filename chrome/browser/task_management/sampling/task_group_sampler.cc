@@ -40,9 +40,14 @@ TaskGroupSampler::TaskGroupSampler(
       blocking_pool_runner_(blocking_pool_runner),
       on_cpu_refresh_callback_(on_cpu_refresh),
       on_memory_refresh_callback_(on_memory_refresh),
-      on_idle_wakeups_callback_(on_idle_wakeups),
-      sequenced_checker_() {
+      on_idle_wakeups_callback_(on_idle_wakeups) {
   DCHECK(blocking_pool_runner.get());
+
+  // This object will be created on the UI thread, however the sequenced checker
+  // will be used to assert we're running the expensive operations on one of the
+  // blocking pool threads.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  worker_pool_sequenced_checker_.DetachFromSequence();
 }
 
 void TaskGroupSampler::Refresh(int64 refresh_flags) {
@@ -79,13 +84,13 @@ TaskGroupSampler::~TaskGroupSampler() {
 }
 
 double TaskGroupSampler::RefreshCpuUsage() {
-  DCHECK(sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
 
   return process_metrics_->GetCPUUsage();
 }
 
 MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
-  DCHECK(sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
 
   // TODO(afakhry): Integrate Bruce's CL for faster retrieval of physical memory
   // on Windows here.
@@ -116,7 +121,7 @@ MemoryUsageStats TaskGroupSampler::RefreshMemoryUsage() {
 }
 
 int TaskGroupSampler::RefreshIdleWakeupsPerSecond() {
-  DCHECK(sequenced_checker_.CalledOnValidSequencedThread());
+  DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequencedThread());
 
   return process_metrics_->GetIdleWakeupsPerSecond();
 }

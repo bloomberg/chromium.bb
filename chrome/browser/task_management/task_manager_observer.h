@@ -11,12 +11,15 @@
 
 namespace task_management {
 
+class TaskManagerInterface;
+
 typedef int64 TaskId;
 typedef std::vector<TaskId> TaskIdList;
 
 // Defines a list of types of resources that an observer needs to be refreshed
 // on every task manager refresh cycle.
 enum RefreshType {
+  REFRESH_TYPE_NONE              = 0,
   REFRESH_TYPE_CPU               = 1,
   REFRESH_TYPE_MEMORY            = 1 << 1,
   REFRESH_TYPE_GPU_MEMORY        = 1 << 2,
@@ -62,7 +65,9 @@ class TaskManagerObserver {
   virtual void OnTaskToBeRemoved(TaskId id) = 0;
 
   // Notifies the observer that the task manager has just finished a refresh
-  // cycle to calculate the resources usage of all tasks.
+  // cycle to calculate the resources usage of all tasks whose IDs are given in
+  // |task_ids|. |task_ids| will be sorted by process IDs first, then by task
+  // IDs.
   virtual void OnTasksRefreshed(const TaskIdList& task_ids) = 0;
 
   const base::TimeDelta& desired_refresh_time() const {
@@ -71,7 +76,21 @@ class TaskManagerObserver {
 
   int64 desired_resources_flags() const { return desired_resources_flags_; }
 
+ protected:
+  TaskManagerInterface* observed_task_manager() const {
+    return observed_task_manager_;
+  }
+
+  // Add or Remove a refresh |type|.
+  void AddRefreshType(RefreshType type);
+  void RemoveRefreshType(RefreshType type);
+
  private:
+  friend class TaskManagerInterface;
+
+  // The currently observed task Manager.
+  TaskManagerInterface* observed_task_manager_;
+
   // The minimum update time of the task manager that this observer needs to
   // do its job.
   base::TimeDelta desired_refresh_time_;

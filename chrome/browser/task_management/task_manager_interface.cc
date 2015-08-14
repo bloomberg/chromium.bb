@@ -4,14 +4,45 @@
 
 #include "chrome/browser/task_management/task_manager_interface.h"
 
+#include "chrome/browser/task_management/sampling/task_manager_impl.h"
+#include "chrome/browser/task_management/sampling/task_manager_io_thread_helper.h"
+#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/common/chrome_switches.h"
+#include "content/public/browser/browser_thread.h"
+
 namespace task_management {
+
+// static
+TaskManagerInterface* TaskManagerInterface::GetTaskManager() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  return TaskManagerImpl::GetInstance();
+}
+
+// static
+void TaskManagerInterface::OnRawBytesRead(const net::URLRequest& request,
+                                          int bytes_read) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (switches::NewTaskManagerEnabled())
+    TaskManagerIoThreadHelper::OnRawBytesRead(request, bytes_read);
+  else
+    TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
+}
 
 void TaskManagerInterface::AddObserver(TaskManagerObserver* observer) {
   observers_.AddObserver(observer);
+  observer->observed_task_manager_ = this;
 
   ResourceFlagsAdded(observer->desired_resources_flags());
 
-  if (observer->desired_refresh_time() > GetCurrentRefreshTime())
+  base::TimeDelta current_refresh_time = GetCurrentRefreshTime();
+  if (current_refresh_time == base::TimeDelta::Max()) {
+    // This is the first observer to be added. Start updating.
+    StartUpdating();
+  }
+
+  if (observer->desired_refresh_time() > current_refresh_time)
     return;
 
   // Reached here, then this is EITHER (not the first observer to be added AND
@@ -23,13 +54,13 @@ void TaskManagerInterface::AddObserver(TaskManagerObserver* observer) {
 
 void TaskManagerInterface::RemoveObserver(TaskManagerObserver* observer) {
   observers_.RemoveObserver(observer);
+  observer->observed_task_manager_ = nullptr;
 
   // Recalculate the minimum refresh rate and the enabled resource flags.
   int64 flags = 0;
   base::TimeDelta min_time = base::TimeDelta::Max();
   base::ObserverList<TaskManagerObserver>::Iterator itr(&observers_);
-  TaskManagerObserver* obs;
-  while ((obs = itr.GetNext()) != nullptr) {
+  while (TaskManagerObserver* obs = itr.GetNext()) {
     if (obs->desired_refresh_time() < min_time)
       min_time = obs->desired_refresh_time();
 
@@ -37,12 +68,23 @@ void TaskManagerInterface::RemoveObserver(TaskManagerObserver* observer) {
   }
 
   if (min_time == base::TimeDelta::Max()) {
+    // This is the last observer to be removed. Stop updating.
     SetEnabledResourceFlags(0);
     refresh_timer_->Stop();
+    StopUpdating();
   } else {
     SetEnabledResourceFlags(flags);
     ScheduleRefresh(min_time);
   }
+}
+
+void TaskManagerInterface::RecalculateRefreshFlags() {
+  int64 flags = 0;
+  base::ObserverList<TaskManagerObserver>::Iterator itr(&observers_);
+  while (TaskManagerObserver* obs = itr.GetNext())
+    flags |= obs->desired_resources_flags();
+
+  SetEnabledResourceFlags(flags);
 }
 
 bool TaskManagerInterface::IsResourceRefreshEnabled(RefreshType type) {

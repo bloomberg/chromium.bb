@@ -110,6 +110,7 @@ void TaskGroup::Refresh(
     base::TimeDelta update_interval,
     int64 refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // First refresh the enabled non-expensive resources usages on the UI thread.
   // 1- Refresh all the tasks.
   for (auto& task_pair : tasks_)
@@ -139,6 +140,14 @@ void TaskGroup::Refresh(
   // 6- Memory usage.
   // 7- Idle Wakeups per second.
   worker_thread_sampler_->Refresh(refresh_flags);
+}
+
+void TaskGroup::AppendSortedTaskIds(TaskIdList* out_list) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(out_list);
+
+  for (const auto& task_pair : tasks_)
+    out_list->push_back(task_pair.first);
 }
 
 Task* TaskGroup::GetTaskById(TaskId task_id) const {

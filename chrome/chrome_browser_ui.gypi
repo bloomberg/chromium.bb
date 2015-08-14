@@ -2268,6 +2268,8 @@
       'browser/ui/views/location_bar/zoom_view.h',
       'browser/ui/views/managed_full_screen_bubble_delegate_view.cc',
       'browser/ui/views/managed_full_screen_bubble_delegate_view.h',
+      'browser/ui/views/new_task_manager_view.cc',
+      'browser/ui/views/new_task_manager_view.h',
       'browser/ui/views/omnibox/omnibox_popup_contents_view.cc',
       'browser/ui/views/omnibox/omnibox_popup_contents_view.h',
       'browser/ui/views/omnibox/omnibox_result_view.cc',

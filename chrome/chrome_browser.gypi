@@ -2999,6 +2999,8 @@
       'browser/task_management/sampling/task_group_sampler.h',
       'browser/task_management/sampling/task_manager_impl.cc',
       'browser/task_management/sampling/task_manager_impl.h',
+      'browser/task_management/sampling/task_manager_io_thread_helper.cc',
+      'browser/task_management/sampling/task_manager_io_thread_helper.h',
       'browser/task_management/task_management_browsertest_util.cc',
       'browser/task_management/task_management_browsertest_util.h',
       'browser/task_management/task_manager_interface.cc',

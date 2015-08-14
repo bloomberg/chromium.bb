@@ -29,14 +29,16 @@ struct MemoryUsageStats {
 };
 
 // Defines the expensive process' stats sampler that will calculate these
-// resources on the worker thread.
+// resources on the worker thread. Objects of this class are created by the
+// TaskGroups on the UI thread, however it will be used mainly on a blocking
+// pool thread.
 class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
  public:
   // The below are the types of the callbacks to the UI thread upon their
   // corresponding refresh are done on the worker thread.
-  typedef base::Callback<void(double)> OnCpuRefreshCallback;
-  typedef base::Callback<void(MemoryUsageStats)> OnMemoryRefreshCallback;
-  typedef base::Callback<void(int)> OnIdleWakeupsCallback;
+  using OnCpuRefreshCallback = base::Callback<void(double)>;
+  using OnMemoryRefreshCallback = base::Callback<void(MemoryUsageStats)>;
+  using OnIdleWakeupsCallback = base::Callback<void(int)>;
 
   TaskGroupSampler(
       base::ProcessHandle proc_handle,
@@ -67,12 +69,12 @@ class TaskGroupSampler : public base::RefCountedThreadSafe<TaskGroupSampler> {
 
   // The UI-thread callbacks in TaskGroup to be called when their corresponding
   // refreshes on the worker thread are done.
-  OnCpuRefreshCallback on_cpu_refresh_callback_;
-  OnMemoryRefreshCallback on_memory_refresh_callback_;
-  OnIdleWakeupsCallback on_idle_wakeups_callback_;
+  const OnCpuRefreshCallback on_cpu_refresh_callback_;
+  const OnMemoryRefreshCallback on_memory_refresh_callback_;
+  const OnIdleWakeupsCallback on_idle_wakeups_callback_;
 
   // To assert we're running on the correct thread.
-  base::SequenceChecker sequenced_checker_;
+  base::SequenceChecker worker_pool_sequenced_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskGroupSampler);
 };

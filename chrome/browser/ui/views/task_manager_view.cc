@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/new_task_manager_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -645,10 +647,20 @@ namespace chrome {
 
 // Declared in browser_dialogs.h so others don't need to depend on our header.
 void ShowTaskManager(Browser* browser) {
+  if (switches::NewTaskManagerEnabled()) {
+    task_management::NewTaskManagerView::Show(browser);
+    return;
+  }
+
   TaskManagerView::Show(browser);
 }
 
 void HideTaskManager() {
+  if (switches::NewTaskManagerEnabled()) {
+    task_management::NewTaskManagerView::Hide();
+    return;
+  }
+
   TaskManagerView::Hide();
 }
 

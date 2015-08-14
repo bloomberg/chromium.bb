@@ -7,14 +7,17 @@
 
 #include <map>
 
+#include "base/lazy_instance.h"
+#include "base/memory/scoped_vector.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/task_management/providers/task_provider.h"
 #include "chrome/browser/task_management/providers/task_provider_observer.h"
+#include "chrome/browser/task_management/sampling/task_group.h"
+#include "chrome/browser/task_management/sampling/task_manager_io_thread_helper.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 
 namespace task_management {
-
-class TaskGroup;
 
 // Defines a concrete implementation of the TaskManagerInterface.
 class TaskManagerImpl :
@@ -22,8 +25,9 @@ class TaskManagerImpl :
     public TaskProviderObserver,
     content::GpuDataManagerObserver {
  public:
-  TaskManagerImpl();
   ~TaskManagerImpl() override;
+
+  static TaskManagerImpl* GetInstance();
 
   // task_management::TaskManagerInterface:
   void ActivateTask(TaskId task_id) override;
@@ -54,6 +58,8 @@ class TaskManagerImpl :
   bool GetWebCacheStats(
       TaskId task_id,
       blink::WebCache::ResourceTypeStats* stats) const override;
+  const TaskIdList& GetTaskIdsList() const override;
+  size_t GetNumberOfTasksOnSameProcess(TaskId task_id) const override;
 
   // task_management::TaskProviderObserver:
   void TaskAdded(Task* task) override;
@@ -63,9 +69,26 @@ class TaskManagerImpl :
   void OnVideoMemoryUsageStatsUpdate(
       const content::GPUVideoMemoryUsageStats& gpu_memory_stats) override;
 
+  // The notification method on the UI thread when multiple bytes are read
+  // from URLRequests. This will be called by the |io_thread_helper_|
+  static void OnMultipleBytesReadUI(std::vector<BytesReadParam>* params);
+
  private:
+  friend struct base::DefaultLazyInstanceTraits<TaskManagerImpl>;
+
+  TaskManagerImpl();
+
   // task_management::TaskManagerInterface:
   void Refresh() override;
+  void StartUpdating() override;
+  void StopUpdating() override;
+
+  // Based on |param| the appropriate task will be updated by its network usage.
+  // Returns true if it was able to match |param| to an existing task, returns
+  // false otherwise, at which point the caller must explicitly match these
+  // bytes to the browser process by calling this method again with
+  // |param.origin_pid = 0| and |param.child_id = param.route_id = -1|.
+  bool UpdateTasksWithBytesRead(const BytesReadParam& param);
 
   TaskGroup* GetTaskGroupByTaskId(TaskId task_id) const;
   Task* GetTaskByTaskId(TaskId task_id) const;
@@ -79,6 +102,18 @@ class TaskManagerImpl :
   // running on the same process represented by a single TaskGroup).
   std::map<TaskId, TaskGroup*> task_groups_by_task_id_;
 
+  // A cached sorted list of the task IDs.
+  mutable std::vector<TaskId> sorted_task_ids_;
+
+  // The manager of the IO thread helper used to handle network bytes
+  // notifications on IO thread. The manager itself lives on the UI thread, but
+  // the IO thread helper lives entirely on the IO thread.
+  scoped_ptr<IoThreadHelperManager> io_thread_helper_manager_;
+
+  // The list of the task providers that are owned and observed by this task
+  // manager implementation.
+  ScopedVector<TaskProvider> task_providers_;
+
   // The current GPU memory usage stats that was last received from the
   // GpuDataManager.
   content::GPUVideoMemoryUsageStats gpu_memory_stats_;
@@ -86,6 +121,10 @@ class TaskManagerImpl :
   // The specific blocking pool SequencedTaskRunner that will be used to make
   // sure TaskGroupSampler posts their refreshes serially.
   scoped_refptr<base::SequencedTaskRunner> blocking_pool_runner_;
+
+  // This will be set to true while there are observers and the task manager is
+  // running.
+  bool is_running_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerImpl);
 };

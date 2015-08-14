@@ -18,7 +18,7 @@
 namespace task_management {
 
 // Defines a group of tasks tracked by the task manager which belong to the same
-// process.
+// process. This class lives on the UI thread.
 class TaskGroup {
  public:
   TaskGroup(
@@ -36,7 +36,14 @@ class TaskGroup {
                base::TimeDelta update_interval,
                int64 refresh_flags);
 
+  // Appends the sorted IDs of the tasks that belong to this group to
+  // |out_list|.
+  void AppendSortedTaskIds(TaskIdList* out_list) const;
+
   Task* GetTaskById(TaskId task_id) const;
+
+  const base::ProcessHandle& process_handle() const { return process_handle_; }
+  const base::ProcessId& process_id() const { return process_id_; }
 
   size_t num_tasks() const { return tasks_.size(); }
   bool empty() const { return tasks_.empty(); }

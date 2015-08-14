@@ -33,7 +33,7 @@
 #include "chrome/browser/net/request_source_bandwidth_histograms.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/domain_reliability/monitor.h"
@@ -483,8 +483,9 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 #if defined(ENABLE_TASK_MANAGER)
   // This is not completely accurate, but as a first approximation ignore
   // requests that are served from the cache. See bug 330931 for more info.
-  if (!request.was_cached())
-    TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
+  if (!request.was_cached()) {
+    task_management::TaskManagerInterface::OnRawBytesRead(request, bytes_read);
+  }
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
