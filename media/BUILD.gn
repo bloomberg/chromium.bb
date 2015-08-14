@@ -167,7 +167,7 @@ component("media") {
     "cdm/player_tracker_impl.cc",
     "cdm/player_tracker_impl.h",
     "cdm/proxy_decryptor.cc",
-    "cdm/proxy_decyrptor.h",
+    "cdm/proxy_decryptor.h",
     "ffmpeg/ffmpeg_deleters.h",
     "filters/audio_clock.cc",
     "filters/audio_clock.h",

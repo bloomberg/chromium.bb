@@ -215,7 +215,6 @@ component("gfx") {
     "ui_gfx_exports.cc",
     "utf16_indexing.cc",
     "utf16_indexing.h",
-    "vector_icons_public.h",
     "vsync_provider.h",
     "win/direct_manipulation.cc",
     "win/direct_manipulation.h",
