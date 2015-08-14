@@ -1312,6 +1312,43 @@ def _CheckJavaStyle(input_api, output_api):
       black_list=_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
 
 
+def _CheckAndroidToastUsage(input_api, output_api):
+  """Checks that code uses org.chromium.ui.widget.Toast instead of
+     android.widget.Toast (Chromium Toast doesn't force hardware
+     acceleration on low-end devices, saving memory).
+  """
+  toast_import_pattern = input_api.re.compile(
+      r'^import android\.widget\.Toast;$')
+
+  errors = []
+
+  sources = lambda affected_file: input_api.FilterSourceFile(
+      affected_file,
+      black_list=(_EXCLUDED_PATHS +
+                  _TEST_CODE_EXCLUDED_PATHS +
+                  input_api.DEFAULT_BLACK_LIST +
+                  (r'^chromecast[\\\/].*',
+                   r'^remoting[\\\/].*')),
+      white_list=(r'.*\.java$',))
+
+  for f in input_api.AffectedSourceFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if toast_import_pattern.search(line):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+
+  if errors:
+    results.append(output_api.PresubmitError(
+        'android.widget.Toast usage is detected. Android toasts use hardware'
+        ' acceleration, and can be\ncostly on low-end devices. Please use'
+        ' org.chromium.ui.widget.Toast instead.\n'
+        'Contact dskiba@chromium.org if you have any questions.',
+        errors))
+
+  return results
+
+
 def _CheckAndroidCrLogUsage(input_api, output_api):
   """Checks that new logs using org.chromium.base.Log:
     - Are using 'TAG' as variable name for the tags (warn)
@@ -1530,6 +1567,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups checks that target android code."""
   results = []
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
+  results.extend(_CheckAndroidToastUsage(input_api, output_api))
   return results
 
 

@@ -7,11 +7,11 @@ package org.chromium.ui.base;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.widget.Toast;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.R;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android

@@ -19,7 +19,6 @@ import android.view.MenuItem;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
@@ -34,6 +33,7 @@ import org.chromium.chrome.browser.preferences.ProtectedContentResetCredentialCo
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content.browser.MediaDrmCredentialManager;
 import org.chromium.content.browser.MediaDrmCredentialManager.MediaDrmCredentialManagerCallback;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;

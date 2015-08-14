@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.hardware_acceleration;
 
 import android.app.Dialog;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
@@ -14,6 +15,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.ui.widget.Toast;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +33,11 @@ public class Utils {
     public static void assertHardwareAcceleration(ChromeActivity activity) throws Exception {
         assertActivityAcceleration(activity);
         assertChildWindowAcceleration(activity);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Toasts are only HW accelerated on LOLLIPOP+
+            assertToastAcceleration(activity);
+        }
     }
 
     /**
@@ -63,12 +70,33 @@ public class Utils {
         });
 
         listenerCalled.waitForCallback(0);
+        assertAcceleration(accelerated);
+    }
 
-        if (SysUtils.isLowEndDevice()) {
-            Assert.assertFalse(accelerated.get());
-        } else {
-            Assert.assertTrue(accelerated.get());
-        }
+    private static void assertToastAcceleration(final ChromeActivity activity)
+            throws Exception {
+        final AtomicBoolean accelerated = new AtomicBoolean();
+        final CallbackHelper listenerCalled = new CallbackHelper();
+
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // We are using Toast.makeText(context, ...) instead of new Toast(context)
+                // because that Toast constructor is unused and is deleted by proguard.
+                Toast toast = Toast.makeText(activity, "", Toast.LENGTH_SHORT);
+                toast.setView(new View(activity) {
+                    @Override
+                    public void onAttachedToWindow() {
+                        accelerated.set(isHardwareAccelerated());
+                        listenerCalled.notifyCalled();
+                    }
+                });
+                toast.show();
+            }
+        });
+
+        listenerCalled.waitForCallback(0);
+        assertAcceleration(accelerated);
     }
 
     private static void assertChildWindowAcceleration(final ChromeActivity activity)
@@ -93,7 +121,10 @@ public class Utils {
         });
 
         listenerCalled.waitForCallback(0);
+        assertAcceleration(accelerated);
+    }
 
+    private static void assertAcceleration(AtomicBoolean accelerated) {
         if (SysUtils.isLowEndDevice()) {
             Assert.assertFalse(accelerated.get());
         } else {

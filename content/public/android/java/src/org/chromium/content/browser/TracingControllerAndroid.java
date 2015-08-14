@@ -10,12 +10,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Environment;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.R;
+import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

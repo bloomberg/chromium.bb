@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
-import android.widget.Toast;
 
 import org.chromium.chrome.R;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Utilities and common methods to handle settings managed by policies.

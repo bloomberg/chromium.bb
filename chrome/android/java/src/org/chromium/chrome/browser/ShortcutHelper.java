@@ -10,7 +10,6 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
-import android.widget.Toast;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
@@ -20,6 +19,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ScreenOrientationConstants;
+import org.chromium.ui.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.util.UUID;

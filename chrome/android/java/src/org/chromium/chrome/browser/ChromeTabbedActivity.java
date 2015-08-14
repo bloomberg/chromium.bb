@@ -22,7 +22,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.MemoryPressureListener;
@@ -93,6 +92,7 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.widget.Toast;
 
 /**
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
@@ -221,7 +221,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
                 public void didAddTab(Tab tab, TabLaunchType type) {
                     if (type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
                             && !DeviceClassManager.enableAnimations(getApplicationContext())) {
-                        Toast.makeText(getBaseContext(),
+                        Toast.makeText(ChromeTabbedActivity.this,
                                 R.string.open_in_new_tab_toast,
                                 Toast.LENGTH_SHORT).show();
                     }

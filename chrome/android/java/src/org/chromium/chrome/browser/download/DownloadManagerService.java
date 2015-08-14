@@ -19,7 +19,6 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
-import android.widget.Toast;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -29,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.content.browser.DownloadInfo;
+import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;

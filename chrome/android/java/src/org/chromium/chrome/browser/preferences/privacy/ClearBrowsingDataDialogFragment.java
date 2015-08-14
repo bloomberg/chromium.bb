@@ -23,7 +23,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -31,6 +30,7 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.text.SpanApplier;
+import org.chromium.ui.widget.Toast;
 
 import java.util.EnumSet;
 
