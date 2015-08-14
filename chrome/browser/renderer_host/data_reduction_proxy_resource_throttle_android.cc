@@ -41,7 +41,7 @@ DataReductionProxyResourceThrottle::MaybeCreate(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   // Don't create the throttle if we can't handle the request.
   if (io_data->IsOffTheRecord() || !io_data->IsDataReductionProxyEnabled() ||
-      request->url().SchemeIsSecure()) {
+      request->url().SchemeIsCryptographic()) {
     return NULL;
   }
 
