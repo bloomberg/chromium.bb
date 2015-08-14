@@ -81,7 +81,7 @@ bool SafeStrCopy(wchar_t* dest, size_t dest_size, const wchar_t* src) {
 bool SafeStrCat(wchar_t* dest, size_t dest_size, const wchar_t* src) {
   // Use SafeStrLen instead of lstrlen just in case the |dest| buffer isn't
   // terminated.
-  int str_len = SafeStrLen(dest, dest_size);
+  size_t str_len = SafeStrLen(dest, dest_size);
   return SafeStrCopy(dest + str_len, dest_size - str_len, src);
 }
 

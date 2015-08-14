@@ -211,6 +211,7 @@
           ],
         },
         {
+          # GN version: //chrome/installer/setup
           'target_name': 'setup',
           'type': 'executable',
           'dependencies': [
@@ -269,8 +270,6 @@
               ],
             },
           },
-          # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
           'rules': [
             {
               'rule_name': 'setup_version',

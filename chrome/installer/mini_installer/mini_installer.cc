@@ -75,7 +75,6 @@ bool OpenInstallStateKey(const Configuration& configuration, RegKey* key) {
       configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   const wchar_t* app_guid = configuration.chrome_app_guid();
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
-  LONG ret = ERROR_SUCCESS;
 
   return OpenClientStateKey(root_key, app_guid, key_access, key);
 }
@@ -228,12 +227,13 @@ ProcessExitResult RunProcessAndWait(const wchar_t* exe_path, wchar_t* cmdline) {
 void AppendCommandLineFlags(const Configuration& configuration,
                             CommandString* buffer) {
   PathString full_exe_path;
-  size_t len = ::GetModuleFileName(NULL, full_exe_path.get(),
-                                   full_exe_path.capacity());
+  size_t len = ::GetModuleFileName(
+      NULL, full_exe_path.get(), static_cast<DWORD>(full_exe_path.capacity()));
   if (!len || len >= full_exe_path.capacity())
     return;
 
-  const wchar_t* exe_name = GetNameFromPathExt(full_exe_path.get(), len);
+  const wchar_t* exe_name =
+      GetNameFromPathExt(full_exe_path.get(), static_cast<DWORD>(len));
 
   // - configuration.program() returns the first command line argument
   //   passed into the program (that the user probably typed in this case).
@@ -599,12 +599,14 @@ bool CreateWorkDir(const wchar_t* base_path, PathString* work_dir) {
 // extract mini_installer payload. |work_dir| ends with a path separator.
 bool GetWorkDir(HMODULE module, PathString* work_dir) {
   PathString base_path;
-  DWORD len = ::GetTempPath(base_path.capacity(), base_path.get());
+  DWORD len = ::GetTempPath(static_cast<DWORD>(base_path.capacity()),
+                            base_path.get());
   if (!len || len >= base_path.capacity() ||
       !CreateWorkDir(base_path.get(), work_dir)) {
     // Problem creating the work dir under TEMP path, so try using the
     // current directory as the base path.
-    len = ::GetModuleFileName(module, base_path.get(), base_path.capacity());
+    len = ::GetModuleFileName(module, base_path.get(),
+                              static_cast<DWORD>(base_path.capacity()));
     if (len >= base_path.capacity() || !len)
       return false;  // Can't even get current directory? Return an error.
 
@@ -709,7 +711,7 @@ void DeleteOldChromeTempDirectories() {
 
   PathString temp;
   // GetTempPath always returns a path with a trailing backslash.
-  DWORD len = ::GetTempPath(temp.capacity(), temp.get());
+  DWORD len = ::GetTempPath(static_cast<DWORD>(temp.capacity()), temp.get());
   // GetTempPath returns 0 or number of chars copied, not including the
   // terminating '\0'.
   if (!len || len >= temp.capacity())
@@ -798,7 +800,7 @@ ProcessExitResult WMain(HMODULE module) {
   // While unpacking the binaries, we paged in a whole bunch of memory that
   // we don't need anymore.  Let's give it back to the pool before running
   // setup.
-  ::SetProcessWorkingSetSize(::GetCurrentProcess(), -1, -1);
+  ::SetProcessWorkingSetSize(::GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1);
 
   if (exit_code.IsSuccess())
     exit_code = RunSetup(configuration, archive_path.get(), setup_path.get());

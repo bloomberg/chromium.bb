@@ -223,7 +223,8 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
     // This runs before the main routine of the process runs, so it doesn't
     // matter much which executable we choose except that we don't want to
     // use e.g. a console app that causes a window to be created.
-    size = (path.value().length() + 1) * sizeof(path.value()[0]);
+    size = static_cast<DWORD>(
+        (path.value().length() + 1) * sizeof(path.value()[0]));
     void* mem = ::VirtualAllocEx(pi.hProcess, NULL, size, MEM_COMMIT,
                                  PAGE_READWRITE);
     if (mem) {

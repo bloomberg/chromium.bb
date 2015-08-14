@@ -1,0 +1,188 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/features.gni")
+import("//build/config/ui.gni")
+import("//build/module_args/v8.gni")
+import("//third_party/icu/config.gni")
+
+config("mini_installer_compiler_flags") {
+  cflags = [
+    "/bigobj",
+    "/Gy",  # Enable function-level linking.
+    "/GS-",  # Disable buffer security checking.
+  ]
+
+  cflags_c = [ "/TC" ]
+  cflags_cc = [ "/TP" ]
+}
+
+source_set("lib") {
+  sources = [
+    "appid.h",
+    "chrome.release",
+    "chrome_appid.cc",
+    "configuration.cc",
+    "configuration.h",
+    "decompress.cc",
+    "decompress.h",
+    "mini_installer.ico",
+    "mini_installer.rc",
+    "mini_installer_constants.cc",
+    "mini_installer_constants.h",
+    "mini_installer_resource.h",
+    "mini_string.cc",
+    "mini_string.h",
+    "pe_resource.cc",
+    "pe_resource.h",
+    "regkey.cc",
+    "regkey.h",
+  ]
+
+  deps = [
+    #"test_installer_sentinel",  TODO(GYP) bug 521052.
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "configuration_test.cc",
+    "decompress_test.cc",
+    "mini_string_test.cc",
+  ]
+
+  public_deps = [
+    ":lib",
+  ]
+  deps = [
+    "//testing/gtest",
+  ]
+}
+
+packed_files_rc_file = "$target_gen_dir/packed_files.rc"
+
+action("archive") {
+  script = "//chrome/tools/build/win/create_installer_archive.py"
+
+  release_file = "chrome.release"
+
+  inputs = [
+    "$root_out_dir/chrome.exe",
+    "$root_out_dir/chrome.dll",
+    "$root_out_dir/locales/en-US.pak",
+    "$root_out_dir/setup.exe",
+    release_file,
+  ]
+
+  outputs = [
+    # See also chrome.packed.7z conditionally added below.
+    "$root_out_dir/chrome.7z",
+    "$root_out_dir/setup.ex_",
+    packed_files_rc_file,
+  ]
+  args = [
+    "--build_dir",
+    rebase_path(root_out_dir, root_build_dir),
+    "--staging_dir",
+    rebase_path(root_gen_dir, root_build_dir),
+    "--input_file",
+    rebase_path(release_file, root_build_dir),
+    "--resource_file_path",
+    rebase_path(packed_files_rc_file, root_build_dir),
+    "--target_arch=$current_cpu",
+    "--distribution=_google_chrome",
+
+    # Optional arguments to generate diff installer.
+    #'--last_chrome_installer=C:/Temp/base',
+    #'--setup_exe_format=DIFF',
+    #'--diff_algorithm=COURGETTE',
+  ]
+
+  if (enable_hidpi) {
+    args += [ "--enable_hidpi=1" ]
+  }
+  if (is_component_build) {
+    args += [ "--component_build=1" ]
+  } else {
+    outputs += [ "$root_out_dir/chrome.packed.7z" ]
+  }
+
+  if (enable_nacl) {
+    inputs += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
+    if (cpu_arch == "x86") {
+      inputs += [
+        "$root_out_dir/nacl64.exe",
+        "$root_out_dir/nacl_irt_x86_32.nexe",
+      ]
+    }
+  }
+
+  if (icu_use_data_file) {
+    inputs += [ "$root_out_dir/icudtl.dat" ]
+  } else {
+    inputs += [ "$root_out_dir/icudt.dll" ]
+  }
+
+  if (v8_use_external_startup_data) {
+    inputs += [
+      "$root_out_dir/natives_blob.bin",
+      "$root_out_dir/snapshot_blob.bin",
+    ]
+  }
+
+  depfile = "$target_gen_dir/archive.d"
+  args += [
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+  ]
+
+  deps = [
+    "//chrome",
+    "//chrome:main_dll",
+    "//chrome/installer/setup",
+    "//third_party/icu:icudata",
+
+    #"../chrome.gyp:chrome_nacl_win64",  TODO(GYP) bug 512869.
+    #"../chrome.gyp:default_extensions",  TODO(GYP) bug 521048.
+  ]
+}
+
+# TODO(GYP) bug 521052: This target needs to be checked to make sure its the
+# same size as the GYP build.
+executable("mini_installer") {
+  sources = [
+    "mini_installer.cc",
+    "mini_installer_exe_version.rc.version",
+    packed_files_rc_file,
+  ]
+
+  # This target is special so we manually override most linker flags and
+  # specify our own to keep the size down.
+  configs -= [
+    "//build/config/compiler:compiler",
+    "//build/config/win:common_linker_setup",
+    "//build/config/win:console",
+  ]
+  configs += [
+    ":mini_installer_compiler_flags",
+    "//build/config/win:windowed",
+  ]
+
+  ldflags = [
+    "/ENTRY:MainEntryPoint",
+    "/FIXED:NO",
+    "/NXCOMPAT",
+  ]
+
+  libs = [ "setupapi.lib" ]
+
+  deps = [
+    ":archive",
+    ":lib",
+    "//build/win:default_exe_manifest",
+    "//chrome/installer/setup",
+  ]
+}

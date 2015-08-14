@@ -137,9 +137,12 @@ if (!is_android) {
       sources += [ "app/chrome_exe_main_mac.cc" ]
       # TODO(GYP) lots more stuff in the is_mac block.
     } else {  # Non-Mac.
-      deps += [
+      # These files are used by the installer so we need a public dep.
+      public_deps = [
         ":packed_extra_resources",
         ":packed_resources",
+      ]
+      deps += [
         "//components/startup_metric_utils",
 
         # Precompiled plugins that need to get copied to the output directory.

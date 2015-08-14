@@ -70,7 +70,7 @@ bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
 
   // There is no point getting a buffer to store more than |privilege_name|\0 as
   // anything longer will obviously not be equal to |privilege_name|.
-  const DWORD desired_size = wcslen(privilege_name);
+  const DWORD desired_size = static_cast<DWORD>(wcslen(privilege_name));
   const DWORD buffer_size = desired_size + 1;
   scoped_ptr<wchar_t[]> name_buffer(new wchar_t[buffer_size]);
   for (int i = privileges->PrivilegeCount - 1; i >= 0 ; --i) {

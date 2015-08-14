@@ -5,60 +5,77 @@
 import("//testing/test.gni")
 
 if (is_win) {
-  test("setup_unittests") {
-    # TODO(robertshield): Move the items marked with "Move to lib"
-    # below into a separate lib and then link both setup.exe and
-    # setup_unittests.exe against that.
+  executable("setup") {
     sources = [
-      "../mini_installer/appid.h",
-      "../mini_installer/chrome.release",  # Move to lib
-      "../mini_installer/chrome_appid.cc",
-      "../mini_installer/configuration.cc",
-      "../mini_installer/configuration.h",
-      "../mini_installer/configuration_test.cc",
-      "../mini_installer/decompress.cc",
-      "../mini_installer/decompress.h",
-      "../mini_installer/decompress_test.cc",
-      "../mini_installer/mini_installer_constants.cc",
-      "../mini_installer/mini_installer_constants.h",
-      "../mini_installer/mini_string.cc",
-      "../mini_installer/mini_string.h",
-      "../mini_installer/mini_string_test.cc",
-      "../mini_installer/regkey.cc",
-      "../mini_installer/regkey.h",
-      "app_launcher_installer.cc",  # Move to lib
-      "app_launcher_installer.h",  # Move to lib
-      "archive_patch_helper.cc",  # Move to lib
-      "archive_patch_helper.h",  # Move to lib
+      "setup.ico",
+      "setup.rc",
+      "setup_exe_version.rc.version",
+      "setup_main.cc",
+      "setup_main.h",
+      "setup_resource.h",
+      "uninstall.cc",
+      "uninstall.h",
+    ]
+
+    configs -= [ "//build/config/win:console" ]
+    configs += [ "//build/config/win:windowed" ]
+
+    deps = [
+      ":lib",
+    ]
+  }
+
+  source_set("lib") {
+    sources = [
+      "app_launcher_installer.cc",
+      "app_launcher_installer.h",
+      "archive_patch_helper.cc",
+      "archive_patch_helper.h",
+      "install.cc",
+      "install.h",
+      "install_worker.cc",
+      "install_worker.h",
+      "setup_constants.cc",
+      "setup_constants.h",
+      "setup_util.cc",
+      "setup_util.h",
+      "update_active_setup_version_work_item.cc",
+      "update_active_setup_version_work_item.h",
+    ]
+
+    public_deps = [
+      "//base",
+      "//breakpad:breakpad_handler",
+      "//chrome/common:constants",
+      "//chrome/installer/util",
+      "//chrome_elf:constants",
+      "//rlz:rlz_lib",
+      "//third_party/zlib",
+    ]
+  }
+
+  # This test covers the mini installer and setup tests.
+  test("setup_unittests") {
+    sources = [
       "archive_patch_helper_unittest.cc",
-      "install.cc",  # Move to lib
-      "install.h",  # Move to lib
       "install_unittest.cc",
-      "install_worker.cc",  # Move to lib
-      "install_worker.h",  # Move to lib
       "install_worker_unittest.cc",
       "run_all_unittests.cc",
-      "setup_constants.cc",  # Move to lib
-      "setup_constants.h",  # Move to lib
-      "setup_util.cc",
       "setup_util_unittest.cc",
       "setup_util_unittest.h",
-      "update_active_setup_version_work_item.cc",  # Move to lib
-      "update_active_setup_version_work_item.h",  # Move to lib
       "update_active_setup_version_work_item_unittest.cc",
     ]
 
     deps = [
+      ":lib",
       "//base",
       "//base:i18n",
       "//base/test:test_support",
+      "//chrome/installer/mini_installer:unit_tests",
       "//chrome/installer/util:strings",
       "//chrome/installer/util:util",
       "//testing/gmock",
       "//testing/gtest",
     ]
-
-    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 }
