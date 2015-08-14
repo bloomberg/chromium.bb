@@ -30,7 +30,6 @@ class ClipboardMac : public Clipboard {
   ClipboardMac();
   ~ClipboardMac() override;
 
-  // Must be called on the UI thread.
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
   void InjectClipboardEvent(const protocol::ClipboardEvent& event) override;
 
@@ -44,14 +43,9 @@ class ClipboardMac : public Clipboard {
   DISALLOW_COPY_AND_ASSIGN(ClipboardMac);
 };
 
-ClipboardMac::ClipboardMac() : current_change_count_(0) {
-}
+ClipboardMac::ClipboardMac() : current_change_count_(0) {}
 
-ClipboardMac::~ClipboardMac() {
-  // In it2me the destructor is not called in the same thread that the timer is
-  // created. Thus the timer must have already been destroyed by now.
-  DCHECK(clipboard_polling_timer_.get() == nullptr);
-}
+ClipboardMac::~ClipboardMac() {}
 
 void ClipboardMac::Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   client_clipboard_.reset(client_clipboard.release());
