@@ -176,17 +176,17 @@ lenboldphrase 1
 
 firstwordital 23
 firstletterital 23
-firstwordbold 23
-firstletterbold 23
-firstwordunder 23
-firstletterunder 23
+firstwordbold 6-3
+firstletterbold 6-3
+firstwordunder 456
+firstletterunder 456
 
 lastworditalafter 56
 lastletterital 56
-lastwordboldafter 56
-lastletterbold 56
-lastwordunderafter 56
-lastletterunder 56
+lastwordboldafter 6-3
+lastletterbold 6-3
+lastwordunderafter 456
+lastletterunder 456
 
 midnum , 2
 midnum . 3

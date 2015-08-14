@@ -1276,8 +1276,8 @@
         {
           "comment": "Highlighting: Example 2",
           "xfail": false,
-          "input":    "Det var bare det at hun også misunte ham det",
-          "typeform": "00000000000000000000000000000111000000000000",
+          "input":    "Det var bare det at hun også misunte ham det.",
+          "typeform": "000000000000000000000000000001110000000000000",
           "output": "⠠⠙⠑⠞ ⠧⠁⠗ ⠃⠁⠗⠑ ⠙⠑⠞ ⠁⠞ ⠓⠥⠝ ⠕⠛⠎⠡ ⠆⠍⠊⠎⠰⠥⠝⠞⠑ ⠓⠁⠍ ⠙⠑⠞⠄"
         }
       ]
@@ -1288,7 +1288,7 @@
           "comment": "Highlighting: Example 3",
           "xfail": false,
           "input":    "Jeg verken vil eller kan gjøre dette for deg!",
-          "typeform": "000000000011111000001111100000000000000000000",
+          "typeform": "000000000001110000000111000000000000000000000",
           "output": "⠠⠚⠑⠛ ⠧⠑⠗⠅⠑⠝ ⠆⠧⠊⠇⠰ ⠑⠇⠇⠑⠗ ⠆⠅⠁⠝⠰ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠞⠑ ⠋⠕⠗ ⠙⠑⠛⠖"
         }
       ]
@@ -1300,7 +1300,7 @@
           "xfail": false,
           "input":    "Karin Fossum slo gjennom som krimforfatter med romanen Evas øye, som kom ut i 1995.",
           "typeform": "00000000000000000000000000000000000000000000000000000001111111100000000000000000000",
-          "output": "⠠⠅⠁⠗⠊⠝ ⠠⠋⠕⠎⠎⠥⠍ ⠎⠇⠕ ⠛⠚⠑⠝⠝⠕⠍ ⠎⠕⠍ ⠅⠗⠊⠍⠋⠕⠗⠋⠁⠞⠞⠑⠗ ⠍⠑⠙ ⠗⠕⠍⠁⠝⠑⠝ ⠆⠑⠧⠁⠎ ⠪⠽⠑⠰⠂ ⠎⠕⠍ ⠅⠕⠍ ⠥⠞ ⠊ ⠼⠁⠊⠊⠑⠄"
+          "output": "⠠⠅⠁⠗⠊⠝ ⠠⠋⠕⠎⠎⠥⠍ ⠎⠇⠕ ⠛⠚⠑⠝⠝⠕⠍ ⠎⠕⠍ ⠅⠗⠊⠍⠋⠕⠗⠋⠁⠞⠞⠑⠗ ⠍⠑⠙ ⠗⠕⠍⠁⠝⠑⠝ ⠆⠠⠑⠧⠁⠎ ⠪⠽⠑⠰⠂ ⠎⠕⠍ ⠅⠕⠍ ⠥⠞ ⠊ ⠼⠁⠊⠊⠑⠄"
         }
       ]
     },
@@ -1310,7 +1310,7 @@
           "comment": "Highlighting: Example 5",
           "xfail": false,
           "input":    "\"Hør her: du må gjøre det!\"",
-          "typeform": "000000000011155511111111100",
+          "typeform": "000000000011113311111111100",
           "output": "⠲⠠⠓⠪⠗ ⠓⠑⠗⠒ ⠆⠙⠥ ⠸⠍⠡⠸ ⠛⠚⠪⠗⠑ ⠙⠑⠞⠰⠖⠲"
         }
       ]
@@ -1320,12 +1320,37 @@
         {
           "comment": "Highlighting: Example 6",
           "xfail": false,
-          "input":    "Romanen Tusen  strålende soler av den afghansk-amerikanske forfatteren Khaled Hosseini  tyder på å bli en like stor suksess som den forrige romanen, Drageløperen. I bokanmeldelsen fra Dagbladet 06.06.07 forklares dette med: Ikke fordi Hosseini er en spesielt god  forfatter. Men fordi tematikken til den USA-bosatte Hosseini, har en spesiell  dragning på et vestlig publikum.",
-          "typeform": "000000001111111111111111111111100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111111110000000000000000000000011111111110000000000000000000000000000002222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222",
-          "output": "⠠⠗⠕⠍⠁⠝⠑⠝ ⠆⠠⠞⠥⠎⠑⠝ ⠎⠞⠗⠡⠇⠑⠝⠙⠑ ⠎⠕⠇⠑⠗⠰ ⠁⠧ ⠙⠑⠝ ⠁⠋⠛⠓⠁⠝⠎⠅⠁⠍⠑⠗⠊⠅⠁⠝⠎⠅⠑ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠑⠝ ⠠⠅⠓⠁⠇⠑⠙ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠞⠽⠙⠑⠗ ⠏⠡ ⠡ ⠃⠇⠊ ⠑⠝ ⠇⠊⠅⠑ ⠎⠞⠕⠗ ⠎⠥⠅⠎⠑⠎⠎ ⠎⠕⠍ ⠙⠑⠝ ⠋⠕⠗⠗⠊⠛⠑ ⠗⠕⠍⠁⠝⠑⠝⠂ ⠆⠠⠙⠗⠁⠛⠑⠇⠪⠏⠑⠗⠑⠝⠰⠄ ⠠⠊ ⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠝ ⠋⠗⠁ ⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰ ⠼⠚⠋⠄⠚⠋⠄⠚⠛ ⠋⠕⠗⠅⠇⠁⠗⠑⠎ ⠙⠑⠞⠞⠑ ⠍⠑⠙⠒ ⠠⠄⠊⠅⠅⠑ ⠋⠕⠗⠙⠊ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠑⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠞ ⠛⠕⠙ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠄ ⠠⠍⠑⠝ ⠋⠕⠗⠙⠊ ⠞⠑⠍⠁⠞⠊⠅⠅⠑⠝ ⠞⠊⠇ ⠙⠑⠝ ⠠⠠⠥⠎⠁⠃⠕⠎⠁⠞⠞⠑ ⠠⠓⠕⠎⠎⠑⠊⠝⠊⠂ ⠓⠁⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠇ ⠙⠗⠁⠛⠝⠊⠝⠛ ⠏⠡ ⠑⠞ ⠧⠑⠎⠞⠇⠊⠛ ⠏⠥⠃⠇⠊⠅⠥⠍⠄⠠⠄"
+          "input":    "Romanen Tusen strålende soler av den afghansk-amerikanske forfatteren Khaled Hosseini tyder på å bli en like stor suksess som den forrige romanen, Drageløperen. I bokanmeldelsen fra Dagbladet 06.06.07 forklares dette med: Ikke fordi Hosseini er en spesielt god forfatter. Men fordi tematikken til den USA-bosatte Hosseini, har en spesiell dragning på et vestlig publikum.",
+          "typeform": "00000000111111111111111111111000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111100000000000000000000000111111111000000000000000000000000000000044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444",
+          "output": "⠠⠗⠕⠍⠁⠝⠑⠝ ⠆⠠⠞⠥⠎⠑⠝ ⠎⠞⠗⠡⠇⠑⠝⠙⠑ ⠎⠕⠇⠑⠗⠰ ⠁⠧ ⠙⠑⠝ ⠁⠋⠛⠓⠁⠝⠎⠅⠤⠁⠍⠑⠗⠊⠅⠁⠝⠎⠅⠑ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠑⠝ ⠠⠅⠓⠁⠇⠑⠙ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠞⠽⠙⠑⠗ ⠏⠡ ⠡ ⠃⠇⠊ ⠑⠝ ⠇⠊⠅⠑ ⠎⠞⠕⠗ ⠎⠥⠅⠎⠑⠎⠎ ⠎⠕⠍ ⠙⠑⠝ ⠋⠕⠗⠗⠊⠛⠑ ⠗⠕⠍⠁⠝⠑⠝⠂ ⠆⠠⠙⠗⠁⠛⠑⠇⠪⠏⠑⠗⠑⠝⠰⠄ ⠠⠊ ⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑⠝ ⠋⠗⠁ ⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰ ⠼⠚⠋⠄⠚⠋⠄⠚⠛ ⠋⠕⠗⠅⠇⠁⠗⠑⠎ ⠙⠑⠞⠞⠑ ⠍⠑⠙⠒ ⠠⠄⠠⠊⠅⠅⠑ ⠋⠕⠗⠙⠊ ⠠⠓⠕⠎⠎⠑⠊⠝⠊ ⠑⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠞ ⠛⠕⠙ ⠋⠕⠗⠋⠁⠞⠞⠑⠗⠄ ⠠⠍⠑⠝ ⠋⠕⠗⠙⠊ ⠞⠑⠍⠁⠞⠊⠅⠅⠑⠝ ⠞⠊⠇ ⠙⠑⠝ ⠠⠠⠥⠎⠁⠤⠃⠕⠎⠁⠞⠞⠑ ⠠⠓⠕⠎⠎⠑⠊⠝⠊⠂ ⠓⠁⠗ ⠑⠝ ⠎⠏⠑⠎⠊⠑⠇⠇ ⠙⠗⠁⠛⠝⠊⠝⠛ ⠏⠡ ⠑⠞ ⠧⠑⠎⠞⠇⠊⠛ ⠏⠥⠃⠇⠊⠅⠥⠍⠄⠠⠄"
         }
       ]
     },
+    
+    {
+      "data": [
+        {
+          "comment": "Highlighting: Example 6_bold",
+          "xfail": false,
+          "input":    "aa bb cc",
+          "typeform": "00044000",
+          "output": "⠁⠁ ⠠⠄⠃⠃⠠⠄ ⠉⠉"
+        }
+      ]
+    },
+    
+    {
+      "data": [
+        {
+          "comment": "Highlighting: Example 6_underline",
+          "xfail": false,
+          "input":    "aa bb cc",
+          "typeform": "00022000",
+          "output": "⠁⠁ ⠸⠃⠃⠸ ⠉⠉"
+        }
+      ]
+    },
+    
     {
       "data": [
         {
@@ -1333,7 +1358,7 @@
           "xfail": false,
           "input":    "Vinje, Finn-Erik. 2004. Skriveregler. 8. utg. Oslo",
           "typeform": "00000000000000000000000011111111111100000000000000",
-          "output": "⠠⠧⠊⠝⠚⠑⠂ ⠠⠋⠊⠝⠝⠤⠠⠑⠗⠊⠅⠄ ⠼⠃⠚⠚⠙⠄ ⠠⠄⠠⠎⠅⠗⠊⠧⠑⠗⠑⠛⠇⠑⠗⠠⠄⠄ ⠼⠓⠄ ⠥⠞⠛⠄⠠⠕⠎⠇⠕"
+          "output": "⠠⠧⠊⠝⠚⠑⠂ ⠠⠋⠊⠝⠝⠤⠠⠑⠗⠊⠅⠄ ⠼⠃⠚⠚⠙⠄ ⠆⠠⠎⠅⠗⠊⠧⠑⠗⠑⠛⠇⠑⠗⠰⠄ ⠼⠓⠄ ⠥⠞⠛⠄ ⠠⠕⠎⠇⠕"
         }
       ]
     },
@@ -1344,7 +1369,7 @@
           "xfail": false,
           "input":    "Hellevik, Alf. 1970. God nynorsk.  Oslo",
           "typeform": "000000000000000000000111111111110000000",
-          "output": "⠠⠓⠑⠇⠇⠑⠧⠊⠅⠂ ⠠⠁⠇⠋⠄ ⠼⠁⠊⠛⠚⠄ ⠠⠄⠛⠕⠙ ⠝⠽⠝⠕⠗⠎⠅⠠⠄⠄ ⠠⠕⠎⠇⠕"
+          "output": "⠠⠓⠑⠇⠇⠑⠧⠊⠅⠂ ⠠⠁⠇⠋⠄ ⠼⠁⠊⠛⠚⠄ ⠆⠠⠛⠕⠙ ⠝⠽⠝⠕⠗⠎⠅⠰⠄  ⠠⠕⠎⠇⠕"
         }
       ]
     },
@@ -1354,8 +1379,8 @@
           "comment": "Highlighting: Example 9",
           "xfail": false,
           "input":    "Ny afghansk bestselger. Bokanmeldelse Dagbladet 06.06.07",
-          "typeform": "00000000000000000000000000000000000000111111111100000000",
-          "output": "⠠⠝⠽ ⠁⠋⠛⠓⠁⠝⠎⠅ ⠃⠑⠎⠞⠎⠑⠇⠛⠑⠗⠄⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑ ⠠⠄⠙⠁⠛⠃⠇⠁⠙⠑⠞⠠⠄⠼⠚⠋⠄⠚⠋⠄⠚⠛"
+          "typeform": "00000000000000000000000000000000000000111111111000000000",
+          "output": "⠠⠝⠽ ⠁⠋⠛⠓⠁⠝⠎⠅ ⠃⠑⠎⠞⠎⠑⠇⠛⠑⠗⠄ ⠠⠃⠕⠅⠁⠝⠍⠑⠇⠙⠑⠇⠎⠑ ⠆⠠⠙⠁⠛⠃⠇⠁⠙⠑⠞⠰ ⠼⠚⠋⠄⠚⠋⠄⠚⠛"
         }
       ]
     },
