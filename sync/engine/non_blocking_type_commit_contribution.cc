@@ -9,7 +9,7 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/protocol/proto_value_conversions.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 NonBlockingTypeCommitContribution::NonBlockingTypeCommitContribution(
     const sync_pb::DataTypeContext& context,
@@ -39,16 +39,16 @@ void NonBlockingTypeCommitContribution::AddToCommitMessage(
     commit_message->add_client_contexts()->CopyFrom(context_);
 }
 
-SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
+syncer::SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
     const sync_pb::ClientToServerResponse& response,
-    sessions::StatusController* status) {
+    syncer::sessions::StatusController* status) {
   const sync_pb::CommitResponse& commit_response = response.commit();
 
   bool transient_error = false;
   bool commit_conflict = false;
   bool unknown_error = false;
 
-  syncer_v2::CommitResponseDataList response_list;
+  CommitResponseDataList response_list;
 
   for (size_t i = 0; i < sequence_numbers_.size(); ++i) {
     const sync_pb::CommitResponse_EntryResponse& entry_response =
@@ -57,18 +57,18 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
     switch (entry_response.response_type()) {
       case sync_pb::CommitResponse::INVALID_MESSAGE:
         LOG(ERROR) << "Server reports commit message is invalid.";
-        DLOG(ERROR) << "Message was: " << SyncEntityToValue(entities_.Get(i),
-                                                            false);
+        DLOG(ERROR) << "Message was: "
+                    << syncer::SyncEntityToValue(entities_.Get(i), false);
         unknown_error = true;
         break;
       case sync_pb::CommitResponse::CONFLICT:
         DVLOG(1) << "Server reports conflict for commit message.";
-        DVLOG(1) << "Message was: " << SyncEntityToValue(entities_.Get(i),
-                                                         false);
+        DVLOG(1) << "Message was: "
+                 << syncer::SyncEntityToValue(entities_.Get(i), false);
         commit_conflict = true;
         break;
       case sync_pb::CommitResponse::SUCCESS: {
-        syncer_v2::CommitResponseData response_data;
+        CommitResponseData response_data;
         response_data.id = entry_response.id_string();
         response_data.client_tag_hash =
             entities_.Get(i).client_defined_unique_tag();
@@ -95,13 +95,13 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
 
   // Let the scheduler know about the failures.
   if (unknown_error) {
-    return SERVER_RETURN_UNKNOWN_ERROR;
+    return syncer::SERVER_RETURN_UNKNOWN_ERROR;
   } else if (transient_error) {
-    return SERVER_RETURN_TRANSIENT_ERROR;
+    return syncer::SERVER_RETURN_TRANSIENT_ERROR;
   } else if (commit_conflict) {
-    return SERVER_RETURN_CONFLICT;
+    return syncer::SERVER_RETURN_CONFLICT;
   } else {
-    return SYNCER_OK;
+    return syncer::SYNCER_OK;
   }
 }
 

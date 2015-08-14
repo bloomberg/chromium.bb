@@ -22,6 +22,8 @@
 
 namespace syncer_v2 {
 struct DataTypeState;
+class ModelTypeSyncWorkerImpl;
+class ModelTypeSyncProxyImpl;
 }
 
 namespace syncer {
@@ -34,8 +36,6 @@ class CommitContributor;
 class DirectoryCommitContributor;
 class DirectoryUpdateHandler;
 class DirectoryTypeDebugInfoEmitter;
-class ModelTypeSyncWorkerImpl;
-class ModelTypeSyncProxyImpl;
 class UpdateHandler;
 
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
@@ -66,7 +66,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
       const syncer_v2::DataTypeState& data_type_state,
       const syncer_v2::UpdateResponseDataList& saved_pending_updates,
       const scoped_refptr<base::SequencedTaskRunner>& type_task_runner,
-      const base::WeakPtr<ModelTypeSyncProxyImpl>& proxy) override;
+      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy) override;
 
   // Disables the syncing of an off-thread type.
   //
@@ -120,7 +120,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   ScopedVector<DirectoryTypeDebugInfoEmitter>
       directory_type_debug_info_emitters_;
 
-  ScopedVector<ModelTypeSyncWorkerImpl> model_type_sync_workers_;
+  ScopedVector<syncer_v2::ModelTypeSyncWorkerImpl> model_type_sync_workers_;
 
   // Maps of UpdateHandlers and CommitContributors.
   // They do not own any of the objects they point to.

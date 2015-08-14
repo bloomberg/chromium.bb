@@ -63,7 +63,7 @@ class NonBlockingDataTypeController {
   // will only ever deal with a single type proxy.
   void InitializeType(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy);
+      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_sync_proxy);
 
   // Initialize the connection to the SyncContextProxy.
   //
@@ -125,7 +125,7 @@ class NonBlockingDataTypeController {
 
   // The ModelTypeSyncProxyImpl and its associated thread.  May be NULL.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtr<syncer::ModelTypeSyncProxyImpl> type_sync_proxy_;
+  base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl> type_sync_proxy_;
 
   // The SyncContextProxy that connects to the current sync backend.  May be
   // NULL.

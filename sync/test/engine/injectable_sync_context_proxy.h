@@ -9,26 +9,25 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 class ModelTypeSyncProxyImpl;
 class ModelTypeSyncWorker;
 
 // A SyncContextProxy implementation that, when a connection request is made,
 // initalizes a connection to a previously injected ModelTypeSyncProxyImpl.
-class InjectableSyncContextProxy : public syncer_v2::SyncContextProxy {
+class InjectableSyncContextProxy : public SyncContextProxy {
  public:
   explicit InjectableSyncContextProxy(ModelTypeSyncWorker* worker);
   ~InjectableSyncContextProxy() override;
 
   void ConnectTypeToSync(
-      ModelType type,
-      const syncer_v2::DataTypeState& data_type_state,
-      const syncer_v2::UpdateResponseDataList& pending_updates,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy)
-      override;
-  void Disconnect(ModelType type) override;
-  scoped_ptr<syncer_v2::SyncContextProxy> Clone() const override;
+      syncer::ModelType type,
+      const DataTypeState& data_type_state,
+      const UpdateResponseDataList& pending_updates,
+      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) override;
+  void Disconnect(syncer::ModelType type) override;
+  scoped_ptr<SyncContextProxy> Clone() const override;
 
   ModelTypeSyncWorker* GetWorker();
 

@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 MockModelTypeSyncWorker::MockModelTypeSyncWorker() {
 }
@@ -15,7 +15,7 @@ MockModelTypeSyncWorker::~MockModelTypeSyncWorker() {
 }
 
 void MockModelTypeSyncWorker::EnqueueForCommit(
-    const syncer_v2::CommitRequestDataList& list) {
+    const CommitRequestDataList& list) {
   commit_request_lists_.push_back(list);
 }
 
@@ -23,8 +23,8 @@ size_t MockModelTypeSyncWorker::GetNumCommitRequestLists() const {
   return commit_request_lists_.size();
 }
 
-syncer_v2::CommitRequestDataList
-MockModelTypeSyncWorker::GetNthCommitRequestList(size_t n) const {
+CommitRequestDataList MockModelTypeSyncWorker::GetNthCommitRequestList(
+    size_t n) const {
   DCHECK_LT(n, GetNumCommitRequestLists());
   return commit_request_lists_[n];
 }
@@ -33,11 +33,10 @@ bool MockModelTypeSyncWorker::HasCommitRequestForTagHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
-  for (std::vector<syncer_v2::CommitRequestDataList>::const_reverse_iterator
-           lists_it = commit_request_lists_.rbegin();
+  for (std::vector<CommitRequestDataList>::const_reverse_iterator lists_it =
+           commit_request_lists_.rbegin();
        lists_it != commit_request_lists_.rend(); ++lists_it) {
-    for (syncer_v2::CommitRequestDataList::const_iterator it =
-             lists_it->begin();
+    for (CommitRequestDataList::const_iterator it = lists_it->begin();
          it != lists_it->end(); ++it) {
       if (it->client_tag_hash == tag_hash) {
         return true;
@@ -48,16 +47,14 @@ bool MockModelTypeSyncWorker::HasCommitRequestForTagHash(
   return false;
 }
 
-syncer_v2::CommitRequestData
-MockModelTypeSyncWorker::GetLatestCommitRequestForTagHash(
+CommitRequestData MockModelTypeSyncWorker::GetLatestCommitRequestForTagHash(
     const std::string& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
-  for (std::vector<syncer_v2::CommitRequestDataList>::const_reverse_iterator
-           lists_it = commit_request_lists_.rbegin();
+  for (std::vector<CommitRequestDataList>::const_reverse_iterator lists_it =
+           commit_request_lists_.rbegin();
        lists_it != commit_request_lists_.rend(); ++lists_it) {
-    for (syncer_v2::CommitRequestDataList::const_iterator it =
-             lists_it->begin();
+    for (CommitRequestDataList::const_iterator it = lists_it->begin();
          it != lists_it->end(); ++it) {
       if (it->client_tag_hash == tag_hash) {
         return *it;
@@ -66,10 +63,10 @@ MockModelTypeSyncWorker::GetLatestCommitRequestForTagHash(
   }
 
   NOTREACHED() << "Could not find commit for tag hash " << tag_hash << ".";
-  return syncer_v2::CommitRequestData();
+  return CommitRequestData();
 }
 
-syncer_v2::UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
+UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
     int64 version_offset,
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
@@ -80,7 +77,7 @@ syncer_v2::UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
     SetServerVersion(tag_hash, version);
   }
 
-  syncer_v2::UpdateResponseData data;
+  UpdateResponseData data;
   data.id = GenerateId(tag_hash);
   data.client_tag_hash = tag_hash;
   data.response_version = version;
@@ -98,7 +95,7 @@ syncer_v2::UpdateResponseData MockModelTypeSyncWorker::UpdateFromServer(
   return data;
 }
 
-syncer_v2::UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
+UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
     int64 version_offset,
     const std::string& tag_hash) {
   int64 old_version = GetServerVersion(tag_hash);
@@ -107,7 +104,7 @@ syncer_v2::UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
     SetServerVersion(tag_hash, version);
   }
 
-  syncer_v2::UpdateResponseData data;
+  UpdateResponseData data;
   data.id = GenerateId(tag_hash);
   data.client_tag_hash = tag_hash;
   data.response_version = version;
@@ -124,11 +121,11 @@ syncer_v2::UpdateResponseData MockModelTypeSyncWorker::TombstoneFromServer(
   return data;
 }
 
-syncer_v2::CommitResponseData MockModelTypeSyncWorker::SuccessfulCommitResponse(
-    const syncer_v2::CommitRequestData& request_data) {
+CommitResponseData MockModelTypeSyncWorker::SuccessfulCommitResponse(
+    const CommitRequestData& request_data) {
   const std::string& client_tag_hash = request_data.client_tag_hash;
 
-  syncer_v2::CommitResponseData response_data;
+  CommitResponseData response_data;
 
   if (request_data.base_version == 0) {
     // Server assigns new ID to newly committed items.

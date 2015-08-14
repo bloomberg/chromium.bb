@@ -10,7 +10,7 @@
 #include "sync/syncable/syncable_util.h"
 #include "sync/util/time.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 scoped_ptr<EntityTracker> EntityTracker::FromServerUpdate(
     const std::string& id_string,
@@ -87,7 +87,7 @@ void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
                                        int64* sequence_number) const {
   // Set ID if we have a server-assigned ID.  Otherwise, it will be up to
   // our caller to assign a client-unique initial ID.
-  if (base_version_ != syncer_v2::kUncommittedVersion) {
+  if (base_version_ != kUncommittedVersion) {
     commit_entity->set_id_string(id_);
   }
 
@@ -97,8 +97,8 @@ void EntityTracker::PrepareCommitProto(sync_pb::SyncEntity* commit_entity,
   commit_entity->set_folder(false);
   commit_entity->set_name(non_unique_name_);
   if (!deleted_) {
-    commit_entity->set_ctime(TimeToProtoTime(ctime_));
-    commit_entity->set_mtime(TimeToProtoTime(mtime_));
+    commit_entity->set_ctime(syncer::TimeToProtoTime(ctime_));
+    commit_entity->set_mtime(syncer::TimeToProtoTime(mtime_));
     commit_entity->mutable_specifics()->CopyFrom(specifics_);
   }
 
@@ -201,13 +201,12 @@ void EntityTracker::ReceiveUpdate(int64 version) {
   }
 }
 
-bool EntityTracker::ReceivePendingUpdate(
-    const syncer_v2::UpdateResponseData& data) {
+bool EntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
   if (data.response_version < highest_gu_response_version_)
     return false;
 
   highest_gu_response_version_ = data.response_version;
-  pending_update_.reset(new syncer_v2::UpdateResponseData(data));
+  pending_update_.reset(new UpdateResponseData(data));
   ClearPendingCommit();
   return true;
 }
@@ -216,7 +215,7 @@ bool EntityTracker::HasPendingUpdate() const {
   return !!pending_update_;
 }
 
-syncer_v2::UpdateResponseData EntityTracker::GetPendingUpdate() const {
+UpdateResponseData EntityTracker::GetPendingUpdate() const {
   return *pending_update_;
 }
 
@@ -248,7 +247,7 @@ bool EntityTracker::IsInConflict() const {
 }
 
 bool EntityTracker::IsServerKnown() const {
-  return base_version_ != syncer_v2::kUncommittedVersion;
+  return base_version_ != kUncommittedVersion;
 }
 
 void EntityTracker::ClearPendingCommit() {

@@ -17,12 +17,18 @@
 #include "sync/util/cryptographer.h"
 #include "sync/util/time.h"
 
-namespace syncer {
+namespace syncer_v2 {
+
+using syncer::CommitContribution;
+using syncer::Cryptographer;
+using syncer::ModelType;
+using syncer::NudgeHandler;
+using syncer::SyncerError;
 
 ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     ModelType type,
-    const syncer_v2::DataTypeState& initial_state,
-    const syncer_v2::UpdateResponseDataList& saved_pending_updates,
+    const DataTypeState& initial_state,
+    const UpdateResponseDataList& saved_pending_updates,
     scoped_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
     scoped_ptr<ModelTypeSyncProxy> type_sync_proxy)
@@ -37,7 +43,7 @@ ModelTypeSyncWorkerImpl::ModelTypeSyncWorkerImpl(
     nudge_handler_->NudgeForInitialDownload(type_);
   }
 
-  for (syncer_v2::UpdateResponseDataList::const_iterator it =
+  for (UpdateResponseDataList::const_iterator it =
            saved_pending_updates.begin();
        it != saved_pending_updates.end(); ++it) {
     scoped_ptr<EntityTracker> entity_tracker = EntityTracker::FromServerUpdate(
@@ -95,15 +101,15 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
+    syncer::sessions::StatusController* status) {
   DCHECK(CalledOnValidThread());
 
   // TODO(rlarocque): Handle data type context conflicts.
   data_type_state_.type_context = mutated_context;
   data_type_state_.progress_marker = progress_marker;
 
-  syncer_v2::UpdateResponseDataList response_datas;
-  syncer_v2::UpdateResponseDataList pending_updates;
+  UpdateResponseDataList response_datas;
+  UpdateResponseDataList pending_updates;
 
   for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
        update_it != applicable_updates.end();
@@ -137,12 +143,12 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
     }
 
     // Prepare the message for the model thread.
-    syncer_v2::UpdateResponseData response_data;
+    UpdateResponseData response_data;
     response_data.id = update_entity->id_string();
     response_data.client_tag_hash = client_tag_hash;
     response_data.response_version = update_entity->version();
-    response_data.ctime = ProtoTimeToTime(update_entity->ctime());
-    response_data.mtime = ProtoTimeToTime(update_entity->mtime());
+    response_data.ctime = syncer::ProtoTimeToTime(update_entity->ctime());
+    response_data.mtime = syncer::ProtoTimeToTime(update_entity->mtime());
     response_data.non_unique_name = update_entity->name();
     response_data.deleted = update_entity->deleted();
 
@@ -185,10 +191,11 @@ SyncerError ModelTypeSyncWorkerImpl::ProcessGetUpdatesResponse(
   type_sync_proxy_->OnUpdateReceived(
       data_type_state_, response_datas, pending_updates);
 
-  return SYNCER_OK;
+  return syncer::SYNCER_OK;
 }
 
-void ModelTypeSyncWorkerImpl::ApplyUpdates(sessions::StatusController* status) {
+void ModelTypeSyncWorkerImpl::ApplyUpdates(
+    syncer::sessions::StatusController* status) {
   DCHECK(CalledOnValidThread());
   // This function is called only when we've finished a download cycle, ie. we
   // got a response with changes_remaining == 0.  If this is our first download
@@ -199,28 +206,27 @@ void ModelTypeSyncWorkerImpl::ApplyUpdates(sessions::StatusController* status) {
 
     data_type_state_.initial_sync_done = true;
 
-    type_sync_proxy_->OnUpdateReceived(data_type_state_,
-                                       syncer_v2::UpdateResponseDataList(),
-                                       syncer_v2::UpdateResponseDataList());
+    type_sync_proxy_->OnUpdateReceived(
+        data_type_state_, UpdateResponseDataList(), UpdateResponseDataList());
   }
 }
 
 void ModelTypeSyncWorkerImpl::PassiveApplyUpdates(
-    sessions::StatusController* status) {
+    syncer::sessions::StatusController* status) {
   NOTREACHED()
       << "Non-blocking types should never apply updates on sync thread.  "
       << "ModelType is: " << ModelTypeToString(type_);
 }
 
 void ModelTypeSyncWorkerImpl::EnqueueForCommit(
-    const syncer_v2::CommitRequestDataList& list) {
+    const CommitRequestDataList& list) {
   DCHECK(CalledOnValidThread());
 
   DCHECK(IsTypeInitialized())
       << "Asked to commit items before type was initialized.  "
       << "ModelType is: " << ModelTypeToString(type_);
 
-  for (syncer_v2::CommitRequestDataList::const_iterator it = list.begin();
+  for (CommitRequestDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     StorePendingCommit(*it);
   }
@@ -266,9 +272,9 @@ scoped_ptr<CommitContribution> ModelTypeSyncWorkerImpl::GetContribution(
 }
 
 void ModelTypeSyncWorkerImpl::StorePendingCommit(
-    const syncer_v2::CommitRequestData& request) {
+    const CommitRequestData& request) {
   if (!request.deleted) {
-    DCHECK_EQ(type_, GetModelTypeFromSpecifics(request.specifics));
+    DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(request.specifics));
   }
 
   EntityMap::const_iterator map_it = entities_.find(request.client_tag_hash);
@@ -293,8 +299,8 @@ void ModelTypeSyncWorkerImpl::StorePendingCommit(
 }
 
 void ModelTypeSyncWorkerImpl::OnCommitResponse(
-    const syncer_v2::CommitResponseDataList& response_list) {
-  for (syncer_v2::CommitResponseDataList::const_iterator response_it =
+    const CommitResponseDataList& response_list) {
+  for (CommitResponseDataList::const_iterator response_it =
            response_list.begin();
        response_it != response_list.end(); ++response_it) {
     const std::string client_tag_hash = response_it->client_tag_hash;
@@ -350,7 +356,7 @@ void ModelTypeSyncWorkerImpl::HelpInitializeCommitEntity(
 
   // Initial commits need our help to generate a client ID.
   if (!sync_entity->has_id_string()) {
-    DCHECK_EQ(syncer_v2::kUncommittedVersion, sync_entity->version());
+    DCHECK_EQ(kUncommittedVersion, sync_entity->version());
     // TODO(stanisc): This is incorrect for bookmarks for two reasons:
     // 1) Won't be able to match previously committed bookmarks to the ones
     //    with server ID.
@@ -385,7 +391,7 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
   DCHECK(cryptographer_);
 
   bool new_encryption_key = false;
-  syncer_v2::UpdateResponseDataList response_datas;
+  UpdateResponseDataList response_datas;
 
   const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
 
@@ -400,15 +406,14 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     if (it->second->HasPendingUpdate()) {
-      const syncer_v2::UpdateResponseData& saved_pending =
-          it->second->GetPendingUpdate();
+      const UpdateResponseData& saved_pending = it->second->GetPendingUpdate();
 
       // We assume all pending updates are encrypted items for which we
       // don't have the key.
       DCHECK(saved_pending.specifics.has_encrypted());
 
       if (cryptographer_->CanDecrypt(saved_pending.specifics.encrypted())) {
-        syncer_v2::UpdateResponseData decrypted_response = saved_pending;
+        UpdateResponseData decrypted_response = saved_pending;
         if (DecryptSpecifics(cryptographer_.get(),
                              saved_pending.specifics,
                              &decrypted_response.specifics)) {
@@ -428,7 +433,7 @@ void ModelTypeSyncWorkerImpl::OnCryptographerUpdated() {
                     "Delivering encryption key and %zd decrypted updates.",
                     response_datas.size());
     type_sync_proxy_->OnUpdateReceived(data_type_state_, response_datas,
-                                       syncer_v2::UpdateResponseDataList());
+                                       UpdateResponseDataList());
   }
 }
 

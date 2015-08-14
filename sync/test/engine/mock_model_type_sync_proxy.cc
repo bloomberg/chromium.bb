@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 MockModelTypeSyncProxy::MockModelTypeSyncProxy() : is_synchronous_(true) {
 }
@@ -15,8 +15,8 @@ MockModelTypeSyncProxy::~MockModelTypeSyncProxy() {
 }
 
 void MockModelTypeSyncProxy::OnCommitCompleted(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::CommitResponseDataList& response_list) {
+    const DataTypeState& type_state,
+    const CommitResponseDataList& response_list) {
   base::Closure task =
       base::Bind(&MockModelTypeSyncProxy::OnCommitCompletedImpl,
                  base::Unretained(this),
@@ -28,9 +28,9 @@ void MockModelTypeSyncProxy::OnCommitCompleted(
 }
 
 void MockModelTypeSyncProxy::OnUpdateReceived(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::UpdateResponseDataList& response_list,
-    const syncer_v2::UpdateResponseDataList& pending_updates) {
+    const DataTypeState& type_state,
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
   base::Closure task = base::Bind(&MockModelTypeSyncProxy::OnUpdateReceivedImpl,
                                   base::Unretained(this),
                                   type_state,
@@ -54,12 +54,12 @@ void MockModelTypeSyncProxy::RunQueuedTasks() {
   pending_tasks_.clear();
 }
 
-syncer_v2::CommitRequestData MockModelTypeSyncProxy::CommitRequest(
+CommitRequestData MockModelTypeSyncProxy::CommitRequest(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   const int64 base_version = GetBaseVersion(tag_hash);
 
-  syncer_v2::CommitRequestData data;
+  CommitRequestData data;
 
   if (HasServerAssignedId(tag_hash)) {
     data.id = GetServerAssignedId(tag_hash);
@@ -80,10 +80,10 @@ syncer_v2::CommitRequestData MockModelTypeSyncProxy::CommitRequest(
   return data;
 }
 
-syncer_v2::CommitRequestData MockModelTypeSyncProxy::DeleteRequest(
+CommitRequestData MockModelTypeSyncProxy::DeleteRequest(
     const std::string& tag_hash) {
   const int64 base_version = GetBaseVersion(tag_hash);
-  syncer_v2::CommitRequestData data;
+  CommitRequestData data;
 
   if (HasServerAssignedId(tag_hash)) {
     data.id = GetServerAssignedId(tag_hash);
@@ -107,20 +107,19 @@ size_t MockModelTypeSyncProxy::GetNumUpdateResponses() const {
   return received_update_responses_.size();
 }
 
-syncer_v2::UpdateResponseDataList MockModelTypeSyncProxy::GetNthUpdateResponse(
+UpdateResponseDataList MockModelTypeSyncProxy::GetNthUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return received_update_responses_[n];
 }
 
-syncer_v2::UpdateResponseDataList MockModelTypeSyncProxy::GetNthPendingUpdates(
+UpdateResponseDataList MockModelTypeSyncProxy::GetNthPendingUpdates(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return received_pending_updates_[n];
 }
 
-syncer_v2::DataTypeState
-MockModelTypeSyncProxy::GetNthTypeStateReceivedInUpdateResponse(
+DataTypeState MockModelTypeSyncProxy::GetNthTypeStateReceivedInUpdateResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return type_states_received_on_update_[n];
@@ -130,14 +129,13 @@ size_t MockModelTypeSyncProxy::GetNumCommitResponses() const {
   return received_commit_responses_.size();
 }
 
-syncer_v2::CommitResponseDataList MockModelTypeSyncProxy::GetNthCommitResponse(
+CommitResponseDataList MockModelTypeSyncProxy::GetNthCommitResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return received_commit_responses_[n];
 }
 
-syncer_v2::DataTypeState
-MockModelTypeSyncProxy::GetNthTypeStateReceivedInCommitResponse(
+DataTypeState MockModelTypeSyncProxy::GetNthTypeStateReceivedInCommitResponse(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return type_states_received_on_commit_[n];
@@ -145,41 +143,40 @@ MockModelTypeSyncProxy::GetNthTypeStateReceivedInCommitResponse(
 
 bool MockModelTypeSyncProxy::HasUpdateResponse(
     const std::string& tag_hash) const {
-  std::map<const std::string, syncer_v2::UpdateResponseData>::const_iterator
-      it = update_response_items_.find(tag_hash);
+  std::map<const std::string, UpdateResponseData>::const_iterator it =
+      update_response_items_.find(tag_hash);
   return it != update_response_items_.end();
 }
 
-syncer_v2::UpdateResponseData MockModelTypeSyncProxy::GetUpdateResponse(
+UpdateResponseData MockModelTypeSyncProxy::GetUpdateResponse(
     const std::string& tag_hash) const {
   DCHECK(HasUpdateResponse(tag_hash));
-  std::map<const std::string, syncer_v2::UpdateResponseData>::const_iterator
-      it = update_response_items_.find(tag_hash);
+  std::map<const std::string, UpdateResponseData>::const_iterator it =
+      update_response_items_.find(tag_hash);
   return it->second;
 }
 
 bool MockModelTypeSyncProxy::HasCommitResponse(
     const std::string& tag_hash) const {
-  std::map<const std::string, syncer_v2::CommitResponseData>::const_iterator
-      it = commit_response_items_.find(tag_hash);
+  std::map<const std::string, CommitResponseData>::const_iterator it =
+      commit_response_items_.find(tag_hash);
   return it != commit_response_items_.end();
 }
 
-syncer_v2::CommitResponseData MockModelTypeSyncProxy::GetCommitResponse(
+CommitResponseData MockModelTypeSyncProxy::GetCommitResponse(
     const std::string& tag_hash) const {
   DCHECK(HasCommitResponse(tag_hash));
-  std::map<const std::string, syncer_v2::CommitResponseData>::const_iterator
-      it = commit_response_items_.find(tag_hash);
+  std::map<const std::string, CommitResponseData>::const_iterator it =
+      commit_response_items_.find(tag_hash);
   return it->second;
 }
 
 void MockModelTypeSyncProxy::OnCommitCompletedImpl(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::CommitResponseDataList& response_list) {
+    const DataTypeState& type_state,
+    const CommitResponseDataList& response_list) {
   received_commit_responses_.push_back(response_list);
   type_states_received_on_commit_.push_back(type_state);
-  for (syncer_v2::CommitResponseDataList::const_iterator it =
-           response_list.begin();
+  for (CommitResponseDataList::const_iterator it = response_list.begin();
        it != response_list.end(); ++it) {
     commit_response_items_.insert(std::make_pair(it->client_tag_hash, *it));
 
@@ -190,14 +187,13 @@ void MockModelTypeSyncProxy::OnCommitCompletedImpl(
 }
 
 void MockModelTypeSyncProxy::OnUpdateReceivedImpl(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::UpdateResponseDataList& response_list,
-    const syncer_v2::UpdateResponseDataList& pending_updates) {
+    const DataTypeState& type_state,
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
   received_update_responses_.push_back(response_list);
   received_pending_updates_.push_back(pending_updates);
   type_states_received_on_update_.push_back(type_state);
-  for (syncer_v2::UpdateResponseDataList::const_iterator it =
-           response_list.begin();
+  for (UpdateResponseDataList::const_iterator it = response_list.begin();
        it != response_list.end(); ++it) {
     update_response_items_.insert(std::make_pair(it->client_tag_hash, *it));
 
@@ -234,7 +230,7 @@ int64 MockModelTypeSyncProxy::GetBaseVersion(
   std::map<const std::string, int64>::const_iterator it =
       base_versions_.find(tag_hash);
   if (it == base_versions_.end()) {
-    return syncer_v2::kUncommittedVersion;
+    return kUncommittedVersion;
   } else {
     return it->second;
   }

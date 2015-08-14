@@ -14,9 +14,9 @@
 #include "sync/test/engine/mock_model_type_sync_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
-static const ModelType kModelType = PREFERENCES;
+static const syncer::ModelType kModelType = syncer::PREFERENCES;
 
 // Tests the sync engine parts of ModelTypeSyncProxyImpl.
 //
@@ -88,23 +88,21 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   bool HasPendingUpdate(const std::string& tag) const;
 
   // Returns the pending update with the specified tag.
-  syncer_v2::UpdateResponseData GetPendingUpdate(const std::string& tag) const;
+  UpdateResponseData GetPendingUpdate(const std::string& tag) const;
 
   // Returns the number of pending updates.
   size_t GetNumPendingUpdates() const;
 
   // Read emitted commit requests as batches.
   size_t GetNumCommitRequestLists();
-  syncer_v2::CommitRequestDataList GetNthCommitRequestList(size_t n);
+  CommitRequestDataList GetNthCommitRequestList(size_t n);
 
   // Read emitted commit requests by tag, most recent only.
   bool HasCommitRequestForTag(const std::string& tag);
-  syncer_v2::CommitRequestData GetLatestCommitRequestForTag(
-      const std::string& tag);
+  CommitRequestData GetLatestCommitRequestForTag(const std::string& tag);
 
   // Sends the type sync proxy a successful commit response.
-  void SuccessfulCommitResponse(
-      const syncer_v2::CommitRequestData& request_data);
+  void SuccessfulCommitResponse(const CommitRequestData& request_data);
 
   // Sends the type sync proxy an updated DataTypeState to let it know that
   // the desired encryption key has changed.
@@ -130,7 +128,7 @@ class ModelTypeSyncProxyImplTest : public ::testing::Test {
   scoped_ptr<InjectableSyncContextProxy> injectable_sync_context_proxy_;
   scoped_ptr<ModelTypeSyncProxyImpl> type_sync_proxy_;
 
-  syncer_v2::DataTypeState data_type_state_;
+  DataTypeState data_type_state_;
 };
 
 ModelTypeSyncProxyImplTest::ModelTypeSyncProxyImplTest()
@@ -193,7 +191,7 @@ void ModelTypeSyncProxyImplTest::DeleteItem(const std::string& tag) {
 
 void ModelTypeSyncProxyImplTest::OnInitialSyncDone() {
   data_type_state_.initial_sync_done = true;
-  syncer_v2::UpdateResponseDataList empty_update_list;
+  UpdateResponseDataList empty_update_list;
 
   type_sync_proxy_->OnUpdateReceived(
       data_type_state_, empty_update_list, empty_update_list);
@@ -203,13 +201,13 @@ void ModelTypeSyncProxyImplTest::UpdateFromServer(int64 version_offset,
                                                   const std::string& tag,
                                                   const std::string& value) {
   const std::string tag_hash = GenerateTagHash(tag);
-  syncer_v2::UpdateResponseData data = mock_worker_->UpdateFromServer(
+  UpdateResponseData data = mock_worker_->UpdateFromServer(
       version_offset, tag_hash, GenerateSpecifics(tag, value));
 
-  syncer_v2::UpdateResponseDataList list;
+  UpdateResponseDataList list;
   list.push_back(data);
   type_sync_proxy_->OnUpdateReceived(data_type_state_, list,
-                                     syncer_v2::UpdateResponseDataList());
+                                     UpdateResponseDataList());
 }
 
 void ModelTypeSyncProxyImplTest::PendingUpdateFromServer(
@@ -218,14 +216,14 @@ void ModelTypeSyncProxyImplTest::PendingUpdateFromServer(
     const std::string& value,
     const std::string& key_name) {
   const std::string tag_hash = GenerateTagHash(tag);
-  syncer_v2::UpdateResponseData data = mock_worker_->UpdateFromServer(
+  UpdateResponseData data = mock_worker_->UpdateFromServer(
       version_offset, tag_hash,
       GenerateEncryptedSpecifics(tag, value, key_name));
 
-  syncer_v2::UpdateResponseDataList list;
+  UpdateResponseDataList list;
   list.push_back(data);
-  type_sync_proxy_->OnUpdateReceived(data_type_state_,
-                                     syncer_v2::UpdateResponseDataList(), list);
+  type_sync_proxy_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
+                                     list);
 }
 
 void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
@@ -233,21 +231,20 @@ void ModelTypeSyncProxyImplTest::TombstoneFromServer(int64 version_offset,
   // Overwrite the existing server version if this is the new highest version.
   std::string tag_hash = GenerateTagHash(tag);
 
-  syncer_v2::UpdateResponseData data =
+  UpdateResponseData data =
       mock_worker_->TombstoneFromServer(version_offset, tag_hash);
 
-  syncer_v2::UpdateResponseDataList list;
+  UpdateResponseDataList list;
   list.push_back(data);
   type_sync_proxy_->OnUpdateReceived(data_type_state_, list,
-                                     syncer_v2::UpdateResponseDataList());
+                                     UpdateResponseDataList());
 }
 
 bool ModelTypeSyncProxyImplTest::HasPendingUpdate(
     const std::string& tag) const {
   const std::string client_tag_hash = GenerateTagHash(tag);
-  const syncer_v2::UpdateResponseDataList list =
-      type_sync_proxy_->GetPendingUpdates();
-  for (syncer_v2::UpdateResponseDataList::const_iterator it = list.begin();
+  const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
+  for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     if (it->client_tag_hash == client_tag_hash)
       return true;
@@ -255,19 +252,18 @@ bool ModelTypeSyncProxyImplTest::HasPendingUpdate(
   return false;
 }
 
-syncer_v2::UpdateResponseData ModelTypeSyncProxyImplTest::GetPendingUpdate(
+UpdateResponseData ModelTypeSyncProxyImplTest::GetPendingUpdate(
     const std::string& tag) const {
   DCHECK(HasPendingUpdate(tag));
   const std::string client_tag_hash = GenerateTagHash(tag);
-  const syncer_v2::UpdateResponseDataList list =
-      type_sync_proxy_->GetPendingUpdates();
-  for (syncer_v2::UpdateResponseDataList::const_iterator it = list.begin();
+  const UpdateResponseDataList list = type_sync_proxy_->GetPendingUpdates();
+  for (UpdateResponseDataList::const_iterator it = list.begin();
        it != list.end(); ++it) {
     if (it->client_tag_hash == client_tag_hash)
       return *it;
   }
   NOTREACHED();
-  return syncer_v2::UpdateResponseData();
+  return UpdateResponseData();
 }
 
 size_t ModelTypeSyncProxyImplTest::GetNumPendingUpdates() const {
@@ -275,8 +271,8 @@ size_t ModelTypeSyncProxyImplTest::GetNumPendingUpdates() const {
 }
 
 void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
-    const syncer_v2::CommitRequestData& request_data) {
-  syncer_v2::CommitResponseDataList list;
+    const CommitRequestData& request_data) {
+  CommitResponseDataList list;
   list.push_back(mock_worker_->SuccessfulCommitResponse(request_data));
   type_sync_proxy_->OnCommitCompleted(data_type_state_, list);
 }
@@ -284,9 +280,8 @@ void ModelTypeSyncProxyImplTest::SuccessfulCommitResponse(
 void ModelTypeSyncProxyImplTest::UpdateDesiredEncryptionKey(
     const std::string& key_name) {
   data_type_state_.encryption_key_name = key_name;
-  type_sync_proxy_->OnUpdateReceived(data_type_state_,
-                                     syncer_v2::UpdateResponseDataList(),
-                                     syncer_v2::UpdateResponseDataList());
+  type_sync_proxy_->OnUpdateReceived(data_type_state_, UpdateResponseDataList(),
+                                     UpdateResponseDataList());
 }
 
 void ModelTypeSyncProxyImplTest::SetServerEncryptionKey(
@@ -296,7 +291,7 @@ void ModelTypeSyncProxyImplTest::SetServerEncryptionKey(
 
 std::string ModelTypeSyncProxyImplTest::GenerateTagHash(
     const std::string& tag) {
-  return syncable::GenerateSyncableHash(kModelType, tag);
+  return syncer::syncable::GenerateSyncableHash(kModelType, tag);
 }
 
 sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateSpecifics(
@@ -315,7 +310,7 @@ sync_pb::EntitySpecifics ModelTypeSyncProxyImplTest::GenerateEncryptedSpecifics(
     const std::string& value,
     const std::string& key_name) {
   sync_pb::EntitySpecifics specifics;
-  AddDefaultFieldValue(kModelType, &specifics);
+  syncer::AddDefaultFieldValue(kModelType, &specifics);
   specifics.mutable_encrypted()->set_key_name(key_name);
   specifics.mutable_encrypted()->set_blob("BLOB" + key_name);
   return specifics;
@@ -325,8 +320,8 @@ size_t ModelTypeSyncProxyImplTest::GetNumCommitRequestLists() {
   return mock_worker_->GetNumCommitRequestLists();
 }
 
-syncer_v2::CommitRequestDataList
-ModelTypeSyncProxyImplTest::GetNthCommitRequestList(size_t n) {
+CommitRequestDataList ModelTypeSyncProxyImplTest::GetNthCommitRequestList(
+    size_t n) {
   return mock_worker_->GetNthCommitRequestList(n);
 }
 
@@ -336,8 +331,7 @@ bool ModelTypeSyncProxyImplTest::HasCommitRequestForTag(
   return mock_worker_->HasCommitRequestForTagHash(tag_hash);
 }
 
-syncer_v2::CommitRequestData
-ModelTypeSyncProxyImplTest::GetLatestCommitRequestForTag(
+CommitRequestData ModelTypeSyncProxyImplTest::GetLatestCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_worker_->GetLatestCommitRequestForTagHash(tag_hash);
@@ -354,11 +348,10 @@ TEST_F(ModelTypeSyncProxyImplTest, CreateLocalItem) {
   // Verify the commit request this operation has triggered.
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_data = GetLatestCommitRequestForTag("tag1");
 
   EXPECT_TRUE(tag1_data.id.empty());
-  EXPECT_EQ(syncer_v2::kUncommittedVersion, tag1_data.base_version);
+  EXPECT_EQ(kUncommittedVersion, tag1_data.base_version);
   EXPECT_FALSE(tag1_data.ctime.is_null());
   EXPECT_FALSE(tag1_data.mtime.is_null());
   EXPECT_EQ("tag1", tag1_data.non_unique_name);
@@ -376,15 +369,13 @@ TEST_F(ModelTypeSyncProxyImplTest, CreateAndModifyLocalItem) {
   WriteItem("tag1", "value1");
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_v1_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v1_data = GetLatestCommitRequestForTag("tag1");
 
   WriteItem("tag1", "value2");
   EXPECT_EQ(2U, GetNumCommitRequestLists());
 
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_v2_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v2_data = GetLatestCommitRequestForTag("tag1");
 
   // Test some of the relations between old and new commit requests.
   EXPECT_EQ(tag1_v1_data.specifics.preference().value(), "value1");
@@ -392,7 +383,7 @@ TEST_F(ModelTypeSyncProxyImplTest, CreateAndModifyLocalItem) {
 
   // Perform a thorough examination of the update-generated request.
   EXPECT_TRUE(tag1_v2_data.id.empty());
-  EXPECT_EQ(syncer_v2::kUncommittedVersion, tag1_v2_data.base_version);
+  EXPECT_EQ(kUncommittedVersion, tag1_v2_data.base_version);
   EXPECT_FALSE(tag1_v2_data.ctime.is_null());
   EXPECT_FALSE(tag1_v2_data.mtime.is_null());
   EXPECT_EQ("tag1", tag1_v2_data.non_unique_name);
@@ -421,19 +412,17 @@ TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown) {
   WriteItem("tag1", "value1");
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_v1_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v1_data = GetLatestCommitRequestForTag("tag1");
 
   DeleteItem("tag1");
   EXPECT_EQ(2U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_v2_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v2_data = GetLatestCommitRequestForTag("tag1");
 
   EXPECT_GT(tag1_v2_data.sequence_number, tag1_v1_data.sequence_number);
 
   EXPECT_TRUE(tag1_v2_data.id.empty());
-  EXPECT_EQ(syncer_v2::kUncommittedVersion, tag1_v2_data.base_version);
+  EXPECT_EQ(kUncommittedVersion, tag1_v2_data.base_version);
   EXPECT_TRUE(tag1_v2_data.deleted);
 }
 
@@ -448,8 +437,7 @@ TEST_F(ModelTypeSyncProxyImplTest, DeleteServerUnknown_RacyCommitResponse) {
   WriteItem("tag1", "value1");
   EXPECT_EQ(1U, GetNumCommitRequestLists());
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_v1_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v1_data = GetLatestCommitRequestForTag("tag1");
 
   DeleteItem("tag1");
   EXPECT_EQ(2U, GetNumCommitRequestLists());
@@ -585,7 +573,7 @@ TEST_F(ModelTypeSyncProxyImplTest, ReceivePendingUpdates) {
   PendingUpdateFromServer(5, "tag1", "value1", "key1");
   EXPECT_EQ(1U, GetNumPendingUpdates());
   ASSERT_TRUE(HasPendingUpdate("tag1"));
-  syncer_v2::UpdateResponseData data1 = GetPendingUpdate("tag1");
+  UpdateResponseData data1 = GetPendingUpdate("tag1");
   EXPECT_EQ(5, data1.response_version);
 
   // Receive an updated version of a pending update.
@@ -593,7 +581,7 @@ TEST_F(ModelTypeSyncProxyImplTest, ReceivePendingUpdates) {
   PendingUpdateFromServer(10, "tag1", "value15", "key1");
   EXPECT_EQ(1U, GetNumPendingUpdates());
   ASSERT_TRUE(HasPendingUpdate("tag1"));
-  syncer_v2::UpdateResponseData data2 = GetPendingUpdate("tag1");
+  UpdateResponseData data2 = GetPendingUpdate("tag1");
   EXPECT_EQ(15, data2.response_version);
 
   // Receive a stale version of a pending update.
@@ -601,7 +589,7 @@ TEST_F(ModelTypeSyncProxyImplTest, ReceivePendingUpdates) {
   PendingUpdateFromServer(-3, "tag1", "value12", "key1");
   EXPECT_EQ(1U, GetNumPendingUpdates());
   ASSERT_TRUE(HasPendingUpdate("tag1"));
-  syncer_v2::UpdateResponseData data3 = GetPendingUpdate("tag1");
+  UpdateResponseData data3 = GetPendingUpdate("tag1");
   EXPECT_EQ(15, data3.response_version);
 }
 
@@ -642,8 +630,7 @@ TEST_F(ModelTypeSyncProxyImplTest, ReEncryptCommitsWithNewKey) {
   // Commit an item.
   WriteItem("tag1", "value1");
   ASSERT_TRUE(HasCommitRequestForTag("tag1"));
-  const syncer_v2::CommitRequestData& tag1_v1_data =
-      GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag1_v1_data = GetLatestCommitRequestForTag("tag1");
   SuccessfulCommitResponse(tag1_v1_data);
 
   // Create another item and don't wait for its commit response.
@@ -658,10 +645,8 @@ TEST_F(ModelTypeSyncProxyImplTest, ReEncryptCommitsWithNewKey) {
   ASSERT_EQ(3U, GetNumCommitRequestLists());
   EXPECT_EQ(2U, GetNthCommitRequestList(2).size());
 
-  const syncer_v2::CommitRequestData& tag1_enc =
-      GetLatestCommitRequestForTag("tag1");
-  const syncer_v2::CommitRequestData& tag2_enc =
-      GetLatestCommitRequestForTag("tag2");
+  const CommitRequestData& tag1_enc = GetLatestCommitRequestForTag("tag1");
+  const CommitRequestData& tag2_enc = GetLatestCommitRequestForTag("tag2");
 
   SuccessfulCommitResponse(tag1_enc);
   SuccessfulCommitResponse(tag2_enc);

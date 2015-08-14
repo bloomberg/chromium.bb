@@ -11,7 +11,7 @@
 #include "sync/engine/model_type_sync_worker.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Receives and records commit requests sent through the ModelTypeSyncWorker.
 //
@@ -24,13 +24,13 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   ~MockModelTypeSyncWorker() override;
 
   // Implementation of ModelTypeSyncWorker.
-  void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override;
+  void EnqueueForCommit(const CommitRequestDataList& list) override;
 
   // Getters to inspect the requests sent to this object.
   size_t GetNumCommitRequestLists() const;
-  syncer_v2::CommitRequestDataList GetNthCommitRequestList(size_t n) const;
+  CommitRequestDataList GetNthCommitRequestList(size_t n) const;
   bool HasCommitRequestForTagHash(const std::string& tag_hash) const;
-  syncer_v2::CommitRequestData GetLatestCommitRequestForTagHash(
+  CommitRequestData GetLatestCommitRequestForTagHash(
       const std::string& tag_hash) const;
 
   // Functions to produce state as though it came from a real server and had
@@ -42,21 +42,20 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   // The |version_offset| field can be used to emulate stale data (ie. versions
   // going backwards), reflections and redeliveries (ie. several instances of
   // the same version) or new updates.
-  syncer_v2::UpdateResponseData UpdateFromServer(
+  UpdateResponseData UpdateFromServer(
       int64 version_offset,
       const std::string& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
 
   // Returns an UpdateResponseData representing a tombstone update from the
   // server.  Updates server state accordingly.
-  syncer_v2::UpdateResponseData TombstoneFromServer(
-      int64 version_offset,
-      const std::string& tag_hash);
+  UpdateResponseData TombstoneFromServer(int64 version_offset,
+                                         const std::string& tag_hash);
 
   // Returns a commit response that indicates a successful commit of the
   // given |request_data|.  Updates server state accordingly.
-  syncer_v2::CommitResponseData SuccessfulCommitResponse(
-      const syncer_v2::CommitRequestData& request_data);
+  CommitResponseData SuccessfulCommitResponse(
+      const CommitRequestData& request_data);
 
   // Sets the encryption key name used for updates from the server.
   // (ie. the key other clients are using to encrypt their commits.)
@@ -72,7 +71,7 @@ class MockModelTypeSyncWorker : public ModelTypeSyncWorker {
   void SetServerVersion(const std::string& tag_hash, int64 version);
 
   // A record of past commits requests.
-  std::vector<syncer_v2::CommitRequestDataList> commit_request_lists_;
+  std::vector<CommitRequestDataList> commit_request_lists_;
 
   // Map of versions by client tag.
   // This is an essential part of the mocked server state.

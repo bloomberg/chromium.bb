@@ -7,7 +7,7 @@
 
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Interface used by a synced data type to issue requests to the sync backend.
 class SYNC_EXPORT_PRIVATE ModelTypeSyncWorker {
@@ -16,8 +16,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncWorker {
   virtual ~ModelTypeSyncWorker();
 
   // Entry point for the ModelTypeSyncProxy to send commit requests.
-  virtual void EnqueueForCommit(
-      const syncer_v2::CommitRequestDataList& list) = 0;
+  virtual void EnqueueForCommit(const CommitRequestDataList& list) = 0;
 };
 
 }  // namespace syncer

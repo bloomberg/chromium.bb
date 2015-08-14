@@ -11,15 +11,14 @@
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/syncable/syncable_util.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
-ModelTypeSyncProxyImpl::ModelTypeSyncProxyImpl(ModelType type)
+ModelTypeSyncProxyImpl::ModelTypeSyncProxyImpl(syncer::ModelType type)
     : type_(type),
       is_preferred_(false),
       is_connected_(false),
       weak_ptr_factory_for_ui_(this),
-      weak_ptr_factory_for_sync_(this) {
-}
+      weak_ptr_factory_for_sync_(this) {}
 
 ModelTypeSyncProxyImpl::~ModelTypeSyncProxyImpl() {
 }
@@ -34,13 +33,13 @@ bool ModelTypeSyncProxyImpl::IsConnected() const {
   return is_connected_;
 }
 
-ModelType ModelTypeSyncProxyImpl::GetModelType() const {
+syncer::ModelType ModelTypeSyncProxyImpl::GetModelType() const {
   DCHECK(CalledOnValidThread());
   return type_;
 }
 
 void ModelTypeSyncProxyImpl::Enable(
-    scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy) {
+    scoped_ptr<SyncContextProxy> sync_context_proxy) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Asked to enable " << ModelTypeToString(type_);
 
@@ -50,7 +49,7 @@ void ModelTypeSyncProxyImpl::Enable(
   data_type_state_.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(type_));
 
-  syncer_v2::UpdateResponseDataList saved_pending_updates = GetPendingUpdates();
+  UpdateResponseDataList saved_pending_updates = GetPendingUpdates();
   sync_context_proxy_ = sync_context_proxy.Pass();
   sync_context_proxy_->ConnectTypeToSync(
       GetModelType(),
@@ -100,10 +99,10 @@ void ModelTypeSyncProxyImpl::OnConnect(scoped_ptr<ModelTypeSyncWorker> worker) {
 
 void ModelTypeSyncProxyImpl::Put(const std::string& client_tag,
                                  const sync_pb::EntitySpecifics& specifics) {
-  DCHECK_EQ(type_, GetModelTypeFromSpecifics(specifics));
+  DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(specifics));
 
   const std::string client_tag_hash(
-      syncable::GenerateSyncableHash(type_, client_tag));
+      syncer::syncable::GenerateSyncableHash(type_, client_tag));
 
   EntityMap::const_iterator it = entities_.find(client_tag_hash);
   if (it == entities_.end()) {
@@ -120,7 +119,7 @@ void ModelTypeSyncProxyImpl::Put(const std::string& client_tag,
 
 void ModelTypeSyncProxyImpl::Delete(const std::string& client_tag) {
   const std::string client_tag_hash(
-      syncable::GenerateSyncableHash(type_, client_tag));
+      syncer::syncable::GenerateSyncableHash(type_, client_tag));
 
   EntityMap::const_iterator it = entities_.find(client_tag_hash);
   if (it == entities_.end()) {
@@ -137,7 +136,7 @@ void ModelTypeSyncProxyImpl::Delete(const std::string& client_tag) {
 }
 
 void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
-  syncer_v2::CommitRequestDataList commit_requests;
+  CommitRequestDataList commit_requests;
 
   // Don't bother sending anything if there's no one to send to.
   if (!IsConnected())
@@ -151,7 +150,7 @@ void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
     if (it->second->RequiresCommitRequest()) {
-      syncer_v2::CommitRequestData request;
+      CommitRequestData request;
       it->second->InitializeCommitRequestData(&request);
       commit_requests.push_back(request);
       it->second->SetCommitRequestInProgress();
@@ -163,14 +162,13 @@ void ModelTypeSyncProxyImpl::FlushPendingCommitRequests() {
 }
 
 void ModelTypeSyncProxyImpl::OnCommitCompleted(
-    const syncer_v2::DataTypeState& type_state,
-    const syncer_v2::CommitResponseDataList& response_list) {
+    const DataTypeState& type_state,
+    const CommitResponseDataList& response_list) {
   data_type_state_ = type_state;
 
-  for (syncer_v2::CommitResponseDataList::const_iterator list_it =
-           response_list.begin();
+  for (CommitResponseDataList::const_iterator list_it = response_list.begin();
        list_it != response_list.end(); ++list_it) {
-    const syncer_v2::CommitResponseData& response_data = *list_it;
+    const CommitResponseData& response_data = *list_it;
     const std::string& client_tag_hash = response_data.client_tag_hash;
 
     EntityMap::const_iterator it = entities_.find(client_tag_hash);
@@ -188,18 +186,17 @@ void ModelTypeSyncProxyImpl::OnCommitCompleted(
 }
 
 void ModelTypeSyncProxyImpl::OnUpdateReceived(
-    const syncer_v2::DataTypeState& data_type_state,
-    const syncer_v2::UpdateResponseDataList& response_list,
-    const syncer_v2::UpdateResponseDataList& pending_updates) {
+    const DataTypeState& data_type_state,
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
   bool got_new_encryption_requirements = data_type_state_.encryption_key_name !=
                                          data_type_state.encryption_key_name;
 
   data_type_state_ = data_type_state;
 
-  for (syncer_v2::UpdateResponseDataList::const_iterator list_it =
-           response_list.begin();
+  for (UpdateResponseDataList::const_iterator list_it = response_list.begin();
        list_it != response_list.end(); ++list_it) {
-    const syncer_v2::UpdateResponseData& response_data = *list_it;
+    const UpdateResponseData& response_data = *list_it;
     const std::string& client_tag_hash = response_data.client_tag_hash;
 
     // If we're being asked to apply an update to this entity, this overrides
@@ -244,23 +241,20 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
   }
 
   // Save pending updates in the appropriate data structure.
-  for (syncer_v2::UpdateResponseDataList::const_iterator list_it =
-           pending_updates.begin();
+  for (UpdateResponseDataList::const_iterator list_it = pending_updates.begin();
        list_it != pending_updates.end(); ++list_it) {
-    const syncer_v2::UpdateResponseData& update = *list_it;
+    const UpdateResponseData& update = *list_it;
     const std::string& client_tag_hash = update.client_tag_hash;
 
     UpdateMap::const_iterator lookup_it =
         pending_updates_map_.find(client_tag_hash);
     if (lookup_it == pending_updates_map_.end()) {
       pending_updates_map_.insert(
-          client_tag_hash,
-          make_scoped_ptr(new syncer_v2::UpdateResponseData(update)));
+          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update)));
     } else if (lookup_it->second->response_version <= update.response_version) {
       pending_updates_map_.erase(lookup_it);
       pending_updates_map_.insert(
-          client_tag_hash,
-          make_scoped_ptr(new syncer_v2::UpdateResponseData(update)));
+          client_tag_hash, make_scoped_ptr(new UpdateResponseData(update)));
     } else {
       // Received update is stale, do not overwrite existing.
     }
@@ -281,8 +275,8 @@ void ModelTypeSyncProxyImpl::OnUpdateReceived(
   // TODO: Persist the new data on disk.
 }
 
-syncer_v2::UpdateResponseDataList ModelTypeSyncProxyImpl::GetPendingUpdates() {
-  syncer_v2::UpdateResponseDataList pending_updates_list;
+UpdateResponseDataList ModelTypeSyncProxyImpl::GetPendingUpdates() {
+  UpdateResponseDataList pending_updates_list;
   for (UpdateMap::const_iterator it = pending_updates_map_.begin();
        it != pending_updates_map_.end();
        ++it) {
@@ -304,7 +298,7 @@ void ModelTypeSyncProxyImpl::ClearSyncState() {
     it->second->ClearSyncState();
   }
   pending_updates_map_.clear();
-  data_type_state_ = syncer_v2::DataTypeState();
+  data_type_state_ = DataTypeState();
 }
 
 }  // namespace syncer

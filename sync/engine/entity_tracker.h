@@ -15,9 +15,6 @@
 
 namespace syncer_v2 {
 struct UpdateResponseData;
-}  // namespace syncer_v2
-
-namespace syncer {
 
 // Manages the pending commit and update state for an entity on the sync
 // thread.
@@ -92,11 +89,11 @@ class SYNC_EXPORT EntityTracker {
   // Returns true if the tracker decides this item is worth keeping.  Returns
   // false if the item is discarded, which could happen if the version number
   // is out of date.
-  bool ReceivePendingUpdate(const syncer_v2::UpdateResponseData& data);
+  bool ReceivePendingUpdate(const UpdateResponseData& data);
 
   // Functions to fetch the latest pending update.
   bool HasPendingUpdate() const;
-  syncer_v2::UpdateResponseData GetPendingUpdate() const;
+  UpdateResponseData GetPendingUpdate() const;
 
   // Clears the pending update.  Allows us to resume regular commit behavior.
   void ClearPendingUpdate();
@@ -169,7 +166,7 @@ class SYNC_EXPORT EntityTracker {
   // An update for this item which can't be applied right now.  The presence of
   // an pending update prevents commits.  As of this writing, the only source
   // of pending updates is updates we can't decrypt right now.
-  scoped_ptr<syncer_v2::UpdateResponseData> pending_update_;
+  scoped_ptr<UpdateResponseData> pending_update_;
 
   DISALLOW_COPY_AND_ASSIGN(EntityTracker);
 };

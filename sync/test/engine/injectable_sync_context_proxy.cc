@@ -7,7 +7,7 @@
 #include "sync/engine/model_type_sync_proxy_impl.h"
 #include "sync/engine/model_type_sync_worker.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 InjectableSyncContextProxy::InjectableSyncContextProxy(
     ModelTypeSyncWorker* worker)
@@ -19,9 +19,9 @@ InjectableSyncContextProxy::~InjectableSyncContextProxy() {
 
 void InjectableSyncContextProxy::ConnectTypeToSync(
     syncer::ModelType type,
-    const syncer_v2::DataTypeState& data_type_state,
-    const syncer_v2::UpdateResponseDataList& response_list,
-    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+    const DataTypeState& data_type_state,
+    const UpdateResponseDataList& response_list,
+    const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) {
   // This class is allowed to participate in only one connection.
   DCHECK(!is_worker_connected_);
   is_worker_connected_ = true;
@@ -38,11 +38,9 @@ void InjectableSyncContextProxy::Disconnect(syncer::ModelType type) {
   worker_ = NULL;
 }
 
-scoped_ptr<syncer_v2::SyncContextProxy> InjectableSyncContextProxy::Clone()
-    const {
+scoped_ptr<SyncContextProxy> InjectableSyncContextProxy::Clone() const {
   // This confuses ownership.  We trust that our callers are well-behaved.
-  return scoped_ptr<syncer_v2::SyncContextProxy>(
-      new InjectableSyncContextProxy(worker_));
+  return scoped_ptr<SyncContextProxy>(new InjectableSyncContextProxy(worker_));
 }
 
 ModelTypeSyncWorker* InjectableSyncContextProxy::GetWorker() {

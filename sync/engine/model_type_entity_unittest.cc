@@ -12,7 +12,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Some simple sanity tests for the ModelTypeEntity.
 //
@@ -28,7 +28,9 @@ class ModelTypeEntityTest : public ::testing::Test {
   ModelTypeEntityTest()
       : kServerId("ServerID"),
         kClientTag("sample.pref.name"),
-        kClientTagHash(syncable::GenerateSyncableHash(PREFERENCES, kClientTag)),
+        kClientTagHash(
+            syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES,
+                                                   kClientTag)),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)) {
     sync_pb::PreferenceSpecifics* pref_specifics =

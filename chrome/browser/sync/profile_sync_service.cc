@@ -432,7 +432,7 @@ void ProfileSyncService::RegisterNonBlockingType(syncer::ModelType type) {
 void ProfileSyncService::InitializeNonBlockingType(
     syncer::ModelType type,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+    const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_sync_proxy) {
   non_blocking_data_type_manager_.InitializeType(
       type, task_runner, type_sync_proxy);
 }

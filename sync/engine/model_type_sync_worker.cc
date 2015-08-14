@@ -4,7 +4,7 @@
 
 #include "sync/engine/model_type_sync_worker.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 ModelTypeSyncWorker::ModelTypeSyncWorker() {
 }

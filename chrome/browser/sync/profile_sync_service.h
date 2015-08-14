@@ -356,7 +356,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   void InitializeNonBlockingType(
       syncer::ModelType type,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& proxy);
+      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& proxy);
 
   // Returns the SyncedWindowDelegatesGetter from the embedded sessions manager.
   virtual browser_sync::SyncedWindowDelegatesGetter*

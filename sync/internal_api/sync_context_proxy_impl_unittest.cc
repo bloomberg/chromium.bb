@@ -58,7 +58,7 @@ class SyncContextProxyImplTest : public ::testing::Test {
 
 // Try to connect a type to a SyncContext that has already shut down.
 TEST_F(SyncContextProxyImplTest, FailToConnect1) {
-  syncer::ModelTypeSyncProxyImpl themes_sync_proxy(syncer::THEMES);
+  ModelTypeSyncProxyImpl themes_sync_proxy(syncer::THEMES);
   DisableSync();
   themes_sync_proxy.Enable(GetProxy());
 
@@ -69,7 +69,7 @@ TEST_F(SyncContextProxyImplTest, FailToConnect1) {
 
 // Try to connect a type to a SyncContext as it shuts down.
 TEST_F(SyncContextProxyImplTest, FailToConnect2) {
-  syncer::ModelTypeSyncProxyImpl themes_sync_proxy(syncer::THEMES);
+  ModelTypeSyncProxyImpl themes_sync_proxy(syncer::THEMES);
   themes_sync_proxy.Enable(GetProxy());
   DisableSync();
 
@@ -80,8 +80,8 @@ TEST_F(SyncContextProxyImplTest, FailToConnect2) {
 
 // Tests the case where the type's sync proxy shuts down first.
 TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
-  scoped_ptr<syncer::ModelTypeSyncProxyImpl> themes_sync_proxy(
-      new syncer::ModelTypeSyncProxyImpl(syncer::THEMES));
+  scoped_ptr<ModelTypeSyncProxyImpl> themes_sync_proxy(
+      new ModelTypeSyncProxyImpl(syncer::THEMES));
   themes_sync_proxy->Enable(GetProxy());
 
   base::RunLoop run_loop_;
@@ -93,8 +93,8 @@ TEST_F(SyncContextProxyImplTest, TypeDisconnectsFirst) {
 
 // Tests the case where the sync thread shuts down first.
 TEST_F(SyncContextProxyImplTest, SyncDisconnectsFirst) {
-  scoped_ptr<syncer::ModelTypeSyncProxyImpl> themes_sync_proxy(
-      new syncer::ModelTypeSyncProxyImpl(syncer::THEMES));
+  scoped_ptr<ModelTypeSyncProxyImpl> themes_sync_proxy(
+      new ModelTypeSyncProxyImpl(syncer::THEMES));
   themes_sync_proxy->Enable(GetProxy());
 
   base::RunLoop run_loop_;

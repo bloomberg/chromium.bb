@@ -22,7 +22,7 @@ namespace sync_driver {
 namespace {
 
 // A useless instance of ModelTypeSyncWorker.
-class NullModelTypeSyncWorker : public syncer::ModelTypeSyncWorker {
+class NullModelTypeSyncWorker : public syncer_v2::ModelTypeSyncWorker {
  public:
   NullModelTypeSyncWorker();
   ~NullModelTypeSyncWorker() override;
@@ -47,14 +47,14 @@ class MockSyncContext {
   void Connect(
       syncer::ModelType type,
       const scoped_refptr<base::SingleThreadTaskRunner>& model_task_runner,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy) {
+      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_proxy) {
     enabled_types_.Put(type);
     model_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&syncer::ModelTypeSyncProxyImpl::OnConnect,
-                   type_proxy,
-                   base::Passed(scoped_ptr<syncer::ModelTypeSyncWorker>(
-                                    new NullModelTypeSyncWorker()).Pass())));
+        base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::OnConnect, type_proxy,
+                   base::Passed(scoped_ptr<syncer_v2::ModelTypeSyncWorker>(
+                                    new NullModelTypeSyncWorker())
+                                    .Pass())));
   }
 
   void Disconnect(syncer::ModelType type) {
@@ -83,7 +83,7 @@ class MockSyncContextProxy : public syncer_v2::SyncContextProxy {
       syncer::ModelType type,
       const syncer_v2::DataTypeState& data_type_state,
       const syncer_v2::UpdateResponseDataList& saved_pending_updates,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_proxy)
+      const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_proxy)
       override {
     // Normally we'd use ThreadTaskRunnerHandle::Get() as the TaskRunner
     // argument
@@ -182,7 +182,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   }
 
  protected:
-  syncer::ModelTypeSyncProxyImpl type_sync_proxy_;
+  syncer_v2::ModelTypeSyncProxyImpl type_sync_proxy_;
   scoped_refptr<base::TestSimpleTaskRunner> model_thread_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_;
 

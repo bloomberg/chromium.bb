@@ -26,7 +26,7 @@ void SyncContextProxyImpl::ConnectTypeToSync(
     syncer::ModelType type,
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& saved_pending_updates,
-    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+    const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) {
   VLOG(1) << "ConnectTypeToSync: " << ModelTypeToString(type);
   sync_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&SyncContext::ConnectSyncTypeToWorker,

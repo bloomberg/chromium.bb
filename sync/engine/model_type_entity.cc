@@ -6,17 +6,17 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/syncable/syncable_util.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 scoped_ptr<ModelTypeEntity> ModelTypeEntity::NewLocalItem(
     const std::string& client_tag,
     const sync_pb::EntitySpecifics& specifics,
     base::Time now) {
   return scoped_ptr<ModelTypeEntity>(new ModelTypeEntity(
-      1, 0, 0, syncer_v2::kUncommittedVersion, true,
+      1, 0, 0, kUncommittedVersion, true,
       std::string(),  // Sync thread will assign the initial ID.
-      syncable::GenerateSyncableHash(GetModelTypeFromSpecifics(specifics),
-                                     client_tag),
+      syncer::syncable::GenerateSyncableHash(
+          syncer::GetModelTypeFromSpecifics(specifics), client_tag),
       client_tag,  // As non-unique name.
       specifics, false, now, now, std::string()));
 }
@@ -139,7 +139,7 @@ void ModelTypeEntity::Delete() {
 }
 
 void ModelTypeEntity::InitializeCommitRequestData(
-    syncer_v2::CommitRequestData* request) const {
+    CommitRequestData* request) const {
   request->id = id_;
   request->client_tag_hash = client_tag_hash_;
   request->sequence_number = sequence_number_;
@@ -173,7 +173,7 @@ void ModelTypeEntity::ClearTransientSyncState() {
 }
 
 void ModelTypeEntity::ClearSyncState() {
-  base_version_ = syncer_v2::kUncommittedVersion;
+  base_version_ = kUncommittedVersion;
   is_dirty_ = true;
   sequence_number_ = 1;
   commit_requested_sequence_number_ = 0;

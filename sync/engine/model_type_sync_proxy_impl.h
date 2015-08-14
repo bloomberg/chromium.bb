@@ -16,10 +16,6 @@
 
 namespace syncer_v2 {
 class SyncContextProxy;
-}  // namespace syncer_v2
-
-namespace syncer {
-
 class ModelTypeEntity;
 class ModelTypeSyncWorker;
 
@@ -27,7 +23,7 @@ class ModelTypeSyncWorker;
 // communication between sync and model type threads.
 class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
  public:
-  ModelTypeSyncProxyImpl(ModelType type);
+  ModelTypeSyncProxyImpl(syncer::ModelType type);
   virtual ~ModelTypeSyncProxyImpl();
 
   // Returns true if this object believes that sync is preferred for this type.
@@ -46,10 +42,10 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   bool IsConnected() const;
 
   // Returns the model type handled by this type sync proxy.
-  ModelType GetModelType() const;
+  syncer::ModelType GetModelType() const;
 
   // Starts the handshake with the sync thread.
-  void Enable(scoped_ptr<syncer_v2::SyncContextProxy> context_proxy);
+  void Enable(scoped_ptr<SyncContextProxy> context_proxy);
 
   // Severs all ties to the sync thread and may delete local sync state.
   // Another call to Enable() can be used to re-establish this connection.
@@ -71,16 +67,14 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
 
   // Informs this object that some of its commit requests have been
   // successfully serviced.
-  void OnCommitCompleted(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::CommitResponseDataList& response_list);
+  void OnCommitCompleted(const DataTypeState& type_state,
+                         const CommitResponseDataList& response_list);
 
   // Informs this object that there are some incoming updates is should
   // handle.
-  void OnUpdateReceived(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::UpdateResponseDataList& response_list,
-      const syncer_v2::UpdateResponseDataList& pending_updates);
+  void OnUpdateReceived(const DataTypeState& type_state,
+                        const UpdateResponseDataList& response_list,
+                        const UpdateResponseDataList& pending_updates);
 
   // Returns the list of pending updates.
   //
@@ -88,7 +82,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // The current test harness setup doesn't allow us to test the data that the
   // proxy sends to the worker during initialization, so we use this to inspect
   // its state instead.
-  syncer_v2::UpdateResponseDataList GetPendingUpdates();
+  UpdateResponseDataList GetPendingUpdates();
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.
@@ -97,8 +91,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
  private:
   typedef base::ScopedPtrMap<std::string, scoped_ptr<ModelTypeEntity>>
       EntityMap;
-  typedef base::ScopedPtrMap<std::string,
-                             scoped_ptr<syncer_v2::UpdateResponseData>>
+  typedef base::ScopedPtrMap<std::string, scoped_ptr<UpdateResponseData>>
       UpdateMap;
 
   // Sends all commit requests that are due to be sent to the sync thread.
@@ -113,8 +106,8 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   // account.  Useful when a user signs out of the current account.
   void ClearSyncState();
 
-  ModelType type_;
-  syncer_v2::DataTypeState data_type_state_;
+  syncer::ModelType type_;
+  DataTypeState data_type_state_;
 
   // Whether or not sync is preferred for this type.  This is a cached copy of
   // the canonical copy information on the UI thread.
@@ -129,7 +122,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeSyncProxyImpl : base::NonThreadSafe {
   //
   // Beware of NULL pointers: This object is uninitialized when we are not
   // connected to sync.
-  scoped_ptr<syncer_v2::SyncContextProxy> sync_context_proxy_;
+  scoped_ptr<SyncContextProxy> sync_context_proxy_;
 
   // Reference to the ModelTypeSyncWorker.
   //

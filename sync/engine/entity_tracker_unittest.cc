@@ -12,7 +12,7 @@
 #include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Some simple tests for the EntityTracker.
 //
@@ -27,7 +27,9 @@ class EntityTrackerTest : public ::testing::Test {
   EntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("some.sample.tag"),
-        kClientTagHash(syncable::GenerateSyncableHash(PREFERENCES, kClientTag)),
+        kClientTagHash(
+            syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES,
+                                                   kClientTag)),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)) {
     specifics.mutable_preference()->set_name(kClientTag);
@@ -75,8 +77,8 @@ TEST_F(EntityTrackerTest, FromCommitRequest) {
   EXPECT_EQ(kServerId, pb_entity.id_string());
   EXPECT_EQ(kClientTagHash, pb_entity.client_defined_unique_tag());
   EXPECT_EQ(33, pb_entity.version());
-  EXPECT_EQ(kCtime, ProtoTimeToTime(pb_entity.ctime()));
-  EXPECT_EQ(kMtime, ProtoTimeToTime(pb_entity.mtime()));
+  EXPECT_EQ(kCtime, syncer::ProtoTimeToTime(pb_entity.ctime()));
+  EXPECT_EQ(kMtime, syncer::ProtoTimeToTime(pb_entity.mtime()));
   EXPECT_FALSE(pb_entity.deleted());
   EXPECT_EQ(specifics.preference().name(),
             pb_entity.specifics().preference().name());

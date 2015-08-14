@@ -17,6 +17,8 @@
 
 namespace syncer {
 
+using syncer_v2::ModelTypeSyncProxyImpl;
+
 class ModelTypeRegistryTest : public ::testing::Test {
  public:
   ModelTypeRegistryTest();

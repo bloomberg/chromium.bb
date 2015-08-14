@@ -11,7 +11,7 @@
 #include "sync/engine/commit_contribution.h"
 #include "sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 class ModelTypeSyncWorkerImpl;
 
@@ -19,7 +19,7 @@ class ModelTypeSyncWorkerImpl;
 //
 // Helps build a commit message and process its response.  It collaborates
 // closely with the ModelTypeSyncWorkerImpl.
-class NonBlockingTypeCommitContribution : public CommitContribution {
+class NonBlockingTypeCommitContribution : public syncer::CommitContribution {
  public:
   NonBlockingTypeCommitContribution(
       const sync_pb::DataTypeContext& context,
@@ -30,9 +30,9 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
 
   // Implementation of CommitContribution
   void AddToCommitMessage(sync_pb::ClientToServerMessage* msg) override;
-  SyncerError ProcessCommitResponse(
+  syncer::SyncerError ProcessCommitResponse(
       const sync_pb::ClientToServerResponse& response,
-      sessions::StatusController* status) override;
+      syncer::sessions::StatusController* status) override;
   void CleanUp() override;
   size_t GetNumEntries() const override;
 

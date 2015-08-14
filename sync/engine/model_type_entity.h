@@ -14,9 +14,6 @@
 
 namespace syncer_v2 {
 struct CommitRequestData;
-}  // namespace syncer_v2
-
-namespace syncer {
 
 // This is the model thread's representation of a SyncEntity.
 //
@@ -99,7 +96,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeEntity {
 
   // Initializes a message representing this item's uncommitted state
   // to be forwarded to the sync server for committing.
-  void InitializeCommitRequestData(syncer_v2::CommitRequestData* request) const;
+  void InitializeCommitRequestData(CommitRequestData* request) const;
 
   // Notes that the current version of this item has been queued for commit.
   void SetCommitRequestInProgress();

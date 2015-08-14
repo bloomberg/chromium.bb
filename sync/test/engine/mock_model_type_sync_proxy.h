@@ -12,7 +12,7 @@
 #include "sync/engine/model_type_sync_proxy.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Mocks the ModelTypeSyncProxy.
 //
@@ -31,13 +31,11 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   ~MockModelTypeSyncProxy() override;
 
   // Implementation of ModelTypeSyncProxy.
-  void OnCommitCompleted(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::UpdateResponseDataList& response_list,
-      const syncer_v2::UpdateResponseDataList& pending_updates) override;
+  void OnCommitCompleted(const DataTypeState& type_state,
+                         const CommitResponseDataList& response_list) override;
+  void OnUpdateReceived(const DataTypeState& type_state,
+                        const UpdateResponseDataList& response_list,
+                        const UpdateResponseDataList& pending_updates) override;
 
   // By default, this object behaves as if all messages are processed
   // immediately.  Sometimes it is useful to defer work until later, as might
@@ -57,53 +55,46 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   // directly to its attached ModelTypeSyncWorker.  These methods
   // return the value to the caller so the test framework can handle them as it
   // sees fit.
-  syncer_v2::CommitRequestData CommitRequest(
-      const std::string& tag_hash,
-      const sync_pb::EntitySpecifics& specifics);
-  syncer_v2::CommitRequestData DeleteRequest(const std::string& tag_hash);
+  CommitRequestData CommitRequest(const std::string& tag_hash,
+                                  const sync_pb::EntitySpecifics& specifics);
+  CommitRequestData DeleteRequest(const std::string& tag_hash);
 
   // Getters to access the log of received update responses.
   //
   // Does not includes repsonses that are in pending tasks.
   size_t GetNumUpdateResponses() const;
-  syncer_v2::UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
-  syncer_v2::UpdateResponseDataList GetNthPendingUpdates(size_t n) const;
-  syncer_v2::DataTypeState GetNthTypeStateReceivedInUpdateResponse(
-      size_t n) const;
+  UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
+  UpdateResponseDataList GetNthPendingUpdates(size_t n) const;
+  DataTypeState GetNthTypeStateReceivedInUpdateResponse(size_t n) const;
 
   // Getters to access the log of received commit responses.
   //
   // Does not includes repsonses that are in pending tasks.
   size_t GetNumCommitResponses() const;
-  syncer_v2::CommitResponseDataList GetNthCommitResponse(size_t n) const;
-  syncer_v2::DataTypeState GetNthTypeStateReceivedInCommitResponse(
-      size_t n) const;
+  CommitResponseDataList GetNthCommitResponse(size_t n) const;
+  DataTypeState GetNthTypeStateReceivedInCommitResponse(size_t n) const;
 
   // Getters to access the lastest update response for a given tag_hash.
   bool HasUpdateResponse(const std::string& tag_hash) const;
-  syncer_v2::UpdateResponseData GetUpdateResponse(
-      const std::string& tag_hash) const;
+  UpdateResponseData GetUpdateResponse(const std::string& tag_hash) const;
 
   // Getters to access the lastest commit response for a given tag_hash.
   bool HasCommitResponse(const std::string& tag_hash) const;
-  syncer_v2::CommitResponseData GetCommitResponse(
-      const std::string& tag_hash) const;
+  CommitResponseData GetCommitResponse(const std::string& tag_hash) const;
 
  private:
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void OnCommitCompletedImpl(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::CommitResponseDataList& response_list);
+  void OnCommitCompletedImpl(const DataTypeState& type_state,
+                             const CommitResponseDataList& response_list);
 
   // Process a received update response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void OnUpdateReceivedImpl(
-      const syncer_v2::DataTypeState& type_state,
-      const syncer_v2::UpdateResponseDataList& response_list,
-      const syncer_v2::UpdateResponseDataList& pending_updates);
+  void OnUpdateReceivedImpl(const DataTypeState& type_state,
+                            const UpdateResponseDataList& response_list,
+                            const UpdateResponseDataList& pending_updates);
 
   // Getter and setter for per-item sequence number tracking.
   int64 GetCurrentSequenceNumber(const std::string& tag_hash) const;
@@ -124,17 +115,15 @@ class MockModelTypeSyncProxy : public ModelTypeSyncProxy {
   std::vector<base::Closure> pending_tasks_;
 
   // A log of messages received by this object.
-  std::vector<syncer_v2::CommitResponseDataList> received_commit_responses_;
-  std::vector<syncer_v2::UpdateResponseDataList> received_update_responses_;
-  std::vector<syncer_v2::UpdateResponseDataList> received_pending_updates_;
-  std::vector<syncer_v2::DataTypeState> type_states_received_on_update_;
-  std::vector<syncer_v2::DataTypeState> type_states_received_on_commit_;
+  std::vector<CommitResponseDataList> received_commit_responses_;
+  std::vector<UpdateResponseDataList> received_update_responses_;
+  std::vector<UpdateResponseDataList> received_pending_updates_;
+  std::vector<DataTypeState> type_states_received_on_update_;
+  std::vector<DataTypeState> type_states_received_on_commit_;
 
   // Latest responses received, indexed by tag_hash.
-  std::map<const std::string, syncer_v2::CommitResponseData>
-      commit_response_items_;
-  std::map<const std::string, syncer_v2::UpdateResponseData>
-      update_response_items_;
+  std::map<const std::string, CommitResponseData> commit_response_items_;
+  std::map<const std::string, UpdateResponseData> update_response_items_;
 
   // The per-item state maps.
   std::map<const std::string, int64> sequence_numbers_;

@@ -9,11 +9,9 @@
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 
-namespace syncer {
-class ModelTypeSyncProxyImpl;
-}
-
 namespace syncer_v2 {
+class ModelTypeSyncProxyImpl;
+
 // A non-functional implementation of SyncContextProxy.
 //
 // It supports Clone(), but not much else.  Useful for testing.
@@ -22,11 +20,11 @@ class NullSyncContextProxy : public SyncContextProxy {
   NullSyncContextProxy();
   ~NullSyncContextProxy() override;
 
-  void ConnectTypeToSync(syncer::ModelType type,
-                         const DataTypeState& data_type_state,
-                         const UpdateResponseDataList& saved_pending_updates,
-                         const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>&
-                             type_sync_proxy) override;
+  void ConnectTypeToSync(
+      syncer::ModelType type,
+      const DataTypeState& data_type_state,
+      const UpdateResponseDataList& saved_pending_updates,
+      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) override;
   void Disconnect(syncer::ModelType type) override;
   scoped_ptr<SyncContextProxy> Clone() const override;
 };

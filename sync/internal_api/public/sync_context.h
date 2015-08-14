@@ -12,11 +12,9 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
 
-namespace syncer {
-class ModelTypeSyncProxyImpl;
-}
-
 namespace syncer_v2 {
+class ModelTypeSyncProxyImpl;
+
 // An interface of the core parts of sync.
 //
 // In theory, this is the component that provides off-thread sync types with
@@ -38,7 +36,7 @@ class SYNC_EXPORT_PRIVATE SyncContext {
       const DataTypeState& data_type_state,
       const UpdateResponseDataList& saved_pending_updates,
       const scoped_refptr<base::SequencedTaskRunner>& datatype_task_runner,
-      const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) = 0;
+      const base::WeakPtr<ModelTypeSyncProxyImpl>& type_sync_proxy) = 0;
 
   // Disconnects the syncer from the model and stops syncing the type.
   //

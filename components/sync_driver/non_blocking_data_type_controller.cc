@@ -21,7 +21,7 @@ NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
 void NonBlockingDataTypeController::InitializeType(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::WeakPtr<syncer::ModelTypeSyncProxyImpl>& type_sync_proxy) {
+    const base::WeakPtr<syncer_v2::ModelTypeSyncProxyImpl>& type_sync_proxy) {
   DCHECK(!IsSyncProxyConnected());
   task_runner_ = task_runner;
   type_sync_proxy_ = type_sync_proxy;
@@ -86,8 +86,7 @@ void NonBlockingDataTypeController::SendEnableSignal() {
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&syncer::ModelTypeSyncProxyImpl::Enable,
-                 type_sync_proxy_,
+      base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::Enable, type_sync_proxy_,
                  base::Passed(sync_context_proxy_->Clone())));
   current_state_ = ENABLED;
 }
@@ -95,9 +94,9 @@ void NonBlockingDataTypeController::SendEnableSignal() {
 void NonBlockingDataTypeController::SendDisableSignal() {
   DCHECK_EQ(DISABLED, GetDesiredState());
   DVLOG(1) << "Disabling non-blocking sync type " << ModelTypeToString(type_);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&syncer::ModelTypeSyncProxyImpl::Disable, type_sync_proxy_));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::Disable,
+                                    type_sync_proxy_));
   current_state_ = DISABLED;
 }
 
@@ -105,9 +104,9 @@ void NonBlockingDataTypeController::SendDisconnectSignal() {
   DCHECK_EQ(DISCONNECTED, GetDesiredState());
   DVLOG(1) << "Disconnecting non-blocking sync type "
            << ModelTypeToString(type_);
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&syncer::ModelTypeSyncProxyImpl::Disconnect,
-                                    type_sync_proxy_));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&syncer_v2::ModelTypeSyncProxyImpl::Disconnect,
+                            type_sync_proxy_));
   current_state_ = DISCONNECTED;
 }
 
