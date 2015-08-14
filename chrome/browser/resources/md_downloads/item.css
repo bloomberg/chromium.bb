@@ -36,21 +36,16 @@
   width: var(--downloads-item-width);
 }
 
-#content.no-file {
-  background: rgba(255, 255, 255, .5);
-}
-
-.no-file .icon-wrapper:not(#remove-wrapper),
-.no-file #details {
-  opacity: .5;
-}
-
 #details {
   -webkit-border-start: 1px #d8d8d8 solid;
   display: flex;
   flex: 1;
   flex-direction: column;
   padding: 16px 16px 12px 16px;
+}
+
+#content:not(.is-active) #details {
+  color: #bababa;
 }
 
 .icon-wrapper {
@@ -63,6 +58,10 @@
 .icon {
   height: 32px;
   width: 32px;
+}
+
+#content:not(.is-active) .icon {
+  -webkit-filter: grayscale(100%);
 }
 
 #warning {
@@ -85,8 +84,11 @@
 
 #name {
   -webkit-margin-end: 12px;  /* Only really affects #tag. */
-  color: #212121;
   font-weight: bold;
+}
+
+.is-active #name {
+  color: #212121;
 }
 
 .dangerous #name {
@@ -94,18 +96,21 @@
 }
 
 #tag {
-  color: #6f6f6f;
-  font-size: 92.307%;
+  color: #5a5a5a;
   font-weight: bold;
 }
 
 #url {
-  color: rgb(51, 103, 214);
+  color: inherit;
   margin-top: 6px;
   overflow: hidden;
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.is-active #url {
+  color: rgb(51, 103, 214);
 }
 
 #progress,
@@ -114,7 +119,7 @@
   margin-top: 16px;
 }
 
-#description {
+.is-active #description {
   color: #616161;
 }
 

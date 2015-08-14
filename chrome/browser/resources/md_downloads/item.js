@@ -56,11 +56,12 @@ cr.define('downloads', function() {
       this.ensureTextIs_(this.$.since, data.since_string);
       this.ensureTextIs_(this.$.date, data.date_string);
 
-      /** @const */ var noFile =
-          data.state == downloads.States.CANCELLED ||
-          data.state == downloads.States.INTERRUPTED ||
-          data.file_externally_removed;
-      this.$.content.classList.toggle('no-file', noFile);
+      /** @const */ var isActive =
+          data.state != downloads.States.CANCELLED &&
+          data.state != downloads.States.INTERRUPTED &&
+          !data.file_externally_removed;
+      this.$.content.classList.toggle('is-active', isActive);
+      this.$.content.elevation = isActive ? 1 : 0;
 
       this.ensureTextIs_(this.$.name, data.file_name);
       this.ensureTextIs_(this.$.url, data.url);
@@ -74,8 +75,8 @@ cr.define('downloads', function() {
       var description = dangerText || this.getStatusText_(data);
 
       // Status goes in the "tag" (next to the file name) if there's no file.
-      this.ensureTextIs_(this.$.description, noFile ? '' : description);
-      this.ensureTextIs_(this.$.tag, noFile ? description : '');
+      this.ensureTextIs_(this.$.description, isActive ? description : '');
+      this.ensureTextIs_(this.$.tag, isActive ? '' : description);
 
       /** @const */ var showProgress =
           isFinite(data.percent) && !this.isDangerous_;
