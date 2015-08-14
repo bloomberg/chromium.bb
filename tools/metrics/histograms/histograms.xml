@@ -59126,6 +59126,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="913" label="AudioParamSetValueCurveAtTime"/>
   <int value="914" label="AudioParamCancelScheduledValues"/>
   <int value="915" label="V8Permissions_Request_Method"/>
+  <int value="916" label="LinkRelSubresource"/>
+  <int value="917" label="LinkRelPrefetch"/>
+  <int value="918" label="LinkRelPrerender"/>
+  <int value="919" label="LinkRelNext"/>
+  <int value="920" label="PrefixedPerformanceResourceTimingBufferFull"/>
+  <int value="921" label="CSSValuePrefixedMinContent"/>
+  <int value="922" label="CSSValuePrefixedMaxContent"/>
+  <int value="923" label="CSSValuePrefixedFitContent"/>
+  <int value="924" label="CSSValuePrefixedFillAvailable"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
