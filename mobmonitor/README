@@ -220,7 +220,7 @@ Using the RPC library:
 
     def testStatus():
       # RpcExecutor takes optional keyword args for |host| and |port|.
-      # They default to 'localhost' and 9999 respectively.
+      # They default to 'localhost' and 9991 respectively.
       rpcexec = rpc.RpcExecutor()
       service_list = rpcexec.GetServiceList()
       for service in service_list:

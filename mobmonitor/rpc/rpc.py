@@ -26,7 +26,7 @@ class RpcError(Exception):
 class RpcExecutor(object):
   """Construct and send RPCs to the Mob* Monitor with retry."""
 
-  def __init__(self, host='localhost', port=9999):
+  def __init__(self, host='localhost', port=9991):
     self.host = 'http://%s:%s' % (host, remote_access.NormalizePort(port))
 
   def ConstructUrllibCall(self, func, **kwargs):
@@ -44,7 +44,7 @@ class RpcExecutor(object):
     # with the Mob* Monitor's RESTful interface.
     #
     # For example, suppose we have:
-    #   host = 'http://localhost:9999'
+    #   host = 'http://localhost:9991'
     #   func = 'repair_service'
     #   kwargs = {'service': 's1', 'action': 'a1'}
     #
@@ -52,7 +52,7 @@ class RpcExecutor(object):
     #   'service=s1&action=a1'
     #
     # And we return:
-    #   'http://localhost:9999/repair_service?service=s1&action=a1'
+    #   'http://localhost:9991/repair_service?service=s1&action=a1'
     #
     args = urllib.urlencode(kwargs)
     return URLLIB_CALL_FORMAT_STR % dict(host=self.host, func=func, args=args)

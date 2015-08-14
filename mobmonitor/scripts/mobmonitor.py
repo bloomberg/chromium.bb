@@ -85,7 +85,7 @@ def ParseArguments(argv):
   parser.add_argument('-d', '--checkdir',
                       default='/etc/mobmonitor/checkfiles/',
                       help='The Mob* Monitor checkfile directory.')
-  parser.add_argument('-p', '--port', type=int, default=9999,
+  parser.add_argument('-p', '--port', type=int, default=9991,
                       help='The Mob* Monitor port.')
 
   return parser.parse_args(argv)

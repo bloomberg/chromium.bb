@@ -52,7 +52,7 @@ def InputsToArgs(inputs):
 class MobMonCli(object):
   """Provides command-line functionality for using the Mob* Monitor."""
 
-  def __init__(self, host='localhost', port=9999):
+  def __init__(self, host='localhost', port=9991):
     self.host = host
     self.port = remote_access.NormalizePort(port)
 
@@ -90,7 +90,7 @@ def ParseArguments(argv):
   parser.add_argument('-a', '--action', help='The action to execute')
   parser.add_argument('--host', default='localhost',
                       help='The hostname of the Mob* Monitor.')
-  parser.add_argument('-p', '--port', type=int, default=9999,
+  parser.add_argument('-p', '--port', type=int, default=9991,
                       help='The Mob* Monitor port.')
   parser.add_argument('-i', '--inputs',
                       help='Repair action inputs. Inputs are specified'
