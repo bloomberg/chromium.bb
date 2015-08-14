@@ -46,7 +46,10 @@ def main_run(args):
 
 
 def main_compile_targets(args):
-  json.dump(['chrome'], args.output)
+  if 'android' == args.properties.get('target_platform'):
+    json.dump(['chrome_public_apk'], args.output)
+  else:
+    json.dump(['chrome'], args.output)
 
 
 if __name__ == '__main__':
