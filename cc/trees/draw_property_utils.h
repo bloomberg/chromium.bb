@@ -116,6 +116,10 @@ CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
 gfx::Rect CC_EXPORT
 DrawableContentRectFromPropertyTrees(const LayerImpl* layer,
                                      const TransformTree& transform_tree);
+
+gfx::Rect CC_EXPORT
+ClipRectFromPropertyTrees(const LayerImpl* layer,
+                          const TransformTree& transform_tree);
 }  // namespace cc
 
 #endif  // CC_TREES_DRAW_PROPERTY_UTILS_H_

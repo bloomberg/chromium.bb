@@ -135,9 +135,9 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.data.target_id =
         data_for_children->render_target->transform_tree_index();
     node.owner_id = layer->id();
-    node.data.inherit_parent_target_space_clip =
-        !data_for_children->ancestor_clips_subtree &&
-        layer->has_render_surface() && ancestor_clips_subtree;
+    node.data.inherit_parent_target_space_clip = !layer_clips_subtree &&
+                                                 layer->has_render_surface() &&
+                                                 ancestor_clips_subtree;
     node.data.requires_tight_clip_rect =
         ancestor_clips_subtree &&
         (!layer->render_surface() ||

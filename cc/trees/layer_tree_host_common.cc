@@ -2339,6 +2339,16 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
       << DrawableContentRectFromPropertyTrees(current_layer,
                                               property_trees->transform_tree)
              .ToString();
+
+  const bool clip_rects_match = ApproximatelyEqual(
+      current_layer->clip_rect(),
+      ClipRectFromPropertyTrees(current_layer, property_trees->transform_tree));
+  CHECK(clip_rects_match) << "expected: "
+                          << current_layer->clip_rect().ToString()
+                          << " actual: "
+                          << ClipRectFromPropertyTrees(
+                                 current_layer, property_trees->transform_tree)
+                                 .ToString();
 }
 
 void VerifyPropertyTreeValues(

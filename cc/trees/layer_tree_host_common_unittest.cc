@@ -7867,5 +7867,43 @@ TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
   EXPECT_EQ(test_layer->visible_rect_from_property_trees(), gfx::RectF(30, 30));
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       RenderSurfaceWithUnclippedDescendantsClipsSubtree) {
+  // Ensure clip rect is calculated correctly when render surface has unclipped
+  // descendants.
+  LayerImpl* root = root_layer();
+  LayerImpl* clip_parent = AddChildToRoot<LayerImpl>();
+  LayerImpl* between_clip_parent_and_child = AddChild<LayerImpl>(clip_parent);
+  LayerImpl* render_surface =
+      AddChild<LayerImpl>(between_clip_parent_and_child);
+  LayerImpl* test_layer = AddChild<LayerImpl>(render_surface);
+
+  const gfx::Transform identity_matrix;
+  gfx::Transform transform;
+  transform.Translate(2.0, 2.0);
+
+  test_layer->SetDrawsContent(true);
+  render_surface->SetClipParent(clip_parent);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(clip_parent, transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+  SetLayerPropertiesForTesting(between_clip_parent_and_child, transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               true, false, false);
+  SetLayerPropertiesForTesting(render_surface, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               true);
+  SetLayerPropertiesForTesting(test_layer, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(30, 30), true, false,
+                               false);
+
+  ExecuteCalculateDrawProperties(root);
+
+  EXPECT_EQ(test_layer->clip_rect(), gfx::RectF(-4, -4, 30, 30));
+}
+
 }  // namespace
 }  // namespace cc

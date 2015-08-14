@@ -86,6 +86,13 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
             MathUtil::MapClippedRect(clip_to_target, clip_node->data.clip));
       }
 
+      if (clip_node->data.requires_tight_clip_rect)
+        layer->set_clip_rect_in_target_space_from_property_trees(
+            combined_clip_rect_in_target_space);
+      else
+        layer->set_clip_rect_in_target_space_from_property_trees(
+            clip_rect_in_target_space);
+
       gfx::Rect layer_content_rect = gfx::Rect(layer_bounds);
       gfx::Rect layer_content_bounds_in_target_space =
           MathUtil::MapEnclosingClippedRect(content_to_target,
@@ -93,13 +100,6 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
       combined_clip_rect_in_target_space.Intersect(
           layer_content_bounds_in_target_space);
       clip_rect_in_target_space.Intersect(layer_content_bounds_in_target_space);
-      if (clip_node->data.requires_tight_clip_rect) {
-        layer->set_clip_rect_in_target_space_from_property_trees(
-            combined_clip_rect_in_target_space);
-      } else {
-        layer->set_clip_rect_in_target_space_from_property_trees(
-            clip_rect_in_target_space);
-      }
       if (combined_clip_rect_in_target_space.IsEmpty()) {
         layer->set_visible_rect_from_property_trees(gfx::Rect());
         continue;
@@ -429,6 +429,7 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     // must combine clips.
     gfx::Transform parent_to_target;
     gfx::Transform clip_to_target;
+
     gfx::Transform target_to_clip;
     gfx::Transform parent_to_transform_target;
     gfx::Transform transform_target_to_target;
@@ -786,6 +787,15 @@ gfx::Rect DrawableContentRectFromPropertyTrees(
         layer->clip_rect_in_target_space_from_property_trees());
   }
   return drawable_content_rect;
+}
+
+gfx::Rect ClipRectFromPropertyTrees(const LayerImpl* layer,
+                                    const TransformTree& transform_tree) {
+  if (layer->is_clipped() && layer->clip_tree_index() > 0)
+    return layer->clip_rect_in_target_space_from_property_trees();
+  return MathUtil::MapEnclosingClippedRect(
+      DrawTransformFromPropertyTrees(layer, transform_tree),
+      gfx::Rect(layer->bounds()));
 }
 
 }  // namespace cc
