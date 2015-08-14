@@ -37,10 +37,10 @@ class ControllerProcessWrapper(object):
 
   def __init__(self, rpc, cmd, verbose=False, detached=False, cwd=None,
                key=None, shell=None):
-    logging.info('Creating a process with cmd=%s', cmd)
+    logging.debug('Creating a process with cmd=%s', cmd)
     self._rpc = rpc
     self._key = rpc.subprocess.Process(cmd, key)
-    logging.info('Process created with key=%s', self._key)
+    logging.debug('Process created with key=%s', self._key)
     if verbose:
       self._rpc.subprocess.SetVerbose(self._key)
     if detached:
