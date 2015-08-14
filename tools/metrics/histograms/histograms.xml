@@ -38948,6 +38948,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.PageLoad" enum="ServiceWorkerSite">
+  <owner>falken@chromium.org</owner>
+  <summary>Counts page loads controlled by a service worker.</summary>
+</histogram>
+
 <histogram name="ServiceWorker.PushEvent.Time" units="milliseconds">
   <owner>johnme@chromium.org</owner>
   <summary>
@@ -68849,6 +68854,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="ErrorResponseTypeNotBasicOrDefault"/>
   <int value="7" label="ErrorBodyUsed"/>
   <int value="8" label="ErrorResponseTypeOpaqueForClientRequest"/>
+</enum>
+
+<enum name="ServiceWorkerSite" type="int">
+  <int value="0" label="Other"/>
+  <int value="1" label="NewTabPage"/>
 </enum>
 
 <enum name="ServiceWorkerStatusCode" type="int">

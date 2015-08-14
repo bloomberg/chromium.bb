@@ -6,12 +6,10 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_util.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -24,16 +22,25 @@ void RecordURLMetricOnUI(const GURL& url) {
       "ServiceWorker.ControlledPageUrl", url);
 }
 
+ServiceWorkerMetrics::Site SiteFromURL(const GURL& gurl) {
+  // UIThreadSearchTermsData::GoogleBaseURLValue() returns the google base
+  // URL, but not available in content layer.
+  static const char google_like_scope_prefix[] = "https://www.google.";
+  static const char ntp_scope_path[] = "/_/chrome/";
+  if (base::StartsWith(gurl.spec(), google_like_scope_prefix,
+                       base::CompareCase::INSENSITIVE_ASCII) &&
+      base::StartsWith(gurl.path(), ntp_scope_path,
+                       base::CompareCase::SENSITIVE)) {
+    return ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
+  }
+
+  return ServiceWorkerMetrics::Site::OTHER;
+}
+
 bool ShouldExcludeForHistogram(const GURL& scope) {
   // Exclude NTP scope from UMA for now as it tends to dominate the stats
   // and makes the results largely skewed.
-  // TOOD(kinuko): This should be temporary, revisit this once we have
-  // better idea about what should be excluded in the UMA.
-  // (UIThreadSearchTermsData::GoogleBaseURLValue() returns the google base
-  // URL, but not available in content layer)
-  const char google_like_scope_prefix[] = "https://www.google.";
-  return base::StartsWith(scope.spec(), google_like_scope_prefix,
-                          base::CompareCase::INSENSITIVE_ASCII);
+  return SiteFromURL(scope) == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
 }
 
 enum EventHandledRatioType {
@@ -103,7 +110,13 @@ void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
 }
 
 void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
-  RecordAction(base::UserMetricsAction("ServiceWorker.ControlledPageLoad"));
+  Site site = SiteFromURL(url);
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", static_cast<int>(site),
+                            static_cast<int>(Site::NUM_TYPES));
+
+  // Don't record NTP on RAPPOR since it would dominate the data.
+  if (site == Site::NEW_TAB_PAGE)
+    return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&RecordURLMetricOnUI, url));
 }

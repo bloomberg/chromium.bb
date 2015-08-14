@@ -11200,6 +11200,7 @@ should be able to be added at any place in this file.
   <description>
     Counts the number of page loads controlled by a Service Worker.
   </description>
+  <obsolete>Replaced by ServiceWorker.PageLoad histogram.</obsolete>
 </action>
 
 <action name="SettingsResetBubble.LearnMore">

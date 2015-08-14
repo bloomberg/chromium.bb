@@ -83,6 +83,9 @@ class ServiceWorkerMetrics {
     NUM_EVENT_TYPES
   };
 
+  // Used for UMA. Append only.
+  enum class Site { OTHER, NEW_TAB_PAGE, NUM_TYPES };
+
   // Used for ServiceWorkerDiskCache.
   static void CountInitDiskCacheResult(bool result);
   static void CountReadResponseResult(ReadResponseResult result);
