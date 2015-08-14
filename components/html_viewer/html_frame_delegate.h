@@ -5,13 +5,13 @@
 #ifndef COMPONENTS_HTML_VIEWER_HTML_FRAME_DELEGATE_H_
 #define COMPONENTS_HTML_VIEWER_HTML_FRAME_DELEGATE_H_
 
+#include "components/html_viewer/html_frame.h"
+
 namespace mojo {
 class ApplicationImpl;
 }
 
 namespace html_viewer {
-
-class HTMLFrame;
 
 class HTMLFrameDelegate {
  public:
@@ -26,6 +26,9 @@ class HTMLFrameDelegate {
 
   // Returns the ApplicationImpl for the frame.
   virtual mojo::ApplicationImpl* GetApp() = 0;
+
+  // Creates a new HTMLFrame. The delegate must return non-null.
+  virtual HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) = 0;
 
  protected:
   virtual ~HTMLFrameDelegate() {}

@@ -121,26 +121,22 @@ bool CanNavigateLocally(blink::WebFrame* frame,
 
 }  // namespace
 
-HTMLFrame::HTMLFrame(const HTMLFrame::CreateParams& params)
-    : frame_tree_manager_(params.manager),
-      parent_(params.parent),
+HTMLFrame::HTMLFrame(CreateParams* params)
+    : frame_tree_manager_(params->manager),
+      parent_(params->parent),
       view_(nullptr),
-      id_(params.id),
+      id_(params->id),
       web_frame_(nullptr),
       web_widget_(nullptr),
-      delegate_(nullptr),
+      delegate_(params->delegate),
       weak_factory_(this) {
   if (parent_)
     parent_->children_.push_back(this);
-}
 
-void HTMLFrame::Init(
-    mojo::View* local_view,
-    const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
-  if (local_view && local_view->id() == id_)
-    SetView(local_view);
+  if (params->view && params->view->id() == id_)
+    SetView(params->view);
 
-  SetReplicatedFrameStateFromClientProperties(properties, &state_);
+  SetReplicatedFrameStateFromClientProperties(params->properties, &state_);
 
   if (!parent_) {
     CreateRootWebWidget();
@@ -154,20 +150,21 @@ void HTMLFrame::Init(
     // We need to set the main frame before creating children so that state is
     // properly set up in blink.
     web_view()->setMainFrame(local_web_frame);
-    const gfx::Size size_in_pixels(local_view->bounds().width,
-                                   local_view->bounds().height);
+    const gfx::Size size_in_pixels(params->view->bounds().width,
+                                   params->view->bounds().height);
     const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
-        local_view->viewport_metrics().device_pixel_ratio, size_in_pixels);
+        params->view->viewport_metrics().device_pixel_ratio, size_in_pixels);
     web_widget_->resize(size_in_dips);
     web_frame_ = local_web_frame;
     web_view()->setDeviceScaleFactor(global_state()->device_pixel_ratio());
-    if (id_ != local_view->id()) {
+    if (id_ != params->view->id()) {
       blink::WebRemoteFrame* remote_web_frame =
           blink::WebRemoteFrame::create(state_.tree_scope, this);
       local_web_frame->swap(remote_web_frame);
       web_frame_ = remote_web_frame;
     }
-  } else if (local_view && id_ == local_view->id()) {
+  } else if (!params->allow_local_shared_frame && params->view &&
+             id_ == params->view->id()) {
     // Frame represents the local frame, and it isn't the root of the tree.
     HTMLFrame* previous_sibling = GetPreviousSibling(this);
     blink::WebFrame* previous_web_frame =
@@ -181,11 +178,17 @@ void HTMLFrame::Init(
     web_frame_ = parent_->web_frame()->toWebRemoteFrame()->createRemoteChild(
         state_.tree_scope, state_.name, state_.sandbox_flags, this);
   } else {
-    // This is hit if we're asked to create a child frame of a local parent.
+    // TODO(sky): this DCHECK, and |allow_local_shared_frame| should be
+    // moved to HTMLFrameTreeManager. It makes more sense there.
     // This should never happen (if we create a local child we don't call
     // Init(), and the frame server should not being creating child frames of
     // this frame).
-    NOTREACHED();
+    DCHECK(params->allow_local_shared_frame);
+
+    blink::WebLocalFrame* child_web_frame =
+        blink::WebLocalFrame::create(state_.tree_scope, this);
+    web_frame_ = child_web_frame;
+    parent_->web_frame_->appendChild(child_web_frame);
   }
 
   if (!IsLocal()) {
@@ -409,11 +412,13 @@ void HTMLFrame::SwapToRemote() {
 }
 
 void HTMLFrame::SwapToLocal(
+    HTMLFrameDelegate* delegate,
     mojo::View* view,
     const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
   CHECK(!IsLocal());
   // It doesn't make sense for the root to swap to local.
   CHECK(parent_);
+  delegate_ = delegate;
   SetView(view);
   SetReplicatedFrameStateFromClientProperties(properties, &state_);
   blink::WebLocalFrame* local_web_frame =
@@ -679,18 +684,12 @@ blink::WebFrame* HTMLFrame::createChildFrame(
   GetLocalRoot()->server_->OnCreatedFrame(id_, child_view->id(),
                                           client_properties.Pass());
 
-  HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id());
-  HTMLFrame* child_frame = new HTMLFrame(params);
-  child_frame->state_ = child_state;
-
-  child_frame->SetView(child_view);
+  HTMLFrame::CreateParams params(frame_tree_manager_, this, child_view->id(),
+                                 child_view, client_properties, nullptr);
+  params.allow_local_shared_frame = true;
+  HTMLFrame* child_frame = GetLocalRoot()->delegate_->CreateHTMLFrame(&params);
   child_frame->owned_view_.reset(new mojo::ScopedViewPtr(child_view));
-
-  blink::WebLocalFrame* child_web_frame =
-      blink::WebLocalFrame::create(scope, child_frame);
-  child_frame->web_frame_ = child_web_frame;
-  parent->appendChild(child_web_frame);
-  return child_web_frame;
+  return child_frame->web_frame_;
 }
 
 void HTMLFrame::frameDetached(blink::WebFrame* web_frame,

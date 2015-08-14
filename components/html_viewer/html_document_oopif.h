@@ -57,6 +57,8 @@ class HTMLDocumentOOPIF
       public mojo::InterfaceFactory<TestHTMLViewer> {
  public:
   using DeleteCallback = base::Callback<void(HTMLDocumentOOPIF*)>;
+  using HTMLFrameCreationCallback =
+      base::Callback<HTMLFrame*(HTMLFrame::CreateParams*)>;
 
   // Load a new HTMLDocument with |response|.
   // |html_document_app| is the application this app was created in, and
@@ -66,7 +68,8 @@ class HTMLDocumentOOPIF
                     mojo::ApplicationConnection* connection,
                     mojo::URLResponsePtr response,
                     GlobalState* setup,
-                    const DeleteCallback& delete_callback);
+                    const DeleteCallback& delete_callback,
+                    const HTMLFrameCreationCallback& frame_creation_callback);
 
   // Deletes this object.
   void Destroy();
@@ -107,6 +110,7 @@ class HTMLDocumentOOPIF
   bool ShouldNavigateLocallyInMainFrame() override;
   void OnFrameDidFinishLoad() override;
   mojo::ApplicationImpl* GetApp() override;
+  HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>:
   void Create(mojo::ApplicationConnection* connection,
@@ -145,6 +149,8 @@ class HTMLDocumentOOPIF
   scoped_ptr<BeforeLoadCache> before_load_cache_;
 
   DeleteCallback delete_callback_;
+
+  HTMLFrameCreationCallback frame_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocumentOOPIF);
 };

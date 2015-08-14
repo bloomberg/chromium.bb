@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/html_viewer/html_document.h"
+#include "components/html_viewer/html_frame.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
@@ -20,6 +20,7 @@
 namespace html_viewer {
 
 class GlobalState;
+class HTMLDocument;
 class HTMLDocumentOOPIF;
 
 // ApplicationDelegate created by the content handler for a specific url.
@@ -31,11 +32,10 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
       GlobalState* global_state,
       scoped_ptr<mojo::AppRefCount> parent_app_refcount);
 
-  typedef base::Callback<HTMLDocument*(HTMLDocument::CreateParams*)>
-      HTMLDocumentCreationCallback;
+  using HTMLFrameCreationCallback =
+      base::Callback<HTMLFrame*(HTMLFrame::CreateParams*)>;
 
-  void SetHTMLDocumentCreationCallback(
-      const HTMLDocumentCreationCallback& callback);
+  void SetHTMLFrameCreationCallback(const HTMLFrameCreationCallback& callback);
 
  private:
   class ServiceConnectorQueue;
@@ -76,7 +76,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   // HTMLDocument is deleted.
   std::set<HTMLDocumentOOPIF*> documents2_;
 
-  HTMLDocumentCreationCallback html_document_creation_callback_;
+  HTMLFrameCreationCallback html_frame_creation_callback_;
 
   base::WeakPtrFactory<HTMLDocumentApplicationDelegate> weak_factory_;
 

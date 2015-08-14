@@ -40,17 +40,16 @@ void LayoutTestContentHandlerImpl::StartApplication(
           request.Pass(), response.Pass(), global_state(),
           app()->app_lifetime_helper()->CreateAppRefCount());
 
-  delegate->SetHTMLDocumentCreationCallback(
-      base::Bind(&LayoutTestContentHandlerImpl::CreateHTMLDocument,
-                 base::Unretained(this)));
+  delegate->SetHTMLFrameCreationCallback(base::Bind(
+      &LayoutTestContentHandlerImpl::CreateHTMLFrame, base::Unretained(this)));
 }
 
-HTMLDocument* LayoutTestContentHandlerImpl::CreateHTMLDocument(
-    HTMLDocument::CreateParams* params) {
-  typedef test_runner::WebTestProxy<
-      test_runner::WebFrameTestProxy<HTMLDocument, HTMLDocument::CreateParams*>,
-      HTMLDocument::CreateParams*> ProxyType;
-
+HTMLFrame* LayoutTestContentHandlerImpl::CreateHTMLFrame(
+    HTMLFrame::CreateParams* params) {
+  using ProxyType = test_runner::WebTestProxy<
+      test_runner::WebFrameTestProxy<HTMLFrame, HTMLFrame::CreateParams*>,
+      HTMLFrame::CreateParams*>;
+  // TODO(sky): this isn't right for all frame types, eg remote frames.
   ProxyType* proxy = new ProxyType(params);
   proxy->SetInterfaces(test_interfaces_);
   proxy->SetDelegate(test_delegate_);

@@ -37,6 +37,7 @@ group("tests") {
       "//components/filesystem:apptests",
       "//components/html_viewer:apptests",
       "//components/html_viewer:html_viewer_unittests",
+      "//components/html_viewer:layout_test_html_viewer",
       "//components/resource_provider:apptests",
       "//components/resource_provider:resource_provider_unittests",
       "//components/view_manager:tests",

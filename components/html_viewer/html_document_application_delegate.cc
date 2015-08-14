@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "components/html_viewer/global_state.h"
+#include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_document_oopif.h"
 #include "components/html_viewer/html_viewer_switches.h"
 #include "mojo/application/public/cpp/application_connection.h"
@@ -21,8 +22,8 @@ bool EnableOOPIFs() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kOOPIF);
 }
 
-HTMLDocument* CreateHTMLDocument(HTMLDocument::CreateParams* params) {
-  return new HTMLDocument(params);
+HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) {
+  return new HTMLFrame(params);
 }
 
 }  // namespace
@@ -79,9 +80,8 @@ HTMLDocumentApplicationDelegate::HTMLDocumentApplicationDelegate(
       url_(response->url),
       initial_response_(response.Pass()),
       global_state_(global_state),
-      html_document_creation_callback_(base::Bind(CreateHTMLDocument)),
-      weak_factory_(this) {
-}
+      html_frame_creation_callback_(base::Bind(CreateHTMLFrame)),
+      weak_factory_(this) {}
 
 HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   // Deleting the documents is going to trigger a callback to
@@ -98,9 +98,9 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   DCHECK(documents2_.empty());
 }
 
-void HTMLDocumentApplicationDelegate::SetHTMLDocumentCreationCallback(
-    const HTMLDocumentCreationCallback& callback) {
-  html_document_creation_callback_ = callback;
+void HTMLDocumentApplicationDelegate::SetHTMLFrameCreationCallback(
+    const HTMLFrameCreationCallback& callback) {
+  html_frame_creation_callback_ = callback;
 }
 
 // Callback from the quit closure. We key off this rather than
@@ -174,15 +174,15 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
     HTMLDocumentOOPIF* document = new HTMLDocumentOOPIF(
         &app_, connection, response.Pass(), global_state_,
         base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        html_frame_creation_callback_);
     documents2_.insert(document);
   } else {
     HTMLDocument::CreateParams params(
         &app_, connection, response.Pass(), global_state_,
         base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted,
                    base::Unretained(this)));
-    HTMLDocument* document = html_document_creation_callback_.Run(&params);
-    documents_.insert(document);
+    documents_.insert(new HTMLDocument(&params));
   }
 
   if (connector_queue) {

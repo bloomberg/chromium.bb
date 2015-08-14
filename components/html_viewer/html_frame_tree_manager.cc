@@ -89,15 +89,13 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     const mandoline::FrameDataPtr& data = frame_data[frame_data_index];
     if (existing_frame) {
       CHECK(!existing_frame->IsLocal());
-      existing_frame->set_delegate(delegate);
-      existing_frame->SwapToLocal(view, data->client_properties);
+      existing_frame->SwapToLocal(delegate, view, data->client_properties);
     } else {
       HTMLFrame* parent = frame_tree->root_->FindFrame(data->parent_id);
       CHECK(parent);
-      HTMLFrame::CreateParams params(frame_tree, parent, view->id());
-      HTMLFrame* frame = new HTMLFrame(params);
-      frame->set_delegate(delegate);
-      frame->Init(view, data->client_properties);
+      HTMLFrame::CreateParams params(frame_tree, parent, view->id(), view,
+                                     data->client_properties, delegate);
+      delegate->CreateHTMLFrame(&params);
     }
   }
 
@@ -167,18 +165,17 @@ HTMLFrame* HTMLFrameTreeManager::BuildFrameTree(
     }
     HTMLFrame::CreateParams params(this,
                                    !parents.empty() ? parents.back() : nullptr,
-                                   frame_data[i]->frame_id);
-    HTMLFrame* frame = new HTMLFrame(params);
+                                   frame_data[i]->frame_id, local_view,
+                                   frame_data[i]->client_properties, nullptr);
+    if (frame_data[i]->frame_id == local_frame_id)
+      params.delegate = delegate;
+
+    HTMLFrame* frame = delegate->CreateHTMLFrame(&params);
     if (!last_frame)
       root = frame;
     else
       DCHECK(frame->parent());
     last_frame = frame;
-
-    if (frame_data[i]->frame_id == local_frame_id)
-      frame->set_delegate(delegate);
-
-    frame->Init(local_view, frame_data[i]->client_properties);
   }
   return root;
 }
@@ -235,10 +232,10 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
   if (pending_remove_ids_.count(frame_data->frame_id))
     return;
 
-  HTMLFrame::CreateParams params(this, parent, frame_data->frame_id);
-  // |parent| takes ownership of |frame|.
-  HTMLFrame* frame = new HTMLFrame(params);
-  frame->Init(nullptr, frame_data->client_properties);
+  HTMLFrame::CreateParams params(this, parent, frame_data->frame_id, nullptr,
+                                 frame_data->client_properties, nullptr);
+  // |parent| takes ownership of created HTMLFrame.
+  source->GetLocalRoot()->delegate_->CreateHTMLFrame(&params);
 }
 
 void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
