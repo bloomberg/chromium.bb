@@ -69,8 +69,6 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id,
 
 bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                               StringPiece value) {
-  typedef std::pair<SpdyHeaderBlock::iterator, bool> InsertResult;
-
   // Fail if pseudo-header follows regular header.
   if (name.size() > 0) {
     if (name[0] == kPseudoHeaderPrefix) {
@@ -90,9 +88,10 @@ bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
       cookie_value_.insert(cookie_value_.end(), value.begin(), value.end());
     }
   } else {
-    InsertResult result = decoded_block_.insert(
+    auto result = decoded_block_.insert(
         std::make_pair(name.as_string(), value.as_string()));
     if (!result.second) {
+      // Key |name| already exists, append new value.
       result.first->second.push_back('\0');
       result.first->second.insert(result.first->second.end(), value.begin(),
                                   value.end());
