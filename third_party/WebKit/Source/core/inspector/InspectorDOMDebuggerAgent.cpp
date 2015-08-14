@@ -313,7 +313,6 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
         *errorString = "Inspected frame has gone";
         return;
     }
-
     ScriptState* state = injectedScript.scriptState();
     ScriptState::Scope scope(state);
     v8::Local<v8::Value> value = injectedScript.findObject(*remoteId);
@@ -321,51 +320,62 @@ void InspectorDOMDebuggerAgent::getEventListeners(ErrorString* errorString, cons
         *errorString = "No object with passed objectId";
         return;
     }
-    EventTarget* target = InjectedScriptHost::eventTargetFromV8Value(state->isolate(), value);
-    if (!target) {
-        *errorString = "No event target with passed objectId";
-        return;
-    }
-
-    listenersArray = TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>::create();
-    WillBeHeapVector<EventListenerInfo> eventInformation;
-    EventListenerInfo::getEventListeners(target, eventInformation, false);
-    if (eventInformation.isEmpty())
-        return;
 
     String objectGroup = injectedScript.objectIdToObjectGroupName(objectId);
+    listenersArray = TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>::create();
+    eventListeners(injectedScript, value, objectGroup, listenersArray);
+}
+
+void InspectorDOMDebuggerAgent::eventListeners(InjectedScript& injectedScript, v8::Local<v8::Value> object, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray)
+{
+    ScriptState* state = injectedScript.scriptState();
+    EventTarget* eventTarget = InjectedScriptHost::eventTargetFromV8Value(state->isolate(), object);
+    if (!eventTarget)
+        return;
+    ExecutionContext* executionContext = eventTarget->executionContext();
+    if (!executionContext)
+        return;
+
+    WillBeHeapVector<EventListenerInfo> eventInformation;
+    EventListenerInfo::getEventListeners(eventTarget, eventInformation, false);
+    if (eventInformation.isEmpty())
+        return;
     RegisteredEventListenerIterator iterator(eventInformation);
     while (const RegisteredEventListener* listener = iterator.nextRegisteredEventListener()) {
         const EventListenerInfo& info = iterator.currentEventListenerInfo();
-        RefPtr<TypeBuilder::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(*listener, info.eventType, info.eventTarget, objectGroup);
+        v8::Local<v8::Object> handler = eventListenerHandler(executionContext, listener->listener.get());
+        RefPtr<TypeBuilder::DOMDebugger::EventListener> listenerObject = buildObjectForEventListener(injectedScript, handler, listener->useCapture, info.eventType, objectGroup);
         if (listenerObject)
             listenersArray->addItem(listenerObject);
     }
 }
 
-PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(const RegisteredEventListener& registeredEventListener, const AtomicString& eventType, EventTarget* target, const String& objectGroupId)
+PassRefPtr<TypeBuilder::DOMDebugger::EventListener> InspectorDOMDebuggerAgent::buildObjectForEventListener(InjectedScript& injectedScript, v8::Local<v8::Object> handler, bool useCapture, const String& type, const String& objectGroupId)
 {
-    EventListener* eventListener = registeredEventListener.listener.get();
-    RefPtrWillBeRawPtr<EventListener> protect(eventListener);
+    if (handler.IsEmpty())
+        return nullptr;
+
+    ScriptState* scriptState = injectedScript.scriptState();
+    v8::Isolate* isolate = scriptState->isolate();
+    v8::Local<v8::Function> function = eventListenerEffectiveFunction(isolate, handler);
+    if (function.IsEmpty())
+        return nullptr;
+
     String scriptId;
     int lineNumber;
     int columnNumber;
-    ExecutionContext* context = target->executionContext();
-    if (!context)
-        return nullptr;
-    if (!eventListenerHandlerLocation(context, eventListener, scriptId, lineNumber, columnNumber))
-        return nullptr;
+    getFunctionLocation(function, scriptId, lineNumber, columnNumber);
 
     RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
         .setScriptId(scriptId)
         .setLineNumber(lineNumber);
     location->setColumnNumber(columnNumber);
     RefPtr<TypeBuilder::DOMDebugger::EventListener> value = TypeBuilder::DOMDebugger::EventListener::create()
-        .setType(eventType)
-        .setUseCapture(registeredEventListener.useCapture)
+        .setType(type)
+        .setUseCapture(useCapture)
         .setLocation(location);
     if (!objectGroupId.isEmpty())
-        value->setHandler(eventHandlerObject(context, eventListener, m_injectedScriptManager, &objectGroupId));
+        value->setHandler(injectedScript.wrapObject(ScriptValue(scriptState, function), objectGroupId));
     return value.release();
 }
 

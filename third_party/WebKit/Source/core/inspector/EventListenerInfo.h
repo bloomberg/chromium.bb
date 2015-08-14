@@ -62,8 +62,6 @@ private:
     bool m_isUseCapturePass;
 };
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> eventHandlerObject(ExecutionContext*, EventListener*, InjectedScriptManager*, const String* objectGroupId);
-
 } // namespace blink
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::EventListenerInfo);

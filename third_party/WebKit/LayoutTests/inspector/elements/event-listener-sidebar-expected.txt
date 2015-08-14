@@ -8,10 +8,10 @@ Inspect Me
     handler: function documentClickHandler(event) { console.log("click - document - attribute"); }
 [expanded] documentevent-listener-sidebar.html:31
     useCapture: true
-    handler: EventListenerImpl
+    handler: function () { console.log("click - document - handleEvent"); }
 [expanded] documentevent-listener-sidebar.html:25
     useCapture: true
-    handler: ObjectHandler
+    handler: function ObjectHandler() { document.addEventListener("click", this, true); }
 [expanded] documentevent-listener-sidebar.html:19
     useCapture: true
     handler: function (event) { console.log("click - document - capturing"); }

@@ -77,23 +77,4 @@ const EventListenerInfo& RegisteredEventListenerIterator::currentEventListenerIn
     return m_listenersArray[m_infoIndex];
 }
 
-PassRefPtr<TypeBuilder::Runtime::RemoteObject> eventHandlerObject(ExecutionContext* context, EventListener* eventListener, InjectedScriptManager* manager, const String* objectGroupId)
-{
-    ScriptValue functionValue = eventListenerHandler(context, eventListener);
-    if (functionValue.isEmpty() || !context->isDocument())
-        return nullptr;
-
-    LocalFrame* frame = toDocument(context)->frame();
-    if (!frame)
-        return nullptr;
-
-    ScriptState* scriptState = eventListenerHandlerScriptState(frame, eventListener);
-    if (scriptState) {
-        InjectedScript injectedScript = manager->injectedScriptFor(scriptState);
-        if (!injectedScript.isEmpty())
-            return injectedScript.wrapObject(functionValue, *objectGroupId);
-    }
-    return nullptr;
-}
-
 } // namespace blink
