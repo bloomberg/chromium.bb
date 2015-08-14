@@ -28,8 +28,8 @@
 #define DocumentMarkerController_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DocumentMarker.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"

@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "core/dom/DocumentMarkerController.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
 #include "core/dom/Range.h"
-#include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/PassRefPtr.h"

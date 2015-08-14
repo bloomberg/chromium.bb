@@ -28,7 +28,6 @@
 
 #include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
-#include "core/dom/DocumentMarker.h"
 #include "core/editing/EditAction.h"
 #include "core/editing/EditingBehavior.h"
 #include "core/editing/EphemeralRange.h"
@@ -37,6 +36,7 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "platform/PasteMode.h"
 #include "platform/heap/Handle.h"
 

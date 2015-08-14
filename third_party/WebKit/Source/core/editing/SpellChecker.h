@@ -27,9 +27,9 @@
 #define SpellChecker_h
 
 #include "core/CoreExport.h"
-#include "core/dom/DocumentMarker.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
 

@@ -22,10 +22,10 @@
 
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRectList.h"
-#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/editing/DragCaretController.h"
 #include "core/editing/UndoStack.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/DOMTimer.h"

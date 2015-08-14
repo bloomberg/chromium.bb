@@ -29,7 +29,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/EditingUtilities.h"
@@ -39,6 +38,7 @@
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"

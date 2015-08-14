@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "core/dom/DocumentMarkerController.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
-#include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 

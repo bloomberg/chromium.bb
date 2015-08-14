@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 
-#include "core/dom/DocumentMarkerController.h"
-#include "core/dom/RenderedDocumentMarker.h"
 #include "core/editing/Editor.h"
+#include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/api/SelectionState.h"

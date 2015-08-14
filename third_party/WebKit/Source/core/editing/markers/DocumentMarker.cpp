@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/dom/DocumentMarker.h"
+#include "core/editing/markers/DocumentMarker.h"
 
 namespace blink {
 

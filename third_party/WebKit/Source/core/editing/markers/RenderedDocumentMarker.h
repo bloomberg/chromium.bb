@@ -27,7 +27,7 @@
 #ifndef RenderedDocumentMarker_h
 #define RenderedDocumentMarker_h
 
-#include "core/dom/DocumentMarker.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {

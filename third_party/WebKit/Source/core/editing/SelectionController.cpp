@@ -31,11 +31,11 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/DocumentMarkerController.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"

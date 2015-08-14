@@ -27,10 +27,10 @@
 #include "config.h"
 #include "web/SpellCheckerClientImpl.h"
 
-#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Element.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SpellChecker.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"

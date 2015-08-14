@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 
-#include "core/dom/DocumentMarkerController.h"
-#include "core/dom/RenderedDocumentMarker.h"
 #include "core/editing/Editor.h"
+#include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/markers/RenderedDocumentMarker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutInline.h"

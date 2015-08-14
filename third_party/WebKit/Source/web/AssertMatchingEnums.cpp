@@ -35,11 +35,11 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/DocumentMarker.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/IconURL.h"
 #include "core/editing/SelectionType.h"
 #include "core/editing/TextAffinity.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "core/fileapi/FileError.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Settings.h"

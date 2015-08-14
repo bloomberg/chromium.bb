@@ -23,11 +23,11 @@
 #include "core/layout/HitTestResult.h"
 
 #include "core/HTMLNames.h"
-#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"

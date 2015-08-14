@@ -5,7 +5,7 @@
 #include "config.h"
 #include "core/paint/FramePainter.h"
 
-#include "core/dom/DocumentMarkerController.h"
+#include "core/editing/markers/DocumentMarkerController.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
