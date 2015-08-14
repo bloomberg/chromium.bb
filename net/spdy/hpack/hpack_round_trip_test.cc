@@ -125,10 +125,11 @@ TEST_F(HpackRoundTripTest, RandomizedExamples) {
   // Grow vectors of names & values, which are seeded with fixtures and then
   // expanded with dynamically generated data. Samples are taken using the
   // exponential distribution.
-  vector<string> names;
-  names.push_back(":authority");
-  names.push_back(":path");
-  names.push_back(":status");
+  vector<string> pseudo_header_names, random_header_names;
+  pseudo_header_names.push_back(":authority");
+  pseudo_header_names.push_back(":path");
+  pseudo_header_names.push_back(":status");
+
   // TODO(jgraettinger): Enable "cookie" as a name fixture. Crumbs may be
   // reconstructed in any order, which breaks the simple validation used here.
 
@@ -148,18 +149,36 @@ TEST_F(HpackRoundTripTest, RandomizedExamples) {
   for (size_t i = 0; i != 2000; ++i) {
     SpdyHeaderBlock headers;
 
+    // Choose a random number of headers to add, and of these a random subset
+    // will be HTTP/2 pseudo headers.
     size_t header_count = 1 + SampleExponential(7, 50);
+    size_t pseudo_header_count =
+        std::min(header_count, 1 + SampleExponential(7, 50));
+    EXPECT_LE(pseudo_header_count, header_count);
     for (size_t j = 0; j != header_count; ++j) {
-      size_t name_index = SampleExponential(20, 200);
-      size_t value_index = SampleExponential(20, 200);
-
       string name, value;
-      if (name_index >= names.size()) {
-        names.push_back(base::RandBytesAsString(1 + SampleExponential(5, 30)));
-        name = names.back();
+      // Pseudo headers must be added before regular headers.
+      if (j < pseudo_header_count) {
+        // Choose one of the defined pseudo headers at random.
+        size_t name_index = base::RandGenerator(pseudo_header_names.size());
+        name = pseudo_header_names[name_index];
       } else {
-        name = names[name_index];
+        // Randomly reuse an existing header name, or generate a new one.
+        size_t name_index = SampleExponential(20, 200);
+        if (name_index >= random_header_names.size()) {
+          name = base::RandBytesAsString(1 + SampleExponential(5, 30));
+          // A regular header cannot begin with the pseudo header prefix ":".
+          if (name[0] == ':') {
+            name[0] = 'x';
+          }
+          random_header_names.push_back(name);
+        } else {
+          name = random_header_names[name_index];
+        }
       }
+
+      // Randomly reuse an existing value, or generate a new one.
+      size_t value_index = SampleExponential(20, 200);
       if (value_index >= values.size()) {
         string newvalue =
             base::RandBytesAsString(1 + SampleExponential(15, 75));
