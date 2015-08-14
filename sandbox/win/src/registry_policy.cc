@@ -43,7 +43,7 @@ NTSTATUS TranslateMaximumAllowed(OBJECT_ATTRIBUTES* obj_attributes,
   OBJECT_BASIC_INFORMATION info = {0};
   status = NtQueryObject(handle, ObjectBasicInformation, &info, sizeof(info),
                          NULL);
-  NtClose(handle);
+  CHECK(NT_SUCCESS(NtClose(handle)));
   if (!NT_SUCCESS(status))
     return status;
 

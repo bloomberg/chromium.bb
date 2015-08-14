@@ -47,11 +47,8 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   NTSTATUS status = NtOpenDirectoryObject(&symbolic_link_directory,
                                           DIRECTORY_QUERY,
                                           &symbolic_link_directory_attributes);
-  if (status != STATUS_SUCCESS) {
-    DLOG(ERROR) << "Failed to open symbolic link directory. Error: "
-                << status;
+  if (!NT_SUCCESS(status))
     return status;
-  }
 
   OBJECT_ATTRIBUTES symbolic_link_attributes = {};
   UNICODE_STRING name_string = {};
@@ -61,20 +58,16 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   HANDLE symbolic_link = NULL;
   status = NtOpenSymbolicLinkObject(&symbolic_link, GENERIC_READ,
                                     &symbolic_link_attributes);
-  NtClose(symbolic_link_directory);
-  if (status != STATUS_SUCCESS) {
-    DLOG(ERROR) << "Failed to open symbolic link Error: " << status;
+  CHECK(NT_SUCCESS(NtClose(symbolic_link_directory)));
+  if (!NT_SUCCESS(status))
     return status;
-  }
 
   UNICODE_STRING target_path = {};
   unsigned long target_length = 0;
   status = NtQuerySymbolicLinkObject(symbolic_link, &target_path,
                                      &target_length);
   if (status != STATUS_BUFFER_TOO_SMALL) {
-    NtClose(symbolic_link);
-    DLOG(ERROR) << "Failed to get length for symbolic link target. Error: "
-                << status;
+    CHECK(NT_SUCCESS(NtClose(symbolic_link)));
     return status;
   }
 
@@ -83,13 +76,10 @@ NTSTATUS ResolveSymbolicLink(const base::string16& directory_name,
   target_path.Buffer = new wchar_t[target_path.MaximumLength + 1];
   status = NtQuerySymbolicLinkObject(symbolic_link, &target_path,
                                      &target_length);
-  if (status == STATUS_SUCCESS) {
+  if (NT_SUCCESS(status))
     target->assign(target_path.Buffer, target_length);
-  } else {
-    DLOG(ERROR) << "Failed to resolve symbolic link. Error: " << status;
-  }
 
-  NtClose(symbolic_link);
+  CHECK(NT_SUCCESS(NtClose(symbolic_link)));
   delete[] target_path.Buffer;
   return status;
 }
@@ -112,7 +102,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
   NTSTATUS status = ResolveSymbolicLink(L"\\Sessions\\BNOLINKS",
                                         base::StringPrintf(L"%d", session_id),
                                         &base_named_objects_path);
-  if (status != STATUS_SUCCESS) {
+  if (!NT_SUCCESS(status)) {
     DLOG(ERROR) << "Failed to resolve BaseNamedObjects path. Error: "
                 << status;
     return status;
@@ -125,7 +115,7 @@ NTSTATUS GetBaseNamedObjectsDirectory(HANDLE* directory) {
   status = NtOpenDirectoryObject(&base_named_objects_handle,
                                  DIRECTORY_ALL_ACCESS,
                                  &object_attributes);
-  if (status == STATUS_SUCCESS)
+  if (NT_SUCCESS(status))
     *directory = base_named_objects_handle;
   return status;
 }
