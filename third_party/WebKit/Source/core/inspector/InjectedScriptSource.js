@@ -418,7 +418,7 @@ InjectedScript.prototype = {
             return false;
         object = /** @type {!Object} */ (object);
         var descriptors = [];
-        var iter = this._propertyDescriptors(object, ownProperties, accessorPropertiesOnly, undefined);
+        var iter = this._propertyDescriptors(object, ownProperties, accessorPropertiesOnly);
         // Go over properties, wrap object values.
         for (var descriptor of iter) {
             if ("get" in descriptor)
