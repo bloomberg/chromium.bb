@@ -3982,17 +3982,20 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 			for( ; icrs < aend; icrs++)
 			switch(input[icrs])
 			{
-			case '_':  attr |= CTC_Space;        break;
-			case '#':  attr |= CTC_Digit;        break;
-			case 'a':  attr |= CTC_Letter;       break;
-			case 'u':  attr |= CTC_UpperCase;    break;
-			case 'l':  attr |= CTC_LowerCase;    break;
-			case '.':  attr |= CTC_Punctuation;  break;
-			case '$':  attr |= CTC_Sign;         break;
-			case '1':  attr |= CTC_Class1;       break;
-			case '2':  attr |= CTC_Class2;       break;
-			case '3':  attr |= CTC_Class3;       break;
-			case '4':  attr |= CTC_Class4;       break;
+			case '_':  attr |= CTC_Space;         break;
+			case '#':  attr |= CTC_Digit;         break;
+			case 'a':  attr |= CTC_Letter;        break;
+			case 'u':  attr |= CTC_UpperCase;     break;
+			case 'l':  attr |= CTC_LowerCase;     break;
+			case '.':  attr |= CTC_Punctuation;   break;
+			case '$':  attr |= CTC_Sign;          break;
+			case '~':  attr |= CTC_SeqDelimiter;  break;
+			case '<':  attr |= CTC_SeqBefore;     break;
+			case '>':  attr |= CTC_SeqAfter;      break;
+			case '1':  attr |= CTC_Class1;        break;
+			case '2':  attr |= CTC_Class2;        break;
+			case '3':  attr |= CTC_Class3;        break;
+			case '4':  attr |= CTC_Class4;        break;
 			default:  return 0;
 			}
 			expr[rcrs++] = attr;

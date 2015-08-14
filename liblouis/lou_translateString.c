@@ -1154,8 +1154,8 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 			return !not;
 		else if(input[icrs] == 0)
 			return !not;
-		else if(checkAttr(input[icrs], CTC_Space | CTC_SeqDelimiter, 0))
-			return !not;
+		//else if(checkAttr(input[icrs], CTC_Space | CTC_SeqDelimiter, 0))
+		//	return !not;
 		else
 			return not;
 
@@ -1270,8 +1270,8 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 			return !not;
 		else if(input[icrs] == 0)
 			return !not;
-		else if(checkAttr(input[icrs], CTC_Space | CTC_SeqDelimiter, 0))
-			return !not;
+		//else if(checkAttr(input[icrs], CTC_Space | CTC_SeqDelimiter, 0))
+		//	return !not;
 		else
 			return not;
 
