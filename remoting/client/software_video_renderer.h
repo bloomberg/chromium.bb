@@ -76,6 +76,9 @@ class SoftwareVideoRenderer : public VideoRenderer,
 
   ChromotingStats stats_;
 
+  // Keep track of the latest event timestamp bounced back from the host.
+  int64 latest_event_timestamp_;
+
   base::WeakPtrFactory<SoftwareVideoRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareVideoRenderer);

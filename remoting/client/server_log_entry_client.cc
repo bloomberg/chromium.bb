@@ -115,17 +115,17 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
   entry->AddEventNameField(kValueEventNameStatistics);
 
   entry->Set("video-bandwidth",
-             StringPrintf("%.2f", statistics->video_bandwidth()));
+             StringPrintf("%.2f", statistics->video_bandwidth()->Rate()));
   entry->Set("capture-latency",
-             StringPrintf("%.2f", statistics->video_capture_ms()));
+             StringPrintf("%.2f", statistics->video_capture_ms()->Average()));
   entry->Set("encode-latency",
-             StringPrintf("%.2f", statistics->video_encode_ms()));
+             StringPrintf("%.2f", statistics->video_encode_ms()->Average()));
   entry->Set("decode-latency",
-             StringPrintf("%.2f", statistics->video_decode_ms()));
+             StringPrintf("%.2f", statistics->video_decode_ms()->Average()));
   entry->Set("render-latency",
-             StringPrintf("%.2f", statistics->video_frame_rate()));
+             StringPrintf("%.2f", statistics->video_frame_rate()->Rate()));
   entry->Set("roundtrip-latency",
-             StringPrintf("%.2f", statistics->round_trip_ms()));
+             StringPrintf("%.2f", statistics->round_trip_ms()->Average()));
 
   return entry.Pass();
 }

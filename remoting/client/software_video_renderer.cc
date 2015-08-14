@@ -317,6 +317,7 @@ SoftwareVideoRenderer::SoftwareVideoRenderer(
     scoped_ptr<FrameConsumerProxy> consumer)
     : decode_task_runner_(decode_task_runner),
       core_(new Core(main_task_runner, decode_task_runner, consumer.Pass())),
+      latest_event_timestamp_(0),
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
 }
@@ -345,16 +346,35 @@ protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {
 }
 
 void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
-                                               const base::Closure& done) {
+                                                const base::Closure& done) {
   DCHECK(CalledOnValidThread());
 
-  stats_.RecordVideoPacketStats(*packet);
+  // Record this received packet, even if it is empty.
+  stats_.video_packet_rate()->Record(1);
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
   if (!packet->has_data() || packet->data().size() == 0) {
-    decode_task_runner_->PostTask(FROM_HERE, done);
+    done.Run();
     return;
+  }
+
+  // Add one frame to the video frame rate counter.
+  stats_.video_frame_rate()->Record(1);
+
+  // Record other statistics received from host.
+  stats_.video_bandwidth()->Record(packet->data().size());
+  if (packet->has_capture_time_ms())
+    stats_.video_capture_ms()->Record(packet->capture_time_ms());
+  if (packet->has_encode_time_ms())
+    stats_.video_encode_ms()->Record(packet->encode_time_ms());
+  if (packet->has_latest_event_timestamp() &&
+      packet->latest_event_timestamp() > latest_event_timestamp_) {
+    latest_event_timestamp_ = packet->latest_event_timestamp();
+    base::TimeDelta round_trip_latency =
+        base::Time::Now() -
+        base::Time::FromInternalValue(packet->latest_event_timestamp());
+    stats_.round_trip_ms()->Record(round_trip_latency.InMilliseconds());
   }
 
   // Measure the latency between the last packet being received and presented.
@@ -399,14 +419,14 @@ void SoftwareVideoRenderer::SetOutputSizeAndClip(
 }
 
 void SoftwareVideoRenderer::OnPacketDone(base::Time decode_start,
-                                         const base::Closure& done) {
+                                          const base::Closure& done) {
   DCHECK(CalledOnValidThread());
 
   // Record the latency between the packet being received and presented.
-  base::TimeDelta decode_time = base::Time::Now() - decode_start;
-  stats_.RecordDecodeTime(decode_time.InMilliseconds());
+  stats_.video_decode_ms()->Record(
+      (base::Time::Now() - decode_start).InMilliseconds());
 
-  decode_task_runner_->PostTask(FROM_HERE, done);
+  done.Run();
 }
 
 }  // namespace remoting
