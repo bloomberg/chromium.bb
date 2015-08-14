@@ -190,8 +190,8 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
     }
     m_wasFrameScrollable = frameIsScrollable;
 
-    if (WebLayer* scrollingWebLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : nullptr) {
-        scrollingWebLayer->setBounds(frameView->contentsSize());
+    if (WebLayer* layoutViewportScrollLayer = frameView ? toWebLayer(frameView->layerForScrolling()) : nullptr) {
+        layoutViewportScrollLayer->setBounds(frameView->contentsSize());
 
         // If there is a non-root fullscreen element, prevent the viewport from
         // scrolling.
@@ -201,12 +201,12 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
 
         if (visualViewportScrollLayer) {
             if (fullscreenElement && fullscreenElement != mainFrameDocument->documentElement())
-                toWebLayer(m_page->frameHost().visualViewport().scrollLayer())->setUserScrollable(false, false);
+                visualViewportScrollLayer->setUserScrollable(false, false);
             else
-                toWebLayer(m_page->frameHost().visualViewport().scrollLayer())->setUserScrollable(true, true);
+                visualViewportScrollLayer->setUserScrollable(true, true);
         }
 
-        scrollingWebLayer->setUserScrollable(frameView->userInputScrollable(HorizontalScrollbar), frameView->userInputScrollable(VerticalScrollbar));
+        layoutViewportScrollLayer->setUserScrollable(frameView->userInputScrollable(HorizontalScrollbar), frameView->userInputScrollable(VerticalScrollbar));
     }
 
     const FrameTree& tree = m_page->mainFrame()->tree();
