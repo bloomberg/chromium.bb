@@ -258,7 +258,7 @@ void SpdyHeadersToBalsaHeaders(const SpdyHeaderBlock& block,
                                BalsaHeaders* headers,
                                QuicVersion quic_version,
                                SpdyHeaderValidatorType type) {
-  if (type == SpdyHeaderValidatorType::RESPONSE) {
+  if (type == SpdyHeaderValidatorType::RESPONSE_HEADER) {
     SpdyHeadersToResponseHeaders(block, headers, quic_version);
     return;
   }
@@ -341,7 +341,7 @@ void SpdyBalsaUtils::SpdyHeadersToResponseHeaders(const SpdyHeaderBlock& block,
                                                   BalsaHeaders* headers,
                                                   QuicVersion quic_version) {
   SpdyHeadersToBalsaHeaders(block, headers, quic_version,
-                            SpdyHeaderValidatorType::RESPONSE);
+                            SpdyHeaderValidatorType::RESPONSE_HEADER);
 }
 
 // static

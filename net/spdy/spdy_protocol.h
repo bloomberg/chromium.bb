@@ -428,7 +428,11 @@ typedef uint64 SpdyPingId;
 
 typedef std::string SpdyProtocolId;
 
-enum class SpdyHeaderValidatorType { REQUEST, RESPONSE };
+enum class SpdyHeaderValidatorType {
+  REQUEST,
+  RESPONSE_HEADER,
+  RESPONSE_TRAILER
+};
 
 // TODO(hkhalil): Add direct testing for this? It won't increase coverage any,
 // but is good to do anyway.
