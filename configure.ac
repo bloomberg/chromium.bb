@@ -167,6 +167,9 @@ AC_CHECK_SYMBOL([posix_fadvise], [fcntl.h], [fc_func_posix_fadvise=1], [fc_func_
 AC_DEFINE_UNQUOTED([HAVE_POSIX_FADVISE], [$fc_func_posix_fadvise], [Define to 1 if you have the 'posix_fadvise' function.])
 
 #
+AC_CHECK_MEMBERS([struct stat.st_mtim],,, [#include <sys/stat.h>])
+
+#
 if test "x$ac_cv_func_fstatvfs" = "xyes"; then
 	AC_CHECK_MEMBERS([struct statvfs.f_basetype, struct statvfs.f_fstypename],,,
 		[#include <sys/statvfs.h>])
