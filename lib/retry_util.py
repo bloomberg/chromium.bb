@@ -44,6 +44,11 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
                      after successful call to |functor|, with the argument
                      being the number of attempts (1 = |functor| succeeded on
                      first try).
+    raise_first_exception_on_failure: Optional boolean which determines which
+                                      exception is raised upon failure after
+                                      retries. If True, the first exception
+                                      that was encountered. If False, the
+                                      final one. Default: True.
 
   Returns:
     Whatever functor(*args, **kwargs) returns.
@@ -65,6 +70,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
 
   success_functor = kwargs.pop('success_functor', lambda x: None)
   ret, success = (None, False)
+
+  raise_first_exception_on_failure = kwargs.pop(
+      'raise_first_exception_on_failure', True)
+
   attempt = 0
 
   exc_info = None
@@ -84,9 +93,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       # and friends don't enter this except block.
       if not handler(e):
         raise
-      # We intentionally ignore any failures in later attempts since we'll
-      # throw the original failure if all retries fail.
-      if exc_info is None:
+      # If raise_first_exception_on_failure, we intentionally ignore
+      # any failures in later attempts since we'll throw the original
+      # failure if all retries fail.
+      if exc_info is None or not raise_first_exception_on_failure:
         exc_info = sys.exc_info()
 
   if success:

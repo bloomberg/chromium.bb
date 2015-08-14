@@ -692,6 +692,28 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
                       success_functor=sf)
     self.assertEqual(s, [1])
 
+  def testRaisedException(self):
+    """Test which exception gets raised by repeated failure."""
+
+    def getTestFunction():
+      """Get function that fails once with ValueError, Then AssertionError."""
+      source = itertools.count()
+      def f():
+        if source.next() == 0:
+          raise ValueError()
+        else:
+          raise AssertionError()
+      return f
+
+    handler = lambda ex: True
+
+    with self.assertRaises(ValueError):
+      retry_util.GenericRetry(handler, 3, getTestFunction())
+
+    with self.assertRaises(AssertionError):
+      retry_util.GenericRetry(handler, 3, getTestFunction(),
+                              raise_first_exception_on_failure=False)
+
   def testSuccessFunctorException(self):
     """Exceptions in |success_functor| should not be retried."""
     def sf(_):
