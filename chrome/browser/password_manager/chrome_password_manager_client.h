@@ -83,7 +83,7 @@ class ChromePasswordManagerClient
   const GURL& GetMainFrameURL() const override;
   bool IsUpdatePasswordUIEnabled() const override;
   const GURL& GetLastCommittedEntryURL() const override;
-  scoped_ptr<password_manager::StoreResultFilter> CreateStoreResultFilter()
+  scoped_ptr<password_manager::CredentialsFilter> CreateStoreResultFilter()
       const override;
 
   // Hides any visible generation UI.

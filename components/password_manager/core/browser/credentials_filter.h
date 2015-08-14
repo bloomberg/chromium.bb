@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_RESULT_FILTER_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_RESULT_FILTER_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIALS_FILTER_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIALS_FILTER_H_
 
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
 
 namespace password_manager {
 
-// This interface is used by PasswordFormManager to filter results from the
-// PasswordStore.
-class StoreResultFilter {
+// This interface is used to filter credentials during saving, retrieval from
+// PasswordStore, etc.
+class CredentialsFilter {
  public:
-  StoreResultFilter() {}
-  virtual ~StoreResultFilter() {}
+  CredentialsFilter() {}
+  virtual ~CredentialsFilter() {}
 
   // Removes from |results| all forms which should be ignored for any password
   // manager-related purposes, and returns the rest.
@@ -23,9 +23,9 @@ class StoreResultFilter {
       ScopedVector<autofill::PasswordForm> results) const = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StoreResultFilter);
+  DISALLOW_COPY_AND_ASSIGN(CredentialsFilter);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_RESULT_FILTER_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CREDENTIALS_FILTER_H_

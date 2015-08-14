@@ -13,13 +13,13 @@
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/store_result_filter.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -98,7 +98,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
   NiceMock<MockAutofillManager> mock_autofill_manager_;
 };
 
-class MockStoreResultFilter : public StoreResultFilter {
+class MockStoreResultFilter : public CredentialsFilter {
  public:
   MOCK_CONST_METHOD1(FilterResultsPtr,
                      void(ScopedVector<autofill::PasswordForm>* results));
@@ -126,7 +126,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   // will filter out all forms.
   void FilterAllResults() { filter_all_results_ = true; }
 
-  scoped_ptr<StoreResultFilter> CreateStoreResultFilter() const override {
+  scoped_ptr<CredentialsFilter> CreateStoreResultFilter() const override {
     scoped_ptr<NiceMock<MockStoreResultFilter>> stub_filter(
         new NiceMock<MockStoreResultFilter>);
     if (filter_all_results_) {

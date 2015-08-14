@@ -6,8 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
-#include "components/password_manager/core/browser/store_result_filter.h"
 
 namespace password_manager {
 
@@ -15,7 +15,7 @@ namespace {
 
 // This filter does not filter out anything, it is a dummy implementation of
 // the filter interface.
-class PassThroughStoreResultFilter : public StoreResultFilter {
+class PassThroughCredentialsFilter : public CredentialsFilter {
  public:
   ScopedVector<autofill::PasswordForm> FilterResults(
       ScopedVector<autofill::PasswordForm> results) const override {
@@ -75,9 +75,9 @@ const GURL& StubPasswordManagerClient::GetLastCommittedEntryURL() const {
   return GURL::EmptyGURL();
 }
 
-scoped_ptr<StoreResultFilter>
+scoped_ptr<CredentialsFilter>
 StubPasswordManagerClient::CreateStoreResultFilter() const {
-  return make_scoped_ptr(new PassThroughStoreResultFilter);
+  return make_scoped_ptr(new PassThroughCredentialsFilter);
 }
 
 }  // namespace password_manager

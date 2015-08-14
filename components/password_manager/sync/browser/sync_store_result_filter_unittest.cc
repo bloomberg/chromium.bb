@@ -27,7 +27,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(GetLastCommittedEntryURL, const GURL&());
 };
 
-bool IsFormFiltered(const StoreResultFilter& filter, const PasswordForm& form) {
+bool IsFormFiltered(const CredentialsFilter& filter, const PasswordForm& form) {
   ScopedVector<PasswordForm> vector;
   vector.push_back(new PasswordForm(form));
   vector = filter.FilterResults(vector.Pass());

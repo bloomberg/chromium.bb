@@ -38,7 +38,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   PrefService* GetPrefs() override;
   PasswordStore* GetPasswordStore() const override;
   const GURL& GetLastCommittedEntryURL() const override;
-  scoped_ptr<StoreResultFilter> CreateStoreResultFilter() const override;
+  scoped_ptr<CredentialsFilter> CreateStoreResultFilter() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubPasswordManagerClient);

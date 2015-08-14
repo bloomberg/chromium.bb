@@ -19,9 +19,9 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/content/common/credential_manager_messages.h"
+#include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/log_receiver.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
-#include "components/password_manager/core/browser/store_result_filter.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
@@ -425,9 +425,9 @@ TEST_F(ChromePasswordManagerClientTest, GetLastCommittedEntryURL) {
 }
 
 TEST_F(ChromePasswordManagerClientTest, CreateStoreResulFilter) {
-  scoped_ptr<password_manager::StoreResultFilter> filter1 =
+  scoped_ptr<password_manager::CredentialsFilter> filter1 =
       GetClient()->CreateStoreResultFilter();
-  scoped_ptr<password_manager::StoreResultFilter> filter2 =
+  scoped_ptr<password_manager::CredentialsFilter> filter2 =
       GetClient()->CreateStoreResultFilter();
   EXPECT_TRUE(filter1);
   EXPECT_TRUE(filter2);

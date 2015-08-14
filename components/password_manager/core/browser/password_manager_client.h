@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/store_result_filter.h"
 
 class PrefService;
 
@@ -173,7 +173,7 @@ class PasswordManagerClient {
   // Creates a filter for PasswordFormManager to process password store
   // response. One filter should be created for every batch of store results for
   // a single observed form. The filter results should not be cached.
-  virtual scoped_ptr<password_manager::StoreResultFilter>
+  virtual scoped_ptr<password_manager::CredentialsFilter>
   CreateStoreResultFilter() const = 0;
 
  private:

@@ -540,7 +540,7 @@ const GURL& ChromePasswordManagerClient::GetLastCommittedEntryURL() const {
   return entry->GetURL();
 }
 
-scoped_ptr<password_manager::StoreResultFilter>
+scoped_ptr<password_manager::CredentialsFilter>
 ChromePasswordManagerClient::CreateStoreResultFilter() const {
   return make_scoped_ptr(new password_manager::SyncStoreResultFilter(this));
 }

@@ -5,19 +5,20 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_STORE_RESULT_FILTER_H_
 #define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_STORE_RESULT_FILTER_H_
 
-#include "components/password_manager/core/browser/store_result_filter.h"
+#include "components/password_manager/core/browser/credentials_filter.h"
 
 namespace password_manager {
 
 class PasswordManagerClient;
 
 // The sync- and GAIA- aware implementation of the filter.
-class SyncStoreResultFilter : public StoreResultFilter {
+// TODO(vabr): Rename this to match the interface.
+class SyncStoreResultFilter : public CredentialsFilter {
  public:
   explicit SyncStoreResultFilter(const PasswordManagerClient* client);
   ~SyncStoreResultFilter() override;
 
-  // StoreResultFilter
+  // CredentialsFilter
   ScopedVector<autofill::PasswordForm> FilterResults(
       ScopedVector<autofill::PasswordForm> results) const override;
 

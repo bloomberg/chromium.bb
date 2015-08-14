@@ -24,7 +24,6 @@ namespace password_manager {
 
 class PasswordManager;
 class PasswordManagerClient;
-class StoreResultFilter;
 
 // Per-password-form-{on-page, dialog} class responsible for interactions
 // between a given form, the per-tab PasswordManager, and the PasswordStore.
