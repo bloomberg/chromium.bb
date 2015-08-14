@@ -835,11 +835,6 @@ void NativeAppWindowCocoa::HideWithApp() {
   HideWithoutMarkingHidden();
 }
 
-void NativeAppWindowCocoa::UpdateShelfMenu() {
-  // TODO(tmdiep): To be implemented for Mac.
-  NOTIMPLEMENTED();
-}
-
 gfx::Size NativeAppWindowCocoa::GetContentMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }

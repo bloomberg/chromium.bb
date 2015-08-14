@@ -57,7 +57,6 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
   base::string16 GetLabelForCommandId(int command_id) const override;
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
-  bool IsCommandIdVisible(int command_id) const override;
   bool GetAcceleratorForCommandId(int command_id,
                                   ui::Accelerator* accelerator) override;
   void ExecuteCommand(int command_id, int event_flags) override;
@@ -77,7 +76,6 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
     MENU_OPEN_NEW,
     MENU_CLOSE,
     MENU_PIN,
-    MENU_INSTALL,
     LAUNCH_TYPE_PINNED_TAB,
     LAUNCH_TYPE_REGULAR_TAB,
     LAUNCH_TYPE_FULLSCREEN,

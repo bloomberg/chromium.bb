@@ -8,13 +8,10 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
-#include "chrome/browser/jumplist_updater_win.h"
 #include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -28,7 +25,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_util.h"
 #include "extensions/common/extension.h"
 #include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -142,7 +138,6 @@ void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(
 
   if (!create_params.alpha_enabled)
     EnsureCaptionStyleSet();
-  UpdateShelfMenu();
 }
 
 views::NonClientFrameView*
@@ -170,49 +165,4 @@ bool ChromeNativeAppWindowViewsWin::CanMinimize() const {
   // See http://crbug.com/417947.
   return ChromeNativeAppWindowViewsAura::CanMinimize() &&
          !(WidgetHasHitTestMask() && is_translucent_);
-}
-
-void ChromeNativeAppWindowViewsWin::UpdateShelfMenu() {
-  if (!JumpListUpdater::IsEnabled() || IsRunningInAsh())
-    return;
-
-  // Currently the only option is related to ephemeral apps, so avoid updating
-  // the app's jump list when the feature is not enabled.
-  if (!EphemeralAppLauncher::IsFeatureEnabled())
-    return;
-
-  const extensions::Extension* extension = app_window()->GetExtension();
-  if (!extension)
-    return;
-
-  // For the icon resources.
-  base::FilePath chrome_path;
-  if (!PathService::Get(base::FILE_EXE, &chrome_path))
-    return;
-
-  DCHECK(!app_model_id_.empty());
-
-  JumpListUpdater jumplist_updater(app_model_id_);
-  if (!jumplist_updater.BeginUpdate())
-    return;
-
-  // Add item to install ephemeral apps.
-  if (extensions::util::IsEphemeralApp(extension->id(),
-                                       app_window()->browser_context())) {
-    scoped_refptr<ShellLinkItem> link(new ShellLinkItem());
-    link->set_title(l10n_util::GetStringUTF16(IDS_APP_INSTALL_TITLE));
-    link->set_icon(chrome_path.value(),
-                   icon_resources::kInstallPackagedAppIndex);
-    ShellIntegration::AppendProfileArgs(
-        app_window()->browser_context()->GetPath(), link->GetCommandLine());
-    link->GetCommandLine()->AppendSwitchASCII(
-        switches::kInstallEphemeralAppFromWebstore, extension->id());
-
-    ShellLinkItemList items;
-    items.push_back(link);
-    jumplist_updater.AddTasks(items);
-  }
-
-  // Note that an empty jumplist must still be committed to clear all items.
-  jumplist_updater.CommitUpdate();
 }

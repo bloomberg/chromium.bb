@@ -79,10 +79,6 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void ShowWithApp() = 0;
   virtual void HideWithApp() = 0;
 
-  // Updates custom entries for the context menu of the app's taskbar/dock/shelf
-  // icon.
-  virtual void UpdateShelfMenu() = 0;
-
   // Returns the minimum size constraints of the content.
   virtual gfx::Size GetContentMinimumSize() const = 0;
 

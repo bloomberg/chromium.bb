@@ -174,10 +174,6 @@ void ShellNativeAppWindow::HideWithApp() {
   NOTIMPLEMENTED();
 }
 
-void ShellNativeAppWindow::UpdateShelfMenu() {
-  // app_shell has no shelf, dock, or system-tray to update.
-}
-
 gfx::Size ShellNativeAppWindow::GetContentMinimumSize() const {
   // Content fills the desktop and cannot be resized.
   return DesktopController::instance()->GetWindowSize();

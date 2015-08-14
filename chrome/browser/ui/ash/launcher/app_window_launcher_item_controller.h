@@ -79,10 +79,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   // Activates the window at position |index|.
   void ActivateIndexedApp(size_t index);
 
-  // Install the app. Only valid for ephemeral apps, which can be promoted to
-  // regular installed apps.
-  void InstallApp();
-
  private:
   typedef std::list<extensions::AppWindow*> AppWindowList;
 

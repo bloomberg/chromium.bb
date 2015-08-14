@@ -5413,11 +5413,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, the chrome://downloads/ URL loads the Material Design downloads page.
       </message>
 
-      <!-- Packaged Apps -->
-      <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
-        Install app
-      </message>
-
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
         Components

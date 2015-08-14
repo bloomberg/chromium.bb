@@ -16,12 +16,10 @@ const int kApplication4Index = 3;
 const int kSxSApplicationIndex = 4;
 const int kAppLauncherIndex = 5;
 const int kSxSAppLauncherIndex = 6;
-const int kInstallPackagedAppIndex = 7;
 
 #else
 const int kApplicationIndex = 0;
 const int kAppLauncherIndex = 1;
-const int kInstallPackagedAppIndex = 2;
 
 // For google_chrome_sxs_distribution.cc to compile in a dev build only.
 const int kSxSApplicationIndex = -1;

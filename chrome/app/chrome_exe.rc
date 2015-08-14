@@ -59,8 +59,6 @@ IDR_X002_APP_LIST_SXS   ICON                    "theme\\google_chrome\\win\\app_
 IDR_X001_APP_LIST       ICON                    "theme\\chromium\\win\\app_list.ico"
 #endif
 
-IDR_X003_INSTALL_APP    ICON                    "theme\\win\\install_app.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

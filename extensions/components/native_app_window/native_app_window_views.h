@@ -150,7 +150,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   gfx::Insets GetFrameInsets() const override;
   void HideWithApp() override;
   void ShowWithApp() override;
-  void UpdateShelfMenu() override;
   gfx::Size GetContentMinimumSize() const override;
   gfx::Size GetContentMaximumSize() const override;
   void SetContentSizeConstraints(const gfx::Size& min_size,

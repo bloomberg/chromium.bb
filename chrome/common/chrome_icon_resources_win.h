@@ -26,9 +26,6 @@ extern const int kAppLauncherIndex;
 // The Chrome App Launcher Canary icon.
 extern const int kSxSAppLauncherIndex;
 
-// The icon for installing a Chrome packaged app.
-extern const int kInstallPackagedAppIndex;
-
 }  // namespace icon_resources
 
 #endif  // CHROME_COMMON_CHROME_ICON_RESOURCES_WIN_H_

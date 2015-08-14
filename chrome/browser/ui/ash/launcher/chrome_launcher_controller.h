@@ -175,14 +175,6 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // be pinned.
   bool IsPinnable(ash::ShelfID id) const;
 
-  // Installs the specified id. Only valid if the id corresponds to an ephemeral
-  // app.
-  void Install(ash::ShelfID id);
-
-  // Returns true if the specified item can be installed. Only true for
-  // ephemeral apps.
-  bool CanInstall(ash::ShelfID id);
-
   // If there is no shelf item in the shelf for application |app_id|, one
   // gets created. The (existing or created) shelf items get then locked
   // against a users un-pinning removal.

@@ -960,15 +960,6 @@ void AppWindow::OnExtensionUnloaded(BrowserContext* browser_context,
     native_app_window_->Close();
 }
 
-void AppWindow::OnExtensionWillBeInstalled(
-    BrowserContext* browser_context,
-    const Extension* extension,
-    bool is_update,
-    bool from_ephemeral,
-    const std::string& old_name) {
-  if (extension->id() == extension_id())
-    native_app_window_->UpdateShelfMenu();
-}
 void AppWindow::SetWebContentsBlocked(content::WebContents* web_contents,
                                       bool blocked) {
   app_delegate_->SetWebContentsBlocked(web_contents, blocked);

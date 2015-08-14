@@ -146,7 +146,6 @@ class NativeAppWindowCocoa : public extensions::NativeAppWindow,
   // differentiate the reason a window was hidden.
   void ShowWithApp() override;
   void HideWithApp() override;
-  void UpdateShelfMenu() override;
   gfx::Size GetContentMinimumSize() const override;
   gfx::Size GetContentMaximumSize() const override;
   void SetContentSizeConstraints(const gfx::Size& min_size,

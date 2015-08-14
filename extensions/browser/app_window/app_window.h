@@ -422,11 +422,6 @@ class AppWindow : public content::WebContentsDelegate,
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionInfo::Reason reason) override;
-  void OnExtensionWillBeInstalled(content::BrowserContext* browser_context,
-                                  const Extension* extension,
-                                  bool is_update,
-                                  bool from_ephemeral,
-                                  const std::string& old_name) override;
 
   // web_modal::WebContentsModalDialogManagerDelegate implementation.
   void SetWebContentsBlocked(content::WebContents* web_contents,

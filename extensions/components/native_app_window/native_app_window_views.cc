@@ -417,9 +417,6 @@ void NativeAppWindowViews::HideWithApp() {
 void NativeAppWindowViews::ShowWithApp() {
 }
 
-void NativeAppWindowViews::UpdateShelfMenu() {
-}
-
 gfx::Size NativeAppWindowViews::GetContentMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }
