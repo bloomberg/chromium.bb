@@ -101,8 +101,6 @@ TEST(DeclarativeContentPageUrlPredicateTest, PageUrlPredicate) {
   EXPECT_THAT(
       page_url_matches,
       ElementsAre(predicate->url_matcher_condition_set()->id()));
-
-  EXPECT_TRUE(predicate->Evaluate(page_url_matches));
 }
 
 // Tests that adding and removing condition sets trigger evaluation requests for
@@ -125,26 +123,29 @@ TEST_F(DeclarativeContentPageUrlConditionTrackerTest,
   // add.
   LoadURL(tabs[0], GURL("http://test1/"));
 
-  const int condition_set_id = 100;
-  std::set<url_matcher::URLMatcherCondition> conditions;
-  conditions.insert(
-      tracker.condition_factory()->CreateHostPrefixCondition("test1"));
-  std::vector<scoped_refptr<url_matcher::URLMatcherConditionSet>>
-      condition_sets(1,
-                     new url_matcher::URLMatcherConditionSet(
-                         condition_set_id, conditions));
+  std::string error;
+  scoped_ptr<DeclarativeContentPageUrlPredicate> predicate =
+      DeclarativeContentPageUrlPredicate::Create(
+          tracker.condition_factory(),
+          *base::test::ParseJson("{\"hostPrefix\": \"test1\"}"),
+          &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(predicate);
+
   delegate_.evaluation_requests().clear();
+  url_matcher::URLMatcherConditionSet::Vector condition_sets(
+      1,
+      predicate->url_matcher_condition_set());
   tracker.AddConditionSets(condition_sets);
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0]));
-  std::set<int> match_ids;
-  tracker.GetMatches(tabs[0], &match_ids);
-  EXPECT_THAT(match_ids, UnorderedElementsAre(condition_set_id));
-  tracker.GetMatches(tabs[1], &match_ids);
-  EXPECT_TRUE(match_ids.empty());
+  EXPECT_TRUE(tracker.EvaluatePredicate(predicate.get(), tabs[0]));
+  EXPECT_FALSE(tracker.EvaluatePredicate(predicate.get(), tabs[1]));
 
   delegate_.evaluation_requests().clear();
-  tracker.RemoveConditionSets(std::vector<int>(1, condition_set_id));
+  tracker.RemoveConditionSets(std::vector<int>(
+      1,
+      predicate->url_matcher_condition_set()->id()));
   EXPECT_THAT(delegate_.evaluation_requests(),
               UnorderedElementsAre(tabs[0]));
 }

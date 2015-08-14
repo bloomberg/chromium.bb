@@ -36,8 +36,8 @@ class DeclarativeContentIsBookmarkedPredicate {
   ~DeclarativeContentIsBookmarkedPredicate();
 
   bool IsIgnored() const;
-  // Evaluate for URL bookmarked state.
-  bool Evaluate(bool url_is_bookmarked) const;
+
+  bool is_bookmarked() const { return is_bookmarked_; }
 
   static scoped_ptr<DeclarativeContentIsBookmarkedPredicate> Create(
       const Extension* extension,
@@ -86,8 +86,11 @@ class DeclarativeContentIsBookmarkedConditionTracker
                                const content::LoadCommittedDetails& details,
                                const content::FrameNavigateParams& params);
 
-  // Returns true if |contents| current URL is bookmarked.
-  bool IsUrlBookmarked(content::WebContents* contents) const;
+  // Returns the result of evaluating |predicate| on the per-tab state
+  // associated with |contents|.
+  bool EvaluatePredicate(
+      const DeclarativeContentIsBookmarkedPredicate* predicate,
+      content::WebContents* contents) const;
 
  private:
   class PerWebContentsTracker : public content::WebContentsObserver {

@@ -16,6 +16,7 @@
 namespace extensions {
 
 using testing::HasSubstr;
+using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
 class DeclarativeContentCssConditionTrackerTest
@@ -92,19 +93,12 @@ TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
   std::string error;
   scoped_ptr<DeclarativeContentCssPredicate> predicate =
       DeclarativeContentCssPredicate::Create(
-          *base::test::ParseJson("[\"input\"]"),
+          *base::test::ParseJson("[\"input\", \"a\"]"),
           &error);
   EXPECT_EQ("", error);
   ASSERT_TRUE(predicate);
 
-  base::hash_set<std::string> matched_css_selectors;
-  matched_css_selectors.insert("input");
-
-  EXPECT_TRUE(predicate->Evaluate(matched_css_selectors));
-
-  matched_css_selectors.clear();
-  matched_css_selectors.insert("body");
-  EXPECT_FALSE(predicate->Evaluate(matched_css_selectors));
+  EXPECT_THAT(predicate->css_selectors(), UnorderedElementsAre("input", "a"));
 }
 
 // Tests the basic flow of operations on the
@@ -128,18 +122,30 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Basic) {
   });
   EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
 
+  std::string error;
+  scoped_ptr<DeclarativeContentCssPredicate> div_predicate =
+      DeclarativeContentCssPredicate::Create(
+          *base::test::ParseJson("[\"div\"]"),
+          &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(div_predicate);
+
+  scoped_ptr<DeclarativeContentCssPredicate> a_predicate =
+      DeclarativeContentCssPredicate::Create(
+          *base::test::ParseJson("[\"a\"]"),
+          &error);
+  EXPECT_EQ("", error);
+  ASSERT_TRUE(a_predicate);
+
   // Check that receiving an OnWatchedPageChange message from the tab results in
   // a request for condition evaluation.
   const std::vector<std::string> matched_selectors(1, "div");
   SendOnWatchedPageChangeMessage(tab.get(), matched_selectors);
   EXPECT_EQ(++expected_evaluation_requests, delegate_.evaluation_requests());
 
-  // Check that GetMatchingCssSelectors produces the same matched selectors as
-  // were sent by the OnWatchedPageChange message.
-  base::hash_set<std::string> matching_selectors;
-  tracker.GetMatchingCssSelectors(tab.get(), &matching_selectors);
-  EXPECT_THAT(matching_selectors,
-              UnorderedElementsAreArray(matched_selectors));
+  // Check that only the div predicate matches.
+  EXPECT_TRUE(tracker.EvaluatePredicate(div_predicate.get(), tab.get()));
+  EXPECT_FALSE(tracker.EvaluatePredicate(a_predicate.get(), tab.get()));
   EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
 
   // Check that an in-page navigation has no effect on the matching selectors.
@@ -148,10 +154,8 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Basic) {
     details.is_in_page = true;
     content::FrameNavigateParams params;
     tracker.OnWebContentsNavigation(tab.get(), details, params);
-    matching_selectors.clear();
-    tracker.GetMatchingCssSelectors(tab.get(), &matching_selectors);
-    EXPECT_THAT(matching_selectors,
-                UnorderedElementsAreArray(matched_selectors));
+    EXPECT_TRUE(tracker.EvaluatePredicate(div_predicate.get(), tab.get()));
+    EXPECT_FALSE(tracker.EvaluatePredicate(a_predicate.get(), tab.get()));
     EXPECT_EQ(expected_evaluation_requests, delegate_.evaluation_requests());
   }
 
@@ -162,9 +166,8 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Basic) {
     details.is_in_page = false;
     content::FrameNavigateParams params;
     tracker.OnWebContentsNavigation(tab.get(), details, params);
-    matching_selectors.clear();
-    tracker.GetMatchingCssSelectors(tab.get(), &matching_selectors);
-    EXPECT_TRUE(matching_selectors.empty());
+    EXPECT_FALSE(tracker.EvaluatePredicate(div_predicate.get(), tab.get()));
+    EXPECT_FALSE(tracker.EvaluatePredicate(a_predicate.get(), tab.get()));
     EXPECT_EQ(++expected_evaluation_requests,
               delegate_.evaluation_requests());
   }

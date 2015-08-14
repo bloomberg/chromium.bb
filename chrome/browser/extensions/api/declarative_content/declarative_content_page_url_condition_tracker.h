@@ -40,11 +40,6 @@ class DeclarativeContentPageUrlPredicate {
     return url_matcher_condition_set_.get();
   }
 
-  // Evaluate for match IDs for the URL of the top-level page of the renderer.
-  bool Evaluate(
-      const std::set<url_matcher::URLMatcherConditionSet::ID>&
-          page_url_matches) const;
-
   static scoped_ptr<DeclarativeContentPageUrlPredicate> Create(
       url_matcher::URLMatcherConditionFactory* url_matcher_condition_factory,
       const base::Value& value,
@@ -115,10 +110,10 @@ class DeclarativeContentPageUrlConditionTracker {
                                const content::LoadCommittedDetails& details,
                                const content::FrameNavigateParams& params);
 
-  // Gets the maching IDs for the last navigation on WebContents.
-  void GetMatches(
-      content::WebContents* contents,
-      std::set<url_matcher::URLMatcherConditionSet::ID>* matches) const;
+  // Returns the result of evaluating |predicate| on the per-tab state
+  // associated with |contents|.
+  bool EvaluatePredicate(const DeclarativeContentPageUrlPredicate* predicate,
+                         content::WebContents* contents) const;
 
   // Returns true if this object retains no allocated data. Only for debugging.
   bool IsEmpty() const;

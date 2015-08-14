@@ -29,12 +29,6 @@ static url_matcher::URLMatcherConditionSet::ID g_next_id = 0;
 DeclarativeContentPageUrlPredicate::~DeclarativeContentPageUrlPredicate() {
 }
 
-bool DeclarativeContentPageUrlPredicate::Evaluate(
-    const std::set<url_matcher::URLMatcherConditionSet::ID>&
-        page_url_matches) const {
-  return ContainsKey(page_url_matches, url_matcher_condition_set_->id());
-}
-
 // static
 scoped_ptr<DeclarativeContentPageUrlPredicate>
 DeclarativeContentPageUrlPredicate::Create(
@@ -166,12 +160,15 @@ void DeclarativeContentPageUrlConditionTracker::OnWebContentsNavigation(
   per_web_contents_tracker_[contents]->UpdateMatchesForCurrentUrl(true);
 }
 
-void DeclarativeContentPageUrlConditionTracker::GetMatches(
-    content::WebContents* contents,
-    std::set<url_matcher::URLMatcherConditionSet::ID>* matches) const {
+bool DeclarativeContentPageUrlConditionTracker::EvaluatePredicate(
+    const DeclarativeContentPageUrlPredicate* predicate,
+    content::WebContents* contents) const {
   auto loc = per_web_contents_tracker_.find(contents);
   DCHECK(loc != per_web_contents_tracker_.end());
-  *matches = loc->second->matches();
+  const std::set<url_matcher::URLMatcherConditionSet::ID>&
+      web_contents_id_matches = loc->second->matches();
+  return ContainsKey(web_contents_id_matches,
+                     predicate->url_matcher_condition_set()->id());
 }
 
 bool DeclarativeContentPageUrlConditionTracker::IsEmpty() const {

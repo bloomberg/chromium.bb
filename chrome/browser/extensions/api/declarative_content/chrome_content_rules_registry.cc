@@ -307,12 +307,6 @@ bool ChromeContentRulesRegistry::ManagingRulesForBrowserContext(
 
 std::set<const ChromeContentRulesRegistry::ContentRule*>
 ChromeContentRulesRegistry::GetMatchingRules(content::WebContents* tab) const {
-  std::set<url_matcher::URLMatcherConditionSet::ID> page_url_matches;
-  base::hash_set<std::string> css_selectors;
-  page_url_condition_tracker_.GetMatches(tab, &page_url_matches);
-  css_condition_tracker_.GetMatchingCssSelectors(tab, &css_selectors);
-  const bool is_bookmarked =
-      is_bookmarked_condition_tracker_.IsUrlBookmarked(tab);
   const bool is_incognito_tab = tab->GetBrowserContext()->IsOffTheRecord();
   std::set<const ContentRule*> matching_rules;
   for (const RulesMap::value_type& rule_id_rule_pair : content_rules_) {
@@ -323,18 +317,24 @@ ChromeContentRulesRegistry::GetMatchingRules(content::WebContents* tab) const {
 
     for (const ContentCondition* condition : rule->conditions) {
       if (condition->page_url_predicate &&
-          !condition->page_url_predicate->Evaluate(page_url_matches)) {
+          !page_url_condition_tracker_.EvaluatePredicate(
+              condition->page_url_predicate.get(),
+              tab)) {
         continue;
       }
 
       if (condition->css_predicate &&
-          !condition->css_predicate->Evaluate(css_selectors)) {
+          !css_condition_tracker_.EvaluatePredicate(
+              condition->css_predicate.get(),
+              tab)) {
         continue;
       }
 
       if (condition->is_bookmarked_predicate &&
           !condition->is_bookmarked_predicate->IsIgnored() &&
-          !condition->is_bookmarked_predicate->Evaluate(is_bookmarked)) {
+          !is_bookmarked_condition_tracker_.EvaluatePredicate(
+              condition->is_bookmarked_predicate.get(),
+              tab)) {
         continue;
       }
 

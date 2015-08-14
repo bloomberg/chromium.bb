@@ -42,11 +42,6 @@ bool DeclarativeContentIsBookmarkedPredicate::IsIgnored() const {
   return !HasBookmarkAPIPermission(extension_.get());
 }
 
-bool DeclarativeContentIsBookmarkedPredicate::Evaluate(
-    bool url_is_bookmarked) const {
-  return url_is_bookmarked == is_bookmarked_;
-}
-
 // static
 scoped_ptr<DeclarativeContentIsBookmarkedPredicate>
 DeclarativeContentIsBookmarkedPredicate::Create(
@@ -191,11 +186,12 @@ void DeclarativeContentIsBookmarkedConditionTracker::OnWebContentsNavigation(
   per_web_contents_tracker_[contents]->UpdateState(true);
 }
 
-bool DeclarativeContentIsBookmarkedConditionTracker::IsUrlBookmarked(
+bool DeclarativeContentIsBookmarkedConditionTracker::EvaluatePredicate(
+    const DeclarativeContentIsBookmarkedPredicate* predicate,
     content::WebContents* contents) const {
   auto loc = per_web_contents_tracker_.find(contents);
   DCHECK(loc != per_web_contents_tracker_.end());
-  return loc->second->is_url_bookmarked();
+  return loc->second->is_url_bookmarked() == predicate->is_bookmarked();
 }
 
 void DeclarativeContentIsBookmarkedConditionTracker::BookmarkModelChanged() {}

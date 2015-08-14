@@ -36,17 +36,6 @@ const char kInvalidTypeOfParameter[] = "Attribute '%s' has an invalid type";
 DeclarativeContentCssPredicate::~DeclarativeContentCssPredicate() {
 }
 
-bool DeclarativeContentCssPredicate::Evaluate(
-    const base::hash_set<std::string>& matched_css_selectors) const {
-  // All attributes must be fulfilled for a fulfilled condition.
-  for (const std::string& css_selector : css_selectors_) {
-    if (!ContainsKey(matched_css_selectors, css_selector))
-      return false;
-  }
-
-  return true;
-}
-
 // static
 scoped_ptr<DeclarativeContentCssPredicate>
 DeclarativeContentCssPredicate::Create(
@@ -128,7 +117,9 @@ OnWebContentsNavigation(const content::LoadCommittedDetails& details,
 void DeclarativeContentCssConditionTracker::PerWebContentsTracker::
 UpdateMatchingCssSelectorsForTesting(
     const std::vector<std::string>& matching_css_selectors) {
-  matching_css_selectors_ = matching_css_selectors;
+  matching_css_selectors_.clear();
+  matching_css_selectors_.insert(matching_css_selectors.begin(),
+                                 matching_css_selectors.end());
   request_evaluation_.Run(web_contents());
 }
 
@@ -154,7 +145,8 @@ void
 DeclarativeContentCssConditionTracker::PerWebContentsTracker::
 OnWatchedPageChange(
     const std::vector<std::string>& css_selectors) {
-  matching_css_selectors_ = css_selectors;
+  matching_css_selectors_.clear();
+  matching_css_selectors_.insert(css_selectors.begin(), css_selectors.end());
   request_evaluation_.Run(web_contents());
 }
 
@@ -219,15 +211,19 @@ void DeclarativeContentCssConditionTracker::OnWebContentsNavigation(
   per_web_contents_tracker_[contents]->OnWebContentsNavigation(details, params);
 }
 
-void DeclarativeContentCssConditionTracker::GetMatchingCssSelectors(
-    content::WebContents* contents,
-    base::hash_set<std::string>* css_selectors) const {
+bool DeclarativeContentCssConditionTracker::EvaluatePredicate(
+    const DeclarativeContentCssPredicate* predicate,
+    content::WebContents* contents) const {
   auto loc = per_web_contents_tracker_.find(contents);
   DCHECK(loc != per_web_contents_tracker_.end());
-  const std::vector<std::string>& matching_css_selectors =
+  const base::hash_set<std::string>& matching_css_selectors =
       loc->second->matching_css_selectors();
-  css_selectors->insert(matching_css_selectors.begin(),
-                        matching_css_selectors.end());
+  for (const std::string& predicate_css_selector : predicate->css_selectors()) {
+    if (!ContainsKey(matching_css_selectors, predicate_css_selector))
+      return false;
+  }
+
+  return true;
 }
 
 void DeclarativeContentCssConditionTracker::

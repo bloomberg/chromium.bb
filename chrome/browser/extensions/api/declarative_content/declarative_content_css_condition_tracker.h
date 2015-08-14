@@ -43,10 +43,6 @@ class DeclarativeContentCssPredicate {
     return css_selectors_;
   }
 
-  // Evaluate for all watched CSS selectors that match on frames with the same
-  // origin as the page's main frame.
-  bool Evaluate(const base::hash_set<std::string>& matched_css_selectors) const;
-
   static scoped_ptr<DeclarativeContentCssPredicate> Create(
       const base::Value& value,
       std::string* error);
@@ -96,11 +92,10 @@ class DeclarativeContentCssConditionTracker
                                const content::LoadCommittedDetails& details,
                                const content::FrameNavigateParams& params);
 
-  // Inserts the currently-matching CSS selectors into |css_selectors|. We use
-  // hash_set for maximally efficient lookup.
-  void GetMatchingCssSelectors(
-      content::WebContents* contents,
-      base::hash_set<std::string>* css_selectors) const;
+  // Returns the result of evaluating |predicate| on the per-tab state
+  // associated with |contents|.
+  bool EvaluatePredicate(const DeclarativeContentCssPredicate* predicate,
+                         content::WebContents* contents) const;
 
   // TODO(wittman): Remove once DeclarativeChromeContentRulesRegistry no longer
   // depends on concrete condition implementations. At that point
@@ -133,7 +128,7 @@ class DeclarativeContentCssConditionTracker
     void UpdateMatchingCssSelectorsForTesting(
         const std::vector<std::string>& matching_css_selectors);
 
-    const std::vector<std::string>& matching_css_selectors() const {
+    const base::hash_set<std::string>& matching_css_selectors() const {
       return matching_css_selectors_;
     }
 
@@ -147,7 +142,8 @@ class DeclarativeContentCssConditionTracker
     const RequestEvaluationCallback request_evaluation_;
     const WebContentsDestroyedCallback web_contents_destroyed_;
 
-    std::vector<std::string> matching_css_selectors_;
+    // We use a hash_set for maximally efficient lookup.
+    base::hash_set<std::string> matching_css_selectors_;
 
     DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };
