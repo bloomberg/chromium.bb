@@ -6,6 +6,7 @@
 
 namespace switches {
 
+const char kEnablePageVisibility[] = "enable-page-visibility";
 const char kUseInProcCommandBuffer[] = "use-in-proc-command-buffer";
 
 }  // namespace switches

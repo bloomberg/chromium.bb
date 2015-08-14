@@ -43,6 +43,7 @@ import android.widget.OverScroller;
 
 import org.chromium.android_webview.permission.AwGeolocationCallback;
 import org.chromium.android_webview.permission.AwPermissionRequest;
+import org.chromium.base.CommandLine;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -105,6 +106,9 @@ public class AwContents implements SmartClipProvider,
 
     private static final boolean FORCE_AUXILIARY_BITMAP_RENDERING =
             "goldfish".equals(Build.HARDWARE);
+
+    // Matches kEnablePageVisibility.
+    private static final String ENABLE_PAGE_VISIBILITY = "enable-page-visibility";
 
     /**
      * WebKit hit test related data structure. These are used to implement
@@ -233,10 +237,15 @@ public class AwContents implements SmartClipProvider,
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
 
+    // Visibility related state.
+    private final boolean mEnablePageVisibility;
     private boolean mIsPaused;
     private boolean mIsViewVisible;
     private boolean mIsWindowVisible;
     private boolean mIsAttachedToWindow;
+    // Visiblity state of |mContentViewCore|.
+    private boolean mIsContentViewCoreVisible;
+
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
     // TODO(boliu): This should be in a global context, not per webview.
@@ -716,6 +725,7 @@ public class AwContents implements SmartClipProvider,
         mScrollOffsetManager = dependencyFactory.createScrollOffsetManager(
                 new AwScrollOffsetManagerDelegate(), new OverScroller(mContext));
         mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
+        mEnablePageVisibility = CommandLine.getInstance().hasSwitch(ENABLE_PAGE_VISIBILITY);
 
         setOverScrollMode(mContainerView.getOverScrollMode());
         setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
@@ -963,7 +973,7 @@ public class AwContents implements SmartClipProvider,
         installWebContentsObserver();
         mSettings.setWebContents(webContents);
         nativeSetDipScale(mNativeAwContents, (float) mDIPScale);
-        mContentViewCore.onShow();
+        updateContentViewCoreVisibility();
 
         // The native side object has been bound to this java instance, so now is the time to
         // bind all the native->java relationships.
@@ -1763,7 +1773,7 @@ public class AwContents implements SmartClipProvider,
         if (mIsPaused || isDestroyed()) return;
         mIsPaused = true;
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
-        mContentViewCore.onHide();
+        updateContentViewCoreVisibility();
     }
 
     /**
@@ -1774,7 +1784,7 @@ public class AwContents implements SmartClipProvider,
         if (!mIsPaused || isDestroyed()) return;
         mIsPaused = false;
         nativeSetIsPaused(mNativeAwContents, mIsPaused);
-        mContentViewCore.onShow();
+        updateContentViewCoreVisibility();
     }
 
     /**
@@ -2274,6 +2284,7 @@ public class AwContents implements SmartClipProvider,
     private void setViewVisibilityInternal(boolean visible) {
         mIsViewVisible = visible;
         if (!isDestroyed()) nativeSetViewVisibility(mNativeAwContents, mIsViewVisible);
+        updateContentViewCoreVisibility();
     }
 
     private void setWindowVisibilityInternal(boolean visible) {
@@ -2281,6 +2292,22 @@ public class AwContents implements SmartClipProvider,
                 && visible && !mIsWindowVisible;
         mIsWindowVisible = visible;
         if (!isDestroyed()) nativeSetWindowVisibility(mNativeAwContents, mIsWindowVisible);
+        updateContentViewCoreVisibility();
+    }
+
+    private void updateContentViewCoreVisibility() {
+        if (isDestroyed()) return;
+        boolean contentViewCoreVisible = !mIsPaused;
+        if (mEnablePageVisibility) {
+            contentViewCoreVisible = contentViewCoreVisible && mIsWindowVisible && mIsViewVisible;
+        }
+
+        if (contentViewCoreVisible && !mIsContentViewCoreVisible) {
+            mContentViewCore.onShow();
+        } else if (!contentViewCoreVisible && mIsContentViewCoreVisible) {
+            mContentViewCore.onHide();
+        }
+        mIsContentViewCoreVisible = contentViewCoreVisible;
     }
 
     /**

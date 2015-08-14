@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "android_webview/common/aw_resource.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
@@ -18,6 +19,7 @@
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -47,8 +49,9 @@ using content::RenderThread;
 
 namespace android_webview {
 
-AwContentRendererClient::AwContentRendererClient() {
-}
+AwContentRendererClient::AwContentRendererClient()
+    : enable_page_visibility_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePageVisibility)) {}
 
 AwContentRendererClient::~AwContentRendererClient() {
 }
@@ -171,6 +174,9 @@ void AwContentRendererClient::AddKeySystems(
 bool AwContentRendererClient::ShouldOverridePageVisibilityState(
     const content::RenderFrame* render_frame,
     blink::WebPageVisibilityState* override_state) {
+  if (enable_page_visibility_)
+    return false;
+
   // webview is always visible due to rendering requirements.
   *override_state = blink::WebPageVisibilityStateVisible;
   return true;
