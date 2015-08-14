@@ -498,6 +498,10 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP" file="common/omnibox_content_setting_bubble_top.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_LEFT" file="common/omnibox_content_setting_bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_RIGHT" file="common/omnibox_content_setting_bubble_top_right.png" />
+      <if expr="enable_topchrome_md">
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM" file="common/omnibox_dropdown_shadow_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_OMNIBOX_DROPDOWN_SHADOW_TOP" file="common/omnibox_dropdown_shadow_top.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM" file="common/omnibox_ev_bubble_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM_LEFT" file="common/omnibox_ev_bubble_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BOTTOM_RIGHT" file="common/omnibox_ev_bubble_bottom_right.png" />
