@@ -77,7 +77,6 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
   }
 
   const int half_height = (height + 1) / 2;
-#if defined(OS_MACOSX)
   if (frame->format() == PIXEL_FORMAT_NV12) {
     const int stride_uv = frame->stride(VideoFrame::kUVPlane);
     uint8* uv_plane = frame->data(VideoFrame::kUVPlane);
@@ -92,9 +91,7 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
         uv_plane += 2;
       }
     }
-  } else
-#endif
-  {
+  } else {
     DCHECK(frame->format() == PIXEL_FORMAT_I420 ||
            frame->format() == PIXEL_FORMAT_YV12);
     const int stride_u = frame->stride(VideoFrame::kUPlane);

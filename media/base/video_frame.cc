@@ -86,9 +86,7 @@ static gfx::Size SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_YV12:
         case PIXEL_FORMAT_I420:
         case PIXEL_FORMAT_YV12A:
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
         case PIXEL_FORMAT_NV12:
-#endif
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_UNKNOWN:
@@ -119,12 +117,8 @@ static int BytesPerElement(VideoPixelFormat format, size_t plane) {
   DCHECK(IsValidPlane(plane, format));
   if (format == PIXEL_FORMAT_ARGB || format == PIXEL_FORMAT_XRGB)
     return 4;
-
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   if (format == PIXEL_FORMAT_NV12 && plane == VideoFrame::kUVPlane)
     return 2;
-#endif
-
   return 1;
 }
 
@@ -510,10 +504,8 @@ size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
       return 1;
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
     case PIXEL_FORMAT_NV12:
       return 2;
-#endif
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_YV16:
     case PIXEL_FORMAT_I420:

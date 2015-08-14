@@ -341,9 +341,7 @@ GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
     case PIXEL_FORMAT_YV12A:
     case PIXEL_FORMAT_YV16:
     case PIXEL_FORMAT_YV24:
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
     case PIXEL_FORMAT_NV12:
-#endif
     case PIXEL_FORMAT_ARGB:
     case PIXEL_FORMAT_XRGB:
     case PIXEL_FORMAT_UNKNOWN:
