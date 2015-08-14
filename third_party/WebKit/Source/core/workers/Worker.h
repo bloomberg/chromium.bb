@@ -16,7 +16,7 @@ class WorkerGlobalScopeProxy;
 class CORE_EXPORT Worker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
+    static Worker* create(ExecutionContext*, const String& url, ExceptionState&);
     ~Worker() override;
 
 protected:

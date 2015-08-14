@@ -40,7 +40,6 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
@@ -49,16 +48,15 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT ServiceWorker final : public AbstractWorker, public WebServiceWorkerProxy {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<ServiceWorker> from(ExecutionContext*, WebServiceWorker*);
+    static ServiceWorker* from(ExecutionContext*, WebServiceWorker*);
 
     ~ServiceWorker() override;
 
     // Eager finalization needed to promptly release owned WebServiceWorker.
     EAGERLY_FINALIZE();
-#if ENABLE(OILPAN)
+
     // Override 'operator new' to enforce allocation of eagerly finalized object.
     DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
-#endif
 
     void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
@@ -74,7 +72,7 @@ public:
 
     void internalsTerminate();
 private:
-    static PassRefPtrWillBeRawPtr<ServiceWorker> getOrCreate(ExecutionContext*, WebServiceWorker*);
+    static ServiceWorker* getOrCreate(ExecutionContext*, WebServiceWorker*);
     ServiceWorker(ExecutionContext*, PassOwnPtr<WebServiceWorker>);
 
     // ActiveDOMObject overrides.

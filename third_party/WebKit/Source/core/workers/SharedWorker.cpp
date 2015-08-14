@@ -54,14 +54,14 @@ inline SharedWorker::SharedWorker(ExecutionContext* context)
 {
 }
 
-PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
+SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
     UseCounter::count(context, UseCounter::SharedWorkerStart);
 
-    RefPtrWillBeRawPtr<SharedWorker> worker = adoptRefWillBeNoop(new SharedWorker(context));
+    SharedWorker* worker = new SharedWorker(context);
 
     MessageChannel* channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
@@ -82,9 +82,9 @@ PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* cont
         return nullptr;
 
     if (document->frame()->loader().client()->sharedWorkerRepositoryClient())
-        document->frame()->loader().client()->sharedWorkerRepositoryClient()->connect(worker.get(), remotePort.release(), scriptURL, name, exceptionState);
+        document->frame()->loader().client()->sharedWorkerRepositoryClient()->connect(worker, remotePort.release(), scriptURL, name, exceptionState);
 
-    return worker.release();
+    return worker;
 }
 
 SharedWorker::~SharedWorker()
@@ -103,10 +103,8 @@ bool SharedWorker::hasPendingActivity() const
 
 DEFINE_TRACE(SharedWorker)
 {
-#if ENABLE(OILPAN)
     visitor->trace(m_port);
     HeapSupplementable<SharedWorker>::trace(visitor);
-#endif
     AbstractWorker::trace(visitor);
 }
 

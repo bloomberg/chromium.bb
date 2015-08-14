@@ -218,7 +218,7 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 
 void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()
 {
-    m_workerGlobalScope = 0;
+    m_workerGlobalScope = nullptr;
     m_client.willDestroyWorkerContext();
 }
 
@@ -231,7 +231,7 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(WebEmbeddedWorkerIm
     : m_embeddedWorker(embeddedWorker)
     , m_document(document)
     , m_client(client)
-    , m_workerGlobalScope(0)
+    , m_workerGlobalScope(nullptr)
 {
 }
 

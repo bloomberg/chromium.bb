@@ -50,10 +50,10 @@ const char* SharedWorkerPerformance::supplementName()
 
 SharedWorkerPerformance& SharedWorkerPerformance::from(SharedWorker& sharedWorker)
 {
-    SharedWorkerPerformance* supplement = static_cast<SharedWorkerPerformance*>(WillBeHeapSupplement<SharedWorker>::from(sharedWorker, supplementName()));
+    SharedWorkerPerformance* supplement = static_cast<SharedWorkerPerformance*>(HeapSupplement<SharedWorker>::from(sharedWorker, supplementName()));
     if (!supplement) {
         supplement = new SharedWorkerPerformance();
-        provideTo(sharedWorker, supplementName(), adoptPtrWillBeNoop(supplement));
+        provideTo(sharedWorker, supplementName(), supplement);
     }
     return *supplement;
 }
@@ -76,4 +76,3 @@ double SharedWorkerPerformance::getWorkerStart(ExecutionContext* context, Shared
 }
 
 } // namespace blink
-

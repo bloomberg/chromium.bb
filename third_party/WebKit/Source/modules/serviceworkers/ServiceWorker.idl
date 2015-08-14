@@ -40,6 +40,7 @@ enum ServiceWorkerState {
 
 [
     ActiveDOMObject,
+    GarbageCollected,
     TypeChecking=Interface,
 ] interface ServiceWorker : EventTarget {
 

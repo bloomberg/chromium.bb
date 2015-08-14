@@ -202,7 +202,11 @@ void WorkerMessagingProxy::workerThreadCreated(PassRefPtr<WorkerThread> workerTh
 
 void WorkerMessagingProxy::workerObjectDestroyed()
 {
-    m_workerObject = nullptr;
+    // workerObjectDestroyed() is called in InProcessWorkerBase's destructor.
+    // Thus it should be guaranteed that a weak pointer m_workerObject has been cleared
+    // before this method gets called.
+    ASSERT(!m_workerObject);
+
     m_executionContext->postTask(FROM_HERE, createCrossThreadTask(&WorkerMessagingProxy::workerObjectDestroyedInternal, this));
 }
 

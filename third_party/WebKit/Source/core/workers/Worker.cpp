@@ -19,7 +19,7 @@ Worker::Worker(ExecutionContext* context)
 {
 }
 
-PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
+Worker* Worker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
@@ -28,9 +28,9 @@ PassRefPtrWillBeRawPtr<Worker> Worker::create(ExecutionContext* context, const S
         exceptionState.throwDOMException(InvalidAccessError, "The context provided is invalid.");
         return nullptr;
     }
-    RefPtrWillBeRawPtr<Worker> worker = adoptRefWillBeNoop(new Worker(context));
+    Worker* worker = new Worker(context);
     if (worker->initialize(context, url, exceptionState))
-        return worker.release();
+        return worker;
     return nullptr;
 }
 

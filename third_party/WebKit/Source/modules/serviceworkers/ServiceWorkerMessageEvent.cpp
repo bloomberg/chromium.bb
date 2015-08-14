@@ -30,7 +30,7 @@ ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(const AtomicString& type, c
         m_data = initializer.data();
 }
 
-ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<ServiceWorker> source, MessagePortArray* ports)
+ServiceWorkerMessageEvent::ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, ServiceWorker* source, MessagePortArray* ports)
     : Event(EventTypeNames::message, false, false)
     , m_serializedData(data)
     , m_origin(origin)

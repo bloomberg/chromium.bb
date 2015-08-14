@@ -31,6 +31,7 @@
     ActiveDOMObject,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
+    GarbageCollected,
     // TODO(philipj): Exposed=(Window,Worker),
     RaisesException=Constructor,
 ] interface Worker : EventTarget {

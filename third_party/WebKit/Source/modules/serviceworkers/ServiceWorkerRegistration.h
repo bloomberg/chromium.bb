@@ -47,9 +47,9 @@ public:
     static ServiceWorkerRegistration* take(ScriptPromiseResolver*, WebServiceWorkerRegistration*);
     static void dispose(WebServiceWorkerRegistration*);
 
-    PassRefPtrWillBeRawPtr<ServiceWorker> installing() { return m_installing.get(); }
-    PassRefPtrWillBeRawPtr<ServiceWorker> waiting() { return m_waiting.get(); }
-    PassRefPtrWillBeRawPtr<ServiceWorker> active() { return m_active.get(); }
+    ServiceWorker* installing() { return m_installing; }
+    ServiceWorker* waiting() { return m_waiting; }
+    ServiceWorker* active() { return m_active; }
 
     String scope() const;
 
@@ -76,9 +76,9 @@ private:
 
     OwnPtr<WebServiceWorkerRegistration> m_outerRegistration;
     WebServiceWorkerProvider* m_provider;
-    RefPtrWillBeMember<ServiceWorker> m_installing;
-    RefPtrWillBeMember<ServiceWorker> m_waiting;
-    RefPtrWillBeMember<ServiceWorker> m_active;
+    Member<ServiceWorker> m_installing;
+    Member<ServiceWorker> m_waiting;
+    Member<ServiceWorker> m_active;
 
     bool m_stopped;
 };

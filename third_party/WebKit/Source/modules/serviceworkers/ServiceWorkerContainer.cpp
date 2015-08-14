@@ -379,7 +379,7 @@ void ServiceWorkerContainer::dispatchMessageEvent(WebServiceWorker* serviceWorke
 
     MessagePortArray* ports = MessagePort::toMessagePortArray(executionContext(), webChannels);
     RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
-    RefPtrWillBeRawPtr<ServiceWorker> source = ServiceWorker::from(executionContext(), serviceWorker);
+    ServiceWorker* source = ServiceWorker::from(executionContext(), serviceWorker);
     dispatchEvent(ServiceWorkerMessageEvent::create(ports, value, source, executionContext()->securityOrigin()->toString()));
 }
 

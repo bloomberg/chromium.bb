@@ -101,13 +101,9 @@ String ServiceWorker::state() const
     }
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::from(ExecutionContext* executionContext, WebServiceWorker* worker)
+ServiceWorker* ServiceWorker::from(ExecutionContext* executionContext, WebServiceWorker* worker)
 {
-    if (!worker)
-        return nullptr;
-
-    RefPtrWillBeRawPtr<ServiceWorker> serviceWorker = getOrCreate(executionContext, worker);
-    return serviceWorker.release();
+    return getOrCreate(executionContext, worker);
 }
 
 bool ServiceWorker::hasPendingActivity() const
@@ -124,7 +120,7 @@ void ServiceWorker::stop()
     m_wasStopped = true;
 }
 
-PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContext* executionContext, WebServiceWorker* outerWorker)
+ServiceWorker* ServiceWorker::getOrCreate(ExecutionContext* executionContext, WebServiceWorker* outerWorker)
 {
     if (!outerWorker)
         return nullptr;
@@ -135,9 +131,9 @@ PassRefPtrWillBeRawPtr<ServiceWorker> ServiceWorker::getOrCreate(ExecutionContex
         return existingServiceWorker;
     }
 
-    RefPtrWillBeRawPtr<ServiceWorker> worker = adoptRefWillBeNoop(new ServiceWorker(executionContext, adoptPtr(outerWorker)));
+    ServiceWorker* worker = new ServiceWorker(executionContext, adoptPtr(outerWorker));
     worker->suspendIfNeeded();
-    return worker.release();
+    return worker;
 }
 
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext, PassOwnPtr<WebServiceWorker> worker)

@@ -26,7 +26,7 @@ public:
         return adoptRefWillBeNoop(new ServiceWorkerMessageEvent(type, initializer));
     }
 
-    static PassRefPtrWillBeRawPtr<ServiceWorkerMessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, PassRefPtrWillBeRawPtr<ServiceWorker> source, const String& origin)
+    static PassRefPtrWillBeRawPtr<ServiceWorkerMessageEvent> create(MessagePortArray* ports, PassRefPtr<SerializedScriptValue> data, ServiceWorker* source, const String& origin)
     {
         return adoptRefWillBeNoop(new ServiceWorkerMessageEvent(data, origin, String(), source, ports));
     }
@@ -48,13 +48,13 @@ public:
 private:
     ServiceWorkerMessageEvent();
     ServiceWorkerMessageEvent(const AtomicString& type, const ServiceWorkerMessageEventInit& initializer);
-    ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtrWillBeRawPtr<ServiceWorker> source, MessagePortArray* ports);
+    ServiceWorkerMessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, ServiceWorker* source, MessagePortArray* ports);
 
     ScriptValue m_data;
     RefPtr<SerializedScriptValue> m_serializedData;
     String m_origin;
     String m_lastEventId;
-    RefPtrWillBeMember<ServiceWorker> m_sourceAsServiceWorker;
+    PersistentWillBeMember<ServiceWorker> m_sourceAsServiceWorker;
     PersistentWillBeMember<MessagePort> m_sourceAsMessagePort;
     PersistentWillBeMember<MessagePortArray> m_ports;
 };

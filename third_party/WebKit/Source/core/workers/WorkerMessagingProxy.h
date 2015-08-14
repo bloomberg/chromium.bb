@@ -96,7 +96,7 @@ private:
 
     RefPtrWillBePersistent<ExecutionContext> m_executionContext;
     OwnPtr<WorkerObjectProxy> m_workerObjectProxy;
-    InProcessWorkerBase* m_workerObject;
+    WeakPersistent<InProcessWorkerBase> m_workerObject;
     bool m_mayBeDestroyed;
     RefPtr<WorkerThread> m_workerThread;
 

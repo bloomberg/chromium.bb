@@ -43,8 +43,6 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -68,7 +66,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    PassRefPtrWillBeRawPtr<ServiceWorker> controller() { return m_controller.get(); }
+    ServiceWorker* controller() { return m_controller; }
     ScriptPromise ready(ScriptState*);
     WebServiceWorkerProvider* provider() { return m_provider; }
 
@@ -95,7 +93,7 @@ private:
     ReadyProperty* createReadyProperty();
 
     WebServiceWorkerProvider* m_provider;
-    RefPtrWillBeMember<ServiceWorker> m_controller;
+    Member<ServiceWorker> m_controller;
     Member<ReadyProperty> m_ready;
 };
 

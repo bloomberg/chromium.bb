@@ -41,11 +41,11 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT SharedWorker final : public AbstractWorker, public WillBeHeapSupplementable<SharedWorker> {
+class CORE_EXPORT SharedWorker final : public AbstractWorker, public HeapSupplementable<SharedWorker> {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
+    USING_GARBAGE_COLLECTED_MIXIN(SharedWorker);
 public:
-    static PassRefPtrWillBeRawPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
+    static SharedWorker* create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
     ~SharedWorker() override;
 
     MessagePort* port() const { return m_port.get(); }
@@ -61,7 +61,7 @@ public:
 private:
     explicit SharedWorker(ExecutionContext*);
 
-    PersistentWillBeMember<MessagePort> m_port;
+    Member<MessagePort> m_port;
     bool m_isBeingConnected;
 };
 
