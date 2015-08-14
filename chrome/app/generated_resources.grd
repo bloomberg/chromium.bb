@@ -14901,14 +14901,6 @@ After you create a new supervised user, you can manage their settings at any tim
         Reload
       </message>
 
-      <!-- Supervised User Warning Infobar -->
-      <message name="IDS_SUPERVISED_USER_WARN_INFOBAR_MESSAGE" desc="Infobar message when browsing a site that is not explicitly permitted by a whitelist or manual exception.">
-        You're browsing on a site that may not be something you really want to see.
-      </message>
-      <message name="IDS_SUPERVISED_USER_WARN_INFOBAR_GO_BACK" desc="Label for the button that goes back to a 'safe' page.">
-        Take me back!
-      </message>
-
       <!-- Identity internals strings -->
       <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
         Identity API Token Cache

@@ -6,156 +6,20 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/metrics/histogram.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_interstitial.h"
-#include "chrome/browser/supervised_user/supervised_user_resource_throttle.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/infobars/core/confirm_infobar_delegate.h"
-#include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/user_metrics.h"
-#include "ui/base/l10n/l10n_util.h"
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#endif
 
 using base::Time;
 using content::NavigationEntry;
-
-namespace {
-
-
-// Helpers --------------------------------------------------------------------
-
-#if !defined(OS_ANDROID)
-// TODO(bauerb): Get rid of the platform-specific #ifdef here.
-// http://crbug.com/313377
-void GoBackToSafety(content::WebContents* web_contents) {
-  // For now, just go back one page (the user didn't retreat from that page,
-  // so it should be okay).
-  content::NavigationController* controller =
-      &web_contents->GetController();
-  if (controller->CanGoBack()) {
-    controller->GoBack();
-    return;
-  }
-
-  // If we can't go back (because we opened a new tab), try to close the tab.
-  // If this is the last tab on this desktop, open a new window.
-  chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeView(web_contents->GetNativeView());
-  const BrowserList* browser_list = BrowserList::GetInstance(host_desktop_type);
-  if (browser_list->size() == 1) {
-    Browser* browser = browser_list->get(0);
-    DCHECK(browser == chrome::FindBrowserWithWebContents(web_contents));
-    if (browser->tab_strip_model()->count() == 1)
-      chrome::NewEmptyWindow(browser->profile(), browser->host_desktop_type());
-  }
-
-  web_contents->GetDelegate()->CloseContents(web_contents);
-}
-#endif
-
-// SupervisedUserWarningInfoBarDelegate ---------------------------------------
-
-class SupervisedUserWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
- public:
-  // Creates a supervised user warning infobar and delegate and adds the infobar
-  // to |infobar_service|.  Returns the infobar if it was successfully added.
-  static infobars::InfoBar* Create(InfoBarService* infobar_service);
-
- private:
-  SupervisedUserWarningInfoBarDelegate();
-  ~SupervisedUserWarningInfoBarDelegate() override;
-
-  // ConfirmInfoBarDelegate:
-  bool ShouldExpire(const NavigationDetails& details) const override;
-  void InfoBarDismissed() override;
-  base::string16 GetMessageText() const override;
-  int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool Accept() override;
-
-  DISALLOW_COPY_AND_ASSIGN(SupervisedUserWarningInfoBarDelegate);
-};
-
-// static
-infobars::InfoBar* SupervisedUserWarningInfoBarDelegate::Create(
-    InfoBarService* infobar_service) {
-  return infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
-          new SupervisedUserWarningInfoBarDelegate())));
-}
-
-SupervisedUserWarningInfoBarDelegate::SupervisedUserWarningInfoBarDelegate()
-    : ConfirmInfoBarDelegate() {
-}
-
-SupervisedUserWarningInfoBarDelegate::~SupervisedUserWarningInfoBarDelegate() {
-}
-
-bool SupervisedUserWarningInfoBarDelegate::ShouldExpire(
-    const NavigationDetails& details) const {
-  // SupervisedUserNavigationObserver removes us below.
-  return false;
-}
-
-void SupervisedUserWarningInfoBarDelegate::InfoBarDismissed() {
-  content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
-  SupervisedUserNavigationObserver::FromWebContents(
-      web_contents)->WarnInfoBarDismissed();
-}
-
-base::string16 SupervisedUserWarningInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_WARN_INFOBAR_MESSAGE);
-}
-
-int SupervisedUserWarningInfoBarDelegate::GetButtons() const {
-  return BUTTON_OK;
-}
-
-base::string16 SupervisedUserWarningInfoBarDelegate::GetButtonLabel(
-    InfoBarButton button) const {
-  DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_WARN_INFOBAR_GO_BACK);
-}
-
-bool SupervisedUserWarningInfoBarDelegate::Accept() {
-#if defined(OS_ANDROID)
-  // TODO(bauerb): Get rid of the platform-specific #ifdef here.
-  // http://crbug.com/313377
-  NOTIMPLEMENTED();
-#else
-  GoBackToSafety(InfoBarService::WebContentsFromInfoBar(infobar()));
-#endif
-
-  return false;
-}
-
-
-}  // namespace
-
-// SupervisedUserNavigationObserver -------------------------------------------
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SupervisedUserNavigationObserver);
 
@@ -164,39 +28,12 @@ SupervisedUserNavigationObserver::~SupervisedUserNavigationObserver() {
 
 SupervisedUserNavigationObserver::SupervisedUserNavigationObserver(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      warn_infobar_(NULL) {
+    : web_contents_(web_contents) {
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  supervised_user_service_ =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
-  url_filter_ = supervised_user_service_->GetURLFilterForUIThread();
-}
-
-void SupervisedUserNavigationObserver::WarnInfoBarDismissed() {
-  DCHECK(warn_infobar_);
-  warn_infobar_ = NULL;
-}
-
-void SupervisedUserNavigationObserver::DidCommitProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& url,
-    ui::PageTransition transition_type) {
-  if (render_frame_host->GetParent())
-    return;
-
-  DVLOG(1) << "DidCommitProvisionalLoadForFrame " << url.spec();
-  SupervisedUserURLFilter::FilteringBehavior behavior =
-      url_filter_->GetFilteringBehaviorForURL(url);
-
-  if (behavior == SupervisedUserURLFilter::WARN && !warn_infobar_) {
-    warn_infobar_ = SupervisedUserWarningInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents()));
-  } else if (behavior != SupervisedUserURLFilter::WARN && warn_infobar_) {
-    InfoBarService::FromWebContents(web_contents())->
-        RemoveInfoBar(warn_infobar_);
-    warn_infobar_ = NULL;
-  }
+  url_filter_ = supervised_user_service->GetURLFilterForUIThread();
 }
 
 // static
@@ -228,13 +65,13 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   Time timestamp = Time::Now();  // TODO(bauerb): Use SaneTime when available.
   // Create a history entry for the attempt and mark it as such.
   history::HistoryAddPageArgs add_page_args(
-      url, timestamp, history::ContextIDForWebContents(web_contents()), 0, url,
+      url, timestamp, history::ContextIDForWebContents(web_contents_), 0, url,
       history::RedirectList(), ui::PAGE_TRANSITION_BLOCKED,
       history::SOURCE_BROWSED, false);
 
   // Add the entry to the history database.
   Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
@@ -249,5 +86,5 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   blocked_navigations_.push_back(entry.release());
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
-  supervised_user_service->DidBlockNavigation(web_contents());
+  supervised_user_service->DidBlockNavigation(web_contents_);
 }
