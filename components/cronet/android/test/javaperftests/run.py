@@ -47,6 +47,7 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools/telemetry'))
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android'))
 
 import lighttpd_server
+from pylib import constants
 from pylib import pexpect
 from pylib.device import device_utils
 from pylib.device import intent
@@ -59,10 +60,11 @@ from telemetry.internal.forwarders import android_forwarder
 from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
 
-BUILD_DIR = REPOSITORY_ROOT + '/out/Release/'
-QUIC_SERVER = BUILD_DIR + 'quic_server'
-QUIC_CLIENT = BUILD_DIR + 'quic_client'
-APP_APK = BUILD_DIR + 'apks/CronetPerfTest.apk'
+BUILD_TYPE = 'Release'
+BUILD_DIR = os.path.join(REPOSITORY_ROOT, 'out', BUILD_TYPE)
+QUIC_SERVER = os.path.join(BUILD_DIR, 'quic_server')
+QUIC_CLIENT = os.path.join(BUILD_DIR, 'quic_client')
+APP_APK = os.path.join(BUILD_DIR, 'apks', 'CronetPerfTest.apk')
 APP_PACKAGE = 'org.chromium.net'
 APP_ACTIVITY = '.CronetPerfTestActivity'
 APP_ACTION = 'android.intent.action.MAIN'
@@ -275,6 +277,7 @@ def GenerateLighttpdConfig(config_file, http_server_doc_root, http_server):
 
 
 def main():
+  constants.SetBuildType(BUILD_TYPE)
   # Install APK
   device = GetDevice()
   device.EnableRoot()
