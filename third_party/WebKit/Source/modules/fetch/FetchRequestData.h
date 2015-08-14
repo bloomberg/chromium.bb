@@ -64,7 +64,7 @@ public:
     ~FetchRequestData();
 
     void setMethod(AtomicString method) { m_method = method; }
-    const AtomicString method() const { return m_method; }
+    const AtomicString& method() const { return m_method; }
     void setURL(const KURL& url) { m_url = url; }
     const KURL& url() const { return m_url; }
     bool unsafeRequestFlag() const { return m_unsafeRequestFlag; }
