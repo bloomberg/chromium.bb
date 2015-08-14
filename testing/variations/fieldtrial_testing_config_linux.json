@@ -1,4 +1,9 @@
 {
+    "CaptivePortalInterstitial": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "InstanceID": [
         {
             "group_name": "Enabled"

@@ -4,6 +4,11 @@
             "group_name": "Enabled"
         }
     ],
+    "CaptivePortalInterstitial": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ChildAccountDetection": [
         {
             "group_name": "Disabled"
