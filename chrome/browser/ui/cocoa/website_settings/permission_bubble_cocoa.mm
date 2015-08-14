@@ -4,10 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 
-#include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
-#import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
 #import "chrome/browser/ui/website_settings/permission_bubble_view.h"
 #include "content/public/browser/web_contents.h"
@@ -31,15 +28,14 @@ void PermissionBubbleCocoa::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state) {
   if (!bubbleController_) {
-    bubbleController_ = [[PermissionBubbleController alloc]
-        initWithParentWindow:GetParentWindow()
-                      bridge:this];
+    bubbleController_ =
+        [[PermissionBubbleController alloc] initWithBrowser:browser_
+                                                     bridge:this];
   }
 
-  [bubbleController_ showAtAnchor:GetAnchorPoint()
-                     withDelegate:delegate_
-                      forRequests:requests
-                     acceptStates:accept_state];
+  [bubbleController_ showWithDelegate:delegate_
+                          forRequests:requests
+                         acceptStates:accept_state];
 }
 
 void PermissionBubbleCocoa::Hide() {
@@ -61,8 +57,7 @@ bool PermissionBubbleCocoa::CanAcceptRequestUpdate() {
 }
 
 void PermissionBubbleCocoa::UpdateAnchorPosition() {
-  [bubbleController_ setParentWindow:GetParentWindow()];
-  [bubbleController_ setAnchorPoint:GetAnchorPoint()];
+  [bubbleController_ updateAnchorPosition];
 }
 
 gfx::NativeWindow PermissionBubbleCocoa::GetNativeWindow() {
@@ -71,32 +66,4 @@ gfx::NativeWindow PermissionBubbleCocoa::GetNativeWindow() {
 
 void PermissionBubbleCocoa::OnBubbleClosing() {
   bubbleController_ = nil;
-}
-
-NSPoint PermissionBubbleCocoa::GetAnchorPoint() {
-  NSPoint anchor;
-  if (HasLocationBar()) {
-    LocationBarViewMac* location_bar =
-        [[GetParentWindow() windowController] locationBarBridge];
-    anchor = location_bar->GetPageInfoBubblePoint();
-  } else {
-    // Center the bubble if there's no location bar.
-    NSView* content_view = [GetParentWindow() contentView];
-    anchor.y = NSMaxY(content_view.frame);
-    anchor.x = NSMidX(content_view.frame);
-  }
-
-  return [GetParentWindow() convertBaseToScreen:anchor];
-}
-
-bool PermissionBubbleCocoa::HasLocationBar() {
-  return browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
-}
-
-info_bubble::BubbleArrowLocation PermissionBubbleCocoa::GetArrowLocation() {
-  return HasLocationBar() ? info_bubble::kTopLeft : info_bubble::kNoArrow;
-}
-
-NSWindow* PermissionBubbleCocoa::GetParentWindow() {
-  return browser_->window()->GetNativeWindow();
 }

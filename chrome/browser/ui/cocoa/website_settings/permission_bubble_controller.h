@@ -23,6 +23,9 @@ class PermissionBubbleRequest;
   // Delegate to be informed of user actions.
   PermissionBubbleView::Delegate* delegate_;  // Weak.
 
+  // Used to determine the correct anchor location and parent window.
+  Browser* browser_;  // Weak.
+
   // Delegate that receives menu events on behalf of this.
   scoped_ptr<ui::SimpleMenuModel::Delegate> menuDelegate_;
 
@@ -30,19 +33,24 @@ class PermissionBubbleRequest;
   PermissionBubbleCocoa* bridge_;  // Weak.
 }
 
-// Designated initializer.  |parentWindow| and |bridge| must both be non-nil.
-- (id)initWithParentWindow:(NSWindow*)parentWindow
-                    bridge:(PermissionBubbleCocoa*)bridge;
+// Designated initializer.  |browser| and |bridge| must both be non-nil.
+- (id)initWithBrowser:(Browser*)browser bridge:(PermissionBubbleCocoa*)bridge;
 
-// Makes the bubble visible, with an arrow pointing to |anchor|.  The bubble
-// will be populated with text retrieved from |requests|.  If
-// |customizationMode| is YES, each request will have a checkbox, with its state
-// set to the corresponding element in |acceptStates|.  If it is NO, each
-// request will have a bullet point and |acceptStates| may be empty.  |delegate|
-// will receive callbacks for user actions.
-- (void)showAtAnchor:(NSPoint)anchor
-         withDelegate:(PermissionBubbleView::Delegate*)delegate
-          forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
-         acceptStates:(const std::vector<bool>&)acceptStates;
+// Makes the bubble visible. The bubble will be popuplated with text retrieved
+// from |requests|. |delegate| will receive callbacks for user actions.
+- (void)showWithDelegate:(PermissionBubbleView::Delegate*)delegate
+             forRequests:(const std::vector<PermissionBubbleRequest*>&)requests
+            acceptStates:(const std::vector<bool>&)acceptStates;
+
+// Will reposition the bubble based in case the anchor or parent should change.
+- (void)updateAnchorPosition;
+
+// Will calculate the expected anchor point for this bubble.
+// Should only be used outside this class for tests.
+- (NSPoint)getExpectedAnchorPoint;
+
+// Returns true of the browser has support for the location bar.
+// Should only be used outside this class for tests.
+- (bool)hasLocationBar;
 
 @end

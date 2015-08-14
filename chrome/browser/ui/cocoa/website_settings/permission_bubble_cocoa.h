@@ -36,12 +36,6 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
   // Called when |bubbleController_| is closing.
   void OnBubbleClosing();
 
-  // Returns the point, in screen coordinates, to which the bubble's arrow
-  // should point.
-  NSPoint GetAnchorPoint();
-
-  info_bubble::BubbleArrowLocation GetArrowLocation();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(PermissionBubbleBrowserTest,
                            HasLocationBarByDefault);
@@ -56,10 +50,6 @@ class PermissionBubbleCocoa : public PermissionBubbleView {
 
   // Cocoa-side UI controller for the bubble.  Weak, as it will close itself.
   PermissionBubbleController* bubbleController_;
-  virtual bool HasLocationBar();
-
-  // Will get the intended parent window for the bubble and will not be NULL.
-  NSWindow* GetParentWindow();
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleCocoa);
 };
