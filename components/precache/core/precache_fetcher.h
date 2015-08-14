@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -113,7 +114,7 @@ class PrecacheFetcher {
   const std::vector<std::string> starting_hosts_;
 
   // The request context used when fetching URLs.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  const scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // The custom URL to use when fetching the config. If not provided, the
   // default flag-specified URL will be used.
@@ -137,6 +138,9 @@ class PrecacheFetcher {
   int network_response_bytes_;
 
   scoped_ptr<Fetcher> fetcher_;
+
+  // Time when the prefetch was started.
+  base::TimeTicks start_time_;
 
   int num_manifest_urls_to_fetch_;
   std::list<GURL> manifest_urls_to_fetch_;

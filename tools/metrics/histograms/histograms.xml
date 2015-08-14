@@ -32731,6 +32731,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Precache.Fetch.TimeToComplete" units="milliseconds">
+  <owner>twifkak@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    The time, in milliseconds, to complete a prefetch run. Only applies to
+    non-cancelled runs (those for which PercentCompleted is 100).
+  </summary>
+</histogram>
+
 <histogram name="Precache.Latency.NonPrefetch" units="milliseconds">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>

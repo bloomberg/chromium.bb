@@ -186,6 +186,7 @@ TEST_F(PrecacheFetcherTest, FullPrecache) {
   histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 100, 1);
   histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes.Total",
                                url_callback_.total_response_bytes(), 1);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
 }
 
 TEST_F(PrecacheFetcherTest, CustomURLs) {
@@ -316,6 +317,7 @@ TEST_F(PrecacheFetcherTest, Cancel) {
 
   histogram.ExpectUniqueSample("Precache.Fetch.PercentCompleted", 0, 1);
   histogram.ExpectUniqueSample("Precache.Fetch.ResponseBytes.Total", 0, 1);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 0);
 }
 
 #if defined(PRECACHE_CONFIG_SETTINGS_URL)

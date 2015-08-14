@@ -240,6 +240,8 @@ void PrecacheFetcher::Start() {
   DCHECK(config_url.is_valid()) << "Config URL not valid: "
                                 << config_url.possibly_invalid_spec();
 
+  start_time_ = base::TimeTicks::Now();
+
   // Fetch the precache configuration settings from the server.
   fetcher_.reset(new Fetcher(request_context_.get(), config_url,
                              base::Bind(&PrecacheFetcher::OnConfigFetchComplete,
@@ -276,6 +278,11 @@ void PrecacheFetcher::StartNextFetch() {
   }
 
   // There are no more URLs to fetch, so end the precache cycle.
+  base::TimeDelta time_to_fetch = base::TimeTicks::Now() - start_time_;
+  UMA_HISTOGRAM_CUSTOM_TIMES("Precache.Fetch.TimeToComplete", time_to_fetch,
+                             base::TimeDelta::FromSeconds(1),
+                             base::TimeDelta::FromHours(4), 50);
+
   precache_delegate_->OnDone();
   // OnDone may have deleted this PrecacheFetcher, so don't do anything after it
   // is called.
