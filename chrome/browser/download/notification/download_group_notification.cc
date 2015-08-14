@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
@@ -33,6 +34,58 @@ base::string16 TruncateFilename(const base::FilePath& filename) {
   return gfx::ElideFilename(filename,
       views::Label().font_list(),
       kMaxFilenameWidth);
+}
+
+base::string16 GetStatusString(content::DownloadItem* download) {
+  switch (download->GetState()) {
+    case content::DownloadItem::IN_PROGRESS:
+      // "Adding to Chrome..."
+      if (download->AllDataSaved() &&
+          download_crx_util::IsExtensionDownload(*download)) {
+        return l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
+      }
+
+      // "Paused"
+      if (download->IsPaused())
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
+
+      // "100/120 MB" or "100 MB"
+      if (download->GetReceivedBytes() > 0) {
+        DownloadItemModel model(download);
+        return model.GetProgressSizesString();
+      }
+
+      // "Starting..."
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING);
+    case content::DownloadItem::COMPLETE:
+      // "Removed" or "Completed"
+      if (download->GetFileExternallyRemoved())
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
+      else
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_COMPLETED);
+    case content::DownloadItem::CANCELLED:
+      // "Cancelled"
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+    case content::DownloadItem::INTERRUPTED: {
+      content::DownloadInterruptReason reason = download->GetLastReason();
+      if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+        // "Failed - <REASON>"
+        DownloadItemModel model(download);
+        base::string16 interrupt_reason = model.GetInterruptReasonText();
+        return l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_INTERRUPTED, interrupt_reason);
+      }
+
+      // Same as DownloadItem::CANCELLED.
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+    }
+    case content::DownloadItem::MAX_DOWNLOAD_STATE:
+      break;
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 }  // anonymous namespace
@@ -197,7 +250,7 @@ void DownloadGroupNotification::UpdateNotificationData() {
     // TODO(yoshiki): Use emplace_back when C++11 becomes allowed.
     subitems.push_back(message_center::NotificationItem(
         truncated_filename_cache_[download].truncated_filename,
-        model.GetStatusText()));
+        GetStatusString(download)));
 
     if (!download->IsDone())
       all_finished = false;

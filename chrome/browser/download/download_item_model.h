@@ -160,7 +160,6 @@ class DownloadItemModel {
 
   content::DownloadItem* download() { return download_; }
 
- private:
   // Returns a string representations of the current download progress sizes. If
   // the total size of the download is known, this string looks like: "100/200
   // MB" where the numerator is the transferred size and the denominator is the
@@ -168,6 +167,7 @@ class DownloadItemModel {
   // string (e.g.: "100 MB").
   base::string16 GetProgressSizesString() const;
 
+ private:
   // Returns a string indicating the status of an in-progress download.
   base::string16 GetInProgressStatusString() const;
 
