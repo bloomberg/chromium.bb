@@ -4,10 +4,6 @@
 
 {
   'variables': {
-    'scheduler_common_sources': [
-      'common/scheduler_switches.cc',
-      'common/scheduler_switches.h',
-    ],
     'scheduler_sources': [
       'child/cancelable_closure_holder.cc',
       'child/cancelable_closure_holder.h',
@@ -17,12 +13,6 @@
       'child/lazy_now.cc',
       'child/lazy_now.h',
       'child/nestable_single_thread_task_runner.h',
-      'child/null_idle_task_runner.cc',
-      'child/null_idle_task_runner.h',
-      'child/null_task_queue.cc',
-      'child/null_task_queue.h',
-      'child/null_worker_scheduler.cc',
-      'child/null_worker_scheduler.h',
       'child/pollable_thread_safe_flag.cc',
       'child/pollable_thread_safe_flag.h',
       'child/scheduler_helper.cc',
@@ -54,8 +44,6 @@
       'child/worker_scheduler_impl.h',
       'renderer/deadline_task_runner.cc',
       'renderer/deadline_task_runner.h',
-      'renderer/null_renderer_scheduler.cc',
-      'renderer/null_renderer_scheduler.h',
       'renderer/renderer_scheduler.cc',
       'renderer/renderer_scheduler.h',
       'renderer/renderer_scheduler_impl.cc',

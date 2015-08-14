@@ -108,7 +108,6 @@ source_set("browser") {
     deps += [
       "//cc",
       "//cc/surfaces",
-      "//components/scheduler:common",
       "//content/app/resources",
       "//content/app/strings",
       "//content/browser/devtools:gen_devtools_protocol_handler",

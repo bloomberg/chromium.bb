@@ -37,7 +37,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 #include "cc/base/switches.h"
-#include "components/scheduler/common/scheduler_switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"
@@ -1380,8 +1379,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kStrictLayerPropertyChangeChecking,
     cc::switches::kTopControlsHideThreshold,
     cc::switches::kTopControlsShowThreshold,
-
-    scheduler::switches::kDisableBlinkScheduler,
 
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,

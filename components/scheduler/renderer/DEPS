@@ -1,6 +1,5 @@
 include_rules = [
   "+components/scheduler/child",
-  "+components/scheduler/common",
   "+components/scheduler/scheduler_export.h",
   "+cc/output",
   "+ui/gfx",

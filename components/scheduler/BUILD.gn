@@ -16,7 +16,6 @@ component("scheduler") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
-    ":common",
     "//base",
     "//cc:cc",
     "//third_party/WebKit/public:blink",
@@ -26,13 +25,6 @@ component("scheduler") {
   public_deps = [
     "//third_party/WebKit/public:blink",
   ]
-}
-
-# GYP version: components/scheduler.gypi:scheduler_common
-source_set("common") {
-  sources = rebase_path(scheduler_gypi_values.scheduler_common_sources,
-                        ".",
-                        "//components/scheduler")
 }
 
 source_set("unit_tests") {
