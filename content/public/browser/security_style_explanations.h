@@ -9,18 +9,42 @@
 
 #include "content/common/content_export.h"
 #include "content/public/browser/security_style_explanation.h"
+#include "content/public/common/security_style.h"
 
 namespace content {
 
-// SecurityStyleExplanations contains human-readable explanations for
-// why a particular SecurityStyle was chosen. Each
+// SecurityStyleExplanations contains information about why a particular
+// SecurityStyle was chosen for a page. This information includes the
+// mixed content status of the page and whether the page was loaded over
+// a cryptographically secure transport. Additionally,
+// SecurityStyleExplanations contains human-readable
+// SecurityStyleExplanation objects that the embedder can use to
+// describe embedder-specific security policies. Each
 // SecurityStyleExplanation is a single security property of a page (for
 // example, an expired certificate, a valid certificate, or the presence
-// of active mixed content). A single site may have multiple different
-// explanations of "secure", "warning", and "broken" severity levels.
+// of a deprecated crypto algorithm). A single site may have multiple
+// different explanations of "secure", "warning", and "broken" severity
+// levels.
 struct SecurityStyleExplanations {
   CONTENT_EXPORT SecurityStyleExplanations();
   CONTENT_EXPORT ~SecurityStyleExplanations();
+
+  // True if the page ran insecure content such as scripts.
+  bool ran_insecure_content;
+  // True if the page displayed insecure content such as images.
+  bool displayed_insecure_content;
+
+  // The SecurityStyle assigned to a page that runs or displays insecure
+  // content, respectively. These values are used to convey the effect
+  // that mixed content has on the overall SecurityStyle of the page;
+  // for example, a |displayed_insecure_content_style| value of
+  // SECURITY_STYLE_UNAUTHENTICATED indicates that the page's overall
+  // SecurityStyle will be downgraded to UNAUTHENTICATED as a result of
+  // displaying insecure content.
+  SecurityStyle ran_insecure_content_style;
+  SecurityStyle displayed_insecure_content_style;
+
+  bool scheme_is_cryptographic;
 
   std::vector<SecurityStyleExplanation> secure_explanations;
   std::vector<SecurityStyleExplanation> warning_explanations;

@@ -95,10 +95,20 @@ connection_security::SHA1DeprecationStatus GetSHA1DeprecationStatus(
 
 connection_security::MixedContentStatus GetMixedContentStatus(
     const content::SSLStatus& ssl) {
+  bool ran_insecure_content = false;
+  bool displayed_insecure_content = false;
   if (ssl.content_status & content::SSLStatus::RAN_INSECURE_CONTENT)
-    return connection_security::RAN_MIXED_CONTENT;
+    ran_insecure_content = true;
   if (ssl.content_status & content::SSLStatus::DISPLAYED_INSECURE_CONTENT)
+    displayed_insecure_content = true;
+
+  if (ran_insecure_content && displayed_insecure_content)
+    return connection_security::RAN_AND_DISPLAYED_MIXED_CONTENT;
+  if (ran_insecure_content)
+    return connection_security::RAN_MIXED_CONTENT;
+  if (displayed_insecure_content)
     return connection_security::DISPLAYED_MIXED_CONTENT;
+
   return connection_security::NO_MIXED_CONTENT;
 }
 
@@ -156,6 +166,13 @@ SecurityLevel GetSecurityLevelForWebContents(
       // Active mixed content is downgraded to the BROKEN style and
       // handled above.
       DCHECK_NE(RAN_MIXED_CONTENT, mixed_content_status);
+      DCHECK_NE(RAN_AND_DISPLAYED_MIXED_CONTENT, mixed_content_status);
+      // This should be kept in sync with
+      // |kDisplayedInsecureContentStyle|. That is: the treatment
+      // given to passive mixed content here should be expressed by
+      // |kDisplayedInsecureContentStyle|, which is used to coordinate
+      // the treatment of passive mixed content with other security UI
+      // elements.
       if (mixed_content_status == DISPLAYED_MIXED_CONTENT)
         return NONE;
 
@@ -187,6 +204,9 @@ void GetSecurityInfoForWebContents(const content::WebContents* web_contents,
     security_info->security_style = content::SECURITY_STYLE_UNKNOWN;
     return;
   }
+
+  security_info->scheme_is_cryptographic =
+      entry->GetURL().SchemeIsCryptographic();
 
   SecurityLevel security_level = GetSecurityLevelForWebContents(web_contents);
   switch (security_level) {

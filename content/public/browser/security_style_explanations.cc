@@ -6,8 +6,12 @@
 
 namespace content {
 
-SecurityStyleExplanations::SecurityStyleExplanations() {
-}
+SecurityStyleExplanations::SecurityStyleExplanations()
+    : ran_insecure_content(false),
+      displayed_insecure_content(false),
+      ran_insecure_content_style(SECURITY_STYLE_UNKNOWN),
+      displayed_insecure_content_style(SECURITY_STYLE_UNKNOWN),
+      scheme_is_cryptographic(false) {}
 
 SecurityStyleExplanations::~SecurityStyleExplanations() {
 }

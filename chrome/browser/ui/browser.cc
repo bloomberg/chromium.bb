@@ -1289,21 +1289,28 @@ bool Browser::CanDragEnter(content::WebContents* source,
 content::SecurityStyle Browser::GetSecurityStyle(
     WebContents* web_contents,
     content::SecurityStyleExplanations* security_style_explanations) {
-  // Check if the page is HTTP; if so, no explanations are needed.
-  const content::NavigationEntry* entry =
-      web_contents->GetController().GetVisibleEntry();
-  if (entry &&
-      entry->GetSSL().security_style ==
-          content::SECURITY_STYLE_UNAUTHENTICATED) {
-    return content::SECURITY_STYLE_UNAUTHENTICATED;
-  }
-
   connection_security::SecurityInfo security_info;
   connection_security::GetSecurityInfoForWebContents(web_contents,
                                                      &security_info);
 
-  if (security_info.security_style == content::SECURITY_STYLE_UNKNOWN)
+  security_style_explanations->ran_insecure_content_style =
+      connection_security::kRanInsecureContentStyle;
+  security_style_explanations->displayed_insecure_content_style =
+      connection_security::kDisplayedInsecureContentStyle;
+
+  // Check if the page is HTTP; if so, no explanations are needed. Note
+  // that SECURITY_STYLE_UNAUTHENTICATED does not necessarily mean that
+  // the page is loaded over HTTP, because the security style merely
+  // represents how the embedder wishes to display the security state of
+  // the page, and the embedder can choose to display HTTPS page as HTTP
+  // if it wants to (for example, displaying deprecated crypto
+  // algorithms with the same UI treatment as HTTP pages).
+  security_style_explanations->scheme_is_cryptographic =
+      security_info.scheme_is_cryptographic;
+  if (!security_info.scheme_is_cryptographic ||
+      security_info.security_style == content::SECURITY_STYLE_UNKNOWN) {
     return security_info.security_style;
+  }
 
   if (security_info.sha1_deprecation_status ==
       connection_security::DEPRECATED_SHA1_BROKEN) {
@@ -1319,26 +1326,16 @@ content::SecurityStyle Browser::GetSecurityStyle(
             l10n_util::GetStringUTF8(IDS_WARNING_SHA1_DESCRIPTION)));
   }
 
-  switch (security_info.mixed_content_status) {
-    case connection_security::RAN_MIXED_CONTENT:
-      security_style_explanations->broken_explanations.push_back(
-          content::SecurityStyleExplanation(
-              l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT),
-              l10n_util::GetStringUTF8(IDS_ACTIVE_MIXED_CONTENT_DESCRIPTION)));
-      break;
-    case connection_security::DISPLAYED_MIXED_CONTENT:
-      security_style_explanations->warning_explanations.push_back(
-          content::SecurityStyleExplanation(
-              l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT),
-              l10n_util::GetStringUTF8(IDS_PASSIVE_MIXED_CONTENT_DESCRIPTION)));
-      break;
-    case connection_security::NO_MIXED_CONTENT:
-      security_style_explanations->secure_explanations.push_back(
-          content::SecurityStyleExplanation(
-              l10n_util::GetStringUTF8(IDS_NO_MIXED_CONTENT),
-              l10n_util::GetStringUTF8(IDS_NO_MIXED_CONTENT_DESCRIPTION)));
-      break;
-  }
+  security_style_explanations->ran_insecure_content =
+      security_info.mixed_content_status ==
+          connection_security::RAN_MIXED_CONTENT ||
+      security_info.mixed_content_status ==
+          connection_security::RAN_AND_DISPLAYED_MIXED_CONTENT;
+  security_style_explanations->displayed_insecure_content =
+      security_info.mixed_content_status ==
+          connection_security::DISPLAYED_MIXED_CONTENT ||
+      security_info.mixed_content_status ==
+          connection_security::RAN_AND_DISPLAYED_MIXED_CONTENT;
 
   if (net::IsCertStatusError(security_info.cert_status)) {
     base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(

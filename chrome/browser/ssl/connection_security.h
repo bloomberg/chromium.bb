@@ -17,6 +17,14 @@ class WebContents;
 // connection security status of a page.
 namespace connection_security {
 
+// These security styles describe the treatment given to pages that
+// display and run mixed content. They are used to coordinate the
+// treatment of mixed content with other security UI elements.
+const content::SecurityStyle kDisplayedInsecureContentStyle =
+    content::SECURITY_STYLE_UNAUTHENTICATED;
+const content::SecurityStyle kRanInsecureContentStyle =
+    content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+
 // TODO(wtc): unify this enum with SecurityStyle.  We
 // don't need two sets of security UI levels.  SECURITY_STYLE_AUTHENTICATED
 // needs to be refined into three levels: warning, standard, and EV.
@@ -73,6 +81,8 @@ enum MixedContentStatus {
   DISPLAYED_MIXED_CONTENT,
   // The site ran nonsecure resources (active mixed content).
   RAN_MIXED_CONTENT,
+  // The site both ran and displayed nonsecure resources.
+  RAN_AND_DISPLAYED_MIXED_CONTENT,
 };
 
 // Contains information about a page's security status, including a
@@ -83,6 +93,7 @@ struct SecurityInfo {
   SHA1DeprecationStatus sha1_deprecation_status;
   MixedContentStatus mixed_content_status;
   net::CertStatus cert_status;
+  bool scheme_is_cryptographic;
 };
 
 // Returns a security level describing the overall security state of
