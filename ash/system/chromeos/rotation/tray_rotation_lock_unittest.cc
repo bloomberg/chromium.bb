@@ -45,6 +45,10 @@ class TrayRotationLockTest : public test::AshTestBase {
   // Creates the tray view associated to |tray_rotation_lock|.
   views::View* CreateTrayView(TrayRotationLock* tray_rotation_lock);
 
+  // Destroys only the |tray_view_|. Tests may call this to simulate destruction
+  // order during the deletion of the StatusAreaWidget.
+  void DestroyTrayView();
+
   // Sets up a TrayRotationLock, its tray view, and its default view, for the
   // given SystemTray and its display. On a primary display all will be
   // created. On a secondary display both the tray view and default view will
@@ -72,6 +76,11 @@ views::View* TrayRotationLockTest::CreateTrayView(
     TrayRotationLock* tray_rotation_lock) {
   return tray_rotation_lock->CreateTrayView(
       StatusAreaWidgetTestHelper::GetUserLoginStatus());
+}
+
+void TrayRotationLockTest::DestroyTrayView() {
+  tray_view_.reset();
+  tray_->DestroyTrayView();
 }
 
 void TrayRotationLockTest::SetUpForStatusAreaWidget(
@@ -250,6 +259,20 @@ TEST_F(TrayRotationLockTest, InternalDisplayNotAvailableAtCreation) {
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(true);
   EXPECT_TRUE(default_view->visible());
+}
+
+// Tests that when the tray view is deleted, while TrayRotationLock has not been
+// deleted, that updates to the rotation lock state do not crash.
+TEST_F(TrayRotationLockTest, LockUpdatedDuringDesctruction) {
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(true);
+  DestroyTrayView();
+  Shell::GetInstance()->screen_orientation_controller()->SetRotationLocked(
+      true);
+  Shell::GetInstance()
+      ->maximize_mode_controller()
+      ->EnableMaximizeModeWindowManager(false);
 }
 
 }  // namespace ash

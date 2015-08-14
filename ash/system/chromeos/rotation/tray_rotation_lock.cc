@@ -95,12 +95,14 @@ void RotationLockDefaultView::UpdateImage() {
 }  // namespace tray
 
 TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED) {
+    : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED),
+      observing_rotation_(false),
+      observing_shell_(true) {
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 TrayRotationLock::~TrayRotationLock() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  StopObservingShell();
 }
 
 void TrayRotationLock::OnRotationLockChanged(bool rotation_locked) {
@@ -117,11 +119,18 @@ void TrayRotationLock::OnMaximizeModeStarted() {
   tray_view()->SetVisible(
       Shell::GetInstance()->screen_orientation_controller()->rotation_locked());
   Shell::GetInstance()->screen_orientation_controller()->AddObserver(this);
+  observing_rotation_ = true;
 }
 
 void TrayRotationLock::OnMaximizeModeEnded() {
   tray_view()->SetVisible(false);
-  Shell::GetInstance()->screen_orientation_controller()->RemoveObserver(this);
+  StopObservingRotation();
+}
+
+void TrayRotationLock::DestroyTrayView() {
+  StopObservingRotation();
+  StopObservingShell();
+  TrayImageItem::DestroyTrayView();
 }
 
 bool TrayRotationLock::GetInitialVisibility() {
@@ -143,6 +152,23 @@ bool TrayRotationLock::OnPrimaryDisplay() const {
   gfx::Display parent_display =
       Shell::GetScreen()->GetDisplayNearestWindow(native_view);
   return parent_display.IsInternal();
+}
+
+void TrayRotationLock::StopObservingRotation() {
+  if (!observing_rotation_)
+    return;
+  ScreenOrientationController* controller =
+      Shell::GetInstance()->screen_orientation_controller();
+  if (controller)
+    controller->RemoveObserver(this);
+  observing_rotation_ = false;
+}
+
+void TrayRotationLock::StopObservingShell() {
+  if (!observing_shell_)
+    return;
+  Shell::GetInstance()->RemoveShellObserver(this);
+  observing_shell_ = false;
 }
 
 }  // namespace ash
