@@ -16,6 +16,7 @@ import android.view.View;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlUtilities;
@@ -91,6 +92,8 @@ public class WebappActivity extends FullScreenActivity {
 
         mWebContentsObserver = createWebContentsObserver();
         getActivityTab().addObserver(createTabObserver());
+        getActivityTab().getChromeWebContentsDelegateAndroid().setDisplayMode(
+                (int) WebDisplayMode.Standalone);
         updateTaskDescription();
         removeWindowBackground();
     }

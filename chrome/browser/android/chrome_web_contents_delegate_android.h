@@ -42,6 +42,8 @@ class ChromeWebContentsDelegateAndroid
   void RunFileChooser(content::WebContents* web_contents,
                       const content::FileChooserParams& params) override;
   void CloseContents(content::WebContents* web_contents) override;
+  blink::WebDisplayMode GetDisplayMode(
+      const content::WebContents* web_contents) const override;
   void FindReply(content::WebContents* web_contents,
                  int request_id,
                  int number_of_matches,

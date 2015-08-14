@@ -133,6 +133,20 @@ void ChromeWebContentsDelegateAndroid::Observe(
   }
 }
 
+blink::WebDisplayMode ChromeWebContentsDelegateAndroid::GetDisplayMode(
+    const WebContents* web_contents) const {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return blink::WebDisplayModeUndefined;
+
+  return static_cast<blink::WebDisplayMode>(
+      Java_ChromeWebContentsDelegateAndroid_getDisplayMode(
+          env, obj.obj())
+    );
+}
+
 void ChromeWebContentsDelegateAndroid::FindReply(
     WebContents* web_contents,
     int request_id,
