@@ -132,6 +132,14 @@ void CueTimeline::updateActiveCues(double movieTime)
 
     HTMLMediaElement& mediaElement = this->mediaElement();
 
+#if !ENABLE(OILPAN)
+    // Don't run the "time marches on" algorithm if the document has been
+    // detached. This primarily guards against dispatch of events w/
+    // HTMLTrackElement targets.
+    if (mediaElement.document().isDetached())
+        return;
+#endif
+
     // https://html.spec.whatwg.org/#time-marches-on
 
     // 1 - Let current cues be a list of cues, initialized to contain all the
@@ -348,7 +356,7 @@ void CueTimeline::endIgnoringUpdateRequests()
 {
     ASSERT(m_ignoreUpdate);
     --m_ignoreUpdate;
-    if (!m_ignoreUpdate && mediaElement().inActiveDocument())
+    if (!m_ignoreUpdate)
         updateActiveCues(mediaElement().currentTime());
 }
 
