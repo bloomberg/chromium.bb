@@ -10,7 +10,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ServiceRegistry.ImplementationFactory;
 import org.chromium.device.battery.BatteryMonitorFactory;
+import org.chromium.device.vibration.VibrationManagerImpl;
 import org.chromium.mojom.device.BatteryMonitor;
+import org.chromium.mojom.device.VibrationManager;
 
 /**
  * Registers mojo services exposed by the browser in the given registry.
@@ -33,11 +35,27 @@ class ServiceRegistrar {
         }
     }
 
+    private static class VibrationManagerImplementationFactory
+            implements ImplementationFactory<VibrationManager> {
+        private final Context mApplicationContext;
+
+        VibrationManagerImplementationFactory(Context applicationContext) {
+            mApplicationContext = applicationContext;
+        }
+
+        @Override
+        public VibrationManager createImpl() {
+            return new VibrationManagerImpl(mApplicationContext);
+        }
+    }
+
     @CalledByNative
     static void registerProcessHostServices(ServiceRegistry registry, Context applicationContext) {
         assert applicationContext != null;
         registry.addService(BatteryMonitor.MANAGER,
                 new BatteryMonitorImplementationFactory(applicationContext));
+        registry.addService(VibrationManager.MANAGER,
+                new VibrationManagerImplementationFactory(applicationContext));
     }
 
     @CalledByNative

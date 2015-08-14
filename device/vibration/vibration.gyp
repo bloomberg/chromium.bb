@@ -8,7 +8,7 @@
   },
   'targets': [
     {
-      # GN version: //device/vibration:vibration_mojo
+      # GN version: //device/vibration:mojo_bindings
       'target_name': 'device_vibration_mojo_bindings',
       'type': 'static_library',
       'includes': [
@@ -34,18 +34,13 @@
         'DEVICE_VIBRATION_IMPLEMENTATION',
       ],
       'sources': [
-        'android/vibration_jni_registrar.cc',
-        'android/vibration_jni_registrar.h',
         'vibration_manager_impl.h',
-        'vibration_manager_impl_android.cc',
-        'vibration_manager_impl_android.h',
         'vibration_manager_impl_default.cc',
       ],
       'conditions': [
         ['OS == "android"', {
           'dependencies': [
             'device_vibration_java',
-            'device_vibration_jni_headers',
           ],
           'sources!': [
             'vibration_manager_impl_default.cc',
@@ -58,21 +53,12 @@
     ['OS == "android"', {
       'targets': [
         {
-          'target_name': 'device_vibration_jni_headers',
-          'type': 'none',
-          'sources': [
-            'android/java/src/org/chromium/device/vibration/VibrationProvider.java',
-          ],
-          'variables': {
-            'jni_gen_package': 'device_vibration',
-          },
-          'includes': [ '../../build/jni_generator.gypi' ],
-        },
-        {
           'target_name': 'device_vibration_java',
           'type': 'none',
           'dependencies': [
             '../../base/base.gyp:base',
+            '../../third_party/mojo/mojo_public.gyp:mojo_bindings_java',
+            'device_vibration_mojo_bindings',
           ],
           'variables': {
             'java_in_dir': '../../device/vibration/android/java',
