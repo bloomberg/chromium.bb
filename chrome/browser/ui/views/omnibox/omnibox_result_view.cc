@@ -40,10 +40,6 @@ using ui::NativeTheme;
 
 namespace {
 
-// The minimum distance between the top and bottom of the icon and the
-// top or bottom of the row.
-const int kMinimumIconVerticalPadding = 2;
-
 // A mapping from OmniboxResultView's ResultViewState/ColorKind types to
 // NativeTheme colors.
 struct TranslationTable {
@@ -727,8 +723,14 @@ int OmniboxResultView::GetAnswerLineHeight() const {
 }
 
 int OmniboxResultView::GetContentLineHeight() const {
-  return std::max(default_icon_size_ + (kMinimumIconVerticalPadding * 2),
-                  GetTextHeight() + (kMinimumTextVerticalPadding * 2));
+  ui::ThemeProvider* theme_provider = location_bar_view_->GetThemeProvider();
+  const int min_icon_vertical_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_ICON_VERTICAL_PADDING);
+  const int min_text_vertical_padding = theme_provider->GetDisplayProperty(
+      ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING);
+
+  return std::max(default_icon_size_ + (min_icon_vertical_padding * 2),
+                  GetTextHeight() + (min_text_vertical_padding * 2));
 }
 
 scoped_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(

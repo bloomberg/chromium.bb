@@ -47,10 +47,6 @@ class OmniboxResultView : public views::View,
     NUM_KINDS
   };
 
-  // The minimum distance between the top and bottom of the text and the
-  // top or bottom of the row.
-  static const int kMinimumTextVerticalPadding = 3;
-
   OmniboxResultView(OmniboxPopupContentsView* model,
                     int model_index,
                     LocationBarView* location_bar_view,

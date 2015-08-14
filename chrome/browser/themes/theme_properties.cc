@@ -124,6 +124,18 @@ const int kLocationBarHorizontalPadding[] = {3, 6, 6};
 // The Vertical padding of items in the location bar.
 const int kLocationBarVerticalPadding[] = {2, 6, 6};
 
+// The number of pixels in the omnibox dropdown border image interior to
+// the actual border.
+const int kOmniboxDropdownBorderInterior[] = {6, 6, 6};
+
+// In an omnibox dropdown row, the minimum distance between the top and
+// bottom of the row's icon and the top or bottom of the row edge.
+const int kOmniboxDropdownMinIconVerticalPadding[] = {2, 4, 8};
+
+// In an omnibox dropdown row, the minimum distance between the top and
+// bottom of the row's text and the top or bottom of the row edge.
+const int kOmniboxDropdownMinTextVerticalPadding[] = {3, 4, 8};
+
 // The spacing between a ToolbarButton's image and its border.
 const int kToolbarButtonBorderInset[] = {2, 6, 6};
 
@@ -372,6 +384,12 @@ int ThemeProperties::GetDefaultDisplayProperty(int id) {
       return kLocationBarHorizontalPadding[mode];
     case ThemeProperties::PROPERTY_LOCATION_BAR_VERTICAL_PADDING:
       return kLocationBarVerticalPadding[mode];
+    case ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_BORDER_INTERIOR:
+      return kOmniboxDropdownBorderInterior[mode];
+    case ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_ICON_VERTICAL_PADDING:
+      return kOmniboxDropdownMinIconVerticalPadding[mode];
+    case ThemeProperties::PROPERTY_OMNIBOX_DROPDOWN_MIN_TEXT_VERTICAL_PADDING:
+      return kOmniboxDropdownMinTextVerticalPadding[mode];
     case ThemeProperties::PROPERTY_TOOLBAR_BUTTON_BORDER_INSET:
       return kToolbarButtonBorderInset[mode];
     case ThemeProperties::PROPERTY_TOOLBAR_VIEW_CONTENT_SHADOW_HEIGHT:
