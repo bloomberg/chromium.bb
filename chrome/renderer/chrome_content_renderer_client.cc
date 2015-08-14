@@ -877,6 +877,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               blocked_for_background_tab);
           placeholder->set_blocked_for_prerendering(is_prerendering);
           placeholder->set_power_saver_enabled(power_saver_enabled);
+          placeholder->AllowLoading();
           break;
         }
 
@@ -916,6 +917,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
+        placeholder->AllowLoading();
         render_frame->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
             render_frame->GetRoutingID(), placeholder->CreateRoutingId(),
             identifier));
@@ -934,6 +936,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
+        placeholder->AllowLoading();
         if (info.type != content::WebPluginInfo::PLUGIN_TYPE_NPAPI) {
           render_frame->Send(new ChromeViewHostMsg_BlockedUnauthorizedPlugin(
               render_frame->GetRoutingID(),
@@ -947,6 +950,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
+        placeholder->AllowLoading();
         RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Blocked"));
         observer->DidBlockContentType(content_type, group_name);
         break;
@@ -956,7 +960,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_BY_POLICY,
                                        group_name));
-        placeholder->DisallowLoading();
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_BlockedByPolicy"));
         observer->DidBlockContentType(content_type, group_name);

@@ -37,7 +37,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   // When we load the plugin, use this already-created plugin, not a new one.
   void SetPremadePlugin(content::PluginInstanceThrottler* throttler);
 
-  void DisallowLoading() { allow_loading_ = false; }
+  void AllowLoading() { allow_loading_ = true; }
 
  protected:
   LoadablePluginPlaceholder(content::RenderFrame* render_frame,
