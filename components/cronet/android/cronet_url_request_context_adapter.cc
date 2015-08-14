@@ -279,7 +279,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
           static_cast<uint16>(quic_hint.alternate_port));
       context_->http_server_properties()->SetAlternativeService(
           quic_hint_host_port_pair, alternative_service, 1.0f,
-          base::Time::Now() + base::TimeDelta::FromDays(1));
+          base::Time::Max());
     }
   }
 
