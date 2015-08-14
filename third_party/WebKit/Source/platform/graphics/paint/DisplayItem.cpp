@@ -141,8 +141,8 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
 {
     if (isDrawingType(type))
         return drawingTypeAsDebugString(type);
-    if (isCachedType(type))
-        return "Cached" + drawingTypeAsDebugString(cachedTypeToDrawingType(type));
+    if (isCachedDrawingType(type))
+        return "Cached" + drawingTypeAsDebugString(cachedDrawingTypeToDrawingType(type));
     if (isClipType(type))
         return clipTypeAsDebugString(type);
     if (isEndClipType(type))
@@ -164,7 +164,7 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndTransform3DType(type))
         return "End" + transform3DTypeAsDebugString(endTransform3DTypeToTransform3DType(type));
 
-    PAINT_PHASE_BASED_DEBUG_STRINGS(SubtreeCached);
+    PAINT_PHASE_BASED_DEBUG_STRINGS(CachedSubtree);
     PAINT_PHASE_BASED_DEBUG_STRINGS(BeginSubtree);
     PAINT_PHASE_BASED_DEBUG_STRINGS(EndSubtree);
 

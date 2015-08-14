@@ -7,10 +7,12 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
+#include "platform/graphics/paint/SubtreeRecorder.h"
 #include <gtest/gtest.h>
 
 namespace blink {
@@ -18,7 +20,7 @@ namespace blink {
 class DisplayItemListTest : public ::testing::Test {
 public:
     DisplayItemListTest()
-        : m_originalSlimmingPaintEnabled(RuntimeEnabledFeatures::slimmingPaintEnabled()) { }
+        : m_originalSlimmingPaintV2Enabled(RuntimeEnabledFeatures::slimmingPaintV2Enabled()) { }
 
 protected:
     DisplayItemList& displayItemList() { return m_displayItemList; }
@@ -27,19 +29,20 @@ protected:
 private:
     void SetUp() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
     }
     void TearDown() override
     {
-        RuntimeEnabledFeatures::setSlimmingPaintEnabled(m_originalSlimmingPaintEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(m_originalSlimmingPaintV2Enabled);
     }
 
     DisplayItemList m_displayItemList;
-    bool m_originalSlimmingPaintEnabled;
+    bool m_originalSlimmingPaintV2Enabled;
 };
 
 const DisplayItem::Type foregroundDrawingType = static_cast<DisplayItem::Type>(DisplayItem::DrawingPaintPhaseFirst + 4);
-const DisplayItem::Type backgroundDrawingType = DisplayItem::BoxDecorationBackground;
+const DisplayItem::Type backgroundDrawingType = DisplayItem::DrawingPaintPhaseFirst;
 const DisplayItem::Type clipType = DisplayItem::ClipFirst;
 
 class TestDisplayItemClient {
@@ -448,53 +451,80 @@ TEST_F(DisplayItemListTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container1, foregroundDrawingType));
 }
 
-// Enable this when cached subtree flags are ready.
-#if 0
 TEST_F(DisplayItemListTest, CachedSubtreeSwapOrder)
 {
     TestDisplayItemClient container1("container1");
     TestDisplayItemClient content1("content1");
     TestDisplayItemClient container2("container2");
     TestDisplayItemClient content2("content2");
-    GraphicsContext context(nullptr, &displayItemList());
+    GraphicsContext context(&displayItemList());
+    const int backgroundPaintPhase = backgroundDrawingType - DisplayItem::DrawingPaintPhaseFirst;
+    const int foregroundPaintPhase = foregroundDrawingType - DisplayItem::DrawingPaintPhaseFirst;
 
     {
-        SubtreeRecorder r(context, container1, backgroundDrawingType);
-        r.begin();
+        SubtreeRecorder r(context, container1, backgroundPaintPhase);
+        EXPECT_FALSE(r.canUseCache());
         drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
         drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
     }
     {
-        SubtreeRecorder r(context, container1, foregroundDrawingType);
-        r.begin();
+        SubtreeRecorder r(context, container1, foregroundPaintPhase);
+        EXPECT_FALSE(r.canUseCache());
         drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
     {
-        SubtreeRecorder r(context, container2, backgroundDrawingType);
-        r.begin();
+        SubtreeRecorder r(context, container2, backgroundPaintPhase);
+        EXPECT_FALSE(r.canUseCache());
         drawRect(context, container2, backgroundDrawingType, FloatRect(100, 200, 100, 100));
         drawRect(context, content2, backgroundDrawingType, FloatRect(100, 200, 50, 200));
     }
     {
-        SubtreeRecorder r(context, container2, foregroundDrawingType);
-        r.begin();
+        SubtreeRecorder r(context, container2, foregroundPaintPhase);
+        EXPECT_FALSE(r.canUseCache());
         drawRect(context, content2, foregroundDrawingType, FloatRect(100, 200, 50, 200));
         drawRect(context, container2, foregroundDrawingType, FloatRect(100, 200, 100, 100));
     }
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 16,
-        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(backgroundDrawingType)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(backgroundPaintPhase)),
         TestDisplayItem(container1, backgroundDrawingType),
         TestDisplayItem(content1, backgroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(backgroundDrawingType)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(backgroundPaintPhase)),
 
-        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(foregroundDrawingType)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToBeginSubtreeType(foregroundPaintPhase)),
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(foregroundDrawingType)),
+        TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(foregroundPaintPhase)),
 
+        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(backgroundPaintPhase)),
+        TestDisplayItem(container2, backgroundDrawingType),
+        TestDisplayItem(content2, backgroundDrawingType),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(backgroundPaintPhase)),
+
+        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(foregroundPaintPhase)),
+        TestDisplayItem(content2, foregroundDrawingType),
+        TestDisplayItem(container2, foregroundDrawingType),
+        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(foregroundPaintPhase)));
+
+    // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
+    displayItemList().createAndAppend<CachedDisplayItem>(container2, DisplayItem::paintPhaseToCachedSubtreeType(backgroundPaintPhase));
+    EXPECT_EQ((size_t)1, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate().last().isCachedSubtree());
+    displayItemList().createAndAppend<CachedDisplayItem>(container2, DisplayItem::paintPhaseToCachedSubtreeType(foregroundPaintPhase));
+    EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate().last().isCachedSubtree());
+
+    displayItemList().createAndAppend<CachedDisplayItem>(container1, DisplayItem::paintPhaseToCachedSubtreeType(backgroundPaintPhase));
+    EXPECT_EQ((size_t)3, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate().last().isCachedSubtree());
+    displayItemList().createAndAppend<CachedDisplayItem>(container1, DisplayItem::paintPhaseToCachedSubtreeType(foregroundPaintPhase));
+    EXPECT_EQ((size_t)4, newPaintListBeforeUpdate().size());
+    EXPECT_TRUE(newPaintListBeforeUpdate().last().isCachedSubtree());
+    displayItemList().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 16,
         TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(backgroundDrawingType)),
         TestDisplayItem(container2, backgroundDrawingType),
         TestDisplayItem(content2, backgroundDrawingType),
@@ -502,42 +532,6 @@ TEST_F(DisplayItemListTest, CachedSubtreeSwapOrder)
 
         TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(foregroundDrawingType)),
         TestDisplayItem(content2, foregroundDrawingType),
-        TestDisplayItem(container2, foregroundDrawingType),
-        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(foregroundDrawingType)));
-
-    // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2,
-    // and at the same time container2 is scrolled out of viewport and content2 is invalidated.
-    displayItemList().invalidate(content2.displayItemClient());
-    {
-        SubtreeRecorder r(context, container2, backgroundDrawingType);
-    }
-    EXPECT_EQ((size_t)1, newPaintListBeforeUpdate().size());
-    EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
-    {
-        SubtreeRecorder r(context, container2, foregroundDrawingType);
-    }
-    EXPECT_EQ((size_t)2, newPaintListBeforeUpdate().size());
-    EXPECT_TRUE(newPaintListBeforeUpdate().last()->isSubtreeCached());
-    {
-        SubtreeRecorder r(context, container1, backgroundDrawingType);
-        r.begin();
-        drawRect(context, container1, backgroundDrawingType, FloatRect(100, 100, 100, 100));
-        drawRect(context, content1, backgroundDrawingType, FloatRect(100, 100, 50, 200));
-    }
-    {
-        SubtreeRecorder r(context, container1, foregroundDrawingType);
-        r.begin();
-        drawRect(context, content1, foregroundDrawingType, FloatRect(100, 100, 50, 200));
-        drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
-    }
-    displayItemList().commitNewDisplayItems();
-
-    EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 14,
-        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(backgroundDrawingType)),
-        TestDisplayItem(container2, backgroundDrawingType),
-        TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(backgroundDrawingType)),
-
-        TestDisplayItem(container2, DisplayItem::paintPhaseToBeginSubtreeType(foregroundDrawingType)),
         TestDisplayItem(container2, foregroundDrawingType),
         TestDisplayItem(container2, DisplayItem::paintPhaseToEndSubtreeType(foregroundDrawingType)),
 
@@ -550,17 +544,6 @@ TEST_F(DisplayItemListTest, CachedSubtreeSwapOrder)
         TestDisplayItem(content1, foregroundDrawingType),
         TestDisplayItem(container1, foregroundDrawingType),
         TestDisplayItem(container1, DisplayItem::paintPhaseToEndSubtreeType(foregroundDrawingType)));
-}
-#endif
-
-static bool isDrawing(const DisplayItem& item)
-{
-    return DisplayItem::isDrawingType(item.type());
-}
-
-static bool isCached(const DisplayItem& item)
-{
-    return DisplayItem::isCachedType(item.type());
 }
 
 TEST_F(DisplayItemListTest, Scope)
@@ -603,9 +586,9 @@ TEST_F(DisplayItemListTest, Scope)
     drawRect(context, content, foregroundDrawingType, rect2);
     displayItemList().endScope();
 
-    EXPECT_TRUE(isCached(newPaintListBeforeUpdate()[0]));
-    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[1]));
-    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[2]));
+    EXPECT_TRUE(newPaintListBeforeUpdate()[0].isCachedDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[1].isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[2].isDrawing());
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 3,
@@ -632,10 +615,10 @@ TEST_F(DisplayItemListTest, Scope)
     displayItemList().endScope();
 
     // We should repaint everything on invalidation of the scope container.
-    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[0]));
-    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[1]));
-    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[2]));
-    EXPECT_TRUE(isDrawing(newPaintListBeforeUpdate()[3]));
+    EXPECT_TRUE(newPaintListBeforeUpdate()[0].isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[1].isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[2].isDrawing());
+    EXPECT_TRUE(newPaintListBeforeUpdate()[3].isDrawing());
     displayItemList().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(displayItemList().displayItems(), 4,

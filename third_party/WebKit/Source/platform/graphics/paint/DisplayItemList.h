@@ -133,9 +133,10 @@ private:
     using DisplayItemIndicesByClientMap = HashMap<DisplayItemClient, Vector<size_t>>;
 
     static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItems&);
-    static void addItemToIndex(DisplayItemClient, DisplayItem::Type, size_t index, DisplayItemIndicesByClientMap&);
+    static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
     DisplayItems::iterator findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
     DisplayItems::iterator findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
+    void copyCachedSubtree(DisplayItems::iterator& currentIt, DisplayItems& updatedList);
 
 #if ENABLE(ASSERT)
     // The following two methods are for checking under-invalidations

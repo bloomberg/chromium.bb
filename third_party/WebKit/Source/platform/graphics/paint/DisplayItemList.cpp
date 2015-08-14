@@ -66,7 +66,7 @@ void DisplayItemList::processNewItem(DisplayItem* displayItem)
     ASSERT(!m_constructionDisabled);
     ASSERT(!skippingCache() || !displayItem->isCached());
 
-    if (DisplayItem::isCachedType(displayItem->type()))
+    if (displayItem->isCached())
         ++m_numCachedItems;
 
 #if ENABLE(ASSERT)
@@ -91,7 +91,7 @@ void DisplayItemList::processNewItem(DisplayItem* displayItem)
 #endif
         ASSERT_NOT_REACHED();
     }
-    addItemToIndex(displayItem->client(), displayItem->type(), m_newDisplayItems.size() - 1, m_newDisplayItemIndicesByClient);
+    addItemToIndexIfNeeded(*displayItem, m_newDisplayItems.size() - 1, m_newDisplayItemIndicesByClient);
 #endif // ENABLE(ASSERT)
 
     ASSERT(!displayItem->skippedCache()); // Only DisplayItemList can set the flag.
@@ -157,15 +157,14 @@ size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, con
     return kNotFound;
 }
 
-void DisplayItemList::addItemToIndex(DisplayItemClient client, DisplayItem::Type type, size_t index, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+void DisplayItemList::addItemToIndexIfNeeded(const DisplayItem& displayItem, size_t index, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
 {
-    // Only need to index DrawingDisplayItems and FIXME: BeginSubtreeDisplayItems.
-    if (!DisplayItem::isDrawingType(type))
+    if (!displayItem.isCacheable())
         return;
 
-    DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(client);
+    DisplayItemIndicesByClientMap::iterator it = displayItemIndicesByClient.find(displayItem.client());
     Vector<size_t>& indices = it == displayItemIndicesByClient.end() ?
-        displayItemIndicesByClient.add(client, Vector<size_t>()).storedValue->value : it->value;
+        displayItemIndicesByClient.add(displayItem.client(), Vector<size_t>()).storedValue->value : it->value;
     indices.append(index);
 }
 
@@ -187,22 +186,37 @@ DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayI
     for (; currentIt != currentEnd; ++currentIt) {
         const DisplayItem& item = *currentIt;
         if (!item.ignoreFromDisplayList()
-            && DisplayItem::isDrawingType(item.type())
+            && item.isCacheable()
             && m_validlyCachedClients.contains(item.client())) {
             if (id.matches(item))
                 return currentIt;
 
-            addItemToIndex(item.client(), item.type(), currentIt - m_currentDisplayItems.begin(), displayItemIndicesByClient);
+            addItemToIndexIfNeeded(item, currentIt - m_currentDisplayItems.begin(), displayItemIndicesByClient);
         }
     }
     return currentEnd;
 }
 
+void DisplayItemList::copyCachedSubtree(DisplayItems::iterator& currentIt, DisplayItems& updatedList)
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(currentIt->isBeginSubtree());
+    ASSERT(!currentIt->scope());
+    DisplayItem::Id endSubtreeId(currentIt->client(), DisplayItem::beginSubtreeTypeToEndSubtreeType(currentIt->type()), 0);
+    while (true) {
+        updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
+        if (endSubtreeId.matches(updatedList.last()))
+            break;
+        ++currentIt;
+        // We should always find the EndSubtree display item.
+        ASSERT(currentIt != m_currentDisplayItems.end());
+    }
+}
+
 // Update the existing display items by removing invalidated entries, updating
 // repainted ones, and appending new items.
 // - For CachedDisplayItem, copy the corresponding cached DrawingDisplayItem;
-// - FIXME: Re-enable SubtreeCachedDisplayItem:
-//   For SubtreeCachedDisplayItem, copy the cached display items between the
+// - For SubtreeCachedDisplayItem, copy the cached display items between the
 //   corresponding BeginSubtreeDisplayItem and EndSubtreeDisplayItem (incl.);
 // - Otherwise, copy the new display item.
 //
@@ -225,10 +239,8 @@ void DisplayItemList::commitNewDisplayItems()
 
     if (m_currentDisplayItems.isEmpty()) {
 #if ENABLE(ASSERT)
-        for (const auto& item : m_newDisplayItems) {
-            ASSERT(!DisplayItem::isCachedType(item.type())
-                && !DisplayItem::isSubtreeCachedType(item.type()));
-        }
+        for (const auto& item : m_newDisplayItems)
+            ASSERT(!item.isCached());
 #endif
         m_currentDisplayItems.swap(m_newDisplayItems);
         m_validlyCachedClientsDirty = true;
@@ -250,7 +262,7 @@ void DisplayItemList::commitNewDisplayItems()
         // Under-invalidation checking requires a full index of m_currentDisplayItems.
         size_t i = 0;
         for (const auto& item : m_currentDisplayItems) {
-            addItemToIndex(item.client(), item.type(), i, displayItemIndicesByClient);
+            addItemToIndexIfNeeded(item, i, displayItemIndicesByClient);
             ++i;
         }
     }
@@ -273,38 +285,40 @@ void DisplayItemList::commitNewDisplayItems()
 
         if (newDisplayItemHasCachedType) {
             ASSERT(!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
-            ASSERT(DisplayItem::isCachedType(newDisplayItem.type()));
+            ASSERT(newDisplayItem.isCached());
             ASSERT(clientCacheIsValid(newDisplayItem.client()));
-            if (isSynchronized) {
+            if (!isSynchronized) {
+                DisplayItems::iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, displayItemIndicesByClient);
+                ASSERT(foundIt != currentIt);
+
+                if (foundIt == currentEnd) {
+#ifndef NDEBUG
+                    showDebugData();
+                    WTFLogAlways("%s not found in m_currentDisplayItems\n", newDisplayItem.asDebugString().utf8().data());
+#endif
+                    ASSERT_NOT_REACHED();
+
+                    // If foundIt == currentEnd, it means that we did not find the cached display item. This should be impossible, but may occur
+                    // if there is a bug in the system, such as under-invalidation, incorrect cache checking or duplicate display ids. In this case,
+                    // attempt to recover rather than crashing or bailing on display of the rest of the display list.
+                    continue;
+                }
+                currentIt = foundIt;
+            }
+
+            if (newDisplayItem.isCachedDrawing()) {
                 updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
             } else {
-                DisplayItems::iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, displayItemIndicesByClient);
-                isSynchronized = (foundIt == currentIt);
-
-#ifndef NDEBUG
-                if (foundIt == currentEnd) {
-                    showDebugData();
-                    WTFLogAlways("CachedDisplayItem %s not found in m_currentDisplayItems\n",
-                        newDisplayItem.asDebugString().utf8().data());
-                    ASSERT_NOT_REACHED();
-                }
-#endif
-                // If foundIt == currentEnd, it means that we did not find the cached display item. This should be impossible, but may occur
-                // if there is a bug in the system, such as under-invalidation, incorrect cache checking or duplicate display ids. In this case,
-                // attempt to recover rather than crashing or bailing on display of the rest of the display list.
-                if (foundIt == currentEnd)
-                    continue;
-
-                currentIt = foundIt;
-
-                updatedList.appendByMoving(*foundIt, foundIt->derivedSize());
+                ASSERT(newDisplayItem.isCachedSubtree());
+                copyCachedSubtree(currentIt, updatedList);
+                ASSERT(updatedList.last().isEndSubtree());
             }
         } else {
 #if ENABLE(ASSERT)
             if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
                 checkCachedDisplayItemIsUnchanged(newDisplayItem, displayItemIndicesByClient);
             else
-                ASSERT(!DisplayItem::isDrawingType(newDisplayItem.type()) || newDisplayItem.skippedCache() || !clientCacheIsValid(newDisplayItem.client()));
+                ASSERT(!newDisplayItem.isDrawing() || newDisplayItem.skippedCache() || !clientCacheIsValid(newDisplayItem.client()));
 #endif // ENABLE(ASSERT)
             updatedList.appendByMoving(*newIt, newIt->derivedSize());
         }
@@ -403,7 +417,7 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
-    if (!DisplayItem::isDrawingType(displayItem.type()) || displayItem.skippedCache() || !clientCacheIsValid(displayItem.client()))
+    if (!displayItem.isDrawing() || displayItem.skippedCache() || !clientCacheIsValid(displayItem.client()))
         return;
 
     // If checking under-invalidation, we always generate new display item even if the client is not invalidated.
@@ -476,7 +490,7 @@ void DisplayItemList::checkNoRemainingCachedDisplayItems()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
     for (const auto& displayItem : m_currentDisplayItems) {
-        if (displayItem.ignoreFromDisplayList() || !DisplayItem::isDrawingType(displayItem.type()) || !clientCacheIsValid(displayItem.client()))
+        if (displayItem.ignoreFromDisplayList() || !displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
             continue;
         showUnderInvalidationError("May be under-invalidation: no new display item", displayItem);
     }

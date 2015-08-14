@@ -22,8 +22,8 @@
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
-#include "core/paint/SubtreeRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/SubtreeRecorder.h"
 #include "wtf/Optional.h"
 
 namespace blink {

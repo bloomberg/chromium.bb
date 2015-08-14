@@ -5,30 +5,27 @@
 #ifndef SubtreeRecorder_h
 #define SubtreeRecorder_h
 
-#include "core/paint/PaintPhase.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 
 namespace blink {
 
-class DisplayItem;
 class DisplayItemList;
 class GraphicsContext;
-class LayoutObject;
 
 // Records subtree information during painting. The recorder's life span covers
 // all painting operations executed during the root of the subtree's paint method
 // for the paint phase.
-class SubtreeRecorder {
+class PLATFORM_EXPORT SubtreeRecorder {
 public:
-    SubtreeRecorder(GraphicsContext&, const LayoutObject& root, PaintPhase);
+    SubtreeRecorder(GraphicsContext&, const DisplayItemClientWrapper&, int paintPhase);
     ~SubtreeRecorder();
 
     bool canUseCache() const;
 
 private:
     DisplayItemList* m_displayItemList;
-    const LayoutObject& m_subtreeRoot;
-    const PaintPhase m_paintPhase;
+    DisplayItemClientWrapper m_client;
+    const int m_paintPhase;
     bool m_canUseCache;
 #if ENABLE(ASSERT)
     mutable bool m_checkedCanUseCache;

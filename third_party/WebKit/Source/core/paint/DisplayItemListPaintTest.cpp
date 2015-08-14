@@ -15,7 +15,6 @@
 #include "core/paint/LayerClipRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
-#include "core/paint/SubtreeRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"

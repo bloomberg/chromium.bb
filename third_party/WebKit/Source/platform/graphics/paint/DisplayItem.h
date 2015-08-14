@@ -96,8 +96,8 @@ public:
         WebFont,
         DrawingLast = WebFont,
 
-        CachedFirst,
-        CachedLast = CachedFirst + DrawingLast - DrawingFirst,
+        CachedDrawingFirst,
+        CachedDrawingLast = CachedDrawingFirst + DrawingLast - DrawingFirst,
 
         ClipFirst,
         ClipBoxPaintPhaseFirst = ClipFirst,
@@ -159,10 +159,10 @@ public:
         BeginFixedPositionContainer,
         EndFixedPositionContainer,
 
-        SubtreeCachedFirst,
-        SubtreeCachedPaintPhaseFirst = SubtreeCachedFirst,
-        SubtreeCachedPaintPhaseLast = SubtreeCachedPaintPhaseFirst + PaintPhaseMax,
-        SubtreeCachedLast = SubtreeCachedPaintPhaseLast,
+        CachedSubtreeFirst,
+        CachedSubtreePaintPhaseFirst = CachedSubtreeFirst,
+        CachedSubtreePaintPhaseLast = CachedSubtreePaintPhaseFirst + PaintPhaseMax,
+        CachedSubtreeLast = CachedSubtreePaintPhaseLast,
 
         BeginSubtreeFirst,
         BeginSubtreePaintPhaseFirst = BeginSubtreeFirst,
@@ -217,11 +217,20 @@ public:
         const unsigned scope;
     };
 
-    // Return the Id with cached types converted to non-cached types
-    // (e.g., Type::CachedSVGImage -> Type::SVGImage).
+    // Convert cached type to non-cached type (e.g., Type::CachedSVGImage -> Type::SVGImage).
+    Type nonCachedType() const
+    {
+        if (isCachedDrawingType(m_type))
+            return cachedDrawingTypeToDrawingType(m_type);
+        if (isCachedSubtreeType(m_type))
+            return cachedSubtreeTypeToBeginSubtreeType(m_type);
+        return m_type;
+    }
+
+    // Return the Id with cached type converted to non-cached type.
     Id nonCachedId() const
     {
-        return Id(m_client, isCachedType(m_type) ? cachedTypeToDrawingType(m_type) : m_type, m_scope);
+        return Id(m_client, nonCachedType(), m_scope);
     }
 
     virtual ~DisplayItem() { }
@@ -232,6 +241,7 @@ public:
     Type type() const { return m_type; }
 
     void setScope(unsigned scope) { m_scope = scope; }
+    unsigned scope() { return m_scope; }
 
     // Size of this object in memory, used to move it with memcpy.
     // This is not sizeof(*this), because it needs to account for the size of
@@ -279,8 +289,8 @@ public:
 
     DEFINE_CATEGORY_METHODS(Drawing)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Drawing)
-    DEFINE_CATEGORY_METHODS(Cached)
-    DEFINE_CONVERSION_METHODS(Drawing, drawing, Cached, cached)
+    DEFINE_CATEGORY_METHODS(CachedDrawing)
+    DEFINE_CONVERSION_METHODS(Drawing, drawing, CachedDrawing, cachedDrawing)
 
     DEFINE_PAIRED_CATEGORY_METHODS(Clip, clip)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(ClipLayerFragment)
@@ -295,15 +305,20 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D);
 
-    DEFINE_CATEGORY_METHODS(SubtreeCached)
-    DEFINE_PAINT_PHASE_CONVERSION_METHOD(SubtreeCached)
+    DEFINE_CATEGORY_METHODS(CachedSubtree)
+    DEFINE_PAINT_PHASE_CONVERSION_METHOD(CachedSubtree)
     DEFINE_CATEGORY_METHODS(BeginSubtree)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(BeginSubtree)
     DEFINE_CATEGORY_METHODS(EndSubtree)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(EndSubtree)
-    DEFINE_CONVERSION_METHODS(SubtreeCached, subtreeCached, BeginSubtree, beginSubtree)
-    DEFINE_CONVERSION_METHODS(SubtreeCached, subtreeCached, EndSubtree, endSubtree)
+    DEFINE_CONVERSION_METHODS(CachedSubtree, cachedSubtree, BeginSubtree, beginSubtree)
+    DEFINE_CONVERSION_METHODS(CachedSubtree, cachedSubtree, EndSubtree, endSubtree)
     DEFINE_CONVERSION_METHODS(BeginSubtree, beginSubtree, EndSubtree, endSubtree)
+
+    static bool isCachedType(Type type) { return isCachedDrawingType(type) || isCachedSubtreeType(type); }
+    bool isCached() const { return isCachedType(m_type); }
+    static bool isCacheableType(Type type) { return isDrawingType(type) || isBeginSubtreeType(type); }
+    bool isCacheable() const { return !skippedCache() && isCacheableType(m_type); }
 
     virtual bool isBegin() const { return false; }
     virtual bool isEnd() const { return false; }

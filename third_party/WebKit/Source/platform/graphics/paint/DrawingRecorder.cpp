@@ -28,7 +28,7 @@ bool DrawingRecorder::useCachedDrawingIfPossible(GraphicsContext& context, const
     if (!context.displayItemList()->clientCacheIsValid(client.displayItemClient()))
         return false;
 
-    context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::drawingTypeToCachedType(type));
+    context.displayItemList()->createAndAppend<CachedDisplayItem>(client, DisplayItem::drawingTypeToCachedDrawingType(type));
     return true;
 }
 
