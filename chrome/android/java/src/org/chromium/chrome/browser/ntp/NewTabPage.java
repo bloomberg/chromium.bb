@@ -337,8 +337,8 @@ public class NewTabPage
         @Override
         public void getLargeIconForUrl(String url, int size, LargeIconCallback callback) {
             if (mIsDestroyed) return;
-            if (mLargeIconBridge == null) mLargeIconBridge = new LargeIconBridge();
-            mLargeIconBridge.getLargeIconForUrl(mProfile, url, size, callback);
+            if (mLargeIconBridge == null) mLargeIconBridge = new LargeIconBridge(mProfile);
+            mLargeIconBridge.getLargeIconForUrl(url, size, callback);
         }
 
         @Override
