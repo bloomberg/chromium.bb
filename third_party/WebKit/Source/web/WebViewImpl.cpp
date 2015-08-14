@@ -3965,6 +3965,15 @@ void WebViewImpl::willInsertBody(WebLocalFrameImpl* webframe)
         resumeTreeViewCommits();
 }
 
+void WebViewImpl::didFinishDocumentLoad(WebLocalFrameImpl* webframe)
+{
+    if (webframe != mainFrameImpl())
+        return;
+    // If we finished parsing and there's no sheets to load start painting.
+    if (webframe->frame()->document()->isRenderingReady())
+        resumeTreeViewCommits();
+}
+
 void WebViewImpl::didRemoveAllPendingStylesheet(WebLocalFrameImpl* webframe)
 {
     if (webframe != mainFrameImpl())
@@ -3995,10 +4004,6 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
 {
     if (!m_client || !webframe->frame()->isLocalRoot())
         return;
-
-    // If we finished a layout while in deferred commit mode,
-    // that means it's time to start producing frames again so un-defer.
-    resumeTreeViewCommits();
 
     if (m_shouldAutoResize && webframe->frame() && webframe->frame()->view()) {
         WebSize frameSize = webframe->frame()->view()->frameRect().size();

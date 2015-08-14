@@ -385,6 +385,7 @@ public:
 
     void willInsertBody(WebLocalFrameImpl*);
     void didRemoveAllPendingStylesheet(WebLocalFrameImpl*);
+    void didFinishDocumentLoad(WebLocalFrameImpl*);
     void didChangeContentsSize();
     void pageScaleFactorChanged();
 

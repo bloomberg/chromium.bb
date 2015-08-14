@@ -382,6 +382,8 @@ void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad(bool documentIsEmpty)
 {
     if (m_webFrame->client())
         m_webFrame->client()->didFinishDocumentLoad(m_webFrame, documentIsEmpty);
+    if (WebViewImpl* webview = m_webFrame->viewImpl())
+        webview->didFinishDocumentLoad(m_webFrame);
 }
 
 void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
