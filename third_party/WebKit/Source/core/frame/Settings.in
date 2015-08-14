@@ -169,7 +169,7 @@ unifiedTextCheckerEnabled initial=defaultUnifiedTextCheckerEnabled
 # Some apps could have a default video poster if it is not set.
 defaultVideoPosterURL type=String
 
-smartInsertDeleteEnabled initial=defaultSmartInsertDeleteEnabled
+smartInsertDeleteEnabled initial=false
 selectTrailingWhitespaceEnabled initial=defaultSelectTrailingWhitespaceEnabled
 
 selectionIncludesAltImageText initial=false

@@ -53,11 +53,6 @@ static EditingBehaviorType editingBehaviorTypeForPlatform()
 }
 
 static const bool defaultUnifiedTextCheckerEnabled = false;
-#if OS(MACOSX)
-static const bool defaultSmartInsertDeleteEnabled = true;
-#else
-static const bool defaultSmartInsertDeleteEnabled = false;
-#endif
 #if OS(WIN)
 static const bool defaultSelectTrailingWhitespaceEnabled = true;
 #else
