@@ -253,6 +253,7 @@ source_set("browser") {
       "//chrome/browser/devtools",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/installer/util",
+      "//components/about_handler",
       "//components/app_modal",
       "//components/autofill/content/browser",
       "//components/browsing_data",

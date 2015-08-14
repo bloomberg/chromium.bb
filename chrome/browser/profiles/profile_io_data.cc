@@ -33,7 +33,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/media/media_device_id_salt.h"
-#include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_http_user_agent_settings.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -51,6 +50,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/about_handler/about_protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -1203,8 +1203,8 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
                   base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
 #endif
 
-  job_factory->SetProtocolHandler(
-      url::kAboutScheme, new chrome_browser_net::AboutProtocolHandler());
+  job_factory->SetProtocolHandler(url::kAboutScheme,
+                                  new about_handler::AboutProtocolHandler());
 #if !defined(DISABLE_FTP_SUPPORT)
   DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(

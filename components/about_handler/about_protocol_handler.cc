@@ -2,22 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/about_protocol_handler.h"
+#include "components/about_handler/about_protocol_handler.h"
 
-#include "net/url_request/url_request_about_job.h"
+#include "components/about_handler/url_request_about_job.h"
 
-namespace chrome_browser_net {
+namespace about_handler {
 
 AboutProtocolHandler::AboutProtocolHandler() {
 }
 
+AboutProtocolHandler::~AboutProtocolHandler() {
+}
+
 net::URLRequestJob* AboutProtocolHandler::MaybeCreateJob(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  return new net::URLRequestAboutJob(request, network_delegate);
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return new URLRequestAboutJob(request, network_delegate);
 }
 
 bool AboutProtocolHandler::IsSafeRedirectTarget(const GURL& location) const {
   return false;
 }
 
-}  // namespace chrome_browser_net
+}  // namespace about_handler

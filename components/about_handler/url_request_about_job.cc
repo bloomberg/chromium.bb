@@ -6,7 +6,7 @@
 // about:blank.  No other about: features should be available to web content,
 // so they're not implemented here.
 
-#include "net/url_request/url_request_about_job.h"
+#include "components/about_handler/url_request_about_job.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -14,10 +14,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 
-namespace net {
+namespace about_handler {
 
-URLRequestAboutJob::URLRequestAboutJob(URLRequest* request,
-                                       NetworkDelegate* network_delegate)
+URLRequestAboutJob::URLRequestAboutJob(net::URLRequest* request,
+                                       net::NetworkDelegate* network_delegate)
     : URLRequestJob(request, network_delegate),
       weak_factory_(this) {
 }
@@ -42,4 +42,4 @@ void URLRequestAboutJob::StartAsync() {
   NotifyHeadersComplete();
 }
 
-}  // namespace net
+}  // namespace about_handler

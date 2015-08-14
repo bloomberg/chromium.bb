@@ -10,6 +10,7 @@
     'chromium_code': 1,
   },
   'includes': [
+    'about_handler.gypi',
     'auto_login_parser.gypi',
     'autofill.gypi',
     'bookmarks.gypi',

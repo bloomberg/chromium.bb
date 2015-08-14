@@ -1903,6 +1903,7 @@ if (!is_android) {
         "//base/test:test_support",
         "//chrome/browser",
         "//chrome/renderer",
+        "//components/about_handler",
         "//components/autofill/content/browser/wallet:test_support",
         "//components/autofill/content/renderer:test_support",
         "//media/cast:test_support",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_URL_REQUEST_URL_REQUEST_ABOUT_JOB_H_
-#define NET_URL_REQUEST_URL_REQUEST_ABOUT_JOB_H_
+#ifndef COMPONENTS_ABOUT_HANDLER_URL_REQUEST_ABOUT_JOB_H_
+#define COMPONENTS_ABOUT_HANDLER_URL_REQUEST_ABOUT_JOB_H_
 
 #include <string>
 
@@ -11,11 +11,12 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 
-namespace net {
+namespace about_handler {
 
-class NET_EXPORT URLRequestAboutJob : public URLRequestJob {
+class URLRequestAboutJob : public net::URLRequestJob {
  public:
-  URLRequestAboutJob(URLRequest* request, NetworkDelegate* network_delegate);
+  URLRequestAboutJob(net::URLRequest* request,
+                     net::NetworkDelegate* network_delegate);
 
   // URLRequestJob:
   void Start() override;
@@ -29,6 +30,6 @@ class NET_EXPORT URLRequestAboutJob : public URLRequestJob {
   base::WeakPtrFactory<URLRequestAboutJob> weak_factory_;
 };
 
-}  // namespace net
+}  // namespace about_handler
 
-#endif  // NET_URL_REQUEST_URL_REQUEST_ABOUT_JOB_H_
+#endif  // COMPONENTS_ABOUT_HANDLER_URL_REQUEST_ABOUT_JOB_H_

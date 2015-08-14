@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NET_ABOUT_PROTOCOL_HANDLER_H_
-#define CHROME_BROWSER_NET_ABOUT_PROTOCOL_HANDLER_H_
+#ifndef COMPONENTS_ABOUT_HANDLER_ABOUT_PROTOCOL_HANDLER_H_
+#define COMPONENTS_ABOUT_HANDLER_ABOUT_PROTOCOL_HANDLER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "net/url_request/url_request_job_factory.h"
 
-namespace chrome_browser_net {
+namespace about_handler {
 
 // Implements a ProtocolHandler for About jobs.
 class AboutProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   AboutProtocolHandler();
+  ~AboutProtocolHandler() override;
   net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
@@ -24,6 +25,6 @@ class AboutProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
   DISALLOW_COPY_AND_ASSIGN(AboutProtocolHandler);
 };
 
-}  // namespace chrome_browser_net
+}  // namespace about_handler
 
-#endif  // CHROME_BROWSER_NET_ABOUT_PROTOCOL_HANDLER_H_
+#endif  // COMPONENTS_ABOUT_HANDLER_ABOUT_PROTOCOL_HANDLER_H_

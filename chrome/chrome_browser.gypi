@@ -1876,8 +1876,6 @@
       'browser/nacl_host/nacl_infobar_delegate.h',
     ],
     'chrome_browser_net_sources': [
-      'browser/net/about_protocol_handler.cc',
-      'browser/net/about_protocol_handler.h',
       'browser/net/async_dns_field_trial.cc',
       'browser/net/async_dns_field_trial.h',
       'browser/net/certificate_error_reporter.cc',
@@ -3231,6 +3229,7 @@
             'installer_util',
             '../third_party/re2/re2.gyp:re2',
             '../cc/cc.gyp:cc',
+            '../components/components.gyp:about_handler',
             '../components/components.gyp:autofill_content_browser',
             '../components/components.gyp:browsing_data',
             '../components/components.gyp:data_reduction_proxy_content_browser',
