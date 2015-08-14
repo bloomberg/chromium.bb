@@ -8,8 +8,9 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.OfflinePageCallback;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.DeletePageCallback;
 import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.OfflinePageModelObserver;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
@@ -128,7 +129,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                         getActivity().getActivityTab().getWebContents());
 
                 mOfflinePageBridge.savePage(getActivity().getActivityTab().getWebContents(),
-                        BOOKMARK_ID, new OfflinePageCallback() {
+                        BOOKMARK_ID, new SavePageCallback() {
                             @Override
                             public void onSavePageDone(int savePageResult, String url) {
                                 assertEquals(
@@ -136,10 +137,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
                                 assertEquals(
                                         "Save result incorrect.", expectedResult, savePageResult);
                                 semaphore.release();
-                            }
-
-                            @Override
-                            public void onDeletePageDone(int deletePageResult) {
                             }
                         });
             }
@@ -153,11 +150,7 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.deletePage(BOOKMARK_ID, new OfflinePageCallback() {
-                    @Override
-                    public void onSavePageDone(int savePageResult, String url) {
-                    }
-
+                mOfflinePageBridge.deletePage(BOOKMARK_ID, new DeletePageCallback() {
                     @Override
                     public void onDeletePageDone(int deletePageResult) {
                         assertEquals(

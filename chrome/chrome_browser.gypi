@@ -3653,7 +3653,6 @@
             '../components/components.gyp:data_reduction_proxy_content',
             '../components/components.gyp:enhanced_bookmarks',
             '../components/components.gyp:offline_pages',
-            '../components/components.gyp:offline_pages_enums_java',
             '../components/components.gyp:precache_content',
             '../components/components.gyp:precache_core',
             '../components/components.gyp:service_tab_launcher',

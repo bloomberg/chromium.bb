@@ -8,11 +8,15 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.OfflinePageModelObserver;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offline_pages.OfflinePageItem;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
+import org.chromium.components.offline_pages.SavePageResult;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +28,17 @@ import java.util.List;
  */
 public class EnhancedBookmarksModel extends BookmarksBridge {
     private static final int FAVICON_MAX_CACHE_SIZE = 10 * 1024 * 1024; // 10MB
+
+    /**
+     * Callback for use with addBookmark.
+     */
+    public interface AddBookmarkCallback {
+        /**
+         * Called when the bookmark has been added.
+         * @param bookmarkId ID of the bookmark that has been added.
+         */
+        void onBookmarkAdded(BookmarkId bookmarkId);
+    }
 
     /**
      * Observer that listens to delete event. This interface is used by undo controllers to know
@@ -42,6 +57,8 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
 
     private ObserverList<EnhancedBookmarkDeleteObserver> mDeleteObservers = new ObserverList<>();
     private OfflinePageBridge mOfflinePageBridge;
+    private boolean mIsOfflinePageModelLoaded;
+    private OfflinePageModelObserver mOfflinePageModelObserver;
 
     /**
      * Initialize enhanced bookmark model for last used non-incognito profile.
@@ -55,9 +72,41 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
         super(profile);
 
         if (OfflinePageBridge.isEnabled()) {
-            // TODO(jianli): Make sure to wait until the bridge is loaded.
             mOfflinePageBridge = new OfflinePageBridge(profile);
+            if (mOfflinePageBridge.isOfflinePageModelLoaded()) {
+                mIsOfflinePageModelLoaded = true;
+            } else {
+                mOfflinePageModelObserver = new OfflinePageModelObserver() {
+                    @Override
+                    public void offlinePageModelLoaded() {
+                        mIsOfflinePageModelLoaded = true;
+                        if (isBookmarkModelLoaded()) {
+                            notifyBookmarkModelLoaded();
+                        }
+                    }
+                };
+                mOfflinePageBridge.addObserver(mOfflinePageModelObserver);
+            }
         }
+    }
+
+    /**
+     * Clean up all the bridges. This must be called after done using this class.
+     */
+    @Override
+    public void destroy() {
+        if (mOfflinePageBridge != null) {
+            mOfflinePageBridge.destroy();
+            mOfflinePageBridge = null;
+        }
+
+        super.destroy();
+    }
+
+    @Override
+    public boolean isBookmarkModelLoaded() {
+        return super.isBookmarkModelLoaded()
+                && (mOfflinePageBridge == null || mIsOfflinePageModelLoaded);
     }
 
     /**
@@ -119,10 +168,37 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
         }
     }
 
-    @Override
-    public BookmarkId addBookmark(BookmarkId parent, int index, String title, String url) {
+    /**
+     * Add a new bookmark asynchronously.
+     *
+     * @param parent Folder where to add.
+     * @param index The position where the bookmark will be placed in parent folder
+     * @param title Title of the new bookmark.
+     * @param url Url of the new bookmark
+     * @param webContents A {@link WebContents} object.
+     * @param callback The callback to be invoked when the bookmark is added.
+     */
+    public void addBookmarkAsync(BookmarkId parent, int index, String title, String url,
+                                 WebContents webContents, final AddBookmarkCallback callback) {
         url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-        return super.addBookmark(parent, index, title, url);
+        final BookmarkId enhancedId = addBookmark(parent, index, title, url);
+
+        // If there is no need to save offline page, return now.
+        if (mOfflinePageBridge == null) {
+            callback.onBookmarkAdded(enhancedId);
+            return;
+        }
+
+        mOfflinePageBridge.savePage(webContents, enhancedId,
+                new SavePageCallback() {
+                    @Override
+                    public void onSavePageDone(int savePageResult, String url) {
+                        // TODO(jianli): Error handling.
+                        if (savePageResult == SavePageResult.SUCCESS) {
+                            callback.onBookmarkAdded(enhancedId);
+                        }
+                    }
+                });
     }
 
     /**
@@ -131,6 +207,23 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     public String getBookmarkTitle(BookmarkId bookmarkId) {
         return getBookmarkById(bookmarkId).getTitle();
     }
+
+    /**
+     * Returns the url used to launch a bookmark.
+     *
+     * @param bookmarkId ID of the bookmark to launch.
+     */
+    public String getBookmarkLaunchUrl(BookmarkId bookmarkId) {
+        String url = getBookmarkById(bookmarkId).getUrl();
+        if (mOfflinePageBridge == null) {
+            return url;
+        }
+
+        // Return the offline url for the offline page.
+        OfflinePageItem page = mOfflinePageBridge.getPageByBookmarkId(bookmarkId);
+        return page == null ? url : page.getOfflineUrl();
+    }
+
 
     /**
      * @return The id of the default folder to add bookmarks/folders to.
@@ -154,5 +247,12 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
             bookmarkIds.add(offlinePage.getBookmarkId());
         }
         return bookmarkIds;
+    }
+
+    /**
+     * @return Offline page bridge.
+     */
+    public OfflinePageBridge getOfflinePageBridge() {
+        return mOfflinePageBridge;
     }
 }

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
@@ -61,44 +62,54 @@ public class EnhancedBookmarkUtils {
      * If the tab has already been bookmarked, start {@link EnhancedBookmarkEditActivity} for the
      * bookmark. If not, add the bookmark to bookmarkmodel, and show a snackbar notifying the user.
      */
-    public static void addOrEditBookmark(long idToAdd, EnhancedBookmarksModel bookmarkModel,
+    public static void addOrEditBookmark(long idToAdd, final EnhancedBookmarksModel bookmarkModel,
             Tab tab, final SnackbarManager snackbarManager, final Activity activity) {
         if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
             startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL));
             return;
         }
 
-        final BookmarkId enhancedId = bookmarkModel
-                .addBookmark(bookmarkModel.getDefaultFolder(), 0, tab.getTitle(), tab.getUrl());
-
-        Pair<EnhancedBookmarksModel, BookmarkId> pair = Pair.create(bookmarkModel, enhancedId);
-
-        SnackbarController snackbarController = new SnackbarController() {
+        AddBookmarkCallback callback = new AddBookmarkCallback() {
             @Override
-            public void onDismissForEachType(boolean isTimeout) {}
+            public void onBookmarkAdded(final BookmarkId enhancedId) {
+                Pair<EnhancedBookmarksModel, BookmarkId> pair =
+                        Pair.create(bookmarkModel, enhancedId);
 
-            @Override
-            public void onDismissNoAction(Object actionData) {
-                // This method will be called only if the snackbar is dismissed by timeout.
-                @SuppressWarnings("unchecked")
-                Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
-                        EnhancedBookmarksModel, BookmarkId>) actionData;
-                pair.first.destroy();
-            }
+                SnackbarController snackbarController = new SnackbarController() {
+                    @Override
+                    public void onDismissForEachType(boolean isTimeout) {}
 
-            @Override
-            public void onAction(Object actionData) {
-                @SuppressWarnings("unchecked")
-                Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
-                        EnhancedBookmarksModel, BookmarkId>) actionData;
-                // Show edit activity with the name of parent folder highlighted.
-                startEditActivity(activity, enhancedId);
-                pair.first.destroy();
+                    @Override
+                    public void onDismissNoAction(Object actionData) {
+                        // This method will be called only if the snackbar is dismissed by timeout.
+                        @SuppressWarnings("unchecked")
+                        Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
+                                EnhancedBookmarksModel, BookmarkId>) actionData;
+                        pair.first.destroy();
+                    }
+
+                    @Override
+                    public void onAction(Object actionData) {
+                        @SuppressWarnings("unchecked")
+                        Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
+                                EnhancedBookmarksModel, BookmarkId>) actionData;
+                        // Show edit activity with the name of parent folder highlighted.
+                        startEditActivity(activity, enhancedId);
+                        pair.first.destroy();
+                    }
+                };
+
+                int messageId = bookmarkModel.getOfflinePageBridge() == null
+                        ? R.string.enhanced_bookmark_page_saved
+                        : R.string.enhanced_bookmark_page_saved_offline_pages;
+                snackbarManager.showSnackbar(Snackbar.make(
+                        activity.getString(messageId), snackbarController)
+                        .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), pair));
             }
         };
-        snackbarManager.showSnackbar(Snackbar.make(
-                activity.getString(R.string.enhanced_bookmark_page_saved), snackbarController)
-                .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), pair));
+
+        bookmarkModel.addBookmarkAsync(bookmarkModel.getDefaultFolder(), 0, tab.getTitle(),
+                                       tab.getUrl(), tab.getWebContents(), callback);
     }
 
     /**

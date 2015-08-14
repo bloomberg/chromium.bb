@@ -185,6 +185,11 @@ public abstract class ChromeSwitches {
      */
     public static final String PROGRESS_BAR_ANIMATION = "progress-bar-animation";
 
+    /**
+     * Enable offline pages.
+     */
+    public static final String ENABLE_OFFLINE_PAGES = "enable-offline-pages";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

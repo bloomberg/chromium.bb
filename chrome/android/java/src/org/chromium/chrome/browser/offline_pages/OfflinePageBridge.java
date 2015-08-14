@@ -31,9 +31,9 @@ public final class OfflinePageBridge {
     private static Boolean sIsEnabled;
 
     /**
-     * Interface with callbacks to public calls on OfflinePageBrdige.
+     * Callback used to saving an offline page.
      */
-    public interface OfflinePageCallback {
+    public interface SavePageCallback {
         /**
          * Delivers result of saving a page.
          *
@@ -42,9 +42,14 @@ public final class OfflinePageBridge {
          * @param url URL of the saved page.
          * @see OfflinePageBridge#savePage()
          */
-        @CalledByNative("OfflinePageCallback")
+        @CalledByNative("SavePageCallback")
         void onSavePageDone(int savePageResult, String url);
+    }
 
+    /**
+     * Callback used to deleting an offline page.
+     */
+    public interface DeletePageCallback {
         /**
          * Delivers result of deleting a page.
          *
@@ -52,7 +57,7 @@ public final class OfflinePageBridge {
          *     {@see org.chromium.components.offline_pages.DeletePageResult} enum.
          * @see OfflinePageBridge#deletePage()
          */
-        @CalledByNative("OfflinePageCallback")
+        @CalledByNative("DeletePageCallback")
         void onDeletePageDone(int deletePageResult);
     }
 
@@ -143,11 +148,11 @@ public final class OfflinePageBridge {
      * @param webContents Contents of the page to save.
      * @param bookmarkId Id of the bookmark related to the offline page.
      * @param callback Interface that contains a callback.
-     * @see OfflinePageCallback
+     * @see SavePageCallback
      */
     @VisibleForTesting
     public void savePage(
-            WebContents webContents, BookmarkId bookmarkId, OfflinePageCallback callback) {
+            WebContents webContents, BookmarkId bookmarkId, SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         nativeSavePage(mNativeOfflinePageBridge, callback, webContents, bookmarkId.getId());
     }
@@ -157,9 +162,10 @@ public final class OfflinePageBridge {
      *
      * @param bookmarkId Bookmark ID for which the offline copy will be deleted.
      * @param callback Interface that contains a callback.
+     * @see DeletePageCallback
      */
     @VisibleForTesting
-    public void deletePage(BookmarkId bookmarkId, OfflinePageCallback callback) {
+    public void deletePage(BookmarkId bookmarkId, DeletePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         nativeDeletePage(mNativeOfflinePageBridge, callback, bookmarkId.getId());
     }
@@ -199,8 +205,8 @@ public final class OfflinePageBridge {
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
     private native OfflinePageItem nativeGetPageByBookmarkId(
             long nativeOfflinePageBridge, long bookmarkId);
-    private native void nativeSavePage(long nativeOfflinePageBridge, OfflinePageCallback callback,
+    private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, long bookmarkId);
     private native void nativeDeletePage(long nativeOfflinePageBridge,
-            OfflinePageCallback callback, long bookmarkId);
+            DeletePageCallback callback, long bookmarkId);
 }

@@ -37,7 +37,7 @@ void SavePageCallback(ScopedJavaGlobalRef<jobject>* j_callback_obj,
 
   scoped_ptr<ScopedJavaGlobalRef<jobject>> j_callback_ptr(j_callback_obj);
 
-  Java_OfflinePageCallback_onSavePageDone(
+  Java_SavePageCallback_onSavePageDone(
       env, j_callback_ptr->obj(), static_cast<int>(result),
       ConvertUTF8ToJavaString(env, url.spec()).obj());
 }
@@ -48,7 +48,7 @@ void DeletePageCallback(ScopedJavaGlobalRef<jobject>* j_callback_obj,
 
   scoped_ptr<ScopedJavaGlobalRef<jobject>> j_callback_ptr(j_callback_obj);
 
-  Java_OfflinePageCallback_onDeletePageDone(
+  Java_DeletePageCallback_onDeletePageDone(
       env, j_callback_ptr->obj(), static_cast<int>(result));
 }
 

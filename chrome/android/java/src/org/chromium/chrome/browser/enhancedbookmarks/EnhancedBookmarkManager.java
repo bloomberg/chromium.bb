@@ -9,6 +9,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -410,11 +411,14 @@ public class EnhancedBookmarkManager implements EnhancedBookmarkDelegate {
     public void openBookmark(BookmarkId bookmark, int launchLocation) {
         clearSelection();
         if (mEnhancedBookmarksModel.getBookmarkById(bookmark) != null) {
+            String url = mEnhancedBookmarksModel.getBookmarkLaunchUrl(bookmark);
+            // TODO(jianli): Notify the user about the failure.
+            if (TextUtils.isEmpty(url)) return;
+
             NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_BOOKMARK);
             RecordHistogram.recordEnumeratedHistogram("Stars.LaunchLocation", launchLocation,
                     LaunchLocation.COUNT);
-            EnhancedBookmarkUtils.openBookmark(mActivity,
-                    mEnhancedBookmarksModel.getBookmarkById(bookmark).getUrl());
+            EnhancedBookmarkUtils.openBookmark(mActivity, url);
             finishActivityOnPhone();
         }
     }

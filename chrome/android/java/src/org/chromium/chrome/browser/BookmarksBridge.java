@@ -566,13 +566,24 @@ public class BookmarksBridge {
         return nativeIsEnhancedBookmarksFeatureEnabled(profile);
     }
 
+    /**
+     * Notifies the observer that bookmark model has been loaded.
+     */
+    protected void notifyBookmarkModelLoaded() {
+        // Call isBookmarkModelLoaded() to do the check since it could be overridden by the child
+        // class to add the addition logic.
+        if (isBookmarkModelLoaded()) {
+            for (BookmarkModelObserver observer : mObservers) {
+                observer.bookmarkModelLoaded();
+            }
+        }
+    }
+
     @CalledByNative
     private void bookmarkModelLoaded() {
         mIsNativeBookmarkModelLoaded = true;
 
-        for (BookmarkModelObserver observer : mObservers) {
-            observer.bookmarkModelLoaded();
-        }
+        notifyBookmarkModelLoaded();
 
         if (!mDelayedBookmarkCallbacks.isEmpty()) {
             for (int i = 0; i < mDelayedBookmarkCallbacks.size(); i++) {
