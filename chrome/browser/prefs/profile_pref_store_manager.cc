@@ -15,7 +15,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/tracked/pref_hash_store_impl.h"
 #include "components/user_prefs/tracked/pref_service_hash_store_contents.h"
