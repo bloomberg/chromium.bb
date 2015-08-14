@@ -1,5 +1,3 @@
-language_settings_private_externs.js
-
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -12,23 +10,13 @@ language_settings_private_externs.js
 chrome.languageSettingsPrivate = {};
 
 /**
- * @enum {string}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-DownloadStatus
- */
-chrome.languageSettingsPrivate.DownloadStatus = {
-  DOWNLOADED: 'DOWNLOADED',
-  DOWNLOADING: 'DOWNLOADING',
-  FAILURE: 'FAILURE',
-};
-
-/**
  * @typedef {{
  *   code: string,
  *   displayName: string,
  *   nativeDisplayName: string,
- *   rtl: (boolean|undefined),
+ *   displayNameRTL: (boolean|undefined),
  *   supportsUI: (boolean|undefined),
- *   supportsSpellCheck: (boolean|undefined),
+ *   supportsSpellcheck: (boolean|undefined),
  *   supportsTranslate: (boolean|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-Language
@@ -38,11 +26,13 @@ var Language;
 /**
  * @typedef {{
  *   languageCode: string,
- *   status: !chrome.languageSettingsPrivate.DownloadStatus
+ *   isReady: boolean,
+ *   isDownloading: (boolean|undefined),
+ *   downloadFailed: (boolean|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-SpellCheckDictionaryStatus
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#type-SpellcheckDictionaryStatus
  */
-var SpellCheckDictionaryStatus;
+var SpellcheckDictionaryStatus;
 
 /**
  * @typedef {{
@@ -81,18 +71,18 @@ chrome.languageSettingsPrivate.getLanguageList = function(callback) {};
 chrome.languageSettingsPrivate.setLanguageList = function(languageCodes) {};
 
 /**
- * Gets the current status of the spell check dictionary.
- * @param {function(SpellCheckDictionaryStatus):void} callback
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellCheckDictionaryStatus
+ * Gets the current status of the chosen spell check dictionaries.
+ * @param {function(!Array<SpellcheckDictionaryStatus>):void} callback
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellcheckDictionaryStatuses
  */
-chrome.languageSettingsPrivate.getSpellCheckDictionaryStatus = function(callback) {};
+chrome.languageSettingsPrivate.getSpellcheckDictionaryStatuses = function(callback) {};
 
 /**
  * Gets the custom spell check words.
  * @param {function(!Array<string>):void} callback
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellCheckWords
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-getSpellcheckWords
  */
-chrome.languageSettingsPrivate.getSpellCheckWords = function(callback) {};
+chrome.languageSettingsPrivate.getSpellcheckWords = function(callback) {};
 
 /**
  * Gets the translate target language (in most cases, the display locale).
@@ -125,12 +115,20 @@ chrome.languageSettingsPrivate.addInputMethod = function(inputMethodId) {};
 chrome.languageSettingsPrivate.removeInputMethod = function(inputMethodId) {};
 
 /**
- * Called when the language used for spell checking changes or the dictionary
- * download status changes.
+ * Called when the pref for the dictionaries used for spell checking changes or
+ * the status of one of the spell check dictionaries changes.
  * @type {!ChromeEvent}
- * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onSpellCheckDictionaryChanged
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onSpellcheckDictionariesChanged
  */
-chrome.languageSettingsPrivate.onSpellCheckDictionaryChanged;
+chrome.languageSettingsPrivate.onSpellcheckDictionariesChanged;
+
+/**
+ * Called when words are added to and/or removed from the custom spell check
+ * dictionary.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#event-onCustomDictionaryChanged
+ */
+chrome.languageSettingsPrivate.onCustomDictionaryChanged;
 
 /**
  * Called when an input method is added.

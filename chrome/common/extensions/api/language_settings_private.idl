@@ -5,9 +5,6 @@
 // Use the <code>chrome.languageSettingsPrivate</code> API to get or change
 // language and input method settings.
 namespace languageSettingsPrivate {
-  // Status of a spell check dictionary download.
-  enum DownloadStatus { DOWNLOADED, DOWNLOADING, FAILURE };
-
   dictionary Language {
     // The unique code identifying the language.
     DOMString code;
@@ -18,26 +15,33 @@ namespace languageSettingsPrivate {
     // The name of the language as it is in its own language.
     DOMString nativeDisplayName;
 
-    // Whether the directionality is RTL. Defaults to false.
-    boolean? rtl;
+    // Whether the display name has RTL. Defaults to false.
+    boolean? displayNameRTL;
 
     // Whether the UI can be displayed in this language. Defaults to false.
     boolean? supportsUI;
 
     // Whether this language can be used for spell checking. Defaults to false.
-    boolean? supportsSpellCheck;
+    boolean? supportsSpellcheck;
 
     // Whether this language has translations for the current target language.
     // Defaults to false.
     boolean? supportsTranslate;
   };
 
-  dictionary SpellCheckDictionaryStatus {
+  dictionary SpellcheckDictionaryStatus {
     // The language code of the dictionary that the status describes.
     DOMString languageCode;
 
-    // The download status of the dictionary.
-    DownloadStatus status;
+    // Whether the dictionary is ready (has been loaded from disk or
+    // successfully downloaded).
+    boolean isReady;
+
+    // Whether the dictionary is being downloaded. Defaults to false.
+    boolean? isDownloading;
+
+    // Whether the dictionary download failed. Defaults to false.
+    boolean? downloadFailed;
   };
 
   dictionary InputMethod {
@@ -67,11 +71,10 @@ namespace languageSettingsPrivate {
 
   callback GetLanguageListCallback = void (Language[] languages);
   callback GetInputMethodListsCallback = void (InputMethodLists lists);
-  callback GetSpellCheckWordsCallback = void (DOMString[] words);
+  callback GetSpellcheckWordsCallback = void (DOMString[] words);
   callback GetTranslateTargetLanguageCallback = void (DOMString languageCode);
-  callback GetSpellCheckDictionaryStatusCallback =
-      void (SpellCheckDictionaryStatus status);
-  callback InputMethodAddedRemovedCallback = void (DOMString inputMethodId);
+  callback GetSpellcheckDictionaryStatusesCallback =
+      void (SpellcheckDictionaryStatus[] status);
 
   interface Functions {
     // Gets languages available for translate, spell checking, input and locale.
@@ -81,12 +84,12 @@ namespace languageSettingsPrivate {
     // generate the Accept-Language header, etc.
     static void setLanguageList(DOMString[] languageCodes);
 
-    // Gets the current status of the spell check dictionary.
-    static void getSpellCheckDictionaryStatus(
-        GetSpellCheckDictionaryStatusCallback callback);
+    // Gets the current status of the chosen spell check dictionaries.
+    static void getSpellcheckDictionaryStatuses(
+        GetSpellcheckDictionaryStatusesCallback callback);
 
     // Gets the custom spell check words.
-    static void getSpellCheckWords(GetSpellCheckWordsCallback callback);
+    static void getSpellcheckWords(GetSpellcheckWordsCallback callback);
 
     // Gets the translate target language (in most cases, the display locale).
     static void getTranslateTargetLanguage(
@@ -105,17 +108,20 @@ namespace languageSettingsPrivate {
   };
 
   interface Events {
-    // Called when the language used for spell checking changes or the
-    // dictionary download status changes.
-    static void onSpellCheckDictionaryChanged(
-        GetSpellCheckDictionaryStatusCallback callback);
+    // Called when the pref for the dictionaries used for spell checking changes
+    // or the status of one of the spell check dictionaries changes.
+    static void onSpellcheckDictionariesChanged(
+        SpellcheckDictionaryStatus[] statuses);
+
+    // Called when words are added to and/or removed from the custom spell check
+    // dictionary.
+    static void onCustomDictionaryChanged(
+        DOMString[] wordsAdded, DOMString[] wordsRemoved);
 
     // Called when an input method is added.
-    static void onInputMethodAdded(
-        InputMethodAddedRemovedCallback callback);
+    static void onInputMethodAdded(DOMString inputMethodId);
 
     // Called when an input method is removed.
-    static void onInputMethodRemoved(
-        InputMethodAddedRemovedCallback callback);
+    static void onInputMethodRemoved(DOMString inputMethodId);
   };
 };

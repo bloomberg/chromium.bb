@@ -56514,6 +56514,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="373" label="WEB_VIEW_INTERNAL_ON_UNRESPONSIVE"/>
   <int value="374" label="WEB_VIEW_INTERNAL_ON_ZOOM_CHANGE"/>
   <int value="375" label="GUEST_VIEW_INTERNAL_ON_RESIZE"/>
+  <int value="376" label="LANGUAGE_SETTINGS_PRIVATE_ON_INPUT_METHOD_ADDED"/>
+  <int value="377" label="LANGUAGE_SETTINGS_PRIVATE_ON_INPUT_METHOD_REMOVED"/>
+  <int value="379"
+      label="LANGUAGE_SETTINGS_PRIVATE_ON_SPELLCHECK_DICTIONARIES_CHANGED"/>
+  <int value="380"
+      label="LANGUAGE_SETTINGS_PRIVATE_ON_CUSTOM_DICTIONARY_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">

@@ -5,8 +5,11 @@
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_api.h"
 
 #include "base/values.h"
+#include "chrome/common/extensions/api/language_settings_private.h"
 
 namespace extensions {
+
+namespace language_settings_private = api::language_settings_private;
 
 LanguageSettingsPrivateGetLanguageListFunction::
     LanguageSettingsPrivateGetLanguageListFunction() {
@@ -31,33 +34,37 @@ LanguageSettingsPrivateSetLanguageListFunction::
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateSetLanguageListFunction::Run() {
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
+  scoped_ptr<language_settings_private::SetLanguageList::Params> parameters =
+      language_settings_private::SetLanguageList::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  return RespondNow(NoArguments());
 }
 
-LanguageSettingsPrivateGetSpellCheckDictionaryStatusFunction::
-    LanguageSettingsPrivateGetSpellCheckDictionaryStatusFunction() {
+LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::
+    LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction() {
 }
 
-LanguageSettingsPrivateGetSpellCheckDictionaryStatusFunction::
-    ~LanguageSettingsPrivateGetSpellCheckDictionaryStatusFunction() {
-}
-
-ExtensionFunction::ResponseAction
-LanguageSettingsPrivateGetSpellCheckDictionaryStatusFunction::Run() {
-  return RespondNow(OneArgument(new base::DictionaryValue()));
-}
-
-LanguageSettingsPrivateGetSpellCheckWordsFunction::
-    LanguageSettingsPrivateGetSpellCheckWordsFunction() {
-}
-
-LanguageSettingsPrivateGetSpellCheckWordsFunction::
-    ~LanguageSettingsPrivateGetSpellCheckWordsFunction() {
+LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::
+    ~LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction() {
 }
 
 ExtensionFunction::ResponseAction
-LanguageSettingsPrivateGetSpellCheckWordsFunction::Run() {
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
+LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::Run() {
+  return RespondNow(OneArgument(new base::ListValue()));
+}
+
+LanguageSettingsPrivateGetSpellcheckWordsFunction::
+    LanguageSettingsPrivateGetSpellcheckWordsFunction() {
+}
+
+LanguageSettingsPrivateGetSpellcheckWordsFunction::
+    ~LanguageSettingsPrivateGetSpellcheckWordsFunction() {
+}
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateGetSpellcheckWordsFunction::Run() {
+  return RespondNow(OneArgument(new base::ListValue()));
 }
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
