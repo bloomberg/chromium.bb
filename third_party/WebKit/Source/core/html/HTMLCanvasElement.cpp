@@ -744,9 +744,10 @@ SkCanvas* HTMLCanvasElement::drawingCanvas() const
     return buffer() ? m_imageBuffer->canvas() : nullptr;
 }
 
-SkCanvas* HTMLCanvasElement::immediateDrawingCanvas() const
+void HTMLCanvasElement::disableDeferral() const
 {
-    return buffer() ? m_imageBuffer->immediateCanvas() : nullptr;
+    if (buffer())
+        m_imageBuffer->disableDeferral();
 }
 
 SkCanvas* HTMLCanvasElement::existingDrawingCanvas() const

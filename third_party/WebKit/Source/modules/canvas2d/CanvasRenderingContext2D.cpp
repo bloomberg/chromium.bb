@@ -879,16 +879,12 @@ void CanvasRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, SkCanvas
 }
 
 template<typename DrawFunc, typename ContainsFunc>
-bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc& drawCoversClipBounds, CanvasDeferralMode deferralMode, const SkRect& bounds, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
+bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc& drawCoversClipBounds, const SkRect& bounds, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
 {
     if (!state().isTransformInvertible())
         return false;
 
     SkIRect clipBounds;
-    // Deliberately not using 'deferralMode' in the call to drawingCanvas below because
-    // a) The call does not write anything so we do not care about the write mode here
-    // b) We want to avoid flushing before the call to checkOverdraw (below), otherwise
-    //    we could be supressing an overdraw optimization.
     if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return false;
 
@@ -901,12 +897,12 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
     }
 
     if (isFullCanvasCompositeMode(state().globalComposite()) || state().hasFilter()) {
-        compositedDraw(drawFunc, drawingCanvas(deferralMode), paintType, imageType);
+        compositedDraw(drawFunc, drawingCanvas(), paintType, imageType);
         didDraw(clipBounds);
     } else if (state().globalComposite() == SkXfermode::kSrc_Mode) {
         clearCanvas(); // takes care of checkOvewrdraw()
         const SkPaint* paint = state().getPaint(paintType, DrawForegroundOnly, imageType);
-        drawFunc(drawingCanvas(deferralMode), paint);
+        drawFunc(drawingCanvas(), paint);
         didDraw(clipBounds);
     } else {
         SkIRect dirtyRect;
@@ -914,7 +910,7 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
             const SkPaint* paint = state().getPaint(paintType, DrawShadowAndForeground, imageType);
             if (paintType != CanvasRenderingContext2DState::StrokePaintType && drawCoversClipBounds(clipBounds))
                 checkOverdraw(bounds, paint, imageType, ClipFill);
-            drawFunc(drawingCanvas(deferralMode), paint);
+            drawFunc(drawingCanvas(), paint);
             didDraw(dirtyRect);
         }
     }
@@ -956,7 +952,7 @@ void CanvasRenderingContext2D::drawPathInternal(const Path& path, CanvasRenderin
         [](const SkIRect& rect) // overdraw test lambda
         {
             return false;
-        }, AllowDeferredCanvas, bounds, paintType)) {
+        }, bounds, paintType)) {
         if (isPathExpensive(path)) {
             ImageBuffer* buffer = canvas()->buffer();
             if (buffer)
@@ -1013,7 +1009,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         [&rect, this](const SkIRect& clipBounds) // overdraw test lambda
         {
             return rectContainsTransformedRect(rect, clipBounds);
-        }, AllowDeferredCanvas, rect, CanvasRenderingContext2DState::FillPaintType);
+        }, rect, CanvasRenderingContext2DState::FillPaintType);
 }
 
 static void strokeRectOnCanvas(const FloatRect& rect, SkCanvas* canvas, const SkPaint* paint)
@@ -1050,7 +1046,7 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
         [](const SkIRect& clipBounds) // overdraw test lambda
         {
             return false;
-        }, AllowDeferredCanvas, bounds, CanvasRenderingContext2DState::StrokePaintType);
+        }, bounds, CanvasRenderingContext2DState::StrokePaintType);
 }
 
 void CanvasRenderingContext2D::clipInternal(const Path& path, const String& windingRuleString)
@@ -1392,7 +1388,13 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    CanvasDeferralMode deferralMode = imageSource->isVideoElement() ? ForceImmediateCanvas : AllowDeferredCanvas;
+    // FIXME: crbug.com/521001
+    // We make the destination canvas fall out of display list mode by forcing
+    // immediate rendering. This is to prevent run-away memory consumption caused by SkSurface
+    // copyOnWrite when the source canvas is animated and consumed at a rate higher than the
+    // presentation frame rate of the destination canvas.
+    if (imageSource->isVideoElement() || imageSource->isCanvasElement())
+        canvas()->disableDeferral();
 
     validateStateStack();
 
@@ -1404,7 +1406,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
         [this, &dstRect](const SkIRect& clipBounds) // overdraw test lambda
         {
             return rectContainsTransformedRect(dstRect, clipBounds);
-        }, deferralMode, dstRect, CanvasRenderingContext2DState::ImagePaintType,
+        }, dstRect, CanvasRenderingContext2DState::ImagePaintType,
         imageSource->isOpaque() ? CanvasRenderingContext2DState::OpaqueImage : CanvasRenderingContext2DState::NonOpaqueImage);
 
     validateStateStack();
@@ -1423,19 +1425,10 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
             buffer->setHasExpensiveOp();
     }
 
-    if (imageSource->isCanvasElement()) {
-        if (static_cast<HTMLCanvasElement*>(imageSource)->is3D()) {
-            // WebGL to 2D canvas: must flush graphics context to prevent a race
-            // FIXME: crbug.com/516331 Fix the underlying synchronization issue so this flush can be eliminated.
-            canvas()->buffer()->flushGpu();
-        } else {
-            // FIXME: crbug.com/447218
-            // We make the destination canvas fall out of display list mode by calling
-            // flush. This is to prevent run-away memory consumption caused by SkSurface
-            // copyOnWrite when the source canvas is animated and consumed at a rate higher than the
-            // presentation frame rate of the destination canvas.
-            canvas()->buffer()->flush();
-        }
+    if (imageSource->isCanvasElement() && static_cast<HTMLCanvasElement*>(imageSource)->is3D()) {
+        // WebGL to 2D canvas: must flush graphics context to prevent a race
+        // FIXME: crbug.com/516331 Fix the underlying synchronization issue so this flush can be eliminated.
+        canvas()->buffer()->flushGpu();
     }
 
     if (canvas()->originClean() && wouldTaintOrigin(imageSource))
@@ -1446,8 +1439,9 @@ void CanvasRenderingContext2D::clearCanvas()
 {
     FloatRect canvasRect(0, 0, canvas()->width(), canvas()->height());
     checkOverdraw(canvasRect, 0, CanvasRenderingContext2DState::NoImage, ClipFill);
-    if (drawingCanvas())
-        drawingCanvas()->clear(m_hasAlpha ? SK_ColorTRANSPARENT : SK_ColorBLACK);
+    SkCanvas* c = drawingCanvas();
+    if (c)
+        c->clear(m_hasAlpha ? SK_ColorTRANSPARENT : SK_ColorBLACK);
 }
 
 bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect, const SkIRect& transformedRect) const
@@ -1553,11 +1547,11 @@ void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
     canvas()->didDraw(SkRect::Make(dirtyRect));
 }
 
-SkCanvas* CanvasRenderingContext2D::drawingCanvas(CanvasDeferralMode deferralMode) const
+SkCanvas* CanvasRenderingContext2D::drawingCanvas() const
 {
     if (isContextLost())
         return nullptr;
-    return deferralMode == ForceImmediateCanvas ? canvas()->immediateDrawingCanvas() : canvas()->drawingCanvas();
+    return canvas()->drawingCanvas();
 }
 
 ImageData* CanvasRenderingContext2D::createImageData(ImageData* imageData) const
@@ -2020,7 +2014,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         {
             return false;
         },
-        AllowDeferredCanvas, textRunPaintInfo.bounds, paintType);
+        textRunPaintInfo.bounds, paintType);
 }
 
 void CanvasRenderingContext2D::inflateStrokeRect(FloatRect& rect) const

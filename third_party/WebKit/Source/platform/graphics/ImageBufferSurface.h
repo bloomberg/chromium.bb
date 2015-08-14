@@ -58,8 +58,8 @@ class PLATFORM_EXPORT ImageBufferSurface {
 public:
     virtual ~ImageBufferSurface();
 
-    virtual SkCanvas* canvas() { return immediateCanvas(); }
-    virtual SkCanvas* immediateCanvas() = 0;
+    virtual SkCanvas* canvas() = 0;
+    virtual void disableDeferral() { }
     virtual const SkBitmap& deprecatedBitmapForOverwrite();
     virtual void willOverwriteCanvas() { }
     virtual void didDraw(const FloatRect& rect) { }

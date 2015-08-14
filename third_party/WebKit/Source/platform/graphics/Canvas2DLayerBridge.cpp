@@ -98,6 +98,7 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_rateLimitingEnabled(false)
     , m_filterQuality(kLow_SkFilterQuality)
     , m_isHidden(false)
+    , m_isDeferralEnabled(true)
     , m_lastImageId(0)
     , m_lastFilter(GL_LINEAR)
     , m_opacityMode(opacityMode)
@@ -132,6 +133,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 
 void Canvas2DLayerBridge::startRecording()
 {
+    ASSERT(m_isDeferralEnabled);
     m_recorder = adoptPtr(new SkPictureRecorder);
     m_recorder->beginRecording(m_size.width(), m_size.height(), nullptr);
     if (m_imageBuffer) {
@@ -141,26 +143,36 @@ void Canvas2DLayerBridge::startRecording()
 
 SkCanvas* Canvas2DLayerBridge::canvas()
 {
+    if (!m_isDeferralEnabled)
+        return m_surface->getCanvas();
     return m_recorder->getRecordingCanvas();
 }
 
-SkCanvas* Canvas2DLayerBridge::immediateCanvas()
+void Canvas2DLayerBridge::disableDeferral()
 {
-    if (!m_surface)
-        return nullptr;
+    // Disabling deferral is permanent: once triggered by disableDeferral()
+    // we stay in immediate mode indefinitely. This is a performance heuristic
+    // that significantly helps a number of use cases. The rationale is that if
+    // immediate rendering was needed once, it is likely to be needed at least
+    // once per frame, which eliminates the possibility for inter-frame
+    // overdraw optimization. Furthermore, in cases where immediate mode is
+    // required multiple times per frame, the repeated flushing of deferred
+    // commands would cause significant overhead, so it is better to just stop
+    // trying to defer altogether.
+    if (!m_isDeferralEnabled)
+        return;
+
+    m_isDeferralEnabled = false;
     flushRecordingOnly();
-
+    m_recorder.clear();
     // install the current matrix/clip stack onto the immediate canvas
-    m_surface->getCanvas()->restoreToCount(m_initialSurfaceSaveCount);
     m_imageBuffer->resetCanvas(m_surface->getCanvas());
-
-    return m_surface->getCanvas();
 }
 
 void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
 {
     m_imageBuffer = imageBuffer;
-    if (m_imageBuffer) {
+    if (m_imageBuffer && m_isDeferralEnabled) {
         m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
     }
 }
@@ -246,9 +258,9 @@ void Canvas2DLayerBridge::flushRecordingOnly()
     if (m_haveRecordedDrawCommands && m_surface) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
-        m_surface->getCanvas()->restoreToCount(m_initialSurfaceSaveCount); // In case immediateCanvas() was used
         picture->playback(m_surface->getCanvas());
-        startRecording();
+        if (m_isDeferralEnabled)
+            startRecording();
         m_haveRecordedDrawCommands = false;
     }
 }
@@ -479,14 +491,14 @@ WebLayer* Canvas2DLayerBridge::layer() const
 
 void Canvas2DLayerBridge::didDraw()
 {
-    m_haveRecordedDrawCommands = true;
+    if (m_isDeferralEnabled)
+        m_haveRecordedDrawCommands = true;
 }
 
 void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     ASSERT(!m_destructionInProgress);
     m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
-
     m_framesPending++;
     if (m_framesPending > 1) {
         // Turn on the rate limiter if this layer tends to accumulate a

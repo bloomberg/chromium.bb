@@ -93,11 +93,9 @@ SkCanvas* ImageBuffer::canvas() const
     return m_surface->canvas();
 }
 
-SkCanvas* ImageBuffer::immediateCanvas() const
+void ImageBuffer::disableDeferral() const
 {
-    if (!isSurfaceValid())
-        return nullptr;
-    return m_surface->immediateCanvas();
+    return m_surface->disableDeferral();
 }
 
 bool ImageBuffer::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)

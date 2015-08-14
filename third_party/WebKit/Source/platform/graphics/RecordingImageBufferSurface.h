@@ -35,7 +35,7 @@ public:
 
     // Implementation of ImageBufferSurface interfaces
     SkCanvas* canvas() override;
-    SkCanvas* immediateCanvas() override;
+    void disableDeferral() override;
     PassRefPtr<SkPicture> getPicture() override;
     void flush() override;
     void didDraw(const FloatRect&) override;

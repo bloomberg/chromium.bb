@@ -44,7 +44,7 @@ public:
     UnacceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
     ~UnacceleratedImageBufferSurface() override;
 
-    SkCanvas* immediateCanvas() override;
+    SkCanvas* canvas() override;
     bool isValid() const override;
     const SkBitmap& deprecatedBitmapForOverwrite() override;
 

@@ -65,7 +65,7 @@ public:
     void willOverwriteAllPixels();
     void willOverwriteCanvas();
     SkCanvas* canvas();
-    SkCanvas* immediateCanvas();
+    void disableDeferral();
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
@@ -108,6 +108,7 @@ private:
     bool m_rateLimitingEnabled;
     SkFilterQuality m_filterQuality;
     bool m_isHidden;
+    bool m_isDeferralEnabled;
 
     friend class Canvas2DLayerBridgeTest;
 

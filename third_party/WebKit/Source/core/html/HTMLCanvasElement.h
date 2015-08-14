@@ -120,7 +120,7 @@ public:
     void paint(GraphicsContext*, const LayoutRect&);
 
     SkCanvas* drawingCanvas() const;
-    SkCanvas* immediateDrawingCanvas() const; // Guarantees draws will not be deferred. Use sparingly.
+    void disableDeferral() const;
     SkCanvas* existingDrawingCanvas() const;
 
     void setRenderingContext(PassOwnPtrWillBeRawPtr<CanvasRenderingContext>);

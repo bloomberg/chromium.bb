@@ -91,7 +91,7 @@ public:
     void resetCanvas(SkCanvas*) const;
 
     SkCanvas* canvas() const;
-    SkCanvas* immediateCanvas() const;
+    void disableDeferral() const;
 
     // Called at the end of a task that rendered a whole frame
     void finalizeFrame(const FloatRect &dirtyRect);

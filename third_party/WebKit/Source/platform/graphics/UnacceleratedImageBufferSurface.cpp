@@ -52,7 +52,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& 
 
 UnacceleratedImageBufferSurface::~UnacceleratedImageBufferSurface() { }
 
-SkCanvas* UnacceleratedImageBufferSurface::immediateCanvas()
+SkCanvas* UnacceleratedImageBufferSurface::canvas()
 {
     return m_surface->getCanvas();
 }

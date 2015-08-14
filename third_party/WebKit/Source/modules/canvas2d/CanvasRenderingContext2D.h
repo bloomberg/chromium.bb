@@ -242,12 +242,7 @@ private:
     bool computeDirtyRect(const FloatRect& localBounds, const SkIRect& transformedClipBounds, SkIRect*);
     void didDraw(const SkIRect&);
 
-    enum CanvasDeferralMode {
-        AllowDeferredCanvas,
-        ForceImmediateCanvas,
-    };
-
-    SkCanvas* drawingCanvas(CanvasDeferralMode = AllowDeferredCanvas) const;
+    SkCanvas* drawingCanvas() const;
 
     void unwindStateStack();
     void realizeSaves();
@@ -258,7 +253,7 @@ private:
     bool shouldDrawImageAntialiased(const FloatRect& destRect) const;
 
     template<typename DrawFunc, typename ContainsFunc>
-    bool draw(const DrawFunc&, const ContainsFunc&, CanvasDeferralMode, const SkRect& bounds, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType = CanvasRenderingContext2DState::NoImage);
+    bool draw(const DrawFunc&, const ContainsFunc&, const SkRect& bounds, CanvasRenderingContext2DState::PaintType, CanvasRenderingContext2DState::ImageType = CanvasRenderingContext2DState::NoImage);
     void drawPathInternal(const Path&, CanvasRenderingContext2DState::PaintType, SkPath::FillType = SkPath::kWinding_FillType);
     void drawImageInternal(SkCanvas*, CanvasImageSource*, Image*, const FloatRect& srcRect, const FloatRect& dstRect, const SkPaint*);
     void clipInternal(const Path&, const String& windingRuleString);

@@ -113,12 +113,10 @@ SkCanvas* RecordingImageBufferSurface::canvas()
     return m_currentFrame->getRecordingCanvas();
 }
 
-SkCanvas* RecordingImageBufferSurface::immediateCanvas()
+void RecordingImageBufferSurface::disableDeferral()
 {
     if (!m_fallbackSurface)
         fallBackToRasterCanvas();
-
-    return m_fallbackSurface->canvas();
 }
 
 PassRefPtr<SkPicture> RecordingImageBufferSurface::getPicture()
