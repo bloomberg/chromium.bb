@@ -119,19 +119,6 @@ DEFINE_TRACE(InspectorDOMDebuggerAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-bool InspectorDOMDebuggerAgent::checkEnabled(ErrorString* errorString)
-{
-    if (!m_domAgent->enabled()) {
-        *errorString = "DOM domain required by DOMDebugger is not enabled";
-        return false;
-    }
-    if (!m_debuggerAgent->enabled()) {
-        *errorString = "Debugger domain required by DOMDebugger is not enabled";
-        return false;
-    }
-    return true;
-}
-
 void InspectorDOMDebuggerAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
@@ -170,8 +157,6 @@ static PassRefPtr<JSONObject> ensurePropertyObject(JSONObject* object, const Str
 
 void InspectorDOMDebuggerAgent::setBreakpoint(ErrorString* error, const String& eventName, const String* targetName)
 {
-    if (!checkEnabled(error))
-        return;
     if (eventName.isEmpty()) {
         *error = "Event name is empty";
         return;
@@ -276,8 +261,6 @@ static String domTypeName(int type)
 
 void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString, int nodeId, const String& typeString)
 {
-    if (!checkEnabled(errorString))
-        return;
     Node* node = m_domAgent->assertNode(errorString, nodeId);
     if (!node)
         return;
@@ -297,8 +280,6 @@ void InspectorDOMDebuggerAgent::setDOMBreakpoint(ErrorString* errorString, int n
 
 void InspectorDOMDebuggerAgent::removeDOMBreakpoint(ErrorString* errorString, int nodeId, const String& typeString)
 {
-    if (!checkEnabled(errorString))
-        return;
     Node* node = m_domAgent->assertNode(errorString, nodeId);
     if (!node)
         return;
@@ -591,8 +572,6 @@ void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message
 
 void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString* errorString, const String& url)
 {
-    if (!checkEnabled(errorString))
-        return;
     if (url.isEmpty()) {
         m_state->setBoolean(DOMDebuggerAgentState::pauseOnAllXHRs, true);
     } else {

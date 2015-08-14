@@ -24,7 +24,7 @@ function test()
 
     function enableDOMAgent(message)
     {
-        InspectorTest.log("Error on attempt to set event listener breakpoint when DOM is disabled: " + message.error.message);
+        InspectorTest.log("Error on attempt to set event listener breakpoint when DOM is disabled: " + JSON.stringify(message.error));
         InspectorTest.sendCommand("DOM.enable", {}, setEventListenerBreakpoint);
     }
 
