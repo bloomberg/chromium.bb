@@ -341,11 +341,15 @@ fi
 AC_ARG_ENABLE(simple-intel-dmabuf-client,
               AS_HELP_STRING([--disable-simple-intel-dmabuf-client],
                              [do not build the simple intel dmabuf client]),,
-              enable_simple_intel_dmabuf_client="yes")
-AM_CONDITIONAL(BUILD_SIMPLE_INTEL_DMABUF_CLIENT, test "x$enable_simple_intel_dmabuf_client" = "xyes")
-if test "x$enable_simple_intel_dmabuf_client" = "xyes"; then
-  PKG_CHECK_MODULES(SIMPLE_DMABUF_CLIENT, [wayland-client libdrm libdrm_intel])
+              enable_simple_intel_dmabuf_client="auto")
+if ! test "x$enable_simple_intel_dmabuf_client" = "xno"; then
+  PKG_CHECK_MODULES(SIMPLE_DMABUF_CLIENT, [wayland-client libdrm libdrm_intel],
+		    have_simple_dmabuf_client=yes, have_simple_dmabuf_client=no)
+  if test "x$have_simple_dmabuf_client" = "xno" -a "x$enable_simple_intel_dmabuf_client" = "xyes"; then
+    AC_MSG_ERROR([Intel dmabuf client explicitly enabled, but libdrm_intel couldn't be found])
+  fi
 fi
+AM_CONDITIONAL(BUILD_SIMPLE_INTEL_DMABUF_CLIENT, test "x$enable_simple_intel_dmabuf_client" = "xyes")
 
 AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)
 AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
