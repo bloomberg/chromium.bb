@@ -25,6 +25,9 @@
 //   name: (string) the DNS name of the host in question
 //   include_subdomains: (optional bool) whether subdomains of |name| are also
 //       covered
+//   include_subdomains_for_pinning: (optional bool) whether subdomains
+//       of |name| are also covered for pinning. |include_subdomains|
+//       implies this.
 //   mode: (optional string) "force-https" iff covered names should require
 //       HTTPS
 //   pins: (optional string) the |name| member of an object in |pinsets|
@@ -153,7 +156,8 @@
         "ThawtePrimaryRootCA_G2",
         "ThawtePrimaryRootCA_G3",
         "ThawtePrimaryRootCA"
-      ]
+      ],
+      "report_uri": "https://log.getdropbox.com/hpkp"
     },
     {
       "name": "facebook",
@@ -830,8 +834,10 @@
     { "name": "z.ai", "include_subdomains": true, "mode": "force-https" },
     { "name": "wildbee.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "portal.tirol.gv.at", "include_subdomains": true, "mode": "force-https" },
-    { "name": "dropbox.com", "mode": "force-https", "pins": "dropbox" },
+    { "name": "dropbox.com", "mode": "force-https", "include_subdomains_for_pinning": true, "pins": "dropbox" },
     { "name": "www.dropbox.com", "include_subdomains": true, "mode": "force-https", "pins": "dropbox" },
+    { "name": "dropboxstatic.com", "include_subdomains_for_pinning": true, "pins": "dropbox" },
+    { "name": "dropboxusercontent.com", "include_subdomains_for_pinning": true, "pins": "dropbox" },
     { "name": "code-poets.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "jackyyf.com", "mode": "force-https" },
     { "name": "flynn.io", "include_subdomains": true, "mode": "force-https" },
@@ -3663,6 +3669,8 @@
     "GVT2_COM",
     "GOOGLE",
     "GGPHT_COM",
-    "BLOGSPOT_COM"
+    "BLOGSPOT_COM",
+    "DROPBOXSTATIC_COM",
+    "DROPBOXUSERCONTENT_COM"
   ]
 }
