@@ -16,15 +16,12 @@ typedef void* GLeglImageOES;
 
 #include "base/mac/scoped_cftyperef.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/geometry/dip_util.h"
-#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image_io_surface.h"
-#include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/scoped_api.h"
 #include "ui/gl/scoped_cgl.h"
 
@@ -48,9 +45,6 @@ void CheckGLErrors(const char* msg) {
   while ((gl_error = glGetError()) != GL_NO_ERROR) {
     LOG(ERROR) << "OpenGL error hit " << msg << ": " << gl_error;
   }
-}
-
-void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
 }
 
 }  // namespace
@@ -94,14 +88,12 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
-    : scale_factor_(1), gl_renderer_id_(0), pending_overlay_image_(nullptr),
+    : scale_factor_(1), pending_overlay_image_(nullptr),
       has_pending_callback_(false), weak_factory_(this) {
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
-  ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
-  ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
   Destroy();
 }
 
@@ -259,7 +251,7 @@ bool ImageTransportSurfaceOverlayMac::IsFirstPendingSwapReadyToDisplay(
     gfx::ScopedCGLSetCurrentContext scoped_set_current(swap->cgl_context);
 
     CheckGLErrors("before testing fence");
-    has_completed = swap->gl_fence->HasCompleted();
+    has_completed= swap->gl_fence->HasCompleted();
     CheckGLErrors("after testing fence");
     if (has_completed) {
       swap->gl_fence.reset();
@@ -416,14 +408,6 @@ void* ImageTransportSurfaceOverlayMac::GetHandle() {
   return nullptr;
 }
 
-bool ImageTransportSurfaceOverlayMac::OnMakeCurrent(gfx::GLContext* context) {
-  // Ensure that the context is on the appropriate GL renderer. The GL renderer
-  // will generally only change when the GPU changes.
-  if (gl_renderer_id_ && context)
-    context->share_group()->SetRendererID(gl_renderer_id_);
-  return true;
-}
-
 bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     int z_order,
     gfx::OverlayTransform transform,
@@ -470,27 +454,5 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
 }
 
 void ImageTransportSurfaceOverlayMac::WakeUpGpu() {}
-
-void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
-  // Create a new context, and use the GL renderer ID that the new context gets.
-  scoped_refptr<ui::IOSurfaceContext> context_on_new_gpu =
-      ui::IOSurfaceContext::Get(ui::IOSurfaceContext::kCALayerContext);
-  if (!context_on_new_gpu)
-    return;
-  GLint context_renderer_id = -1;
-  if (CGLGetParameter(context_on_new_gpu->cgl_context(),
-                      kCGLCPCurrentRendererID,
-                      &context_renderer_id) != kCGLNoError) {
-    LOG(ERROR) << "Failed to create test context after GPU switch";
-    return;
-  }
-  gl_renderer_id_ = context_renderer_id & kCGLRendererIDMatchingMask;
-
-  // Post a task holding a reference to the new GL context. The reason for
-  // this is to avoid creating-then-destroying the context for every image
-  // transport surface that is observing the GPU switch.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&IOSurfaceContextNoOp, context_on_new_gpu));
-}
 
 }  // namespace content
