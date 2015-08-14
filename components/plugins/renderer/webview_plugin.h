@@ -159,6 +159,7 @@ class WebViewPlugin : public blink::WebPlugin,
   virtual ~WebViewPlugin();
 
   // content::RenderViewObserver methods:
+  void OnDestruct() override;
   void OnZoomLevelChanged() override;
 
   // Manages its own lifetime.

@@ -305,6 +305,11 @@ void WebViewPlugin::didReceiveResponse(WebLocalFrame* frame,
   WebFrameClient::didReceiveResponse(frame, identifier, response);
 }
 
+void WebViewPlugin::OnDestruct() {
+  // By default RenderViewObservers are destroyed along with the RenderView.
+  // WebViewPlugin has a custom destruction mechanism, so we disable this.
+}
+
 void WebViewPlugin::OnZoomLevelChanged() {
   web_view_->setZoomLevel(
       blink::WebView::zoomFactorToZoomLevel(container_->pageZoomFactor()));
