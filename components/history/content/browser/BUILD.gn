@@ -24,3 +24,16 @@ static_library("browser") {
     "//url:url",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "content_history_backend_db_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//components/history/core/browser:browser",
+    "//components/history/core/test",
+    "//testing/gtest",
+  ]
+}

@@ -12,3 +12,14 @@ static_library("common") {
     "//base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "thumbnail_score_unittest.cc",
+  ]
+  deps = [
+    ":common",
+    "//testing/gtest",
+  ]
+}
