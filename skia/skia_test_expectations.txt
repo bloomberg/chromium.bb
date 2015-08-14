@@ -47,5 +47,6 @@
 # tests (because other rendering changes might creep in).
 #
 # START OVERRIDES HERE
-
+crbug/521012 compositing/canvas-with-object-fit-contain-in-composited-layer.html [ ImageOnlyFailure ]
+crbug/521012 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ ImageOnlyFailure ]
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
