@@ -136,7 +136,7 @@ void PageOverlayTest::runPageOverlayTestWithAcceleratedCompositing()
     initialize(AcceleratedCompositing);
     webViewImpl()->layerTreeView()->setViewportSize(WebSize(viewportWidth, viewportHeight));
 
-    OwnPtr<PageOverlay> pageOverlay = PageOverlay::create(webViewImpl(), adoptPtr(new OverlayType(SK_ColorYELLOW)));
+    OwnPtr<PageOverlay> pageOverlay = PageOverlay::create(webViewImpl(), new OverlayType(SK_ColorYELLOW));
     pageOverlay->update();
     webViewImpl()->layout();
 

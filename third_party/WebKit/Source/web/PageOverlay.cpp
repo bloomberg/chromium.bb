@@ -43,12 +43,12 @@
 
 namespace blink {
 
-PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, PassOwnPtr<PageOverlay::Delegate> delegate)
+PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)
 {
     return adoptPtr(new PageOverlay(viewImpl, delegate));
 }
 
-PageOverlay::PageOverlay(WebViewImpl* viewImpl, PassOwnPtr<PageOverlay::Delegate> delegate)
+PageOverlay::PageOverlay(WebViewImpl* viewImpl, PageOverlay::Delegate* delegate)
     : m_viewImpl(viewImpl)
     , m_delegate(delegate)
 {

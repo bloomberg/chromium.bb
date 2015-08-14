@@ -88,25 +88,31 @@ DEFINE_TRACE(InspectorOverlayStub)
 
 } // anonymous namespace
 
-class InspectorOverlayImpl::InspectorPageOverlayDelegate : public PageOverlay::Delegate {
+class InspectorOverlayImpl::InspectorPageOverlayDelegate final : public PageOverlay::Delegate {
 public:
-    InspectorPageOverlayDelegate(InspectorOverlayImpl& overlay)
-        : m_overlay(overlay)
+    explicit InspectorPageOverlayDelegate(InspectorOverlayImpl& overlay)
+        : m_overlay(&overlay)
     { }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_overlay);
+        PageOverlay::Delegate::trace(visitor);
+    }
 
     void paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
     {
-        if (m_overlay.isEmpty())
+        if (m_overlay->isEmpty())
             return;
 
         GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
-        FrameView* view = m_overlay.overlayMainFrame()->view();
+        FrameView* view = m_overlay->overlayMainFrame()->view();
         ASSERT(!view->needsLayout());
         view->paint(&graphicsContext, IntRect(0, 0, view->width(), view->height()));
     }
 
 private:
-    InspectorOverlayImpl& m_overlay;
+    RawPtrWillBeMember<InspectorOverlayImpl> m_overlay;
 };
 
 
@@ -186,7 +192,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
 void InspectorOverlayImpl::invalidate()
 {
     if (!m_pageOverlay)
-        m_pageOverlay = PageOverlay::create(m_webViewImpl, adoptPtr(new InspectorPageOverlayDelegate(*this)));
+        m_pageOverlay = PageOverlay::create(m_webViewImpl, new InspectorPageOverlayDelegate(*this));
 
     m_pageOverlay->update();
 }

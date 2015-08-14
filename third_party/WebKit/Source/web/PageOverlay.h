@@ -50,15 +50,16 @@ class WebGraphicsContext;
 // to the DisplayItemList owned by the GraphicsLayer
 class PageOverlay : public GraphicsLayerClient {
 public:
-
-    class Delegate {
+    class Delegate : public GarbageCollectedFinalized<Delegate> {
     public:
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
+
         // Paints page overlay contents.
         virtual void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) = 0;
         virtual ~Delegate() { }
     };
 
-    static PassOwnPtr<PageOverlay> create(WebViewImpl*, PassOwnPtr<PageOverlay::Delegate>);
+    static PassOwnPtr<PageOverlay> create(WebViewImpl*, PageOverlay::Delegate*);
 
     ~PageOverlay();
 
@@ -73,10 +74,10 @@ public:
     String debugName(const GraphicsLayer*) override;
 
 private:
-    PageOverlay(WebViewImpl*, PassOwnPtr<PageOverlay::Delegate>);
+    PageOverlay(WebViewImpl*, PageOverlay::Delegate*);
 
     WebViewImpl* m_viewImpl;
-    OwnPtr<PageOverlay::Delegate> m_delegate;
+    Persistent<PageOverlay::Delegate> m_delegate;
     OwnPtr<GraphicsLayer> m_layer;
 };
 

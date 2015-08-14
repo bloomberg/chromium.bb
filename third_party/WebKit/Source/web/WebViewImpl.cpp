@@ -298,9 +298,9 @@ private:
     }
 };
 
-class ColorOverlay : public PageOverlay::Delegate {
+class ColorOverlay final : public PageOverlay::Delegate {
 public:
-    ColorOverlay(WebColor color)
+    explicit ColorOverlay(WebColor color)
         : m_color(color)
     {
     }
@@ -4090,7 +4090,7 @@ void WebViewImpl::setPageOverlayColor(WebColor color)
     if (color == Color::transparent)
         return;
 
-    m_pageColorOverlay = PageOverlay::create(this, adoptPtr(new ColorOverlay(color)));
+    m_pageColorOverlay = PageOverlay::create(this, new ColorOverlay(color));
     m_pageColorOverlay->update();
 }
 
