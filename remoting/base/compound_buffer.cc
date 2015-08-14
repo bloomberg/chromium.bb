@@ -144,12 +144,12 @@ net::IOBufferWithSize* CompoundBuffer::ToIOBufferWithSize() const {
 }
 
 void CompoundBuffer::CopyTo(char* data, int size) const {
-  char* pos = data;
+  int pos = 0;
   for (DataChunkList::const_iterator it = chunks_.begin();
-       it != chunks_.end(); ++it) {
-    CHECK_LE(pos + it->size, data + size);
-    memcpy(pos, it->start, it->size);
-    pos += it->size;
+       it != chunks_.end() && pos < size; ++it) {
+    int bytes_to_copy = std::min(size - pos, it->size);
+    memcpy(data + pos, it->start, bytes_to_copy);
+    pos += bytes_to_copy;
   }
 }
 

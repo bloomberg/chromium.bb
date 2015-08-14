@@ -19,11 +19,8 @@ QuicP2PStream::~QuicP2PStream() {}
 void QuicP2PStream::OnDataAvailable() {
   DCHECK(delegate_);
 
-  char buffer[1024];
   struct iovec iov;
   while (true) {
-    iov.iov_base = buffer;
-    iov.iov_len = arraysize(buffer);
     if (sequencer()->GetReadableRegions(&iov, 1) != 1) {
       // No more data to read.
       break;

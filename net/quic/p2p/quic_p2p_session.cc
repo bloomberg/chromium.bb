@@ -67,6 +67,8 @@ QuicP2PStream* QuicP2PSession::CreateOutgoingDynamicStream() {
 void QuicP2PSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
   QuicSession::OnConnectionClosed(error, from_peer);
 
+  socket_.reset();
+
   if (delegate_) {
     Delegate* delegate = delegate_;
     delegate_ = nullptr;
@@ -97,6 +99,10 @@ void QuicP2PSession::DoReadLoop(int result) {
 int QuicP2PSession::DoRead() {
   DCHECK_EQ(read_state_, READ_STATE_DO_READ);
   read_state_ = READ_STATE_DO_READ_COMPLETE;
+
+  if (!socket_) {
+    return net::ERR_SOCKET_NOT_CONNECTED;
+  }
 
   return socket_->Read(
       read_buffer_.get(), kMaxPacketSize,

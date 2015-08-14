@@ -69,6 +69,40 @@ int FakeDatagramSocket::Send(const scoped_refptr<net::IOBuffer>& buf,
                              int buf_len,
                              const net::CompletionCallback& callback) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+  EXPECT_FALSE(send_pending_);
+
+  if (async_send_) {
+    send_pending_ = true;
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&FakeDatagramSocket::DoAsyncSend, weak_factory_.GetWeakPtr(),
+                   buf, buf_len, callback));
+    return net::ERR_IO_PENDING;
+  } else {
+    return DoSend(buf, buf_len);
+  }
+}
+
+void FakeDatagramSocket::DoAsyncSend(const scoped_refptr<net::IOBuffer>& buf,
+                                     int buf_len,
+                                     const net::CompletionCallback& callback) {
+  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+
+  EXPECT_TRUE(send_pending_);
+  send_pending_ = false;
+  callback.Run(DoSend(buf, buf_len));
+}
+
+int FakeDatagramSocket::DoSend(const scoped_refptr<net::IOBuffer>& buf,
+                               int buf_len) {
+  EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
+
+  if (next_send_error_ != net::OK) {
+    int r = next_send_error_;
+    next_send_error_ = net::OK;
+    return r;
+  }
+
   written_packets_.push_back(std::string());
   written_packets_.back().assign(buf->data(), buf->data() + buf_len);
 

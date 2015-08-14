@@ -31,9 +31,13 @@ class FakeP2PDatagramSocket : public Socket {
   FakeP2PDatagramSocket() : weak_factory_(this) {}
   ~FakeP2PDatagramSocket() override {}
 
+  base::WeakPtr<FakeP2PDatagramSocket> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   void ConnectWith(FakeP2PDatagramSocket* peer_socket) {
-    peer_socket_ = peer_socket->weak_factory_.GetWeakPtr();
-    peer_socket->peer_socket_ = weak_factory_.GetWeakPtr();
+    peer_socket_ = peer_socket->GetWeakPtr();
+    peer_socket->peer_socket_ = GetWeakPtr();
   }
 
   void SetReadError(int error) {
@@ -216,16 +220,19 @@ class QuicP2PSessionTest : public ::testing::Test {
   }
 
   void CreateSessions() {
-    socket1_ = new FakeP2PDatagramSocket();
-    socket2_ = new FakeP2PDatagramSocket();
-    socket1_->ConnectWith(socket2_);
+    scoped_ptr<FakeP2PDatagramSocket> socket1(new FakeP2PDatagramSocket());
+    scoped_ptr<FakeP2PDatagramSocket> socket2(new FakeP2PDatagramSocket());
+    socket1->ConnectWith(socket2.get());
+
+    socket1_ = socket1->GetWeakPtr();
+    socket2_ = socket2->GetWeakPtr();
 
     QuicP2PCryptoConfig crypto_config(kTestSharedKey);
 
-    session1_ = CreateP2PSession(make_scoped_ptr(socket1_), crypto_config,
-                                 Perspective::IS_SERVER);
-    session2_ = CreateP2PSession(make_scoped_ptr(socket2_), crypto_config,
-                                 Perspective::IS_CLIENT);
+    session1_ =
+        CreateP2PSession(socket1.Pass(), crypto_config, Perspective::IS_SERVER);
+    session2_ =
+        CreateP2PSession(socket2.Pass(), crypto_config, Perspective::IS_CLIENT);
   }
 
   scoped_ptr<QuicP2PSession> CreateP2PSession(scoped_ptr<Socket> socket,
@@ -252,10 +259,10 @@ class QuicP2PSessionTest : public ::testing::Test {
   QuicConnectionHelper quic_helper_;
   QuicConfig config_;
 
-  FakeP2PDatagramSocket* socket1_;
+  base::WeakPtr<FakeP2PDatagramSocket> socket1_;
   scoped_ptr<QuicP2PSession> session1_;
 
-  FakeP2PDatagramSocket* socket2_;
+  base::WeakPtr<FakeP2PDatagramSocket> socket2_;
   scoped_ptr<QuicP2PSession> session2_;
 };
 
@@ -318,6 +325,15 @@ TEST_F(QuicP2PSessionTest, ServerToClient) {
   TestStreamConnection(session1_.get(), session2_.get(), 2);
 }
 
+TEST_F(QuicP2PSessionTest, DestroySocketWhenClosed) {
+  CreateSessions();
+
+  // The socket must be destroyed when connection is closed.
+  EXPECT_TRUE(socket1_);
+  session1_->connection()->CloseConnection(net::QUIC_NO_ERROR, false);
+  EXPECT_FALSE(socket1_);
+}
+
 TEST_F(QuicP2PSessionTest, TransportWriteError) {
   CreateSessions();
 
@@ -343,6 +359,9 @@ TEST_F(QuicP2PSessionTest, TransportWriteError) {
   EXPECT_EQ(QUIC_PACKET_WRITE_ERROR, stream_delegate.error());
   EXPECT_TRUE(session_delegate.is_closed());
   EXPECT_EQ(QUIC_PACKET_WRITE_ERROR, session_delegate.error());
+
+  // Verify that the socket was destroyed.
+  EXPECT_FALSE(socket1_);
 }
 
 TEST_F(QuicP2PSessionTest, TransportReceiveError) {
@@ -365,6 +384,9 @@ TEST_F(QuicP2PSessionTest, TransportReceiveError) {
   EXPECT_EQ(QUIC_PACKET_READ_ERROR, stream_delegate.error());
   EXPECT_TRUE(session_delegate.is_closed());
   EXPECT_EQ(QUIC_PACKET_READ_ERROR, session_delegate.error());
+
+  // Verify that the socket was destroyed.
+  EXPECT_FALSE(socket1_);
 }
 
 }  // namespace net

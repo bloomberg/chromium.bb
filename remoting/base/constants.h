@@ -14,9 +14,8 @@ extern const char kChromotingXmlNamespace[];
 extern const char kAudioChannelName[];
 extern const char kControlChannelName[];
 extern const char kEventChannelName[];
+extern const char kQuicChannelName[];
 extern const char kVideoChannelName[];
-extern const char kVideoRtpChannelName[];
-extern const char kVideoRtcpChannelName[];
 
 // MIME types for the clipboard.
 extern const char kMimeTypeTextUtf8[];

@@ -41,6 +41,13 @@ class FakeDatagramSocket : public P2PDatagramSocket {
     return written_packets_;
   }
 
+  // Enables asynchronous Write().
+  void set_async_send(bool async_send) { async_send_ = async_send; }
+
+  // Set error codes for the next Write() call. Once returned the
+  // value is automatically reset to net::OK .
+  void set_next_send_error(int error) { next_send_error_ = error; }
+
   void AppendInputPacket(const std::string& data);
 
   // Current position in the input in number of packets, i.e. number of finished
@@ -61,6 +68,14 @@ class FakeDatagramSocket : public P2PDatagramSocket {
 
  private:
   int CopyReadData(const scoped_refptr<net::IOBuffer>& buf, int buf_len);
+
+  void DoAsyncSend(const scoped_refptr<net::IOBuffer>& buf, int buf_len,
+                   const net::CompletionCallback& callback);
+  int DoSend(const scoped_refptr<net::IOBuffer>& buf, int buf_len);
+
+  bool async_send_ = false;
+  bool send_pending_ = false;
+  int next_send_error_ = 0;
 
   base::WeakPtr<FakeDatagramSocket> peer_socket_;
 

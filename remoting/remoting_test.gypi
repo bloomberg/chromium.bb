@@ -316,6 +316,7 @@
         'protocol/message_reader_unittest.cc',
         'protocol/monitored_video_stub_unittest.cc',
         'protocol/mouse_input_filter_unittest.cc',
+        'protocol/quic_channel_factory_unittest.cc',
         'protocol/negotiating_authenticator_unittest.cc',
         'protocol/pairing_registry_unittest.cc',
         'protocol/port_range_unittest.cc',
