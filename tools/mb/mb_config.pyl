@@ -41,7 +41,7 @@
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
     'gyp_debug_bot': ['gyp', 'debug_bot'],
     'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
-    'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm'],
+    'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm', 'crosscompile'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
 
     # This is just for completeness; any bot that uses this config should never actually run MB.
@@ -57,8 +57,8 @@
     'swarming_gyp_debug_trybot_x86': ['swarming', 'gyp', 'debug_trybot', 'x86'],
     'swarming_gyp_release_bot': ['swarming', 'gyp', 'release_bot'],
     'swarming_gyp_release_trybot': ['swarming', 'gyp', 'release_trybot'],
-    'swarming_gyp_release_trybot_arm': ['swarming', 'gyp', 'release_trybot', 'arm'],
-    'swarming_gyp_release_trybot_arm_float': ['swarming', 'gyp', 'release_trybot', 'arm_float'],
+    'swarming_gyp_release_trybot_arm': ['swarming', 'gyp', 'release_trybot', 'arm', 'crosscompile'],
+    'swarming_gyp_release_trybot_arm_float': ['swarming', 'gyp', 'release_trybot', 'arm_float', 'crosscompile'],
     'swarming_tsan_gyp_release_trybot': ['swarming', 'disable_nacl', 'tsan', 'gyp', 'release_trybot'],
 
     # clang/win doesn't work with goma yet, so this can't use debug_bot:
@@ -129,6 +129,14 @@
     'clang': {
       'gn_args': 'is_clang=true',
       'gyp_defines': 'clang=1',
+    },
+
+    'crosscompile': {
+      # This mixin is only needed on GYP bots that are doing cross-compiles
+      # but are *not* targetting Android or iOS (where build/gyp_chromium
+      # will set the crosscompile variable automatically). It is not need
+      # in GN at all.
+      'gyp_crosscompile': True,
     },
 
     'dcheck_always_on': {

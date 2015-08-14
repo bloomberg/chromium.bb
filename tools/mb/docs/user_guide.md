@@ -174,6 +174,8 @@ following keys:
 
   * `gyp_configs`: a list of the configurations to build, e.g.,
     ['Release', 'Release_x64'].
+  * `gyp_crosscompile`: a boolean; if true, GYP_CROSSCOMPILE=1 is set in
+    the environment and passed to GYP.
   * `gyp_defines`: a string containing a list of GYP_DEFINES.
   * `gn_args`: a string containing a list of values passed to gn --args.
   * `mixins`: a list of other mixins that should be included.

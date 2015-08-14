@@ -19,6 +19,7 @@ class FakeMBW(mb.MetaBuildWrapper):
     self.files = {}
     self.calls = []
     self.cmds = []
+    self.cross_compile = None
     self.out = ''
     self.err = ''
     self.platform = 'linux2'
@@ -40,7 +41,9 @@ class FakeMBW(mb.MetaBuildWrapper):
   def WriteFile(self, path, contents):
     self.files[path] = contents
 
-  def Call(self, cmd):
+  def Call(self, cmd, env=None):
+    if env:
+      self.cross_compile = env.get('GYP_CROSSCOMPILE')
     self.calls.append(cmd)
     if self.cmds:
       return self.cmds.pop(0)
@@ -82,7 +85,7 @@ TEST_CONFIG = """\
     'gyp_rel_bot': ['gyp', 'rel', 'goma'],
     'gn_debug': ['gn', 'debug'],
     'gn_rel_bot': ['gn', 'rel', 'goma'],
-    'private': ['gyp', 'fake_feature1'],
+    'private': ['gyp', 'rel', 'fake_feature1'],
     'unsupported': ['gn', 'fake_feature2'],
   },
   'masters': {
@@ -94,6 +97,7 @@ TEST_CONFIG = """\
   'mixins': {
     'fake_feature1': {
       'gn_args': 'enable_doom_melon=true',
+      'gyp_crosscompile': True,
       'gyp_defines': 'doom_melon=1',
     },
     'fake_feature2': {
@@ -149,7 +153,7 @@ class UnitTest(unittest.TestCase):
              }"""}
 
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd: (0, 'out/Default/foo_unittests\n', '')
+    mbw.Call = lambda cmd, env=None: (0, 'out/Default/foo_unittests\n', '')
 
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
@@ -166,7 +170,7 @@ class UnitTest(unittest.TestCase):
                "targets": ["all", "bar_unittests"]
              }"""}
     mbw = self.fake_mbw(files)
-    mbw.Call = lambda cmd: (0, 'out/Default/foo_unittests\n', '')
+    mbw.Call = lambda cmd, env=None: (0, 'out/Default/foo_unittests\n', '')
     self.check(['analyze', '-c', 'gn_debug', '//out/Default',
                 '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=0)
     out = json.loads(mbw.files['/tmp/out.json'])
@@ -201,7 +205,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gn_gen_fails(self):
     mbw = self.fake_mbw()
-    mbw.Call = lambda cmd: (1, '', '')
+    mbw.Call = lambda cmd, env=None: (1, '', '')
     self.check(['gen', '-c', 'gn_debug', '//out/Default'], mbw=mbw, ret=1)
 
   def test_gn_gen_swarming(self):
@@ -243,12 +247,17 @@ class UnitTest(unittest.TestCase):
                      ret=0)
     self.assertIn('analyzer', mbw.calls[0])
 
+  def test_gyp_crosscompile(self):
+    mbw = self.fake_mbw()
+    self.check(['gen', '-c', 'private', '//out/Release'], mbw=mbw)
+    self.assertTrue(mbw.cross_compile)
+
   def test_gyp_gen(self):
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], ret=0)
 
   def test_gyp_gen_fails(self):
     mbw = self.fake_mbw()
-    mbw.Call = lambda cmd: (1, '', '')
+    mbw.Call = lambda cmd, env=None: (1, '', '')
     self.check(['gen', '-c', 'gyp_rel_bot', '//out/Release'], mbw=mbw, ret=1)
 
   def test_gyp_lookup_goma_dir_expansion(self):
