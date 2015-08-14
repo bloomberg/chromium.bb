@@ -8,32 +8,48 @@ function test()
     var ProcessMock = function(name, runnable)
     {
         this._runnable = runnable;
-        this._processName = name;
-        this._call = this._call.bind(this);
-        this._call.finish = this._finish.bind(this);
-        this._call.processName = name;
+        this.processName = name;
+        this.run = this.run.bind(this);
+        this.run.processName = name;
+
+        this.startPromise = new Promise(onStart.bind(this));
+        this.finishPromise = new Promise(onFinish.bind(this));
+
+        function onStart(startCallback)
+        {
+            this._startCallback = startCallback;
+        }
+
+        function onFinish(finishCallback)
+        {
+            this._finishCallback = finishCallback;
+        }
     }
 
     ProcessMock.create = function(name, runnable)
     {
-        var processMock = new ProcessMock(name, runnable);
-        return processMock._call;
+        return new ProcessMock(name, runnable);
     }
 
     ProcessMock.prototype = {
-        _call: function(finishCallback)
+        run: function()
         {
-            InspectorTest.addResult("Process '" + this._processName + "' STARTED.");
-            this._finishCallback = finishCallback;
+            InspectorTest.addResult("Process '" + this.processName + "' STARTED.");
+            this._startCallback();
             if (this._runnable)
                 this._runnable.call(null);
+            return this.finishPromise;
         },
 
-        _finish: function()
+        finish: function()
         {
-            InspectorTest.addResult("Process '" + this._processName + "' FINISHED.");
-            this._finishCallback();
-            delete this._finishCallback();
+            this.startPromise.then(onFinish.bind(this));
+
+            function onFinish()
+            {
+                InspectorTest.addResult("Process '" + this.processName + "' FINISHED.");
+                this._finishCallback();
+            }
         },
     }
 
@@ -46,31 +62,43 @@ function test()
     function testSimpleSchedule(next, runningProcess)
     {
         assertThrottlerIdle();
-        throttler.schedule(ProcessMock.create("operation #1"), false);
+        throttler.schedule(ProcessMock.create("operation #1").run, false);
         var process = ProcessMock.create("operation #2");
-        throttler.schedule(process);
-        if (runningProcess)
-            runningProcess.finish();
+        throttler.schedule(process.run);
 
-        assertThrottlerTimeout();
-        timeoutMock.fireAllTimers();
-        process.finish();
-        next();
+        var promise = Promise.resolve();
+        if (runningProcess) {
+            runningProcess.finish();
+            promise = waitForProcessFinish();
+        }
+
+        promise.then(function() {
+            assertThrottlerTimeout();
+            timeoutMock.fireAllTimers();
+            process.finish();
+            return waitForProcessFinish();
+        }).then(next);
     }
 
     function testAsSoonAsPossibleOverrideTimeout(next, runningProcess)
     {
         assertThrottlerIdle();
-        throttler.schedule(ProcessMock.create("operation #1"));
+        throttler.schedule(ProcessMock.create("operation #1").run);
         var process = ProcessMock.create("operation #2");
-        throttler.schedule(process, true);
-        if (runningProcess)
-            runningProcess.finish();
+        throttler.schedule(process.run, true);
 
-        assertThrottlerTimeout();
-        timeoutMock.fireAllTimers();
-        process.finish();
-        next();
+        var promise = Promise.resolve();
+        if (runningProcess) {
+            runningProcess.finish();
+            promise = waitForProcessFinish();
+        }
+
+        promise.then(function() {
+            assertThrottlerTimeout();
+            timeoutMock.fireAllTimers();
+            process.finish();
+            return waitForProcessFinish();
+        }).then(next);
     }
 
     function testAlwaysExecuteLastScheduled(next, runningProcess)
@@ -79,15 +107,19 @@ function test()
         var process = null;
         for (var i = 0; i < 4; ++i) {
             process = ProcessMock.create("operation #" + i);
-            throttler.schedule(process, i % 2 === 0);
+            throttler.schedule(process.run, i % 2 === 0);
         }
-        if (runningProcess)
+        var promise = Promise.resolve();
+        if (runningProcess) {
             runningProcess.finish();
-
-        assertThrottlerTimeout();
-        timeoutMock.fireAllTimers();
-        process.finish();
-        next();
+            promise = waitForProcessFinish();
+        }
+        promise.then(function() {
+            assertThrottlerTimeout();
+            timeoutMock.fireAllTimers();
+            process.finish();
+            return waitForProcessFinish();
+        }).then(next);
     }
 
     InspectorTest.runTestSuite([
@@ -100,19 +132,25 @@ function test()
         function testSimpleScheduleDuringProcess(next)
         {
             var runningProcess = throttlerToRunningState();
-            testSimpleSchedule(next, runningProcess);
+            runningProcess.startPromise.then(function() {
+                testSimpleSchedule(next, runningProcess);
+            });
         },
 
         function testAsSoonAsPossibleOverrideDuringProcess(next)
         {
             var runningProcess = throttlerToRunningState();
-            testAsSoonAsPossibleOverrideTimeout(next, runningProcess);
+            runningProcess.startPromise.then(function() {
+                testAsSoonAsPossibleOverrideTimeout(next, runningProcess);
+            });
         },
 
         function testAlwaysExecuteLastScheduledDuringProcess(next)
         {
             var runningProcess = throttlerToRunningState();
-            testAlwaysExecuteLastScheduled(next, runningProcess);
+            runningProcess.startPromise.then(function() {
+                testAlwaysExecuteLastScheduled(next, runningProcess);
+            });
         },
 
         function testScheduleFromProcess(next)
@@ -120,29 +158,33 @@ function test()
             var nextProcess;
             assertThrottlerIdle();
             var process = ProcessMock.create("operation #1", processBody);
-            throttler.schedule(process);
+            throttler.schedule(process.run);
             assertThrottlerTimeout();
             timeoutMock.fireAllTimers();
             process.finish();
-            assertThrottlerTimeout();
-            timeoutMock.fireAllTimers();
-            nextProcess.finish();
-            next();
+            waitForProcessFinish().then(function() {
+                assertThrottlerTimeout();
+                timeoutMock.fireAllTimers();
+                nextProcess.finish();
+                return waitForProcessFinish();
+            }).then(next);
 
             function processBody()
             {
                 nextProcess = ProcessMock.create("operation #2");
-                throttler.schedule(nextProcess, false);
+                throttler.schedule(nextProcess.run, false);
             }
         },
 
         function testExceptionFromProcess(next)
         {
             var process = ProcessMock.create("operation #1", processBody);
-            throttler.schedule(process);
+            throttler.schedule(process.run);
             timeoutMock.fireAllTimers();
-            assertThrottlerIdle();
-            next();
+            waitForProcessFinish().then(function() {
+                assertThrottlerIdle();
+                next();
+            });
 
             function processBody()
             {
@@ -151,11 +193,29 @@ function test()
         }
     ]);
 
+    function waitForProcessFinish()
+    {
+        var promiseResolve;
+        var hasFinished;
+        InspectorTest.addSniffer(WebInspector.Throttler.prototype, "_processCompletedForTests", onFinished);
+        function onFinished()
+        {
+            hasFinished = true;
+            if (promiseResolve)
+                promiseResolve();
+        }
+        return new Promise(function(success) {
+            promiseResolve = success;
+            if (hasFinished)
+                success();
+        });
+    }
+
     function throttlerToRunningState()
     {
         assertThrottlerIdle();
         var process = ProcessMock.create("long operation");
-        throttler.schedule(process);
+        throttler.schedule(process.run);
         assertThrottlerTimeout();
         timeoutMock.fireAllTimers();
         return process;

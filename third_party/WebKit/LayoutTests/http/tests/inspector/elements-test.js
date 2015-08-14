@@ -267,7 +267,7 @@ InspectorTest.selectNodeAndWaitForStylesWithComputed = function(idValue, callbac
 
     function onSidebarRendered()
     {
-        InspectorTest.computedStyleWidget().doUpdate(callback);
+        InspectorTest.computedStyleWidget().doUpdate().then(callback);
     }
 }
 
