@@ -4,71 +4,29 @@
 
 cr.define('downloads', function() {
   /**
-   * Provides an implementation for a single column grid.
+   * @param {!Element} root
+   * @param {?Node} boundary
    * @constructor
    * @extends {cr.ui.FocusRow}
    */
-  function FocusRow() {}
+  function FocusRow(root, boundary) {
+    cr.ui.FocusRow.call(this, root, boundary);
 
-  /**
-   * Decorates |focusRow| so that it can be treated as a FocusRow.
-   * @param {Element} focusRow The element that has all the columns represented
-   *     by |itemView|.
-   * @param {!downloads.ItemView} itemView The item view this row cares about.
-   * @param {Node} boundary Focus events are ignored outside of this node.
-   */
-  FocusRow.decorate = function(focusRow, itemView, boundary) {
-    focusRow.__proto__ = FocusRow.prototype;
-    focusRow.decorate(boundary);
-    focusRow.addFocusableElements_();
-  };
+    assert(this.addItem('name', '[is="action-link"].name'));
+    assert(this.addItem('url', '.src-url'));
+    assert(this.addItem('show-retry', '.safe .controls .show'));
+    assert(this.addItem('show-retry', '.retry'));
+    assert(this.addItem('pause-resume', '.pause'));
+    assert(this.addItem('pause-resume', '.resume'));
+    assert(this.addItem('remove', '.remove'));
+    assert(this.addItem('cancel', '.cancel'));
+    assert(this.addItem('restore-save', '.restore'));
+    assert(this.addItem('restore-save', '.save'));
+    assert(this.addItem('remove-discard', '.remove'));
+    assert(this.addItem('remove-discard', '.discard'));
+  }
 
-  FocusRow.prototype = {
-    __proto__: cr.ui.FocusRow.prototype,
-
-    /**
-     * TODO(dbeam): remove all this :not([hidden]) hackery and just create 2 new
-     * methods on cr.ui.FocusRow that get possibly focusable nodes as well as
-     * currently focusable nodes (taking into account visibility).
-     * @override
-     */
-    getEquivalentElement: function(element) {
-      if (this.focusableElements.indexOf(element) > -1 &&
-          cr.ui.FocusRow.isFocusable(element)) {
-        return assert(element);
-      }
-
-      // All elements default to another element with the same type.
-      var columnType = element.getAttribute('focus-type');
-      var equivalent = this.querySelector(
-          '[focus-type=' + columnType + ']:not([hidden])');
-
-      if (this.focusableElements.indexOf(equivalent) < 0) {
-        equivalent = null;
-        var equivalentTypes =
-            ['show', 'retry', 'pause', 'resume', 'remove', 'cancel'];
-        if (equivalentTypes.indexOf(columnType) != -1) {
-          var allTypes = equivalentTypes.map(function(type) {
-            return '[focus-type=' + type + ']:not([hidden])';
-          }).join(', ');
-          equivalent = this.querySelector(allTypes);
-        }
-      }
-
-      // Return the first focusable element if no equivalent element is found.
-      return assert(equivalent || this.focusableElements[0]);
-    },
-
-    /** @private */
-    addFocusableElements_: function() {
-      var possiblyFocusableElements = this.querySelectorAll('[focus-type]');
-      for (var i = 0; i < possiblyFocusableElements.length; ++i) {
-        var possiblyFocusableElement = possiblyFocusableElements[i];
-        if (cr.ui.FocusRow.isFocusable(possiblyFocusableElement))
-          this.addFocusableElement(possiblyFocusableElement);
-      }
-    },
-  };
+  FocusRow.prototype = {__proto__: cr.ui.FocusRow.prototype};
 
   return {FocusRow: FocusRow};
 });

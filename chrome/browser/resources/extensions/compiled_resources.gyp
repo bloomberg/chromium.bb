@@ -29,6 +29,7 @@
           '../../../../ui/webui/resources/js/event_tracker.js',
           '../../../../ui/webui/resources/js/load_time_data.js',
           '../../../../ui/webui/resources/js/util.js',
+          'focus_row.js',
         ],
         'externs': [
           '<(EXTERNS_DIR)/chrome_extensions.js',

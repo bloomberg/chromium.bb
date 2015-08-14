@@ -43,35 +43,25 @@ cr.define('extensions', function() {
    * notification to the user when an error is caused by an extension.
    * @param {(RuntimeError|ManifestError)} error The error the element should
    *     represent.
-   * @param {Element} boundary The boundary for the focus grid.
    * @constructor
-   * @extends {cr.ui.FocusRow}
+   * @extends {HTMLElement}
    */
-  function ExtensionError(error, boundary) {
+  function ExtensionError(error) {
     var div = cloneTemplate('extension-error-metadata');
     div.__proto__ = ExtensionError.prototype;
-    div.decorateWithError_(error, boundary);
+    div.decorate(error);
     return div;
   }
 
   ExtensionError.prototype = {
-    __proto__: cr.ui.FocusRow.prototype,
-
-    /** @override */
-    getEquivalentElement: function(element) {
-      return element.classList.contains('error-delete-button') ?
-          this.deleteButton_ : this.messageSpan_;
-    },
+    __proto__: HTMLElement.prototype,
 
     /**
      * @param {(RuntimeError|ManifestError)} error The error the element should
      *     represent.
-     * @param {Element} boundary The boundary for the FocusGrid.
      * @private
      */
-    decorateWithError_: function(error, boundary) {
-      this.decorate(boundary);
-
+    decorate: function(error) {
       /**
        * The backing error.
        * @type {(ManifestError|RuntimeError)}
@@ -105,27 +95,25 @@ cr.define('extensions', function() {
       iconNode.alt = '';
       this.insertBefore(iconNode, this.firstChild);
 
-      this.messageSpan_ = this.querySelector('.extension-error-message');
-      this.messageSpan_.textContent = error.message;
+      var messageSpan = this.querySelector('.extension-error-message');
+      messageSpan.textContent = error.message;
 
-      this.deleteButton_ = this.querySelector('.error-delete-button');
-      this.deleteButton_.addEventListener('click', function(e) {
+      var deleteButton = this.querySelector('.error-delete-button');
+      deleteButton.addEventListener('click', function(e) {
         this.dispatchEvent(
             new CustomEvent('deleteExtensionError',
                             {bubbles: true, detail: this.error}));
       }.bind(this));
 
       this.addEventListener('click', function(e) {
-        if (e.target != this.deleteButton_)
+        if (e.target != deleteButton)
           this.requestActive_();
       }.bind(this));
+
       this.addEventListener('keydown', function(e) {
-        if (e.keyIdentifier == 'Enter' && e.target != this.deleteButton_)
+        if (e.keyIdentifier == 'Enter' && e.target != deleteButton)
           this.requestActive_();
       });
-
-      this.addFocusableElement(this.messageSpan_);
-      this.addFocusableElement(this.deleteButton_);
     },
 
     /**
@@ -155,6 +143,23 @@ cr.define('extensions', function() {
     return div;
   }
 
+  /**
+   * @param {!Element} root
+   * @param {?Node} boundary
+   * @constructor
+   * @extends {cr.ui.FocusRow}
+   */
+  ExtensionErrorList.FocusRow = function(root, boundary) {
+    cr.ui.FocusRow.call(this, root, boundary);
+
+    this.addItem('message', '.extension-error-message');
+    this.addItem('delete', '.error-delete-button');
+  };
+
+  ExtensionErrorList.FocusRow.prototype = {
+    __proto__: cr.ui.FocusRow.prototype,
+  };
+
   ExtensionErrorList.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -163,12 +168,13 @@ cr.define('extensions', function() {
      * @param {Array<(RuntimeError|ManifestError)>} errors The list of errors.
      */
     decorate: function(errors) {
-      /**
-       * @private {!Array<(ManifestError|RuntimeError)>}
-       */
+      /** @private {!Array<(ManifestError|RuntimeError)>} */
       this.errors_ = [];
 
+      /** @private {!cr.ui.FocusGrid} */
       this.focusGrid_ = new cr.ui.FocusGrid();
+
+      /** @private {Element} */
       this.listContents_ = this.querySelector('.extension-error-list-contents');
 
       errors.forEach(this.addError_, this);
@@ -222,9 +228,12 @@ cr.define('extensions', function() {
     addError_: function(error) {
       this.querySelector('#no-errors-span').hidden = true;
       this.errors_.push(error);
-      var focusRow = new ExtensionError(error, this.listContents_);
-      this.listContents_.appendChild(focusRow);
-      this.focusGrid_.addRow(focusRow);
+
+      var extensionError = new ExtensionError(error);
+      this.listContents_.appendChild(extensionError);
+
+      this.focusGrid_.addRow(
+          new ExtensionErrorList.FocusRow(extensionError, this.listContents_));
     },
 
     /**
@@ -247,7 +256,7 @@ cr.define('extensions', function() {
       this.errors_.splice(index, 1);
       var listElement = errorList.children[index];
 
-      var focusRow = assertInstanceof(listElement, ExtensionError);
+      var focusRow = this.focusGrid_.getRowForRoot(listElement);
       this.focusGrid_.removeRow(focusRow);
       this.focusGrid_.ensureRowActive();
       focusRow.destroy();

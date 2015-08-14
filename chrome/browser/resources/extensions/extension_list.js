@@ -4,148 +4,61 @@
 
 <include src="extension_error.js">
 
-///////////////////////////////////////////////////////////////////////////////
-// ExtensionFocusRow:
-
-/**
- * Provides an implementation for a single column grid.
- * @constructor
- * @extends {cr.ui.FocusRow}
- */
-function ExtensionFocusRow() {}
-
-/**
- * Decorates |focusRow| so that it can be treated as a ExtensionFocusRow.
- * @param {Element} focusRow The element that has all the columns.
- * @param {Node} boundary Focus events are ignored outside of this node.
- */
-ExtensionFocusRow.decorate = function(focusRow, boundary) {
-  focusRow.__proto__ = ExtensionFocusRow.prototype;
-  focusRow.decorate(boundary);
-};
-
-ExtensionFocusRow.prototype = {
-  __proto__: cr.ui.FocusRow.prototype,
-
-  /** @override */
-  getEquivalentElement: function(element) {
-    if (this.focusableElements.indexOf(element) > -1)
-      return element;
-
-    // All elements default to another element with the same type.
-    var columnType = element.getAttribute('focus-type');
-    var equivalent = this.querySelector('[focus-type=' + columnType + ']');
-
-    if (!equivalent || !this.canAddElement_(equivalent)) {
-      var actionLinks = ['options', 'website', 'launch', 'localReload'];
-      var optionalControls = ['showButton', 'incognito', 'dev-collectErrors',
-                              'allUrls', 'localUrls'];
-      var removeStyleButtons = ['trash', 'enterprise'];
-      var enableControls = ['terminatedReload', 'repair', 'enabled'];
-
-      if (actionLinks.indexOf(columnType) > -1)
-        equivalent = this.getFirstFocusableByType_(actionLinks);
-      else if (optionalControls.indexOf(columnType) > -1)
-        equivalent = this.getFirstFocusableByType_(optionalControls);
-      else if (removeStyleButtons.indexOf(columnType) > -1)
-        equivalent = this.getFirstFocusableByType_(removeStyleButtons);
-      else if (enableControls.indexOf(columnType) > -1)
-        equivalent = this.getFirstFocusableByType_(enableControls);
-    }
-
-    // Return the first focusable element if no equivalent type is found.
-    return equivalent || this.focusableElements[0];
-  },
-
-  /** @override */
-  makeActive: function(active) {
-    cr.ui.FocusRow.prototype.makeActive.call(this, active);
-
-    // Only highlight if the row has focus.
-    this.classList.toggle('extension-highlight',
-                          active && this.contains(document.activeElement));
-  },
-
-  /** Updates the list of focusable elements. */
-  updateFocusableElements: function() {
-    this.focusableElements.length = 0;
-
-    var focusableCandidates = this.querySelectorAll('[focus-type]');
-    for (var i = 0; i < focusableCandidates.length; ++i) {
-      var element = focusableCandidates[i];
-      if (this.canAddElement_(element))
-        this.addFocusableElement(element);
-    }
-  },
-
-  /**
-   * Get the first focusable element that matches a list of types.
-   * @param {Array<string>} types An array of types to match from.
-   * @return {?Element} Return the first element that matches a type in |types|.
-   * @private
-   */
-  getFirstFocusableByType_: function(types) {
-    for (var i = 0; i < this.focusableElements.length; ++i) {
-      var element = this.focusableElements[i];
-      if (types.indexOf(element.getAttribute('focus-type')) > -1)
-        return element;
-    }
-    return null;
-  },
-
-  /**
-   * Setup a typical column in the ExtensionFocusRow. A column can be any
-   * element and should have an action when clicked/toggled. This function
-   * adds a listener and a handler for an event. Also adds the "focus-type"
-   * attribute to make the element focusable in |updateFocusableElements|.
-   * @param {string} query A query to select the element to set up.
-   * @param {string} columnType A tag used to identify the column when
-   *     changing focus.
-   * @param {string} eventType The type of event to listen to.
-   * @param {function(Event)} handler The function that should be called
-   *     by the event.
-   * @private
-   */
-  setupColumn: function(query, columnType, eventType, handler) {
-    var element = this.querySelector(query);
-    element.addEventListener(eventType, handler);
-    element.setAttribute('focus-type', columnType);
-  },
-
-  /**
-   * @param {Element} element
-   * @return {boolean}
-   * @private
-   */
-  canAddElement_: function(element) {
-    if (!element || element.disabled)
-      return false;
-
-    var developerMode = $('extension-settings').classList.contains('dev-mode');
-    if (this.isDeveloperOption_(element) && !developerMode)
-      return false;
-
-    for (var el = element; el; el = el.parentElement) {
-      if (el.hidden)
-        return false;
-    }
-
-    return true;
-  },
-
-  /**
-   * Returns true if the element should only be shown in developer mode.
-   * @param {Element} element
-   * @return {boolean}
-   * @private
-   */
-  isDeveloperOption_: function(element) {
-    return /^dev-/.test(element.getAttribute('focus-type'));
-  },
-};
-
 cr.define('extensions', function() {
   'use strict';
+
+  /**
+   * @param {string} name The name of the template to clone.
+   * @return {!Element} The freshly cloned template.
+   */
+  function cloneTemplate(name) {
+    var node = $('templates').querySelector('.' + name).cloneNode(true);
+    return assertInstanceof(node, Element);
+  }
+
+  /**
+   * @extends {HTMLElement}
+   * @constructor
+   */
+  function ExtensionWrapper() {
+    var wrapper = cloneTemplate('extension-list-item-wrapper');
+    wrapper.__proto__ = ExtensionWrapper.prototype;
+    wrapper.initialize();
+    return wrapper;
+  }
+
+  ExtensionWrapper.prototype = {
+    __proto__: HTMLElement.prototype,
+
+    initialize: function() {
+      var boundary = $('extension-settings-list');
+      /** @private {!extensions.FocusRow} */
+      this.focusRow_ = new extensions.FocusRow(this, boundary);
+    },
+
+    /** @return {!cr.ui.FocusRow} */
+    getFocusRow: function() {
+      return this.focusRow_;
+    },
+
+    /**
+     * Add an item to the focus row and listen for |eventType| events.
+     * @param {string} focusType A tag used to identify equivalent elements when
+     *     changing focus between rows.
+     * @param {string} query A query to select the element to set up.
+     * @param {string=} opt_eventType The type of event to listen to.
+     * @param {function(Event)=} opt_handler The function that should be called
+     *     by the event.
+     * @private
+     */
+    setupColumn: function(focusType, query, opt_eventType, opt_handler) {
+      assert(this.focusRow_.addItem(focusType, query));
+      if (opt_eventType) {
+        assert(opt_handler);
+        this.querySelector(query).addEventListener(opt_eventType, opt_handler);
+      }
+    },
+  };
 
   var ExtensionCommandsOverlay = extensions.ExtensionCommandsOverlay;
 
@@ -276,14 +189,14 @@ cr.define('extensions', function() {
           case EventType.ERRORS_REMOVED:
           case EventType.PREFS_CHANGED:
             if (eventData.extensionInfo) {
-              this.updateExtension_(eventData.extensionInfo);
+              this.updateOrCreateWrapper_(eventData.extensionInfo);
               this.focusGrid_.ensureRowActive();
             }
             break;
           case EventType.UNINSTALLED:
             var index = this.getIndexOfExtension_(eventData.item_id);
             this.extensions_.splice(index, 1);
-            this.removeNode_(getRequiredElement(eventData.item_id));
+            this.removeWrapper_(getRequiredElement(eventData.item_id));
             break;
           default:
             assertNotReached();
@@ -365,12 +278,18 @@ cr.define('extensions', function() {
       assert(!this.hidden);
       assert(!this.parentElement.hidden);
 
-      this.updateFocusableElements();
-
       var idToHighlight = this.getIdQueryParam_();
-      if (idToHighlight && $(idToHighlight)) {
-        this.scrollToNode_(idToHighlight);
-        this.setInitialFocus_(idToHighlight);
+      if (idToHighlight) {
+        var wrapper = $(idToHighlight);
+        if (wrapper) {
+          this.scrollToWrapper_(idToHighlight);
+
+          var focusRow = wrapper.getFocusRow();
+          (focusRow.getFirstFocusable('enabled') ||
+           focusRow.getFirstFocusable('remove-enterprise') ||
+           focusRow.getFirstFocusable('website') ||
+           focusRow.getFirstFocusable('details')).focus();
+        }
       }
 
       var idToOpenOptions = this.getOptionsQueryParam_();
@@ -415,48 +334,46 @@ cr.define('extensions', function() {
       // Iterate over the extension data and add each item to the list.
       this.extensions_.forEach(function(extension) {
         seenIds.push(extension.id);
-        this.updateExtension_(extension);
+        this.updateOrCreateWrapper_(extension);
       }, this);
       this.focusGrid_.ensureRowActive();
 
       // Remove extensions that are no longer installed.
-      var nodes = document.querySelectorAll('.extension-list-item-wrapper[id]');
-      Array.prototype.forEach.call(nodes, function(node) {
-        if (seenIds.indexOf(node.id) < 0)
-          this.removeNode_(node);
+      var wrappers = document.querySelectorAll(
+          '.extension-list-item-wrapper[id]');
+      Array.prototype.forEach.call(wrappers, function(wrapper) {
+        if (seenIds.indexOf(wrapper.id) < 0)
+          this.removeWrapper_(wrapper);
       }, this);
     },
 
-    /** Updates each row's focusable elements without rebuilding the grid. */
-    updateFocusableElements: function() {
-      var rows = document.querySelectorAll('.extension-list-item-wrapper[id]');
-      for (var i = 0; i < rows.length; ++i) {
-        assertInstanceof(rows[i], ExtensionFocusRow).updateFocusableElements();
-      }
-    },
-
     /**
-     * Removes the node from the DOM, and updates the focused element if needed.
-     * @param {!HTMLElement} node
+     * Removes the wrapper from the DOM and updates the focused element if
+     * needed.
+     * @param {!Element} wrapper
      * @private
      */
-    removeNode_: function(node) {
-      if (node.contains(document.activeElement)) {
-        var nodes =
-            document.querySelectorAll('.extension-list-item-wrapper[id]');
-        var index = Array.prototype.indexOf.call(nodes, node);
+    removeWrapper_: function(wrapper) {
+      // If focus is in the wrapper about to be removed, move it first. This
+      // happens when clicking the trash can to remove an extension.
+      if (wrapper.contains(document.activeElement)) {
+        var wrappers = document.querySelectorAll(
+            '.extension-list-item-wrapper[id]');
+        var index = Array.prototype.indexOf.call(wrappers, wrapper);
         assert(index != -1);
-        var focusableNode = nodes[index + 1] || nodes[index - 1];
-        if (focusableNode)
-          focusableNode.getEquivalentElement(document.activeElement).focus();
+        var focusableWrapper = wrappers[index + 1] || wrappers[index - 1];
+        if (focusableWrapper) {
+          var newFocusRow = focusableWrapper.getFocusRow();
+          newFocusRow.getEquivalentElement(document.activeElement).focus();
+        }
       }
-      node.parentNode.removeChild(node);
-      this.focusGrid_.removeRow(assertInstanceof(node, ExtensionFocusRow));
 
-      // Unregister the removed node from events.
-      assertInstanceof(node, ExtensionFocusRow).destroy();
-
+      var focusRow = wrapper.getFocusRow();
+      this.focusGrid_.removeRow(focusRow);
       this.focusGrid_.ensureRowActive();
+      focusRow.destroy();
+
+      wrapper.parentNode.removeChild(wrapper);
     },
 
     /**
@@ -464,60 +381,95 @@ cr.define('extensions', function() {
      * @param {string} extensionId The id of the extension to scroll to.
      * @private
      */
-    scrollToNode_: function(extensionId) {
+    scrollToWrapper_: function(extensionId) {
       // Scroll offset should be calculated slightly higher than the actual
       // offset of the element being scrolled to, so that it ends up not all
       // the way at the top. That way it is clear that there are more elements
       // above the element being scrolled to.
+      var wrapper = $(extensionId);
       var scrollFudge = 1.2;
-      var scrollTop = $(extensionId).offsetTop - scrollFudge *
-          $(extensionId).clientHeight;
+      var scrollTop = wrapper.offsetTop - scrollFudge * wrapper.clientHeight;
       setScrollTopForDocument(document, scrollTop);
-    },
-
-    /**
-     * @param {string} extensionId The id of the extension that should have
-     *     initial focus
-     * @private
-     */
-    setInitialFocus_: function(extensionId) {
-      var focusRow = assertInstanceof($(extensionId), ExtensionFocusRow);
-      var columnTypePriority = ['enabled', 'enterprise', 'website', 'details'];
-      var elementToFocus = null;
-      var elementPriority = columnTypePriority.length;
-
-      for (var i = 0; i < focusRow.focusableElements.length; ++i) {
-        var element = focusRow.focusableElements[i];
-        var priority =
-            columnTypePriority.indexOf(element.getAttribute('focus-type'));
-        if (priority > -1 && priority < elementPriority) {
-          elementToFocus = element;
-          elementPriority = priority;
-        }
-      }
-
-      focusRow.getEquivalentElement(elementToFocus).focus();
     },
 
     /**
      * Synthesizes and initializes an HTML element for the extension metadata
      * given in |extension|.
      * @param {!ExtensionInfo} extension A dictionary of extension metadata.
-     * @param {?Element} nextNode |node| should be inserted before |nextNode|.
-     *     |node| will be appended to the end if |nextNode| is null.
+     * @param {?Element} nextWrapper The newly created wrapper will be inserted
+     *     before |nextWrapper| if non-null (else it will be appended to the
+     *     wrapper list).
      * @private
      */
-    createNode_: function(extension, nextNode) {
-      var template = $('template-collection').querySelector(
-          '.extension-list-item-wrapper');
-      var node = template.cloneNode(true);
-      ExtensionFocusRow.decorate(node, $('extension-settings-list'));
+    createWrapper_: function(extension, nextWrapper) {
+      var wrapper = new ExtensionWrapper;
+      wrapper.id = extension.id;
 
-      var row = assertInstanceof(node, ExtensionFocusRow);
-      row.id = extension.id;
+      // The 'Permissions' link.
+      wrapper.setupColumn('details', '.permissions-link', 'click', function(e) {
+        if (!this.permissionsPromptIsShowing_) {
+          chrome.developerPrivate.showPermissionsDialog(extension.id,
+                                                        function() {
+            this.permissionsPromptIsShowing_ = false;
+          }.bind(this));
+          this.permissionsPromptIsShowing_ = true;
+        }
+        e.preventDefault();
+      });
+
+      wrapper.setupColumn('options', '.options-button', 'click', function(e) {
+        this.showEmbeddedExtensionOptions_(extension.id, false);
+        e.preventDefault();
+      }.bind(this));
+
+      // The 'Options' button or link, depending on its behaviour.
+      // Set an href to get the correct mouse-over appearance (link,
+      // footer) - but the actual link opening is done through developerPrivate
+      // API with a preventDefault().
+      wrapper.querySelector('.options-link').href =
+          extension.optionsPage ? extension.optionsPage.url : '';
+      wrapper.setupColumn('options', '.options-link', 'click', function(e) {
+        chrome.developerPrivate.showOptions(extension.id);
+        e.preventDefault();
+      });
+
+      // The 'View in Web Store/View Web Site' link.
+      wrapper.setupColumn('website', '.site-link');
+
+      // The 'Launch' link.
+      wrapper.setupColumn('launch', '.launch-link', 'click', function(e) {
+        chrome.management.launchApp(extension.id);
+      });
+
+      // The 'Reload' link.
+      wrapper.setupColumn('localReload', '.reload-link', 'click', function(e) {
+        chrome.developerPrivate.reload(extension.id, {failQuietly: true});
+      });
+
+      wrapper.setupColumn('errors', '.errors-link', 'click', function(e) {
+        var extensionId = extension.id;
+        assert(this.extensions_.length > 0);
+        var newEx = this.extensions_.filter(function(e) {
+          return e.state == chrome.developerPrivate.ExtensionState.ENABLED &&
+              e.id == extensionId;
+        })[0];
+        var errors = newEx.manifestErrors.concat(newEx.runtimeErrors);
+        extensions.ExtensionErrorOverlay.getInstance().setErrorsAndShowOverlay(
+            errors, extensionId, newEx.name);
+      }.bind(this));
+
+      wrapper.setupColumn('suspiciousLearnMore',
+                          '.suspicious-install-message .learn-more-link');
+
+      // The path, if provided by unpacked extension.
+      wrapper.setupColumn('loadPath', '.load-path a:first-of-type', 'click',
+                          function(e) {
+        chrome.developerPrivate.showPath(extension.id);
+        e.preventDefault();
+      });
 
       // The 'Show Browser Action' button.
-      row.setupColumn('.show-button', 'showButton', 'click', function(e) {
+      wrapper.setupColumn('showButton', '.show-button', 'click', function(e) {
         chrome.developerPrivate.updateExtensionConfiguration({
           extensionId: extension.id,
           showActionButton: true
@@ -525,9 +477,9 @@ cr.define('extensions', function() {
       });
 
       // The 'allow in incognito' checkbox.
-      row.setupColumn('.incognito-control input', 'incognito', 'change',
-                      function(e) {
-        var butterBar = row.querySelector('.butter-bar');
+      wrapper.setupColumn('incognito', '.incognito-control input', 'change',
+                          function(e) {
+        var butterBar = wrapper.querySelector('.butter-bar');
         var checked = e.target.checked;
         if (!this.butterbarShown_) {
           butterBar.hidden = !checked ||
@@ -546,8 +498,8 @@ cr.define('extensions', function() {
       // The 'collect errors' checkbox. This should only be visible if the
       // error console is enabled - we can detect this by the existence of the
       // |errorCollectionEnabled| property.
-      row.setupColumn('.error-collection-control input', 'dev-collectErrors',
-                      'change', function(e) {
+      wrapper.setupColumn('collectErrors', '.error-collection-control input',
+          'change', function(e) {
         chrome.developerPrivate.updateExtensionConfiguration({
           extensionId: extension.id,
           errorCollection: e.target.checked
@@ -557,8 +509,8 @@ cr.define('extensions', function() {
       // The 'allow on all urls' checkbox. This should only be visible if
       // active script restrictions are enabled. If they are not enabled, no
       // extensions should want all urls.
-      row.setupColumn('.all-urls-control input', 'allUrls', 'click',
-                      function(e) {
+      wrapper.setupColumn('allUrls', '.all-urls-control input', 'click',
+                          function(e) {
         chrome.developerPrivate.updateExtensionConfiguration({
           extensionId: extension.id,
           runOnAllUrls: e.target.checked
@@ -566,82 +518,29 @@ cr.define('extensions', function() {
       });
 
       // The 'allow file:// access' checkbox.
-      row.setupColumn('.file-access-control input', 'localUrls', 'click',
-                      function(e) {
+      wrapper.setupColumn('localUrls', '.file-access-control input', 'click',
+                          function(e) {
         chrome.developerPrivate.updateExtensionConfiguration({
           extensionId: extension.id,
           fileAccess: e.target.checked
         });
       });
 
-      // The 'Options' button or link, depending on its behaviour.
-      // Set an href to get the correct mouse-over appearance (link,
-      // footer) - but the actual link opening is done through developerPrivate
-      // API with a preventDefault().
-      row.querySelector('.options-link').href =
-          extension.optionsPage ? extension.optionsPage.url : '';
-      row.setupColumn('.options-link', 'options', 'click', function(e) {
-        chrome.developerPrivate.showOptions(extension.id);
-        e.preventDefault();
-      });
-
-      row.setupColumn('.options-button', 'options', 'click', function(e) {
-        this.showEmbeddedExtensionOptions_(extension.id, false);
-        e.preventDefault();
-      }.bind(this));
-
-      // The 'View in Web Store/View Web Site' link.
-      row.querySelector('.site-link').setAttribute('focus-type', 'website');
-
-      // The 'Permissions' link.
-      row.setupColumn('.permissions-link', 'details', 'click', function(e) {
-        if (!this.permissionsPromptIsShowing_) {
-          chrome.developerPrivate.showPermissionsDialog(extension.id,
-                                                        function() {
-            this.permissionsPromptIsShowing_ = false;
-          }.bind(this));
-          this.permissionsPromptIsShowing_ = true;
-        }
-        e.preventDefault();
-      });
-
-      // The 'Reload' link.
-      row.setupColumn('.reload-link', 'localReload', 'click', function(e) {
-        chrome.developerPrivate.reload(extension.id, {failQuietly: true});
-      });
-
-      // The 'Launch' link.
-      row.setupColumn('.launch-link', 'launch', 'click', function(e) {
-        chrome.management.launchApp(extension.id);
-      });
-
-      row.setupColumn('.errors-link', 'errors', 'click', function(e) {
-        var extensionId = extension.id;
-        assert(this.extensions_.length > 0);
-        var newEx = this.extensions_.filter(function(e) {
-          return e.state == chrome.developerPrivate.ExtensionState.ENABLED &&
-              e.id == extensionId;
-        })[0];
-        var errors = newEx.manifestErrors.concat(newEx.runtimeErrors);
-        extensions.ExtensionErrorOverlay.getInstance().setErrorsAndShowOverlay(
-            errors, extensionId, newEx.name);
-      }.bind(this));
-
       // The 'Reload' terminated link.
-      row.setupColumn('.terminated-reload-link', 'terminatedReload', 'click',
-                      function(e) {
+      wrapper.setupColumn('terminatedReload', '.terminated-reload-link',
+                          'click', function(e) {
         chrome.developerPrivate.reload(extension.id, {failQuietly: true});
       });
 
       // The 'Repair' corrupted link.
-      row.setupColumn('.corrupted-repair-button', 'repair', 'click',
-                      function(e) {
+      wrapper.setupColumn('repair', '.corrupted-repair-button', 'click',
+                          function(e) {
         chrome.developerPrivate.repairExtension(extension.id);
       });
 
       // The 'Enabled' checkbox.
-      row.setupColumn('.enable-checkbox input', 'enabled', 'change',
-                      function(e) {
+      wrapper.setupColumn('enabled', '.enable-checkbox input', 'change',
+                          function(e) {
         var checked = e.target.checked;
         // TODO(devlin): What should we do if this fails?
         chrome.management.setEnabled(extension.id, checked);
@@ -655,11 +554,12 @@ cr.define('extensions', function() {
       });
 
       // 'Remove' button.
-      var trashTemplate = $('template-collection').querySelector('.trash');
-      var trash = trashTemplate.cloneNode(true);
+      var trash = cloneTemplate('trash');
       trash.title = loadTimeData.getString('extensionUninstall');
-      trash.setAttribute('focus-type', 'trash');
-      trash.addEventListener('click', function(e) {
+
+      wrapper.querySelector('.enable-controls').appendChild(trash);
+
+      wrapper.setupColumn('remove-enterprise', '.trash', 'click', function(e) {
         trash.classList.add('open');
         trash.classList.toggle('mouse-clicked', e.detail > 0);
         if (this.uninstallIsShowing_)
@@ -683,69 +583,51 @@ cr.define('extensions', function() {
           }
         }.bind(this));
       }.bind(this));
-      row.querySelector('.enable-controls').appendChild(trash);
-
-      // Developer mode ////////////////////////////////////////////////////////
-
-      // The path, if provided by unpacked extension.
-      row.setupColumn('.load-path a:first-of-type', 'dev-loadPath', 'click',
-                      function(e) {
-        chrome.developerPrivate.showPath(extension.id);
-        e.preventDefault();
-      });
 
       // Maintain the order that nodes should be in when creating as well as
-      // when adding only one new row.
-      this.insertBefore(row, nextNode);
-      this.updateNode_(extension, row);
+      // when adding only one new wrapper.
+      this.insertBefore(wrapper, nextWrapper);
+      this.updateWrapper_(extension, wrapper);
 
-      var nextRow = null;
-      if (nextNode)
-        nextRow = assertInstanceof(nextNode, ExtensionFocusRow);
-
-      this.focusGrid_.addRowBefore(row, nextRow);
+      var nextRow = this.focusGrid_.getRowForRoot(nextWrapper);  // May be null.
+      this.focusGrid_.addRowBefore(wrapper.getFocusRow(), nextRow);
     },
 
     /**
      * Updates an HTML element for the extension metadata given in |extension|.
      * @param {!ExtensionInfo} extension A dictionary of extension metadata.
-     * @param {!ExtensionFocusRow} row The node that is being updated.
+     * @param {!Element} wrapper The extension wrapper element to update.
      * @private
      */
-    updateNode_: function(extension, row) {
+    updateWrapper_: function(extension, wrapper) {
       var isActive =
           extension.state == chrome.developerPrivate.ExtensionState.ENABLED;
-      row.classList.toggle('inactive-extension', !isActive);
+      wrapper.classList.toggle('inactive-extension', !isActive);
+      wrapper.classList.remove('controlled', 'may-not-remove');
 
-      // Hack to keep the closure compiler happy about |remove|.
-      // TODO(hcarmona): Remove this hack when the closure compiler is updated.
-      var node = /** @type {Element} */ (row);
-      node.classList.remove('controlled', 'may-not-remove');
-      var classes = [];
       if (extension.controlledInfo) {
-        classes.push('controlled');
+        wrapper.classList.add('controlled');
       } else if (!extension.userMayModify ||
                  extension.mustRemainInstalled ||
                  extension.dependentExtensions.length > 0) {
-        classes.push('may-not-remove');
+        wrapper.classList.add('may-not-remove');
       }
-      row.classList.add.apply(row.classList, classes);
 
-      var item = row.querySelector('.extension-list-item');
+      var item = wrapper.querySelector('.extension-list-item');
       item.style.backgroundImage = 'url(' + extension.iconUrl + ')';
 
-      this.setText_(row, '.extension-title', extension.name);
-      this.setText_(row, '.extension-version', extension.version);
-      this.setText_(row, '.location-text', extension.locationText || '');
-      this.setText_(row, '.blacklist-text', extension.blacklistText || '');
-      this.setText_(row, '.extension-description', extension.description);
+      this.setText_(wrapper, '.extension-title', extension.name);
+      this.setText_(wrapper, '.extension-version', extension.version);
+      this.setText_(wrapper, '.location-text', extension.locationText || '');
+      this.setText_(wrapper, '.blacklist-text', extension.blacklistText || '');
+      this.setText_(wrapper, '.extension-description', extension.description);
 
       // The 'Show Browser Action' button.
-      this.updateVisibility_(row, '.show-button',
+      this.updateVisibility_(wrapper, '.show-button',
                              isActive && extension.actionButtonHidden);
 
       // The 'allow in incognito' checkbox.
-      this.updateVisibility_(row, '.incognito-control',
+      this.updateVisibility_(wrapper, '.incognito-control',
                              isActive && this.incognitoAvailable_,
                              function(item) {
         var incognito = item.querySelector('input');
@@ -754,7 +636,7 @@ cr.define('extensions', function() {
       });
 
       // Hide butterBar if incognito is not enabled for the extension.
-      var butterBar = row.querySelector('.butter-bar');
+      var butterBar = wrapper.querySelector('.butter-bar');
       butterBar.hidden =
           butterBar.hidden || !extension.incognitoAccess.isEnabled;
 
@@ -762,7 +644,7 @@ cr.define('extensions', function() {
       // error console is enabled - we can detect this by the existence of the
       // |errorCollectionEnabled| property.
       this.updateVisibility_(
-          row, '.error-collection-control',
+          wrapper, '.error-collection-control',
           isActive && extension.errorCollection.isEnabled,
           function(item) {
         item.querySelector('input').checked =
@@ -773,14 +655,14 @@ cr.define('extensions', function() {
       // active script restrictions are enabled. If they are not enabled, no
       // extensions should want all urls.
       this.updateVisibility_(
-          row, '.all-urls-control',
+          wrapper, '.all-urls-control',
           isActive && extension.runOnAllUrls.isEnabled,
           function(item) {
         item.querySelector('input').checked = extension.runOnAllUrls.isActive;
       });
 
       // The 'allow file:// access' checkbox.
-      this.updateVisibility_(row, '.file-access-control',
+      this.updateVisibility_(wrapper, '.file-access-control',
                              isActive && extension.fileAccess.isEnabled,
                              function(item) {
         item.querySelector('input').checked = extension.fileAccess.isActive;
@@ -788,15 +670,15 @@ cr.define('extensions', function() {
 
       // The 'Options' button or link, depending on its behaviour.
       var optionsEnabled = isActive && !!extension.optionsPage;
-      this.updateVisibility_(row, '.options-link', optionsEnabled &&
+      this.updateVisibility_(wrapper, '.options-link', optionsEnabled &&
                              extension.optionsPage.openInTab);
-      this.updateVisibility_(row, '.options-button', optionsEnabled &&
+      this.updateVisibility_(wrapper, '.options-button', optionsEnabled &&
                              !extension.optionsPage.openInTab);
 
       // The 'View in Web Store/View Web Site' link.
       var siteLinkEnabled = !!extension.homePage.url &&
                             !this.enableAppInfoDialog_;
-      this.updateVisibility_(row, '.site-link', siteLinkEnabled,
+      this.updateVisibility_(wrapper, '.site-link', siteLinkEnabled,
                              function(item) {
         item.href = extension.homePage.url;
         item.textContent = loadTimeData.getString(
@@ -807,18 +689,19 @@ cr.define('extensions', function() {
       var isUnpacked =
           extension.location == chrome.developerPrivate.Location.UNPACKED;
       // The 'Reload' link.
-      this.updateVisibility_(row, '.reload-link', isUnpacked);
+      this.updateVisibility_(wrapper, '.reload-link', isUnpacked);
 
       // The 'Launch' link.
       this.updateVisibility_(
-          row, '.launch-link',
+          wrapper, '.launch-link',
           isUnpacked && extension.type ==
                             chrome.developerPrivate.ExtensionType.PLATFORM_APP);
 
       // The 'Errors' link.
       var hasErrors = extension.runtimeErrors.length > 0 ||
           extension.manifestErrors.length > 0;
-      this.updateVisibility_(row, '.errors-link', hasErrors, function(item) {
+      this.updateVisibility_(wrapper, '.errors-link', hasErrors,
+                             function(item) {
         var Level = chrome.developerPrivate.ErrorLevel;
 
         var map = {};
@@ -846,18 +729,18 @@ cr.define('extensions', function() {
       // The 'Reload' terminated link.
       var isTerminated =
           extension.state == chrome.developerPrivate.ExtensionState.TERMINATED;
-      this.updateVisibility_(row, '.terminated-reload-link', isTerminated);
+      this.updateVisibility_(wrapper, '.terminated-reload-link', isTerminated);
 
       // The 'Repair' corrupted link.
       var canRepair = !isTerminated &&
                       extension.disableReasons.corruptInstall &&
                       extension.location ==
                           chrome.developerPrivate.Location.FROM_STORE;
-      this.updateVisibility_(row, '.corrupted-repair-button', canRepair);
+      this.updateVisibility_(wrapper, '.corrupted-repair-button', canRepair);
 
       // The 'Enabled' checkbox.
       var isOK = !isTerminated && !canRepair;
-      this.updateVisibility_(row, '.enable-checkbox', isOK, function(item) {
+      this.updateVisibility_(wrapper, '.enable-checkbox', isOK, function(item) {
         var enableCheckboxDisabled =
             !extension.userMayModify ||
             extension.disableReasons.suspiciousInstall ||
@@ -869,7 +752,7 @@ cr.define('extensions', function() {
       });
 
       // Indicator for extensions controlled by policy.
-      var controlNode = row.querySelector('.enable-controls');
+      var controlNode = wrapper.querySelector('.enable-controls');
       var indicator =
           controlNode.querySelector('.controlled-extension-indicator');
       var needsIndicator = isOK && extension.controlledInfo;
@@ -895,8 +778,7 @@ cr.define('extensions', function() {
         indicator.setAttribute('text' + controlledByStr, text);
         indicator.image.setAttribute('aria-label', text);
         controlNode.appendChild(indicator);
-        indicator.querySelector('div').setAttribute('focus-type',
-                                                    'enterprise');
+        wrapper.setupColumn('remove-enterprise', '[controlled-by] div');
       } else if (!needsIndicator && indicator) {
         controlNode.removeChild(indicator);
       }
@@ -904,11 +786,11 @@ cr.define('extensions', function() {
       // Developer mode ////////////////////////////////////////////////////////
 
       // First we have the id.
-      var idLabel = row.querySelector('.extension-id');
+      var idLabel = wrapper.querySelector('.extension-id');
       idLabel.textContent = ' ' + extension.id;
 
       // Then the path, if provided by unpacked extension.
-      this.updateVisibility_(row, '.load-path', isUnpacked,
+      this.updateVisibility_(wrapper, '.load-path', isUnpacked,
                              function(item) {
         item.querySelector('a:first-of-type').textContent =
             ' ' + extension.prettifiedPath;
@@ -919,32 +801,31 @@ cr.define('extensions', function() {
       // extension is disabled.
       var isRequired =
           !extension.userMayModify || extension.mustRemainInstalled;
-      this.updateVisibility_(row, '.managed-message', isRequired &&
+      this.updateVisibility_(wrapper, '.managed-message', isRequired &&
                              !extension.disableReasons.updateRequired);
 
       // Then the 'This isn't from the webstore, looks suspicious' message.
-      this.updateVisibility_(row, '.suspicious-install-message', !isRequired &&
-                             extension.disableReasons.suspiciousInstall);
+      var isSuspicious = extension.disableReasons.suspiciousInstall;
+      this.updateVisibility_(wrapper, '.suspicious-install-message',
+                             !isRequired && isSuspicious);
 
       // Then the 'This is a corrupt extension' message.
-      this.updateVisibility_(row, '.corrupt-install-message', !isRequired &&
+      this.updateVisibility_(wrapper, '.corrupt-install-message', !isRequired &&
                              extension.disableReasons.corruptInstall);
 
       // Then the 'An update required by enterprise policy' message. Note that
       // a force-installed extension might be disabled due to being outdated
       // as well.
-      this.updateVisibility_(row, '.update-required-message',
+      this.updateVisibility_(wrapper, '.update-required-message',
                              extension.disableReasons.updateRequired);
 
       // The 'following extensions depend on this extension' list.
       var hasDependents = extension.dependentExtensions.length > 0;
-      row.classList.toggle('developer-extras', hasDependents);
-      this.updateVisibility_(row, '.dependent-extensions-message',
+      wrapper.classList.toggle('developer-extras', hasDependents);
+      this.updateVisibility_(wrapper, '.dependent-extensions-message',
                              hasDependents, function(item) {
         var dependentList = item.querySelector('ul');
         dependentList.textContent = '';
-        var dependentTemplate = $('template-collection').querySelector(
-            '.dependent-list-item');
         extension.dependentExtensions.forEach(function(dependentId) {
           var dependentExtension = null;
           for (var i = 0; i < this.extensions_.length; ++i) {
@@ -956,7 +837,7 @@ cr.define('extensions', function() {
           if (!dependentExtension)
             return;
 
-          var depNode = dependentTemplate.cloneNode(true);
+          var depNode = cloneTemplate('dependent-list-item');
           depNode.querySelector('.dep-extension-title').textContent =
               dependentExtension.name;
           depNode.querySelector('.dep-extension-id').textContent =
@@ -966,8 +847,8 @@ cr.define('extensions', function() {
       }.bind(this));
 
       // The active views.
-      this.updateVisibility_(row, '.active-views', extension.views.length > 0,
-                             function(item) {
+      this.updateVisibility_(wrapper, '.active-views',
+                             extension.views.length > 0, function(item) {
         var link = item.querySelector('a');
 
         // Link needs to be an only child before the list is updated.
@@ -1013,16 +894,13 @@ cr.define('extensions', function() {
             link = link.cloneNode(true);
             item.appendChild(link);
           }
-        });
 
-        var allLinks = item.querySelectorAll('a');
-        for (var i = 0; i < allLinks.length; ++i) {
-          allLinks[i].setAttribute('focus-type', 'dev-activeViews' + i);
-        }
+          wrapper.setupColumn('activeView', '.active-views a:last-of-type');
+        });
       });
 
       // The extension warnings (describing runtime issues).
-      this.updateVisibility_(row, '.extension-warnings',
+      this.updateVisibility_(wrapper, '.extension-warnings',
                              extension.runtimeWarnings.length > 0,
                              function(item) {
         var warningList = item.querySelector('ul');
@@ -1034,7 +912,7 @@ cr.define('extensions', function() {
       });
 
       // Install warnings.
-      this.updateVisibility_(row, '.install-warnings',
+      this.updateVisibility_(wrapper, '.install-warnings',
                              extension.installWarnings.length > 0,
                              function(item) {
         var installWarningList = item.querySelector('ul');
@@ -1051,19 +929,17 @@ cr.define('extensions', function() {
       if (location.hash.substr(1) == extension.id) {
         // Scroll beneath the fixed header so that the extension is not
         // obscured.
-        var topScroll = row.offsetTop - $('page-header').offsetHeight;
-        var pad = parseInt(window.getComputedStyle(row, null).marginTop, 10);
+        var topScroll = wrapper.offsetTop - $('page-header').offsetHeight;
+        var pad = parseInt(window.getComputedStyle(wrapper).marginTop, 10);
         if (!isNaN(pad))
           topScroll -= pad / 2;
         setScrollTopForDocument(document, topScroll);
       }
-
-      row.updateFocusableElements();
     },
 
     /**
      * Updates an element's textContent.
-     * @param {Element} node Ancestor of the element specified by |query|.
+     * @param {Node} node Ancestor of the element specified by |query|.
      * @param {string} query A query to select an element in |node|.
      * @param {string} textContent
      * @private
@@ -1075,7 +951,7 @@ cr.define('extensions', function() {
     /**
      * Updates an element's visibility and calls |shownCallback| if it is
      * visible.
-     * @param {Element} node Ancestor of the element specified by |query|.
+     * @param {Node} node Ancestor of the element specified by |query|.
      * @param {string} query A query to select an element in |node|.
      * @param {boolean} visible Whether the element should be visible or not.
      * @param {function(Element)=} opt_shownCallback Callback if the element is
@@ -1084,10 +960,10 @@ cr.define('extensions', function() {
      * @private
      */
     updateVisibility_: function(node, query, visible, opt_shownCallback) {
-      var item = assert(node.querySelector(query));
-      item.hidden = !visible;
+      var element = assertInstanceof(node.querySelector(query), Element);
+      element.hidden = !visible;
       if (visible && opt_shownCallback)
-        opt_shownCallback(item);
+        opt_shownCallback(element);
     },
 
     /**
@@ -1112,7 +988,7 @@ cr.define('extensions', function() {
         return;
 
       if (scroll)
-        this.scrollToNode_(extensionId);
+        this.scrollToWrapper_(extensionId);
 
       // Add the options query string. Corner case: the 'options' query string
       // will clobber the 'id' query string if the options link is clicked when
@@ -1161,12 +1037,12 @@ cr.define('extensions', function() {
     },
 
     /**
-     * Updates the node for the extension.
+     * Updates or creates a wrapper for |extension|.
      * @param {!ExtensionInfo} extension The information about the extension to
      *     update.
      * @private
      */
-    updateExtension_: function(extension) {
+    updateOrCreateWrapper_: function(extension) {
       var currIndex = this.getIndexOfExtension_(extension.id);
       if (currIndex != -1) {
         // If there is a current version of the extension, update it with the
@@ -1180,12 +1056,12 @@ cr.define('extensions', function() {
         this.extensions_.sort(compareExtensions);
       }
 
-      var node = /** @type {ExtensionFocusRow} */ ($(extension.id));
-      if (node) {
-        this.updateNode_(extension, node);
+      var wrapper = $(extension.id);
+      if (wrapper) {
+        this.updateWrapper_(extension, wrapper);
       } else {
         var nextExt = this.extensions_[this.extensions_.indexOf(extension) + 1];
-        this.createNode_(extension, nextExt ? $(nextExt.id) : null);
+        this.createWrapper_(extension, nextExt ? $(nextExt.id) : null);
       }
     }
   };

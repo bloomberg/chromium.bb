@@ -9,6 +9,7 @@
 <include src="extension_commands_overlay.js">
 <include src="extension_error_overlay.js">
 <include src="extension_focus_manager.js">
+<include src="focus_row.js">
 <include src="extension_list.js">
 <include src="pack_extension_overlay.js">
 <include src="extension_loader.js">
@@ -152,7 +153,6 @@ cr.define('extensions', function() {
 
       $('toggle-dev-on').addEventListener('change', function(e) {
         this.updateDevControlsVisibility_(true);
-        extensionList.updateFocusableElements();
         chrome.developerPrivate.updateProfileConfiguration(
             {inDeveloperMode: e.target.checked});
         var suffix = $('toggle-dev-on').checked ? 'Enabled' : 'Disabled';

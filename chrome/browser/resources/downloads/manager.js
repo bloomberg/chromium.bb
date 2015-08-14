@@ -130,10 +130,10 @@ cr.define('downloads', function() {
 
       var item = this.idMap_[data.id];
       item.update(data);
-      var focusRow = this.decorateItem_(item);
 
-      if (focusRow.contains(activeElement) &&
+      if (item.node.contains(activeElement) &&
           !cr.ui.FocusRow.isFocusable(activeElement)) {
+        var focusRow = this.focusGrid_.getRowForRoot(item.node);
         focusRow.getEquivalentElement(activeElement).focus();
       }
     },
@@ -150,25 +150,17 @@ cr.define('downloads', function() {
       this.focusGrid_.destroy();
 
       this.items_.forEach(function(item) {
-        var focusRow = this.decorateItem_(item);
+        var focusRow = new downloads.FocusRow(item.node, this.node_);
+
         this.focusGrid_.addRow(focusRow);
 
-        if (focusRow.contains(activeElement) &&
+        if (item.node.contains(activeElement) &&
             !cr.ui.FocusRow.isFocusable(activeElement)) {
           focusRow.getEquivalentElement(activeElement).focus();
         }
       }, this);
-      this.focusGrid_.ensureRowActive();
-    },
 
-    /**
-     * @param {!downloads.ItemView} item An item to decorate as a FocusRow.
-     * @return {!downloads.FocusRow} |item| decorated as a FocusRow.
-     * @private
-     */
-    decorateItem_: function(item) {
-      downloads.FocusRow.decorate(item.node, item, this.node_);
-      return assertInstanceof(item.node, downloads.FocusRow);
+      this.focusGrid_.ensureRowActive();
     },
 
     /**

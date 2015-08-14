@@ -64,7 +64,7 @@ cr.define('cr.ui', function() {
       // Only the clicked row should be active.
       var target = assertInstanceof(e.target, Node);
       this.focusGrid_.rows.forEach(function(row) {
-        row.makeActive(row.contains(target));
+        row.makeActive(row.root.contains(target));
       });
 
       return true;
@@ -86,10 +86,22 @@ cr.define('cr.ui', function() {
      */
     getRowIndexForTarget: function(target) {
       for (var i = 0; i < this.rows.length; ++i) {
-        if (this.rows[i].focusableElements.indexOf(target) >= 0)
+        if (this.rows[i].getElements().indexOf(target) >= 0)
           return i;
       }
       return -1;
+    },
+
+    /**
+     * @param {Element} root An element to search for.
+     * @return {?cr.ui.FocusRow} The row with root of |root| or null.
+     */
+    getRowForRoot: function(root) {
+      for (var i = 0; i < this.rows.length; ++i) {
+        if (this.rows[i].root == root)
+          return this.rows[i];
+      }
+      return null;
     },
 
     /**
