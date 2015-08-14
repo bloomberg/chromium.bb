@@ -1278,14 +1278,14 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
         || (direction == ForRows && styleRef().alignContentDistribution() != ContentDistributionStretch))
         return;
 
-    // We consider auto-sized tracks as content-sized (min-content, max-content, auto).
+    // Spec defines auto-sized tracks as the ones with an 'auto' max-sizing function.
     Vector<GridTrack>& tracks = (direction == ForColumns) ? sizingData.columnTracks : sizingData.rowTracks;
     Vector<unsigned> autoSizedTracksIndex;
     for (unsigned i = 0; i < tracks.size(); ++i) {
         const GridTrackSize& trackSize = gridTrackSize(direction, i);
         // If there is some flexible-sized track, they should have exhausted available space during sizing algorithm.
         ASSERT(!trackSize.maxTrackBreadth().isFlex());
-        if (trackSize.isContentSized())
+        if (trackSize.hasAutoMaxTrackBreadth())
             autoSizedTracksIndex.append(i);
     }
 
@@ -1296,7 +1296,6 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
     LayoutUnit sizeToIncrease = availableSpace / numberOfAutoSizedTracks;
     for (const auto& trackIndex : autoSizedTracksIndex) {
         GridTrack* track = tracks.data() + trackIndex;
-        // FIXME: Respecting the constraints imposed by max-height/max-width.
         LayoutUnit baseSize = track->baseSize() + sizeToIncrease;
         track->setBaseSize(baseSize);
     }
