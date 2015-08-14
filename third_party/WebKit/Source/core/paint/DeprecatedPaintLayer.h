@@ -164,7 +164,6 @@ public:
 
     const LayoutSize& offsetForInFlowPosition() const { return m_offsetForInFlowPosition; }
 
-    void blockSelectionGapsBoundsChanged();
     void addBlockSelectionGapsBounds(const LayoutRect&);
     void clearBlockSelectionGapsBounds();
     void invalidatePaintForBlockSelectionGaps();
@@ -607,6 +606,8 @@ private:
 
     void updatePaginationRecursive(bool needsPaginationUpdate = false);
     void clearPaginationRecursive();
+
+    void blockSelectionGapsBoundsChanged();
 
     DeprecatedPaintLayerType m_layerType;
 

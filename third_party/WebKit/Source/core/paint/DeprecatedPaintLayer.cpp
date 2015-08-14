@@ -1937,12 +1937,16 @@ void DeprecatedPaintLayer::blockSelectionGapsBoundsChanged()
 
 void DeprecatedPaintLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
 {
+    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
+        return;
     m_blockSelectionGapsBounds.unite(enclosingIntRect(bounds));
     blockSelectionGapsBoundsChanged();
 }
 
 void DeprecatedPaintLayer::clearBlockSelectionGapsBounds()
 {
+    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
+        return;
     m_blockSelectionGapsBounds = IntRect();
     for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling())
         child->clearBlockSelectionGapsBounds();
@@ -1951,6 +1955,9 @@ void DeprecatedPaintLayer::clearBlockSelectionGapsBounds()
 
 void DeprecatedPaintLayer::invalidatePaintForBlockSelectionGaps()
 {
+    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
+        return;
+
     for (DeprecatedPaintLayer* child = firstChild(); child; child = child->nextSibling()) {
         // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
         DisablePaintInvalidationStateAsserts disabler;
@@ -1978,6 +1985,9 @@ void DeprecatedPaintLayer::invalidatePaintForBlockSelectionGaps()
 
 IntRect DeprecatedPaintLayer::blockSelectionGapsBounds() const
 {
+    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
+        return IntRect();
+
     if (!layoutObject()->isLayoutBlockFlow())
         return IntRect();
 
@@ -1989,6 +1999,9 @@ IntRect DeprecatedPaintLayer::blockSelectionGapsBounds() const
 
 bool DeprecatedPaintLayer::hasBlockSelectionGapBounds() const
 {
+    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
+        return false;
+
     // FIXME: it would be more accurate to return !blockSelectionGapsBounds().isEmpty(), but this is impossible
     // at the moment because it causes invalid queries to layout-dependent code (crbug.com/372802).
     // ASSERT(layoutObject()->document().lifecycle().state() >= DocumentLifecycle::LayoutClean);

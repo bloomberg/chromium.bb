@@ -1093,7 +1093,8 @@ void CompositedDeprecatedPaintLayerMapping::updatePaintingPhases()
         if (!m_foregroundLayer)
             paintPhase |= GraphicsLayerPaintForeground;
         m_scrollingContentsLayer->setPaintingPhase(paintPhase);
-        m_scrollingBlockSelectionLayer->setPaintingPhase(paintPhase);
+        if (m_scrollingBlockSelectionLayer)
+            m_scrollingBlockSelectionLayer->setPaintingPhase(paintPhase);
     }
 }
 
@@ -1142,6 +1143,9 @@ void CompositedDeprecatedPaintLayerMapping::updateContentsOffsetInCompositingLay
 
 void CompositedDeprecatedPaintLayerMapping::updateScrollingBlockSelection()
 {
+    if (RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled())
+        return;
+
     if (!m_scrollingBlockSelectionLayer)
         return;
 
@@ -1554,9 +1558,11 @@ bool CompositedDeprecatedPaintLayerMapping::updateScrollingLayers(bool needsScro
             m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContents);
             m_scrollingLayer->addChild(m_scrollingContentsLayer.get());
 
-            m_scrollingBlockSelectionLayer = createGraphicsLayer(CompositingReasonLayerForScrollingBlockSelection);
-            m_scrollingBlockSelectionLayer->setDrawsContent(true);
-            m_scrollingContentsLayer->addChild(m_scrollingBlockSelectionLayer.get());
+            if (!RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled()) {
+                m_scrollingBlockSelectionLayer = createGraphicsLayer(CompositingReasonLayerForScrollingBlockSelection);
+                m_scrollingBlockSelectionLayer->setDrawsContent(true);
+                m_scrollingContentsLayer->addChild(m_scrollingBlockSelectionLayer.get());
+            }
 
             layerChanged = true;
             if (scrollingCoordinator)
