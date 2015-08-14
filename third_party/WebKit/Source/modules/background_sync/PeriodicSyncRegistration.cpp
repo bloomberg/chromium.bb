@@ -66,6 +66,9 @@ PeriodicSyncRegistration::PeriodicSyncRegistration(int64_t id, const PeriodicSyn
 
 PeriodicSyncRegistration::~PeriodicSyncRegistration()
 {
+    WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();
+    ASSERT(webSyncProvider);
+    webSyncProvider->releaseRegistration(m_id);
 }
 
 ScriptPromise PeriodicSyncRegistration::unregister(ScriptState* scriptState)
