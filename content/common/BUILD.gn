@@ -186,6 +186,7 @@ source_set("common") {
       "//media/midi",
       "//media:shared_memory_support",
       "//mojo/application/public/interfaces",
+      "//mojo/common:common_base",
       "//mojo/environment:chromium",
       "//sandbox",
       "//storage/common",
