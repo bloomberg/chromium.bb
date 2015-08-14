@@ -88,6 +88,8 @@ class ThemeProperties {
     COLOR_NTP_SECTION_HEADER_RULE,
     COLOR_NTP_SECTION_HEADER_RULE_LIGHT,
     COLOR_NTP_TEXT_LIGHT,
+    // Color for any icon on the tabstrip (e.g. media indicator).
+    COLOR_TAB_ICON,
     COLOR_THROBBER_SPINNING,
     COLOR_THROBBER_WAITING,
 #if defined(ENABLE_SUPERVISED_USERS)

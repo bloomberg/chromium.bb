@@ -23,6 +23,10 @@ class Animation;
 class Image;
 }  // namespace gfx
 
+namespace ui {
+class ThemeProvider;
+}
+
 // Media state for a tab.  In reality, more than one of these may apply.  See
 // comments for GetTabMediaStateForContents() below.
 enum TabMediaState {
@@ -82,12 +86,14 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents);
 
 // Returns a cached image, to be shown by the media indicator for the given
 // |media_state|.  Uses the global ui::ResourceBundle shared instance.
-gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state);
+gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
+                                     const ui::ThemeProvider* tp);
 
 // Returns the cached image, to be shown by the media indicator button for mouse
 // hover/pressed, when the indicator is in the given |media_state|.  Uses the
 // global ui::ResourceBundle shared instance.
-gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state);
+gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state,
+                                               const ui::ThemeProvider* tp);
 
 // Returns a non-continuous Animation that performs a fade-in or fade-out
 // appropriate for the given |next_media_state|.  This is used by the tab media

@@ -81,7 +81,8 @@ class Tab : public gfx::AnimationDelegate,
   // Returns true if the tab is selected.
   bool IsSelected() const;
 
-  // Sets the data this tabs displays. Invokes DataChanged.
+  // Sets the data this tabs displays. Invokes DataChanged. Should only be
+  // called after Tab is added to widget hierarchy.
   void SetData(const TabRendererData& data);
   const TabRendererData& data() const { return data_; }
 

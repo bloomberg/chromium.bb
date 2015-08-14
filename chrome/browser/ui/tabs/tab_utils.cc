@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -15,12 +16,13 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/vector_icons_public2.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
 
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
@@ -160,15 +162,14 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
   return TAB_MEDIA_STATE_NONE;
 }
 
-gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state) {
+gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
+                                     const ui::ThemeProvider* tp) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   switch (media_state) {
-#if defined(TOOLKIT_VIEWS)
+#if !defined(OS_MACOSX)
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
     case TAB_MEDIA_STATE_AUDIO_MUTING: {
-      SkColor icon_color;
-      ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                    &icon_color);
+      SkColor icon_color = tp->GetColor(ThemeProperties::COLOR_TAB_ICON);
       return gfx::Image(
           gfx::CreateVectorIcon(media_state == TAB_MEDIA_STATE_AUDIO_PLAYING
                                     ? gfx::VectorIconId::TAB_AUDIO
@@ -192,18 +193,19 @@ gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state) {
   return rb.GetNativeImageNamed(IDR_SAD_FAVICON);
 }
 
-gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state) {
+gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state,
+                                               const ui::ThemeProvider* tp) {
   switch (media_state) {
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
-      return GetTabMediaIndicatorImage(TAB_MEDIA_STATE_AUDIO_MUTING);
+      return GetTabMediaIndicatorImage(TAB_MEDIA_STATE_AUDIO_MUTING, tp);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
     case TAB_MEDIA_STATE_NONE:
     case TAB_MEDIA_STATE_RECORDING:
     case TAB_MEDIA_STATE_CAPTURING:
-      return GetTabMediaIndicatorImage(media_state);
+      return GetTabMediaIndicatorImage(media_state, tp);
   }
   NOTREACHED();
-  return GetTabMediaIndicatorImage(media_state);
+  return GetTabMediaIndicatorImage(media_state, tp);
 }
 
 scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(

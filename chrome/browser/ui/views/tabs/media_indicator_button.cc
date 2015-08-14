@@ -72,12 +72,14 @@ void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
     return;
 
   if (next_state != TAB_MEDIA_STATE_NONE) {
+    ui::ThemeProvider* tp = GetThemeProvider();
     gfx::ImageSkia indicator_image =
-        chrome::GetTabMediaIndicatorImage(next_state).AsImageSkia();
+        chrome::GetTabMediaIndicatorImage(next_state, tp).AsImageSkia();
     SetImage(views::CustomButton::STATE_NORMAL, &indicator_image);
     SetImage(views::CustomButton::STATE_DISABLED, &indicator_image);
     gfx::ImageSkia affordance_image =
-        chrome::GetTabMediaIndicatorAffordanceImage(next_state).AsImageSkia();
+        chrome::GetTabMediaIndicatorAffordanceImage(next_state, tp)
+            .AsImageSkia();
     SetImage(views::CustomButton::STATE_HOVERED, &affordance_image);
     SetImage(views::CustomButton::STATE_PRESSED, &affordance_image);
   }

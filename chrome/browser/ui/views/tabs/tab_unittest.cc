@@ -203,6 +203,14 @@ class TabTest : public views::ViewsTestBase,
     }
   }
 
+ protected:
+  void InitWidget(Widget* widget) {
+    Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
+    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds.SetRect(10, 20, 300, 400);
+    widget->Init(params);
+  }
+
  private:
   static gfx::Rect GetMediaIndicatorBounds(const Tab& tab) {
     if (!tab.media_indicator_button_) {
@@ -222,10 +230,7 @@ TEST_P(TabTest, HitTestTopPixel) {
   }
 
   Widget widget;
-  Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
-  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds.SetRect(10, 20, 300, 400);
-  widget.Init(params);
+  InitWidget(&widget);
 
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
@@ -261,8 +266,12 @@ TEST_P(TabTest, LayoutAndVisibilityOfElements) {
     TAB_MEDIA_STATE_AUDIO_PLAYING, TAB_MEDIA_STATE_AUDIO_MUTING
   };
 
+  Widget widget;
+  InitWidget(&widget);
+
   FakeTabController controller;
   Tab tab(&controller);
+  widget.GetContentsView()->AddChildView(&tab);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(16, 16);
@@ -317,8 +326,12 @@ TEST_P(TabTest, TooltipProvidedByTab) {
     return;
   }
 
+  Widget widget;
+  InitWidget(&widget);
+
   FakeTabController controller;
   Tab tab(&controller);
+  widget.GetContentsView()->AddChildView(&tab);
   tab.SetBoundsRect(gfx::Rect(Tab::GetStandardSize()));
 
   SkBitmap bitmap;

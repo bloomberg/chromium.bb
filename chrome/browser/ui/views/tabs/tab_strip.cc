@@ -631,10 +631,10 @@ void TabStrip::AddTabAt(int model_index,
                         const TabRendererData& data,
                         bool is_active) {
   Tab* tab = CreateTab();
+  AddChildView(tab);
   tab->SetData(data);
   UpdateTabsClosingMap(model_index, 1);
   tabs_.Add(tab, model_index);
-  AddChildView(tab);
 
   if (touch_layout_) {
     GenerateIdealBoundsForPinnedTabs(NULL);

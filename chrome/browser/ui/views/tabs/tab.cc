@@ -486,6 +486,8 @@ bool Tab::IsSelected() const {
 }
 
 void Tab::SetData(const TabRendererData& data) {
+  DCHECK(GetWidget());
+
   if (data_.Equals(data))
     return;
 
