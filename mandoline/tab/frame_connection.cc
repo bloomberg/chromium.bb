@@ -13,8 +13,9 @@
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/interfaces/font_service.mojom.h"
@@ -41,8 +42,9 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
                         resource_provider_interfaces.Pass());
 
   mojo::Array<mojo::String> network_service_interfaces;
-  network_service_interfaces.push_back(mojo::NetworkService::Name_);
+  network_service_interfaces.push_back(mojo::CookieStore::Name_);
   network_service_interfaces.push_back(mojo::URLLoaderFactory::Name_);
+  network_service_interfaces.push_back(mojo::WebSocketFactory::Name_);
   filter->filter.insert("mojo:network_service",
                         network_service_interfaces.Pass());
 

@@ -14,8 +14,8 @@
 #include "components/html_viewer/web_notification_manager_impl.h"
 #include "components/html_viewer/web_theme_engine_impl.h"
 #include "components/webcrypto/webcrypto_impl.h"
-#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
@@ -97,7 +97,7 @@ class BlinkPlatformImpl : public blink::Platform {
   webcrypto::WebCryptoImpl web_crypto_;
   WebNotificationManagerImpl web_notification_manager_;
   blink::WebScrollbarBehavior scrollbar_behavior_;
-  mojo::NetworkServicePtr network_service_;
+  mojo::WebSocketFactoryPtr web_socket_factory_;
   mojo::URLLoaderFactoryPtr url_loader_factory_;
   MockWebBlobRegistryImpl blob_registry_;
   scoped_ptr<WebCookieJarImpl> cookie_jar_;

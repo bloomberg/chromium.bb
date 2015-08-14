@@ -83,6 +83,8 @@ source_set("lib") {
     "url_loader_factory_impl.h",
     "url_loader_impl.cc",
     "url_loader_impl.h",
+    "web_socket_factory_impl.cc",
+    "web_socket_factory_impl.h",
     "web_socket_impl.cc",
     "web_socket_impl.h",
   ]

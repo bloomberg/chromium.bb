@@ -12,9 +12,10 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/network/network_context.h"
+#include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 
 namespace sql {
 class ScopedMojoFilesystemVFS;
@@ -23,11 +24,12 @@ class ScopedMojoFilesystemVFS;
 namespace mojo {
 class NetworkServiceDelegateObserver;
 
-class NetworkServiceDelegate
-    : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<mojo::NetworkService>,
-      public mojo::InterfaceFactory<mojo::URLLoaderFactory>,
-      public filesystem::FileSystemClient {
+class NetworkServiceDelegate : public ApplicationDelegate,
+                               public InterfaceFactory<NetworkService>,
+                               public InterfaceFactory<CookieStore>,
+                               public InterfaceFactory<WebSocketFactory>,
+                               public InterfaceFactory<URLLoaderFactory>,
+                               public filesystem::FileSystemClient {
  public:
   NetworkServiceDelegate();
   ~NetworkServiceDelegate() override;
@@ -40,31 +42,38 @@ class NetworkServiceDelegate
   // multiple times.
   void EnsureIOThreadShutdown();
 
-  // mojo::ApplicationDelegate implementation.
-  void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) override;
+  // ApplicationDelegate implementation.
+  void Initialize(ApplicationImpl* app) override;
+  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
   bool OnShellConnectionError() override;
   void Quit() override;
 
-  // mojo::InterfaceFactory<mojo::NetworkService> implementation.
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::NetworkService> request) override;
+  // InterfaceFactory<NetworkService> implementation.
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<NetworkService> request) override;
 
-  // mojo::InterfaceFactory<mojo::URLLoaderFactory> implementation.
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::URLLoaderFactory> request) override;
+  // InterfaceFactory<CookieStore> implementation.
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<CookieStore> request) override;
+
+  // InterfaceFactory<WebSocketFactory> implementation.
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<WebSocketFactory> request) override;
+
+  // InterfaceFactory<URLLoaderFactory> implementation.
+  void Create(ApplicationConnection* connection,
+              InterfaceRequest<URLLoaderFactory> request) override;
 
   // Overridden from FileSystemClient:
   void OnFileSystemShutdown() override;
 
  private:
-  mojo::ApplicationImpl* app_;
+  ApplicationImpl* app_;
 
   // Observers that want notifications that our worker thread is going away.
   base::ObserverList<NetworkServiceDelegateObserver> observers_;
 
-  mojo::Binding<filesystem::FileSystemClient> binding_;
+  Binding<filesystem::FileSystemClient> binding_;
 
   // A worker thread that blocks for file IO.
   scoped_ptr<base::Thread> io_worker_thread_;
@@ -73,7 +82,7 @@ class NetworkServiceDelegate
   // other data.
   filesystem::FileSystemPtr files_;
 
-  scoped_ptr<mojo::NetworkContext> context_;
+  scoped_ptr<NetworkContext> context_;
 };
 
 }  // namespace mojo

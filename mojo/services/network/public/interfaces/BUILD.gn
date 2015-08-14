@@ -20,6 +20,7 @@ mojom("interfaces") {
     "url_loader.mojom",
     "url_loader_factory.mojom",
     "web_socket.mojom",
+    "web_socket_factory.mojom",
   ]
 
   import_dirs = [ get_path_info("../../../", "abspath") ]

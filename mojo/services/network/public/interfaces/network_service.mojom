@@ -13,14 +13,9 @@ import "network/public/interfaces/tcp_connected_socket.mojom";
 import "network/public/interfaces/udp_socket.mojom";
 import "network/public/interfaces/web_socket.mojom";
 
-// TODO Darin suggests that this should probably be two classes. One for
-// high-level origin-build requests like WebSockets and HTTP, and the other for
-// non-origin-bound low-level stuff like DNS, UDP, and TCP.
+// TODO(beng): consider if this should be further reduced to functionality-
+//             specific interfaces.
 interface NetworkService {
-  GetCookieStore(CookieStore& cookie_store);
-
-  CreateWebSocket(WebSocket& socket);
-
   // Creates a TCP socket bound to a given local address. This bound socket
   // can be used for creating a client or server socket on that local address.
   //

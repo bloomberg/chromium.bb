@@ -4,38 +4,23 @@
 
 #include "mojo/services/network/network_service_impl.h"
 
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/services/network/cookie_store_impl.h"
 #include "mojo/services/network/http_server_impl.h"
 #include "mojo/services/network/net_adapters.h"
 #include "mojo/services/network/tcp_bound_socket_impl.h"
 #include "mojo/services/network/udp_socket_impl.h"
 #include "mojo/services/network/url_loader_impl.h"
-#include "mojo/services/network/web_socket_impl.h"
 #include "net/base/mime_util.h"
 
 namespace mojo {
 
 NetworkServiceImpl::NetworkServiceImpl(
-    ApplicationConnection* connection,
-    NetworkContext* context,
     scoped_ptr<mojo::AppRefCount> app_refcount,
     InterfaceRequest<NetworkService> request)
-    : context_(context),
-      app_refcount_(app_refcount.Pass()),
-      origin_(GURL(connection->GetRemoteApplicationURL()).GetOrigin()),
+    : app_refcount_(app_refcount.Pass()),
       binding_(this, request.Pass()) {
 }
 
 NetworkServiceImpl::~NetworkServiceImpl() {
-}
-
-void NetworkServiceImpl::GetCookieStore(InterfaceRequest<CookieStore> store) {
-  new CookieStoreImpl(context_, origin_, app_refcount_->Clone(), store.Pass());
-}
-
-void NetworkServiceImpl::CreateWebSocket(InterfaceRequest<WebSocket> socket) {
-  new WebSocketImpl(context_, app_refcount_->Clone(), socket.Pass());
 }
 
 void NetworkServiceImpl::CreateTCPBoundSocket(

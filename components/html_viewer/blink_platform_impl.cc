@@ -76,11 +76,11 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     request->url = mojo::String::From("mojo:network_service");
     scoped_ptr<mojo::ApplicationConnection> connection =
         app->ConnectToApplication(request.Pass());
-    connection->ConnectToService(&network_service_);
+    connection->ConnectToService(&web_socket_factory_);
     connection->ConnectToService(&url_loader_factory_);
 
     mojo::CookieStorePtr cookie_store;
-    network_service_->GetCookieStore(GetProxy(&cookie_store));
+    connection->ConnectToService(&cookie_store);
     cookie_jar_.reset(new WebCookieJarImpl(cookie_store.Pass()));
 
     mojo::ClipboardPtr clipboard;
@@ -180,7 +180,7 @@ blink::WebURLLoader* BlinkPlatformImpl::createURLLoader() {
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
-  return new WebSocketHandleImpl(network_service_.get());
+  return new WebSocketHandleImpl(web_socket_factory_.get());
 }
 
 blink::WebString BlinkPlatformImpl::userAgent() {

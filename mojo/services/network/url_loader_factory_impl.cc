@@ -9,7 +9,6 @@
 namespace mojo {
 
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
-    ApplicationConnection* connection,
     NetworkContext* context,
     scoped_ptr<mojo::AppRefCount> app_refcount,
     InterfaceRequest<URLLoaderFactory> request)

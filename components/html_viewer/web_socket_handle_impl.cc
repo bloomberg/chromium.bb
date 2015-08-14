@@ -12,7 +12,7 @@
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "mojo/services/network/public/cpp/web_socket_read_queue.h"
 #include "mojo/services/network/public/cpp/web_socket_write_queue.h"
-#include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebSocketHandleClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -147,9 +147,9 @@ class WebSocketClientImpl : public mojo::WebSocketClient {
   DISALLOW_COPY_AND_ASSIGN(WebSocketClientImpl);
 };
 
-WebSocketHandleImpl::WebSocketHandleImpl(mojo::NetworkService* network_service)
+WebSocketHandleImpl::WebSocketHandleImpl(mojo::WebSocketFactory* factory)
     : did_close_(false) {
-  network_service->CreateWebSocket(GetProxy(&web_socket_));
+  factory->CreateWebSocket(GetProxy(&web_socket_));
 }
 
 WebSocketHandleImpl::~WebSocketHandleImpl() {

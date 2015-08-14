@@ -14,7 +14,6 @@
 #include "components/html_viewer/html_document.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
@@ -65,7 +64,6 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate {
   // AppRefCount of the parent (HTMLViewer).
   scoped_ptr<mojo::AppRefCount> parent_app_refcount_;
   const mojo::String url_;
-  mojo::NetworkServicePtr network_service_;
   mojo::URLLoaderFactoryPtr url_loader_factory_;
   mojo::URLResponsePtr initial_response_;
   GlobalState* global_state_;

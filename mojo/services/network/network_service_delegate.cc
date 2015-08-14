@@ -13,9 +13,11 @@
 #include "base/path_service.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/services/network/cookie_store_impl.h"
 #include "mojo/services/network/network_service_delegate_observer.h"
 #include "mojo/services/network/network_service_impl.h"
 #include "mojo/services/network/url_loader_factory_impl.h"
+#include "mojo/services/network/web_socket_factory_impl.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"
 
@@ -81,7 +83,7 @@ void NetworkServiceDelegate::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void NetworkServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
+void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   app_ = app;
 
 #if !defined(OS_ANDROID)
@@ -91,8 +93,8 @@ void NetworkServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
   // to OpenFileSystem, the entire mojo system hangs to the point where writes
   // to stderr that previously would have printed to our console aren't. The
   // apptests are also fairly resistant to being run under gdb on android.
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:filesystem");
+  URLRequestPtr request(URLRequest::New());
+  request->url = String::From("mojo:filesystem");
   app_->ConnectToService(request.Pass(), &files_);
 
   filesystem::FileSystemClientPtr client;
@@ -101,7 +103,7 @@ void NetworkServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
   filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
   filesystem::DirectoryPtr directory;
   files_->OpenFileSystem("origin", GetProxy(&directory), client.Pass(),
-                         mojo::Capture(&error));
+                         Capture(&error));
   files_.WaitForIncomingResponse();
 
   io_worker_thread_.reset(new SQLThread(directory.Pass()));
@@ -126,14 +128,16 @@ void NetworkServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
 #if !defined(OS_ANDROID)
   worker_thread = io_worker_thread_->task_runner();
 #endif
-  context_.reset(new mojo::NetworkContext(base_path, worker_thread, this));
+  context_.reset(new NetworkContext(base_path, worker_thread, this));
 }
 
 bool NetworkServiceDelegate::ConfigureIncomingConnection(
-    mojo::ApplicationConnection* connection) {
+    ApplicationConnection* connection) {
   DCHECK(context_);
-  connection->AddService<mojo::NetworkService>(this);
-  connection->AddService<mojo::URLLoaderFactory>(this);
+  connection->AddService<CookieStore>(this);
+  connection->AddService<NetworkService>(this);
+  connection->AddService<URLLoaderFactory>(this);
+  connection->AddService<WebSocketFactory>(this);
   return true;
 }
 
@@ -151,24 +155,34 @@ void NetworkServiceDelegate::Quit() {
   context_.reset();
 }
 
-void NetworkServiceDelegate::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::NetworkService> request) {
-  new mojo::NetworkServiceImpl(
-      connection,
-      context_.get(),
-      app_->app_lifetime_helper()->CreateAppRefCount(),
-      request.Pass());
+void NetworkServiceDelegate::Create(ApplicationConnection* connection,
+                                    InterfaceRequest<NetworkService> request) {
+  new NetworkServiceImpl(app_->app_lifetime_helper()->CreateAppRefCount(),
+                         request.Pass());
+}
+
+void NetworkServiceDelegate::Create(ApplicationConnection* connection,
+                                    InterfaceRequest<CookieStore> request) {
+  new CookieStoreImpl(context_.get(),
+                      GURL(connection->GetRemoteApplicationURL()).GetOrigin(),
+                      app_->app_lifetime_helper()->CreateAppRefCount(),
+                      request.Pass());
 }
 
 void NetworkServiceDelegate::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::URLLoaderFactory> request) {
-  new mojo::URLLoaderFactoryImpl(
-      connection,
-      context_.get(),
-      app_->app_lifetime_helper()->CreateAppRefCount(),
-      request.Pass());
+    ApplicationConnection* connection,
+    InterfaceRequest<WebSocketFactory> request) {
+  new WebSocketFactoryImpl(context_.get(),
+                           app_->app_lifetime_helper()->CreateAppRefCount(),
+                           request.Pass());
+}
+
+void NetworkServiceDelegate::Create(
+    ApplicationConnection* connection,
+    InterfaceRequest<URLLoaderFactory> request) {
+  new URLLoaderFactoryImpl(context_.get(),
+                           app_->app_lifetime_helper()->CreateAppRefCount(),
+                           request.Pass());
 }
 
 void NetworkServiceDelegate::OnFileSystemShutdown() {

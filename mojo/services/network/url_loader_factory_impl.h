@@ -11,13 +11,11 @@
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
-class ApplicationConnection;
 class NetworkContext;
 
 class URLLoaderFactoryImpl : public URLLoaderFactory {
  public:
-  URLLoaderFactoryImpl(ApplicationConnection* connection,
-                       NetworkContext* context,
+  URLLoaderFactoryImpl(NetworkContext* context,
                        scoped_ptr<mojo::AppRefCount> app_refcount,
                        InterfaceRequest<URLLoaderFactory> request);
   ~URLLoaderFactoryImpl() override;

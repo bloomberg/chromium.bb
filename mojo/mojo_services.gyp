@@ -23,6 +23,7 @@
           'services/network/public/interfaces/url_loader.mojom',
           'services/network/public/interfaces/url_loader_factory.mojom',
           'services/network/public/interfaces/web_socket.mojom',
+          'services/network/public/interfaces/web_socket_factory.mojom',
         ],
         'mojom_include_path': '<(DEPTH)/mojo/services',
       },

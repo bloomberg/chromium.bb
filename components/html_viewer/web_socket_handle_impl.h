@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/platform/WebSocketHandle.h"
 
 namespace mojo {
-class NetworkService;
+class WebSocketFactory;
 class WebSocketWriteQueue;
 }
 
@@ -23,7 +23,7 @@ class WebSocketClientImpl;
 // Implements WebSocketHandle by talking to the mojo WebSocket interface.
 class WebSocketHandleImpl : public blink::WebSocketHandle {
  public:
-  explicit WebSocketHandleImpl(mojo::NetworkService* network_service);
+  explicit WebSocketHandleImpl(mojo::WebSocketFactory* factory);
 
  private:
   friend class WebSocketClientImpl;

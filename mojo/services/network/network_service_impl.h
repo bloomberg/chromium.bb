@@ -12,20 +12,14 @@
 #include "url/gurl.h"
 
 namespace mojo {
-class ApplicationConnection;
-class NetworkContext;
 
 class NetworkServiceImpl : public NetworkService {
  public:
-  NetworkServiceImpl(ApplicationConnection* connection,
-                     NetworkContext* context,
-                     scoped_ptr<mojo::AppRefCount> app_refcount,
+  NetworkServiceImpl(scoped_ptr<mojo::AppRefCount> app_refcount,
                      InterfaceRequest<NetworkService> request);
   ~NetworkServiceImpl() override;
 
   // NetworkService methods:
-  void GetCookieStore(InterfaceRequest<CookieStore> store) override;
-  void CreateWebSocket(InterfaceRequest<WebSocket> socket) override;
   void CreateTCPBoundSocket(
       NetAddressPtr local_address,
       InterfaceRequest<TCPBoundSocket> bound_socket,
@@ -45,9 +39,7 @@ class NetworkServiceImpl : public NetworkService {
       const GetMimeTypeFromFileCallback& callback) override;
 
  private:
-  NetworkContext* context_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
-  GURL origin_;
   StrongBinding<NetworkService> binding_;
 };
 
