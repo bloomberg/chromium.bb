@@ -31,7 +31,9 @@ static const wchar_t* utf8towcs(const char* str) {
   if (size == 0)
     return NULL;
 
-  wchar_t* const val = new wchar_t[size + 1];
+  wchar_t* const val = new (std::nothrow) wchar_t[size + 1];
+  if (val == NULL)
+    return NULL;
 
   mbstowcs(val, str, size);
   val[size] = L'\0';
