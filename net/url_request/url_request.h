@@ -601,9 +601,9 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     received_response_content_length_ = received_content_length;
   }
 
-  // Available only for http/https/ws/wss URLs (those handled by
-  // URLRequestHttpJob), and only after the response has finished. Pertains to
-  // the last URLRequestHttpJob that this URLRequest issued.
+  // The number of bytes in the raw response body (before any decompression,
+  // etc.). This is only available after the final Read completes. Not available
+  // for FTP responses.
   int64 received_response_content_length() const {
     return received_response_content_length_;
   }
