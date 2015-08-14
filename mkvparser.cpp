@@ -7240,11 +7240,16 @@ long Block::Parse(const Cluster* pCluster) {
 
   ++pos;  // consume frame count
   assert(pos <= stop);
+  if (pos > stop)
+    return E_FILE_FORMAT_INVALID;
 
   m_frame_count = int(biased_count) + 1;
 
   m_frames = new Frame[m_frame_count];
   assert(m_frames);
+
+  if (!m_frames)
+    return E_FILE_FORMAT_INVALID;
 
   if (lacing == 1) {  // Xiph
     Frame* pf = m_frames;
@@ -7277,6 +7282,8 @@ long Block::Parse(const Cluster* pCluster) {
 
       Frame& f = *pf++;
       assert(pf < pf_end);
+      if (pf >= pf_end)
+        return E_FILE_FORMAT_INVALID;
 
       f.pos = 0;  // patch later
 
@@ -7291,6 +7298,8 @@ long Block::Parse(const Cluster* pCluster) {
 
     assert(pf < pf_end);
     assert(pos <= stop);
+    if (pf >= pf_end || pos > stop)
+      return E_FILE_FORMAT_INVALID;
 
     {
       Frame& f = *pf++;
@@ -7318,11 +7327,17 @@ long Block::Parse(const Cluster* pCluster) {
       Frame& f = *pf++;
       assert((pos + f.len) <= stop);
 
+      if ((pos + f.len) > stop)
+        return E_FILE_FORMAT_INVALID;
+
       f.pos = pos;
       pos += f.len;
     }
 
     assert(pos == stop);
+    if (pos != stop)
+      return E_FILE_FORMAT_INVALID;
+
   } else if (lacing == 2) {  // fixed-size lacing
     if (pos >= stop)
       return E_FILE_FORMAT_INVALID;
@@ -7342,6 +7357,8 @@ long Block::Parse(const Cluster* pCluster) {
 
     while (pf != pf_end) {
       assert((pos + frame_size) <= stop);
+      if ((pos + frame_size) > stop)
+        return E_FILE_FORMAT_INVALID;
 
       Frame& f = *pf++;
 
@@ -7352,6 +7369,9 @@ long Block::Parse(const Cluster* pCluster) {
     }
 
     assert(pos == stop);
+    if (pos != stop)
+      return E_FILE_FORMAT_INVALID;
+
   } else {
     assert(lacing == 3);  // EBML lacing
 
@@ -7396,6 +7416,9 @@ long Block::Parse(const Cluster* pCluster) {
         return E_FILE_FORMAT_INVALID;
 
       assert(pf < pf_end);
+      if (pf >= pf_end)
+        return E_FILE_FORMAT_INVALID;
+
 
       const Frame& prev = *pf++;
       assert(prev.len == frame_size);
@@ -7403,6 +7426,8 @@ long Block::Parse(const Cluster* pCluster) {
         return E_FILE_FORMAT_INVALID;
 
       assert(pf < pf_end);
+      if (pf >= pf_end)
+        return E_FILE_FORMAT_INVALID;
 
       Frame& curr = *pf;
 
@@ -7418,6 +7443,8 @@ long Block::Parse(const Cluster* pCluster) {
 
       pos += len;  // consume length of (delta) size
       assert(pos <= stop);
+      if (pos > stop)
+        return E_FILE_FORMAT_INVALID;
 
       const int exp = 7 * len - 1;
       const long long bias = (1LL << exp) - 1LL;
@@ -7448,9 +7475,13 @@ long Block::Parse(const Cluster* pCluster) {
         return E_FILE_FORMAT_INVALID;
 
       assert(pf < pf_end);
+      if (pf >= pf_end)
+        return E_FILE_FORMAT_INVALID;
 
       Frame& curr = *pf++;
       assert(pf == pf_end);
+      if (pf != pf_end)
+        return E_FILE_FORMAT_INVALID;
 
       curr.pos = 0;  // patch later
 
@@ -7471,6 +7502,8 @@ long Block::Parse(const Cluster* pCluster) {
     while (pf != pf_end) {
       Frame& f = *pf++;
       assert((pos + f.len) <= stop);
+      if ((pos + f.len) > stop)
+        return E_FILE_FORMAT_INVALID;
 
       f.pos = pos;
       pos += f.len;
