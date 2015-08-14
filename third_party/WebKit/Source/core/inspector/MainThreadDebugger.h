@@ -62,9 +62,8 @@ public:
 
     ~MainThreadDebugger() override;
 
-    static void initializeContext(v8::Local<v8::Context>, int worldId);
-    void addListener(V8DebuggerListener*, LocalFrame*);
-    void removeListener(V8DebuggerListener*, LocalFrame*);
+    static void initializeContext(v8::Local<v8::Context>, LocalFrame*, int worldId);
+    static int contextGroupId(LocalFrame*);
 
     static MainThreadDebugger* instance();
     static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
@@ -73,7 +72,6 @@ public:
 private:
     MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
 
-    V8DebuggerListener* getDebugListenerForContext(v8::Local<v8::Context>) override;
     void runMessageLoopOnPause(v8::Local<v8::Context>) override;
     void quitMessageLoopOnPause() override;
 
@@ -83,7 +81,6 @@ private:
     ListenersMap m_listenersMap;
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     OwnPtr<InspectorTaskRunner> m_taskRunner;
-    int m_pausedFrameId;
 
     static MainThreadDebugger* s_instance;
 };

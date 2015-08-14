@@ -51,13 +51,10 @@ private:
     WorkerDebuggerAgent(WorkerThreadDebugger*, WorkerGlobalScope*, InjectedScriptManager*);
 
     // V8DebuggerAgent::Client implemntation.
-    void startListeningV8Debugger() override;
-    void stopListeningV8Debugger() override;
     InjectedScript defaultInjectedScript() override;
     void muteConsole() override;
     void unmuteConsole() override;
 
-    WorkerThreadDebugger* m_workerThreadDebugger;
     RawPtrWillBeMember<WorkerGlobalScope> m_inspectedWorkerGlobalScope;
 };
 

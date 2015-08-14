@@ -44,8 +44,7 @@ PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerTh
 }
 
 WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerThreadDebugger* workerThreadDebugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, workerThreadDebugger->debugger())
-    , m_workerThreadDebugger(workerThreadDebugger)
+    : InspectorDebuggerAgent(injectedScriptManager, workerThreadDebugger->debugger(), WorkerThreadDebugger::contextGroupId())
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
 }
@@ -58,18 +57,6 @@ DEFINE_TRACE(WorkerDebuggerAgent)
 {
     visitor->trace(m_inspectedWorkerGlobalScope);
     InspectorDebuggerAgent::trace(visitor);
-}
-
-void WorkerDebuggerAgent::startListeningV8Debugger()
-{
-    m_workerThreadDebugger->addListener(this);
-    InspectorDebuggerAgent::startListeningV8Debugger();
-}
-
-void WorkerDebuggerAgent::stopListeningV8Debugger()
-{
-    m_workerThreadDebugger->removeListener(this);
-    InspectorDebuggerAgent::stopListeningV8Debugger();
 }
 
 InjectedScript WorkerDebuggerAgent::defaultInjectedScript()

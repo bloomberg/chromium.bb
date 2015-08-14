@@ -32,8 +32,8 @@
 
 namespace blink {
 
-InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
-    : V8DebuggerAgent(injectedScriptManager, debugger, this)
+InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
+    : V8DebuggerAgent(injectedScriptManager, debugger, this, contextGroupId)
 {
 }
 
@@ -49,12 +49,12 @@ void InspectorDebuggerAgent::enable(ErrorString* errorString)
     V8DebuggerAgent::enable(errorString);
 }
 
-void InspectorDebuggerAgent::startListeningV8Debugger()
+void InspectorDebuggerAgent::debuggerAgentEnabled()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(this);
 }
 
-void InspectorDebuggerAgent::stopListeningV8Debugger()
+void InspectorDebuggerAgent::debuggerAgentDisabled()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
 }

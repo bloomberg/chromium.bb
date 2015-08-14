@@ -52,14 +52,10 @@ public:
     V8DebuggerImpl(v8::Isolate*, V8DebuggerClient*);
     ~V8DebuggerImpl() override;
 
-    void enable() override;
-    void disable() override;
     bool enabled() const override;
 
-    // Each script inherits debug data from v8::Context where it has been compiled.
-    // Only scripts whose debug data contains |contextDebugDataSubstring| substring will be reported.
-    // Passing empty string will result in reporting all scripts.
-    void getCompiledScripts(const String& contextDebugDataSubstring, Vector<V8DebuggerListener::ParsedScript>&) override;
+    void addListener(int contextGroupId, V8DebuggerListener*) override;
+    void removeListener(int contextGroupId) override;
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation) override;
     void removeBreakpoint(const String& breakpointId) override;
@@ -94,6 +90,14 @@ public:
     v8::Isolate* isolate() const override { return m_isolate; }
 
 private:
+    void enable();
+    void disable();
+    // Each script inherits debug data from v8::Context where it has been compiled.
+    // Only scripts whose debug data matches |contextGroupId| will be reported.
+    // Passing 0 will result in reporting all scripts.
+    void getCompiledScripts(int contextGroupId, Vector<V8DebuggerListener::ParsedScript>&);
+    V8DebuggerListener* getListenerForContext(v8::Local<v8::Context>);
+
     void compileDebuggerScript();
     v8::MaybeLocal<v8::Value> callDebuggerMethod(const char* functionName, int argc, v8::Local<v8::Value> argv[]);
     v8::Local<v8::Context> debuggerContext() const;
@@ -121,6 +125,8 @@ private:
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
+    using ListenersMap = HashMap<int, V8DebuggerListener*>;
+    ListenersMap m_listenersMap;
     bool m_breakpointsActivated;
     v8::UniquePersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::UniquePersistent<v8::Object> m_debuggerScript;

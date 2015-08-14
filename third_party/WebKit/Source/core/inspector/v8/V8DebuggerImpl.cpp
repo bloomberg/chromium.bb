@@ -99,14 +99,66 @@ bool V8DebuggerImpl::enabled() const
     return !m_debuggerScript.IsEmpty();
 }
 
-void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String& contextDebugData)
+void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String& type, int contextGroupId)
 {
+    String debugData = String::number(contextGroupId) + "," + type;
     v8::HandleScope scope(context->GetIsolate());
     v8::Context::Scope contextScope(context);
-    context->SetEmbedderData(static_cast<int>(gin::kDebugIdIndex), v8String(context->GetIsolate(), contextDebugData));
+    context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), v8String(context->GetIsolate(), debugData));
 }
 
-void V8DebuggerImpl::getCompiledScripts(const String& contextDebugDataSubstring, Vector<V8DebuggerListener::ParsedScript>& result)
+static int getGroupId(v8::Local<v8::Context> context)
+{
+    v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
+    if (data.IsEmpty() || !data->IsString())
+        return 0;
+    String dataString = toCoreString(data.As<v8::String>());
+    if (dataString.isEmpty())
+        return 0;
+    size_t commaPos = dataString.find(",");
+    if (commaPos == kNotFound)
+        return 0;
+    return dataString.left(commaPos).toInt();
+}
+
+void V8DebuggerImpl::addListener(int contextGroupId, V8DebuggerListener* listener)
+{
+    ASSERT(contextGroupId);
+    ASSERT(!m_listenersMap.contains(contextGroupId));
+    if (m_listenersMap.isEmpty())
+        enable();
+    m_listenersMap.set(contextGroupId, listener);
+
+    Vector<V8DebuggerListener::ParsedScript> compiledScripts;
+    getCompiledScripts(contextGroupId, compiledScripts);
+    for (size_t i = 0; i < compiledScripts.size(); i++)
+        listener->didParseSource(compiledScripts[i]);
+}
+
+void V8DebuggerImpl::removeListener(int contextGroupId)
+{
+    ASSERT(contextGroupId);
+    if (!m_listenersMap.contains(contextGroupId))
+        return;
+
+    if (!m_pausedContext.IsEmpty() && getGroupId(m_pausedContext) == contextGroupId)
+        continueProgram();
+
+    m_listenersMap.remove(contextGroupId);
+
+    if (m_listenersMap.isEmpty())
+        disable();
+}
+
+V8DebuggerListener* V8DebuggerImpl::getListenerForContext(v8::Local<v8::Context> context)
+{
+    int groupId = getGroupId(context);
+    if (!groupId)
+        return nullptr;
+    return m_listenersMap.get(groupId);
+}
+
+void V8DebuggerImpl::getCompiledScripts(int contextGroupId, Vector<V8DebuggerListener::ParsedScript>& result)
 {
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
@@ -114,7 +166,7 @@ void V8DebuggerImpl::getCompiledScripts(const String& contextDebugDataSubstring,
     v8::Local<v8::Object> debuggerScript = m_debuggerScript.Get(m_isolate);
     ASSERT(!debuggerScript->IsUndefined());
     v8::Local<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8InternalizedString("getScripts")));
-    v8::Local<v8::Value> argv[] = { v8String(m_isolate, contextDebugDataSubstring) };
+    v8::Local<v8::Value> argv[] = { v8::Integer::New(m_isolate, contextGroupId) };
     v8::Local<v8::Value> value;
     if (!V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate).ToLocal(&value))
         return;
@@ -469,7 +521,7 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (m_runningNestedMessageLoop)
         return;
 
-    V8DebuggerListener* listener = m_client->getDebugListenerForContext(pausedContext);
+    V8DebuggerListener* listener = getListenerForContext(pausedContext);
     if (!listener)
         return;
 
@@ -489,6 +541,10 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
     if (result == V8DebuggerListener::NoSkip) {
         m_runningNestedMessageLoop = true;
         m_client->runMessageLoopOnPause(pausedContext);
+        // The listener may have been removed in the nested loop.
+        listener = getListenerForContext(pausedContext);
+        if (listener)
+            listener->didContinue();
         m_runningNestedMessageLoop = false;
     }
     m_pausedContext.Clear();
@@ -530,7 +586,7 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
     v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
     ASSERT(!eventContext.IsEmpty());
 
-    V8DebuggerListener* listener = m_client->getDebugListenerForContext(eventContext);
+    V8DebuggerListener* listener = getListenerForContext(eventContext);
     if (listener) {
         v8::HandleScope scope(m_isolate);
         if (event == v8::AfterCompile || event == v8::CompileError) {

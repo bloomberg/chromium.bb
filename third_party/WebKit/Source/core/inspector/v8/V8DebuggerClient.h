@@ -17,7 +17,6 @@ class CORE_EXPORT V8DebuggerClient {
 public:
     virtual ~V8DebuggerClient() { }
     virtual v8::Local<v8::Object> compileDebuggerScript() = 0;
-    virtual V8DebuggerListener* getDebugListenerForContext(v8::Local<v8::Context>) = 0;
     virtual void runMessageLoopOnPause(v8::Local<v8::Context>) = 0;
     virtual void quitMessageLoopOnPause() = 0;
 };

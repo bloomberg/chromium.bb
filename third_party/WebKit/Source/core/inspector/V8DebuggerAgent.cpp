@@ -121,11 +121,12 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::O
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
-V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgent::Client* client)
+V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgent::Client* client, int contextGroupId)
     : InspectorBaseAgent<V8DebuggerAgent, InspectorFrontend::Debugger>("Debugger")
     , m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
     , m_client(client)
+    , m_contextGroupId(contextGroupId)
     , m_isolate(debugger->isolate())
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
@@ -150,6 +151,7 @@ V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V
     , m_startingStepIntoAsync(false)
     , m_compiledScripts(debugger->isolate())
 {
+    ASSERT(contextGroupId);
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
     m_promiseTracker = PromiseTracker::create(this, m_isolate);
     clearBreakDetails();
@@ -169,12 +171,13 @@ bool V8DebuggerAgent::checkEnabled(ErrorString* errorString)
 
 void V8DebuggerAgent::enable()
 {
-    // startListeningV8Debugger may result in reporting all parsed scripts to
+    // debugger().addListener may result in reporting all parsed scripts to
     // the agent so it should already be in enabled state by then.
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
-    m_client->startListeningV8Debugger();
+    debugger().addListener(m_contextGroupId, this);
     // FIXME(WK44513): breakpoints activated flag should be synchronized between all front-ends
     debugger().setBreakpointsActivated(true);
+    m_client->debuggerAgentEnabled();
 }
 
 void V8DebuggerAgent::disable()
@@ -186,7 +189,8 @@ void V8DebuggerAgent::disable()
     m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
 
-    m_client->stopListeningV8Debugger();
+    debugger().removeListener(m_contextGroupId);
+    m_client->debuggerAgentDisabled();
     clear();
     m_skipAllPauses = false;
 }

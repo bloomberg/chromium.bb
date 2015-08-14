@@ -25,15 +25,14 @@ public:
     static PassOwnPtr<V8Debugger> create(v8::Isolate*, V8DebuggerClient*);
     virtual ~V8Debugger() { }
 
-    virtual void enable() = 0;
-    virtual void disable() = 0;
     virtual bool enabled() const = 0;
 
-    static void setContextDebugData(v8::Local<v8::Context>, const String& contextDebugData);
-    // Each script inherits debug data from v8::Context where it has been compiled.
-    // Only scripts whose debug data contains |contextDebugDataSubstring| substring will be reported.
-    // Passing empty string will result in reporting all scripts.
-    virtual void getCompiledScripts(const String& contextDebugDataSubstring, Vector<V8DebuggerListener::ParsedScript>&) = 0;
+    // Each v8::Context is a part of a group. The group id is used to find approapriate
+    // V8DebuggerListener to notify about events in the context.
+    // |contextGroupId| must be non-0.
+    static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextGroupId);
+    virtual void addListener(int contextGroupId, V8DebuggerListener*) = 0;
+    virtual void removeListener(int contextGroupId) = 0;
 
     virtual String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation) = 0;
     virtual void removeBreakpoint(const String& breakpointId) = 0;

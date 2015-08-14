@@ -77,7 +77,6 @@ MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessa
     : ScriptDebuggerBase(isolate)
     , m_clientMessageLoop(clientMessageLoop)
     , m_taskRunner(adoptPtr(new InspectorTaskRunner(isolate)))
-    , m_pausedFrameId(-1)
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -97,49 +96,16 @@ Mutex& MainThreadDebugger::creationMutex()
     return mutex;
 }
 
-void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, int worldId)
+void MainThreadDebugger::initializeContext(v8::Local<v8::Context> context, LocalFrame* frame, int worldId)
 {
-    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
-    if (!frame)
-        return;
-    LocalFrame* localFrameRoot = frame->localFrameRoot();
     String type = worldId == MainWorldId ? "page" : "injected";
-    String debugData = "[" + type + "," + String::number(frameId(localFrameRoot)) + "]";
-    V8Debugger::setContextDebugData(context, debugData);
+    V8Debugger::setContextDebugData(context, type, contextGroupId(frame));
 }
 
-void MainThreadDebugger::addListener(V8DebuggerListener* listener, LocalFrame* localFrameRoot)
+int MainThreadDebugger::contextGroupId(LocalFrame* frame)
 {
-    ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
-
-    ScriptController& scriptController = localFrameRoot->script();
-    if (!scriptController.canExecuteScripts(NotAboutToExecuteScript))
-        return;
-
-    if (m_listenersMap.isEmpty())
-        debugger()->enable();
-    int localFrameRootId = frameId(localFrameRoot);
-    m_listenersMap.set(localFrameRootId, listener);
-    String contextDataSubstring = "," + String::number(localFrameRootId) + "]";
-    Vector<V8DebuggerListener::ParsedScript> compiledScripts;
-    debugger()->getCompiledScripts(contextDataSubstring, compiledScripts);
-    for (size_t i = 0; i < compiledScripts.size(); i++)
-        listener->didParseSource(compiledScripts[i]);
-}
-
-void MainThreadDebugger::removeListener(V8DebuggerListener* listener, LocalFrame* localFrame)
-{
-    int localFrameId = frameId(localFrame);
-    if (!m_listenersMap.contains(localFrameId))
-        return;
-
-    if (m_pausedFrameId == localFrameId)
-        debugger()->continueProgram();
-
-    m_listenersMap.remove(localFrameId);
-
-    if (m_listenersMap.isEmpty())
-        debugger()->disable();
+    LocalFrame* localFrameRoot = frame->localFrameRoot();
+    return frameId(localFrameRoot);
 }
 
 MainThreadDebugger* MainThreadDebugger::instance()
@@ -155,30 +121,12 @@ void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunne
         s_instance->m_taskRunner->interruptAndRun(task);
 }
 
-V8DebuggerListener* MainThreadDebugger::getDebugListenerForContext(v8::Local<v8::Context> context)
-{
-    v8::HandleScope scope(context->GetIsolate());
-    LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
-    if (!frame)
-        return 0;
-    return m_listenersMap.get(frameId(frame->localFrameRoot()));
-}
-
 void MainThreadDebugger::runMessageLoopOnPause(v8::Local<v8::Context> context)
 {
-    v8::HandleScope scope(context->GetIsolate());
     LocalFrame* frame = retrieveFrameWithGlobalObjectCheck(context);
     LocalFrame* pausedFrame = frame->localFrameRoot();
-    m_pausedFrameId = frameId(pausedFrame);
-
     // Wait for continue or step command.
     m_clientMessageLoop->run(pausedFrame);
-
-    // The listener may have been removed in the nested loop.
-    if (V8DebuggerListener* listener = m_listenersMap.get(m_pausedFrameId))
-        listener->didContinue();
-
-    m_pausedFrameId = -1;
 }
 
 void MainThreadDebugger::quitMessageLoopOnPause()

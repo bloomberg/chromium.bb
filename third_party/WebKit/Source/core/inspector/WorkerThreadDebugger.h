@@ -47,8 +47,7 @@ public:
     ~WorkerThreadDebugger() override;
 
     static void setContextDebugData(v8::Local<v8::Context>);
-    void addListener(V8DebuggerListener*);
-    void removeListener(V8DebuggerListener*);
+    static int contextGroupId();
 
 private:
 

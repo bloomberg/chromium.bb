@@ -130,18 +130,21 @@ DebuggerScript._setScopeVariableValue = function(scopeHolder, scopeIndex, variab
     return undefined;
 }
 
-DebuggerScript.getScripts = function(contextDataSubstring)
+DebuggerScript.getScripts = function(contextGroupId)
 {
     var result = [];
     var scripts = Debug.scripts();
+    var contextDataPrefix = null;
+    if (contextGroupId)
+        contextDataPrefix = contextGroupId + ",";
     for (var i = 0; i < scripts.length; ++i) {
         var script = scripts[i];
-        if (contextDataSubstring) {
+        if (contextDataPrefix) {
             if (!script.context_data)
                 continue;
             // Context data is a string in the following format:
-            // "["("page"|"injected"|"worker")","<id>"]"
-            if (script.context_data.indexOf(contextDataSubstring) === -1)
+            // <id>","("page"|"injected"|"worker")
+            if (script.context_data.indexOf(contextDataPrefix) !== 0)
                 continue;
         }
         result.push(DebuggerScript._formatScript(script));

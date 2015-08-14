@@ -67,8 +67,8 @@ public:
 
 private:
     // V8DebuggerAgent::Client implemntation.
-    void startListeningV8Debugger() override;
-    void stopListeningV8Debugger() override;
+    void debuggerAgentEnabled() override;
+    void debuggerAgentDisabled() override;
     void muteConsole() override;
     void unmuteConsole() override;
 
@@ -80,7 +80,6 @@ private:
     bool canExecuteScripts() const;
 
     PageDebuggerAgent(MainThreadDebugger*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
-    MainThreadDebugger* m_mainThreadDebugger;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     HashMap<String, String> m_compiledScriptURLs;

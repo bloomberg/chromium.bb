@@ -57,14 +57,14 @@ public:
     class CORE_EXPORT Client {
     public:
         virtual ~Client() { }
-        virtual void startListeningV8Debugger() = 0;
-        virtual void stopListeningV8Debugger() = 0;
+        virtual void debuggerAgentEnabled() = 0;
+        virtual void debuggerAgentDisabled() = 0;
         virtual void muteConsole() = 0;
         virtual void unmuteConsole() = 0;
         virtual InjectedScript defaultInjectedScript() = 0;
     };
 
-    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*);
+    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*, int contextGroupId);
     ~V8DebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -230,6 +230,7 @@ private:
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     V8Debugger* m_debugger;
     Client* m_client;
+    int m_contextGroupId;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;
     v8::Global<v8::Object> m_currentCallStack;

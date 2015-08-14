@@ -44,11 +44,11 @@ public:
     void enable(ErrorString*) override;
 
     // V8DebuggerAgent::Client implementation.
-    void startListeningV8Debugger() override;
-    void stopListeningV8Debugger() override;
+    void debuggerAgentEnabled() override;
+    void debuggerAgentDisabled() override;
 
 protected:
-    InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*);
+    InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
 };
 
 } // namespace blink

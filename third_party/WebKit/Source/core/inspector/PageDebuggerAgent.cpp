@@ -58,8 +58,7 @@ PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDe
 }
 
 PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
-    : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger())
-    , m_mainThreadDebugger(mainThreadDebugger)
+    : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(pageAgent->inspectedFrame()))
     , m_pageAgent(pageAgent)
     , m_overlay(overlay)
 {
@@ -98,20 +97,18 @@ void PageDebuggerAgent::restore()
         InspectorDebuggerAgent::restore();
 }
 
-void PageDebuggerAgent::startListeningV8Debugger()
+void PageDebuggerAgent::debuggerAgentEnabled()
 {
     ASSERT(canExecuteScripts());
-    m_mainThreadDebugger->addListener(this, m_pageAgent->inspectedFrame());
     m_instrumentingAgents->setPageDebuggerAgent(this);
-    InspectorDebuggerAgent::startListeningV8Debugger();
+    InspectorDebuggerAgent::debuggerAgentEnabled();
 }
 
-void PageDebuggerAgent::stopListeningV8Debugger()
+void PageDebuggerAgent::debuggerAgentDisabled()
 {
-    m_mainThreadDebugger->removeListener(this, m_pageAgent->inspectedFrame());
     m_instrumentingAgents->setPageDebuggerAgent(nullptr);
     m_compiledScriptURLs.clear();
-    InspectorDebuggerAgent::stopListeningV8Debugger();
+    InspectorDebuggerAgent::debuggerAgentDisabled();
 }
 
 void PageDebuggerAgent::muteConsole()
