@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_X11_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_X11_H_
 
-#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_x11.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
 class BrowserFrame;
 class BrowserView;
