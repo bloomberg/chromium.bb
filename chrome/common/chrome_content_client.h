@@ -41,6 +41,13 @@ class ChromeContentClient : public content::ContentClient {
       content::PepperPluginInfo::GetInterfaceFunc get_interface,
       content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
       content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module);
+
+  // This returns the most recent plugin based on the plugin versions.
+  // It does not make sense to call this on a vector that contains more than one
+  // plugin type. This function may return a nullptr if given an empty vector.
+  // The method is only visible for testing purposes.
+  static content::PepperPluginInfo* FindMostRecentPlugin(
+      const std::vector<content::PepperPluginInfo*>& plugins);
 #endif
 
   void SetActiveURL(const GURL& url) override;

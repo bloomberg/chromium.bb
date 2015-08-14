@@ -133,6 +133,10 @@ enum {
   DIR_GEN_TEST_DATA,            // Directory where generated test data resides.
   DIR_TEST_DATA,                // Directory where unit test data resides.
   DIR_TEST_TOOLS,               // Directory where unit test tools reside.
+#if defined(OS_LINUX)
+  FILE_COMPONENT_FLASH_HINT,    // A file in a known location that points to
+                                // the component updated flash plugin.
+#endif // defined(OS_LINUX)
 
   PATH_END
 };

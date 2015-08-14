@@ -517,6 +517,7 @@
       'common/chrome_content_client_unittest.cc',
       'common/chrome_paths_unittest.cc',
       'common/cloud_print/cloud_print_helpers_unittest.cc',
+      'common/component_flash_hint_file_linux_unittest.cc',
       'common/crash_keys_unittest.cc',
       'common/ini_parser_unittest.cc',
       'common/instant_types_unittest.cc',

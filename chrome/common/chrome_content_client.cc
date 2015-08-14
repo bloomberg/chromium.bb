@@ -4,10 +4,15 @@
 
 #include "chrome/common/chrome_content_client.h"
 
+#if defined(OS_LINUX)
+#include <fcntl.h>
+#endif  // defined(OS_LINUX)
+
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
+#include "base/memory/scoped_vector.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,6 +25,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/component_flash_hint_file_linux.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/pepper_flash.h"
 #include "chrome/common/secure_origin_whitelist.h"
@@ -233,6 +239,50 @@ void AddPepperFlashFromCommandLine(
       CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
 }
 
+#if defined(OS_LINUX)
+bool IsUserDataDirAvailable() {
+  base::FilePath user_data_dir;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    return false;
+  return base::PathExists(user_data_dir);
+}
+
+// This method is used on Linux only because of architectural differences in how
+// it loads the component updated flash plugin, and not because the other
+// platforms do not support component updated flash. On other platforms, the
+// component updater sends an IPC message to all threads, at undefined points in
+// time, with the URL of the component updated flash. Because the linux zygote
+// thread has no access to the file system after it warms up, it must preload
+// the component updated flash.
+bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
+#if defined(FLAPPER_AVAILABLE)
+  if (chrome::component_flash_hint_file::DoesHintFileExist()) {
+    base::FilePath flash_path;
+    std::string version;
+    if (chrome::component_flash_hint_file::VerifyAndReturnFlashLocation(
+            &flash_path, &version)) {
+      // Test if the file can be mapped as executable. If the user's home
+      // directory is mounted noexec, the component flash plugin will not load.
+      // By testing for this, Chrome can fallback to the bundled flash plugin.
+      if (!chrome::component_flash_hint_file::TestExecutableMapping(
+              flash_path)) {
+        LOG(WARNING) << "The component updated flash plugin could not be "
+                        "mapped as executable. Attempting to fallback to the "
+                        "bundled or system plugin.";
+        return false;
+      }
+      *plugin = CreatePepperFlashInfo(flash_path, version);
+      return true;
+    } else {
+      LOG(ERROR)
+          << "Failed to locate and load the component updated flash plugin.";
+    }
+  }
+#endif  // defined(FLAPPER_AVAILABLE)
+  return false;
+}
+#endif  // defined(OS_LINUX)
+
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #if defined(FLAPPER_AVAILABLE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -397,18 +447,65 @@ void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
 #endif
 }
 
+#if defined(ENABLE_PLUGINS)
+// static
+content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
+    const std::vector<content::PepperPluginInfo*>& plugins) {
+  content::PepperPluginInfo* result = nullptr;
+  auto it = std::max_element(
+      plugins.begin(), plugins.end(),
+      [](content::PepperPluginInfo* x, content::PepperPluginInfo* y) {
+        Version version_x(x->version);
+        DCHECK(version_x.IsValid());
+        return version_x.IsOlderThan(y->version);
+      });
+  if (it != plugins.end())
+    result = *it;
+  return result;
+}
+#endif  // defined(ENABLE_PLUGINS)
+
 void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
 #if defined(ENABLE_PLUGINS)
   ComputeBuiltInPlugins(plugins);
   AddPepperFlashFromCommandLine(plugins);
 
-  content::PepperPluginInfo plugin;
-  if (GetBundledPepperFlash(&plugin))
-    plugins->push_back(plugin);
-  if (GetSystemPepperFlash(&plugin))
-    plugins->push_back(plugin);
-#endif
+#if defined(OS_LINUX)
+  // Depending on the sandbox configurtion, the user data directory
+  // is not always available. If it is not available, do not try and load any
+  // flash plugin. The flash player, if any, preloaded before the sandbox
+  // initialization will continue to be used.
+  if (!IsUserDataDirAvailable()) {
+    return;
+  }
+#endif  // defined(OS_LINUX)
+
+  ScopedVector<content::PepperPluginInfo> flash_versions;
+
+#if defined(OS_LINUX)
+  scoped_ptr<content::PepperPluginInfo> component_flash(
+      new content::PepperPluginInfo);
+  if (GetComponentUpdatedPepperFlash(component_flash.get()))
+    flash_versions.push_back(component_flash.release());
+#endif  // defined(OS_LINUX)
+
+  scoped_ptr<content::PepperPluginInfo> bundled_flash(
+      new content::PepperPluginInfo);
+  if (GetBundledPepperFlash(bundled_flash.get()))
+    flash_versions.push_back(bundled_flash.release());
+
+  scoped_ptr<content::PepperPluginInfo> system_flash(
+      new content::PepperPluginInfo);
+  if (GetSystemPepperFlash(system_flash.get()))
+    flash_versions.push_back(system_flash.release());
+
+  // This function will return only the most recent version of the flash plugin.
+  content::PepperPluginInfo* max_flash =
+      FindMostRecentPlugin(flash_versions.get());
+  if (max_flash != nullptr)
+    plugins->push_back(*max_flash);
+#endif  // defined(ENABLE_PLUGINS)
 }
 
 void ChromeContentClient::AddAdditionalSchemes(
