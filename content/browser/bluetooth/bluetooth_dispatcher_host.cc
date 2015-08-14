@@ -10,11 +10,9 @@
 
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 
-#include "base/hash.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/bluetooth/bluetooth_metrics.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -31,161 +29,9 @@ using device::BluetoothGattCharacteristic;
 using device::BluetoothGattService;
 using device::BluetoothUUID;
 
+namespace content {
+
 namespace {
-
-// These types of errors aren't as common. We log them to understand
-// how common they are and if we need to investigate more.
-enum class BluetoothGATTError {
-  UNKNOWN,
-  FAILED,
-  IN_PROGRESS,
-  NOT_PAIRED,
-  // Add errors above this line and update corresponding histograms.xml enum.
-  MAX_ERROR,
-};
-
-enum class UMARequestDeviceOutcome {
-  SUCCESS = 0,
-  NO_BLUETOOTH_ADAPTER = 1,
-  NO_RENDER_FRAME = 2,
-  DISCOVERY_START_FAILED = 3,
-  DISCOVERY_STOP_FAILED = 4,
-  NO_MATCHING_DEVICES_FOUND = 5,
-  BLUETOOTH_ADAPTER_NOT_PRESENT = 6,
-  BLUETOOTH_ADAPTER_OFF = 7,
-  // NOTE: Add new requestDevice() outcomes immediately above this line. Make
-  // sure to update the enum list in
-  // tools/metrics/histogram/histograms.xml accordingly.
-  COUNT
-};
-
-void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.RequestDevice.Outcome",
-                            static_cast<int>(outcome),
-                            static_cast<int>(UMARequestDeviceOutcome::COUNT));
-}
-// TODO(ortuno): Remove once we have a macro to histogram strings.
-// http://crbug.com/520284
-int HashUUID(const std::string& uuid) {
-  uint32 data = base::SuperFastHash(uuid.data(), uuid.size());
-
-  // Strip off the signed bit because UMA doesn't support negative values,
-  // but takes a signed int as input.
-  return static_cast<int>(data & 0x7fffffff);
-}
-
-void RecordRequestDeviceFilters(
-    const std::vector<content::BluetoothScanFilter>& filters) {
-  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.Filters.Count",
-                           filters.size());
-  for (const content::BluetoothScanFilter& filter : filters) {
-    UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.FilterSize",
-                             filter.services.size());
-    for (const BluetoothUUID& service : filter.services) {
-      // TODO(ortuno): Use a macro to histogram strings.
-      // http://crbug.com/520284
-      UMA_HISTOGRAM_SPARSE_SLOWLY(
-          "Bluetooth.Web.RequestDevice.Filters.Services",
-          HashUUID(service.canonical_value()));
-    }
-  }
-}
-
-void RecordRequestDeviceOptionalServices(
-    const std::vector<BluetoothUUID>& optional_services) {
-  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.OptionalServices.Count",
-                           optional_services.size());
-  for (const BluetoothUUID& service : optional_services) {
-    // TODO(ortuno): Use a macro to histogram strings.
-    // http://crbug.com/520284
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "Bluetooth.Web.RequestDevice.OptionalServices.Services",
-        HashUUID(service.canonical_value()));
-  }
-}
-
-void RecordUnionOfServices(
-    const std::vector<content::BluetoothScanFilter>& filters,
-    const std::vector<BluetoothUUID>& optional_services) {
-  std::set<BluetoothUUID> union_of_services(optional_services.begin(),
-                                            optional_services.end());
-
-  for (const content::BluetoothScanFilter& filter : filters)
-    union_of_services.insert(filter.services.begin(), filter.services.end());
-
-  UMA_HISTOGRAM_COUNTS_100("Bluetooth.Web.RequestDevice.UnionOfServices.Count",
-                           union_of_services.size());
-}
-
-enum class UMAGetPrimaryServiceOutcome {
-  SUCCESS,
-  NO_DEVICE,
-  NOT_FOUND,
-  // Note: Add new GetPrimaryService outcomes immediately above this line. Make
-  // sure to update the enum list in tools/metrics/histograms/histograms.xml
-  // accordingly.
-  COUNT
-};
-
-void RecordGetPrimaryServiceService(const BluetoothUUID& service) {
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetPrimaryService.Services",
-                              HashUUID(service.canonical_value()));
-}
-
-void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Bluetooth.Web.GetPrimaryService.Outcome", static_cast<int>(outcome),
-      static_cast<int>(UMAGetPrimaryServiceOutcome::COUNT));
-}
-
-enum class UMAConnectGATTOutcome {
-  SUCCESS,
-  NO_DEVICE,
-  UNKNOWN,
-  IN_PROGRESS,
-  FAILED,
-  AUTH_FAILED,
-  AUTH_CANCELED,
-  AUTH_REJECTED,
-  AUTH_TIMEOUT,
-  UNSUPPORTED_DEVICE,
-  // Note: Add new ConnectGATT outcomes immediately above this line. Make sure
-  // to update the enum list in tools/metrisc/histogram/histograms.xml
-  // accordingly.
-  COUNT
-};
-
-void RecordConnectGATTOutcome(UMAConnectGATTOutcome outcome) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.ConnectGATT.Outcome",
-                            static_cast<int>(outcome),
-                            static_cast<int>(UMAConnectGATTOutcome::COUNT));
-}
-
-void RecordConnectGATTTimeSuccess(const base::TimeDelta& duration) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("Bluetooth.Web.ConnectGATT.TimeSuccess", duration);
-}
-
-void RecordConnectGATTTimeFailed(const base::TimeDelta& duration) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("Bluetooth.Web.ConnectGATT.TimeFailed", duration);
-}
-
-enum class UMAWebBluetoothFunction {
-  REQUEST_DEVICE,
-  CONNECT_GATT,
-  GET_PRIMARY_SERVICE,
-  GET_CHARACTERISTIC,
-  CHARACTERISTIC_READ_VALUE,
-  CHARACTERISTIC_WRITE_VALUE,
-  // NOTE: Add new actions immediately above this line. Make sure to update the
-  // enum list in tools/metrics/histogram/histograms.xml accordingly.
-  COUNT
-};
-
-void RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction function) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.FunctionCall.Count",
-                            static_cast<int>(function),
-                            static_cast<int>(UMAWebBluetoothFunction::COUNT));
-}
 
 // TODO(ortuno): Once we have a chooser for scanning and the right
 // callback for discovered services we should delete these constants.
@@ -218,11 +64,6 @@ bool MatchesFilters(const device::BluetoothDevice& device,
     }
   }
   return false;
-}
-
-void AddToHistogram(BluetoothGATTError error) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.GATTErrors", static_cast<int>(error),
-                            static_cast<int>(BluetoothGATTError::MAX_ERROR));
 }
 
 WebBluetoothError TranslateConnectError(
@@ -261,13 +102,13 @@ blink::WebBluetoothError TranslateGATTError(
     BluetoothGattService::GattErrorCode error_code) {
   switch (error_code) {
     case BluetoothGattService::GATT_ERROR_UNKNOWN:
-      AddToHistogram(BluetoothGATTError::UNKNOWN);
+      RecordGATTError(UMAGATTError::UNKNOWN);
       return blink::WebBluetoothError::GATTUnknownError;
     case BluetoothGattService::GATT_ERROR_FAILED:
-      AddToHistogram(BluetoothGATTError::FAILED);
+      RecordGATTError(UMAGATTError::FAILED);
       return blink::WebBluetoothError::GATTUnknownFailure;
     case BluetoothGattService::GATT_ERROR_IN_PROGRESS:
-      AddToHistogram(BluetoothGATTError::IN_PROGRESS);
+      RecordGATTError(UMAGATTError::IN_PROGRESS);
       return blink::WebBluetoothError::GATTOperationInProgress;
     case BluetoothGattService::GATT_ERROR_INVALID_LENGTH:
       return blink::WebBluetoothError::GATTInvalidAttributeLength;
@@ -276,7 +117,7 @@ blink::WebBluetoothError TranslateGATTError(
     case BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED:
       return blink::WebBluetoothError::GATTNotAuthorized;
     case BluetoothGattService::GATT_ERROR_NOT_PAIRED:
-      AddToHistogram(BluetoothGATTError::NOT_PAIRED);
+      RecordGATTError(UMAGATTError::NOT_PAIRED);
       return blink::WebBluetoothError::GATTNotPaired;
     case BluetoothGattService::GATT_ERROR_NOT_SUPPORTED:
       return blink::WebBluetoothError::GATTNotSupported;
@@ -286,8 +127,6 @@ blink::WebBluetoothError TranslateGATTError(
 }
 
 }  //  namespace
-
-namespace content {
 
 BluetoothDispatcherHost::BluetoothDispatcherHost(int render_process_id)
     : BrowserMessageFilter(BluetoothMsgStart),
@@ -385,9 +224,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
-  RecordRequestDeviceFilters(filters);
-  RecordRequestDeviceOptionalServices(optional_services);
-  RecordUnionOfServices(filters, optional_services);
+  RecordRequestDeviceArguments(filters, optional_services);
 
   VLOG(1) << "requestDevice called with the following filters: ";
   for (const BluetoothScanFilter& filter : filters) {
@@ -444,7 +281,6 @@ void BluetoothDispatcherHost::OnRequestDevice(
     // with a message.
     // https://crbug.com/517237
     if (!adapter_->IsPowered()) {
-      VLOG(1) << "Bluetooth Adapter is not powered. Can't serve requestDevice.";
       RecordRequestDeviceOutcome(
           UMARequestDeviceOutcome::BLUETOOTH_ADAPTER_OFF);
       Send(new BluetoothMsg_RequestDeviceError(
@@ -482,7 +318,6 @@ void BluetoothDispatcherHost::OnConnectGATT(
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     RecordConnectGATTOutcome(UMAConnectGATTOutcome::NO_DEVICE);
-    VLOG(1) << "Bluetooth Device no longer in range.";
     Send(new BluetoothMsg_ConnectGATTError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -747,7 +582,6 @@ void BluetoothDispatcherHost::OnDiscoverySessionStopped(int thread_id,
   CHECK(session != request_device_sessions_.end());
   BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   for (device::BluetoothDevice* device : devices) {
-    // Remove VLOG when stable. http://crbug.com/519010
     VLOG(1) << "Device: " << device->GetName();
     VLOG(1) << "UUIDs: ";
     for (BluetoothUUID uuid : device->GetUUIDs())
@@ -773,7 +607,6 @@ void BluetoothDispatcherHost::OnDiscoverySessionStopped(int thread_id,
   }
   RecordRequestDeviceOutcome(
       UMARequestDeviceOutcome::NO_MATCHING_DEVICES_FOUND);
-  VLOG(1) << "No matching Bluetooth Devices found";
   Send(new BluetoothMsg_RequestDeviceError(thread_id, request_id,
                                            WebBluetoothError::NoDevicesFound));
   request_device_sessions_.erase(session);
@@ -828,7 +661,6 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
   device::BluetoothDevice* device = adapter_->GetDevice(device_instance_id);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
     RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NO_DEVICE);
-    VLOG(1) << "Bluetooth Device is no longer in range.";
     Send(new BluetoothMsg_GetPrimaryServiceError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -852,7 +684,6 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
     }
   }
   RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
-  VLOG(1) << "No GATT services with UUID: " << service_uuid;
   Send(new BluetoothMsg_GetPrimaryServiceError(
       thread_id, request_id, WebBluetoothError::ServiceNotFound));
 }

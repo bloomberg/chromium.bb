@@ -486,6 +486,8 @@
       'browser/bad_message.h',
       'browser/bluetooth/bluetooth_dispatcher_host.cc',
       'browser/bluetooth/bluetooth_dispatcher_host.h',
+      'browser/bluetooth/bluetooth_metrics.cc',
+      'browser/bluetooth/bluetooth_metrics.h',
       'browser/bootstrap_sandbox_mac.cc',
       'browser/bootstrap_sandbox_mac.h',
       'browser/browser_child_process_host_impl.cc',
