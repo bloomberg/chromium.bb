@@ -893,6 +893,7 @@ crbug.com/471066 [ SnowLeopard ] fast/text/fake-italic.html [ Failure ImageOnlyF
 
 crbug.com/478109 [ SnowLeopard ] fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
 
+crbug.com/419769 [ Debug SnowLeopard ] fast/forms/time-multiple-fields/time-multiple-fields-localization.html [ Crash ]
 crbug.com/419769 [ Debug SnowLeopard ] fast/text/unicode-fallback-font.html [ Crash ]
 
 # Re-check these after the re-baseline for crbug.com/512991
