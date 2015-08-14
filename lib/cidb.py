@@ -522,6 +522,7 @@ class SchemaVersionedMySQLConnection(object):
         sleep=self.query_retry_args.sleep,
         backoff_factor=self.query_retry_args.backoff_factor,
         success_functor=_RetrySuccessHandler,
+        raise_first_exception_on_failure=False,
         functor=f)
 
   def _GetEngine(self):
