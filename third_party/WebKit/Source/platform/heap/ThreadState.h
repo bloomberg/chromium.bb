@@ -322,8 +322,6 @@ public:
     bool checkThread() const { return m_thread == currentThread(); }
 #endif
 
-    void didV8MajorGC();
-
     void performIdleGC(double deadlineSeconds);
     void performIdleLazySweep(double deadlineSeconds);
 
