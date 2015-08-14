@@ -43,8 +43,8 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
       helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       supported_versions_(supported_versions),
-      weak_factory_(this) {
-}
+      packet_reader_started_(false),
+      weak_factory_(this) {}
 
 QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
                                    const QuicServerId& server_id,
@@ -62,6 +62,7 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
       num_sent_client_hellos_(0),
       connection_error_(QUIC_NO_ERROR),
       connected_or_attempting_connect_(false),
+      packet_reader_started_(false),
       weak_factory_(this) {}
 
 QuicSimpleClient::~QuicSimpleClient() {
@@ -166,12 +167,20 @@ bool QuicSimpleClient::CreateUDPSocket() {
   return true;
 }
 
+void QuicSimpleClient::StartPacketReaderIfNotStarted() {
+  if (!packet_reader_started_) {
+    packet_reader_->StartReading();
+    packet_reader_started_ = true;
+  }
+}
+
 bool QuicSimpleClient::Connect() {
   // Attempt multiple connects until the maximum number of client hellos have
   // been sent.
   while (!connected() &&
          GetNumSentClientHellos() <= QuicCryptoClientStream::kMaxClientHellos) {
     StartConnect();
+    StartPacketReaderIfNotStarted();
     while (EncryptionBeingEstablished()) {
       WaitForEvents();
     }

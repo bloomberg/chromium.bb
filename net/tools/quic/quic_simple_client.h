@@ -314,6 +314,8 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
 
+  void StartPacketReaderIfNotStarted();
+
   //  Used by |helper_| to time alarms.
   QuicClock clock_;
 
@@ -418,6 +420,8 @@ class QuicSimpleClient : public QuicDataStream::Visitor,
   NetLog net_log_;
 
   scoped_ptr<QuicPacketReader> packet_reader_;
+
+  bool packet_reader_started_;
 
   base::WeakPtrFactory<QuicSimpleClient> weak_factory_;
 
