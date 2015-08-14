@@ -11,13 +11,12 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "content/common/resource_messages.h"
-#include "content/browser/loader/resource_message_delegate.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
-#include "ipc/ipc_message_macros.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
@@ -163,27 +162,36 @@ class ResourceScheduler::RequestQueue {
 
 // This is the handle we return to the ResourceDispatcherHostImpl so it can
 // interact with the request.
-class ResourceScheduler::ScheduledResourceRequest
-    : public ResourceMessageDelegate,
-      public ResourceThrottle {
+class ResourceScheduler::ScheduledResourceRequest : public ResourceThrottle {
  public:
   ScheduledResourceRequest(const ClientId& client_id,
                            net::URLRequest* request,
                            ResourceScheduler* scheduler,
-                           const RequestPriorityParams& priority)
-      : ResourceMessageDelegate(request),
-        client_id_(client_id),
+                           const RequestPriorityParams& priority,
+                           bool is_async)
+      : client_id_(client_id),
         client_state_on_creation_(scheduler->GetClientState(client_id_)),
         request_(request),
         ready_(false),
         deferred_(false),
+        is_async_(is_async),
         classification_(NORMAL_REQUEST),
         scheduler_(scheduler),
         priority_(priority),
         fifo_ordering_(0) {
+    DCHECK(!request_->GetUserData(kUserDataKey));
+    request_->SetUserData(kUserDataKey, new UnownedPointer(this));
   }
 
-  ~ScheduledResourceRequest() override { scheduler_->RemoveRequest(this); }
+  ~ScheduledResourceRequest() override {
+    request_->RemoveUserData(kUserDataKey);
+    scheduler_->RemoveRequest(this);
+  }
+
+  static ScheduledResourceRequest* ForRequest(net::URLRequest* request) {
+    return static_cast<UnownedPointer*>(request->GetUserData(kUserDataKey))
+        ->get();
+  }
 
   void Start() {
     ready_ = true;
@@ -226,6 +234,7 @@ class ResourceScheduler::ScheduledResourceRequest
   const ClientId& client_id() const { return client_id_; }
   net::URLRequest* url_request() { return request_; }
   const net::URLRequest* url_request() const { return request_; }
+  bool is_async() const { return is_async_; }
   uint32 fifo_ordering() const { return fifo_ordering_; }
   void set_fifo_ordering(uint32 fifo_ordering) {
     fifo_ordering_ = fifo_ordering;
@@ -238,15 +247,20 @@ class ResourceScheduler::ScheduledResourceRequest
   }
 
  private:
-  // ResourceMessageDelegate interface:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ScheduledResourceRequest, message)
-      IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, DidChangePriority)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
+  class UnownedPointer : public base::SupportsUserData::Data {
+   public:
+    explicit UnownedPointer(ScheduledResourceRequest* pointer)
+        : pointer_(pointer) {}
+
+    ScheduledResourceRequest* get() const { return pointer_; }
+
+   private:
+    ScheduledResourceRequest* const pointer_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
+  };
+
+  static const void* const kUserDataKey;
 
   // ResourceThrottle interface:
   void WillStartRequest(bool* defer) override {
@@ -256,16 +270,12 @@ class ResourceScheduler::ScheduledResourceRequest
 
   const char* GetNameForLogging() const override { return "ResourceScheduler"; }
 
-  void DidChangePriority(int request_id, net::RequestPriority new_priority,
-                         int intra_priority_value) {
-    scheduler_->ReprioritizeRequest(this, new_priority, intra_priority_value);
-  }
-
   const ClientId client_id_;
   const ResourceScheduler::ClientState client_state_on_creation_;
   net::URLRequest* request_;
   bool ready_;
   bool deferred_;
+  bool is_async_;
   RequestClassification classification_;
   ResourceScheduler* scheduler_;
   RequestPriorityParams priority_;
@@ -274,6 +284,9 @@ class ResourceScheduler::ScheduledResourceRequest
 
   DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequest);
 };
+
+const void* const ResourceScheduler::ScheduledResourceRequest::kUserDataKey =
+    &ResourceScheduler::ScheduledResourceRequest::kUserDataKey;
 
 bool ResourceScheduler::ScheduledResourceSorter::operator()(
     const ScheduledResourceRequest* a,
@@ -325,9 +338,8 @@ class ResourceScheduler::Client {
     UpdateThrottleState();
   }
 
-  void ScheduleRequest(
-      net::URLRequest* url_request,
-      ScheduledResourceRequest* request) {
+  void ScheduleRequest(net::URLRequest* url_request,
+                       ScheduledResourceRequest* request) {
     if (ShouldStartRequest(request) == START_REQUEST)
       StartRequest(request);
     else
@@ -723,7 +735,7 @@ class ResourceScheduler::Client {
     const net::URLRequest& url_request = *request->url_request();
     // Syncronous requests could block the entire render, which could impact
     // user-observable Clients.
-    if (!ResourceRequestInfo::ForRequest(&url_request)->IsAsync()) {
+    if (!request->is_async()) {
       return START_REQUEST;
     }
 
@@ -908,14 +920,13 @@ ResourceScheduler::GetClientStateForTesting(int child_id, int route_id) {
 scoped_ptr<ResourceThrottle> ResourceScheduler::ScheduleRequest(
     int child_id,
     int route_id,
+    bool is_async,
     net::URLRequest* url_request) {
   DCHECK(CalledOnValidThread());
   ClientId client_id = MakeClientId(child_id, route_id);
   scoped_ptr<ScheduledResourceRequest> request(new ScheduledResourceRequest(
-      client_id,
-      url_request,
-      this,
-      RequestPriorityParams(url_request->priority(), 0)));
+      client_id, url_request, this,
+      RequestPriorityParams(url_request->priority(), 0), is_async));
 
   ClientMap::iterator it = client_map_.find(client_id);
   if (it == client_map_.end()) {
@@ -1171,27 +1182,39 @@ ResourceScheduler::ClientState ResourceScheduler::GetClientState(
   return client_it->second->is_active() ? ACTIVE : BACKGROUND;
 }
 
-void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
+void ResourceScheduler::ReprioritizeRequest(net::URLRequest* request,
                                             net::RequestPriority new_priority,
                                             int new_intra_priority_value) {
-  if (request->url_request()->load_flags() & net::LOAD_IGNORE_LIMITS) {
+  if (request->load_flags() & net::LOAD_IGNORE_LIMITS) {
     // We should not be re-prioritizing requests with the
     // IGNORE_LIMITS flag.
     NOTREACHED();
     return;
   }
+
+  auto* scheduled_resource_request =
+      ScheduledResourceRequest::ForRequest(request);
+
+  // Downloads don't use the resource scheduler.
+  if (!scheduled_resource_request) {
+    request->SetPriority(new_priority);
+    return;
+  }
+
   RequestPriorityParams new_priority_params(new_priority,
       new_intra_priority_value);
   RequestPriorityParams old_priority_params =
-      request->get_request_priority_params();
+      scheduled_resource_request->get_request_priority_params();
 
   DCHECK(old_priority_params != new_priority_params);
 
-  ClientMap::iterator client_it = client_map_.find(request->client_id());
+  ClientMap::iterator client_it =
+      client_map_.find(scheduled_resource_request->client_id());
   if (client_it == client_map_.end()) {
     // The client was likely deleted shortly before we received this IPC.
-    request->url_request()->SetPriority(new_priority_params.priority);
-    request->set_request_priority_params(new_priority_params);
+    request->SetPriority(new_priority_params.priority);
+    scheduled_resource_request->set_request_priority_params(
+        new_priority_params);
     return;
   }
 
@@ -1199,8 +1222,8 @@ void ResourceScheduler::ReprioritizeRequest(ScheduledResourceRequest* request,
     return;
 
   Client *client = client_it->second;
-  client->ReprioritizeRequest(
-      request, old_priority_params, new_priority_params);
+  client->ReprioritizeRequest(scheduled_resource_request, old_priority_params,
+                              new_priority_params);
 }
 
 ResourceScheduler::ClientId ResourceScheduler::MakeClientId(

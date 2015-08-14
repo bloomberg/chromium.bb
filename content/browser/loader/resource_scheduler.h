@@ -44,9 +44,9 @@ class ResourceThrottle;
 // Each Client may have many Requests in flight. Requests are uniquely
 // identified within a Client by its ScheduledResourceRequest.
 //
-// Users should call ScheduleRequest() to notify this ResourceScheduler of a
-// new request. The returned ResourceThrottle should be destroyed when the load
-// finishes or is canceled.
+// Users should call ScheduleRequest() to notify this ResourceScheduler of a new
+// request. The returned ResourceThrottle should be destroyed when the load
+// finishes or is canceled, before the net::URLRequest.
 //
 // The scheduler may defer issuing the request via the ResourceThrottle
 // interface or it may alter the request's priority by calling set_priority() on
@@ -104,9 +104,11 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   // Requests that this ResourceScheduler schedule, and eventually loads, the
   // specified |url_request|. Caller should delete the returned ResourceThrottle
-  // when the load completes or is canceled.
-  scoped_ptr<ResourceThrottle> ScheduleRequest(
-      int child_id, int route_id, net::URLRequest* url_request);
+  // when the load completes or is canceled, before |url_request| is deleted.
+  scoped_ptr<ResourceThrottle> ScheduleRequest(int child_id,
+                                               int route_id,
+                                               bool is_async,
+                                               net::URLRequest* url_request);
 
   // Signals from the UI thread, posted as tasks on the IO thread:
 
@@ -152,6 +154,12 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
 
   // Returns true if at least one client is currently loading.
   bool HasLoadingClients() const;
+
+  // Update the priority for |request|. Modifies request->priority(), and may
+  // start the request loading if it wasn't already started.
+  void ReprioritizeRequest(net::URLRequest* request,
+                           net::RequestPriority new_priority,
+                           int intra_priority_value);
 
  private:
   // Returns true if limiting of outstanding requests is enabled.
@@ -215,16 +223,6 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // whether the client is ACTIVE (user-observable) or BACKGROUND.
   ClientState GetClientState(ClientId client_id) const;
 
-  // Update the queue position for |request|, possibly causing it to start
-  // loading.
-  //
-  // Queues are maintained for each priority level. When |request| is
-  // reprioritized, it will move to the end of the queue for that priority
-  // level.
-  void ReprioritizeRequest(ScheduledResourceRequest* request,
-                           net::RequestPriority new_priority,
-                           int intra_priority_value);
-
   // Returns the client ID for the given |child_id| and |route_id| combo.
   ClientId MakeClientId(int child_id, int route_id);
 
@@ -241,6 +239,8 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // This is a repeating timer to initiate requests on COALESCED Clients.
   scoped_ptr<base::Timer> coalescing_timer_;
   RequestSet unowned_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceScheduler);
 };
 
 }  // namespace content

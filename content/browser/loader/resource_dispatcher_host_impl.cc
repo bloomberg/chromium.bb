@@ -978,6 +978,7 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
+    IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, OnDidChangePriority)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1435,8 +1436,10 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
     throttles.push_back(new PowerSaveBlockResourceThrottle());
   }
 
-  throttles.push_back(
-      scheduler_->ScheduleRequest(child_id, route_id, request).release());
+  // TODO(ricea): Stop looking this up so much.
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
+  throttles.push_back(scheduler_->ScheduleRequest(child_id, route_id,
+                                                  info->IsAsync(), request));
 
   handler.reset(
       new ThrottlingResourceHandler(handler.Pass(), request, throttles.Pass()));
@@ -1446,6 +1449,20 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
 
 void ResourceDispatcherHostImpl::OnReleaseDownloadedFile(int request_id) {
   UnregisterDownloadedTempFile(filter_->child_id(), request_id);
+}
+
+void ResourceDispatcherHostImpl::OnDidChangePriority(
+    int request_id,
+    net::RequestPriority new_priority,
+    int intra_priority_value) {
+  ResourceLoader* loader = GetLoader(filter_->child_id(), request_id);
+  // The request may go away before processing this message, so |loader| can
+  // legitimately be null.
+  if (!loader)
+    return;
+
+  scheduler_->ReprioritizeRequest(loader->request(), new_priority,
+                                  intra_priority_value);
 }
 
 void ResourceDispatcherHostImpl::OnDataDownloadedACK(int request_id) {

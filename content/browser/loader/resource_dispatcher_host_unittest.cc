@@ -946,6 +946,11 @@ class ResourceDispatcherHostTest : public testing::Test,
 
   void MakeWebContentsAssociatedTestRequest(int request_id, const GURL& url);
 
+  // Generates a request with the given priority.
+  void MakeTestRequestWithPriority(int render_view_id,
+                                   int request_id,
+                                   net::RequestPriority priority);
+
   void CancelRequest(int request_id);
   void RendererCancelRequest(int request_id) {
     ResourceMessageFilter* old_filter = SetFilter(filter_.get());
@@ -1070,6 +1075,17 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedTestRequest(
                                       request);
   host_.OnMessageReceived(msg, web_contents_filter_.get());
   KickOffRequest();
+}
+
+void ResourceDispatcherHostTest::MakeTestRequestWithPriority(
+    int render_view_id,
+    int request_id,
+    net::RequestPriority priority) {
+  ResourceHostMsg_Request request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_SUB_RESOURCE, GURL("http://example.com/priority"));
+  request.priority = priority;
+  ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
+  host_.OnMessageReceived(msg, filter_.get());
 }
 
 void ResourceDispatcherHostTest::CancelRequest(int request_id) {
@@ -3327,6 +3343,44 @@ TEST_F(ResourceDispatcherHostTest, TransferRequestRedirected) {
 
   EXPECT_EQ(initial_count + 1,
             web_contents_observer_->resource_request_redirect_count());
+}
+
+// Confirm that DidChangePriority messages are respected.
+TEST_F(ResourceDispatcherHostTest, DidChangePriority) {
+  // ResourceScheduler only throttles http and https requests.
+  HandleScheme("http");
+
+  // Needed to enable scheduling for this child.
+  host_.OnRenderViewHostCreated(filter_->child_id(),  // child_id
+                                0,                    // route_id
+                                true,                 // is_visible
+                                false);               // is_audible
+
+  // Prevent any of these requests from completing.
+  job_factory_->SetDelayedCompleteJobGeneration(true);
+  SetResponse("HTTP/1.1 200 OK\n\n", "<title>Dummy body</title>");
+
+  // Only one idle priority request will run while a high-priority request
+  // exists.
+  MakeTestRequestWithPriority(0, 1, net::HIGHEST);
+  MakeTestRequestWithPriority(0, 2, net::IDLE);
+  MakeTestRequestWithPriority(0, 3, net::IDLE);
+
+  KickOffRequest();
+
+  EXPECT_EQ(2, job_factory_->url_request_jobs_created_count());
+
+  // Increase the priority of the second idle priority request. It was
+  // scheduled later, so it is not currently running.
+  ResourceHostMsg_DidChangePriority priority_msg(3, net::MAXIMUM_PRIORITY, 0);
+  host_.OnMessageReceived(priority_msg, filter_.get());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_EQ(3, job_factory_->url_request_jobs_created_count());
+
+  // Cleanup.
+  host_.OnRenderViewHostDeleted(filter_->child_id(),  // child_id
+                                0);                   // route_id
 }
 
 net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(

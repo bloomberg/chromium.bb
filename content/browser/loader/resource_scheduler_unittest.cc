@@ -14,15 +14,10 @@
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
-#include "content/browser/loader/resource_request_info_impl.h"
-#include "content/common/resource_messages.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/process_type.h"
-#include "content/public/common/resource_type.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host_factory.h"
@@ -54,14 +49,20 @@ const int kBackgroundRouteId2 = 82;
 
 class TestRequest : public ResourceController {
  public:
-  TestRequest(scoped_ptr<ResourceThrottle> throttle,
-              scoped_ptr<net::URLRequest> url_request)
+  TestRequest(scoped_ptr<net::URLRequest> url_request,
+              scoped_ptr<ResourceThrottle> throttle,
+              ResourceScheduler* scheduler)
       : started_(false),
+        url_request_(url_request.Pass()),
         throttle_(throttle.Pass()),
-        url_request_(url_request.Pass()) {
+        scheduler_(scheduler) {
     throttle_->set_controller_for_testing(this);
   }
-  ~TestRequest() override {}
+  ~TestRequest() override {
+    // The URLRequest must still be valid when the ScheduledResourceRequest is
+    // destroyed, so that it can unregister itself.
+    throttle_.reset();
+  }
 
   bool started() const { return started_; }
 
@@ -71,9 +72,14 @@ class TestRequest : public ResourceController {
     started_ = !deferred;
   }
 
+  void ChangePriority(net::RequestPriority new_priority, int intra_priority) {
+    scheduler_->ReprioritizeRequest(url_request_.get(), new_priority,
+                                    intra_priority);
+  }
+
   void Cancel() override {
     // Alert the scheduler that the request can be deleted.
-    throttle_.reset(0);
+    throttle_.reset();
   }
 
   const net::URLRequest* url_request() const { return url_request_.get(); }
@@ -86,15 +92,17 @@ class TestRequest : public ResourceController {
 
  private:
   bool started_;
-  scoped_ptr<ResourceThrottle> throttle_;
   scoped_ptr<net::URLRequest> url_request_;
+  scoped_ptr<ResourceThrottle> throttle_;
+  ResourceScheduler* scheduler_;
 };
 
 class CancelingTestRequest : public TestRequest {
  public:
-  CancelingTestRequest(scoped_ptr<ResourceThrottle> throttle,
-                       scoped_ptr<net::URLRequest> url_request)
-      : TestRequest(throttle.Pass(), url_request.Pass()) {}
+  CancelingTestRequest(scoped_ptr<net::URLRequest> url_request,
+                       scoped_ptr<ResourceThrottle> throttle,
+                       ResourceScheduler* scheduler)
+      : TestRequest(url_request.Pass(), throttle.Pass(), scheduler) {}
 
   void set_request_to_cancel(scoped_ptr<TestRequest> request_to_cancel) {
     request_to_cancel_ = request_to_cancel.Pass();
@@ -115,39 +123,10 @@ class FakeResourceContext : public ResourceContext {
   net::URLRequestContext* GetRequestContext() override { return NULL; }
 };
 
-class FakeResourceMessageFilter : public ResourceMessageFilter {
- public:
-  FakeResourceMessageFilter(int child_id)
-      : ResourceMessageFilter(
-          child_id,
-          PROCESS_TYPE_RENDERER,
-          NULL  /* appcache_service */,
-          NULL  /* blob_storage_context */,
-          NULL  /* file_system_context */,
-          NULL  /* service_worker_context */,
-          NULL  /* host_zoom_level_context */,
-          base::Bind(&FakeResourceMessageFilter::GetContexts,
-                     base::Unretained(this))) {
-  }
-
- private:
-  ~FakeResourceMessageFilter() override {}
-
-  void GetContexts(const ResourceHostMsg_Request& request,
-                   ResourceContext** resource_context,
-                   net::URLRequestContext** request_context) {
-    *resource_context = &context_;
-    *request_context = NULL;
-  }
-
-  FakeResourceContext context_;
-};
-
 class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest()
-      : next_request_id_(0),
-        ui_thread_(BrowserThread::UI, &message_loop_),
+      : ui_thread_(BrowserThread::UI, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         field_trial_list_(new base::MockEntropyProvider()) {
     InitializeScheduler();
@@ -199,44 +178,15 @@ class ResourceSchedulerTest : public testing::Test {
       const char* url,
       net::RequestPriority priority,
       int child_id,
-      int route_id,
-      bool is_async) {
+      int route_id) {
     scoped_ptr<net::URLRequest> url_request(
         context_.CreateRequest(GURL(url), priority, NULL));
-    ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
-        PROCESS_TYPE_RENDERER,                   // process_type
-        child_id,                                // child_id
-        route_id,                                // route_id
-        -1,                                      // frame_tree_node_id
-        0,                                       // origin_pid
-        ++next_request_id_,                      // request_id
-        MSG_ROUTING_NONE,                        // render_frame_id
-        false,                                   // is_main_frame
-        false,                                   // parent_is_main_frame
-        0,                                       // parent_render_frame_id
-        RESOURCE_TYPE_SUB_RESOURCE,              // resource_type
-        ui::PAGE_TRANSITION_LINK,                // transition_type
-        false,                                   // should_replace_current_entry
-        false,                                   // is_download
-        false,                                   // is_stream
-        true,                                    // allow_download
-        false,                                   // has_user_gesture
-        false,                                   // enable_load_timing
-        false,                                   // enable_upload_progress
-        false,                                   // do_not_prompt_for_login
-        blink::WebReferrerPolicyDefault,         // referrer_policy
-        blink::WebPageVisibilityStateVisible,    // visibility_state
-        NULL,                                    // context
-        base::WeakPtr<ResourceMessageFilter>(),  // filter
-        is_async);                               // is_async
-    info->AssociateWithRequest(url_request.get());
     return url_request.Pass();
   }
 
   scoped_ptr<net::URLRequest> NewURLRequest(const char* url,
                                             net::RequestPriority priority) {
-    return NewURLRequestWithChildAndRoute(
-        url, priority, kChildId, kRouteId, true);
+    return NewURLRequestWithChildAndRoute(url, priority, kChildId, kRouteId);
   }
 
   TestRequest* NewRequestWithRoute(const char* url,
@@ -284,11 +234,12 @@ class ResourceSchedulerTest : public testing::Test {
                                  int child_id,
                                  int route_id,
                                  bool is_async) {
-    scoped_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
-        url, priority, child_id, route_id, is_async));
-    scoped_ptr<ResourceThrottle> throttle(
-        scheduler_->ScheduleRequest(child_id, route_id, url_request.get()));
-    TestRequest* request = new TestRequest(throttle.Pass(), url_request.Pass());
+    scoped_ptr<net::URLRequest> url_request(
+        NewURLRequestWithChildAndRoute(url, priority, child_id, route_id));
+    scoped_ptr<ResourceThrottle> throttle(scheduler_->ScheduleRequest(
+        child_id, route_id, is_async, url_request.get()));
+    TestRequest* request =
+        new TestRequest(url_request.Pass(), throttle.Pass(), scheduler());
     request->Start();
     return request;
   }
@@ -296,14 +247,7 @@ class ResourceSchedulerTest : public testing::Test {
   void ChangeRequestPriority(TestRequest* request,
                              net::RequestPriority new_priority,
                              int intra_priority = 0) {
-    scoped_refptr<FakeResourceMessageFilter> filter(
-        new FakeResourceMessageFilter(kChildId));
-    const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
-        request->url_request());
-    const GlobalRequestID& id = info->GetGlobalRequestID();
-    ResourceHostMsg_DidChangePriority msg(id.request_id, new_priority,
-                                          intra_priority);
-    rdh_.OnMessageReceived(msg, filter.get());
+    request->ChangePriority(new_priority, intra_priority);
   }
 
   void FireCoalescingTimer() {
@@ -315,7 +259,6 @@ class ResourceSchedulerTest : public testing::Test {
     return scheduler_.get();
   }
 
-  int next_request_id_;
   base::MessageLoopForIO message_loop_;
   BrowserThreadImpl ui_thread_;
   BrowserThreadImpl io_thread_;
@@ -436,10 +379,10 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
 
   scoped_ptr<net::URLRequest> url_request(
       NewURLRequest("http://host/low2", net::LOWEST));
-  scoped_ptr<ResourceThrottle> throttle(
-      scheduler()->ScheduleRequest(kChildId, kRouteId, url_request.get()));
+  scoped_ptr<ResourceThrottle> throttle(scheduler()->ScheduleRequest(
+      kChildId, kRouteId, true, url_request.get()));
   scoped_ptr<CancelingTestRequest> low2(new CancelingTestRequest(
-      throttle.Pass(), url_request.Pass()));
+      url_request.Pass(), throttle.Pass(), scheduler()));
   low2->Start();
 
   scoped_ptr<TestRequest> low3(NewRequest("http://host/low3", net::LOWEST));

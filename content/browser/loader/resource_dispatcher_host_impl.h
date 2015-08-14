@@ -39,6 +39,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
+#include "net/base/request_priority.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request.h"
 
@@ -461,6 +462,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
   void OnReleaseDownloadedFile(int request_id);
+  void OnDidChangePriority(int request_id,
+                           net::RequestPriority new_priority,
+                           int intra_priority_value);
 
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
