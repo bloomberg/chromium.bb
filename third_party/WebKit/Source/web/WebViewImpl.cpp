@@ -1646,11 +1646,15 @@ void WebViewImpl::closePagePopup(PagePopup* popup)
 {
     ASSERT(popup);
     WebPagePopupImpl* popupImpl = toWebPagePopupImpl(popup);
-    ASSERT(m_pagePopup.get() == popupImpl);
-    if (m_pagePopup.get() != popupImpl)
+    // It's possible that closePagePopup is called from pagePopup->closePopup()
+    // below because the main frame of the page popup can have the last
+    // reference to the pagePopupOwner Element. So, we clear m_pagePopup before
+    // pagePopup->closePopup(), and do nothing if m_pagepopup is nullptr.
+    ASSERT(!m_pagePopup || m_pagePopup.get() == popupImpl);
+    if (!m_pagePopup || m_pagePopup.get() != popupImpl)
         return;
-    m_pagePopup->closePopup();
-    m_pagePopup = nullptr;
+    RefPtr<WebPagePopupImpl> pagePopup = m_pagePopup.release();
+    pagePopup->closePopup();
     disablePopupMouseWheelEventListener();
 }
 
