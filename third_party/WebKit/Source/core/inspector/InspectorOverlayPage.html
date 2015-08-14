@@ -347,7 +347,7 @@ function reset(resetData)
     resetCanvas(canvas);
 
     window.labelsCanvas = document.getElementById("labels-canvas");
-    resetCanvas(labelsCanvas);
+    resetLabelCanvas();
 
     window.canvasWidth = viewportSize.width;
     window.canvasHeight = viewportSize.height;
@@ -359,6 +359,9 @@ function reset(resetData)
     editor.style.visibility = "hidden";
     editor.textContent = "";
     document.body.classList.remove("dimmed");
+    document.removeEventListener("mousemove", onGlobalMouseMove);
+    delete window.hoverableAreas;
+    delete window.anchorsByType;
     window._gridPainted = false;
 }
 
@@ -479,7 +482,7 @@ function _drawRulers(bounds, rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function drawPath(commands, fillColor, outlineColor, bounds)
+function drawPath(commands, fillColor, outlineColor, bounds, name)
 {
     var commandsIndex = 0;
 
@@ -500,47 +503,52 @@ function drawPath(commands, fillColor, outlineColor, bounds)
             bounds.rightmostXForY[y] = Math.max(bounds.rightmostXForY[y] || Number.MIN_VALUE, x);
             bounds.topmostYForX[x] = Math.min(bounds.topmostYForX[x] || Number.MAX_VALUE, y);
             bounds.bottommostYForX[x] = Math.max(bounds.bottommostYForX[x] || Number.MIN_VALUE, y);
-
             points.push(x, y);
         }
         return points;
     }
 
     context.save();
-    context.beginPath();
-
     var commandsLength = commands.length;
+    var path = new Path2D();
     while (commandsIndex < commandsLength) {
         switch (commands[commandsIndex++]) {
         case "M":
-            context.moveTo.apply(context, extractPoints(1));
+            path.moveTo.apply(path, extractPoints(1));
             break;
         case "L":
-            context.lineTo.apply(context, extractPoints(1));
+            path.lineTo.apply(path, extractPoints(1));
             break;
         case "C":
-            context.bezierCurveTo.apply(context, extractPoints(3));
+            path.bezierCurveTo.apply(path, extractPoints(3));
             break;
         case "Q":
-            context.quadraticCurveTo.apply(context, extractPoints(2));
+            path.quadraticCurveTo.apply(path, extractPoints(2));
             break;
         case "Z":
-            context.closePath();
+            path.closePath();
             break;
         }
     }
-    context.closePath();
+    path.closePath();
     context.lineWidth = 0;
     context.fillStyle = fillColor;
-    context.fill();
+    context.fill(path);
 
     if (outlineColor) {
         context.lineWidth = 2;
         context.strokeStyle = outlineColor;
-        context.stroke();
+        context.stroke(path);
     }
 
     context.restore();
+
+    if (name) {
+        if (!window.hoverableAreas)
+            window.hoverableAreas = new Map();
+
+        window.hoverableAreas.set(name, path);
+    }
 }
 
 function drawHighlight(highlight)
@@ -560,7 +568,7 @@ function drawHighlight(highlight)
 
     for (var paths = highlight.paths.slice(); paths.length;) {
         var path = paths.pop();
-        drawPath(path.path, path.fillColor, path.outlineColor, bounds);
+        drawPath(path.path, path.fillColor, path.outlineColor, bounds, path.name);
         if (paths.length) {
             context.save();
             context.globalCompositeOperation = "destination-out";
@@ -640,12 +648,22 @@ function showLayoutEditor(info)
     var editorElement = document.getElementById("editor");
     editorElement.style.visibility = "visible";
     var anchors = info.anchors;
+    window.anchorsByType = new Map();
+    var selectedAnchorInfo = null;
     for (var i = 0; i < anchors.length; ++i) {
         var anchorInfo = anchors[i];
+        if (!anchorsByType.get(anchorInfo.type))
+            anchorsByType.set(anchorInfo.type, []);
+        anchorsByType.get(anchorInfo.type).push(anchorInfo);
         editorElement.appendChild(createAnchor(anchorInfo));
         if (anchorInfo.propertyName === window.draggedPropertyName)
-            showLabel(anchorInfo);
+            selectedAnchorInfo = anchorInfo;
     }
+
+    if (selectedAnchorInfo)
+        showLabels(selectedAnchorInfo.type, selectedAnchorInfo.propertyName);
+
+    document.addEventListener("mousemove", onGlobalMouseMove);
 }
 
 function createAnchor(anchorInfo)
@@ -666,8 +684,7 @@ function createAnchor(anchorInfo)
     anchorElement.style.top = anchorInfo.y - handleWidth + "px";
     if (anchorInfo.propertyValue.mutable)
         anchorElement.addEventListener("mousedown", onAnchorMouseDown.bind(null, anchorInfo));
-    anchorElement.addEventListener("mouseenter", onAnchorMouseEnter.bind(null, anchorInfo));
-    anchorElement.addEventListener("mouseleave", onAnchorMouseLeave.bind(null, anchorInfo));
+    anchorElement.addEventListener("mousemove", onAnchorMouseMove.bind(null, anchorInfo));
     return anchorElement;
 }
 
@@ -688,8 +705,7 @@ function onAnchorMouseDown(anchorInfo, event)
     document.addEventListener("mouseup", onDragEnd);
     InspectorOverlayHost.startPropertyChange(anchorInfo.propertyName);
     window.draggedPropertyName = anchorInfo.propertyName;
-    resetCanvas(labelsCanvas);
-    showLabel(anchorInfo);
+    showLabels(anchorInfo.type, anchorInfo.propertyName);
 }
 
 function onDragMove(mouseDownPoint, deltaVector, event)
@@ -702,16 +718,42 @@ function onDragMove(mouseDownPoint, deltaVector, event)
     InspectorOverlayHost.changeProperty(calculateDelta(deltaVector, new Point(event.screenX - mouseDownPoint.x, event.screenY - mouseDownPoint.y)));
 }
 
-function showLabel(anchorInfo)
+function showLabel(anchorInfo, showLongDescription)
 {
     var context =  labelsCanvas.getContext("2d");
     var secondaryColor = "rgba(255, 255, 255, 0.7)";
     var labelColor = labelColorForProperty(anchorInfo);
-    _drawLabel(context, anchorInfo.x, anchorInfo.y, labelColor, [
-        {string: anchorInfo.propertyName + ": ", color: secondaryColor},
+    var textDescription = [
         {string: anchorInfo.propertyValue.value, color: "white" },
         {string: "\u2009" + anchorInfo.propertyValue.unit, color: secondaryColor}
-    ], anchorInfo.deltaVector.x < 0);
+    ];
+
+    if (showLongDescription)
+        textDescription.splice(0, 0, {string: anchorInfo.propertyName + ": ", color: secondaryColor});
+    _drawLabel(context, anchorInfo.x, anchorInfo.y, labelColor, textDescription, anchorInfo.deltaVector.x < 0);
+}
+
+function showLabels(type, fullLabelName)
+{
+    if (!anchorsByType)
+        return;
+
+    if (window.labelCanvasState && labelCanvasState.type === type && labelCanvasState.fullLabelName === fullLabelName)
+        return;
+
+    resetLabelCanvas();
+    window.labelCanvasState = {type: type, fullLabelName: fullLabelName};
+    var anchors = anchorsByType.get(type) || [];
+    var selectedAnchorInfo = null;
+    for (var anchorInfo of anchors) {
+        if (fullLabelName !== anchorInfo.propertyName)
+            showLabel(anchorInfo, false);
+        else
+            selectedAnchorInfo = anchorInfo;
+    }
+
+    if (selectedAnchorInfo)
+        showLabel(selectedAnchorInfo, true);
 }
 
 function onDragEnd(event)
@@ -722,24 +764,16 @@ function onDragEnd(event)
     document.removeEventListener("mouseup", onDragEnd);
     event.preventDefault();
     InspectorOverlayHost.endPropertyChange();
-    resetCanvas(labelsCanvas);
+    resetLabelCanvas();
 }
 
-function onAnchorMouseEnter(anchorInfo)
+function onAnchorMouseMove(anchorInfo)
 {
     if (window.draggedPropertyName)
         return;
-
-    resetCanvas(labelsCanvas);
-    showLabel(anchorInfo);
-}
-
-function onAnchorMouseLeave()
-{
-    if (window.draggedPropertyName)
-        return;
-
-    resetCanvas(labelsCanvas);
+    event.preventDefault();
+    event.stopPropagation();
+    showLabels(anchorInfo.type, anchorInfo.propertyName);
 }
 
 function Point(x, y)
@@ -837,6 +871,26 @@ function anchorColorForProperty(anchorInfo)
     if (propertyName.startsWith("margin"))
         return "rgb(246, 167, 35)";
     return "rgb(107, 213, 0)";
+}
+
+function onGlobalMouseMove(event)
+{
+    if (!window.hoverableAreas)
+        return;
+    var types = ["padding", "margin"];
+    for (var type of types) {
+        var path = hoverableAreas.get(type);
+        if (path && context.isPointInPath(path, deviceScaleFactor * event.x, deviceScaleFactor * event.y)) {
+            showLabels(type);
+            break;
+        }
+    }
+}
+
+function resetLabelCanvas()
+{
+    delete window.labelCanvasState;
+    resetCanvas(labelsCanvas);
 }
 
 window.addEventListener("DOMContentLoaded", onLoaded);

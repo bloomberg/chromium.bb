@@ -38,7 +38,7 @@ private:
     explicit LayoutEditor(InspectorCSSAgent*);
     RefPtrWillBeRawPtr<CSSPrimitiveValue> getPropertyCSSValue(CSSPropertyID) const;
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
-    void appendAnchorFor(JSONArray*, const String&, const FloatPoint&, const FloatPoint&) const;
+    void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;
 
     // InspectorOverlayHost::LayoutEditorListener implementation.
     void overlayStartedPropertyChange(const String&) override;

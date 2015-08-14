@@ -19,7 +19,8 @@ svg-root{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -37,7 +38,8 @@ svg-root{
         145,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -55,7 +57,8 @@ svg-root{
         155,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -73,7 +76,8 @@ svg-root{
         160,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,

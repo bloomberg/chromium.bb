@@ -115,7 +115,8 @@ circle{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -133,7 +134,8 @@ circle{
         152,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -151,7 +153,8 @@ circle{
         152,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -169,7 +172,8 @@ circle{
         168,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -299,7 +303,8 @@ insetSimpleRound{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -317,7 +322,8 @@ insetSimpleRound{
         152,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -335,7 +341,8 @@ insetSimpleRound{
         152,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -353,7 +360,8 @@ insetSimpleRound{
         168,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -483,7 +491,8 @@ insetComplexRound{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -501,7 +510,8 @@ insetComplexRound{
         152,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -519,7 +529,8 @@ insetComplexRound{
         152,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -537,7 +548,8 @@ insetComplexRound{
         168,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -667,7 +679,8 @@ ellipse{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -685,7 +698,8 @@ ellipse{
         104,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -703,7 +717,8 @@ ellipse{
         104,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -721,7 +736,8 @@ ellipse{
         120,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -851,7 +867,8 @@ contentBox{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -869,7 +886,8 @@ contentBox{
         312,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -887,7 +905,8 @@ contentBox{
         312,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -905,7 +924,8 @@ contentBox{
         328,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -952,7 +972,8 @@ polygon{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -970,7 +991,8 @@ polygon{
         472,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -988,7 +1010,8 @@ polygon{
         472,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -1006,7 +1029,8 @@ polygon{
         488,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -1386,7 +1410,8 @@ raster{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -1404,7 +1429,8 @@ raster{
         472,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -1422,7 +1448,8 @@ raster{
         472,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -1440,7 +1467,8 @@ raster{
         488,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,

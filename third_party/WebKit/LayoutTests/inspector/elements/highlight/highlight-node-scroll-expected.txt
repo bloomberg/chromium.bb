@@ -19,7 +19,8 @@ inspectedElement1{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -37,7 +38,8 @@ inspectedElement1{
         153,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -55,7 +57,8 @@ inspectedElement1{
         163,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -73,7 +76,8 @@ inspectedElement1{
         168,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,
@@ -105,7 +109,8 @@ inspectedElement2{
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
-      "outlineColor": "rgba(128, 0, 0, 0)"
+      "outlineColor": "rgba(128, 0, 0, 0)",
+      "name": "content"
     },
     {
       "path": [
@@ -123,7 +128,8 @@ inspectedElement2{
         363,
         "Z"
       ],
-      "fillColor": "rgba(0, 255, 0, 0)"
+      "fillColor": "rgba(0, 255, 0, 0)",
+      "name": "padding"
     },
     {
       "path": [
@@ -141,7 +147,8 @@ inspectedElement2{
         373,
         "Z"
       ],
-      "fillColor": "rgba(0, 0, 255, 0)"
+      "fillColor": "rgba(0, 0, 255, 0)",
+      "name": "border"
     },
     {
       "path": [
@@ -159,7 +166,8 @@ inspectedElement2{
         378,
         "Z"
       ],
-      "fillColor": "rgba(255, 255, 255, 0)"
+      "fillColor": "rgba(255, 255, 255, 0)",
+      "name": "margin"
     }
   ],
   "showRulers": true,

@@ -19,11 +19,12 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<JSONObject> createAnchor(const FloatPoint& point, const String& propertyName, FloatPoint deltaVector, PassRefPtr<JSONObject> valueDescription)
+PassRefPtr<JSONObject> createAnchor(const FloatPoint& point, const String& type, const String& propertyName, FloatPoint deltaVector, PassRefPtr<JSONObject> valueDescription)
 {
     RefPtr<JSONObject> object = JSONObject::create();
     object->setNumber("x", point.x());
     object->setNumber("y", point.y());
+    object->setString("type", type);
     object->setString("propertyName", propertyName);
 
     RefPtr<JSONObject> deltaVectorJSON = JSONObject::create();
@@ -146,16 +147,16 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
     FloatQuad contentMeans = means(content);
 
     FloatQuad paddingHandles = translateAndProject(contentMeans, orthogonals, padding, 0);
-    appendAnchorFor(anchors.get(), "padding-top", paddingHandles.p1(), orthogonals.p1());
-    appendAnchorFor(anchors.get(), "padding-right", paddingHandles.p2(), orthogonals.p2());
-    appendAnchorFor(anchors.get(), "padding-bottom", paddingHandles.p3(), orthogonals.p3());
-    appendAnchorFor(anchors.get(), "padding-left", paddingHandles.p4(), orthogonals.p4());
+    appendAnchorFor(anchors.get(), "padding", "padding-top", paddingHandles.p1(), orthogonals.p1());
+    appendAnchorFor(anchors.get(), "padding", "padding-right", paddingHandles.p2(), orthogonals.p2());
+    appendAnchorFor(anchors.get(), "padding", "padding-bottom", paddingHandles.p3(), orthogonals.p3());
+    appendAnchorFor(anchors.get(), "padding", "padding-left", paddingHandles.p4(), orthogonals.p4());
 
     FloatQuad marginHandles = translateAndProject(contentMeans, orthogonals, margin, 12);
-    appendAnchorFor(anchors.get(), "margin-top", marginHandles.p1(), orthogonals.p1());
-    appendAnchorFor(anchors.get(), "margin-right", marginHandles.p2(), orthogonals.p2());
-    appendAnchorFor(anchors.get(), "margin-bottom", marginHandles.p3(), orthogonals.p3());
-    appendAnchorFor(anchors.get(), "margin-left", marginHandles.p4(), orthogonals.p4());
+    appendAnchorFor(anchors.get(), "margin", "margin-top", marginHandles.p1(), orthogonals.p1());
+    appendAnchorFor(anchors.get(), "margin", "margin-right", marginHandles.p2(), orthogonals.p2());
+    appendAnchorFor(anchors.get(), "margin", "margin-bottom", marginHandles.p3(), orthogonals.p3());
+    appendAnchorFor(anchors.get(), "margin", "margin-left", marginHandles.p4(), orthogonals.p4());
 
     object->setArray("anchors", anchors.release());
     return object.release();
@@ -188,11 +189,11 @@ PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& proper
     return object.release();
 }
 
-void LayoutEditor::appendAnchorFor(JSONArray* anchors, const String& propertyName, const FloatPoint& position, const FloatPoint& orthogonalVector) const
+void LayoutEditor::appendAnchorFor(JSONArray* anchors, const String& type, const String& propertyName, const FloatPoint& position, const FloatPoint& orthogonalVector) const
 {
     RefPtr<JSONObject> description = createValueDescription(propertyName);
     if (description)
-        anchors->pushObject(createAnchor(position, propertyName, orthogonalVector, description.release()));
+        anchors->pushObject(createAnchor(position, type, propertyName, orthogonalVector, description.release()));
 }
 
 void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)

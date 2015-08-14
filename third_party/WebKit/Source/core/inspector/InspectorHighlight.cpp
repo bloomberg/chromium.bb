@@ -243,21 +243,23 @@ InspectorHighlight::~InspectorHighlight()
 {
 }
 
-void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColor, const Color& outlineColor)
+void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColor, const Color& outlineColor, const String& name)
 {
     Path path = quadToPath(quad);
     PathBuilder builder;
     builder.appendPath(path);
-    appendPath(builder.path(), fillColor, outlineColor);
+    appendPath(builder.path(), fillColor, outlineColor, name);
 }
 
-void InspectorHighlight::appendPath(PassRefPtr<JSONArrayBase> path, const Color& fillColor, const Color& outlineColor)
+void InspectorHighlight::appendPath(PassRefPtr<JSONArrayBase> path, const Color& fillColor, const Color& outlineColor, const String& name)
 {
     RefPtr<JSONObject> object = JSONObject::create();
     object->setValue("path", path);
     object->setString("fillColor", fillColor.serialized());
     if (outlineColor != Color::transparent)
         object->setString("outlineColor", outlineColor.serialized());
+    if (!name.isEmpty())
+        object->setString("name", name);
     m_highlightPaths->pushObject(object.release());
 }
 
@@ -311,10 +313,10 @@ void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighligh
     FloatQuad content, padding, border, margin;
     if (!buildNodeQuads(node, &content, &padding, &border, &margin))
         return;
-    appendQuad(content, highlightConfig.content, highlightConfig.contentOutline);
-    appendQuad(padding, highlightConfig.padding);
-    appendQuad(border, highlightConfig.border);
-    appendQuad(margin, highlightConfig.margin);
+    appendQuad(content, highlightConfig.content, highlightConfig.contentOutline, "content");
+    appendQuad(padding, highlightConfig.padding, Color::transparent, "padding");
+    appendQuad(border, highlightConfig.border, Color::transparent, "border");
+    appendQuad(margin, highlightConfig.margin, Color::transparent, "margin");
 }
 
 PassRefPtr<JSONObject> InspectorHighlight::asJSONObject() const
