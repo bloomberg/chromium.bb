@@ -738,6 +738,18 @@ void VisibleSelection::resetPositionsInComposedTree()
     adjustStartAndEndInComposedTree();
 }
 
+bool VisibleSelection::isValidFor(const Document& document) const
+{
+    if (isNone())
+        return true;
+
+    return m_base.document() == &document
+        && !m_base.isOrphan() && !m_extent.isOrphan()
+        && !m_start.isOrphan() && !m_end.isOrphan()
+        && !m_baseInComposedTree.isOrphan() && !m_extentInComposedTree.isOrphan()
+        && !m_startInComposedTree.isOrphan() && !m_endInComposedTree.isOrphan();
+}
+
 // FIXME: This function breaks the invariant of this class.
 // But because we use VisibleSelection to store values in editing commands for use when
 // undoing the command, we need to be able to create a selection that while currently

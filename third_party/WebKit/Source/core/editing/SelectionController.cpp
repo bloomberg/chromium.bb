@@ -238,6 +238,10 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
     if (m_selectionState == SelectionState::HaveNotStartedSelection && !dispatchSelectStart(target))
         return;
 
+    // TODO(yosin) We should check |mousePressNode|, |targetPosition|, and
+    // |newSelection| are valid for |m_frame->document()|.
+    // |dispatchSelectStart()| can change them by "selectstart" event handler.
+
     if (m_selectionState != SelectionState::ExtendedSelection) {
         // Always extend selection here because it's caused by a mouse drag
         m_selectionState = SelectionState::ExtendedSelection;
@@ -283,6 +287,9 @@ bool SelectionController::updateSelectionForMouseDownDispatchingSelectStart(Node
         return false;
 
     if (!dispatchSelectStart(targetNode))
+        return false;
+
+    if (!selection.isValidFor(*m_frame->document()))
         return false;
 
     if (selection.isRange()) {
