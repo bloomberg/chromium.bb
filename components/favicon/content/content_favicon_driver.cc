@@ -143,6 +143,12 @@ void ContentFaviconDriver::NotifyFaviconUpdated(bool icon_url_changed) {
 void ContentFaviconDriver::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
+
+  // Ignore the update if there is no last committed navigation entry. This can
+  // occur when loading an initially blank page.
+  if (!web_contents()->GetController().GetLastCommittedEntry())
+    return;
+
   favicon_urls_ = candidates;
   OnUpdateFaviconURL(FaviconURLsFromContentFaviconURLs(candidates));
 }
