@@ -2198,6 +2198,9 @@
       ['mac_views_browser==1', {
         'grit_defines': ['-D', 'mac_views_browser'],
       }],
+      ['enable_topchrome_md==1', {
+        'grit_defines': ['-D', 'enable_topchrome_md'],
+      }],
       ['enable_resource_whitelist_generation==1 and OS!="win"', {
         'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("whitelisted_resource_{numeric_id}") {numeric_id}'],
       }],
