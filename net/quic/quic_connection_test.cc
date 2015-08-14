@@ -4662,6 +4662,24 @@ TEST_P(QuicConnectionTest, FecSendPolicyReceivedConnectionOption) {
   EXPECT_EQ(FEC_ALARM_TRIGGER, generator_->fec_send_policy());
 }
 
+// TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
+TEST_P(QuicConnectionTest, FecRTTMultiplierReceivedConnectionOption) {
+  connection_.set_perspective(Perspective::IS_SERVER);
+
+  // Test ReceivedConnectionOptions.
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  QuicTagVector copt;
+  copt.push_back(kFRTT);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, copt);
+  float rtt_multiplier_for_fec_timeout =
+      generator_->rtt_multiplier_for_fec_timeout();
+  connection_.SetFromConfig(config);
+  // New RTT multiplier is half of the old RTT multiplier.
+  EXPECT_EQ(rtt_multiplier_for_fec_timeout,
+            generator_->rtt_multiplier_for_fec_timeout() * 2);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

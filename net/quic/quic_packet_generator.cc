@@ -44,14 +44,14 @@ QuicPacketGenerator::QuicPacketGenerator(QuicConnectionId connection_id,
       packet_creator_(connection_id, framer, random_generator),
       batch_mode_(false),
       fec_timeout_(QuicTime::Delta::Zero()),
+      rtt_multiplier_for_fec_timeout_(kRttMultiplierForFecTimeout),
       should_fec_protect_(false),
       fec_send_policy_(FEC_ANY_TRIGGER),
       should_send_ack_(false),
       should_send_stop_waiting_(false),
       ack_queued_(false),
       stop_waiting_queued_(false),
-      max_packet_length_(kDefaultMaxPacketSize) {
-}
+      max_packet_length_(kDefaultMaxPacketSize) {}
 
 QuicPacketGenerator::~QuicPacketGenerator() {
   for (QuicFrame& frame : queued_control_frames_) {
@@ -103,7 +103,7 @@ void QuicPacketGenerator::OnCongestionWindowChange(
 }
 
 void QuicPacketGenerator::OnRttChange(QuicTime::Delta rtt) {
-  fec_timeout_ = rtt.Multiply(kRttMultiplierForFecTimeout);
+  fec_timeout_ = rtt.Multiply(rtt_multiplier_for_fec_timeout_);
 }
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {

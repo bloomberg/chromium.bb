@@ -211,6 +211,15 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     debug_delegate_ = debug_delegate;
   }
 
+  // TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
+  float rtt_multiplier_for_fec_timeout() {
+    return rtt_multiplier_for_fec_timeout_;
+  }
+  void set_rtt_multiplier_for_fec_timeout(
+      float rtt_multiplier_for_fec_timeout) {
+    rtt_multiplier_for_fec_timeout_ = rtt_multiplier_for_fec_timeout;
+  }
+
   FecSendPolicy fec_send_policy() { return fec_send_policy_; }
   void set_fec_send_policy(FecSendPolicy fec_send_policy) {
     fec_send_policy_ = fec_send_policy;
@@ -270,6 +279,10 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // Timeout used for FEC alarm. Can be set to zero initially or if the SRTT has
   // not yet been set.
   QuicTime::Delta fec_timeout_;
+
+  // The multiplication factor for FEC timeout based on RTT.
+  // TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
+  float rtt_multiplier_for_fec_timeout_;
 
   // True if FEC protection is on. The creator may have an open FEC group even
   // if this variable is false.

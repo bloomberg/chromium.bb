@@ -368,6 +368,12 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(kFSPA, perspective_)) {
     packet_generator_.set_fec_send_policy(FecSendPolicy::FEC_ALARM_TRIGGER);
   }
+  if (config.HasClientSentConnectionOption(kFRTT, perspective_)) {
+    // TODO(rtenneti): Delete this code after the 0.25 RTT FEC experiment.
+    const float kFecTimeoutRttMultiplier = 0.25;
+    packet_generator_.set_rtt_multiplier_for_fec_timeout(
+        kFecTimeoutRttMultiplier);
+  }
 
   if (config.HasClientSentConnectionOption(kMTUH, perspective_)) {
     mtu_discovery_target_ = kMtuDiscoveryTargetPacketSizeHigh;

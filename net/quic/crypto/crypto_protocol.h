@@ -93,6 +93,9 @@ const QuicTag kFHDR = TAG('F', 'H', 'D', 'R');   // FEC protect headers
 const QuicTag kFSTR = TAG('F', 'S', 'T', 'R');   // FEC protect all streams
 // Set FecSendPolicy for sending FEC packet only when FEC alarm goes off.
 const QuicTag kFSPA = TAG('F', 'S', 'P', 'A');
+// Run an experiment that sets FecTimeOut alarm to 0.25RTT.
+// TODO(rtenneti): Delete it after the experiment.
+const QuicTag kFRTT = TAG('F', 'R', 'T', 'T');
 
 // Enable bandwidth resumption experiment.
 const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
