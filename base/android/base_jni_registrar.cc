@@ -16,7 +16,6 @@
 #include "base/android/important_file_writer_android.h"
 #include "base/android/java_handler_thread.h"
 #include "base/android/java_runtime.h"
-#include "base/android/java_system.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/jni_utils.h"
@@ -63,7 +62,6 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
     {"RecordHistogram", base::android::RegisterRecordHistogram},
     {"RecordUserAction", base::android::RegisterRecordUserAction},
     {"Runtime", base::android::JavaRuntime::Register},
-    {"System", base::android::JavaSystem::Register},
     {"SystemMessageHandler", base::MessagePumpForUI::RegisterBindings},
     {"SysUtils", base::android::SysUtils::Register},
     {"ThreadUtils", base::RegisterThreadUtils},

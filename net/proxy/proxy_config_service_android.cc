@@ -4,7 +4,8 @@
 
 #include "net/proxy/proxy_config_service_android.h"
 
-#include "base/android/java_system.h"
+#include <sys/system_properties.h>
+
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/basictypes.h"
@@ -155,8 +156,14 @@ void GetLatestProxyConfigInternal(const GetPropertyCallback& get_property,
 }
 
 std::string GetJavaProperty(const std::string& property) {
+  // Use Java System.getProperty to get configuration information.
   // TODO(pliard): Conversion to/from UTF8 ok here?
-  return base::android::JavaSystem::GetProperty(property);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> str = ConvertUTF8ToJavaString(env, property);
+  ScopedJavaLocalRef<jstring> result =
+      Java_ProxyChangeListener_getProperty(env, str.obj());
+  return result.is_null() ?
+      std::string() : ConvertJavaStringToUTF8(env, result.obj());
 }
 
 void CreateStaticProxyConfig(const std::string& host,

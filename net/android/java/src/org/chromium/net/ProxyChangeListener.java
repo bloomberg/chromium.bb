@@ -73,6 +73,11 @@ public class ProxyChangeListener {
     }
 
     @CalledByNative
+    public static String getProperty(String property) {
+        return System.getProperty(property);
+    }
+
+    @CalledByNative
     public void start(long nativePtr) {
         assert mNativePtr == 0;
         mNativePtr = nativePtr;

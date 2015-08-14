@@ -1381,7 +1381,6 @@
           },
           'dependencies': [
             'android_runtime_jni_headers',
-            'android_system_jni_headers',
           ],
           'includes': [ '../build/jni_generator.gypi' ],
         },
@@ -1393,16 +1392,6 @@
             'jni_gen_package': 'base',
             'input_java_class': 'java/lang/Runtime.class',
           },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
-        },
-        {
-          # GN: //base:android_system_jni_headers
-          'target_name': 'android_system_jni_headers',
-          'type': 'none',
-          'variables': {
-             'jni_gen_package': 'base',
-             'input_java_class': 'java/lang/System.class',
-           },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
         {
