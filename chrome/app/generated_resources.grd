@@ -7643,7 +7643,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Click to go back, hold to see history
       </message>
       <message name="IDS_ACCNAME_TOOLTIP_BACK" desc="The tooltip for back button suited for non-mouse users">
-        Press to go back, context menu to see history
+        Press to go back, use context menu to see history
       </message>
       <message name="IDS_TOOLTIP_FORWARD" desc="The tooltip for forward button">
         Click to go forward, hold to see history
