@@ -202,13 +202,6 @@ crbug.com/418091 [ SnowLeopard Debug ] inspector/elements/bidi-dom-tree.html [ P
 crbug.com/449242 [ SnowLeopard Debug ] fast/css/word-spacing-characters-complex-text.html [ Pass Crash ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 
-crbug.com/516016 paint/invalidation/invalidate-after-composited-scroll.html [ NeedsRebaseline ]
-crbug.com/516016 paint/invalidation/invalidate-after-composited-scroll-of-window.html [ NeedsRebaseline ]
-crbug.com/516016 compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
-crbug.com/516016 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
-crbug.com/516016 fast/repaint/overflow-move-after-scroll.html [ NeedsRebaseline ]
-crbug.com/516016 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
-
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]

@@ -11,25 +11,10 @@
           "bounds": [500, 500],
           "drawsContent": true,
           "repaintRects": [
-            [866, 0, 1, 17],
-            [0, 0, 867, 18],
-            [-1, 18, 883, 18],
-            [-1, 0, 5001, 5000],
-            [-1134, -2000, 1, 17],
-            [-2000, -2000, 867, 18],
-            [-2001, -1982, 883, 18],
             [-2001, -2000, 5001, 5000]
           ],
           "paintInvalidationClients": [
-            "LayoutBlockFlow DIV id='content'",
-            "LayoutText #text",
-            "InlineTextBox 'Tests invalidation of scrolling layer. Passes if the repaint rect is not clipped,\n'",
-            "InlineTextBox 'and there is no red when the scrolling container is scrolled.'",
-            "LayoutBR BR",
-            "InlineTextBox '\n'",
-            "LayoutText #text",
-            "InlineTextBox 'Note for manual testing: must run with --enable-prefer-compositing-to-lcd-text\n'",
-            "InlineTextBox 'on non-high-dpi machines to enable composited scrolling.'"
+            "LayoutBlockFlow DIV id='content'"
           ],
           "children": [
             {
@@ -39,25 +24,10 @@
                   "bounds": [5000, 5000],
                   "drawsContent": true,
                   "repaintRects": [
-                    [2866, 2000, 1, 17],
-                    [2000, 2000, 867, 18],
-                    [1999, 2018, 883, 18],
-                    [1999, 2000, 5001, 5000],
-                    [866, 0, 1, 17],
-                    [0, 0, 867, 18],
-                    [-1, 18, 883, 18],
                     [-1, 0, 5001, 5000]
                   ],
                   "paintInvalidationClients": [
-                    "LayoutBlockFlow DIV id='content'",
-                    "LayoutText #text",
-                    "InlineTextBox 'Tests invalidation of scrolling layer. Passes if the repaint rect is not clipped,\n'",
-                    "InlineTextBox 'and there is no red when the scrolling container is scrolled.'",
-                    "LayoutBR BR",
-                    "InlineTextBox '\n'",
-                    "LayoutText #text",
-                    "InlineTextBox 'Note for manual testing: must run with --enable-prefer-compositing-to-lcd-text\n'",
-                    "InlineTextBox 'on non-high-dpi machines to enable composited scrolling.'"
+                    "LayoutBlockFlow DIV id='content'"
                   ],
                   "children": [
                     {
