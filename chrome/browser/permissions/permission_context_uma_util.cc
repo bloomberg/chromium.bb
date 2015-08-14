@@ -154,6 +154,8 @@ std::string PermissionTypeToString(PermissionType permission_type) {
       return "Geolocation";
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
       return "ProtectedMediaIdentifier";
+    case PermissionType::MIDI:
+      return "Midi";
     case PermissionType::NUM:
       break;
   }

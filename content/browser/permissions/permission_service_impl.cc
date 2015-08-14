@@ -21,6 +21,8 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
       return PermissionType::NOTIFICATIONS;
     case PERMISSION_NAME_PUSH_NOTIFICATIONS:
       return PermissionType::PUSH_MESSAGING;
+    case PERMISSION_NAME_MIDI:
+      return PermissionType::MIDI;
     case PERMISSION_NAME_MIDI_SYSEX:
       return PermissionType::MIDI_SYSEX;
     case PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER:

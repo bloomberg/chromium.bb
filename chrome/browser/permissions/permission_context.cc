@@ -41,6 +41,10 @@ PermissionContextBase* PermissionContext::Get(Profile* profile,
       return ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(
           profile);
 #endif
+    case PermissionType::MIDI:
+      // PermissionType::MIDI is a valid permission but does not have a
+      // permission context. It has a constant value instead.
+      break;
     default:
       NOTREACHED() << "No PermissionContext associated with "
                    << static_cast<int>(permission_type);

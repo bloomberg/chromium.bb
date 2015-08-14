@@ -22,6 +22,8 @@ class PermissionContext {
  public:
   // Helper method returning the PermissionContextBase object associated with
   // the given ContentSettingsType.
+  // This can return nullptr if the the permission type has no associated
+  // context.
   static PermissionContextBase* Get(
       Profile* profile,
       content::PermissionType content_settings_type);

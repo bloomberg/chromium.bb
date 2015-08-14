@@ -58,6 +58,9 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       NOTIMPLEMENTED();
       break;
 #endif
+    case PermissionType::MIDI:
+      // This will hit the NOTREACHED below.
+      break;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
       break;
@@ -74,6 +77,39 @@ void PermissionStatusCallbackWrapper(
     const base::Callback<void(PermissionStatus)>& callback,
     ContentSetting content_setting) {
   callback.Run(ContentSettingToPermissionStatus(content_setting));
+}
+
+// Returns whether the permission has a constant PermissionStatus value (i.e.
+// always approved or always denied)
+// The PermissionTypes for which true is returned should be exactly those which
+// return nullptr in PermissionContext::Get since they don't have a context.
+bool IsConstantPermission(PermissionType type) {
+  switch (type) {
+    case PermissionType::MIDI:
+      return true;
+    default:
+      return false;
+  }
+}
+
+// Function used for handling permission types which do not change their
+// value i.e. they are always approved or always denied etc.
+// CONTENT_SETTING_DEFAULT is returned if the permission needs further handling.
+// This function should only be called when IsConstantPermission has returned
+// true for the PermissionType.
+ContentSetting GetContentSettingForConstantPermission(PermissionType type) {
+  DCHECK(IsConstantPermission(type));
+  switch (type) {
+    case PermissionType::MIDI:
+      return CONTENT_SETTING_ALLOW;
+    default:
+      return CONTENT_SETTING_DEFAULT;
+  }
+}
+
+PermissionStatus GetPermissionStatusForConstantPermission(PermissionType type) {
+  return ContentSettingToPermissionStatus(
+      GetContentSettingForConstantPermission(type));
 }
 
 }  // anonymous namespace
@@ -102,6 +138,11 @@ void PermissionManager::RequestPermission(
     const GURL& requesting_origin,
     bool user_gesture,
     const base::Callback<void(PermissionStatus)>& callback) {
+  if (IsConstantPermission(permission)) {
+    callback.Run(GetPermissionStatusForConstantPermission(permission));
+    return;
+  }
+
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
   if (!context) {
     callback.Run(content::PERMISSION_STATUS_DENIED);
@@ -157,6 +198,9 @@ PermissionStatus PermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
+  if (IsConstantPermission(permission))
+    return GetPermissionStatusForConstantPermission(permission);
+
   PermissionContextBase* context = PermissionContext::Get(profile_, permission);
   if (!context)
     return content::PERMISSION_STATUS_DENIED;
@@ -169,6 +213,11 @@ PermissionStatus PermissionManager::GetPermissionStatus(
 void PermissionManager::RegisterPermissionUsage(PermissionType permission,
                                                 const GURL& requesting_origin,
                                                 const GURL& embedding_origin) {
+  // This is required because constant permissions don't have a
+  // ContentSettingsType.
+  if (IsConstantPermission(permission))
+    return;
+
   profile_->GetHostContentSettingsMap()->UpdateLastUsage(
       requesting_origin,
       embedding_origin,
@@ -188,9 +237,15 @@ int PermissionManager::SubscribePermissionStatusChange(
   subscription->requesting_origin = requesting_origin;
   subscription->embedding_origin = embedding_origin;
   subscription->callback = callback;
-  subscription->current_value = PermissionContext::Get(profile_, permission)
-      ->GetPermissionStatus(subscription->requesting_origin,
-                            subscription->embedding_origin);
+
+  if (IsConstantPermission(permission)) {
+    subscription->current_value = GetContentSettingForConstantPermission(
+        permission);
+  } else {
+    subscription->current_value = PermissionContext::Get(profile_, permission)
+        ->GetPermissionStatus(subscription->requesting_origin,
+                              subscription->embedding_origin);
+  }
 
   return subscriptions_.Add(subscription);
 }
