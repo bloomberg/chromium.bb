@@ -195,8 +195,6 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
-            'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
-            'translate/content/renderer/data_file_renderer_cld_data_provider.h',
             'translate/content/renderer/renderer_cld_data_provider.cc',
             'translate/content/renderer/renderer_cld_data_provider.h',
             'translate/content/renderer/renderer_cld_data_provider_factory.cc',
@@ -210,6 +208,10 @@
             ['cld_version==2', {
               'dependencies': [
                 '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
+              ],
+              'sources': [
+                'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
+                'translate/content/renderer/data_file_renderer_cld_data_provider.h',
               ],
             }],
           ],
