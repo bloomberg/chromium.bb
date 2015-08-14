@@ -4103,9 +4103,9 @@ doOpcode:
 			int len, mrk;
 
 			noback = 1;
-			getRuleCharsText(nested, &ptn_before);
+			getCharacters(nested, &ptn_before);
 			getRuleCharsText(nested, &ruleChars);
-			getRuleCharsText(nested, &ptn_after);
+			getCharacters(nested, &ptn_after);
 			getRuleDotsPattern(nested, &ruleDots);
 
 			if(!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0))
