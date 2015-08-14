@@ -108,7 +108,6 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
   webrtc::DesktopSize view_size_;
 
   ChromotingStats stats_;
-  int64 latest_input_event_timestamp_ ;
 
   bool initialization_finished_;
   bool decode_pending_;

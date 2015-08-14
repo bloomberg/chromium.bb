@@ -61,25 +61,6 @@ namespace {
 // Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
 
-// The boundary value for the FPS histogram: we don't expect video frame-rate to
-// be greater than 40fps. Leaving some room for future improvements, we'll set
-// the max frame rate to 60fps.
-// Histograms expect samples to be less than the boundary value, so set to 61.
-const int kMaxFramesPerSec = 61;
-
-// For bandwidth, based on expected real-world numbers, we'll use a histogram
-// ranging from 0 to 10MB/s, spread across 100 buckets.
-// Histograms are log-scaled by default. This results in fine-grained buckets at
-// lower values and wider-ranged buckets closer to the maximum.
-// Values above the maximum defined here are not discarded; they end up in the
-// max-bucket.
-// Note: if the minimum for a UMA histogram is set to be < 1, it is implicitly
-// normalized to 1.
-// See $/src/base/metrics/histogram.h for more details.
-const int kBandwidthHistogramMinBps = 0;
-const int kBandwidthHistogramMaxBps = 10 * 1000 * 1000;
-const int kBandwidthHistogramBuckets = 100;
-
 // Size of the random seed blob used to initialize RNG in libjingle. OpenSSL
 // needs at least 32 bytes of entropy (see
 // http://wiki.openssl.org/index.php/Random_Numbers), but stores 1039 bytes of
@@ -592,6 +573,14 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   CHECK(video_renderer_);
 
+  video_renderer_->GetStats()->SetUpdateUmaCallbacks(
+      base::Bind(&ChromotingInstance::UpdateUmaCustomHistogram,
+                 weak_factory_.GetWeakPtr(), true),
+      base::Bind(&ChromotingInstance::UpdateUmaCustomHistogram,
+                 weak_factory_.GetWeakPtr(), false),
+      base::Bind(&ChromotingInstance::UpdateUmaEnumHistogram,
+                 weak_factory_.GetWeakPtr()));
+
   if (!plugin_view_.is_null())
     video_renderer_->OnViewChanged(plugin_view_);
 
@@ -981,26 +970,19 @@ void ChromotingInstance::SendPerfStats() {
   // for display to users.
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   ChromotingStats* stats = video_renderer_->GetStats();
-  data->SetDouble("videoBandwidth", stats->video_bandwidth()->Rate());
-  data->SetDouble("videoFrameRate", stats->video_frame_rate()->Rate());
-  data->SetDouble("captureLatency", stats->video_capture_ms()->Average());
-  data->SetDouble("encodeLatency", stats->video_encode_ms()->Average());
-  data->SetDouble("decodeLatency", stats->video_decode_ms()->Average());
-  data->SetDouble("renderLatency", stats->video_paint_ms()->Average());
-  data->SetDouble("roundtripLatency", stats->round_trip_ms()->Average());
+  data->SetDouble("videoBandwidth", stats->video_bandwidth());
+  data->SetDouble("videoFrameRate", stats->video_frame_rate());
+  data->SetDouble("captureLatency", stats->video_capture_ms());
+  data->SetDouble("encodeLatency", stats->video_encode_ms());
+  data->SetDouble("decodeLatency", stats->video_decode_ms());
+  data->SetDouble("renderLatency", stats->video_paint_ms());
+  data->SetDouble("roundtripLatency", stats->round_trip_ms());
   PostLegacyJsonMessage("onPerfStats", data.Pass());
 
   // Record the video frame-rate, packet-rate and bandwidth stats to UMA.
-  pp::UMAPrivate uma(this);
-  uma.HistogramEnumeration("Chromoting.Video.FrameRate",
-                           stats->video_frame_rate()->Rate(), kMaxFramesPerSec);
-  uma.HistogramEnumeration("Chromoting.Video.PacketRate",
-                           stats->video_packet_rate()->Rate(),
-                           kMaxFramesPerSec);
-  uma.HistogramCustomCounts(
-      "Chromoting.Video.Bandwidth", stats->video_bandwidth()->Rate(),
-      kBandwidthHistogramMinBps, kBandwidthHistogramMaxBps,
-      kBandwidthHistogramBuckets);
+  // TODO(anandc): Create a timer in ChromotingStats to do this work.
+  // See http://crbug/508602.
+  stats->UploadRateStatsToUma();
 }
 
 // static
@@ -1071,6 +1053,31 @@ bool ChromotingInstance::LogToUI(int severity, const char* file, int line,
 bool ChromotingInstance::IsConnected() {
   return client_ &&
          (client_->connection_state() == protocol::ConnectionToHost::CONNECTED);
+}
+
+void ChromotingInstance::UpdateUmaEnumHistogram(
+    const std::string& histogram_name,
+    int64 value,
+    int histogram_max) {
+  pp::UMAPrivate uma(this);
+  uma.HistogramEnumeration(histogram_name, value, histogram_max);
+}
+
+void ChromotingInstance::UpdateUmaCustomHistogram(
+    bool is_custom_counts_histogram,
+    const std::string& histogram_name,
+    int64 value,
+    int histogram_min,
+    int histogram_max,
+    int histogram_buckets) {
+  pp::UMAPrivate uma(this);
+
+  if (is_custom_counts_histogram)
+    uma.HistogramCustomCounts(histogram_name, value, histogram_min,
+                              histogram_max, histogram_buckets);
+  else
+    uma.HistogramCustomTimes(histogram_name, value, histogram_min,
+                             histogram_max, histogram_buckets);
 }
 
 }  // namespace remoting

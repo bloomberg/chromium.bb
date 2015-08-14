@@ -289,7 +289,7 @@ void ChromotingJniInstance::RecordPaintTime(int64 paint_time_ms) {
   }
 
   if (stats_logging_enabled_)
-    video_renderer_->GetStats()->video_paint_ms()->Record(paint_time_ms);
+    video_renderer_->GetStats()->RecordPaintTime(paint_time_ms);
 }
 
 void ChromotingJniInstance::OnConnectionState(
@@ -522,13 +522,10 @@ void ChromotingJniInstance::LogPerfStats() {
   __android_log_print(ANDROID_LOG_INFO, "stats",
                       "Bandwidth:%.0f FrameRate:%.1f Capture:%.1f Encode:%.1f "
                       "Decode:%.1f Render:%.1f Latency:%.0f",
-                      stats->video_bandwidth()->Rate(),
-                      stats->video_frame_rate()->Rate(),
-                      stats->video_capture_ms()->Average(),
-                      stats->video_encode_ms()->Average(),
-                      stats->video_decode_ms()->Average(),
-                      stats->video_paint_ms()->Average(),
-                      stats->round_trip_ms()->Average());
+                      stats->video_bandwidth(), stats->video_frame_rate(),
+                      stats->video_capture_ms(), stats->video_encode_ms(),
+                      stats->video_decode_ms(), stats->video_paint_ms(),
+                      stats->round_trip_ms());
 
   client_status_logger_->LogStatistics(stats);
 

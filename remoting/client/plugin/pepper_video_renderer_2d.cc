@@ -361,7 +361,7 @@ void PepperVideoRenderer2D::OnFlushDone(int result,
   DCHECK(CalledOnValidThread());
   DCHECK(flush_pending_);
 
-  software_video_renderer_->GetStats()->video_paint_ms()->Record(
+  software_video_renderer_->GetStats()->RecordPaintTime(
       (base::Time::Now() - paint_start).InMilliseconds());
 
   flush_pending_ = false;
