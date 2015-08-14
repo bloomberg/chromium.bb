@@ -42,7 +42,6 @@ remoting.LogToServer = function(signalStrategy, opt_isHost) {
   this.role_ = opt_isHost ? 'host' : 'client';
 
   this.setSessionId();
-  signalStrategy.sendConnectionSetupResults(this);
 };
 
 // Constants used for generating a session ID.

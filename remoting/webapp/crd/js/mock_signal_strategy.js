@@ -45,10 +45,6 @@ remoting.MockSignalStrategy.prototype.connect = function() {
 remoting.MockSignalStrategy.prototype.sendMessage = function() {
 };
 
-/** @override */
-remoting.MockSignalStrategy.prototype.sendConnectionSetupResults = function() {
-};
-
 /**
  * @param {function(remoting.SignalStrategy.State):void} onStateChangedCallback
  *   Callback to call on state change.

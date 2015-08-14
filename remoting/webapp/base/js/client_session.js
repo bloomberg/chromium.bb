@@ -389,7 +389,6 @@ remoting.ClientSession.prototype.createLogger_ = function(
       remoting.ChromotingEvent.Role.CLIENT,
       remoting.TelemetryEventWriter.Client.write
     );
-    signalStrategy.sendConnectionSetupResults(logger);
     return logger;
   } else {
     return new remoting.LogToServer(signalStrategy);

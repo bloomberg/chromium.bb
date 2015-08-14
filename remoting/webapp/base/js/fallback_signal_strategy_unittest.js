@@ -84,6 +84,7 @@ QUnit.module('fallback_signal_strategy', {
     secondary = strategy.secondary_;
     addSpies(secondary);
     logToServer = new MockLogToServer(assert);
+    strategy.logger_ = logToServer;
   },
   afterEach: function() {
     onStateChange = null;
@@ -119,7 +120,6 @@ QUnit.test('primary succeeds; send & receive routed to it',
     setState(assert, primary, remoting.SignalStrategy.State.CONNECTED, true);
     assert.equal(strategy.getJid(), 'primary-jid');
 
-    strategy.sendConnectionSetupResults(logToServer);
     logToServer.assertProgress(
         remoting.SignalStrategy.Type.XMPP,
         remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
@@ -168,7 +168,6 @@ QUnit.test('primary fails; secondary succeeds; send & receive routed to it',
     setState(assert, secondary, remoting.SignalStrategy.State.CONNECTED, true);
     assert.equal(strategy.getJid(), 'secondary-jid');
 
-    strategy.sendConnectionSetupResults(logToServer);
     logToServer.assertProgress(
         remoting.SignalStrategy.Type.XMPP,
         remoting.FallbackSignalStrategy.Progress.FAILED,
@@ -229,7 +228,6 @@ QUnit.test('primary times out; secondary succeeds',
              false);
     setState(assert, secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
     setState(assert, secondary, remoting.SignalStrategy.State.CONNECTED, true);
-    strategy.sendConnectionSetupResults(logToServer);
 
     setState(assert, secondary, remoting.SignalStrategy.State.CLOSED, true);
     setState(assert, primary, remoting.SignalStrategy.State.FAILED, false);
@@ -284,7 +282,6 @@ QUnit.test('primary times out; secondary succeeds; primary succeeds late',
              false);
     setState(assert, secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
     setState(assert, secondary, remoting.SignalStrategy.State.CONNECTED, true);
-    strategy.sendConnectionSetupResults(logToServer);
 
     setState(assert, primary, remoting.SignalStrategy.State.HANDSHAKE, false);
     setState(assert, primary, remoting.SignalStrategy.State.CONNECTED, false);

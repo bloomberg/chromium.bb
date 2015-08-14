@@ -43,16 +43,6 @@ remoting.BufferedSignalStrategy.prototype.sendMessage = function(message) {
 };
 
 /**
- * Send any messages accumulated during connection set-up.
- *
- * @param {remoting.Logger} logger The Logger instance for the connection.
- */
-remoting.BufferedSignalStrategy.prototype.sendConnectionSetupResults =
-    function(logger) {
-  this.underlying_.sendConnectionSetupResults(logger);
-};
-
-/**
  * If the underlying implementation is connected, flush all pending messages.
  * @private
  */

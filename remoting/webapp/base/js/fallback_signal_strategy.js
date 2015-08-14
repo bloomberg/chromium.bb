@@ -74,7 +74,10 @@ remoting.FallbackSignalStrategy = function(primary,
   this.primaryConnectTimerId_ = 0;
 
   /** @private {remoting.Logger} */
-  this.logger_ = null;
+  this.logger_ = new remoting.SessionLogger(
+      remoting.ChromotingEvent.Role.CLIENT,
+      remoting.TelemetryEventWriter.Client.write
+  );
 
   /**
    * @type {Array<{strategyType: remoting.SignalStrategy.Type,
@@ -153,28 +156,6 @@ remoting.FallbackSignalStrategy.prototype.connect =
  */
 remoting.FallbackSignalStrategy.prototype.sendMessage = function(message) {
   this.getConnectedSignalStrategy_().sendMessage(message);
-};
-
-/**
- * Send any messages accumulated during connection set-up.
- *
- * @param {remoting.Logger} logToServer The Logger instance for the
- *     connection.
- */
-remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResults =
-    function(logToServer) {
-  this.logger_ = logToServer;
-  this.sendConnectionSetupResultsInternal_();
-}
-
-remoting.FallbackSignalStrategy.prototype.sendConnectionSetupResultsInternal_ =
-    function() {
-  for (var i = 0; i < this.connectionSetupResults_.length; ++i) {
-    var result = this.connectionSetupResults_[i];
-    this.logger_.logSignalStrategyProgress(result.strategyType,
-                                                result.progress);
-  }
-  this.connectionSetupResults_ = [];
 };
 
 /** @return {remoting.SignalStrategy.State} Current state */
@@ -357,11 +338,5 @@ remoting.FallbackSignalStrategy.prototype.updateProgress_ = function(
     strategy, progress) {
   console.log('FallbackSignalStrategy progress: ' + strategy.getType() + ' ' +
       progress);
-  this.connectionSetupResults_.push({
-    'strategyType': strategy.getType(),
-    'progress': progress
-  });
-  if (this.logger_) {
-    this.sendConnectionSetupResultsInternal_();
-  }
+  this.logger_.logSignalStrategyProgress(strategy.getType(), progress);
 };

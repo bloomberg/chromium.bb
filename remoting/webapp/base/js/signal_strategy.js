@@ -76,16 +76,6 @@ remoting.SignalStrategy.prototype.connect =
  */
 remoting.SignalStrategy.prototype.sendMessage = function(message) {};
 
-/**
- * Send any messages accumulated during connection set-up.
- *
- * @param {remoting.Logger} logger The logger instance for the
- *     connection.
- */
-remoting.SignalStrategy.prototype.sendConnectionSetupResults =
-    function(logger) {
-};
-
 /** @return {remoting.SignalStrategy.State} Current state */
 remoting.SignalStrategy.prototype.getState = function() {};
 

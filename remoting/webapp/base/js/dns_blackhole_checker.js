@@ -113,11 +113,6 @@ remoting.DnsBlackholeChecker.prototype.dispose = function() {
   this.setState_(remoting.SignalStrategy.State.CLOSED);
 };
 
-remoting.DnsBlackholeChecker.prototype.sendConnectionSetupResults = function(
-    logger) {
-  this.signalStrategy_.sendConnectionSetupResults(logger);
-};
-
 /** @param {string} message */
 remoting.DnsBlackholeChecker.prototype.sendMessage = function(message) {
   console.assert(this.state_ == remoting.SignalStrategy.State.CONNECTED,

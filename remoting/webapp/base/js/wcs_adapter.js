@@ -103,10 +103,6 @@ remoting.WcsAdapter.prototype.sendMessage = function(message) {
   remoting.wcsSandbox.sendIq(message);
 };
 
-remoting.WcsAdapter.prototype.sendConnectionSetupResults =
-    function(logger) {
-};
-
 /** @param {string} jid */
 remoting.WcsAdapter.prototype.onWcsConnected_ = function(jid) {
   this.jid_ = jid;

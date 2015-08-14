@@ -130,10 +130,6 @@ remoting.XmppConnection.prototype.sendMessage = function(message) {
   this.sendString_(message);
 };
 
-remoting.XmppConnection.prototype.sendConnectionSetupResults =
-    function(logger) {
-};
-
 /** @return {remoting.SignalStrategy.State} Current state */
 remoting.XmppConnection.prototype.getState = function() {
   return this.state_;
