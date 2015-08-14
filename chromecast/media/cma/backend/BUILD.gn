@@ -18,8 +18,8 @@ source_set("backend") {
 
   deps = [
     "//base",
-    "//chromecast/media/base",
     "//chromecast/media/cma/base",
+    "//chromecast/public/media",
     "//media",
   ]
 

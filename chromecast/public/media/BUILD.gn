@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("public") {
+source_set("media") {
   sources = [
     "audio_pipeline_device.h",
     "cast_decoder_buffer.h",
@@ -16,4 +16,13 @@ source_set("public") {
     "stream_id.h",
     "video_pipeline_device.h",
   ]
+
+  public_configs = [ ":public_headers" ]
+}
+
+# Any target which includes headers in ":media" should include it in its deps
+# so that it inherits the config below. This allows headers in ":media" to
+# include other interfaces without an absolute path from src.
+config("public_headers") {
+  include_dirs = [ "//chromecast/public" ]
 }

@@ -11,10 +11,10 @@ declare_args() {
 
 source_set("base") {
   sources = [
-    "decrypt_context.cc",
-    "decrypt_context.h",
-    "decrypt_context_clearkey.cc",
-    "decrypt_context_clearkey.h",
+    "decrypt_context_impl.cc",
+    "decrypt_context_impl.h",
+    "decrypt_context_impl_clearkey.cc",
+    "decrypt_context_impl_clearkey.h",
     "key_systems_common.cc",
     "key_systems_common.h",
     "media_caps.cc",
@@ -31,6 +31,7 @@ source_set("base") {
 
   deps = [
     "//base",
+    "//chromecast/public/media",
     "//crypto",
     "//crypto:platform",
     "//media",
@@ -59,6 +60,8 @@ shared_library("libcast_media_default") {
   configs += [ "//chromecast:config" ]
 
   deps = [
+    "//chromecast/media/cma/backend",
     "//chromecast/public",
+    "//chromecast/public/media",
   ]
 }
