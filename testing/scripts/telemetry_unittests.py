@@ -16,15 +16,19 @@ def main_run(args):
   if args.filter_file:
     filter_tests = json.load(args.filter_file)
 
+  test_args = ['--retry-limit', '3']
+  if 'android' == args.properties.get('target_platform'):
+    test_args += ['--browser', 'android-chromium', '--device', 'android']
+  else:
+    test_args += ['--browser', args.build_config_fs.lower()]
+
   with common.temporary_file() as tempfile_path:
+    test_args += ['--write-full-results-to', tempfile_path]
     rc = common.run_runtest(args, [
         '--test-type', 'telemetry_unittests',
         '--run-python-script',
         os.path.join(common.SRC_DIR, 'tools', 'telemetry', 'run_tests'),
-        '--browser', args.build_config_fs.lower(),
-        '--retry-limit', '3',
-        '--write-full-results-to', tempfile_path,
-    ] + filter_tests)
+    ] + test_args + filter_tests)
 
     with open(tempfile_path) as f:
       results = json.load(f)
