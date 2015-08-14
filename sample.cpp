@@ -28,7 +28,7 @@ static const wchar_t* utf8towcs(const char* str) {
 
   const size_t size = mbstowcs(NULL, str, 0);
 
-  if (size == 0)
+  if (size == 0 || size == static_cast<size_t>(-1))
     return NULL;
 
   wchar_t* const val = new (std::nothrow) wchar_t[size + 1];
