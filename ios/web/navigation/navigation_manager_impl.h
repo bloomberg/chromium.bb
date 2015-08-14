@@ -84,7 +84,6 @@ class NavigationManagerImpl : public NavigationManager {
   int GetLastCommittedEntryIndex() const;
   int GetEntryCount() const;
   bool RemoveEntryAtIndex(int index);
-  void DiscardNonCommittedEntries();
   int GetPendingEntryIndex() const;
   void LoadURL(const GURL& url,
                const Referrer& referrer,
@@ -113,6 +112,7 @@ class NavigationManagerImpl : public NavigationManager {
   NavigationItem* GetVisibleItem() const override;
   NavigationItem* GetLastCommittedItem() const override;
   NavigationItem* GetPendingItem() const override;
+  void DiscardNonCommittedItems() override;
   void AddTransientURLRewriter(
       BrowserURLRewriter::URLRewriter rewriter) override;
 

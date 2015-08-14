@@ -130,6 +130,10 @@ NavigationItem* NavigationManagerImpl::GetPendingItem() const {
   return [[session_controller_ pendingEntry] navigationItem];
 }
 
+void NavigationManagerImpl::DiscardNonCommittedItems() {
+  [session_controller_ discardNonCommittedEntries];
+}
+
 NavigationItem* NavigationManagerImpl::GetTransientItem() const {
   return [[session_controller_ transientEntry] navigationItem];
 }
@@ -170,10 +174,6 @@ bool NavigationManagerImpl::RemoveEntryAtIndex(int index) {
 
   [session_controller_ removeEntryAtIndex:index];
   return true;
-}
-
-void NavigationManagerImpl::DiscardNonCommittedEntries() {
-  [session_controller_ discardNonCommittedEntries];
 }
 
 NavigationItem* NavigationManagerImpl::GetLastUserItem() const {

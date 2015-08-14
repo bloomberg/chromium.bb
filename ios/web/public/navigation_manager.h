@@ -42,6 +42,9 @@ class NavigationManager {
   // currently in progress, or null if there is none.
   virtual NavigationItem* GetPendingItem() const = 0;
 
+  // Removes the transient and pending NavigationItems.
+  virtual void DiscardNonCommittedItems() = 0;
+
   // Adds |rewriter| to a transient list of URL rewriters.  Transient URL
   // rewriters will be executed before the rewriters already added to the
   // BrowserURLRewriter singleton, and the list will be cleared after the next
