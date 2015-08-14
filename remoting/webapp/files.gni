@@ -90,6 +90,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/dns_blackhole_checker_unittest.js",
   "base/js/error_unittest.js",
   "base/js/fallback_signal_strategy_unittest.js",
+  "base/js/format_iq_unittest.js",
   "base/js/identity_unittest.js",
   "base/js/ipc_unittest.js",
   "base/js/l10n_unittest.js",

@@ -79,7 +79,8 @@ remoting.ChromotingEvent = function(type) {
   this.signal_strategy_type;
   /** @type {remoting.ChromotingEvent.SignalStrategyProgress} */
   this.signal_strategy_progress;
-
+  /** @type {?remoting.ChromotingEvent.XmppError} */
+  this.xmpp_error;
   this.init_();
 };
 
@@ -200,6 +201,25 @@ remoting.ChromotingEvent.ConnectionError = {
 };
 
 /** @enum {number} */
+remoting.ChromotingEvent.XmppErrorType = {
+  UNKNOWN: 0,
+  CANCEL: 1,
+  WAIT: 2,
+  MODIFY: 3,
+  AUTH: 4
+};
+
+/** @enum {number} */
+remoting.ChromotingEvent.JingleAction = {
+  UNKNOWN: 0,
+  SESSION_INITIATE: 1,
+  SESSION_ACCEPT: 2,
+  SESSION_TERMINATE: 3,
+  SESSION_INFO: 4,
+  TRANSPORT_INFO: 5
+};
+
+/** @enum {number} */
 remoting.ChromotingEvent.Mode = {
   IT2ME: 1,
   ME2ME: 2,
@@ -221,3 +241,23 @@ remoting.ChromotingEvent.SignalStrategyProgress = {
   FAILED_LATE: 5
 };
 
+
+/**
+ * Represents an XMPP Error.
+ *
+ * jingle_action: represents the action attribute of the original request.
+ *
+ * type: The XMPP error type.
+ *
+ * condition_string: The XMPP error condition.
+ *
+ * See http://xmpp.org/extensions/xep-0086.html.
+ *
+ * @typedef {{
+ *  jingle_action: remoting.ChromotingEvent.JingleAction,
+ *  type: remoting.ChromotingEvent.XmppErrorType,
+ *  condition_string: string,
+ *  from_client: boolean
+ * }}
+ */
+remoting.ChromotingEvent.XmppError;
