@@ -55,8 +55,13 @@ class ScrollingPage(page_module.Page):
       action_runner.tab.WaitForDocumentReadyStateToBeInteractiveOrBetter(1)
     except exceptions.TimeoutException:
       pass
-    # Make sure we have a body element to scroll.
-    action_runner.WaitForJavaScriptCondition('document.body !== null')
+    # Wait for the document to have a body so that we can scroll.
+    # Simultaneously (to reduce latency), insert a no-op touch handler on the
+    # body. Most ads have touch handlers and we want to simulate the worst case
+    # of the user trying to scroll the page by grabbing an ad.
+    action_runner.WaitForJavaScriptCondition(
+        '!(document.body == null || '
+        '  document.body.addEventListener("touchstart", function() {}))')
 
   def RunPageInteractions(self, action_runner):
     for _ in range(10):
@@ -82,8 +87,6 @@ class ScrollingForbesPage(ScrollingPage):
     # Wait until the interstitial banner goes away.
     action_runner.WaitForJavaScriptCondition(
         'window.location.pathname.indexOf("welcome") == -1')
-    # Make sure we have a body element to scroll.
-    action_runner.WaitForJavaScriptCondition('document.body !== null')
 
 
 class ToughAdCasesPageSet(story.StorySet):
