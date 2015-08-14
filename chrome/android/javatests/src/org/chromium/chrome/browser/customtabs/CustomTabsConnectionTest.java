@@ -128,17 +128,39 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     }
 
     /**
-     * Tests that CPU cgroup exists and is either root or background.
+     * Tests that CPU cgroups exist and have the expected values for background and foreground.
+     *
+     * To make testing easier the test assumes that the Android Framework uses
+     * the same cgroup for background processes and background _threads_, which
+     * has been the case through LOLLIPOP_MR1.
      */
     @SmallTest
     public void testGetSchedulerGroup() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
         assertNotNull(CustomTabsConnection.getSchedulerGroup(Process.myPid()));
         String cgroup = CustomTabsConnection.getSchedulerGroup(Process.myPid());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // TODO(lizeb): Really test with background processes, as this
-            // process doesn't run in the background.
-            assertTrue(cgroup.equals("/") || cgroup.equals("/bg_non_interactive") // L MR1+
-                    || cgroup.equals("/apps") || cgroup.equals("/apps//bg_non_interactive"));
+        // Tests run in the foreground.
+        assertTrue(cgroup.equals("/") || cgroup.equals("/apps"));
+
+        final String[] backgroundThreadCgroup = {null};
+        Thread backgroundThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int tid = Process.myTid();
+                Process.setThreadPriority(tid, Process.THREAD_PRIORITY_BACKGROUND);
+                backgroundThreadCgroup[0] = CustomTabsConnection.getSchedulerGroup(tid);
+            }
+        });
+        backgroundThread.start();
+        try {
+            backgroundThread.join();
+        } catch (InterruptedException e) {
+            fail();
+            return;
         }
+        String threadCgroup = backgroundThreadCgroup[0];
+        assertNotNull(threadCgroup);
+        assertTrue(threadCgroup.equals("/bg_non_interactive")
+                || threadCgroup.equals("/apps/bg_non_interactive"));
     }
 }
