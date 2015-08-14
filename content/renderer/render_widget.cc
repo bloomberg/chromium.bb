@@ -1680,8 +1680,6 @@ void RenderWidget::OnImeSetComposition(
   if (!ShouldHandleImeEvent())
     return;
   ImeEventGuard guard(this);
-  base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
-                                                      true);
   if (!webwidget_->setComposition(
       text, WebVector<WebCompositionUnderline>(underlines),
       selection_start, selection_end)) {
