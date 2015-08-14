@@ -52,8 +52,12 @@ class GFX_EXPORT DirectManipulationHelper {
   // of the legacy window.
   void SetBounds(const gfx::Rect& bounds);
 
-  // Registers the passed in |window| as a Direct Manipulation consumer.
+  // Registers and activates the passed in |window| as a Direct Manipulation
+  // consumer.
   void Activate(HWND window);
+
+  // Deactivates Direct Manipulation processing on the passed in |window|.
+  void Deactivate(HWND window);
 
   // Passes the WM_MOUSEWHEEL messages to Direct Manipulation. This is for
   // logistics purposes.

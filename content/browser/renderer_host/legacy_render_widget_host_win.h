@@ -89,6 +89,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                           OnMouseRange)
     MESSAGE_HANDLER_EX(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER_EX(WM_SIZE, OnSize)
+    MESSAGE_HANDLER_EX(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
   END_MSG_MAP()
 
   HWND hwnd() { return m_hWnd; }
@@ -142,6 +143,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCCalcSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnWindowPosChanged(UINT message, WPARAM w_param, LPARAM l_param);
 
   base::win::ScopedComPtr<IAccessible> window_accessible_;
 

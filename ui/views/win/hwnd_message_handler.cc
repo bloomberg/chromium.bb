@@ -2520,10 +2520,15 @@ void HWNDMessageHandler::OnWindowPosChanged(WINDOWPOS* window_pos) {
     MARGINS m = {10, 10, 10, 10};
     DwmExtendFrameIntoClientArea(hwnd(), &m);
   }
-  if (window_pos->flags & SWP_SHOWWINDOW)
+  if (window_pos->flags & SWP_SHOWWINDOW) {
     delegate_->HandleVisibilityChanged(true);
-  else if (window_pos->flags & SWP_HIDEWINDOW)
+    if (direct_manipulation_helper_)
+      direct_manipulation_helper_->Activate(hwnd());
+  } else if (window_pos->flags & SWP_HIDEWINDOW) {
     delegate_->HandleVisibilityChanged(false);
+    if (direct_manipulation_helper_)
+      direct_manipulation_helper_->Deactivate(hwnd());
+  }
   SetMsgHandled(FALSE);
 }
 

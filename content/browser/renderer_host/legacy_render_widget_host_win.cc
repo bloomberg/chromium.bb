@@ -76,8 +76,6 @@ HWND LegacyRenderWidgetHostHWND::GetParent() {
 
 void LegacyRenderWidgetHostHWND::Show() {
   ::ShowWindow(hwnd(), SW_SHOW);
-  if (direct_manipulation_helper_)
-    direct_manipulation_helper_->Activate(hwnd());
 }
 
 void LegacyRenderWidgetHostHWND::Hide() {
@@ -394,6 +392,21 @@ LRESULT LegacyRenderWidgetHostHWND::OnSize(UINT message,
   long current_style = ::GetWindowLong(hwnd(), GWL_STYLE);
   ::SetWindowLong(hwnd(), GWL_STYLE,
                   current_style | WS_VSCROLL | WS_HSCROLL);
+  return 0;
+}
+
+LRESULT LegacyRenderWidgetHostHWND::OnWindowPosChanged(UINT message,
+                                                       WPARAM w_param,
+                                                       LPARAM l_param) {
+  WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(l_param);
+  if (direct_manipulation_helper_) {
+    if (window_pos->flags & SWP_SHOWWINDOW) {
+      direct_manipulation_helper_->Activate(hwnd());
+    } else if (window_pos->flags & SWP_HIDEWINDOW) {
+      direct_manipulation_helper_->Deactivate(hwnd());
+    }
+  }
+  SetMsgHandled(FALSE);
   return 0;
 }
 
