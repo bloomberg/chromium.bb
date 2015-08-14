@@ -30,8 +30,8 @@ namespace {
 // Don't let a frame draw until 5% of the way through the next vsync interval
 // after the call to SwapBuffers. This slight offset is to ensure that skew
 // doesn't result in the frame being presented to the previous vsync interval.
-
 const double kVSyncIntervalFractionForEarliestDisplay = 0.05;
+
 // Target 50% of the way through the next vsync interval. Empirically, it has
 // been determined to be a good target for smooth animation.
 const double kVSyncIntervalFractionForDisplayCallback = 0.5;
@@ -289,19 +289,18 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
         [layer_ addSublayer:partial_damage_layer_];
       [partial_damage_layer_ setContents:new_contents];
 
-      CGRect new_frame = gfx::ConvertRectToDIP(
-          swap->scale_factor, swap->pixel_partial_damage_rect).ToCGRect();
+      gfx::Rect dip_partial_damage_rect = gfx::ConvertRectToDIP(
+          swap->scale_factor, swap->pixel_partial_damage_rect);
+      gfx::Size dip_size = gfx::ConvertSizeToDIP(
+          swap->scale_factor, swap->pixel_size);
+
+      CGRect new_frame = dip_partial_damage_rect.ToCGRect();
       if (!CGRectEqualToRect([partial_damage_layer_ frame], new_frame))
         [partial_damage_layer_ setFrame:new_frame];
 
-      gfx::RectF contents_rect =
-          gfx::RectF(swap->pixel_partial_damage_rect);
-      contents_rect.Scale(
-          1. / swap->pixel_size.width(), 1. / swap->pixel_size.height());
-      CGRect cg_contents_rect = CGRectMake(
-          contents_rect.x(), contents_rect.y(),
-          contents_rect.width(), contents_rect.height());
-      [partial_damage_layer_ setContentsRect:cg_contents_rect];
+      gfx::RectF contents_rect = gfx::RectF(dip_partial_damage_rect);
+      contents_rect.Scale(1. / dip_size.width(), 1. / dip_size.height());
+      [partial_damage_layer_ setContentsRect:contents_rect.ToCGRect()];
     } else {
       // Remove the partial damage layer.
       if ([partial_damage_layer_ superlayer]) {
