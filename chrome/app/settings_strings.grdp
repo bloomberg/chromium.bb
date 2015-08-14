@@ -106,6 +106,9 @@
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS" desc="Label for the servers tab in certificate manager.">
     Servers
   </message>
+  <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS_IDENTIFY" desc="Label for servers subtitle tab in certificate manager.">
+    You have certificates on file that identify these servers:
+  </message>
   <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES" desc="Label for the authorities tab in certificate manager.">
     Authorities
   </message>

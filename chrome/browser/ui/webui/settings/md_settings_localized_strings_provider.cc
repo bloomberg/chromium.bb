@@ -97,6 +97,9 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
       IDS_SETTINGS_CERTIFICATE_MANAGER_YOU_HAVE_CERTIFICATES);
   html_source->AddLocalizedString("certificateManagerServers",
                                   IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS);
+  html_source->AddLocalizedString(
+      "certificateManagerServersSubtitle",
+      IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS_IDENTIFY);
   html_source->AddLocalizedString("certificateManagerAuthorities",
                                   IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES);
   html_source->AddLocalizedString(
