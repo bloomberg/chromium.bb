@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "net/tools/dump_cache/url_to_filename_encoder.h"
+#include "net/tools/flip_server/url_to_filename_encoder.h"
 
 namespace net {
 

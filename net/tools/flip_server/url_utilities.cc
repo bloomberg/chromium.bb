@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/dump_cache/url_utilities.h"
+#include "net/tools/flip_server/url_utilities.h"
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,9 +18,8 @@ std::string UrlUtilities::GetUrlHost(const std::string& url) {
     b += 2;
   size_t next_slash = url.find_first_of('/', b);
   size_t next_colon = url.find_first_of(':', b);
-  if (next_slash != std::string::npos
-      && next_colon != std::string::npos
-      && next_colon < next_slash) {
+  if (next_slash != std::string::npos && next_colon != std::string::npos &&
+      next_colon < next_slash) {
     return std::string(url, b, next_colon - b);
   }
   if (next_slash == std::string::npos) {
@@ -52,7 +51,7 @@ std::string UrlUtilities::GetUrlPath(const std::string& url) {
   if (b == std::string::npos)
     return "/";
 
-  size_t e = url.find("#", b+1);
+  size_t e = url.find("#", b + 1);
   if (e != std::string::npos)
     return std::string(url, b, (e - b));
   return std::string(url, b);
@@ -123,4 +122,3 @@ std::string UrlUtilities::Unescape(const std::string& escaped_url) {
 }
 
 }  // namespace net
-

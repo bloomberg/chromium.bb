@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_DUMP_CACHE_URL_UTILITIES_H_
-#define NET_TOOLS_DUMP_CACHE_URL_UTILITIES_H_
+#ifndef NET_TOOLS_FLIP_SERVER_URL_UTILITIES_H_
+#define NET_TOOLS_FLIP_SERVER_URL_UTILITIES_H_
 
 #include <string>
 
@@ -32,4 +32,4 @@ struct UrlUtilities {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DUMP_CACHE_URL_UTILITIES_H_
+#endif  // NET_TOOLS_FLIP_SERVER_URL_UTILITIES_H_

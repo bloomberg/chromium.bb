@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/tools/dump_cache/dump_files.h"
-#include "net/tools/dump_cache/simple_cache_dumper.h"
 
 enum Errors {
   GENERIC = -1,
@@ -26,9 +25,8 @@ enum Errors {
   TOOL_NOT_FOUND,
 };
 
-// Folders to read and write cache files.
+// Folder to read cache files.
 const char kInputPath[] = "input";
-const char kOutputPath[] = "output";
 
 // Dumps the file headers to stdout.
 const char kDumpHeaders[] = "dump-headers";
@@ -36,15 +34,11 @@ const char kDumpHeaders[] = "dump-headers";
 // Dumps all entries to stdout.
 const char kDumpContents[] = "dump-contents";
 
-// Convert the cache to files.
-const char kDumpToFiles[] = "dump-to-files";
-
 int Help() {
   printf("warning: input files are modified by this tool\n");
   printf("dump_cache --input=path1 [--output=path2]\n");
   printf("--dump-headers: display file headers\n");
   printf("--dump-contents: display all entries\n");
-  printf("--dump-to-files: write the contents of the cache to files\n");
   return INVALID_ARGUMENT;
 }
 
@@ -62,21 +56,9 @@ int main(int argc, const char* argv[]) {
   if (input_path.empty())
     return Help();
 
-  bool dump_to_files = command_line.HasSwitch(kDumpToFiles);
-
-  base::FilePath output_path = command_line.GetSwitchValuePath(kOutputPath);
-  if (dump_to_files && output_path.empty())
-    return Help();
-
   int version = GetMajorVersion(input_path);
-  if (!version)
+  if (version != 2)
     return FILE_ACCESS_ERROR;
-
-  if (dump_to_files) {
-    net::SimpleCacheDumper dumper(input_path, output_path);
-    dumper.Run();
-    return ALL_GOOD;
-  }
 
   if (command_line.HasSwitch(kDumpContents))
     return DumpContents(input_path);

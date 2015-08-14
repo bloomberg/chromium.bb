@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_util.h"
-#include "net/tools/dump_cache/url_to_filename_encoder.h"
+#include "net/tools/flip_server/url_to_filename_encoder.h"
 
 using std::string;
 
@@ -31,12 +31,11 @@ int HexDigitsPrefix(const char* buf, int num_digits) {
 // A simple parser for long long values. Returns the parsed value if a
 // valid integer is found; else returns deflt
 // UInt64 and Int64 cannot handle decimal numbers with leading 0s.
-uint64 ParseLeadingHex64Value(const char *str, uint64 deflt) {
-  char *error = NULL;
+uint64 ParseLeadingHex64Value(const char* str, uint64 deflt) {
+  char* error = NULL;
   const uint64 value = strtoull(str, &error, 16);
   return (error == str) ? deflt : value;
 }
-
 }
 
 namespace net {
@@ -169,13 +168,7 @@ void UrlToFilenameEncoder::EncodeSegment(const string& filename_prefix,
 bool UrlToFilenameEncoder::Decode(const string& encoded_filename,
                                   char dir_separator,
                                   string* decoded_url) {
-  enum State {
-    kStart,
-    kEscape,
-    kFirstDigit,
-    kTruncate,
-    kEscapeDot
-  };
+  enum State { kStart, kEscape, kFirstDigit, kTruncate, kEscapeDot };
   State state = kStart;
   char hex_buffer[3];
   hex_buffer[2] = '\0';

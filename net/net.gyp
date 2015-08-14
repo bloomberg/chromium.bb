@@ -802,17 +802,9 @@
         'net_test_support',
       ],
       'sources': [
-        'tools/dump_cache/cache_dumper.cc',
-        'tools/dump_cache/cache_dumper.h',
         'tools/dump_cache/dump_cache.cc',
         'tools/dump_cache/dump_files.cc',
         'tools/dump_cache/dump_files.h',
-        'tools/dump_cache/simple_cache_dumper.cc',
-        'tools/dump_cache/simple_cache_dumper.h',
-        'tools/dump_cache/url_to_filename_encoder.cc',
-        'tools/dump_cache/url_to_filename_encoder.h',
-        'tools/dump_cache/url_utilities.cc',
-        'tools/dump_cache/url_utilities.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
@@ -1202,10 +1194,6 @@
             'net',
           ],
           'sources': [
-            'tools/dump_cache/url_to_filename_encoder.cc',
-            'tools/dump_cache/url_to_filename_encoder.h',
-            'tools/dump_cache/url_utilities.cc',
-            'tools/dump_cache/url_utilities.h',
             'tools/flip_server/acceptor_thread.cc',
             'tools/flip_server/acceptor_thread.h',
             'tools/flip_server/constants.h',
@@ -1233,6 +1221,10 @@
             'tools/flip_server/spdy_util.h',
             'tools/flip_server/streamer_interface.cc',
             'tools/flip_server/streamer_interface.h',
+            'tools/flip_server/url_to_filename_encoder.cc',
+            'tools/flip_server/url_to_filename_encoder.h',
+            'tools/flip_server/url_utilities.cc',
+            'tools/flip_server/url_utilities.h',
           ],
         },
         {
@@ -1253,6 +1245,8 @@
             'tools/flip_server/mem_cache_test.cc',
             'tools/flip_server/run_all_tests.cc',
             'tools/flip_server/spdy_interface_test.cc',
+            'tools/flip_server/url_to_filename_encoder_unittest.cc',
+            'tools/flip_server/url_utilities_unittest.cc',
           ],
         },
         {

@@ -9,11 +9,11 @@
 
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
-#include "net/tools/dump_cache/url_utilities.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/http_interface.h"
 #include "net/tools/flip_server/spdy_util.h"
+#include "net/tools/flip_server/url_utilities.h"
 
 namespace net {
 

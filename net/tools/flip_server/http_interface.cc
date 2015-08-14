@@ -5,10 +5,10 @@
 #include "net/tools/flip_server/http_interface.h"
 
 #include "net/tools/balsa/balsa_frame.h"
-#include "net/tools/dump_cache/url_utilities.h"
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/sm_connection.h"
 #include "net/tools/flip_server/spdy_util.h"
+#include "net/tools/flip_server/url_utilities.h"
 
 namespace net {
 

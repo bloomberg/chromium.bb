@@ -76,13 +76,13 @@
 // NOTE: we avoid using some classes here (like FilePath and GURL) because we
 //       share this code with other projects externally.
 
-#ifndef NET_TOOLS_DUMP_CACHE_URL_TO_FILENAME_ENCODER_H_
-#define NET_TOOLS_DUMP_CACHE_URL_TO_FILENAME_ENCODER_H_
+#ifndef NET_TOOLS_FLIP_SERVER_URL_TO_FILENAME_ENCODER_H_
+#define NET_TOOLS_FLIP_SERVER_URL_TO_FILENAME_ENCODER_H_
 
 #include <string>
 
 #include "base/strings/string_util.h"
-#include "net/tools/dump_cache/url_utilities.h"
+#include "net/tools/flip_server/url_utilities.h"
 
 namespace net {
 
@@ -94,7 +94,8 @@ class UrlToFilenameEncoder {
   // |legacy_escape| indicates that this function should use the old-style
   // of encoding.
   // TODO(mbelshe): delete the legacy_escape code.
-  static std::string Encode(const std::string& url, std::string base_path,
+  static std::string Encode(const std::string& url,
+                            std::string base_path,
                             bool legacy_escape) {
     std::string filename;
     if (!legacy_escape) {
@@ -105,7 +106,7 @@ class UrlToFilenameEncoder {
 #endif
     } else {
       std::string clean_url(url);
-      if (clean_url.length() && clean_url[clean_url.length()-1] == '/')
+      if (clean_url.length() && clean_url[clean_url.length() - 1] == '/')
         clean_url.append("index.html");
 
       std::string host = UrlUtilities::GetUrlHost(clean_url);
@@ -150,11 +151,10 @@ class UrlToFilenameEncoder {
   // escaped characters (like %21 for !).
   // |dir_separator| is "/" on Unix, "\" on Windows.
   // |encoded_filename| is the resultant filename.
-  static void EncodeSegment(
-      const std::string& filename_prefix,
-      const std::string& escaped_ending,
-      char dir_separator,
-      std::string* encoded_filename);
+  static void EncodeSegment(const std::string& filename_prefix,
+                            const std::string& escaped_ending,
+                            char dir_separator,
+                            std::string* encoded_filename);
 
   // Decodes a filename that was encoded with EncodeSegment,
   // yielding back the original URL.
@@ -182,7 +182,8 @@ class UrlToFilenameEncoder {
   static std::string LegacyEscape(const std::string& path);
 
   // Replace all instances of |from| within |str| as |to|.
-  static void ReplaceAll(std::string* str, const std::string& from,
+  static void ReplaceAll(std::string* str,
+                         const std::string& from,
                          const std::string& to) {
     std::string::size_type pos(0);
     while ((pos = str->find(from, pos)) != std::string::npos) {
@@ -208,4 +209,4 @@ class UrlToFilenameEncoder {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_DUMP_CACHE_URL_TO_FILENAME_ENCODER_H_
+#endif  // NET_TOOLS_FLIP_SERVER_URL_TO_FILENAME_ENCODER_H_

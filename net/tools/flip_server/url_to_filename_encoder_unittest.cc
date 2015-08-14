@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/dump_cache/url_to_filename_encoder.h"
+#include "net/tools/flip_server/url_to_filename_encoder.h"
 
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -28,9 +28,9 @@ char kOtherDirSeparator = '\\';
 
 class UrlToFilenameEncoderTest : public ::testing::Test {
  protected:
-  UrlToFilenameEncoderTest() : escape_(1, UrlToFilenameEncoder::kEscapeChar),
-                               dir_sep_(1, kDirSeparator) {
-  }
+  UrlToFilenameEncoderTest()
+      : escape_(1, UrlToFilenameEncoder::kEscapeChar),
+        dir_sep_(1, kDirSeparator) {}
 
   void CheckSegmentLength(const StringPiece& escaped_word) {
     for (const base::StringPiece& component :
@@ -58,8 +58,8 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
 
   void Validate(const string& in_word, const string& gold_word) {
     string escaped_word, url;
-    UrlToFilenameEncoder::EncodeSegment(
-        std::string(), in_word, '/', &escaped_word);
+    UrlToFilenameEncoder::EncodeSegment(std::string(), in_word, '/',
+                                        &escaped_word);
     EXPECT_EQ(gold_word, escaped_word);
     CheckSegmentLength(escaped_word);
     CheckValidChars(escaped_word, '\\');
@@ -69,8 +69,8 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
 
   void ValidateAllSegmentsSmall(const string& in_word) {
     string escaped_word, url;
-    UrlToFilenameEncoder::EncodeSegment(
-        std::string(), in_word, '/', &escaped_word);
+    UrlToFilenameEncoder::EncodeSegment(std::string(), in_word, '/',
+                                        &escaped_word);
     CheckSegmentLength(escaped_word);
     CheckValidChars(escaped_word, '\\');
     UrlToFilenameEncoder::Decode(escaped_word, '/', &url);
@@ -90,10 +90,12 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
     Validate(string(1, ch), escaped);
   }
 
-  void ValidateUrl(const string& url, const string& base_path,
-                   bool legacy_escape, const string& gold_filename) {
-    string encoded_filename = UrlToFilenameEncoder::Encode(
-        url, base_path, legacy_escape);
+  void ValidateUrl(const string& url,
+                   const string& base_path,
+                   bool legacy_escape,
+                   const string& gold_filename) {
+    string encoded_filename =
+        UrlToFilenameEncoder::Encode(url, base_path, legacy_escape);
     EXPECT_EQ(gold_filename, encoded_filename);
     if (!legacy_escape) {
       CheckSegmentLength(encoded_filename);
@@ -107,7 +109,8 @@ class UrlToFilenameEncoderTest : public ::testing::Test {
     }
   }
 
-  void ValidateUrlOldNew(const string& url, const string& gold_old_filename,
+  void ValidateUrlOldNew(const string& url,
+                         const string& gold_old_filename,
                          const string& gold_new_filename) {
     ValidateUrl(url, std::string(), true, gold_old_filename);
     ValidateUrl(url, std::string(), false, gold_new_filename);
@@ -131,8 +134,9 @@ TEST_F(UrlToFilenameEncoderTest, DoesNotEscape) {
   ValidateNoChange("ZYXWVUTSRQPONMLKJIHGFEDCBA");
   ValidateNoChange("01234567689");
   ValidateNoChange("_.=+-");
-  ValidateNoChange("abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA"
-                   "01234567689_.=+-");
+  ValidateNoChange(
+      "abcdefghijklmnopqrstuvwxyzZYXWVUTSRQPONMLKJIHGFEDCBA"
+      "01234567689_.=+-");
   ValidateNoChange("index.html");
   ValidateNoChange("/");
   ValidateNoChange("/.");
@@ -167,15 +171,14 @@ TEST_F(UrlToFilenameEncoderTest, DoesEscapeCorrectly) {
   Validate("/./leaf", "/" + escape_ + "./leaf" + escape_);
   Validate("/../leaf", "/" + escape_ + "../leaf" + escape_);
   Validate("//leaf", "/" + escape_ + "2Fleaf" + escape_);
-  Validate("mysite/u?param1=x&param2=y",
-           "mysite/u" + escape_ + "3Fparam1=x" + escape_ + "26param2=y" +
-           escape_);
+  Validate("mysite/u?param1=x&param2=y", "mysite/u" + escape_ + "3Fparam1=x" +
+                                             escape_ + "26param2=y" + escape_);
   Validate("search?q=dogs&go=&form=QBLH&qs=n",  // from Latency Labs bing test.
            "search" + escape_ + "3Fq=dogs" + escape_ + "26go=" + escape_ +
-           "26form=QBLH" + escape_ + "26qs=n" + escape_);
+               "26form=QBLH" + escape_ + "26qs=n" + escape_);
   Validate("~joebob/my_neeto-website+with_stuff.asp?id=138&content=true",
            "" + escape_ + "7Ejoebob/my_neeto-website+with_stuff.asp" + escape_ +
-           "3Fid=138" + escape_ + "26content=true" + escape_);
+               "3Fid=138" + escape_ + "26content=true" + escape_);
 }
 
 TEST_F(UrlToFilenameEncoderTest, EncodeUrlCorrectly) {
@@ -184,33 +187,34 @@ TEST_F(UrlToFilenameEncoderTest, EncodeUrlCorrectly) {
                     "www.google.com" + dir_sep_ + "index.html" + escape_);
   ValidateUrlOldNew("http://www.google.com/x/search?hl=en&q=dogs&oq=",
                     "www.google.com" + dir_sep_ + "x" + dir_sep_ +
-                    "searchx3Fhlx3Denx26qx3Ddogsx26oqx3D",
+                        "searchx3Fhlx3Denx26qx3Ddogsx26oqx3D",
 
                     "www.google.com" + dir_sep_ + "x" + dir_sep_ + "search" +
-                    escape_ + "3Fhl=en" + escape_ + "26q=dogs" + escape_ +
-                    "26oq=" + escape_);
-  ValidateUrlOldNew("http://www.foo.com/a//",
-                    "www.foo.com" + dir_sep_ + "ax255Cx255Cindexx2Ehtml",
-                    "www.foo.com" + dir_sep_ + "a" + dir_sep_ + escape_ + "2F" +
-                    escape_);
+                        escape_ + "3Fhl=en" + escape_ + "26q=dogs" + escape_ +
+                        "26oq=" + escape_);
+  ValidateUrlOldNew(
+      "http://www.foo.com/a//",
+      "www.foo.com" + dir_sep_ + "ax255Cx255Cindexx2Ehtml",
+      "www.foo.com" + dir_sep_ + "a" + dir_sep_ + escape_ + "2F" + escape_);
 
   // From bug: Double slash preserved.
   ValidateUrl("http://www.foo.com/u?site=http://www.google.com/index.html",
-              std::string(),
-              false,
+              std::string(), false,
               "www.foo.com" + dir_sep_ + "u" + escape_ + "3Fsite=http" +
-              escape_ + "3A" + dir_sep_ + escape_ + "2Fwww.google.com" +
-              dir_sep_ + "index.html" + escape_);
+                  escape_ + "3A" + dir_sep_ + escape_ + "2Fwww.google.com" +
+                  dir_sep_ + "index.html" + escape_);
   ValidateUrlOldNew(
       "http://blogutils.net/olct/online.php?"
       "site=http://thelwordfanfics.blogspot.&interval=600",
 
-      "blogutils.net" + dir_sep_ + "olct" + dir_sep_ + "onlinex2Ephpx3F"
-      "sitex3Dhttpx3Ax255Cx255Cthelwordfanficsx2Eblogspotx2Ex26intervalx3D600",
+      "blogutils.net" + dir_sep_ + "olct" + dir_sep_ +
+          "onlinex2Ephpx3F"
+          "sitex3Dhttpx3Ax255Cx255Cthelwordfanficsx2Eblogspotx2Ex26intervalx3D6"
+          "00",
 
       "blogutils.net" + dir_sep_ + "olct" + dir_sep_ + "online.php" + escape_ +
-      "3Fsite=http" + escape_ + "3A" + dir_sep_ + escape_ +
-      "2Fthelwordfanfics.blogspot." + escape_ + "26interval=600" + escape_);
+          "3Fsite=http" + escape_ + "3A" + dir_sep_ + escape_ +
+          "2Fthelwordfanfics.blogspot." + escape_ + "26interval=600" + escape_);
 }
 
 // From bug: Escapes treated the same as normal char.
@@ -248,17 +252,22 @@ TEST_F(UrlToFilenameEncoderTest, LongTail) {
   // the long lines in the string below are 64 characters, so we can see
   // the slashes every 128.
   string gold_long_word =
-      escape_ + "7Ejoebob/briggs/"
+      escape_ +
+      "7Ejoebob/briggs/"
       "1234567890123456789012345678901234567890123456789012345678901234"
       "56789012345678901234567890123456789012345678901234567890123456" +
-      escape_ + "-/"
+      escape_ +
+      "-/"
       "7890123456789012345678901234567890123456789012345678901234567890"
       "12345678901234567890123456789012345678901234567890123456789012" +
-      escape_ + "-/"
+      escape_ +
+      "-/"
       "3456789012345678901234567890123456789012345678901234567890123456"
       "78901234567890123456789012345678901234567890123456789012345678" +
-      escape_ + "-/"
-      "9012345678901234567890" + escape_;
+      escape_ +
+      "-/"
+      "9012345678901234567890" +
+      escape_;
   EXPECT_LT(UrlToFilenameEncoder::kMaximumSubdirectoryLength,
             sizeof(long_word));
   Validate(long_word, gold_long_word);
@@ -280,19 +289,23 @@ TEST_F(UrlToFilenameEncoderTest, LongTailQuestion) {
   // only 127 characters.
   string pattern = "1234567" + escape_ + "3F";  // 10 characters
   string gold_long_word =
-      escape_ + "7Ejoebob/briggs/" +
-      pattern + pattern + pattern + pattern + pattern + pattern + "1234"
-      "567" + escape_ + "3F" + pattern + pattern + pattern + pattern + pattern +
-       "123456" + escape_ + "-/"
-      "7" + escape_ + "3F" + pattern + pattern + pattern + pattern + pattern +
+      escape_ + "7Ejoebob/briggs/" + pattern + pattern + pattern + pattern +
+      pattern + pattern +
+      "1234"
+      "567" +
+      escape_ + "3F" + pattern + pattern + pattern + pattern + pattern +
+      "123456" + escape_ +
+      "-/"
+      "7" +
+      escape_ + "3F" + pattern + pattern + pattern + pattern + pattern +
       pattern + pattern + pattern + pattern + pattern + pattern + pattern +
-      "12" +
-      escape_ + "-/"
-      "34567" + escape_ + "3F" + pattern + pattern + pattern + pattern + pattern
-      + "1234567" + escape_ + "3F" + pattern + pattern + pattern + pattern
-      + pattern + "1234567" +
-      escape_ + "-/" +
-      escape_ + "3F" + pattern + pattern + escape_;
+      "12" + escape_ +
+      "-/"
+      "34567" +
+      escape_ + "3F" + pattern + pattern + pattern + pattern + pattern +
+      "1234567" + escape_ + "3F" + pattern + pattern + pattern + pattern +
+      pattern + "1234567" + escape_ + "-/" + escape_ + "3F" + pattern +
+      pattern + escape_;
   EXPECT_LT(UrlToFilenameEncoder::kMaximumSubdirectoryLength,
             sizeof(long_word));
   Validate(long_word, gold_long_word);
@@ -320,27 +333,25 @@ TEST_F(UrlToFilenameEncoderTest, CornerCasesNearMaxLenWithEscape) {
 }
 
 TEST_F(UrlToFilenameEncoderTest, LeafBranchAlias) {
-  Validate("/a/b/c", "/a/b/c" + escape_);        // c is leaf file "c,"
-  Validate("/a/b/c/d", "/a/b/c/d" + escape_);    // c is directory "c"
+  Validate("/a/b/c", "/a/b/c" + escape_);      // c is leaf file "c,"
+  Validate("/a/b/c/d", "/a/b/c/d" + escape_);  // c is directory "c"
   Validate("/a/b/c/d/", "/a/b/c/d/" + escape_);
 }
-
 
 TEST_F(UrlToFilenameEncoderTest, BackslashSeparator) {
   string long_word;
   string escaped_word;
   long_word.append(UrlToFilenameEncoder::kMaximumSubdirectoryLength + 1, 'x');
-  UrlToFilenameEncoder::EncodeSegment(
-      std::string(), long_word, '\\', &escaped_word);
+  UrlToFilenameEncoder::EncodeSegment(std::string(), long_word, '\\',
+                                      &escaped_word);
 
   // check that one backslash, plus the escape ",-", and the ending , got added.
   EXPECT_EQ(long_word.size() + 4, escaped_word.size());
   ASSERT_LT(UrlToFilenameEncoder::kMaximumSubdirectoryLength,
             escaped_word.size());
   // Check that the backslash got inserted at the correct spot.
-  EXPECT_EQ('\\', escaped_word[
-      UrlToFilenameEncoder::kMaximumSubdirectoryLength]);
+  EXPECT_EQ('\\',
+            escaped_word[UrlToFilenameEncoder::kMaximumSubdirectoryLength]);
 }
 
 }  // namespace net
-

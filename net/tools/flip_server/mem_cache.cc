@@ -19,8 +19,8 @@
 #include "base/strings/string_util.h"
 #include "net/tools/balsa/balsa_frame.h"
 #include "net/tools/balsa/balsa_headers.h"
-#include "net/tools/dump_cache/url_to_filename_encoder.h"
-#include "net/tools/dump_cache/url_utilities.h"
+#include "net/tools/flip_server/url_to_filename_encoder.h"
+#include "net/tools/flip_server/url_utilities.h"
 
 namespace {
 // The directory where cache locates);

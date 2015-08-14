@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/dump_cache/url_utilities.h"
+#include "net/tools/flip_server/url_utilities.h"
 
 #include <string>
 
@@ -13,25 +13,18 @@
 namespace net {
 
 TEST(UrlUtilitiesTest, GetUrlHost) {
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHost("http://www.foo.com"));
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHost("http://www.foo.com:80"));
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHost("http://www.foo.com:80/"));
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHost("http://www.foo.com/news"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHost("http://www.foo.com"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHost("http://www.foo.com:80"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHost("http://www.foo.com:80/"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHost("http://www.foo.com/news"));
   EXPECT_EQ("www.foo.com",
             UrlUtilities::GetUrlHost("www.foo.com:80/news?q=hello"));
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHost("www.foo.com/news?q=a:b"));
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHost("www.foo.com:80"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHost("www.foo.com/news?q=a:b"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHost("www.foo.com:80"));
 }
 
 TEST(UrlUtilitiesTest, GetUrlHostPath) {
-  EXPECT_EQ("www.foo.com",
-            UrlUtilities::GetUrlHostPath("http://www.foo.com"));
+  EXPECT_EQ("www.foo.com", UrlUtilities::GetUrlHostPath("http://www.foo.com"));
   EXPECT_EQ("www.foo.com:80",
             UrlUtilities::GetUrlHostPath("http://www.foo.com:80"));
   EXPECT_EQ("www.foo.com:80/",
@@ -42,31 +35,23 @@ TEST(UrlUtilitiesTest, GetUrlHostPath) {
             UrlUtilities::GetUrlHostPath("www.foo.com:80/news?q=hello"));
   EXPECT_EQ("www.foo.com/news?q=a:b",
             UrlUtilities::GetUrlHostPath("www.foo.com/news?q=a:b"));
-  EXPECT_EQ("www.foo.com:80",
-            UrlUtilities::GetUrlHostPath("www.foo.com:80"));
+  EXPECT_EQ("www.foo.com:80", UrlUtilities::GetUrlHostPath("www.foo.com:80"));
 }
 
 TEST(UrlUtilitiesTest, GetUrlPath) {
-  EXPECT_EQ("/",
-            UrlUtilities::GetUrlPath("http://www.foo.com"));
-  EXPECT_EQ("/",
-            UrlUtilities::GetUrlPath("http://www.foo.com:80"));
-  EXPECT_EQ("/",
-            UrlUtilities::GetUrlPath("http://www.foo.com:80/"));
-  EXPECT_EQ("/news",
-            UrlUtilities::GetUrlPath("http://www.foo.com/news"));
+  EXPECT_EQ("/", UrlUtilities::GetUrlPath("http://www.foo.com"));
+  EXPECT_EQ("/", UrlUtilities::GetUrlPath("http://www.foo.com:80"));
+  EXPECT_EQ("/", UrlUtilities::GetUrlPath("http://www.foo.com:80/"));
+  EXPECT_EQ("/news", UrlUtilities::GetUrlPath("http://www.foo.com/news"));
   EXPECT_EQ("/news?q=hello",
             UrlUtilities::GetUrlPath("www.foo.com:80/news?q=hello"));
-  EXPECT_EQ("/news?q=a:b",
-            UrlUtilities::GetUrlPath("www.foo.com/news?q=a:b"));
-  EXPECT_EQ("/",
-            UrlUtilities::GetUrlPath("www.foo.com:80"));
+  EXPECT_EQ("/news?q=a:b", UrlUtilities::GetUrlPath("www.foo.com/news?q=a:b"));
+  EXPECT_EQ("/", UrlUtilities::GetUrlPath("www.foo.com:80"));
 }
 
 TEST(UrlUtilitiesTest, Unescape) {
   // Basic examples are left alone.
-  EXPECT_EQ("http://www.foo.com",
-            UrlUtilities::Unescape("http://www.foo.com"));
+  EXPECT_EQ("http://www.foo.com", UrlUtilities::Unescape("http://www.foo.com"));
   EXPECT_EQ("www.foo.com:80/news?q=hello",
             UrlUtilities::Unescape("www.foo.com:80/news?q=hello"));
 
@@ -111,4 +96,3 @@ TEST(UrlUtilitiesTest, Unescape) {
 }
 
 }  // namespace net
-
