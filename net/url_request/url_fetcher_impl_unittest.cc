@@ -4,6 +4,9 @@
 
 #include "net/url_request/url_fetcher_impl.h"
 
+#include <stdint.h>
+#include <string.h>
+
 #include <algorithm>
 #include <string>
 
@@ -15,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/thread_task_runner_handle.h"
@@ -471,6 +475,15 @@ TEST_F(URLFetcherTest, SameThreadTest) {
   std::string data;
   ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
   EXPECT_EQ(kDefaultResponseBody, data);
+
+  EXPECT_EQ(static_cast<int64_t>(strlen(kDefaultResponseBody)),
+            delegate.fetcher()->GetReceivedResponseContentLength());
+  std::string parsed_headers;
+  base::ReplaceChars(delegate.fetcher()->GetResponseHeaders()->raw_headers(),
+                     std::string("\0", 1), "\n\r", &parsed_headers);
+  EXPECT_EQ(static_cast<int64_t>(parsed_headers.size() +
+                                 strlen(kDefaultResponseBody)),
+            delegate.fetcher()->GetTotalReceivedBytes());
 }
 
 // Create a separate thread that will create the URLFetcher.  A separate thread

@@ -292,7 +292,8 @@ class NET_EXPORT URLFetcher {
   virtual int64_t GetReceivedResponseContentLength() const = 0;
 
   // The number of bytes received over the network during the processing of this
-  // request.
+  // request. This includes redirect headers, but not redirect bodies. It also
+  // excludes SSL and proxy handshakes.
   virtual int64_t GetTotalReceivedBytes() const = 0;
 
   // Start the request.  After this is called, you may not change any other

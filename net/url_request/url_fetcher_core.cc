@@ -424,9 +424,6 @@ void URLFetcherCore::OnResponseStarted(URLRequest* request) {
     socket_address_ = request_->GetSocketAddress();
     was_fetched_via_proxy_ = request_->was_fetched_via_proxy();
     was_cached_ = request_->was_cached();
-    received_response_content_length_ =
-        request_->received_response_content_length();
-    total_received_bytes_ += request_->GetTotalReceivedBytes();
     total_response_bytes_ = request_->GetExpectedContentSize();
   }
 
@@ -480,6 +477,9 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
   // See comments re: HEAD requests in ReadResponse().
   if (!status.is_io_pending() || request_type_ == URLFetcher::HEAD) {
     status_ = status;
+    received_response_content_length_ =
+        request_->received_response_content_length();
+    total_received_bytes_ += request_->GetTotalReceivedBytes();
     ReleaseRequest();
 
     // No more data to write.
