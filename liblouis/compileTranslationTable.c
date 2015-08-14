@@ -3910,6 +3910,7 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 				return 0;
 
 			inxt = iend + 1;
+			if(inxt < input_max)
 			if(input[inxt] == '*')
 			{
 				expr[rcrs++] = PTN_ZERO_MORE;
@@ -3964,6 +3965,7 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 				inxt = aend;
 			}
 
+			if(inxt < input_max)
 			if(input[inxt] == '*')
 			{
 				expr[rcrs++] = PTN_ZERO_MORE;
@@ -4005,6 +4007,7 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 		default:
 
 			inxt = icrs + 1;
+			if(inxt < input_max)
 			if(input[inxt] == '*')
 			{
 				expr[rcrs++] = PTN_ZERO_MORE;
