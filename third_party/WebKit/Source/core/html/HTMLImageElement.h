@@ -93,6 +93,7 @@ public:
     HTMLFormElement* formOwner() const override;
     void formRemovedFromTree(const Node& formRoot);
     virtual void ensureFallbackContent();
+    virtual void ensureFallbackForGeneratedContent();
     virtual void ensurePrimaryContent();
 
     // CanvasImageSource implementation

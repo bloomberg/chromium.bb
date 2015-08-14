@@ -46,6 +46,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutImage.h"
 #include "core/page/Page.h"
+#include "core/style/ContentData.h"
 #include "platform/ContentType.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/MIMETypeRegistry.h"
@@ -330,11 +331,12 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 
 LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style)
 {
+    const ContentData* contentData = style.contentData();
+    if (contentData && contentData->isImage() && !toImageContentData(contentData)->image()->cachedImage()->errorOccurred())
+        return LayoutObject::createObject(this, style);
+
     if (m_useFallbackContent)
         return new LayoutBlockFlow(this);
-
-    if (style.hasContent())
-        return LayoutObject::createObject(this, style);
 
     LayoutImage* image = new LayoutImage(this);
     image->setImageResource(LayoutImageResource::create());
@@ -697,6 +699,12 @@ const KURL& HTMLImageElement::sourceURL() const
 void HTMLImageElement::didAddUserAgentShadowRoot(ShadowRoot&)
 {
     HTMLImageFallbackHelper::createAltTextShadowTree(*this);
+}
+
+void HTMLImageElement::ensureFallbackForGeneratedContent()
+{
+    setUseFallbackContent();
+    reattachFallbackContent();
 }
 
 void HTMLImageElement::ensureFallbackContent()

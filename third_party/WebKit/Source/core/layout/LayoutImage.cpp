@@ -110,6 +110,11 @@ void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
     if (newImage != m_imageResource->imagePtr())
         return;
 
+    if (isGeneratedContent() && isHTMLImageElement(node()) && m_imageResource->errorOccurred())  {
+        toHTMLImageElement(node())->ensureFallbackForGeneratedContent();
+        return;
+    }
+
     // Per the spec, we let the server-sent header override srcset/other sources of dpr.
     // https://github.com/igrigorik/http-client-hints/blob/master/draft-grigorik-http-client-hints-01.txt#L255
     if (m_imageResource->cachedImage() && m_imageResource->cachedImage()->hasDevicePixelRatioHeaderValue()) {
