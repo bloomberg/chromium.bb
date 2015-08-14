@@ -87,6 +87,13 @@ public class ContextualMenuBar {
     }
 
     /**
+     * Overrides the preset height of the tab strip.
+     */
+    public void setTabStripHeight(int tabStripHeight) {
+        mTabStripHeight = tabStripHeight;
+    }
+
+    /**
      * @return The delegate handling action bar positioning for the contextual menu bar.
      */
     public ActionBarDelegate getActionBarDelegate() {

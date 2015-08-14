@@ -164,6 +164,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public int getTabStripHeight() {
+        return 0;
+    }
+
+    @Override
     public ChromeTab getCurrentTab() {
         return ChromeTab.fromTab(getToolbarDataProvider().getTab());
     }

@@ -186,9 +186,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 // TODO(tedchoc): Add support for changing the color based on the brand color.
             }
         };
-        mContextualMenuBar = new ContextualMenuBar(activity, mActionBarDelegate);
-        mContextualMenuBar.setCustomSelectionActionModeCallback(
-                new CustomSelectionActionModeCallback());
 
         mToolbarModel = new ToolbarModelImpl();
         mControlContainer = controlContainer;
@@ -197,6 +194,11 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         mToolbar = (ToolbarLayout) controlContainer.findViewById(R.id.toolbar);
 
         mToolbar.setPaintInvalidator(invalidator);
+
+        mContextualMenuBar = new ContextualMenuBar(activity, mActionBarDelegate);
+        mContextualMenuBar.setCustomSelectionActionModeCallback(
+                new CustomSelectionActionModeCallback());
+        mContextualMenuBar.setTabStripHeight(mToolbar.getTabStripHeight());
 
         MenuDelegatePhone menuDelegate = new MenuDelegatePhone() {
             @Override

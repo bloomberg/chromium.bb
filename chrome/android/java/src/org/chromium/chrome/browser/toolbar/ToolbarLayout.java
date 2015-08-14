@@ -392,6 +392,13 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             OnClickListener listener) { }
 
     /**
+     * @return The height of the tab strip. Return 0 for toolbars that do not have a tabstrip.
+     */
+    public int getTabStripHeight() {
+        return getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
+    }
+
+    /**
      * Triggered when the content view for the specified tab has changed.
      */
     protected void onTabContentViewChanged() {
