@@ -30,7 +30,7 @@ enum RequestCredentials { "omit", "same-origin", "include" };
     readonly attribute ByteString method;
     readonly attribute USVString url;
     readonly attribute Headers headers;
-    readonly attribute RequestContext context;
+    [DeprecateAs=FetchAPIRequestContext] readonly attribute RequestContext context;
     readonly attribute DOMString referrer;
     readonly attribute RequestMode mode;
     readonly attribute RequestCredentials credentials;

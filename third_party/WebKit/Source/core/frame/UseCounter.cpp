@@ -968,6 +968,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedPerformanceResourceTimingBufferFull:
         return replacedBy("Performance.onwebkitresourcetimingbufferfull", "Performance.onresourcetimingbufferfull");
 
+    case FetchAPIRequestContext:
+        return "Request.context is deprecated and will be removed in M46 (see: https://www.chromestatus.com/feature/5534702526005248).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

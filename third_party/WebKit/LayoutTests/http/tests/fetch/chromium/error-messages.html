@@ -42,4 +42,12 @@ sequential_promise_test(function(t) {
     return fetch('http://localhost:8000/fetch/resources/redirect-loop.php?Count=100&ACAOrigin=*')
       .then(t.unreached_func('must reject'), function() {});
   }, 'A didFailRedirectCheck() error should output an error message');
+
+sequential_promise_test(function(t) {
+    return Promise.resolve()
+      .then(function() {
+          var request = new Request('http://localhost/');
+          request.context;
+        });
+  }, 'A deprecation warning should be output for Request.context');
 </script>
