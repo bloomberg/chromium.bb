@@ -50,7 +50,6 @@ cr.define('options', function() {
       $('import-browsers').onchange = function() {
         self.updateCheckboxes_();
         self.validateCommitButton_();
-        self.updateBottomBar_();
       };
 
       $('import-data-commit').onclick = function() {
@@ -103,9 +102,6 @@ cr.define('options', function() {
         this.setUpCheckboxState_(checkboxes[i], enabled);
       $('import-data-commit').disabled = !enabled;
       $('import-choose-file').hidden = !enabled;
-<if expr="is_macosx">
-      $('mac-password-keychain').hidden = !enabled;
-</if>
     },
 
     /**
@@ -146,21 +142,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Show or hide gray message at the bottom.
-     * @private
-     */
-    updateBottomBar_: function() {
-      var index = $('import-browsers').selectedIndex;
-      var browserProfile;
-      if (this.browserProfiles.length > index)
-        browserProfile = this.browserProfiles[index];
-      var enable = browserProfile && browserProfile['show_bottom_bar'];
-<if expr="is_macosx">
-      $('mac-password-keychain').hidden = !enable;
-</if>
-    },
-
-    /**
      * Update the supported browsers popup with given entries.
      * @param {Array} browsers List of supported browsers name.
      * @private
@@ -187,7 +168,6 @@ cr.define('options', function() {
 
         this.updateCheckboxes_();
         this.validateCommitButton_();
-        this.updateBottomBar_();
       }
     },
 

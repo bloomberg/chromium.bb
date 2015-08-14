@@ -7979,11 +7979,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
           No supported browser found
         </message>
-        <if expr="is_macosx">
-          <message name="IDS_IMPORT_PASSWORD_KEYCHAIN_WARNING" desc="Message displayed at the bottom of the Import Dialog for Safari on Mac OS">
-            Passwords saved in the Mac OS X Keychain will be used to help you sign in without typing.
-          </message>
-        </if>
 
         <!-- Import progress popup -->
         <if expr="is_macosx">
