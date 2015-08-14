@@ -18,7 +18,6 @@
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
-#include "chrome/common/net/test_server_locations.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -189,10 +188,6 @@ base::string16 GoogleChromeDistribution::GetAppDescription() {
 
 std::string GoogleChromeDistribution::GetSafeBrowsingName() {
   return "googlechrome";
-}
-
-std::string GoogleChromeDistribution::GetNetworkStatsServer() const {
-  return chrome_common_net::kEchoTestServerLocation;
 }
 
 base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {

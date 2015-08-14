@@ -10,7 +10,6 @@
 #include "chrome/installer/util/chrome_frame_distribution.h"
 
 #include "base/strings/string_util.h"
-#include "chrome/common/net/test_server_locations.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -79,10 +78,6 @@ base::string16 ChromeFrameDistribution::GetLongAppDescription() {
 
 std::string ChromeFrameDistribution::GetSafeBrowsingName() {
   return "googlechromeframe";
-}
-
-std::string ChromeFrameDistribution::GetNetworkStatsServer() const {
-  return chrome_common_net::kEchoTestServerLocation;
 }
 
 base::string16 ChromeFrameDistribution::GetUninstallLinkName() {

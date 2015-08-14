@@ -35,8 +35,6 @@ class ChromeFrameDistribution : public BrowserDistribution {
 
   std::string GetSafeBrowsingName() override;
 
-  std::string GetNetworkStatsServer() const override;
-
   base::string16 GetUninstallLinkName() override;
 
   base::string16 GetUninstallRegPath() override;

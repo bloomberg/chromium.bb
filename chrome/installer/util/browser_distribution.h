@@ -126,8 +126,6 @@ class BrowserDistribution {
 
   virtual std::string GetSafeBrowsingName();
 
-  virtual std::string GetNetworkStatsServer() const;
-
 #if defined(OS_WIN)
   virtual base::string16 GetDistributionData(HKEY root_key);
 #endif
