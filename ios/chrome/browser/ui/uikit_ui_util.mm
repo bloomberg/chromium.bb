@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#include "ios/chrome/browser/ui/ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/ios/uikit_util.h"
@@ -529,22 +528,23 @@ void AddSameCenterYConstraint(UIView* parentView,
                                           constant:0]];
 }
 
-bool IsCompactTablet() {
+bool IsCompact() {
   if (base::ios::IsRunningOnIOS8OrLater()) {
     UIViewController* rootController =
         [UIApplication sharedApplication].keyWindow.rootViewController;
-    return IsCompactTabletSizeClass(
-        [rootController.traitCollection horizontalSizeClass]);
+    return [rootController.traitCollection horizontalSizeClass] ==
+           UIUserInterfaceSizeClassCompact;
   } else {
-    return IsCompactTabletSizeClass(UIUserInterfaceSizeClassRegular);
+    // Prior to iOS 8, iPad is always regular, iPhone is always compact.
+    return !IsIPadIdiom();
   }
 }
 
-bool IsCompactTabletSizeClass(UIUserInterfaceSizeClass sizeClass) {
-  return IsIPadIdiom() && sizeClass == UIUserInterfaceSizeClassCompact;
+bool IsCompactTablet() {
+  return IsIPadIdiom() && IsCompact();
 }
 
-BOOL IsRTLUILayout() {
+bool IsRTLUILayout() {
   if (base::ios::IsRunningOnIOS9OrLater()) {
 #if __IPHONE_9_0
     // Calling this method is better than using the locale on iOS9 since it will

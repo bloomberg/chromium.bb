@@ -183,19 +183,21 @@ void AddSameCenterYConstraint(UIView* parentView, UIView* subview);
 void AddSameCenterYConstraint(UIView* parentView,
                               UIView* subview1,
                               UIView* subview2);
+
+// Whether the main application window's rootViewController has a compact
+// horizontal size class.
+bool IsCompact();
+
+// Whether the main application window's rootViewController has a compact
+// iPad horizontal size class.
+bool IsCompactTablet();
+
 // Whether the UI is configured for right to left layout.
 // The implementation will use the local in order to get the UI layout direction
 // for version of iOS under 9.
 // TODO(jbbegue): Use base::i18n::IsRTL() instead when it will support RTL
 // pseudo language. Remove that method once base::i18n::IsRTL() is fixed.
 // crbug/514625.
-BOOL IsRTLUILayout();
-
-// Returns true if the main application window's rootViewController is a compact
-// iPad horizontal size class.
-bool IsCompactTablet();
-
-// Returns true if the horizontal |sizeClass| is compact and device is an iPad.
-bool IsCompactTabletSizeClass(UIUserInterfaceSizeClass sizeClass);
+bool IsRTLUILayout();
 
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_
