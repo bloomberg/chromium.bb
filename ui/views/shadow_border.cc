@@ -4,6 +4,7 @@
 
 #include "ui/views/shadow_border.h"
 
+#include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
