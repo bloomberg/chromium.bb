@@ -1,6 +1,8 @@
 crbug.com/504613 paint/images/image-backgrounds-not-antialiased.html [ ImageOnlyFailure ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]
 
+crbug.com/520998 svg/repaint/image-animation-with-zoom.html [ NeedsRebaseline ]
+
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ ImageOnlyFailure ]
 crbug.com/449242 [ Linux ] fast/css/word-spacing-characters-complex-text.html [ ImageOnlyFailure ]
 crbug.com/492664 [ Linux XP ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ ImageOnlyFailure ]
