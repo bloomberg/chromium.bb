@@ -27,6 +27,7 @@
 #define DateTimeFormat_h
 
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -95,7 +96,10 @@ public:
     };
 
     class TokenHandler {
+        STACK_ALLOCATED();
+        WTF_MAKE_NONCOPYABLE(TokenHandler);
     public:
+        TokenHandler() { }
         virtual ~TokenHandler() { }
         virtual void visitField(FieldType, int numberOfPatternCharacters) = 0;
         virtual void visitLiteral(const String&) = 0;
