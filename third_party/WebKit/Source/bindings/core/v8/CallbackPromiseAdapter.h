@@ -166,9 +166,9 @@ private:
         }
     };
     template <typename T>
-    class OnSuccess<WebTypeHolder<void>, T> : public Base<WebTypeHolder<void>, T> {
+    class OnSuccess<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T> : public Base<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T> {
     public:
-        explicit OnSuccess(ScriptPromiseResolver* resolver) : Base<WebTypeHolder<void>, T>(resolver) {}
+        explicit OnSuccess(ScriptPromiseResolver* resolver) : Base<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T>(resolver) {}
         void onSuccess() override
         {
             ScriptPromiseResolver* resolver = this->resolver();
@@ -191,9 +191,9 @@ private:
         }
     };
     template <typename S>
-    class OnError<S, WebTypeHolder<void>> : public OnSuccess<S, WebTypeHolder<void>> {
+    class OnError<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>> : public OnSuccess<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>> {
     public:
-        explicit OnError(ScriptPromiseResolver* resolver) : OnSuccess<S, WebTypeHolder<void>>(resolver) {}
+        explicit OnError(ScriptPromiseResolver* resolver) : OnSuccess<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>>(resolver) {}
         void onError() override
         {
             ScriptPromiseResolver* resolver = this->resolver();
