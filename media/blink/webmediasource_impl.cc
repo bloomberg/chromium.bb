@@ -35,25 +35,6 @@ WebMediaSourceImpl::~WebMediaSourceImpl() {}
 
 WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
     const blink::WebString& type,
-    const blink::WebVector<blink::WebString>& codecs,
-    blink::WebSourceBuffer** source_buffer) {
-  std::string id = base::GenerateGUID();
-  std::vector<std::string> new_codecs(codecs.size());
-  for (size_t i = 0; i < codecs.size(); ++i)
-    new_codecs[i] = codecs[i].utf8().data();
-
-  WebMediaSource::AddStatus result =
-      static_cast<WebMediaSource::AddStatus>(
-          demuxer_->AddId(id, type.utf8().data(), new_codecs));
-
-  if (result == WebMediaSource::AddStatusOk)
-    *source_buffer = new WebSourceBufferImpl(id, demuxer_);
-
-  return result;
-}
-
-WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
-    const blink::WebString& type,
     const blink::WebString& codecs,
     blink::WebSourceBuffer** source_buffer) {
   std::string id = base::GenerateGUID();

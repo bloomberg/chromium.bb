@@ -25,10 +25,6 @@ class MEDIA_EXPORT WebMediaSourceImpl
   // blink::WebMediaSource implementation.
   virtual AddStatus addSourceBuffer(
       const blink::WebString& type,
-      const blink::WebVector<blink::WebString>& codecs,
-      blink::WebSourceBuffer** source_buffer);
-  virtual AddStatus addSourceBuffer(
-      const blink::WebString& type,
       const blink::WebString& codecs,
       blink::WebSourceBuffer** source_buffer);
   virtual double duration();
