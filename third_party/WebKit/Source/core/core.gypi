@@ -1753,6 +1753,8 @@
             'loader/FrameLoaderStateMachine.cpp',
             'loader/HistoryItem.cpp',
             'loader/HistoryItem.h',
+            'loader/HttpEquiv.cpp',
+            'loader/HttpEquiv.h',
             'loader/ImageLoader.cpp',
             'loader/ImageLoader.h',
             'loader/LinkHeader.cpp',

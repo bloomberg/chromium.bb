@@ -2974,70 +2974,6 @@ CSSStyleSheet& Document::elementSheet()
     return *m_elemSheet;
 }
 
-void Document::processHttpEquiv(const AtomicString& equiv, const AtomicString& content, bool inDocumentHeadElement)
-{
-    ASSERT(!equiv.isNull() && !content.isNull());
-
-    if (equalIgnoringCase(equiv, "default-style")) {
-        processHttpEquivDefaultStyle(content);
-    } else if (equalIgnoringCase(equiv, "refresh")) {
-        processHttpEquivRefresh(content);
-    } else if (equalIgnoringCase(equiv, "set-cookie")) {
-        processHttpEquivSetCookie(content);
-    } else if (equalIgnoringCase(equiv, "content-language")) {
-        setContentLanguage(content);
-    } else if (equalIgnoringCase(equiv, "x-dns-prefetch-control")) {
-        parseDNSPrefetchControlHeader(content);
-    } else if (equalIgnoringCase(equiv, "x-frame-options")) {
-        processHttpEquivXFrameOptions(content);
-    } else if (equalIgnoringCase(equiv, "accept-ch")) {
-        processHttpEquivAcceptCH(content);
-    } else if (equalIgnoringCase(equiv, "content-security-policy") || equalIgnoringCase(equiv, "content-security-policy-report-only")) {
-        if (inDocumentHeadElement)
-            processHttpEquivContentSecurityPolicy(equiv, content);
-        else
-            contentSecurityPolicy()->reportMetaOutsideHead(content);
-    }
-}
-
-void Document::processHttpEquivContentSecurityPolicy(const AtomicString& equiv, const AtomicString& content)
-{
-    if (importLoader())
-        return;
-    if (equalIgnoringCase(equiv, "content-security-policy"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
-    else if (equalIgnoringCase(equiv, "content-security-policy-report-only"))
-        contentSecurityPolicy()->didReceiveHeader(content, ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceMeta);
-    else
-        ASSERT_NOT_REACHED();
-}
-
-void Document::processHttpEquivAcceptCH(const AtomicString& content)
-{
-    if (frame()) {
-        UseCounter::count(frame()->document(), UseCounter::ClientHintsMetaAcceptCH);
-        handleAcceptClientHintsHeader(content, m_clientHintsPreferences, fetcher());
-    }
-}
-
-void Document::processHttpEquivDefaultStyle(const AtomicString& content)
-{
-    // The preferred style set has been overridden as per section
-    // 14.3.2 of the HTML4.0 specification. We need to update the
-    // sheet used variable and then update our style selector.
-    // For more info, see the test at:
-    // http://www.hixie.ch/tests/evil/css/import/main/preferred.html
-    // -dwh
-    styleEngine().setSelectedStylesheetSetName(content);
-    styleEngine().setPreferredStylesheetSetName(content);
-    styleResolverChanged();
-}
-
-void Document::processHttpEquivRefresh(const AtomicString& content)
-{
-    maybeHandleHttpRefresh(content, HttpRefreshFromMetaTag);
-}
-
 void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType httpRefreshType)
 {
     if (m_isViewSource || !m_frame)
@@ -3064,37 +3000,6 @@ void Document::maybeHandleHttpRefresh(const String& content, HttpRefreshType htt
         return;
     }
     m_frame->navigationScheduler().scheduleRedirect(delay, refreshURL);
-}
-
-void Document::processHttpEquivSetCookie(const AtomicString& content)
-{
-    // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
-    if (!isHTMLDocument())
-        return;
-
-    // Exception (for sandboxed documents) ignored.
-    toHTMLDocument(this)->setCookie(content, IGNORE_EXCEPTION);
-}
-
-void Document::processHttpEquivXFrameOptions(const AtomicString& content)
-{
-    if (!m_frame)
-        return;
-
-    unsigned long requestIdentifier = loader()->mainResourceIdentifier();
-    if (m_frame->loader().shouldInterruptLoadForXFrameOptions(content, url(), requestIdentifier)) {
-        String message = "Refused to display '" + url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-        m_frame->loader().stopAllLoaders();
-        if (!m_frame)
-            return;
-        // Stopping the loader isn't enough, as we're already parsing the document; to honor the header's
-        // intent, we must navigate away from the possibly partially-rendered document to a location that
-        // doesn't inherit the parent's SecurityOrigin.
-        m_frame->navigate(*this, SecurityOrigin::urlWithUniqueSecurityOrigin(), true, UserGestureStatus::None);
-        RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
-        consoleMessage->setRequestIdentifier(requestIdentifier);
-        addConsoleMessage(consoleMessage.release());
-    }
 }
 
 bool Document::shouldMergeWithLegacyDescription(ViewportDescription::Type origin)

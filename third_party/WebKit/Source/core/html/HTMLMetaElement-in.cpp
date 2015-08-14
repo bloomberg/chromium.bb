@@ -31,6 +31,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/HttpEquiv.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -485,8 +486,10 @@ void HTMLMetaElement::process()
     // on the document).
 
     const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
-    if (!httpEquivValue.isEmpty())
-        document().processHttpEquiv(httpEquivValue, contentValue, inDocumentHead(this));
+    if (httpEquivValue.isEmpty())
+        return;
+
+    HttpEquiv::process(document(), httpEquivValue, contentValue, inDocumentHead(this));
 }
 
 const AtomicString& HTMLMetaElement::content() const
