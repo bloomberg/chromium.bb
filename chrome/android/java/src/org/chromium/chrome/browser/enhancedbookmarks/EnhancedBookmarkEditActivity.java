@@ -151,7 +151,9 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
         if (!mTitleEditText.validate() || !mUrlEditText.validate()) return;
 
         mEnhancedBookmarksModel.setBookmarkTitle(mBookmarkId, newTitle);
-        mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);
+        if (mEnhancedBookmarksModel.getBookmarkById(mBookmarkId).isUrlEditable()) {
+            mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, newUrl);
+        }
         super.onBackPressed();
     }
 

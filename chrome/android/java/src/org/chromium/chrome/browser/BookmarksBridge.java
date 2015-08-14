@@ -407,6 +407,7 @@ public class BookmarksBridge {
      */
     public void setBookmarkUrl(BookmarkId id, String url) {
         assert mIsNativeBookmarkModelLoaded;
+        assert id.getType() == BookmarkType.NORMAL;
         nativeSetBookmarkUrl(mNativeBookmarksBridge, id.getId(), id.getType(), url);
     }
 
