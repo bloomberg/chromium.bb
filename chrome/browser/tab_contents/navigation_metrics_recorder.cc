@@ -4,12 +4,17 @@
 
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 
-#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
 #include "components/navigation_metrics/navigation_metrics.h"
+#include "components/rappor/rappor_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/common/frame_navigate_params.h"
+#include "url/gurl.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -29,8 +34,18 @@ NavigationMetricsRecorder::~NavigationMetricsRecorder() {
 void NavigationMetricsRecorder::DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   navigation_metrics::RecordMainFrameNavigation(details.entry->GetVirtualURL(),
                                                 details.is_in_page);
+  // Record the domain and registry of the URL that resulted in a navigation to
+  // a |data:| URL, either by redirects or user clicking a link.
+  if (details.entry->GetVirtualURL().SchemeIs(url::kDataScheme) &&
+      params.transition != ui::PAGE_TRANSITION_TYPED &&
+      !details.previous_url.is_empty()) {
+    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
+                                            "Navigation.Scheme.Data",
+                                            details.previous_url);
+  }
 }
 
 void NavigationMetricsRecorder::DidStartLoading() {

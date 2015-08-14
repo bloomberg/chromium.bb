@@ -408,6 +408,16 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Navigation.Scheme.Data" type="ETLD_PLUS_ONE">
+  <owner>meacer@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that resulted in a main frame navigation
+    to a |data:| URL. This includes page initiated navigations (e.g. redirects)
+    and users clicking links, but excludes navigations initiated by users typing
+    |data:| URLs.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
   <owner>wfh@chromium.org</owner>
   <summary>
