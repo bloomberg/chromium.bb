@@ -2880,6 +2880,73 @@ class LayerTreeHostImplTopControlsTest : public LayerTreeHostImplTest {
   LayerTreeSettings settings_;
 };  // class LayerTreeHostImplTopControlsTest
 
+// Tests that, on a page with content the same size as the viewport, hiding
+// the top controls also increases the ScrollableSize (i.e. the content size).
+// Since the viewport got larger, the effective scrollable "content" also did.
+// This ensures, for one thing, that the overscroll glow is shown in the right
+// place.
+TEST_F(LayerTreeHostImplTopControlsTest,
+    HidingTopControlsExpandsScrollableSize) {
+  SetupTopControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(50, 50), gfx::Size(50, 50), gfx::Size(50, 50));
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  int id = host_impl_->OuterViewportScrollLayer()->id();
+  host_impl_->OuterViewportScrollLayer()->AddChild(
+      LayerImpl::Create(host_impl_->active_tree(), id + 2));
+  LayerImpl* content = active_tree->OuterViewportScrollLayer()->children()[0];
+  content->SetBounds(gfx::Size(50, 50));
+
+  DrawFrame();
+
+  LayerImpl* inner_container = active_tree->InnerViewportContainerLayer();
+  LayerImpl* outer_container = active_tree->OuterViewportContainerLayer();
+
+  // The top controls should start off showing so the viewport should be shrunk.
+  ASSERT_EQ(gfx::Size(50, 50), inner_container->bounds());
+  ASSERT_EQ(gfx::Size(50, 50), outer_container->bounds());
+
+  EXPECT_EQ(gfx::SizeF(50, 50), active_tree->ScrollableSize());
+
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
+
+  host_impl_->top_controls_manager()->ScrollBegin();
+
+  // Hide the top controls by a bit, the scrollable size should increase but the
+  // actual content bounds shouldn't.
+  {
+    host_impl_->top_controls_manager()->ScrollBy(gfx::Vector2dF(0.f, 25.f));
+    ASSERT_EQ(gfx::Size(50, 75), inner_container->bounds());
+    ASSERT_EQ(gfx::Size(50, 75), outer_container->bounds());
+    EXPECT_EQ(gfx::SizeF(50, 75), active_tree->ScrollableSize());
+    EXPECT_EQ(gfx::SizeF(50, 50), content->BoundsForScrolling());
+  }
+
+  // Fully hide the top controls.
+  {
+    host_impl_->top_controls_manager()->ScrollBy(gfx::Vector2dF(0.f, 25.f));
+    ASSERT_EQ(gfx::Size(50, 100), inner_container->bounds());
+    ASSERT_EQ(gfx::Size(50, 100), outer_container->bounds());
+    EXPECT_EQ(gfx::SizeF(50, 100), active_tree->ScrollableSize());
+    EXPECT_EQ(gfx::SizeF(50, 50), content->BoundsForScrolling());
+  }
+
+  // Scrolling additionally shouldn't have any effect.
+  {
+    host_impl_->top_controls_manager()->ScrollBy(gfx::Vector2dF(0.f, 25.f));
+    ASSERT_EQ(gfx::Size(50, 100), inner_container->bounds());
+    ASSERT_EQ(gfx::Size(50, 100), outer_container->bounds());
+    EXPECT_EQ(gfx::SizeF(50, 100), active_tree->ScrollableSize());
+    EXPECT_EQ(gfx::SizeF(50, 50), content->BoundsForScrolling());
+  }
+
+  host_impl_->top_controls_manager()->ScrollEnd();
+  host_impl_->ScrollEnd();
+}
+
 TEST_F(LayerTreeHostImplTopControlsTest, ScrollTopControlsByFractionalAmount) {
   SetupTopControlsAndScrollLayerWithVirtualViewport(
       gfx::Size(10, 10), gfx::Size(10, 10), gfx::Size(10, 10));
