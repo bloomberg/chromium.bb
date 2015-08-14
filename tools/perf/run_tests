@@ -12,18 +12,20 @@ import os
 import subprocess
 import sys
 
+from core import project_config as project_config_module
 
 if __name__ == '__main__':
-  perf_dir = os.path.dirname(os.path.realpath(__file__))
-  telemetry_dir = os.path.realpath(os.path.join(perf_dir, '..', 'telemetry'))
+  project_config = project_config_module.config
 
   env = os.environ.copy()
   if 'PYTHONPATH' in env:
-    env['PYTHONPATH'] = env['PYTHONPATH'] + os.pathsep + telemetry_dir
+    env['PYTHONPATH'] = os.path.join(env['PYTHONPATH'],
+                                     project_config.telemetry_dir)
   else:
-    env['PYTHONPATH'] = telemetry_dir
+    env['PYTHONPATH'] = project_config.telemetry_dir
 
-  path_to_run_tests = os.path.join(telemetry_dir, 'telemetry', 'testing',
-                                   'run_tests.py')
-  argv = ['--top-level-dir', perf_dir] + sys.argv[1:]
+  path_to_run_tests = os.path.join(
+      project_config.telemetry_dir, 'telemetry', 'testing', 'run_tests.py')
+  argv = ['--top-level-dir', project_config.top_level_dir,
+          '--client-config', project_config.client_config] + sys.argv[1:]
   sys.exit(subprocess.call([sys.executable, path_to_run_tests] + argv, env=env))
