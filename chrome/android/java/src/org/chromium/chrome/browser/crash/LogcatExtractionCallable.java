@@ -110,6 +110,21 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             "org.chromium.", "com.google."
     };
 
+    private static final String[] SYSTEM_NAMESPACE = new String[] {
+            "android.accessibilityservice", "android.accounts", "android.animation",
+            "android.annotation", "android.app", "android.appwidget", "android.bluetooth",
+            "android.content", "android.database", "android.databinding", "android.drm",
+            "android.gesture", "android.graphics", "android.hardware",
+            "android.inputmethodservice", "android.location", "android.media", "android.mtp",
+            "android.net", "android.nfc", "android.opengl", "android.os", "android.preference",
+            "android.print", "android.printservice", "android.provider", "android.renderscript",
+            "android.sax", "android.security", "android.service", "android.speech",
+            "android.support", "android.system", "android.telecom", "android.telephony",
+            "android.test", "android.text", "android.transition", "android.util", "android.view",
+            "android.webkit", "android.widget", "com.android.", "dalvik.", "java.", "javax.",
+            "org.apache.", "org.json.", "org.w3c.dom.", "org.xml.", "org.xmlpull."
+    };
+
     private final Context mContext;
     private final String[] mMinidumpFilenames;
     private final Intent mRedirectIntent;
@@ -307,7 +322,7 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
             start = matcher.start();
             int end = matcher.end();
             String url = buffer.substring(start, end);
-            if (!likelyToBeChromeNamespace(url)) {
+            if (!likelyToBeChromeNamespace(url) && !likelyToBeSystemNamespace(url)) {
                 buffer.replace(start, end, URL_ELISION);
                 end = start + URL_ELISION.length();
                 matcher = WEB_URL.matcher(buffer);
@@ -319,6 +334,15 @@ public class LogcatExtractionCallable implements Callable<Boolean> {
 
     public static boolean likelyToBeChromeNamespace(String url) {
         for (String ns : CHROME_NAMESPACE) {
+            if (url.startsWith(ns)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean likelyToBeSystemNamespace(String url) {
+        for (String ns : SYSTEM_NAMESPACE) {
             if (url.startsWith(ns)) {
                 return true;
             }

@@ -82,6 +82,12 @@ public class LogcatExtractionCallableTest extends CrashTestCase {
     }
 
     @SmallTest
+    public void testElideUrl7() {
+        String original = " at android.content.Intent \n at java.util.ArrayList";
+        assertEquals(original, LogcatExtractionCallable.elideUrl(original));
+    }
+
+    @SmallTest
     public void testElideIp() {
         String original = "traceroute 127.0.0.1";
         String expected = "traceroute 1.2.3.4";
