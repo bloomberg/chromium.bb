@@ -974,6 +974,7 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 		return NULL;
 
 	if ((dmabuf = linux_dmabuf_buffer_get(buffer_resource))) {
+#ifdef HAVE_GBM_FD_IMPORT
 		/* XXX: TODO:
 		 *
 		 * Use AddFB2 directly, do not go via GBM.
@@ -994,6 +995,9 @@ drm_output_prepare_overlay_view(struct drm_output *output,
 
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_FD, &gbm_dmabuf,
 				   GBM_BO_USE_SCANOUT);
+#else
+		return NULL;
+#endif
 	} else {
 		bo = gbm_bo_import(b->gbm, GBM_BO_IMPORT_WL_BUFFER,
 				   buffer_resource, GBM_BO_USE_SCANOUT);
