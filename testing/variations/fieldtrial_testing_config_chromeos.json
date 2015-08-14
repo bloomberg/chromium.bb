@@ -51,6 +51,14 @@
             "group_name": "DefaultEnabled"
         }
     ],
+    "QUIC": [
+        {
+            "group_name": "Enabled",
+            "params": {
+              "alternate_protocol_probability_threshold": "0.01"
+            }
+        }
+    ],
     "VarationsServiceControl": [
         {
             "group_name": "Interval_30min",

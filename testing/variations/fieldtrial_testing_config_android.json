@@ -51,6 +51,14 @@
             "group_name": "Enabled"
         }
     ],
+    "QUIC": [
+        {
+            "group_name": "Enabled",
+            "params": {
+              "alternate_protocol_probability_threshold": "0.01"
+            }
+        }
+    ],
     "ReaderModeUIFeedback": [
         {
             "group_name": "Show"
