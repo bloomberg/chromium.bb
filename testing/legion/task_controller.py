@@ -71,6 +71,7 @@ class TaskController(object):
     self._rpc = None
     self._output_dir = None
     self._platform = None
+    self._executable = None
 
     run_id = run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     self._task_name = '%s/%s/%s' % (
@@ -135,6 +136,18 @@ class TaskController(object):
     if not self._platform:
       self._platform = self._rpc.GetPlatform()
     return self._platform
+
+  @property
+  def ip_address(self):
+    if not self._ip_address:
+      self._ip_address = self.rpc.GetIpAddress()
+    return self._ip_address
+
+  @property
+  def executable(self):
+    if not self._executable:
+      self._executable = self.rpc.GetExecutable()
+    return self._executable
 
   @classmethod
   def ReleaseAllTasks(cls):
