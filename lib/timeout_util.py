@@ -12,7 +12,6 @@ import functools
 import signal
 import time
 
-from chromite.lib import cros_build_lib
 from chromite.lib import signals
 
 
@@ -108,14 +107,8 @@ def FatalTimeout(max_run_time):
     # RunCommand's kill_timeout; thus we set the alarming interval
     # fairly high.
     signal.alarm(60)
-
-    # The cbuildbot stage that gets aborted by this timeout should be treated as
-    # failed by buildbot.
-    error_message = ("Timeout occurred- waited %i seconds, failing." %
-                     max_run_time)
-    cros_build_lib.PrintBuildbotStepFailure()
-    cros_build_lib.Error(error_message)
-    raise SystemExit(error_message)
+    raise SystemExit("Timeout occurred- waited %i seconds, failing."
+                     % max_run_time)
 
   original_handler = signal.signal(signal.SIGALRM, kill_us)
   remaining_timeout = signal.alarm(max_run_time)
