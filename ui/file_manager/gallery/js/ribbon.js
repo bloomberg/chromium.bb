@@ -439,7 +439,6 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
  * @private
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
-  thumbnail.setAttribute('aria-label', item.getFileName());
   thumbnail.setAttribute('title', item.getFileName());
 
   if (!item.getThumbnailMetadataItem())

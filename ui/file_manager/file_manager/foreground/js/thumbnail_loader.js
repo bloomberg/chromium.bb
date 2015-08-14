@@ -26,6 +26,12 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
     ThumbnailLoader.LoadTarget.FILE_ENTRY
   ];
 
+  /**
+   * @private {Entry}
+   * @const
+   */
+  this.entry_ = entry;
+
   this.mediaType_ = opt_mediaType || FileType.getMediaType(entry);
   this.loaderType_ = opt_loaderType || ThumbnailLoader.LoaderType.IMAGE;
   this.metadata_ = opt_metadata;
@@ -192,6 +198,7 @@ ThumbnailLoader.prototype.load = function(box, fillMode, opt_optimizationMode,
   this.cancel();
   this.canvasUpToDate_ = false;
   this.image_ = new Image();
+  this.image_.setAttribute('alt', this.entry_.name);
   this.image_.onload = function() {
     this.attachImage(assert(box), fillMode, opt_autoFillThreshold);
     if (opt_onSuccess)

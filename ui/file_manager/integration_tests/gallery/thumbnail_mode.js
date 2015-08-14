@@ -40,14 +40,14 @@ function renameImageInThumbnailMode(testVolumeName, volumeType) {
     chrome.test.assertEq(1, result.length);
 
     chrome.test.assertEq('My Desktop Background.png',
-        result[0].attributes['aria-label']);
+        result[0].attributes['title']);
     return gallery.callRemoteTestUtil('queryAllElements', appId,
         ['.thumbnail-view > ul > li:not(.selected)']);
   }).then(function(result) {
     // Confirm that thumbnail of renamed image has updated.
     chrome.test.assertEq(1, result.length);
     chrome.test.assertEq('New Image Name.jpg',
-        result[0].attributes['aria-label']);
+        result[0].attributes['title']);
   });
 };
 

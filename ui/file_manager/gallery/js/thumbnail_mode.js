@@ -227,6 +227,7 @@ function ThumbnailView(container, dataModel, selectionModel) {
   this.container_.addEventListener('scroll', this.onScroll_.bind(this));
   this.container_.addEventListener('click', this.onClick_.bind(this));
   this.container_.addEventListener('dblclick', this.onDblClick_.bind(this));
+  this.container_.addEventListener('focusin', this.onFocusin_.bind(this));
 
   this.scrollbarThumb_.addEventListener(
       'mousedown', this.onScrollbarThumbMouseDown_.bind(this));
@@ -490,7 +491,7 @@ ThumbnailView.prototype.onSelectionChange_ = function(event) {
 ThumbnailView.prototype.onClick_ = function(event) {
   var target = event.target;
   if (target.matches('.selection.frame'))
-    this.selectBySelectionFrame_(/** @type {!HTMLElement} */ (target));
+    this.selectByThumbnail_(target.parentNode.getThumbnail());
 };
 
 /**
@@ -501,24 +502,32 @@ ThumbnailView.prototype.onClick_ = function(event) {
 ThumbnailView.prototype.onDblClick_ = function(event) {
   var target = event.target;
   if (target.matches('.selection.frame')) {
-    this.selectBySelectionFrame_(/** @type{!HTMLElement} */ (target));
+    this.selectByThumbnail_(target.parentNode.getThumbnail());
     var thumbnailDoubleClickEvent = new Event('thumbnail-double-click');
     this.dispatchEvent(thumbnailDoubleClickEvent);
   }
 };
 
 /**
- * Selects a thumbnail by selection frame.
- * @param {!HTMLElement} selectionFrame Selection frame.
+ * Handles focusin event.
+ * @param {!Event} event An event.
  * @private
  */
-ThumbnailView.prototype.selectBySelectionFrame_ = function(selectionFrame) {
-  var thumbnailContainer = selectionFrame.parentNode;
+ThumbnailView.prototype.onFocusin_ = function(event) {
+  var target = event.target;
+  if (target.matches('li.thumbnail'))
+    this.selectByThumbnail_(target.getThumbnail());
+};
 
+/**
+ * Selects a thumbnail.
+ * @param {!ThumbnailView.Thumbnail} thumbnail Thumbnail to be selected.
+ * @private
+ */
+ThumbnailView.prototype.selectByThumbnail_ = function(thumbnail) {
   // Unselect all other items.
   this.selectionModel_.unselectAll();
 
-  var thumbnail = thumbnailContainer.getThumbnail();
   var index = this.dataModel_.indexOf(thumbnail.getGalleryItem());
   this.selectionModel_.setIndexSelected(index, true);
 };
@@ -668,6 +677,7 @@ ThumbnailView.Thumbnail = function(galleryItem) {
    * @private {!HTMLElement}
    */
   this.container_ = assertInstanceof(document.createElement('li'), HTMLElement);
+  this.container_.tabIndex = 1;
   this.container_.classList.add('thumbnail');
 
   /**
@@ -708,6 +718,8 @@ ThumbnailView.Thumbnail.prototype.getGalleryItem = function() {
 ThumbnailView.Thumbnail.prototype.setSelected = function(selected) {
   this.selected_ = selected;
   this.container_.classList.toggle('selected', selected);
+  if (selected)
+    this.container_.focus();
 };
 
 /**
@@ -777,8 +789,8 @@ ThumbnailView.Thumbnail.prototype.getBackgroundImage = function() {
  * Updates thumbnail.
  */
 ThumbnailView.Thumbnail.prototype.update = function() {
-  // Update aria-label.
-  this.container_.setAttribute('aria-label', this.galleryItem_.getFileName());
+  // Update title.
+  this.container_.setAttribute('title', this.galleryItem_.getFileName());
 
   // Calculate and set width.
   var metadata = this.galleryItem_.getMetadataItem();

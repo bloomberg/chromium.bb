@@ -498,6 +498,5 @@ RemoteCallGallery.prototype.waitForPressEnterMessage = function(appId) {
  */
 RemoteCallGallery.prototype.selectImageInThumbnailMode = function(appId, name) {
   return this.callRemoteTestUtil('fakeMouseClick', appId,
-      ['.thumbnail-view > ul > li[aria-label="' + name +
-       '"] > .selection.frame']);
+      ['.thumbnail-view > ul > li[title="' + name + '"] > .selection.frame']);
 };
