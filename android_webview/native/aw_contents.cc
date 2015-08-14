@@ -935,7 +935,7 @@ bool AwContents::OnDraw(JNIEnv* env,
   scoped_ptr<SoftwareCanvasHolder> canvas_holder = SoftwareCanvasHolder::Create(
       canvas, scroll, view_size, g_force_auxiliary_bitmap_rendering);
   if (!canvas_holder || !canvas_holder->GetCanvas()) {
-    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_EmptySize",
+    TRACE_EVENT_INSTANT0("android_webview", "EarlyOut_NoSoftwareCanvas",
                          TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
