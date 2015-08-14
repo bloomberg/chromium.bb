@@ -593,6 +593,15 @@ class MsvsSettings(object):
             '2': 'WINDOWS%s' % minimum_required_version},
        prefix='/SUBSYSTEM:')
 
+    stack_reserve_size = self._Setting(
+        ('VCLinkerTool', 'StackReserveSize'), config, default='')
+    if stack_reserve_size:
+      stack_commit_size = self._Setting(
+          ('VCLinkerTool', 'StackCommitSize'), config, default='')
+      if stack_commit_size:
+        stack_commit_size = ',' + stack_commit_size
+      ldflags.append('/STACK:%s%s' % (stack_reserve_size, stack_commit_size))
+
     ld('TerminalServerAware', map={'1': ':NO', '2': ''}, prefix='/TSAWARE')
     ld('LinkIncremental', map={'1': ':NO', '2': ''}, prefix='/INCREMENTAL')
     ld('BaseAddress', prefix='/BASE:')
