@@ -119,6 +119,15 @@
             '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).isolated',
           ],
         }],
+        ['OS=="win"', {
+          'action': [
+            '--config-variable', 'msvs_version=<(MSVS_VERSION)',
+          ],
+        }, {
+          'action': [
+            '--config-variable', 'msvs_version=0',
+          ],
+        }],
       ],
     },
   ],

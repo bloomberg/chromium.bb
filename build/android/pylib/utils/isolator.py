@@ -49,6 +49,7 @@ def DefaultConfigVariables():
     'use_ozone': '0',
     'use_x11': '0',
     'v8_use_external_startup_data': '1',
+    'msvs_version': '0',
   }
 
 
