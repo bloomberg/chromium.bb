@@ -49,6 +49,8 @@
         'web_cache_common',
       ],
       'sources': [
+        'web_cache/renderer/web_cache_memory_dump_provider.cc',
+        'web_cache/renderer/web_cache_memory_dump_provider.h',
         'web_cache/renderer/web_cache_render_process_observer.cc',
         'web_cache/renderer/web_cache_render_process_observer.h',
       ],

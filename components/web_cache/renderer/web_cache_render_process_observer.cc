@@ -6,7 +6,10 @@
 
 #include <limits>
 
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "components/web_cache/common/web_cache_messages.h"
+#include "components/web_cache/renderer/web_cache_memory_dump_provider.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
 using blink::WebCache;
@@ -53,9 +56,15 @@ void WebCacheRenderProcessObserver::WebKitInitialized() {
                             pending_cache_max_dead_capacity_,
                             pending_cache_capacity_);
   }
+
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      web_cache::WebCacheMemoryDumpProvider::GetInstance(),
+      base::ThreadTaskRunnerHandle::Get());
 }
 
 void WebCacheRenderProcessObserver::OnRenderProcessShutdown() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      web_cache::WebCacheMemoryDumpProvider::GetInstance());
   webkit_initialized_ = false;
 }
 
