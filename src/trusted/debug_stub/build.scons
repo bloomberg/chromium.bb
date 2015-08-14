@@ -48,14 +48,13 @@ gdb_rsp_test_exe = env.ComponentProgram(
 node = env.CommandTest('gdb_rsp_unittest.out', command=[gdb_rsp_test_exe])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_gdb_rsp_tests')
 
-if not env.Bit('windows'):
-  gtest_env = env.MakeGTestEnv()
+gtest_env = env.MakeGTestEnv()
 
-  transport_ipc_test_exe = gtest_env.ComponentProgram(
-      'transport_ipc_unittest',
-      'transport_ipc_test.cc',
-      EXTRA_LIBS=['debug_stub'])
+transport_ipc_test_exe = gtest_env.ComponentProgram(
+    'transport_ipc_unittest',
+    'transport_ipc_test.cc',
+    EXTRA_LIBS=['debug_stub'])
 
-  node = gtest_env.CommandTest('transport_ipc_unittest.out',
-                               command=[transport_ipc_test_exe])
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_transport_ipc_test')
+node = gtest_env.CommandTest('transport_ipc_unittest.out',
+                             command=[transport_ipc_test_exe])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_transport_ipc_test')

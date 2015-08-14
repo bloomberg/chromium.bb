@@ -18,6 +18,9 @@
 #include "native_client/src/trusted/debug_stub/transport.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
+#if NACL_WINDOWS
+#include <windows.h>
+#endif
 
 namespace port {
 
@@ -33,9 +36,6 @@ namespace port {
 // socket was disconnected and is awaiting a new connection.
 // Once in a disconnected state any new incoming data will
 // symbolize a new connection.
-
-// TODO(leslieb): implement for windows.
-#if NACL_LINUX || NACL_OSX
 class TransportIPC : public ITransport {
  public:
   TransportIPC()
@@ -52,7 +52,11 @@ class TransportIPC : public ITransport {
 
   ~TransportIPC() {
     if (handle_ != NACL_INVALID_HANDLE) {
+#if NACL_WINDOWS
+      if (!CloseHandle(handle_))
+#else
       if (::close(handle_))
+#endif
         NaClLog(LOG_FATAL,
                 "TransportIPC::Disconnect: Failed to close handle.\n");
     }
@@ -78,11 +82,11 @@ class TransportIPC : public ITransport {
     CHECK(ptr && len >= 0);
     const char *src = static_cast<const char *>(ptr);
     while (len > 0) {
-      int result = ::write(handle_, src, len);
-      if (result > 0) {
+      int result = WriteInternal(handle_, src, len);
+      if (result >= 0) {
         src += result;
         len -= result;
-      } else if (result == 0 || errno != EINTR) {
+      } else {
         NaClLog(LOG_FATAL,
                 "TransportIPC::Write: Pipe closed from other process.\n");
       }
@@ -94,6 +98,15 @@ class TransportIPC : public ITransport {
   virtual bool IsDataAvailable() {
     CHECK(IsConnected());
     if (unconsumed_bytes_ > 0) return true;
+
+#if NACL_WINDOWS
+  DWORD available_bytes = 0;
+  // Return true if the pipe has data or there is an error.
+  if (PeekNamedPipe(handle_, NULL, 0, NULL, &available_bytes, NULL))
+    return available_bytes > 0;
+  else
+    return true;
+#else
     fd_set fds;
 
     FD_ZERO(&fds);
@@ -112,6 +125,7 @@ class TransportIPC : public ITransport {
     if (cnt != 0) return true;
 
     return false;
+#endif
   }
 
   void WaitForDebugStubEvent(struct NaClApp *nap,
@@ -125,6 +139,19 @@ class TransportIPC : public ITransport {
       wait = false;
     }
 
+#if NACL_WINDOWS
+  HANDLE handles[2];
+  handles[0] = nap->faulted_thread_event;
+  handles[1] = handle_;
+  int result = WaitForMultipleObjects(2, handles, FALSE,
+                                      wait ? INFINITE : 0);
+  if (result == WAIT_OBJECT_0 ||
+      result == WAIT_OBJECT_0 + 1 ||
+      result == WAIT_TIMEOUT)
+    return;
+  NaClLog(LOG_FATAL,
+          "TransportIPC::WaitForDebugStubEvent: Wait for events failed.\n");
+#else
     fd_set fds;
 
     FD_ZERO(&fds);
@@ -148,8 +175,7 @@ class TransportIPC : public ITransport {
     }
     if (ret < 0) {
       NaClLog(LOG_FATAL,
-              "TransportIPC::WaitForDebugStubEvent: Failed to wait for "
-              "debug stub event.\n");
+              "TransportIPC::WaitForDebugStubEvent: Wait for events failed.\n");
     }
 
     if (ret > 0) {
@@ -164,6 +190,7 @@ class TransportIPC : public ITransport {
       if (FD_ISSET(handle_, &fds))
         FillBufferIfEmpty();
     }
+#endif
   }
 
   virtual void Disconnect() {
@@ -186,6 +213,16 @@ class TransportIPC : public ITransport {
   // server socket across the pipe got a new connection.
   virtual bool AcceptConnection() {
     CHECK(!IsConnected());
+#if NACL_WINDOWS
+  if (WaitForSingleObject(handle_, INFINITE) == WAIT_OBJECT_0) {
+    // This marks ourself as connected.
+    bytes_to_read_ = 0;
+    return true;
+  }
+  NaClLog(LOG_FATAL,
+          "TransportIPC::WaitForDebugStubEvent: Wait for events failed.\n");
+  return false;
+#else
     fd_set fds;
 
     FD_ZERO(&fds);
@@ -203,6 +240,7 @@ class TransportIPC : public ITransport {
     }
 
     return false;
+#endif
   }
 
  private:
@@ -251,12 +289,12 @@ class TransportIPC : public ITransport {
         return false;
     }
 
-    int result = ::read(handle_, buf_.get() + unconsumed_bytes_,
+    int result = ReadInternal(handle_, buf_.get() + unconsumed_bytes_,
                         std::min(bytes_to_read_, kBufSize));
-    if (result > 0) {
+    if (result >= 0) {
       unconsumed_bytes_ += result;
       bytes_to_read_ -= result;
-    } else if (result == 0 || errno != EINTR) {
+    } else {
       NaClLog(LOG_FATAL,
               "TransportIPC::FillBufferIfEmpty: "
               "Pipe closed from other process.\n");
@@ -268,20 +306,65 @@ class TransportIPC : public ITransport {
     return true;
   }
 
-  // Block until you read len bytes.
-  // Return false on EOF or error, but retries EINTR.
+  // Block until you read len bytes. Return false on error.
   bool ReadNBytes(char *buf, uint32_t len) {
     uint32_t bytes_read = 0;
     while (len > 0) {
-      int result = ::read(handle_, buf + bytes_read, len);
-      if (result > 0) {
+      int result = ReadInternal(handle_, buf + bytes_read, len);
+      if (result >= 0) {
         bytes_read += result;
         len -= result;
-      } else if (result == 0 || errno != EINTR) {
+      } else {
         return false;
       }
     }
     return true;
+  }
+
+  // Platform independant read. Returns number of bytes read or
+  // -1 on eof or error. Eof is treated as an error since the pipe
+  // should never be closed on the other end. On posix EINTR will
+  // return 0.
+  static int ReadInternal(NaClHandle handle, char *buf, int len) {
+#if NACL_WINDOWS
+    DWORD bytes_read = 0;
+
+    if (!ReadFile(handle, buf, len, &bytes_read, NULL))
+      return -1;
+    else
+      return static_cast<int>(bytes_read);
+#else
+    int result = ::read(handle, buf, len);
+    if (result > 0)
+      return result;
+    else if (result == 0 || errno != EINTR)
+      return -1;
+    else
+      return 0;
+#endif
+  }
+
+  // Platform independant write. Returns number of bytes read or
+  // -1 on eof or error. Eof is treated as an error since the pipe
+  // should never be closed on the other end. On posix EINTR will
+  // return 0.
+  static int WriteInternal(NaClHandle handle, const char *buf, int len) {
+#if NACL_WINDOWS
+    DWORD bytes_written = 0;
+
+    if (!WriteFile(handle, buf, len, &bytes_written, NULL))
+      return -1;
+    else
+      return static_cast<int>(bytes_written);
+#else
+    int result = ::write(handle, buf, len);
+    if (result > 0)
+      return result;
+    else if (result == 0 || errno != EINTR)
+      return -1;
+    else
+      return 0;
+#endif
   }
 
   static const int kServerSocketDisconnect = -1;
@@ -300,15 +383,8 @@ class TransportIPC : public ITransport {
 // under some optmizations or lack thereof it needs space.
 const int TransportIPC::kBufSize;
 
-#endif
-
 ITransport *CreateTransportIPC(NaClHandle fd) {
-#if NACL_LINUX || NACL_OSX
   return new TransportIPC(fd);
-#else
-  // TODO(leslieb): implement for windows.
-  return NULL;
-#endif
 }
 
 }  // namespace port

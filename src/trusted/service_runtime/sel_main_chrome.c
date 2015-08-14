@@ -350,10 +350,13 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
   }
 
   if (args->enable_debug_stub) {
-#if NACL_LINUX || NACL_OSX
     if (args->debug_stub_pipe_fd != NACL_INVALID_HANDLE) {
       NaClDebugStubSetPipe(args->debug_stub_pipe_fd);
-    } else if (args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
+    }
+
+#if NACL_LINUX || NACL_OSX
+    if (args->debug_stub_pipe_fd == NACL_INVALID_HANDLE &&
+        args->debug_stub_server_bound_socket_fd != NACL_INVALID_SOCKET) {
       NaClDebugSetBoundSocket(args->debug_stub_server_bound_socket_fd);
     }
 #endif
@@ -361,7 +364,8 @@ static int LoadApp(struct NaClApp *nap, struct NaClChromeMainArgs *args) {
       goto done;
     }
 #if NACL_WINDOWS
-    if (NULL != args->debug_stub_server_port_selected_handler_func) {
+    if (args->debug_stub_pipe_fd == NACL_INVALID_HANDLE &&
+        NULL != args->debug_stub_server_port_selected_handler_func) {
       args->debug_stub_server_port_selected_handler_func(
           NaClDebugGetBoundPort());
     }
