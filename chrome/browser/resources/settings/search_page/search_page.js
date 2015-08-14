@@ -113,12 +113,17 @@ Polymer({
   },
 
   /** @private */
-  manageSearchEngines_: function() {
+  onBackTap_: function() {
+    this.$.pages.back();
+  },
+
+  /** @private */
+  onSearchEnginesTap_: function() {
     this.$.pages.navigateTo('search-engines');
   },
 
   /** @private */
-  handleBack_: function() {
-    this.$.pages.back();
+  onSearchEnginesSubpageTap_: function() {
+    this.$.pages.navigateTo('search-engines-subpage');
   },
 });

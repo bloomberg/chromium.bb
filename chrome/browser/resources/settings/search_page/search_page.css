@@ -6,7 +6,11 @@
   -webkit-margin-start: 10px;
 }
 
-.search-engines {
+cr-button.search-engines-subpage {
+  margin-top: 10px;
+}
+
+cr-button.search-engines {
   align-items: center;
   display: flex;
   margin-top: 20px;

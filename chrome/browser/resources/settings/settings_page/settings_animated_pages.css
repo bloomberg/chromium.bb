@@ -10,6 +10,6 @@ neon-animated-pages ::content > * {
   position: static;
 }
 
-:host(.in-subpage) neon-animated-pages ::content > * {
+neon-animated-pages ::content > .neon-animating {
   position: absolute;
 }

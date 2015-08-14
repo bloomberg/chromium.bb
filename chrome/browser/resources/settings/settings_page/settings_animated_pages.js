@@ -21,24 +21,6 @@ Polymer({
   is: 'cr-settings-animated-pages',
 
   properties: {
-    /**
-     * Corresponds to a page id.
-     */
-    selectedPage: {
-      type: String,
-      value: 'main',
-    },
-
-    entryAnimation: {
-      type: String,
-      value: 'next-page-enter-animation',
-    },
-
-    exitAnimation: {
-      type: String,
-      value: 'next-page-exit-animation',
-    },
-
     inSubpage: {
       type: Boolean,
       notify: true,
@@ -50,19 +32,38 @@ Polymer({
     this.history_ = ['main'];
   },
 
+  /** @private */
   inSubpageChanged_: function() {
     this.classList.toggle('in-subpage', this.inSubpage);
   },
 
   navigateTo: function(page) {
+    if (this.inSubpage) {
+      this.$.animatedPages.exitAnimation = 'slide-left-animation';
+      this.$.animatedPages.entryAnimation = 'slide-from-right-animation';
+    } else {
+      this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
+      this.$.animatedPages.entryAnimation = 'settings-fade-in-animation';
+    }
+
     this.history_.push(page);
     this.inSubpage = true;
-    this.selectedPage = page;
+
+    this.$.animatedPages.selected = page;
   },
 
   back: function() {
     this.history_.pop();
     this.inSubpage = this.history_.length > 1;
-    this.selectedPage = this.history_.slice(-1)[0];
+
+    if (this.inSubpage) {
+      this.$.animatedPages.exitAnimation = 'slide-right-animation';
+      this.$.animatedPages.entryAnimation = 'slide-from-left-animation';
+    } else {
+      this.$.animatedPages.exitAnimation = 'settings-fade-out-animation';
+      this.$.animatedPages.entryAnimation = 'settings-fade-in-animation';
+    }
+
+    this.$.animatedPages.selected = this.history_.slice(-1)[0];
   },
 });

@@ -11,6 +11,7 @@
   background-color: white;
   height: 100%;
   margin-bottom: 16px;
+  overflow: hidden;
   width: 605px;
 }
 

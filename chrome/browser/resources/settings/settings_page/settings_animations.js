@@ -8,7 +8,7 @@
  * 'settings-animated-pages'.
  */
 Polymer({
-  is: 'next-page-enter-animation',
+  is: 'settings-fade-in-animation',
 
   behaviors: [
     Polymer.NeonAnimationBehavior
@@ -30,7 +30,7 @@ Polymer({
 });
 
 Polymer({
-  is: 'next-page-exit-animation',
+  is: 'settings-fade-out-animation',
 
   behaviors: [
     Polymer.NeonAnimationBehavior
