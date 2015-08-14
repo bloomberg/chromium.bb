@@ -48,9 +48,6 @@ SyncRegistration::SyncRegistration(int64_t id, const SyncRegistrationOptions& op
 
 SyncRegistration::~SyncRegistration()
 {
-    WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();
-    ASSERT(webSyncProvider);
-    webSyncProvider->releaseRegistration(m_id);
 }
 
 ScriptPromise SyncRegistration::done(ScriptState* scriptState)
