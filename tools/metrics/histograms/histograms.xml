@@ -15311,6 +15311,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Invalidations.GCMUpstreamRequest"
+    enum="GCMUpstreamMessageStatus">
+  <owner>nyquist@chromium.org</owner>
+  <owner>khushalsagar@chromium.org</owner>
+  <summary>
+    Status of sending outgoing invalidation message through GCM upsteam.
+  </summary>
+</histogram>
+
 <histogram name="Invalidations.NetworkChannel"
     enum="InvalidationNetworkChannel">
   <owner>pavely@chromium.org</owner>
@@ -59788,6 +59797,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="HTTP reponse code not OK"/>
   <int value="9" label="Unknown error"/>
   <int value="10" label="Reached maximum number of retries"/>
+</enum>
+
+<enum name="GCMUpstreamMessageStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Message size limit exceeded"/>
+  <int value="2" label="Access token request failed"/>
+  <int value="3" label="Send request failed"/>
 </enum>
 
 <enum name="GCReason" type="int">
