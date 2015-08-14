@@ -14,7 +14,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/timer/timer.h"
@@ -56,14 +55,17 @@ namespace {
 // Increase logging level for Guest mode to avoid INFO messages in logs.
 const char kGuestModeLoggingLevel[] = "1";
 
+// Format of command line switch.
+const char kSwitchFormatString[] = " --%s=\"%s\"";
+
 // Derives the new command line from |base_command_line| by doing the following:
 // - Forward a given switches list to new command;
 // - Set start url if given;
 // - Append/override switches using |new_switches|;
-void DeriveCommandLine(const GURL& start_url,
-                       const base::CommandLine& base_command_line,
-                       const base::DictionaryValue& new_switches,
-                       base::CommandLine* command_line) {
+std::string DeriveCommandLine(const GURL& start_url,
+                              const base::CommandLine& base_command_line,
+                              const base::DictionaryValue& new_switches,
+                              base::CommandLine* command_line) {
   DCHECK_NE(&base_command_line, command_line);
 
   static const char* const kForwardSwitches[] = {
@@ -234,12 +236,30 @@ void DeriveCommandLine(const GURL& start_url,
     CHECK(it.value().GetAsString(&value));
     command_line->AppendSwitchASCII(it.key(), value);
   }
+
+  std::string cmd_line_str = command_line->GetCommandLineString();
+  // Special workaround for the arguments that should be quoted.
+  // Copying switches won't be needed when Guest mode won't need restart
+  // http://crosbug.com/6924
+  if (base_command_line.HasSwitch(::switches::kRegisterPepperPlugins)) {
+    cmd_line_str += base::StringPrintf(
+        kSwitchFormatString,
+        ::switches::kRegisterPepperPlugins,
+        base_command_line.GetSwitchValueNative(
+            ::switches::kRegisterPepperPlugins).c_str());
+  }
+
+  return cmd_line_str;
 }
 
 // Simulates a session manager restart by launching give command line
 // and exit current process.
-void ReLaunch(const base::CommandLine& command_line) {
-  base::LaunchProcess(command_line.argv(), base::LaunchOptions());
+void ReLaunch(const std::string& command_line) {
+  // This is not a proper way to get |argv| but it's good enough for debugging.
+  std::vector<std::string> argv = base::SplitString(
+      command_line, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+
+  base::LaunchProcess(argv, base::LaunchOptions());
   chrome::AttemptUserExit();
 }
 
@@ -253,7 +273,7 @@ void EnsureLocalStateIsWritten() {}
 class ChromeRestartRequest
     : public base::SupportsWeakPtr<ChromeRestartRequest> {
  public:
-  explicit ChromeRestartRequest(const std::vector<std::string>& argv);
+  explicit ChromeRestartRequest(const std::string& command_line);
   ~ChromeRestartRequest();
 
   // Starts the request.
@@ -263,20 +283,22 @@ class ChromeRestartRequest
   // Fires job restart request to session manager.
   void RestartJob();
 
-  const std::vector<std::string> argv_;
+  const int pid_;
+  const std::string command_line_;
   base::OneShotTimer<ChromeRestartRequest> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRestartRequest);
 };
 
-ChromeRestartRequest::ChromeRestartRequest(const std::vector<std::string>& argv)
-    : argv_(argv) {}
+ChromeRestartRequest::ChromeRestartRequest(const std::string& command_line)
+    : pid_(getpid()),
+      command_line_(command_line) {}
 
 ChromeRestartRequest::~ChromeRestartRequest() {}
 
 void ChromeRestartRequest::Start() {
-  VLOG(1) << "Requesting a restart with command line: "
-          << base::JoinString(argv_, " ");
+  VLOG(1) << "Requesting a restart with PID " << pid_
+          << " and command line: " << command_line_;
 
   // Session Manager may kill the chrome anytime after this point.
   // Write exit_cleanly and other stuff to the disk here.
@@ -311,17 +333,19 @@ void ChromeRestartRequest::Start() {
 void ChromeRestartRequest::RestartJob() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(argv_);
+  DBusThreadManager::Get()->GetSessionManagerClient()->RestartJob(
+      pid_, command_line_);
 
   delete this;
 }
 
 }  // namespace
 
-void GetOffTheRecordCommandLine(const GURL& start_url,
-                                bool is_oobe_completed,
-                                const base::CommandLine& base_command_line,
-                                base::CommandLine* command_line) {
+std::string GetOffTheRecordCommandLine(
+    const GURL& start_url,
+    bool is_oobe_completed,
+    const base::CommandLine& base_command_line,
+    base::CommandLine* command_line) {
   base::DictionaryValue otr_switches;
   otr_switches.SetString(switches::kGuestSession, std::string());
   otr_switches.SetString(::switches::kIncognito, std::string());
@@ -338,10 +362,13 @@ void GetOffTheRecordCommandLine(const GURL& start_url,
   if (!is_oobe_completed)
     otr_switches.SetString(switches::kOobeGuestSession, std::string());
 
-  DeriveCommandLine(start_url, base_command_line, otr_switches, command_line);
+  return DeriveCommandLine(start_url,
+                           base_command_line,
+                           otr_switches,
+                           command_line);
 }
 
-void RestartChrome(const base::CommandLine& command_line) {
+void RestartChrome(const std::string& command_line) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BootTimesRecorder::Get()->set_restart_requested();
 
@@ -358,7 +385,7 @@ void RestartChrome(const base::CommandLine& command_line) {
   }
 
   // ChromeRestartRequest deletes itself after request sent to session manager.
-  (new ChromeRestartRequest(command_line.argv()))->Start();
+  (new ChromeRestartRequest(command_line))->Start();
 }
 
 }  // namespace chromeos

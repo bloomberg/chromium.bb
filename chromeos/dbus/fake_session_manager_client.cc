@@ -47,8 +47,9 @@ bool FakeSessionManagerClient::IsScreenLocked() const {
 void FakeSessionManagerClient::EmitLoginPromptVisible() {
 }
 
-void FakeSessionManagerClient::RestartJob(
-    const std::vector<std::string>& argv) {}
+void FakeSessionManagerClient::RestartJob(int pid,
+                                          const std::string& command_line) {
+}
 
 void FakeSessionManagerClient::StartSession(const std::string& user_email) {
   DCHECK_EQ(0UL, user_sessions_.count(user_email));

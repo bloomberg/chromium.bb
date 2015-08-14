@@ -229,9 +229,13 @@ void ErrorScreen::OnOffTheRecordAuthSuccess() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
   base::CommandLine command_line(browser_command_line.GetProgram());
-  GetOffTheRecordCommandLine(GURL(), StartupUtils::IsOobeCompleted(),
-                             browser_command_line, &command_line);
-  RestartChrome(command_line);
+  std::string cmd_line_str =
+      GetOffTheRecordCommandLine(GURL(),
+                                 StartupUtils::IsOobeCompleted(),
+                                 browser_command_line,
+                                 &command_line);
+
+  RestartChrome(cmd_line_str);
 }
 
 void ErrorScreen::OnPasswordChangeDetected() {
