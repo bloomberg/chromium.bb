@@ -26,6 +26,9 @@ if (self.importScripts) {
 
 // List of builtin JS constructors; Blink is not controlling what properties these
 // objects have, so exercising them in a Blink test doesn't make sense.
+//
+// If new builtins are added, please update this list along with the one in
+// LayoutTests/http/tests/serviceworker/webexposed/resources/global-interface-listing-worker.js
 var jsBuiltins = new Set([
     'Array',
     'ArrayBuffer',

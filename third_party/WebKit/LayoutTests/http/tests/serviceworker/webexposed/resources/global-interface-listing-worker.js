@@ -2,7 +2,47 @@
 
 var globals = [];
 
-function is_constructor(property_name) {
+// List of builtin JS constructors; Blink is not controlling what properties these
+// objects have, so exercising them in a Blink test doesn't make sense.
+//
+// This list should be kept in sync with the one at LayoutTests/webexposed/resources/global-interface-listing.js
+var js_builtins = new Set([
+    'Array',
+    'ArrayBuffer',
+    'Boolean',
+    'Date',
+    'Error',
+    'EvalError',
+    'Float32Array',
+    'Float64Array',
+    'Function',
+    'Int16Array',
+    'Int32Array',
+    'Int8Array',
+    'Map',
+    'Number',
+    'Object',
+    'Promise',
+    'RangeError',
+    'ReferenceError',
+    'RegExp',
+    'Set',
+    'String',
+    'Symbol',
+    'SyntaxError',
+    'TypeError',
+    'Uint16Array',
+    'Uint32Array',
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'URIError',
+    'WeakMap',
+    'WeakSet',
+]);
+
+function is_web_idl_constructor(property_name) {
+  if (js_builtins.has(property_name))
+    return false;
   var descriptor = Object.getOwnPropertyDescriptor(this, property_name);
   if (descriptor.value === undefined ||
       descriptor.value.prototype === undefined) {
@@ -12,7 +52,7 @@ function is_constructor(property_name) {
          descriptor.configurable;
 }
 
-var interface_names = Object.getOwnPropertyNames(this).filter(is_constructor);
+var interface_names = Object.getOwnPropertyNames(this).filter(is_web_idl_constructor);
 interface_names.sort();
 interface_names.forEach(function(interface_name) {
     globals.push('interface ' + interface_name);
