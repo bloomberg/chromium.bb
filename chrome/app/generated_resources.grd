@@ -14469,12 +14469,6 @@ After you create a new supervised user, you can manage their settings at any tim
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
             Uninstall...
           </message>
-          <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
-            Sign in
-          </message>
-          <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher sign-in learn more link text.">
-            Learn more
-          </message>
           <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
             New window
           </message>
@@ -14507,12 +14501,6 @@ After you create a new supervised user, you can manage their settings at any tim
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
             Uninstall...
-          </message>
-          <message name="IDS_APP_LIST_SIGNIN_BUTTON" desc="App launcher sign-in button text.">
-            Sign in
-          </message>
-          <message name="IDS_APP_LIST_SIGNIN_LEARN_MORE_TEXT" desc="App launcher sign-in learn more link text.">
-            Learn More
           </message>
           <message name="IDS_APP_LIST_NEW_WINDOW" desc="The text label of the New Window menu item">
             New Window
