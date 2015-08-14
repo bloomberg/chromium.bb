@@ -34,7 +34,6 @@ namespace blink {
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger)
     : V8DebuggerAgent(injectedScriptManager, debugger, this)
-    , m_listener(nullptr)
 {
 }
 
@@ -43,14 +42,6 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 #if !ENABLE(OILPAN)
     ASSERT(!m_instrumentingAgents->inspectorDebuggerAgent());
 #endif
-}
-
-DEFINE_TRACE(InspectorDebuggerAgent)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_listener);
-#endif
-    V8DebuggerAgent::trace(visitor);
 }
 
 void InspectorDebuggerAgent::enable(ErrorString* errorString)
@@ -66,29 +57,6 @@ void InspectorDebuggerAgent::startListeningV8Debugger()
 void InspectorDebuggerAgent::stopListeningV8Debugger()
 {
     m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
-}
-
-bool InspectorDebuggerAgent::canPauseOnPromiseEvent()
-{
-    return m_listener && m_listener->canPauseOnPromiseEvent();
-}
-
-void InspectorDebuggerAgent::didCreatePromise()
-{
-    if (m_listener)
-        m_listener->didCreatePromise();
-}
-
-void InspectorDebuggerAgent::didResolvePromise()
-{
-    if (m_listener)
-        m_listener->didResolvePromise();
-}
-
-void InspectorDebuggerAgent::didRejectPromise()
-{
-    if (m_listener)
-        m_listener->didRejectPromise();
 }
 
 } // namespace blink

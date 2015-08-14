@@ -74,9 +74,6 @@ static const char setInnerHTMLEventName[] = "setInnerHTML";
 static const char setTimerEventName[] = "setTimer";
 static const char clearTimerEventName[] = "clearTimer";
 static const char timerFiredEventName[] = "timerFired";
-static const char newPromiseEventName[] = "newPromise";
-static const char promiseResolvedEventName[] = "promiseResolved";
-static const char promiseRejectedEventName[] = "promiseRejected";
 static const char scriptFirstStatementEventName[] = "scriptFirstStatement";
 static const char windowCloseEventName[] = "close";
 static const char webglErrorFiredEventName[] = "webglErrorFired";
@@ -102,14 +99,11 @@ InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InjectedScriptManager* inje
     , m_domAgent(domAgent)
     , m_debuggerAgent(debuggerAgent)
 {
-    m_debuggerAgent->setListener(this);
 }
 
 InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 {
 #if !ENABLE(OILPAN)
-    ASSERT(!m_debuggerAgent);
-    ASSERT(!m_domAgent);
     ASSERT(!m_instrumentingAgents->inspectorDOMDebuggerAgent());
 #endif
 }
@@ -151,13 +145,6 @@ void InspectorDOMDebuggerAgent::restore()
 {
     if (m_state->getBoolean(DOMDebuggerAgentState::enabled))
         m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
-}
-
-void InspectorDOMDebuggerAgent::discardAgent()
-{
-    m_debuggerAgent->setListener(nullptr);
-    m_debuggerAgent = nullptr;
-    m_domAgent = nullptr;
 }
 
 void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName, const String* targetName)
@@ -545,30 +532,6 @@ void InspectorDOMDebuggerAgent::didRemoveTimer(ExecutionContext*, int)
 void InspectorDOMDebuggerAgent::willFireTimer(ExecutionContext*, int)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(timerFiredEventName, 0), false);
-}
-
-bool InspectorDOMDebuggerAgent::canPauseOnPromiseEvent()
-{
-    RefPtr<JSONObject> eventListenerBreakpoints = m_state->getObject(DOMDebuggerAgentState::eventListenerBreakpoints);
-    JSONObject::iterator end = eventListenerBreakpoints->end();
-    return eventListenerBreakpoints->find(String(instrumentationEventCategoryType) + newPromiseEventName) != end
-        || eventListenerBreakpoints->find(String(instrumentationEventCategoryType) + promiseResolvedEventName) != end
-        || eventListenerBreakpoints->find(String(instrumentationEventCategoryType) + promiseRejectedEventName) != end;
-}
-
-void InspectorDOMDebuggerAgent::didCreatePromise()
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(newPromiseEventName, 0), true);
-}
-
-void InspectorDOMDebuggerAgent::didResolvePromise()
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(promiseResolvedEventName, 0), true);
-}
-
-void InspectorDOMDebuggerAgent::didRejectPromise()
-{
-    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(promiseRejectedEventName, 0), true);
 }
 
 void InspectorDOMDebuggerAgent::didRequestAnimationFrame(ExecutionContext*, int)

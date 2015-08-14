@@ -62,11 +62,6 @@ public:
         virtual void muteConsole() = 0;
         virtual void unmuteConsole() = 0;
         virtual InjectedScript defaultInjectedScript() = 0;
-
-        virtual bool canPauseOnPromiseEvent() = 0;
-        virtual void didCreatePromise() = 0;
-        virtual void didResolvePromise() = 0;
-        virtual void didRejectPromise() = 0;
     };
 
     V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*);

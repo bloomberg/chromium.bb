@@ -40,33 +40,15 @@ class CORE_EXPORT InspectorDebuggerAgent
     , public V8DebuggerAgent::Client {
 public:
     ~InspectorDebuggerAgent() override;
-    DECLARE_VIRTUAL_TRACE();
 
     void enable(ErrorString*) override;
 
     // V8DebuggerAgent::Client implementation.
     void startListeningV8Debugger() override;
     void stopListeningV8Debugger() override;
-    bool canPauseOnPromiseEvent() final;
-    void didCreatePromise() final;
-    void didResolvePromise() final;
-    void didRejectPromise() final;
-
-    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
-    public:
-        virtual ~Listener() { }
-        virtual bool canPauseOnPromiseEvent() = 0;
-        virtual void didCreatePromise() = 0;
-        virtual void didResolvePromise() = 0;
-        virtual void didRejectPromise() = 0;
-    };
-    void setListener(Listener* listener) { m_listener = listener; }
 
 protected:
     InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*);
-
-private:
-    RawPtrWillBeMember<Listener> m_listener;
 };
 
 } // namespace blink

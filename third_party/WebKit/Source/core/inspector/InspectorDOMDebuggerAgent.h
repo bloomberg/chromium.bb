@@ -57,7 +57,6 @@ typedef String ErrorString;
 
 class CORE_EXPORT InspectorDOMDebuggerAgent final
     : public InspectorBaseAgent<InspectorDOMDebuggerAgent, InspectorFrontend::DOMDebugger>
-    , public InspectorDebuggerAgent::Listener
     , public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorDOMDebuggerAgent);
@@ -101,7 +100,6 @@ public:
 
     void disable(ErrorString*) override;
     void restore() override;
-    void discardAgent() override;
 
 private:
     InspectorDOMDebuggerAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorDebuggerAgent*);
@@ -109,12 +107,6 @@ private:
 
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
-
-    // InspectorDebuggerAgent::Listener implementation.
-    bool canPauseOnPromiseEvent() override;
-    void didCreatePromise() override;
-    void didResolvePromise() override;
-    void didRejectPromise() override;
 
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);

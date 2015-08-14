@@ -740,22 +740,14 @@ void V8DebuggerAgent::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context,
 
 bool V8DebuggerAgent::v8PromiseEventsEnabled() const
 {
-    return promiseTracker().isEnabled() || m_client->canPauseOnPromiseEvent();
+    return promiseTracker().isEnabled();
 }
 
 void V8DebuggerAgent::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
+    ASSERT(promiseTracker().isEnabled());
     ScriptState* scriptState = ScriptState::from(context);
-    if (promiseTracker().isEnabled())
-        promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
-    if (!parentPromise.IsEmpty() && parentPromise->IsObject())
-        return;
-    if (status < 0)
-        m_client->didRejectPromise();
-    else if (status > 0)
-        m_client->didResolvePromise();
-    else
-        m_client->didCreatePromise();
+    promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
 }
 
 void V8DebuggerAgent::pause(ErrorString* errorString)
