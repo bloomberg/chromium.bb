@@ -3761,6 +3761,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chromoting.Video.CaptureLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The time to capture a video frame on the host, returned as part of a video
+    packet.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.DecodeLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>The time to decode a video packet on the client.</summary>
+</histogram>
+
+<histogram name="Chromoting.Video.EncodeLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The time to encode a video packet on the host, returned as part of a video
+    packet.
+  </summary>
+</histogram>
+
 <histogram name="Chromoting.Video.FrameRate" units="fps">
   <owner>anandc@chromium.org</owner>
   <owner>sergeyu@chromium.org</owner>
@@ -3776,6 +3800,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The packets/sec, including empty packets, in Chromoting remote sessions,
     updated every time a video packet is processed and logged every 1s.
+  </summary>
+</histogram>
+
+<histogram name="Chromoting.Video.PaintLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>The time to paint a decoded video packet on the client.</summary>
+</histogram>
+
+<histogram name="Chromoting.Video.RoundTripLatency" units="ms">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    The time from an input being sent from the client to a response being
+    received by the client after it is processed by the host.
   </summary>
 </histogram>
 
