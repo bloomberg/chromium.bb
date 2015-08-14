@@ -104,6 +104,16 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
         results.current_page, 'request_start', 'ms', request_start,
         important=False))
 
+    response_start = (float(response_start) - navigation_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'response_start', 'ms', response_start,
+        important=False))
+
+    response_end = (float(response_end) - navigation_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'response_end', 'ms', response_end,
+        important=False))
+
     # Phase measurements in milliseconds.
     domain_lookup_duration = (float(domain_lookup_end) - domain_lookup_start)
     results.AddValue(scalar.ScalarValue(
