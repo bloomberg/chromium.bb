@@ -126,6 +126,19 @@ void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome) {
       static_cast<int>(UMAGetPrimaryServiceOutcome::COUNT));
 }
 
+// getCharacteristic
+
+void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Bluetooth.Web.GetCharacteristic.Outcome", static_cast<int>(outcome),
+      static_cast<int>(UMAGetCharacteristicOutcome::COUNT));
+}
+
+void RecordGetCharacteristicCharacteristic(const std::string& characteristic) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Bluetooth.Web.GetCharacteristic.Characteristic",
+                              HashUUID(characteristic));
+}
+
 // read/write characteristic
 
 void RecordGATTError(UMAGATTError error) {

@@ -361,6 +361,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
     const std::string& characteristic_uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_CHARACTERISTIC);
+  RecordGetCharacteristicCharacteristic(characteristic_uuid);
 
   auto device_iter = service_to_device_.find(service_instance_id);
   // A service_instance_id not in the map implies a hostile renderer
@@ -378,6 +379,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
 
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_DEVICE);
     Send(new BluetoothMsg_GetCharacteristicError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -388,6 +390,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
   device::BluetoothGattService* service =
       device->GetGattService(service_instance_id);
   if (!service) {
+    RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NO_SERVICE);
     Send(new BluetoothMsg_GetCharacteristicError(
         thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
     return;
@@ -406,6 +409,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       if (!insert_result.second)
         DCHECK(insert_result.first->second == service_instance_id);
 
+      RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::SUCCESS);
       // TODO(ortuno): Use generated instance ID instead.
       // https://crbug.com/495379
       Send(new BluetoothMsg_GetCharacteristicSuccess(
@@ -413,6 +417,7 @@ void BluetoothDispatcherHost::OnGetCharacteristic(
       return;
     }
   }
+  RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome::NOT_FOUND);
   Send(new BluetoothMsg_GetCharacteristicError(
       thread_id, request_id, WebBluetoothError::CharacteristicNotFound));
 }

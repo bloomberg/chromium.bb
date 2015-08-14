@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_METRICS_H_
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_METRICS_H_
 
+#include <string>
 #include <vector>
 
 namespace base {
@@ -110,6 +111,24 @@ void RecordGetPrimaryServiceService(const device::BluetoothUUID& service);
 // Send(BluetoothMsg_GetPrimaryServiceSuccess) and
 // Send(BluetoothMsg_GetPrimaryServiceError).
 void RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome outcome);
+
+// getCharacteristic() Metrics
+enum class UMAGetCharacteristicOutcome {
+  SUCCESS = 0,
+  NO_DEVICE = 1,
+  NO_SERVICE = 2,
+  NOT_FOUND = 3,
+  // Note: Add new outcomes immediately above this line.
+  // Make sure to update the enum list in
+  // tools/metrisc/histogram/histograms.xml accordingly.
+  COUNT
+};
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_GetCharacteristicSuccess) and
+// Send(BluetoothMsg_GetCharacteristicError).
+void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome);
+// Records the UUID of the characteristic used when calling getCharacteristic.
+void RecordGetCharacteristicCharacteristic(const std::string& characteristic);
 
 // read/write characteristics Metrics
 // TODO(ortuno): For now we are just copying over the code to record these
