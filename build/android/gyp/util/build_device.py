@@ -23,7 +23,7 @@ from pylib.device import device_utils
 
 def GetAttachedDevices():
   return [a.GetDeviceSerial()
-          for a in adb_wrapper.Devices()]
+          for a in adb_wrapper.AdbWrapper.Devices()]
 
 
 class BuildDevice(object):
