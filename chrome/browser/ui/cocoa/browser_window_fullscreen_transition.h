@@ -7,8 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+@class FramedBrowserWindow;
+
 // This class is responsible for managing the custom transition of a
-// BrowserWindow from its normal state into an AppKit Fullscreen state.
+// BrowserWindow from its normal state into an AppKit Fullscreen state
+// and vice versa.
 //
 // By default, when AppKit Fullscreens a window, it creates a new virtual
 // desktop and slides it in from the right of the screen. At the same time, the
@@ -19,7 +22,7 @@
 // second, no user interaction is possible.
 //
 // The default implementation of the AppKit transition smoothly animates a
-// window from its original size to the full size of the screen. At the
+// window from its original size to the expected size. At the
 // beginning of the animation, it takes a snapshot of the window's current
 // state. Then it resizes the window, calls drawRect: (theorized, not tested),
 // and takes a snapshot of the window's final state. The animation is a simple
@@ -28,12 +31,18 @@
 // drawRect: is called. As a result, the animation is effectively a no-op. When
 // the animation is finished, the new web content flashes in.
 //
-// The window's delegate can override two methods to customize the transition.
+// The window's delegate can override four methods to customize the transition.
 //  -customWindowsToEnterFullScreenForWindow:
 //    The return of this method is an array of NSWindows. Each window that is
 //    returned will be added to the new virtual desktop after the animation is
 //    finished, but will not be a part of the animation itself.
 //  -window:startCustomAnimationToEnterFullScreenWithDuration:
+//    In this method, the window's delegate adds animations to the windows
+//    returned in the above method.
+//  -customWindowsToExitFullScreenForWindow:
+//    This method is similar to customWindowsToEnterFullScreenForWindow, but
+//    will be used for exiting full screen
+//  -window:startCustomAnimationToExitFullScreenWithDuration:
 //    In this method, the window's delegate adds animations to the windows
 //    returned in the above method.
 //
@@ -45,19 +54,18 @@
 // preceding comments for a more detailed description of the implementation,
 // and the reasoning behind the decisions made.
 //
-// Recommended usage:
-//  (Override method on NSWindow's delegate)
+// Recommended usage for entering full screen:
+//  (Override method on NSWindow's delegate):
 //  - (NSArray*)customWindowsToEnterFullScreenForWindow:(NSWindow*)window {
 //    self.transition = [[[BrowserWindowEnterFullscreenTransition alloc]
-//        initWithWindow:window] autorelease];
-//    return [self.transition customWindowsToEnterFullScreen];
+//        initEnterWithWindow:window] autorelease];
+//    return [self.transition customWindowsForFullScreen];
 //  }
 //
 //  (Override method on NSWindow's delegate)
 //  - (void)window:(NSWindow*)window
 //  startCustomAnimationToEnterFullScreenWithDuration:(NSTimeInterval)duration {
-//    [self.transition
-//        startCustomAnimationToEnterFullScreenWithDuration:duration];
+//    [self.transition startCustomFullScreenAnimationWithDuration:duration];
 //  }
 //
 //  (Override method on NSWindow's delegate)
@@ -71,39 +79,61 @@
 //      return frame;
 //    return [super constrainFrameRect:frame toScreen:screen];
 //  }
+//
+//  For exiting fullscreen, you should do the same as above, but you must
+//  override following methods instead.
+//      -customWindowsToExitFullScreenForWindow:,
+//      -startCustomAnimationToEnterFullScreenWithDuration:
+//      -windowDidExitFullScreen:
+//  In addition, you should use initExitWithWindow:frame: instead of
+//  initEnterWithWindow:. For the frame parameter, you should pass the expected
+//  frame of the window at the end of the transition. If you want the window to
+//  resize and move to the frame it had before entering fullscreen, you will be
+//  responsible for saving the value of the frame and passing it to the
+//  parameter.
 
-@interface BrowserWindowEnterFullscreenTransition : NSObject
+@interface BrowserWindowFullscreenTransition : NSObject
 
-// Designated initializer. |window| is the NSWindow that is going to be moved
+// Designated initializers. |window| is the NSWindow that is going to be moved
 // into a fullscreen Space (virtual desktop), and resized to have the same size
 // as the screen. |window|'s root view must be layer backed.
-- (instancetype)initWithWindow:(NSWindow*)window;
+// initEnterWithWindow will create a BrowserWindowFullscreenTransition that
+// enters fullscreen. initExitWithWindow will create one that exits fullscreen,
+// using |frame| as the frame that |window| is going to transition into.
+- (instancetype)initEnterWithWindow:(FramedBrowserWindow*)window;
+- (instancetype)initExitWithWindow:(FramedBrowserWindow*)window
+                             frame:(NSRect)frame;
 
-// Returns the windows to be used in the custom transition.
-//   - Takes a snapshot of the current window.
-//   - Makes a new snapshot window which shows the snapshot in the same
-//   location as the current window.
-//   - Adds the style mask NSFullScreenWindowMask to the current window.
-//   - Makes the current window transparent, and resizes the current window to
-//   be the same size as the screen.
-- (NSArray*)customWindowsToEnterFullScreen;
+// Returns the windows to be used in the custom fullscreen transition.
+- (NSArray*)customWindowsForFullScreenTransition;
 
-// Begins the animations used for the custom fullscreen transition.
-//   - Animates the snapshot to the full size of the screen while fading it out.
-//   - Animates the current window from it's original location to its final
-//   location, while fading it in.
+// This method begins animation for exit or enter fullscreen transition.
+// In this method, the following happens:
+//   - Animates the snapshot to the expected final size of the window while
+//   fading it out.
+//   - Animates the current window from its original to final location and size
+//   while fading it in.
+// If the transition is for exiting fullscreen, we would shrink the content view
+// to the expected final size so that we can to avoid clipping from the
+// window.
 // Note: The two animations are added to different layers in different windows.
 // There is no explicit logic to keep the two animations in sync. If this
 // proves to be a problem, the relevant layers should attempt to sync up their
 // time offsets with CACurrentMediaTime().
-- (void)startCustomAnimationToEnterFullScreenWithDuration:
-    (NSTimeInterval)duration;
+- (void)startCustomFullScreenAnimationWithDuration:(NSTimeInterval)duration;
 
 // When this method returns true, the NSWindow method
 // -constrainFrameRect:toScreen: must return the frame rect without
 // constraining it. The owner of the instance of this class is responsible for
 // hooking up this logic.
 - (BOOL)shouldWindowBeUnconstrained;
+
+// Returns the size of the window we expect the BrowserWindowLayout to have.
+// During the exit fullscreen transition, the content size shrinks while the
+// window frame stays the same. When that happens, we want to set the
+// BrowserWindowLayout's window parameter to the content size instead of the
+// actual window's size.
+- (NSSize)desiredWindowLayoutSize;
 
 @end
 

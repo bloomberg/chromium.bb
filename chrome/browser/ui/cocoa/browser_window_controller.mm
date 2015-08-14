@@ -2151,9 +2151,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (BOOL)isInAppKitFullscreen {
-  return ([[self window] styleMask] & NSFullScreenWindowMask) ==
-             NSFullScreenWindowMask ||
-         enteringAppKitFullscreen_;
+  return !exitingAppKitFullscreen_ &&
+         (([[self window] styleMask] & NSFullScreenWindowMask) ==
+              NSFullScreenWindowMask ||
+          enteringAppKitFullscreen_);
 }
 
 - (void)enterExtensionFullscreenForURL:(const GURL&)url

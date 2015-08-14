@@ -35,6 +35,10 @@ const CGFloat kBrowserFrameViewPaintHeight = 60.0;
   NSButton* miniaturizeButton_;
   NSButton* zoomButton_;
 
+  // Locks the window's frame and style mask. If it's set to YES, then the
+  // frame and the style mask cannot be changed.
+  BOOL frameAndStyleMaskLock_;
+
   CGFloat windowButtonsInterButtonSpacing_;
 }
 
@@ -44,6 +48,22 @@ const CGFloat kBrowserFrameViewPaintHeight = 60.0;
 
 // Tells the window to suppress title drawing.
 - (void)setShouldHideTitle:(BOOL)flag;
+
+// When the lock is set to YES, the frame and style mask of the Window cannot be
+// changed. This is used to prevent AppKit from making these unwanted changes
+// to the window during exit fullscreen transition. It is very important to
+// release this lock after the transition is completed.
+- (void)setFrameAndStyleMaskLock:(BOOL)lock;
+
+// This method is overridden to prevent AppKit from  setting the style mask
+// when frameAndStyleMaskLock_ is set to true.
+- (void)setStyleMask:(NSUInteger)styleMask;
+
+// This method is overridden to prevent the AppKit from setting the frame when
+// frameAndStyleMaskLock_ is set to true.
+- (void)setFrame:(NSRect)windowFrame
+         display:(BOOL)displayViews
+         animate:(BOOL)performAnimation;
 
 // Returns the desired spacing between window control views.
 - (CGFloat)windowButtonsInterButtonSpacing;

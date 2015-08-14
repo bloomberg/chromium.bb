@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/full_size_content_window.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 
 @interface FullSizeContentWindow ()
 
@@ -16,6 +17,11 @@
 // as a NSWindow's contentView.  It is needed because NSWindow's implementation
 // explicitly resizes the contentView at inopportune times.
 @interface FullSizeContentView : NSView
+
+// This method allows us to set the content view size since setFrameSize is
+// overridden to prevent the view from shrinking.
+- (void)forceFrameSize:(NSSize)size;
+
 @end
 
 @implementation FullSizeContentView
@@ -25,6 +31,10 @@
 - (void)setFrameSize:(NSSize)size {
   if ([self superview])
     size = [[self superview] bounds].size;
+  [super setFrameSize:size];
+}
+
+- (void)forceFrameSize:(NSSize)size {
   [super setFrameSize:size];
 }
 
@@ -79,6 +89,12 @@
     }
   }
   return self;
+}
+
+- (void)forceContentViewSize:(NSSize)size {
+  FullSizeContentView* contentView =
+      base::mac::ObjCCast<FullSizeContentView>(chromeWindowView_);
+  [contentView forceFrameSize:size];
 }
 
 #pragma mark - Private Methods

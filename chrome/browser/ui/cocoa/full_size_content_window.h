@@ -35,6 +35,11 @@
                               defer:(BOOL)deferCreation
              wantsViewsOverTitlebar:(BOOL)wantsViewsOverTitlebar;
 
+// Forces the contentView to resize to the given size. This need to be forced
+// because by default, the contentView will always have the same size as the
+// window.
+- (void)forceContentViewSize:(NSSize)size;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_FULL_SIZE_CONTENT_WINDOW_H_
