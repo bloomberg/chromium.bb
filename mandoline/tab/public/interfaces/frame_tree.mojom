@@ -67,6 +67,9 @@ struct HTMLMessageEvent {
 };
 
 interface FrameTreeServer {
+  // Requests the server to message the specified frame with |event|. If the
+  // operation is allowed OnPostMessageEvent() is called on the appropriate
+  // FrameTreeClient.
   PostMessageEventToFrame(uint32 source_frame_id,
                           uint32 target_frame_id,
                           HTMLMessageEvent event);
@@ -124,7 +127,8 @@ interface FrameTreeClient {
                                string name,
                                array<uint8>? new_value);
 
-  PostMessage(uint32 source_frame_id,
-              uint32 target_frame_id,
-              HTMLMessageEvent event);
+  // See description in PostMessageEventToFrame().
+  OnPostMessageEvent(uint32 source_frame_id,
+                     uint32 target_frame_id,
+                     HTMLMessageEvent event);
 };

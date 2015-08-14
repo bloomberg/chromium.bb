@@ -198,9 +198,10 @@ class HTMLFrame : public blink::WebFrameClient,
   void OnFrameClientPropertyChanged(uint32_t frame_id,
                                     const mojo::String& name,
                                     mojo::Array<uint8_t> new_value) override;
-  void PostMessage(uint32_t source_frame_id,
-                   uint32_t target_frame_id,
-                   mandoline::HTMLMessageEventPtr serialized_event) override;
+  void OnPostMessageEvent(
+      uint32_t source_frame_id,
+      uint32_t target_frame_id,
+      mandoline::HTMLMessageEventPtr serialized_event) override;
 
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();

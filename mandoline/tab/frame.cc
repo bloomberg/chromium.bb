@@ -325,8 +325,9 @@ void Frame::PostMessageEventToFrame(uint32_t source_frame_id,
     return;
 
   DCHECK(target->GetAncestorWithFrameTreeClient());
-  target->GetAncestorWithFrameTreeClient()->frame_tree_client_->PostMessage(
-      source_frame_id, target_frame_id, event.Pass());
+  target->GetAncestorWithFrameTreeClient()
+      ->frame_tree_client_->OnPostMessageEvent(source_frame_id, target_frame_id,
+                                               event.Pass());
 }
 
 void Frame::LoadingStarted(uint32_t frame_id) {

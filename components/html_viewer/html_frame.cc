@@ -526,9 +526,9 @@ void HTMLFrame::OnFrameClientPropertyChanged(uint32_t frame_id,
                                                            new_value.Pass());
 }
 
-void HTMLFrame::PostMessage(uint32_t source_frame_id,
-                            uint32_t target_frame_id,
-                            HTMLMessageEventPtr serialized_event) {
+void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
+                                   uint32_t target_frame_id,
+                                   HTMLMessageEventPtr serialized_event) {
   NOTIMPLEMENTED();  // For message ports.
 
   HTMLFrame* target = frame_tree_manager_->root_->FindFrame(target_frame_id);
