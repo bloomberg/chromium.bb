@@ -58,6 +58,8 @@ function ImageEditor(
       this.onOptionsChange.bind(this), true /* done button */);
   this.modeToolbar_.addEventListener(
       'done-clicked', this.onDoneClicked_.bind(this));
+  this.modeToolbar_.addEventListener(
+      'cancel-clicked', this.onCancelClicked_.bind(this));
 
   this.prompt_ = prompt;
 
@@ -576,9 +578,16 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
  * @private
  */
 ImageEditor.prototype.onDoneClicked_ = function(event) {
-  var button = event.target.getDoneButton();
-  button.querySelector('paper-ripple').simulatedRipple();
-  this.leaveMode(true);
+  this.leaveMode(true /* commit */);
+};
+
+/**
+ * Handles click event of Cancel button.
+ * @param {!Event} event An event.
+ * @private
+ */
+ImageEditor.prototype.onCancelClicked_ = function(event) {
+  this.leaveMode(false /* not commit */);
 };
 
 /**
@@ -993,13 +1002,13 @@ ImageEditor.MouseControl.prototype.updateCursor_ = function(position) {
  * @param {function(string)} displayStringFunction A string formatting function.
  * @param {function(Object)=} opt_updateCallback The callback called when
  *     controls change.
- * @param {boolean=} opt_showDoneButton True to show done button.
+ * @param {boolean=} opt_showActionButtons True to show action buttons.
  * @constructor
  * @extends {cr.EventTarget}
  * @struct
  */
 ImageEditor.Toolbar = function(
-    parent, displayStringFunction, opt_updateCallback, opt_showDoneButton) {
+    parent, displayStringFunction, opt_updateCallback, opt_showActionButtons) {
   this.wrapper_ = parent;
   this.displayStringFunction_ = displayStringFunction;
 
@@ -1009,15 +1018,22 @@ ImageEditor.Toolbar = function(
    */
   this.updateCallback_ = opt_updateCallback || null;
 
-  // Create done button.
-  if (opt_showDoneButton) {
-    var doneButtonLayer = document.createElement('div');
-    doneButtonLayer.classList.add('done-button');
+  // Create action buttons.
+  if (opt_showActionButtons) {
+    var actionButtonsLayer = document.createElement('div');
+    actionButtonsLayer.classList.add('action-buttons');
+
+    this.cancelButton_ = ImageEditor.Toolbar.createButton_(
+        'GALLERY_CANCEL_LABEL', ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE,
+        this.onCancelClicked_.bind(this), 'cancel');
+    actionButtonsLayer.appendChild(this.cancelButton_);
+
     this.doneButton_ = ImageEditor.Toolbar.createButton_(
-        'GALLERY_DONE', ImageEditor.Toolbar.ButtonType.LABEL,
+        'GALLERY_DONE', ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE,
         this.onDoneClicked_.bind(this), 'done');
-    doneButtonLayer.appendChild(this.doneButton_);
-    this.wrapper_.appendChild(doneButtonLayer);
+    actionButtonsLayer.appendChild(this.doneButton_);
+
+    this.wrapper_.appendChild(actionButtonsLayer);
   }
 
   /**
@@ -1041,7 +1057,20 @@ ImageEditor.Toolbar.HEIGHT = 48; // px
  * @private
  */
 ImageEditor.Toolbar.prototype.onDoneClicked_ = function() {
+  this.doneButton_.querySelector('paper-ripple').simulatedRipple();
+
   var event = new Event('done-clicked');
+  this.dispatchEvent(event);
+};
+
+/**
+ * Handles click event of cancel button.
+ * @private
+ */
+ImageEditor.Toolbar.prototype.onCancelClicked_ = function() {
+  this.cancelButton_.querySelector('paper-ripple').simulatedRipple();
+
+  var event = new Event('cancel-clicked');
   this.dispatchEvent(event);
 };
 
@@ -1051,14 +1080,6 @@ ImageEditor.Toolbar.prototype.onDoneClicked_ = function() {
  */
 ImageEditor.Toolbar.prototype.getElement = function() {
   return this.container_;
-};
-
-/**
- * Returns the element of done button.
- * @return {!HTMLElement}
- */
-ImageEditor.Toolbar.prototype.getDoneButton = function() {
-  return this.doneButton_;
 };
 
 /**
@@ -1084,7 +1105,8 @@ ImageEditor.Toolbar.prototype.add = function(element) {
  */
 ImageEditor.Toolbar.ButtonType = {
   ICON: 'icon',
-  LABEL: 'label'
+  LABEL: 'label',
+  LABEL_UPPER_CASE: 'label_upper_case'
 };
 
 /**
@@ -1108,10 +1130,13 @@ ImageEditor.Toolbar.createButton_ = function(
     var icon = document.createElement('div');
     icon.classList.add('icon');
     button.appendChild(icon);
-  } else if (type === ImageEditor.Toolbar.ButtonType.LABEL) {
+  } else if (type === ImageEditor.Toolbar.ButtonType.LABEL ||
+      type === ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE) {
     var label = document.createElement('span');
     label.classList.add('label');
-    label.textContent = strf(title);
+    label.textContent =
+        type === ImageEditor.Toolbar.ButtonType.LABEL_UPPER_CASE ?
+        strf(title).toLocaleUpperCase() : strf(title);
     button.appendChild(label);
   } else {
     assertNotReached();

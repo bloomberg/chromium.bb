@@ -718,7 +718,7 @@ button[disabled] {
 }
 
 .edit-modal-wrapper .container,
-.edit-modal-wrapper .done-button {
+.edit-modal-wrapper .action-buttons {
   align-items: center;
   display: flex;
   height: 100%;
@@ -729,7 +729,7 @@ button[disabled] {
   justify-content: center;
 }
 
-.edit-modal-wrapper .done-button {
+.edit-modal-wrapper .action-buttons {
   justify-content: flex-end;
   left: 0;
   position: absolute;
@@ -755,17 +755,18 @@ button[disabled] {
   display: block;
 }
 
-/* Done button */
-.edit-modal button.done {
+/* Action buttons */
+.edit-modal-wrapper .action-buttons button {
   -webkit-margin-end: 8px;
   align-items: center;
   display: flex;
   height: 32px;
   justify-content: center;
+  outline: none;
   width: 70px;
 }
 
-.edit-modal button.done .label {
+.edit-modal-wrapper .action-buttons button .label {
   font-weight: bold;
 }
 
