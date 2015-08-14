@@ -111,18 +111,17 @@
   }
 
   if (openMenuOnClick_) {
-    [cell setEnableClickHold:NO];
     [cell setClickHoldTimeout:0.0];  // Make menu trigger immediately.
     [cell setAction:@selector(clickShowMenu:)];
     [cell setTarget:self];
-    [cell setClickHoldAction:nil];
-    [cell setClickHoldTarget:nil];
   } else {
-    [cell setEnableClickHold:YES];
     [cell setClickHoldTimeout:0.25];  // Default value.
-    [cell setClickHoldAction:@selector(dragShowMenu:)];
-    [cell setClickHoldTarget:self];
   }
+  // Even when openMenuOnClick_ is true, click hold action and target still
+  // need to be set in order to allow classic Mac menu behavior.
+  [cell setEnableClickHold:YES];
+  [cell setClickHoldAction:@selector(dragShowMenu:)];
+  [cell setClickHoldTarget:self];
 
   [cell setEnableRightClick:openMenuOnRightClick_];
   if (!openMenuOnClick_ || openMenuOnRightClick_) {
@@ -190,6 +189,8 @@
 // Called when the button is clicked and released. (Shouldn't happen with
 // timeout of 0, though there may be some strange pointing devices out there.)
 - (void)clickShowMenu:(id)sender {
+  // We shouldn't get here unless the menu is enabled.
+  DCHECK([self attachedMenu]);
   [self showMenu:NO];
 }
 

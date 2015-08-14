@@ -215,7 +215,8 @@ static const CGFloat kDragDistThreshold = 2.5;
 }
 
 - (BOOL)shouldExposeAccessibilityShowMenu {
-  return (enableRightClick_ || (enableClickHold_ && clickHoldTimeout_ > 0.0)) &&
+  return (enableRightClick_ ||
+      (enableClickHold_ && clickHoldTimeout_ > kMinTimeout)) &&
       accessibilityShowMenuAction_ && accessibilityShowMenuTarget_;
 }
 
