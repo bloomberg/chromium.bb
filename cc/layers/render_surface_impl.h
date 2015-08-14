@@ -139,6 +139,7 @@ class CC_EXPORT RenderSurfaceImpl {
                    RenderPassId render_pass_id);
 
   int TransformTreeIndex() const;
+  int ClipTreeIndex() const;
 
  private:
   LayerImpl* owning_layer_;

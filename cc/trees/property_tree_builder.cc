@@ -79,7 +79,7 @@ static bool RequiresClipNode(LayerType* layer,
   if (!render_surface_applies_clip)
     return false;
 
-  return !!layer->parent();
+  return true;
 }
 
 template <typename LayerType>
@@ -141,8 +141,13 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.data.requires_tight_clip_rect =
         ancestor_clips_subtree &&
         (!layer->render_surface() ||
-         (layer->render_surface() && !layer_clips_subtree &&
+         (layer->has_render_surface() && !layer_clips_subtree &&
           layer->num_unclipped_descendants()));
+
+    node.data.render_surface_is_clipped = layer->has_render_surface() &&
+                                          ancestor_clips_subtree &&
+                                          !layer->num_unclipped_descendants();
+
     data_for_children->clip_tree_parent =
         data_for_children->clip_tree->Insert(node, parent_id);
   }

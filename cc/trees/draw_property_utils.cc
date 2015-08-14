@@ -669,6 +669,17 @@ gfx::Transform DrawTransformOfRenderSurfaceFromPropertyTrees(
   return render_surface_transform;
 }
 
+bool RenderSurfaceIsClippedFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const ClipTree& tree) {
+  const ClipNode* node = tree.Node(render_surface->ClipTreeIndex());
+  // If the render surface's owning layer doesn't form a clip node, it is not
+  // clipped.
+  if (render_surface->OwningLayerId() != node->owner_id)
+    return false;
+  return node->data.render_surface_is_clipped;
+}
+
 template <typename LayerType>
 gfx::Transform ScreenSpaceTransformFromPropertyTreesInternal(
     LayerType* layer,

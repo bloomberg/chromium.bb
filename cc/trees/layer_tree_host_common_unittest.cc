@@ -6343,6 +6343,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   // If we force render surface, but none of the layers are in the layer list,
   // then this layer should not appear in RSLL.
   grand_child1_raw->SetHasRenderSurface(true);
+  grand_child1_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(grand_parent_raw);
   member_id = render_surface_layer_list_count();
@@ -6382,6 +6383,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   // content.
   grand_child1_raw->SetDrawsContent(false);
   grand_child1_raw->SetHasRenderSurface(false);
+  grand_child1_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   child_raw->SetHasRenderSurface(true);
   grand_child2_raw->SetDrawsContent(true);
 

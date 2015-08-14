@@ -2287,6 +2287,10 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
       << DrawTransformOfRenderSurfaceFromPropertyTrees(
              render_surface, property_trees->transform_tree)
              .ToString();
+
+  CHECK_EQ(render_surface->is_clipped(),
+           RenderSurfaceIsClippedFromPropertyTrees(render_surface,
+                                                   property_trees->clip_tree));
 }
 
 void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,

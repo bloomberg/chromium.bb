@@ -144,6 +144,7 @@ struct CC_EXPORT ClipNodeData {
   // target space clip.
   bool inherit_parent_target_space_clip;
   bool requires_tight_clip_rect;
+  bool render_surface_is_clipped;
 };
 
 typedef TreeNode<ClipNodeData> ClipNode;

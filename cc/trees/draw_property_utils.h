@@ -81,6 +81,10 @@ gfx::Transform CC_EXPORT DrawTransformOfRenderSurfaceFromPropertyTrees(
     const RenderSurfaceImpl* render_Surface,
     const TransformTree& tree);
 
+bool CC_EXPORT
+RenderSurfaceIsClippedFromPropertyTrees(const RenderSurfaceImpl* render_surface,
+                                        const ClipTree& tree);
+
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const LayerImpl* layer,
                                const TransformTree& tree);

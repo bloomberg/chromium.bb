@@ -75,6 +75,10 @@ int RenderSurfaceImpl::TransformTreeIndex() const {
   return owning_layer_->transform_tree_index();
 }
 
+int RenderSurfaceImpl::ClipTreeIndex() const {
+  return owning_layer_->clip_tree_index();
+}
+
 void RenderSurfaceImpl::SetClipRect(const gfx::Rect& clip_rect) {
   if (clip_rect_ == clip_rect)
     return;
