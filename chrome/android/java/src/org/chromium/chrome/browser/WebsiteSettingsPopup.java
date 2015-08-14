@@ -543,18 +543,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 originToDisplay = mFullUrl;
             }
 
-            String leadingText = mContext.getResources().getString(
-                    R.string.page_info_connection_broken_leading_text);
-            String followingText = mContext.getResources().getString(
-                    R.string.page_info_connection_broken_following_text, originToDisplay);
-            messageBuilder.append(leadingText + " " + followingText);
-            final ForegroundColorSpan redSpan = new ForegroundColorSpan(mContext.getResources()
-                    .getColor(R.color.website_settings_connection_broken_leading_text));
-            final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
-            messageBuilder.setSpan(redSpan, 0, leadingText.length(),
-                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-            messageBuilder.setSpan(boldSpan, 0, leadingText.length(),
-                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            messageBuilder.append(mContext.getResources().getString(
+                    R.string.page_info_connection_broken, originToDisplay));
         }
 
         if (isConnectionDetailsLinkVisible()) {

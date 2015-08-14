@@ -38,7 +38,6 @@
     <!-- Website Settings Popup colors -->
     <color name="website_settings_popup_text">#444444</color>
     <color name="website_settings_popup_button_text">#444444</color>
-    <color name="website_settings_connection_broken_leading_text">#db4437</color>
     <color name="website_settings_popup_permission_spinner_text">#646464</color>
     <color name="website_settings_popup_text_link">#4285f4</color>
 

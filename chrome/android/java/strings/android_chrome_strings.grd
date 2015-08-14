@@ -1387,11 +1387,8 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_PAGE_INFO_CONNECTION_SHA1" desc="Message to display in the page info bubble when the page is not considered private (because the connection used SHA-1 for certificate signatures, which are not considered secure anymore).">
         This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.
       </message>
-      <message name="IDS_PAGE_INFO_CONNECTION_BROKEN_LEADING_TEXT" desc="Message to display highlighted red in the page info bubble when the connection is insecure because the HTTPS certificate is invalid.">
-        Your connection to this site is not private.
-      </message>
-      <message name="IDS_PAGE_INFO_CONNECTION_BROKEN_FOLLOWING_TEXT" desc="Message to display after a 'Your connection to this site is not private' message' in the page info bubble when the connection is insecure because the HTTPS certificate is invalid.">
-        Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
+      <message name="IDS_PAGE_INFO_CONNECTION_BROKEN" desc="Message to display in the page info bubble when the connection is insecure because the HTTPS certificate is invalid.">
+        Your connection to this site is not private. Attackers might be trying to steal your information (for example, photos, passwords, messages and credit cards) from <ph name="DOMAIN_NAME">%1$s<ex>google.com</ex></ph>.
       </message>
       <message name="IDS_PAGE_INFO_CONNECTION_INTERNAL_PAGE" desc="Message to display in the page info bubble when the page is an internal Chrome page (e.g. the bookmarks page, or about:blank).">
         You are viewing a secure Google Chrome page.
