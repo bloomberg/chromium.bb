@@ -22,7 +22,7 @@ const int kNumStandardURLSchemes = 8;
 const char* kStandardURLSchemes[kNumStandardURLSchemes] = {
   kHttpScheme,
   kHttpsScheme,
-  kFileScheme,  // Yes, file urls can have a hostname!
+  kFileScheme,  // Yes, file URLs can have a hostname!
   kFtpScheme,
   kGopherScheme,
   kWsScheme,    // WebSocket.
@@ -132,7 +132,7 @@ bool DoCanonicalize(const CHAR* in_spec,
   Parsed parsed_input;
 #ifdef WIN32
   // For Windows, we allow things that look like absolute Windows paths to be
-  // fixed up magically to file URLs. This is done for IE compatability. For
+  // fixed up magically to file URLs. This is done for IE compatibility. For
   // example, this will change "c:/foo" into a file URL rather than treating
   // it as a URL with the protocol "c". It also works for UNC ("\\foo\bar.txt").
   // There is similar logic in url_canon_relative.cc for
@@ -175,13 +175,14 @@ bool DoCanonicalize(const CHAR* in_spec,
                                       charset_converter, output, output_parsed);
 
   } else if (DoCompareSchemeComponent(spec, scheme, url::kMailToScheme)) {
-    // Mailto are treated like a standard url with only a scheme, path, query
+    // Mailto URLs are treated like standard URLs, with only a scheme, path,
+    // and query.
     ParseMailtoURL(spec, spec_len, &parsed_input);
     success = CanonicalizeMailtoURL(spec, spec_len, parsed_input, output,
                                     output_parsed);
 
   } else {
-    // "Weird" URLs like data: and javascript:
+    // "Weird" URLs like data: and javascript:.
     ParsePathURL(spec, spec_len, trim_path_end, &parsed_input);
     success = CanonicalizePathURL(spec, spec_len, parsed_input, output,
                                   output_parsed);
@@ -271,7 +272,7 @@ bool DoReplaceComponents(const char* spec,
                          CanonOutput* output,
                          Parsed* out_parsed) {
   // If the scheme is overridden, just do a simple string substitution and
-  // reparse the whole thing. There are lots of edge cases that we really don't
+  // re-parse the whole thing. There are lots of edge cases that we really don't
   // want to deal with. Like what happens if I replace "http://e:8080/foo"
   // with a file. Does it become "file:///E:/8080/foo" where the port number
   // becomes part of the path? Parsing that string as a file URL says "yes"
@@ -318,7 +319,7 @@ bool DoReplaceComponents(const char* spec,
     // getting replaced here. If ReplaceComponents didn't re-check everything,
     // we wouldn't know if something *not* getting replaced is a problem.
     // If the scheme-specific replacers are made more intelligent so they don't
-    // re-check everything, we should instead recanonicalize the whole thing
+    // re-check everything, we should instead re-canonicalize the whole thing
     // after this call to check validity (this assumes replacing the scheme is
     // much much less common than other types of replacements, like clearing the
     // ref).
@@ -371,7 +372,7 @@ void AddStandardScheme(const char* new_scheme) {
   //
   // This normally means you're trying to set up a new standard scheme too late
   // in your application's init process. Locate where your app does this
-  // initialization and calls LockStandardScheme, and add your new standard
+  // initialization and calls LockStandardSchemes, and add your new standard
   // scheme there.
   DCHECK(!standard_schemes_locked) <<
       "Trying to add a standard scheme after the list has been locked.";
@@ -380,7 +381,7 @@ void AddStandardScheme(const char* new_scheme) {
   if (scheme_len == 0)
     return;
 
-  // Dulicate the scheme into a new buffer and add it to the list of standard
+  // Duplicate the scheme into a new buffer and add it to the list of standard
   // schemes. This pointer will be leaked on shutdown.
   char* dup_scheme = new char[scheme_len + 1];
   ANNOTATE_LEAKING_OBJECT_PTR(dup_scheme);

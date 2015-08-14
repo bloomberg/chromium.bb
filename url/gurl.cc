@@ -61,7 +61,7 @@ const std::string& EmptyStringForGURL() {
 
 #endif  // WIN32
 
-} // namespace
+}  // namespace
 
 GURL::GURL() : is_valid_(false) {
 }
@@ -132,7 +132,7 @@ void GURL::InitializeFromCanonicalSpec() {
 #ifndef NDEBUG
   // For testing purposes, check that the parsed canonical URL is identical to
   // what we would have produced. Skip checking for invalid URLs have no meaning
-  // and we can't always canonicalize then reproducabely.
+  // and we can't always canonicalize then reproducibly.
   if (is_valid_) {
     url::Component scheme;
     // We can't do this check on the inner_url of a filesystem URL, as
@@ -311,7 +311,7 @@ GURL GURL::ReplaceComponents(
 
 GURL GURL::GetOrigin() const {
   // This doesn't make sense for invalid or nonstandard URLs, so return
-  // the empty URL
+  // the empty URL.
   if (!is_valid_ || !IsStandard())
     return GURL();
 
@@ -408,16 +408,17 @@ std::string GURL::ExtractFileName() const {
 }
 
 std::string GURL::PathForRequest() const {
-  DCHECK(parsed_.path.len > 0) << "Canonical path for requests should be non-empty";
+  DCHECK(parsed_.path.len > 0)
+      << "Canonical path for requests should be non-empty";
   if (parsed_.ref.len >= 0) {
-    // Clip off the reference when it exists. The reference starts after the #
-    // sign, so we have to subtract one to also remove it.
+    // Clip off the reference when it exists. The reference starts after the
+    // #-sign, so we have to subtract one to also remove it.
     return std::string(spec_, parsed_.path.begin,
                        parsed_.ref.begin - parsed_.path.begin - 1);
   }
   // Compute the actual path length, rather than depending on the spec's
-  // terminator.  If we're an inner_url, our spec continues on into our outer
-  // url's path/query/ref.
+  // terminator. If we're an inner_url, our spec continues on into our outer
+  // URL's path/query/ref.
   int path_len = parsed_.path.len;
   if (parsed_.query.is_valid())
     path_len = parsed_.query.end() - parsed_.path.begin;

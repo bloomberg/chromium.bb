@@ -144,7 +144,7 @@ URL_EXPORT bool ResolveRelative(const char* base_spec,
                                 CanonOutput* output,
                                 Parsed* output_parsed);
 
-// Replaces components in the given VALID input url. The new canonical URL info
+// Replaces components in the given VALID input URL. The new canonical URL info
 // is written to output and out_parsed.
 //
 // Returns true if the resulting URL is valid.
@@ -171,7 +171,7 @@ URL_EXPORT void DecodeURLEscapeSequences(const char* input,
                                          int length,
                                          CanonOutputW* output);
 
-// Escapes the given string as defined by the JS method encodeURIComponent.  See
+// Escapes the given string as defined by the JS method encodeURIComponent. See
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent
 URL_EXPORT void EncodeURIComponent(const char* input,
                                    int length,

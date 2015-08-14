@@ -45,14 +45,15 @@ TEST(GURLTest, Types) {
   EXPECT_EQ("something:///HOSTNAME.com/",
             TypesTestCase("something:///HOSTNAME.com/"));
 
-  // In the reverse, known schemes should always trigger standard URL handling.
+  // Conversely, URLs with known schemes should always trigger standard URL
+  // handling.
   EXPECT_EQ("http://hostname.com/", TypesTestCase("http:HOSTNAME.com"));
   EXPECT_EQ("http://hostname.com/", TypesTestCase("http:/HOSTNAME.com"));
   EXPECT_EQ("http://hostname.com/", TypesTestCase("http://HOSTNAME.com"));
   EXPECT_EQ("http://hostname.com/", TypesTestCase("http:///HOSTNAME.com"));
 
 #ifdef WIN32
-  // URLs that look like absolute Windows drive specs.
+  // URLs that look like Windows absolute path specs.
   EXPECT_EQ("file:///C:/foo.txt", TypesTestCase("c:\\foo.txt"));
   EXPECT_EQ("file:///Z:/foo.txt", TypesTestCase("Z|foo.txt"));
   EXPECT_EQ("file://server/foo.txt", TypesTestCase("\\\\server\\foo.txt"));
@@ -60,7 +61,7 @@ TEST(GURLTest, Types) {
 #endif
 }
 
-// Test the basic creation and querying of components in a GURL. We assume
+// Test the basic creation and querying of components in a GURL. We assume that
 // the parser is already tested and works, so we are mostly interested if the
 // object does the right thing with the results.
 TEST(GURLTest, Components) {
@@ -175,7 +176,7 @@ TEST(GURLTest, Assign) {
   EXPECT_EQ("", invalid2.ref());
 }
 
-// This is a regression test for http://crbug.com/309975 .
+// This is a regression test for http://crbug.com/309975.
 TEST(GURLTest, SelfAssign) {
   GURL a("filesystem:http://example.com/temporary/");
   // This should not crash.
@@ -245,9 +246,9 @@ TEST(GURLTest, IsValid) {
 }
 
 TEST(GURLTest, ExtraSlashesBeforeAuthority) {
-  // According to RFC3986, the hier-part for URI with an authority must use only
-  // two slashes, GURL intentionally just ignores slashes more than 2 and parses
-  // the following part as an authority.
+  // According to RFC3986, the hierarchical part for URI with an authority
+  // must use only two slashes; GURL intentionally just ignores extra slashes
+  // if there are more than 2, and parses the following part as an authority.
   GURL url("http:///host");
   EXPECT_EQ("host", url.host());
   EXPECT_EQ("/", url.path());
@@ -378,7 +379,7 @@ TEST(GURLTest, GetWithEmptyPath) {
 }
 
 TEST(GURLTest, Replacements) {
-  // The url canonicalizer replacement test will handle most of these case.
+  // The URL canonicalizer replacement test will handle most of these case.
   // The most important thing to do here is to check that the proper
   // canonicalizer gets called based on the scheme of the input.
   struct ReplaceCase {
@@ -395,7 +396,7 @@ TEST(GURLTest, Replacements) {
   } replace_cases[] = {
     {"http://www.google.com/foo/bar.html?foo#bar", NULL, NULL, NULL, NULL, NULL, "/", "", "", "http://www.google.com/"},
     {"http://www.google.com/foo/bar.html?foo#bar", "javascript", "", "", "", "", "window.open('foo');", "", "", "javascript:window.open('foo');"},
-    {"file:///C:/foo/bar.txt", "http", NULL, NULL, "www.google.com", "99", "/foo","search", "ref", "http://www.google.com:99/foo?search#ref"},
+    {"file:///C:/foo/bar.txt", "http", NULL, NULL, "www.google.com", "99", "/foo", "search", "ref", "http://www.google.com:99/foo?search#ref"},
 #ifdef WIN32
     {"http://www.google.com/foo/bar.html?foo#bar", "file", "", "", "", "", "c:\\", "", "", "file:///C:/"},
 #endif
@@ -435,7 +436,7 @@ TEST(GURLTest, ClearFragmentOnDataUrl) {
 
   EXPECT_EQ("data: one ? two ", url_no_ref.spec());
 
-  // Importing a parsed url via this constructor overload will retain trailing
+  // Importing a parsed URL via this constructor overload will retain trailing
   // whitespace.
   GURL import_url(url_no_ref.spec(),
                   url_no_ref.parsed_for_possibly_invalid_spec(),
