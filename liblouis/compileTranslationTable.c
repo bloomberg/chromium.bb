@@ -3854,12 +3854,13 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 	int icrs, rcrs;
 	int iend, rcnt;
 	int inxt, rnxt;
+	int attr, aend;
 	int esc;
 	int i;
 
-	icrs = iend = inxt = 0;
 	rcrs = 1;
-	rnxt = rcnt = 0;
+	icrs = iend = inxt = rnxt = rcnt = aend = 0;
+
 	expr[rnxt] = PTN_LAST;
 	
 	/*   no pattern   */
@@ -3883,8 +3884,7 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 		case '~':
 
 			icrs++;
-			expr[rcrs++] = PTN_DELIMIT;
-			//expr[rnxt] = 1;
+			expr[rcrs++] = PTN_DELIMITER;
 			expr[rnxt] = rcrs - rnxt;
 			rnxt = rcrs++;
 			expr[rnxt] = PTN_LAST;
@@ -3938,6 +3938,63 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 				expr[rcrs++] = (widechar)input[i];
 				expr[rcnt]++;
 			}
+			icrs = inxt;
+
+			expr[rnxt] = rcrs - rnxt;
+			rnxt = rcrs++;
+			expr[rnxt] = PTN_LAST;
+			break;
+
+		case '%':
+
+			icrs++;
+			if(input[icrs] == '"')
+			{
+				icrs++;
+				for(aend = icrs; aend < input_max; aend++)
+				if(input[aend] == '"')
+					break;
+				if(aend == input_max)
+					return 0;
+				inxt = aend + 1;
+			}
+			else
+			{
+				aend = icrs + 1;
+				inxt = aend;
+			}
+
+			if(input[inxt] == '*')
+			{
+				expr[rcrs++] = PTN_ZERO_MORE;
+				inxt++;
+			}
+			else if(input[inxt] == '+')
+			{
+				expr[rcrs++] = PTN_ONE_MORE;
+				inxt++;
+			}
+			expr[rcrs++] = PTN_ATTRIBUTE;
+
+			attr = 0;
+			for( ; icrs < aend; icrs++)
+			switch(input[icrs])
+			{
+			case '_':  attr |= CTC_Space;        break;
+			case '#':  attr |= CTC_Digit;        break;
+			case 'a':  attr |= CTC_Letter;       break;
+			case 'u':  attr |= CTC_UpperCase;    break;
+			case 'l':  attr |= CTC_LowerCase;    break;
+			case '.':  attr |= CTC_Punctuation;  break;
+			case '$':  attr |= CTC_Sign;         break;
+			case '1':  attr |= CTC_Class1;       break;
+			case '2':  attr |= CTC_Class2;       break;
+			case '3':  attr |= CTC_Class3;       break;
+			case '4':  attr |= CTC_Class4;       break;
+			default:  return 0;
+			}
+			expr[rcrs++] = attr;
+
 			icrs = inxt;
 
 			expr[rnxt] = rcrs - rnxt;

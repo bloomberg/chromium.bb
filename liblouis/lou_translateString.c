@@ -1139,9 +1139,8 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 	int not;
 
 	icrs = off;
-	not = 0;
-	rnxt = 0;
 	rcrs = 1;
+	rnxt = not = 0;
 	while(expr[rnxt] != PTN_LAST)
 	{
 		if(expr[rcrs] == PTN_NOT)
@@ -1150,7 +1149,7 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 			rcrs++;
 		}
 
-		if(expr[rcrs] == PTN_DELIMIT)
+		if(expr[rcrs] == PTN_DELIMITER)
 		if(icrs >= max)
 			return !not;
 		else if(input[icrs] == 0)
@@ -1189,12 +1188,26 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 			/*   check this expression   */
 			while(icrs < max)
 			{
-				//  assert next one is PTN_CHARS
-				check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
-				if(check && not)
-					return 0;
-				if(!check && !not)
-					return 0;
+				switch(expr[rcrs + 1])
+				{
+				case PTN_ATTRIBUTE:
+
+					check = checkAttr(input[icrs], expr[rcrs + 2], 0);
+					if(check && not)
+						return 0;
+					if(!check && !not)
+						return 0;
+					break;
+
+				case PTN_CHARS:
+
+					check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
+					if(check && not)
+						return 0;
+					if(!check && !not)
+						return 0;
+					break;
+				}
 				icrs++;
 
 				/*   check next expression again   */
@@ -1203,6 +1216,16 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 					return 1;
 			}
 			return 0;
+
+		case PTN_ATTRIBUTE:
+
+			check = checkAttr(input[icrs], expr[rcrs + 1], 0);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs++;
+			break;
 
 		case PTN_CHARS:
 
@@ -1232,9 +1255,8 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 	int not;
 	
 	icrs = off;
-	not = 0;
-	rnxt = 0;
 	rcrs = 1;
+	rnxt = not = 0;
 	while(expr[rnxt] != PTN_LAST)
 	{
 		if(expr[rcrs] == PTN_NOT)
@@ -1243,7 +1265,7 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 			rcrs++;
 		}
 
-		if(expr[rcrs] == PTN_DELIMIT)
+		if(expr[rcrs] == PTN_DELIMITER)
 		if(icrs <= min)
 			return !not;
 		else if(input[icrs] == 0)
@@ -1282,11 +1304,26 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 			/*   check this expression   */
 			while(icrs > min)
 			{
-				check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
-				if(check && not)
-					return 0;
-				if(!check && !not)
-					return 0;
+				switch(expr[rcrs + 1])
+				{
+				case PTN_ATTRIBUTE:
+
+					check = checkAttr(input[icrs], expr[rcrs + 2], 0);
+					if(check && not)
+						return 0;
+					if(!check && !not)
+						return 0;
+					break;
+
+				case PTN_CHARS:
+
+					check = pattern_check_chars(input[icrs], &expr[rcrs + 2]);
+					if(check && not)
+						return 0;
+					if(!check && !not)
+						return 0;
+					break;
+				}
 				icrs--;
 
 				/*   check next expression again   */
@@ -1295,6 +1332,16 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 					return 1;
 			}
 			return 0;
+
+		case PTN_ATTRIBUTE:
+
+			check = checkAttr(input[icrs], expr[rcrs + 1], 0);
+			if(check && not)
+				return 0;
+			if(!check && !not)
+				return 0;
+			icrs--;
+			break;
 
 		case PTN_CHARS:
 

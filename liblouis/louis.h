@@ -738,13 +738,15 @@ typedef enum
 {
 	PTN_LAST,
 	
-	PTN_DELIMIT,
+	PTN_DELIMITER,
 
 	PTN_NOT,
 	PTN_ZERO_MORE,
 	PTN_ONE_MORE,
 
 	PTN_CHARS,
+
+	PTN_ATTRIBUTE,
 }
 PatternCodes;
 
