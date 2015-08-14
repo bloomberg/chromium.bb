@@ -24,6 +24,9 @@
 // Initializes the window with the given content rect.
 - (id)initWithContentRect:(NSRect)contentRect;
 
+// Initializes the window with the given content rect and style mask.
+- (id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)windowStyle;
+
 @end
 
 // The content view for the custom window.

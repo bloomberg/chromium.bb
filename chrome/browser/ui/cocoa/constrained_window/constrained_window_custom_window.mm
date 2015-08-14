@@ -13,8 +13,14 @@
 @implementation ConstrainedWindowCustomWindow
 
 - (id)initWithContentRect:(NSRect)contentRect {
+  return [self initWithContentRect:contentRect
+                         styleMask:NSBorderlessWindowMask];
+}
+
+- (id)initWithContentRect:(NSRect)contentRect
+                styleMask:(NSUInteger)windowStyle {
   if ((self = [self initWithContentRect:contentRect
-                              styleMask:NSBorderlessWindowMask
+                              styleMask:windowStyle
                                 backing:NSBackingStoreBuffered
                                   defer:NO])) {
     base::scoped_nsobject<NSView> contentView(
@@ -30,7 +36,7 @@
                   backing:(NSBackingStoreType)bufferingType
                     defer:(BOOL)deferCreation {
   if ((self = [super initWithContentRect:contentRect
-                               styleMask:NSBorderlessWindowMask
+                               styleMask:windowStyle
                                  backing:bufferingType
                                    defer:NO])) {
     [self setHasShadow:YES];

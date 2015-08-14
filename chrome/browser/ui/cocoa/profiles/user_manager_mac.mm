@@ -185,7 +185,9 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
   NSRect frame = NSMakeRect(
       0, 0, UserManager::kReauthDialogWidth, UserManager::kReauthDialogHeight);
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window(
-      [[ConstrainedWindowCustomWindow alloc] initWithContentRect:frame]);
+      [[ConstrainedWindowCustomWindow alloc]
+          initWithContentRect:frame
+                    styleMask:NSTitledWindowMask | NSClosableWindowMask]);
   if ((self = [super initWithWindow:window])) {
     webContents_ = webContents;
 
@@ -202,7 +204,6 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
     constrained_window_.reset(
        new ConstrainedWindowMac(
           webContentsDelegate_.get(), webContents_, sheet));
-    [window setStyleMask:NSTitledWindowMask | NSClosableWindowMask];
 
     // The close button needs to call CloseWebContentsModalDialog() on the
     // constrained window isntead of just [window close] so grab a reference to
