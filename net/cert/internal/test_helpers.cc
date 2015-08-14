@@ -4,12 +4,31 @@
 
 #include "net/cert/internal/test_helpers.h"
 
+#include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "net/cert/pem_tokenizer.h"
 
 namespace net {
+
+namespace der {
+
+void PrintTo(const Input& data, ::std::ostream* os) {
+  std::string b64;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(data.UnsafeData()),
+                        data.Length()),
+      &b64);
+
+  *os << "[" << b64 << "]";
+}
+
+bool operator==(const Input& a, const Input& b) {
+  return a.Equals(b);
+}
+
+}  // namespace der
 
 der::Input InputFromString(const std::string* s) {
   return der::Input(reinterpret_cast<const uint8_t*>(s->data()), s->size());

@@ -5,6 +5,7 @@
 #ifndef NET_CERT_INTERNAL_TEST_HELPERS_H_
 #define NET_CERT_INTERNAL_TEST_HELPERS_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -12,6 +13,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
+
+namespace der {
+
+// These functions are used by GTest to support EXPECT_EQ() for
+// der::Input.
+void PrintTo(const Input& data, ::std::ostream* os);
+bool operator==(const Input& a, const Input& b);
+
+}  // namespace der
 
 // Creates a der::Input from an std::string. The lifetimes are a bit subtle
 // when using this function:

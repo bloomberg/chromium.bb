@@ -371,6 +371,7 @@
                     'data/test.html',
                     'data/url_request_unittest/',
                     'data/verify_name_match_unittest/names/',
+                    'data/parse_certificate_unittest/',
                   ],
                   'test_data_prefix': 'net',
                 },
