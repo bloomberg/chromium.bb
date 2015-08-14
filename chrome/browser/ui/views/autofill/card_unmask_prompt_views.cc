@@ -26,6 +26,8 @@
 #include "ui/compositor/compositing_recorder.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public2.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -453,9 +455,9 @@ void CardUnmaskPromptViews::InitIfNecessary() {
 
   error_icon_ = new views::ImageView();
   error_icon_->SetVisible(false);
-  error_icon_->SetImage(ui::ResourceBundle::GetSharedInstance()
-                            .GetImageNamed(IDR_ALERT_RED)
-                            .ToImageSkia());
+  // TODO(estade): revisit this color.
+  error_icon_->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 16,
+                                              SkColorSetRGB(0xDB, 0x44, 0x37)));
   temporary_error->AddChildView(error_icon_);
 
   // Reserve vertical space for the error label, assuming it's one line.
