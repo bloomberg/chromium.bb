@@ -44,7 +44,7 @@ const char kPluginPath[] = "PluginPath";
 const char kPluginVersion[] = "PluginVersion";
 // For use with the scoped_ptr of an mmap-ed buffer
 struct MmapDeleter {
-  explicit MmapDeleter(size_t map_size) { map_size = map_size_; }
+  explicit MmapDeleter(size_t map_size) : map_size_(map_size) { }
   inline void operator()(uint8_t* ptr) const {
     if (ptr != MAP_FAILED)
       munmap(ptr, map_size_);
