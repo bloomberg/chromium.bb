@@ -365,6 +365,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::string LayerTreeAsJson() const;
 
   void FinishAllRendering();
+  int RequestedMSAASampleCount() const;
 
   virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
   TileManager* tile_manager() { return tile_manager_.get(); }

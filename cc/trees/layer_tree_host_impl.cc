@@ -1639,6 +1639,14 @@ void LayerTreeHostImpl::FinishAllRendering() {
     renderer_->Finish();
 }
 
+int LayerTreeHostImpl::RequestedMSAASampleCount() const {
+  if (settings_.gpu_rasterization_msaa_sample_count == -1) {
+    return device_scale_factor_ >= 2.0f ? 4 : 8;
+  }
+
+  return settings_.gpu_rasterization_msaa_sample_count;
+}
+
 bool LayerTreeHostImpl::CanUseGpuRasterization() {
   if (!(output_surface_ && output_surface_->context_provider() &&
         output_surface_->worker_context_provider()))
@@ -1657,9 +1665,8 @@ void LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   bool use_gpu = false;
   bool use_msaa = false;
   bool using_msaa_for_complex_content =
-      renderer() && settings_.gpu_rasterization_msaa_sample_count > 0 &&
-      GetRendererCapabilities().max_msaa_samples >=
-          settings_.gpu_rasterization_msaa_sample_count;
+      renderer() && RequestedMSAASampleCount() > 0 &&
+      GetRendererCapabilities().max_msaa_samples >= RequestedMSAASampleCount();
   if (settings_.gpu_rasterization_forced) {
     use_gpu = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::ON_FORCED;
@@ -2107,8 +2114,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
-    int msaa_sample_count =
-        use_msaa_ ? settings_.gpu_rasterization_msaa_sample_count : 0;
+    int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
         GetTaskRunner(), task_graph_runner, context_provider,

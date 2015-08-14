@@ -698,7 +698,7 @@ void RenderThreadImpl::Init() {
     DCHECK(parsed_msaa_sample_count) << string_value;
     DCHECK_GE(gpu_rasterization_msaa_sample_count_, 0);
   } else {
-    gpu_rasterization_msaa_sample_count_ = 0;
+    gpu_rasterization_msaa_sample_count_ = -1;
   }
 
   if (command_line.HasSwitch(switches::kDisableDistanceFieldText)) {

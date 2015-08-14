@@ -307,7 +307,8 @@ int GpuRasterizationMSAASampleCount() {
 #if defined(OS_ANDROID)
     return 4;
 #else
-    return 8;
+    // Desktop platforms will compute this automatically based on DPI.
+    return -1;
 #endif
   std::string string_value = command_line.GetSwitchValueASCII(
       switches::kGpuRasterizationMSAASampleCount);

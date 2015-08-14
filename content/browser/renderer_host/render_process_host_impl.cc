@@ -1137,7 +1137,7 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableGpuRasterization);
 
   int msaa_sample_count = GpuRasterizationMSAASampleCount();
-  if (msaa_sample_count > 0) {
+  if (msaa_sample_count >= 0) {
     command_line->AppendSwitchASCII(
         switches::kGpuRasterizationMSAASampleCount,
         base::IntToString(msaa_sample_count));
