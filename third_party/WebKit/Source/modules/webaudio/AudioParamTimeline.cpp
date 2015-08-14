@@ -452,7 +452,7 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
                     unsigned nextEventFillToFrame = fillToFrame;
                     double nextEventFillToTime = fillToTime;
                     fillToTime = std::min(endTime, time1 + duration);
-                    // |fillToTime| can be greater than |startTime| when the end of the
+                    // |fillToTime| can be less than |startTime| when the end of the
                     // setValueCurve automation has been reached, but the next automation has not
                     // yet started. In this case, |fillToTime| is clipped to |time1|+|duration|
                     // above, but |startTime| will keep increasing (because the current time is
