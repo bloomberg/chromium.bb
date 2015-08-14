@@ -334,16 +334,9 @@ cvox.ExtensionBridge.sendContentScriptToBackground = function(message) {
  * @param {Object} message The message to send.
  */
 cvox.ExtensionBridge.sendBackgroundToContentScript = function(message) {
-  chrome.tabs.query(
-      {'active': true, 'lastFocusedWindow': true},
-      function(tabs) {
-        if (tabs && tabs.length > 0) {
-          chrome.tabs.sendMessage(tabs[0].id, message);
-        }
-        cvox.ExtensionBridge.portCache_.forEach(function(port) {
-          port.postMessage(message);
-        });
-      });
+  cvox.ExtensionBridge.portCache_.forEach(function(port) {
+    port.postMessage(message);
+  });
 };
 
 cvox.ExtensionBridge.init();
