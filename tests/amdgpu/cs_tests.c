@@ -266,7 +266,7 @@ static void amdgpu_cs_uvd_decode(void)
 	r = amdgpu_bo_cpu_map(buf_handle, (void **)&ptr);
 	CU_ASSERT_EQUAL(r, 0);
 
-	memcpy(ptr, uvd_decode_msg, sizeof(uvd_create_msg));
+	memcpy(ptr, uvd_decode_msg, sizeof(uvd_decode_msg));
 	if (family_id >= AMDGPU_FAMILY_VI)
 		ptr[0x10] = 7;
 
@@ -362,7 +362,7 @@ static void amdgpu_cs_uvd_destroy(void)
 	r = amdgpu_bo_cpu_map(buf_handle, &msg);
 	CU_ASSERT_EQUAL(r, 0);
 
-	memcpy(msg, uvd_destroy_msg, sizeof(uvd_create_msg));
+	memcpy(msg, uvd_destroy_msg, sizeof(uvd_destroy_msg));
 	if (family_id >= AMDGPU_FAMILY_VI)
 		((uint8_t*)msg)[0x10] = 7;
 
