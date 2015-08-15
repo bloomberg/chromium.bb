@@ -310,7 +310,6 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(const QualifiedName& 
             &SVGNames::directionAttr,
             &displayAttr,
             &dominant_baselineAttr,
-            &enable_backgroundAttr,
             &fillAttr,
             &fill_opacityAttr,
             &fill_ruleAttr,

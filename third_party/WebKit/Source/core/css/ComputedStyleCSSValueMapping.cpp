@@ -2610,7 +2610,6 @@ PassRefPtrWillBeRawPtr<CSSValue> ComputedStyleCSSValueMapping::get(CSSPropertyID
     case CSSPropertyMaskType:
         return CSSPrimitiveValue::create(svgStyle.maskType());
     case CSSPropertyMarker:
-    case CSSPropertyEnableBackground:
         // the above properties are not yet implemented in the engine
         return nullptr;
     case CSSPropertyCx:

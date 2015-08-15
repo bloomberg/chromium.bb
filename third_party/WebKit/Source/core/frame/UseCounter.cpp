@@ -389,7 +389,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyClipPath: return 355;
     case CSSPropertyClipRule: return 356;
     case CSSPropertyMask: return 357;
-    case CSSPropertyEnableBackground: return 358;
+    // CSSPropertyEnableBackground has been removed, was return 358;
     case CSSPropertyFilter: return 359;
     case CSSPropertyFloodColor: return 360;
     case CSSPropertyFloodOpacity: return 361;

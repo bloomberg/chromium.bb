@@ -7652,12 +7652,6 @@ bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
             validPrimitive = validUnit(value, FLength | FPercent, SVGAttributeMode);
         break;
 
-    case CSSPropertyEnableBackground:
-    // accumulate | new [x] [y] [width] [height] | inherit
-        if (id == CSSValueAccumulate) // TODO : new
-            validPrimitive = true;
-        break;
-
     case CSSPropertyClipPath:
     case CSSPropertyFilter:
     case CSSPropertyMarkerStart:
