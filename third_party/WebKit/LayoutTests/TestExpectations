@@ -327,10 +327,6 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 
 crbug.com/503626 virtual/gpu/fast/canvas/canvas-filter-shadow.html [ ImageOnlyFailure ]
 
-# https://codereview.chromium.org/1290133002/
-crbug.com/449197 fast/images/drag-image.html [ NeedsRebaseline ]
-crbug.com/449197 paint/selection/selection-drag-image-in-iframe.html [ NeedsRebaseline ]
-
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ ImageOnlyFailure ]
