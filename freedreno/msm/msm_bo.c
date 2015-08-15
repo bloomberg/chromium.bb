@@ -96,7 +96,7 @@ static void msm_bo_destroy(struct fd_bo *bo)
 
 }
 
-static struct fd_bo_funcs funcs = {
+static const struct fd_bo_funcs funcs = {
 		.offset = msm_bo_offset,
 		.cpu_prep = msm_bo_cpu_prep,
 		.cpu_fini = msm_bo_cpu_fini,

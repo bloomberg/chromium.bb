@@ -191,7 +191,7 @@ static void kgsl_ringbuffer_destroy(struct fd_ringbuffer *ring)
 	free(kgsl_ring);
 }
 
-static struct fd_ringbuffer_funcs funcs = {
+static const struct fd_ringbuffer_funcs funcs = {
 		.hostptr = kgsl_ringbuffer_hostptr,
 		.flush = kgsl_ringbuffer_flush,
 		.emit_reloc = kgsl_ringbuffer_emit_reloc,

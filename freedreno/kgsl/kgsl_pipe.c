@@ -108,7 +108,7 @@ static void kgsl_pipe_destroy(struct fd_pipe *pipe)
 	free(kgsl_pipe);
 }
 
-static struct fd_pipe_funcs funcs = {
+static const struct fd_pipe_funcs funcs = {
 		.ringbuffer_new = kgsl_ringbuffer_new,
 		.get_param = kgsl_pipe_get_param,
 		.wait = kgsl_pipe_wait,

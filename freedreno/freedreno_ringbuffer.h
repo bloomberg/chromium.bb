@@ -44,7 +44,7 @@ struct fd_ringbuffer {
 	int size;
 	uint32_t *cur, *end, *start, *last_start;
 	struct fd_pipe *pipe;
-	struct fd_ringbuffer_funcs *funcs;
+	const struct fd_ringbuffer_funcs *funcs;
 	uint32_t last_timestamp;
 	struct fd_ringbuffer *parent;
 };

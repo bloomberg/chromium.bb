@@ -42,7 +42,7 @@ static void msm_device_destroy(struct fd_device *dev)
 	free(msm_dev);
 }
 
-static struct fd_device_funcs funcs = {
+static const struct fd_device_funcs funcs = {
 		.bo_new_handle = msm_bo_new_handle,
 		.bo_from_handle = msm_bo_from_handle,
 		.pipe_new = msm_pipe_new,

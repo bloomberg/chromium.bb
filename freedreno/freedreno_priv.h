@@ -83,7 +83,7 @@ struct fd_device {
 	 */
 	void *handle_table, *name_table;
 
-	struct fd_device_funcs *funcs;
+	const struct fd_device_funcs *funcs;
 
 	struct fd_bo_bucket cache_bucket[14 * 4];
 	int num_buckets;
@@ -107,7 +107,7 @@ struct fd_pipe_funcs {
 struct fd_pipe {
 	struct fd_device *dev;
 	enum fd_pipe_id id;
-	struct fd_pipe_funcs *funcs;
+	const struct fd_pipe_funcs *funcs;
 };
 
 struct fd_ringmarker {
@@ -141,7 +141,7 @@ struct fd_bo {
 	int fd;          /* dmabuf handle */
 	void *map;
 	atomic_t refcnt;
-	struct fd_bo_funcs *funcs;
+	const struct fd_bo_funcs *funcs;
 
 	int bo_reuse;
 	struct list_head list;   /* bucket-list entry */

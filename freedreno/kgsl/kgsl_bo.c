@@ -123,7 +123,7 @@ static void kgsl_bo_destroy(struct fd_bo *bo)
 
 }
 
-static struct fd_bo_funcs funcs = {
+static const struct fd_bo_funcs funcs = {
 		.offset = kgsl_bo_offset,
 		.cpu_prep = kgsl_bo_cpu_prep,
 		.cpu_fini = kgsl_bo_cpu_fini,

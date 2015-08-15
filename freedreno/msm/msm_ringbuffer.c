@@ -356,7 +356,7 @@ static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 	free(msm_ring);
 }
 
-static struct fd_ringbuffer_funcs funcs = {
+static const struct fd_ringbuffer_funcs funcs = {
 		.hostptr = msm_ringbuffer_hostptr,
 		.flush = msm_ringbuffer_flush,
 		.reset = msm_ringbuffer_reset,

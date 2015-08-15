@@ -80,7 +80,7 @@ static void msm_pipe_destroy(struct fd_pipe *pipe)
 	free(msm_pipe);
 }
 
-static struct fd_pipe_funcs funcs = {
+static const struct fd_pipe_funcs funcs = {
 		.ringbuffer_new = msm_ringbuffer_new,
 		.get_param = msm_pipe_get_param,
 		.wait = msm_pipe_wait,
