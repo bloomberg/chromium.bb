@@ -2489,6 +2489,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAbortPendingOnCancel) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
+  // This test is for the old implementation of the task manager. We must
+  // explicitly disable the new one.
+  task_manager::browsertest_util::EnableOldTaskManager();
+
   const base::string16 any_prerender = MatchTaskManagerPrerender("*");
   const base::string16 any_tab = MatchTaskManagerTab("*");
   const base::string16 original = MatchTaskManagerTab("Preloader");
@@ -2524,6 +2528,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerBeforePrerender) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
+  // This test is for the old implementation of the task manager. We must
+  // explicitly disable the new one.
+  task_manager::browsertest_util::EnableOldTaskManager();
+
   const base::string16 any_prerender = MatchTaskManagerPrerender("*");
   const base::string16 any_tab = MatchTaskManagerTab("*");
   const base::string16 original = MatchTaskManagerTab("Preloader");
@@ -2558,6 +2566,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterPrerender) {
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, OpenTaskManagerAfterSwapIn) {
+  // This test is for the old implementation of the task manager. We must
+  // explicitly disable the new one.
+  task_manager::browsertest_util::EnableOldTaskManager();
+
   const base::string16 any_prerender = MatchTaskManagerPrerender("*");
   const base::string16 any_tab = MatchTaskManagerTab("*");
   const base::string16 final = MatchTaskManagerTab("Prerender Page");

@@ -10,6 +10,10 @@
 namespace task_manager {
 namespace browsertest_util {
 
+// For the old task manager browser tests, we must call this to disable the
+// use of the new implementation and revert back to the old one.
+void EnableOldTaskManager();
+
 // Runs the message loop, observing the task manager, until there are exactly
 // |resource_count| many resources whose titles match the pattern
 // |title_pattern|. The match is done via string_util's base::MatchPattern, so

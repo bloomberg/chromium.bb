@@ -18,6 +18,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Processes) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ProcessesVsTaskManager) {
+  // This test is for the old implementation of the task manager. We must
+  // explicitly disable the new one.
+  task_manager::browsertest_util::EnableOldTaskManager();
+
   // Ensure task manager is not yet updating
   TaskManagerModel* model = TaskManager::GetInstance()->model();
   EXPECT_EQ(0, model->update_requests_);

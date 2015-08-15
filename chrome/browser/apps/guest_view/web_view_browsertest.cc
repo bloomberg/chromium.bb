@@ -1374,6 +1374,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
 // Verify that existing <webview>'s are detected when the task manager starts
 // up.
 IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerExistingWebView) {
+  // This test is for the old implementation of the task manager. We must
+  // explicitly disable the new one.
+  task_manager::browsertest_util::EnableOldTaskManager();
+
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
@@ -1396,6 +1400,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerExistingWebView) {
 
 // Verify that the task manager notices the creation of new <webview>'s.
 IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
+  // This test is for the old implementation of the task manager. We must
+  // explicitly disable the new one.
+  task_manager::browsertest_util::EnableOldTaskManager();
+
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   chrome::ShowTaskManager(browser());  // Show task manager BEFORE guest loads.

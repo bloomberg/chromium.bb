@@ -118,6 +118,10 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
 
+    // These tests are for the old implementation of the task manager. We must
+    // explicitly disable the new one.
+    task_manager::browsertest_util::EnableOldTaskManager();
+
     // Do not launch device discovery process.
     command_line->AppendSwitch(switches::kDisableDeviceDiscoveryNotifications);
   }

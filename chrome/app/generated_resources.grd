@@ -6717,11 +6717,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Causes all iframes to be denied all permissions by default. Allowing particular permissions for an iframe may involve listing the names of these permissions as values of new iframe attributes.
       </message>
       <if expr="enable_task_manager">
-        <message name="IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_NAME" desc="Name of the flag to enable the new implementation of the task manager.">
-          Enable the new task manager.
+        <message name="IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_NAME" desc="Name of the flag to disable the new implementation of the task manager.">
+          Disable the new task manager.
         </message>
-        <message name="IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_DESCRIPTION" desc="Description of the flag to enable the new implementation of the task manager.">
-          Enables the use of the new and optimized implementation of the chrome task manager.
+        <message name="IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_DESCRIPTION" desc="Description of the flag to disable the new implementation of the task manager.">
+          Disables the use of the new and optimized implementation of the chrome task manager.
         </message>
       </if>
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME" desc="Name of the flag to enable the new simplified fullscreen and mouse lock UI.">

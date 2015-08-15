@@ -404,7 +404,7 @@ extern const char kEnablePluginPowerSaver[];
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)
-extern const char kEnableNewTaskManager[];
+extern const char kDisableNewTaskManager[];
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 bool AboutInSettingsEnabled();

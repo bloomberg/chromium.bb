@@ -1356,8 +1356,8 @@ const char kDebugPrint[] = "debug-print";
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)
-// Enables the new implementation of the task manager.
-const char kEnableNewTaskManager[]   = "enable-new-task-manager";
+// Disables the new implementation of the task manager.
+const char kDisableNewTaskManager[]   = "disable-new-task-manager";
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 bool AboutInSettingsEnabled() {
@@ -1411,8 +1411,8 @@ bool PowerOverlayEnabled() {
 
 #if defined(ENABLE_TASK_MANAGER)
 bool NewTaskManagerEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kEnableNewTaskManager);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kDisableNewTaskManager);
 }
 #endif  // defined(ENABLE_TASK_MANAGER)
 

@@ -2090,11 +2090,11 @@ const Experiment kExperiments[] = {
      SINGLE_VALUE_TYPE(switches::kEnableClearBrowsingDataCounters)
     },
 #if defined(ENABLE_TASK_MANAGER)
-    {"enable-new-task-manager",
-     IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_NAME,
-     IDS_FLAGS_ENABLE_NEW_TASK_MANAGER_DESCRIPTION,
+    {"disable-new-task-manager",
+     IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_NAME,
+     IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_DESCRIPTION,
      kOsDesktop,
-     SINGLE_VALUE_TYPE(switches::kEnableNewTaskManager)
+     SINGLE_VALUE_TYPE(switches::kDisableNewTaskManager)
     },
 #endif  // defined(ENABLE_TASK_MANAGER)
     {"simplified-fullscreen-ui",
