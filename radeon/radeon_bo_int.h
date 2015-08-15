@@ -2,7 +2,7 @@
 #define RADEON_BO_INT
 
 struct radeon_bo_manager {
-    struct radeon_bo_funcs  *funcs;
+    const struct radeon_bo_funcs *funcs;
     int                     fd;
 };
 

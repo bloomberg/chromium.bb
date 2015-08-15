@@ -58,7 +58,7 @@ struct radeon_cs_funcs {
 };
 
 struct radeon_cs_manager {
-    struct radeon_cs_funcs  *funcs;
+    const struct radeon_cs_funcs  *funcs;
     int                     fd;
     int32_t vram_limit, gart_limit;
     int32_t vram_write_used, gart_write_used;

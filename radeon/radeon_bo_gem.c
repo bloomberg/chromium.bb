@@ -270,17 +270,18 @@ static int bo_get_tiling(struct radeon_bo_int *boi, uint32_t *tiling_flags,
     return r;
 }
 
-static struct radeon_bo_funcs bo_gem_funcs = {
-    bo_open,
-    bo_ref,
-    bo_unref,
-    bo_map,
-    bo_unmap,
-    bo_wait,
-    NULL,
-    bo_set_tiling,
-    bo_get_tiling,
-    bo_is_busy,
+static const struct radeon_bo_funcs bo_gem_funcs = {
+    .bo_open = bo_open,
+    .bo_ref = bo_ref,
+    .bo_unref = bo_unref,
+    .bo_map = bo_map,
+    .bo_unmap = bo_unmap,
+    .bo_wait = bo_wait,
+    .bo_is_static = NULL,
+    .bo_set_tiling = bo_set_tiling,
+    .bo_get_tiling = bo_get_tiling,
+    .bo_is_busy = bo_is_busy,
+    .bo_is_referenced_by_cs = NULL,
 };
 
 struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)

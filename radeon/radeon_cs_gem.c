@@ -514,16 +514,16 @@ static void cs_gem_print(struct radeon_cs_int *cs, FILE *file)
     }
 }
 
-static struct radeon_cs_funcs radeon_cs_gem_funcs = {
-    cs_gem_create,
-    cs_gem_write_reloc,
-    cs_gem_begin,
-    cs_gem_end,
-    cs_gem_emit,
-    cs_gem_destroy,
-    cs_gem_erase,
-    cs_gem_need_flush,
-    cs_gem_print,
+static const struct radeon_cs_funcs radeon_cs_gem_funcs = {
+    .cs_create = cs_gem_create,
+    .cs_write_reloc = cs_gem_write_reloc,
+    .cs_begin = cs_gem_begin,
+    .cs_end = cs_gem_end,
+    .cs_emit = cs_gem_emit,
+    .cs_destroy = cs_gem_destroy,
+    .cs_erase = cs_gem_erase,
+    .cs_need_flush = cs_gem_need_flush,
+    .cs_print = cs_gem_print,
 };
 
 static int radeon_get_device_id(int fd, uint32_t *device_id)
