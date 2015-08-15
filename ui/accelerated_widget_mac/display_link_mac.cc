@@ -108,22 +108,6 @@ bool DisplayLinkMac::GetVSyncParameters(
   return true;
 }
 
-base::TimeTicks DisplayLinkMac::GetNextVSyncTimeAfter(
-    const base::TimeTicks& from, double interval_fraction) {
-  if (!timebase_and_interval_valid_) {
-    StartOrContinueDisplayLink();
-    return from;
-  }
-
-  // Compute the previous vsync time.
-  base::TimeTicks previous_vsync =
-      interval_ * ((from - timebase_remainder_) / interval_) +
-      timebase_remainder_;
-
-  // Return |interval_fraction| through the next vsync.
-  return previous_vsync + (1 + interval_fraction) * interval_;
-}
-
 void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
   TRACE_EVENT0("ui", "DisplayLinkMac::Tick");
 
@@ -142,9 +126,6 @@ void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
       cv_time.hostTime / 1000);
   interval_ = base::TimeDelta::FromMicroseconds(
       1000000 * static_cast<int64>(numerator) / denominator);
-  // Compute |timebase_remainder_| to be the first vsync after time zero.
-  timebase_remainder_ =
-      timebase_ - interval_ * ((timebase_ - base::TimeTicks()) / interval_);
   timebase_and_interval_valid_ = true;
 
   StopDisplayLink();

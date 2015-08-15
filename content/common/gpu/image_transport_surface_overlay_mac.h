@@ -11,7 +11,6 @@
 #import "base/mac/scoped_nsobject.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
-#include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
 
@@ -38,7 +37,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   gfx::Size GetSize() override;
   void* GetHandle() override;
   bool OnMakeCurrent(gfx::GLContext* context) override;
-
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
                             gfx::GLImage* image,
@@ -82,6 +80,12 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // argument to avoid redundant calls to base::TimeTicks::Now.
   void PostCheckPendingSwapsCallbackIfNeeded(const base::TimeTicks& now);
 
+  // Return the time of |interval_fraction| of the way through the next
+  // vsync period that starts after |from|. If the vsync parameters are not
+  // valid then return |from|.
+  base::TimeTicks GetNextVSyncTimeAfter(
+      const base::TimeTicks& from, double interval_fraction);
+
   scoped_ptr<ImageTransportHelper> helper_;
   base::scoped_nsobject<CAContext> ca_context_;
   base::scoped_nsobject<CALayer> layer_;
@@ -109,8 +113,10 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // non-partial swap.
   gfx::Rect accumulated_partial_damage_pixel_rect_;
 
-  // The display link used to compute the time for callbacks.
-  scoped_refptr<ui::DisplayLinkMac> display_link_mac_;
+  // The vsync information provided by the browser.
+  bool vsync_parameters_valid_;
+  base::TimeTicks vsync_timebase_;
+  base::TimeDelta vsync_interval_;
 
   // True if there is a pending call to CheckPendingSwapsCallback posted.
   bool has_pending_callback_;

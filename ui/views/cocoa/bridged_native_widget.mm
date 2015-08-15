@@ -862,8 +862,11 @@ bool BridgedNativeWidget::AcceleratedWidgetShouldIgnoreBackpressure() const {
   return true;
 }
 
-uint32_t BridgedNativeWidget::AcceleratedWidgetGetDisplayIDForVSync() const {
-  return 0;
+void BridgedNativeWidget::AcceleratedWidgetGetVSyncParameters(
+  base::TimeTicks* timebase, base::TimeDelta* interval) const {
+  // TODO(tapted): Add vsync support.
+  *timebase = base::TimeTicks();
+  *interval = base::TimeDelta();
 }
 
 void BridgedNativeWidget::AcceleratedWidgetSwapCompleted(

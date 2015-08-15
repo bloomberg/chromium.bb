@@ -24,18 +24,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
   static scoped_refptr<DisplayLinkMac> GetForDisplay(
       CGDirectDisplayID display_id);
 
-  CGDirectDisplayID display_id() const { return display_id_; }
-
   // Get vsync scheduling parameters.
   bool GetVSyncParameters(
       base::TimeTicks* timebase,
       base::TimeDelta* interval);
-
-  // Return the time of |interval_fraction| of the way through the next
-  // vsync period that starts after |from|. If the vsync parameters have
-  // not yet been computed, return |from|.
-  base::TimeTicks GetNextVSyncTimeAfter(
-      const base::TimeTicks& from, double interval_fraction);
 
  private:
   friend class base::RefCounted<DisplayLinkMac>;
@@ -78,7 +70,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
   // VSync parameters computed during Tick.
   bool timebase_and_interval_valid_;
   base::TimeTicks timebase_;
-  base::TimeTicks timebase_remainder_;
   base::TimeDelta interval_;
 
   // Each display link instance consumes a non-negligible number of cycles, so

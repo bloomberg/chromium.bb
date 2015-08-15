@@ -110,10 +110,14 @@ int AcceleratedWidgetMac::GetRendererID() const {
   return 0;
 }
 
-uint32_t AcceleratedWidgetMac::GetDisplayIDForVSync() const {
-  if (view_)
-    return view_->AcceleratedWidgetGetDisplayIDForVSync();
-  return 0;
+void AcceleratedWidgetMac::GetVSyncParameters(
+    base::TimeTicks* timebase, base::TimeDelta* interval) const {
+  if (view_) {
+    view_->AcceleratedWidgetGetVSyncParameters(timebase, interval);
+  } else {
+    *timebase = base::TimeTicks();
+    *interval = base::TimeDelta();
+  }
 }
 
 bool AcceleratedWidgetMac::IsRendererThrottlingDisabled() const {
@@ -371,7 +375,8 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     float scale_factor,
     const gfx::Rect& pixel_damage_rect,
     const base::Closure& drawn_callback,
-    bool* disable_throttling, int* renderer_id, uint32_t* display_id) {
+    bool* disable_throttling, int* renderer_id,
+    base::TimeTicks* vsync_timebase, base::TimeDelta* vsync_interval) {
   AcceleratedWidgetMac* accelerated_widget_mac =
       GetHelperFromAcceleratedWidget(widget);
   if (accelerated_widget_mac) {
@@ -381,11 +386,12 @@ void AcceleratedWidgetMacGotAcceleratedFrame(
     *disable_throttling =
         accelerated_widget_mac->IsRendererThrottlingDisabled();
     *renderer_id = accelerated_widget_mac->GetRendererID();
-    *display_id = accelerated_widget_mac->GetDisplayIDForVSync();
+    accelerated_widget_mac->GetVSyncParameters(vsync_timebase, vsync_interval);
   } else {
     *disable_throttling = false;
     *renderer_id = 0;
-    *display_id = 0;
+    *vsync_timebase = base::TimeTicks();
+    *vsync_interval = base::TimeDelta();
   }
 }
 

@@ -496,7 +496,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // AcceleratedWidgetMacNSView implementation.
   NSView* AcceleratedWidgetGetNSView() const override;
   bool AcceleratedWidgetShouldIgnoreBackpressure() const override;
-  uint32_t AcceleratedWidgetGetDisplayIDForVSync() const override;
+  void AcceleratedWidgetGetVSyncParameters(
+      base::TimeTicks* timebase, base::TimeDelta* interval) const override;
   void AcceleratedWidgetSwapCompleted(
       const std::vector<ui::LatencyInfo>& latency_info) override;
   void AcceleratedWidgetHitError() override;

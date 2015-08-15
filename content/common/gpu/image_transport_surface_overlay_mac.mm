@@ -37,8 +37,11 @@ namespace {
 // doesn't result in the frame being presented to the previous vsync interval.
 const double kVSyncIntervalFractionForEarliestDisplay = 0.05;
 
-// Target 50% of the way through the next vsync interval. Empirically, it has
-// been determined to be a good target for smooth animation.
+// After doing a glFlush and putting in a fence in SwapBuffers, post a task to
+// query the fence 50% of the way through the next vsync interval. If we are
+// trying to animate smoothly, then want to query the fence at the next
+// SwapBuffers. For this reason we schedule the callback for a long way into
+// the next frame.
 const double kVSyncIntervalFractionForDisplayCallback = 0.5;
 
 // If a frame takes more than 1/4th of a second for its fence to finish, just
@@ -97,7 +100,8 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
     : scale_factor_(1), gl_renderer_id_(0), pending_overlay_image_(nullptr),
-      has_pending_callback_(false), weak_factory_(this) {
+      vsync_parameters_valid_(false), has_pending_callback_(false),
+      weak_factory_(this) {
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
@@ -184,10 +188,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   }
 
   // Compute the deadlines for drawing this frame.
-  if (display_link_mac_) {
+  if (vsync_parameters_valid_) {
     new_swap->earliest_allowed_draw_time =
-        display_link_mac_->GetNextVSyncTimeAfter(
-            now, kVSyncIntervalFractionForEarliestDisplay);
+        GetNextVSyncTimeAfter(now, kVSyncIntervalFractionForEarliestDisplay);
     new_swap->latest_allowed_draw_time = now +
         base::TimeDelta::FromSecondsD(kMaximumDelayWaitingForFenceInSeconds);
   } else {
@@ -379,12 +382,7 @@ void ImageTransportSurfaceOverlayMac::PostCheckPendingSwapsCallbackIfNeeded(
     return;
 
   base::TimeTicks target;
-  if (display_link_mac_) {
-    target = display_link_mac_->GetNextVSyncTimeAfter(
-          now, kVSyncIntervalFractionForDisplayCallback);
-  } else {
-    target = now;
-  }
+  target = GetNextVSyncTimeAfter(now, kVSyncIntervalFractionForDisplayCallback);
   base::TimeDelta delay = target - now;
 
   base::MessageLoop::current()->PostDelayedTask(
@@ -449,11 +447,16 @@ bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
 
 void ImageTransportSurfaceOverlayMac::OnBufferPresented(
     const AcceleratedSurfaceMsg_BufferPresented_Params& params) {
-  if (display_link_mac_ &&
-      display_link_mac_->display_id() == params.display_id_for_vsync)
-    return;
-  display_link_mac_ = ui::DisplayLinkMac::GetForDisplay(
-      params.display_id_for_vsync);
+  vsync_timebase_ = params.vsync_timebase;
+  vsync_interval_ = params.vsync_interval;
+  vsync_parameters_valid_ = (vsync_interval_ != base::TimeDelta());
+
+  // Compute |vsync_timebase_| to be the first vsync after time zero.
+  if (vsync_parameters_valid_) {
+    vsync_timebase_ -=
+        vsync_interval_ *
+        ((vsync_timebase_ - base::TimeTicks()) / vsync_interval_);
+  }
 }
 
 void ImageTransportSurfaceOverlayMac::OnResize(gfx::Size pixel_size,
@@ -492,6 +495,20 @@ void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   // transport surface that is observing the GPU switch.
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&IOSurfaceContextNoOp, context_on_new_gpu));
+}
+
+base::TimeTicks ImageTransportSurfaceOverlayMac::GetNextVSyncTimeAfter(
+    const base::TimeTicks& from, double interval_fraction) {
+  if (!vsync_parameters_valid_)
+    return from;
+
+  // Compute the previous vsync time.
+  base::TimeTicks previous_vsync =
+      vsync_interval_ * ((from - vsync_timebase_) / vsync_interval_) +
+      vsync_timebase_;
+
+  // Return |interval_fraction| through the next vsync.
+  return previous_vsync + (1 + interval_fraction) * vsync_interval_;
 }
 
 }  // namespace content
