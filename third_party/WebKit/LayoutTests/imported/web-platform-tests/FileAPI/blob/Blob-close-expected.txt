@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Blob.close 
-FAIL Blob should be empty. Failed to execute 'readAsText' on 'FileReader': Blob has been closed.
-FAIL Slice should still have the data. assert_equals: expected "PASS" but got "TEST"
+FAIL Closed Blob Failed to execute 'readAsText' on 'FileReader': Blob has been closed.
+PASS Slice should still have the data. 
 Harness: the test ran to completion.
 

@@ -14,7 +14,9 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-va
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-003.html [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-transitions-2/transitioncancel-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-new-002.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-new-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-new-008.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/vertical-alignment-new-009.xht [ ImageOnlyFailure ]
 crbug.com/418091 [ SnowLeopard Debug ] fast/text/aat-morx.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/hixie/perf/005.xml [ ImageOnlyFailure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/hixie/perf/006.xml [ ImageOnlyFailure ]
@@ -354,6 +356,7 @@ crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Sl
 # In imported/web-platform/tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
+crbug.com/519997 imported/web-platform-tests/html/browsers/history/the-location-interface/location_assign.html [ Slow Timeout ]
 crbug.com/519997 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/023.html [ Crash Timeout ]
 crbug.com/519997 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/026.html [ Crash Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/047.html [ Slow Timeout ]
@@ -367,6 +370,7 @@ crbug.com/490511 imported/web-platform-tests/html/semantics/forms/textfieldselec
 crbug.com/490511 [ Debug ] imported/web-platform-tests/html/semantics/forms/textfieldselection/selection.html [ Failure Slow Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/text-level-semantics/the-wbr-element/wbr-element.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
+crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrack/language.html [ Crash ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure ]
 crbug.com/520835 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formAction_document_address.html [ Failure ]
 crbug.com/520835 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/formaction.html [ Failure ]
@@ -393,20 +397,25 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/te
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/retargeting-relatedtarget/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-001.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-001.html [ Failure Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-003.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-004.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/custom-pseudo-elements/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/test-004.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/test-005.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/ownerdocument-002.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/css-variables/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-008.html [ Crash ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure Crash ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Crash ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Failure ]
+crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-007.html [ Crash Failure Timeout ]
 crbug.com/505364 crbug.com/520616 imported/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Crash Failure Timeout ]
 
 crbug.com/387740 imported/web-platform-tests/mediacapture-streams/stream-api/introduction/disabled-audio-silence.html [ Skip ]
@@ -431,10 +440,10 @@ crbug.com/325673 imported/web-platform-tests/custom-elements/concepts/custom-ele
 
 crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 
-crbug.com/517836 imported/web-platform-tests/screen-orientation/lockOrientation-bad-argument.html [ Failure ]
+crbug.com/517836 imported/web-platform-tests/screen-orientation/lock-bad-argument.html [ Failure ]
 crbug.com/517836 imported/web-platform-tests/screen-orientation/orientation-reading.html [ Failure ]
-crbug.com/517836 imported/web-platform-tests/screen-orientation/orientationchange-event-subframe.html [ Failure Timeout ]
-crbug.com/517836 imported/web-platform-tests/screen-orientation/orientationchange-event.html [ Failure Timeout ]
+crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event-subframe.html [ Failure Timeout ]
+crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event.html [ Failure Timeout ]
 
 # New W3C failures (dpranke@ to triage)
 
@@ -554,6 +563,8 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-normal-011.html [ 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-009.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-table-alignment-003.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-table-alignment-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-004.xht [ ImageOnlyFailure ]
@@ -652,9 +663,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-006.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
-
-# Test currently fails on certain Thai characters
-crbug.com/514645 imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ Failure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
