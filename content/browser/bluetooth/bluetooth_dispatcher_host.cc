@@ -99,27 +99,38 @@ WebBluetoothError TranslateConnectError(
 }
 
 blink::WebBluetoothError TranslateGATTError(
-    BluetoothGattService::GattErrorCode error_code) {
+    BluetoothGattService::GattErrorCode error_code,
+    UMAGATTOperation operation) {
   switch (error_code) {
     case BluetoothGattService::GATT_ERROR_UNKNOWN:
-      RecordGATTError(UMAGATTError::UNKNOWN);
+      RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::UNKNOWN);
       return blink::WebBluetoothError::GATTUnknownError;
     case BluetoothGattService::GATT_ERROR_FAILED:
-      RecordGATTError(UMAGATTError::FAILED);
+      RecordGATTOperationOutcome(operation, UMAGATTOperationOutcome::FAILED);
       return blink::WebBluetoothError::GATTUnknownFailure;
     case BluetoothGattService::GATT_ERROR_IN_PROGRESS:
-      RecordGATTError(UMAGATTError::IN_PROGRESS);
+      RecordGATTOperationOutcome(operation,
+                                 UMAGATTOperationOutcome::IN_PROGRESS);
       return blink::WebBluetoothError::GATTOperationInProgress;
     case BluetoothGattService::GATT_ERROR_INVALID_LENGTH:
+      RecordGATTOperationOutcome(operation,
+                                 UMAGATTOperationOutcome::INVALID_LENGTH);
       return blink::WebBluetoothError::GATTInvalidAttributeLength;
     case BluetoothGattService::GATT_ERROR_NOT_PERMITTED:
+      RecordGATTOperationOutcome(operation,
+                                 UMAGATTOperationOutcome::NOT_PERMITTED);
       return blink::WebBluetoothError::GATTNotPermitted;
     case BluetoothGattService::GATT_ERROR_NOT_AUTHORIZED:
+      RecordGATTOperationOutcome(operation,
+                                 UMAGATTOperationOutcome::NOT_AUTHORIZED);
       return blink::WebBluetoothError::GATTNotAuthorized;
     case BluetoothGattService::GATT_ERROR_NOT_PAIRED:
-      RecordGATTError(UMAGATTError::NOT_PAIRED);
+      RecordGATTOperationOutcome(operation,
+                                 UMAGATTOperationOutcome::NOT_PAIRED);
       return blink::WebBluetoothError::GATTNotPaired;
     case BluetoothGattService::GATT_ERROR_NOT_SUPPORTED:
+      RecordGATTOperationOutcome(operation,
+                                 UMAGATTOperationOutcome::NOT_SUPPORTED);
       return blink::WebBluetoothError::GATTNotSupported;
   }
   NOTREACHED();
@@ -450,6 +461,7 @@ void BluetoothDispatcherHost::OnReadValue(
   device::BluetoothDevice* device =
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::NO_DEVICE);
     Send(new BluetoothMsg_ReadCharacteristicValueError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -457,6 +469,7 @@ void BluetoothDispatcherHost::OnReadValue(
 
   BluetoothGattService* service = device->GetGattService(service_instance_id);
   if (service == nullptr) {
+    RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::NO_SERVICE);
     Send(new BluetoothMsg_ReadCharacteristicValueError(
         thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
     return;
@@ -465,6 +478,8 @@ void BluetoothDispatcherHost::OnReadValue(
   BluetoothGattCharacteristic* characteristic =
       service->GetCharacteristic(characteristic_instance_id);
   if (characteristic == nullptr) {
+    RecordCharacteristicReadValueOutcome(
+        UMAGATTOperationOutcome::NO_CHARACTERISTIC);
     Send(new BluetoothMsg_ReadCharacteristicValueError(
         thread_id, request_id,
         WebBluetoothError::CharacteristicNoLongerExists));
@@ -517,6 +532,7 @@ void BluetoothDispatcherHost::OnWriteValue(
   device::BluetoothDevice* device =
       adapter_->GetDevice(device_iter->second /* device_instance_id */);
   if (device == nullptr) {  // See "NETWORK_ERROR Note" above.
+    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::NO_DEVICE);
     Send(new BluetoothMsg_WriteCharacteristicValueError(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
@@ -524,6 +540,7 @@ void BluetoothDispatcherHost::OnWriteValue(
 
   BluetoothGattService* service = device->GetGattService(service_instance_id);
   if (service == nullptr) {
+    RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::NO_SERVICE);
     Send(new BluetoothMsg_WriteCharacteristicValueError(
         thread_id, request_id, WebBluetoothError::ServiceNoLongerExists));
     return;
@@ -532,6 +549,8 @@ void BluetoothDispatcherHost::OnWriteValue(
   BluetoothGattCharacteristic* characteristic =
       service->GetCharacteristic(characteristic_instance_id);
   if (characteristic == nullptr) {
+    RecordCharacteristicWriteValueOutcome(
+        UMAGATTOperationOutcome::NO_CHARACTERISTIC);
     Send(new BluetoothMsg_WriteCharacteristicValueError(
         thread_id, request_id,
         WebBluetoothError::CharacteristicNoLongerExists));
@@ -697,6 +716,7 @@ void BluetoothDispatcherHost::OnCharacteristicValueRead(
     int thread_id,
     int request_id,
     const std::vector<uint8>& value) {
+  RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   Send(new BluetoothMsg_ReadCharacteristicValueSuccess(thread_id, request_id,
                                                        value));
 }
@@ -705,12 +725,15 @@ void BluetoothDispatcherHost::OnCharacteristicReadValueError(
     int thread_id,
     int request_id,
     device::BluetoothGattService::GattErrorCode error_code) {
+  // TranslateGATTError calls RecordGATTOperationOutcome.
   Send(new BluetoothMsg_ReadCharacteristicValueError(
-      thread_id, request_id, TranslateGATTError(error_code)));
+      thread_id, request_id,
+      TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_READ)));
 }
 
 void BluetoothDispatcherHost::OnWriteValueSuccess(int thread_id,
                                                   int request_id) {
+  RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome::SUCCESS);
   Send(new BluetoothMsg_WriteCharacteristicValueSuccess(thread_id, request_id));
 }
 
@@ -718,8 +741,10 @@ void BluetoothDispatcherHost::OnWriteValueFailed(
     int thread_id,
     int request_id,
     device::BluetoothGattService::GattErrorCode error_code) {
+  // TranslateGATTError calls RecordGATTOperationOutcome.
   Send(new BluetoothMsg_WriteCharacteristicValueError(
-      thread_id, request_id, TranslateGATTError(error_code)));
+      thread_id, request_id,
+      TranslateGATTError(error_code, UMAGATTOperation::CHARACTERISTIC_WRITE)));
 }
 
 }  // namespace content

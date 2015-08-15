@@ -2718,6 +2718,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>jyasskin@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>scheib@chromium.org</owner>
+  <obsolete>
+    As of 08/2015 this has been replaced by
+    Bluetooth.Web.Characteristic.ReadValue and
+    Bluetooth.Web.Characteristic.WriteValue.
+  </obsolete>
   <summary>
     Records how many times each GATT Error has occured. The results will be used
     to determine how common this errors are and if we need to provide better
@@ -2754,6 +2759,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Records the result of a navigator.bluetooth.requestDevice() call. Used to
     understand what errors developers are getting so we can target efforts
     toward the most common ones.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.Characteristic.ReadValue.Outcome"
+    enum="WebBluetoothGATTOperationOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the outcome of a call to characteristic.readValue(). Used to know
+    what types of errors users are seeing. The results will be used to determine
+    how common these errors are and if we need to provide better error messages
+    to the users.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Web.Characteristic.WriteValue.Outcome"
+    enum="WebBluetoothGATTOperationOutcome">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Records the outcome of a call to characteristic.writeValue(). Used to know
+    what types of errors users are seeing. The results will be used to determine
+    how common these errors are and if we need to provide better error messages
+    to the users.
   </summary>
 </histogram>
 
@@ -52473,6 +52504,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="BluetoothGATTErrors" type="int">
+  <obsolete>
+    As of 08/2015 this has been replaced with WebBluetoothGATTOperationOutcome.
+  </obsolete>
   <int value="0" label="Unknown"/>
   <int value="1" label="Failed"/>
   <int value="2" label="In Progress"/>
@@ -72318,6 +72352,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="getCharacteristic()"/>
   <int value="4" label="Characteristic.readValue()"/>
   <int value="5" label="Characteristic.writeValue()"/>
+</enum>
+
+<enum name="WebBluetoothGATTOperationOutcome" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="No Device"/>
+  <int value="2" label="No Service"/>
+  <int value="3" label="No Characteristic"/>
+  <int value="4" label="No Descriptor"/>
+  <int value="5" label="Unknown"/>
+  <int value="6" label="Failed"/>
+  <int value="7" label="In Progress"/>
+  <int value="8" label="Invalid Length"/>
+  <int value="9" label="Not Permitted"/>
+  <int value="10" label="Not Authorized"/>
+  <int value="11" label="Not Paired"/>
+  <int value="12" label="Not Supported"/>
 </enum>
 
 <enum name="WebBluetoothGetCharacteristicOutcome" type="int">

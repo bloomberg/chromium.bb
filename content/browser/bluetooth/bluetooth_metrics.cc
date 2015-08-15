@@ -139,11 +139,39 @@ void RecordGetCharacteristicCharacteristic(const std::string& characteristic) {
                               HashUUID(characteristic));
 }
 
-// read/write characteristic
+// GATT Operations
 
-void RecordGATTError(UMAGATTError error) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.GATTErrors", static_cast<int>(error),
-                            static_cast<int>(UMAGATTError::MAX_ERROR));
+void RecordGATTOperationOutcome(UMAGATTOperation operation,
+                                UMAGATTOperationOutcome outcome) {
+  switch (operation) {
+    case UMAGATTOperation::CHARACTERISTIC_READ:
+      RecordCharacteristicReadValueOutcome(outcome);
+      return;
+    case UMAGATTOperation::CHARACTERISTIC_WRITE:
+      RecordCharacteristicWriteValueOutcome(outcome);
+      return;
+    case UMAGATTOperation::COUNT:
+      NOTREACHED();
+      return;
+  }
+  NOTREACHED();
+}
+
+// Characteristic.readValue
+
+// static
+void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Characteristic.ReadValue.Outcome",
+                            static_cast<int>(outcome),
+                            static_cast<int>(UMAGATTOperationOutcome::COUNT));
+}
+
+// Characteristic.writeValue
+
+void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome outcome) {
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.Characteristic.WriteValue.Outcome",
+                            static_cast<int>(outcome),
+                            static_cast<int>(UMAGATTOperationOutcome::COUNT));
 }
 
 }  // namespace content

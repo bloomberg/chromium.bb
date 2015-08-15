@@ -130,24 +130,54 @@ void RecordGetCharacteristicOutcome(UMAGetCharacteristicOutcome outcome);
 // Records the UUID of the characteristic used when calling getCharacteristic.
 void RecordGetCharacteristicCharacteristic(const std::string& characteristic);
 
-// read/write characteristics Metrics
-// TODO(ortuno): For now we are just copying over the code to record these
-// errors but a follow up CL will add a function for each operation.
+// GATT Operations Metrics
 
-// These types of errors aren't as common. We log them to understand
-// how common they are and if we need to investigate more.
-enum class UMAGATTError {
-  UNKNOWN = 0,
-  FAILED = 1,
-  IN_PROGRESS = 2,
-  NOT_PAIRED = 3,
-  // Note: Add new GATT Errors immediately above this line.
+// These are the possible outcomes when performing GATT operations i.e.
+// characteristic.readValue/writeValue descriptor.readValue/writeValue.
+enum UMAGATTOperationOutcome {
+  SUCCESS = 0,
+  NO_DEVICE = 1,
+  NO_SERVICE = 2,
+  NO_CHARACTERISTIC = 3,
+  NO_DESCRIPTOR = 4,
+  UNKNOWN = 5,
+  FAILED = 6,
+  IN_PROGRESS = 7,
+  INVALID_LENGTH = 8,
+  NOT_PERMITTED = 9,
+  NOT_AUTHORIZED = 10,
+  NOT_PAIRED = 11,
+  NOT_SUPPORTED = 12,
+  // Note: Add new GATT Outcomes immediately above this line.
   // Make sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.
-  MAX_ERROR,
+  COUNT
 };
-// Records the GATT Error the function returned.
-void RecordGATTError(UMAGATTError error);
+
+enum class UMAGATTOperation {
+  CHARACTERISTIC_READ,
+  CHARACTERISTIC_WRITE,
+  // Note: Add new GATT Operations immediately above this line.
+  COUNT
+};
+
+// Records the outcome of a GATT operation.
+// There should be a call to this function whenever the corresponding operation
+// doesn't have a call to Record[Operation]Outcome.
+void RecordGATTOperationOutcome(UMAGATTOperation operation,
+                                UMAGATTOperationOutcome outcome);
+
+// Characteristic.readValue() Metrics
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_ReadCharacteristicValueSuccess) and
+// Send(BluetoothMsg_ReadCharacteristicValueError).
+void RecordCharacteristicReadValueOutcome(UMAGATTOperationOutcome error);
+
+// Characteristic.writeValue() Metrics
+// There should be a call to this function for every call to
+// Send(BluetoothMsg_WriteCharacteristicValueSuccess) and
+// Send(BluetoothMsg_WriteCharacteristicValueError).
+void RecordCharacteristicWriteValueOutcome(UMAGATTOperationOutcome error);
 
 }  // namespace content
 
