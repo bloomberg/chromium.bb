@@ -13,17 +13,21 @@
 #include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "net/disk_cache/blockfile/block_files.h"
 #include "net/disk_cache/blockfile/disk_format.h"
 #include "net/disk_cache/blockfile/mapped_file.h"
 #include "net/disk_cache/blockfile/stats.h"
 #include "net/disk_cache/blockfile/storage_block-inl.h"
 #include "net/disk_cache/blockfile/storage_block.h"
+#include "net/url_request/view_cache_helper.h"
 
 namespace {
 
@@ -119,7 +123,8 @@ void DumpIndexHeader(const base::FilePath& name,
   printf("operation list: %d\n", header.lru.operation_list);
   printf("-------------------------\n\n");
 
-  *stats_addr = header.stats;
+  if (stats_addr)
+    *stats_addr = header.stats;
 }
 
 // Dumps the contents of a block-file header.
@@ -163,12 +168,15 @@ class CacheDumper {
 
   // Reads an entry from disk. Return false when all entries have been already
   // returned.
-  bool GetEntry(disk_cache::EntryStore* entry);
+  bool GetEntry(disk_cache::EntryStore* entry, disk_cache::CacheAddr* addr);
 
   // Loads a specific block from the block files.
   bool LoadEntry(disk_cache::CacheAddr addr, disk_cache::EntryStore* entry);
   bool LoadRankings(disk_cache::CacheAddr addr,
                     disk_cache::RankingsNode* rankings);
+
+  // Appends the data store at |addr| to |out|.
+  bool HexDump(disk_cache::CacheAddr addr, std::string* out);
 
  private:
   base::FilePath path_;
@@ -199,7 +207,8 @@ bool CacheDumper::Init() {
   return true;
 }
 
-bool CacheDumper::GetEntry(disk_cache::EntryStore* entry) {
+bool CacheDumper::GetEntry(disk_cache::EntryStore* entry,
+                           disk_cache::CacheAddr* addr) {
   if (dumped_entries_.find(next_addr_) != dumped_entries_.end()) {
     printf("Loop detected\n");
     next_addr_ = 0;
@@ -207,6 +216,7 @@ bool CacheDumper::GetEntry(disk_cache::EntryStore* entry) {
   }
 
   if (next_addr_) {
+    *addr = next_addr_;
     if (LoadEntry(next_addr_, entry))
       return true;
 
@@ -220,6 +230,7 @@ bool CacheDumper::GetEntry(disk_cache::EntryStore* entry) {
     // dumping every entry that we can find.
     if (index_->table[i]) {
       current_hash_ = i;
+      *addr = index_->table[i];
       if (LoadEntry(index_->table[i], entry))
         return true;
 
@@ -241,7 +252,8 @@ bool CacheDumper::LoadEntry(disk_cache::CacheAddr addr,
     return false;
 
   memcpy(entry, entry_block.Data(), sizeof(*entry));
-  printf("Entry at 0x%x\n", addr);
+  if (!entry_block.VerifyHash())
+    printf("Self hash failed at 0x%x\n", addr);
 
   // Prepare for the next entry to load.
   next_addr_ = entry->next;
@@ -257,6 +269,9 @@ bool CacheDumper::LoadEntry(disk_cache::CacheAddr addr,
 bool CacheDumper::LoadRankings(disk_cache::CacheAddr addr,
                                disk_cache::RankingsNode* rankings) {
   disk_cache::Addr address(addr);
+  if (address.file_type() != disk_cache::RANKINGS)
+    return false;
+
   disk_cache::MappedFile* file = block_files_.GetFile(address);
   if (!file)
     return false;
@@ -265,42 +280,116 @@ bool CacheDumper::LoadRankings(disk_cache::CacheAddr addr,
   if (!rank_block.Load())
     return false;
 
+  if (!rank_block.VerifyHash())
+    printf("Self hash failed at 0x%x\n", addr);
+
   memcpy(rankings, rank_block.Data(), sizeof(*rankings));
-  printf("Rankings at 0x%x\n", addr);
   return true;
 }
 
-void DumpEntry(const disk_cache::EntryStore& entry) {
+bool CacheDumper::HexDump(disk_cache::CacheAddr addr, std::string* out) {
+  disk_cache::Addr address(addr);
+  disk_cache::MappedFile* file = block_files_.GetFile(address);
+  if (!file)
+    return false;
+
+  size_t size = address.num_blocks() * address.BlockSize();
+  scoped_ptr<char> buffer(new char[size]);
+
+  size_t offset = address.start_block() * address.BlockSize() +
+                  disk_cache::kBlockHeaderSize;
+  if (!file->Read(buffer.get(), size, offset))
+    return false;
+
+  base::StringAppendF(out, "0x%x:\n", addr);
+  net::ViewCacheHelper::HexDump(buffer.get(), size, out);
+  return true;
+}
+
+std::string ToLocalTime(int64 time_us) {
+  base::Time time = base::Time::FromInternalValue(time_us);
+  base::Time::Exploded e;
+  time.LocalExplode(&e);
+  return base::StringPrintf("%d/%d/%d %d:%d:%d.%d", e.year, e.month,
+                            e.day_of_month, e.hour, e.minute, e.second,
+                            e.millisecond);
+}
+
+void DumpEntry(disk_cache::CacheAddr addr,
+               const disk_cache::EntryStore& entry,
+               bool verbose) {
   std::string key;
+  static bool full_key =
+      base::CommandLine::ForCurrentProcess()->HasSwitch("full-key");
   if (!entry.long_key) {
-    key = entry.key;
-    if (key.size() > 50)
-      key.resize(50);
+    key = std::string(entry.key, std::min(static_cast<size_t>(entry.key_len),
+                                          sizeof(entry.key)));
+    if (entry.key_len > 90 && !full_key)
+      key.resize(90);
   }
 
-  printf("hash: 0x%x\n", entry.hash);
-  printf("next entry: 0x%x\n", entry.next);
+  printf("Entry at 0x%x\n", addr);
   printf("rankings: 0x%x\n", entry.rankings_node);
   printf("key length: %d\n", entry.key_len);
   printf("key: \"%s\"\n", key.c_str());
-  printf("key addr: 0x%x\n", entry.long_key);
-  printf("reuse count: %d\n", entry.reuse_count);
-  printf("refetch count: %d\n", entry.refetch_count);
-  printf("state: %d\n", entry.state);
-  for (int i = 0; i < 4; i++) {
-    printf("data size %d: %d\n", i, entry.data_size[i]);
-    printf("data addr %d: 0x%x\n", i, entry.data_addr[i]);
+
+  if (verbose) {
+    printf("key addr: 0x%x\n", entry.long_key);
+    printf("hash: 0x%x\n", entry.hash);
+    printf("next entry: 0x%x\n", entry.next);
+    printf("reuse count: %d\n", entry.reuse_count);
+    printf("refetch count: %d\n", entry.refetch_count);
+    printf("state: %d\n", entry.state);
+    printf("creation: %s\n", ToLocalTime(entry.creation_time).c_str());
+    for (int i = 0; i < 4; i++) {
+      printf("data size %d: %d\n", i, entry.data_size[i]);
+      printf("data addr %d: 0x%x\n", i, entry.data_addr[i]);
+    }
+    printf("----------\n\n");
   }
-  printf("----------\n\n");
 }
 
-void DumpRankings(const disk_cache::RankingsNode& rankings) {
+void DumpRankings(disk_cache::CacheAddr addr,
+                  const disk_cache::RankingsNode& rankings,
+                  bool verbose) {
+  printf("Rankings at 0x%x\n", addr);
   printf("next: 0x%x\n", rankings.next);
   printf("prev: 0x%x\n", rankings.prev);
   printf("entry: 0x%x\n", rankings.contents);
-  printf("dirty: %d\n", rankings.dirty);
-  printf("hash: 0x%x\n", rankings.self_hash);
-  printf("----------\n\n");
+
+  if (verbose) {
+    printf("dirty: %d\n", rankings.dirty);
+    if (rankings.last_used != rankings.last_modified)
+      printf("used: %s\n", ToLocalTime(rankings.last_used).c_str());
+    printf("modified: %s\n", ToLocalTime(rankings.last_modified).c_str());
+    printf("hash: 0x%x\n", rankings.self_hash);
+    printf("----------\n\n");
+  } else {
+    printf("\n");
+  }
+}
+
+void PrintCSVHeader() {
+  printf(
+      "entry,rankings,next,prev,rank-contents,chain,reuse,key,"
+      "d0,d1,d2,d3\n");
+}
+
+void DumpCSV(disk_cache::CacheAddr addr,
+             const disk_cache::EntryStore& entry,
+             const disk_cache::RankingsNode& rankings) {
+  printf("0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x\n", addr,
+         entry.rankings_node, rankings.next, rankings.prev, rankings.contents,
+         entry.next, entry.reuse_count, entry.long_key, entry.data_addr[0],
+         entry.data_addr[1], entry.data_addr[2], entry.data_addr[3]);
+
+  if (addr != rankings.contents)
+    printf("Broken entry\n");
+}
+
+bool CanDump(disk_cache::CacheAddr addr) {
+  disk_cache::Addr address(addr);
+  return address.is_initialized() && address.is_block_file();
 }
 
 }  // namespace.
@@ -351,7 +440,9 @@ int DumpHeaders(const base::FilePath& input_path) {
 
 // Dumps all entries from the cache.
 int DumpContents(const base::FilePath& input_path) {
-  DumpHeaders(input_path);
+  bool print_csv = base::CommandLine::ForCurrentProcess()->HasSwitch("csv");
+  if (!print_csv)
+    DumpIndexHeader(input_path.Append(kIndexName), nullptr);
 
   // We need a message loop, although we really don't run any task.
   base::MessageLoopForIO loop;
@@ -359,15 +450,149 @@ int DumpContents(const base::FilePath& input_path) {
   if (!dumper.Init())
     return -1;
 
+  if (print_csv)
+    PrintCSVHeader();
+
   disk_cache::EntryStore entry;
-  while (dumper.GetEntry(&entry)) {
-    DumpEntry(entry);
+  disk_cache::CacheAddr addr;
+  bool verbose = base::CommandLine::ForCurrentProcess()->HasSwitch("v");
+  while (dumper.GetEntry(&entry, &addr)) {
+    if (!print_csv)
+      DumpEntry(addr, entry, verbose);
     disk_cache::RankingsNode rankings;
-    if (dumper.LoadRankings(entry.rankings_node, &rankings))
-      DumpRankings(rankings);
+    if (!dumper.LoadRankings(entry.rankings_node, &rankings))
+      continue;
+
+    if (print_csv)
+      DumpCSV(addr, entry, rankings);
+    else
+      DumpRankings(entry.rankings_node, rankings, verbose);
   }
 
   printf("Done.\n");
 
+  return 0;
+}
+
+int DumpLists(const base::FilePath& input_path) {
+  base::FilePath index_name(input_path.Append(kIndexName));
+  disk_cache::IndexHeader header;
+  if (!ReadHeader(index_name, reinterpret_cast<char*>(&header), sizeof(header)))
+    return -1;
+
+  // We need a message loop, although we really don't run any task.
+  base::MessageLoopForIO loop;
+  CacheDumper dumper(input_path);
+  if (!dumper.Init())
+    return -1;
+
+  printf("list, addr,      next,       prev,       entry\n");
+
+  const int kMaxLength = 1 * 1000 * 1000;
+  for (int i = 0; i < 5; i++) {
+    int32 size = header.lru.sizes[i];
+    if (size < 0 || size > kMaxLength) {
+      printf("Wrong size %d\n", size);
+      size = kMaxLength;
+    }
+
+    disk_cache::CacheAddr addr = header.lru.tails[i];
+    int count = 0;
+    for (; size && addr; size--) {
+      count++;
+      disk_cache::RankingsNode rankings;
+      if (!dumper.LoadRankings(addr, &rankings)) {
+        printf("Failed to load node at 0x%x\n", addr);
+        break;
+      }
+      printf("%d, 0x%x, 0x%x, 0x%x, 0x%x\n", i, addr, rankings.next,
+             rankings.prev, rankings.contents);
+
+      if (rankings.prev == addr)
+        break;
+
+      addr = rankings.prev;
+    }
+    printf("%d nodes found, %d reported\n", count, header.lru.sizes[i]);
+  }
+
+  printf("Done.\n");
+  return 0;
+}
+
+int DumpEntryAt(const base::FilePath& input_path, const std::string& at) {
+  disk_cache::CacheAddr addr;
+  if (!base::HexStringToUInt(at, &addr))
+    return -1;
+
+  if (!CanDump(addr))
+    return -1;
+
+  base::FilePath index_name(input_path.Append(kIndexName));
+  disk_cache::IndexHeader header;
+  if (!ReadHeader(index_name, reinterpret_cast<char*>(&header), sizeof(header)))
+    return -1;
+
+  // We need a message loop, although we really don't run any task.
+  base::MessageLoopForIO loop;
+  CacheDumper dumper(input_path);
+  if (!dumper.Init())
+    return -1;
+
+  disk_cache::CacheAddr entry_addr = 0;
+  disk_cache::CacheAddr rankings_addr = 0;
+  disk_cache::Addr address(addr);
+
+  disk_cache::RankingsNode rankings;
+  if (address.file_type() == disk_cache::RANKINGS) {
+    if (dumper.LoadRankings(addr, &rankings)) {
+      rankings_addr = addr;
+      addr = rankings.contents;
+      address = disk_cache::Addr(addr);
+    }
+  }
+
+  disk_cache::EntryStore entry = {};
+  if (address.file_type() == disk_cache::BLOCK_256 &&
+      dumper.LoadEntry(addr, &entry)) {
+    entry_addr = addr;
+    DumpEntry(addr, entry, true);
+    if (!rankings_addr && dumper.LoadRankings(entry.rankings_node, &rankings))
+      rankings_addr = entry.rankings_node;
+  }
+
+  bool verbose = base::CommandLine::ForCurrentProcess()->HasSwitch("v");
+
+  std::string hex_dump;
+  if (!rankings_addr || verbose)
+    dumper.HexDump(addr, &hex_dump);
+
+  if (rankings_addr)
+    DumpRankings(rankings_addr, rankings, true);
+
+  if (entry_addr && verbose) {
+    if (entry.long_key && CanDump(entry.long_key))
+      dumper.HexDump(entry.long_key, &hex_dump);
+
+    for (int i = 0; i < 4; i++) {
+      if (entry.data_addr[i] && CanDump(entry.data_addr[i]))
+        dumper.HexDump(entry.data_addr[i], &hex_dump);
+    }
+  }
+
+  printf("%s\n", hex_dump.c_str());
+  printf("Done.\n");
+  return 0;
+}
+
+int DumpAllocation(const base::FilePath& file) {
+  disk_cache::BlockFileHeader header;
+  if (!ReadHeader(file, reinterpret_cast<char*>(&header), sizeof(header)))
+    return -1;
+
+  std::string out;
+  net::ViewCacheHelper::HexDump(reinterpret_cast<char*>(&header.allocation_map),
+                                sizeof(header.allocation_map), &out);
+  printf("%s\n", out.c_str());
   return 0;
 }

@@ -20,4 +20,14 @@ int DumpContents(const base::FilePath& input_path);
 // Dumps the headers of all files.
 int DumpHeaders(const base::FilePath& input_path);
 
+// Dumps all lists of entries.
+int DumpLists(const base::FilePath& input_path);
+
+// Dumps a given entry. |at| can be the address of the entry, or the address of
+// the rankings node, or just another block address to dump as data.
+int DumpEntryAt(const base::FilePath& input_path, const std::string& at);
+
+// Dumps the allocation bitmap of the given |file|.
+int DumpAllocation(const base::FilePath& file);
+
 #endif  // NET_TOOLS_DUMP_CACHE_DUMP_FILES_H_
