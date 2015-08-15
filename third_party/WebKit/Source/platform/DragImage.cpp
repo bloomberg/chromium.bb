@@ -48,8 +48,9 @@
 #include "platform/weborigin/KURL.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -57,6 +58,8 @@
 #include <algorithm>
 
 namespace blink {
+
+namespace {
 
 const float kDragLabelBorderX = 4;
 // Keep border_y in synch with DragController::LinkDragBorderInset.
@@ -69,45 +72,95 @@ const float kMaxDragLabelStringWidth = (kMaxDragLabelWidth - 2 * kDragLabelBorde
 const float kDragLinkLabelFontSize = 11;
 const float kDragLinkUrlFontSize = 10;
 
-PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnum shouldRespectImageOrientation, float deviceScaleFactor, InterpolationQuality interpolationQuality)
+PassRefPtr<SkImage> adjustedImage(PassRefPtr<SkImage> image, const IntSize& size,
+    const AffineTransform& transform, float opacity, InterpolationQuality interpolationQuality)
+{
+    if (transform.isIdentity() && opacity == 1) {
+        // Nothing to adjust, just use the original.
+        ASSERT(image->width() == size.width());
+        ASSERT(image->height() == size.height());
+        return image;
+    }
+
+    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(size.width(), size.height()));
+    if (!surface)
+        return nullptr;
+
+    SkPaint paint;
+    ASSERT(opacity >= 0 && opacity <= 1);
+    paint.setAlpha(opacity * 255);
+    paint.setFilterQuality(interpolationQuality == InterpolationNone
+        ? kNone_SkFilterQuality : kHigh_SkFilterQuality);
+
+    SkCanvas* canvas = surface->getCanvas();
+    canvas->clear(SK_ColorTRANSPARENT);
+    canvas->concat(affineTransformToSkMatrix(transform));
+    canvas->drawImage(image.get(), 0, 0, &paint);
+
+    return adoptRef(surface->newImageSnapshot());
+}
+
+} // anonymous namespace
+
+FloatSize DragImage::clampedImageScale(const Image& image, const IntSize& size,
+    const IntSize& maxSize)
+{
+    // Non-uniform scaling for size mapping.
+    FloatSize imageScale(
+        static_cast<float>(size.width()) / image.width(),
+        static_cast<float>(size.height()) / image.height());
+
+    // Uniform scaling for clamping.
+    const float clampScaleX = size.width() > maxSize.width()
+        ? static_cast<float>(maxSize.width()) / size.width() : 1;
+    const float clampScaleY = size.height() > maxSize.height()
+        ? static_cast<float>(maxSize.height()) / size.height() : 1;
+    imageScale.scale(std::min(clampScaleX, clampScaleY));
+
+    return imageScale;
+}
+
+PassOwnPtr<DragImage> DragImage::create(Image* image,
+    RespectImageOrientationEnum shouldRespectImageOrientation, float deviceScaleFactor,
+    InterpolationQuality interpolationQuality, float opacity, const FloatSize& imageScale)
 {
     if (!image)
         return nullptr;
 
-    SkBitmap bitmap;
-    if (!image->deprecatedBitmapForCurrentFrame(&bitmap))
+    RefPtr<SkImage> skImage = image->imageForCurrentFrame();
+    if (!skImage)
         return nullptr;
 
-    if (image->isBitmapImage()) {
-        ImageOrientation orientation = DefaultImageOrientation;
-        BitmapImage* bitmapImage = toBitmapImage(image);
-        IntSize sizeRespectingOrientation = bitmapImage->sizeRespectingOrientation();
+    IntSize size = image->size();
+    size.scale(imageScale.width(), imageScale.height());
+    if (size.isEmpty())
+        return nullptr;
 
-        if (shouldRespectImageOrientation == RespectImageOrientation)
-            orientation = bitmapImage->currentFrameOrientation();
+    AffineTransform transform;
+    transform.scaleNonUniform(imageScale.width(), imageScale.height());
+
+    if (shouldRespectImageOrientation == RespectImageOrientation && image->isBitmapImage()) {
+        BitmapImage* bitmapImage = toBitmapImage(image);
+        ImageOrientation orientation = bitmapImage->currentFrameOrientation();
 
         if (orientation != DefaultImageOrientation) {
-            FloatRect destRect(FloatPoint(), sizeRespectingOrientation);
+            size = bitmapImage->sizeRespectingOrientation();
             if (orientation.usesWidthAsHeight())
-                destRect = destRect.transposedRect();
+                size.scale(imageScale.height(), imageScale.width());
+            else
+                size.scale(imageScale.width(), imageScale.height());
 
-            SkBitmap skBitmap;
-            if (!skBitmap.tryAllocN32Pixels(sizeRespectingOrientation.width(), sizeRespectingOrientation.height()))
-                return nullptr;
-
-            skBitmap.eraseColor(SK_ColorTRANSPARENT);
-            SkCanvas canvas(skBitmap);
-            canvas.concat(affineTransformToSkMatrix(orientation.transformFromDefault(sizeRespectingOrientation)));
-            canvas.drawBitmapRect(bitmap, destRect, nullptr);
-
-            return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
+            transform *= orientation.transformFromDefault(size);
         }
     }
 
-    SkBitmap skBitmap;
-    if (!bitmap.copyTo(&skBitmap, kN32_SkColorType))
+    SkBitmap bm;
+    RefPtr<SkImage> resizedImage =
+        adjustedImage(skImage.release(), size, transform, opacity, interpolationQuality);
+    if (!resizedImage || !resizedImage->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode))
         return nullptr;
-    return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
+
+    return adoptPtr(new DragImage(bm, deviceScaleFactor, interpolationQuality));
 }
 
 static Font deriveDragLabelFont(int size, FontWeight fontWeight, const FontDescription& systemFont)
@@ -219,64 +272,12 @@ DragImage::~DragImage()
 {
 }
 
-void DragImage::fitToMaxSize(const IntSize& srcSize, const IntSize& maxSize)
-{
-    float heightResizeRatio = 0.0f;
-    float widthResizeRatio = 0.0f;
-    float resizeRatio = -1.0f;
-    IntSize originalSize = size();
-
-    if (srcSize.width() > maxSize.width()) {
-        widthResizeRatio = maxSize.width() / static_cast<float>(srcSize.width());
-        resizeRatio = widthResizeRatio;
-    }
-
-    if (srcSize.height() > maxSize.height()) {
-        heightResizeRatio = maxSize.height() / static_cast<float>(srcSize.height());
-        if ((resizeRatio < 0.0f) || (resizeRatio > heightResizeRatio))
-            resizeRatio = heightResizeRatio;
-    }
-
-    if (srcSize == originalSize) {
-        if (resizeRatio > 0.0f)
-            scale(resizeRatio, resizeRatio);
-        return;
-    }
-
-    // The image was scaled in the webpage so at minimum we must account for that scaling
-    float scaleX = srcSize.width() / static_cast<float>(originalSize.width());
-    float scaleY = srcSize.height() / static_cast<float>(originalSize.height());
-    if (resizeRatio > 0.0f) {
-        scaleX *= resizeRatio;
-        scaleY *= resizeRatio;
-    }
-
-    scale(scaleX, scaleY);
-}
-
 void DragImage::scale(float scaleX, float scaleY)
 {
     skia::ImageOperations::ResizeMethod resizeMethod = m_interpolationQuality == InterpolationNone ? skia::ImageOperations::RESIZE_BOX : skia::ImageOperations::RESIZE_LANCZOS3;
     int imageWidth = scaleX * m_bitmap.width();
     int imageHeight = scaleY * m_bitmap.height();
     m_bitmap = skia::ImageOperations::Resize(m_bitmap, resizeMethod, imageWidth, imageHeight);
-}
-
-void DragImage::dissolveToFraction(float fraction)
-{
-    m_bitmap.setAlphaType(kPremul_SkAlphaType);
-    SkAutoLockPixels lock(m_bitmap);
-
-    for (int row = 0; row < m_bitmap.height(); ++row) {
-        for (int column = 0; column < m_bitmap.width(); ++column) {
-            uint32_t* pixel = m_bitmap.getAddr32(column, row);
-            *pixel = SkPreMultiplyARGB(
-                SkColorGetA(*pixel) * fraction,
-                SkColorGetR(*pixel),
-                SkColorGetG(*pixel),
-                SkColorGetB(*pixel));
-        }
-    }
 }
 
 } // namespace blink

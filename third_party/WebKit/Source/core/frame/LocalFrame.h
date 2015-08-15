@@ -154,7 +154,7 @@ public:
     double devicePixelRatio() const;
 
     PassOwnPtr<DragImage> nodeImage(Node&);
-    PassOwnPtr<DragImage> dragImageForSelection();
+    PassOwnPtr<DragImage> dragImageForSelection(float opacity);
 
     String selectedText() const;
     String selectedTextForClipboard() const;
@@ -192,7 +192,9 @@ private:
 
     // Paints the area for the given rect into a DragImage, with the given displayItemClient id attached.
     // The rect is in the coordinate space of the frame.
-    PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags, IntRect paintingRect);
+    PassOwnPtr<DragImage> paintIntoDragImage(const DisplayItemClientWrapper&,
+        RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags,
+        IntRect paintingRect, float opacity = 1);
 
     mutable FrameLoader m_loader;
     mutable NavigationScheduler m_navigationScheduler;

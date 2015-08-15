@@ -68,10 +68,11 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextStream.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
 
@@ -585,7 +586,9 @@ double LocalFrame::devicePixelRatio() const
 }
 
 PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
-    const DisplayItemClientWrapper& displayItemClient, DisplayItem::Type clipType, RespectImageOrientationEnum shouldRespectImageOrientation, const GlobalPaintFlags globalPaintFlags, IntRect paintingRect)
+    const DisplayItemClientWrapper& displayItemClient,
+    RespectImageOrientationEnum shouldRespectImageOrientation,
+    const GlobalPaintFlags globalPaintFlags, IntRect paintingRect, float opacity)
 {
     ASSERT(document()->isActive());
     // Not flattening compositing layers will result in a broken image being painted.
@@ -594,10 +597,6 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
     float deviceScaleFactor = m_host->deviceScaleFactor();
     paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
     paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
-
-    OwnPtr<ImageBuffer> buffer = ImageBuffer::create(paintingRect.size());
-    if (!buffer)
-        return nullptr;
 
     SkPictureBuilder pictureBuilder(paintingRect);
     {
@@ -608,17 +607,16 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
         transform.translate(-paintingRect.x(), -paintingRect.y());
         TransformRecorder transformRecorder(paintContext, displayItemClient, transform);
 
-        ClipRecorder clipRecorder(paintContext, displayItemClient, clipType,
-            LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
-
         m_view->paintContents(&paintContext, globalPaintFlags, paintingRect);
 
     }
     RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
-    buffer->canvas()->drawPicture(recording.get());
+    RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
+        SkISize::Make(paintingRect.width(), paintingRect.height()), nullptr, nullptr));
+    RefPtr<Image> image = StaticBitmapImage::create(skImage.release());
 
-    RefPtr<Image> image = buffer->newImageSnapshot();
-    return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor);
+    return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor,
+        InterpolationHigh, opacity);
 }
 
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
@@ -639,11 +637,11 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 
     IntRect rect;
 
-    return paintIntoDragImage(*layoutObject, DisplayItem::ClipNodeImage, layoutObject->shouldRespectImageOrientation(), GlobalPaintFlattenCompositingLayers,
-        layoutObject->paintingRootRect(rect));
+    return paintIntoDragImage(*layoutObject, layoutObject->shouldRespectImageOrientation(),
+        GlobalPaintFlattenCompositingLayers, layoutObject->paintingRootRect(rect));
 }
 
-PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
+PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
 {
     if (!selection().isRange())
         return nullptr;
@@ -651,7 +649,9 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection()
     const ScopedFramePaintingState state(this, 0);
     m_view->updateAllLifecyclePhases();
 
-    return paintIntoDragImage(*this, DisplayItem::ClipSelectionImage, DoNotRespectImageOrientation, GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers, enclosingIntRect(selection().bounds()));
+    return paintIntoDragImage(*this, DoNotRespectImageOrientation,
+        GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers,
+        enclosingIntRect(selection().bounds()), opacity);
 }
 
 String LocalFrame::selectedText() const

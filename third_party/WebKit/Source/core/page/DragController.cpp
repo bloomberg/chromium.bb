@@ -800,12 +800,13 @@ static PassOwnPtr<DragImage> dragImageForImage(Element* element, Image* image, c
 
     InterpolationQuality interpolationQuality = element->ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? InterpolationNone : InterpolationHigh;
     if (image->size().height() * image->size().width() <= MaxOriginalImageArea
-        && (dragImage = DragImage::create(image, element->layoutObject() ? element->layoutObject()->shouldRespectImageOrientation() : DoNotRespectImageOrientation, 1 /* deviceScaleFactor */, interpolationQuality))) {
+        && (dragImage = DragImage::create(image,
+            element->layoutObject() ? element->layoutObject()->shouldRespectImageOrientation() : DoNotRespectImageOrientation,
+            1 /* deviceScaleFactor */, interpolationQuality, DragImageAlpha,
+            DragImage::clampedImageScale(*image, imageRect.size(), maxDragImageSize())))) {
         IntSize originalSize = imageRect.size();
         origin = imageRect.location();
 
-        dragImage->fitToMaxSize(imageRect.size(), maxDragImageSize());
-        dragImage->dissolveToFraction(DragImageAlpha);
         IntSize newSize = dragImage->size();
 
         // Properly orient the drag image and orient it differently if it's smaller than the original
@@ -868,9 +869,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
     Node* node = state.m_dragSrc.get();
     if (state.m_dragType == DragSourceActionSelection) {
         if (!dragImage) {
-            dragImage = src->dragImageForSelection();
-            if (dragImage)
-                dragImage->dissolveToFraction(DragImageAlpha);
+            dragImage = src->dragImageForSelection(DragImageAlpha);
             dragLocation = dragLocationForSelectionDrag(src);
         }
         doSystemDrag(dragImage.get(), dragLocation, dragOrigin, dataTransfer, src, false);

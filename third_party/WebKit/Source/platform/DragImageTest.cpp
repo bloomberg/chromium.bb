@@ -118,28 +118,15 @@ TEST(DragImageTest, NonNullHandling)
     IntSize size = dragImage->size();
     EXPECT_EQ(1, size.width());
     EXPECT_EQ(1, size.height());
-
-    dragImage->dissolveToFraction(0.5);
 }
 
 TEST(DragImageTest, CreateDragImage)
 {
     {
         // Tests that the DrageImage implementation doesn't choke on null values
-        // of bitmapForCurrentFrame().
+        // of imageForCurrentFrame().
         RefPtr<TestImage> testImage(TestImage::create(IntSize()));
         EXPECT_FALSE(DragImage::create(testImage.get()));
-    }
-
-    {
-        // Tests that the drag image is a deep copy.
-        RefPtr<TestImage> testImage(TestImage::create(IntSize(1, 1)));
-        OwnPtr<DragImage> dragImage = DragImage::create(testImage.get());
-        ASSERT_TRUE(dragImage);
-        SkBitmap bitmap;
-        EXPECT_TRUE(testImage->deprecatedBitmapForCurrentFrame(&bitmap));
-        SkAutoLockPixels lock1(dragImage->bitmap()), lock2(bitmap);
-        EXPECT_NE(dragImage->bitmap().getPixels(), bitmap.getPixels());
     }
 }
 
