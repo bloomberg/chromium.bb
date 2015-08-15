@@ -440,6 +440,58 @@ TEST_F(WebUsbDescriptorsTest, InvalidDescriptorInFunctionSubset) {
       std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer))));
 }
 
+TEST_F(WebUsbDescriptorsTest, UrlDescriptor) {
+  GURL url;
+  ASSERT_TRUE(ParseWebUsbUrlDescriptor(
+      std::vector<uint8_t>(
+          kExampleUrlDescriptor,
+          kExampleUrlDescriptor + sizeof(kExampleUrlDescriptor)),
+      &url));
+  EXPECT_EQ(GURL("https://example.com:80"), url);
+}
+
+TEST_F(WebUsbDescriptorsTest, ShortUrlDescriptorHeader) {
+  // The buffer is just too darn short.
+  static const uint8_t kBuffer[] = {0x01};
+  GURL url;
+  ASSERT_FALSE(ParseWebUsbUrlDescriptor(
+      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
+}
+
+TEST_F(WebUsbDescriptorsTest, ShortUrlDescriptor) {
+  // bLength is too short.
+  static const uint8_t kBuffer[] = {0x01, 0x03};
+  GURL url;
+  ASSERT_FALSE(ParseWebUsbUrlDescriptor(
+      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
+}
+
+TEST_F(WebUsbDescriptorsTest, LongUrlDescriptor) {
+  // bLength is too long.
+  static const uint8_t kBuffer[] = {0x03, 0x03};
+  GURL url;
+  ASSERT_FALSE(ParseWebUsbUrlDescriptor(
+      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
+}
+
+TEST_F(WebUsbDescriptorsTest, EmptyUrl) {
+  // The URL in this descriptor set is the empty string.
+  static const uint8_t kBuffer[] = {0x02, 0x03};
+  GURL url;
+  ASSERT_FALSE(ParseWebUsbUrlDescriptor(
+      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
+}
+
+TEST_F(WebUsbDescriptorsTest, InvalidUrl) {
+  // The URL in this descriptor set is not a valid URL: "This is not a URL."
+  static const uint8_t kBuffer[] = {0x14, 0x03, 'T', 'h', 'i', 's', ' ',
+                                    'i',  's',  ' ', 'n', 'o', 't', ' ',
+                                    'a',  ' ',  'U', 'R', 'L', '.'};
+  GURL url;
+  ASSERT_FALSE(ParseWebUsbUrlDescriptor(
+      std::vector<uint8_t>(kBuffer, kBuffer + sizeof(kBuffer)), &url));
+}
+
 }  // namespace
 
 }  // namespace device

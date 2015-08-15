@@ -287,4 +287,16 @@ bool WebUsbPlatformCapabilityDescriptor::ParseFromBosDescriptor(
   return found_vendor_code;
 }
 
+bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output) {
+  if (bytes.size() < 2) {
+    return false;
+  }
+  uint8_t length = bytes[0];
+  if (length != bytes.size() || bytes[1] != kUrlDescriptorType) {
+    return false;
+  }
+  std::vector<uint8_t>::const_iterator it = bytes.begin();
+  return ParseUrl(output, &it, bytes.end());
+}
+
 }  // namespace device

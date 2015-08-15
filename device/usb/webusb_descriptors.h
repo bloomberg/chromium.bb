@@ -49,6 +49,8 @@ struct WebUsbPlatformCapabilityDescriptor {
   uint8_t vendor_code;
 };
 
+bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output);
+
 }  // device
 
 #endif  // DEVICE_USB_WEBUSB_DESCRIPTORS_H_

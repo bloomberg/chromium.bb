@@ -4,7 +4,13 @@
 
 #include "device/usb/usb_descriptors.h"
 
+#include <algorithm>
+
 namespace device {
+
+namespace {
+const uint8_t kStringDescriptorType = 0x03;
+}
 
 UsbEndpointDescriptor::UsbEndpointDescriptor()
     : address(0),
@@ -38,6 +44,27 @@ UsbConfigDescriptor::UsbConfigDescriptor()
 }
 
 UsbConfigDescriptor::~UsbConfigDescriptor() {
+}
+
+bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
+                              base::string16* output) {
+  if (descriptor.size() < 2 || descriptor[1] != kStringDescriptorType) {
+    return false;
+  }
+  // Let the device return a buffer larger than the actual string but prefer the
+  // length reported inside the descriptor.
+  size_t length = descriptor[0];
+  length = std::min(length, descriptor.size());
+  if (length < 2) {
+    return false;
+  } else if (length == 2) {
+    // Special case to avoid indexing beyond the end of |descriptor|.
+    *output = base::string16();
+  } else {
+    *output = base::string16(
+        reinterpret_cast<const base::char16*>(&descriptor[2]), length / 2 - 1);
+  }
+  return true;
 }
 
 }  // namespace device

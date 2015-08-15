@@ -4,7 +4,6 @@
 
 #include "device/usb/usb_service_impl.h"
 
-#include <algorithm>
 #include <list>
 #include <set>
 
@@ -49,7 +48,6 @@ const uint8_t kBosDescriptorType = 0x0F;
 // WebUSB requests:
 const uint8_t kGetAllowedOriginsRequest = 0x01;
 const uint8_t kGetLandingPageRequest = 0x02;
-const uint8_t kUrlDescriptorType = 0x03;
 
 const int kControlTransferTimeout = 60000;  // 1 minute
 
@@ -186,17 +184,14 @@ void OnReadStringDescriptor(
     UsbTransferStatus status,
     scoped_refptr<net::IOBuffer> buffer,
     size_t length) {
-  if (status != USB_TRANSFER_COMPLETED || length < 2) {
-    callback.Run(base::string16());
+  base::string16 string;
+  if (status == USB_TRANSFER_COMPLETED &&
+      ParseUsbStringDescriptor(
+          std::vector<uint8>(buffer->data(), buffer->data() + length),
+          &string)) {
+    callback.Run(string);
   } else {
-    // Take the lesser of the length of data returned by the device and the
-    // length reported in the descriptor.
-    size_t internal_length = reinterpret_cast<uint8*>(buffer->data())[0];
-    length = std::min(length, internal_length);
-    // Cut off the first 2 bytes of the descriptor which are the length and
-    // descriptor type (always STRING).
-    callback.Run(base::string16(
-        reinterpret_cast<base::char16*>(buffer->data() + 2), length / 2 - 1));
+    callback.Run(base::string16());
   }
 }
 
@@ -218,22 +213,18 @@ void OnReadWebUsbLandingPage(scoped_refptr<UsbDevice> device,
                              UsbTransferStatus status,
                              scoped_refptr<net::IOBuffer> buffer,
                              size_t length) {
-  if (status != USB_TRANSFER_COMPLETED || length < 2) {
+  if (status != USB_TRANSFER_COMPLETED) {
+    USB_LOG(EVENT) << "Failed to read WebUSB landing page.";
     callback.Run();
     return;
   }
 
-  uint8_t string_length = buffer->data()[0];
-  if (string_length < 2 || string_length > length ||
-      buffer->data()[1] != kUrlDescriptorType) {
-    callback.Run();
-    return;
-  }
-
-  GURL url(std::string(&buffer->data()[2], string_length - 2));
-  if (url.is_valid()) {
+  GURL landing_page;
+  if (ParseWebUsbUrlDescriptor(
+          std::vector<uint8_t>(buffer->data(), buffer->data() + length),
+          &landing_page)) {
     UsbDeviceImpl* device_impl = static_cast<UsbDeviceImpl*>(device.get());
-    device_impl->set_webusb_landing_page(url);
+    device_impl->set_webusb_landing_page(landing_page);
   }
   callback.Run();
 }

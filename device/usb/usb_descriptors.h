@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include "base/strings/string16.h"
+
 namespace device {
 
 enum UsbTransferType {
@@ -73,6 +75,9 @@ struct UsbConfigDescriptor {
   std::vector<UsbInterfaceDescriptor> interfaces;
   std::vector<uint8_t> extra_data;
 };
+
+bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
+                              base::string16* output);
 
 }  // namespace device
 

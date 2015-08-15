@@ -77,6 +77,7 @@
         'test/run_all_unittests.cc',
         'test/usb_test_gadget_impl.cc',
         'usb/usb_context_unittest.cc',
+        'usb/usb_descriptors_unittest.cc',
         'usb/usb_device_filter_unittest.cc',
         'usb/usb_device_handle_unittest.cc',
         'usb/usb_ids_unittest.cc',
