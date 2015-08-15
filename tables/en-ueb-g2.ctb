@@ -146,7 +146,6 @@ always ch 16
 always ed 1246
 always er 12456
 always gh 126
-always ing 346
 always ou 1256
 always ow 246
 always sh 146
@@ -154,6 +153,7 @@ always st 34
 always th 1456
 always wh 156
 
+#   10.4.2
 word ch =
 word ou =
 word sh =
@@ -161,23 +161,41 @@ word st =
 word th =
 word wh =
 
+#   10.4.3
+pattern !%"_~" ing - 346
+
 #   10.5   Lower Wordsigns
 
 class lowerdotspunc +=*,.?!"'“”‘’
-#class lowerdotspunc +=*,.?!-—‐‑–—"'“”‘’
+#class lowerdotspunc +=*,.?!"'“”‘’-—‐‑–—
 #class upperdotspunc ()<>{}[]%$#@~^&:;|_\\/
 #seqbeforechars ([{"“'‘
-#seqafterchars  )]}"”'’.,;:.!?…
+#seqafterchars  )]}"”'’.,;:!?…
 
 # be
 
 pattern ~%<* be %l 23       10.6.2  10.6.3
 pattern %"_~"%<* be %l 23   10.6.2  10.6.3
 
-pattern ~["'“”‘’({[-—‐‑–—]* be ["'“”‘’({[-—‐‑–—]*~ 23
-pattern %_["'“”‘’({[-—‐‑–—]* be ["'“”‘’({[-—‐‑–—]*~ 23
-pattern ~["'“”‘’({[-—‐‑–—]* be ["'“”‘’({[-—‐‑–—]*%_ 23
-pattern %_["'“”‘’({[-—‐‑–—]* be ["'“”‘’({[-—‐‑–—]*%_ 23
+pattern ~ be ~ 23
+pattern ~ be [;:)}\\]]%>*~ 23
+pattern ~%<*[([{] be ~ 23
+pattern ~%<*[([{] be [;:)}\\]]%>*~ 23
+
+pattern ~ be %_ 23
+pattern ~ be [;:)}\\]]%>*%"_~" 23
+pattern ~%<*[([{] be %_ 23
+pattern ~%<*[([{] be [;:)}\\]]%>*%"_~" 23
+
+pattern %_ be ~ 23
+pattern %_ be [;:)}\\]]%>*~ 23
+pattern %"_~"%<*[([{] be ~ 23
+pattern %"_~"%<*[([{] be [;:)}\\]]%>*~ 23
+
+pattern %_ be %_ 23
+pattern %_ be [;:)}\\]]%>*%_ 23
+pattern %"_~"%<*[([{] be %_ 23
+pattern %"_~"%<*[([{] be [;:)}\\]]%>*%"_~" 23
 
 # enough
 
@@ -207,10 +225,25 @@ always enough 26-1256-126
 
 # his
 
-context %lowerdotspunc["his"] @125-24-234
-context ["his"]%lowerdotspunc @125-24-234
-word his 236
-#word His 6-236
+pattern ~ his ~ 236
+pattern ~ his [;:)}\\]]%>*~ 236
+pattern ~%<*[([{] his ~ 236
+pattern ~%<*[([{] his [;:)}\\]]%>*~ 236
+
+pattern ~ his %_ 236
+pattern ~ his [;:)}\\]]%>*%"_~" 236
+pattern ~%<*[([{] his %_ 236
+pattern ~%<*[([{] his [;:)}\\]]%>*%"_~" 236
+
+pattern %_ his ~ 236
+pattern %_ his [;:)}\\]]%>*~ 236
+pattern %"_~"%<*[([{] his ~ 236
+pattern %_%<*[([{] his [;:)}\\]]%>*~ 236
+
+pattern %_ his %_ 236
+pattern %_ his [;:)}\\]]%>*%"_~" 236
+pattern %"_~"%<*[([{] his %_ 236
+pattern %"_~"%<*[([{] his [;:)}\\]]%>*%"_~" 236
 
 # in
 
@@ -224,15 +257,47 @@ pattern %_!%"_1"* in !%"_1"*%_ 35
 
 # was
 
-context %lowerdotspunc["was"] @2456-1-234
-context ["was"]%lowerdotspunc @2456-1-234
-word was 356
+pattern ~ was ~ 356
+pattern ~ was [;:)}\\]]%>*~ 356
+pattern ~%<*[([{] was ~ 356
+pattern ~%<*[([{] was [;:)}\\]]%>*~ 356
+
+pattern ~ was %_ 356
+pattern ~ was [;:)}\\]]%>*%"_~" 356
+pattern ~%<*[([{] was %_ 356
+pattern ~%<*[([{] was [;:)}\\]]%>*%"_~" 356
+
+pattern %_ was ~ 356
+pattern %_ was [;:)}\\]]%>*~ 356
+pattern %"_~"%<*[([{] was ~ 356
+pattern %"_~"%<*[([{] was [;:)}\\]]%>*~ 356
+
+pattern %_ was %_ 356
+pattern %_ was [;:)}\\]]%>*%"_~" 356
+pattern %"_~"%<*[([{] was %_ 356
+pattern %"_~"%<*[([{] was [;:)}\\]]%>*%"_~" 356
 
 # were
 
-context %lowerdotspunc["were"] @2456-12456-15
-context ["were"]%lowerdotspunc @2456-12456-15
-word were 2356
+pattern ~ were ~ 2356
+pattern ~ were [;:)}\\]]%>*~ 2356
+pattern ~%<*[([{] were ~ 2356
+pattern ~%<*[([{] were [;:)}\\]]%>*~ 2356
+
+pattern ~ were %_ 2356
+pattern ~ were [;:)}\\]]%>*%"_~" 2356
+pattern ~%<*[([{] were %_ 2356
+pattern ~%<*[([{] were [;:)}\\]]%>*%"_~" 2356
+
+pattern %_ were ~ 2356
+pattern %_ were [;:)}\\]]%>*~ 2356
+pattern %"_~"%<*[([{] were ~ 2356
+pattern %"_~"%<*[([{] were [;:)}\\]]%>*~ 2356
+
+pattern %_ were %_ 2356
+pattern %_ were [;:)}\\]]%>*%"_~" 2356
+pattern %"_~"%<*[([{] were %_ 2356
+pattern %"_~"%<*[([{] were [;:)}\\]]%>*%"_~" 2356
 
 #   10.6   Lower Groupsigns
 
@@ -890,8 +955,8 @@ begword post 1234-135-34
 sufword potherb 1234-123-2345-125-12456-12
 begword potho = pothole pothook
 sufword potsherd 1234-135-2345-146-12456-145
-begword pre =
-begword pre =
+#begword pre =
+#begword pre =
 always preach 1234-1235-2-16
 sufword predator 1234-1235-1246-1-2345-135-1235
 always predecess 1234-1235-1246-15-14-15-234-234
@@ -947,7 +1012,7 @@ contraction rjcd
 contraction rjcg
 contraction rjcr
 contraction rjcs
-syllable room = storeroom
+#syllable room = storeroom
 syllable root = pokeroot snakeroot
 begword roped = ropedance
 always roustabout 1235-1256-34-1-12
