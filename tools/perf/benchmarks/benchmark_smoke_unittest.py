@@ -86,6 +86,7 @@ _BLACK_LIST_TEST_MODULES = {
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
     text_selection, # Always fails on cq bot.
+    memory  # Flaky on bots, crbug.com/513767
 }
 
 # Some smoke benchmark tests that run quickly on desktop platform can be very
@@ -93,7 +94,6 @@ _BLACK_LIST_TEST_MODULES = {
 _ANDROID_BLACK_LIST_MODULES = {
     kraken,  # Takes 275 seconds on Android.
     sunspider,  # Takes 163 seconds on Android.
-    memory  # Often times out on bots, crbug.com/513767
 }
 
 
