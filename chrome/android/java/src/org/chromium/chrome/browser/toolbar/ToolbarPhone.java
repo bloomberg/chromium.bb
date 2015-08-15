@@ -805,7 +805,7 @@ public class ToolbarPhone extends ToolbarLayout
 
         // The transparency of the location bar is dependent on how different its size is
         // from the final value.  This is based on how much growth is applied between the
-        // desired size of the location bar to it's drawn size.  The location bar then only
+        // desired size of the location bar to its drawn size.  The location bar then only
         // starts becoming opaque once the growth is at least half done.
         if (growthPercent >= 0.5f) {
             mPhoneLocationBar.setAlpha(0);
@@ -1720,7 +1720,7 @@ public class ToolbarPhone extends ToolbarLayout
         // world for a UI update.
         // TODO(tedchoc): Move away from updating based on the search engine change and instead
         //                add the toolbar as a listener to the NewTabPage and udpate only when
-        //                it notifies the listeners that it has changed it's state.
+        //                it notifies the listeners that it has changed its state.
         post(new Runnable() {
             @Override
             public void run() {
@@ -1856,7 +1856,7 @@ public class ToolbarPhone extends ToolbarLayout
         mPhoneLocationBar.updateVisualsForState();
 
         // We update the alpha before comparing the visual state as we need to change
-        // it's value when entering and exiting TabSwitcher mode.
+        // its value when entering and exiting TabSwitcher mode.
         if (isLocationBarShownInNTP() && !isInTabSwitcherMode) {
             updateNtpTransitionAnimation(
                     getToolbarDataProvider().getNewTabPageForCurrentTab());
