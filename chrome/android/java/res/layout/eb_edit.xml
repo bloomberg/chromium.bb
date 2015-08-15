@@ -31,14 +31,12 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:orientation="vertical" >
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
-
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp" >
                 <!-- android:text is set here is to avoid UI jumping. -->
                 <org.chromium.chrome.browser.widget.EmptyAlertEditText
                     android:id="@+id/title_text"
@@ -55,26 +53,27 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingEnd="3dp"
-                android:paddingStart="3dp"
-                android:paddingTop="8dp"
+                android:layout_marginTop="18dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp"
                 android:text="@string/bookmark_folder"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textSize="12sp" />
 
             <TextView
                 android:id="@+id/folder_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="8dp"
-                android:paddingEnd="3dp"
-                android:paddingStart="3dp"
-                android:paddingTop="8dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="3dp"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/dark_mode_tint" />
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" >
 
                 <org.chromium.chrome.browser.widget.EmptyAlertEditText
                     android:id="@+id/url_text"
