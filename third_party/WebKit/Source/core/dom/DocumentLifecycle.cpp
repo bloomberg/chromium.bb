@@ -73,154 +73,154 @@ DocumentLifecycle::~DocumentLifecycle()
 
 #if ENABLE(ASSERT)
 
-bool DocumentLifecycle::canAdvanceTo(State state) const
+bool DocumentLifecycle::canAdvanceTo(State nextState) const
 {
     // We can stop from anywhere.
-    if (state == Stopping)
+    if (nextState == Stopping)
         return true;
 
     switch (m_state) {
     case Uninitialized:
-        return state == Inactive;
+        return nextState == Inactive;
     case Inactive:
-        if (state == StyleClean)
+        if (nextState == StyleClean)
             return true;
-        if (state == Disposed)
+        if (nextState == Disposed)
             return true;
         break;
     case VisualUpdatePending:
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
-        if (state == InPerformLayout)
+        if (nextState == InPerformLayout)
             return true;
         break;
     case InStyleRecalc:
-        return state == StyleClean;
+        return nextState == StyleClean;
     case StyleClean:
         // We can synchronously recalc style.
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
         // We can notify layout objects that subtrees changed.
-        if (state == InLayoutSubtreeChange)
+        if (nextState == InLayoutSubtreeChange)
             return true;
         // We can synchronously perform layout.
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == InPerformLayout)
+        if (nextState == InPerformLayout)
             return true;
         // We can redundant arrive in the style clean state.
-        if (state == StyleClean)
+        if (nextState == StyleClean)
             return true;
-        if (state == LayoutClean)
+        if (nextState == LayoutClean)
             return true;
-        if (state == InCompositingUpdate)
+        if (nextState == InCompositingUpdate)
             return true;
         break;
     case InLayoutSubtreeChange:
-        return state == LayoutSubtreeChangeClean;
+        return nextState == LayoutSubtreeChangeClean;
     case LayoutSubtreeChangeClean:
         // We can synchronously recalc style.
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
         // We can synchronously perform layout.
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == InPerformLayout)
+        if (nextState == InPerformLayout)
             return true;
         // Can move back to style clean.
-        if (state == StyleClean)
+        if (nextState == StyleClean)
             return true;
-        if (state == LayoutClean)
+        if (nextState == LayoutClean)
             return true;
-        if (state == InCompositingUpdate)
+        if (nextState == InCompositingUpdate)
             return true;
         break;
     case InPreLayout:
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
-        if (state == StyleClean)
+        if (nextState == StyleClean)
             return true;
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
         break;
     case InPerformLayout:
-        return state == AfterPerformLayout;
+        return nextState == AfterPerformLayout;
     case AfterPerformLayout:
         // We can synchronously recompute layout in AfterPerformLayout.
         // FIXME: Ideally, we would unnest this recursion into a loop.
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == LayoutClean)
+        if (nextState == LayoutClean)
             return true;
         break;
     case LayoutClean:
         // We can synchronously recalc style.
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
         // We can synchronously perform layout.
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == InPerformLayout)
+        if (nextState == InPerformLayout)
             return true;
         // We can redundant arrive in the layout clean state. This situation
         // can happen when we call layout recursively and we unwind the stack.
-        if (state == LayoutClean)
+        if (nextState == LayoutClean)
             return true;
-        if (state == StyleClean)
+        if (nextState == StyleClean)
             return true;
-        if (state == InCompositingUpdate)
+        if (nextState == InCompositingUpdate)
             return true;
         break;
     case InCompositingUpdate:
-        return state == CompositingClean;
+        return nextState == CompositingClean;
     case CompositingClean:
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == InCompositingUpdate)
+        if (nextState == InCompositingUpdate)
             return true;
-        if (state == InPaintInvalidation)
+        if (nextState == InPaintInvalidation)
             return true;
         break;
     case InPaintInvalidation:
-        return state == PaintInvalidationClean;
+        return nextState == PaintInvalidationClean;
     case PaintInvalidationClean:
-        if (state == InStyleRecalc)
+        if (nextState == InStyleRecalc)
             return true;
-        if (state == InPreLayout)
+        if (nextState == InPreLayout)
             return true;
-        if (state == InCompositingUpdate)
+        if (nextState == InCompositingUpdate)
             return true;
         break;
     case Stopping:
-        return state == Stopped;
+        return nextState == Stopped;
     case Stopped:
-        return state == Disposed;
+        return nextState == Disposed;
     case Disposed:
         // FIXME: We can dispose a document multiple times. This seems wrong.
         // See https://code.google.com/p/chromium/issues/detail?id=301668.
-        return state == Disposed;
+        return nextState == Disposed;
     }
     return false;
 }
 
-bool DocumentLifecycle::canRewindTo(State state) const
+bool DocumentLifecycle::canRewindTo(State nextState) const
 {
     // This transition is bogus, but we've whitelisted it anyway.
-    if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && state == s_deprecatedTransitionStack->to())
+    if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && nextState == s_deprecatedTransitionStack->to())
         return true;
     return m_state == StyleClean || m_state == LayoutSubtreeChangeClean || m_state == AfterPerformLayout || m_state == LayoutClean || m_state == CompositingClean || m_state == PaintInvalidationClean;
 }
 
 #endif
 
-void DocumentLifecycle::advanceTo(State state)
+void DocumentLifecycle::advanceTo(State nextState)
 {
-    ASSERT(canAdvanceTo(state));
-    m_state = state;
+    ASSERT(canAdvanceTo(nextState));
+    m_state = nextState;
 }
 
 void DocumentLifecycle::ensureStateAtMost(State state)
