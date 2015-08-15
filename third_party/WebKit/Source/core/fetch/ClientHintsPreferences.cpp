@@ -11,28 +11,43 @@
 
 namespace blink {
 
-void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences& preferences, ResourceFetcher* fetcher)
+ClientHintsPreferences::ClientHintsPreferences()
+    : m_shouldSendDPR(false)
+    , m_shouldSendResourceWidth(false)
+    , m_shouldSendViewportWidth(false)
+{
+}
+
+void ClientHintsPreferences::updateFrom(const ClientHintsPreferences& preferences)
+{
+    m_shouldSendDPR = preferences.m_shouldSendDPR;
+    m_shouldSendResourceWidth = preferences.m_shouldSendResourceWidth;
+    m_shouldSendViewportWidth = preferences.m_shouldSendViewportWidth;
+}
+
+void ClientHintsPreferences::updateFromAcceptClientHintsHeader(const String& headerValue, ResourceFetcher* fetcher)
 {
     if (!RuntimeEnabledFeatures::clientHintsEnabled() || headerValue.isEmpty())
         return;
-    CommaDelimitedHeaderSet acceptCH;
-    parseCommaDelimitedHeader(headerValue, acceptCH);
-    if (acceptCH.contains("dpr")) {
+
+    CommaDelimitedHeaderSet acceptClientHintsHeader;
+    parseCommaDelimitedHeader(headerValue, acceptClientHintsHeader);
+    if (acceptClientHintsHeader.contains("dpr")) {
         if (fetcher)
             fetcher->context().countClientHintsDPR();
-        preferences.setShouldSendDPR(true);
+        m_shouldSendDPR = true;
     }
 
-    if (acceptCH.contains("width")) {
+    if (acceptClientHintsHeader.contains("width")) {
         if (fetcher)
             fetcher->context().countClientHintsResourceWidth();
-        preferences.setShouldSendResourceWidth(true);
+        m_shouldSendResourceWidth = true;
     }
 
-    if (acceptCH.contains("viewport-width")) {
+    if (acceptClientHintsHeader.contains("viewport-width")) {
         if (fetcher)
             fetcher->context().countClientHintsViewportWidth();
-        preferences.setShouldSendViewportWidth(true);
+        m_shouldSendViewportWidth = true;
     }
 }
 

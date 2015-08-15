@@ -1021,8 +1021,7 @@ public:
 
     bool isPrivilegedContext(String& errorMessage, const PrivilegeContextCheck = StandardPrivilegeCheck) const override;
 
-    void setClientHintsPreferences(const ClientHintsPreferences& preferences) { m_clientHintsPreferences.set(preferences); }
-    const ClientHintsPreferences& clientHintsPreferences() const { return m_clientHintsPreferences; }
+    ClientHintsPreferences& clientHintsPreferences() { return m_clientHintsPreferences; }
 
     CanvasFontCache* canvasFontCache();
 

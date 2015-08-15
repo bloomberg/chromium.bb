@@ -575,7 +575,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
                 } else if (equalIgnoringCase(equivAttributeValue, "accept-ch")) {
                     const typename Token::Attribute* contentAttribute = token.getAttributeItem(contentAttr);
                     if (contentAttribute)
-                        handleAcceptClientHintsHeader(String(contentAttribute->value), m_clientHintsPreferences, nullptr);
+                        m_clientHintsPreferences.updateFromAcceptClientHintsHeader(String(contentAttribute->value), nullptr);
                 }
                 return;
             }

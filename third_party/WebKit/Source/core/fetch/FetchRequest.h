@@ -61,26 +61,33 @@ public:
     ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
     const KURL& url() const { return m_resourceRequest.url(); }
+
     const String& charset() const { return m_charset; }
     void setCharset(const String& charset) { m_charset = charset; }
+
     const ResourceLoaderOptions& options() const { return m_options; }
     void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
+
     ResourceLoadPriority priority() const { return m_priority; }
     void setPriority(ResourceLoadPriority priority) { m_priority = priority; }
+
+    DeferOption defer() const { return m_defer; }
+    void setDefer(DeferOption defer) { m_defer = defer; }
+
+    ResourceWidth resourceWidth() const { return m_resourceWidth; }
+    void setResourceWidth(ResourceWidth);
+
+    ClientHintsPreferences& clientHintsPreferences() { return m_clientHintPreferences; }
+
     bool forPreload() const { return m_forPreload; }
     void setForPreload(bool forPreload) { m_forPreload = forPreload; }
-    DeferOption defer() const { return m_defer; }
-    ResourceWidth resourceWidth() const { return m_resourceWidth; }
-    const ClientHintsPreferences& clientHintsPreferences() const { return m_clientHintPreferences; }
-    void setDefer(DeferOption defer) { m_defer = defer; }
+
     void setContentSecurityCheck(ContentSecurityPolicyDisposition contentSecurityPolicyOption) { m_options.contentSecurityPolicyOption = contentSecurityPolicyOption; }
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials, CredentialRequest);
     void setCrossOriginAccessControl(SecurityOrigin*, StoredCredentials);
     void setCrossOriginAccessControl(SecurityOrigin*, const AtomicString& crossOriginMode);
     OriginRestriction originRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
-    void setResourceWidth(ResourceWidth);
-    void setClientHintsPreferences(ClientHintsPreferences& preferences) { m_clientHintPreferences.set(preferences); }
 
 private:
     ResourceRequest m_resourceRequest;

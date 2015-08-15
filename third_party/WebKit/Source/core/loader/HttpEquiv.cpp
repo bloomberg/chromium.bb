@@ -62,9 +62,7 @@ void HttpEquiv::processHttpEquivAcceptCH(Document& document, const AtomicString&
         return;
 
     UseCounter::count(document, UseCounter::ClientHintsMetaAcceptCH);
-    ClientHintsPreferences clientHintsPreferences = document.clientHintsPreferences();
-    handleAcceptClientHintsHeader(content, clientHintsPreferences, document.fetcher());
-    document.setClientHintsPreferences(clientHintsPreferences);
+    document.clientHintsPreferences().updateFromAcceptClientHintsHeader(content, document.fetcher());
 }
 
 void HttpEquiv::processHttpEquivDefaultStyle(Document& document, const AtomicString& content)

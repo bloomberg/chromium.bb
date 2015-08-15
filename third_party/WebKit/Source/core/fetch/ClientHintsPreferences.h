@@ -12,28 +12,21 @@ namespace blink {
 
 class ResourceFetcher;
 
-class ClientHintsPreferences {
+class CORE_EXPORT ClientHintsPreferences {
 public:
-    ClientHintsPreferences()
-        : m_shouldSendDPR(false)
-        , m_shouldSendResourceWidth(false)
-        , m_shouldSendViewportWidth(false)
-    {
-    }
+    ClientHintsPreferences();
 
-    void set(const ClientHintsPreferences& other)
-    {
-        m_shouldSendDPR = other.m_shouldSendDPR;
-        m_shouldSendResourceWidth = other.m_shouldSendResourceWidth;
-        m_shouldSendViewportWidth = other.m_shouldSendViewportWidth;
-    }
+    void updateFrom(const ClientHintsPreferences&);
+    void updateFromAcceptClientHintsHeader(const String& headerValue, ResourceFetcher*);
 
-    void setShouldSendDPR(bool should) { m_shouldSendDPR = should; }
-    void setShouldSendResourceWidth(bool should) { m_shouldSendResourceWidth = should; }
-    void setShouldSendViewportWidth(bool should) { m_shouldSendViewportWidth = should; }
     bool shouldSendDPR() const { return m_shouldSendDPR; }
+    void setShouldSendDPR(bool should) { m_shouldSendDPR = should; }
+
     bool shouldSendResourceWidth() const { return m_shouldSendResourceWidth; }
+    void setShouldSendResourceWidth(bool should) { m_shouldSendResourceWidth = should; }
+
     bool shouldSendViewportWidth() const { return m_shouldSendViewportWidth; }
+    void setShouldSendViewportWidth(bool should) { m_shouldSendViewportWidth = should; }
 
 private:
     bool m_shouldSendDPR;
@@ -41,7 +34,6 @@ private:
     bool m_shouldSendViewportWidth;
 };
 
-CORE_EXPORT void handleAcceptClientHintsHeader(const String& headerValue, ClientHintsPreferences&, ResourceFetcher*);
 } // namespace blink
-#endif
 
+#endif

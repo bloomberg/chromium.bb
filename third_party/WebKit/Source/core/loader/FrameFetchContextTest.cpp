@@ -274,7 +274,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorDPRHints)
     expectHeader("http://www.example.com/1.gif", "DPR", false, "");
     ClientHintsPreferences preferences;
     preferences.setShouldSendDPR(true);
-    document->setClientHintsPreferences(preferences);
+    document->clientHintsPreferences().updateFrom(preferences);
     expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
     dummyPageHolder->page().setDeviceScaleFactor(2.5);
     expectHeader("http://www.example.com/1.gif", "DPR", true, "2.5");
@@ -287,7 +287,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorResourceWidthHints)
     expectHeader("http://www.example.com/1.gif", "Width", false, "");
     ClientHintsPreferences preferences;
     preferences.setShouldSendResourceWidth(true);
-    document->setClientHintsPreferences(preferences);
+    document->clientHintsPreferences().updateFrom(preferences);
     expectHeader("http://www.example.com/1.gif", "Width", true, "500", 500);
     expectHeader("http://www.example.com/1.gif", "Width", true, "667", 666.6666);
     expectHeader("http://www.example.com/1.gif", "DPR", false, "");
@@ -298,7 +298,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorViewportWidthHints)
     expectHeader("http://www.example.com/1.gif", "Viewport-Width", false, "");
     ClientHintsPreferences preferences;
     preferences.setShouldSendViewportWidth(true);
-    document->setClientHintsPreferences(preferences);
+    document->clientHintsPreferences().updateFrom(preferences);
     expectHeader("http://www.example.com/1.gif", "Viewport-Width", true, "500");
     dummyPageHolder->frameView().setLayoutSizeFixedToFrameSize(false);
     dummyPageHolder->frameView().setLayoutSize(IntSize(800, 800));
@@ -317,7 +317,7 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints)
     preferences.setShouldSendDPR(true);
     preferences.setShouldSendResourceWidth(true);
     preferences.setShouldSendViewportWidth(true);
-    document->setClientHintsPreferences(preferences);
+    document->clientHintsPreferences().updateFrom(preferences);
     expectHeader("http://www.example.com/1.gif", "DPR", true, "1");
     expectHeader("http://www.example.com/1.gif", "Width", true, "400", 400);
     expectHeader("http://www.example.com/1.gif", "Viewport-Width", true, "500");

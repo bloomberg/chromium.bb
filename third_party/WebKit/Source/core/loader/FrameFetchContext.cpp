@@ -234,7 +234,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
         ResourceFetcher* fetcher = nullptr;
         if (frame()->document())
             fetcher = frame()->document()->fetcher();
-        handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), m_documentLoader->clientHintsPreferences(), fetcher);
+        m_documentLoader->clientHintsPreferences().updateFromAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), fetcher);
     }
 
     frame()->loader().progress().incrementProgress(identifier, response);
