@@ -21,41 +21,53 @@ FunctionCall: 251.000 / 8.000
 JSFrame: 251.000 / 0.742 z
 JSFrame: 251.000 / 0.742 w
 
-Bottom-Up Chart: 40.000 @ 0.000
-  Scripting: 39.900 @ 0.000
-    FunctionCall: 29.403 @ 0.000
-      y: 7.258 @ 0.000
-        x: 7.258 @ 0.000
-          FunctionCall: 7.258 @ 0.000
-    b: 7.125 @ 29.403
-      a: 7.125 @ 29.403
-        FunctionCall: 7.125 @ 29.403
-    g: 0.905 @ 36.528
-      e: 0.905 @ 36.528
-        b: 0.905 @ 36.528
-          a: 0.905 @ 36.528
-            FunctionCall: 0.905 @ 36.528
-    w: 0.742 @ 37.432
-      z: 0.742 @ 37.432
-        FunctionCall: 0.742 @ 37.432
-          y: 0.742 @ 37.432
-            x: 0.742 @ 37.432
-              FunctionCall: 0.742 @ 37.432
-    a: 0.733 @ 38.175
-      l: 0.733 @ 38.175
-        f: 0.733 @ 38.175
-          FunctionCall: 0.733 @ 38.175
-    y: 0.642 @ 38.907
-      x: 0.642 @ 38.907
-        FunctionCall: 0.642 @ 38.907
-    c: 0.351 @ 39.549
-      b: 0.351 @ 39.549
-        a: 0.351 @ 39.549
-          FunctionCall: 0.351 @ 39.549
-  Rendering: 0.100 @ 39.900
-    Layout: 0.100 @ 39.900
-      a: 0.100 @ 39.900
-        l: 0.100 @ 39.900
-          f: 0.100 @ 39.900
-            FunctionCall: 0.100 @ 39.900
+Top-Down Chart: 40.000
+  FunctionCall: 40.000
+    a: 8.380
+      b: 8.380
+        c: 0.351
+        e: 0.905
+          g: 0.905
+    f: 0.833
+      l: 0.833
+        a: 0.833
+          Layout: 0.100
+    x: 8.642
+      y: 8.642
+        FunctionCall: 8.000
+          z: 0.742
+            w: 0.742
+Bottom-Up Chart: 40.000
+  FunctionCall: 30.407
+    e: 0.905
+      b: 0.905
+        a: 0.905
+          FunctionCall: 0.905
+    a: 0.100
+      l: 0.100
+        f: 0.100
+          FunctionCall: 0.100
+    y: 7.258
+      x: 7.258
+        FunctionCall: 7.258
+  b: 7.125
+    a: 7.125
+      FunctionCall: 7.125
+  c: 0.351
+    b: 0.351
+      a: 0.351
+        FunctionCall: 0.351
+  a: 0.733
+    l: 0.733
+      f: 0.733
+        FunctionCall: 0.733
+  y: 0.642
+    x: 0.642
+      FunctionCall: 0.642
+  w: 0.742
+    z: 0.742
+      FunctionCall: 0.742
+        y: 0.742
+          x: 0.742
+            FunctionCall: 0.742
 

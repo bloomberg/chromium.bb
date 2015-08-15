@@ -383,13 +383,25 @@ function test()
 
     InspectorTest.addResult("");
     tracingTimelineModel._setMainThreadEvents(events);
-    var dataProvider = new WebInspector.TimelineFlameChartBottomUpDataProvider(tracingTimelineModel);
-    dataProvider.setWindowTimes(0, Infinity);
-    var timelineData = dataProvider.timelineData();
-    for (var i = 0; i < timelineData.entryStartTimes.length; ++i) {
-        var name = dataProvider.entryTitle(i);
-        var padding = "  ".repeat(timelineData.entryLevels[i]);
-        InspectorTest.addResult(padding + name + ": " + timelineData.entryTotalTimes[i].toFixed(3) + " @ " + timelineData.entryStartTimes[i].toFixed(3));
+    var filters = [
+        WebInspector.TimelineUIUtils.hiddenEventsFilter(),
+        new WebInspector.ExcludeTopLevelFilter()
+    ];
+    var treeTopDown = WebInspector.TimelineUIUtils.buildTopDownTree(events, 0, Infinity, filters, eventId);
+    printProfileTree(0, treeTopDown);
+    var treeBottomUp = WebInspector.TimelineUIUtils.buildBottomUpTree(treeTopDown);
+    printProfileTree(0, treeBottomUp);
+
+    function eventId(event)
+    {
+        var data = event.args.data;
+        return data && (data.callUID || data.functionNode);
+    }
+
+    function printProfileTree(padding, node)
+    {
+        InspectorTest.addResult("  ".repeat(padding) + node.name + ": " + node.totalTime.toFixed(3));
+        (node.children || new Map()).forEach(printProfileTree.bind(null, padding + 1));
     }
 
     InspectorTest.completeTest();
