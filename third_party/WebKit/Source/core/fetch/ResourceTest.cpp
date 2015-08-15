@@ -27,10 +27,6 @@ public:
     {
         m_cachedURLs.append(url);
     }
-    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
-    {
-        ASSERT_NOT_REACHED();
-    }
 
     const Vector<WebURL>& cachedURLs() const
     {
@@ -40,6 +36,18 @@ public:
     WebThread* currentThread() override
     {
         return m_oldPlatform->currentThread();
+    }
+
+    // These blink::Platform methods must be overriden to make a usable object.
+    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override
+    {
+        static const unsigned char tracingIsDisabled = 0;
+        return &tracingIsDisabled;
     }
 
 private:
