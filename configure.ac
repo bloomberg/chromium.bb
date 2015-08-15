@@ -173,7 +173,7 @@ MAYBE_WARN="-Wall -Wextra \
 -Wpacked -Wswitch-enum -Wmissing-format-attribute \
 -Wstrict-aliasing=2 -Winit-self \
 -Wdeclaration-after-statement -Wold-style-definition \
--Wno-missing-field-initializers -Wno-unused-parameter \
+-Wno-unused-parameter \
 -Wno-attributes -Wno-long-long -Winline -Wshadow"
 
 # invalidate cached value if MAYBE_WARN has changed
