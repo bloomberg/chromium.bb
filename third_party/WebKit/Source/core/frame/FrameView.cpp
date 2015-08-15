@@ -29,6 +29,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/MediaTypeNames.h"
+#include "core/compositing/DisplayListCompositingBuilder.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -92,6 +93,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/scroll/ScrollAnimator.h"
 #include "platform/text/TextStream.h"
 #include "wtf/CurrentTime.h"
@@ -2434,7 +2436,7 @@ void FrameView::updateAllLifecyclePhases()
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases);
 }
 
-// TODO(chrishtr): add a scrolling update lifecycle phase, after compositing and before invalidation.
+// TODO(chrishtr): add a scrolling update lifecycle phase.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 {
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
@@ -2454,6 +2456,8 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
     if (LayoutView* view = layoutView()) {
         TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
+        // This was required for slimming paint v1 but is only temporarily
+        // needed for slimming paint v2.
         view->compositor()->updateIfNeededRecursive();
         scrollContentsIfNeededRecursive();
 
@@ -2466,13 +2470,67 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
                 scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
             updateCompositedSelectionIfNeeded();
+
+            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+                paintForSlimmingPaintV2();
+                compositeForSlimmingPaintV2();
+            }
+
             if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
                 updateFrameTimingRequestsIfNeeded();
 
             ASSERT(!view->hasPendingSelection());
-            ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+            ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean
+                || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && lifecycle().state() == DocumentLifecycle::CompositingForSlimmingPaintV2Clean));
         }
     }
+}
+
+void FrameView::paintForSlimmingPaintV2()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
+
+    LayoutView* view = layoutView();
+    ASSERT(view);
+    GraphicsLayer* rootGraphicsLayer = view->layer()->graphicsLayerBacking();
+
+    // Detached frames can have no root graphics layer.
+    if (!rootGraphicsLayer)
+        return;
+
+    lifecycle().advanceTo(DocumentLifecycle::InPaintForSlimmingPaintV2);
+
+    // TODO(pdr): Update callers to pass in the interest rect.
+    IntRect interestRect = LayoutRect::infiniteIntRect();
+    GraphicsContext context(rootGraphicsLayer->displayItemList());
+    rootGraphicsLayer->paint(context, interestRect);
+
+    lifecycle().advanceTo(DocumentLifecycle::PaintForSlimmingPaintV2Clean);
+}
+
+void FrameView::compositeForSlimmingPaintV2()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
+
+    GraphicsLayer* rootGraphicsLayer = layoutView()->layer()->graphicsLayerBacking();
+
+    // Detached frames can have no root graphics layer.
+    if (!rootGraphicsLayer)
+        return;
+
+    lifecycle().advanceTo(DocumentLifecycle::InCompositingForSlimmingPaintV2);
+
+    DisplayListDiff displayListDiff;
+    rootGraphicsLayer->displayItemList()->commitNewDisplayItems(&displayListDiff);
+
+    DisplayListCompositingBuilder compositingBuilder(*rootGraphicsLayer->displayItemList(), displayListDiff);
+    OwnPtr<CompositedDisplayList> compositedDisplayList = adoptPtr(new CompositedDisplayList());
+    compositingBuilder.build(*compositedDisplayList);
+    layoutView()->setCompositedDisplayList(compositedDisplayList.release());
+
+    lifecycle().advanceTo(DocumentLifecycle::CompositingForSlimmingPaintV2Clean);
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()

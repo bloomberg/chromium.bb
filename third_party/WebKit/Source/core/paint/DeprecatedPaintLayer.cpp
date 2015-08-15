@@ -2220,7 +2220,7 @@ CompositingState DeprecatedPaintLayer::compositingState() const
 
 bool DeprecatedPaintLayer::isAllowedToQueryCompositingState() const
 {
-    if (gCompositingQueryMode == CompositingQueriesAreAllowed)
+    if (gCompositingQueryMode == CompositingQueriesAreAllowed || RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         return true;
     return layoutObject()->document().lifecycle().state() >= DocumentLifecycle::InCompositingUpdate;
 }

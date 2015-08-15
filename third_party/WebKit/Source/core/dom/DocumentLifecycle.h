@@ -65,6 +65,12 @@ public:
         InPaintInvalidation,
         PaintInvalidationClean,
 
+        InPaintForSlimmingPaintV2,
+        PaintForSlimmingPaintV2Clean,
+
+        InCompositingForSlimmingPaintV2,
+        CompositingForSlimmingPaintV2Clean,
+
         // Once the document starts shuting down, we cannot return
         // to the style/layout/compositing states.
         Stopping,
@@ -157,7 +163,9 @@ inline bool DocumentLifecycle::stateAllowsTreeMutations() const
     // but we need to fix MediaList listeners and plugins first.
     return m_state != InStyleRecalc
         && m_state != InPerformLayout
-        && m_state != InCompositingUpdate;
+        && m_state != InCompositingUpdate
+        && m_state != InPaintForSlimmingPaintV2
+        && m_state != InCompositingForSlimmingPaintV2;
 }
 
 inline bool DocumentLifecycle::stateAllowsLayoutTreeMutations() const
@@ -180,6 +188,8 @@ inline bool DocumentLifecycle::stateAllowsDetach() const
         || m_state == LayoutClean
         || m_state == CompositingClean
         || m_state == PaintInvalidationClean
+        || m_state == PaintForSlimmingPaintV2Clean
+        || m_state == CompositingForSlimmingPaintV2Clean
         || m_state == Stopping;
 }
 
@@ -187,7 +197,9 @@ inline bool DocumentLifecycle::stateAllowsLayoutInvalidation() const
 {
     return m_state != InPerformLayout
         && m_state != InCompositingUpdate
-        && m_state != InPaintInvalidation;
+        && m_state != InPaintInvalidation
+        && m_state != InPaintForSlimmingPaintV2
+        && m_state != InCompositingForSlimmingPaintV2;
 }
 
 } // namespace blink

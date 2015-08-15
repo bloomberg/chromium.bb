@@ -223,7 +223,9 @@ void DisplayItemList::copyCachedSubtree(DisplayItems::iterator& currentIt, Displ
 // The algorithm is O(|m_currentDisplayItems| + |m_newDisplayItems|).
 // Coefficients are related to the ratio of out-of-order [Subtree]CachedDisplayItems
 // and the average number of (Drawing|BeginSubtree)DisplayItems per client.
-void DisplayItemList::commitNewDisplayItems()
+//
+// TODO(pdr): Implement the DisplayListDiff algorithm for SlimmingPaintV2.
+void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
 {
     TRACE_EVENT2("blink,benchmark", "DisplayItemList::commitNewDisplayItems", "current_display_list_size", (int)m_currentDisplayItems.size(),
         "num_non_cached_new_items", (int)m_newDisplayItems.size() - m_numCachedItems);
@@ -381,11 +383,16 @@ void DisplayItemList::updateValidlyCachedClientsIfNeeded() const
     }
 }
 
+void DisplayItemList::appendToWebDisplayItemList(WebDisplayItemList* list)
+{
+    for (const DisplayItem& item : m_currentDisplayItems)
+        item.appendToWebDisplayItemList(list);
+}
+
 void DisplayItemList::commitNewDisplayItemsAndAppendToWebDisplayItemList(WebDisplayItemList* list)
 {
     commitNewDisplayItems();
-    for (const DisplayItem& item : m_currentDisplayItems)
-        item.appendToWebDisplayItemList(list);
+    appendToWebDisplayItemList(list);
 }
 
 #if ENABLE(ASSERT)

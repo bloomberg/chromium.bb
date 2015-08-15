@@ -90,6 +90,14 @@ void ContentLayerDelegate::paintContents(
 
     ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
 
+    // TODO(pdr): Remove when slimming paint v2 is further along. This is only
+    // here so the browser is usable during development and does not crash due
+    // to committing the new display items twice.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        m_painter->displayItemList()->appendToWebDisplayItemList(webDisplayItemList);
+        return;
+    }
+
     DisplayItemList* displayItemList = m_painter->displayItemList();
     ASSERT(displayItemList);
     displayItemList->setDisplayItemConstructionIsDisabled(

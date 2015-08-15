@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/dom/DocumentLifecycle.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -194,6 +195,28 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
             return true;
         if (nextState == InCompositingUpdate)
             return true;
+        if (nextState == InPaintForSlimmingPaintV2 && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return true;
+        break;
+    case InPaintForSlimmingPaintV2:
+        if (nextState == PaintForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return true;
+        break;
+    case PaintForSlimmingPaintV2Clean:
+        if (nextState == InCompositingForSlimmingPaintV2 && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return true;
+        break;
+    case InCompositingForSlimmingPaintV2:
+        if (nextState == CompositingForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return true;
+        break;
+    case CompositingForSlimmingPaintV2Clean:
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            return false;
+        if (nextState == InCompositingUpdate)
+            return true;
+        if (nextState == CompositingForSlimmingPaintV2Clean)
+            return true;
         break;
     case Stopping:
         return nextState == Stopped;
@@ -212,7 +235,14 @@ bool DocumentLifecycle::canRewindTo(State nextState) const
     // This transition is bogus, but we've whitelisted it anyway.
     if (s_deprecatedTransitionStack && m_state == s_deprecatedTransitionStack->from() && nextState == s_deprecatedTransitionStack->to())
         return true;
-    return m_state == StyleClean || m_state == LayoutSubtreeChangeClean || m_state == AfterPerformLayout || m_state == LayoutClean || m_state == CompositingClean || m_state == PaintInvalidationClean;
+    return m_state == StyleClean
+        || m_state == LayoutSubtreeChangeClean
+        || m_state == AfterPerformLayout
+        || m_state == LayoutClean
+        || m_state == CompositingClean
+        || m_state == PaintInvalidationClean
+        || (m_state == PaintForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        || (m_state == CompositingForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 }
 
 #endif

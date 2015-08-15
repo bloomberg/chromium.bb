@@ -27,6 +27,10 @@ static const size_t kDisplayItemAlignment = WTF_ALIGN_OF(BeginTransform3DDisplay
 static const size_t kInitialDisplayItemsCapacity = 64;
 static const size_t kMaximumDisplayItemSize = sizeof(BeginTransform3DDisplayItem);
 
+// Map from SimpleLayer.startPoint to the DrawingDisplayItems within its range
+// which were invalidated on this frame and do not change SimpleLayers.
+using DisplayListDiff = HashMap<DisplayItemClient, DisplayItem*>;
+
 using DisplayItems = ContiguousContainer<DisplayItem, kDisplayItemAlignment>;
 
 class PLATFORM_EXPORT DisplayItemList {
@@ -70,8 +74,9 @@ public:
     void endSkippingCache() { ASSERT(m_skippingCacheCount > 0); --m_skippingCacheCount; }
     bool skippingCache() const { return m_skippingCacheCount; }
 
-    // Must be called when a painting is finished.
-    void commitNewDisplayItems();
+    // Must be called when a painting is finished. If passed, a DisplayListDiff
+    // is initialized and created.
+    void commitNewDisplayItems(DisplayListDiff* = 0);
 
     // Returns the approximate memory usage, excluding memory likely to be
     // shared with the embedder after copying to WebDisplayItemList.
@@ -90,6 +95,7 @@ public:
         replay(context);
     }
 
+    void appendToWebDisplayItemList(WebDisplayItemList*);
     void commitNewDisplayItemsAndAppendToWebDisplayItemList(WebDisplayItemList*);
 
     bool displayItemConstructionIsDisabled() const { return m_constructionDisabled; }
@@ -116,6 +122,7 @@ protected:
 private:
     friend class DisplayItemListTest;
     friend class DisplayItemListPaintTest;
+    friend class DisplayItemListPaintTestForSlimmingPaintV2;
     friend class LayoutObjectDrawingRecorderTest;
 
     // Set new item state (scopes, cache skipping, etc) for a new item.
