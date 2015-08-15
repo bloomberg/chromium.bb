@@ -71,8 +71,9 @@ class SpellCheck : public content::RenderProcessObserver,
   // If the word is spelled correctly, the vector is empty.
   // If optional_suggestions is NULL, suggested words will not be looked up.
   // Note that Doing suggest lookups can be slow.
-  bool SpellCheckWord(const base::char16* in_word,
-                      int in_word_len,
+  bool SpellCheckWord(const base::char16* text_begin,
+                      int position_in_text,
+                      int text_length,
                       int tag,
                       int* misspelling_start,
                       int* misspelling_len,

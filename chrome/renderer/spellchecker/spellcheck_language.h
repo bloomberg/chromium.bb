@@ -18,28 +18,50 @@ class SpellingEngine;
 
 class SpellcheckLanguage {
  public:
+  enum SpellcheckWordResult {
+    // Denotes that every recognized word is spelled correctly, from the point
+    // of spellchecking to the end of the text.
+    IS_CORRECT,
+    // A sequence of skippable characters, such as punctuation, spaces, or
+    // characters not recognized by the current spellchecking language.
+    IS_SKIPPABLE,
+    // A misspelled word has been found in the text.
+    IS_MISSPELLED
+  };
+
   SpellcheckLanguage();
   ~SpellcheckLanguage();
 
   void Init(base::File file, const std::string& language);
 
-  // SpellCheck a word.
-  // Returns true if spelled correctly, false otherwise.
-  // If the spellchecker failed to initialize, always returns true.
-  // TODO(groby): This is not true in the multilingual case any more!
-  // The |tag| parameter should either be a unique identifier for the document
-  // that the word came from (if the current platform requires it), or 0.
-  // In addition, finds the suggested words for a given word
-  // and puts them into |*optional_suggestions|.
-  // If the word is spelled correctly, the vector is empty.
-  // If optional_suggestions is NULL, suggested words will not be looked up.
-  // Note that doing suggest lookups can be slow.
-  bool SpellCheckWord(const base::char16* in_word,
-                      int in_word_len,
-                      int tag,
-                      int* misspelling_start,
-                      int* misspelling_len,
-                      std::vector<base::string16>* optional_suggestions);
+  // Spellcheck a sequence of text.
+  // |text_length| is the length of the text being spellchecked. The |tag|
+  // parameter should either be a unique identifier for the document that the
+  // word came from (if the current platform requires it), or 0.
+  //
+  // - Returns IS_CORRECT if every word from |position_in_text| to the end of
+  //   the text is recognized and spelled correctly. Also, returns IS_CORRECT if
+  //   the spellchecker failed to initialize.
+  //
+  // - Returns IS_SKIPPABLE if a sequence of skippable characters, such as
+  //   punctuation, spaces, or unrecognized characters, is found.
+  //   |skip_or_misspelling_start| and |skip_or_misspelling_len| are then set to
+  //   the position and the length of the sequence of skippable characters.
+  //
+  // - Returns IS_MISSPELLED if a misspelled word is found.
+  //   |skip_or_misspelling_start| and |skip_or_misspelling_len| are then set to
+  //   the position and length of the misspelled word. In addition, finds the
+  //   suggested words for a given misspelled word and puts them into
+  //   |*optional_suggestions|. If optional_suggestions is NULL, suggested words
+  //   will not be looked up. Note that doing suggest lookups can be slow.
+  SpellcheckWordResult SpellCheckWord(
+      const base::char16* text_begin,
+      int position_in_text,
+      int text_length,
+      int tag,
+      int* skip_or_misspelling_start,
+      int* skip_or_misspelling_len,
+      std::vector<base::string16>* optional_suggestions);
 
   // Initialize |spellcheck_| if that hasn't happened yet.
   bool InitializeIfNeeded();

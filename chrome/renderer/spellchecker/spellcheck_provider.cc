@@ -131,8 +131,9 @@ void SpellCheckProvider::spellCheck(
     WebVector<WebString>* optional_suggestions) {
   base::string16 word(text);
   std::vector<base::string16> suggestions;
+  const int kWordStart = 0;
   spellcheck_->SpellCheckWord(
-      word.c_str(), word.size(), routing_id(),
+      word.c_str(), kWordStart, word.size(), routing_id(),
       &offset, &length, optional_suggestions ? & suggestions : NULL);
   if (optional_suggestions) {
     *optional_suggestions = suggestions;

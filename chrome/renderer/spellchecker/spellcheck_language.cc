@@ -30,30 +30,33 @@ bool SpellcheckLanguage::InitializeIfNeeded() {
   return platform_spelling_engine_->InitializeIfNeeded();
 }
 
-bool SpellcheckLanguage::SpellCheckWord(
-    const base::char16* in_word,
-    int in_word_len,
+SpellcheckLanguage::SpellcheckWordResult SpellcheckLanguage::SpellCheckWord(
+    const base::char16* text_begin,
+    int position_in_text,
+    int text_length,
     int tag,
-    int* misspelling_start,
-    int* misspelling_len,
+    int* skip_or_misspelling_start,
+    int* skip_or_misspelling_len,
     std::vector<base::string16>* optional_suggestions) {
-  DCHECK(in_word_len >= 0);
-  DCHECK(misspelling_start && misspelling_len) << "Out vars must be given.";
+  int remaining_text_len = text_length - position_in_text;
+  DCHECK(remaining_text_len >= 0);
+  DCHECK(skip_or_misspelling_start && skip_or_misspelling_len)
+      << "Out vars must be given.";
 
   // Do nothing if we need to delay initialization. (Rather than blocking,
   // report the word as correctly spelled.)
   if (InitializeIfNeeded())
-    return true;
+    return IS_CORRECT;
 
   // Do nothing if spell checking is disabled.
   if (!platform_spelling_engine_.get() ||
       !platform_spelling_engine_->IsEnabled())
-    return true;
+    return IS_CORRECT;
 
-  *misspelling_start = 0;
-  *misspelling_len = 0;
-  if (in_word_len == 0)
-    return true;  // No input means always spelled correctly.
+  *skip_or_misspelling_start = 0;
+  *skip_or_misspelling_len = 0;
+  if (remaining_text_len == 0)
+    return IS_CORRECT;  // No input means always spelled correctly.
 
   base::string16 word;
   int word_start;
@@ -62,18 +65,25 @@ bool SpellcheckLanguage::SpellCheckWord(
       !text_iterator_.Initialize(&character_attributes_, true)) {
       // We failed to initialize text_iterator_, return as spelled correctly.
       VLOG(1) << "Failed to initialize SpellcheckWordIterator";
-      return true;
+      return IS_CORRECT;
   }
 
-  text_iterator_.SetText(in_word, in_word_len);
+  text_iterator_.SetText(text_begin + position_in_text, remaining_text_len);
   DCHECK(platform_spelling_engine_.get());
   for (SpellcheckWordIterator::WordIteratorStatus status =
            text_iterator_.GetNextWord(&word, &word_start, &word_length);
        status != SpellcheckWordIterator::IS_END_OF_TEXT;
        status = text_iterator_.GetNextWord(&word, &word_start, &word_length)) {
-    // Found a character that is not able to be spellchecked so skip it.
-    if (status == SpellcheckWordIterator::IS_SKIPPABLE)
-      continue;
+    // Found a character that is not able to be spellchecked so determine how
+    // long the sequence of uncheckable characters is and then return.
+    if (status == SpellcheckWordIterator::IS_SKIPPABLE) {
+      *skip_or_misspelling_start = position_in_text + word_start;
+      while (status == SpellcheckWordIterator::IS_SKIPPABLE) {
+        *skip_or_misspelling_len += word_length;
+        status = text_iterator_.GetNextWord(&word, &word_start, &word_length);
+      }
+      return IS_SKIPPABLE;
+    }
 
     // Found a word (or a contraction) that the spellchecker can check the
     // spelling of.
@@ -85,18 +95,18 @@ bool SpellcheckLanguage::SpellCheckWord(
     if (IsValidContraction(word, tag))
       continue;
 
-    *misspelling_start = word_start;
-    *misspelling_len = word_length;
+    *skip_or_misspelling_start = position_in_text + word_start;
+    *skip_or_misspelling_len = word_length;
 
     // Get the list of suggested words.
     if (optional_suggestions) {
       platform_spelling_engine_->FillSuggestionList(word,
                                                     optional_suggestions);
     }
-    return false;
+    return IS_MISSPELLED;
   }
 
-  return true;
+  return IS_CORRECT;
 }
 
 // Returns whether or not the given string is a valid contraction.

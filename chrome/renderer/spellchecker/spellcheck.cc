@@ -36,6 +36,8 @@ using blink::WebTextCheckingResult;
 using blink::WebTextDecorationType;
 
 namespace {
+const int kNoOffset = 0;
+const int kNoTag = 0;
 
 class UpdateSpellcheckEnabled : public content::RenderViewVisitor {
  public:
@@ -241,13 +243,14 @@ void SpellCheck::AddSpellcheckLanguage(base::File file,
 }
 
 bool SpellCheck::SpellCheckWord(
-    const base::char16* in_word,
-    int in_word_len,
+    const base::char16* text_begin,
+    int position_in_text,
+    int text_length,
     int tag,
     int* misspelling_start,
     int* misspelling_len,
     std::vector<base::string16>* optional_suggestions) {
-  DCHECK(in_word_len >= 0);
+  DCHECK(text_length >= position_in_text);
   DCHECK(misspelling_start && misspelling_len) << "Out vars must be given.";
 
   // Do nothing if we need to delay initialization. (Rather than blocking,
@@ -255,9 +258,18 @@ bool SpellCheck::SpellCheckWord(
   if (InitializeIfNeeded())
     return true;
 
-  return languages_.front()->SpellCheckWord(in_word, in_word_len, tag,
-                                            misspelling_start, misspelling_len,
-                                            optional_suggestions);
+  SpellcheckLanguage::SpellcheckWordResult result;
+  for (result = languages_.front()->SpellCheckWord(
+           text_begin, position_in_text, text_length, tag, misspelling_start,
+           misspelling_len, optional_suggestions);
+       result == SpellcheckLanguage::SpellcheckWordResult::IS_SKIPPABLE;
+       result = languages_.front()->SpellCheckWord(
+           text_begin, position_in_text, text_length, tag, misspelling_start,
+           misspelling_len, optional_suggestions)) {
+    position_in_text = *misspelling_start + *misspelling_len;
+  }
+
+  return result == SpellcheckLanguage::SpellcheckWordResult::IS_CORRECT;
 }
 
 bool SpellCheck::SpellCheckParagraph(
@@ -268,7 +280,7 @@ bool SpellCheck::SpellCheckParagraph(
   DCHECK(results);
   std::vector<WebTextCheckingResult> textcheck_results;
   size_t length = text.length();
-  size_t offset = 0;
+  size_t position_in_text = 0;
 
   // Spellcheck::SpellCheckWord() automatically breaks text into words and
   // checks the spellings of the extracted words. This function sets the
@@ -277,10 +289,11 @@ bool SpellCheck::SpellCheckParagraph(
   // function until it returns true to check the whole text.
   int misspelling_start = 0;
   int misspelling_length = 0;
-  while (offset <= length) {
-    if (SpellCheckWord(&text[offset],
-                       length - offset,
-                       0,
+  while (position_in_text <= length) {
+    if (SpellCheckWord(text.c_str(),
+                       position_in_text,
+                       length,
+                       kNoTag,
                        &misspelling_start,
                        &misspelling_length,
                        NULL)) {
@@ -289,15 +302,15 @@ bool SpellCheck::SpellCheckParagraph(
     }
 
     if (!custom_dictionary_.SpellCheckWord(
-            text, misspelling_start + offset, misspelling_length)) {
+            text, misspelling_start, misspelling_length)) {
       base::string16 replacement;
       textcheck_results.push_back(WebTextCheckingResult(
           blink::WebTextDecorationTypeSpelling,
-          misspelling_start + offset,
+          misspelling_start,
           misspelling_length,
           replacement));
     }
-    offset += misspelling_start + misspelling_length;
+    position_in_text = misspelling_start + misspelling_length;
   }
   results->assign(textcheck_results);
   return false;
@@ -342,8 +355,8 @@ base::string16 SpellCheck::GetAutoCorrectionWord(const base::string16& word,
 
     // Check spelling.
     misspelling_start = misspelling_len = 0;
-    SpellCheckWord(misspelled_word, word_length, tag, &misspelling_start,
-        &misspelling_len, NULL);
+    SpellCheckWord(misspelled_word, kNoOffset, word_length, tag,
+                   &misspelling_start, &misspelling_len, NULL);
 
     // Make decision: if only one swap produced a valid word, then we want to
     // return it. If we found two or more, we don't do autocorrection.
@@ -464,7 +477,8 @@ void SpellCheck::CreateTextCheckingResults(
       int unused_misspelling_start = 0;
       int unused_misspelling_length = 0;
       if (decoration == SpellCheckResult::SPELLING &&
-          SpellCheckWord(misspelled_word.c_str(), misspelled_word.length(), 0,
+          SpellCheckWord(misspelled_word.c_str(), kNoOffset,
+                         misspelled_word.length(), kNoTag,
                          &unused_misspelling_start, &unused_misspelling_length,
                          nullptr)) {
         decoration = SpellCheckResult::GRAMMAR;

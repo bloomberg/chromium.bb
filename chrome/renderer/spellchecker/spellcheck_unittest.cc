@@ -21,6 +21,8 @@
 #define TYPOGRAPHICAL_APOSTROPHE L"\x2019"
 
 namespace {
+const int kNoOffset = 0;
+const int kNoTag = 0;
 
 base::FilePath GetHunspellDirectory() {
   base::FilePath hunspell_directory;
@@ -397,8 +399,9 @@ TEST_F(SpellCheckTest, SpellCheckStrings_EN_US) {
     int misspelling_length;
     bool result = spell_check()->SpellCheckWord(
         base::WideToUTF16(kTestCases[i].input).c_str(),
+        kNoOffset,
         static_cast<int>(input_length),
-        0,
+        kNoTag,
         &misspelling_start,
         &misspelling_length, NULL);
 
@@ -449,8 +452,9 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     int misspelling_length;
     bool result = spell_check()->SpellCheckWord(
         base::WideToUTF16(kTestCases[i].input).c_str(),
+        kNoOffset,
         static_cast<int>(input_length),
-        0,
+        kNoTag,
         &misspelling_start,
         &misspelling_length,
         &suggestions);
@@ -828,8 +832,9 @@ TEST_F(SpellCheckTest, MAYBE_SpellCheckText) {
     int misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
         base::WideToUTF16(kTestCases[i].input).c_str(),
+        kNoOffset,
         static_cast<int>(input_length),
-        0,
+        kNoTag,
         &misspelling_start,
         &misspelling_length, NULL);
 
@@ -913,8 +918,9 @@ TEST_F(SpellCheckTest, MisspelledWords) {
     int misspelling_start = 0;
     int misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(word.c_str(),
+                                                kNoOffset,
                                                 word_length,
-                                                0,
+                                                kNoTag,
                                                 &misspelling_start,
                                                 &misspelling_length,
                                                 NULL);
@@ -1281,8 +1287,9 @@ TEST_F(SpellCheckTest, EnglishWords) {
       int misspelling_length = 0;
       bool result = spell_check()->SpellCheckWord(
           base::ASCIIToUTF16(kTestCases[i].input).c_str(),
+          kNoOffset,
           static_cast<int>(input_length),
-          0,
+          kNoTag,
           &misspelling_start,
           &misspelling_length, NULL);
 
@@ -1328,8 +1335,9 @@ TEST_F(SpellCheckTest, NoSuggest) {
     int misspelling_length = 0;
     bool result = spell_check()->SpellCheckWord(
         base::ASCIIToUTF16(kTestCases[i].suggestion).c_str(),
+        kNoOffset,
         static_cast<int>(suggestion_length),
-        0,
+        kNoTag,
         &misspelling_start,
         &misspelling_length, NULL);
 
@@ -1343,8 +1351,9 @@ TEST_F(SpellCheckTest, NoSuggest) {
       input_length = strlen(kTestCases[i].input);
     result = spell_check()->SpellCheckWord(
         base::ASCIIToUTF16(kTestCases[i].input).c_str(),
+        kNoOffset,
         static_cast<int>(input_length),
-        0,
+        kNoTag,
         &misspelling_start,
         &misspelling_length,
         &suggestions);
@@ -1434,8 +1443,9 @@ TEST_F(SpellCheckTest, LogicalSuggestions) {
     std::vector<base::string16> suggestions;
     EXPECT_FALSE(spell_check()->SpellCheckWord(
         base::ASCIIToUTF16(kTestCases[i].misspelled).c_str(),
+        kNoOffset,
         strlen(kTestCases[i].misspelled),
-        0,
+        kNoTag,
         &misspelling_start,
         &misspelling_length,
         &suggestions));
