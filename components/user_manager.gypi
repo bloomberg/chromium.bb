@@ -73,6 +73,7 @@
         'dependencies': [
           '<(DEPTH)/base/base.gyp:base',
           '<(DEPTH)/base/base.gyp:test_support_base',
+          '<(DEPTH)/skia/skia.gyp:skia',
           '<(DEPTH)/testing/gmock.gyp:gmock',
           '<(DEPTH)/testing/gtest.gyp:gtest',
           'user_manager',
