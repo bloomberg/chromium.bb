@@ -2165,8 +2165,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 		drm_intel_gem_dump_validation_list(bufmgr_gem);
 
 	for (i = 0; i < bufmgr_gem->exec_count; i++) {
-		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
-		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
+		bo_gem = (drm_intel_bo_gem *) bufmgr_gem->exec_bos[i];
 
 		bo_gem->idle = false;
 
@@ -2260,8 +2259,8 @@ skip_execution:
 		drm_intel_gem_dump_validation_list(bufmgr_gem);
 
 	for (i = 0; i < bufmgr_gem->exec_count; i++) {
-		drm_intel_bo *bo = bufmgr_gem->exec_bos[i];
-		drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+		drm_intel_bo_gem *bo_gem =
+			(drm_intel_bo_gem *) bufmgr_gem->exec_bos[i];
 
 		bo_gem->idle = false;
 

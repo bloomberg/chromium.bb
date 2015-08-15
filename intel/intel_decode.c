@@ -3630,7 +3630,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 
 	case 0x7a00:
 		if (IS_GEN6(devid) || IS_GEN7(devid)) {
-			unsigned int i;
 			if (len != 4 && len != 5)
 				fprintf(out, "Bad count in PIPE_CONTROL\n");
 
@@ -3732,8 +3731,6 @@ decode_3d_965(struct drm_intel_decode *ctx)
 		if (opcode_3d->func) {
 			return opcode_3d->func(ctx);
 		} else {
-			unsigned int i;
-
 			instr_out(ctx, 0, "%s\n", opcode_3d->name);
 
 			for (i = 1; i < len; i++) {
@@ -3883,9 +3880,9 @@ drm_intel_decode_set_head_tail(struct drm_intel_decode *ctx,
 
 void
 drm_intel_decode_set_output_file(struct drm_intel_decode *ctx,
-				 FILE *out)
+				 FILE *output)
 {
-	ctx->out = out;
+	ctx->out = output;
 }
 
 /**

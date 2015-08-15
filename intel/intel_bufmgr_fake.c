@@ -1460,7 +1460,7 @@ restart:
 	assert(ret == 0);
 
 	if (bufmgr_fake->exec != NULL) {
-		int ret = bufmgr_fake->exec(bo, used, bufmgr_fake->exec_priv);
+		ret = bufmgr_fake->exec(bo, used, bufmgr_fake->exec_priv);
 		if (ret != 0) {
 			pthread_mutex_unlock(&bufmgr_fake->lock);
 			return ret;
