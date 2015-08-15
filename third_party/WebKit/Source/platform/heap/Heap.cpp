@@ -2400,6 +2400,11 @@ void Heap::reportMemoryUsageHistogram()
 
 void Heap::reportMemoryUsageForTracing()
 {
+    bool gcTracingEnabled;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
+    if (!gcTracingEnabled)
+        return;
+
     // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
     // They are capped to INT_MAX just in case.
     TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
