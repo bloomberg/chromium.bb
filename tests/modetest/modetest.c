@@ -589,7 +589,6 @@ static struct resources *get_resources(struct device *dev)
 
 #define get_resource(_res, __res, type, Type)					\
 	do {									\
-		int i;								\
 		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
 			(_res)->type##s[i].type =				\
 				drmModeGet##Type(dev->fd, (_res)->__res->type##s[i]); \
@@ -616,7 +615,6 @@ static struct resources *get_resources(struct device *dev)
 
 #define get_properties(_res, __res, type, Type)					\
 	do {									\
-		int i;								\
 		for (i = 0; i < (int)(_res)->__res->count_##type##s; ++i) {	\
 			struct type *obj = &res->type##s[i];			\
 			unsigned int j;						\
@@ -1301,7 +1299,6 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 #else
 		struct timeval timeout = { .tv_sec = 3, .tv_usec = 0 };
 		fd_set fds;
-		int ret;
 
 		FD_ZERO(&fds);
 		FD_SET(0, &fds);
