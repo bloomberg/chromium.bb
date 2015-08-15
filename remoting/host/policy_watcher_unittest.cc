@@ -729,7 +729,13 @@ void OnPolicyUpdatedDumpPolicy(scoped_ptr<base::DictionaryValue> policies) {
 
 // To dump policy contents, run unit tests with the following flags:
 // out/Debug/remoting_unittests --gtest_filter=*TestRealChromotingPolicy* -v=1
-TEST_F(PolicyWatcherTest, TestRealChromotingPolicy) {
+#if defined(ADDRESS_SANITIZER)
+// http://crbug.com/517918
+#define MAYBE_TestRealChromotingPolicy DISABLED_TestRealChromotingPolicy
+#else
+#define MAYBE_TestRealChromotingPolicy TestRealChromotingPolicy
+#endif
+TEST_F(PolicyWatcherTest, MAYBE_TestRealChromotingPolicy) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::MessageLoop::current()->task_runner();
   scoped_ptr<PolicyWatcher> policy_watcher(
