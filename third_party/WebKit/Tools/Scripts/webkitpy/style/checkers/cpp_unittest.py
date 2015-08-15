@@ -3439,7 +3439,8 @@ class NoNonVirtualDestructorsTest(CppStyleTestBase):
             '''\
                 enum Foo {
                     FooOne = 1,
-                    FooTwo
+                    FooTwo,
+                    kFooConst,
                 } fooVar = FooOne;
                 enum { FooOne, FooTwo };
                 enum { FooOne, FooTwo } fooVar = FooTwo;
