@@ -4042,7 +4042,10 @@ static widechar* pattern_reverse(const widechar *org, widechar *expr)
 	int i;
 	
 	if(org[0] == PTN_LAST)
+	{
+		expr[0] = PTN_LAST;
 		return expr;
+	}
 	
 	expr = pattern_reverse(&org[org[0]], expr);
 	
