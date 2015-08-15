@@ -7,26 +7,28 @@
 #include "base/stl_util.h"
 #include "components/view_manager/surfaces/display_factory_impl.h"
 #include "components/view_manager/surfaces/surfaces_impl.h"
-#include "components/view_manager/surfaces/surfaces_scheduler.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
 
 namespace surfaces {
 
-SurfacesServiceApplication::SurfacesServiceApplication()
-    : next_id_namespace_(1u) {
+SurfacesServiceApplication::SurfacesServiceApplication() {
 }
 
 SurfacesServiceApplication::~SurfacesServiceApplication() {
   // Make a copy of the sets before deleting them because their destructor will
   // call back into this class to remove them from the set.
   auto displays = displays_;
-  STLDeleteElements(&displays);
+  for (auto& display : displays)
+    display->CloseConnection();
+
   auto surfaces = surfaces_;
-  STLDeleteElements(&surfaces);
+  for (auto& surface : surfaces)
+    surface->CloseConnection();
 }
 
 void SurfacesServiceApplication::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
-  scheduler_.reset(new SurfacesScheduler);
+  surfaces_state_ = new SurfacesState;
 }
 
 bool SurfacesServiceApplication::ConfigureIncomingConnection(
@@ -39,27 +41,27 @@ bool SurfacesServiceApplication::ConfigureIncomingConnection(
 void SurfacesServiceApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::DisplayFactory> request) {
-  new DisplayFactoryImpl(this, &manager_, next_id_namespace_++,
-                         scheduler_.get(), request.Pass());
+  new DisplayFactoryImpl(this, surfaces_state_, request.Pass());
 }
 
 void SurfacesServiceApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::Surface> request) {
-  surfaces_.insert(
-      new SurfacesImpl(this, &manager_, next_id_namespace_++, scheduler_.get(),
-                       request.Pass()));
+  // SurfacesImpl manages its own lifetime.
+  surfaces_.insert(new SurfacesImpl(this, surfaces_state_, request.Pass()));
 }
 
-void SurfacesServiceApplication::DisplayCreated(DisplayImpl* display) {
+void SurfacesServiceApplication::OnDisplayCreated(DisplayImpl* display) {
   displays_.insert(display);
 }
 
-void SurfacesServiceApplication::DisplayDestroyed(DisplayImpl* display) {
+void SurfacesServiceApplication::OnDisplayConnectionClosed(
+    DisplayImpl* display) {
   displays_.erase(display);
 }
 
-void SurfacesServiceApplication::SurfaceDestroyed(SurfacesImpl* surface) {
+void SurfacesServiceApplication::OnSurfaceConnectionClosed(
+    SurfacesImpl* surface) {
   surfaces_.erase(surface);
 }
 

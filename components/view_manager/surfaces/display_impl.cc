@@ -20,37 +20,58 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 }
 }
 
-DisplayImpl::DisplayImpl(SurfacesServiceApplication* application,
-                         cc::SurfaceManager* manager,
+DisplayImpl::DisplayImpl(DisplayDelegate* display_delegate,
+                         const scoped_refptr<SurfacesState>& surfaces_state,
                          cc::SurfaceId cc_id,
-                         SurfacesScheduler* scheduler,
                          mojo::ContextProviderPtr context_provider,
                          mojo::ResourceReturnerPtr returner,
                          mojo::InterfaceRequest<mojo::Display> display_request)
-    : application_(application),
-      manager_(manager),
-      factory_(manager, this),
+    : delegate_(display_delegate),
+      surfaces_state_(surfaces_state),
+      factory_(surfaces_state->manager(), this),
       cc_id_(cc_id),
-      scheduler_(scheduler),
       context_provider_(context_provider.Pass()),
       returner_(returner.Pass()),
       viewport_param_binding_(this),
-      display_binding_(this, display_request.Pass()) {
-  application_->DisplayCreated(this);
+      display_binding_(this, display_request.Pass()),
+      connection_closed_(false) {
+  delegate_->OnDisplayCreated(this);
   mojo::ViewportParameterListenerPtr viewport_parameter_listener;
   viewport_param_binding_.Bind(GetProxy(&viewport_parameter_listener));
   context_provider_->Create(
       viewport_parameter_listener.Pass(),
       base::Bind(&DisplayImpl::OnContextCreated, base::Unretained(this)));
   factory_.Create(cc_id_);
+  display_binding_.set_connection_error_handler(
+      base::Bind(&DisplayImpl::CloseConnection, base::Unretained(this)));
+}
+
+void DisplayImpl::CloseConnection() {
+  if (connection_closed_)
+    return;
+  connection_closed_ = true;
+  delegate_->OnDisplayConnectionClosed(this);
+  delete this;
+}
+
+DisplayImpl::~DisplayImpl() {
+  DCHECK(connection_closed_);
+  if (display_) {
+    factory_.Destroy(cc_id_);
+    surfaces_state_->scheduler()->RemoveDisplay(display_.get());
+    // By deleting the object after display_ is reset, OutputSurfaceLost can
+    // know not to do anything (which would result in double delete).
+    delete display_.release();
+  }
 }
 
 void DisplayImpl::OnContextCreated(mojo::CommandBufferPtr gles2_client) {
   DCHECK(!display_);
 
   cc::RendererSettings settings;
-  display_.reset(new cc::Display(this, manager_, nullptr, nullptr, settings));
-  scheduler_->AddDisplay(display_.get());
+  display_.reset(new cc::Display(this, surfaces_state_->manager(),
+                                 nullptr, nullptr, settings));
+  surfaces_state_->scheduler()->AddDisplay(display_.get());
 
   // TODO(brianderson): Reconcile with SurfacesScheduler crbug.com/476676
   cc::DisplayScheduler* null_display_scheduler = nullptr;
@@ -63,17 +84,6 @@ void DisplayImpl::OnContextCreated(mojo::CommandBufferPtr gles2_client) {
   display_->SetSurfaceId(cc_id_, 1.f);
   if (pending_frame_)
     Draw();
-}
-
-DisplayImpl::~DisplayImpl() {
-  if (display_) {
-    factory_.Destroy(cc_id_);
-    scheduler_->RemoveDisplay(display_.get());
-    // By deleting the object after display_ is reset, OutputSurfaceLost can
-    // know not to do anything (which would result in double delete).
-    delete display_.release();
-  }
-  application_->DisplayDestroyed(this);
 }
 
 void DisplayImpl::SubmitFrame(mojo::FramePtr frame,
@@ -94,7 +104,7 @@ void DisplayImpl::Draw() {
                        pending_frame_.To<scoped_ptr<cc::CompositorFrame>>(),
                        base::Bind(&CallCallback, pending_callback_));
   pending_frame_.reset();
-  scheduler_->SetNeedsDraw();
+  surfaces_state_->scheduler()->SetNeedsDraw();
   pending_callback_.reset();
 }
 
@@ -112,7 +122,7 @@ void DisplayImpl::OutputSurfaceLost() {
   // TODO: This is more violent than necessary - we could simply remove this
   // display from the scheduler's set and pass a new context in to the
   // OutputSurface. It should be able to reinitialize properly.
-  scheduler_->RemoveDisplay(display_.get());
+  surfaces_state_->scheduler()->RemoveDisplay(display_.get());
   display_.reset();
   viewport_param_binding_.Close();
   mojo::ViewportParameterListenerPtr viewport_parameter_listener;
@@ -126,7 +136,7 @@ void DisplayImpl::SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) {
 }
 
 void DisplayImpl::OnVSyncParametersUpdated(int64_t timebase, int64_t interval) {
-  scheduler_->OnVSyncParametersUpdated(
+  surfaces_state_->scheduler()->OnVSyncParametersUpdated(
       base::TimeTicks::FromInternalValue(timebase),
       base::TimeDelta::FromInternalValue(interval));
 }

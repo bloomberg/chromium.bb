@@ -9,20 +9,24 @@
 namespace surfaces {
 
 DisplayFactoryImpl::DisplayFactoryImpl(
-    SurfacesServiceApplication* application,
-    cc::SurfaceManager* manager,
-    uint32_t id_namespace,
-    SurfacesScheduler* scheduler,
+    DisplayDelegate* display_delegate,
+    const scoped_refptr<SurfacesState>& surfaces_state,
     mojo::InterfaceRequest<mojo::DisplayFactory> request)
-    : id_namespace_(id_namespace),
+    : id_namespace_(surfaces_state->next_id_namespace()),
       next_local_id_(1u),
-      application_(application),
-      scheduler_(scheduler),
-      manager_(manager),
-      binding_(this, request.Pass()) {
+      display_delegate_(display_delegate),
+      surfaces_state_(surfaces_state),
+      binding_(this, request.Pass()),
+      connection_closed_(false) {
+  binding_.set_connection_error_handler(
+      base::Bind(&DisplayFactoryImpl::CloseConnection, base::Unretained(this)));
 }
 
-DisplayFactoryImpl::~DisplayFactoryImpl() {
+void DisplayFactoryImpl::CloseConnection() {
+  if (connection_closed_)
+    return;
+  connection_closed_ = true;
+  delete this;
 }
 
 void DisplayFactoryImpl::Create(
@@ -31,9 +35,16 @@ void DisplayFactoryImpl::Create(
     mojo::InterfaceRequest<mojo::Display> display_request) {
   cc::SurfaceId cc_id(static_cast<uint64_t>(id_namespace_) << 32 |
                       next_local_id_++);
-  new DisplayImpl(application_, manager_, cc_id, scheduler_,
-                  context_provider.Pass(), returner.Pass(),
+  new DisplayImpl(display_delegate_,
+                  surfaces_state_, cc_id,
+                  context_provider.Pass(),
+                  returner.Pass(),
                   display_request.Pass());
+}
+
+DisplayFactoryImpl::~DisplayFactoryImpl() {
+  // Only CloseConnection should be allowed to destroy this object.
+  DCHECK(connection_closed_);
 }
 
 }  // namespace surfaces

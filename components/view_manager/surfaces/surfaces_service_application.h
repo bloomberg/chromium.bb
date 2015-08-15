@@ -11,6 +11,9 @@
 #include "cc/surfaces/surface_manager.h"
 #include "components/view_manager/public/interfaces/display.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
+#include "components/view_manager/surfaces/display_delegate.h"
+#include "components/view_manager/surfaces/surfaces_delegate.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/tracing_impl.h"
@@ -22,12 +25,13 @@ class ApplicationConnection;
 namespace surfaces {
 class DisplayImpl;
 class SurfacesImpl;
-class SurfacesScheduler;
 
 class SurfacesServiceApplication
     : public mojo::ApplicationDelegate,
       public mojo::InterfaceFactory<mojo::DisplayFactory>,
-      public mojo::InterfaceFactory<mojo::Surface> {
+      public mojo::InterfaceFactory<mojo::Surface>,
+      public DisplayDelegate,
+      public SurfacesDelegate {
  public:
   SurfacesServiceApplication();
   ~SurfacesServiceApplication() override;
@@ -45,18 +49,18 @@ class SurfacesServiceApplication
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::Surface> request) override;
 
-  void DisplayCreated(DisplayImpl* display);
-  void DisplayDestroyed(DisplayImpl* display);
-  void SurfaceDestroyed(SurfacesImpl* surface);
-
  private:
-  cc::SurfaceManager manager_;
-  uint32_t next_id_namespace_;
-  scoped_ptr<SurfacesScheduler> scheduler_;
   mojo::TracingImpl tracing_;
 
-  // Since these two classes have non-owning pointers to |manager_|, need to
-  // destroy them if this class is destructed first.
+  // DisplayDelegate implementation.
+  void OnDisplayCreated(DisplayImpl* display) override;
+  void OnDisplayConnectionClosed(DisplayImpl* display) override;
+
+  // SurfacesDelegate implementation.
+  void OnSurfaceConnectionClosed(SurfacesImpl* surface) override;
+
+  scoped_refptr<SurfacesState> surfaces_state_;
+
   std::set<DisplayImpl*> displays_;
   std::set<SurfacesImpl*> surfaces_;
 

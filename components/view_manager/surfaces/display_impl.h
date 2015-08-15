@@ -10,6 +10,7 @@
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "components/view_manager/public/interfaces/display.mojom.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace cc {
@@ -18,24 +19,27 @@ class SurfaceFactory;
 }
 
 namespace surfaces {
-class SurfacesScheduler;
-class SurfacesServiceApplication;
+
+class DisplayDelegate;
 
 class DisplayImpl : public mojo::Display,
                     public mojo::ViewportParameterListener,
                     public cc::DisplayClient,
                     public cc::SurfaceFactoryClient {
  public:
-  DisplayImpl(SurfacesServiceApplication* application,
-              cc::SurfaceManager* manager,
+  DisplayImpl(DisplayDelegate* display_delegate,
+              const scoped_refptr<SurfacesState>& surfaces_state,
               cc::SurfaceId cc_id,
-              SurfacesScheduler* scheduler,
               mojo::ContextProviderPtr context_provider,
               mojo::ResourceReturnerPtr returner,
               mojo::InterfaceRequest<mojo::Display> display_request);
-  ~DisplayImpl() override;
+
+  // Closes the connection and destroys |this| object.
+  void CloseConnection();
 
  private:
+  ~DisplayImpl() override;
+
   void OnContextCreated(mojo::CommandBufferPtr gles2_client);
 
   // mojo::Display implementation:
@@ -43,6 +47,7 @@ class DisplayImpl : public mojo::Display,
                    const SubmitFrameCallback& callback) override;
 
   // DisplayClient implementation.
+  // TODO(rjkroege, fsamuel): This won't work correctly with multiple displays.
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void OutputSurfaceLost() override;
@@ -56,11 +61,10 @@ class DisplayImpl : public mojo::Display,
 
   void Draw();
 
-  SurfacesServiceApplication* application_;
-  cc::SurfaceManager* manager_;
+  DisplayDelegate* delegate_;
+  scoped_refptr<SurfacesState> surfaces_state_;
   cc::SurfaceFactory factory_;
   cc::SurfaceId cc_id_;
-  SurfacesScheduler* scheduler_;
   mojo::ContextProviderPtr context_provider_;
   mojo::ResourceReturnerPtr returner_;
 
@@ -71,7 +75,8 @@ class DisplayImpl : public mojo::Display,
   scoped_ptr<cc::Display> display_;
 
   mojo::Binding<mojo::ViewportParameterListener> viewport_param_binding_;
-  mojo::StrongBinding<mojo::Display> display_binding_;
+  mojo::Binding<mojo::Display> display_binding_;
+  bool connection_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayImpl);
 };

@@ -14,19 +14,22 @@ class SurfaceManager;
 }
 
 namespace surfaces {
+
+class DisplayDelegate;
 class SurfacesScheduler;
 class SurfacesServiceApplication;
 
 class DisplayFactoryImpl : public mojo::DisplayFactory {
  public:
-  DisplayFactoryImpl(SurfacesServiceApplication* application,
-                     cc::SurfaceManager* manager,
-                     uint32_t id_namespace,
-                     SurfacesScheduler* scheduler,
+  DisplayFactoryImpl(DisplayDelegate* display_delegate,
+                     const scoped_refptr<SurfacesState>& surfaces_state,
                      mojo::InterfaceRequest<mojo::DisplayFactory> request);
-  ~DisplayFactoryImpl() override;
+
+  void CloseConnection();
 
  private:
+  ~DisplayFactoryImpl() override;
+
   // mojo::DisplayFactory implementation.
   void Create(mojo::ContextProviderPtr context_provider,
               mojo::ResourceReturnerPtr returner,
@@ -36,10 +39,12 @@ class DisplayFactoryImpl : public mojo::DisplayFactory {
   // cc and not exposed through mojom.
   uint32_t id_namespace_;
   uint32_t next_local_id_;
-  SurfacesServiceApplication* application_;
-  SurfacesScheduler* scheduler_;
-  cc::SurfaceManager* manager_;
-  mojo::StrongBinding<mojo::DisplayFactory> binding_;
+  DisplayDelegate* display_delegate_;
+  scoped_refptr<SurfacesState> surfaces_state_;
+  mojo::Binding<mojo::DisplayFactory> binding_;
+  bool connection_closed_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayFactoryImpl);
 };
 
 }  // namespace surfaces

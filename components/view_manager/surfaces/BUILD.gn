@@ -19,12 +19,14 @@ mojo_native_application("surfaces") {
 
 source_set("lib") {
   sources = [
+    "display_delegate.h",
     "display_factory_impl.cc",
     "display_factory_impl.h",
     "display_impl.cc",
     "display_impl.h",
     "surfaces_context_provider.cc",
     "surfaces_context_provider.h",
+    "surfaces_delegate.h",
     "surfaces_impl.cc",
     "surfaces_impl.h",
     "surfaces_output_surface.cc",
@@ -33,6 +35,8 @@ source_set("lib") {
     "surfaces_scheduler.h",
     "surfaces_service_application.cc",
     "surfaces_service_application.h",
+    "surfaces_state.cc",
+    "surfaces_state.h",
   ]
 
   deps = [

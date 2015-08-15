@@ -8,8 +8,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "components/view_manager/surfaces/surfaces_delegate.h"
 #include "components/view_manager/surfaces/surfaces_scheduler.h"
-#include "components/view_manager/surfaces/surfaces_service_application.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 
@@ -23,22 +23,25 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 }
 }
 
-SurfacesImpl::SurfacesImpl(SurfacesServiceApplication* application,
-                           cc::SurfaceManager* manager,
-                           uint32_t id_namespace,
-                           SurfacesScheduler* scheduler,
+SurfacesImpl::SurfacesImpl(SurfacesDelegate* surfaces_delegate,
+                           const scoped_refptr<SurfacesState>& state,
                            mojo::InterfaceRequest<mojo::Surface> request)
-    : application_(application),
-      manager_(manager),
-      factory_(manager, this),
-      id_namespace_(id_namespace),
-      scheduler_(scheduler),
+    : delegate_(surfaces_delegate),
+      state_(state),
+      id_namespace_(state->next_id_namespace()),
+      factory_(state->manager(), this),
       binding_(this, request.Pass()) {
+  // Destroy this object if the connection is closed.
+  binding_.set_connection_error_handler(
+      base::Bind(&SurfacesImpl::CloseConnection, base::Unretained(this)));
 }
 
-SurfacesImpl::~SurfacesImpl() {
-  application_->SurfaceDestroyed(this);
-  factory_.DestroyAll();
+void SurfacesImpl::CloseConnection() {
+  if (connection_closed_)
+    return;
+  connection_closed_ = true;
+  delegate_->OnSurfaceConnectionClosed(this);
+  delete this;
 }
 
 void SurfacesImpl::GetIdNamespace(
@@ -61,7 +64,7 @@ void SurfacesImpl::SubmitFrame(uint32_t local_id,
   factory_.SubmitFrame(QualifyIdentifier(local_id),
                        frame.To<scoped_ptr<cc::CompositorFrame>>(),
                        base::Bind(&CallCallback, callback));
-  scheduler_->SetNeedsDraw();
+  state_->scheduler()->SetNeedsDraw();
 }
 
 void SurfacesImpl::DestroySurface(uint32_t local_id) {
@@ -76,6 +79,12 @@ void SurfacesImpl::ReturnResources(const cc::ReturnedResourceArray& resources) {
     ret[i] = mojo::ReturnedResource::From(resources[i]);
   }
   returner_->ReturnResources(ret.Pass());
+}
+
+SurfacesImpl::~SurfacesImpl() {
+  // Only CloseConnection should be allowed to destroy this object.
+  DCHECK(connection_closed_);
+  factory_.DestroyAll();
 }
 
 cc::SurfaceId SurfacesImpl::QualifyIdentifier(uint32_t local_id) {
