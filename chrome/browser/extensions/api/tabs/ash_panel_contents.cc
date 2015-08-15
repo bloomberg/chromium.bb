@@ -69,6 +69,8 @@ void AshPanelContents::NativeWindowClosed() {
 void AshPanelContents::DispatchWindowShownForTests() const {
 }
 
+void AshPanelContents::OnWindowReady() {}
+
 content::WebContents* AshPanelContents::GetWebContents() const {
   return web_contents_.get();
 }

@@ -21,7 +21,8 @@
 
 namespace extensions {
 
-AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host) : host_(host) {}
+AppWindowContentsImpl::AppWindowContentsImpl(AppWindow* host)
+    : host_(host), is_blocking_requests_(false), is_window_ready_(false) {}
 
 AppWindowContentsImpl::~AppWindowContentsImpl() {}
 
@@ -84,6 +85,21 @@ void AppWindowContentsImpl::DispatchWindowShownForTests() const {
       "appWindowShownForTests", args, false));
 }
 
+void AppWindowContentsImpl::OnWindowReady() {
+  is_window_ready_ = true;
+  if (is_blocking_requests_) {
+    is_blocking_requests_ = false;
+    content::RenderFrameHost* frame = web_contents_->GetMainFrame();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(
+            &content::ResourceDispatcherHost::ResumeBlockedRequestsForRoute,
+            base::Unretained(content::ResourceDispatcherHost::Get()),
+            frame->GetProcess()->GetID(),
+            frame->GetRenderViewHost()->GetRoutingID()));
+  }
+}
+
 content::WebContents* AppWindowContentsImpl::GetWebContents() const {
   return web_contents_.get();
 }
@@ -110,6 +126,10 @@ void AppWindowContentsImpl::UpdateDraggableRegions(
 void AppWindowContentsImpl::SuspendRenderFrameHost(
     content::RenderFrameHost* rfh) {
   DCHECK(rfh);
+  // Don't bother blocking requests if the renderer side is already good to go.
+  if (is_window_ready_)
+    return;
+  is_blocking_requests_ = true;
   // The ResourceDispatcherHost only accepts RenderViewHost child ids.
   // TODO(devlin): This will need to change for site isolation.
   content::BrowserThread::PostTask(

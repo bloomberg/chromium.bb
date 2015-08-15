@@ -68,6 +68,9 @@ class AppWindowContents {
   // Called in tests when the window is shown
   virtual void DispatchWindowShownForTests() const = 0;
 
+  // Called when the renderer notifies the browser that the window is ready.
+  virtual void OnWindowReady() = 0;
+
   virtual content::WebContents* GetWebContents() const = 0;
 
   virtual extensions::WindowController* GetWindowController() const = 0;
@@ -340,6 +343,10 @@ class AppWindow : public content::WebContentsDelegate,
   // Called by the window API when events can be sent to the window for this
   // app.
   void WindowEventsReady();
+
+  // Notifies the window's contents that the render view is ready and it can
+  // unblock resource requests.
+  void NotifyRenderViewReady();
 
   // Whether the app window wants to be alpha enabled.
   bool requested_alpha_enabled() const { return requested_alpha_enabled_; }

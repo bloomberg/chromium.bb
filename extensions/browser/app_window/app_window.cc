@@ -714,6 +714,11 @@ void AppWindow::WindowEventsReady() {
   SendOnWindowShownIfShown();
 }
 
+void AppWindow::NotifyRenderViewReady() {
+  if (app_window_contents_)
+    app_window_contents_->OnWindowReady();
+}
+
 void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   DCHECK(properties);
 

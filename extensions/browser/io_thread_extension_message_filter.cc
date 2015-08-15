@@ -4,8 +4,14 @@
 
 #include "extensions/browser/io_thread_extension_message_filter.h"
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
@@ -15,6 +21,33 @@
 using content::BrowserThread;
 
 namespace extensions {
+
+namespace {
+
+void NotifyAppWindowReadyOnUIThread(int render_process_id, int route_id) {
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id);
+  if (!process)
+    return;
+  content::BrowserContext* browser_context = process->GetBrowserContext();
+  if (!browser_context)
+    return;
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, route_id);
+  if (!rvh)
+    return;
+  content::WebContents* contents =
+      content::WebContents::FromRenderViewHost(rvh);
+  if (!contents)
+    return;
+  AppWindowRegistry* registry = AppWindowRegistry::Get(browser_context);
+  DCHECK(registry);
+  AppWindow* window = registry->GetAppWindowForWebContents(contents);
+  if (window)
+    window->NotifyRenderViewReady();
+}
+
+}  // namespace
 
 IOThreadExtensionMessageFilter::IOThreadExtensionMessageFilter(
     int render_process_id,
@@ -41,10 +74,9 @@ bool IOThreadExtensionMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(IOThreadExtensionMessageFilter, message)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_AppWindowReady, OnAppWindowReady);
   IPC_MESSAGE_HANDLER(ExtensionHostMsg_GenerateUniqueID,
                       OnExtensionGenerateUniqueID)
-  IPC_MESSAGE_HANDLER(ExtensionHostMsg_ResumeRequests,
-                      OnExtensionResumeRequests);
   IPC_MESSAGE_HANDLER(ExtensionHostMsg_RequestForIOThread,
                       OnExtensionRequestForIOThread)
   IPC_MESSAGE_UNHANDLED(handled = false)
@@ -52,15 +84,16 @@ bool IOThreadExtensionMessageFilter::OnMessageReceived(
   return handled;
 }
 
+void IOThreadExtensionMessageFilter::OnAppWindowReady(int route_id) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&NotifyAppWindowReadyOnUIThread,
+                                     render_process_id_, route_id));
+}
+
 void IOThreadExtensionMessageFilter::OnExtensionGenerateUniqueID(
     int* unique_id) {
   static int next_unique_id = 0;
   *unique_id = ++next_unique_id;
-}
-
-void IOThreadExtensionMessageFilter::OnExtensionResumeRequests(int route_id) {
-  content::ResourceDispatcherHost::Get()->ResumeBlockedRequestsForRoute(
-      render_process_id_, route_id);
 }
 
 void IOThreadExtensionMessageFilter::OnExtensionRequestForIOThread(
