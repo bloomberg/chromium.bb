@@ -2185,9 +2185,13 @@ do_exec2(drm_intel_bo *bo, int used, drm_intel_context *ctx,
 	 unsigned int flags)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_i915_gem_execbuffer2 execbuf;
 	int ret = 0;
 	int i;
+
+	if (bo_gem->has_error)
+		return -ENOMEM;
 
 	switch (flags & 0x7) {
 	default:
@@ -2259,8 +2263,7 @@ skip_execution:
 		drm_intel_gem_dump_validation_list(bufmgr_gem);
 
 	for (i = 0; i < bufmgr_gem->exec_count; i++) {
-		drm_intel_bo_gem *bo_gem =
-			(drm_intel_bo_gem *) bufmgr_gem->exec_bos[i];
+		bo_gem = (drm_intel_bo_gem *) bufmgr_gem->exec_bos[i];
 
 		bo_gem->idle = false;
 
