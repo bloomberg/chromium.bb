@@ -724,7 +724,7 @@ function showLabel(anchorInfo, showLongDescription)
     var secondaryColor = "rgba(255, 255, 255, 0.7)";
     var labelColor = labelColorForProperty(anchorInfo);
     var textDescription = [
-        {string: anchorInfo.propertyValue.value, color: "white" },
+        {string: String(parseFloat(anchorInfo.propertyValue.value.toFixed(2))), color: "white" },
         {string: "\u2009" + anchorInfo.propertyValue.unit, color: secondaryColor}
     ];
 
