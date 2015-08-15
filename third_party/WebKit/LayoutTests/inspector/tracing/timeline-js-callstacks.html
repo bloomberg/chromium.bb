@@ -387,9 +387,9 @@ function test()
         WebInspector.TimelineUIUtils.hiddenEventsFilter(),
         new WebInspector.ExcludeTopLevelFilter()
     ];
-    var treeTopDown = WebInspector.TimelineUIUtils.buildTopDownTree(events, 0, Infinity, filters, eventId);
+    var treeTopDown = WebInspector.TimelineModel.buildTopDownTree(events, 0, Infinity, filters, eventId);
     printProfileTree(0, treeTopDown);
-    var treeBottomUp = WebInspector.TimelineUIUtils.buildBottomUpTree(treeTopDown);
+    var treeBottomUp = WebInspector.TimelineModel.buildBottomUpTree(treeTopDown);
     printProfileTree(0, treeBottomUp);
 
     function eventId(event)
