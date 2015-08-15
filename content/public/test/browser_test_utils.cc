@@ -75,9 +75,11 @@ class DOMOperationObserver : public NotificationObserver,
                const NotificationDetails& details) override {
     DCHECK(type == NOTIFICATION_DOM_OPERATION_RESPONSE);
     Details<DomOperationNotificationDetails> dom_op_details(details);
-    response_ = dom_op_details->json;
-    did_respond_ = true;
-    message_loop_runner_->Quit();
+    if (!did_respond_) {
+      response_ = dom_op_details->json;
+      did_respond_ = true;
+      message_loop_runner_->Quit();
+    }
   }
 
   // Overridden from WebContentsObserver:

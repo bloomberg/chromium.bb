@@ -49,6 +49,10 @@ namespace {
 void PostMessageAndWaitForReply(FrameTreeNode* sender_ftn,
                                 const std::string& post_message_script,
                                 const std::string& reply_status) {
+  // Subtle: msg_queue needs to be declared before the ExecuteScript below, or
+  // else it might miss the message of interest.  See https://crbug.com/518729.
+  DOMMessageQueue msg_queue;
+
   bool success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       sender_ftn->current_frame_host(),
@@ -56,7 +60,6 @@ void PostMessageAndWaitForReply(FrameTreeNode* sender_ftn,
       &success));
   EXPECT_TRUE(success);
 
-  content::DOMMessageQueue msg_queue;
   std::string status;
   while (msg_queue.WaitForMessage(&status)) {
     if (status == reply_status)
@@ -2479,16 +2482,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
 
 // Check that postMessage can be sent from a subframe on a cross-process opener
 // tab, and that its event.source points to a valid proxy.
-// Very flaky on windows (crbug.com/518729).
-#if defined(OS_WIN)
-#define MAYBE_PostMessageWithSubframeOnOpenerChain \
-    DISABLED_PostMessageWithSubframeOnOpenerChain
-#else
-#define MAYBE_PostMessageWithSubframeOnOpenerChain \
-    PostMessageWithSubframeOnOpenerChain
-#endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       MAYBE_PostMessageWithSubframeOnOpenerChain) {
+                       PostMessageWithSubframeOnOpenerChain) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_post_message_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
