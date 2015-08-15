@@ -8,13 +8,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 
+from core import project_config
 from telemetry import benchmark_runner
 
 
 if __name__ == '__main__':
-  top_level_dir = os.path.dirname(os.path.realpath(__file__))
-
-  config = benchmark_runner.ProjectConfig(
-      top_level_dir=top_level_dir,
-      benchmark_dirs=[os.path.join(top_level_dir, 'benchmarks')])
-  sys.exit(benchmark_runner.main(config))
+  sys.exit(benchmark_runner.main(project_config.config))
