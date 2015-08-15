@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/metrics.h"
 
+#include "base/logging.h"
 #include "base/md5.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -67,6 +68,13 @@ void RecordAuthProximityTimeSinceLastZeroRssi(
 void RecordAuthProximityRemoteDeviceModelHash(const std::string& device_model) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("EasyUnlock.AuthProximity.RemoteDeviceModelHash",
                               HashDeviceModelName(device_model));
+}
+
+void RecordRemoteSecuritySettingsState(RemoteSecuritySettingsState state) {
+  DCHECK(state < RemoteSecuritySettingsState::COUNT);
+  UMA_HISTOGRAM_ENUMERATION(
+      "EasyUnlock.RemoteLockScreenState", static_cast<int>(state),
+      static_cast<int>(RemoteSecuritySettingsState::COUNT));
 }
 
 }  // namespace metrics

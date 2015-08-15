@@ -496,6 +496,7 @@
       'proximity_auth/proximity_monitor_impl_unittest.cc',
       'proximity_auth/remote_status_update_unittest.cc',
       'proximity_auth/throttled_bluetooth_connection_finder_unittest.cc',
+      'proximity_auth/unlock_manager_unittest.cc',
       'proximity_auth/wire_message_unittest.cc',
     ],
     'proxy_config_unittest_sources': [

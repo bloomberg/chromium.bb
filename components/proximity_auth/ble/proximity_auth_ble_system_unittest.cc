@@ -71,7 +71,10 @@ class MockProximityAuthClient : public ProximityAuthClient {
   // ProximityAuthClient:
   std::string GetAuthenticatedUsername() const override { return kTestUser; }
 
-  MOCK_METHOD1(FinalizeUnlock, void(bool));
+  MOCK_METHOD1(UpdateScreenlockState,
+               void(proximity_auth::ScreenlockState state));
+  MOCK_METHOD1(FinalizeUnlock, void(bool success));
+  MOCK_METHOD1(FinalizeSignin, void(const std::string& secret));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockProximityAuthClient);

@@ -25,6 +25,7 @@ source_set("proximity_auth") {
     "connection.h",
     "connection_finder.h",
     "connection_observer.h",
+    "controller.h",
     "device_to_device_authenticator.cc",
     "device_to_device_authenticator.h",
     "device_to_device_initiator_operations.cc",
@@ -52,6 +53,8 @@ source_set("proximity_auth") {
     "switches.h",
     "throttled_bluetooth_connection_finder.cc",
     "throttled_bluetooth_connection_finder.h",
+    "unlock_manager.cc",
+    "unlock_manager.h",
     "wire_message.cc",
     "wire_message.h",
   ]
@@ -94,6 +97,7 @@ source_set("unit_tests") {
     "proximity_monitor_impl_unittest.cc",
     "remote_status_update_unittest.cc",
     "throttled_bluetooth_connection_finder_unittest.cc",
+    "unlock_manager_unittest.cc",
     "wire_message_unittest.cc",
   ]
 

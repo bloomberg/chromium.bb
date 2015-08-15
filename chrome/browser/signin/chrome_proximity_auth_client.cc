@@ -11,6 +11,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 
+using proximity_auth::ScreenlockState;
+
 ChromeProximityAuthClient::ChromeProximityAuthClient(Profile* profile)
     : profile_(profile) {
 }
@@ -27,6 +29,20 @@ std::string ChromeProximityAuthClient::GetAuthenticatedUsername() const {
   return signin_manager->GetAuthenticatedUsername();
 }
 
+void ChromeProximityAuthClient::UpdateScreenlockState(ScreenlockState state) {
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
+  if (service)
+    service->UpdateScreenlockState(state);
+}
+
 void ChromeProximityAuthClient::FinalizeUnlock(bool success) {
-  EasyUnlockService::Get(profile_)->FinalizeUnlock(success);
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
+  if (service)
+    service->FinalizeUnlock(success);
+}
+
+void ChromeProximityAuthClient::FinalizeSignin(const std::string& secret) {
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
+  if (service)
+    service->FinalizeSignin(secret);
 }
