@@ -66,10 +66,6 @@ const int kConnectionSectionPaddingLeft = 18;
 const int kConnectionSectionPaddingTop = 16;
 const int kConnectionSectionPaddingRight = 18;
 
-// The text color that is used for the site identity status text, if the site's
-// identity was sucessfully verified.
-const SkColor kIdentityVerifiedTextColor = 0xFF298a27;
-
 // Left icon margin.
 const int kIconMarginLeft = 6;
 
@@ -552,15 +548,8 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 void WebsiteSettingsPopupView::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   base::string16 identity_status_text = identity_info.GetIdentityStatusText();
-  SkColor text_color = SK_ColorBLACK;
-  if (identity_info.identity_status ==
-          WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
-      identity_info.identity_status ==
-          WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
-    text_color = kIdentityVerifiedTextColor;
-  }
   header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
-  header_->SetIdentityStatus(identity_status_text, text_color);
+  header_->SetIdentityStatus(identity_status_text, SK_ColorBLACK);
 
   // The headline and the certificate dialog link of the site's identity
   // section is only displayed if the site's identity was verified. If the
