@@ -217,7 +217,9 @@ void VideoFrameCompositor::BackgroundRender() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   const base::TimeTicks now = tick_clock_->NowTicks();
   last_background_render_ = now;
-  CallRender(now, now + last_interval_, true);
+  bool new_frame = CallRender(now, now + last_interval_, true);
+  if (new_frame && client_)
+    client_->DidReceiveFrame();
 }
 
 bool VideoFrameCompositor::CallRender(base::TimeTicks deadline_min,
