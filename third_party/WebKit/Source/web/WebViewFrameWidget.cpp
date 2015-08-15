@@ -70,11 +70,6 @@ void WebViewFrameWidget::beginFrame(const WebBeginFrameArgs& frameTime)
     return m_webView->beginFrame(frameTime);
 }
 
-void WebViewFrameWidget::setNeedsLayoutAndFullPaintInvalidation()
-{
-    return m_webView->setNeedsLayoutAndFullPaintInvalidation();
-}
-
 void WebViewFrameWidget::layout()
 {
     return m_webView->layout();

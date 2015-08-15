@@ -43,7 +43,6 @@ public:
     void didEnterFullScreen() override;
     void didExitFullScreen() override;
     void beginFrame(const WebBeginFrameArgs& frameTime) override;
-    void setNeedsLayoutAndFullPaintInvalidation() override;
     void layout() override;
     void paint(WebCanvas*, const WebRect& viewPort) override;
     void paintCompositedDeprecated(WebCanvas*, const WebRect&) override;

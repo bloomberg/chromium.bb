@@ -1918,16 +1918,6 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     }
 }
 
-void WebViewImpl::setNeedsLayoutAndFullPaintInvalidation()
-{
-    if (!mainFrameImpl() || !mainFrameImpl()->frame() || !mainFrameImpl()->frame()->view())
-        return;
-
-    FrameView* view = mainFrameImpl()->frame()->view();
-    view->setNeedsLayout();
-    view->setNeedsFullPaintInvalidation();
-}
-
 void WebViewImpl::layout()
 {
     TRACE_EVENT0("blink", "WebViewImpl::layout");

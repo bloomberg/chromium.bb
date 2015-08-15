@@ -95,10 +95,6 @@ public:
     // paint, although the client can rate-limit these calls.
     virtual void beginFrame(const WebBeginFrameArgs& frameTime) { }
 
-    // Called when the Widget contents has changed in such a way the layout must be
-    // redone, and any resulting paint invalidations issued.
-    virtual void setNeedsLayoutAndFullPaintInvalidation() { }
-
     // Called to layout the WebWidget. This MUST be called before Paint,
     // and it may result in calls to WebWidgetClient::didInvalidateRect.
     virtual void layout() { }

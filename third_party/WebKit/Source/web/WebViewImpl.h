@@ -109,7 +109,6 @@ public:
 
     void beginFrame(const WebBeginFrameArgs&) override;
 
-    void setNeedsLayoutAndFullPaintInvalidation() override;
     void layout() override;
     void paint(WebCanvas*, const WebRect&) override;
 #if OS(ANDROID)
