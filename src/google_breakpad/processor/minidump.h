@@ -916,6 +916,9 @@ class MinidumpLinuxMapsList : public MinidumpStream {
  public:
   virtual ~MinidumpLinuxMapsList();
 
+  // Get number of mappings.
+  unsigned int get_maps_count() const { return valid_ ? maps_count_ : 0; }
+
   // Get mapping at the given memory address. The caller owns the pointer.
   const MinidumpLinuxMaps *GetLinuxMapsForAddress(uint64_t address) const;
   // Get mapping at the given index. The caller owns the pointer.
