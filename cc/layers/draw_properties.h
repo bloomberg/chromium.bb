@@ -19,7 +19,6 @@ template <typename LayerType>
 struct CC_EXPORT DrawProperties {
   DrawProperties()
       : opacity(0.f),
-        blend_mode(SkXfermode::kSrcOver_Mode),
         screen_space_transform_is_animating(false),
         can_use_lcd_text(false),
         render_target(nullptr),
@@ -45,10 +44,6 @@ struct CC_EXPORT DrawProperties {
   // particularly in the case when a RenderSurface re-parents the layer's
   // opacity, or when opacity is compounded by the hierarchy.
   float opacity;
-
-  // DrawProperties::blend_mode may be different than LayerType::blend_mode,
-  // when a RenderSurface re-parents the layer's blend_mode.
-  SkXfermode::Mode blend_mode;
 
   // xxx_is_animating flags are used to indicate whether the DrawProperties
   // are actually meaningful on the main thread. When the properties are

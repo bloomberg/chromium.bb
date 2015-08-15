@@ -393,8 +393,12 @@ void BuildPropertyTreesInternal(
     const DataForRecursion<LayerType>& data_from_parent) {
   layer->set_property_tree_sequence_number(data_from_parent.sequence_number);
   DataForRecursion<LayerType> data_for_children(data_from_parent);
-  if (layer->render_surface())
+  if (layer->render_surface()) {
     data_for_children.render_target = layer;
+    layer->set_draw_blend_mode(SkXfermode::kSrcOver_Mode);
+  } else {
+    layer->set_draw_blend_mode(layer->blend_mode());
+  }
 
   bool created_transform_node =
       AddTransformNodeIfNeeded(data_from_parent, layer, &data_for_children);

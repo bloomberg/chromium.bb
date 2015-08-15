@@ -81,6 +81,7 @@ Layer::Layer(const LayerSettings& settings)
       background_color_(0),
       opacity_(1.f),
       blend_mode_(SkXfermode::kSrcOver_Mode),
+      draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       scroll_parent_(nullptr),
       layer_or_descendant_is_drawn_tracker_(0),
       sorted_for_recursion_tracker_(0),
@@ -1215,6 +1216,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   layer->set_is_clipped(is_clipped_);
+  layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);

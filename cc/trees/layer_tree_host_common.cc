@@ -1783,7 +1783,7 @@ static void CalculateDrawPropertiesInternal(
     // entire subtree properly inherits opacity.
     render_surface->SetDrawOpacity(accumulated_draw_opacity);
     layer_draw_properties.opacity = 1.f;
-    layer_draw_properties.blend_mode = SkXfermode::kSrcOver_Mode;
+    DCHECK_EQ(layer->draw_blend_mode(), SkXfermode::kSrcOver_Mode);
 
     layer_draw_properties.screen_space_transform_is_animating =
         animating_transform_to_screen;
@@ -1906,7 +1906,7 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.screen_space_transform_is_animating =
         animating_transform_to_screen;
     layer_draw_properties.opacity = accumulated_draw_opacity;
-    layer_draw_properties.blend_mode = layer->blend_mode();
+    DCHECK_EQ(layer->draw_blend_mode(), layer->blend_mode());
     data_for_children.parent_matrix = combined_transform;
 
     // Layers without render_surfaces directly inherit the ancestor's clip

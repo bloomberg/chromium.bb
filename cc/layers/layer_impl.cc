@@ -75,6 +75,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       background_color_(0),
       opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
+      draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(-1),
       opacity_tree_index_(-1),
@@ -315,8 +316,8 @@ void LayerImpl::ClearRenderSurfaceLayerList() {
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform, bounds(),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
-                is_clipped_, draw_properties_.opacity,
-                draw_properties_.blend_mode, sorting_context_id_);
+                is_clipped_, draw_properties_.opacity, draw_blend_mode_,
+                sorting_context_id_);
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
@@ -331,7 +332,7 @@ void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
 
   state->SetAll(scaled_draw_transform, scaled_bounds, scaled_visible_layer_rect,
                 draw_properties().clip_rect, is_clipped_,
-                draw_properties().opacity, draw_properties().blend_mode,
+                draw_properties().opacity, draw_blend_mode_,
                 sorting_context_id_);
 }
 
@@ -570,6 +571,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   layer->set_is_clipped(is_clipped_);
+  layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 

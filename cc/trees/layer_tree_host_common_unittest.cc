@@ -1295,7 +1295,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   ASSERT_TRUE(child->render_surface());
   EXPECT_EQ(1.0f, child->draw_opacity());
   EXPECT_EQ(0.5f, child->render_surface()->draw_opacity());
-  EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_properties().blend_mode);
+  EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_blend_mode());
 }
 
 TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {

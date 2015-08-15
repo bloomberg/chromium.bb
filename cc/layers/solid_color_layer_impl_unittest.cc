@@ -113,7 +113,7 @@ TEST(SolidColorLayerImplTest, VerifyCorrectBlendModeInQuad) {
   scoped_ptr<SolidColorLayerImpl> layer =
       SolidColorLayerImpl::Create(host_impl.active_tree(), 1);
   layer->SetBounds(layer_size);
-  layer->draw_properties().blend_mode = blend_mode;
+  layer->set_draw_blend_mode(blend_mode);
 
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
