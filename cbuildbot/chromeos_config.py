@@ -439,6 +439,7 @@ _x86_internal_release_boards = frozenset([
     'swanky',
     'tidus',
     'tricky',
+    'ultima',
     'winky',
     'wizpig',
     'wolf',
@@ -2644,6 +2645,7 @@ def GetConfig():
       'strago', 'strago', (
           'cyan',
           'celes',
+          'ultima',
       ),
       important=False,
   )
