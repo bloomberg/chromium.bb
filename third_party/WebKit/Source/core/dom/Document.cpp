@@ -3286,15 +3286,8 @@ void Document::styleResolverChanged(StyleResolverUpdateMode updateMode)
 {
     styleEngine().resolverChanged(updateMode);
 
-    if (didLayoutWithPendingStylesheets() && !styleEngine().hasPendingSheets()) {
-        // We need to manually repaint because we avoid doing all repaints in layout or style
-        // recalc while sheets are still loading to avoid FOUC.
+    if (m_pendingSheetLayout == DidLayoutWithPendingSheets && !styleEngine().hasPendingSheets())
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
-
-        ASSERT(layoutView() || importsController());
-        if (layoutView())
-            layoutView()->invalidatePaintForViewAndCompositedLayers();
-    }
 }
 
 void Document::styleResolverMayHaveChanged()

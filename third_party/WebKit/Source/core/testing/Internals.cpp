@@ -2334,12 +2334,6 @@ void Internals::setInitialFocus(bool reverse)
     frame()->page()->focusController().setInitialFocus(reverse ? WebFocusTypeBackward : WebFocusTypeForward);
 }
 
-bool Internals::ignoreLayoutWithPendingStylesheets(Document* document)
-{
-    ASSERT(document);
-    return document->ignoreLayoutWithPendingStylesheets();
-}
-
 void Internals::setNetworkStateNotifierTestOnly(bool testOnly)
 {
     networkStateNotifier().setTestUpdatesOnly(testOnly);

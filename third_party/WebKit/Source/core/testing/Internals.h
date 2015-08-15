@@ -335,8 +335,6 @@ public:
     void setFocused(bool);
     void setInitialFocus(bool);
 
-    bool ignoreLayoutWithPendingStylesheets(Document*);
-
     void setNetworkStateNotifierTestOnly(bool);
     // Test must call setNetworkStateNotifierTestOnly(true) before calling setNetworkConnectionInfo.
     void setNetworkConnectionInfo(const String&, ExceptionState&);
