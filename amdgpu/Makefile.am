@@ -25,7 +25,7 @@
 include Makefile.sources
 
 AM_CFLAGS = \
-	$(WARN_CFLAGS) -Wno-switch-enum \
+	$(WARN_CFLAGS) \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm
