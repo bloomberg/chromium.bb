@@ -211,7 +211,7 @@ ClipRect DeprecatedPaintLayerClipper::backgroundClipRect(const ClipRectsContext&
     if (!context.usesCache())
         return uncachedBackgroundClipRect(context);
 
-    // TODO(chadarmstrong): precalculation for painting should be moved to updateAllLifecyclePhasesInternal
+    // TODO(chadarmstrong): precalculation for painting should be moved to updateLifecyclePhasesInternal
     // and precalculation could be done for all hit testing. This would let us avoid clearing the cache
     if (!m_clips[context.cacheSlot()])
         precalculate(context);

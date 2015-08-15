@@ -2431,22 +2431,16 @@ void FrameView::updateWidgetPositionsIfNeeded()
 
 void FrameView::updateAllLifecyclePhases()
 {
-    frame().localFrameRoot()->view()->updateAllLifecyclePhasesInternal();
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(AllPhases);
 }
 
 // TODO(chrishtr): add a scrolling update lifecycle phase, after compositing and before invalidation.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 {
-    frame().localFrameRoot()->view()->updateStyleAndLayoutIfNeededRecursive();
-    LayoutView* view = layoutView();
-    if (view)
-        view->compositor()->updateIfNeededRecursive();
-    scrollContentsIfNeededRecursive();
-
-    ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+    frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(OnlyUpToCompositingCleanPlusScrolling);
 }
 
-void FrameView::updateAllLifecyclePhasesInternal()
+void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases)
 {
     // This must be called from the root frame, since it recurses down, not up.
     // Otherwise the lifecycles of the frames might be out of sync.
@@ -2462,19 +2456,23 @@ void FrameView::updateAllLifecyclePhasesInternal()
 
         view->compositor()->updateIfNeededRecursive();
         scrollContentsIfNeededRecursive();
-        invalidateTreeIfNeededRecursive();
 
-        if (view->compositor()->inCompositingMode())
-            scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+        ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
-        updateCompositedSelectionIfNeeded();
-        if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
-            updateFrameTimingRequestsIfNeeded();
+        if (phases == AllPhases) {
+            invalidateTreeIfNeededRecursive();
 
-        ASSERT(!view->hasPendingSelection());
+            if (view->compositor()->inCompositingMode())
+                scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
+            updateCompositedSelectionIfNeeded();
+            if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
+                updateFrameTimingRequestsIfNeeded();
+
+            ASSERT(!view->hasPendingSelection());
+            ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
+        }
     }
-
-    ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()

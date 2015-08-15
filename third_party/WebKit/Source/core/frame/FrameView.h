@@ -606,7 +606,12 @@ private:
     void setScrollOffset(const IntPoint&, ScrollType) override;
     void setScrollOffset(const DoublePoint&, ScrollType) override;
 
-    void updateAllLifecyclePhasesInternal();
+    enum LifeCycleUpdateOption {
+        AllPhases,
+        OnlyUpToCompositingCleanPlusScrolling,
+    };
+
+    void updateLifecyclePhasesInternal(LifeCycleUpdateOption);
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
