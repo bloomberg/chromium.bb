@@ -177,7 +177,6 @@ int main(int argc, char **argv)
 	while (1) {
 		struct timeval timeout = { .tv_sec = 3, .tv_usec = 0 };
 		fd_set fds;
-		int ret;
 
 		FD_ZERO(&fds);
 		FD_SET(0, &fds);
