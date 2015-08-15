@@ -42,6 +42,7 @@ public:
     // EventTarget implementation.
     const AtomicString& interfaceName() const override;
     ExecutionContext* executionContext() const override;
+    bool addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener>, bool capture) override;
 
     DECLARE_VIRTUAL_TRACE();
 

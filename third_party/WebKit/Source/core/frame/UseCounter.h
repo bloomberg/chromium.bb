@@ -818,6 +818,17 @@ public:
         CSSValuePrefixedFitContent = 923,
         CSSValuePrefixedFillAvailable = 924,
         FetchAPIRequestContext = 925,
+        PresentationDefaultRequest = 926,
+        PresentationAvailabilityChangeEventListener = 927,
+        PresentationRequestConstructor = 928,
+        PresentationRequestStart = 929,
+        PresentationRequestJoin = 930,
+        PresentationRequestGetAvailability = 931,
+        PresentationRequestSessionConnectEventListener = 932,
+        PresentationSessionClose = 933,
+        PresentationSessionSend = 934,
+        PresentationSessionStateChangeEventListener = 935,
+        PresentationSessionMessageEventListener = 936,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

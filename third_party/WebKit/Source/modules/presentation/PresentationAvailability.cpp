@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "modules/EventTargetModulesNames.h"
 #include "modules/presentation/PresentationController.h"
 #include "public/platform/Platform.h"
@@ -61,6 +62,14 @@ const AtomicString& PresentationAvailability::interfaceName() const
 ExecutionContext* PresentationAvailability::executionContext() const
 {
     return ActiveDOMObject::executionContext();
+}
+
+bool PresentationAvailability::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool capture)
+{
+    if (eventType == EventTypeNames::change)
+        UseCounter::count(executionContext(), UseCounter::PresentationAvailabilityChangeEventListener);
+
+    return EventTarget::addEventListener(eventType, listener, capture);
 }
 
 void PresentationAvailability::availabilityChanged(bool value)

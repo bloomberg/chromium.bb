@@ -8,7 +8,7 @@
     GarbageCollected,
     RuntimeEnabled=Presentation
 ] interface Presentation : EventTarget {
-    attribute PresentationRequest? defaultRequest;
+    [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;
 
     // This API used by presenting browsing context.
     // TODO(avayvod): The spec has |getSession()| and |getSessions()| instead.

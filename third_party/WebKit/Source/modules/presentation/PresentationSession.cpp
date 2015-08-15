@@ -15,6 +15,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
 #include "modules/presentation/PresentationController.h"
@@ -156,7 +157,18 @@ ExecutionContext* PresentationSession::executionContext() const
 {
     if (!frame())
         return nullptr;
-    return frame()->document();}
+    return frame()->document();
+}
+
+bool PresentationSession::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool capture)
+{
+    if (eventType == EventTypeNames::statechange)
+        UseCounter::count(executionContext(), UseCounter::PresentationSessionStateChangeEventListener);
+    else if (eventType == EventTypeNames::message)
+        UseCounter::count(executionContext(), UseCounter::PresentationSessionMessageEventListener);
+
+    return EventTarget::addEventListener(eventType, listener, capture);
+}
 
 DEFINE_TRACE(PresentationSession)
 {

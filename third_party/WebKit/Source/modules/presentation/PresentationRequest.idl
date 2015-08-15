@@ -11,10 +11,11 @@
     RaisesException=Constructor,
     GarbageCollected,
     RuntimeEnabled=Presentation,
+    MeasureAs=PresentationRequestConstructor
 ] interface PresentationRequest : EventTarget {
-    [CallWith=ScriptState] Promise<PresentationSession> start();
-    [CallWith=ScriptState] Promise<PresentationSession> join(DOMString id);
-    [CallWith=ScriptState] Promise<PresentationAvailability> getAvailability();
+    [CallWith=ScriptState, MeasureAs=PresentationRequestStart] Promise<PresentationSession> start();
+    [CallWith=ScriptState, MeasureAs=PresentationRequestJoin] Promise<PresentationSession> join(DOMString id);
+    [CallWith=ScriptState, MeasureAs=PresentationRequestGetAvailability] Promise<PresentationAvailability> getAvailability();
 
     attribute EventHandler onsessionconnect;
 };

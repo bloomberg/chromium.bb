@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/PresentationAvailability.h"
 #include "modules/presentation/PresentationAvailabilityCallbacks.h"
@@ -59,6 +60,14 @@ const AtomicString& PresentationRequest::interfaceName() const
 ExecutionContext* PresentationRequest::executionContext() const
 {
     return ActiveDOMObject::executionContext();
+}
+
+bool PresentationRequest::addEventListener(const AtomicString& eventType, PassRefPtrWillBeRawPtr<EventListener> listener, bool capture)
+{
+    if (eventType == EventTypeNames::sessionconnect)
+        UseCounter::count(executionContext(), UseCounter::PresentationRequestSessionConnectEventListener);
+
+    return EventTarget::addEventListener(eventType, listener, capture);
 }
 
 bool PresentationRequest::hasPendingActivity() const
