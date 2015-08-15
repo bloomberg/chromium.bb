@@ -332,8 +332,12 @@ ImageCandidate HTMLImageElement::findBestFitImageFromPictureParent()
 LayoutObject* HTMLImageElement::createLayoutObject(const ComputedStyle& style)
 {
     const ContentData* contentData = style.contentData();
-    if (contentData && contentData->isImage() && !toImageContentData(contentData)->image()->cachedImage()->errorOccurred())
-        return LayoutObject::createObject(this, style);
+    if (contentData && contentData->isImage()) {
+        const StyleImage* contentImage = toImageContentData(contentData)->image();
+        bool errorOccurred = contentImage && contentImage->cachedImage() && contentImage->cachedImage()->errorOccurred();
+        if (!errorOccurred)
+            return LayoutObject::createObject(this, style);
+    }
 
     if (m_useFallbackContent)
         return new LayoutBlockFlow(this);
