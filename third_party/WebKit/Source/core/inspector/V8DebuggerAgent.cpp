@@ -589,10 +589,7 @@ void V8DebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::De
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it == m_scripts.end())
         return;
-    String url = it->value.url();
-    if (url.isEmpty())
-        return;
-    m_editedScripts.set(url, newContent);
+    it->value.setSource(newContent);
 }
 
 void V8DebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame>>& newCallFrames, RefPtr<StackTrace>& asyncStackTrace)
@@ -629,10 +626,6 @@ void V8DebuggerAgent::getScriptSource(ErrorString* error, const String& scriptId
         *error = "No script for id: " + scriptId;
         return;
     }
-
-    String url = it->value.url();
-    if (!url.isEmpty() && getEditedScript(url, scriptSource))
-        return;
     *scriptSource = it->value.source();
 }
 
@@ -1418,14 +1411,6 @@ void V8DebuggerAgent::changeJavaScriptRecursionLevel(int step)
     }
 }
 
-bool V8DebuggerAgent::getEditedScript(const String& url, String* content)
-{
-    if (!m_editedScripts.contains(url))
-        return false;
-    *content = m_editedScripts.get(url);
-    return true;
-}
-
 PassRefPtr<Array<CallFrame>> V8DebuggerAgent::currentCallFrames()
 {
     if (!m_pausedScriptState || m_currentCallStack.IsEmpty())
@@ -1719,11 +1704,6 @@ void V8DebuggerAgent::reset()
     promiseTracker().clear();
     if (frontend())
         frontend()->globalObjectCleared();
-}
-
-void V8DebuggerAgent::resetModifiedSources()
-{
-    m_editedScripts.clear();
 }
 
 DEFINE_TRACE(V8DebuggerAgent)

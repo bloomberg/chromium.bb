@@ -30,12 +30,12 @@ Adding first script for pending request.
 UISourceCode: index.html
 UISourceCode is content script: false
 Highlighter type: text/html
-UISourceCode content:   <script><script source 1></script>
+UISourceCode content: <script source 1>
 Adding second script for pending request.
 UISourceCode: index.html
 UISourceCode is content script: false
 Highlighter type: text/html
-UISourceCode content:                                      <script><script source 2></script>
+UISourceCode content: <script source 2>
 Adding uiSourceCode for finished resource.
 UISourceCode: index.html
 UISourceCode is content script: false

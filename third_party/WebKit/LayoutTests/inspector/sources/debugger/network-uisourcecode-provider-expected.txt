@@ -8,31 +8,21 @@ UISourceCode is content script: false
 Highlighter type: text/html
 UISourceCode content: <document resource content>
 
-Running: testScriptResource
-Creating resource.
-UISourceCode: http://fake.url/2
-UISourceCode is content script: false
-Highlighter type: text/javascript
-UISourceCode content: <script resource content>
-
-Running: testVMScript
+Running: testScriptResourceAndVMScript
+Creating script resource.
 Creating script.
 UISourceCode: http://fake.url/3
 UISourceCode is content script: false
 Highlighter type: text/javascript
 UISourceCode content: <script content>
 
-Running: testStylesheetResource
-Creating resource.
-UISourceCode: http://fake.url/4
-Highlighter type: text/css
-UISourceCode content: <stylesheet resource content>
-
 Running: testRemoveStyleSheetFromModelWithComplexURL
+Creating stylesheet resource.
 Added uiSourceCode: http://example.com/foo.css
 Removed uiSourceCode: http://example.com/foo.css
 
 Running: testRemoveStyleSheetFromModelWithSimpleURL
+Creating stylesheet resource.
 Added uiSourceCode: foo.css
 Removed uiSourceCode: foo.css
 

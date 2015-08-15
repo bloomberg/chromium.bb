@@ -87,38 +87,14 @@ function test()
             }
         },
 
-        function testScriptResource(next)
+        function testScriptResourceAndVMScript(next)
         {
             createNetworkUISourceCodeProvider();
-            InspectorTest.addResult("Creating resource.");
             InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+            InspectorTest.addResult("Creating script resource.");
             createResourceMock(WebInspector.resourceTypes.Script, "<script resource content>");
-
-            function uiSourceCodeAdded(uiSourceCode)
-            {
-                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
-            }
-        },
-
-        function testVMScript(next)
-        {
-            createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating script.");
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
             createScriptMock("<script content>");
-
-            function uiSourceCodeAdded(uiSourceCode)
-            {
-                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
-            }
-        },
-
-        function testStylesheetResource(next)
-        {
-            createNetworkUISourceCodeProvider();
-            InspectorTest.addResult("Creating resource.");
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
@@ -143,6 +119,9 @@ function test()
     {
         createNetworkUISourceCodeProvider();
         InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+        InspectorTest.addResult("Creating stylesheet resource.");
+        createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
+
         WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
 
         function uiSourceCodeAdded(uiSourceCode)

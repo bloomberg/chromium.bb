@@ -63,7 +63,6 @@ public:
 
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void didCommitLoadForLocalFrame(LocalFrame*) override;
 
 private:
     // V8DebuggerAgent::Client implemntation.

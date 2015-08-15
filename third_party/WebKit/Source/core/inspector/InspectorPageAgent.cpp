@@ -262,11 +262,10 @@ PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(LocalFrame
     return adoptPtrWillBeNoop(new InspectorPageAgent(inspectedFrame, overlay, resourceContentLoader));
 }
 
-void InspectorPageAgent::setDeferredAgents(InspectorDebuggerAgent* debuggerAgent, InspectorCSSAgent* cssAgent)
+void InspectorPageAgent::setDebuggerAgent(InspectorDebuggerAgent* debuggerAgent)
 {
-    ASSERT(!m_debuggerAgent && !m_cssAgent);
+    ASSERT(!m_debuggerAgent);
     m_debuggerAgent = debuggerAgent;
-    m_cssAgent = cssAgent;
 }
 
 Resource* InspectorPageAgent::cachedResource(LocalFrame* frame, const KURL& url)
@@ -355,7 +354,6 @@ InspectorPageAgent::InspectorPageAgent(LocalFrame* inspectedFrame, InspectorOver
     : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
     , m_inspectedFrame(inspectedFrame)
     , m_debuggerAgent(nullptr)
-    , m_cssAgent(nullptr)
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
@@ -532,11 +530,6 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
 
 void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback> callback)
 {
-    String content;
-    if (m_debuggerAgent->getEditedScript(url, &content) || m_cssAgent->getEditedStyleSheet(url, &content)) {
-        callback->sendSuccess(content, false);
-        return;
-    }
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
         return;
@@ -823,7 +816,6 @@ DEFINE_TRACE(InspectorPageAgent)
 {
     visitor->trace(m_inspectedFrame);
     visitor->trace(m_debuggerAgent);
-    visitor->trace(m_cssAgent);
     visitor->trace(m_overlay);
     visitor->trace(m_inspectorResourceContentLoader);
     InspectorBaseAgent::trace(visitor);

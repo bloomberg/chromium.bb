@@ -132,7 +132,6 @@ public:
     void didCallFunction();
     void willEvaluateScript(const String& url, int lineNumber);
     void didEvaluateScript();
-    bool getEditedScript(const String& url, String* content);
 
     bool enabled();
     V8Debugger& debugger() { return *m_debugger; }
@@ -165,7 +164,6 @@ public:
     InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void reset();
-    void resetModifiedSources();
 
 private:
     bool checkEnabled(ErrorString*);
@@ -258,7 +256,6 @@ private:
     // This field must be destroyed before the listeners set above.
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
-    HashMap<String, String> m_editedScripts;
 
     using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;

@@ -75,7 +75,7 @@ public:
     };
 
     static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(LocalFrame* inspectedFrame, InspectorOverlay*, InspectorResourceContentLoader*);
-    void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
+    void setDebuggerAgent(InspectorDebuggerAgent*);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
@@ -145,7 +145,6 @@ private:
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
-    RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;
