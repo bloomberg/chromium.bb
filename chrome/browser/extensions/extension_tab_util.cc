@@ -51,11 +51,6 @@ namespace {
 
 namespace keys = tabs_constants;
 
-// Strings to indicate reason for muted state change (user, capture, extension
-// id, or empty string).
-const char kMuteCauseUser[] = "user";
-const char kMuteCauseCapture[] = "capture";
-
 WindowController* GetAppWindowController(const WebContents* contents) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   AppWindowRegistry* registry = AppWindowRegistry::Get(profile);
@@ -402,8 +397,7 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetBoolean(keys::kPinnedKey,
                      tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetBoolean(keys::kAudibleKey, contents->WasRecentlyAudible());
-  result->SetBoolean(keys::kMutedKey, contents->IsAudioMuted());
-  result->SetString(keys::kMutedCauseKey, GetTabAudioMutedReason(contents));
+  result->Set(keys::kMutedInfoKey, CreateMutedInfo(contents).Pass());
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
   result->SetInteger(keys::kWidthKey,
@@ -428,6 +422,31 @@ base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
   }
 
   return result;
+}
+
+// static
+scoped_ptr<base::DictionaryValue> ExtensionTabUtil::CreateMutedInfo(
+    content::WebContents* contents) {
+  DCHECK(contents);
+  api::tabs::MutedInfo info;
+  info.muted = contents->IsAudioMuted();
+  switch (chrome::GetTabAudioMutedReason(contents)) {
+    case TAB_MUTED_REASON_NONE:
+      break;
+    case TAB_MUTED_REASON_CONTEXT_MENU:
+    case TAB_MUTED_REASON_AUDIO_INDICATOR:
+      info.reason = api::tabs::MUTED_INFO_REASON_USER;
+      break;
+    case TAB_MUTED_REASON_MEDIA_CAPTURE:
+      info.reason = api::tabs::MUTED_INFO_REASON_CAPTURE;
+      break;
+    case TAB_MUTED_REASON_EXTENSION:
+      info.reason = api::tabs::MUTED_INFO_REASON_EXTENSION;
+      info.extension_id.reset(
+          new std::string(chrome::GetExtensionIdForMutedTab(contents)));
+      break;
+  }
+  return info.ToValue();
 }
 
 void ExtensionTabUtil::ScrubTabValueForExtension(
@@ -656,24 +675,6 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
 // static
 bool ExtensionTabUtil::BrowserSupportsTabs(Browser* browser) {
   return browser && browser->tab_strip_model() && !browser->is_devtools();
-}
-
-// static
-std::string ExtensionTabUtil::GetTabAudioMutedReason(
-    content::WebContents* contents) {
-  DCHECK(contents);
-  switch (chrome::GetTabAudioMutedReason(contents)) {
-    case TAB_MUTED_REASON_NONE:
-    case TAB_MUTED_REASON_CONTEXT_MENU:
-    case TAB_MUTED_REASON_AUDIO_INDICATOR:
-      return kMuteCauseUser;
-    case TAB_MUTED_REASON_MEDIA_CAPTURE:
-      return kMuteCauseCapture;
-    case TAB_MUTED_REASON_EXTENSION:
-      return chrome::GetExtensionIdForMutedTab(contents);
-  }
-  NOTREACHED();
-  return std::string();
 }
 
 }  // namespace extensions

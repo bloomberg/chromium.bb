@@ -103,13 +103,13 @@ chrome.test.runTests([
     chrome.tabs.getCurrent(function(tab) {
       var stopListener = chrome.test.listenForever(chrome.tabs.onUpdated,
           function(tabId, changeInfo, updatedTab) {
-        if ((changeInfo["muted"] === true)) {
+        if ((changeInfo.mutedInfo.muted === true)) {
           tabCapture.capture({audio: true}, function(stream) {
             stream1 = stream;
           });
         }
-        else if ((changeInfo["mutedCause"] == "capture") &&
-                 (changeInfo["muted"] === false)) {
+        else if ((changeInfo.mutedInfo.reason == "capture") &&
+                 (changeInfo.mutedInfo.muted === false)) {
           stream1.stop();
           stopListener();
         }

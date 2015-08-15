@@ -415,20 +415,16 @@ void TabsEventRouter::TabUpdated(
     scoped_ptr<base::DictionaryValue> changed_properties) {
   CHECK(entry->web_contents());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTabAudioMuting)) {
-    bool audible = entry->web_contents()->WasRecentlyAudible();
-    if (entry->SetAudible(audible)) {
-      changed_properties->SetBoolean(tabs_constants::kAudibleKey, audible);
-    }
+  bool audible = entry->web_contents()->WasRecentlyAudible();
+  if (entry->SetAudible(audible)) {
+    changed_properties->SetBoolean(tabs_constants::kAudibleKey, audible);
+  }
 
-    bool muted = entry->web_contents()->IsAudioMuted();
-    if (entry->SetMuted(muted)) {
-      changed_properties->SetBoolean(tabs_constants::kMutedKey, muted);
-      changed_properties->SetString(
-          tabs_constants::kMutedCauseKey,
-          ExtensionTabUtil::GetTabAudioMutedReason(entry->web_contents()));
-    }
+  bool muted = entry->web_contents()->IsAudioMuted();
+  if (entry->SetMuted(muted)) {
+    changed_properties->Set(
+        tabs_constants::kMutedInfoKey,
+        ExtensionTabUtil::CreateMutedInfo(entry->web_contents()).Pass());
   }
 
   if (!changed_properties->empty()) {

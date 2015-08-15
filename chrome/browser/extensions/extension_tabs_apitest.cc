@@ -47,16 +47,6 @@ class ExtensionApiNewTabTest : public ExtensionApiTest {
   }
 };
 
-class ExtensionApiTabAudioMutingTest : public ExtensionApiTest {
- public:
-  ExtensionApiTabAudioMutingTest() {}
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitch(switches::kEnableTabAudioMuting);
-  }
-};
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, Tabs) {
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
@@ -67,11 +57,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiNewTabTest, Tabs) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "crud.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabAudioMutingTest, TabAudible) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabAudible) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "audible.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabAudioMutingTest, TabMuted) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMuted) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "muted.html")) << message_;
 }
 

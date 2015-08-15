@@ -13,10 +13,10 @@ chrome.test.runTests([
 
   function mutedStartsFalse() {
     chrome.tabs.get(testTabId_, pass(function(tab) {
-      assertEq(false, tab.muted);
+      assertEq(false, tab.mutedInfo.muted);
 
       queryForTab(testTabId_, {muted: false}, pass(function(tab) {
-        assertEq(false, tab.muted);
+        assertEq(false, tab.mutedInfo.muted);
       }));
       queryForTab(testTabId_, {muted: true} , pass(function(tab) {
         assertEq(null, tab);
@@ -25,21 +25,71 @@ chrome.test.runTests([
   },
 
   function makeMuted() {
-    onUpdatedExpect("muted", true, {mutedCause: chrome.runtime.id});
-    chrome.tabs.update(testTabId_, {muted: true}, pass());
+    var expectedAfterMute = {
+      muted: true,
+      reason: 'extension',
+      extensionId: chrome.runtime.id
+    };
+
+    var callbackRunCount = 0;
+
+    function checkWasMutedByThisExtension(tabId, changeInfo, tab) {
+      assertEq(expectedAfterMute, changeInfo.mutedInfo);
+      assertEq(expectedAfterMute, tab.mutedInfo);
+
+      // Make sure both this and the callback provided to chrome.tabs.update()
+      // below have been run at this point.
+      ++callbackRunCount;
+      assertEq(2, callbackRunCount);
+
+      chrome.tabs.onUpdated.removeListener(checkWasMutedByThisExtension);
+      chrome.test.succeed();
+    }
+
+    chrome.tabs.onUpdated.addListener(checkWasMutedByThisExtension);
+
+    chrome.tabs.update(testTabId_, {muted: true}, function (tab) {
+      ++callbackRunCount;
+      assertEq(expectedAfterMute, tab.mutedInfo);
+    });
   },
 
   function testStaysMutedAfterChangingWindow() {
     chrome.windows.create({}, pass(function(window) {
       chrome.tabs.move(testTabId_, {windowId: window.id, index: -1},
                        pass(function(tab) {
-        assertEq(true, tab.muted);
+        assertEq(true, tab.mutedInfo.muted);
       }));
     }));
   },
 
   function makeNotMuted() {
-    onUpdatedExpect("muted", false, {mutedCause: chrome.runtime.id});
-    chrome.tabs.update(testTabId_, {muted: false}, pass());
+    var expectedAfterUnmute = {
+      muted: false,
+      reason: 'extension',
+      extensionId: chrome.runtime.id
+    };
+
+    var callbackRunCount = 0;
+
+    function checkWasUnmutedByThisExtension(tabId, changeInfo, tab) {
+      assertEq(expectedAfterUnmute, changeInfo.mutedInfo);
+      assertEq(expectedAfterUnmute, tab.mutedInfo);
+
+      // Make sure both this and the callback provided to chrome.tabs.update()
+      // below have been run at this point.
+      ++callbackRunCount;
+      assertEq(2, callbackRunCount);
+
+      chrome.tabs.onUpdated.removeListener(checkWasUnmutedByThisExtension);
+      chrome.test.succeed();
+    }
+
+    chrome.tabs.onUpdated.addListener(checkWasUnmutedByThisExtension);
+
+    chrome.tabs.update(testTabId_, {muted: false}, function (tab) {
+      ++callbackRunCount;
+      assertEq(expectedAfterUnmute, tab.mutedInfo);
+    });
   }
 ]);

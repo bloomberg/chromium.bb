@@ -42,7 +42,6 @@ class TabCaptureApiTest : public ExtensionApiTest {
     // Specify smallish window size to make testing of tab capture less CPU
     // intensive.
     command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
-    command_line->AppendSwitch(::switches::kEnableTabAudioMuting);
   }
 
   void AddExtensionToCommandLineWhitelist() {

@@ -306,11 +306,10 @@ TabMutedResult SetTabAudioMuted(content::WebContents* contents,
   DCHECK(contents);
   DCHECK_NE(TAB_MUTED_REASON_NONE, reason);
 
-  const bool is_experimental_reason =
-      reason == TAB_MUTED_REASON_AUDIO_INDICATOR ||
-      reason == TAB_MUTED_REASON_EXTENSION;
-  if (is_experimental_reason && !AreExperimentalMuteControlsEnabled())
+  if (reason == TAB_MUTED_REASON_AUDIO_INDICATOR &&
+      !AreExperimentalMuteControlsEnabled()) {
     return TAB_MUTED_RESULT_FAIL_NOT_ENABLED;
+  }
 
   if (!chrome::CanToggleAudioMute(contents))
     return TAB_MUTED_RESULT_FAIL_TABCAPTURE;

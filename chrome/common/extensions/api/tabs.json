@@ -7,6 +7,36 @@
     "namespace": "tabs",
     "description": "Use the <code>chrome.tabs</code> API to interact with the browser's tab system. You can use this API to create, modify, and rearrange tabs in the browser.",
     "types": [
+      { "id": "MutedInfoReason",
+        "type": "string",
+        "description": "An event that caused a muted state change.",
+        "enum": [
+          {"name": "user", "description": "A user input action has set/overridden the muted state."},
+          {"name": "capture", "description": "Tab capture started, forcing a muted state change."},
+          {"name": "extension", "description": "An extension, identified by the extensionId field, set the muted state."}
+        ]
+      },
+      {
+        "id": "MutedInfo",
+        "type": "object",
+        "description": "Tab muted state and the reason for the last state change.",
+        "properties": {
+          "muted": {
+            "type": "boolean",
+            "description": "Whether the tab is prevented from playing sound (but hasn't necessarily recently produced sound). Equivalent to whether the muted audio indicator is showing."
+          },
+          "reason": {
+            "$ref": "MutedInfoReason",
+            "optional": true,
+            "description": "The reason the tab was muted or unmuted. Not set if the tab's mute state has never been changed."
+          },
+          "extensionId": {
+            "type": "string",
+            "optional": true,
+            "description": "The ID of the extension that changed the muted state. Not set if an extension was not the reason the muted state last changed."
+          }
+        }
+      },
       {
         "id": "Tab",
         "type": "object",
@@ -21,8 +51,7 @@
           "active": {"type": "boolean", "description": "Whether the tab is active in its window. (Does not necessarily mean the window is focused.)"},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
           "audible": {"type": "boolean", "optional": true, "description": "Whether the tab has produced sound over the past couple of seconds (but it might not be heard if also muted). Equivalent to whether the speaker audio indicator is showing."},
-          "muted": {"type": "boolean", "optional": true, "description": "Whether the tab is prevented from playing sound (but hasn't necessarily recently produced sound). Equivalent to whether the muted audio indicator is showing."},
-          "mutedCause": {"type": "string", "optional": true, "description": "Indicates what caused the muted setting ('', 'user', 'capture', or an extension id)."},
+          "mutedInfo": {"$ref": "MutedInfo", "optional": true, "description": "Current tab muted state and the reason for the last state change."},
           "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
           "title": {"type": "string", "optional": true, "description": "The title of the tab. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
           "favIconUrl": {"type": "string", "optional": true, "description": "The URL of the tab's favicon. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission. It may also be an empty string if the tab is loading."},
@@ -917,15 +946,10 @@
                 "optional": true,
                 "description": "The tab's new audible state."
               },
-              "muted": {
-                "type": "boolean",
+              "mutedInfo": {
+                "$ref": "MutedInfo",
                 "optional": true,
-                "description": "The tab's new muted state."
-              },
-              "mutedCause": {
-                "type": "string",
-                "optional": true,
-                "description": "When the muted state changes, indicates what caused it ('', 'user', 'capture', or an extension id)."
+                "description": "The tab's new muted state and the reason for the change."
               },
               "favIconUrl": {
                 "type": "string",
