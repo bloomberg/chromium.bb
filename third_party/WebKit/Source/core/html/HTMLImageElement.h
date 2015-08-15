@@ -53,8 +53,8 @@ public:
     ~HTMLImageElement() override;
     DECLARE_VIRTUAL_TRACE();
 
-    int width(bool ignorePendingStylesheets = false);
-    int height(bool ignorePendingStylesheets = false);
+    int width();
+    int height();
 
     int naturalWidth() const;
     int naturalHeight() const;

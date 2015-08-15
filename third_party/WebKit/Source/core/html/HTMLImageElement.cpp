@@ -399,8 +399,11 @@ void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
     HTMLElement::removedFrom(insertionPoint);
 }
 
-int HTMLImageElement::width(bool ignorePendingStylesheets)
+int HTMLImageElement::width()
 {
+    if (inActiveDocument())
+        document().updateLayoutIgnorePendingStylesheets();
+
     if (!layoutObject()) {
         // check the attribute first for an explicit pixel value
         bool ok;
@@ -413,17 +416,15 @@ int HTMLImageElement::width(bool ignorePendingStylesheets)
             return imageLoader().image()->imageSizeForLayoutObject(layoutObject(), 1.0f).width();
     }
 
-    if (ignorePendingStylesheets)
-        document().updateLayoutIgnorePendingStylesheets();
-    else
-        document().updateLayout();
-
     LayoutBox* box = layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentBoxRect().pixelSnappedWidth(), box) : 0;
 }
 
-int HTMLImageElement::height(bool ignorePendingStylesheets)
+int HTMLImageElement::height()
 {
+    if (inActiveDocument())
+        document().updateLayoutIgnorePendingStylesheets();
+
     if (!layoutObject()) {
         // check the attribute first for an explicit pixel value
         bool ok;
@@ -435,11 +436,6 @@ int HTMLImageElement::height(bool ignorePendingStylesheets)
         if (imageLoader().image())
             return imageLoader().image()->imageSizeForLayoutObject(layoutObject(), 1.0f).height();
     }
-
-    if (ignorePendingStylesheets)
-        document().updateLayoutIgnorePendingStylesheets();
-    else
-        document().updateLayout();
 
     LayoutBox* box = layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentBoxRect().pixelSnappedHeight(), box) : 0;
