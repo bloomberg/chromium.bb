@@ -36,7 +36,7 @@ namespace {
 
 // Key names on BrowserContext.
 const char kDownloadManagerKeyName[] = "download_manager";
-const char kStorageParitionMapKeyName[] = "content_storage_partition_map";
+const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
@@ -46,10 +46,10 @@ StoragePartitionImplMap* GetStoragePartitionMap(
     BrowserContext* browser_context) {
   StoragePartitionImplMap* partition_map =
       static_cast<StoragePartitionImplMap*>(
-          browser_context->GetUserData(kStorageParitionMapKeyName));
+          browser_context->GetUserData(kStoragePartitionMapKeyName));
   if (!partition_map) {
     partition_map = new StoragePartitionImplMap(browser_context);
-    browser_context->SetUserData(kStorageParitionMapKeyName, partition_map);
+    browser_context->SetUserData(kStoragePartitionMapKeyName, partition_map);
   }
   return partition_map;
 }
@@ -199,7 +199,7 @@ void BrowserContext::ForEachStoragePartition(
     const StoragePartitionCallback& callback) {
   StoragePartitionImplMap* partition_map =
       static_cast<StoragePartitionImplMap*>(
-          browser_context->GetUserData(kStorageParitionMapKeyName));
+          browser_context->GetUserData(kStoragePartitionMapKeyName));
   if (!partition_map)
     return;
 
