@@ -70,7 +70,7 @@ static int cursor_running;
  */
 
 struct cursor_step {
-	void (*run)(struct cursor *cursor, struct cursor_step *step);
+	void (*run)(struct cursor *cursor, const struct cursor_step *step);
 	uint32_t msec;
 	uint32_t repeat;
 	int arg;
@@ -78,7 +78,7 @@ struct cursor_step {
 
 static uint32_t indx, count;
 
-static void set_cursor(struct cursor *cursor, struct cursor_step *step)
+static void set_cursor(struct cursor *cursor, const struct cursor_step *step)
 {
 	int enabled = (step->arg ^ count) & 0x1;
 	uint32_t handle = 0;
@@ -91,7 +91,7 @@ static void set_cursor(struct cursor *cursor, struct cursor_step *step)
 	drmModeSetCursor(cursor->fd, cursor->crtc_id, handle, cursor->w, cursor->h);
 }
 
-static void move_cursor(struct cursor *cursor, struct cursor_step *step)
+static void move_cursor(struct cursor *cursor, const struct cursor_step *step)
 {
 	int x = cursor->x;
 	int y = cursor->y;
@@ -126,7 +126,7 @@ static void move_cursor(struct cursor *cursor, struct cursor_step *step)
 	drmModeMoveCursor(cursor->fd, cursor->crtc_id, x, y);
 }
 
-static struct cursor_step steps[] = {
+static const struct cursor_step steps[] = {
 		{  set_cursor, 10,   0,  1 },  /* enable */
 		{ move_cursor,  1, 100,  1 },
 		{ move_cursor,  1,  10, 10 },
@@ -145,7 +145,7 @@ static struct cursor_step steps[] = {
 static void *cursor_thread_func(void *data)
 {
 	while (cursor_running) {
-		struct cursor_step *step = &steps[indx % ARRAY_SIZE(steps)];
+		const struct cursor_step *step = &steps[indx % ARRAY_SIZE(steps)];
 		int i;
 
 		for (i = 0; i < ncursors; i++) {
