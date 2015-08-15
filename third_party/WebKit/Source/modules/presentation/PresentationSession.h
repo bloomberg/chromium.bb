@@ -45,7 +45,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    const String id() const { return m_id; }
+    const String& id() const { return m_id; }
     const WTF::AtomicString& state() const;
 
     void send(const String& message, ExceptionState&);
