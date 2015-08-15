@@ -610,7 +610,6 @@ private:
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
-    void updatePostLifecycleData();
 
     void reset();
     void init();

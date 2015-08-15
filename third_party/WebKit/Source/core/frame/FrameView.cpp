@@ -2448,40 +2448,33 @@ void FrameView::updateLifecycleToCompositingCleanPlusScrolling()
 
 void FrameView::updateAllLifecyclePhasesInternal()
 {
-    // This must be called from the root frame, since it recurses down, not up. Otherwise the lifecycles of the frames might be out of sync.
-    ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
+    // This must be called from the root frame, since it recurses down, not up.
+    // Otherwise the lifecycles of the frames might be out of sync.
+    ASSERT(m_frame->isLocalRoot());
 
     // Updating layout can run script, which can tear down the FrameView.
     RefPtrWillBeRawPtr<FrameView> protector(this);
 
     updateStyleAndLayoutIfNeededRecursive();
 
-    LayoutView* view = layoutView();
-    if (view) {
+    if (LayoutView* view = layoutView()) {
         TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
         view->compositor()->updateIfNeededRecursive();
         scrollContentsIfNeededRecursive();
         invalidateTreeIfNeededRecursive();
-        updatePostLifecycleData();
+
+        if (view->compositor()->inCompositingMode())
+            scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
+
+        updateCompositedSelectionIfNeeded();
+        if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
+            updateFrameTimingRequestsIfNeeded();
 
         ASSERT(!view->hasPendingSelection());
     }
 
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
-}
-
-void FrameView::updatePostLifecycleData()
-{
-    LayoutView* view = layoutView();
-    ASSERT(view);
-
-    if (view->compositor()->inCompositingMode() && m_frame->isLocalRoot())
-        scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
-
-    updateCompositedSelectionIfNeeded();
-    if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
-        updateFrameTimingRequestsIfNeeded();
 }
 
 void FrameView::updateFrameTimingRequestsIfNeeded()
