@@ -814,6 +814,9 @@ protected:
     // Generates INVALID_ENUM and returns false if parameters are invalid.
     virtual bool validateReadPixelsFormatAndType(GLenum format, GLenum type);
 
+    // Helper function to get expected ArrayBuffer view type for readPixels.
+    virtual DOMArrayBufferView::ViewType readPixelsExpectedArrayBufferViewType(GLenum type);
+
     // Helper function to check format/type combination for readPixels.
     // Generates INVALID_OPERATION and returns false if the combination is unsupported.
     bool validateReadPixelsFormatTypeCombination(GLenum format, GLenum type, GLenum readBufferInternalFormat, GLenum readBufferType);

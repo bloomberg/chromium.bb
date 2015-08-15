@@ -2115,9 +2115,11 @@ bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, 
     case GL_BYTE:
     case GL_HALF_FLOAT:
     case GL_FLOAT:
+    case GL_UNSIGNED_SHORT:
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
+    case GL_SHORT:
     case GL_UNSIGNED_INT:
     case GL_UNSIGNED_INT_2_10_10_10_REV:
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
@@ -2130,6 +2132,29 @@ bool WebGL2RenderingContextBase::validateReadPixelsFormatAndType(GLenum format, 
     }
 
     return true;
+}
+
+DOMArrayBufferView::ViewType WebGL2RenderingContextBase::readPixelsExpectedArrayBufferViewType(GLenum type)
+{
+    switch (type) {
+    case GL_BYTE:
+        return DOMArrayBufferView::TypeInt8;
+    case GL_UNSIGNED_SHORT:
+        return DOMArrayBufferView::TypeUint16;
+    case GL_SHORT:
+        return DOMArrayBufferView::TypeInt16;
+    case GL_HALF_FLOAT:
+        return DOMArrayBufferView::TypeUint16;
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_2_10_10_10_REV:
+    case GL_UNSIGNED_INT_10F_11F_11F_REV:
+    case GL_UNSIGNED_INT_5_9_9_9_REV:
+        return DOMArrayBufferView::TypeUint32;
+    case GL_INT:
+        return DOMArrayBufferView::TypeInt32;
+    default:
+        return WebGLRenderingContextBase::readPixelsExpectedArrayBufferViewType(type);
+    }
 }
 
 WebGLFramebuffer* WebGL2RenderingContextBase::getFramebufferBinding(GLenum target)

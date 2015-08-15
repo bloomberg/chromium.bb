@@ -3710,6 +3710,25 @@ bool WebGLRenderingContextBase::validateReadPixelsFormatTypeCombination(GLenum f
     return true;
 }
 
+DOMArrayBufferView::ViewType WebGLRenderingContextBase::readPixelsExpectedArrayBufferViewType(GLenum type)
+{
+    switch (type) {
+    case GL_UNSIGNED_BYTE:
+        return DOMArrayBufferView::TypeUint8;
+    case GL_UNSIGNED_SHORT_5_6_5:
+    case GL_UNSIGNED_SHORT_4_4_4_4:
+    case GL_UNSIGNED_SHORT_5_5_5_1:
+        return DOMArrayBufferView::TypeUint16;
+    case GL_FLOAT:
+        return DOMArrayBufferView::TypeFloat32;
+    case GL_HALF_FLOAT_OES:
+        return DOMArrayBufferView::TypeUint16;
+    default:
+        ASSERT_NOT_REACHED();
+        return DOMArrayBufferView::TypeUint8;
+    }
+}
+
 void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, DOMArrayBufferView* pixels)
 {
     if (isContextLost())
@@ -3731,40 +3750,7 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
     if (!validateReadPixelsFormatTypeCombination(format, type, readBufferInternalFormat, readBufferType))
         return;
 
-    DOMArrayBufferView::ViewType expectedViewType;
-    switch (type) {
-    case GL_UNSIGNED_BYTE:
-        expectedViewType = DOMArrayBufferView::TypeUint8;
-        break;
-    case GL_BYTE:
-        expectedViewType = DOMArrayBufferView::TypeInt8;
-        break;
-    case GL_UNSIGNED_SHORT_5_6_5:
-    case GL_UNSIGNED_SHORT_4_4_4_4:
-    case GL_UNSIGNED_SHORT_5_5_5_1:
-        expectedViewType = DOMArrayBufferView::TypeUint16;
-        break;
-    case GL_FLOAT:
-        expectedViewType = DOMArrayBufferView::TypeFloat32;
-        break;
-    case GL_HALF_FLOAT:
-    case GL_HALF_FLOAT_OES:
-        expectedViewType = DOMArrayBufferView::TypeUint16;
-        break;
-    case GL_UNSIGNED_INT:
-    case GL_UNSIGNED_INT_2_10_10_10_REV:
-    case GL_UNSIGNED_INT_10F_11F_11F_REV:
-    case GL_UNSIGNED_INT_5_9_9_9_REV:
-        expectedViewType = DOMArrayBufferView::TypeUint32;
-        break;
-    case GL_INT:
-        expectedViewType = DOMArrayBufferView::TypeInt32;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        expectedViewType = DOMArrayBufferView::TypeUint8;
-        break;
-    }
+    DOMArrayBufferView::ViewType expectedViewType = readPixelsExpectedArrayBufferViewType(type);
     // Validate array type against pixel type.
     if (pixels->type() != expectedViewType) {
         synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "ArrayBufferView was the wrong type for the pixel format");
