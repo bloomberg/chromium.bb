@@ -269,6 +269,7 @@
       'tests/ActivityLoggerTest.cpp',
       'tests/ChromeClientImplTest.cpp',
       'tests/CustomEventTest.cpp',
+      'tests/DocumentLoaderTest.cpp',
       'tests/FakeWebPlugin.cpp',
       'tests/FakeWebPlugin.h',
       'tests/FrameLoaderClientImplTest.cpp',
