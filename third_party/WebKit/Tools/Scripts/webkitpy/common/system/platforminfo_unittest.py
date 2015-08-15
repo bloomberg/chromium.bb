@@ -155,13 +155,25 @@ class TestPlatformInfo(unittest.TestCase):
         self.assertEqual(self.make_info(fake_sys('freebsd9'), fake_platform('', '9.0-RELEASE')).os_version, '9.0-RELEASE')
 
         self.assertRaises(AssertionError, self.make_info, fake_sys('win32', tuple([5, 0, 1234])))
-        self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 2, 1234]))).os_version, 'future')
+        self.assertRaises(AssertionError, self.make_info, fake_sys('win32', tuple([6, 1, 1234])))
+        self.assertEqual(self.make_info(fake_sys('win32', tuple([10, 1, 1234]))).os_version, 'future')
+        self.assertEqual(self.make_info(fake_sys('win32', tuple([10, 0, 1234]))).os_version, '10')
+        self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 3, 1234]))).os_version, '8.1')
+        self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 2, 1234]))).os_version, '8')
+        self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 1, 7601]))).os_version, '7sp1')
         self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 1, 7600]))).os_version, '7sp0')
         self.assertEqual(self.make_info(fake_sys('win32', tuple([6, 0, 1234]))).os_version, 'vista')
         self.assertEqual(self.make_info(fake_sys('win32', tuple([5, 1, 1234]))).os_version, 'xp')
 
-        self.assertRaises(AssertionError, self.make_info, fake_sys('win32'), executive=fake_executive('5.0.1234'))
-        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.2.1234')).os_version, 'future')
+        self.assertRaises(AssertionError, self.make_info, fake_sys('win32'),
+                          executive=fake_executive('5.0.1234'))
+        self.assertRaises(AssertionError, self.make_info, fake_sys('win32'),
+                          executive=fake_executive('6.1.1234'))
+        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('10.1.1234')).os_version, 'future')
+        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('10.0.1234')).os_version, '10')
+        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.3.1234')).os_version, '8.1')
+        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.2.1234')).os_version, '8')
+        self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7601')).os_version, '7sp1')
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.1.7600')).os_version, '7sp0')
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('6.0.1234')).os_version, 'vista')
         self.assertEqual(self.make_info(fake_sys('cygwin'), executive=fake_executive('5.1.1234')).os_version, 'xp')

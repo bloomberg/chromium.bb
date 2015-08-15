@@ -79,21 +79,49 @@ class WinPortTest(port_testcase.PortTestCase):
         self.assert_name('win-xp', 'xp', 'win-xp')
         self.assert_name('win-xp', '7sp0', 'win-xp')
 
+        self.assert_name(None, '10', 'win-win10')
+        self.assert_name('win', '10', 'win-win10')
+        self.assert_name('win-win10', '10', 'win-win10')
+        self.assert_name('win-win10', 'xp', 'win-win10')
+
+        self.assert_name(None, '8', 'win-win8')
+        self.assert_name(None, '8.1', 'win-win8')
+        self.assert_name('win', '8', 'win-win8')
+        self.assert_name('win', '8.1', 'win-win8')
+        self.assert_name('win-win8', '8', 'win-win8')
+        self.assert_name('win-win8', '8.1', 'win-win8')
+        self.assert_name('win-win8', 'vista', 'win-win8')
+
+        self.assert_name(None, '7sp1', 'win-win7')
         self.assert_name(None, '7sp0', 'win-win7')
         self.assert_name(None, 'vista', 'win-win7')
+        self.assert_name('win', '7sp1', 'win-win7')
         self.assert_name('win', '7sp0', 'win-win7')
-        self.assert_name('win-win7', 'xp', 'win-win7')
+        self.assert_name('win', 'vista', 'win-win7')
+        self.assert_name('win-win7', '7sp1', 'win-win7')
         self.assert_name('win-win7', '7sp0', 'win-win7')
         self.assert_name('win-win7', 'vista', 'win-win7')
+        self.assert_name('win-win7', 'xp', 'win-win7')
+
+        self.assert_name(None, 'future', 'win-win10')
+        self.assert_name('win', 'future', 'win-win10')
+        self.assert_name('win-win8', 'future', 'win-win8')
+        self.assert_name('win-win10', 'future', 'win-win10')
 
         self.assertRaises(AssertionError, self.assert_name, None, 'w2k', 'win-xp')
 
-    def test_baseline_path(self):
-        port = self.make_port(port_name='win-xp')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('win-xp'))
+    def assert_baseline_paths(self, port_name, *expected_paths):
+        port = self.make_port(port_name=port_name)
+        self.assertEqual(port.baseline_path(), port._webkit_baseline_path(expected_paths[0]))
+        self.assertEqual(len(port.baseline_search_path()), len(expected_paths))
+        for i, path in enumerate(expected_paths):
+            self.assertTrue(port.baseline_search_path()[i].endswith(path))
 
-        port = self.make_port(port_name='win-win7')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('win'))
+    def test_baseline_path(self):
+        self.assert_baseline_paths('win-xp', 'win-xp', '/win7', '/win8', '/win')
+        self.assert_baseline_paths('win-win7', 'win7', 'win8', '/win')
+        self.assert_baseline_paths('win-win8', 'win8', '/win')
+        self.assert_baseline_paths('win-win10', 'win')
 
     def test_build_path(self):
         # Test that optional paths are used regardless of whether they exist.

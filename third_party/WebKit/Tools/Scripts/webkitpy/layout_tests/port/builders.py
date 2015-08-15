@@ -44,6 +44,8 @@ _exact_matches = {
     "WebKit XP": {"port_name": "win-xp", "specifiers": ['XP', 'Release']},
     "WebKit Win7": {"port_name": "win-win7", "specifiers": ['Win7', 'Release']},
     "WebKit Win7 (dbg)": {"port_name": "win-win7", "specifiers": ['Win7', 'Debug']},
+    "WebKit Win8": {"port_name": "win-win8", "specifiers": ['Win8', 'Release']},
+    "WebKit Win10": {"port_name": "win-win10", "specifiers": ['Win10', 'Release']},
     # FIXME: Rename this to 'WebKit Linux Precise'
     "WebKit Linux": {"port_name": "linux-precise", "specifiers": ['Precise', 'Release']},
     "WebKit Linux Trusty": {"port_name": "linux-trusty", "specifiers": ['Trusty', 'Release']},
@@ -68,6 +70,8 @@ _deps_builders = {
     "linux-trusty": "WebKit Linux (deps)",
     "win-xp": "WebKit XP (deps)",
     "win-win7": "WebKit XP (deps)",
+    "win-win8": "WebKit XP (deps)",
+    "win-win10": "WebKit XP (deps)",
     "mac-snowleopard": "WebKit Mac10.6 (deps)",
     # The following port names are mapped to 10.6 bot since we don't have bots
     # for these ports.

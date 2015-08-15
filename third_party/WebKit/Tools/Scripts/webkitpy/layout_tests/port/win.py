@@ -50,10 +50,11 @@ _log = logging.getLogger(__name__)
 class WinPort(base.Port):
     port_name = 'win'
 
-    # FIXME: Figure out how to unify this with base.TestConfiguration.all_systems()?
-    SUPPORTED_VERSIONS = ('xp', 'win7')
+    SUPPORTED_VERSIONS = ('xp', 'win7', 'win8', 'win10')
 
-    FALLBACK_PATHS = { 'win7': [ 'win' ]}
+    FALLBACK_PATHS = {'win10': ['win']}
+    FALLBACK_PATHS['win8'] = ['win8'] + FALLBACK_PATHS['win10']
+    FALLBACK_PATHS['win7'] = ['win7'] + FALLBACK_PATHS['win8']
     FALLBACK_PATHS['xp'] = ['win-xp'] + FALLBACK_PATHS['win7']
 
     DEFAULT_BUILD_DIRECTORIES = ('build', 'out')
@@ -65,8 +66,12 @@ class WinPort(base.Port):
         if port_name.endswith('win'):
             assert host.platform.is_win()
             # We don't maintain separate baselines for vista, so we pretend it is win7.
-            if host.platform.os_version in ('vista', '7sp0', '7sp1', 'future'):
+            if host.platform.os_version in ('vista', '7sp0', '7sp1'):
                 version = 'win7'
+            elif host.platform.os_version in ('8', '8.1'):
+                version = 'win8'
+            elif host.platform.os_version in ('10', 'future'):
+                version = 'win10'
             else:
                 version = host.platform.os_version
             port_name = port_name + '-' + version

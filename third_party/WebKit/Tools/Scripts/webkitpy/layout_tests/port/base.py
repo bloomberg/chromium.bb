@@ -105,6 +105,8 @@ class Port(object):
         ('yosemite', 'x86'),
         ('xp', 'x86'),
         ('win7', 'x86'),
+        ('win8', 'x86'),
+        ('win10', 'x86'),
         # FIXME: We handle 32bit Linux similarly to Mac retina above treating it
         # as a different system for now.
         ('linux32', 'x86'),
@@ -117,13 +119,13 @@ class Port(object):
 
     ALL_BASELINE_VARIANTS = [
         'mac-yosemite', 'mac-mavericks', 'mac-retina', 'mac-mountainlion', 'mac-lion', 'mac-snowleopard',
-        'win-win7', 'win-xp',
+        'win-win10', 'win-win8', 'win-win7', 'win-xp'
         'linux-trusty', 'linux-precise', 'linux-x86',
     ]
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['snowleopard', 'lion', 'mountainlion', 'retina', 'mavericks', 'yosemite'],
-        'win': ['xp', 'win7'],
+        'win': ['xp', 'win7', 'win8', 'win10'],
         'linux': ['linux32', 'precise', 'trusty'],
         'android': ['icecreamsandwich'],
     }

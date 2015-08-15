@@ -73,6 +73,9 @@ class FactoryTest(unittest.TestCase):
 
     def test_win(self):
         self.assert_port(port_name='win-xp', cls=win.WinPort)
+        self.assert_port(port_name='win-win7', cls=win.WinPort)
+        self.assert_port(port_name='win-win8', cls=win.WinPort)
+        self.assert_port(port_name='win-win10', cls=win.WinPort)
         self.assert_port(port_name='win', os_name='win', os_version='xp',
                          cls=win.WinPort)
         self.assert_port(port_name='chromium', os_name='win', os_version='xp',

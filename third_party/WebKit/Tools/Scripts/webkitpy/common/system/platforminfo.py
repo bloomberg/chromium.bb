@@ -164,13 +164,23 @@ class PlatformInfo(object):
         return 'trusty' if version not in officially_supported_versions else version
 
     def _determine_win_version(self, win_version_tuple):
+        if win_version_tuple[:2] == (10, 0):
+            return '10'
+        if win_version_tuple[:2] == (6, 3):
+            return '8.1'
+        if win_version_tuple[:2] == (6, 2):
+            return '8'
+        if win_version_tuple[:3] == (6, 1, 7601):
+            return '7sp1'
         if win_version_tuple[:3] == (6, 1, 7600):
             return '7sp0'
         if win_version_tuple[:2] == (6, 0):
             return 'vista'
         if win_version_tuple[:2] == (5, 1):
             return 'xp'
-        assert win_version_tuple[0] > 6 or win_version_tuple[1] >= 1, 'Unrecognized Windows version tuple: "%s"' % (win_version_tuple,)
+        assert (win_version_tuple[0] > 10 or
+                win_version_tuple[0] == 10 and win_version_tuple[1] > 0), (
+            'Unrecognized Windows version tuple: "%s"' % (win_version_tuple,))
         return 'future'
 
     def _win_version_tuple(self, sys_module):
