@@ -177,7 +177,7 @@ nouveau_device_del(struct nouveau_device **pdev)
 int
 nouveau_getparam(struct nouveau_device *dev, uint64_t param, uint64_t *value)
 {
-	struct drm_nouveau_getparam r = { param, 0 };
+	struct drm_nouveau_getparam r = { .param = param };
 	int fd = dev->fd, ret =
 		drmCommandWriteRead(fd, DRM_NOUVEAU_GETPARAM, &r, sizeof(r));
 	*value = r.value;
@@ -187,7 +187,7 @@ nouveau_getparam(struct nouveau_device *dev, uint64_t param, uint64_t *value)
 int
 nouveau_setparam(struct nouveau_device *dev, uint64_t param, uint64_t value)
 {
-	struct drm_nouveau_setparam r = { param, value };
+	struct drm_nouveau_setparam r = { .param = param, .value = value };
 	return drmCommandWrite(dev->fd, DRM_NOUVEAU_SETPARAM, &r, sizeof(r));
 }
 
@@ -348,7 +348,7 @@ nouveau_bo_del(struct nouveau_bo *bo)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	struct drm_gem_close req = { bo->handle };
+	struct drm_gem_close req = { .handle = bo->handle };
 
 	if (nvbo->head.next) {
 		pthread_mutex_lock(&nvdev->lock);

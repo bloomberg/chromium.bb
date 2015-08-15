@@ -38,7 +38,10 @@ abi16_chan_nv04(struct nouveau_object *obj)
 {
 	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
 	struct nv04_fifo *nv04 = obj->data;
-	struct drm_nouveau_channel_alloc req = {nv04->vram, nv04->gart};
+	struct drm_nouveau_channel_alloc req = {
+		.fb_ctxdma_handle = nv04->vram,
+		.tt_ctxdma_handle = nv04->gart
+	};
 	int ret;
 
 	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
@@ -105,7 +108,9 @@ drm_private int
 abi16_engobj(struct nouveau_object *obj)
 {
 	struct drm_nouveau_grobj_alloc req = {
-		obj->parent->handle, obj->handle, obj->oclass
+		.channel = obj->parent->handle,
+		.handle = obj->handle,
+		.class = obj->oclass,
 	};
 	struct nouveau_device *dev;
 	int ret;
@@ -125,7 +130,9 @@ abi16_ntfy(struct nouveau_object *obj)
 {
 	struct nv04_notify *ntfy = obj->data;
 	struct drm_nouveau_notifierobj_alloc req = {
-		obj->parent->handle, ntfy->object->handle, ntfy->length
+		.channel = obj->parent->handle,
+		.handle = ntfy->object->handle,
+		.size = ntfy->length,
 	};
 	struct nouveau_device *dev;
 	int ret;
