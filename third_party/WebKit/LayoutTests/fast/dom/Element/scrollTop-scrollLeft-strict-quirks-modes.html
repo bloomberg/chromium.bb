@@ -7,9 +7,6 @@
   var iframeStrict;
   var iframeQuirks;
 
-  shouldBe("document.scrollingElement", "document.body");
-  if (window.internals)
-      internals.settings.setScrollTopLeftInteropEnabled(true);
   shouldBe("document.scrollingElement", "document.documentElement");
 
   function verifyTest() {

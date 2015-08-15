@@ -10,8 +10,6 @@
 <script>
     description("Verify that document.scrollingElement doesn't force a style update or layout in strict mode");
     setPrintTestResultsLazily();
-    if (window.internals)
-        internals.settings.setScrollTopLeftInteropEnabled(true);
 
     document.body.offsetTop;
     shouldBe("internals.needsLayoutCount()", "0");

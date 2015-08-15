@@ -1,4 +1,4 @@
-Test that calling scroll methods on the body element does not scroll the viewport in standards mode. Currently expected to fail: crbug.com/157855
+Test that calling scroll methods on the body element does not scroll the viewport in standards mode.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -7,38 +7,38 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Test that "scroll" on the body element does not scroll
-FAIL document.body.scrollTop should be 0. Was 100.
-FAIL document.body.scrollLeft should be 0. Was 100.
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 0
 PASS document.documentElement.scrollTop is 0
 PASS document.documentElement.scrollLeft is 0
 
 Test that "scrollTo" on the body element does not scroll
-FAIL document.body.scrollTop should be 0. Was 100.
-FAIL document.body.scrollLeft should be 0. Was 100.
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 0
 PASS document.documentElement.scrollTop is 0
 PASS document.documentElement.scrollLeft is 0
 
 Test that "scrollBy" on the body element does not scroll
-FAIL document.body.scrollTop should be 0. Was 200.
-FAIL document.body.scrollLeft should be 0. Was 200.
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 0
 PASS document.documentElement.scrollTop is 0
 PASS document.documentElement.scrollLeft is 0
 
 Test that "scroll" on the document element scrolls
-FAIL document.body.scrollTop should be 0. Was 200.
-FAIL document.body.scrollLeft should be 0. Was 200.
-FAIL document.documentElement.scrollTop should be 100. Was 0.
-FAIL document.documentElement.scrollLeft should be 50. Was 0.
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 0
+PASS document.documentElement.scrollTop is 100
+PASS document.documentElement.scrollLeft is 50
 
 Test that "scrollTo" on the document element scrolls
-FAIL document.body.scrollTop should be 0. Was 200.
-FAIL document.body.scrollLeft should be 0. Was 200.
-FAIL document.documentElement.scrollTop should be 200. Was 0.
-FAIL document.documentElement.scrollLeft should be 450. Was 0.
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 0
+PASS document.documentElement.scrollTop is 200
+PASS document.documentElement.scrollLeft is 450
 
 Test that "scrollBy" on the document element scrolls
-FAIL document.body.scrollTop should be 0. Was 200.
-FAIL document.body.scrollLeft should be 0. Was 200.
-FAIL document.documentElement.scrollTop should be 300. Was 0.
-FAIL document.documentElement.scrollLeft should be 750. Was 0.
+PASS document.body.scrollTop is 0
+PASS document.body.scrollLeft is 0
+PASS document.documentElement.scrollTop is 300
+PASS document.documentElement.scrollLeft is 750
 

@@ -11,9 +11,7 @@
   <script src="../../resources/js-test.js"></script>
   <script>
     onload = function() {
-      description('Test that calling scroll methods on the body element does not scroll the viewport in standards mode.  Currently expected to fail: crbug.com/157855');
-      
-
+      description('Test that calling scroll methods on the body element does not scroll the viewport in standards mode.');
       debug('Test that "scroll" on the body element does not scroll');
       document.body.scroll(100, 100);
       shouldBe("document.body.scrollTop", "0");

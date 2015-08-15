@@ -6,9 +6,6 @@
   description("Verifies that asking for the scrollingElement of a document with null body or null documentElement doesn't crash");
   var jsTestIsAsync = true;
 
-  if (window.internals)
-        internals.settings.setScrollTopLeftInteropEnabled(true);
-
   function runtests()
   {
     // Verify scrollTopLeftInterop is actually enabled.

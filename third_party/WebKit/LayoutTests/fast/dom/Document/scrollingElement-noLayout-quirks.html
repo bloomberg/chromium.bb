@@ -18,8 +18,6 @@
 <script>
     description('Verify that document.scrollingElement updates style in quirks mode without triggering layout');
     setPrintTestResultsLazily();
-    if (window.internals)
-        internals.settings.setScrollTopLeftInteropEnabled(true);
 
     document.body.offsetTop;
     shouldBe("internals.needsLayoutCount()", "0");
