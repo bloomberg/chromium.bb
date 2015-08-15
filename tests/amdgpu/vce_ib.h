@@ -24,7 +24,7 @@
 #ifndef _vce_ib_h_
 #define _vce_ib_h_
 
-static uint32_t vce_session[3] = {
+static const uint32_t vce_session[] = {
 	0x0000000c,
 	0x00000001,
 	0x400c0001,
@@ -41,7 +41,7 @@ static uint32_t vce_taskinfo[8] = {
 	0x00000000,
 };
 
-static uint32_t vce_create[12] = {
+static const uint32_t vce_create[] = {
 	0x00000030,
 	0x01000001,
 	0x00000000,
@@ -56,7 +56,7 @@ static uint32_t vce_create[12] = {
 	0x00000000,
 };
 
-static uint32_t vce_rate_ctrl[28] = {
+static const uint32_t vce_rate_ctrl[] = {
 	0x00000070,
 	0x04000005,
 	0x00000000,
@@ -87,13 +87,13 @@ static uint32_t vce_rate_ctrl[28] = {
 	0x00000000,
 };
 
-static uint32_t vce_config_ext[3] = {
+static const uint32_t vce_config_ext[] = {
 	0x0000000c,
 	0x04000001,
 	0x00000003,
 };
 
-static uint32_t vce_motion_est[26] = {
+static const uint32_t vce_motion_est[] = {
 	0x00000068,
 	0x04000007,
 	0x00000001,
@@ -122,7 +122,7 @@ static uint32_t vce_motion_est[26] = {
 	0x00000000,
 };
 
-static uint32_t vce_rdo[19] = {
+static const uint32_t vce_rdo[] = {
 	0x0000004c,
 	0x04000008,
 	0x00000000,
@@ -144,7 +144,7 @@ static uint32_t vce_rdo[19] = {
 	0x00000000,
 };
 
-static uint32_t vce_pic_ctrl[29] = {
+static const uint32_t vce_pic_ctrl[] = {
 	0x00000074,
 	0x04000002,
 	0x00000000,
@@ -176,7 +176,7 @@ static uint32_t vce_pic_ctrl[29] = {
 	0x00000000,
 };
 
-static uint32_t vce_feedback[5] = {
+static const uint32_t vce_feedback[] = {
 	0x00000014,
 	0x05000005,
 	0x00000000,
@@ -184,14 +184,14 @@ static uint32_t vce_feedback[5] = {
 	0x00000001,
 };
 
-static uint32_t vce_context_buffer[4] = {
+static const uint32_t vce_context_buffer[] = {
 	0x00000010,
 	0x05000001,
 	0x00000000,
 	0xffffffff,
 };
 
-static uint32_t vce_bs_buffer[5] = {
+static const uint32_t vce_bs_buffer[] = {
 	0x00000014,
 	0x05000004,
 	0x00000000,
@@ -199,7 +199,7 @@ static uint32_t vce_bs_buffer[5] = {
 	0x00154000,
 };
 
-static uint32_t vce_aux_buffer[18] = {
+static const uint32_t vce_aux_buffer[] = {
 	0x00000048,
 	0x05000002,
 	0x0000f000,
@@ -311,7 +311,7 @@ static uint32_t vce_encode[88] = {
 	0x00000000,
 };
 
-static uint32_t vce_destroy[2] = {
+static const uint32_t vce_destroy[] = {
 	0x00000008,
 	0x02000001,
 };
