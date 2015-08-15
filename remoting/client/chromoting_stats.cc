@@ -85,6 +85,25 @@ void ChromotingStats::RecordVideoPacketStats(const VideoPacket& packet) {
   // Record this received packet, even if it is empty.
   video_packet_rate_.Record(1);
 
+  // Record the RTT, even for empty packets, otherwise input events that
+  // do not cause an on-screen change can give very large, bogus RTTs.
+  if (packet.has_latest_event_timestamp() &&
+      packet.latest_event_timestamp() > latest_input_event_timestamp_) {
+    latest_input_event_timestamp_ = packet.latest_event_timestamp();
+
+    base::TimeDelta round_trip_latency =
+        base::Time::Now() -
+        base::Time::FromInternalValue(packet.latest_event_timestamp());
+
+    round_trip_ms_.Record(round_trip_latency.InMilliseconds());
+
+    if (!uma_custom_times_updater_.is_null())
+      uma_custom_times_updater_.Run(
+          kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
+          kLatencyHistogramMinMs, kLatencyHistogramMaxMs,
+          kLatencyHistogramBuckets);
+  }
+
   // If the packet is empty, there are no other stats to update.
   if (!packet.data().size())
     return;
@@ -108,26 +127,6 @@ void ChromotingStats::RecordVideoPacketStats(const VideoPacket& packet) {
           kVideoEncodeLatencyHistogram, packet.encode_time_ms(),
           kVideoActionsHistogramsMinMs, kVideoActionsHistogramsMaxMs,
           kVideoActionsHistogramsBuckets);
-  }
-
-  if (packet.has_latest_event_timestamp() &&
-      packet.latest_event_timestamp() > latest_input_event_timestamp_) {
-    // If the timestamp in this video packet has changed from the one we stored
-    // for the previous input event, then it is the first video packet following
-    // that event. We'll use that timestamp to record round-trip latency.
-    latest_input_event_timestamp_ = packet.latest_event_timestamp();
-
-    base::TimeDelta round_trip_latency =
-        base::Time::Now() -
-        base::Time::FromInternalValue(packet.latest_event_timestamp());
-
-    round_trip_ms_.Record(round_trip_latency.InMilliseconds());
-
-    if (!uma_custom_times_updater_.is_null())
-      uma_custom_times_updater_.Run(
-          kRoundTripLatencyHistogram, round_trip_latency.InMilliseconds(),
-          kLatencyHistogramMinMs, kLatencyHistogramMaxMs,
-          kLatencyHistogramBuckets);
   }
 }
 
