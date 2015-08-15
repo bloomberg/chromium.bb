@@ -57,10 +57,10 @@
         <include name="IDR_LIST_PICKER_CSS" file="../Source/web/resources/listPicker.css" type="BINDATA"/>
         <include name="IDR_LIST_PICKER_JS" file="../Source/web/resources/listPicker.js" type="BINDATA"/>
       </if>
-      <if expr="pp_ifdef('use_concatenated_impulse_responses')">
+      <if expr="use_concatenated_impulse_responses">
         <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.wav" type="BINDATA"/>
       </if>
-      <if expr="not pp_ifdef('use_concatenated_impulse_responses')">
+      <if expr="not use_concatenated_impulse_responses">
         <include name="IDR_AUDIO_SPATIALIZATION_T000_P000" file="..\Source\platform\audio\resources\IRC_Composite_C_R0195_T000_P000.wav" type="BINDATA"/>
         <include name="IDR_AUDIO_SPATIALIZATION_T000_P015" file="..\Source\platform\audio\resources\IRC_Composite_C_R0195_T000_P015.wav" type="BINDATA"/>
         <include name="IDR_AUDIO_SPATIALIZATION_T000_P030" file="..\Source\platform\audio\resources\IRC_Composite_C_R0195_T000_P030.wav" type="BINDATA"/>
