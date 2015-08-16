@@ -49,7 +49,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     decorate: function() {
       var webview = document.createElement('webview');
       webview.id = webview.name = 'oauth-enroll-auth-view';
-      webview.classList.toggle('oauth-enroll-focus-on-signin', true);
       $('oauth-enroll-auth-view-container').appendChild(webview);
       this.authenticator_ = new cr.login.Authenticator(webview);
 
@@ -238,13 +237,16 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.classList.toggle('oauth-enroll-state-' + this.currentStep_, false);
       this.classList.toggle('oauth-enroll-state-' + step, true);
 
-      var focusElements =
-          this.querySelectorAll('.oauth-enroll-focus-on-' + step);
-      for (var i = 0; i < focusElements.length; ++i) {
-        if (getComputedStyle(focusElements[i])['display'] != 'none') {
-          focusElements[i].focus();
-          break;
-        }
+      if (step == STEP_SIGNIN) {
+        $('oauth-enroll-auth-view').focus();
+      } else if (step == STEP_ERROR) {
+        $('oauth-enroll-error-card').submitButton.focus();
+      } else if (step == STEP_SUCCESS) {
+        $('oauth-enroll-success-card').submitButton.focus();
+      } else if (step == STEP_ATTRIBUTE_PROMPT) {
+        $('oauth-enroll-asset-id').focus();
+      } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
+        $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
       }
       this.currentStep_ = step;
     },
