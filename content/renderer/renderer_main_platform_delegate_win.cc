@@ -109,6 +109,13 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
     ::GetUserDefaultLangID();
     ::GetUserDefaultLCID();
 
+#if defined(ADDRESS_SANITIZER)
+    // Bind and leak dbghelp.dll before the token is lowered, otherwise
+    // AddressSanitizer will crash when trying to symbolize a report.
+    if (!LoadLibraryA("dbghelp.dll"))
+      return false;
+#endif
+
     target_services->LowerToken();
     return true;
   }

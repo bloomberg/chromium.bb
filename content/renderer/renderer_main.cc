@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
+#include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -183,8 +184,17 @@ int RendererMain(const MainFunctionParams& parameters) {
                              renderer_scheduler.Pass());
 #endif
     bool run_loop = true;
-    if (!no_sandbox)
+    if (!no_sandbox) {
       run_loop = platform.EnableSandbox();
+    } else {
+      LOG(ERROR) << "Running without renderer sandbox";
+#if !defined(NDEBUG) || (defined(CFI_ENFORCEMENT) && !defined(OFFICIAL_BUILD))
+      // For convenience, we print the stack traces for crashes.  When sandbox
+      // is enabled, the in-process stack dumping is enabled as part of the
+      // EnableSandbox() call.
+      base::debug::EnableInProcessStackDumping();
+#endif
+    }
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     RenderProcessImpl render_process;
     RenderThreadImpl::Create(main_message_loop.Pass(),

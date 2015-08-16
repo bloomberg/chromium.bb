@@ -512,7 +512,7 @@ class SandboxSymbolizeHelper {
   int GetFileDescriptor(const char* file_path) {
     int fd = -1;
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG)
     if (file_path) {
       // The assumption here is that iterating over std::map<std::string, int>
       // using a const_iterator does not allocate dynamic memory, hense it is
@@ -533,7 +533,7 @@ class SandboxSymbolizeHelper {
         fd = -1;
       }
     }
-#endif  // !defined(OFFICIAL_BUILD)
+#endif  // !defined(NDEBUG)
 
     return fd;
   }
@@ -619,9 +619,11 @@ class SandboxSymbolizeHelper {
   // Opens all object files and caches their file descriptors.
   void OpenSymbolFiles() {
     // Pre-opening and caching the file descriptors of all loaded modules is
-    // not safe for production builds.  Hence it is only done in non-official
-    // builds.  For more details, take a look at: http://crbug.com/341966.
-#if !defined(OFFICIAL_BUILD)
+    // not considered safe for retail builds.  Hence it is only done in debug
+    // builds.  For more details, take a look at: http://crbug.com/341966
+    // Enabling this to release mode would require approval from the security
+    // team.
+#if !defined(NDEBUG)
     // Open the object files for all read-only executable regions and cache
     // their file descriptors.
     std::vector<MappedMemoryRegion>::const_iterator it;
@@ -653,7 +655,7 @@ class SandboxSymbolizeHelper {
         }
       }
     }
-#endif  // !defined(OFFICIAL_BUILD)
+#endif  // !defined(NDEBUG)
   }
 
   // Initializes and installs the symbolization callback.
@@ -675,7 +677,7 @@ class SandboxSymbolizeHelper {
 
   // Closes all file descriptors owned by this instance.
   void CloseObjectFiles() {
-#if !defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG)
     std::map<std::string, int>::iterator it;
     for (it = modules_.begin(); it != modules_.end(); ++it) {
       int ret = IGNORE_EINTR(close(it->second));
@@ -683,18 +685,19 @@ class SandboxSymbolizeHelper {
       it->second = -1;
     }
     modules_.clear();
-#endif  // !defined(OFFICIAL_BUILD)
+#endif  // !defined(NDEBUG)
   }
 
   // Set to true upon successful initialization.
   bool is_initialized_;
 
-#if !defined(OFFICIAL_BUILD)
+#if !defined(NDEBUG)
   // Mapping from file name to file descriptor.  Includes file descriptors
   // for all successfully opened object files and the file descriptor for
-  // /proc/self/maps.  This code is not safe for production builds.
+  // /proc/self/maps.  This code is not safe for release builds so
+  // this is only done for DEBUG builds.
   std::map<std::string, int> modules_;
-#endif  // !defined(OFFICIAL_BUILD)
+#endif  // !defined(NDEBUG)
 
   // Cache for the process memory regions.  Produced by parsing the contents
   // of /proc/self/maps cache.
