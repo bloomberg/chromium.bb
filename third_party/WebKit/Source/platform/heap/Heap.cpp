@@ -1934,15 +1934,11 @@ void Heap::init()
     s_allocatedObjectSize = 0;
     s_objectSizeAtLastGC = 0;
     s_markedObjectSize = 0;
+    s_markedObjectSizeAtLastCompleteSweep = 0;
     s_persistentCount = 0;
     s_persistentCountAtLastGC = 0;
     s_collectedPersistentCount = 0;
     s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
-    // Initially, the total heap size is very small. Thus we'll hit the GC
-    // condition (i.e., 50% increase on the heap size etc) even if we don't
-    // take into account the memory usage explained by the collected persistent
-    // handles. So it is OK to set a large initial value.
-    s_heapSizePerPersistent = 1024 * 1024;
     s_estimatedMarkingTimePerByte = 0.0;
 
     GCInfoTable::init();
@@ -2409,12 +2405,12 @@ void Heap::reportMemoryUsageForTracing()
     // They are capped to INT_MAX just in case.
     TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeAtLastCompleteSweepKB", std::min(Heap::markedObjectSizeAtLastCompleteSweep() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::allocatedSpaceKB", std::min(Heap::allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::objectSizeAtLastGCKB", std::min(Heap::objectSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::persistentCount", std::min(Heap::persistentCount(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::persistentCountAtLastGC", std::min(Heap::persistentCountAtLastGC(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::collectedPersistentCount", std::min(Heap::collectedPersistentCount(), static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Heap::heapSizePerPersistent", std::min(Heap::heapSizePerPersistent(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Heap::partitionAllocSizeAtLastGCKB", std::min(Heap::partitionAllocSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
 }
@@ -2532,9 +2528,9 @@ void Heap::resetHeapCounters()
     Heap::reportMemoryUsageForTracing();
 
     s_objectSizeAtLastGC = s_allocatedObjectSize + s_markedObjectSize;
+    s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_allocatedObjectSize = 0;
     s_markedObjectSize = 0;
-    s_partitionAllocSizeAtLastGC = WTF::Partitions::totalSizeOfCommittedPages();
     s_persistentCountAtLastGC = s_persistentCount;
     s_collectedPersistentCount = 0;
 }
@@ -2552,11 +2548,11 @@ size_t Heap::s_allocatedSpace = 0;
 size_t Heap::s_allocatedObjectSize = 0;
 size_t Heap::s_objectSizeAtLastGC = 0;
 size_t Heap::s_markedObjectSize = 0;
+size_t Heap::s_markedObjectSizeAtLastCompleteSweep = 0;
 size_t Heap::s_persistentCount = 0;
 size_t Heap::s_persistentCountAtLastGC = 0;
 size_t Heap::s_collectedPersistentCount = 0;
 size_t Heap::s_partitionAllocSizeAtLastGC = 0;
-size_t Heap::s_heapSizePerPersistent = 0;
 double Heap::s_estimatedMarkingTimePerByte = 0.0;
 
 } // namespace blink

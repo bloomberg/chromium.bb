@@ -1019,6 +1019,8 @@ public:
         return info;
     }
 
+    static void setMarkedObjectSizeAtLastCompleteSweep(size_t size) { releaseStore(&s_markedObjectSizeAtLastCompleteSweep, size); }
+    static size_t markedObjectSizeAtLastCompleteSweep() { return acquireLoad(&s_markedObjectSizeAtLastCompleteSweep); }
     static void increaseAllocatedObjectSize(size_t delta) { atomicAdd(&s_allocatedObjectSize, static_cast<long>(delta)); }
     static void decreaseAllocatedObjectSize(size_t delta) { atomicSubtract(&s_allocatedObjectSize, static_cast<long>(delta)); }
     static size_t allocatedObjectSize() { return acquireLoad(&s_allocatedObjectSize); }
@@ -1035,8 +1037,6 @@ public:
     static void increaseCollectedPersistentCount(size_t delta) { atomicAdd(&s_collectedPersistentCount, static_cast<long>(delta)); }
     static size_t collectedPersistentCount() { return acquireLoad(&s_collectedPersistentCount); }
     static size_t partitionAllocSizeAtLastGC() { return acquireLoad(&s_partitionAllocSizeAtLastGC); }
-    static size_t heapSizePerPersistent() { return acquireLoad(&s_heapSizePerPersistent); }
-    static void setHeapSizePerPersistent(size_t size) { releaseStore(&s_heapSizePerPersistent, size); }
 
     static double estimatedMarkingTime();
     static void reportMemoryUsageHistogram();
@@ -1081,11 +1081,11 @@ private:
     static size_t s_allocatedObjectSize;
     static size_t s_objectSizeAtLastGC;
     static size_t s_markedObjectSize;
+    static size_t s_markedObjectSizeAtLastCompleteSweep;
     static size_t s_persistentCount;
     static size_t s_persistentCountAtLastGC;
     static size_t s_collectedPersistentCount;
     static size_t s_partitionAllocSizeAtLastGC;
-    static size_t s_heapSizePerPersistent;
     static double s_estimatedMarkingTimePerByte;
 
     friend class ThreadState;

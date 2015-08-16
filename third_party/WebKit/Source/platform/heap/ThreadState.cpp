@@ -576,6 +576,11 @@ size_t ThreadState::currentObjectSize()
 
 size_t ThreadState::estimatedLiveObjectSize()
 {
+    if (Heap::persistentCountAtLastGC() == 0) {
+        // We'll reach here only before hitting the first GC.
+        return 0;
+    }
+
     // We estimate the live object size with the following equations.
     //
     //   heapSizePerPersistent = (marked(t0, t1) + partitionAlloc(t0)) / persistentCount(t0)
@@ -591,19 +596,20 @@ size_t ThreadState::estimatedLiveObjectSize()
     //                     The number of persistent handles collected between
     //                     t0 and t.
     // partitionAlloc(t):  The size of allocated memory in PartitionAlloc at t.
+    size_t heapSizeRetainedByCollectedPersistents = static_cast<size_t>(1.0 * (Heap::markedObjectSizeAtLastCompleteSweep() + Heap::partitionAllocSizeAtLastGC()) / Heap::persistentCountAtLastGC() * Heap::collectedPersistentCount());
     size_t currentHeapSize = currentObjectSize();
-    size_t heapSizeRetainedByCollectedPersistents = Heap::heapSizePerPersistent() * Heap::collectedPersistentCount();
-    size_t estimatedSize = 0;
-    if (currentHeapSize > heapSizeRetainedByCollectedPersistents)
-        estimatedSize = currentHeapSize - heapSizeRetainedByCollectedPersistents;
-    return estimatedSize;
+    if (currentHeapSize < heapSizeRetainedByCollectedPersistents)
+        return 0;
+    return currentHeapSize - heapSizeRetainedByCollectedPersistents;
 }
 
 double ThreadState::heapGrowingRate()
 {
     size_t currentSize = currentObjectSize();
     size_t estimatedSize = estimatedLiveObjectSize();
-    double growingRate = 1.0 * currentSize / estimatedSize;
+    // If the estimatedSize is 0, we set a very high growing rate
+    // to trigger a GC.
+    double growingRate = estimatedSize > 0 ? 1.0 * currentSize / estimatedSize : 100;
     TRACE_COUNTER1("blink_gc", "ThreadState::currentHeapSizeKB", std::min(currentSize / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "ThreadState::estimatedLiveObjectSizeKB", std::min(estimatedSize / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1("blink_gc", "ThreadState::heapGrowingRate", static_cast<int>(100 * growingRate));
@@ -655,17 +661,11 @@ bool ThreadState::shouldSchedulePreciseGC()
 
 bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
 {
-    if (isGCForbidden())
-        return false;
-
     return judgeGCThreshold(1024 * 1024, 1.5);
 }
 
 bool ThreadState::shouldForceConservativeGC()
 {
-    if (isGCForbidden())
-        return false;
-
     // TODO(haraken): 400% is too large. Lower the heap growing factor.
     return judgeGCThreshold(32 * 1024 * 1024, 5.0);
 }
@@ -673,6 +673,9 @@ bool ThreadState::shouldForceConservativeGC()
 void ThreadState::schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio)
 {
     ASSERT(checkThread());
+    if (isGCForbidden())
+        return;
+
     // Finish on-going lazy sweeping.
     // TODO(haraken): It might not make sense to force completeSweep() for all
     // page navigations.
@@ -695,6 +698,9 @@ void ThreadState::schedulePageNavigationGC()
 void ThreadState::scheduleGCIfNeeded()
 {
     ASSERT(checkThread());
+    if (isGCForbidden())
+        return;
+
     // Allocation is allowed during sweeping, but those allocations should not
     // trigger nested GCs.
     if (isSweepingInProgress())
@@ -1146,14 +1152,9 @@ void ThreadState::postSweep()
             collectionRate = 1 - 1.0 * Heap::markedObjectSize() / Heap::objectSizeAtLastGC();
         TRACE_COUNTER1("blink_gc", "ThreadState::collectionRate", static_cast<int>(100 * collectionRate));
 
-        // See the comment in estimatedLiveObjectSize() for what we're
-        // calculating here.
-        //
         // Heap::markedObjectSize() may be underestimated here if any other
         // thread has not yet finished lazy sweeping.
-        if (Heap::persistentCountAtLastGC() > 0) {
-            Heap::setHeapSizePerPersistent((Heap::markedObjectSize() + Heap::partitionAllocSizeAtLastGC()) / Heap::persistentCountAtLastGC());
-        }
+        Heap::setMarkedObjectSizeAtLastCompleteSweep(Heap::markedObjectSize());
     }
 
     switch (gcState()) {
