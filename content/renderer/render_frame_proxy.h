@@ -19,6 +19,7 @@ struct FrameMsg_CompositorFrameSwapped_Params;
 
 namespace blink {
 class WebInputEvent;
+struct WebRect;
 }
 
 namespace cc {
@@ -129,6 +130,7 @@ class CONTENT_EXPORT RenderFrameProxy
   virtual void navigate(const blink::WebURLRequest& request,
                         bool should_replace_current_entry);
   virtual void forwardInputEvent(const blink::WebInputEvent* event);
+  virtual void frameRectsChanged(const blink::WebRect& frame_rect);
 
   // IPC handlers
   void OnDidStartLoading();

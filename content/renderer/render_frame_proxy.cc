@@ -414,4 +414,8 @@ void RenderFrameProxy::forwardInputEvent(const blink::WebInputEvent* event) {
   Send(new FrameHostMsg_ForwardInputEvent(routing_id_, event));
 }
 
+void RenderFrameProxy::frameRectsChanged(const blink::WebRect& frame_rect) {
+  Send(new FrameHostMsg_FrameRectChanged(routing_id_, frame_rect));
+}
+
 }  // namespace

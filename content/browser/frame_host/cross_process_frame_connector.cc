@@ -41,6 +41,7 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ReclaimCompositorResources,
                         OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_InitializeChildFrame,
                         OnInitializeChildFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SatisfySequence, OnSatisfySequence)
@@ -196,6 +197,12 @@ void CrossProcessFrameConnector::OnForwardInputEvent(
         *static_cast<const blink::WebMouseWheelEvent*>(event));
     return;
   }
+}
+
+void CrossProcessFrameConnector::OnFrameRectChanged(
+    const gfx::Rect& frame_rect) {
+  if (!frame_rect.size().IsEmpty())
+    SetSize(frame_rect);
 }
 
 void CrossProcessFrameConnector::SetDeviceScaleFactor(float scale_factor) {

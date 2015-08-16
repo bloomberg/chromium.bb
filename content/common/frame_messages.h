@@ -904,6 +904,10 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ReclaimCompositorResources,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
                     IPC::WebInputEventPointer /* event */)
 
+// Tells the parent that a child's frame rect has changed (or the rect/scroll
+// position of a child's ancestor has changed).
+IPC_MESSAGE_ROUTED1(FrameHostMsg_FrameRectChanged, gfx::Rect /* frame_rect */)
+
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params
 // object contains information about the node(s) that were selected when the
