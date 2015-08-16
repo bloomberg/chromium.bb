@@ -121,7 +121,7 @@ DEFINE_TRACE(InspectorDOMDebuggerAgent)
 
 void InspectorDOMDebuggerAgent::disable(ErrorString*)
 {
-    m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
+    setEnabled(false);
     m_domBreakpoints.clear();
     m_state->remove(DOMDebuggerAgentState::eventListenerBreakpoints);
     m_state->remove(DOMDebuggerAgentState::xhrBreakpoints);
@@ -634,8 +634,7 @@ void InspectorDOMDebuggerAgent::didAddBreakpoint()
 {
     if (m_state->getBoolean(DOMDebuggerAgentState::enabled))
         return;
-    m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
-    m_state->setBoolean(DOMDebuggerAgentState::enabled, true);
+    setEnabled(true);
 }
 
 static bool isEmpty(PassRefPtr<JSONObject> object)
@@ -653,8 +652,18 @@ void InspectorDOMDebuggerAgent::didRemoveBreakpoint()
         return;
     if (m_state->getBoolean(DOMDebuggerAgentState::pauseOnAllXHRs))
         return;
-    m_state->remove(DOMDebuggerAgentState::enabled);
-    m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
+    setEnabled(false);
+}
+
+void InspectorDOMDebuggerAgent::setEnabled(bool enabled)
+{
+    if (enabled) {
+        m_instrumentingAgents->setInspectorDOMDebuggerAgent(this);
+        m_state->setBoolean(DOMDebuggerAgentState::enabled, true);
+    } else {
+        m_state->remove(DOMDebuggerAgentState::enabled);
+        m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
+    }
 }
 
 } // namespace blink

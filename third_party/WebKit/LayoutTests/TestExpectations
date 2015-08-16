@@ -42,13 +42,6 @@ crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failu
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ ImageOnlyFailure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
-crbug.com/520735 [ Linux Win ] inspector-protocol/debugger/domdebugger-setInnerHTML.html [ Pass Timeout ]
-crbug.com/520735 inspector/sources/debugger-breakpoints/event-listener-breakpoints-after-suspension.html [ Pass Timeout ]
-crbug.com/520735 inspector/sources/debugger-breakpoints/event-listener-breakpoints-script-first-stmt.html [ Pass Timeout ]
-crbug.com/520735 inspector/sources/debugger-breakpoints/event-listener-breakpoints.html [ Pass Timeout ]
-crbug.com/520735 inspector/sources/debugger-frameworks/frameworks-skip-break-program.html [ Pass Timeout ]
-crbug.com/520735 inspector/sources/debugger-step/step-through-event-listeners.html [ Pass Timeout ]
-
 crbug.com/521084 animations/additive-transform-animations.html [ Pass Timeout ]
 crbug.com/521085 fast/compositorworker/compositor-proxy-disconnect-worker-terminate.html [ Crash Pass ]
 crbug.com/521086 fast/cookies/cookies-disabled-in-data-url.html [ Crash Pass Timeout ]
