@@ -60,6 +60,7 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     bool skip_service_worker,
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
+    FetchRedirectMode redirect_mode,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -89,13 +90,10 @@ void ServiceWorkerRequestHandler::InitializeHandler(
   }
 
   scoped_ptr<ServiceWorkerRequestHandler> handler(
-      provider_host->CreateRequestHandler(request_mode,
-                                          credentials_mode,
-                                          resource_type,
-                                          request_context_type,
-                                          frame_type,
-                                          blob_storage_context->AsWeakPtr(),
-                                          body));
+      provider_host->CreateRequestHandler(
+          request_mode, credentials_mode, redirect_mode, resource_type,
+          request_context_type, frame_type, blob_storage_context->AsWeakPtr(),
+          body));
   if (!handler)
     return;
 

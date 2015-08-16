@@ -59,6 +59,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(blob_size)
   IPC_STRUCT_TRAITS_MEMBER(referrer)
   IPC_STRUCT_TRAITS_MEMBER(credentials_mode)
+  IPC_STRUCT_TRAITS_MEMBER(redirect_mode)
   IPC_STRUCT_TRAITS_MEMBER(is_reload)
 IPC_STRUCT_TRAITS_END()
 

@@ -104,6 +104,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     const ResourceContext* resource_context,
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
+    FetchRedirectMode redirect_mode,
     bool is_main_resource_load,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -118,13 +119,13 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       stream_pending_buffer_size_(0),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
+      redirect_mode_(redirect_mode),
       is_main_resource_load_(is_main_resource_load),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       fall_back_required_(false),
       body_(body),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 void ServiceWorkerURLRequestJob::FallbackToNetwork() {
   DCHECK_EQ(NOT_DETERMINED, response_type_);
@@ -482,6 +483,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->blob_uuid = blob_uuid;
   request->blob_size = blob_size;
   request->credentials_mode = credentials_mode_;
+  request->redirect_mode = redirect_mode_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {
     request->is_reload = ui::PageTransitionCoreTypeIs(

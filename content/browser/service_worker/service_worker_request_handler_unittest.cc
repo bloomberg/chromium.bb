@@ -91,17 +91,11 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
         kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
     request->set_method(method);
     ServiceWorkerRequestHandler::InitializeHandler(
-        request.get(),
-        context_wrapper(),
-        &blob_storage_context_,
-        kMockRenderProcessId,
-        kMockProviderId,
-        skip_service_worker,
-        FETCH_REQUEST_MODE_NO_CORS,
-        FETCH_CREDENTIALS_MODE_OMIT,
-        resource_type,
-        REQUEST_CONTEXT_TYPE_HYPERLINK,
-        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+        request.get(), context_wrapper(), &blob_storage_context_,
+        kMockRenderProcessId, kMockProviderId, skip_service_worker,
+        FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
+        FetchRedirectMode::FOLLOW_MODE, resource_type,
+        REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         nullptr);
     return ServiceWorkerRequestHandler::GetHandler(request.get()) != nullptr;
   }

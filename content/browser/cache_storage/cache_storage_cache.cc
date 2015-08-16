@@ -76,6 +76,8 @@ blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
       return blink::WebServiceWorkerResponseTypeError;
     case CacheResponse::OPAQUE_TYPE:
       return blink::WebServiceWorkerResponseTypeOpaque;
+    case CacheResponse::OPAQUE_REDIRECT_TYPE:
+      return blink::WebServiceWorkerResponseTypeOpaqueRedirect;
   }
   NOTREACHED();
   return blink::WebServiceWorkerResponseTypeOpaque;
@@ -94,10 +96,8 @@ CacheResponse::ResponseType WebResponseTypeToProtoResponseType(
       return CacheResponse::ERROR_TYPE;
     case blink::WebServiceWorkerResponseTypeOpaque:
       return CacheResponse::OPAQUE_TYPE;
-    default:
-      // TODO(horo): Remove this when WebServiceWorkerResponseTypeOpaqueRedirect
-      // will be added in blink's WebServiceWorkerResponseType.h.
-      NOTREACHED();
+    case blink::WebServiceWorkerResponseTypeOpaqueRedirect:
+      return CacheResponse::OPAQUE_REDIRECT_TYPE;
   }
   NOTREACHED();
   return CacheResponse::OPAQUE_TYPE;
@@ -725,6 +725,10 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
 
   // We don't support streaming for cache.
   DCHECK(operation.response.stream_url.is_empty());
+  // We don't support the body of redirect response.
+  DCHECK(!(operation.response.response_type ==
+               blink::WebServiceWorkerResponseTypeOpaqueRedirect &&
+           operation.response.blob_size));
   scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse(
       operation.response.url, operation.response.status_code,
       operation.response.status_text, operation.response.response_type,

@@ -31,6 +31,7 @@ message CacheResponse {
     DEFAULT_TYPE = 2;
     ERROR_TYPE = 3;
     OPAQUE_TYPE = 4;
+    OPAQUE_REDIRECT_TYPE = 5;
   }
 
   required int32 status_code = 1;

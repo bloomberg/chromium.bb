@@ -750,6 +750,7 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
   request->should_reset_appcache = request_info.should_reset_appcache;
   request->fetch_request_mode = request_info.fetch_request_mode;
   request->fetch_credentials_mode = request_info.fetch_credentials_mode;
+  request->fetch_redirect_mode = request_info.fetch_redirect_mode;
   request->fetch_request_context_type = request_info.fetch_request_context_type;
   request->fetch_frame_type = request_info.fetch_frame_type;
   request->enable_load_timing = request_info.enable_load_timing;

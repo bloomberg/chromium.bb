@@ -195,6 +195,17 @@ FetchCredentialsMode GetFetchCredentialsMode(const WebURLRequest& request) {
   return static_cast<FetchCredentialsMode>(request.fetchCredentialsMode());
 }
 
+STATIC_ASSERT_MATCHING_ENUMS(FetchRedirectMode::FOLLOW_MODE,
+                             WebURLRequest::FetchRedirectModeFollow);
+STATIC_ASSERT_MATCHING_ENUMS(FetchRedirectMode::ERROR_MODE,
+                             WebURLRequest::FetchRedirectModeError);
+STATIC_ASSERT_MATCHING_ENUMS(FetchRedirectMode::MANUAL_MODE,
+                             WebURLRequest::FetchRedirectModeManual);
+
+FetchRedirectMode GetFetchRedirectMode(const WebURLRequest& request) {
+  return static_cast<FetchRedirectMode>(request.fetchRedirectMode());
+}
+
 STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_AUXILIARY,
                              WebURLRequest::FrameTypeAuxiliary);
 STATIC_ASSERT_MATCHING_ENUMS(REQUEST_CONTEXT_FRAME_TYPE_NESTED,
@@ -590,6 +601,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.should_reset_appcache = request.shouldResetAppCache();
   request_info.fetch_request_mode = GetFetchRequestMode(request);
   request_info.fetch_credentials_mode = GetFetchCredentialsMode(request);
+  request_info.fetch_redirect_mode = GetFetchRedirectMode(request);
   request_info.fetch_request_context_type = GetRequestContextType(request);
   request_info.fetch_frame_type = GetRequestContextFrameType(request);
   request_info.extra_data = request.extraData();

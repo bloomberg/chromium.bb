@@ -56,6 +56,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       bool skip_service_worker,
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
+      FetchRedirectMode redirect_mode,
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,

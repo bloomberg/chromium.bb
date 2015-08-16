@@ -1308,17 +1308,12 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Initialize the service worker handler for the request. We don't use
   // ServiceWorker for synchronous loads to avoid renderer deadlocks.
   ServiceWorkerRequestHandler::InitializeHandler(
-      new_request.get(),
-      filter_->service_worker_context(),
-      blob_context,
-      child_id,
-      request_data.service_worker_provider_id,
+      new_request.get(), filter_->service_worker_context(), blob_context,
+      child_id, request_data.service_worker_provider_id,
       request_data.skip_service_worker || is_sync_load,
-      request_data.fetch_request_mode,
-      request_data.fetch_credentials_mode,
-      request_data.resource_type,
-      request_data.fetch_request_context_type,
-      request_data.fetch_frame_type,
+      request_data.fetch_request_mode, request_data.fetch_credentials_mode,
+      request_data.fetch_redirect_mode, request_data.resource_type,
+      request_data.fetch_request_context_type, request_data.fetch_frame_type,
       request_data.request_body);
 
   // Have the appcache associate its extra info with the request.

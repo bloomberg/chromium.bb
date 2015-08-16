@@ -25,8 +25,8 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
       frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
       blob_size(0),
       credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
-      is_reload(false) {
-}
+      redirect_mode(FetchRedirectMode::FOLLOW_MODE),
+      is_reload(false) {}
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const GURL& url,
@@ -43,8 +43,8 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
       blob_size(0),
       referrer(referrer),
       credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
-      is_reload(is_reload) {
-}
+      redirect_mode(FetchRedirectMode::FOLLOW_MODE),
+      is_reload(is_reload) {}
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 

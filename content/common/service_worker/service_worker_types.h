@@ -92,6 +92,13 @@ enum FetchCredentialsMode {
   FETCH_CREDENTIALS_MODE_LAST = FETCH_CREDENTIALS_MODE_INCLUDE
 };
 
+enum class FetchRedirectMode {
+  FOLLOW_MODE,
+  ERROR_MODE,
+  MANUAL_MODE,
+  LAST = MANUAL_MODE
+};
+
 // Indicates how the service worker handled a fetch event.
 enum ServiceWorkerFetchEventResult {
   // Browser should fallback to native fetch.
@@ -130,6 +137,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   uint64 blob_size;
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
+  FetchRedirectMode redirect_mode;
   bool is_reload;
 };
 

@@ -130,6 +130,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       FetchRequestMode request_mode,
       FetchCredentialsMode credentials_mode,
+      FetchRedirectMode redirect_mode,
       ResourceType resource_type,
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,

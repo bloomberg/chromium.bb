@@ -332,6 +332,7 @@ scoped_ptr<ServiceWorkerRequestHandler>
 ServiceWorkerProviderHost::CreateRequestHandler(
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
+    FetchRedirectMode redirect_mode,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -345,15 +346,10 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
       controlling_version()) {
     return scoped_ptr<ServiceWorkerRequestHandler>(
-        new ServiceWorkerControlleeRequestHandler(context_,
-                                                  AsWeakPtr(),
-                                                  blob_storage_context,
-                                                  request_mode,
-                                                  credentials_mode,
-                                                  resource_type,
-                                                  request_context_type,
-                                                  frame_type,
-                                                  body));
+        new ServiceWorkerControlleeRequestHandler(
+            context_, AsWeakPtr(), blob_storage_context, request_mode,
+            credentials_mode, redirect_mode, resource_type,
+            request_context_type, frame_type, body));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();
 }

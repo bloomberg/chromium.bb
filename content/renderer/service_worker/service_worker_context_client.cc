@@ -131,6 +131,11 @@ blink::WebURLRequest::FetchCredentialsMode GetBlinkFetchCredentialsMode(
       credentials_mode);
 }
 
+blink::WebURLRequest::FetchRedirectMode GetBlinkFetchRedirectMode(
+    FetchRedirectMode redirect_mode) {
+  return static_cast<blink::WebURLRequest::FetchRedirectMode>(redirect_mode);
+}
+
 blink::WebURLRequest::RequestContext GetBlinkRequestContext(
     RequestContextType request_context_type) {
   return static_cast<blink::WebURLRequest::RequestContext>(
@@ -704,6 +709,7 @@ void ServiceWorkerContextClient::OnFetchEvent(
   webRequest.setMode(GetBlinkFetchRequestMode(request.mode));
   webRequest.setCredentialsMode(
       GetBlinkFetchCredentialsMode(request.credentials_mode));
+  webRequest.setRedirectMode(GetBlinkFetchRedirectMode(request.redirect_mode));
   webRequest.setRequestContext(
       GetBlinkRequestContext(request.request_context_type));
   webRequest.setFrameType(GetBlinkFrameType(request.frame_type));

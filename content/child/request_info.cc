@@ -22,11 +22,11 @@ RequestInfo::RequestInfo()
       should_reset_appcache(false),
       fetch_request_mode(FETCH_REQUEST_MODE_NO_CORS),
       fetch_credentials_mode(FETCH_CREDENTIALS_MODE_OMIT),
+      fetch_redirect_mode(FetchRedirectMode::FOLLOW_MODE),
       enable_load_timing(false),
       enable_upload_progress(false),
       do_not_prompt_for_login(false),
-      extra_data(NULL) {
-}
+      extra_data(NULL) {}
 
 RequestInfo::~RequestInfo() {}
 

@@ -83,8 +83,9 @@ class MockHttpProtocolHandler
     job_ = new ServiceWorkerURLRequestJob(
         request, network_delegate, provider_host_, blob_storage_context_,
         resource_context_, FETCH_REQUEST_MODE_NO_CORS,
-        FETCH_CREDENTIALS_MODE_OMIT, true /* is_main_resource_load */,
-        REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+        FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
+        true /* is_main_resource_load */, REQUEST_CONTEXT_TYPE_HYPERLINK,
+        REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
         scoped_refptr<ResourceRequestBody>());
     job_->ForwardToServiceWorker();
     return job_;

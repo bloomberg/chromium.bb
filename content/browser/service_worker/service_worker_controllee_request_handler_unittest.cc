@@ -123,14 +123,11 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
       kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
   scoped_ptr<ServiceWorkerControlleeRequestHandler> handler(
       new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(),
-          provider_host_,
+          context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS,
-          FETCH_CREDENTIALS_MODE_OMIT,
-          RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK,
-          REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
+          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
+          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL, &mock_resource_context_);
@@ -166,14 +163,11 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
       kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
   scoped_ptr<ServiceWorkerControlleeRequestHandler> handler(
       new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(),
-          provider_host_,
+          context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS,
-          FETCH_CREDENTIALS_MODE_OMIT,
-          RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK,
-          REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
+          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
+          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL, &mock_resource_context_);
@@ -217,14 +211,11 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
       kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
   scoped_ptr<ServiceWorkerControlleeRequestHandler> handler(
       new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(),
-          provider_host_,
+          context()->AsWeakPtr(), provider_host_,
           base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS,
-          FETCH_CREDENTIALS_MODE_OMIT,
-          RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK,
-          REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
+          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
+          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
           scoped_refptr<ResourceRequestBody>()));
   scoped_refptr<net::URLRequestJob> job =
       handler->MaybeCreateJob(request.get(), NULL, &mock_resource_context_);

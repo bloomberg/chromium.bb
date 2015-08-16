@@ -91,6 +91,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRequestMode,
 IPC_ENUM_TRAITS_MAX_VALUE(content::FetchCredentialsMode,
                           content::FETCH_CREDENTIALS_MODE_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::FetchRedirectMode,
+                          content::FetchRedirectMode::LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
 IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(request_start)
@@ -208,6 +211,9 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
 
   // The credentials mode passed to the ServiceWorker.
   IPC_STRUCT_MEMBER(content::FetchCredentialsMode, fetch_credentials_mode)
+
+  // The redirect mode used in Fetch API.
+  IPC_STRUCT_MEMBER(content::FetchRedirectMode, fetch_redirect_mode)
 
   // The request context passed to the ServiceWorker.
   IPC_STRUCT_MEMBER(content::RequestContextType, fetch_request_context_type)

@@ -28,6 +28,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     FetchRequestMode request_mode,
     FetchCredentialsMode credentials_mode,
+    FetchRedirectMode redirect_mode,
     ResourceType resource_type,
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
@@ -40,6 +41,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
           ServiceWorkerUtils::IsMainResourceType(resource_type)),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
+      redirect_mode_(redirect_mode),
       request_context_type_(request_context_type),
       frame_type_(frame_type),
       body_(body),
@@ -96,7 +98,7 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   job_ = new ServiceWorkerURLRequestJob(
       request, network_delegate, provider_host_, blob_storage_context_,
-      resource_context, request_mode_, credentials_mode_,
+      resource_context, request_mode_, credentials_mode_, redirect_mode_,
       is_main_resource_load_, request_context_type_, frame_type_, body_);
   resource_context_ = resource_context;
 
