@@ -119,6 +119,9 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // Forwards an unhandled keyboard event to the DevTools frontend.
   bool ForwardKeyboardEvent(const content::NativeWebKeyboardEvent& event);
 
+  // Reloads inspected web contents as if it was triggered from DevTools.
+  void ReloadInspectedWebContents(bool ignore_cache);
+
   // content::WebContentsDelegate overrides.
   content::WebContents* OpenURLFromTab(
       content::WebContents* source,

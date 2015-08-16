@@ -1239,3 +1239,9 @@ bool DevToolsWindow::ForwardKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
   return event_forwarder_->ForwardEvent(event);
 }
+
+void DevToolsWindow::ReloadInspectedWebContents(bool ignore_cache) {
+  base::FundamentalValue ignore_cache_value(ignore_cache);
+  bindings_->CallClientFunction("DevToolsAPI.reloadInspectedPage",
+                                &ignore_cache_value, nullptr, nullptr);
+}
