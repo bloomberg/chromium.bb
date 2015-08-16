@@ -12,7 +12,7 @@ To make a release of Weston and/or Wayland, follow these steps.
       your changes:
 
       $ export RELEASE_NUMBER="x.y.z"
-      $ export RELEASE_NAME="[alpha|RC1|RC2|official|point]"
+      $ export RELEASE_NAME="[alpha|beta|RC1|RC2|official|point]"
       $ git status
       $ git commit configure.ac -m "configure.ac: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
       $ git push
