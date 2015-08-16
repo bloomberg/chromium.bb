@@ -61,7 +61,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabAudible) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "audible.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMuted) {
+// http://crbug.com/521410
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_TabMuted) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "muted.html")) << message_;
 }
 
