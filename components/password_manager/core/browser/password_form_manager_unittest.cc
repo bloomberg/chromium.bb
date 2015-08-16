@@ -249,10 +249,6 @@ class PasswordFormManagerTest : public testing::Test {
 
   MockPasswordStore* mock_store() const { return mock_store_.get(); }
 
-  PasswordForm* GetPendingCredentials(PasswordFormManager* p) {
-    return &p->pending_credentials_;
-  }
-
   void SimulateMatchingPhase(PasswordFormManager* p,
                              ResultOfSimulatedMatching result) {
     // TODO(vabr): This should use the mock store instead of private methods of
@@ -376,19 +372,17 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   // Make sure the credentials that would be submitted on successful login
   // are going to match the stored entry in the db.
   EXPECT_EQ(observed_form()->origin.spec(),
-            GetPendingCredentials(&form_manager)->origin.spec());
+            form_manager.pending_credentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            GetPendingCredentials(&form_manager)->signon_realm);
-  EXPECT_EQ(observed_form()->action,
-            GetPendingCredentials(&form_manager)->action);
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->preferred);
+            form_manager.pending_credentials().signon_realm);
+  EXPECT_EQ(observed_form()->action, form_manager.pending_credentials().action);
+  EXPECT_TRUE(form_manager.pending_credentials().preferred);
   EXPECT_EQ(saved_match()->password_value,
-            GetPendingCredentials(&form_manager)->password_value);
+            form_manager.pending_credentials().password_value);
   EXPECT_EQ(saved_match()->username_value,
-            GetPendingCredentials(&form_manager)->username_value);
-  EXPECT_TRUE(
-      GetPendingCredentials(&form_manager)->new_password_element.empty());
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->new_password_value.empty());
+            form_manager.pending_credentials().username_value);
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
 
   // Now, suppose the user re-visits the site and wants to save an additional
   // login for the site with a new username. In this case, the matching phase
@@ -406,15 +400,14 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   EXPECT_TRUE(form_manager.IsNewLogin());
   // And make sure everything squares up again.
   EXPECT_EQ(observed_form()->origin.spec(),
-            GetPendingCredentials(&form_manager)->origin.spec());
+            form_manager.pending_credentials().origin.spec());
   EXPECT_EQ(observed_form()->signon_realm,
-            GetPendingCredentials(&form_manager)->signon_realm);
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->preferred);
-  EXPECT_EQ(new_pass, GetPendingCredentials(&form_manager)->password_value);
-  EXPECT_EQ(new_user, GetPendingCredentials(&form_manager)->username_value);
-  EXPECT_TRUE(
-      GetPendingCredentials(&form_manager)->new_password_element.empty());
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->new_password_value.empty());
+            form_manager.pending_credentials().signon_realm);
+  EXPECT_TRUE(form_manager.pending_credentials().preferred);
+  EXPECT_EQ(new_pass, form_manager.pending_credentials().password_value);
+  EXPECT_EQ(new_user, form_manager.pending_credentials().username_value);
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
 }
 
 // If PSL-matched credentials had been suggested, but the user has overwritten
@@ -504,22 +497,22 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
   EXPECT_TRUE(form_manager.IsNewLogin());
-  EXPECT_EQ(credentials.origin, GetPendingCredentials(&form_manager)->origin);
+  EXPECT_EQ(credentials.origin, form_manager.pending_credentials().origin);
   EXPECT_EQ(credentials.signon_realm,
-            GetPendingCredentials(&form_manager)->signon_realm);
-  EXPECT_EQ(credentials.action, GetPendingCredentials(&form_manager)->action);
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->preferred);
+            form_manager.pending_credentials().signon_realm);
+  EXPECT_EQ(credentials.action, form_manager.pending_credentials().action);
+  EXPECT_TRUE(form_manager.pending_credentials().preferred);
   EXPECT_EQ(credentials.username_value,
-            GetPendingCredentials(&form_manager)->username_value);
+            form_manager.pending_credentials().username_value);
 
   // By this point, the PasswordFormManager should have promoted the new
   // password value to be the current password, and should have wiped the
   // password element name: it is likely going to be different on a login
   // form, so it is not worth remembering them.
   EXPECT_EQ(credentials.new_password_value,
-            GetPendingCredentials(&form_manager)->password_value);
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->password_element.empty());
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->new_password_value.empty());
+            form_manager.pending_credentials().password_value);
+  EXPECT_TRUE(form_manager.pending_credentials().password_element.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
@@ -551,12 +544,12 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   // Make sure the credentials that would be submitted on successful login
   // are going to match the stored entry in the db. (This verifies correct
   // behaviour for bug 1074420).
-  EXPECT_EQ(GetPendingCredentials(&form_manager)->origin.spec(),
+  EXPECT_EQ(form_manager.pending_credentials().origin.spec(),
             saved_match()->origin.spec());
-  EXPECT_EQ(GetPendingCredentials(&form_manager)->signon_realm,
+  EXPECT_EQ(form_manager.pending_credentials().signon_realm,
             saved_match()->signon_realm);
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->preferred);
-  EXPECT_EQ(new_pass, GetPendingCredentials(&form_manager)->password_value);
+  EXPECT_TRUE(form_manager.pending_credentials().preferred);
+  EXPECT_EQ(new_pass, form_manager.pending_credentials().password_value);
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
@@ -597,10 +590,9 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   // already to be the current password, and should no longer maintain any info
   // about the new password.
   EXPECT_EQ(credentials.new_password_value,
-            GetPendingCredentials(&form_manager)->password_value);
-  EXPECT_TRUE(
-      GetPendingCredentials(&form_manager)->new_password_element.empty());
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->new_password_value.empty());
+            form_manager.pending_credentials().password_value);
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
 
   // Trigger saving to exercise some special case handling in UpdateLogin().
   PasswordForm new_credentials;
@@ -702,8 +694,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   EXPECT_FALSE(form_manager.IsNewLogin());
   // We bless our saved PasswordForm entry with the action URL of the
   // observed form.
-  EXPECT_EQ(observed_form()->action,
-            GetPendingCredentials(&form_manager)->action);
+  EXPECT_EQ(observed_form()->action, form_manager.pending_credentials().action);
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdateAction) {
@@ -722,8 +713,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   // The observed action URL is different from the previously saved one, and
   // is the same as the one that would be submitted on successful login.
   EXPECT_NE(observed_form()->action, saved_match()->action);
-  EXPECT_EQ(observed_form()->action,
-            GetPendingCredentials(&form_manager)->action);
+  EXPECT_EQ(observed_form()->action, form_manager.pending_credentials().action);
 }
 
 TEST_F(PasswordFormManagerTest, TestDynamicAction) {
@@ -741,7 +731,7 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   EXPECT_TRUE(form_manager.IsNewLogin());
   // Check that the provisionally saved action URL is the same as the submitted
   // action URL, not the one observed on page load.
-  EXPECT_EQ(new_action, GetPendingCredentials(&form_manager)->action);
+  EXPECT_EQ(new_action, form_manager.pending_credentials().action);
 }
 
 TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
@@ -1704,10 +1694,9 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   // already to be the current password, and should no longer maintain any info
   // about the new password.
   EXPECT_EQ(credentials.new_password_value,
-            GetPendingCredentials(&form_manager)->password_value);
-  EXPECT_TRUE(
-      GetPendingCredentials(&form_manager)->new_password_element.empty());
-  EXPECT_TRUE(GetPendingCredentials(&form_manager)->new_password_value.empty());
+            form_manager.pending_credentials().password_value);
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
 
   // Trigger saving to exercise some special case handling in UpdateLogin().
   PasswordForm new_credentials;
