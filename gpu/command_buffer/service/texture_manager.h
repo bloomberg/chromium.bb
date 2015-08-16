@@ -14,6 +14,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/async_pixel_transfer_delegate.h"
+#include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/gpu_export.h"
@@ -532,10 +533,13 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 struct DecoderTextureState {
   // total_texture_upload_time automatically initialized to 0 in default
   // constructor.
-  explicit DecoderTextureState(bool texsubimage_faster_than_teximage)
+  explicit DecoderTextureState(const FeatureInfo::Workarounds& workarounds)
       : tex_image_failed(false),
         texture_upload_count(0),
-        texsubimage_faster_than_teximage(texsubimage_faster_than_teximage) {}
+        texsubimage_faster_than_teximage(
+            workarounds.texsubimage_faster_than_teximage),
+        force_cube_map_positive_x_allocation(
+            workarounds.force_cube_map_positive_x_allocation) {}
 
   // This indicates all the following texSubImage*D calls that are part of the
   // failed texImage*D call should be ignored. The client calls have a lock
@@ -548,6 +552,7 @@ struct DecoderTextureState {
   base::TimeDelta total_texture_upload_time;
 
   bool texsubimage_faster_than_teximage;
+  bool force_cube_map_positive_x_allocation;
 };
 
 // This class keeps track of the textures and their sizes so we can do NPOT and
@@ -887,6 +892,14 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     const char* function_name,
     TextureRef* texture_ref,
     const DoTexImageArguments& args);
+
+  bool DoTexImage2DCubeMapPositiveXIfNeeded(
+      DecoderTextureState* texture_state,
+      ErrorState* error_state,
+      DecoderFramebufferState* framebuffer_state,
+      const char* function_name,
+      TextureRef* texture_ref,
+      const DoTexImageArguments& args);
 
   void StartTracking(TextureRef* texture);
   void StopTracking(TextureRef* texture);
