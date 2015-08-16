@@ -8,7 +8,7 @@ To make a release of Weston and/or Wayland, follow these steps.
   1.  Update the first three lines of configure.ac to the intended
       version, commit.  Also note that Weston includes versioned
       dependencies on 'wayland-server' and 'wayland-client' in
-      configure.ac which typically need updated as well.  Then commit
+      configure.ac which occasionally need updated as well.  Then commit
       your changes:
 
       $ export RELEASE_NUMBER="x.y.z"
