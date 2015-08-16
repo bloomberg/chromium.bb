@@ -382,7 +382,13 @@ word about 1-12
 sufword above 1-12-1236
 word according 1-14
 word across 1-14-1235
-sufword after 1-124
+
+#sufword after 1-124
+pattern ~%<* after %a*>*~ 1-124
+pattern ~%<* after %a*>*%"_~" 1-124
+pattern %"_~"%<* after %a*>*~ 1-124
+pattern %"_~"%<* after %a*>*%"_~" 1-124
+
 always afternoon 1-124-1345 afternoons
 sufword afterward 1-124-2456
 word again 1-1245
@@ -425,7 +431,7 @@ sufword little 123-123
 always much 134-16
 word must 134-34
 word myself 134-13456-124
-prfword necessary 1345-15-14 unnecessary
+#prfword necessary 1345-15-14 unnecessary
 word neither 1345-15-24
 word oneself 5-135-124
 always ourselves 1256-1235-1236-234
@@ -451,6 +457,12 @@ sufword would 2456-145
 word your 13456-1235
 word yourself 13456-1235-124
 word yourselves 13456-1235-1236-234
+
+#   appendix 1
+
+sufword belowdeck 23-123-145-15-14-13
+sufword hereabout 5-125-1-12
+sufword suchlike 234-16-123-24-13-15
 
 ################################################################################
 
@@ -1057,7 +1069,7 @@ word sphere 234-1234-5-125
 begword spiken = spikenard
 always ssh =
 always \s-\shis 6-36-125-24-234
-always sst =
+#always sst =
 always \s-\swas 36-36-2456-1-234
 partword st 34
 midword stak 234-2345-1-13
