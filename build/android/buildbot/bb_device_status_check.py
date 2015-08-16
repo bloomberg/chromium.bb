@@ -224,6 +224,56 @@ def KillAllAdb():
       pass
 
 
+def RecoverDevices(args):
+  # Remove the last build's "bad devices" before checking device statuses.
+  device_blacklist.ResetBlacklist()
+
+  previous_devices = set(a.GetDeviceSerial()
+                         for a in adb_wrapper.AdbWrapper.Devices())
+
+  KillAllAdb()
+  reset_usb.reset_all_android_devices()
+
+  try:
+    expected_devices = set(device_list.GetPersistentDeviceList(
+        os.path.join(args.out_dir, device_list.LAST_DEVICES_FILENAME)))
+  except IOError:
+    expected_devices = set()
+
+  all_devices = [device_utils.DeviceUtils(d)
+                 for d in previous_devices.union(expected_devices)]
+
+  def blacklisting_recovery(device):
+    try:
+      device.WaitUntilFullyBooted()
+    except device_errors.CommandFailedError:
+      logging.exception('Failure while waiting for %s. Adding to blacklist.',
+                        str(device))
+      device_blacklist.ExtendBlacklist([str(device)])
+    except device_errors.CommandTimeoutError:
+      logging.exception('Timed out while waiting for %s. Adding to blacklist.',
+                        str(device))
+      device_blacklist.ExtendBlacklist([str(device)])
+
+  device_utils.DeviceUtils.parallel(all_devices).pMap(blacklisting_recovery)
+
+  devices = device_utils.DeviceUtils.HealthyDevices()
+  device_serials = set(d.adb.GetDeviceSerial() for d in devices)
+
+  missing_devices = expected_devices.difference(device_serials)
+  new_devices = device_serials.difference(expected_devices)
+
+  if missing_devices or new_devices:
+    logging.warning('expected_devices:')
+    for d in sorted(expected_devices):
+      logging.warning('  %s', d)
+    logging.warning('devices:')
+    for d in sorted(device_serials):
+      logging.warning('  %s', d)
+
+  return devices
+
+
 def main():
   parser = optparse.OptionParser()
   parser.add_option('', '--out-dir',
@@ -247,38 +297,7 @@ def main():
 
   run_tests_helper.SetLogLevel(options.verbose)
 
-  # Remove the last build's "bad devices" before checking device statuses.
-  device_blacklist.ResetBlacklist()
-
-  KillAllAdb()
-  reset_usb.reset_all_android_devices()
-
-  try:
-    expected_devices = set(device_list.GetPersistentDeviceList(
-        os.path.join(options.out_dir, device_list.LAST_DEVICES_FILENAME)))
-  except IOError:
-    expected_devices = set()
-
-  def all_devices_found():
-    devices = device_utils.DeviceUtils.HealthyDevices()
-    device_serials = set(d.adb.GetDeviceSerial() for d in devices)
-    return not bool(expected_devices.difference(device_serials))
-
-  timeout_retry.WaitFor(all_devices_found, wait_period=1, max_tries=5)
-
-  devices = device_utils.DeviceUtils.HealthyDevices()
-  device_serials = set(d.adb.GetDeviceSerial() for d in devices)
-
-  missing_devices = expected_devices.difference(device_serials)
-  new_devices = device_serials.difference(expected_devices)
-
-  if missing_devices or new_devices:
-    logging.warning('expected_devices:')
-    for d in sorted(expected_devices):
-      logging.warning('  %s', d)
-    logging.warning('devices:')
-    for d in sorted(device_serials):
-      logging.warning('  %s', d)
+  devices = RecoverDevices(options)
 
   types, builds, batteries, errors, devices_ok, json_data = (
       [], [], [], [], [], [])
