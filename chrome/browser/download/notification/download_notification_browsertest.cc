@@ -86,15 +86,19 @@ class MessageCenterChangeObserver
   void RunLoop() {
     base::MessageLoop::ScopedNestableTaskAllower allow(
         base::MessageLoop::current());
-    run_loop_.Run();
+    run_loop_->Run();
   }
 
   void QuitRunLoop() {
-    run_loop_.Quit();
+    run_loop_->Quit();
+  }
+
+  void ResetRunLoop() {
+    run_loop_.reset(new base::RunLoop);
   }
 
  private:
-  base::RunLoop run_loop_;
+  scoped_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterChangeObserver);
 };
@@ -113,6 +117,7 @@ class NotificationAddObserver : public MessageCenterChangeObserver {
       return count_ == 0;
 
     waiting_ = true;
+    ResetRunLoop();
     RunLoop();
     waiting_ = false;
     return count_ == 0;
@@ -152,9 +157,13 @@ class NotificationUpdateObserver : public MessageCenterChangeObserver {
       return notification_id_;
 
     waiting_ = true;
+    ResetRunLoop();
     RunLoop();
     waiting_ = false;
-    return notification_id_;
+
+    std::string notification_id(notification_id_);
+    notification_id_.clear();
+    return notification_id;
   }
 
   void OnNotificationUpdated(const std::string& notification_id) override {
@@ -184,6 +193,7 @@ class NotificationRemoveObserver : public MessageCenterChangeObserver {
       return notification_id_;
 
     waiting_ = true;
+    ResetRunLoop();
     RunLoop();
     waiting_ = false;
     return notification_id_;
@@ -759,9 +769,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for the completion of downloads.
+  NotificationUpdateObserver download_change_notification_observer;
   while (download1->GetState() != content::DownloadItem::COMPLETE ||
          download2->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
   }
 
@@ -1187,10 +1197,10 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for the completion of downloads.
+  NotificationUpdateObserver download_change_notification_observer;
   while (download1->GetState() != content::DownloadItem::COMPLETE ||
          download2->GetState() != content::DownloadItem::COMPLETE ||
          download3->GetState() != content::DownloadItem::COMPLETE) {
-    NotificationUpdateObserver download_change_notification_observer;
     download_change_notification_observer.Wait();
   }
 
