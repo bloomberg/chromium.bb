@@ -5,6 +5,7 @@
 #include "chrome/browser/download/notification/download_item_notification.h"
 
 #include "base/files/file_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -27,6 +28,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image.h"
@@ -287,10 +289,11 @@ void DownloadItemNotification::UpdateNotificationData(
     type = UPDATE;
   }
 
+  notification_->set_title(GetTitle());
+  notification_->set_message(GetStatusString());
+
   if (item_->IsDangerous()) {
     notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-    notification_->set_title(GetTitle());
-    notification_->set_message(GetWarningText());
 
     // Show icon.
     if (model.MightBeMalicious()) {
@@ -301,8 +304,6 @@ void DownloadItemNotification::UpdateNotificationData(
       notification_->set_priority(message_center::HIGH_PRIORITY);
     }
   } else {
-    notification_->set_title(GetTitle());
-    notification_->set_message(model.GetStatusText());
     notification_->set_priority(message_center::DEFAULT_PRIORITY);
 
     bool is_off_the_record = item_->GetBrowserContext() &&
@@ -607,7 +608,7 @@ base::string16 DownloadItemNotification::GetCommandLabel(
   return l10n_util::GetStringUTF16(id);
 }
 
-base::string16 DownloadItemNotification::GetWarningText() const {
+base::string16 DownloadItemNotification::GetWarningStatusString() const {
   // Should only be called if IsDangerous().
   DCHECK(item_->IsDangerous());
   base::string16 elided_filename =
@@ -647,6 +648,113 @@ base::string16 DownloadItemNotification::GetWarningText() const {
   }
   NOTREACHED();
   return base::string16();
+}
+
+base::string16 DownloadItemNotification::GetInProgressSubStatusString() const {
+  // The download is a CRX (app, extension, theme, ...) and it is being
+  // unpacked and validated.
+  if (item_->AllDataSaved() &&
+      download_crx_util::IsExtensionDownload(*item_)) {
+    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
+  }
+
+  // "Paused"
+  if (item_->IsPaused())
+    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
+
+  base::TimeDelta time_remaining;
+  // time_remaining is only known if the download isn't paused.
+  bool time_remaining_known = (!item_->IsPaused() &&
+                               item_->TimeRemaining(&time_remaining));
+
+
+  // A download scheduled to be opened when complete.
+  if (item_->GetOpenWhenComplete()) {
+    // "Opening when complete"
+    if (!time_remaining_known)
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE);
+
+    // "Opening in 10 secs"
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_STATUS_OPEN_IN,
+        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                               ui::TimeFormat::LENGTH_SHORT, time_remaining));
+  }
+
+  // In progress download with known time left: "10 secs left"
+  if (time_remaining_known) {
+    return ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                               ui::TimeFormat::LENGTH_SHORT, time_remaining);
+  }
+
+  // "In progress"
+  if (item_->GetReceivedBytes() > 0)
+    return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_IN_PROGRESS_SHORT);
+
+  // "Starting..."
+  return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING);
+}
+
+base::string16 DownloadItemNotification::GetStatusString() const {
+  if (item_->IsDangerous())
+    return GetWarningStatusString();
+
+  DownloadItemModel model(item_);
+  base::string16 sub_status_text;
+  switch (item_->GetState()) {
+    case content::DownloadItem::IN_PROGRESS:
+      sub_status_text = GetInProgressSubStatusString();
+      break;
+    case content::DownloadItem::COMPLETE:
+      // If the file has been removed: Removed
+      if (item_->GetFileExternallyRemoved()) {
+        sub_status_text =
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
+      }
+      // Otherwise, no sub status text.
+      break;
+    case content::DownloadItem::CANCELLED:
+      // "Cancelled"
+      sub_status_text =
+          l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+      break;
+    case content::DownloadItem::INTERRUPTED: {
+      content::DownloadInterruptReason reason = item_->GetLastReason();
+      if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
+        // "Failed - <REASON>"
+        base::string16 interrupt_reason = model.GetInterruptReasonText();
+        DCHECK(!interrupt_reason.empty());
+        sub_status_text = l10n_util::GetStringFUTF16(
+            IDS_DOWNLOAD_STATUS_INTERRUPTED, interrupt_reason);
+      } else {
+        // Same as DownloadItem::CANCELLED.
+        sub_status_text =
+            l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELLED);
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+
+  // The hostname. (E.g.:"example.com" or "127.0.0.1")
+  base::string16 host_name = base::UTF8ToUTF16(item_->GetURL().host());
+
+  // Indication of progress. (E.g.:"100/200 MB" or "100 MB")
+  base::string16 size_ratio = model.GetProgressSizesString();
+
+  if (sub_status_text.empty()) {
+    // Download completed: "3.4/3.4 MB from example.com"
+    DCHECK_EQ(item_->GetState(), content::DownloadItem::COMPLETE);
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED,
+        size_ratio, host_name);
+  }
+
+  // Download is not completed: "3.4/3.4 MB from example.com, <SUB STATUS>"
+  return l10n_util::GetStringFUTF16(
+      IDS_DOWNLOAD_NOTIFICATION_STATUS,
+      size_ratio, host_name, sub_status_text);
 }
 
 Browser* DownloadItemNotification::GetBrowser() const {

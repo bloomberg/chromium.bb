@@ -1925,6 +1925,14 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
          =1 {Downloaded a file}
          other {Downloaded # files}}
       </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS"
+               desc="Size and units downloaded and total, the origin domain, and the current status od download.">
+        <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>54/154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>, <ph name="SUB_STATUS_TEXT">$3<ex>24 secs remaining</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED"
+               desc="Size and units downloaded, and the origin domain.">
+        <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>154/154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>
+      </message>
       <message name="IDS_DOWNLOAD_STATUS_COMBINED_IN_PROGRESS"
                desc="Status text of download notification which shows the combined progres of multiple downloads">
                <ph name="PERCENT">$1<ex>30</ex></ph>% complete, <ph name="TIME_LEFT">$2<ex>20 secs left</ex></ph>,
@@ -1952,6 +1960,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_DOWNLOAD_STATUS_OPENING"
                desc="Temporary status shown when a user has clicked to open a downloaded file.">
         Opening <ph name="FILE">$1<ex>image.jpg</ex></ph>...
+      </message>
+      <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS_SHORT" desc="Short status text that appears on unknown-sized downloads in progress.">
+        In progress
       </message>
       <message name="IDS_DOWNLOAD_STATUS_CANCELLED" desc="Text that appears under the downloaded files that have been canceled.">
         Canceled

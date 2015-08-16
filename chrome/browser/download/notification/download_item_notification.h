@@ -70,9 +70,16 @@ class DownloadItemNotification : public DownloadNotification,
   // Returns a short one-line status string for a download command.
   base::string16 GetCommandLabel(DownloadCommands::Command command) const;
 
-  // Get the warning test to notify a dangerous download. Should only be called
+  // Get the warning text to notify a dangerous download. Should only be called
   // if IsDangerous() is true.
-  base::string16 GetWarningText() const;
+  base::string16 GetWarningStatusString() const;
+
+  // Get the sub status text of the current in-progress download status. Should
+  // be called only for downloads in progress.
+  base::string16 GetInProgressSubStatusString() const;
+
+  // Get the status text.
+  base::string16 GetStatusString() const;
 
   bool IsNotificationVisible() const;
 

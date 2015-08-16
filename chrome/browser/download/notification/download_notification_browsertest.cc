@@ -631,8 +631,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, InterruptDownload) {
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_DOWNLOAD_STATUS_INTERRUPTED,
                 l10n_util::GetStringUTF16(
-                    IDS_DOWNLOAD_INTERRUPTED_STATUS_NETWORK_ERROR)),
-            GetNotification(notification_id())->message());
+                    IDS_DOWNLOAD_INTERRUPTED_DESCRIPTION_NETWORK_ERROR)),
+            GetNotification(notification_id())->message().substr(48));
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
             GetNotification(notification_id())->type());
 }
