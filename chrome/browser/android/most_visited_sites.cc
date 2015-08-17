@@ -404,32 +404,102 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 }
 
 void MostVisitedSites::AddPopularSites(std::vector<base::string16>* titles,
-                                       std::vector<std::string>* urls) {
+                                       std::vector<std::string>* urls) const {
   if (!popular_sites_)
     return;
 
   DCHECK_EQ(titles->size(), urls->size());
-  if (static_cast<int>(titles->size()) >= num_sites_)
-    return;
+  DCHECK_LE(static_cast<int>(titles->size()), num_sites_);
 
+  // Collect all non-blacklisted popular suggestions.
+  std::vector<base::string16> new_titles;
+  std::vector<std::string> new_urls;
   scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
   for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
     // Skip blacklisted sites.
     if (top_sites && top_sites->IsBlacklisted(popular_site.url))
       continue;
-    // Skip popular sites that are already in the suggestions.
-    auto it = std::find_if(urls->begin(), urls->end(),
-        [&popular_site](const std::string& url) {
-          return GURL(url).host() == popular_site.url.host();
-        });
-    if (it != urls->end())
-      continue;
 
-    titles->push_back(popular_site.title);
-    urls->push_back(popular_site.url.spec());
-    if (static_cast<int>(titles->size()) >= num_sites_)
+    new_titles.push_back(popular_site.title);
+    new_urls.push_back(popular_site.url.spec());
+    if (static_cast<int>(new_titles.size()) >= num_sites_)
       break;
   }
+
+  AddPopularSitesImpl(num_sites_, titles, urls, new_titles, new_urls);
+}
+
+// static
+void MostVisitedSites::AddPopularSitesImpl(
+    int num_sites,
+    std::vector<base::string16>* titles,
+    std::vector<std::string>* urls,
+    const std::vector<base::string16>& popular_titles,
+    const std::vector<std::string>& popular_urls) {
+  // Start off with the popular suggestions.
+  std::vector<base::string16> new_titles(popular_titles);
+  std::vector<std::string> new_urls(popular_urls);
+
+  // Now, go over the personalized suggestions and replace matching popular
+  // suggestions. This is so that when some of the popular suggestions become
+  // personal, they retain their absolute positions.
+  std::vector<bool> new_is_personalized(new_titles.size(), false);
+  std::vector<base::string16> titles_to_insert;
+  std::vector<std::string> urls_to_insert;
+  for (size_t site_index = 0; site_index < titles->size(); site_index++) {
+    const base::string16& title = (*titles)[site_index];
+    const std::string& url = (*urls)[site_index];
+    // See if we already have a matching popular site.
+    bool found = false;
+    for (size_t i = 0; i < new_urls.size(); i++) {
+      if (!new_is_personalized[i] &&
+          GURL(new_urls[i]).host() == GURL(url).host()) {
+        // We have a matching popular sites suggestion. Replace it with the
+        // actual URL and title.
+        new_titles[i] = title;
+        new_urls[i] = url;
+        new_is_personalized[i] = true;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      titles_to_insert.push_back(title);
+      urls_to_insert.push_back(url);
+    }
+  }
+
+  // Append personalized suggestions at the end if there's room.
+  size_t num_to_append =
+      std::min(static_cast<size_t>(num_sites) - new_titles.size(),
+               titles_to_insert.size());
+  new_titles.insert(new_titles.end(),
+                    titles_to_insert.end() - num_to_append,
+                    titles_to_insert.end());
+  new_urls.insert(new_urls.end(),
+                  urls_to_insert.end() - num_to_append,
+                  urls_to_insert.end());
+  new_is_personalized.insert(new_is_personalized.end(), num_to_append, true);
+
+  // Finally, go over the remaining personalized suggestions and evict popular
+  // suggestions to accommodate them. Do it in reverse order, so the least
+  // important popular suggestions will be evicted.
+  for (size_t i = titles_to_insert.size() - num_to_append; i > 0; --i) {
+    const base::string16& title = titles_to_insert[i - 1];
+    const std::string& url = urls_to_insert[i - 1];
+    for (size_t insert_i = new_titles.size(); insert_i > 0; --insert_i) {
+      size_t insert_index = insert_i - 1;
+      if (!new_is_personalized[insert_index]) {
+        new_titles[insert_index] = title;
+        new_urls[insert_index] = url;
+        new_is_personalized[insert_index] = true;
+        break;
+      }
+    }
+  }
+
+  titles->swap(new_titles);
+  urls->swap(new_urls);
 }
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver(

@@ -54,6 +54,8 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   static bool Register(JNIEnv* env);
 
  private:
+  friend class MostVisitedSitesTest;
+
   // The source of the Most Visited sites.
   enum MostVisitedSource {
     TOP_SITES,
@@ -75,8 +77,20 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
   void OnSuggestionsProfileAvailable(
       const suggestions::SuggestionsProfile& suggestions_profile);
 
+  // Adds the suggestions from |popular_sites_| into |titles| and |urls|. This
+  // might reorder |titles| and |urls| to retain the absolute positions of the
+  // popular suggestions.
   void AddPopularSites(std::vector<base::string16>* titles,
-                       std::vector<std::string>* urls);
+                       std::vector<std::string>* urls) const;
+
+  // Workhorse for AddPopularSites above. Implemented as a separate static
+  // method for ease of testing.
+  static void AddPopularSitesImpl(
+      int num_sites,
+      std::vector<base::string16>* titles,
+      std::vector<std::string>* urls,
+      const std::vector<base::string16>& popular_titles,
+      const std::vector<std::string>& popular_urls);
 
   // Notify the Java side observer about the availability of Most Visited Urls.
   void NotifyMostVisitedURLsObserver(const std::vector<base::string16>& titles,
