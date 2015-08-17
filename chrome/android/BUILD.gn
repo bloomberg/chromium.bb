@@ -43,10 +43,10 @@ locale_pak_resources("chrome_locale_paks") {
 
 # GYP: //chrome/chrome.gyp:chrome_java (resources part)
 android_resources("chrome_java_resources") {
-  resource_dirs = [
-    "java/res",
-    "java/res_default",
-  ]
+  if (!defined(android_branding_res_dirs)) {
+    android_branding_res_dirs = [ "//chrome/android/java/res_chromium" ]
+  }
+  resource_dirs = [ "java/res" ] + android_branding_res_dirs
   deps = [
     ":chrome_locale_paks",
     ":chrome_strings_grd",
