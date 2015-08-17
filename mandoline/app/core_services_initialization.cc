@@ -36,6 +36,8 @@ void InitCoreServicesForContext(mojo::runner::Context* context) {
       GURL("mojo:omnibox"), GURL("mojo:core_services"), "Core");
 #endif
   manager->RegisterApplicationPackageAlias(
+      GURL("mojo:web_view"), GURL("mojo:core_services"), "Core");
+  manager->RegisterApplicationPackageAlias(
       GURL("mojo:surfaces_service"), GURL("mojo:core_services"), "Surfaces");
   manager->RegisterApplicationPackageAlias(
       GURL("mojo:tracing"), GURL("mojo:core_services"), "Sandboxed Core");

@@ -8,11 +8,13 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "frame_tree.mojom",
+    "web_view.mojom",
   ]
 
   import_dirs = [ mojo_network_service_root ]
 
   deps = [
+    "//components/view_manager/public/interfaces",
     "//mojo/services/network/public/interfaces",
   ]
 }

@@ -8,9 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
-#include "mandoline/tab/frame.h"
-#include "mandoline/tab/frame_connection.h"
-#include "mandoline/tab/frame_tree.h"
 #include "mandoline/ui/browser/browser_delegate.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -41,6 +38,7 @@ Browser::Browser(mojo::ApplicationImpl* app,
       content_(nullptr),
       default_url_(default_url),
       navigator_host_(this),
+      web_view_(this),
       app_(app),
       delegate_(delegate) {
   ui_.reset(BrowserUI::Create(this, app));
@@ -78,16 +76,6 @@ mojo::ApplicationConnection* Browser::GetViewManagerConnectionForTesting() {
   return view_manager_init_.connection();
 }
 
-void Browser::NavigateExistingFrame(Frame* frame, mojo::URLRequestPtr request) {
-  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  mojo::ViewManagerClientPtr view_manager_client;
-  frame_connection->Init(app_, request.Pass(), &view_manager_client);
-  frame->view()->Embed(view_manager_client.Pass());
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_->CreateOrReplaceFrame(frame, frame->view(), frame_tree_client,
-                                    frame_connection.Pass());
-}
-
 void Browser::OnEmbed(mojo::View* root) {
   // Browser does not support being embedded more than once.
   CHECK(!root_);
@@ -112,38 +100,17 @@ void Browser::OnEmbed(mojo::View* root) {
   root_->AddChild(content_);
   content_->SetVisible(true);
 
+  web_view_.Init(app_, content_);
+
   view_manager_init_.view_manager_root()->AddAccelerator(
       mojo::KEYBOARD_CODE_BROWSER_BACK, mojo::EVENT_FLAGS_NONE);
 
-  // Now that we're ready, either load a pending url or the default url.
-  if (pending_request_) {
-    Embed(pending_request_.Pass());
-  } else if (default_url_.is_valid()) {
+  // Now that we're ready, load the default url.
+  if (default_url_.is_valid()) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
     request->url = mojo::String::From(default_url_.spec());
     Embed(request.Pass());
   }
-}
-
-void Browser::OnEmbedForDescendant(mojo::View* view,
-                                   mojo::URLRequestPtr request,
-                                   mojo::ViewManagerClientPtr* client) {
-  // TODO(sky): move this to Frame/FrameTree.
-  Frame* frame = Frame::FindFirstFrameAncestor(view);
-  if (!frame || !frame->HasAncestor(frame_tree_->root())) {
-    // TODO(sky): add requestor url so that we can return false if it's not
-    // an app we expect.
-    scoped_ptr<mojo::ApplicationConnection> connection =
-        app_->ConnectToApplication(request.Pass());
-    connection->ConnectToService(client);
-    return;
-  }
-
-  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  frame_connection->Init(app_, request.Pass(), client);
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_->CreateOrReplaceFrame(frame, view, frame_tree_client,
-                                    frame_connection.Pass());
 }
 
 void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
@@ -158,6 +125,18 @@ void Browser::OnAccelerator(mojo::EventPtr event) {
   navigator_host_.RequestNavigateHistory(-1);
 }
 
+void Browser::TopLevelNavigate(mojo::URLRequestPtr request) {
+  Embed(request.Pass());
+}
+
+void Browser::LoadingStateChanged(bool is_loading) {
+  ui_->LoadingStateChanged(is_loading);
+}
+
+void Browser::ProgressChanged(double progress) {
+  ui_->ProgressChanged(progress);
+}
+
 // TODO(beng): Consider moving this to the UI object as well once the frame tree
 //             stuff is better encapsulated.
 void Browser::Embed(mojo::URLRequestPtr request) {
@@ -167,46 +146,15 @@ void Browser::Embed(mojo::URLRequestPtr request) {
     return;
   }
 
-  // We can get Embed calls before we've actually been
-  // embedded into the root view and content_ is created.
-  // Just save the last url, we'll embed it when we're ready.
-  if (!content_) {
-    pending_request_ = request.Pass();
-    return;
-  }
-
   GURL gurl(string_url);
   bool changed = current_url_ != gurl;
   current_url_ = gurl;
   if (changed)
     ui_->OnURLChanged();
 
-  scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
-  mojo::ViewManagerClientPtr view_manager_client;
-  frame_connection->Init(app_, request.Pass(), &view_manager_client);
-  frame_connection->application_connection()->AddService<mojo::NavigatorHost>(
-      this);
-  FrameTreeClient* frame_tree_client = frame_connection->frame_tree_client();
-  frame_tree_.reset(new FrameTree(content_, this, frame_tree_client,
-                                  frame_connection.Pass()));
-  content_->Embed(view_manager_client.Pass());
-  LoadingStateChanged(true);
+  web_view_.web_view()->LoadRequest(request.Pass());
 
   navigator_host_.RecordNavigation(gurl.spec());
-}
-
-bool Browser::CanPostMessageEventToFrame(const Frame* source,
-                                         const Frame* target,
-                                         HTMLMessageEvent* event) {
-  return true;
-}
-
-void Browser::LoadingStateChanged(bool loading) {
-  ui_->LoadingStateChanged(loading);
-}
-
-void Browser::ProgressChanged(double progress) {
-  ui_->ProgressChanged(progress);
 }
 
 void Browser::Create(mojo::ApplicationConnection* connection,
@@ -217,23 +165,6 @@ void Browser::Create(mojo::ApplicationConnection* connection,
 void Browser::Create(mojo::ApplicationConnection* connection,
                      mojo::InterfaceRequest<ViewEmbedder> request) {
   view_embedder_bindings_.AddBinding(this, request.Pass());
-}
-
-void Browser::RequestNavigate(Frame* source,
-                              NavigationTargetType target_type,
-                              Frame* target_frame,
-                              mojo::URLRequestPtr request) {
-  // TODO: this needs security checks.
-  if (target_type == NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
-    if (target_frame && target_frame != frame_tree_->root() &&
-        target_frame->view()) {
-      NavigateExistingFrame(target_frame, request.Pass());
-      return;
-    }
-    DVLOG(1) << "RequestNavigate() targeted existing frame that doesn't exist.";
-    return;
-  }
-  ReplaceContentWithRequest(request.Pass());
 }
 
 }  // namespace mandoline

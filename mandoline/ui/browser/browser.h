@@ -11,7 +11,8 @@
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
-#include "mandoline/tab/frame_tree_delegate.h"
+#include "mandoline/tab/public/cpp/web_view.h"
+#include "mandoline/tab/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/browser/navigator_host_impl.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
@@ -32,12 +33,11 @@ FORWARD_DECLARE_TEST(BrowserTest, ClosingBrowserClosesAppConnection);
 
 class BrowserDelegate;
 class BrowserUI;
-class FrameTree;
 
 class Browser : public mojo::ViewManagerDelegate,
                 public mojo::ViewManagerRootClient,
+                public web_view::mojom::WebViewClient,
                 public ViewEmbedder,
-                public FrameTreeDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
                 public mojo::InterfaceFactory<ViewEmbedder> {
  public:
@@ -63,32 +63,20 @@ class Browser : public mojo::ViewManagerDelegate,
 
   mojo::ApplicationConnection* GetViewManagerConnectionForTesting();
 
-  // Loads |request| in |frame|.
-  void NavigateExistingFrame(Frame* frame, mojo::URLRequestPtr request);
-
   // Overridden from mojo::ViewManagerDelegate:
   void OnEmbed(mojo::View* root) override;
-  void OnEmbedForDescendant(mojo::View* view,
-                            mojo::URLRequestPtr request,
-                            mojo::ViewManagerClientPtr* client) override;
   void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
 
   // Overridden from ViewManagerRootClient:
   void OnAccelerator(mojo::EventPtr event) override;
 
+  // Overridden from web_view::mojom::WebViewClient:
+  void TopLevelNavigate(mojo::URLRequestPtr request) override;
+  void LoadingStateChanged(bool is_loading) override;
+  void ProgressChanged(double progress) override;
+
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
-
-  // Overridden from FrameTreeDelegate:
-  bool CanPostMessageEventToFrame(const Frame* source,
-                                  const Frame* target,
-                                  HTMLMessageEvent* event) override;
-  void LoadingStateChanged(bool loading) override;
-  void ProgressChanged(double progress) override;
-  void RequestNavigate(Frame* source,
-                       NavigationTargetType target_type,
-                       Frame* target_frame,
-                       mojo::URLRequestPtr request) override;
 
   // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
   void Create(mojo::ApplicationConnection* connection,
@@ -105,7 +93,6 @@ class Browser : public mojo::ViewManagerDelegate,
   mojo::View* root_;
   mojo::View* content_;
   GURL default_url_;
-  mojo::URLRequestPtr pending_request_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
 
@@ -113,14 +100,14 @@ class Browser : public mojo::ViewManagerDelegate,
 
   GURL current_url_;
 
+  web_view::WebView web_view_;
+
   OmniboxPtr omnibox_;
   scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
 
   scoped_ptr<BrowserUI> ui_;
   mojo::ApplicationImpl* app_;
   BrowserDelegate* delegate_;
-
-  scoped_ptr<FrameTree> frame_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

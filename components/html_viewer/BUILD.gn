@@ -327,7 +327,7 @@ mojo_native_application("apptests") {
     "//components/scheduler",
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/cpp/tests:test_support",
-    "//mandoline/tab",
+    "//mandoline/tab:lib",
     "//mandoline/tab:test_support",
     "//mandoline/tab/public/interfaces",
     "//mojo/application/public/cpp:sources",

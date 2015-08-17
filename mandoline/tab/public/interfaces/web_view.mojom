@@ -1,0 +1,29 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module web_view.mojom;
+
+import "network/public/interfaces/url_loader.mojom";
+import "components/view_manager/public/interfaces/view_manager.mojom";
+
+interface WebViewClient {
+  // Page-generated request for a top level frame navigation.
+  TopLevelNavigate(mojo.URLRequest request);
+
+  // Loading and progress notifications.
+  LoadingStateChanged(bool is_loading);
+  ProgressChanged(double progress);
+};
+
+interface WebView {
+  // Navigate the top level frame to |request|.
+  LoadRequest(mojo.URLRequest request);
+
+  // Provide a ViewManagerClient for this specific WebView.
+  GetViewManagerClient(mojo.ViewManagerClient& view_manager_client);
+};
+
+interface WebViewFactory {
+  CreateWebView(WebViewClient client, WebView& web_view);
+};

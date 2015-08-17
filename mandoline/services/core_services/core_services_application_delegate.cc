@@ -11,6 +11,7 @@
 #include "components/filesystem/file_system_app.h"
 #include "components/view_manager/surfaces/surfaces_service_application.h"
 #include "mandoline/services/core_services/application_delegate_factory.h"
+#include "mandoline/tab/web_view_application_delegate.h"
 #include "mandoline/ui/browser/browser_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -125,6 +126,8 @@ void CoreServicesApplicationDelegate::StartApplication(
     delegate.reset(new surfaces::SurfacesServiceApplication);
   } else if (url == "mojo://tracing/") {
     delegate.reset(new tracing::TracingApp);
+  } else if (url == "mojo://web_view/") {
+    delegate.reset(new web_view::WebViewApplicationDelegate);
   } else {
 #if defined(USE_AURA)
     delegate = CreateApplicationDelegateAura(url);
