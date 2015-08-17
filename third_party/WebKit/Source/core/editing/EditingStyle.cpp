@@ -1629,7 +1629,8 @@ PassRefPtrWillBeRawPtr<MutableStylePropertySet> getPropertiesNotIn(StyleProperty
 
     if (RefPtrWillBeRawPtr<CSSValue> baseFontWeight = baseStyle->getPropertyCSSValueInternal(CSSPropertyFontWeight)) {
         if (RefPtrWillBeRawPtr<CSSValue> fontWeight = result->getPropertyCSSValue(CSSPropertyFontWeight)) {
-            if (!fontWeightNeedsResolving(fontWeight.get()) && (fontWeightIsBold(fontWeight.get()) == fontWeightIsBold(baseFontWeight.get())))
+            if (!fontWeightNeedsResolving(fontWeight.get()) && !fontWeightNeedsResolving(baseFontWeight.get())
+                && (fontWeightIsBold(fontWeight.get()) == fontWeightIsBold(baseFontWeight.get())))
                 result->removeProperty(CSSPropertyFontWeight);
         }
     }
