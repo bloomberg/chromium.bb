@@ -27,16 +27,16 @@ enum TextInputType {
 // Text input flag which is based on blink::WebTextInputFlags.
 enum TextInputFlag {
   NONE,
-  AUTO_COMPLETE_ON = 0x001,
-  AUTO_COMPLETE_OFF = 0x002,
-  AUTO_CORRECT_ON = 0x004,
-  AUTO_CORRECT_OFF = 0x008,
-  SPELL_CHECK_ON = 0x010,
-  SPELL_CHECK_OFF = 0x020,
-  AUTO_CAPITALIZE_NONE = 0x040,
-  AUTO_CAPITALIZE_CHARACTERS = 0x080,
-  AUTO_CAPITALIZE_WORDS = 0x100,
-  AUTO_CAPITALIZE_SENTENCES = 0x200,
+  AUTOCOMPLETE_ON = 0x001,
+  AUTOCOMPLETE_OFF = 0x002,
+  AUTOCORRECT_ON = 0x004,
+  AUTOCORRECT_OFF = 0x008,
+  SPELLCHECK_ON = 0x010,
+  SPELLCHECK_OFF = 0x020,
+  AUTOCAPITALIZE_NONE = 0x040,
+  AUTOCAPITALIZE_CHARACTERS = 0x080,
+  AUTOCAPITALIZE_WORDS = 0x100,
+  AUTOCAPITALIZE_SENTENCES = 0x200,
   ALL = 0x3FF,
 };
 
@@ -49,7 +49,7 @@ struct TextInputState {
   int32 flags;
 
   // The value of the input field.
-  string text;
+  string? text;
 
   // The cursor position of the current selection start, or the caret position
   // if nothing is selected.

@@ -35,7 +35,7 @@ WindowTreeHostMojo::WindowTreeHostMojo(mojo::Shell* shell, mojo::View* view)
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
   DCHECK_EQ(context_factory_.get(), compositor()->context_factory());
 
-  input_method_.reset(new InputMethodMandoline(this));
+  input_method_.reset(new InputMethodMandoline(this, view_));
   SetSharedInputMethod(input_method_.get());
 }
 

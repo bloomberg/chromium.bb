@@ -56,6 +56,7 @@ void OmniboxImpl::OnEmbed(mojo::View* root) {
     aura_init_.reset(new AuraInit(root, app_impl_->shell()));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
+    edit_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
   }
 
   const int kOpacity = 0xC0;

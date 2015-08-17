@@ -15,6 +15,7 @@ include_rules = [
   "+ui/events",
   "+ui/gfx",
   "+ui/gl",
+  "+ui/mojo/ime",
   "+ui/mojo/init",
   "+ui/views",
   "+ui/wm",
