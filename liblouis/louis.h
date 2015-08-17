@@ -738,7 +738,7 @@ typedef enum
 {
 	PTN_LAST,
 	
-	PTN_DELIMITER,
+	PTN_END_OF_INPUT,
 
 	PTN_NOT,
 	PTN_ZERO_MORE,

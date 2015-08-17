@@ -3881,10 +3881,10 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 			expr[rcrs++] = PTN_NOT;
 			break;
 		
-		case '~':
+		case '^':
 
 			icrs++;
-			expr[rcrs++] = PTN_DELIMITER;
+			expr[rcrs++] = PTN_END_OF_INPUT;
 			expr[rnxt] = rcrs - rnxt;
 			rnxt = rcrs++;
 			expr[rnxt] = PTN_LAST;

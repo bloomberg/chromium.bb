@@ -1149,7 +1149,7 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 			rcrs++;
 		}
 
-		if(expr[rcrs] == PTN_DELIMITER)
+		if(expr[rcrs] == PTN_END_OF_INPUT)
 		if(icrs >= max)
 			return !not;
 		else if(input[icrs] == 0)
@@ -1266,7 +1266,7 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 			rcrs++;
 		}
 
-		if(expr[rcrs] == PTN_DELIMITER)
+		if(expr[rcrs] == PTN_END_OF_INPUT)
 		if(icrs <= min)
 			return !not;
 		else if(input[icrs] == 0)
