@@ -1945,6 +1945,7 @@ def GetConfig():
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       images=['base', 'recovery', 'test', 'factory_install'],
+      sign_types=['recovery'],
       push_image=True,
       upload_symbols=True,
       binhost_bucket='gs://chromeos-dev-installer',
@@ -2157,6 +2158,12 @@ def GetConfig():
       # rialto does not use Chrome.
       sync_chrome=False,
       chrome_sdk=False,
+  )
+
+  site_config.AddConfig(
+      _release, 'smaug-release',
+      _base_configs['smaug'],
+      sign_types=['nv_lp0_firmware'],
   )
 
   # Now generate generic release configs if we haven't created anything more
@@ -2617,6 +2624,7 @@ def GetConfig():
       description='Factory Builds',
       paygen=False,
       afdo_use=False,
+      sign_types=['factory'],
   )
 
   _firmware = config_lib.BuildConfig(
@@ -2638,6 +2646,7 @@ def GetConfig():
       trybot_list=False,
       paygen=False,
       image_test=False,
+      sign_types=['firmware'],
   )
 
   _firmware_release = site_config.AddTemplate(

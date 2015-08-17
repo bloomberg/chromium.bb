@@ -699,6 +699,10 @@ def DefaultSettings():
       # manifest versions that we may later want to branch off of.
       branch_util_test=False,
 
+      # If specified, it is passed on to the PushImage script as '--sign-types'
+      # commandline argument.  Must be either None or a list of image types.
+      sign_types=None,
+
       # TODO(sosa): Collapse to one option.
       # ========== Dev installer prebuilts options =======================
 

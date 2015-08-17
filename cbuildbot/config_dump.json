@@ -84,6 +84,7 @@
         "sanity_check_slaves": null,
         "separate_debug_symbols": true,
         "shared_user_password": null,
+        "sign_types": null,
         "signer_tests": false,
         "sync_chrome": null,
         "trybot_list": false,
@@ -413,6 +414,9 @@
             ],
             "paygen": false,
             "push_image": true,
+            "sign_types": [
+                "firmware"
+            ],
             "signer_tests": false,
             "sync_chrome": false,
             "trybot_list": false,
@@ -455,6 +459,9 @@
                 "chromeos-base/autotest-all"
             ],
             "paygen": false,
+            "sign_types": [
+                "firmware"
+            ],
             "signer_tests": false,
             "sync_chrome": false,
             "trybot_list": false,
@@ -506,6 +513,9 @@
             "overlays": "both",
             "paygen": false,
             "push_image": true,
+            "sign_types": [
+                "factory"
+            ],
             "signer_tests": true,
             "trybot_list": true,
             "upload_hw_test_artifacts": false,
@@ -558,6 +568,9 @@
             ],
             "paygen": false,
             "push_image": true,
+            "sign_types": [
+                "firmware"
+            ],
             "signer_tests": false,
             "sync_chrome": false,
             "trybot_list": false,
@@ -664,6 +677,9 @@
             "paygen_skip_delta_payloads": true,
             "paygen_skip_testing": true,
             "push_image": true,
+            "sign_types": [
+                "recovery"
+            ],
             "signer_tests": false,
             "trybot_list": true,
             "upload_symbols": true,
@@ -876,6 +892,9 @@
             "overlays": "both",
             "paygen": true,
             "push_image": true,
+            "sign_types": [
+                "recovery"
+            ],
             "signer_tests": true,
             "trybot_list": true,
             "upload_symbols": true,
@@ -928,6 +947,9 @@
             "overlays": "both",
             "paygen": false,
             "push_image": false,
+            "sign_types": [
+                "recovery"
+            ],
             "signer_tests": true,
             "trybot_list": false,
             "upload_symbols": true,
@@ -985,6 +1007,9 @@
             "overlays": "both",
             "paygen": false,
             "push_image": false,
+            "sign_types": [
+                "recovery"
+            ],
             "signer_tests": true,
             "trybot_list": false,
             "upload_symbols": true,
@@ -16913,10 +16938,8 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "images": [
-            "base",
-            "recovery",
-            "test"
+        "sign_types": [
+            "nv_lp0_firmware"
         ],
         "vm_tests": []
     },

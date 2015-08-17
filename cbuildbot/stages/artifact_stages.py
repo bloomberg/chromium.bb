@@ -358,10 +358,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # TODO: When we support branches fully, the friendly name of the branch
       # needs to be used with PushImages
       sign_types = []
-      if config['name'].endswith('-%s' % config_lib.CONFIG_TYPE_FIRMWARE):
-        sign_types += ['firmware']
-      if config['name'].endswith('-%s' % config_lib.CONFIG_TYPE_FACTORY):
-        sign_types += ['factory']
+      if config['sign_types']:
+        sign_types = config['sign_types']
       urls = commands.PushImages(
           board=board,
           archive_url=upload_url,
