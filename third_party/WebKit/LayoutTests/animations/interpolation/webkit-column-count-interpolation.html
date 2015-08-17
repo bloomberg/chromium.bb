@@ -29,13 +29,13 @@ assertInterpolation({
   from: '',
   to: '5',
 }, [
-  {at: -0.4, is: '11'},
-  {at: -0.2, is: '10'},
+  {at: -0.4, is: '10'},
+  {at: -0.2, is: '9'},
   {at: 0, is: '9'},
   {at: 0.2, is: '8'},
   {at: 0.4, is: '7'},
-  {at: 0.6, is: '7'},
-  {at: 0.8, is: '6'},
+  {at: 0.6, is: '6'},
+  {at: 0.8, is: '5'},
   {at: 1, is: '5'},
   {at: 1.2, is: '4'},
 ]);
@@ -54,12 +54,12 @@ assertInterpolation({
   {at: -0.4, is: '1'},
   {at: -0.2, is: '1'},
   {at: 0, is: '1'},
-  {at: 0.2, is: '2'},
-  {at: 0.4, is: '3'},
+  {at: 0.2, is: '1'},
+  {at: 0.4, is: '2'},
   {at: 0.6, is: '3'},
   {at: 0.8, is: '4'},
   {at: 1, is: '5'},
-  {at: 1.2, is: '6'},
+  {at: 1.2, is: '5'},
 ]);
 
 assertNoInterpolation({
