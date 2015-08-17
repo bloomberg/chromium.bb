@@ -166,8 +166,9 @@ class MicrodumpWriter {
     const char kOSId[] = "L";
 #endif
 
-// We cannot depend on uts.machine. On multiarch devices it always returns the
-// primary arch, not the one that match the executable being run.
+// Dump the runtime architecture. On multiarch devices it might not match the
+// hw architecture (the one returned by uname()), for instance in the case of
+// a 32-bit app running on a aarch64 device.
 #if defined(__aarch64__)
     const char kArch[] = "arm64";
 #elif defined(__ARMEL__)
@@ -189,21 +190,24 @@ class MicrodumpWriter {
     LogAppend(" ");
     LogAppend(n_cpus);
     LogAppend(" ");
+
+    // Dump the HW architecture (e.g., armv7l, aarch64).
+    struct utsname uts;
+    const bool has_uts_info = (uname(&uts) == 0);
+    const char* hwArch = has_uts_info ? uts.machine : "unknown_hw_arch";
+    LogAppend(hwArch);
+    LogAppend(" ");
+
     // If the client has attached a build fingerprint to the MinidumpDescriptor
     // use that one. Otherwise try to get some basic info from uname().
     if (build_fingerprint_) {
       LogAppend(build_fingerprint_);
+    } else if (has_uts_info) {
+      LogAppend(uts.release);
+      LogAppend(" ");
+      LogAppend(uts.version);
     } else {
-      struct utsname uts;
-      if (uname(&uts) == 0) {
-        LogAppend(uts.machine);
-        LogAppend(" ");
-        LogAppend(uts.release);
-        LogAppend(" ");
-        LogAppend(uts.version);
-      } else {
-        LogAppend("no build fingerprint available");
-      }
+      LogAppend("no build fingerprint available");
     }
     LogCommitLine();
   }

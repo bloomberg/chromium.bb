@@ -27,10 +27,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <ctype.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <sstream>
 #include <string>
 
 #include "breakpad_googletest_includes.h"
@@ -103,7 +105,40 @@ void CrashAndGetMicrodump(
       buf->get(), "-----BEGIN BREAKPAD MICRODUMP-----"));
   ASSERT_NE(static_cast<char*>(0), strstr(
       buf->get(), "-----END BREAKPAD MICRODUMP-----"));
+}
 
+void CheckMicrodumpContents(const string &microdum_content,
+                            const string &expected_fingerprint,
+                            const string &expected_product_info) {
+  std::istringstream iss(microdum_content);
+  bool did_find_os_info = false;
+  bool did_find_product_info = false;
+  for (string line; std::getline(iss, line);) {
+    if (line.find("O ") == 0) {
+      std::istringstream os_info_tokens(line);
+      string token;
+      os_info_tokens.ignore(2); // Ignore the "O " preamble.
+      // Check the OS descriptor char (L=Linux, A=Android).
+      os_info_tokens >> token;
+      ASSERT_TRUE(token == "L" || token == "A");
+
+      os_info_tokens >> token; // HW architecture.
+      os_info_tokens >> token; // Number of cpus.
+      for (size_t i = 0; i < token.size(); ++i)
+        ASSERT_TRUE(isxdigit(token[i]));
+      os_info_tokens >> token; // SW architecture.
+
+      // Check that the build fingerprint is in the right place.
+      os_info_tokens >> token;
+      ASSERT_EQ(expected_fingerprint, token);
+      did_find_os_info = true;
+    } else if (line.find("V ") == 0) {
+      ASSERT_EQ("V " + expected_product_info, line);
+      did_find_product_info = true;
+    }
+  }
+  ASSERT_TRUE(did_find_os_info);
+  ASSERT_TRUE(did_find_product_info);
 }
 
 TEST(MicrodumpWriterTest, BasicWithMappings) {
@@ -156,9 +191,15 @@ TEST(MicrodumpWriterTest, BuildFingerprintAndProductInfo) {
   MappingList no_mappings;
 
   CrashAndGetMicrodump(no_mappings, kBuildFingerprint, kProductInfo, &buf);
-
-  ASSERT_NE(static_cast<char*>(0), strstr(buf.get(), kBuildFingerprint));
-  ASSERT_NE(static_cast<char*>(0), strstr(buf.get(), kProductInfo));
+  CheckMicrodumpContents(string(buf.get()), kBuildFingerprint, kProductInfo);
 }
 
+TEST(MicrodumpWriterTest, NoProductInfo) {
+  const char kBuildFingerprint[] = "foobar";
+  scoped_array<char> buf;
+  MappingList no_mappings;
+
+  CrashAndGetMicrodump(no_mappings, kBuildFingerprint, NULL, &buf);
+  CheckMicrodumpContents(string(buf.get()), kBuildFingerprint, "UNKNOWN:0.0.0.0");
+}
 }  // namespace
