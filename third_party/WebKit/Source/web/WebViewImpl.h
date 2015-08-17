@@ -758,6 +758,7 @@ private:
     float m_zoomFactorOverride;
 
     bool m_userGestureObserved;
+    bool m_shouldDispatchFirstVisuallyNonEmptyLayout;
     WebDisplayMode m_displayMode;
 
     FloatSize m_elasticOverscroll;

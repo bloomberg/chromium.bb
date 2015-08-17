@@ -233,6 +233,7 @@ public:
 
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
+    bool isVisuallyNonEmpty() const { return m_isVisuallyNonEmpty; }
     void setIsVisuallyNonEmpty() { m_isVisuallyNonEmpty = true; }
     void enableAutoSizeMode(const IntSize& minSize, const IntSize& maxSize);
     void disableAutoSizeMode();
@@ -777,7 +778,6 @@ private:
     unsigned m_visuallyNonEmptyCharacterCount;
     unsigned m_visuallyNonEmptyPixelCount;
     bool m_isVisuallyNonEmpty;
-    bool m_firstVisuallyNonEmptyLayoutCallbackPending;
 
     RefPtrWillBeMember<Node> m_scrollAnchor;
 
