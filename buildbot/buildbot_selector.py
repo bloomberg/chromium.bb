@@ -182,10 +182,6 @@ BOT_ASSIGNMENT = {
     'precise64-glibc': bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
     'mac-glibc': bash + ' buildbot/buildbot_mac-glibc-makefile.sh',
     'win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
-    # Toolchain newlib x86.
-    'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
-    'mac-toolchain_x86': bash + ' buildbot/buildbot_toolchain.sh mac',
-    'precise64-toolchain_x86': bash + ' buildbot/buildbot_toolchain.sh linux',
     # Toolchain (glibc) ARM.
     'win7-toolchain_arm':
         python +
@@ -238,10 +234,6 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_pnacl.sh mode-trybot-qemu mips32',
 
     # Toolchain trybots.
-    'nacl-toolchain-precise64-newlib':
-        bash + ' buildbot/buildbot_toolchain.sh linux',
-    'nacl-toolchain-mac-newlib': bash + ' buildbot/buildbot_toolchain.sh mac',
-    'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
     'nacl-toolchain-precise64-newlib-arm': # TODO(bradnelson): rename
         python +
         ' buildbot/buildbot_toolchain_build.py'

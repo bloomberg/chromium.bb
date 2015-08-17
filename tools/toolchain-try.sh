@@ -8,7 +8,7 @@
 cd "$(dirname "$0")"
 . REVISIONS
 
-repos='binutils gcc glibc linux-headers-for-nacl newlib'
+repos='binutils gcc glibc linux-headers-for-nacl'
 
 trybots_glibc_only="\
 nacl-toolchain-precise64-glibc\
@@ -17,11 +17,6 @@ trybots_glibc="\
 nacl-toolchain-precise64-glibc,\
 nacl-toolchain-mac-glibc,\
 nacl-toolchain-win7-glibc\
-"
-trybots_newlib="\
-nacl-toolchain-precise64-newlib,\
-nacl-toolchain-mac-newlib,\
-nacl-toolchain-win7-newlib\
 "
 
 tmp='.git-status$$'
@@ -35,7 +30,6 @@ trap 'rm -f $tmp' 0 1 2 15
 
 test_all=
 test_glibc=
-test_newlib=
 tryname=try
 for repo in $repos; do
   revname="NACL_$(echo "$repo" | tr '[:lower:]-' '[:upper:]_')_COMMIT"
@@ -50,10 +44,8 @@ for repo in $repos; do
     tryname="${tryname}-${repo}-$(cd "SRC/$repo";
                                   git rev-list -n1 --abbrev-commit HEAD)"
     case "$repo" in
-    newlib) test_newlib=yes ;;
     glibc) test_glibc=yes ;;
-    *) test_newlib=yes
-       test_glibc=yes
+    *) test_glibc=yes
        test_all=yes ;;
     esac
   else
@@ -61,11 +53,10 @@ for repo in $repos; do
   fi
 done
 
-if [ -z "$test_all" -a -z "$test_newlib" -a -n "$test_glibc" ]; then
+if [ -z "$test_all" -a -n "$test_glibc" ]; then
   trybots="$trybots_glibc_only"
 else
-  trybots="${test_newlib:+${trybots_newlib}}\
-${test_glibc:+${test_newlib:+,}${trybots_glibc}}"
+  trybots="$trybots_glibc"
 fi
 
 if ! git rev-parse origin/master >/dev/null; then
