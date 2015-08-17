@@ -6,4 +6,7 @@ mkwst@chromium.org
 stuartmorgan@chromium.org
 vabr@chromium.org
 
+per-file credential_android.*=melandory@chromium.org
+
+per-file generated_password_saved_infobar_delegate_android.*=melandory@chromium.org
 per-file generated_password_saved_infobar_delegate_android.*=rouslan@chromium.org
