@@ -137,9 +137,9 @@ void WebViewImpl::RequestNavigate(Frame* source,
                                   Frame* target_frame,
                                   mojo::URLRequestPtr request) {
   // TODO: this needs security checks.
-  if (target_type == mandoline::NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
-    if (target_frame && target_frame != frame_tree_->root() &&
-        target_frame->view()) {
+  if (target_type == mandoline::NAVIGATION_TARGET_TYPE_EXISTING_FRAME &&
+      target_frame != frame_tree_->root()) {
+    if (target_frame && target_frame->view()) {
       NavigateExistingFrame(target_frame, request.Pass());
       return;
     }
