@@ -210,7 +210,8 @@ void Internals::resetToConsistentState(Page* page)
 
     page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
-    page->setPageScaleFactor(1, IntPoint(0, 0));
+    page->setPageScaleFactor(1);
+    page->deprecatedLocalMainFrame()->view()->layoutViewportScrollableArea()->setScrollPosition(IntPoint(0, 0), ProgrammaticScroll);
     overrideUserPreferredLanguages(Vector<AtomicString>());
     if (!page->deprecatedLocalMainFrame()->spellChecker().isContinuousSpellCheckingEnabled())
         page->deprecatedLocalMainFrame()->spellChecker().toggleContinuousSpellChecking();

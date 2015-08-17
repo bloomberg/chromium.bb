@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <style>
   body {
-    height: 2000px;
-    width: 2000px;
+    height: 10000px;
+    width: 10000px;
   }
 </style>
 
@@ -45,7 +45,6 @@
       assert_equals(history.scrollRestoration, newValue, `Setting scrollRestoration to ${newValue} does expected`);
       window.scrollBy(50, 100);
     }
-    assert_equals(history.length, 5, 'history entries match expectation');
 
     // setup verification
     window.addEventListener('hashchange', t.step_func(function() {
@@ -64,7 +63,7 @@
       window.history.back();
     }));
 
-    // Reset the scroll and kick off the verification
+    // reset the scroll and kick off the verification
     setTimeout(function() {
       history.pushState(null, null, '#done');
       window.scrollTo(555, 555);

@@ -161,7 +161,7 @@ public:
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
 
-    void setPageScaleFactor(float scale, const IntPoint& origin);
+    void setPageScaleFactor(float);
     float pageScaleFactor() const;
 
     float deviceScaleFactor() const { return m_deviceScaleFactor; }

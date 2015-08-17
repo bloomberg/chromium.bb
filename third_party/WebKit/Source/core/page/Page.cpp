@@ -304,25 +304,9 @@ void Page::setDefersLoading(bool defers)
     }
 }
 
-void Page::setPageScaleFactor(float scale, const IntPoint& origin)
+void Page::setPageScaleFactor(float scale)
 {
-    if (!mainFrame()->isLocalFrame())
-        return;
-
-    FrameView* view = deprecatedLocalMainFrame()->view();
-    ScrollableArea* layoutViewport = view ? view->layoutViewportScrollableArea() : nullptr;
-    VisualViewport& visualViewport = frameHost().visualViewport();
-
-    if (scale != visualViewport.scale()) {
-        visualViewport.setScale(scale);
-
-        chromeClient().pageScaleFactorChanged();
-
-        deprecatedLocalMainFrame()->loader().saveScrollState();
-    }
-
-    if (layoutViewport && layoutViewport->scrollPosition() != origin)
-        layoutViewport->setScrollPosition(origin, ProgrammaticScroll);
+    frameHost().visualViewport().setScale(scale);
 }
 
 float Page::pageScaleFactor() const
