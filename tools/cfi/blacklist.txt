@@ -20,6 +20,8 @@ src:*third_party/mesa*
 # Deliberate bad cast to derived class to hide functions.
 type:*BlockRefType*
 type:*SkAutoTUnref*
+# https://crbug.com/517959
+type:*NoAddRefRelease*
 
 # All std:: types
 # This should be possible to remove, if/when we build against
@@ -28,7 +30,16 @@ type:std::*
 
 # All mojo::test:: types.
 # They are loaded from libmojo_public_test_support.so
+# https://crbug.com/515347
 type:mojo::test::*
+
+# invalid downcasts for IPC messages
+# https://crbug.com/520760
+fun:*MessageScannerImpl*MessageScannerImpl*
+
+# invalid typedef for MessagePumpForIO
+# https://crbug.com/520732
+fun:*ToPumpIO*
 
 #############################################################################
 # Base class's constructor accesses a derived class.
