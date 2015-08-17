@@ -408,6 +408,11 @@ chrome.automation.AutomationNode.prototype.indexInParent;
  */
 chrome.automation.AutomationNode.prototype.name;
 
+/**
+ * @type {string}
+ */
+chrome.automation.AutomationNode.prototype.description;
+
 
 /**
  * @type {string}

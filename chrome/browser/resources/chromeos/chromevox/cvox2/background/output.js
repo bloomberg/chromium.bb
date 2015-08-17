@@ -362,7 +362,7 @@ Output.STATE_INFO_ = {
 Output.RULES = {
   navigate: {
     'default': {
-      speak: '$name $value $description $help $role',
+      speak: '$name $value $help $role',
       braille: ''
     },
     abstractContainer: {
@@ -814,9 +814,8 @@ Output.prototype = {
           }
 
           // Pending finalization of name calculation; we must use the
-          // attributes property to access aria-label. See crbug.com/473220.
-          node.attributes = node.attributes || {};
-          var resolvedName = node.name || node.attributes['aria-label'];
+          // description property to access aria-label. See crbug.com/473220.
+          var resolvedName = node.description || node.name;
           this.append_(buff, resolvedName, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);

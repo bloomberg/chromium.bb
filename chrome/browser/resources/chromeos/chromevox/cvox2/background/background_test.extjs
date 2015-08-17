@@ -237,14 +237,12 @@ TEST_F('BackgroundTest', 'DISABLED_InitialFocus', function() {
     });
 });
 
-// Test fails because the output doesn't match the (correct) expectation.
-// http://crbug.com/520946
-TEST_F('BackgroundTest', 'DISABLED_AriaLabel', function() {
+TEST_F('BackgroundTest', 'AriaLabel', function() {
   this.runWithLoadedTree('<a aria-label="foo" href="a">a</a>',
     function(rootNode) {
       cvox.ChromeVox.tts.expectSpeech('foo');
       cvox.ChromeVox.tts.expectSpeech('Link', this.newCallback());
-
-      rootNode.find({role: chrome.automation.RoleType.link}).focus();
-    });
+      rootNode.find({role: 'link'}).focus();
+    }
+  );
 });

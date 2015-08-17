@@ -202,25 +202,24 @@ TEST_F('OutputE2ETest', 'Audio', function() {
       var range = cursors.Range.fromNode(el);
       var o = new Output().withSpeechAndBraille(range, null, 'navigate');
       assertEqualsJSON(
-          {string_: 'media control|Tool bar|||play|begin playback|Button',
+          {string_: 'audio|Tool bar|play||begin playback|Button',
            spans_:
               // Entered container toolbar.
 
               // Button.
-              [{value: 'name', start: 23, end: 23},
+              [{value: 'name', start: 15, end: 19},
 
               // Button earcon.
-              {value: {earconId: "BUTTON"}, start: 23, end: 23},
+              {value: {earconId: "BUTTON"}, start: 15, end: 19},
 
-              {value: 'value', start: 24, end: 24},
-              {value: 'description', start: 25, end: 29},
-              {value: 'help', start: 30, end: 44},
-              {value: 'role', start: 45, end: 51}]
+              {value: 'value', start: 20, end: 20},
+              {value: 'help', start: 21, end: 35},
+              {value: 'role', start: 36, end: 42}]
           }, o.speechOutputForTest);
       checkBrailleOutput(
-          'media control tlbar play begin playback btn',
-          [{value: new Output.NodeSpan(el.parent), start: 0, end: 19},
-           {value: new Output.NodeSpan(el), start: 20, end: 43}],
+          'audio tlbar play begin playback btn',
+          [{value: new Output.NodeSpan(el.parent), start: 0, end: 11},
+           {value: new Output.NodeSpan(el), start: 12, end: 35}],
           o);
 
       el = el.nextSibling;
