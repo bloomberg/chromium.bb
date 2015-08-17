@@ -11,10 +11,6 @@
 #define NSAppKitVersionNumber10_9 1265
 #endif
 
-#ifndef NSAppKitVersionNumber10_10
-#define NSAppKitVersionNumber10_10 1343
-#endif
-
 namespace blink {
 
 bool IsOSMavericksOrEarlier()
@@ -25,16 +21,6 @@ bool IsOSMavericksOrEarlier()
 bool IsOSMavericks()
 {
     return floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_9;
-}
-
-bool IsOSYosemiteOrEarlier()
-{
-    return floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_10;
-}
-
-bool IsOSYosemite()
-{
-    return floor(NSAppKitVersionNumber) == NSAppKitVersionNumber10_10;
 }
 
 } // namespace blink

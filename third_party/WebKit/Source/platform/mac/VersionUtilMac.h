@@ -13,10 +13,6 @@ namespace blink {
 PLATFORM_EXPORT bool IsOSMavericksOrEarlier();
 PLATFORM_EXPORT bool IsOSMavericks();
 
-// Yosemite is Mac OS X 10.10, Darwin 14.
-PLATFORM_EXPORT bool IsOSYosemiteOrEarlier();
-PLATFORM_EXPORT bool IsOSYosemite();
-
 } // namespace blink
 
 #endif // VersionUtilMac_h
