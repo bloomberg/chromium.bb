@@ -46,6 +46,10 @@ class PolicyProvider : public ObservableProvider {
   void ShutdownOnUIThread() override;
 
  private:
+  struct PrefsForManagedDefaultMapEntry;
+
+  static const PrefsForManagedDefaultMapEntry kPrefsForManagedDefault[];
+
   // Reads the policy managed default settings.
   void ReadManagedDefaultSettings();
 
@@ -53,7 +57,7 @@ class PolicyProvider : public ObservableProvider {
   void OnPreferenceChanged(const std::string& pref_name);
 
   // Reads the policy controlled default settings for a specific content type.
-  void UpdateManagedDefaultSetting(ContentSettingsType content_type);
+  void UpdateManagedDefaultSetting(const PrefsForManagedDefaultMapEntry& entry);
 
   void ReadManagedContentSettings(bool overwrite);
 
