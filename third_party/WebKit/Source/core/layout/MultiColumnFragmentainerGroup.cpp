@@ -28,6 +28,11 @@ LayoutSize MultiColumnFragmentainerGroup::offsetFromColumnSet() const
     return offset;
 }
 
+LayoutUnit MultiColumnFragmentainerGroup::blockOffsetInEnclosingFlowThread() const
+{
+    return logicalTop() + m_columnSet.logicalTop() + m_columnSet.multiColumnFlowThread()->blockOffsetInEnclosingFlowThread();
+}
+
 bool MultiColumnFragmentainerGroup::heightIsAuto() const
 {
     // Only the last row may have auto height, and thus be balanced. There are no good reasons to
@@ -45,10 +50,18 @@ void MultiColumnFragmentainerGroup::resetColumnHeight()
 
     LayoutUnit oldColumnHeight = m_columnHeight;
 
-    if (heightIsAuto())
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
+    LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread();
+    if (enclosingFlowThread && enclosingFlowThread->isPageLogicalHeightKnown()) {
+        // TODO(mstensho): Do this better. If height is auto here, we shouldn't set a
+        // height, or forced breaks and pagination struts might mess up column balancing.
+        LayoutUnit columnHeight = heightIsAuto() ? m_maxColumnHeight : heightAdjustedForRowOffset(flowThread->columnHeightAvailable());
+        setAndConstrainColumnHeight(columnHeight);
+    } else if (heightIsAuto()) {
         m_columnHeight = LayoutUnit();
-    else
-        setAndConstrainColumnHeight(heightAdjustedForRowOffset(m_columnSet.multiColumnFlowThread()->columnHeightAvailable()));
+    } else {
+        setAndConstrainColumnHeight(heightAdjustedForRowOffset(flowThread->columnHeightAvailable()));
+    }
 
     if (m_columnHeight != oldColumnHeight)
         m_columnSet.setChildNeedsLayout(MarkOnlyThis);
@@ -119,14 +132,35 @@ bool MultiColumnFragmentainerGroup::recalculateColumnHeight(BalancedColumnHeight
 
 LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const
 {
-    LayoutFlowThread* flowThread = m_columnSet.flowThread();
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
     unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread);
     LayoutRect portionRect(flowThreadPortionRectAt(columnIndex));
     flowThread->flipForWritingMode(portionRect);
     LayoutRect columnRect(columnRectAt(columnIndex));
     m_columnSet.flipForWritingMode(columnRect);
     LayoutSize translationRelativeToGroup = columnRect.location() - portionRect.location();
-    return translationRelativeToGroup + offsetFromColumnSet() + m_columnSet.topLeftLocationOffset() - flowThread->topLeftLocationOffset();
+
+    LayoutSize enclosingTranslation;
+    if (LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread()) {
+        // Translation that would map points in the coordinate space of the outermost flow thread to
+        // visual points in the first column in the first fragmentainer group (row) in our multicol
+        // container.
+        LayoutSize enclosingTranslationOrigin = enclosingFlowThread->flowThreadTranslationAtOffset(flowThread->blockOffsetInEnclosingFlowThread());
+
+        // Translation that would map points in the coordinate space of the outermost flow thread to
+        // visual points in the first column in this fragmentainer group.
+        enclosingTranslation = enclosingFlowThread->flowThreadTranslationAtOffset(blockOffsetInEnclosingFlowThread());
+
+        // What we ultimately return from this method is a translation that maps points in the
+        // coordinate space of our flow thread to a visual point in a certain column in this
+        // fragmentainer group. We had to go all the way up to the outermost flow thread, since this
+        // fragmentainer group may be in a different outer column than the first outer column that
+        // this multicol container lives in. It's the visual distance between the first
+        // fragmentainer group and this fragmentainer group that we need to add to the translation.
+        enclosingTranslation -= enclosingTranslationOrigin;
+    }
+
+    return enclosingTranslation + translationRelativeToGroup + offsetFromColumnSet() + m_columnSet.topLeftLocationOffset() - flowThread->topLeftLocationOffset();
 }
 
 LayoutUnit MultiColumnFragmentainerGroup::columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const
@@ -308,14 +342,26 @@ LayoutUnit MultiColumnFragmentainerGroup::calculateMaxColumnHeight() const
 {
     LayoutBlockFlow* multicolBlock = m_columnSet.multiColumnBlockFlow();
     const ComputedStyle& multicolStyle = multicolBlock->styleRef();
-    LayoutUnit availableHeight = m_columnSet.multiColumnFlowThread()->columnHeightAvailable();
+    LayoutMultiColumnFlowThread* flowThread = m_columnSet.multiColumnFlowThread();
+    LayoutUnit availableHeight = flowThread->columnHeightAvailable();
     LayoutUnit maxColumnHeight = availableHeight ? availableHeight : LayoutUnit::max();
     if (!multicolStyle.logicalMaxHeight().isMaxSizeNone()) {
         LayoutUnit logicalMaxHeight = multicolBlock->computeContentLogicalHeight(MaxSize, multicolStyle.logicalMaxHeight(), -1);
         if (logicalMaxHeight != -1 && maxColumnHeight > logicalMaxHeight)
             maxColumnHeight = logicalMaxHeight;
     }
-    return heightAdjustedForRowOffset(maxColumnHeight);
+    LayoutUnit maxHeight = heightAdjustedForRowOffset(maxColumnHeight);
+    if (LayoutMultiColumnFlowThread* enclosingFlowThread = flowThread->enclosingFlowThread()) {
+        if (enclosingFlowThread->isPageLogicalHeightKnown()) {
+            // We're nested inside another fragmentation context whose fragmentainer heights are
+            // known. This constrains the max height.
+            LayoutUnit remainingOuterLogicalHeight = enclosingFlowThread->pageRemainingLogicalHeightForOffset(blockOffsetInEnclosingFlowThread(), LayoutBlock::AssociateWithLatterPage);
+            ASSERT(remainingOuterLogicalHeight > 0);
+            if (maxHeight > remainingOuterLogicalHeight)
+                maxHeight = remainingOuterLogicalHeight;
+        }
+    }
+    return maxHeight;
 }
 
 void MultiColumnFragmentainerGroup::setAndConstrainColumnHeight(LayoutUnit newHeight)
@@ -323,7 +369,6 @@ void MultiColumnFragmentainerGroup::setAndConstrainColumnHeight(LayoutUnit newHe
     m_columnHeight = newHeight;
     if (m_columnHeight > m_maxColumnHeight)
         m_columnHeight = m_maxColumnHeight;
-    // FIXME: the height may also be affected by the enclosing pagination context, if any.
 }
 
 unsigned MultiColumnFragmentainerGroup::findRunWithTallestColumns() const
@@ -469,16 +514,18 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRectAt(unsign
     //
     // FIXME: Eventually we will know overflow on a per-column basis, but we can't do this until we have a painting
     // mode that understands not to paint contents from a previous column in the overflow area of a following column.
-    bool isFirstColumn = !columnIndex;
-    bool isLastColumn = columnIndex == actualColumnCount() - 1;
+    bool isFirstColumnInRow = !columnIndex;
+    bool isLastColumnInRow = columnIndex == actualColumnCount() - 1;
     bool isLTR = m_columnSet.style()->isLeftToRightDirection();
-    bool isLeftmostColumn = isLTR ? isFirstColumn : isLastColumn;
-    bool isRightmostColumn = isLTR ? isLastColumn : isFirstColumn;
+    bool isLeftmostColumn = isLTR ? isFirstColumnInRow : isLastColumnInRow;
+    bool isRightmostColumn = isLTR ? isLastColumnInRow : isFirstColumnInRow;
 
     LayoutRect portionRect = flowThreadPortionRectAt(columnIndex);
+    bool isFirstColumnInMulticolContainer = isFirstColumnInRow && this == &m_columnSet.firstFragmentainerGroup() && !m_columnSet.previousSiblingMultiColumnSet();
+    bool isLastColumnInMulticolContainer = isLastColumnInRow && this == &m_columnSet.lastFragmentainerGroup() && !m_columnSet.nextSiblingMultiColumnSet();
     // Calculate the overflow rectangle, based on the flow thread's, clipped at column logical
     // top/bottom unless it's the first/last column.
-    LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(portionRect, isFirstColumn && !m_columnSet.previousSiblingMultiColumnSet(), isLastColumn && !m_columnSet.nextSiblingMultiColumnSet());
+    LayoutRect overflowRect = m_columnSet.overflowRectForFlowThreadPortion(portionRect, isFirstColumnInMulticolContainer, isLastColumnInMulticolContainer);
 
     // Avoid overflowing into neighboring columns, by clipping in the middle of adjacent column
     // gaps. Also make sure that we avoid rounding errors.

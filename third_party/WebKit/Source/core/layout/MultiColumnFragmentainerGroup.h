@@ -33,10 +33,15 @@ public:
 
     // Position within the LayoutMultiColumnSet.
     LayoutUnit logicalTop() const { return m_logicalTop; }
+    void setLogicalTop(LayoutUnit logicalTop) { m_logicalTop = logicalTop; }
 
     LayoutUnit logicalHeight() const { return m_columnHeight; }
 
     LayoutSize offsetFromColumnSet() const;
+
+    // Return the block offset from the enclosing flow thread, if nested. In the coordinate space
+    // of the enclosing flow thread.
+    LayoutUnit blockOffsetInEnclosingFlowThread() const;
 
     // The top of our flow thread portion
     LayoutUnit logicalTopInFlowThread() const { return m_logicalTopInFlowThread; }
@@ -174,8 +179,11 @@ public:
     iterator end() { return m_groups.end(); }
     const_iterator end() const { return m_groups.end(); }
 
-    void append(const MultiColumnFragmentainerGroup& group) { m_groups.append(group); }
+    size_t size() const { return m_groups.size(); }
+    MultiColumnFragmentainerGroup& operator[](size_t i) { return m_groups.at(i); }
+    const MultiColumnFragmentainerGroup& operator[](size_t i) const { return m_groups.at(i); }
 
+    void append(const MultiColumnFragmentainerGroup& group) { m_groups.append(group); }
     void shrink(size_t size) { m_groups.shrink(size); }
 
 private:

@@ -50,16 +50,18 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& fl
     return layoutObject;
 }
 
-MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit)
+unsigned LayoutMultiColumnSet::fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit flowThreadOffset) const
 {
-    // FIXME: implement this, once we have support for multiple rows.
-    return m_fragmentainerGroups.first();
-}
-
-const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const
-{
-    // FIXME: implement this, once we have support for multiple rows.
-    return m_fragmentainerGroups.first();
+    ASSERT(m_fragmentainerGroups.size() > 0);
+    if (flowThreadOffset <= 0)
+        return 0;
+    // TODO(mstensho): Introduce an interval tree or similar to speed up this.
+    for (unsigned index = 0; index < m_fragmentainerGroups.size(); index++) {
+        const auto& row = m_fragmentainerGroups[index];
+        if (row.logicalTopInFlowThread() <= flowThreadOffset && row.logicalBottomInFlowThread() > flowThreadOffset)
+            return index;
+    }
+    return m_fragmentainerGroups.size() - 1;
 }
 
 const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtVisualPoint(const LayoutPoint&) const
@@ -111,6 +113,24 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() cons
             return toLayoutMultiColumnSet(sibling);
     }
     return nullptr;
+}
+
+MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup()
+{
+    MultiColumnFragmentainerGroup newGroup(*this);
+    { // Extra scope here for previousGroup; it's potentially invalid once we modify the m_fragmentainerGroups Vector.
+        MultiColumnFragmentainerGroup& previousGroup = m_fragmentainerGroups.last();
+
+        // This is the flow thread block offset where |previousGroup| ends and |newGroup| takes over.
+        LayoutUnit blockOffsetInFlowThread = previousGroup.logicalTopInFlowThread() + previousGroup.logicalHeight() * usedColumnCount();
+        previousGroup.setLogicalBottomInFlowThread(blockOffsetInFlowThread);
+        newGroup.setLogicalTopInFlowThread(blockOffsetInFlowThread);
+
+        newGroup.setLogicalTop(previousGroup.logicalTop() + previousGroup.logicalHeight());
+        newGroup.resetColumnHeight();
+    }
+    m_fragmentainerGroups.append(newGroup);
+    return m_fragmentainerGroups.last();
 }
 
 LayoutUnit LayoutMultiColumnSet::logicalTopInFlowThread() const
@@ -216,7 +236,23 @@ bool LayoutMultiColumnSet::recalculateColumnHeight(BalancedColumnHeightCalculati
 
 void LayoutMultiColumnSet::recordSpaceShortage(LayoutUnit offsetInFlowThread, LayoutUnit spaceShortage)
 {
-    fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread).recordSpaceShortage(spaceShortage);
+    MultiColumnFragmentainerGroup& row = fragmentainerGroupAtFlowThreadOffset(offsetInFlowThread);
+    row.recordSpaceShortage(spaceShortage);
+
+    // Since we're at a potential break here, take the opportunity to check if we need another
+    // fragmentainer group. If we've run out of columns in the last fragmentainer group (column
+    // row), we need to insert another fragmentainer group to hold more columns.
+    if (!row.isLastGroup())
+        return;
+    LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+    if (!flowThread->multiColumnBlockFlow()->isInsideFlowThread())
+        return; // Early bail. We're not nested, so waste no more time on this.
+    if (!flowThread->isInInitialLayoutPass())
+        return;
+    // Move the offset to where the next column starts, if we're not there already.
+    offsetInFlowThread += flowThread->pageRemainingLogicalHeightForOffset(offsetInFlowThread, AssociateWithFormerPage);
+
+    flowThread->appendNewFragmentainerGroupIfNeeded(offsetInFlowThread);
 }
 
 void LayoutMultiColumnSet::resetColumnHeight()

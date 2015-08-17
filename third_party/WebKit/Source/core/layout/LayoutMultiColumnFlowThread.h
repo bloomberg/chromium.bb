@@ -168,11 +168,17 @@ public:
     // Do we need to set a new width and lay out?
     virtual bool needsNewWidth() const;
 
+    bool isPageLogicalHeightKnown() const final;
+
+    LayoutSize flowThreadTranslationAtOffset(LayoutUnit) const;
+
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const override;
 
     LayoutMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const final;
 
     void layoutColumns(bool relayoutChildren, SubtreeLayoutScope&);
+
+    bool isInInitialLayoutPass() const { return !m_inBalancingPass; }
 
     bool recalculateColumnHeights();
 
@@ -180,6 +186,17 @@ public:
 
     // Remove the spanner placeholder and return true if the specified object is no longer a valid spanner.
     bool removeSpannerPlaceholderIfNoLongerValid(LayoutBox* spannerObjectInFlowThread);
+
+    LayoutMultiColumnFlowThread* enclosingFlowThread() const;
+    LayoutUnit blockOffsetInEnclosingFlowThread() const { ASSERT(enclosingFlowThread()); return m_blockOffsetInEnclosingFlowThread; }
+
+    // Return true if we have a fragmentainer group that can hold a column at the specified flow thread block offset.
+    bool hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread) const;
+
+    // If we've run out of columns in the last fragmentainer group (column row), we have to insert
+    // another fragmentainer group in order to hold more columns. This means that we're moving to
+    // the next outer column (in the enclosing fragmentation context).
+    void appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread);
 
     const char* name() const override { return "LayoutMultiColumnFlowThread"; }
 
@@ -209,7 +226,6 @@ private:
     void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
     void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) override;
     bool addForcedColumnBreak(LayoutUnit, LayoutObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = nullptr) override;
-    bool isPageLogicalHeightKnown() const override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a
     // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong
@@ -218,6 +234,11 @@ private:
 
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
+
+    // Cached block offset from this flow thread to the enclosing flow thread, if any. In the
+    // coordinate space of the enclosing flow thread.
+    LayoutUnit m_blockOffsetInEnclosingFlowThread;
+
     bool m_inBalancingPass; // Set when relayouting for column balancing.
     bool m_needsColumnHeightsRecalculation; // Set when we need to recalculate the column set heights after layout.
     bool m_progressionIsInline; // Always true for regular multicol. False for paged-y overflow.

@@ -64,8 +64,14 @@ public:
 
     const MultiColumnFragmentainerGroup& firstFragmentainerGroup() const { return m_fragmentainerGroups.first(); }
     const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
-    MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit);
-    const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const;
+    MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset)
+    {
+        return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset)];
+    }
+    const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit flowThreadOffset) const
+    {
+        return m_fragmentainerGroups[fragmentainerGroupIndexAtFlowThreadOffset(flowThreadOffset)];
+    }
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtVisualPoint(const LayoutPoint&) const;
 
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || LayoutBlockFlow::isOfType(type); }
@@ -84,6 +90,8 @@ public:
 
     LayoutMultiColumnSet* nextSiblingMultiColumnSet() const;
     LayoutMultiColumnSet* previousSiblingMultiColumnSet() const;
+
+    MultiColumnFragmentainerGroup& appendNewFragmentainerGroup();
 
     LayoutUnit logicalTopInFlowThread() const;
     LayoutUnit logicalBottomInFlowThread() const;
@@ -158,6 +166,8 @@ protected:
     LayoutMultiColumnSet(LayoutFlowThread*);
 
 private:
+    unsigned fragmentainerGroupIndexAtFlowThreadOffset(LayoutUnit) const;
+
     void insertedIntoTree() final;
     void willBeRemovedFromTree() final;
 
