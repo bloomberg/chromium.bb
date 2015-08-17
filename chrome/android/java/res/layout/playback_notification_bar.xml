@@ -75,4 +75,17 @@
         android:background="?android:attr/selectableItemBackground"
         android:contentDescription="@null"/>
 
+    <ImageButton
+        android:id="@+id/stop"
+        android:src="@drawable/ic_vidcontrol_stop"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:padding="12dp"
+        android:scaleType="center"
+        android:background="?android:attr/selectableItemBackground"
+        android:contentDescription="@string/accessibility_stop"
+        android:visibility="gone"/>
+
 </LinearLayout>

@@ -23,6 +23,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -304,6 +305,14 @@ public class NotificationMediaPlaybackControls {
     private RemoteViews createContentView() {
         RemoteViews contentView =
                 new RemoteViews(mContext.getPackageName(), R.layout.playback_notification_bar);
+
+        // On Android pre-L, dismissing the notification when the service is no longer in foreground
+        // doesn't work. Instead, a STOP button is shown.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            contentView.setViewVisibility(R.id.stop, View.VISIBLE);
+            contentView.setOnClickPendingIntent(R.id.stop,
+                    mService.getPendingIntent(ListenerService.ACTION_STOP));
+        }
         return contentView;
     }
 
