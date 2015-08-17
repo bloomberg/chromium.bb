@@ -54,19 +54,6 @@ public:
         callbacks->onError(new WebSyncError(WebSyncError::ErrorTypeAbort, "Function not implemented."));
         delete callbacks;
     }
-
-    // Takes ownership of the WebServiceWorkerRegistration.
-    virtual void trackRegistration(WebSyncRegistration* registration)
-    {
-        // TODO(jkarlin): After landing both legs of the releaseRegistration CLs, make this a pure virtual function.
-        return;
-    }
-
-    virtual void releaseRegistration(int64_t syncId)
-    {
-        // TODO(jkarlin): After landing both legs of the releaseRegistration CLs, make this a pure virtual function.
-        return;
-    }
 };
 
 } // namespace blink

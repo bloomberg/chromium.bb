@@ -48,13 +48,6 @@ SyncRegistration::SyncRegistration(int64_t id, const SyncRegistrationOptions& op
 
 SyncRegistration::~SyncRegistration()
 {
-    Platform* currentPlatform = Platform::current();
-    if (!currentPlatform)
-        return;
-    WebSyncProvider* syncProvider = currentPlatform->backgroundSyncProvider();
-    if (!syncProvider)
-        return;
-    syncProvider->releaseRegistration(m_id);
 }
 
 ScriptPromise SyncRegistration::done(ScriptState* scriptState)

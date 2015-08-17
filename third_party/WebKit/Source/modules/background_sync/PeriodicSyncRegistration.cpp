@@ -66,13 +66,6 @@ PeriodicSyncRegistration::PeriodicSyncRegistration(int64_t id, const PeriodicSyn
 
 PeriodicSyncRegistration::~PeriodicSyncRegistration()
 {
-    Platform* currentPlatform = Platform::current();
-    if (!currentPlatform)
-        return;
-    WebSyncProvider* syncProvider = currentPlatform->backgroundSyncProvider();
-    if (!syncProvider)
-        return;
-    syncProvider->releaseRegistration(m_id);
 }
 
 ScriptPromise PeriodicSyncRegistration::unregister(ScriptState* scriptState)
