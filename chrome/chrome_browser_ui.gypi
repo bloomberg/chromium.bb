@@ -1716,6 +1716,8 @@
       'browser/ui/tabs/tab_strip_model_observer.h',
       'browser/ui/tabs/tab_strip_model_order_controller.cc',
       'browser/ui/tabs/tab_strip_model_order_controller.h',
+      'browser/ui/tabs/tab_strip_model_stats_recorder.cc',
+      'browser/ui/tabs/tab_strip_model_stats_recorder.h',
       'browser/ui/tabs/tab_strip_model_utils.cc',
       'browser/ui/tabs/tab_strip_model_utils.h',
       'browser/ui/tabs/tab_utils.cc',
