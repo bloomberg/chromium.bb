@@ -206,8 +206,8 @@ remoting_webapp_shared_js_host_files = [
 remoting_webapp_shared_js_logging_files = [
   "base/js/chromoting_event.js",
   "base/js/format_iq.js",
-  "base/js/log_to_server.js",
   "base/js/logger.js",
+  "base/js/log_to_server.js",
   "base/js/server_log_entry.js",
   "base/js/session_logger.js",
   "base/js/stats_accumulator.js",
