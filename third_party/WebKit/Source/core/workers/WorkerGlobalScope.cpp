@@ -72,7 +72,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     : m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
-    , m_script(adoptPtr(new WorkerScriptController(*this, thread->isolate())))
+    , m_script(WorkerScriptController::create(this, thread->isolate()))
     , m_thread(thread)
     , m_workerInspectorController(adoptRefWillBeNoop(new WorkerInspectorController(this)))
     , m_closing(false)
@@ -184,6 +184,13 @@ WorkerNavigator* WorkerGlobalScope::navigator() const
 void WorkerGlobalScope::postTask(const WebTraceLocation& location, PassOwnPtr<ExecutionContextTask> task)
 {
     thread()->postTask(location, task);
+}
+
+void WorkerGlobalScope::clearScript()
+{
+    ASSERT(m_script);
+    m_script->dispose();
+    m_script.clear();
 }
 
 void WorkerGlobalScope::clearInspector()
@@ -390,6 +397,7 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
+    visitor->trace(m_script);
     visitor->trace(m_workerInspectorController);
     visitor->trace(m_eventQueue);
     visitor->trace(m_workerClients);

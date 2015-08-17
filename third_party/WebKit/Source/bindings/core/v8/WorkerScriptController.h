@@ -49,10 +49,11 @@ class ExceptionState;
 class ScriptSourceCode;
 class WorkerGlobalScope;
 
-class CORE_EXPORT WorkerScriptController {
+class CORE_EXPORT WorkerScriptController : public NoBaseWillBeGarbageCollectedFinalized<WorkerScriptController> {
 public:
-    WorkerScriptController(WorkerGlobalScope&, v8::Isolate*);
-    ~WorkerScriptController();
+    static PassOwnPtrWillBeRawPtr<WorkerScriptController> create(WorkerGlobalScope*, v8::Isolate*);
+    virtual ~WorkerScriptController();
+    void dispose();
 
     bool isExecutionForbidden() const;
     bool isExecutionTerminating() const;
@@ -86,7 +87,10 @@ public:
 
     RejectedPromises* rejectedPromises() const { return m_rejectedPromises.get(); }
 
+    DECLARE_TRACE();
+
 private:
+    WorkerScriptController(WorkerGlobalScope*, v8::Isolate*);
     class WorkerGlobalScopeExecutionState;
 
     bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
@@ -95,7 +99,7 @@ private:
     // Evaluate a script file in the current execution environment.
     ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
 
-    WorkerGlobalScope& m_workerGlobalScope;
+    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     RefPtr<ScriptState> m_scriptState;
     RefPtr<DOMWrapperWorld> m_world;
     String m_disableEvalPending;
@@ -103,7 +107,7 @@ private:
     bool m_executionScheduledToTerminate;
     mutable Mutex m_scheduledTerminationMutex;
 
-    OwnPtrWillBePersistent<RejectedPromises> m_rejectedPromises;
+    OwnPtrWillBeMember<RejectedPromises> m_rejectedPromises;
 
     // |m_globalScopeExecutionState| refers to a stack object
     // that evaluate() allocates; evaluate() ensuring that the

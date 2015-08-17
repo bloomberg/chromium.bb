@@ -167,7 +167,7 @@ private:
     EventTarget* errorEventTarget() final;
     void didUpdateSecurityOrigin() final { }
 
-    void clearScript() { m_script.clear(); }
+    void clearScript();
     void clearInspector();
 
     static void removeURLFromMemoryCacheInternal(const KURL&);
@@ -182,7 +182,7 @@ private:
 
     mutable UseCounter::CountBits m_deprecationWarningBits;
 
-    OwnPtr<WorkerScriptController> m_script;
+    OwnPtrWillBeMember<WorkerScriptController> m_script;
     WorkerThread* m_thread;
 
     RefPtrWillBeMember<WorkerInspectorController> m_workerInspectorController;

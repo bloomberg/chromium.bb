@@ -77,6 +77,7 @@ public:
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_errorEventFromImportedScript);
+        visitor->trace(m_controller);
     }
 
     bool hadException;
@@ -98,11 +99,16 @@ public:
     //
     // With Oilpan, |m_outerState| isn't traced. It'll be "up the stack"
     // and its fields will be traced when scanning the stack.
-    WorkerScriptController* m_controller;
+    RawPtrWillBeMember<WorkerScriptController> m_controller;
     WorkerGlobalScopeExecutionState* m_outerState;
 };
 
-WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalScope, v8::Isolate* isolate)
+PassOwnPtrWillBeRawPtr<WorkerScriptController> WorkerScriptController::create(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
+{
+    return adoptPtrWillBeNoop(new WorkerScriptController(workerGlobalScope, isolate));
+}
+
+WorkerScriptController::WorkerScriptController(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
     : m_workerGlobalScope(workerGlobalScope)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
@@ -115,6 +121,11 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
 
 WorkerScriptController::~WorkerScriptController()
 {
+    ASSERT(!m_rejectedPromises);
+}
+
+void WorkerScriptController::dispose()
+{
     m_rejectedPromises->dispose();
     m_rejectedPromises.clear();
 
@@ -122,7 +133,7 @@ WorkerScriptController::~WorkerScriptController()
 
     // The corresponding call to didStartRunLoop() is in WorkerThread::initialize().
     // See http://webkit.org/b/83104#c14 for why this is here.
-    m_workerGlobalScope.thread()->didStopRunLoop();
+    m_workerGlobalScope->thread()->didStopRunLoop();
 
     if (isContextInitialized())
         m_scriptState->disposePerContextData();
@@ -147,7 +158,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     WorkerThreadDebugger::setContextDebugData(context);
 
     // Create a new JS object and use it as the prototype for the shadow global object.
-    const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope.wrapperTypeInfo();
+    const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope->wrapperTypeInfo();
     v8::Local<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
     if (workerGlobalScopeConstructor.IsEmpty())
         return false;
@@ -157,7 +168,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
         return false;
     }
 
-    jsWorkerGlobalScope = V8DOMWrapper::associateObjectWithWrapper(isolate(), &m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
+    jsWorkerGlobalScope = V8DOMWrapper::associateObjectWithWrapper(isolate(), m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Local<v8::Object> globalObject = v8::Local<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());
@@ -166,7 +177,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
 v8::Isolate* WorkerScriptController::isolate() const
 {
-    return m_workerGlobalScope.thread()->isolate();
+    return m_workerGlobalScope->thread()->isolate();
 }
 
 ScriptValue WorkerScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
@@ -187,7 +198,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     v8::Local<v8::Script> compiledScript;
     v8::MaybeLocal<v8::Value> maybeResult;
     if (v8Call(V8ScriptRunner::compileScript(script, fileName, String(), scriptStartPosition, isolate(), cacheHandler, SharableCrossOrigin, v8CacheOptions), compiledScript, block))
-        maybeResult = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, &m_workerGlobalScope);
+        maybeResult = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, m_workerGlobalScope);
 
     if (!block.CanContinue()) {
         forbidExecution();
@@ -237,19 +248,19 @@ bool WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
                 *errorEvent = state.m_errorEventFromImportedScript.release();
                 return false;
             }
-            if (m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin))
+            if (m_workerGlobalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin))
                 *errorEvent = ErrorEvent::createSanitizedError(m_world.get());
             else
                 *errorEvent = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(isolate(), errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global());
         } else {
-            ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
+            ASSERT(!m_workerGlobalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
             if (state.m_errorEventFromImportedScript)
                 event = state.m_errorEventFromImportedScript.release();
             else
                 event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            m_workerGlobalScope.reportException(event, 0, nullptr, NotSharableCrossOrigin);
+            m_workerGlobalScope->reportException(event, 0, nullptr, NotSharableCrossOrigin);
         }
         return false;
     }
@@ -274,13 +285,13 @@ bool WorkerScriptController::isExecutionTerminating() const
 
 void WorkerScriptController::forbidExecution()
 {
-    ASSERT(m_workerGlobalScope.isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     m_executionForbidden = true;
 }
 
 bool WorkerScriptController::isExecutionForbidden() const
 {
-    ASSERT(m_workerGlobalScope.isContextThread());
+    ASSERT(m_workerGlobalScope->isContextThread());
     return m_executionForbidden;
 }
 
@@ -295,6 +306,12 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBe
     if (m_globalScopeExecutionState)
         m_globalScopeExecutionState->m_errorEventFromImportedScript = errorEvent;
     exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(isolate(), errorMessage));
+}
+
+DEFINE_TRACE(WorkerScriptController)
+{
+    visitor->trace(m_workerGlobalScope);
+    visitor->trace(m_rejectedPromises);
 }
 
 } // namespace blink
