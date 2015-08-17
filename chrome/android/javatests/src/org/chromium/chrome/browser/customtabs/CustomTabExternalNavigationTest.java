@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Activity;
 import android.os.Bundle;
 import android.test.FlakyTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
@@ -90,8 +89,11 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
     /**
      * When loading a normal http url that chrome is able to handle, an intent picker should never
      * be shown, even if other activities such as {@link DummyActivityForHttp} claim to handle it.
+     *
+     * crbug.com/519613
+     * @SmallTest
      */
-    @SmallTest
+    @FlakyTest
     public void testIntentPickerNotShownForNormalUrl() {
         final String testUrl = "http://customtabtest.com";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
@@ -104,8 +106,11 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
 
     /**
      * Tests whether a new tab can be created from a {@link CustomTab}.
+     *
+     * crbug.com/519613
+     * @SmallTest
      */
-    @SmallTest
+    @FlakyTest
     public void testNotCreateNewTab() throws InterruptedException, TimeoutException {
         final String testUrl = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
         final TabModelSelector tabSelector = getActivity().getTabModelSelector();
