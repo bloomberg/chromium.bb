@@ -12,7 +12,6 @@ per-file audio_modem.gypi=xiyuan@chromium.org
 # Can not match autofill* due to crbug.com/397984
 per-file autofill.gypi=estade@chromium.org
 per-file autofill.gypi=isherman@chromium.org
-per-file autofill_scaled_resources.grdp=estade@chromium.org
 per-file autofill_strings.grdp=estade@chromium.org
 per-file autofill_strings.grdp=isherman@chromium.org
 

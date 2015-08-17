@@ -5,8 +5,16 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="autofill/mastercard.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
-  <!-- This is not used on desktop, only Android, so use a placeholder file. -->
-  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="autofill/cc-generic.png" />
+
+  <if expr="is_android">
+    <!-- These are not used on desktop, only Android, so use a placeholder file.
+         TODO(rouslan): Remove non-keyboard-accessory icon when keyboard
+         accessory becomes default on Android. -->
+    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW" file="autofill/cc-generic.png" />
+    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY" file="autofill/cc-generic.png" />
+    <structure type="chrome_scaled_image" name="IDR_AUTOFILL_SETTINGS" file="autofill/cc-generic.png" />
+  </if>
+
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_MAC_CONTACTS_ICON" file="autofill/mac_contacts_icon.png" />
   <structure type="chrome_scaled_image" name="IDR_CREDIT_CARD_CVC_HINT" file="autofill/credit_card_cvc_hint.png" />
   <structure type="chrome_scaled_image" name="IDR_CREDIT_CARD_CVC_HINT_AMEX" file="autofill/credit_card_cvc_hint_amex.png" />

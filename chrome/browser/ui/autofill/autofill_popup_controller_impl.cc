@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
@@ -14,6 +15,7 @@
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/components_scaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -60,10 +62,12 @@ const DataResource kDataResources[] = {
   { "jcbCC", IDR_AUTOFILL_CC_GENERIC },
   { "masterCardCC", IDR_AUTOFILL_CC_MASTERCARD },
   { "visaCC", IDR_AUTOFILL_CC_VISA },
+#if defined(OS_ANDROID)
   { "scanCreditCardIcon", IDR_AUTOFILL_CC_SCAN_NEW },
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+  { "settings", IDR_AUTOFILL_SETTINGS },
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   { "macContactsIcon", IDR_AUTOFILL_MAC_CONTACTS_ICON },
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif
 };
 
 }  // namespace
@@ -349,12 +353,23 @@ void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
 
 int AutofillPopupControllerImpl::GetIconResourceID(
     const base::string16& resource_name) const {
+  int result = -1;
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
-    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name))
-      return kDataResources[i].id;
+    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name)) {
+      result = kDataResources[i].id;
+      break;
+    }
   }
 
-  return -1;
+#if defined(OS_ANDROID)
+  if (result == IDR_AUTOFILL_CC_SCAN_NEW &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAccessorySuggestionView)) {
+    result = IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY;
+  }
+#endif  // OS_ANDROID
+
+  return result;
 }
 
 bool AutofillPopupControllerImpl::IsWarning(size_t index) const {

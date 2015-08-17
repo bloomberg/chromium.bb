@@ -54,14 +54,18 @@ DEFINE_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_warning)
 DEFINE_RESOURCE_ID(IDR_PAGEINFO_WARNING_MAJOR,\
                    R.drawable.pageinfo_warning)
 
-// Autofill popup images.
+// Autofill popup and keyboard accessory images.
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_AMEX, R.drawable.amex_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_DISCOVER, R.drawable.discover_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_GENERIC, R.drawable.generic_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_MASTERCARD, R.drawable.mc_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_VISA, R.drawable.visa_card)
 DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_SCAN_NEW, android.R.drawable.ic_menu_camera)
+DEFINE_RESOURCE_ID(IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY,
+                   org.chromium.chrome.R.drawable.ic_photo_camera)
 DEFINE_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT, R.drawable.cvc_icon)
 DEFINE_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT_AMEX, R.drawable.cvc_icon_amex)
+DEFINE_RESOURCE_ID(IDR_AUTOFILL_SETTINGS,
+                   org.chromium.chrome.R.drawable.ic_settings)
 
 #endif  // CHROME_BROWSER_ANDROID_RESOURCE_ID_H_

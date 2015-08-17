@@ -377,6 +377,10 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   suggestions->push_back(Suggestion(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_POPUP)));
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAccessorySuggestionView)) {
+    suggestions->back().icon = base::ASCIIToUTF16("settings");
+  }
 }
 
 void AutofillExternalDelegate::InsertDataListValues(

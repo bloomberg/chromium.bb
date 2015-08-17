@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -82,22 +83,31 @@ public class AutofillKeyboardAccessory extends LinearLayout
     public void showWithSuggestions(AutofillSuggestion[] suggestions, boolean isRtl) {
         removeAllViews();
         for (AutofillSuggestion suggestion : suggestions) {
-            View touchTarget = LayoutInflater.from(getContext()).inflate(
-                    R.layout.autofill_keyboard_accessory_item, this, false);
-            touchTarget.setOnClickListener(this);
-            TextView label = (TextView) touchTarget.findViewById(
-                    R.id.autofill_keyboard_accessory_item_label);
-            label.setMaxWidth(mMaximumLabelWidthPx);
+            assert !TextUtils.isEmpty(suggestion.getLabel());
 
-            if (suggestion.getIconId() != 0) {
-                ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        label, suggestion.getIconId(), 0, 0, 0);
-            }
+            View touchTarget;
+            if (suggestion.getSuggestionId() < 0 && suggestion.getIconId() != 0) {
+                touchTarget = LayoutInflater.from(getContext()).inflate(
+                        R.layout.autofill_keyboard_accessory_icon, this, false);
 
-            if (!TextUtils.isEmpty(suggestion.getLabel())) {
+                ImageView icon = (ImageView) touchTarget;
+                icon.setImageResource(suggestion.getIconId());
+                icon.setContentDescription(suggestion.getLabel());
+            } else {
+                touchTarget = LayoutInflater.from(getContext()).inflate(
+                        R.layout.autofill_keyboard_accessory_item, this, false);
+
+                TextView label = (TextView) touchTarget.findViewById(
+                        R.id.autofill_keyboard_accessory_item_label);
+                label.setMaxWidth(mMaximumLabelWidthPx);
                 label.setText(suggestion.getLabel());
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     label.setTypeface(Typeface.DEFAULT_BOLD);
+                }
+
+                if (suggestion.getIconId() != 0) {
+                    ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                            label, suggestion.getIconId(), 0, 0, 0);
                 }
 
                 if (!TextUtils.isEmpty(suggestion.getSublabel())) {
@@ -109,6 +119,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 }
             }
 
+            touchTarget.setOnClickListener(this);
             addView(touchTarget);
         }
 
