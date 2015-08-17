@@ -291,6 +291,11 @@ public interface WebContents extends Parcelable {
     void suspendMediaSession();
 
     /**
+     * Stops the current media session.
+     */
+    void stopMediaSession();
+
+    /**
      * Add an observer to the WebContents
      *
      * @param observer The observer to add.

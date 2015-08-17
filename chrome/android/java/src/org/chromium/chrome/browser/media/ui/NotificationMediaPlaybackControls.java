@@ -51,8 +51,8 @@ public class NotificationMediaPlaybackControls {
                 "NotificationMediaPlaybackControls.ListenerService.PLAY";
         private static final String ACTION_PAUSE =
                 "NotificationMediaPlaybackControls.ListenerService.PAUSE";
-        private static final String ACTION_STOP_SELF =
-                "NotificationMediaPlaybackControls.ListenerService.STOP_SELF";
+        private static final String ACTION_STOP =
+                "NotificationMediaPlaybackControls.ListenerService.STOP";
         private static final String ACTION_MEDIA_BUTTON =
                 "NotificationMediaPlaybackControls.ListenerService.MEDIA_BUTTON";
 
@@ -132,7 +132,8 @@ public class NotificationMediaPlaybackControls {
                 return START_NOT_STICKY;
             }
 
-            if (ACTION_STOP_SELF.equals(action)) {
+            if (ACTION_STOP.equals(action)) {
+                sInstance.mMediaNotificationInfo.listener.onStop();
                 stopSelf();
                 return START_NOT_STICKY;
             }
@@ -377,7 +378,7 @@ public class NotificationMediaPlaybackControls {
                 .setSmallIcon(R.drawable.audio_playing)
                 .setAutoCancel(false)
                 .setLocalOnly(true)
-                .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP_SELF));
+                .setDeleteIntent(mService.getPendingIntent(ListenerService.ACTION_STOP));
         }
         mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
         mNotificationBuilder.setContentIntent(createContentIntent());

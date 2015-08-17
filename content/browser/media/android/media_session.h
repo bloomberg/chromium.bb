@@ -75,6 +75,9 @@ class CONTENT_EXPORT MediaSession
   // is not controllable.
   void Suspend();
 
+  // Called when the user requests stopping the session.
+  void Stop();
+
   // Returns if the session can be controlled by Resume() and Suspend calls
   // above.
   bool IsControllable() const;

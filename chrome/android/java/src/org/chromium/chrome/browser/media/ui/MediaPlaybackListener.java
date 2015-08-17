@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.media.ui;
 
 /**
- * Interface for classes that need to be notified about play/pause events.
+ * Interface for classes that need to be notified about media events.
  */
 public interface MediaPlaybackListener {
     /**
@@ -17,4 +17,9 @@ public interface MediaPlaybackListener {
      * Called when the user wants to pause the playback.
      */
     void onPause();
+
+    /**
+     * Called when the user wants to stop the playback.
+     */
+    void onStop();
 }

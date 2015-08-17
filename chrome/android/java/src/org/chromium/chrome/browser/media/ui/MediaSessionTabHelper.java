@@ -39,6 +39,12 @@ public class MediaSessionTabHelper {
             assert mWebContents != null;
             mWebContents.suspendMediaSession();
         }
+
+        @Override
+        public void onStop() {
+            assert mWebContents != null;
+            mWebContents.stopMediaSession();
+        }
     };
 
     private WebContentsObserver createWebContentsObserver(WebContents webContents) {

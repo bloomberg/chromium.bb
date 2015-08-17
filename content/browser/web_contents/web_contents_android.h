@@ -114,6 +114,7 @@ class CONTENT_EXPORT WebContentsAndroid
 
   void ResumeMediaSession(JNIEnv* env, jobject obj);
   void SuspendMediaSession(JNIEnv* env, jobject obj);
+  void StopMediaSession(JNIEnv* env, jobject obj);
 
   base::android::ScopedJavaLocalRef<jstring> GetEncoding(JNIEnv* env,
                                                          jobject obj) const;

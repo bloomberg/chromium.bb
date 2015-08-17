@@ -3407,6 +3407,10 @@ void WebContentsImpl::SuspendMediaSession() {
   MediaSession::Get(this)->Suspend();
 }
 
+void WebContentsImpl::StopMediaSession() {
+  MediaSession::Get(this)->Stop();
+}
+
 #endif  // defined(OS_ANDROID)
 
 void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {

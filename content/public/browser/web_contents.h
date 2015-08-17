@@ -672,6 +672,8 @@ class WebContents : public PageNavigator,
   virtual void ResumeMediaSession() = 0;
   // Requests to suspend the current media session.
   virtual void SuspendMediaSession() = 0;
+  // Requests to stop the current media session.
+  virtual void StopMediaSession() = 0;
 
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);

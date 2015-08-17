@@ -350,6 +350,11 @@ import java.util.UUID;
     }
 
     @Override
+    public void stopMediaSession() {
+        nativeStopMediaSession(mNativeWebContentsAndroid);
+    }
+
+    @Override
     public String getEncoding() {
         return nativeGetEncoding(mNativeWebContentsAndroid);
     }
@@ -449,5 +454,6 @@ import java.util.UUID;
             AccessibilitySnapshotCallback callback, float offsetY, float scrollX);
     private native void nativeResumeMediaSession(long nativeWebContentsAndroid);
     private native void nativeSuspendMediaSession(long nativeWebContentsAndroid);
+    private native void nativeStopMediaSession(long nativeWebContentsAndroid);
     private native String nativeGetEncoding(long nativeWebContentsAndroid);
 }

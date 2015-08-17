@@ -366,6 +366,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnMediaSessionStateChanged();
   void ResumeMediaSession() override;
   void SuspendMediaSession() override;
+  void StopMediaSession() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
   virtual WebContentsAndroid* GetWebContentsAndroid();

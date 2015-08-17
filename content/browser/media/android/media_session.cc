@@ -145,6 +145,17 @@ void MediaSession::Suspend() {
   OnSuspendInternal(SuspendType::UI);
 }
 
+void MediaSession::Stop() {
+  DCHECK(audio_focus_state_ != State::INACTIVE);
+
+  if (audio_focus_state_ != State::SUSPENDED)
+    OnSuspendInternal(SuspendType::UI);
+
+  DCHECK(audio_focus_state_ == State::SUSPENDED);
+  players_.clear();
+  AbandonSystemAudioFocusIfNeeded();
+}
+
 bool MediaSession::IsSuspended() const {
   // TODO(mlamouri): should be == State::SUSPENDED.
   return audio_focus_state_ != State::ACTIVE;
