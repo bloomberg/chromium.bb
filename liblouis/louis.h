@@ -93,11 +93,11 @@ extern "C"
     CTC_SeqDelimiter = 0x2000,
     CTC_SeqBefore = 0x4000,
     CTC_SeqAfter = 0x8000,
-    //CTC_WordReset = 0x10000,
-    CTC_NumericMode = 0x10000,
-    CTC_NumericNoContract = 0x20000,
     CTC_CapsMode = 0x40000,
-    CTC_EmphMode = 0x80000
+    CTC_EmphMode = 0x80000,
+    CTC_NumericMode = 0x20000000,
+    CTC_NumericNoContract = 0x40000000,
+    CTC_EndOfInput = 0x80000000   //   used by pattern matcher
   } TranslationTableCharacterAttribute;
 
   typedef enum
@@ -746,7 +746,7 @@ typedef enum
 
 	PTN_CHARS,
 
-	PTN_ATTRIBUTE,
+	PTN_ATTRIBUTES,
 }
 PatternCodes;
 

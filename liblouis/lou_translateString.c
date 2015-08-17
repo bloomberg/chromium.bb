@@ -1135,6 +1135,7 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 {
 	int icrs, ibgn;
 	int rcrs, rnxt;
+	int attrs;
 	int check;
 	int not;
 
@@ -1159,8 +1160,16 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 
 		if(icrs >= max)
 		{
+			/*   there could be CTC_EndOfInput   */
+			if(expr[rcrs] == PTN_ATTRIBUTES)
+			{
+					attrs = expr[rcrs + 1] << 16;
+					if(attrs & CTC_EndOfInput)
+						return !not;
+			}
+
 			/*   there could still be ZERO_OR_MORE   */
-			if(expr[rcrs] == PTN_ZERO_MORE)
+			else if(expr[rcrs] == PTN_ZERO_MORE)
 			{
 				rcrs = rnxt + expr[rnxt];
 				rnxt = rcrs;
@@ -1182,9 +1191,10 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 			{
 				switch(expr[rcrs + 1])
 				{
-				case PTN_ATTRIBUTE:
+				case PTN_ATTRIBUTES:
 
-					check = checkAttr(input[icrs], expr[rcrs + 2], 0);
+					attrs = ((expr[rcrs + 2] << 16) | expr[rcrs + 3]) & ~CTC_EndOfInput;
+					check = checkAttr(input[icrs], attrs, 0);
 					break;
 
 				case PTN_CHARS:
@@ -1218,9 +1228,10 @@ static int pattern_check(const widechar *input, const widechar *expr, const int 
 
 			return 0;
 
-		case PTN_ATTRIBUTE:
+		case PTN_ATTRIBUTES:
 
-			check = checkAttr(input[icrs], expr[rcrs + 1], 0);
+			attrs = ((expr[rcrs + 1] << 16) | expr[rcrs + 2]) & ~CTC_EndOfInput;
+			check = checkAttr(input[icrs], attrs, 0);
 			if(check && not)
 				return 0;
 			if(!check && !not)
@@ -1252,6 +1263,7 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 {
 	int icrs, ibgn;
 	int rcrs, rnxt;
+	int attrs;
 	int check;
 	int not;
 	
@@ -1276,8 +1288,16 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 
 		if(icrs <= min)
 		{
+			/*   there could be CTC_EndOfInput   */
+			if(expr[rcrs] == PTN_ATTRIBUTES)
+			{
+					attrs = expr[rcrs + 1] << 16;
+					if(attrs & CTC_EndOfInput)
+						return !not;
+			}
+
 			/*   there could still be ZERO_OR_MORE   */
-			if(expr[rcrs] == PTN_ZERO_MORE)
+			else if(expr[rcrs] == PTN_ZERO_MORE)
 			{
 				rcrs = rnxt + expr[rnxt];
 				rnxt = rcrs;
@@ -1299,9 +1319,10 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 			{
 				switch(expr[rcrs + 1])
 				{
-				case PTN_ATTRIBUTE:
+				case PTN_ATTRIBUTES:
 
-					check = checkAttr(input[icrs], expr[rcrs + 2], 0);
+					attrs = ((expr[rcrs + 2] << 16) | expr[rcrs + 3]) & ~CTC_EndOfInput;
+					check = checkAttr(input[icrs], attrs, 0);
 					break;
 
 				case PTN_CHARS:
@@ -1335,9 +1356,10 @@ static int pattern_check_reverse(const widechar *input, const widechar *expr, co
 
 			return 0;
 
-		case PTN_ATTRIBUTE:
+		case PTN_ATTRIBUTES:
 
-			check = checkAttr(input[icrs], expr[rcrs + 1], 0);
+			attrs = ((expr[rcrs + 1] << 16) | expr[rcrs + 2]) & ~CTC_EndOfInput;
+			check = checkAttr(input[icrs], attrs, 0);
 			if(check && not)
 				return 0;
 			if(!check && !not)
@@ -2431,9 +2453,8 @@ markEmphases()
 			caps_cnt = 0;
 		}
 			
-		if(typebuf[i] & word_reset
-		)//   || checkAttr(currentInput[i], CTC_WordReset, 0))
-			wordBuffer[i] |= WORD_RESET;		
+		if(typebuf[i] & word_reset)
+			wordBuffer[i] |= WORD_RESET;
 	
 		if(checkAttr(currentInput[i], CTC_UpperCase, 0))
 		{

@@ -3854,7 +3854,7 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 	int icrs, rcrs;
 	int iend, rcnt;
 	int inxt, rnxt;
-	int attr, aend;
+	int attrs0, attrs1, aend;
 	int esc;
 	int i;
 
@@ -3976,29 +3976,33 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 				expr[rcrs++] = PTN_ONE_MORE;
 				inxt++;
 			}
-			expr[rcrs++] = PTN_ATTRIBUTE;
+			expr[rcrs++] = PTN_ATTRIBUTES;
 
-			attr = 0;
+			attrs0 = attrs1 = 0;
 			for( ; icrs < aend; icrs++)
 			switch(input[icrs])
 			{
-			case '_':  attr |= CTC_Space;         break;
-			case '#':  attr |= CTC_Digit;         break;
-			case 'a':  attr |= CTC_Letter;        break;
-			case 'u':  attr |= CTC_UpperCase;     break;
-			case 'l':  attr |= CTC_LowerCase;     break;
-			case '.':  attr |= CTC_Punctuation;   break;
-			case '$':  attr |= CTC_Sign;          break;
-			case '~':  attr |= CTC_SeqDelimiter;  break;
-			case '<':  attr |= CTC_SeqBefore;     break;
-			case '>':  attr |= CTC_SeqAfter;      break;
-			case '1':  attr |= CTC_Class1;        break;
-			case '2':  attr |= CTC_Class2;        break;
-			case '3':  attr |= CTC_Class3;        break;
-			case '4':  attr |= CTC_Class4;        break;
+			case '_':  attrs0 |= CTC_Space;         break;
+			case '#':  attrs0 |= CTC_Digit;         break;
+			case 'a':  attrs0 |= CTC_Letter;        break;
+			case 'u':  attrs0 |= CTC_UpperCase;     break;
+			case 'l':  attrs0 |= CTC_LowerCase;     break;
+			case '.':  attrs0 |= CTC_Punctuation;   break;
+			case '$':  attrs0 |= CTC_Sign;          break;
+			case '~':  attrs0 |= CTC_SeqDelimiter;  break;
+			case '<':  attrs0 |= CTC_SeqBefore;     break;
+			case '>':  attrs0 |= CTC_SeqAfter;      break;
+			case '1':  attrs0 |= CTC_Class1;        break;
+			case '2':  attrs0 |= CTC_Class2;        break;
+			case '3':  attrs0 |= CTC_Class3;        break;
+			case '4':  attrs0 |= CTC_Class4;        break;
+
+			case '^':  attrs1 |= (CTC_EndOfInput >> 16);  break;
+
 			default:  return 0;
 			}
-			expr[rcrs++] = attr;
+			expr[rcrs++] = attrs1;
+			expr[rcrs++] = attrs0;
 
 			icrs = inxt;
 
@@ -5221,12 +5225,6 @@ doOpcode:
 				c->attributes |= CTC_NumericMode;
 		}
 	  }
-//		if(opcode != CTO_DecPoint)
-//		{
-//			TranslationTableCharacter *c = compile_findCharOrDots(ruleChars.chars[0], 0);
-//			//if(c)
-//			//	c->attributes |= CTC_WordReset;
-//		}
       break;
     case CTO_Space:
       compileCharDef (nested, opcode, CTC_Space);
