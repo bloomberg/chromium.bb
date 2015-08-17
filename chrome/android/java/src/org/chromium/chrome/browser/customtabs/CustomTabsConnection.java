@@ -540,7 +540,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                 if (matchingUid && isForeground) return true;
             }
         }
-        return useWorkaround ? isBackgroundProcess(Binder.getCallingPid()) : false;
+        return useWorkaround ? !isBackgroundProcess(Binder.getCallingPid()) : false;
     }
 
     @VisibleForTesting
