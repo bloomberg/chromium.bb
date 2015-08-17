@@ -99,6 +99,9 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
     case kGpuFeatureDisabled:
       entry_index += 2;
       break;
+    case kGpuFeatureNumStatus:
+      NOTREACHED();
+      break;
   }
   return entry_index;
 }

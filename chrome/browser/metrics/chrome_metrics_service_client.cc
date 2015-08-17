@@ -391,6 +391,12 @@ void ChromeMetricsServiceClient::Initialize() {
     case version_info::Channel::DEV:
       report_exit_funnels = true;
       break;
+    case version_info::Channel::UNKNOWN:
+    case version_info::Channel::BETA:
+    case version_info::Channel::STABLE:
+      // report_exit_funnels was initialized to the right value above.
+      DCHECK(!report_exit_funnels);
+      break;
   }
 
   metrics_service_->RegisterMetricsProvider(

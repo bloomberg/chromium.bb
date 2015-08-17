@@ -60,6 +60,10 @@ FileVerificationResult VerifyFileAtPath(const base::FilePath& file) {
             FILE_VERIFICATION_FAILED_SAMEDIR_REDIRECT :
             FILE_VERIFICATION_FAILED_SAMEDIR;
         break;
+      case internal::PATH_COMPARISON_FAILED_UNKNOWN:
+        // file_verification_result was initialized to the right value above.
+        DCHECK_EQ(FILE_VERIFICATION_FAILED_UNKNOWN, file_verification_result);
+        break;
     }
   }
   return file_verification_result;

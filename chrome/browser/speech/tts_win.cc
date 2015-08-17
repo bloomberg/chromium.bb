@@ -220,6 +220,8 @@ void TtsPlatformImplWin::OnSpeechEvent() {
           utterance_id_, TTS_EVENT_SENTENCE, char_position_,
           std::string());
       break;
+    default:
+      break;
     }
   }
 }
