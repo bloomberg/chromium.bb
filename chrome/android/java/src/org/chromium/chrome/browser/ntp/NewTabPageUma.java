@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.UrlUtilities;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -33,6 +34,13 @@ public class NewTabPageUma {
     public static final int ACTION_OPENED_FOREIGN_SESSION = 6;
     // The number of possible actions
     private static final int NUM_ACTIONS = 7;
+
+    // User navigated to a page using the omnibox.
+    private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;
+    // User navigated to a page using one of the suggested tiles.
+    public static final int RAPPOR_ACTION_VISITED_SUGGESTED_TILE = 1;
+    // The number of possible actions pertinent to Rappor
+    private static final int RAPPOR_NUM_ACTIONS = 2;
 
     /**
      * Records an action taken by the user on the NTP.
@@ -69,10 +77,31 @@ public class NewTabPageUma {
     public static void recordOmniboxNavigation(String destinationUrl, int transitionType) {
         if ((transitionType & PageTransition.CORE_MASK) == PageTransition.GENERATED) {
             recordAction(ACTION_SEARCHED_USING_OMNIBOX);
-        } else if (UrlUtilities.nativeIsGoogleHomePageUrl(destinationUrl)) {
-            recordAction(ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE);
         } else {
-            recordAction(ACTION_NAVIGATED_USING_OMNIBOX);
+            if (UrlUtilities.nativeIsGoogleHomePageUrl(destinationUrl)) {
+                recordAction(ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE);
+            } else {
+                recordAction(ACTION_NAVIGATED_USING_OMNIBOX);
+            }
+            recordExplicitUserNavigation(destinationUrl, RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX);
+        }
+    }
+
+    /**
+     * Record the eTLD+1 for a website explicitly visited by the user, using Rappor.
+     */
+    public static void recordExplicitUserNavigation(String destinationUrl, int rapporMetric) {
+        switch (rapporMetric) {
+            case RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX:
+                RapporServiceBridge.sampleDomainAndRegistryFromURL(
+                        "NTP.ExplicitUserAction.PageNavigation.OmniboxNonSearch", destinationUrl);
+                return;
+            case RAPPOR_ACTION_VISITED_SUGGESTED_TILE:
+                RapporServiceBridge.sampleDomainAndRegistryFromURL(
+                        "NTP.ExplicitUserAction.PageNavigation.NTPTileClick", destinationUrl);
+                return;
+            default:
+                return;
         }
     }
 }

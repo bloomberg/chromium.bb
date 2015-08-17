@@ -64,6 +64,7 @@
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
 #include "chrome/browser/android/profiles/profile_downloader_android.h"
 #include "chrome/browser/android/provider/chrome_browser_provider.h"
+#include "chrome/browser/android/rappor/rappor_service_bridge.h"
 #include "chrome/browser/android/recently_closed_tabs_bridge.h"
 #include "chrome/browser/android/rlz/revenue_stats.h"
 #include "chrome/browser/android/shortcut_helper.h"
@@ -285,6 +286,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ProfileAndroid", ProfileAndroid::RegisterProfileAndroid},
     {"ProfileDownloader", RegisterProfileDownloader},
     {"ProfileSyncService", ProfileSyncServiceAndroid::Register},
+    {"RapporServiceBridge", rappor::RegisterRapporServiceBridge},
     {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RecentlyClosedBridge", RecentlyClosedTabsBridge::Register},
     {"RecordCastAction", remote_media::RegisterRecordCastAction},
