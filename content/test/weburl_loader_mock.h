@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 
 namespace blink {
@@ -59,7 +60,8 @@ class WebURLLoaderMock : public blink::WebURLLoader {
   scoped_ptr<blink::WebURLLoader> default_loader_;
   bool using_default_loader_;
   bool is_deferred_;
-  bool* this_deleted_;
+
+  base::WeakPtrFactory<WebURLLoaderMock> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderMock);
 };
