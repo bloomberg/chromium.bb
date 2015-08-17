@@ -18,6 +18,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "content/public/browser/user_metrics.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
+#import "ui/base/cocoa/nsview_additions.h"
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
@@ -26,6 +27,9 @@ using bookmarks::BookmarkNode;
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
 - (void)updateTheme:(ui::ThemeProvider*)themeProvider;
+
+// NSView override.
+- (void)setFrameSize:(NSSize)size;
 @end
 
 @implementation BookmarkBarView
@@ -34,6 +38,15 @@ using bookmarks::BookmarkNode;
 @synthesize dropIndicatorPosition = dropIndicatorPosition_;
 @synthesize noItemContainer = noItemContainer_;
 
+- (void)setFrameSize:(NSSize)size {
+  NSSize oldFrameSize = [self frame].size;
+  [super setFrameSize:size];
+  // Any time the size of the bookmark bar view changes, the bookmark bar view
+  // buttons needs to be redrawn.
+  // https://code.google.com/p/chromium/issues/detail?id=521025#c7
+  if (!NSEqualSizes(oldFrameSize, size))
+    [self cr_recursivelySetNeedsDisplay:YES];
+}
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
