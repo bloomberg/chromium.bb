@@ -59,6 +59,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/watchdog.h"
 #include "base/time/time.h"
+#include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -532,6 +533,12 @@ class ThreadWatcherObserver : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called when a URL is opened from the Omnibox.
+  void OnURLOpenedFromOmnibox(OmniboxLog* log);
+
+  // Called when user activity is detected.
+  void OnUserActivityDetected();
+
   // The singleton of this class.
   static ThreadWatcherObserver* g_thread_watcher_observer_;
 
@@ -543,6 +550,11 @@ class ThreadWatcherObserver : public content::NotificationObserver {
 
   // It is the time interval between wake up calls to thread watchers.
   const base::TimeDelta wakeup_interval_;
+
+  // Subscription for receiving callbacks that a URL was opened from the
+  // omnibox.
+  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+      omnibox_url_opened_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadWatcherObserver);
 };

@@ -592,8 +592,11 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
                  content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                 content::NotificationService::AllSources());
+
+  omnibox_url_opened_subscription_ =
+      OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
+          base::Bind(&ChromeMetricsServiceClient::OnURLOpenedFromOmnibox,
+                     base::Unretained(this)));
 }
 
 void ChromeMetricsServiceClient::Observe(
@@ -605,7 +608,6 @@ void ChromeMetricsServiceClient::Observe(
   switch (type) {
     case chrome::NOTIFICATION_BROWSER_OPENED:
     case chrome::NOTIFICATION_BROWSER_CLOSED:
-    case chrome::NOTIFICATION_OMNIBOX_OPENED_URL:
     case chrome::NOTIFICATION_TAB_PARENTED:
     case chrome::NOTIFICATION_TAB_CLOSING:
     case content::NOTIFICATION_LOAD_STOP:
@@ -618,4 +620,8 @@ void ChromeMetricsServiceClient::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void ChromeMetricsServiceClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
+  metrics_service_->OnApplicationNotIdle();
 }

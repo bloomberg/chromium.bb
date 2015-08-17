@@ -16,6 +16,7 @@
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/profiler/tracking_synchronizer_observer.h"
+#include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -127,6 +128,9 @@ class ChromeMetricsServiceClient
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called when a URL is opened from the Omnibox.
+  void OnURLOpenedFromOmnibox(OmniboxLog* log);
+
 #if defined(OS_WIN)
   // Counts (and removes) the browser crash dump attempt signals left behind by
   // any previous browser processes which generated a crash dump.
@@ -193,6 +197,11 @@ class ChromeMetricsServiceClient
   // Map of ProcessResourceUsage from render process host IDs.
   base::ScopedPtrMap<int, scoped_ptr<ProcessResourceUsage>>
       host_resource_usage_map_;
+
+  // Subscription for receiving callbacks that a URL was opened from the
+  // omnibox.
+  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+      omnibox_url_opened_subscription_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

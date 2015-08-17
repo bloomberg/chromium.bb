@@ -688,9 +688,10 @@ void ThreadWatcherObserver::SetupNotifications(
   observer->registrar_.Add(observer,
                            content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
                            content::NotificationService::AllSources());
-  observer->registrar_.Add(observer,
-                           chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                           content::NotificationService::AllSources());
+  observer->omnibox_url_opened_subscription_ =
+      OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
+          base::Bind(&ThreadWatcherObserver::OnURLOpenedFromOmnibox,
+                     base::Unretained(observer)));
 }
 
 // static
@@ -706,6 +707,14 @@ void ThreadWatcherObserver::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  OnUserActivityDetected();
+}
+
+void ThreadWatcherObserver::OnURLOpenedFromOmnibox(OmniboxLog* log) {
+  OnUserActivityDetected();
+}
+
+void ThreadWatcherObserver::OnUserActivityDetected() {
   // There is some user activity, see if thread watchers are to be awakened.
   base::TimeTicks now = base::TimeTicks::Now();
   if ((now - last_wakeup_time_) < wakeup_interval_)
