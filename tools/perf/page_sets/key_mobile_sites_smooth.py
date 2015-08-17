@@ -49,7 +49,6 @@ class LinkedInSmoothPage(key_mobile_sites_pages.LinkedInPage):
   def RunNavigateSteps(self, action_runner):
     super(LinkedInSmoothPage, self).RunNavigateSteps(action_runner)
     action_runner.ScrollPage()
-    action_runner.ReloadPage()
     super(LinkedInSmoothPage, self).RunNavigateSteps(action_runner)
 
 
@@ -65,7 +64,6 @@ class WowwikiSmoothPage(KeyMobileSitesSmoothPage):
   def RunNavigateSteps(self, action_runner):
     super(WowwikiSmoothPage, self).RunNavigateSteps(action_runner)
     action_runner.ScrollPage()
-    action_runner.ReloadPage()
     super(WowwikiSmoothPage, self).RunNavigateSteps(action_runner)
 
 
