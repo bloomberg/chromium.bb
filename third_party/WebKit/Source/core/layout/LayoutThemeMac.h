@@ -57,8 +57,6 @@ public:
     // System fonts.
     void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily) const override;
 
-    bool needsHackForTextControlWithFontFamily(const AtomicString& family) const override;
-
     int minimumMenuListSize(const ComputedStyle&) const override;
 
     void adjustSliderThumbSize(ComputedStyle&) const override;

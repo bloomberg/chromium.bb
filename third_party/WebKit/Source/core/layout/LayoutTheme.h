@@ -136,10 +136,6 @@ public:
     void systemFont(CSSValueID systemFontID, FontDescription&);
     virtual Color systemColor(CSSValueID) const;
 
-    // Whether the default system font should have its average character width
-    // adjusted to match MS Shell Dlg.
-    virtual bool needsHackForTextControlWithFontFamily(const AtomicString&) const { return false; }
-
     virtual int minimumMenuListSize(const ComputedStyle&) const { return 0; }
 
     virtual void adjustSliderThumbSize(ComputedStyle&) const;
