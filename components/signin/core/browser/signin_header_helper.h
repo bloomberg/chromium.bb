@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "build/build_config.h"  // For OS_IOS
+
 namespace content_settings {
 class CookieSettings;
 }
