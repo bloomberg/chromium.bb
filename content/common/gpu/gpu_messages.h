@@ -83,7 +83,7 @@ IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuMsg_CreateGpuMemoryBuffer_Params)
-  IPC_STRUCT_MEMBER(int32, id)
+  IPC_STRUCT_MEMBER(gfx::GpuMemoryBufferId, id)
   IPC_STRUCT_MEMBER(gfx::Size, size)
   IPC_STRUCT_MEMBER(gfx::BufferFormat, format)
   IPC_STRUCT_MEMBER(gfx::BufferUsage, usage)

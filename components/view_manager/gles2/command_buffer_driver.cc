@@ -256,7 +256,7 @@ void CommandBufferDriver::CreateImage(int32_t id,
   gfx::GpuMemoryBufferHandle gfx_handle;
   // TODO(jam): create mojo enum for this and converter
   gfx_handle.type = static_cast<gfx::GpuMemoryBufferType>(type);
-  gfx_handle.id = id;
+  gfx_handle.id = gfx::GpuMemoryBufferId(id);
 
   MojoPlatformHandle platform_handle;
   MojoResult extract_result = MojoExtractPlatformHandle(

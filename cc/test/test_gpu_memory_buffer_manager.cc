@@ -123,7 +123,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
   gfx::GpuMemoryBufferId GetId() const override {
     NOTREACHED();
-    return 0;
+    return gfx::GpuMemoryBufferId(0);
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     gfx::GpuMemoryBufferHandle handle;

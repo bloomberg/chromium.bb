@@ -58,8 +58,9 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
     const gfx::Size& size,
     gfx::BufferFormat format,
     const DestructionCallback& callback) {
-  ANativeWindow* native_window = SurfaceTextureManager::GetInstance()->
-      AcquireNativeWidgetForSurfaceTexture(handle.id);
+  ANativeWindow* native_window =
+      SurfaceTextureManager::GetInstance()
+          ->AcquireNativeWidgetForSurfaceTexture(handle.id.id);
   if (!native_window)
     return scoped_ptr<GpuMemoryBufferImpl>();
 

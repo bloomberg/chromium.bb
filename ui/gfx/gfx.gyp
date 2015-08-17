@@ -173,6 +173,8 @@
         'font_render_params_linux.cc',
         'font_render_params_mac.cc',
         'font_render_params_win.cc',
+        'generic_shared_memory_id.cc',
+        'generic_shared_memory_id.h',
         'gfx_export.h',
         'gfx_paths.cc',
         'gfx_paths.h',

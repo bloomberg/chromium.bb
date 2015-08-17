@@ -24,6 +24,11 @@
 
 namespace content {
 
+// TODO(ericrk): Use gfx::GenericSharedMemoryId as the |io_surface_id| in
+// this file. Allows for more type-safe usage of GpuMemoryBufferIds as the
+// type of the |io_surface_id|, as it is a typedef of
+// gfx::GenericSharedMemoryId.
+
 // Implementation of IOSurfaceManager that provides a mechanism for child
 // processes to register and acquire IOSurfaces through a Mach service.
 class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {

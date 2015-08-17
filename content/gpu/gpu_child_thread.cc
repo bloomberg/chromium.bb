@@ -80,7 +80,7 @@ class GpuMemoryBufferMessageFilter : public IPC::MessageFilter {
   void OnCreateGpuMemoryBuffer(
       const GpuMsg_CreateGpuMemoryBuffer_Params& params) {
     TRACE_EVENT2("gpu", "GpuMemoryBufferMessageFilter::OnCreateGpuMemoryBuffer",
-                 "id", params.id, "client_id", params.client_id);
+                 "id", params.id.id, "client_id", params.client_id);
     sender_->Send(new GpuHostMsg_GpuMemoryBufferCreated(
         gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
             params.id, params.size, params.format, params.usage,
@@ -358,4 +358,3 @@ void GpuChildThread::OnGpuSwitched() {
 }
 
 }  // namespace content
-

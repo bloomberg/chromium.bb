@@ -28,7 +28,7 @@ class GpuMemoryBufferFactoryTest
 };
 
 TEST_P(GpuMemoryBufferFactoryTest, CreateAndDestroy) {
-  const int kBufferId = 1;
+  const gfx::GpuMemoryBufferId kBufferId(1);
   const int kClientId = 1;
 
   gfx::Size buffer_size(2, 2);

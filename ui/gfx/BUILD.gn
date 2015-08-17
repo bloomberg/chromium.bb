@@ -103,6 +103,8 @@ component("gfx") {
     "font_render_params_win.cc",
     "gdi_util.cc",
     "gdi_util.h",
+    "generic_shared_memory_id.cc",
+    "generic_shared_memory_id.h",
     "gfx_paths.cc",
     "gfx_paths.h",
     "gpu_memory_buffer.cc",

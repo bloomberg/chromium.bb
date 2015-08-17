@@ -152,7 +152,7 @@ void MojoGpuMemoryBufferImpl::GetStride(int* stride) const {
 }
 
 gfx::GpuMemoryBufferId MojoGpuMemoryBufferImpl::GetId() const {
-  return 0;
+  return gfx::GpuMemoryBufferId(0);
 }
 
 gfx::GpuMemoryBufferHandle MojoGpuMemoryBufferImpl::GetHandle() const {

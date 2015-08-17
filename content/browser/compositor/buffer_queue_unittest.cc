@@ -34,7 +34,9 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return gfx::BufferFormat::RGBX_8888;
   }
   void GetStride(int* stride) const override {}
-  gfx::GpuMemoryBufferId GetId() const override { return 0; }
+  gfx::GpuMemoryBufferId GetId() const override {
+    return gfx::GpuMemoryBufferId(0);
+  }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     return gfx::GpuMemoryBufferHandle();
   }

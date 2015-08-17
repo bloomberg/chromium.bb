@@ -272,6 +272,8 @@
       'common/gamepad_param_traits.h',
       'common/gamepad_user_gesture.cc',
       'common/gamepad_user_gesture.h',
+      'common/generic_shared_memory_id_generator.cc',
+      'common/generic_shared_memory_id_generator.h',
       'common/geofencing_messages.h',
       'common/geofencing_types.cc',
       'common/geofencing_types.h',

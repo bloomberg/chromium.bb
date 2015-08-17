@@ -1199,7 +1199,8 @@ void RenderMessageFilter::OnWebAudioMediaCodec(
 }
 #endif
 
-void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
+void RenderMessageFilter::OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                                    uint32 width,
                                                     uint32 height,
                                                     gfx::BufferFormat format,
                                                     gfx::BufferUsage usage,
@@ -1215,13 +1216,10 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(uint32 width,
 
   BrowserGpuMemoryBufferManager::current()
       ->AllocateGpuMemoryBufferForChildProcess(
-          gfx::Size(width, height),
-          format,
-          usage,
-          PeerHandle(),
+          id, gfx::Size(width, height), format, usage, PeerHandle(),
           render_process_id_,
-          base::Bind(
-              &RenderMessageFilter::GpuMemoryBufferAllocated, this, reply));
+          base::Bind(&RenderMessageFilter::GpuMemoryBufferAllocated, this,
+                     reply));
 }
 
 void RenderMessageFilter::GpuMemoryBufferAllocated(

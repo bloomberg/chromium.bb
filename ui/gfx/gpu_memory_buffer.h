@@ -9,6 +9,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gfx/gfx_export.h"
 
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
@@ -24,7 +25,7 @@ enum GpuMemoryBufferType {
   GPU_MEMORY_BUFFER_TYPE_LAST = OZONE_NATIVE_PIXMAP
 };
 
-using GpuMemoryBufferId = int32;
+using GpuMemoryBufferId = gfx::GenericSharedMemoryId;
 
 struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle();

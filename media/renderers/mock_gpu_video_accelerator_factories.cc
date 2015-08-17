@@ -32,7 +32,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   void GetStride(int* stride) const override { stride[0] = size_.width(); }
   gfx::GpuMemoryBufferId GetId() const override {
     NOTREACHED();
-    return 0;
+    return gfx::GpuMemoryBufferId(0);
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();

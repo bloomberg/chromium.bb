@@ -50,7 +50,7 @@ class GpuMemoryBufferImplTest
 };
 
 TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
-  const int kBufferId = 1;
+  const gfx::GpuMemoryBufferId kBufferId(1);
 
   gfx::Size buffer_size(8, 8);
 
@@ -73,7 +73,7 @@ TEST_P(GpuMemoryBufferImplTest, CreateFromHandle) {
 }
 
 TEST_P(GpuMemoryBufferImplTest, Map) {
-  const int kBufferId = 1;
+  const gfx::GpuMemoryBufferId kBufferId(1);
 
   // Use a multiple of 4 for both dimensions to support compressed formats.
   gfx::Size buffer_size(4, 4);
@@ -135,7 +135,7 @@ TEST_P(GpuMemoryBufferImplTest, Map) {
 }
 
 TEST_P(GpuMemoryBufferImplTest, PersistentMap) {
-  const int kBufferId = 1;
+  const gfx::GpuMemoryBufferId kBufferId(1);
 
   // Use a multiple of 4 for both dimensions to support compressed formats.
   gfx::Size buffer_size(4, 4);

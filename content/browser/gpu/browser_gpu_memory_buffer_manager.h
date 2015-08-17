@@ -52,6 +52,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       int32 surface_id);
 
   void AllocateGpuMemoryBufferForChildProcess(
+      gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,

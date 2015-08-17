@@ -87,9 +87,6 @@ base::FilePath TransformPathForFeature(const base::FilePath& path,
 // Global atomic to generate child process unique IDs.
 base::StaticAtomicSequenceNumber g_unique_id;
 
-// Global atomic to generate gpu memory buffer unique IDs.
-base::StaticAtomicSequenceNumber g_next_gpu_memory_buffer_id;
-
 }  // namespace
 
 namespace content {
@@ -358,6 +355,7 @@ void ChildProcessHostImpl::OnShutdownRequest() {
 }
 
 void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
+    gfx::GpuMemoryBufferId id,
     uint32 width,
     uint32 height,
     gfx::BufferFormat format,
@@ -371,8 +369,7 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
   if (GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) &&
       GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
     *handle = GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
-        g_next_gpu_memory_buffer_id.GetNext(), gfx::Size(width, height), format,
-        peer_process_.Handle());
+        id, gfx::Size(width, height), format, peer_process_.Handle());
   }
 }
 

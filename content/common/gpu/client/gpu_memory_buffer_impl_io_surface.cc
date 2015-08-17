@@ -48,7 +48,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
-      IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id));
+      IOSurfaceManager::GetInstance()->AcquireIOSurface(handle.id.id));
   if (!io_surface)
     return nullptr;
 

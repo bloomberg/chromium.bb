@@ -292,7 +292,8 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
                             uint32_t data_size);
 #endif
 
-  void OnAllocateGpuMemoryBuffer(uint32 width,
+  void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                                 uint32 width,
                                  uint32 height,
                                  gfx::BufferFormat format,
                                  gfx::BufferUsage usage,
