@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "core/editing/SpellCheckRequester.h"
+#include "core/editing/spellcheck/SpellCheckRequester.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
-#include "core/editing/SpellChecker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "platform/text/TextCheckerClient.h"

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/editing/SpellChecker.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
@@ -34,11 +34,11 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/SpellCheckRequester.h"
-#include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/markers/DocumentMarkerController.h"
+#include "core/editing/spellcheck/SpellCheckRequester.h"
+#include "core/editing/spellcheck/TextCheckingHelper.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"

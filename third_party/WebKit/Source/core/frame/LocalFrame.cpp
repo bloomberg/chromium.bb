@@ -37,7 +37,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/Serialization.h"
-#include "core/editing/SpellChecker.h"
+#include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/EventHandlerRegistry.h"

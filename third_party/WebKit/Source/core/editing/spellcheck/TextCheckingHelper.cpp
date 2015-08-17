@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/editing/TextCheckingHelper.h"
+#include "core/editing/spellcheck/TextCheckingHelper.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
