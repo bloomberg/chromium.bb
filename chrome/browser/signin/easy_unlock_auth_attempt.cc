@@ -5,9 +5,11 @@
 #include "chrome/browser/signin/easy_unlock_auth_attempt.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/signin/easy_unlock_app_manager.h"
 #include "components/proximity_auth/screenlock_bridge.h"
+#include "components/proximity_auth/switches.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 
@@ -116,7 +118,15 @@ bool EasyUnlockAuthAttempt::Start() {
 
   state_ = STATE_RUNNING;
 
-  if (!app_manager_->SendAuthAttemptEvent()) {
+  // We need this workaround for ProximityAuthBleSystem, which is already
+  // notified in EasyUnlockService. No notification is sent when only the
+  // |kEnableBluetoothLowEnergyDiscovery| flag is set, and
+  // |app_manager_->SendAuthAttemptEvent()| returns false. As a result, the auth
+  // attempt will always fail.
+  // TODO(sacomoto): Remove this when it's not needed anymore.
+  if (!app_manager_->SendAuthAttemptEvent() &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
     Cancel(user_id_);
     return false;
   }
