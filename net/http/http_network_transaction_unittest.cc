@@ -7967,7 +7967,6 @@ TEST_P(HttpNetworkTransactionTest, GroupNameForDirectConnections) {
       EXPECT_EQ(tests[i].expected_group_name,
                 transport_conn_pool->last_group_name_received());
   }
-
 }
 
 TEST_P(HttpNetworkTransactionTest, GroupNameForHTTPProxyConnections) {
@@ -8570,7 +8569,6 @@ TEST_P(HttpNetworkTransactionTest, CancelDuringInitRequestBody) {
 
 // Tests that changes to Auth realms are treated like auth rejections.
 TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
@@ -12530,9 +12528,9 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   scoped_ptr<SpdyFrame> resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body1(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads1[] = {
-    CreateMockRead(*resp1, 1),
-    CreateMockRead(*body1, 2),
-    MockRead(ASYNC, OK, 3) // EOF
+      CreateMockRead(*resp1, 1),
+      CreateMockRead(*body1, 2),
+      MockRead(ASYNC, OK, 3)  // EOF
   };
 
   scoped_ptr<DeterministicSocketData> data1(
@@ -12555,9 +12553,9 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
   scoped_ptr<SpdyFrame> resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyFrame> body2(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads2[] = {
-    CreateMockRead(*resp2, 1),
-    CreateMockRead(*body2, 2),
-    MockRead(ASYNC, OK, 3) // EOF
+      CreateMockRead(*resp2, 1),
+      CreateMockRead(*body2, 2),
+      MockRead(ASYNC, OK, 3)  // EOF
   };
 
   scoped_ptr<DeterministicSocketData> data2(
