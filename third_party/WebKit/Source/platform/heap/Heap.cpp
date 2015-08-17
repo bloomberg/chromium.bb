@@ -1686,7 +1686,7 @@ void NormalPage::countObjectsToSweep(ClassAgeCountsMap& classAgeCounts)
 bool NormalPage::contains(Address addr)
 {
     Address blinkPageStart = roundToBlinkPageStart(address());
-    ASSERT(blinkPageStart == address() - WTF::kSystemPageSize); // Page is at aligned address plus guard page size.
+    ASSERT(blinkPageStart == address() - blinkGuardPageSize); // Page is at aligned address plus guard page size.
     return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
 }
 #endif

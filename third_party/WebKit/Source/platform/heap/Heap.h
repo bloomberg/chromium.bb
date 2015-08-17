@@ -57,6 +57,16 @@ const size_t blinkPageBaseMask = ~blinkPageOffsetMask;
 // away the page tables and lead to bad performance.
 const size_t blinkPagesPerRegion = 10;
 
+// TODO(nya): Replace this with something like #if ENABLE_NACL.
+#if 0
+// NaCl's system page size is 64 KB. This causes a problem in Oilpan's heap
+// layout because Oilpan allocates two guard pages for each blink page
+// (whose size is 128 KB). So we don't use guard pages in NaCl.
+const size_t blinkGuardPageSize = 0;
+#else
+const size_t blinkGuardPageSize = WTF::kSystemPageSize;
+#endif
+
 // Double precision floats are more efficient when 8 byte aligned, so we 8 byte
 // align all allocations even on 32 bit.
 const size_t allocationGranularity = 8;
@@ -298,7 +308,7 @@ private:
 // Blink heap pages are set up with a guard page before and after the payload.
 inline size_t blinkPagePayloadSize()
 {
-    return blinkPageSize - 2 * WTF::kSystemPageSize;
+    return blinkPageSize - 2 * blinkGuardPageSize;
 }
 
 // Blink heap pages are aligned to the Blink heap page size.
@@ -331,7 +341,7 @@ inline bool vTableInitialized(void* objectPointer)
 // aligned.
 inline bool isPageHeaderAddress(Address address)
 {
-    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - WTF::kSystemPageSize);
+    return !((reinterpret_cast<uintptr_t>(address) & blinkPageOffsetMask) - blinkGuardPageSize);
 }
 #endif
 
@@ -800,13 +810,13 @@ private:
 };
 
 // Mask an address down to the enclosing oilpan heap base page.  All oilpan heap
-// pages are aligned at blinkPageBase plus an OS page size.
+// pages are aligned at blinkPageBase plus the size of a guard size.
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
 // typed heaps.  This is only exported to enable tests in HeapTest.cpp.
 PLATFORM_EXPORT inline BasePage* pageFromObject(const void* object)
 {
     Address address = reinterpret_cast<Address>(const_cast<void*>(object));
-    BasePage* page = reinterpret_cast<BasePage*>(blinkPageAddress(address) + WTF::kSystemPageSize);
+    BasePage* page = reinterpret_cast<BasePage*>(blinkPageAddress(address) + blinkGuardPageSize);
     ASSERT(page->contains(address));
     return page;
 }
