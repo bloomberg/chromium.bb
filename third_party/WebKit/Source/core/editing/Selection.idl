@@ -40,14 +40,19 @@
     readonly attribute long focusOffset;
     readonly attribute boolean isCollapsed;
     readonly attribute long rangeCount;
+    [MeasureAs=SelectionType] readonly attribute DOMString type;
     [RaisesException] Range getRangeAt(long index);
     void addRange(Range range);
     // TODO(yoichio): Implement removeRange. crbug.com/391673
     //void removeRange(Range range);
     void removeAllRanges();
+    [MeasureAs=SelectionEmpty] void empty();
     // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
     // TODO(philipj): The offset argument should not have a default value.
     [RaisesException] void collapse(Node? node, optional long offset = 0);
+    // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
+    // TODO(philipj): The offset argument should not have a default value.
+    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
     [RaisesException] void collapseToStart();
     [RaisesException] void collapseToEnd();
     // TODO(philipj): The offset argument should not have a default value.
@@ -75,17 +80,8 @@
     [MeasureAs=SelectionExtentNode] readonly attribute Node? extentNode;
     [MeasureAs=SelectionExtentOffset] readonly attribute long extentOffset;
 
-    // https://github.com/w3c/selection-api/issues/14
-    [MeasureAs=SelectionType] readonly attribute DOMString type;
-
-    // https://github.com/w3c/selection-api/issues/36
-    [MeasureAs=SelectionEmpty] void empty();
-
     // https://github.com/w3c/selection-api/issues/37
     [MeasureAs=SelectionModify] void modify([Default=Undefined] optional DOMString alter,
                                             [Default=Undefined] optional DOMString direction,
                                             [Default=Undefined] optional DOMString granularity);
-
-    // https://github.com/w3c/selection-api/issues/38
-    [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException] void setPosition(Node? node, optional long offset = 0);
 };
