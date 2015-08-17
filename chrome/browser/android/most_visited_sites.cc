@@ -264,25 +264,20 @@ void MostVisitedSites::BlacklistUrl(JNIEnv* env,
                                     jstring j_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
 
-  switch (mv_source_) {
-    case TOP_SITES: {
-      scoped_refptr<TopSites> top_sites =
-          TopSitesFactory::GetForProfile(profile_);
-      DCHECK(top_sites);
-      top_sites->AddBlacklistedURL(url);
-      break;
-    }
+  // Always blacklist in the local TopSites.
+  scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
+  if (top_sites)
+    top_sites->AddBlacklistedURL(url);
 
-    case SUGGESTIONS_SERVICE: {
-      SuggestionsService* suggestions_service =
-          SuggestionsServiceFactory::GetForProfile(profile_);
-      DCHECK(suggestions_service);
-      suggestions_service->BlacklistURL(
-          url, base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
-                          weak_ptr_factory_.GetWeakPtr()),
-          base::Closure());
-      break;
-    }
+  // Only blacklist in the server-side suggestions service if it's active.
+  if (mv_source_ == SUGGESTIONS_SERVICE) {
+    SuggestionsService* suggestions_service =
+        SuggestionsServiceFactory::GetForProfile(profile_);
+    DCHECK(suggestions_service);
+    suggestions_service->BlacklistURL(
+        url, base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
+                        weak_ptr_factory_.GetWeakPtr()),
+        base::Closure());
   }
 }
 
@@ -417,7 +412,11 @@ void MostVisitedSites::AddPopularSites(std::vector<base::string16>* titles,
   if (static_cast<int>(titles->size()) >= num_sites_)
     return;
 
+  scoped_refptr<TopSites> top_sites(TopSitesFactory::GetForProfile(profile_));
   for (const PopularSites::Site& popular_site : popular_sites_->sites()) {
+    // Skip blacklisted sites.
+    if (top_sites && top_sites->IsBlacklisted(popular_site.url))
+      continue;
     // Skip popular sites that are already in the suggestions.
     auto it = std::find_if(urls->begin(), urls->end(),
         [&popular_site](const std::string& url) {
