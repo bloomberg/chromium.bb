@@ -965,7 +965,7 @@ function testLoadAbortEmptyResponse() {
 function testLoadAbortIllegalChromeURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
   });
   webview.addEventListener('loadstop', function(e)  {
     embedder.test.assertEq('about:blank', webview.src);
@@ -978,7 +978,7 @@ function testLoadAbortIllegalChromeURL() {
 function testLoadAbortIllegalFileURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
   });
   webview.addEventListener('loadstop', function(e) {
     embedder.test.assertEq('about:blank', webview.src);
@@ -991,7 +991,7 @@ function testLoadAbortIllegalFileURL() {
 function testLoadAbortIllegalJavaScriptURL() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
   });
   webview.addEventListener('loadstop', function(e) {
     embedder.test.assertEq('about:blank', webview.src);
@@ -1005,7 +1005,7 @@ function testLoadAbortIllegalJavaScriptURL() {
 function testLoadAbortInvalidNavigation() {
   var webview = document.createElement('webview');
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('ERR_INVALID_URL', e.reason);
     embedder.test.assertEq('', e.url);
   });
   webview.addEventListener('loadstop', function(e) {
@@ -1026,7 +1026,7 @@ function testLoadAbortNonWebSafeScheme() {
   var webview = document.createElement('webview');
   var chromeGuestURL = 'chrome-guest://abc123/';
   webview.addEventListener('loadabort', function(e) {
-    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('ERR_DISALLOWED_URL_SCHEME', e.reason);
     embedder.test.assertEq(chromeGuestURL, e.url);
   });
   webview.addEventListener('loadstop', function(e) {

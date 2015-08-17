@@ -1325,17 +1325,25 @@ void WebViewGuest::LoadURLWithParams(
     ui::PageTransition transition_type,
     const GlobalRequestID& transferred_global_request_id,
     bool force_navigation) {
-  // Do not allow navigating a guest to schemes other than known safe schemes.
-  // This will block the embedder trying to load unwanted schemes, e.g.
-  // chrome://.
+  if (!url.is_valid()) {
+    LoadAbort(true /* is_top_level */, url, net::ERR_INVALID_URL,
+              net::ErrorToShortString(net::ERR_INVALID_URL));
+    NavigateGuest(url::kAboutBlankURL, false /* force_navigation */);
+    return;
+  }
+
   bool scheme_is_blocked =
       (!content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
            url.scheme()) &&
        !url.SchemeIs(url::kAboutScheme)) ||
       url.SchemeIs(url::kJavaScriptScheme);
-  if (scheme_is_blocked || !url.is_valid()) {
-    LoadAbort(true /* is_top_level */, url, net::ERR_ABORTED,
-              net::ErrorToShortString(net::ERR_ABORTED));
+
+  // Do not allow navigating a guest to schemes other than known safe schemes.
+  // This will block the embedder trying to load unwanted schemes, e.g.
+  // chrome://.
+  if (scheme_is_blocked) {
+    LoadAbort(true /* is_top_level */, url, net::ERR_DISALLOWED_URL_SCHEME,
+              net::ErrorToShortString(net::ERR_DISALLOWED_URL_SCHEME));
     NavigateGuest(url::kAboutBlankURL, false /* force_navigation */);
     return;
   }

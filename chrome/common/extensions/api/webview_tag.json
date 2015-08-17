@@ -1198,7 +1198,7 @@
             "name": "reason",
             "description": "String indicating what type of abort occurred. This string is <em>not</em> guaranteed to remain backwards compatible between releases. You must not parse and act based upon its content. It is also possible that, in some cases, an error not listed here could be reported.",
             "type": "string",
-            "enum": ["ERR_ABORTED", "ERR_BLOCKED_BY_CLIENT", "ERR_ADDRESS_UNREACHABLE", "ERR_EMPTY_RESPONSE", "ERR_FILE_NOT_FOUND", "ERR_UNKNOWN_URL_SCHEME"]
+            "enum": ["ERR_ABORTED", "ERR_INVALID_URL", "ERR_DISALLOWED_URL_SCHEME", "ERR_BLOCKED_BY_CLIENT", "ERR_ADDRESS_UNREACHABLE", "ERR_EMPTY_RESPONSE", "ERR_FILE_NOT_FOUND", "ERR_UNKNOWN_URL_SCHEME"]
           }
         ]
       },
