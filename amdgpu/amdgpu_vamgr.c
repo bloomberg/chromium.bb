@@ -33,8 +33,6 @@
 #include "amdgpu_internal.h"
 #include "util_math.h"
 
-static struct amdgpu_bo_va_mgr vamgr = {{0}};
-
 int amdgpu_va_range_query(amdgpu_device_handle dev,
 			  enum amdgpu_gpu_va_range type, uint64_t *start, uint64_t *end)
 {
@@ -67,28 +65,6 @@ drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
 	pthread_mutex_destroy(&mgr->bo_va_mutex);
 }
 
-drm_private struct amdgpu_bo_va_mgr *
-amdgpu_vamgr_get_global(struct amdgpu_device *dev)
-{
-	int ref;
-	ref = atomic_inc_return(&vamgr.refcount);
-
-	if (ref == 1)
-		amdgpu_vamgr_init(&vamgr, dev->dev_info.virtual_address_offset,
-				  dev->dev_info.virtual_address_max,
-				  dev->dev_info.virtual_address_alignment);
-	return &vamgr;
-}
-
-drm_private void
-amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
-		       struct amdgpu_bo_va_mgr *src)
-{
-	if (update_references(&(*dst)->refcount, NULL))
-		amdgpu_vamgr_deinit(*dst);
-	*dst = src;
-}
-
 drm_private uint64_t
 amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 		     uint64_t alignment, uint64_t base_required)
@@ -105,7 +81,7 @@ amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,
 	pthread_mutex_lock(&mgr->bo_va_mutex);
 	/* TODO: using more appropriate way to track the holes */
 	/* first look for a hole */
-	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &vamgr.va_holes, list) {
+	LIST_FOR_EACH_ENTRY_SAFE(hole, n, &mgr->va_holes, list) {
 		if (base_required) {
 			if(hole->offset > base_required ||
 				(hole->offset + hole->size) < (base_required + size))

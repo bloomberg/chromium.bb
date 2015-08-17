@@ -52,7 +52,6 @@ struct amdgpu_bo_va_hole {
 };
 
 struct amdgpu_bo_va_mgr {
-	atomic_t refcount;
 	/* the start virtual address */
 	uint64_t va_offset;
 	uint64_t va_max;
@@ -124,13 +123,6 @@ struct amdgpu_context {
  */
 
 drm_private void amdgpu_bo_free_internal(amdgpu_bo_handle bo);
-
-drm_private struct amdgpu_bo_va_mgr*
-amdgpu_vamgr_get_global(struct amdgpu_device *dev);
-
-drm_private void
-amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
-		       struct amdgpu_bo_va_mgr *src);
 
 drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 		       uint64_t max, uint64_t alignment);
