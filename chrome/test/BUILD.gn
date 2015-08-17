@@ -1490,6 +1490,12 @@ if (!is_android) {
               chrome_tests_unit_gypi_values.chrome_unit_tests_views_sources,
               ".",
               "//chrome")
+      if (!is_chromeos && (!is_mac || mac_views_browser)) {
+        sources += rebase_path(
+                chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_chromeos_sources,
+                ".",
+                "//chrome")
+      }
       if (!is_mac) {
         sources += rebase_path(
                 chrome_tests_unit_gypi_values.chrome_unit_tests_views_non_mac_sources,
@@ -1669,9 +1675,6 @@ if (!is_android) {
       sources -= [
         "../browser/signin/signin_global_error_unittest.cc",
         "../browser/signin/signin_manager_unittest.cc",
-        "../browser/ui/views/app_list/linux/app_list_linux_unittest.cc",
-        "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
-        "../browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc",
       ]
     }
     if (use_x11) {

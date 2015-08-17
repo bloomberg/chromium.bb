@@ -230,16 +230,6 @@ source_set("ui") {
                 ".",
                 "//chrome")
       }
-      if (is_chromeos) {
-        # TODO(GYP): crbug.com/481629. These files should probably not be
-        # a part of ui_views_non_mac_sources at all.
-        sources -= [
-          "views/frame/opaque_browser_frame_view.cc",
-          "views/frame/opaque_browser_frame_view.h",
-          "views/frame/opaque_browser_frame_view_linux.cc",
-          "views/frame/opaque_browser_frame_view_linux.h",
-        ]
-      }
     }
     if (use_ash) {
       sources += rebase_path(gypi_values.chrome_browser_ui_ash_views_sources,

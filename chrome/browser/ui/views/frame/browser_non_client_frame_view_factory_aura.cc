@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
+
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view.h"
+#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/frame/glass_browser_frame_view.h"

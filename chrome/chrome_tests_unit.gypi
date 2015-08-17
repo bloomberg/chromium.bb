@@ -1357,11 +1357,16 @@
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_views_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc',
     ],
+    # Views unit_tests for everywhere but ChromeOS.
+    'chrome_unit_tests_views_non_chromeos_sources': [
+      'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
+      'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
+      'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
+    ],
     # Cross-platform (except Mac) views unit tests. Assumes app list is enabled.
     'chrome_unit_tests_views_non_mac_sources': [
       'browser/ui/views/accelerator_table_unittest.cc',
       # Views implies app list is enabled (only disabled on mobile).
-      'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
       'browser/ui/views/app_list/win/app_list_win_unittest.cc',
       'browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc',
       'browser/ui/views/apps/shaped_app_window_targeter_unittest.cc',
@@ -1380,13 +1385,11 @@
       'browser/ui/views/first_run_bubble_unittest.cc',
       'browser/ui/views/frame/browser_view_layout_unittest.cc',
       'browser/ui/views/frame/browser_view_unittest.cc',
-      'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
       'browser/ui/views/frame/test_with_browser_view.cc',
       'browser/ui/views/frame/test_with_browser_view.h',
       'browser/ui/views/frame/web_contents_close_handler_unittest.cc',
       'browser/ui/views/omnibox/omnibox_view_views_unittest.cc',
       'browser/ui/views/status_icons/status_tray_win_unittest.cc',
-      'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
       'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
@@ -2454,9 +2457,6 @@
             'browser/signin/signin_global_error_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
             'browser/signin/signin_names_io_thread_unittest.cc',
-            'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
-            'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
-            'browser/ui/views/sync/one_click_signin_bubble_view_unittest.cc',
           ],
         }],
         ['use_x11==1', {
@@ -2671,6 +2671,9 @@
           ],
           'sources': [ '<@(chrome_unit_tests_views_sources)' ],
           'conditions': [
+            ['chromeos == 0 and (OS != "mac" or mac_views_browser == 1)', {
+              'sources': [ '<@(chrome_unit_tests_views_non_chromeos_sources)' ],
+            }],
             ['OS != "mac"', {
               'sources': [ '<@(chrome_unit_tests_views_non_mac_sources)' ],
             }],
