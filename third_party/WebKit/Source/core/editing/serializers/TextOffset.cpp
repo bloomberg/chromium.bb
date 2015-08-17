@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/editing/TextOffset.h"
+#include "core/editing/serializers/TextOffset.h"
 
 #include "core/dom/Text.h"
 

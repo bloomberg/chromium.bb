@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/editing/MarkupFormatter.h"
+#include "core/editing/serializers/MarkupFormatter.h"
 
 #include "core/HTMLNames.h"
 #include "core/XLinkNames.h"

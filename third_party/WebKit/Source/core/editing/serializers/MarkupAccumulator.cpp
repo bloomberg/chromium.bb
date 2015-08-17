@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/editing/MarkupAccumulator.h"
+#include "core/editing/serializers/MarkupAccumulator.h"
 
 #include "core/HTMLNames.h"
 #include "core/XLinkNames.h"

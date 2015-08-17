@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/editing/StyledMarkupAccumulator.h"
+#include "core/editing/serializers/StyledMarkupAccumulator.h"
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Text.h"

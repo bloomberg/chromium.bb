@@ -37,7 +37,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/InspectorHistory.h"
 #include "wtf/RefPtr.h"

@@ -32,7 +32,7 @@
 #include "core/clipboard/DataTransferItemList.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FrameSelection.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"

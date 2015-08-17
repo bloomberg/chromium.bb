@@ -45,7 +45,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/MoveSelectionCommand.h"
 #include "core/editing/ReplaceSelectionCommand.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/events/TextEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"

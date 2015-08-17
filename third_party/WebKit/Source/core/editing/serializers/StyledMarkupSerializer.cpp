@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/editing/StyledMarkupSerializer.h"
+#include "core/editing/serializers/StyledMarkupSerializer.h"
 
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -36,10 +36,10 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/editing/Serialization.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/text/StringBuilder.h"

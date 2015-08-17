@@ -82,7 +82,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"

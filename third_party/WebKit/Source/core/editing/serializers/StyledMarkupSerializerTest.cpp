@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/editing/StyledMarkupSerializer.h"
+#include "core/editing/serializers/StyledMarkupSerializer.h"
 
 #include "core/dom/Text.h"
 #include "core/editing/EditingTestBase.h"

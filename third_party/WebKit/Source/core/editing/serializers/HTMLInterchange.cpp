@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/editing/HTMLInterchange.h"
+#include "core/editing/serializers/HTMLInterchange.h"
 
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
@@ -60,37 +60,38 @@ String convertHTMLTextToInterchangeFormat(const String& in, const Text& node)
             while (count) {
                 unsigned add = count % 3;
                 switch (add) {
-                    case 0:
+                case 0:
+                    s.appendLiteral(convertedSpaceString);
+                    s.append(' ');
+                    s.appendLiteral(convertedSpaceString);
+                    add = 3;
+                    break;
+                case 1:
+                    if (i == 0 || i + 1 == in.length()) // at start or end of string
+                        s.appendLiteral(convertedSpaceString);
+                    else
+                        s.append(' ');
+                    break;
+                case 2:
+                    if (i == 0) {
+                        // at start of string
                         s.appendLiteral(convertedSpaceString);
                         s.append(' ');
+                    } else if (i + 2 == in.length()) {
+                        // at end of string
                         s.appendLiteral(convertedSpaceString);
-                        add = 3;
-                        break;
-                    case 1:
-                        if (i == 0 || i + 1 == in.length()) // at start or end of string
-                            s.appendLiteral(convertedSpaceString);
-                        else
-                            s.append(' ');
-                        break;
-                    case 2:
-                        if (i == 0) {
-                             // at start of string
-                            s.appendLiteral(convertedSpaceString);
-                            s.append(' ');
-                        } else if (i + 2 == in.length()) {
-                             // at end of string
-                            s.appendLiteral(convertedSpaceString);
-                            s.appendLiteral(convertedSpaceString);
-                        } else {
-                            s.appendLiteral(convertedSpaceString);
-                            s.append(' ');
-                        }
-                        break;
+                        s.appendLiteral(convertedSpaceString);
+                    } else {
+                        s.appendLiteral(convertedSpaceString);
+                        s.append(' ');
+                    }
+                    break;
                 }
                 count -= add;
             }
-        } else
+        } else {
             s.append(in[i]);
+        }
         i += consumed;
     }
 

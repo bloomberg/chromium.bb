@@ -26,62 +26,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyledMarkupAccumulator_h
-#define StyledMarkupAccumulator_h
+#ifndef StyledMarkupSerializer_h
+#define StyledMarkupSerializer_h
 
+#include "core/dom/NodeTraversal.h"
+#include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingStyle.h"
-#include "core/editing/MarkupFormatter.h"
-#include "core/editing/TextOffset.h"
+#include "core/editing/Position.h"
+#include "core/editing/serializers/StyledMarkupAccumulator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class Document;
-class StylePropertySet;
-class Text;
-
-class StyledMarkupAccumulator final {
-    WTF_MAKE_NONCOPYABLE(StyledMarkupAccumulator);
+template<typename Strategy>
+class StyledMarkupSerializer final {
     STACK_ALLOCATED();
 public:
-    StyledMarkupAccumulator(EAbsoluteURLs, const TextOffset& start, const TextOffset& end, const PassRefPtrWillBeRawPtr<Document>, EAnnotateForInterchange, ConvertBlocksToInlines);
+    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines);
 
-    void appendEndTag(const Element&);
-    void appendInterchangeNewline();
-
-    void appendText(Text&);
-    void appendTextWithInlineStyle(Text&, PassRefPtrWillBeRawPtr<EditingStyle>);
-
-    void wrapWithStyleNode(StylePropertySet*);
-    String takeResults();
-
-    void pushMarkup(const String&);
-
-    void appendElement(const Element&);
-    void appendElement(StringBuilder&, const Element&);
-    void appendElementWithInlineStyle(const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
-    void appendElementWithInlineStyle(StringBuilder&, const Element&, PassRefPtrWillBeRawPtr<EditingStyle>);
-    void appendStartMarkup(Node&);
-
-    bool shouldAnnotate() const;
-    bool convertBlocksToInlines() const { return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert; }
+    String createMarkup();
 
 private:
-    String renderedText(Text&);
-    String stringValueForRange(const Text&);
+    bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange; }
 
-    void appendEndMarkup(StringBuilder&, const Element&);
-
-    MarkupFormatter m_formatter;
-    const TextOffset m_start;
-    const TextOffset m_end;
-    const RefPtrWillBeMember<Document> m_document;
+    const PositionAlgorithm<Strategy> m_start;
+    const PositionAlgorithm<Strategy> m_end;
+    const EAbsoluteURLs m_shouldResolveURLs;
     const EAnnotateForInterchange m_shouldAnnotate;
-    StringBuilder m_result;
-    Vector<String> m_reversedPrecedingMarkup;
+    const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;
     const ConvertBlocksToInlines m_convertBlocksToInlines;
+    RawPtrWillBeMember<Node> m_lastClosed;
+    RefPtrWillBeMember<EditingStyle> m_wrappingStyle;
 };
+
+extern template class StyledMarkupSerializer<EditingStrategy>;
+extern template class StyledMarkupSerializer<EditingInComposedTreeStrategy>;
 
 } // namespace blink
 
-#endif // StyledMarkupAccumulator_h
+#endif // StyledMarkupSerializer_h

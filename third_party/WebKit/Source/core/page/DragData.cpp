@@ -30,7 +30,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Range.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/FileMetadata.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"

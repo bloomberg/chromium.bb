@@ -27,8 +27,8 @@
 #define MarkupAccumulator_h
 
 #include "core/editing/EditingStrategy.h"
-#include "core/editing/MarkupFormatter.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/MarkupFormatter.h"
+#include "core/editing/serializers/Serialization.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"

@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/xml/XMLSerializer.h"
 
-#include "core/editing/MarkupAccumulator.h"
+#include "core/editing/serializers/MarkupAccumulator.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

@@ -30,8 +30,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/editing/EphemeralRange.h"
-#include "core/editing/HTMLInterchange.h"
 #include "core/editing/Position.h"
+#include "core/editing/serializers/HTMLInterchange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 

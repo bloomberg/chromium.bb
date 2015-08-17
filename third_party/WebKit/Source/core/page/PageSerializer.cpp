@@ -47,7 +47,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
-#include "core/editing/MarkupAccumulator.h"
+#include "core/editing/serializers/MarkupAccumulator.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/LocalFrame.h"

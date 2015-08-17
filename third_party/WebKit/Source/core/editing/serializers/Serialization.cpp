@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSValueKeywords.h"
@@ -47,11 +47,11 @@
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
-#include "core/editing/MarkupAccumulator.h"
-#include "core/editing/StyledMarkupSerializer.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/serializers/MarkupAccumulator.h"
+#include "core/editing/serializers/StyledMarkupSerializer.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLBRElement.h"

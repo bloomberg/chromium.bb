@@ -25,7 +25,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
-#include "core/editing/Serialization.h"
+#include "core/editing/serializers/Serialization.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
