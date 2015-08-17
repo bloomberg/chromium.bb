@@ -543,7 +543,7 @@ LogMessage::LogMessage(const char* file, int line, LogSeverity severity,
 }
 
 LogMessage::~LogMessage() {
-#if !defined(NDEBUG) && !defined(OS_NACL) && !defined(__UCLIBC__)
+#if !defined(OFFICIAL_BUILD) && !defined(OS_NACL) && !defined(__UCLIBC__)
   if (severity_ == LOG_FATAL) {
     // Include a stack trace on a fatal.
     base::debug::StackTrace trace;

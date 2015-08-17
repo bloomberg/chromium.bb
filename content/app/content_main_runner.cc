@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
@@ -194,6 +195,16 @@ void CommonSubprocessInit(const std::string& process_type) {
   // Note that this is not correct for plugin processes -- they can
   // surface UI -- but it's likely they get this wrong too so why not.
   setlocale(LC_NUMERIC, "C");
+#endif
+
+#if !defined(OFFICIAL_BUILD)
+  // Print stack traces to stderr when crashes occur. This opens up security
+  // holes so it should never be enabled for official builds.
+  base::debug::EnableInProcessStackDumping();
+#if defined(OS_WIN)
+  base::RouteStdioToConsole(false);
+  LoadLibraryA("dbghelp.dll");
+#endif
 #endif
 }
 
@@ -603,7 +614,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(OS_WIN)
     // Route stdio to parent console (if any) or create one.
     if (command_line.HasSwitch(switches::kEnableLogging))
-      base::RouteStdioToConsole();
+      base::RouteStdioToConsole(true);
 #endif
 
     // Enable startup tracing asap to avoid early TRACE_EVENT calls being

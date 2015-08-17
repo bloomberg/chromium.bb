@@ -140,13 +140,6 @@ void LinuxSandbox::PreinitializeSandbox() {
   sanitizer_args_.reset();
 #endif
 
-#if !defined(NDEBUG) || (defined(CFI_ENFORCEMENT) && !defined(OFFICIAL_BUILD))
-  // The in-process stack dumping needs to open /proc/self/maps and cache
-  // its contents before the sandbox is enabled.  It also pre-opens the
-  // object files that are already loaded in the process address space.
-  base::debug::EnableInProcessStackDumpingForSandbox();
-#endif  // !defined(NDEBUG)
-
   // Open proc_fd_. It would break the security of the setuid sandbox if it was
   // not closed.
   // If LinuxSandbox::PreinitializeSandbox() runs, InitializeSandbox() must run

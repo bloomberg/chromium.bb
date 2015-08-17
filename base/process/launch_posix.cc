@@ -530,7 +530,8 @@ enum GetAppOutputInternalResult {
 // path for the application; in that case, |envp| must be null, and it will use
 // the current environment. If |do_search_path| is false, |argv[0]| should fully
 // specify the path of the application, and |envp| will be used as the
-// environment. Redirects stderr to /dev/null.
+// environment. If |include_stderr| is true, includes stderr otherwise redirects
+// it to /dev/null.
 // If we successfully start the application and get all requested output, we
 // return GOT_MAX_OUTPUT, or if there is a problem starting or exiting
 // the application we return RUN_FAILURE. Otherwise we return EXECUTE_SUCCESS.
@@ -543,6 +544,7 @@ enum GetAppOutputInternalResult {
 static GetAppOutputInternalResult GetAppOutputInternal(
     const std::vector<std::string>& argv,
     char* const envp[],
+    bool include_stderr,
     std::string* output,
     size_t max_output,
     bool do_search_path,
@@ -597,7 +599,9 @@ static GetAppOutputInternalResult GetAppOutputInternal(
         base::type_profiler::Controller::Stop();
 
         fd_shuffle1.push_back(InjectionArc(pipe_fd[1], STDOUT_FILENO, true));
-        fd_shuffle1.push_back(InjectionArc(dev_null, STDERR_FILENO, true));
+        fd_shuffle1.push_back(InjectionArc(
+            include_stderr ? pipe_fd[1] : dev_null,
+            STDERR_FILENO, true));
         fd_shuffle1.push_back(InjectionArc(dev_null, STDIN_FILENO, true));
         // Adding another element here? Remeber to increase the argument to
         // reserve(), above.
@@ -666,8 +670,17 @@ bool GetAppOutput(const std::vector<std::string>& argv, std::string* output) {
   // Run |execve()| with the current environment and store "unlimited" data.
   int exit_code;
   GetAppOutputInternalResult result = GetAppOutputInternal(
-      argv, NULL, output, std::numeric_limits<std::size_t>::max(), true,
+      argv, NULL, false, output, std::numeric_limits<std::size_t>::max(), true,
       &exit_code);
+  return result == EXECUTE_SUCCESS && exit_code == EXIT_SUCCESS;
+}
+
+bool GetAppOutputAndError(const CommandLine& cl, std::string* output) {
+  // Run |execve()| with the current environment and store "unlimited" data.
+  int exit_code;
+  GetAppOutputInternalResult result = GetAppOutputInternal(
+      cl.argv(), NULL, true, output, std::numeric_limits<std::size_t>::max(),
+      true, &exit_code);
   return result == EXECUTE_SUCCESS && exit_code == EXIT_SUCCESS;
 }
 
@@ -679,7 +692,7 @@ bool GetAppOutputRestricted(const CommandLine& cl,
   char* const empty_environ = NULL;
   int exit_code;
   GetAppOutputInternalResult result = GetAppOutputInternal(
-      cl.argv(), &empty_environ, output, max_output, false, &exit_code);
+      cl.argv(), &empty_environ, false, output, max_output, false, &exit_code);
   return result == GOT_MAX_OUTPUT || (result == EXECUTE_SUCCESS &&
                                       exit_code == EXIT_SUCCESS);
 }
@@ -689,8 +702,8 @@ bool GetAppOutputWithExitCode(const CommandLine& cl,
                               int* exit_code) {
   // Run |execve()| with the current environment and store "unlimited" data.
   GetAppOutputInternalResult result = GetAppOutputInternal(
-      cl.argv(), NULL, output, std::numeric_limits<std::size_t>::max(), true,
-      exit_code);
+      cl.argv(), NULL, false, output, std::numeric_limits<std::size_t>::max(),
+      true, exit_code);
   return result == EXECUTE_SUCCESS;
 }
 

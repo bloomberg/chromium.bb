@@ -540,13 +540,6 @@ bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo* sandbox_info) {
   // content.
   sandbox::TargetServices* target_services = sandbox_info->target_services;
   if (target_services) {
-#if defined(ADDRESS_SANITIZER)
-    // Bind and leak dbghelp.dll before the token is lowered, otherwise
-    // AddressSanitizer will crash when trying to symbolize a report.
-    if (!LoadLibraryA("dbghelp.dll"))
-      return false;
-#endif
-
     target_services->LowerToken();
     return true;
   }

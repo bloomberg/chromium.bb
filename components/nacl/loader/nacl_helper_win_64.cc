@@ -61,7 +61,7 @@ int NaClWin64Main() {
   content::SetupCRT(command_line);
   // Route stdio to parent console (if any) or create one.
   if (command_line.HasSwitch(switches::kEnableLogging))
-    base::RouteStdioToConsole();
+    base::RouteStdioToConsole(true);
 
   // Initialize the sandbox for this process.
   bool sandbox_initialized_ok = content::InitializeSandbox(&sandbox_info);

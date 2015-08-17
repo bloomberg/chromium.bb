@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/process/launch.h"
 #include "base/process/memory.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
@@ -312,6 +313,7 @@ void TestSuite::Initialize() {
 
   CHECK(debug::EnableInProcessStackDumping());
 #if defined(OS_WIN)
+  RouteStdioToConsole(true);
   // Make sure we run with high resolution timer to minimize differences
   // between production code and test code.
   Time::EnableHighResolutionTimer(true);
