@@ -20,6 +20,11 @@ class EnvTestHelper {
     env_->input_state_lookup_ = input_state_lookup.Pass();
   }
 
+  void ResetEventState() {
+    env_->mouse_button_flags_ = 0;
+    env_->is_touch_down_ = false;
+  }
+
  private:
   Env* env_;
 

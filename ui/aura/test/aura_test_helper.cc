@@ -64,7 +64,9 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   Env::GetInstance()->set_context_factory(context_factory);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
-  EnvTestHelper(Env::GetInstance()).SetInputStateLookup(nullptr);
+  EnvTestHelper env_helper(Env::GetInstance());
+  env_helper.SetInputStateLookup(nullptr);
+  env_helper.ResetEventState();
 
   ui::InitializeInputMethodForTesting();
 

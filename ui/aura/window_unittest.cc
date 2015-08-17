@@ -1673,10 +1673,11 @@ TEST_F(WindowTest, Property) {
 TEST_F(WindowTest, OwnedProperty) {
   scoped_ptr<Window> w(CreateTestWindowWithId(0, root_window()));
   EXPECT_EQ(NULL, w->GetProperty(kOwnedKey));
+  TestProperty* last_deleted = TestProperty::last_deleted();
   TestProperty* p1 = new TestProperty();
   w->SetProperty(kOwnedKey, p1);
   EXPECT_EQ(p1, w->GetProperty(kOwnedKey));
-  EXPECT_EQ(NULL, TestProperty::last_deleted());
+  EXPECT_EQ(last_deleted, TestProperty::last_deleted());
 
   TestProperty* p2 = new TestProperty();
   w->SetProperty(kOwnedKey, p2);
