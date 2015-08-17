@@ -266,9 +266,11 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
           ts);
     }
 
-    TRACE_EVENT_FLOW_BEGIN1(
-        "input,benchmark", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id_),
-        "trace_id", trace_id_);
+    TRACE_EVENT_WITH_FLOW1("input,benchmark",
+                           "LatencyInfo.Flow",
+                           TRACE_ID_DONT_MANGLE(trace_id_),
+                           TRACE_EVENT_FLAG_FLOW_OUT,
+                           "trace_id", trace_id_);
   }
 
   LatencyMap::key_type key = std::make_pair(component, id);
@@ -302,8 +304,10 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
                                   "data", AsTraceableData());
     }
 
-    TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0(
-        "input,benchmark", "LatencyInfo.Flow", TRACE_ID_DONT_MANGLE(trace_id_));
+    TRACE_EVENT_WITH_FLOW0("input,benchmark",
+                           "LatencyInfo.Flow",
+                           TRACE_ID_DONT_MANGLE(trace_id_),
+                           TRACE_EVENT_FLAG_FLOW_IN);
   }
 }
 
