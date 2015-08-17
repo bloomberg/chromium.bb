@@ -233,6 +233,11 @@ ExceptionHandler::ExceptionHandler(const MinidumpDescriptor& descriptor,
       !minidump_descriptor_.IsMicrodumpOnConsole())
     minidump_descriptor_.UpdatePath();
 
+#if defined(__ANDROID__)
+  if (minidump_descriptor_.IsMicrodumpOnConsole())
+    logger::initializeCrashLogWriter();
+#endif
+
   pthread_mutex_lock(&g_handler_stack_mutex_);
   if (!g_handler_stack_)
     g_handler_stack_ = new std::vector<ExceptionHandler*>;

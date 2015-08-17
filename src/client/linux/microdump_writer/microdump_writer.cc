@@ -105,9 +105,11 @@ class MicrodumpWriter {
  private:
   // Writes one line to the system log.
   void LogLine(const char* msg) {
+#if defined(__ANDROID__)
+    logger::writeToCrashLog(msg);
+#else
     logger::write(msg, my_strlen(msg));
-#if !defined(__ANDROID__)
-    logger::write("\n", 1);  // Android logger appends the \n. Linux's doesn't.
+    logger::write("\n", 1);
 #endif
   }
 
