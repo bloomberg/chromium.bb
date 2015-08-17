@@ -37,7 +37,7 @@
             "group_name": "Enabled",
             "params": {
                 "rtt_msec": "2000",
-                "hysteresis_period_seconds": "300"
+                "hysteresis_period_seconds": "120"
             }            
         }
     ],
