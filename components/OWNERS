@@ -189,11 +189,13 @@ per-file pairing.gypi=achuith@chromium.org
 per-file pairing.gypi=dzhioev@chromium.org
 per-file pairing.gypi=zork@chromium.org
 
+per-file password_manager*=engedy@chromium.org
 per-file password_manager*=gcasto@chromium.org
 per-file password_manager*=isherman@chromium.org
 per-file password_manager*=mkwst@chromium.org
 per-file password_manager*=stuartmorgan@chromium.org
 per-file password_manager*=vabr@chromium.org
+per-file password_manager*=vasilii@chromium.org
 
 per-file pdf.gypi=gene@chromium.org
 per-file pdf.gypi=jam@chromium.org
