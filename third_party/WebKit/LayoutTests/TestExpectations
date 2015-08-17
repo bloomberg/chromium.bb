@@ -105,7 +105,6 @@ crbug.com/518985 http/tests/serviceworker/request-end-to-end.html [ Pass Timeout
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
 crbug.com/518989 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-002.xht [ ImageOnlyFailure Pass Timeout ]
-crbug.com/518990 imported/web-platform-tests/html/semantics/embedded-content/the-img-element/current-pixel-density/error.html [ Failure Pass ]
 crbug.com/518992 imported/web-platform-tests/user-timing/test_user_timing_measure.html [ Failure Pass ]
 crbug.com/518993 imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Failure Pass ]
 crbug.com/518995 media/track/media-element-move-to-new-document-assert.html [ Failure Pass ]
