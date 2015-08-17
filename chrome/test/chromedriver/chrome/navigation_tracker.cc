@@ -15,6 +15,8 @@ namespace {
 const std::string kDummyFrameUrl =
     "data:text/html,<!--chromedriver dummy frame-->";
 
+const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
+
 }  // namespace
 
 NavigationTracker::NavigationTracker(DevToolsClient* client,
@@ -188,6 +190,16 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
         // See crbug.com/180742.
         pending_frame_set_.clear();
         scheduled_frame_set_.clear();
+      } else {
+        // If the URL indicates that the web page is unreachable (the sad tab
+        // page) then discard any pending or scheduled navigations.
+        std::string frame_url;
+        if (!params.GetString("frame.url", &frame_url))
+          return Status(kUnknownError, "missing or invalid 'frame.url'");
+        if (frame_url == kUnreachableWebDataURL) {
+          pending_frame_set_.clear();
+          scheduled_frame_set_.clear();
+        }
       }
     } else {
       // If a child frame just navigated, check if it is the dummy frame that
