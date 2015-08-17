@@ -2216,6 +2216,39 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_TRUE(metadata.root_overflow_y_hidden);
   }
 
+  // Re-enable scrollability and verify that overflows are no longer hidden.
+  {
+    host_impl_->active_tree()
+        ->OuterViewportScrollLayer()
+        ->set_user_scrollable_horizontal(true);
+    host_impl_->active_tree()
+        ->OuterViewportScrollLayer()
+        ->set_user_scrollable_vertical(true);
+    CompositorFrameMetadata metadata =
+        host_impl_->MakeCompositorFrameMetadata();
+    EXPECT_FALSE(metadata.root_overflow_x_hidden);
+    EXPECT_FALSE(metadata.root_overflow_y_hidden);
+  }
+
+  // Root "overflow: hidden" properties should also be reflected on the
+  // inner viewport scroll layer.
+  {
+    host_impl_->active_tree()
+        ->InnerViewportScrollLayer()
+        ->set_user_scrollable_horizontal(false);
+    CompositorFrameMetadata metadata =
+        host_impl_->MakeCompositorFrameMetadata();
+    EXPECT_TRUE(metadata.root_overflow_x_hidden);
+    EXPECT_FALSE(metadata.root_overflow_y_hidden);
+
+    host_impl_->active_tree()
+        ->InnerViewportScrollLayer()
+        ->set_user_scrollable_vertical(false);
+    metadata = host_impl_->MakeCompositorFrameMetadata();
+    EXPECT_TRUE(metadata.root_overflow_x_hidden);
+    EXPECT_TRUE(metadata.root_overflow_y_hidden);
+  }
+
   // Page scale should update metadata correctly (shrinking only the viewport).
   host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE);
   host_impl_->PinchGestureBegin();
@@ -7658,6 +7691,32 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
   EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
   host_impl_->ScrollEnd();
+}
+
+TEST_F(LayerTreeHostImplVirtualViewportTest,
+       NoOverscrollWhenInnerViewportCantScroll) {
+  InputHandlerScrollResult scroll_result;
+  gfx::Size content_size = gfx::Size(100, 160);
+  gfx::Size outer_viewport = gfx::Size(50, 80);
+  gfx::Size inner_viewport = gfx::Size(25, 40);
+  SetupVirtualViewportLayers(content_size, outer_viewport, inner_viewport);
+  DrawFrame();
+
+  // Make inner viewport unscrollable.
+  LayerImpl* inner_scroll = host_impl_->InnerViewportScrollLayer();
+  inner_scroll->set_user_scrollable_horizontal(false);
+  inner_scroll->set_user_scrollable_vertical(false);
+
+  // Ensure inner viewport doesn't react to scrolls (test it's unscrollable).
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), inner_scroll->CurrentScrollOffset());
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 100));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(), inner_scroll->CurrentScrollOffset());
+
+  // When inner viewport is unscrollable, a fling gives zero overscroll.
+  EXPECT_FALSE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
 }
 
 class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {

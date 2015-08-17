@@ -1499,18 +1499,20 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
 
   active_tree_->GetViewportSelection(&metadata.selection);
 
-  LayerImpl* root_layer_for_overflow = OuterViewportScrollLayer()
-                                           ? OuterViewportScrollLayer()
-                                           : InnerViewportScrollLayer();
-  if (root_layer_for_overflow) {
+  if (OuterViewportScrollLayer()) {
     metadata.root_overflow_x_hidden =
-        !root_layer_for_overflow->user_scrollable_horizontal();
+        !OuterViewportScrollLayer()->user_scrollable_horizontal();
     metadata.root_overflow_y_hidden =
-        !root_layer_for_overflow->user_scrollable_vertical();
+        !OuterViewportScrollLayer()->user_scrollable_vertical();
   }
 
   if (!InnerViewportScrollLayer())
     return metadata;
+
+  metadata.root_overflow_x_hidden |=
+      !InnerViewportScrollLayer()->user_scrollable_horizontal();
+  metadata.root_overflow_y_hidden |=
+      !InnerViewportScrollLayer()->user_scrollable_vertical();
 
   // TODO(miletus) : Change the metadata to hold ScrollOffset.
   metadata.root_scroll_offset = gfx::ScrollOffsetToVector2dF(
@@ -2749,6 +2751,15 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     accumulated_root_overscroll_.set_y(0);
   gfx::Vector2dF unused_root_delta(scroll_state.delta_x(),
                                    scroll_state.delta_y());
+
+  // When inner viewport is unscrollable, disable overscrolls.
+  if (InnerViewportScrollLayer()) {
+    if (!InnerViewportScrollLayer()->user_scrollable_horizontal())
+      unused_root_delta.set_x(0);
+    if (!InnerViewportScrollLayer()->user_scrollable_vertical())
+      unused_root_delta.set_y(0);
+  }
+
   accumulated_root_overscroll_ += unused_root_delta;
 
   bool did_scroll_top_controls =

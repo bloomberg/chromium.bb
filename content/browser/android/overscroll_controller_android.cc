@@ -11,7 +11,6 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/edge_effect.h"
 #include "content/browser/android/edge_effect_l.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
@@ -94,16 +93,8 @@ OverscrollControllerAndroid::OverscrollControllerAndroid(
       dpi_scale_(content_view_core->GetDpiScale()),
       enabled_(true),
       glow_effect_(CreateGlowEffect(this, dpi_scale_)),
-      refresh_effect_(CreateRefreshEffect(content_view_core)),
-      is_fullscreen_(false) {
+      refresh_effect_(CreateRefreshEffect(content_view_core)) {
   DCHECK(compositor_);
-  // Fullscreen state is only relevant for the refresh effect.
-  if (refresh_effect_) {
-    WebContentsImpl* web_contents =
-        static_cast<WebContentsImpl*>(content_view_core->GetWebContents());
-    is_fullscreen_ = web_contents->IsFullscreenForCurrentTab();
-    Observe(web_contents);
-  }
 }
 
 OverscrollControllerAndroid::~OverscrollControllerAndroid() {
@@ -115,10 +106,6 @@ bool OverscrollControllerAndroid::WillHandleGestureEvent(
     return false;
 
   if (!refresh_effect_)
-    return false;
-
-  // Suppress refresh detection for fullscreen HTML5 scenarios, e.g., video.
-  if (is_fullscreen_)
     return false;
 
   // Suppress refresh detection if the glow effect is still prominent.
@@ -271,16 +258,6 @@ void OverscrollControllerAndroid::Disable() {
     if (glow_effect_)
       glow_effect_->Reset();
   }
-}
-
-void OverscrollControllerAndroid::DidToggleFullscreenModeForTab(
-    bool entered_fullscreen) {
-  DCHECK(refresh_effect_);
-  if (is_fullscreen_ == entered_fullscreen)
-    return;
-  is_fullscreen_ = entered_fullscreen;
-  if (is_fullscreen_)
-    refresh_effect_->ReleaseWithoutActivation();
 }
 
 scoped_ptr<EdgeEffectBase> OverscrollControllerAndroid::CreateEdgeEffect() {
