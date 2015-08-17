@@ -408,7 +408,7 @@ extern "C"
 	//CTO_Apostrophe,
 	//CTO_Initial,
     CTO_NoBreak,
-	CTO_Pattern,
+	CTO_Match,
     CTO_None,
 /*Internal opcodes */
     CTO_CapitalRule,

@@ -433,7 +433,7 @@ static const char *opcodeNames[CTO_None] = {
 //  "apostrophe",
 //  "initial",
   "nobreak",
-	"pattern",
+	"match",
 };
 static short opcodeLengths[CTO_None] = { 0 };
 
@@ -1093,7 +1093,7 @@ charactersDefined (FileInfo * nested)
       || newRule->opcode == CTO_Repeated ||
       ((newRule->opcode >= CTO_Context && newRule->opcode <=
 	CTO_Pass4) && newRule->opcode != CTO_Correct)
-		|| newRule->opcode == CTO_Pattern)
+		|| newRule->opcode == CTO_Match)
     return 1;
   for (k = 0; k < newRule->charslen; k++)
     if (!compile_findCharOrDots (newRule->charsdots[k], 0))
@@ -4161,7 +4161,7 @@ doOpcode:
 				 CTO_Undefined, &table->undefined);
       break;
 
-		case CTO_Pattern:
+		case CTO_Match:
 		{
 			CharsString ptn_before, ptn_after, ptn_regex;
 			widechar patterns[512], buffer[256];

@@ -1648,7 +1648,7 @@ for_selectRule ()
 		      }
 		    break;
 		    
-				case CTO_Pattern:
+				case CTO_Match:
 				{
 					widechar *patterns, *pattern;
 					
