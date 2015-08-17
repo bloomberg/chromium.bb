@@ -340,6 +340,8 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
       return DomKey::PRINT_SCREEN;
     case XKB_KEY_ISO_Level3_Shift:
       return DomKey::ALT_GRAPH;
+    case XKB_KEY_ISO_Level3_Latch:
+      return DomKey::ALT_GRAPH_LATCH;
     case XKB_KEY_ISO_Level5_Shift:
       return DomKey::SHIFT_LEVEL5;
     case XKB_KEY_ISO_Next_Group:

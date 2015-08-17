@@ -156,7 +156,7 @@ class EventRewriter : public ui::EventRewriter {
 
   // Rewriter phases. These can inspect the original |event|, but operate using
   // the current |state|, which may have been modified by previous phases.
-  void RewriteModifierKeys(const ui::KeyEvent& event, MutableKeyState* state);
+  bool RewriteModifierKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteNumPadKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteExtendedKeys(const ui::KeyEvent& event, MutableKeyState* state);
   void RewriteFunctionKeys(const ui::KeyEvent& event, MutableKeyState* state);
@@ -186,6 +186,24 @@ class EventRewriter : public ui::EventRewriter {
   // While the Diamond key is down, this holds the corresponding modifier
   // ui::EventFlags; otherwise it is EF_NONE.
   int current_diamond_key_modifier_flags_;
+
+  // Some keyboard layouts have 'latching' keys, which either apply
+  // a modifier while held down (like normal modifiers), or, if no
+  // non-modifier is pressed while the latching key is down, apply the
+  // modifier to the next non-modifier keypress. Under Ozone the stateless
+  // layout model requires this to be handled explicitly. See crbug.com/518237
+  // Pragmatically this, like the Diamond key, is handled here in
+  // EventRewriter, but modifier state management is scattered between
+  // here, sticky keys, and the system layer (X11 or Ozone), and could
+  // do with refactoring.
+  // - |pressed_modifier_latches_| records the latching keys currently pressed.
+  // - |latched_modifier_latches_| records the latching keys just released,
+  //   to be applied to the next non-modifier key.
+  // - |used_modifier_latches_| records the latching keys applied to a non-
+  //   modifier while pressed, so that they do not get applied after release.
+  int pressed_modifier_latches_;
+  int latched_modifier_latches_;
+  int used_modifier_latches_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriter);
 };
