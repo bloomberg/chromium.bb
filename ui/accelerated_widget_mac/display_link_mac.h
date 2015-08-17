@@ -29,6 +29,13 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
       base::TimeTicks* timebase,
       base::TimeDelta* interval);
 
+  // The vsync parameters are cached, because re-computing them is expensive.
+  // The parameters also skew over time (astonishingly quickly -- 0.1 msec per
+  // second), so, use this method to tell the display link the current time.
+  // If too much time has elapsed since the last time the vsync parameters were
+  // calculated, re-calculate them.
+  void NotifyCurrentTime(const base::TimeTicks& now);
+
  private:
   friend class base::RefCounted<DisplayLinkMac>;
 
@@ -71,6 +78,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayLinkMac :
   bool timebase_and_interval_valid_;
   base::TimeTicks timebase_;
   base::TimeDelta interval_;
+
+  // The time after which we should re-start the display link to get fresh
+  // parameters.
+  base::TimeTicks recalculate_time_;
 
   // Each display link instance consumes a non-negligible number of cycles, so
   // make all display links on the same screen share the same object.

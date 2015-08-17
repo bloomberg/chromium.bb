@@ -108,6 +108,11 @@ bool DisplayLinkMac::GetVSyncParameters(
   return true;
 }
 
+void DisplayLinkMac::NotifyCurrentTime(const base::TimeTicks& now) {
+  if (now >= recalculate_time_)
+    StartOrContinueDisplayLink();
+}
+
 void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
   TRACE_EVENT0("ui", "DisplayLinkMac::Tick");
 
@@ -128,6 +133,9 @@ void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
       1000000 * static_cast<int64>(numerator) / denominator);
   timebase_and_interval_valid_ = true;
 
+  // Don't restart the display link for 10 seconds.
+  recalculate_time_ = base::TimeTicks::Now() +
+                      base::TimeDelta::FromSeconds(10);
   StopDisplayLink();
 }
 

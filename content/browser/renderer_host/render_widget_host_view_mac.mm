@@ -529,6 +529,7 @@ void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted(
   if (!render_widget_host_)
     return;
   base::TimeTicks swap_time = base::TimeTicks::Now();
+
   for (auto latency_info : all_latency_info) {
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_GPU_SWAP_BUFFER_COMPONENT, 0, 0, swap_time, 1);
@@ -537,6 +538,9 @@ void RenderWidgetHostViewMac::AcceleratedWidgetSwapCompleted(
         swap_time, 1);
     render_widget_host_->FrameSwapped(latency_info);
   }
+
+  if (display_link_)
+    display_link_->NotifyCurrentTime(swap_time);
 }
 
 void RenderWidgetHostViewMac::AcceleratedWidgetHitError() {
