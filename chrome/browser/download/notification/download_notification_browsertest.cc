@@ -12,6 +12,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
+#include "chrome/browser/download/notification/download_group_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -792,6 +793,10 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_MULTIPLE,
             GetNotification(notification_id_group)->type());
   EXPECT_EQ(2u, GetNotification(notification_id_group)->items().size());
+  EXPECT_EQ(DownloadGroupNotification::TruncateFileName(download2),
+            GetNotification(notification_id_group)->items()[0].title);
+  EXPECT_EQ(DownloadGroupNotification::TruncateFileName(download1),
+            GetNotification(notification_id_group)->items()[1].title);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadNotificationTest,

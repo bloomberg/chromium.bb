@@ -30,12 +30,6 @@ const char kDownloadNotificationNotifierId[] =
 
 const size_t kMaxFilenameWidth = 160;  // in px
 
-base::string16 TruncateFilename(const base::FilePath& filename) {
-  return gfx::ElideFilename(filename,
-      views::Label().font_list(),
-      kMaxFilenameWidth);
-}
-
 base::string16 GetStatusString(content::DownloadItem* download) {
   switch (download->GetState()) {
     case content::DownloadItem::IN_PROGRESS:
@@ -89,6 +83,14 @@ base::string16 GetStatusString(content::DownloadItem* download) {
 }
 
 }  // anonymous namespace
+
+// static
+base::string16 DownloadGroupNotification::TruncateFileName(
+    const content::DownloadItem* download) {
+  return gfx::ElideFilename(download->GetFileNameToReportUser(),
+      views::Label().font_list(),
+      kMaxFilenameWidth);
+}
 
 DownloadGroupNotification::DownloadGroupNotification(
     Profile* profile, DownloadNotificationManagerForProfile* manager)
@@ -244,7 +246,7 @@ void DownloadGroupNotification::UpdateNotificationData() {
         it->second.original_filename != original_filename) {
       truncated_filename_cache_[download].original_filename = original_filename;
       truncated_filename_cache_[download].truncated_filename =
-          TruncateFilename(original_filename);
+          TruncateFileName(download);
     }
 
     // TODO(yoshiki): Use emplace_back when C++11 becomes allowed.
