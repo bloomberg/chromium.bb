@@ -35,6 +35,7 @@ public:
     bool showRulers;
     bool showExtensionLines;
     bool showLayoutEditor;
+    bool displayAsMaterial;
 };
 
 class CORE_EXPORT InspectorHighlight {
@@ -61,6 +62,7 @@ private:
     RefPtr<JSONArray> m_highlightPaths;
     bool m_showRulers;
     bool m_showExtensionLines;
+    bool m_displayAsMaterial;
 };
 
 } // namespace blink

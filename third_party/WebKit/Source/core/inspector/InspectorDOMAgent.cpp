@@ -1255,6 +1255,9 @@ PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspe
     bool showLayoutEditor = false;
     highlightInspectorObject->getBoolean("showLayoutEditor", &showLayoutEditor);
     highlightConfig->showLayoutEditor = showLayoutEditor;
+    bool displayAsMaterial = false;
+    highlightInspectorObject->getBoolean("displayAsMaterial", &displayAsMaterial);
+    highlightConfig->displayAsMaterial = displayAsMaterial;
     highlightConfig->content = parseConfigColor("contentColor", highlightInspectorObject);
     highlightConfig->contentOutline = parseConfigColor("contentOutlineColor", highlightInspectorObject);
     highlightConfig->padding = parseConfigColor("paddingColor", highlightInspectorObject);

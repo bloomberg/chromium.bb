@@ -87,6 +87,7 @@ svg-root{
     "idValue": "svg-root",
     "nodeWidth": "280",
     "nodeHeight": "380"
-  }
+  },
+  "displayAsMaterial": false
 }
 

@@ -87,6 +87,7 @@ inspectedElement{
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250"
-  }
+  },
+  "displayAsMaterial": false
 }
 

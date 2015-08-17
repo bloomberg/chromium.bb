@@ -152,6 +152,93 @@ body.platform-linux {
     position: absolute;
 }
 
+
+/* Material */
+.hidden {
+    display: none !important;
+}
+
+#tooltip-container {
+    -webkit-filter: drop-shadow(0 1px 1px hsla(0, 0%, 0%, 0.1)) drop-shadow(0 0px 1px hsla(0, 0%, 0%, 0.2));
+}
+
+#element-tooltip,
+#element-tooltip-arrow {
+    position: absolute;
+    z-index: 10;
+    -webkit-user-select: none;
+}
+
+#element-tooltip {
+    background-color: hsl(0, 0%, 25%);
+    font-size: 11px;
+    line-height: 14px;
+    padding: 5px 6px;
+    border-radius: 2px;
+    color: white;
+    display: flex;
+    align-content: stretch;
+    box-sizing: border-box;
+    max-width: calc(100% - 4px);
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    z-index: 1;
+    background-clip: padding-box;
+    will-change: transform;
+    text-rendering: optimizeLegibility;
+}
+
+#element-tooltip-arrow {
+    border: solid;
+    border-color: hsl(0, 0%, 25%) transparent;
+    border-width: 0 8px 8px 8px;
+    z-index: 2;
+    margin-top: 1px;
+}
+
+#element-tooltip-arrow.tooltip-arrow-top {
+    border-width: 8px 8px 0 8px;
+    margin-top: -1px;
+}
+
+
+#element-description {
+    flex: 1 1;
+    word-wrap: break-word;
+}
+
+#dimensions {
+    border-left: 1px solid hsl(0, 0%, 50%);
+    padding-left: 7px;
+    margin-left: 7px;
+    float: right;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    color: hsl(0, 0%, 85%);
+}
+
+#material-node-width {
+    margin-right: 2px;
+}
+
+#material-node-height {
+    margin-left: 2px;
+}
+
+#material-tag-name {
+    color: hsl(304, 77%, 70%);
+}
+
+#material-node-id {
+    color: hsl(27, 100%, 70%);
+}
+
+#material-class-name {
+    color: hsl(202, 90%, 75%);
+}
+
+
 </style>
 <script>
 const lightGridColor = "rgba(0,0,0,0.2)";
@@ -355,6 +442,7 @@ function reset(resetData)
     window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
+    document.getElementById("tooltip-container").classList.add("hidden");
     var editor = document.getElementById("editor");
     editor.style.visibility = "hidden";
     editor.textContent = "";
@@ -436,6 +524,63 @@ function _drawElementTitle(elementInfo, bounds)
     elementTitle.style.visibility = "visible";
     elementTitle.style.top = (boxY + 3) + "px";
     elementTitle.style.left = (boxX + 3) + "px";
+}
+
+function _drawMaterialElementTitle(elementInfo, bounds)
+{
+    // Reset position before measuring to ensure line-wraps are consistent.
+    var elementTitle = document.getElementById("element-tooltip");
+    elementTitle.style.top = "0";
+    elementTitle.style.left = "0";
+    document.getElementById("tooltip-container").classList.remove("hidden");
+
+    document.getElementById("material-tag-name").textContent = elementInfo.tagName;
+    document.getElementById("material-node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
+    document.getElementById("material-node-id").classList.toggle("hidden", !elementInfo.idValue);
+    var className = elementInfo.className;
+    if (className && className.length > 50)
+       className = className.substring(0, 50) + "\u2026";
+    document.getElementById("material-class-name").textContent = className || "";
+    document.getElementById("material-class-name").classList.toggle("hidden", !className);
+    document.getElementById("material-node-width").textContent = elementInfo.nodeWidth;
+    document.getElementById("material-node-height").textContent = elementInfo.nodeHeight;
+
+    var titleWidth = elementTitle.offsetWidth;
+    var titleHeight = elementTitle.offsetHeight;
+    var arrowRadius = 8;
+    var pageMargin = 2;
+
+    var boxX = Math.max(pageMargin, bounds.minX + (bounds.maxX - bounds.minX) / 2 - titleWidth / 2);
+    boxX = Math.min(boxX, canvasWidth - titleWidth - pageMargin);
+
+    var boxY = bounds.minY - arrowRadius - titleHeight;
+    var onTop = true;
+    if (boxY < 0) {
+        boxY = bounds.maxY + arrowRadius;
+        onTop = false;
+    } else if (bounds.minY > canvasHeight) {
+        boxY = canvasHeight - arrowRadius - titleHeight;
+    }
+
+    elementTitle.style.top = boxY + "px";
+    elementTitle.style.left = boxX + "px";
+
+    var tooltipArrow = document.getElementById("element-tooltip-arrow");
+    // Center arrow if possible. Otherwise, try the bounds of the element.
+    var arrowX = bounds.minX + (bounds.maxX - bounds.minX) / 2 - arrowRadius;
+    var tooltipBorderRadius = 2;
+    if (arrowX < pageMargin + tooltipBorderRadius)
+        arrowX = bounds.maxX - arrowRadius * 2;
+    else if (arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius)
+        arrowX = bounds.minX;
+    // Hide arrow if element is completely off the sides of the page.
+    var arrowHidden = arrowX < pageMargin + tooltipBorderRadius || arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius;
+    tooltipArrow.classList.toggle("hidden", arrowHidden);
+    if (!arrowHidden) {
+        tooltipArrow.classList.toggle("tooltip-arrow-top", onTop);
+        tooltipArrow.style.top = (onTop ? boxY + titleHeight : boxY - arrowRadius) + "px";
+        tooltipArrow.style.left = arrowX + "px";
+    }
 }
 
 function _drawRulers(bounds, rulerAtRight, rulerAtBottom)
@@ -587,7 +732,9 @@ function drawHighlight(highlight)
         if (highlight.showExtensionLines)
             _drawRulers(bounds, rulerAtRight, rulerAtBottom);
 
-        if (highlight.elementInfo)
+        if (highlight.elementInfo && highlight.displayAsMaterial)
+           _drawMaterialElementTitle(highlight.elementInfo, bounds);
+        else if (highlight.elementInfo)
            _drawElementTitle(highlight.elementInfo, bounds);
     }
     context.restore();
@@ -911,6 +1058,12 @@ document.addEventListener("keydown", onDocumentKeyDown);
   <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
   <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
 </div>
+<div id="tooltip-container" class="hidden">
+    <div id="element-tooltip">
+      <div id="element-description" class="monospace"><span id="material-tag-name"></span><span id="material-node-id"></span><span id="material-class-name"></span></div>
+      <div id="dimensions"><span id="material-node-width"></span>&#xD7;<span id="material-node-height"></span></div>
+    </div>
+    <div id="element-tooltip-arrow"></div>
 <div id="editor" class="fill"></div>
 <div id="log"></div>
 </html>

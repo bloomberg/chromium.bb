@@ -86,6 +86,7 @@ div{
     "idValue": "div",
     "nodeWidth": "100",
     "nodeHeight": "80"
-  }
+  },
+  "displayAsMaterial": false
 }
 

@@ -217,6 +217,7 @@ InspectorHighlight::InspectorHighlight()
     : m_highlightPaths(JSONArray::create())
     , m_showRulers(false)
     , m_showExtensionLines(false)
+    , m_displayAsMaterial(false)
 {
 }
 
@@ -225,6 +226,7 @@ InspectorHighlightConfig::InspectorHighlightConfig()
     , showRulers(false)
     , showExtensionLines(false)
     , showLayoutEditor(false)
+    , displayAsMaterial(false)
 {
 }
 
@@ -232,6 +234,7 @@ InspectorHighlight::InspectorHighlight(Node* node, const InspectorHighlightConfi
     : m_highlightPaths(JSONArray::create())
     , m_showRulers(highlightConfig.showRulers)
     , m_showExtensionLines(highlightConfig.showExtensionLines)
+    , m_displayAsMaterial(highlightConfig.displayAsMaterial)
 {
     appendPathsForShapeOutside(node, highlightConfig);
     appendNodeHighlight(node, highlightConfig);
@@ -327,6 +330,7 @@ PassRefPtr<JSONObject> InspectorHighlight::asJSONObject() const
     object->setBoolean("showExtensionLines", m_showExtensionLines);
     if (m_elementInfo)
         object->setObject("elementInfo", m_elementInfo);
+    object->setBoolean("displayAsMaterial", m_displayAsMaterial);
     return object.release();
 }
 
@@ -444,6 +448,7 @@ InspectorHighlightConfig InspectorHighlight::defaultConfig()
     config.showRulers = true;
     config.showExtensionLines = true;
     config.showLayoutEditor = false;
+    config.displayAsMaterial = false;
     return config;
 }
 
