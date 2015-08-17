@@ -155,6 +155,19 @@
       "89715614FAA2B4C2853802D70261D2A9D0756FC8"   // http://crbug.com/455986
     ]
   },
+  "cast": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "whitelist": [
+      "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Dev
+      "FA01E0B81978950F2BC5A50512FD769725F57510",  // Beta
+      "B11A93E7E5B541F8010245EBDE2C74647D6C14B9",  // Canary
+      "F155646B5D1CA545F7E1E4E20D573DFDD44C2540",  // Google Cast Beta
+      "16CA7A47AAE4BE49B1E75A6B960C3875E945B264",  // Google Cast Stable
+      "C17CD9E6868D7B9C67926E0EC612EA25C768418F",  // http://crbug.com/457908
+      "EF2AB692559EA97C3BBDEA018A8C45F92457BD4E"   // http://crbug.com/457908
+    ]
+  },
   "declarativeWebRequest": {
       "channel": "beta",
       "extension_types": ["extension", "legacy_packaged_app"]
