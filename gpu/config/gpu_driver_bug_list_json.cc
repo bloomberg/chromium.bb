@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.23",
+  "version": "8.22",
   "entries": [
     {
       "id": 1,
@@ -1480,18 +1480,6 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) 3.*",
       "features": [
         "disable_program_cache"
-      ]
-    },
-    {
-      "id": 127,
-      "description": "Crash on binding cube map texture to FBO",
-      "cr_bugs": [518889],
-      "os": {
-        "type": "android"
-      },
-      "gl_renderer": "Adreno.*",
-      "features": [
-        "force_cube_map_positive_x_allocation"
       ]
     }
   ]
