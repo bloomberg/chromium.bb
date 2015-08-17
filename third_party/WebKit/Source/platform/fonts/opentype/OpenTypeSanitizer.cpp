@@ -33,6 +33,7 @@
 
 #include "ots-memory-stream.h"
 #include "platform/SharedBuffer.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
@@ -83,7 +84,11 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
     double start = currentTime();
     BlinkOTSContext otsContext;
 
-    if (!otsContext.Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size())) {
+    TRACE_EVENT_BEGIN0("blink", "DecodeFont");
+    bool ok = otsContext.Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size());
+    TRACE_EVENT_END0("blink", "DecodeFont");
+
+    if (!ok) {
         setErrorString(otsContext.getErrorString());
         return nullptr;
     }
