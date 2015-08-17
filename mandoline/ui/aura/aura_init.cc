@@ -15,6 +15,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+#include "components/font_service/public/cpp/font_loader.h"
+#endif
+
 namespace mandoline {
 
 namespace {
@@ -60,6 +64,12 @@ void AuraInit::InitializeResources(mojo::Shell* shell) {
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
       resource_loader.ReleaseFile(kResourceUIPak),
       ui::SCALE_FACTOR_100P);
+
+  // Initialize the skia font code to go ask fontconfig underneath.
+#if defined(OS_LINUX) && !defined(OS_ANDROID)
+  SkFontConfigInterface::SetGlobal(new font_service::FontLoader(shell));
+#endif
+
   // There is a bunch of static state in gfx::Font, by running this now,
   // before any other apps load, we ensure all the state is set up.
   gfx::Font();
