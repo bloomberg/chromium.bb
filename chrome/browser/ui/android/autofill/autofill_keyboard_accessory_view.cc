@@ -22,7 +22,8 @@ namespace autofill {
 
 AutofillKeyboardAccessoryView::AutofillKeyboardAccessoryView(
     AutofillPopupController* controller)
-    : controller_(controller) {
+    : controller_(controller),
+      deleting_index_(-1) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(Java_AutofillKeyboardAccessoryBridge_create(env));
 }
@@ -66,11 +67,13 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
           controller_->GetIconResourceID(suggestion.icon));
     }
 
+    bool deletable =
+        controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
     Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
         env, data_array.obj(), i,
         base::android::ConvertUTF16ToJavaString(env, suggestion.value).obj(),
         base::android::ConvertUTF16ToJavaString(env, suggestion.label).obj(),
-        android_icon_id, suggestion.frontend_id);
+        android_icon_id, suggestion.frontend_id, deletable);
   }
 
   Java_AutofillKeyboardAccessoryBridge_show(
@@ -83,6 +86,34 @@ void AutofillKeyboardAccessoryView::SuggestionSelected(JNIEnv* env,
   // Race: Hide() may have already run.
   if (controller_)
     controller_->AcceptSuggestion(list_index);
+}
+
+void AutofillKeyboardAccessoryView::DeletionRequested(JNIEnv* env,
+                                                      jobject obj,
+                                                      jint list_index) {
+  if (!controller_)
+    return;
+
+  base::string16 confirmation_title, confirmation_body;
+  if (!controller_->GetRemovalConfirmationText(list_index, &confirmation_title,
+                                               &confirmation_body)) {
+    return;
+  }
+
+  deleting_index_ = list_index;
+  Java_AutofillKeyboardAccessoryBridge_confirmDeletion(
+      env, java_object_.obj(),
+      base::android::ConvertUTF16ToJavaString(env, confirmation_title).obj(),
+      base::android::ConvertUTF16ToJavaString(env, confirmation_body).obj());
+}
+
+void AutofillKeyboardAccessoryView::DeletionConfirmed(JNIEnv* env,
+                                                      jobject obj) {
+  if (!controller_)
+    return;
+
+  CHECK_GE(deleting_index_, 0);
+  controller_->RemoveSuggestion(deleting_index_);
 }
 
 void AutofillKeyboardAccessoryView::ViewDismissed(JNIEnv* env, jobject obj) {

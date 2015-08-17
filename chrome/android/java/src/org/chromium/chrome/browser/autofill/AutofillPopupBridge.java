@@ -15,8 +15,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.DropdownItem;
+import org.chromium.ui.autofill.AutofillDelegate;
 import org.chromium.ui.autofill.AutofillPopup;
-import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.ui.autofill.AutofillSuggestion;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
@@ -25,7 +25,7 @@ import org.chromium.ui.base.WindowAndroid;
 * JNI call glue for AutofillExternalDelagate C++ and Java objects.
 */
 @JNINamespace("autofill")
-public class AutofillPopupBridge implements AutofillPopupDelegate, DialogInterface.OnClickListener {
+public class AutofillPopupBridge implements AutofillDelegate, DialogInterface.OnClickListener {
     private final long mNativeAutofillPopup;
     private final AutofillPopup mAutofillPopup;
     private AlertDialog mDeletionDialog;

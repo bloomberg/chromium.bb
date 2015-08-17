@@ -34,43 +34,20 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
     private static final int ITEM_ID_SEPARATOR_ENTRY = -3;
 
     private final Context mContext;
-    private final AutofillPopupDelegate mAutofillCallback;
+    private final AutofillDelegate mAutofillDelegate;
     private List<AutofillSuggestion> mSuggestions;
-
-
-    /**
-     * An interface to handle the touch interaction with an AutofillPopup object.
-     */
-    public interface AutofillPopupDelegate {
-        /**
-         * Informs the controller the AutofillPopup was hidden.
-         */
-        public void dismissed();
-
-        /**
-         * Handles the selection of an Autofill suggestion from an AutofillPopup.
-         * @param listIndex The index of the selected Autofill suggestion.
-         */
-        public void suggestionSelected(int listIndex);
-
-        /**
-         * Initiates the deletion process for an item. (A confirm dialog should be shown.)
-         * @param listIndex The index of the suggestion to delete.
-         */
-        public void deleteSuggestion(int listIndex);
-    }
 
     /**
      * Creates an AutofillWindow with specified parameters.
      * @param context Application context.
      * @param viewAndroidDelegate View delegate used to add and remove views.
-     * @param autofillCallback A object that handles the calls to the native AutofillPopupView.
+     * @param autofillDelegate An object that handles the calls to the native AutofillPopupView.
      */
     public AutofillPopup(Context context, ViewAndroidDelegate viewAndroidDelegate,
-            AutofillPopupDelegate autofillCallback) {
+            AutofillDelegate autofillDelegate) {
         super(context, viewAndroidDelegate);
         mContext = context;
-        mAutofillCallback = autofillCallback;
+        mAutofillDelegate = autofillDelegate;
 
         setOnItemClickListener(this);
         setOnDismissListener(this);
@@ -109,7 +86,7 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
         DropdownAdapter adapter = (DropdownAdapter) parent.getAdapter();
         int listIndex = mSuggestions.indexOf(adapter.getItem(position));
         assert listIndex > -1;
-        mAutofillCallback.suggestionSelected(listIndex);
+        mAutofillDelegate.suggestionSelected(listIndex);
     }
 
     @Override
@@ -120,12 +97,12 @@ public class AutofillPopup extends DropdownPopupWindow implements AdapterView.On
 
         int listIndex = mSuggestions.indexOf(suggestion);
         assert listIndex > -1;
-        mAutofillCallback.deleteSuggestion(listIndex);
+        mAutofillDelegate.deleteSuggestion(listIndex);
         return true;
     }
 
     @Override
     public void onDismiss() {
-        mAutofillCallback.dismissed();
+        mAutofillDelegate.dismissed();
     }
 }

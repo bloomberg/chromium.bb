@@ -17,8 +17,8 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.DropdownItem;
+import org.chromium.ui.autofill.AutofillDelegate;
 import org.chromium.ui.autofill.AutofillPopup;
-import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.ui.autofill.AutofillSuggestion;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -69,7 +69,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final long CALLBACK_TIMEOUT_MS = scaleTimeout(4000);
     private static final int CHECK_INTERVAL_MS = 100;
 
-    private class MockAutofillCallback implements AutofillPopupDelegate{
+    private class MockAutofillCallback implements AutofillDelegate {
         private final AtomicBoolean mGotPopupSelection = new AtomicBoolean(false);
         public int mListIndex = -1;
 

@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.DropdownItem;
+import org.chromium.ui.autofill.AutofillDelegate;
 import org.chromium.ui.autofill.AutofillKeyboardAccessory;
-import org.chromium.ui.autofill.AutofillKeyboardAccessory.AutofillKeyboardAccessoryDelegate;
 import org.chromium.ui.autofill.AutofillSuggestion;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -19,9 +24,11 @@ import org.chromium.ui.base.WindowAndroid;
 * --enable-autofill-keyboard-accessory-view is passed on the command line.
 */
 @JNINamespace("autofill")
-public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessoryDelegate {
+public class AutofillKeyboardAccessoryBridge
+        implements AutofillDelegate, DialogInterface.OnClickListener {
     private long mNativeAutofillKeyboardAccessory;
     private AutofillKeyboardAccessory mAccessoryView;
+    private Context mContext;
 
     private AutofillKeyboardAccessoryBridge() {
     }
@@ -43,6 +50,19 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
         nativeSuggestionSelected(mNativeAutofillKeyboardAccessory, listIndex);
     }
 
+    @Override
+    public void deleteSuggestion(int listIndex) {
+        if (mNativeAutofillKeyboardAccessory == 0) return;
+        nativeDeletionRequested(mNativeAutofillKeyboardAccessory, listIndex);
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+        assert which == DialogInterface.BUTTON_POSITIVE;
+        if (mNativeAutofillKeyboardAccessory == 0) return;
+        nativeDeletionConfirmed(mNativeAutofillKeyboardAccessory);
+    }
+
     /**
      * Initializes this object.
      * This function should be called at most one time.
@@ -59,6 +79,7 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
 
         mNativeAutofillKeyboardAccessory = nativeAutofillKeyboardAccessory;
         mAccessoryView = new AutofillKeyboardAccessory(windowAndroid, this);
+        mContext = windowAndroid.getActivity().get();
     }
 
     /**
@@ -75,6 +96,7 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
     @CalledByNative
     private void dismiss() {
         if (mAccessoryView != null) mAccessoryView.dismiss();
+        mContext = null;
     }
 
     /**
@@ -89,6 +111,17 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
     // Helper methods for AutofillSuggestion. These are copied from AutofillPopupBridge (which
     // should
     // eventually disappear).
+
+    @CalledByNative
+    private void confirmDeletion(String title, String body) {
+        new AlertDialog.Builder(mContext, R.style.AlertDialogTheme)
+                .setTitle(title)
+                .setMessage(body)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.ok, this)
+                .create()
+                .show();
+    }
 
     @CalledByNative
     private static AutofillSuggestion[] createAutofillSuggestionArray(int size) {
@@ -114,12 +147,15 @@ public class AutofillKeyboardAccessoryBridge implements AutofillKeyboardAccessor
      */
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
-            String label, String sublabel, int iconId, int suggestionId) {
+            String label, String sublabel, int iconId, int suggestionId, boolean deletable) {
         int drawableId = iconId == 0 ? DropdownItem.NO_ICON : ResourceId.mapToDrawableId(iconId);
-        array[index] = new AutofillSuggestion(label, sublabel, drawableId, suggestionId, false);
+        array[index] = new AutofillSuggestion(label, sublabel, drawableId, suggestionId, deletable);
     }
 
     private native void nativeViewDismissed(long nativeAutofillKeyboardAccessoryView);
     private native void nativeSuggestionSelected(
             long nativeAutofillKeyboardAccessoryView, int listIndex);
+    private native void nativeDeletionRequested(
+            long nativeAutofillKeyboardAccessoryView, int listIndex);
+    private native void nativeDeletionConfirmed(long nativeAutofillKeyboardAccessoryView);
 }

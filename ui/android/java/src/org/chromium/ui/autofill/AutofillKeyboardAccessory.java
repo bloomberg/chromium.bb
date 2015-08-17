@@ -26,41 +26,26 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
  * below the content area.
  */
 public class AutofillKeyboardAccessory extends LinearLayout
-        implements WindowAndroid.KeyboardVisibilityListener, View.OnClickListener {
+        implements WindowAndroid.KeyboardVisibilityListener, View.OnClickListener,
+        View.OnLongClickListener {
     private final WindowAndroid mWindowAndroid;
-    private final AutofillKeyboardAccessoryDelegate mAutofillCallback;
+    private final AutofillDelegate mAutofillDelegate;
     private final int mMaximumLabelWidthPx;
     private final int mMaximumSublabelWidthPx;
 
     /**
-     * An interface to handle the touch interaction with an AutofillKeyboardAccessory object.
-     */
-    public interface AutofillKeyboardAccessoryDelegate {
-        /**
-         * Informs the controller the AutofillKeyboardAccessory was hidden.
-         */
-        public void dismissed();
-
-        /**
-         * Handles the selection of an Autofill suggestion from an AutofillKeyboardAccessory.
-         * @param listIndex The index of the selected Autofill suggestion.
-         */
-        public void suggestionSelected(int listIndex);
-    }
-
-    /**
      * Creates an AutofillKeyboardAccessory with specified parameters.
      * @param windowAndroid The owning WindowAndroid.
-     * @param autofillCallback A object that handles the calls to the native
-     * AutofillKeyboardAccessoryView.
+     * @param autofillDelegate A object that handles the calls to the native
+     *                         AutofillKeyboardAccessoryView.
      */
     public AutofillKeyboardAccessory(
-            WindowAndroid windowAndroid, AutofillKeyboardAccessoryDelegate autofillCallback) {
+            WindowAndroid windowAndroid, AutofillDelegate autofillDelegate) {
         super(windowAndroid.getActivity().get());
-        assert autofillCallback != null;
+        assert autofillDelegate != null;
         assert windowAndroid.getActivity().get() != null;
         mWindowAndroid = windowAndroid;
-        mAutofillCallback = autofillCallback;
+        mAutofillDelegate = autofillDelegate;
 
         int deviceWidthPx = DeviceDisplayInfo.create(getContext()).getDisplayWidth();
         mMaximumLabelWidthPx = deviceWidthPx / 2;
@@ -82,7 +67,8 @@ public class AutofillKeyboardAccessory extends LinearLayout
     @SuppressLint("InlinedApi")
     public void showWithSuggestions(AutofillSuggestion[] suggestions, boolean isRtl) {
         removeAllViews();
-        for (AutofillSuggestion suggestion : suggestions) {
+        for (int i = 0; i < suggestions.length; i++) {
+            AutofillSuggestion suggestion = suggestions[i];
             assert !TextUtils.isEmpty(suggestion.getLabel());
 
             View touchTarget;
@@ -119,7 +105,12 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 }
             }
 
+            touchTarget.setTag(i);
             touchTarget.setOnClickListener(this);
+            if (suggestion.isDeletable()) {
+                touchTarget.setOnLongClickListener(this);
+            }
+
             addView(touchTarget);
         }
 
@@ -149,20 +140,18 @@ public class AutofillKeyboardAccessory extends LinearLayout
     public void keyboardVisibilityChanged(boolean isShowing) {
         if (!isShowing) {
             dismiss();
-            mAutofillCallback.dismissed();
+            mAutofillDelegate.dismissed();
         }
     }
 
     @Override
     public void onClick(View v) {
-        int count = getChildCount();
-        for (int i = 0; i < count; i++) {
-            if (getChildAt(i) == v) {
-                mAutofillCallback.suggestionSelected(i);
-                return;
-            }
-        }
+        mAutofillDelegate.suggestionSelected((int) v.getTag());
+    }
 
-        assert false;
+    @Override
+    public boolean onLongClick(View v) {
+        mAutofillDelegate.deleteSuggestion((int) v.getTag());
+        return true;
     }
 }

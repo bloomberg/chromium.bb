@@ -33,6 +33,10 @@ class AutofillKeyboardAccessoryView : public AutofillPopupView {
   // Called when an autofill item was selected.
   void SuggestionSelected(JNIEnv* env, jobject obj, jint list_index);
 
+  void DeletionRequested(JNIEnv* env, jobject obj, jint list_index);
+
+  void DeletionConfirmed(JNIEnv* env, jobject obj);
+
   void ViewDismissed(JNIEnv* env, jobject obj);
 
   static bool RegisterAutofillKeyboardAccessoryView(JNIEnv* env);
@@ -48,6 +52,10 @@ class AutofillKeyboardAccessoryView : public AutofillPopupView {
   ~AutofillKeyboardAccessoryView() override;
 
   AutofillPopupController* controller_;  // weak.
+
+  // The index of the last item the user long-pressed (they will be shown a
+  // confirmation dialog).
+  int deleting_index_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
