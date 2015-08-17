@@ -50,11 +50,10 @@ _log = logging.getLogger(__name__)
 class WinPort(base.Port):
     port_name = 'win'
 
-    SUPPORTED_VERSIONS = ('xp', 'win7', 'win8', 'win10')
+    SUPPORTED_VERSIONS = ('xp', 'win7', 'win10')
 
     FALLBACK_PATHS = {'win10': ['win']}
-    FALLBACK_PATHS['win8'] = ['win8'] + FALLBACK_PATHS['win10']
-    FALLBACK_PATHS['win7'] = ['win7'] + FALLBACK_PATHS['win8']
+    FALLBACK_PATHS['win7'] = ['win7'] + FALLBACK_PATHS['win10']
     FALLBACK_PATHS['xp'] = ['win-xp'] + FALLBACK_PATHS['win7']
 
     DEFAULT_BUILD_DIRECTORIES = ('build', 'out')
@@ -68,9 +67,8 @@ class WinPort(base.Port):
             # We don't maintain separate baselines for vista, so we pretend it is win7.
             if host.platform.os_version in ('vista', '7sp0', '7sp1'):
                 version = 'win7'
-            elif host.platform.os_version in ('8', '8.1'):
-                version = 'win8'
-            elif host.platform.os_version in ('10', 'future'):
+            # Same for win8, we treat it as win10.
+            elif host.platform.os_version in ('8', '8.1', '10', 'future'):
                 version = 'win10'
             else:
                 version = host.platform.os_version
