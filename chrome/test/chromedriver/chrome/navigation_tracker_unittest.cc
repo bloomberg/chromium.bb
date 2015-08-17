@@ -351,5 +351,9 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   tracker.OnCommandSuccess(&client, "Page.navigate", result);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
   tracker.OnEvent(&client, "Page.loadEventFired", params);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  params.Clear();
+  params.SetString("frameId", "f");
+  tracker.OnEvent(&client, "Page.frameStoppedLoading", params);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }

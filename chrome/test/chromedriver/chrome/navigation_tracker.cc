@@ -22,7 +22,9 @@ NavigationTracker::NavigationTracker(DevToolsClient* client,
     : client_(client),
       loading_state_(kUnknown),
       browser_info_(browser_info),
-      dummy_execution_context_id_(0) {
+      dummy_execution_context_id_(0),
+      load_event_fired_(true),
+      timed_out_(false) {
   client_->AddListener(this);
 }
 
@@ -32,7 +34,9 @@ NavigationTracker::NavigationTracker(DevToolsClient* client,
     : client_(client),
       loading_state_(known_state),
       browser_info_(browser_info),
-      dummy_execution_context_id_(0) {
+      dummy_execution_context_id_(0),
+      load_event_fired_(true),
+      timed_out_(false) {
   client_->AddListener(this);
 }
 
@@ -100,6 +104,10 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
   return Status(kOk);
 }
 
+void NavigationTracker::set_timed_out(bool timed_out) {
+  timed_out_ = timed_out;
+}
+
 Status NavigationTracker::OnConnected(DevToolsClient* client) {
   ResetLoadingState(kUnknown);
 
@@ -144,11 +152,10 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       return Status(kUnknownError, "missing or invalid 'frameId'");
 
     pending_frame_set_.erase(frame_id);
-
-    if (pending_frame_set_.empty() || expecting_single_stop_event) {
+    if (expecting_single_stop_event)
       pending_frame_set_.clear();
+    if (pending_frame_set_.empty() && (load_event_fired_ || timed_out_))
       loading_state_ = kNotLoading;
-    }
   } else if (method == "Page.frameScheduledNavigation") {
     double delay;
     if (!params.GetDouble("delay", &delay))
@@ -174,12 +181,14 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
 
     const base::Value* unused_value;
     if (!params.Get("frame.parentId", &unused_value)) {
-      // If the main frame just navigated, discard any pending scheduled
-      // navigations. For some reasons at times the cleared event is not
-      // received when navigating.
-      // See crbug.com/180742.
-      pending_frame_set_.clear();
-      scheduled_frame_set_.clear();
+      if (IsExpectingFrameLoadingEvents()) {
+        // If the main frame just navigated, discard any pending scheduled
+        // navigations. For some reasons at times the cleared event is not
+        // received when navigating.
+        // See crbug.com/180742.
+        pending_frame_set_.clear();
+        scheduled_frame_set_.clear();
+      }
     } else {
       // If a child frame just navigated, check if it is the dummy frame that
       // was attached by IsPendingNavigation(). We don't want to track execution
@@ -194,6 +203,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     if (!IsExpectingFrameLoadingEvents()) {
       execution_context_set_.clear();
       ResetLoadingState(kLoading);
+      load_event_fired_ = false;
     }
   } else if (method == "Runtime.executionContextCreated") {
     if (!IsExpectingFrameLoadingEvents()) {
@@ -217,6 +227,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       if (execution_context_id != dummy_execution_context_id_) {
         if (execution_context_set_.empty()) {
           loading_state_ = kLoading;
+          load_event_fired_ = false;
           dummy_frame_id_ = std::string();
           dummy_execution_context_id_ = 0;
         }
@@ -224,7 +235,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Page.loadEventFired") {
     if (!IsExpectingFrameLoadingEvents())
-      ResetLoadingState(kNotLoading);
+      load_event_fired_ = true;
   } else if (method == "Inspector.targetCrashed") {
     ResetLoadingState(kNotLoading);
   }

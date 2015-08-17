@@ -407,11 +407,13 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
   if (status.code() == kTimeout && stop_load_on_timeout) {
     VLOG(0) << "Timed out. Stopping navigation...";
     scoped_ptr<base::Value> unused_value;
+    navigation_tracker_->set_timed_out(true);
     EvaluateScript(std::string(), "window.stop();", &unused_value);
     Status new_status = client_->HandleEventsUntil(
         base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
                    frame_id),
         base::TimeDelta::FromSeconds(10));
+    navigation_tracker_->set_timed_out(false);
     if (new_status.IsError())
       status = new_status;
   }

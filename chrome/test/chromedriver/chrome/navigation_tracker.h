@@ -43,6 +43,8 @@ class NavigationTracker : public DevToolsEventListener {
   // may be empty to signify the main frame.
   Status IsPendingNavigation(const std::string& frame_id, bool* is_pending);
 
+  void set_timed_out(bool timed_out);
+
   // Overridden from DevToolsEventListener:
   Status OnConnected(DevToolsClient* client) override;
   Status OnEvent(DevToolsClient* client,
@@ -61,6 +63,8 @@ class NavigationTracker : public DevToolsEventListener {
   std::set<int> execution_context_set_;
   std::string dummy_frame_id_;
   int dummy_execution_context_id_;
+  bool load_event_fired_;
+  bool timed_out_;
 
   void ResetLoadingState(LoadingState loading_state);
   bool IsExpectingFrameLoadingEvents();
