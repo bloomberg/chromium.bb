@@ -29,7 +29,6 @@ crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Image
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ ImageOnlyFailure ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
-crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Slow Timeout ]
 
 crbug.com/474440 [ Mac Debug ] plugins/destroy-reentry.html [ Timeout ]
 
@@ -352,15 +351,15 @@ crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Sl
 crbug.com/519997 imported/web-platform-tests/html/browsers/history/the-location-interface/location_assign.html [ Slow Timeout ]
 crbug.com/519997 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/023.html [ Crash Timeout ]
 crbug.com/519997 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/026.html [ Crash Timeout ]
-crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/047.html [ Slow Timeout ]
-crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/048.html [ Slow Timeout ]
+# 047.html and 048.html.  |Slow| didn't help.
+crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/047.html [ Timeout ]
+crbug.com/490511 imported/web-platform-tests/html/dom/dynamic-markup-insertion/document-write/048.html [ Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ Failure Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-1.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-2.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/the-img-element/srcset/parse-a-srcset-attribute.html [ Crash Failure Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html [ Failure Timeout ]
-crbug.com/490511 [ Debug ] imported/web-platform-tests/html/semantics/forms/textfieldselection/selection.html [ Failure Slow Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/text-level-semantics/the-wbr-element/wbr-element.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrack/language.html [ Crash ]
