@@ -18,11 +18,6 @@ const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 const char kContentSettingsWindowLastTabIndex[] =
     "content_settings_window.last_tab_index";
 
-// Boolean indicating whether the media stream default setting had been
-// migrated into two separate microphone and camera settings.
-const char kMigratedDefaultMediaStreamSetting[] =
-    "profile.migrated_default_media_stream_content_settings";
-
 // Preferences that are exclusively used to store managed values for default
 // content settings.
 const char kManagedDefaultCookiesSetting[] =

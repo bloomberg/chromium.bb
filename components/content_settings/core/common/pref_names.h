@@ -17,8 +17,6 @@ extern const char kBlockThirdPartyCookies[];
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsWindowLastTabIndex[];
 
-extern const char kMigratedDefaultMediaStreamSetting[];
-
 extern const char kManagedDefaultCookiesSetting[];
 extern const char kManagedDefaultImagesSetting[];
 extern const char kManagedDefaultJavaScriptSetting[];

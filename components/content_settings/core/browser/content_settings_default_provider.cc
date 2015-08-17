@@ -36,6 +36,8 @@ const char kObsoleteDefaultContentSettings[] =
     "profile.default_content_settings";
 const char kObsoleteMigratedDefaultContentSettings[] =
     "profile.migrated_default_content_settings";
+const char kObsoleteMigratedDefaultMediaStreamSetting[] =
+    "profile.migrated_default_media_stream_content_settings";
 
 ContentSetting GetDefaultValue(ContentSettingsType type) {
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS)
@@ -90,11 +92,6 @@ void DefaultProvider::RegisterProfilePrefs(
                                   PrefRegistrationFlagsForType(type));
   }
 
-  // Whether the deprecated mediastream default setting has already been
-  // migrated into microphone and camera default settings.
-  registry->RegisterBooleanPref(prefs::kMigratedDefaultMediaStreamSetting,
-                                false);
-
   // Obsolete prefs -------------------------------------------------------
 
   // The deprecated dictionary preference.
@@ -109,6 +106,11 @@ void DefaultProvider::RegisterProfilePrefs(
       kObsoleteMigratedDefaultContentSettings,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+
+  // Whether the deprecated mediastream default setting has already been
+  // migrated into microphone and camera default settings.
+  registry->RegisterBooleanPref(kObsoleteMigratedDefaultMediaStreamSetting,
+                                false);
 }
 
 DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
@@ -363,6 +365,7 @@ void DefaultProvider::ForceDefaultsToBeExplicit(ValueMap* value_map) {
 void DefaultProvider::DiscardObsoletePreferences() {
   prefs_->ClearPref(kObsoleteDefaultContentSettings);
   prefs_->ClearPref(kObsoleteMigratedDefaultContentSettings);
+  prefs_->ClearPref(kObsoleteMigratedDefaultMediaStreamSetting);
 }
 
 }  // namespace content_settings
