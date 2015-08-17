@@ -53,7 +53,7 @@ vars = {
   # and whatever else without interference from each other.
   'buildtools_revision': '565d04e8741429fb1b4f26d102f2c6c3b849edeb',  # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '24fbf134d43a7ec4226de3db601f0a617bbe428b',
+  'pdfium_revision': 'fdc8f439e854a2636e7d22d7104bf08cf5620b0b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openmax_dl
   # and whatever else without interference from each other.
