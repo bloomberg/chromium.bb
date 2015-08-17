@@ -213,6 +213,7 @@ void FrameView::reset()
     m_visuallyNonEmptyCharacterCount = 0;
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
+    m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     clearScrollAnchor();
     m_viewportConstrainedObjects.clear();
     m_layoutSubtreeRootList.clear();
@@ -1065,11 +1066,6 @@ void FrameView::layout()
     // Post-layout assert that nobody was re-marked as needing layout during layout.
     layoutView()->assertSubtreeIsLaidOut();
 #endif
-
-    // Ensure that we become visually non-empty eventually.
-    // TODO(esprehn): This should check isRenderingReady() instead.
-    if (!frame().document()->parsing() && frame().loader().stateMachine()->committedFirstRealDocumentLoad())
-        m_isVisuallyNonEmpty = true;
 
     // FIXME: It should be not possible to remove the FrameView from the frame/page during layout
     // however m_inPerformLayout is not set for most of this function, so none of our RELEASE_ASSERTS
@@ -1974,6 +1970,19 @@ void FrameView::performPostLayoutTasks()
     m_frame->selection().updateAppearance();
 
     ASSERT(m_frame->document());
+    if (m_nestedLayoutCount <= 1) {
+        // Ensure that we always send this eventually.
+        if (!m_frame->document()->parsing() && m_frame->loader().stateMachine()->committedFirstRealDocumentLoad())
+            m_isVisuallyNonEmpty = true;
+
+        // If the layout was done with pending sheets, we are not in fact visually non-empty yet.
+        if (m_isVisuallyNonEmpty && !m_frame->document()->didLayoutWithPendingStylesheets() && m_firstVisuallyNonEmptyLayoutCallbackPending) {
+            m_firstVisuallyNonEmptyLayoutCallbackPending = false;
+            // FIXME: This callback is probably not needed, but is currently used
+            // by android for setting the background color.
+            m_frame->loader().client()->dispatchDidFirstVisuallyNonEmptyLayout();
+        }
+    }
 
     FontFaceSet::didLayout(*m_frame->document());
     // Cursor update scheduling is done by the local root, which is the main frame if there
