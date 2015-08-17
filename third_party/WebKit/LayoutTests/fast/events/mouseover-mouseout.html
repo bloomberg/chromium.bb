@@ -84,26 +84,18 @@ Mouse events vs. DOM manipulation.</p>
 <!-- 6: Enter a different document -->
 <iframe style='height: 50; width: 50; top:100;left:350; position:absolute; border-width:0' src='resources/mouseover-mouseout-iframe.html'
         onMouseOver="logMouseEvent(event)"
-        onMouseOut="
-            logMouseEvent(event);
-            if (top.document.getElementById('log').innerHTML == top.document.getElementById('exp').innerHTML) {
-                top.document.getElementById('success').style.display = 'block';
-            }
-            "
+        onMouseOut="logMouseEvent(event)"
         id="frame6"
     ></iframe>
 
 <iframe id=invisible_frame style="width:0; height:0; border-width:0"></iframe>
 
 <table border=1 width="100%" style='top:200; position:absolute'>
-<tr><td width="50%">Log</td><td>Expected results</td></tr>
+<tr><td width="50%">Log</td></tr>
 <tr>
     <td id=log style="vertical-align:top"></td>
-    <td id=exp style="vertical-align:top"><li>mouseover on t1_1</li><li>mouseout on t1_1</li><li>mouseover on t1_2</li><li>mouseout on t1_2</li><li>mouseover on t2_1</li><li>mouseout on t2_1</li><li>mouseover on t2_2</li><li>mouseout on t2_2</li><li>mouseover on t3_1</li><li>mouseover on t3_2</li><li>mouseout on t3_2</li><li>mouseover on t4_1</li><li>mouseover on t4_2</li><li>mouseout on t4_2</li><li>mouseover on t5_1</li><li>mouseout on t5_1</li><li>mouseover on t5_2</li><li>mouseout on t5_2</li><li>mouseover on frame6</li><li>mouseover on t6</li><li>mouseout on t6</li><li>mouseout on frame6</li></td>
 </tr>
 </table>
-
-<div style='height: 50; width: 300; top:100;left:100; position:absolute; display:none' id='success'><br><center>SUCCESS</center></div>
 
 <script>
 function autoTest() {

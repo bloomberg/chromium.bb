@@ -101,6 +101,15 @@
 
 namespace blink {
 
+namespace {
+
+bool isNodeInDocument(Node* n)
+{
+    return n && n->inDocument();
+}
+
+}
+
 using namespace HTMLNames;
 
 // The link drag hysteresis is much larger than the others because there
@@ -1530,7 +1539,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     ASSERT(exitedNode != enteredNode);
 
     // First, dispatch mouseout event (which bubbles to ancestors)
-    if (exitedNode)
+    if (isNodeInDocument(exitedNode))
         exitedNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseout, 0, enteredNode);
 
     // A note on mouseenter and mouseleave: These are non-bubbling events, and they are dispatched if there
@@ -1550,13 +1559,13 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     // Create lists of all exited/entered ancestors.
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> exitedAncestors;
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
-    if (exitedNode) {
+    if (isNodeInDocument(exitedNode)) {
         exitedNode->updateDistribution();
         for (Node* node = exitedNode; node; node = ComposedTreeTraversal::parent(*node)) {
             exitedAncestors.append(node);
         }
     }
-    if (enteredNode) {
+    if (isNodeInDocument(enteredNode)) {
         enteredNode->updateDistribution();
         for (Node* node = enteredNode; node; node = ComposedTreeTraversal::parent(*node)) {
             enteredAncestors.append(node);
@@ -1595,7 +1604,7 @@ void EventHandler::sendMouseEventsForNodeTransition(Node* exitedNode, Node* ente
     }
 
     // Dispatch mouseover event (which bubbles to ancestors) after the mouseleave events are sent.
-    if (enteredNode)
+    if (isNodeInDocument(enteredNode))
         enteredNode->dispatchMouseEvent(mouseEvent, EventTypeNames::mouseover, 0, exitedNode);
 
     // Determine if there is a capturing mouseenter listener in an ancestor. This must be done /after/ dispatching the
