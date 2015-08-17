@@ -8,7 +8,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
@@ -457,24 +456,31 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertEquals(mContentViewCore.getSelectedText(), "SampleTextToCopy");
     }
 
-    /*
     @SmallTest
     @Feature({"TextInput"})
-    https://crbug.com/518848
-    */
-    @FlakyTest
     public void testSelectActionBarPasswordPaste() throws Exception {
-        copyStringToClipboard("SampleTextToCopy");
+        copyStringToClipboard("SamplePassword2");
+
+        // Select the password field.
         DOMUtils.longPressNode(this, mContentViewCore, "input_password");
         assertWaitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
+        assertEquals(mContentViewCore.getSelectedText().length(), "SamplePassword".length());
+
+        // Paste "SamplePassword2" into the password field, replacing
+        // "SamplePassword".
         assertNotNull(mContentViewCore.getSelectActionHandler());
         selectActionBarPaste();
-        DOMUtils.clickNode(this, mContentViewCore, "plain_text_1");
+        assertWaitForSelectActionBarVisible(false);
+        assertFalse(mContentViewCore.hasSelection());
+
+        // Ensure the new text matches the pasted text. Note that we can't
+        // actually compare strings as password field selections only provide
+        // a placeholder with the correct length.
         DOMUtils.longPressNode(this, mContentViewCore, "input_password");
         assertWaitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
-        assertNotSame(mContentViewCore.getSelectedText(), "SampleTextToCopy");
+        assertEquals(mContentViewCore.getSelectedText().length(), "SamplePassword2".length());
     }
 
     @SmallTest
