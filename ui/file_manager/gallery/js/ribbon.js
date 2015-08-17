@@ -336,17 +336,20 @@ Ribbon.prototype.onSelection_ = function() {
       }, 0);
     }
 
-    ImageUtil.setClass(this, 'fade-left',
-        firstIndex > 0 && selectedIndex != firstIndex);
-
-    ImageUtil.setClass(this, 'fade-right',
-        lastIndex < length - 1 && selectedIndex != lastIndex);
-
     this.firstVisibleIndex_ = firstIndex;
     this.lastVisibleIndex_ = lastIndex;
 
     this.scheduleRemove_();
   }
+
+  ImageUtil.setClass(
+      this,
+      'fade-left',
+      firstIndex > 0 && selectedIndex !== firstIndex);
+  ImageUtil.setClass(
+      this,
+      'fade-right',
+      lastIndex < length - 1 && selectedIndex !== lastIndex);
 
   var oldSelected = this.querySelector('[selected]');
   if (oldSelected)
