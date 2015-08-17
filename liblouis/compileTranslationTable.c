@@ -434,6 +434,7 @@ static const char *opcodeNames[CTO_None] = {
 //  "initial",
   "nobreak",
 	"match",
+	"attribute",
 };
 static short opcodeLengths[CTO_None] = { 0 };
 
@@ -3992,11 +3993,19 @@ static int pattern_compile(const widechar *input, const int input_max, widechar 
 			case '~':  attrs0 |= CTC_SeqDelimiter;  break;
 			case '<':  attrs0 |= CTC_SeqBefore;     break;
 			case '>':  attrs0 |= CTC_SeqAfter;      break;
-			case '1':  attrs0 |= CTC_Class1;        break;
-			case '2':  attrs0 |= CTC_Class2;        break;
-			case '3':  attrs0 |= CTC_Class3;        break;
-			case '4':  attrs0 |= CTC_Class4;        break;
+			//case '1':  attrs0 |= CTC_Class1;        break;
+			//case '2':  attrs0 |= CTC_Class2;        break;
+			//case '3':  attrs0 |= CTC_Class3;        break;
+			//case '4':  attrs0 |= CTC_Class4;        break;
 
+			case '0':  attrs1 |= (CTC_UserDefined0 >> 16);  break;
+			case '1':  attrs1 |= (CTC_UserDefined1 >> 16);  break;
+			case '2':  attrs1 |= (CTC_UserDefined2 >> 16);  break;
+			case '3':  attrs1 |= (CTC_UserDefined3 >> 16);  break;
+			case '4':  attrs1 |= (CTC_UserDefined4 >> 16);  break;
+			case '5':  attrs1 |= (CTC_UserDefined5 >> 16);  break;
+			case '6':  attrs1 |= (CTC_UserDefined6 >> 16);  break;
+			case '7':  attrs1 |= (CTC_UserDefined7 >> 16);  break;
 			case '^':  attrs1 |= (CTC_EndOfInput >> 16);  break;
 
 			default:  return 0;
@@ -4127,7 +4136,7 @@ compileRule (FileInfo * nested)
   TranslationTableCharacterAttributes after = 0;
   TranslationTableCharacterAttributes before = 0;
 	TranslationTableCharacter *c = NULL;
-  int k;
+  int k, i;
 
   noback = nofor = 0;
 doOpcode:
@@ -4314,7 +4323,54 @@ doOpcode:
 	compileBrailleIndicator (nested, "number sign", CTO_NumberRule,
 				 &table->numberSign);
       break;
-	  
+
+	case CTO_Attribute:
+
+		c = NULL;
+		ok = 1;
+		if(!getToken(nested, &ruleChars, "attribute number"))
+		{
+			compileError(nested, "Expected attribute number.");
+			ok = 0;
+			break;
+		}
+
+		k = -1;
+		switch(ruleChars.chars[0])
+		{
+		case '0':  k = 0;  break;
+		case '1':  k = 1;  break;
+		case '2':  k = 2;  break;
+		case '3':  k = 3;  break;
+		case '4':  k = 4;  break;
+		case '5':  k = 5;  break;
+		case '6':  k = 6;  break;
+		case '7':  k = 7;  break;
+		}
+		if(k == -1)
+		{
+			compileError(nested, "Invalid attribute number.");
+			ok = 0;
+			break;
+		}
+
+		if(getRuleCharsText(nested, &ruleChars))
+		{
+			for(i = 0; i < ruleChars.length; i++)
+			{
+				c = compile_findCharOrDots(ruleChars.chars[i], 0);
+				if(c)
+					c->attributes |= (CTC_UserDefined0 << k);
+				else
+				{
+					compileError(nested, "Attribute character undefined");
+					ok = 0;
+					break;
+				}
+			}
+		}
+		break;
+
 	case CTO_NumericModeChars:
 	
 		c = NULL;
@@ -4936,7 +4992,7 @@ doOpcode:
 			}
 		}	
 		break;
-
+	/*
 	case CTO_EmphModeChars:
 	
 		c = NULL;
@@ -4958,6 +5014,7 @@ doOpcode:
 		}	
 		table->usesEmphMode = 1;
 		break;
+	*/
 	  
     case CTO_BegComp:
       ok =

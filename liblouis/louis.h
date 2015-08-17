@@ -77,10 +77,10 @@ extern "C"
 
   typedef enum
   {
-    CTC_Space = 0x01,
-    CTC_Letter = 0x02,
-    CTC_Digit = 0x04,
-    CTC_Punctuation = 0x08,
+    CTC_Space = 0x1,
+    CTC_Letter = 0x2,
+    CTC_Digit = 0x4,
+    CTC_Punctuation = 0x8,
     CTC_UpperCase = 0x10,
     CTC_LowerCase = 0x20,
     CTC_Math = 0x40,
@@ -93,8 +93,16 @@ extern "C"
     CTC_SeqDelimiter = 0x2000,
     CTC_SeqBefore = 0x4000,
     CTC_SeqAfter = 0x8000,
-    CTC_CapsMode = 0x40000,
-    CTC_EmphMode = 0x80000,
+    CTC_UserDefined0 = 0x10000,
+    CTC_UserDefined1 = 0x20000,
+    CTC_UserDefined2 = 0x40000,
+    CTC_UserDefined3 = 0x80000,
+    CTC_UserDefined4 = 0x100000,
+    CTC_UserDefined5 = 0x200000,
+    CTC_UserDefined6 = 0x400000,
+    CTC_UserDefined7 = 0x800000,
+    CTC_CapsMode = 0x10000000,
+    // CTC_EmphMode = 0x20000000,
     CTC_NumericMode = 0x20000000,
     CTC_NumericNoContract = 0x40000000,
     CTC_EndOfInput = 0x80000000   //   used by pattern matcher
@@ -331,7 +339,7 @@ extern "C"
 	CTO_LenTransNotePhrase,
 
 	CTO_CapsModeChars,
-	CTO_EmphModeChars,
+	// CTO_EmphModeChars,
 
     CTO_BegComp,
     CTO_CompBegEmph1,
@@ -409,6 +417,7 @@ extern "C"
 	//CTO_Initial,
     CTO_NoBreak,
 	CTO_Match,
+	CTO_Attribute,
     CTO_None,
 /*Internal opcodes */
     CTO_CapitalRule,
