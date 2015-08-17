@@ -7,12 +7,10 @@
  * Module to format IQ messages so they can be displayed in the debug log.
  */
 
+'use strict';
+
 /** @suppress {duplicate} */
 var remoting = remoting || {};
-
-(function() {
-
-'use strict';
 
 /**
  * @constructor
@@ -24,16 +22,6 @@ remoting.FormatIq = function(clientJid, hostJid) {
   this.clientJid_ = clientJid;
   /** @private */
   this.hostJid_ = hostJid;
-  /** @private {?remoting.ChromotingEvent.XmppError} */
-  this.mostRecentXmppError_ = null;
-};
-
-/**
- * @return {?remoting.ChromotingEvent.XmppError}
- */
-remoting.FormatIq.prototype.getMostRecentError = function() {
-  return /** @type {remoting.ChromotingEvent.XmppError} */ (base.deepCopy(
-      this.mostRecentXmppError_));
 };
 
 /**
@@ -201,8 +189,7 @@ remoting.FormatIq.prototype.prettySessionInitiateAccept = function(jingle) {
         /** @type {Node} */
         var desc = desc_children[d];
         var dname = desc.nodeName;
-        if (dname == 'control' || dname == 'event' || dname == 'video' ||
-            dname == 'audio') {
+        if (dname == 'control' || dname == 'event' || dname == 'video') {
           var channel_str = this.calcChannelString(desc);
           if (!channel_str) {
             return null;
@@ -226,6 +213,8 @@ remoting.FormatIq.prototype.prettySessionInitiateAccept = function(jingle) {
               return null;
             }
           }
+        } else {
+          return null;
         }
       }
       result += '\n  channels: ' + channels;
@@ -349,32 +338,39 @@ remoting.FormatIq.prototype.prettyJingleAction = function(jingle, action) {
 /**
  * Pretty print the jingle error information contained in the given Xml node.
  *
- * @param {boolean} send True if we're sending this stanza; false for receiving.
- * @param {string} jingleAction The Jingle action that the error corresponds to.
  * @param {Node} error Xml node containing error information in child nodes.
  *
- * @return {?string} Pretty version of error stanza. Null if error.
+ * @return {?string} Pretty version of error stanze. Null if error.
  */
-remoting.FormatIq.prototype.prettyError = function(send, jingleAction, error) {
+remoting.FormatIq.prototype.prettyError = function(error) {
   if (!this.verifyAttributes(error, 'xmlns:err,code,type,err:hostname,' +
                              'err:bnsname,err:stacktrace')) {
     return null;
   }
   var code = error.getAttribute('code');
   var type = error.getAttribute('type');
-  var condition = (error.firstChild) ? error.firstChild.nodeName : '';
+  var hostname = error.getAttribute('err:hostname');
+  var bnsname = error.getAttribute('err:bnsname');
+  var stacktrace = error.getAttribute('err:stacktrace');
 
-  // This variable is part of the ChromotingEvent protobuf, which has naming
-  // convention of variable_name as opposed to variableName.
-  this.mostRecentXmppError_ = {
-    jingle_action: toJingleAction(jingleAction),
-    type: toXmppErrorType(type),
-    condition_string: condition,
-    from_client: send
-  };
-
-  return '\n  error code:' + code + ' type:' + type + ' error-condition:' +
-         condition;
+  var result = '\n  error ' + code + ' ' + type + " hostname:'" +
+             hostname + "' bnsname:'" + bnsname + "'";
+  var children = error.childNodes;
+  for (var i = 0; i < children.length; i++) {
+    /** @type {Node} */
+    var child = children[i];
+    result += '\n  ' + child.nodeName;
+  }
+  if (stacktrace) {
+    var stack = stacktrace.split(' | ');
+    result += '\n  stacktrace:';
+    // We use 'length-1' because the stack trace ends with " | " which results
+    // in an empty string at the end after the split.
+    for (var s = 0; s < stack.length - 1; s++) {
+      result += '\n    ' + stack[s];
+    }
+  }
+  return result;
 };
 
 /**
@@ -572,26 +568,23 @@ remoting.FormatIq.prototype.prettyIqError = function(action, iq_list) {
   var sid = jingle.getAttribute('sid');
   var result = this.prettyIqHeading(action, id, 'error from ' + jingle_action,
                                     sid);
-
-  /** @type {Node} */
-  var error = iq_children[1];
-  if (error.nodeName != 'error') {
-    return null;
-  }
-
-  var error_str = this.prettyError(action == 'send', jingle_action, error);
-  if (!error_str) {
-    return null;
-  }
-
   var action_str = this.prettyJingleAction(jingle, jingle_action);
   if (!action_str) {
     return null;
   }
-
   result += action_str;
-  result += error_str;
 
+  /** @type {Node} */
+  var error = iq_children[1];
+  if (error.nodeName != 'cli:error') {
+    return null;
+  }
+
+  var error_str = this.prettyError(error);
+  if (!error_str) {
+    return null;
+  }
+  result += error_str;
   return result;
 };
 
@@ -703,51 +696,3 @@ remoting.FormatIq.prototype.prettifyReceiveIq = function(message) {
   }
   return result;
 };
-
-/**
- * @param {string} actionString
- * @return {!remoting.ChromotingEvent.JingleAction}
- */
-function toJingleAction(actionString) {
-  var JingleAction = remoting.ChromotingEvent.JingleAction;
-
-  switch(actionString.toLowerCase()) {
-    case 'session-initiate':
-      return JingleAction.SESSION_INITIATE;
-    case 'session-accept':
-      return JingleAction.SESSION_ACCEPT;
-    case 'session-terminate':
-      return JingleAction.SESSION_TERMINATE;
-    case 'session-info':
-      return JingleAction.SESSION_INFO;
-    case 'transport-info':
-      return JingleAction.TRANSPORT_INFO;
-    default:
-      console.assert(false, 'Unknown jingle action: ' + actionString);
-      return JingleAction.UNKNOWN;
-  }
-}
-
-/**
- * @param {string} errorTypeString
- * @return {!remoting.ChromotingEvent.XmppErrorType}
- */
-function toXmppErrorType(errorTypeString) {
-  var XmppErrorType = remoting.ChromotingEvent.XmppErrorType;
-
-  switch(errorTypeString.toLowerCase()) {
-    case 'cancel':
-      return XmppErrorType.CANCEL;
-    case 'wait':
-      return XmppErrorType.WAIT;
-    case 'modify':
-      return XmppErrorType.MODIFY;
-    case 'auth':
-      return XmppErrorType.AUTH;
-    default:
-      console.assert(false, 'Unknown XMPP error type: ' + errorTypeString);
-      return XmppErrorType.UNKNOWN;
-  }
-}
-
-})();

@@ -93,7 +93,6 @@
       'webapp/base/js/dns_blackhole_checker_unittest.js',
       'webapp/base/js/error_unittest.js',
       'webapp/base/js/fallback_signal_strategy_unittest.js',
-      'webapp/base/js/format_iq_unittest.js',
       'webapp/base/js/identity_unittest.js',
       'webapp/base/js/ipc_unittest.js',
       'webapp/base/js/l10n_unittest.js',
