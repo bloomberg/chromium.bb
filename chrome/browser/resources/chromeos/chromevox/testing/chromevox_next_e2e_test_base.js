@@ -46,5 +46,13 @@ ChromeVoxNextE2ETest.prototype = {
       r.addEventListener('loadComplete', listener, true);
       this.runWithTab(doc);
     }.bind(this));
+  },
+
+  listenOnce: function(node, eventType, callback, capture) {
+    var innerCallback = this.newCallback(function() {
+      node.removeEventListener(eventType, innerCallback, capture);
+      callback();
+    });
+    node.addEventListener(eventType, innerCallback, capture);
   }
 };

@@ -206,24 +206,6 @@ TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
     });
 });
 
-// Test breaks because the context menu enters a nested message loop.
-// http://crbug.com/520938
-TEST_F('BackgroundTest', 'DISABLED_ShowContextMenu', function() {
-  this.runWithLoadedTree(function() {/*!
-      <h1>Document with link</h1>
-      <a href="a">a</a>
-      <a href="b">b</a>
-    */},
-    function(rootNode) {
-      this.mockTts.expectSpeech('a', this.doCmd('showContextMenu'));
-      this.mockTts.expectSpeech(' menu opened', this.newCallback());
-
-      var link = rootNode.find({role: chrome.automation.RoleType.link,
-                                name: 'a'});
-      link.focus();
-    });
-});
-
 // Test fails because no speech is generated when the rootWebArea is
 // focused.
 // http://crbug.com/520940
@@ -245,4 +227,24 @@ TEST_F('BackgroundTest', 'AriaLabel', function() {
       rootNode.find({role: 'link'}).focus();
     }
   );
+});
+
+TEST_F('BackgroundTest', 'ShowContextMenu', function() {
+  this.runWithLoadedTree('<a href="a">a</a>',
+    function(rootNode) {
+      cvox.ChromeVox.tts.expectSpeech(' menu opened', this.newCallback(
+        function() {
+          // When shown, the context menu pushes a new message loop so test
+          // messages sent to the browser do not get processed. Ensure we exit
+          // the context menu here.
+          go.showContextMenu();
+        })
+      );
+
+      var go = rootNode.find({ role: chrome.automation.RoleType.link });
+      this.listenOnce(go, 'focus', function(e) {
+        this.doCmd('showContextMenu')();
+      }.bind(this), true);
+      go.focus();
+    }.bind(this));
 });
