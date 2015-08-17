@@ -190,6 +190,11 @@ public:
         return m_layoutObject->isInline();
     }
 
+    bool isInlineBlockOrInlineTable() const
+    {
+        return m_layoutObject->isInlineBlockOrInlineTable();
+    }
+
     bool isLayoutBlock() const
     {
         return m_layoutObject->isLayoutBlock();

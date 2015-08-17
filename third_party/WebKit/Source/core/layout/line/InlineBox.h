@@ -23,6 +23,7 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
@@ -167,7 +168,7 @@ public:
     InlineBox* nextLeafChildIgnoringLineBreak() const;
     InlineBox* prevLeafChildIgnoringLineBreak() const;
 
-    // TODO(pilgrim) convert all callers to lineLayoutItem, replace m_layoutObject with m_lineLayoutItem, remove layoutObject()
+    // TODO(pilgrim): This will be removed as part of the Line Layout API refactoring crbug.com/499321
     LayoutObject& layoutObject() const { return m_layoutObject; }
     LineLayoutItem lineLayoutItem() const { return LineLayoutItem(&m_layoutObject); }
 
@@ -270,12 +271,20 @@ public:
 
     EVerticalAlign verticalAlign() const { return lineLayoutItem().isText() ? ComputedStyle::initialVerticalAlign() : lineLayoutItem().style(m_bitfields.firstLine())->verticalAlign(); }
 
-    // Use with caution! The type is not checked!
-    LayoutBoxModelObject* boxModelObject() const
+    // TODO(pilgrim) remove this
+    LayoutBoxModelObject* deprecatedBoxModelObject() const
     {
         if (!lineLayoutItem().isText())
             return toLayoutBoxModelObject(&layoutObject());
         return 0;
+    }
+
+    // Use with caution! The type is not checked!
+    LineLayoutBoxModel boxModelObject() const
+    {
+        if (!lineLayoutItem().isText())
+            return LineLayoutBoxModel(toLayoutBoxModelObject(&layoutObject()));
+        return LineLayoutBoxModel(nullptr);
     }
 
     LayoutPoint locationIncludingFlipping();

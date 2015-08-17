@@ -33,14 +33,104 @@ public:
         return toBoxModel()->layer();
     }
 
-    LayoutUnit lineHeight(bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode) const
+    LayoutUnit lineHeight(bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode = PositionOnContainingLine) const
     {
         return toBoxModel()->lineHeight(firstLine, lineDirectionMode, linePositionMode);
     }
 
-    int baselinePosition(FontBaseline fontBaseline, bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode) const
+    int baselinePosition(FontBaseline fontBaseline, bool firstLine, LineDirectionMode lineDirectionMode, LinePositionMode linePositionMode = PositionOnContainingLine) const
     {
         return toBoxModel()->baselinePosition(fontBaseline, firstLine, lineDirectionMode, linePositionMode);
+    }
+
+    bool hasSelfPaintingLayer() const
+    {
+        return toBoxModel()->hasSelfPaintingLayer();
+    }
+
+    LayoutUnit marginTop() const
+    {
+        return toBoxModel()->marginTop();
+    }
+
+    LayoutUnit marginBottom() const
+    {
+        return toBoxModel()->marginBottom();
+    }
+
+    LayoutUnit marginLeft() const
+    {
+        return toBoxModel()->marginLeft();
+    }
+
+    LayoutUnit marginRight() const
+    {
+        return toBoxModel()->marginRight();
+    }
+
+    LayoutUnit marginBefore(const ComputedStyle* otherStyle = nullptr) const
+    {
+        return toBoxModel()->marginBefore(otherStyle);
+    }
+
+    LayoutUnit marginAfter(const ComputedStyle* otherStyle = nullptr) const
+    {
+        return toBoxModel()->marginAfter(otherStyle);
+    }
+
+    LayoutUnit paddingTop() const
+    {
+        return toBoxModel()->paddingTop();
+    }
+
+    LayoutUnit paddingBottom() const
+    {
+        return toBoxModel()->paddingBottom();
+    }
+
+    LayoutUnit paddingLeft() const
+    {
+        return toBoxModel()->paddingLeft();
+    }
+
+    LayoutUnit paddingRight() const
+    {
+        return toBoxModel()->paddingRight();
+    }
+
+    LayoutUnit paddingBefore() const
+    {
+        return toBoxModel()->paddingBefore();
+    }
+
+    LayoutUnit paddingAfter() const
+    {
+        return toBoxModel()->paddingAfter();
+    }
+
+    int borderBefore() const
+    {
+        return toBoxModel()->borderBefore();
+    }
+
+    int borderAfter() const
+    {
+        return toBoxModel()->borderAfter();
+    }
+
+    LayoutSize relativePositionLogicalOffset() const
+    {
+        return toBoxModel()->relativePositionLogicalOffset();
+    }
+
+    bool hasInlineDirectionBordersOrPadding() const
+    {
+        return toBoxModel()->hasInlineDirectionBordersOrPadding();
+    }
+
+    LayoutUnit borderAndPaddingLogicalHeight() const
+    {
+        return toBoxModel()->borderAndPaddingLogicalHeight();
     }
 
 private:
