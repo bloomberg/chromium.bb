@@ -54,7 +54,8 @@ static int msm_pipe_get_param(struct fd_pipe *pipe,
 	}
 }
 
-static int msm_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
+static int msm_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp,
+		uint64_t timeout)
 {
 	struct fd_device *dev = pipe->dev;
 	struct drm_msm_wait_fence req = {
@@ -62,7 +63,7 @@ static int msm_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
 	};
 	int ret;
 
-	get_abs_timeout(&req.timeout, 5000);
+	get_abs_timeout(&req.timeout, timeout);
 
 	ret = drmCommandWrite(dev->fd, DRM_MSM_WAIT_FENCE, &req, sizeof(req));
 	if (ret) {

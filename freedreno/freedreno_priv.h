@@ -100,7 +100,7 @@ drm_private void fd_device_del_locked(struct fd_device *dev);
 struct fd_pipe_funcs {
 	struct fd_ringbuffer * (*ringbuffer_new)(struct fd_pipe *pipe, uint32_t size);
 	int (*get_param)(struct fd_pipe *pipe, enum fd_param_id param, uint64_t *value);
-	int (*wait)(struct fd_pipe *pipe, uint32_t timestamp);
+	int (*wait)(struct fd_pipe *pipe, uint32_t timestamp, uint64_t timeout);
 	void (*destroy)(struct fd_pipe *pipe);
 };
 

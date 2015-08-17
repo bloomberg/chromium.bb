@@ -56,7 +56,8 @@ static int kgsl_pipe_get_param(struct fd_pipe *pipe,
 	}
 }
 
-static int kgsl_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
+static int kgsl_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp,
+		uint64_t timeout)
 {
 	struct kgsl_pipe *kgsl_pipe = to_kgsl_pipe(pipe);
 	struct kgsl_device_waittimestamp req = {

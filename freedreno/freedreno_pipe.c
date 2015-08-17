@@ -72,5 +72,11 @@ int fd_pipe_get_param(struct fd_pipe *pipe,
 
 int fd_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp)
 {
-	return pipe->funcs->wait(pipe, timestamp);
+	return fd_pipe_wait_timeout(pipe, timestamp, ~0);
+}
+
+int fd_pipe_wait_timeout(struct fd_pipe *pipe, uint32_t timestamp,
+		uint64_t timeout)
+{
+	return pipe->funcs->wait(pipe, timestamp, timeout);
 }

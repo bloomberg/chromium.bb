@@ -96,13 +96,13 @@ drm_private int msm_bo_new_handle(struct fd_device *dev,
 drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle);
 
-static inline void get_abs_timeout(struct drm_msm_timespec *tv, uint32_t ms)
+static inline void get_abs_timeout(struct drm_msm_timespec *tv, uint64_t ns)
 {
 	struct timespec t;
-	uint32_t s = ms / 1000;
+	uint32_t s = ns / 1000000000;
 	clock_gettime(CLOCK_MONOTONIC, &t);
 	tv->tv_sec = t.tv_sec + s;
-	tv->tv_nsec = t.tv_nsec + ((ms - (s * 1000)) * 1000000);
+	tv->tv_nsec = t.tv_nsec + ns - (s * 1000000000);
 }
 
 #endif /* MSM_PRIV_H_ */
