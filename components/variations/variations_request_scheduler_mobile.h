@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_
-#define CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_
+#ifndef COMPONENTS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_
+#define COMPONENTS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_
 
 #include "base/bind.h"
-#include "chrome/browser/metrics/variations/variations_request_scheduler.h"
+#include "components/variations/variations_request_scheduler.h"
 
 class PrefService;
 
@@ -49,4 +49,4 @@ class VariationsRequestSchedulerMobile : public VariationsRequestScheduler {
 
 }  // namespace chrome_variations
 
-#endif  // CHROME_BROWSER_METRICS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_
+#endif  // COMPONENTS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_

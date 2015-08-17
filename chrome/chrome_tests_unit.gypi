@@ -140,8 +140,6 @@
       'browser/metrics/thread_watcher_unittest.cc',
       'browser/metrics/time_ticks_experiment_unittest.cc',
       'browser/metrics/variations/generated_resources_map_lookup_unittest.cc',
-      'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',
-      'browser/metrics/variations/variations_request_scheduler_unittest.cc',
       'browser/metrics/variations/variations_seed_store_unittest.cc',
       'browser/metrics/variations/variations_service_unittest.cc',
       'browser/mod_pagespeed/mod_pagespeed_metrics_unittest.cc',
@@ -2636,7 +2634,6 @@
             'tools/profile_reset/jtl_compiler.gyp:jtl_compiler_lib',
           ],
           'sources!': [
-            'browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc',
             'browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc',
           ],
         }],

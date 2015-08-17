@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/variations/variations_request_scheduler.h"
+#include "components/variations/variations_request_scheduler.h"
 
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"

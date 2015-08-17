@@ -661,6 +661,8 @@
       'variations/net/variations_http_header_provider_unittest.cc',
       'variations/study_filtering_unittest.cc',
       'variations/variations_associated_data_unittest.cc',
+      'variations/variations_request_scheduler_mobile_unittest.cc',
+      'variations/variations_request_scheduler_unittest.cc',
       'variations/variations_seed_processor_unittest.cc',
       'variations/variations_seed_simulator_unittest.cc',
     ],
@@ -1159,6 +1161,9 @@
             '<@(copresence_unittest_sources)',
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
+          ],
+          'sources!': [
+            'variations/variations_request_scheduler_mobile_unittest.cc',
           ],
           'dependencies': [
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',

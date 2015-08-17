@@ -985,8 +985,6 @@
     'chrome_browser_mobile_sources': [
       'browser/chrome_browser_field_trials_mobile.cc',
       'browser/chrome_browser_field_trials_mobile.h',
-      'browser/metrics/variations/variations_request_scheduler_mobile.cc',
-      'browser/metrics/variations/variations_request_scheduler_mobile.h',
     ],
     # Everything but Android and iOS.
     'chrome_browser_non_mobile_sources': [
@@ -1866,8 +1864,6 @@
       'browser/metrics/variations/generated_resources_map_lookup.cc',
       'browser/metrics/variations/variations_registry_syncer_win.cc',
       'browser/metrics/variations/variations_registry_syncer_win.h',
-      'browser/metrics/variations/variations_request_scheduler.cc',
-      'browser/metrics/variations/variations_request_scheduler.h',
       'browser/metrics/variations/variations_seed_store.cc',
       'browser/metrics/variations/variations_seed_store.h',
       'browser/metrics/variations/variations_service.cc',

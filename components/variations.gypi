@@ -48,6 +48,10 @@
         'variations/variations_associated_data.h',
         'variations/variations_experiment_util.cc',
         'variations/variations_experiment_util.h',
+        'variations/variations_request_scheduler.cc',
+        'variations/variations_request_scheduler.h',
+        'variations/variations_request_scheduler_mobile.cc',
+        'variations/variations_request_scheduler_mobile.h',
         'variations/variations_seed_processor.cc',
         'variations/variations_seed_processor.h',
         'variations/variations_seed_simulator.cc',
@@ -64,6 +68,11 @@
         ['OS == "android"', {
           'dependencies': [
             'variations_jni_headers',
+          ],
+        }],
+        ['OS!="android" and OS!="ios"', {
+          'sources!': [
+            'variations/variations_request_scheduler_mobile.cc',
           ],
         }],
       ],

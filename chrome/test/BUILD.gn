@@ -1795,10 +1795,7 @@ if (!is_android) {
         "../browser/ui/sync/sync_promo_ui_unittest.cc",
       ]
     } else {
-      sources -= [
-        "../browser/metrics/variations/variations_request_scheduler_mobile_unittest.cc",
-        "../browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc",
-      ]
+      sources -= [ "../browser/web_resource/promo_resource_service_mobile_ntp_unittest.cc" ]
       deps += [ "//chrome/tools/profile_reset:jtl_compiler_lib" ]
     }
     if (!is_android && !is_chromeos) {
