@@ -36,7 +36,6 @@ protected:
     }
 
 private:
-    Page::PageClients m_pageClients;
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 

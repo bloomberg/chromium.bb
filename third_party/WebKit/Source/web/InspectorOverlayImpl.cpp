@@ -116,39 +116,51 @@ private:
 };
 
 
-class InspectorOverlayImpl::InspectorOverlayChromeClient final: public EmptyChromeClient {
+class InspectorOverlayImpl::InspectorOverlayChromeClient final : public EmptyChromeClient {
 public:
-    InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlayImpl& overlay)
-        : m_client(client)
-        , m_overlay(overlay)
-    { }
+    static PassOwnPtrWillBeRawPtr<InspectorOverlayChromeClient> create(ChromeClient& client, InspectorOverlayImpl& overlay)
+    {
+        return adoptPtrWillBeNoop(new InspectorOverlayChromeClient(client, overlay));
+    }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_client);
+        visitor->trace(m_overlay);
+        EmptyChromeClient::trace(visitor);
+    }
 
     void setCursor(const Cursor& cursor) override
     {
-        m_client.setCursor(cursor);
+        m_client->setCursor(cursor);
     }
 
     void setToolTip(const String& tooltip, TextDirection direction) override
     {
-        m_client.setToolTip(tooltip, direction);
+        m_client->setToolTip(tooltip, direction);
     }
 
     void invalidateRect(const IntRect&) override
     {
-        m_overlay.invalidate();
+        m_overlay->invalidate();
     }
 
     void scheduleAnimation() override
     {
-        if (m_overlay.m_inLayout)
+        if (m_overlay->m_inLayout)
             return;
 
-        m_client.scheduleAnimation();
+        m_client->scheduleAnimation();
     }
 
 private:
-    ChromeClient& m_client;
-    InspectorOverlayImpl& m_overlay;
+    InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlayImpl& overlay)
+        : m_client(&client)
+        , m_overlay(&overlay)
+    { }
+
+    RawPtrWillBeMember<ChromeClient> m_client;
+    RawPtrWillBeMember<InspectorOverlayImpl> m_overlay;
 };
 
 
@@ -183,6 +195,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_highlightNode);
     visitor->trace(m_eventTargetNode);
     visitor->trace(m_overlayPage);
+    visitor->trace(m_overlayChromeClient);
     visitor->trace(m_overlayHost);
     visitor->trace(m_listener);
     visitor->trace(m_layoutEditor);
@@ -390,7 +403,7 @@ Page* InspectorOverlayImpl::overlayPage()
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     ASSERT(!m_overlayChromeClient);
-    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_webViewImpl->page()->chromeClient(), *this));
+    m_overlayChromeClient = InspectorOverlayChromeClient::create(m_webViewImpl->page()->chromeClient(), *this);
     pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = adoptPtrWillBeNoop(new Page(pageClients));
 

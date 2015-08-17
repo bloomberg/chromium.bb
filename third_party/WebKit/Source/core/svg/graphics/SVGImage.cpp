@@ -428,7 +428,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
 
         Page::PageClients pageClients;
         fillWithEmptyClients(pageClients);
-        m_chromeClient = adoptPtr(new SVGImageChromeClient(this));
+        m_chromeClient = SVGImageChromeClient::create(this);
         pageClients.chromeClient = m_chromeClient.get();
 
         // FIXME: If this SVG ends up loading itself, we might leak the world.

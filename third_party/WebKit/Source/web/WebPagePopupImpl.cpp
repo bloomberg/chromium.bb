@@ -66,14 +66,10 @@
 namespace blink {
 
 class PagePopupChromeClient final : public EmptyChromeClient {
-    WTF_MAKE_NONCOPYABLE(PagePopupChromeClient);
-    WTF_MAKE_FAST_ALLOCATED(PagePopupChromeClient);
-
 public:
-    explicit PagePopupChromeClient(WebPagePopupImpl* popup)
-        : m_popup(popup)
+    static PassOwnPtrWillBeRawPtr<PagePopupChromeClient> create(WebPagePopupImpl* popup)
     {
-        ASSERT(m_popup->widgetClient());
+        return adoptPtrWillBeNoop(new PagePopupChromeClient(popup));
     }
 
     void setWindowRect(const IntRect& rect) override
@@ -83,6 +79,12 @@ public:
     }
 
 private:
+    explicit PagePopupChromeClient(WebPagePopupImpl* popup)
+        : m_popup(popup)
+    {
+        ASSERT(m_popup->widgetClient());
+    }
+
     void closeWindowSoon() override
     {
         m_popup->closePopup();
@@ -229,7 +231,7 @@ bool WebPagePopupImpl::initializePage()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
-    m_chromeClient = adoptPtr(new PagePopupChromeClient(this));
+    m_chromeClient = PagePopupChromeClient::create(this);
     pageClients.chromeClient = m_chromeClient.get();
 
     m_page = adoptPtrWillBeNoop(new Page(pageClients));

@@ -150,8 +150,8 @@ HTMLFrameOwnerElement* Frame::deprecatedLocalOwner() const
 
 static ChromeClient& emptyChromeClient()
 {
-    DEFINE_STATIC_LOCAL(EmptyChromeClient, client, ());
-    return client;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<EmptyChromeClient>, client, (EmptyChromeClient::create()));
+    return *client;
 }
 
 ChromeClient& Frame::chromeClient() const

@@ -412,7 +412,7 @@ HashSet<WebViewImpl*>& WebViewImpl::allInstances()
 WebViewImpl::WebViewImpl(WebViewClient* client)
     : m_client(client)
     , m_spellCheckClient(0)
-    , m_chromeClientImpl(this)
+    , m_chromeClientImpl(ChromeClientImpl::create(this))
     , m_contextMenuClientImpl(this)
     , m_dragClientImpl(this)
     , m_editorClientImpl(this)
@@ -460,7 +460,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_elasticOverscroll(FloatSize())
 {
     Page::PageClients pageClients;
-    pageClients.chromeClient = &m_chromeClientImpl;
+    pageClients.chromeClient = m_chromeClientImpl.get();
     pageClients.contextMenuClient = &m_contextMenuClientImpl;
     pageClients.editorClient = &m_editorClientImpl;
     pageClients.dragClient = &m_dragClientImpl;

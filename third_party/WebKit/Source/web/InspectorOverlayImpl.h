@@ -120,7 +120,7 @@ private:
     InspectorHighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
     OwnPtrWillBeMember<Page> m_overlayPage;
-    OwnPtr<EmptyChromeClient> m_overlayChromeClient;
+    OwnPtrWillBeMember<InspectorOverlayChromeClient> m_overlayChromeClient;
     RefPtrWillBeMember<InspectorOverlayHost> m_overlayHost;
     InspectorHighlightConfig m_quadHighlightConfig;
     bool m_drawViewSize;

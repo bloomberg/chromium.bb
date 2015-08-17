@@ -49,19 +49,20 @@ PassOwnPtr<DummyPageHolder> DummyPageHolder::create(
 
 DummyPageHolder::DummyPageHolder(
     const IntSize& initialViewSize,
-    Page::PageClients* pageClients,
+    Page::PageClients* pageClientsArgument,
     PassOwnPtr<FrameLoaderClient> frameLoaderClient)
 {
-    if (!pageClients) {
-        fillWithEmptyClients(m_pageClients);
+    Page::PageClients pageClients;
+    if (!pageClientsArgument) {
+        fillWithEmptyClients(pageClients);
     } else {
-        m_pageClients.chromeClient = pageClients->chromeClient;
-        m_pageClients.contextMenuClient = pageClients->contextMenuClient;
-        m_pageClients.editorClient = pageClients->editorClient;
-        m_pageClients.dragClient = pageClients->dragClient;
-        m_pageClients.spellCheckerClient = pageClients->spellCheckerClient;
+        pageClients.chromeClient = pageClientsArgument->chromeClient;
+        pageClients.contextMenuClient = pageClientsArgument->contextMenuClient;
+        pageClients.editorClient = pageClientsArgument->editorClient;
+        pageClients.dragClient = pageClientsArgument->dragClient;
+        pageClients.spellCheckerClient = pageClientsArgument->spellCheckerClient;
     }
-    m_page = adoptPtrWillBeNoop(new Page(m_pageClients));
+    m_page = adoptPtrWillBeNoop(new Page(pageClients));
     Settings& settings = m_page->settings();
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.

@@ -76,13 +76,14 @@ public:
     static void platformColorsChanged();
 
     // It is up to the platform to ensure that non-null clients are provided where required.
-    struct CORE_EXPORT PageClients {
-        WTF_MAKE_NONCOPYABLE(PageClients); WTF_MAKE_FAST_ALLOCATED(PageClients);
+    struct CORE_EXPORT PageClients final {
+        STACK_ALLOCATED();
+        WTF_MAKE_NONCOPYABLE(PageClients);
     public:
         PageClients();
         ~PageClients();
 
-        ChromeClient* chromeClient;
+        RawPtrWillBeMember<ChromeClient> chromeClient;
         ContextMenuClient* contextMenuClient;
         EditorClient* editorClient;
         DragClient* dragClient;

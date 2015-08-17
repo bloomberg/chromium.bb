@@ -125,6 +125,11 @@ ChromeClientImpl::~ChromeClientImpl()
 {
 }
 
+PassOwnPtrWillBeRawPtr<ChromeClientImpl> ChromeClientImpl::create(WebViewImpl* webView)
+{
+    return adoptPtrWillBeNoop(new ChromeClientImpl(webView));
+}
+
 void* ChromeClientImpl::webView() const
 {
     return static_cast<void*>(m_webView);

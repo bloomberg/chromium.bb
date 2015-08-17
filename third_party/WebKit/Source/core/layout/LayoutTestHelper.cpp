@@ -21,6 +21,8 @@ public:
 
 class FakeChromeClient : public EmptyChromeClient {
 public:
+    static PassOwnPtrWillBeRawPtr<FakeChromeClient> create() { return adoptPtrWillBeNoop(new FakeChromeClient); }
+
     virtual GraphicsLayerFactory* graphicsLayerFactory() const
     {
         static FakeGraphicsLayerFactory* factory = adoptPtr(new FakeGraphicsLayerFactory).leakPtr();
@@ -30,10 +32,11 @@ public:
 
 void RenderingTest::SetUp()
 {
-    fillWithEmptyClients(m_pageClients);
-    static FakeChromeClient* chromeClient = adoptPtr(new FakeChromeClient).leakPtr();
-    m_pageClients.chromeClient = chromeClient;
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &m_pageClients);
+    Page::PageClients pageClients;
+    fillWithEmptyClients(pageClients);
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FakeChromeClient>, chromeClient, (FakeChromeClient::create()));
+    pageClients.chromeClient = chromeClient.get();
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients);
 
     // This ensures that the minimal DOM tree gets attached
     // correctly for tests that don't call setBodyInnerHTML.

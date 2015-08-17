@@ -77,7 +77,6 @@ private:
     OwnPtrWillBePersistent<Page> m_page;
     RefPtrWillBePersistent<LocalFrame> m_frame;
 
-    Page::PageClients m_pageClients;
     OwnPtr<FrameLoaderClient> m_frameLoaderClient;
 };
 

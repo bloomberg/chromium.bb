@@ -45,6 +45,11 @@ SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
 {
 }
 
+PassOwnPtrWillBeRawPtr<SVGImageChromeClient> SVGImageChromeClient::create(SVGImage* image)
+{
+    return adoptPtrWillBeNoop(new SVGImageChromeClient(image));
+}
+
 bool SVGImageChromeClient::isSVGImageChromeClient() const
 {
     return true;

@@ -47,7 +47,7 @@ struct WebCursorInfo;
 // Handles window-level notifications from core on behalf of a WebView.
 class ChromeClientImpl final : public ChromeClient {
 public:
-    explicit ChromeClientImpl(WebViewImpl*);
+    static PassOwnPtrWillBeRawPtr<ChromeClientImpl> create(WebViewImpl*);
     ~ChromeClientImpl() override;
 
     void* webView() const override;
@@ -170,6 +170,8 @@ public:
     FloatSize elasticOverscroll() const override;
 
 private:
+    explicit ChromeClientImpl(WebViewImpl*);
+
     bool isChromeClientImpl() const override { return true; }
     void registerPopupOpeningObserver(PopupOpeningObserver*) override;
     void unregisterPopupOpeningObserver(PopupOpeningObserver*) override;

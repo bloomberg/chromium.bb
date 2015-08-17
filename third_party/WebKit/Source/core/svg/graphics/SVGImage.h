@@ -104,7 +104,7 @@ private:
     void drawPatternForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
         SkXfermode::Mode, const FloatRect&, const IntSize& repeatSpacing);
 
-    OwnPtr<SVGImageChromeClient> m_chromeClient;
+    OwnPtrWillBePersistent<SVGImageChromeClient> m_chromeClient;
     OwnPtrWillBePersistent<Page> m_page;
     IntSize m_intrinsicSize;
     KURL m_url;

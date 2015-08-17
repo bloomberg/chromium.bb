@@ -65,8 +65,9 @@
 namespace blink {
 
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
-    WTF_MAKE_FAST_ALLOCATED(EmptyChromeClient);
 public:
+    static PassOwnPtrWillBeRawPtr<EmptyChromeClient> create() { return adoptPtrWillBeNoop(new EmptyChromeClient); }
+
     ~EmptyChromeClient() override {}
     void chromeDestroyed() override {}
 
