@@ -87,6 +87,25 @@ class TestClientInitializer : public testing::EmptyTestEventListener {
   DISALLOW_COPY_AND_ASSIGN(TestClientInitializer);
 };
 
+class AtExitManagerResetter : public testing::EmptyTestEventListener {
+public:
+  AtExitManagerResetter() {}
+
+  void OnTestStart(const testing::TestInfo& test_info) override {
+    at_exit_manager_.reset(new ShadowingAtExitManager);
+  }
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    at_exit_manager_.reset();
+  }
+
+ private:
+  // Ensures that singletons created during a test run are destroyed afterwards.
+  scoped_ptr<base::ShadowingAtExitManager> at_exit_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(AtExitManagerResetter);
+};
+
 }  // namespace
 
 int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
@@ -154,7 +173,7 @@ void TestSuite::PreInitialize(bool create_at_exit_manager) {
   // testing/android/native_test_wrapper.cc before main() is called.
 #if !defined(OS_ANDROID)
   if (create_at_exit_manager)
-    at_exit_manager_.reset(new AtExitManager);
+    CreateAtExitManager();
 #endif
 
   // Don't add additional code to this function.  Instead add it to
@@ -177,6 +196,14 @@ void TestSuite::ResetCommandLine() {
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new TestClientInitializer);
+}
+
+void TestSuite::CreateAtExitManager() {
+  at_exit_manager_.reset(new base::AtExitManager);
+
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new AtExitManagerResetter);
 }
 
 void TestSuite::AddTestLauncherResultPrinter() {
