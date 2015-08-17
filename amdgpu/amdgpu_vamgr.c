@@ -46,11 +46,12 @@ int amdgpu_va_range_query(amdgpu_device_handle dev,
 	return -EINVAL;
 }
 
-static void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, struct amdgpu_device *dev)
+static void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
+			      uint64_t max, uint64_t alignment)
 {
-	mgr->va_offset = dev->dev_info.virtual_address_offset;
-	mgr->va_max = dev->dev_info.virtual_address_max;
-	mgr->va_alignment = dev->dev_info.virtual_address_alignment;
+	mgr->va_offset = start;
+	mgr->va_max = max;
+	mgr->va_alignment = alignment;
 
 	list_inithead(&mgr->va_holes);
 	pthread_mutex_init(&mgr->bo_va_mutex, NULL);
@@ -73,7 +74,9 @@ amdgpu_vamgr_get_global(struct amdgpu_device *dev)
 	ref = atomic_inc_return(&vamgr.refcount);
 
 	if (ref == 1)
-		amdgpu_vamgr_init(&vamgr, dev);
+		amdgpu_vamgr_init(&vamgr, dev->dev_info.virtual_address_offset,
+				  dev->dev_info.virtual_address_max,
+				  dev->dev_info.virtual_address_alignment);
 	return &vamgr;
 }
 
