@@ -2,15 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("tracing") {
+component("tracing") {
   sources = [
     "child_memory_dump_manager_delegate_impl.cc",
     "child_memory_dump_manager_delegate_impl.h",
     "child_trace_message_filter.cc",
     "child_trace_message_filter.h",
+    "tracing_export.h",
     "tracing_messages.cc",
     "tracing_messages.h",
   ]
+
+  defines = [ "TRACING_IMPLEMENTATION" ]
 
   deps = [
     "//base",
@@ -18,11 +21,14 @@ source_set("tracing") {
   ]
 }
 
-source_set("startup_tracing") {
+component("startup_tracing") {
   sources = [
     "startup_tracing.cc",
     "startup_tracing.h",
+    "tracing_export.h",
   ]
+
+  defines = [ "TRACING_IMPLEMENTATION" ]
 
   deps = [
     "//base",

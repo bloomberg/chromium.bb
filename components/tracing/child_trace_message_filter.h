@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "components/tracing/tracing_export.h"
 #include "ipc/message_filter.h"
 
 namespace base {
@@ -19,7 +20,7 @@ class SingleThreadTaskRunner;
 namespace tracing {
 
 // This class sends and receives trace messages on child processes.
-class ChildTraceMessageFilter : public IPC::MessageFilter {
+class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
  public:
   explicit ChildTraceMessageFilter(
       base::SingleThreadTaskRunner* ipc_task_runner);

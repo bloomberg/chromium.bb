@@ -14,7 +14,7 @@
   'targets' : [
     {
       'target_name': 'tracing',
-      'type': 'static_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
@@ -22,11 +22,15 @@
       'include_dirs': [
         '..',
       ],
+      'defines': [
+        'TRACING_IMPLEMENTATION=1',
+      ],
       'sources': [
         'tracing/child_memory_dump_manager_delegate_impl.cc',
         'tracing/child_memory_dump_manager_delegate_impl.h',
         'tracing/child_trace_message_filter.cc',
         'tracing/child_trace_message_filter.h',
+        'tracing/tracing_export.h',
         'tracing/startup_tracing.cc',
         'tracing/startup_tracing.h',
         'tracing/tracing_messages.cc',

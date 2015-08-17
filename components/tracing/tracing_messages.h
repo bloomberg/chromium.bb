@@ -11,11 +11,14 @@
 #include "base/sync_socket.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "base/trace_event/trace_event_impl.h"
+#include "components/tracing/tracing_export.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_platform_file.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT TRACING_EXPORT
 #define IPC_MESSAGE_START TracingMsgStart
 
 IPC_STRUCT_TRAITS_BEGIN(base::trace_event::TraceLogStatus)
