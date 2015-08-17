@@ -311,6 +311,8 @@ void WebViewPlugin::OnDestruct() {
 }
 
 void WebViewPlugin::OnZoomLevelChanged() {
-  web_view_->setZoomLevel(
+  if (container_) {
+    web_view_->setZoomLevel(
       blink::WebView::zoomFactorToZoomLevel(container_->pageZoomFactor()));
+  }
 }
