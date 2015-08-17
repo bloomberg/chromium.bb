@@ -49,10 +49,10 @@ GIT_REVISIONS = {
         'upstream-base': 'c1283af40b65f1ad862cf5b27e2d9ed10b2076b6',
         },
     'glibc': {
-        'rev': 'f4ddb3557e80a193c4169bbaf01a0e7f556098b9',
-        'upstream-branch': 'upstream/master',
-        'upstream-name': 'glibc-2.21',
-        'upstream-base': 'glibc-2.21',
+        'rev': 'a34d1c6afc86521d6ad17662a3b5362d8481514c',
+        'upstream-branch': 'upstream/release/2.22/master',
+        'upstream-name': 'glibc-2.22',
+        'upstream-base': 'glibc-2.22',
         },
     'gdb': {
         'rev': '4ad027945e8645f00b857488959fc2a3b5b16d05',
