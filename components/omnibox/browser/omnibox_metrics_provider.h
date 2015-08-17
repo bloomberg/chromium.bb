@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METRICS_OMNIBOX_METRICS_PROVIDER_H_
-#define CHROME_BROWSER_METRICS_OMNIBOX_METRICS_PROVIDER_H_
+#ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_METRICS_PROVIDER_H_
+#define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_METRICS_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "components/metrics/metrics_provider.h"
@@ -48,4 +48,4 @@ class OmniboxMetricsProvider : public metrics::MetricsProvider {
   DISALLOW_COPY_AND_ASSIGN(OmniboxMetricsProvider);
 };
 
-#endif  // CHROME_BROWSER_METRICS_OMNIBOX_METRICS_PROVIDER_H_
+#endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_METRICS_PROVIDER_H_

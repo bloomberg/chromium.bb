@@ -2,7 +2,7 @@ include_rules = [
   "+components/bookmarks/browser",
   "+components/history/core/browser",
   "+components/keyed_service/core",
-  "+components/metrics/proto",
+  "+components/metrics",
   "+components/open_from_clipboard",
   "+components/pref_registry",
   "+components/query_parser",
