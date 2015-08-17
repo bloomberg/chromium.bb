@@ -539,6 +539,12 @@ void BaseMultipleFieldsDateAndTimeInputType::updateView()
     updateClearButtonVisibility();
 }
 
+void BaseMultipleFieldsDateAndTimeInputType::closePopupView()
+{
+    if (PickerIndicatorElement* picker = pickerIndicatorElement())
+        picker->closePopup();
+}
+
 void BaseMultipleFieldsDateAndTimeInputType::valueAttributeChanged()
 {
     if (!element().hasDirtyValue())

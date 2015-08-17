@@ -63,7 +63,6 @@ PassRefPtrWillBeRawPtr<PickerIndicatorElement> PickerIndicatorElement::create(Do
 
 PickerIndicatorElement::~PickerIndicatorElement()
 {
-    closePopup();
     ASSERT(!m_chooser);
 }
 
