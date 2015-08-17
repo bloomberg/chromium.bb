@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, MAYBE_SaveViewSourceHTMLOnly) {
 #else
 #define MAYBE_SaveCompleteHTML SaveCompleteHTML
 #endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_SaveCompleteHTML) {
   GURL url = NavigateToMockURL("b");
 
   base::FilePath full_file_name, dir;
@@ -622,7 +622,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
 #else
 #define MAYBE_FileNameFromPageTitle FileNameFromPageTitle
 #endif
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, DISABLED_FileNameFromPageTitle) {
   GURL url = NavigateToMockURL("b");
 
   base::FilePath full_file_name = save_dir_.path().AppendASCII(

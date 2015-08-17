@@ -178,7 +178,7 @@ INSTANTIATE_TEST_CASE_P(EncodingAliases,
                         testing::ValuesIn(kEncodingTestDatas));
 
 // Marked as flaky: see  http://crbug.com/44668
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestOverrideEncoding) {
   const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
   const char* const kExpectedFileName =
       "expected_gb18030_saved_from_iso88591_meta.html";
@@ -229,7 +229,9 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 #define MAYBE_TestEncodingAutoDetect TestEncodingAutoDetect
 #endif
 // TODO(phajdan.jr): See if fix for http://crbug.com/122053 would help here.
-IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
+// Disabled to revert a depending Blink CL. crbug.com/328354, and
+// crbug.com/510422.
+IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, DISABLED_TestEncodingAutoDetect) {
   struct EncodingAutoDetectTestData {
     const char* test_file_name;   // File name of test data.
     const char* expected_result;  // File name of expected results.
