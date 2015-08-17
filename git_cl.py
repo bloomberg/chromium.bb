@@ -67,9 +67,6 @@ REFS_THAT_ALIAS_TO_OTHER_REFS = {
     'refs/remotes/origin/lkcr': 'refs/remotes/origin/master',
 }
 
-# Buildbucket-related constants
-BUILDBUCKET_HOST = 'cr-buildbucket.appspot.com'
-
 # Valid extensions for files we want to lint.
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
 DEFAULT_LINT_IGNORE_REGEX = r"$^"
@@ -244,7 +241,7 @@ def trigger_try_jobs(auth_config, changelist, options, masters, category,
 
   buildbucket_put_url = (
       'https://{hostname}/_ah/api/buildbucket/v1/builds/batch'.format(
-          hostname=BUILDBUCKET_HOST))
+          hostname=options.buildbucket_host))
   buildset = 'patch/rietveld/{hostname}/{issue}/{patch}'.format(
       hostname=rietveld_host,
       issue=issue,
@@ -3050,7 +3047,7 @@ def CMDtree(parser, args):
 
 
 def CMDtry(parser, args):
-  """Triggers a try job through Rietveld."""
+  """Triggers a try job through BuildBucket."""
   group = optparse.OptionGroup(parser, "Try job options")
   group.add_option(
       "-b", "--bot", action="append",
@@ -3078,8 +3075,11 @@ def CMDtry(parser, args):
   group.add_option(
       "-n", "--name", help="Try job name; default to current branch name")
   group.add_option(
-      "--use-buildbucket", action="store_true", default=False,
-      help="Use buildbucket to trigger try jobs.")
+      "--use-rietveld", action="store_true", default=False,
+      help="Use Rietveld to trigger try jobs.")
+  group.add_option(
+      "--buildbucket-host", default='cr-buildbucket.appspot.com',
+      help="Host of buildbucket. The default host is %default.")
   parser.add_option_group(group)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
@@ -3177,7 +3177,7 @@ def CMDtry(parser, args):
         '\nWARNING Mismatch between local config and server. Did a previous '
         'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
         'Continuing using\npatchset %s.\n' % patchset)
-  if options.use_buildbucket:
+  if not options.use_rietveld:
     try:
       trigger_try_jobs(auth_config, cl, options, masters, 'git_cl_try')
     except BuildbucketResponseException as ex:
