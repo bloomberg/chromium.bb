@@ -348,6 +348,7 @@ if ! test "x$enable_simple_intel_dmabuf_client" = "xno"; then
   if test "x$have_simple_dmabuf_client" = "xno" -a "x$enable_simple_intel_dmabuf_client" = "xyes"; then
     AC_MSG_ERROR([Intel dmabuf client explicitly enabled, but libdrm_intel couldn't be found])
   fi
+  enable_simple_intel_dmabuf_client="$have_simple_dmabuf_client"
 fi
 AM_CONDITIONAL(BUILD_SIMPLE_INTEL_DMABUF_CLIENT, test "x$enable_simple_intel_dmabuf_client" = "xyes")
 
