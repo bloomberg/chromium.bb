@@ -2152,8 +2152,8 @@ crbug.com/509025 [ Yosemite ] virtual/threaded/compositing/visibility/visibility
 crbug.com/509025 [ Yosemite ] virtual/threaded/printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 crbug.com/509025 [ Yosemite ] paint/inline/outline-offset.html [ Missing ]
 crbug.com/509025 [ Yosemite ] compositing/geometry/vertical-scroll-composited.html [ Failure ]
-crbug.com/509025 [ Yosemite ] css2.1/t1202-counter-04-b.html [ Failure ]
-crbug.com/509025 [ Yosemite ] css2.1/t1202-counters-04-b.html [ Failure ]
+crbug.com/509025 [ Yosemite ] css2.1/t1202-counter-04-b.html [ NeedsRebaseline ]
+crbug.com/509025 [ Yosemite ] css2.1/t1202-counters-04-b.html [ NeedsRebaseline ]
 crbug.com/509025 [ Yosemite ] fast/block/lineboxcontain/block-with-ideographs.xhtml [ Failure ]
 # TODO(tkent): Needs to increase padding-right.
 crbug.com/509025 [ Yosemite ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
