@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
