@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/webrtc/overrides/webrtc/base/basictypes.h"
 #include "third_party/webrtc/overrides/webrtc/base/logging.h"
+#include "third_party/webrtc/system_wrappers/interface/cpu_info.h"
 #include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 
 const unsigned char* GetCategoryGroupEnabled(const char* category_group) {
@@ -77,11 +78,11 @@ void HistogramAdd(
 }  // namespace metrics
 }  // namespace webrtc
 
-// libpeerconnection is being compiled as a static lib.  In this case
-// we don't need to do any initializing but to keep things simple we
-// provide an empty intialization routine so that this #ifdef doesn't
-// have to be in other places.
 bool InitializeWebRtcModule() {
+  // Workaround for crbug.com/176522
+  // On Linux, we can't fetch the number of cores after the sandbox has been
+  // initialized, so we call DetectNumberOfCores() here, to cache the value.
+  webrtc::CpuInfo::DetectNumberOfCores();
   webrtc::SetupEventTracer(&GetCategoryGroupEnabled, &AddTraceEvent);
   return true;
 }
