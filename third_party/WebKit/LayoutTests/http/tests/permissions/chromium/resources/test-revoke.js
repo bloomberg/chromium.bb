@@ -53,18 +53,18 @@ var tests = [
             return navigator.permissions.revoke({name:'midi'});
         }).then(function(result) {
             assert_true(result instanceof PermissionStatus);
-            assert_equals(result.state, 'granted');
+            assert_equals(result.state, DEFAULT_PERMISSION_STATE);
             return navigator.permissions.revoke({name:'midi', sysex:false});
         }).then(function(result) {
             assert_true(result instanceof PermissionStatus);
-            assert_equals(result.state, 'granted');
+            assert_equals(result.state, DEFAULT_PERMISSION_STATE);
             return navigator.permissions.revoke({name:'midi', sysex:true});
         }).then(function(result) {
             assert_true(result instanceof PermissionStatus);
             assert_equals(result.state, DEFAULT_PERMISSION_STATE);
             callback();
         }).catch(function() {
-            assert_unreached('revoking geolocation permission should not fail.')
+            assert_unreached('revoking midi permission should not fail.')
             callback();
         });
     }

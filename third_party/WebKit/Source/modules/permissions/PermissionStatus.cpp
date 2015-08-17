@@ -19,8 +19,7 @@ namespace blink {
 // static
 PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver, WebPermissionStatus* status, WebPermissionType type)
 {
-    PermissionStatus* permissionStatus = PermissionStatus::create(resolver->executionContext(), *status, type);
-    permissionStatus->startListening();
+    PermissionStatus* permissionStatus = PermissionStatus::createAndListen(resolver->executionContext(), *status, type);
     delete status;
     return permissionStatus;
 }
@@ -31,10 +30,11 @@ void PermissionStatus::dispose(WebPermissionStatus* status)
     delete status;
 }
 
-PermissionStatus* PermissionStatus::create(ExecutionContext* executionContext, WebPermissionStatus status, WebPermissionType type)
+PermissionStatus* PermissionStatus::createAndListen(ExecutionContext* executionContext, WebPermissionStatus status, WebPermissionType type)
 {
     PermissionStatus* permissionStatus = new PermissionStatus(executionContext, status, type);
     permissionStatus->suspendIfNeeded();
+    permissionStatus->startListening();
     return permissionStatus;
 }
 

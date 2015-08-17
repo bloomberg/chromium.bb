@@ -32,7 +32,7 @@ public:
     static PermissionStatus* take(ScriptPromiseResolver*, WebPermissionStatus*, WebPermissionType);
     static void dispose(WebPermissionStatus*);
 
-    static PermissionStatus* create(ExecutionContext*, WebPermissionStatus, WebPermissionType);
+    static PermissionStatus* createAndListen(ExecutionContext*, WebPermissionStatus, WebPermissionType);
     ~PermissionStatus() override;
 
     // EventTarget implementation.

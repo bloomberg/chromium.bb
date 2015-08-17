@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class Dictionary;
 class ScriptState;
 class ScriptValue;
 class WebPermissionClient;
@@ -25,9 +26,10 @@ public:
     // TODO(mlamouri): Find better place for this. https://crbug.com/510948
     static WebPermissionClient* getClient(ExecutionContext*);
 
-    ScriptPromise query(ScriptState*, const ScriptValue&);
-    ScriptPromise request(ScriptState*, const ScriptValue&);
-    ScriptPromise revoke(ScriptState*, const ScriptValue&);
+    ScriptPromise query(ScriptState*, const Dictionary&);
+    ScriptPromise request(ScriptState*, const Dictionary&);
+    ScriptPromise request(ScriptState*, const Vector<Dictionary>&);
+    ScriptPromise revoke(ScriptState*, const Dictionary&);
 };
 
 } // namespace blink

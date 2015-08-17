@@ -36,16 +36,14 @@ async_test(function(test) {
 
 async_test(function(test) {
     navigator.permissions.query({name:'midi'}).then(function(result) {
-        // By default, the permission is granted if "sysex" option isn't set or
-        // set to false.
-        assert_equals(result.status, "granted");
+        assert_true(result instanceof PermissionStatus);
+        assert_equals(result.status, 'denied');
 
         // Test for sysex=false.
         return navigator.permissions.query({name:'midi', sysex: false});
     }).then(function(result) {
-        // By default, the permission is granted if "sysex" option isn't set or
-        // set to false.
-        assert_equals(result.status, "granted");
+        assert_true(result instanceof PermissionStatus);
+        assert_equals(result.status, 'denied');
 
         // Test for sysex=true.
         return navigator.permissions.query({name:'midi', sysex: true});

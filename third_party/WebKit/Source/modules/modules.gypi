@@ -1195,6 +1195,8 @@
       'permissions/Permissions.h',
       'permissions/PermissionCallback.cpp',
       'permissions/PermissionCallback.h',
+      'permissions/PermissionsCallback.cpp',
+      'permissions/PermissionsCallback.h',
       'permissions/PermissionStatus.cpp',
       'permissions/PermissionStatus.h',
       'permissions/WorkerNavigatorPermissions.cpp',
