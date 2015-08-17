@@ -29,12 +29,14 @@
 
 namespace content {
 
+// Disabled on official builds because symbolization in sandboxes processes
+// opens up security holes.
 // On Android symbolization happens in one step after all the tests ran, so this
 // test doesn't work there.
 // TODO(mac): figure out why symbolization doesn't happen in the renderer.
 // http://crbug.com/521456
 // TODO(win): send PDB files for component build. http://crbug.com/521459
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
+#if !defined(OFFICIAL_BUILD) && !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
     !(defined(COMPONENT_BUILD) && defined(OS_WIN))
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
@@ -85,19 +87,19 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   new_test.AppendSwitch(kRunManualTestsFlag);
   new_test.AppendSwitch(kSingleProcessTestsFlag);
 
-#if defined(ADDRESS_SANITIZER)
   // Per https://www.chromium.org/developers/testing/addresssanitizer, there are
   // ASAN bots that run without the sandbox which this test will pass for. The
   // other ones pipe the output to a symbolizer script.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoSandbox)) {
     new_test.AppendSwitch(switches::kNoSandbox);
   } else {
+#if defined(ADDRESS_SANITIZER)
     LOG(INFO) << "Couldn't run ContentBrowserTest.RendererCrashCallStack since "
               << "sandbox is enabled and ASAN requires piping to an external "
               << "script.";
     return;
-  }
 #endif
+  }
 
   std::string output;
   base::GetAppOutputAndError(new_test, &output);
