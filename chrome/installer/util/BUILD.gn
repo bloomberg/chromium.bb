@@ -11,6 +11,7 @@ static_library("util") {
     "//chrome:strings",
     "//chrome/common:constants",
     "//chrome/common:result_codes",
+    "//components/variations",
     "//content/public/common:result_codes",
   ]
 

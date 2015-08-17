@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/variations/variations_request_scheduler_mobile.h"
 
 #include "base/prefs/pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "components/variations/pref_names.h"
 
 namespace chrome_variations {
 

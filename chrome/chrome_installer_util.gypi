@@ -120,6 +120,7 @@
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
             '<(DEPTH)/chrome/common_constants.gyp:common_constants',
             '<(DEPTH)/components/components.gyp:metrics',
+            '<(DEPTH)/components/components.gyp:variations',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/crypto/crypto.gyp:crypto',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
@@ -210,6 +211,7 @@
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
+            '<(DEPTH)/components/components.gyp:variations',
           ],
           'sources': [
             # Note: sources list duplicated in GN build.

@@ -14,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/variations/pref_names.h"
 
 namespace {
 
@@ -298,15 +299,15 @@ bool MasterPreferences::GetExtensionsBlock(
 }
 
 std::string MasterPreferences::GetCompressedVariationsSeed() const {
-  return ExtractPrefString(prefs::kVariationsCompressedSeed);
+  return ExtractPrefString(chrome_variations::prefs::kVariationsCompressedSeed);
 }
 
 std::string MasterPreferences::GetVariationsSeed() const {
-  return ExtractPrefString(prefs::kVariationsSeed);
+  return ExtractPrefString(chrome_variations::prefs::kVariationsSeed);
 }
 
 std::string MasterPreferences::GetVariationsSeedSignature() const {
-  return ExtractPrefString(prefs::kVariationsSeedSignature);
+  return ExtractPrefString(chrome_variations::prefs::kVariationsSeedSignature);
 }
 
 std::string MasterPreferences::ExtractPrefString(

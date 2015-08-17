@@ -1264,35 +1264,6 @@ const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
 #endif
 
-// Base64-encoded compressed serialized form of the variations seed protobuf.
-const char kVariationsCompressedSeed[] = "variations_compressed_seed";
-
-// 64-bit integer serialization of the base::Time from the last successful seed
-// fetch (i.e. when the Variations server responds with 200 or 304).
-const char kVariationsLastFetchTime[] = "variations_last_fetch_time";
-
-// The latest country code received by the VariationsService for evaluating
-// studies.
-const char kVariationsCountry[] = "variations_country";
-
-// Pair of <Chrome version string, country code string> representing the country
-// used for filtering permanent consistency studies until the next time Chrome
-// is updated.
-const char kVariationsPermanentConsistencyCountry[] =
-    "variations_permanent_consistency_country";
-
-// String for the restrict parameter to be appended to the variations URL.
-const char kVariationsRestrictParameter[] = "variations_restrict_parameter";
-
-// Base64-encoded serialized form of the variations seed protobuf.
-const char kVariationsSeed[] = "variations_seed";
-
-// 64-bit integer serialization of the base::Time from the last seed received.
-const char kVariationsSeedDate[] = "variations_seed_date";
-
-// Digital signature of the binary variations seed data, base64-encoded.
-const char kVariationsSeedSignature[] = "variations_seed_signature";
-
 // Number of times a page load event occurred since the last report.
 const char kStabilityPageLoadCount[] =
     "user_experience_metrics.stability.page_load_count";

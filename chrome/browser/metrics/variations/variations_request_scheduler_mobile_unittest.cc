@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/common/pref_names.h"
+#include "components/variations/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_variations {

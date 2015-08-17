@@ -124,6 +124,7 @@
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_header_provider.h"
+#include "components/variations/pref_names.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
@@ -978,22 +979,24 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     if (!master_prefs_->variations_seed.empty() ||
         !master_prefs_->compressed_variations_seed.empty()) {
       if (!master_prefs_->variations_seed.empty()) {
-        local_state_->SetString(prefs::kVariationsSeed,
-                              master_prefs_->variations_seed);
+        local_state_->SetString(chrome_variations::prefs::kVariationsSeed,
+                                master_prefs_->variations_seed);
       }
       if (!master_prefs_->compressed_variations_seed.empty()) {
-        local_state_->SetString(prefs::kVariationsCompressedSeed,
-                                master_prefs_->compressed_variations_seed);
+        local_state_->SetString(
+            chrome_variations::prefs::kVariationsCompressedSeed,
+            master_prefs_->compressed_variations_seed);
       }
       if (!master_prefs_->variations_seed_signature.empty()) {
-        local_state_->SetString(prefs::kVariationsSeedSignature,
-                                master_prefs_->variations_seed_signature);
+        local_state_->SetString(
+            chrome_variations::prefs::kVariationsSeedSignature,
+            master_prefs_->variations_seed_signature);
       }
       // Set the variation seed date to the current system time. If the user's
       // clock is incorrect, this may cause some field trial expiry checks to
       // not do the right thing until the next seed update from the server,
       // when this value will be updated.
-      local_state_->SetInt64(prefs::kVariationsSeedDate,
+      local_state_->SetInt64(chrome_variations::prefs::kVariationsSeedDate,
                              base::Time::Now().ToInternalValue());
     }
 

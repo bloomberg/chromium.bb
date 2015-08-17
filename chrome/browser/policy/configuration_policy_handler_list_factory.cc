@@ -27,6 +27,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/translate/core/common/translate_pref_names.h"
+#include "components/variations/pref_names.h"
 #include "policy/policy_constants.h"
 
 #if defined(OS_ANDROID)
@@ -356,7 +357,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kHideWebStoreIcon,
     base::Value::TYPE_BOOLEAN },
   { key::kVariationsRestrictParameter,
-    prefs::kVariationsRestrictParameter,
+    chrome_variations::prefs::kVariationsRestrictParameter,
     base::Value::TYPE_STRING },
   { key::kSupervisedUserCreationEnabled,
     prefs::kSupervisedUserCreationAllowed,

@@ -6,8 +6,8 @@
 
 #include "base/base64.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/common/pref_names.h"
 #include "components/metrics/compression_utils.h"
+#include "components/variations/pref_names.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
