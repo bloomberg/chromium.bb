@@ -23,7 +23,6 @@
 <translation id="2148716181193084225">Ma</translation>
 <translation id="2226276347425096477">Kérjük, rövidítse le a szöveget legfeljebb <ph name="MAX_CHARACTERS"/> karakterre (jelenleg <ph name="CURRENT_LENGTH"/> karaktert használ).</translation>
 <translation id="2247351761944213033"><ph name="WEEKNUMBER"/>. hét, <ph name="YEAR"/></translation>
-<translation id="2291999235780842123">jelölőnégyzet</translation>
 <translation id="248395913932153421">nap</translation>
 <translation id="2507943997699731163">Kérjük, töltse ki ezt a mezőt.</translation>
 <translation id="2548326553472216322">Nincsenek friss keresések</translation>
@@ -37,7 +36,6 @@
 <translation id="2846343701378493991">1024 (Közepes)</translation>
 <translation id="2901282870647571346">a jelenlegi film állapota</translation>
 <translation id="2908441821576996758">Kérjük, adjon meg egy vesszőkkel elválasztott e-mail címlistát.</translation>
-<translation id="2942448076852699108">kijelölt tartalom</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="3075154866155599887">Kérjük, adjon meg érvényes értéket. A mező hiányos, vagy érvénytelen dátum van megadva.</translation>
 <translation id="310520048233152454">Adjon meg egy URL-t.</translation>

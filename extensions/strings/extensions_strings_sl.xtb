@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Izmenjava podatkov z vsemi napravami v domenah: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Uporabljena je bila lokalizacija, vendar v manifestu ni bil naveden parameter default_locale.</translation>
 <translation id="2616366145935564096">Branje in spreminjanje vaših podatkov na spletnem mestu <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene ali več vaših naprav.</translation>
 <translation id="2753617847762399167">Neveljavna pot (absolutna ali v povezavi z »..«): »<ph name="IMAGE_PATH"/>«</translation>
 <translation id="27822970480436970">Tej razširitvi ni uspelo spremeniti omrežne zahteve, ker je bila sprememba v sporu z drugo razširitvijo.</translation>
 <translation id="2857834222104759979">Datoteka manifesta ni veljavna.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (serijska številka <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Branje vaših podatkov na več spletnih mestih</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> dobavitelja <ph name="VENDOR_ID"/> (serijska številka <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Izbira naprave USB}multiple{Izbira naprav USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Strani zaganjalnika »<ph name="PAGE"/>« ni bilo mogoče naložiti.</translation>
 <translation id="3759933321830434300">Blokiraj dele spletnih strani</translation>
 <translation id="388442998277590542">Strani z možnostmi »<ph name="OPTIONS_PAGE"/>« ni bilo mogoče naložiti.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">neznane naprave prodajalca <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Branje vaših podatkov na spletnih mestih <ph name="WEBSITE_1"/> in <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Uporabite mikrofon</translation>
+<translation id="4776856853352853275">Izbira naprav USB</translation>
 <translation id="4811956658694082538">Paketa ni bilo mogoče namestiti, ker se je pomožni proces zrušil. Znova zaženite Chrome in poskusite znova.</translation>
 <translation id="4883436287898674711">Vsa spletna mesta <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Spletni pogled: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Upravljanje omrežnih povezav</translation>
-<translation id="5165983846722506205">{1,select, single{Izbira naprave HID}multiple{Izbira naprav HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Komponenta appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Ta razširitev vključuje datoteko s ključem »<ph name="KEY_PATH"/>«. Verjetno ne želite narediti tega.</translation>
+<translation id="545850661681880228">Izbira naprave HID</translation>
 <translation id="5627523580512561598">razširitev <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Branje vaših podatkov na spletnem mestu <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene od vaših naprav.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Nadzor nad stanjem vmesnika Bluetooth in seznanjanjem</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> dobavitelja <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Izmenjava podatkov z napravo, imenovano: <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Razširitve ni mogoče odpakirati. Če želite varno odpakirati razširitev, pot do imenika vašega profila ne sme vsebovati simbolne povezave. Takšne poti ni za vaš profil.</translation>
-<translation id="616804573177634438">{0,select, single{Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene od vaših naprav.}multiple{Aplikacija »<ph name="APP_NAME"/>« zahteva dostop do ene ali več vaših naprav.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Dostop do podatkov o napravah Bluetooth, ki so seznanjene z vašim sistemom, in odkrivanje naprav Bluetooth v bližini.</translation>
 <translation id="6344170822609224263">Dostop do seznama omrežnih povezav</translation>
 <translation id="6384275966486438344">Sprememba nastavitev iskanja na: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Branje podatkov, ki jih kopirate in prilepite</translation>
 <translation id="730515362922783851">Izmenjava podatkov s poljubno napravo v lokalnem omrežju ali internetu</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID razširitve »<ph name="EXTENSION_ID"/>«) je blokiral skrbnik.</translation>
+<translation id="781637217073033149">Izbira naprav HID</translation>
 <translation id="7893008570150657497">Dostop do fotografij, glasbe in druge predstavnosti v računalniku</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Ta razširitev ni mogla prenosa poimenovati »<ph name="ATTEMPTED_FILENAME"/>«, ker je druga razširitev (<ph name="EXTENSION_NAME"/>) določila drugo ime datoteke: »<ph name="ACTUAL_FILENAME"/>«.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Datoteka manifesta manjka ali pa je ni mogoče prebrati.</translation>
 <translation id="8620765578342452535">Konfiguriranje omrežnih povezav</translation>
 <translation id="8636666366616799973">Paket je neveljaven. Podrobnosti: »<ph name="ERROR_MESSAGE"/>«.</translation>
+<translation id="8658591203505835552">Izbira naprave USB</translation>
 <translation id="8662911384982557515">Sprememba domače strani na: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Razširitvi ni uspelo preusmeriti omrežne zahteve <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, ker jo je druga razširitev (<ph name="EXTENSION_NAME"/>) preusmerila na cilj <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Orodje za odpakiranje razširitev</translation>

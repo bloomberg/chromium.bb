@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
 <translation id="1002108253973310084">S'ha detectat una versió del protocol incompatible. Assegureu-vos que tingueu instal·lada la versió més recent del programari als dos ordinadors i torneu-ho a provar.</translation>
+<translation id="1023096696228309145">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a Comparteix ara i que us doni el codi d'accés.</translation>
 <translation id="1050693411695664090">Deficient</translation>
 <translation id="1152528166145813711">Seleccioneu...</translation>
 <translation id="1199593201721843963">Desactiva les connexions remotes</translation>
+<translation id="1261403020716313927">• Hem corregit una filtració de memòria important en desconnectar-se des d'un escriptori remot.</translation>
 <translation id="1291443878853470558">Heu d'activar les connexions remotes si voleu utilitzar Chromoting per accedir a aquest ordinador.</translation>
 <translation id="1300633907480909701">Accediu de manera segura als vostres ordinadors des del dispositiu Android.
 
@@ -15,7 +17,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1324095856329524885">(aquesta funció encara no està disponible al vostre ordinador)</translation>
 <translation id="1342297293546459414">Vegeu i controleu un ordinador compartit.</translation>
 <translation id="1450760146488584666">L'objecte sol·licitat no existeix.</translation>
-<translation id="1480046233931937785">Crèdits</translation>
 <translation id="1520828917794284345">Ajusta la mida de l'escriptori</translation>
 <translation id="154040539590487450">No s'ha pogut iniciar el servei d'accés remot.</translation>
 <translation id="1546934824884762070">S'ha produït un error inesperat. Informeu d'aquest problema als desenvolupadors.</translation>
@@ -52,10 +53,8 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2124408767156847088">Accediu de manera segura als vostres ordinadors des del dispositiu Android.</translation>
 <translation id="2208514473086078157">La configuració de la política no permet compartir aquest ordinador com a amfitrió de l'escriptori remot de Chrome. Contacteu amb l'administrador del sistema per obtenir assistència.</translation>
 <translation id="2220529011494928058">Informa d'un problema</translation>
-<translation id="2221097377466213233">Utilitza la tecla de Ctrl dreta com a tecla de Windows (⌘ a Mac)</translation>
 <translation id="2235518894410572517">Compartiu aquest ordinador perquè un altre usuari el vegi i el controli.</translation>
 <translation id="2246783206985865117">Aquesta configuració es controla a la política de dominis.</translation>
-<translation id="2256115617011615191">Reinicia ara</translation>
 <translation id="225614027745146050">Benvingut</translation>
 <translation id="228809120910082333">Confirmeu el vostre compte i PIN a continuació per permetre l'accés per Chromoting.</translation>
 <translation id="2314101195544969792">La vostra sessió de <ph name="APPLICATION_NAME"/> ha estat inactiva durant una estona i es desconnectarà aviat.</translation>
@@ -76,14 +75,11 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="2851674870054673688">Quan hagin introduït el codi, la sessió compartida començarà.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">sense connexió</translation>
-<translation id="2888969873284818612">S'ha produït un error a la xarxa. Reiniciarem l'aplicació quan el dispositiu torni a estar en línia.</translation>
 <translation id="2894654864775534701">Aquest ordinador es comparteix actualment mitjançant un altre compte.</translation>
 <translation id="2919669478609886916">Esteu compartint aquest ordinador amb un altre usuari. Voleu continuar compartint-lo?</translation>
 <translation id="2921543551052660690">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN"/>inicieu la sessió a Chromium<ph name="LINK_END"/> amb el compte en qüestió i torneu a instal·lar Chromoting.</translation>
 <translation id="2926340305933667314">No s'ha pogut desactivar l'accés remot a aquest ordinador. Torneu-ho a provar més tard.</translation>
 <translation id="2939145106548231838">Autenticació a l'amfitrió</translation>
-<translation id="2998137343848432918">• S'ha afegit la pantalla Crèdits.
-• S'ha esmenat un problema en canviar a pantalla completa amb el teclat visible.</translation>
 <translation id="3020807351229499221">No s'ha pogut actualitzar el PIN. Torneu-ho a provar més tard.</translation>
 <translation id="3025388528294795783">Per ajudar-nos a resoldre el problema, ens heu de dir què passa:</translation>
 <translation id="3027681561976217984">Mode tàctil</translation>
@@ -92,7 +88,6 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="3150823315463303127">L'amfitrió no ha pogut llegir la política.</translation>
 <translation id="3194245623920924351">Escriptori remot de Chrome</translation>
 <translation id="3197730452537982411">Escriptori remot</translation>
-<translation id="3244258558056547981">Mostra la visualització de Cardboard</translation>
 <translation id="3258789396564295715">Podeu accedir de manera segura a aquest ordinador mitjançant l'escriptori remot de Chrome.</translation>
 <translation id="327263477022142889">Voleu ajudar a millorar l'Escriptori remot de Chrome? <ph name="LINK_BEGIN"/>Responeu a l'enquesta.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Controlador de Chromoting Host</translation>
@@ -164,7 +159,6 @@ remot de Chrome</translation>
 <translation id="5254120496627797685">Si sortiu d'aquesta pàgina, la sessió de l'escriptori remot de Chrome finalitzarà.</translation>
 <translation id="5285241842433869526">Obteniu informació sobre com podeu configurar un ordinador per a l'accés remot.</translation>
 <translation id="5308380583665731573">Connexió</translation>
-<translation id="5363265567587775042">Demaneu a l'usuari de l'ordinador al qual voleu accedir que faci clic a <ph name="SHARE"/> i que us faciliti el codi d'accés.</translation>
 <translation id="5379087427956679853">L'escriptori remot de Chrome us permet compartir el vostre ordinador de manera segura al web. Els dos usuaris han d'executar l'aplicació d'escriptori remot de Chrome, que podeu trobar a la pàgina <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Programa de desinstal·lació de l'amfitrió de l'escriptori remot de Chrome</translation>
 <translation id="5419185025274123272">No es pot restablir l'aplicació. Podeu enviar un informe d'errors.</translation>
@@ -233,6 +227,7 @@ remot de Chrome</translation>
 <translation id="7401733114166276557">Escriptori remot de Chrome</translation>
 <translation id="7434397035092923453">S'ha rebutjat l'accés del client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Client connectat: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Connexió nova</translation>
 <translation id="7606912958770842224">Activa les connexions remotes</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>

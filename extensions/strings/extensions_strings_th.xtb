@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">แลกเปลี่ยนข้อมูลกับอุปกรณ์ในโดเมน <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">ใช้การแปลภาษาท้องถิ่นแล้ว แต่ไม่ได้ระบุ default_locale ในมานิเฟสต์</translation>
 <translation id="2616366145935564096">อ่านและเปลี่ยนแปลงข้อมูลของคุณใน <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง</translation>
 <translation id="2753617847762399167">เส้นทางที่ไม่ถูกต้อง (โดยชัดแจ้งหรือเกี่ยวข้องกับ '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">ส่วนขยายนี้ไม่สามารถปรับเปลี่ยนคำขอเครือข่ายได้เนื่องจากการปรับเปลี่ยนมีความขัดแย้งกับส่วนขยายอื่น</translation>
 <translation id="2857834222104759979">ไฟล์มานิเฟสต์ไม่ถูกต้อง</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">อ่านข้อมูลบนเว็บไซต์จำนวนมาก</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> จากผู้ขาย <ph name="VENDOR_ID"/> (หมายเลขซีเรียล <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{เลือกอุปกรณ์ USB}multiple{เลือกอุปกรณ์ USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">ไม่สามารถโหลดหน้า Launcher &quot;<ph name="PAGE"/>&quot;</translation>
 <translation id="3759933321830434300">บล็อกส่วนต่างๆ ของหน้าเว็บ</translation>
 <translation id="388442998277590542">ไม่สามารถโหลดหน้าตัวเลือก &quot;<ph name="OPTIONS_PAGE"/>&quot;</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">อุปกรณ์ที่ไม่รู้จักจาก <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">อ่านข้อมูลใน <ph name="WEBSITE_1"/> และ <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">ใช้ไมโครโฟนของคุณ</translation>
+<translation id="4776856853352853275">เลือกอุปกรณ์ USB</translation>
 <translation id="4811956658694082538">ไม่สามารถติดตั้งแพ็กเกจเนื่องจากกระบวนการอรรถประโยชน์ขัดข้อง ลองรีสตาร์ท Chrome และลองใหม่อีกครั้ง</translation>
 <translation id="4883436287898674711">ไซต์ <ph name="WEBSITE_1"/> ทั้งหมด</translation>
 <translation id="5026754133087629784">มุมมองเว็บ: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">จัดการการเชื่อมต่อเครือข่าย</translation>
-<translation id="5165983846722506205">{1,select, single{เลือกอุปกรณ์ HID}multiple{เลือกอุปกรณ์ HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">การดูแอป: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">ส่วนขยายนี้มีไฟล์คีย์ &quot;<ph name="KEY_PATH"/>&quot; คุณอาจจะไม่ต้องการดำเนินการนั้น</translation>
+<translation id="545850661681880228">เลือกอุปกรณ์ HID</translation>
 <translation id="5627523580512561598">ส่วนขยาย <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">อ่านข้อมูลใน <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์ในการเข้าถึงอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">ควบคุมสถานะและการจับคู่อะแดปเตอร์บลูทูธ</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> จากผู้ขาย <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">แลกเปลี่ยนข้อมูลกับอุปกรณ์ชื่อ <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">ไม่สามารถแยกส่วนขยาย หากต้องการแยกส่วนขยายอย่างปลอดภัย คุณต้องมีเส้นทางไปยังไดเรกทอรีโปรไฟล์ของคุณซึ่งไม่มีลิงก์สัญลักษณ์ ไม่มีเส้นทางในรูปแบบดังกล่าวอยู่สำหรับโปรไฟล์ของคุณ</translation>
-<translation id="616804573177634438">{0,select, single{แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์เข้าถึงอุปกรณ์เครื่องใดเครื่องหนึ่งของคุณ}multiple{แอปพลิเคชัน &quot;<ph name="APP_NAME"/>&quot; กำลังขอสิทธิ์เข้าถึงอุปกรณ์ของคุณอย่างน้อย 1 เครื่อง}other{UNUSED}}</translation>
 <translation id="6241530762627360640">เข้าถึงข้อมูลเกี่ยวกับอุปกรณ์บลูทูธที่จับคู่กับระบบของคุณ และสำรวจอุปกรณ์บลูทูธใกล้เคียง</translation>
 <translation id="6344170822609224263">เข้าถึงรายการเชื่อมต่อเครือข่าย</translation>
 <translation id="6384275966486438344">เปลี่ยนการตั้งค่าการค้นหาของคุณเป็น: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">อ่านข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="730515362922783851">แลกเปลี่ยนข้อมูลกับอุปกรณ์ที่อยู่ในเครือข่ายเฉพาะที่หรืออินเทอร์เน็ต</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID ส่วนขยาย &quot;<ph name="EXTENSION_ID"/>&quot;) ถูกบล็อกโดยผู้ดูแลระบบ</translation>
+<translation id="781637217073033149">เลือกอุปกรณ์ HID</translation>
 <translation id="7893008570150657497">เข้าถึงรูปภาพ เพลง และสื่ออื่นๆ จากคอมพิวเตอร์ของคุณ</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">ส่วนขยายนี้ล้มเหลวในการตั้งชื่อการดาวน์โหลดว่า &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; เนื่องจากอีกส่วนขยายหนึ่ง (<ph name="EXTENSION_NAME"/>) ได้กำหนดชื่อไฟล์ที่แตกต่างไว้ว่า &quot;<ph name="ACTUAL_FILENAME"/>&quot;</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">ไฟล์มานิเฟสต์หายไปหรืออ่านไม่ได้</translation>
 <translation id="8620765578342452535">กำหนดค่าการเชื่อมต่อเครือข่าย</translation>
 <translation id="8636666366616799973">แพ็กเกจไม่ถูกต้อง รายละเอียด: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
+<translation id="8658591203505835552">เลือกอุปกรณ์ USB</translation>
 <translation id="8662911384982557515">เปลี่ยนหน้าแรกของคุณเป็น: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">ส่วนขยายนี้ไม่สามารถเปลี่ยนเส้นทางคำขอเครือข่ายไปยัง <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>) ได้เปลี่ยนเส้นทางคำขอไปยัง <ph name="ACTUAL_REDIRECT_DESTINATION"/></translation>
 <translation id="8712265948125780616">ตัวแตกไฟล์ส่วนขยาย</translation>

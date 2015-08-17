@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="1002108253973310084">检测到不兼容的协议版本。请确保两台计算机上都已安装该软件的最新版本，然后重试。</translation>
+<translation id="1023096696228309145">如果您想要访问某台计算机，请让该计算机的用户点击“立即共享”，然后告诉您访问代码。</translation>
 <translation id="1050693411695664090">较差</translation>
 <translation id="1152528166145813711">请选择…</translation>
 <translation id="1199593201721843963">停用远程连接</translation>
+<translation id="1261403020716313927">• 更正了在与远程桌面断开连接时会出现大量内存泄露的问题。</translation>
 <translation id="1291443878853470558">如果您想使用 Chrome 远程访问来访问此计算机，就必须启用远程连接。</translation>
 <translation id="1300633907480909701">通过您的Android设备安全地访问自己的计算机。
 
@@ -15,7 +17,6 @@
 <translation id="1324095856329524885">（您的计算机尚不支持该功能）</translation>
 <translation id="1342297293546459414">查看和控制共享的计算机。</translation>
 <translation id="1450760146488584666">请求的对象不存在。</translation>
-<translation id="1480046233931937785">鸣谢</translation>
 <translation id="1520828917794284345">将桌面调整为合适大小</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
@@ -52,10 +53,8 @@
 <translation id="2124408767156847088">通过您的Android设备安全地访问自己的计算机。</translation>
 <translation id="2208514473086078157">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="2220529011494928058">报告问题</translation>
-<translation id="2221097377466213233">使用右侧的 Ctrl 键执行 Win 键功能（在 Mac 上则使用 ⌘ 键）</translation>
 <translation id="2235518894410572517">共享此计算机以供其他用户查看和控制。</translation>
 <translation id="2246783206985865117">此设置受您的网域政策管理。</translation>
-<translation id="2256115617011615191">立即重新启动</translation>
 <translation id="225614027745146050">欢迎</translation>
 <translation id="228809120910082333">请在下方确认您的帐户和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
 <translation id="2314101195544969792">您的<ph name="APPLICATION_NAME"/>会话已经有一段时间没有活动了，连接即将断开。</translation>
@@ -76,14 +75,11 @@
 <translation id="2851674870054673688">他们输入访问代码后，您的共享会话就会立即开始。</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">离线</translation>
-<translation id="2888969873284818612">出现网络错误。当您的设备重新联网后，系统将重新启动该应用。</translation>
 <translation id="2894654864775534701">目前，此计算机只能通过另一帐户进行共享。</translation>
 <translation id="2919669478609886916">您目前正在与其他用户共享此计算机。您希望继续共享吗？</translation>
 <translation id="2921543551052660690">您之前曾使用 <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN"/>登录 Chromium<ph name="LINK_END"/>，然后重新安装 Chrome 远程访问。</translation>
 <translation id="2926340305933667314">无法停用对此计算机的远程访问。请稍后重试。</translation>
 <translation id="2939145106548231838">向主机验证身份</translation>
-<translation id="2998137343848432918">• 添加了“鸣谢”屏幕。
-• 解决了一个在显示键盘的情况下进入全屏模式时会出现的问题。</translation>
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
 <translation id="3025388528294795783">请将您遇到的问题告诉我们，以便我们为您解决：</translation>
 <translation id="3027681561976217984">触摸模式</translation>
@@ -92,7 +88,6 @@
 <translation id="3150823315463303127">主机无法读取政策。</translation>
 <translation id="3194245623920924351">Chrome远程桌面</translation>
 <translation id="3197730452537982411">远程桌面</translation>
-<translation id="3244258558056547981">显示 Cardboard 视图。</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="327263477022142889">愿意帮忙改进 Chrome 远程桌面吗？<ph name="LINK_BEGIN"/>请参与调查<ph name="LINK_END"/>。</translation>
 <translation id="3286521253923406898">Chrome 远程访问主机控制器</translation>
@@ -164,7 +159,6 @@
 <translation id="5254120496627797685">如果您离开此页，那么您的 Chrome 远程桌面会话就会结束。</translation>
 <translation id="5285241842433869526">了解如何为计算机设置远程访问。</translation>
 <translation id="5308380583665731573">连接</translation>
-<translation id="5363265567587775042">请让您想访问其计算机的用户点击“<ph name="SHARE"/>”，然后向您提供访问代码。</translation>
 <translation id="5379087427956679853">Chrome 远程桌面可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程桌面应用（下载地址为 <ph name="URL"/>）。</translation>
 <translation id="5397086374758643919">Chrome 远程桌面主机卸载程序</translation>
 <translation id="5419185025274123272">无法重置该应用。您仍可以发送错误报告。</translation>
@@ -233,6 +227,7 @@
 <translation id="7401733114166276557">Chrome 远程桌面</translation>
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME"/> 访问客户端的请求遭拒。</translation>
 <translation id="7444276978508498879">已连接客户端：<ph name="CLIENT_USERNAME"/>。</translation>
+<translation id="7605995381616883502">新连接</translation>
 <translation id="7606912958770842224">启用远程连接</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>

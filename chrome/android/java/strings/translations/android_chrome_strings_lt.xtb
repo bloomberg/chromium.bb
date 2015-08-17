@@ -1,49 +1,32 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
 <translation id="1056898198331236512">Įspėjimas</translation>
 <translation id="10614374240317010">Niekada neišsaugota</translation>
-<translation id="1061441684050139317">„Chrome“ reikia galimybės pasiekti mikrofoną, kad jį būtų galima bendrinti su šia svetaine.</translation>
 <translation id="1080790410959514870">Atsijungiate nuo <ph name="DOMAIN_NAME"/> tvarkomos paskyros. Bus ištrinti šiame įrenginyje saugomi „Chrome“ duomenys, bet jie išliks „Google“ paskyroje.</translation>
 <translation id="1086169178231554178">SD kortelė nepasiekiama</translation>
 <translation id="1091134514807961917">Esate prisijungę prie nurodytos „Google“ paskyros.</translation>
-<translation id="1095407227123756519">Pridėkite paskyrą ir pasiekite žymių, istorijos, slaptažodžių bei kitų nustatymų duomenis visuose įrenginiuose.</translation>
 <translation id="1098052486217676340">Baigta</translation>
 <translation id="1121094540300013208">Naudojimo ir strigčių ataskaitos</translation>
 <translation id="1159783623621444829">Tai vaiko paskyra</translation>
 <translation id="1173289567081511873">Esate prisijungę prie toliau nurodytų „Google“ paskyrų. Pridėkite arba pašalinkite paskyras „Android“ nustatymuose.</translation>
 <translation id="1178581264944972037">Pristabdyti</translation>
-<translation id="1181037720776840403">Pašalinti</translation>
-<translation id="1197267115302279827">Perkelti žymes</translation>
 <translation id="119944043368869598">Valyti viską</translation>
-<translation id="1201402288615127009">Toliau</translation>
 <translation id="1206892813135768548">Kopijuoti nuorodos tekstą</translation>
-<translation id="1258753120186372309">„Google“ papuoštas logotipas: <ph name="DOODLE_DESCRIPTION"/></translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
-<translation id="129553762522093515">Neseniai uždarytas</translation>
 <translation id="1312168552565502328">Slapukai, svetainių duomenys</translation>
-<translation id="1359381790106966506">Atnaujinti leidimus</translation>
 <translation id="1369915414381695676">Pridėta svetainė <ph name="SITE_NAME"/></translation>
 <translation id="1373696734384179344">Nepakanka atminties pasirinktam turiniui atsisiųsti.</translation>
 <translation id="1379156015317873965">Padidinti puslapio įkėlimo našumą</translation>
 <translation id="138361230106469022">Sveiki, <ph name="FULL_NAME"/>!</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
-<translation id="1389974829397082527">Čia žymių nėra</translation>
 <translation id="1404122904123200417">Įterpta į <ph name="WEBSITE_URL"/></translation>
-<translation id="1412240523210238692">Teksto pasirinkimas</translation>
 <translation id="1416550906796893042">Programos versija</translation>
-<translation id="1423209968422390786">Galimybė pasiekti vietovę <ph name="BEGIN_LINK"/>išjungta šiame įrenginyje<ph name="END_LINK"/>.</translation>
 <translation id="1445680696957526815">„Chrome“ komponentai nesuderinami tarpusavyje. „Chrome“ tikriausiai naujovinama, netrukus bandykite dar kartą. Jei problema išlieka, pabandykite pašalinti ir vėl įdiegti „Chrome“.</translation>
 <translation id="1446450296470737166">Leisti visiškai valdyti MIDI įr.</translation>
-<translation id="145097072038377568">Išjungta „Android“ nustatymuose</translation>
 <translation id="1491151370853475546">Iš naujo įkelti šį puslapį</translation>
 <translation id="1506061864768559482">Paieškos variklis</translation>
-<translation id="1513352483775369820">Žymių ir žiniatinklio istorija</translation>
-<translation id="1521530746149324532">Pradėjote naudoti inkognito režimą.</translation>
-<translation id="1557201757634521564">Automatiškai aptikti koduotę</translation>
-<translation id="1568822834048182062">Žymės, istorija, slaptažodžiai ir kiti nustatymai bus sinchronizuojami su „Google“ paskyra.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Neleisti šiam puslapiui kurti papildomų dialogo langų</translation>
-<translation id="1641113438599504367">Saugus naršymas</translation>
 <translation id="1644574205037202324">Istorija</translation>
 <translation id="1647391597548383849">Prieiga prie fotoaparato</translation>
 <translation id="1657479659644194568">„Chrome“ nustatymas</translation>
@@ -52,36 +35,19 @@
 <translation id="1742134235943978220">Išversta į <ph name="TARGET_LANGUAGE"/> k.</translation>
 <translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1807246157184219062">Šviesi</translation>
-<translation id="1825719650605518411">Pirmosios paleisties patirtis</translation>
-<translation id="1829244130665387512">Surasti puslapyje</translation>
-<translation id="1832521218263067499">Su sauga susiję įvykiai</translation>
-<translation id="1853692000353488670">Naujas inkognito skirtukas</translation>
 <translation id="1886021608051665693">Pasirinkite paskyrą iš „Google Smart Lock“.</translation>
-<translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
-<translation id="194341124344773587">Įjunkite „Chrome“ leidimą <ph name="BEGIN_LINK"/>„Android“ nustatymuose<ph name="END_LINK"/>.</translation>
 <translation id="1943432128510653496">Slaptažodžių išsaugojimas</translation>
 <translation id="1944384637046898011">Šifruoti viską nuo <ph name="TIME"/> taikant „Google“ slaptažodį</translation>
 <translation id="1966710179511230534">Atnaujinkite išsamią prisijungimo informaciją.</translation>
-<translation id="1974060860693918893">Išplėstiniai</translation>
 <translation id="1984937141057606926">Leidžiama (išskyrus trečiąsias šalis)</translation>
 <translation id="1987317783729300807">Paskyros</translation>
 <translation id="1994173015038366702">Svetainės URL</translation>
 <translation id="200669432486043882">Pakeisti failą</translation>
-<translation id="2038563949887743358">Įjungti stalinio kompiuterio svetainės užklausą</translation>
 <translation id="2060102051813087825">Automatiškai prisijungti prie svetainių naudojant išsaugotus prisijungimo duomenis. Kai funkcija išjungta, kaskart prisijungiant prie svetainės prašoma patvirtinti.</translation>
-<translation id="2073235970478114994">Įkelti vaizdus</translation>
-<translation id="2077711166702792587">Peržiūrėkite skirtukus su kitomis naujausiomis programomis telefono „Apžvalgos“ ekrane.</translation>
-<translation id="2079545284768500474">Anuliuoti</translation>
-<translation id="2082238445998314030">Rezultatų: <ph name="RESULT_NUMBER"/> iš <ph name="TOTAL_RESULTS"/></translation>
 <translation id="2100273922101894616">Automatinis prisijungimas</translation>
-<translation id="2126426811489709554">Teikia „Chrome“</translation>
-<translation id="213279576345780926">„<ph name="TAB_TITLE"/>“ uždaryta</translation>
 <translation id="2139186145475833000">Pridėti prie pagr. ekrano</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
-<translation id="219985413780390209">Apsaugokite save ir įrenginį nuo pavojingų svetainių</translation>
 <translation id="2206488550163399966">„<ph name="APP_NAME"/>“, žiniatinklio programa. <ph name="APP_URL"/></translation>
-<translation id="2268044343513325586">Patikslinti</translation>
-<translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="2321958826496381788">Vilkite šliaužiklį, kol bus patogu skaityti šį tekstą. Du kartus palietus pastraipą, tekstas turėtų būti mažiausiai tokio dydžio.</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
 <translation id="2354750644801399986">Nestebėti</translation>
@@ -90,9 +56,7 @@
 <translation id="2381756643783702095">Klausti prieš siunčiant (rekomenduojama)</translation>
 <translation id="2387895666653383613">Teksto mastelio keitimas</translation>
 <translation id="238909021488141516">Atsisiunčiant turinį įvyko klaida.</translation>
-<translation id="2409301052052350563">Leidžiamas garso įrašas</translation>
 <translation id="2414886740292270097">Tamsi</translation>
-<translation id="2433507940547922241">Išvaizda</translation>
 <translation id="2440823041667407902">Prieiga prie vietovės</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
@@ -106,50 +70,30 @@
 <translation id="257931822824936280">Išskleista – spustelėkite, kad sutrauktumėte</translation>
 <translation id="2593272815202181319">Lygiaplotis</translation>
 <translation id="2646820313617290661">Tėvai padeda tvarkyti šiuos nustatymus.</translation>
-<translation id="2678212031093903894">Sukurkite atsarginę žymių kopiją ir jas sinchronizuokite</translation>
-<translation id="2707726405694321444">Atnaujinti puslapį</translation>
+<translation id="2699916814609764774">Profilio kelias</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
 <translation id="2718352093833049315">Tik su „Wi–Fi“</translation>
 <translation id="2731700343119398978">Palaukite...</translation>
 <translation id="2748463065602559597">Žiūrite saugų „Google Chrome“ puslapį.</translation>
-<translation id="2770465223704140727">Pašalinti iš sąrašo</translation>
-<translation id="2816165854387457183">Aptiktas lėtas ryšys.</translation>
-<translation id="2842985007712546952">Viršaplankis</translation>
 <translation id="2870560284913253234">Svetainė</translation>
 <translation id="2888126860611144412">Apie „Chrome“</translation>
-<translation id="2891154217021530873">Sustabdyti puslapio įkėlimą</translation>
 <translation id="2902702728133930130">Nepavyko paleisti „Chrome“, nes kilo netikėta klaida.</translation>
 <translation id="2903493209154104877">Adresai</translation>
-<translation id="2904413602477443379">Pasirinkti aplanką</translation>
 <translation id="2913331724188855103">Leisti svetainėms išsaugoti ir nuskaityti slapukų duomenis (rekomenduojama)</translation>
 <translation id="2956410042958133412">Šią paskyrą tvarko <ph name="PARENT_NAME_1"/> ir <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR"/> m. Visos teisės saugomos.</translation>
-<translation id="2996809686854298943">Reikalingas URL</translation>
 <translation id="3003595280608617736">Nėra SD kortelės</translation>
 <translation id="3029704984691124060">Slaptafrazės neatitinka</translation>
-<translation id="3039671569659952257">Ištrinti aplanką</translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
-<translation id="307329814453917357">Siūlyti versti puslapius naudojant „Google“ vertėją</translation>
 <translation id="3089395242580810162">Atidaryti inkognito skirtuko lape</translation>
-<translation id="3090193911106258841">Pasiekiama garso ir vaizdo įrašų įvestis</translation>
 <translation id="3102119246920354026">Talpykla</translation>
-<translation id="3137521801621304719">Išjungti inkognito režimą</translation>
-<translation id="3158619413803296679">Pasirinkti žymę</translation>
-<translation id="3184369589781594823">Importuoti visas vietines žymes iš „Android“ naršyklės?</translation>
-<translation id="3190152372525844641">Įjunkite „Chrome“ leidimus <ph name="BEGIN_LINK"/>„Android“ nustatymuose<ph name="END_LINK"/>.</translation>
 <translation id="3198916472715691905">Išsaugota duomenų: <ph name="STORAGE_AMOUNT"/></translation>
-<translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3227137524299004712">Mikrofonas</translation>
-<translation id="3232754137068452469">Žiniatinklio programa</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Įtraukti šį puslapį į žymes</translation>
 <translation id="326254929494722411">Šiame įrenginyje dar nenustatėte „Google“ paskyros</translation>
-<translation id="3269093882174072735">Įkelti vaizdą</translation>
 <translation id="3282568296779691940">Prisijungti prie „Chrome“</translation>
-<translation id="3287852534598822456">Žymės nebėra. Atnaujinkite.</translation>
 <translation id="3303414029551471755">Tęsti turinio atsisiuntimo procesą?</translation>
-<translation id="3328801116991980348">Svetainės informacija</translation>
-<translation id="3343085080042659442">„Chrome“ pasenusi. Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
 <translation id="3350687908700087792">Uždaryti visus inkognito skirtukų lapus</translation>
 <translation id="3358663646935160692">Šią paskyrą valdo <ph name="DOMAIN_NAME"/>.
 
@@ -158,8 +102,8 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="3414952576877147120">Dydis:</translation>
 <translation id="346339498574870680">Kopijuoti vaizdo URL</translation>
 <translation id="3485544713029068372">„Smart Lock“, skirta slaptažodž.</translation>
+<translation id="3489120686474540259">Pridėkite paskyrą ir pasiekite skirtukų, žymių, istorijos bei kitų nustatymų duomenis visuose įrenginiuose.</translation>
 <translation id="3518985090088779359">Sutikti ir tęsti</translation>
-<translation id="3527085408025491307">Aplankas</translation>
 <translation id="360480449234699036">Sužinokite apie temas svetainėse, neišėję iš puslapio. Naudojant funkciją „Paieška palietus“ siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų, paieškos rezultatų ir kitos išsamios informacijos.
 
 Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasirinktumėte. Kad patikslintumėte paiešką, slinkite skydeliu į viršų ir palieskite paieškos laukelį.</translation>
@@ -169,13 +113,10 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3774280986422214650">Jei įgalinsite šią funkciją, dalyvausite eksperimente, kurį vykdant HTTPS puslapiai įgaliojami naudojant „Google“ serverius.</translation>
 <translation id="3809549525127675114">Baigta leisti „<ph name="VIDEO_TITLE"/>“</translation>
-<translation id="3828029223314399057">Ieškoti žymėse</translation>
-<translation id="3894427358181296146">Aplanko pridėjimas</translation>
 <translation id="3895926599014793903">Priverstinai įgalinti mastelio keitimą</translation>
 <translation id="3896036286668839683">Sertifikato peržiūros priemonė</translation>
 <translation id="3917783807003067648">Vietovės informacija blokuojama</translation>
 <translation id="3927692899758076493">Be užraitų</translation>
-<translation id="393697183122708255">Neįgalinta paieška balsu</translation>
 <translation id="3950820424414687140">Prisijungti</translation>
 <translation id="3988213473815854515">Vietovės informacija leidžiama</translation>
 <translation id="3992315671621218278">Išsaugoti nuorodą</translation>
@@ -184,7 +125,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4042870126885713738">Rodyti pasiūlymus, kai žiniatinklio adresas nepasiekiamas arba nepavyksta užmegzti ryšio</translation>
 <translation id="4056223980640387499">Sepija</translation>
 <translation id="4062305924942672200">Teisinė informacija</translation>
-<translation id="4084682180776658562">Žymė</translation>
 <translation id="4089831646916293264">Ši funkcija gali trukdyti pasiekti papildomas operatoriaus teikiamas duomenų paslaugas.</translation>
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="411254640334432676">Nepavyko atsisiųsti.</translation>
@@ -193,16 +133,11 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4165986682804962316">Svetainės nustatymai</translation>
 <translation id="4170011742729630528">Paslauga nepasiekiama; vėliau bandykite dar kartą.</translation>
 <translation id="4195643157523330669">Atidaryti naujame skirtuke</translation>
-<translation id="423410644998903704">„Chrome“ reikia pasiekiamumo leidimų, kad juos būtų galima bendrinti su šia svetaine.</translation>
 <translation id="4256782883801055595">Atvirojo šaltinio licencijos</translation>
-<translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL"/></translation>
 <translation id="4269820728363426813">Kopijuoti nuorodos adresą</translation>
 <translation id="4271185234001491831">Niekada neversti <ph name="LANGUAGE"/> k.</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
-<translation id="4297410240212242334">Atskirti skirtukus ir programas</translation>
-<translation id="4307992518367153382">Pagrindai</translation>
 <translation id="4333969446981951071">Naudodami šią programą sutinkate su „Chrome“ <ph name="BEGIN_LINK1"/>paslaugų teikimo sąlygomis<ph name="END_LINK1"/> ir <ph name="BEGIN_LINK2"/>privatumo pranešimo<ph name="END_LINK2"/> sąlygomis.</translation>
-<translation id="4351244548802238354">Uždaryti dialogo langą</translation>
 <translation id="4376501731284077108">Nevaldoma</translation>
 <translation id="4378154925671717803">Telefonas</translation>
 <translation id="4412992751769744546">Leisti trečiųjų šalių slapukus</translation>
@@ -211,33 +146,18 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4522570452068850558">Išsami informacija</translation>
 <translation id="4526249700380860531">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius apsilankę adresu <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="4526792582053123229">Naudojant HTTPS arba inkognito režimą pasiekti puslapiai nebus optimizuojami ir „Google“ jų nematys.</translation>
-<translation id="4532845899244822526">Pasirinkti aplanką</translation>
-<translation id="4543087392704641517">Žymės pavadinimas</translation>
 <translation id="4543661749405994812">Kopijuoti el. pašto adresą</translation>
 <translation id="4619298195800598081">At. orig. vaiz. nauj. sk. lap.</translation>
 <translation id="4645575059429386691">Tvarko vienas iš jūsų tėvų</translation>
-<translation id="4663756553811254707">Ištrinta žymių: <ph name="NUMBER_OF_BOOKMARKS"/></translation>
 <translation id="4684427112815847243">Viską sinchronizuoti</translation>
 <translation id="4686372254213217147">Pradinis dydis</translation>
-<translation id="4690286298542128877">Skirtukai bus perkelti į skirtukų jungiklį, esantį „Chrome“.</translation>
 <translation id="4698413471314543145">Trūksta svarbios funkcijos, būtinos paleisti „Chrome“: „Chrome“ įdiegimas neužbaigtas arba nesuderinamas su šia „Android“ versija.</translation>
-<translation id="4720023427747327413">Atidaryti naudojant „<ph name="PRODUCT_NAME"/>“</translation>
 <translation id="473775607612524610">Atnaujinti</translation>
-<translation id="4761374747761474835">Pasirinkite paskyrą ir pasiekite žymių, istorijos, slaptažodžių bei kitų nustatymų duomenis visuose įrenginiuose.</translation>
 <translation id="4773299976671772492">Sustabdyta</translation>
-<translation id="4797039098279997504">Palieskite, kad grįžtumėte į <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
-<translation id="4803910478683254032">Importuojant įvyko klaida</translation>
 <translation id="4807098396393229769">Kortelėje nurodytas vardas ir pavardė</translation>
 <translation id="4816465935029283692">Duomenų tipai</translation>
 <translation id="4827948050554950725">Pridėti kredito kortelę</translation>
-<translation id="4871370605780490696">Žymės pridėjimas</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
-<translation id="4885273946141277891">Nepalaikomas „Chrome“ atvejų skaičius.</translation>
-<translation id="494334276486034338">Paskutinį kartą sinchronizuota: prieš <ph name="HOURS"/> val.</translation>
-<translation id="4943872375798546930">Rezultatų nėra</translation>
-<translation id="4970484396410298643">Čia galite pasiekti skirtukus, kurių lapus esate atidarę kompiuteryje.
-
-Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite „Prisijungti prie „Chrome“...“</translation>
 <translation id="497421865427891073">Eiti pirmyn</translation>
 <translation id="4996978546172906250">Bendrinti per</translation>
 <translation id="5000922062037820727">Užblokuota (rekomenduojama)</translation>
@@ -246,38 +166,29 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5032574515228824816">Raginimas</translation>
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="5040262127954254034">Privatumas</translation>
-<translation id="5042680980623431490">Importuojant žymes iš „Android“ naršyklės kilo problema.</translation>
 <translation id="5063480226653192405">Naudojimas</translation>
+<translation id="5085880389019676122">USB atmintis nepasiekiama</translation>
+<translation id="5098185943924922330">Padėkite pirmiausia sutelkti dėmesį į funkcijas ir patobulinimus, ties kuriais turėtume padirbėti, į sistemą „Google“ siųsdami informacijos apie failus, programas ir paslaugas, kurios buvo vykdomos per strigtį.
+
+        Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų paspaudimus ir atminties naudojimą. Tinklalapių URL adresai ar kita asmeninė informacija neįtraukiama. Strigčių ataskaitose pateikiama užstrigusios sistemos informacija ir jose gali būti tinklalapių URL adresų ar asmeninės informacijos, atsižvelgiant į tai, kas vyko per strigtį.</translation>
 <translation id="5100237604440890931">Sutraukta – spustelėkite, kad išskleistumėte</translation>
+<translation id="5118309162436926908">Prisijunkite ir gaukite skirtukų, žymių, istorijos bei kitų nustatymų duomenis visuose įrenginiuose</translation>
 <translation id="5127805178023152808">Sinchronizavimas išjungtas</translation>
 <translation id="5138299137310274655">Šis puslapis pateikiamas <ph name="SOURCE_LANGUAGE"/>. Išversti į <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="5150703642582475397">Rodyti skirtukus ir programas kartu</translation>
 <translation id="515227803646670480">Valyti išsaugotus duomenis</translation>
-<translation id="5161254044473106830">Būtina nurodyti pavadinimą</translation>
 <translation id="5164482624172255778">Ar norėtumėte, kad kitą kartą „Google Chrome“ būtų siūloma išversti šios svetainės puslapius <ph name="LANGUAGE"/> k.?</translation>
-<translation id="5168917394043976756">Atidaryti naršymo skydelį</translation>
-<translation id="5171045022955879922">Ieškokite ar įveskite URL</translation>
-<translation id="5184329579814168207">Atidaryti naudojant „Chrome“</translation>
+<translation id="5185769685341198552">Ar norite pakeisti esamą <ph name="FILE_NAME"/> kataloge „<ph name="DIRECTORY_NAME"/>“?</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
-<translation id="5210714456814679336">Čia bus rodomi kituose įrenginiuose atidarytų „Chrome“ skirtukų lapai.</translation>
-<translation id="5228579091201413441">Įgalinti sinchronizavimą</translation>
 <translation id="5233638681132016545">Naujas skirtukas</translation>
 <translation id="5271967389191913893">Įrenginyje nepavyksta atidaryti norimo atsisiųsti turinio.</translation>
-<translation id="5275558766013849309">Skirtukai bus pateikti su naujausiomis programomis.</translation>
-<translation id="5302048478445481009">Kalba</translation>
 <translation id="5304593522240415983">Šis laukas negali būti tuščias</translation>
-<translation id="5305985456140490686">Paskutinį kartą sinchronizuota: prieš <ph name="MINUTES"/> min.</translation>
+<translation id="5308603654685598744">Kai ši funkcija įjungta, „Chrome“ siūlo versti kita kalba parašytus puslapius naudojant „Google“ vertėją.</translation>
 <translation id="5313967007315987356">Pridėti svetainę</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
-<translation id="5323972449344932352">Paleisti „Chrome“</translation>
 <translation id="5324858694974489420">Tėvų nustatymai</translation>
-<translation id="5327248766486351172">Pavadinimas</translation>
 <translation id="5335200807405507442">Išankstinė puslapio išteklių iškvieta</translation>
-<translation id="5345040418939504969">Ištrinta „<ph name="BOOKMARK_TITLE"/>“</translation>
-<translation id="5345083863238459644">Galimybė pasiekti vietovę taip pat <ph name="BEGIN_LINK"/>išjungta šiame įrenginyje<ph name="END_LINK"/>.</translation>
 <translation id="5380554235172449987">Niekada nesiųsti</translation>
 <translation id="5414836363063783498">Patvirtinama…</translation>
-<translation id="5423934151118863508">Puslapiai, kuriuose lankomasi dažniausiai, bus rodomi čia</translation>
 <translation id="5424715742813396254">Išs. vardo, slaptaž. ar išimt. red. 
 </translation>
 <translation id="5435662027590074193">„<ph name="SEARCH_ENGINE_NAME"/>“ (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
@@ -285,11 +196,9 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5487729733663684359">„Chrome“ naujiniai daugiau nepalaikomi naudojant šios versijos „Android“.</translation>
 <translation id="5511351932351731210">Visada siųsti</translation>
 <translation id="5512137114520586844">Šią paskyrą tvarko <ph name="PARENT_NAME"/>.</translation>
-<translation id="5530766185686772672">Užd. inkognito skirt. lapus</translation>
 <translation id="5565871407246142825">Kredito kortelės</translation>
 <translation id="5578795271662203820">Ieškoti „<ph name="SEARCH_ENGINE"/>“ šio vaizdo</translation>
 <translation id="5595485650161345191">Adreso redagavimas</translation>
-<translation id="5596627076506792578">Daugiau parinkčių</translation>
 <translation id="5626134646977739690">Pavadinimas:</translation>
 <translation id="5626370437647899551">Pridėti „Google“ paskyrą</translation>
 <translation id="563535393368633106">Klausti prieš pasiekiant (rekomenduojama)</translation>
@@ -299,21 +208,11 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5676636989614905379">Nepavyko paleisti vaizdo įrašo ekrane „<ph name="SCREEN_NAME"/>“.</translation>
 <translation id="5677928146339483299">Užblokuota</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
-<translation id="5712189971979076230">Padėkite pirmiausia sutelkti dėmesį į funkcijas ir patobulinimus, ties kuriais turėtume padirbėti, į sistemą „Google“ siųsdami informacijos apie failus, programas ir paslaugas, kurios buvo vykdomos per strigtį.
-
-Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų paspaudimus ir atminties naudojimą. Tinklalapių URL adresai ar kita asmeninė informacija neįtraukiama. Strigčių ataskaitose pateikiama užstrigusios sistemos informacija ir jose gali būti tinklalapių URL adresų ar asmeninės informacijos, atsižvelgiant į tai, kas vyko per strigtį.</translation>
 <translation id="5715468759630044318">Pasirinkti paskyrą</translation>
-<translation id="5719837394786370183">Kai uždarysite visus inkognito skirtukų lapus, puslapiai, kuriuos žiūrite inkognito režimu, nebus saugomi naršyklės istorijoje, slapukų saugykloje ar paieškos istorijoje. Bus išsaugoti visi atsisiųsti failai ar sukurtos žymės.
-
-Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, interneto paslaugų teikėjas ar lankomos svetainės vis tiek gali pasiekti naršymo informaciją.</translation>
-<translation id="572328651809341494">Naujausi skirtukai</translation>
 <translation id="5733727110006255111">Kai ši funkcija įjungta, „Chrome“ naudoja „Google“ serverius, kad glaudintų aplankytus puslapius prieš juos atsisiųsdama. SSL ir inkognito režimu aplankyti puslapiai nebus įtraukti.</translation>
 <translation id="5763382633136178763">Inkognito skirtukai</translation>
 <translation id="5765780083710877561">Aprašas:</translation>
-<translation id="5771382037724542929">Ar norite pakeisti „<ph name="FILE_NAME"/>“, esantį „<ph name="DIRECTORY_NAME"/>“?</translation>
 <translation id="5804241973901381774">Leidimai</translation>
-<translation id="5806294296882899667">Įkeliant numatytąjį įvyko klaida</translation>
-<translation id="5832934273103296195">Išskleista – spustelėkite, kad sutrauktumėte</translation>
 <translation id="583891442612896534">„Chrome“ negali pasiekti „Google“ serverių dėl duomenų glaudinimo. Duomenų išsaugojimas gali būti apribotas.</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="5869522115854928033">Išsaugoti slaptažodžiai</translation>
@@ -322,69 +221,56 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="5902828464777634901">Visi šioje svetainėje saugomi vietiniai duomenys, įskaitant slapukus, bus ištrinti.</translation>
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
 <translation id="5916664084637901428">Įjungta</translation>
-<translation id="5939518447894949180">Nustatyti iš naujo</translation>
+<translation id="5917058779668915997">Skirtukai, žymės, istorija ir kiti nustatymai bus sinchronizuojami su „Google“ paskyra.</translation>
 <translation id="5953603475187800576">Rodyti „Google Payments“ adresus ir kredito korteles</translation>
 <translation id="5968595432776860642">Leidžiamas „<ph name="VIDEO_TITLE"/>“</translation>
-<translation id="6010869025736512584">Pasiekiama vaizdo įrašų įvestis</translation>
-<translation id="6012342843556706400">„Chrome“ reikia galimybės pasiekti vietovės informaciją, kad ją būtų galima bendrinti su šia svetaine.</translation>
 <translation id="6027491994609789413">Leidžiamas vaizdo įrašas</translation>
-<translation id="6031101910111098835">Sutraukta – spustelėkite, kad išskleistumėte</translation>
 <translation id="6036158371062192100">Įgalinus „Nestebėti“, užklausa bus įtraukta į naršymo srautą. Poveikis priklauso nuo to, ar svetainė atsako į užklausą ir kaip užklausa interpretuojama.
 
 Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos jums skelbimus, nepagrįstus kitomis svetainėmis, kuriose lankėtės. Daugelis svetainių vis tiek rinks ir naudos jūsų naršymo duomenis, kad, pvz., patobulintų saugą, teiktų turinį, skelbimus bei rekomendacijas svetainėse ir sugeneruotų ataskaitų teikimo statistiką.</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="605721222689873409">MM</translation>
-<translation id="6060567974409584397">Palieskite, kad grįžtumėte į skirtuką</translation>
-<translation id="6066720739967032277">Peržiūrėkite skirtukų lapus naudodami kitas naujausias programas telefono „Apžvalgos“ ekrane. Šią funkciją galite tvarkyti <ph name="BEGIN_LINK"/>Nustatymų<ph name="END_LINK"/> skiltyje.</translation>
-<translation id="6075798973483050474">Redaguoti pagrindinį puslapį</translation>
+<translation id="6064211167623632605">Vykdomasis kelias</translation>
 <translation id="6108923351542677676">Nustatoma…</translation>
 <translation id="6112702117600201073">Puslapio atnaujinimas</translation>
-<translation id="6138140242378429169">Padarykite, kad puslapis būtų skirtas mobiliesiems</translation>
 <translation id="6140912465461743537">Šalis / regionas</translation>
 <translation id="6159335304067198720">Sutaupyta duomenų: <ph name="PERCENT"/></translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6177390657002841081">Duomenų taupymo priemonės įjungimas</translation>
 <translation id="6192792657125177640">Išimtys</translation>
-<translation id="6208263165776660488">„Chrome“ skirtukai perkelti</translation>
 <translation id="6231464350722415003">Leisti „JavaScript“ nurodytose svetainėse, tačiau blokuoti visur kitur žiniatinklyje</translation>
 <translation id="624558823898732418">Vertimo kalba: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6277522088822131679">Spausdinant puslapį kilo problema. Bandykite dar kartą.</translation>
+<translation id="6292937202013477045">Užgrobėjai gali bandyti pavogti jūsų informaciją iš <ph name="DOMAIN_NAME"/> (pvz., nuotraukas, slaptažodžius, pranešimus ar kredito kortelių duomenis).</translation>
 <translation id="6295158916970320988">Visos svetainės</translation>
 <translation id="6317634962183824346">Išjungtas „Android“ sistemos sinchronizavimas. Vėl įgalinkite ir bandykite dar kartą.</translation>
-<translation id="6324360525379265737">Automatiškai nustatyti ženklų koduotę</translation>
 <translation id="6333140779060797560">Bendrinti per „<ph name="APPLICATION"/>“</translation>
 <translation id="6337234675334993532">Šifruotė</translation>
-<translation id="6364438453358674297">Pašalinti pasiūlymą iš istorijos?</translation>
 <translation id="6388207532828177975">Išvalyti ir nustatyti iš naujo</translation>
-<translation id="6404511346730675251">Redaguoti žymę</translation>
 <translation id="6406506848690869874">Sinchronizavimas</translation>
 <translation id="6409731863280057959">Iššokantieji langai</translation>
 <translation id="641643625718530986">Spausdinti…</translation>
 <translation id="6447842834002726250">Slapukai</translation>
 <translation id="6448273550210938826">Paieškos ir URL pasiūlymai</translation>
 <translation id="6458785801851713928">Sinchronizavimo paslauga nepasiekiama jūsų domenui.</translation>
-<translation id="6464825623202322042">Šis įrenginys</translation>
 <translation id="6476911854266661814">„<ph name="VIDEO_TITLE"/>“ pristabdytas</translation>
+<translation id="6504836143156866575">„JavaScript“ versija</translation>
 <translation id="6512448926095770873">Išeiti iš šio puslapio</translation>
 <translation id="654446541061731451">Kad perduotumėte, pasirinkite skirtuką</translation>
-<translation id="6550675742724504774">Parinktys</translation>
 <translation id="656628257199996201">Visada versti iš <ph name="SOURCE_LANGUAGE"/> k.</translation>
 <translation id="6570560778840017462">Nebūsite atjungti nuo <ph name="BEGIN_LINK"/>„Google“ paskyrų<ph name="END_LINK"/></translation>
 <translation id="6571070086367343653">Kredito kortelės redagavimas</translation>
 <translation id="6575643671698722332">Nepavyko nustatyti iš naujo. Įsitikinkite, kad įrenginys prijungtas prie interneto, ir bandykite dar kartą.</translation>
 <translation id="6600954340915313787">Nukopijuota į „Chrome“</translation>
 <translation id="6612358246767739896">Apsaugotas turinys</translation>
-<translation id="6612856669344839356">Išsaugoti žymę</translation>
-<translation id="6627583120233659107">Redaguoti aplanką</translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="666268767214822976">Naudoti numatymo paslaugą, kad adreso juostoje įvedant tekstą būtų rodomos susijusios užklausos ir populiarios svetainės</translation>
 <translation id="666981079809192359">„Chrome“ privatumo pranešimas</translation>
 <translation id="6671495933530132209">Kopijuoti vaizdą</translation>
-<translation id="6675018499747166670">Garso įrašas leidžiamas. Palieskite, kad grįžtumėte į <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
 <translation id="6698801883190606802">Tvarkykite sinchronizuotus duomenis</translation>
-<translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6738867403308150051">Atsisiunčiama...</translation>
+<translation id="6757714913056001524">Pasirinkite paskyrą ir pasiekite skirtukų, žymių, istorijos bei kitų nustatymų duomenis visuose įrenginiuose.</translation>
 <translation id="6770414673596662518">„Chrome“ saugaus naršymo sistema taip pat bus naudojama siekiant aptikti kenkėjiškus puslapius ir apsaugoti jus nuo sukčiavimo, kenkėjiškų programų ir žalingų atsisiuntimų.</translation>
 <translation id="6784675033504223784">Ieškoti pagal „<ph name="SEARCH_TERM"/>“</translation>
 <translation id="6790428901817661496">Žaisti</translation>
@@ -392,40 +278,26 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
 <translation id="6846298663435243399">Įkeliama…</translation>
-<translation id="6850830437481525139">Uždaryta skirtukų lapų: <ph name="TAB_COUNT"/></translation>
 <translation id="6857778194843072568">Siųsti tik naudojant „Wi-Fi“</translation>
-<translation id="6868088497967843822">Prisijunkite, kad žymės, istorija, slaptažodžiai ir kiti nustatymai būtų pateikti visuose įrenginiuose</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> pridėtas prie pagrindinio ekrano</translation>
-<translation id="6945221475159498467">Pasirinkti</translation>
-<translation id="6963766334940102469">Ištrinti žymes</translation>
 <translation id="6964496835063002391">Pridėti paskyrą</translation>
 <translation id="6965382102122355670">Gerai</translation>
-<translation id="6973630695168034713">Aplankai</translation>
 <translation id="6978479750597523876">Nustatyti vertimo nustatymus iš naujo</translation>
-<translation id="6979922938747275756">Įkeliant aplankus įvyko klaida</translation>
 <translation id="6981982820502123353">Pritaikymas neįgaliesiems</translation>
 <translation id="6990079615885386641">Gauti programą iš „Google Play“ parduotuvės: <ph name="APP_ACTION"/></translation>
-<translation id="699220179437400583">Automatiškai pateikti išsamią informaciją apie galimas saugos problemas „Google“.</translation>
 <translation id="6999892069268112724">Patvirtinti „Google“ paskyrą</translation>
 <translation id="7019652137705190998">Įjunkite inkognito režimą, kad naršytumėte privačiai, arba laikinai prisijunkite</translation>
 <translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
 <translation id="7063006564040364415">Nepavyko prisijungti prie sinchronizavimo serverio.</translation>
-<translation id="7095930899177687653">Atidaryta skirtukų lapų: <ph name="OPEN_TABS"/></translation>
 <translation id="7096034533295549981">Įkel. v. įrašas</translation>
-<translation id="7144878232160441200">Bandyti dar kartą</translation>
-<translation id="7191430249889272776">Skirtuko lapas atidarytas fone.</translation>
-<translation id="7201341158316793215">Pašalinama…</translation>
-<translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL"/> naudoja vietovės informaciją vietinės paieškos rezultatams rodyti</translation>
-<translation id="724999909741939927">Importuojamos žymės</translation>
-<translation id="7299721129597238157">Ištrinti žymę</translation>
+<translation id="7232255641409319872">Leisti vaizdus nurodytose svetainėse, tačiau blokuoti visur kitur žiniatinklyje</translation>
 <translation id="7324738665594301612">Vykdydami eksperimentą išbandome HTTPS puslapių įgaliojimą naudojant „Google“ serverius.</translation>
-<translation id="7346909386216857016">Gerai, supratau</translation>
+<translation id="7358682983403815415">Atidaryti skirtukų lapai, žymės, istorija ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
 <translation id="7363354739009474003">Įkeliamas „<ph name="VIDEO_TITLE"/>“</translation>
 <translation id="7366340029385295517">Perduodama į ekraną „<ph name="SCREEN_NAME"/>“</translation>
 <translation id="7375125077091615385">Tipas:</translation>
 <translation id="7378627244592794276">Ne</translation>
-<translation id="7400418766976504921">URL adresas</translation>
 <translation id="7400448254438078120">Negalima perduoti vaizdo įrašo dėl svetainės apribojimų.</translation>
 <translation id="7423098979219808738">Pirmiausia paklausti</translation>
 <translation id="7437998757836447326">Atsijungimas nuo „Chrome“</translation>
@@ -433,7 +305,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="748127970106343339">Patvirtinti įrenginio prisijungimo duomenų ištrynimą</translation>
 <translation id="7493994139787901920"><ph name="VERSION"/> (atnaujinta <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="7498271377022651285">Palaukite…</translation>
-<translation id="7501135638693251872">Visos žymės</translation>
 <translation id="7521387064766892559">„JavaScript“</translation>
 <translation id="7561196759112975576">Visada</translation>
 <translation id="7562080006725997899">Naršymo duomenų išvalymas</translation>
@@ -443,38 +314,27 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7634554953375732414">Jūsų ryšys su šia svetaine nėra privatus.</translation>
 <translation id="7638584964844754484">Neteisinga slaptafrazė</translation>
 <translation id="7644305409888602715">Puslapis verčiamas į <ph name="SOURCE_LANGUAGE"/> k...</translation>
-<translation id="764743049316168389">Aplankas „<ph name="FOLDER_NAME"/>“</translation>
-<translation id="7648120236428811856">Prisijunkite prie „Chrome“, kad galėtumėte pasiekti žymes naudodami bet kurį įrenginį</translation>
 <translation id="7648422057306047504">Šifruoti slaptažodžius naudojant „Google“ kredencialus</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7665369617277396874">Pridėti paskyrą</translation>
 <translation id="7711895876052978264">Svetainė veikia viso ekrano režimu.
 Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="7764225426217299476">Pridėti adresą</translation>
-<translation id="7765158879357617694">Perkelti</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>
-<translation id="7788788617745289808">„Chrome“ reikia galimybės pasiekti fotoaparatą, kad jį būtų galima bendrinti su šia svetaine.</translation>
 <translation id="7791543448312431591">Pridėti</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7811044698839470685">Tik slaptafrazę turintis asmuo gali skaityti šifruotus duomenis. Slaptafrazė nesiunčiama ir nesaugoma „Google“. Jei pamiršite slaptafrazę, turėsite iš naujo nustatyti sinchronizavimą.</translation>
-<translation id="7829298379596169484">Pasiekiama garso įrašų įvestis</translation>
-<translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
-<translation id="7851858861565204677">Kiti įrenginiai</translation>
-<translation id="7876243839304621966">Pašalinti viską</translation>
+<translation id="7817177303494746697">„Blink“ versija</translation>
 <translation id="7925108652071887026">Automatinio pildymo duomenys</translation>
-<translation id="7926911226829060241">Atidarytos žymės, istorija, slaptažodžiai ir kiti duomenys yra sinchronizuojami „Google“ paskyroje.</translation>
 <translation id="7947953824732555851">Sutikti ir prisij.</translation>
 <translation id="7961015016161918242">Niekada</translation>
 <translation id="7963646190083259054">Paslaugos teikėjas:</translation>
 <translation id="7977858705483383621">Saugi paieška</translation>
 <translation id="7981795308302452224">Pradedant atsisiuntimą įvyko klaida</translation>
 <translation id="7987073022710626672">„Chrome“ paslaugų teikimo sąlygos</translation>
-<translation id="7989222512959629388">Išsaugoma…</translation>
 <translation id="7998918019931843664">Iš naujo atidarykite uždarytą skirtuko lapą</translation>
 <translation id="7999064672810608036">Ar tikrai norite išvalyti visus šios svetainės vietinius duomenis, įskaitant slapukus, ir iš naujo nustatyti visus leidimus?</translation>
-<translation id="8007176423574883786">Išjungta šiame įrenginyje</translation>
 <translation id="8026334261755873520">Išvalyti naršymo duomenis</translation>
-<translation id="8035133914807600019">Naujas aplankas…</translation>
 <translation id="8069239273282989646">Suglaudinus</translation>
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="8084156870963450514">Prisijunkite, kad pasiektumėte visus žiniatinklio elementus bet kuriuo įrenginiu.</translation>
@@ -482,33 +342,23 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 <translation id="8109148095642131923">Nepavyko prie atsisiuntimų tvarkytuvės pridėti atsisiųsto elemento.</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8137558756159375272">Paieška palietus siunčia pasirinktą žodį ir esamą puslapį kaip kontekstą „Google“ paieškai. Galite išjungti šią funkciją <ph name="BEGIN_LINK"/>nustatymuose<ph name="END_LINK"/>.</translation>
-<translation id="8143660160623733249">Aplanko pavadinimas</translation>
 <translation id="8157532349231307196">Paskyrų: <ph name="NUMBER_OF_ACCOUNTS"/></translation>
 <translation id="8168435359814927499">Turinys</translation>
 <translation id="8209050860603202033">Atidaryti vaizdą</translation>
 <translation id="8218346974737627104">Patvirtinti prisijungimą</translation>
 <translation id="8237438615979997762">Šiame įrenginyje ir „Google“ paskyroje saugomi duomenys liks abiejose vietose. Tačiau nauji duomenys ar atlikti duomenų pakeitimai nebus sinchronizuojami.</translation>
 <translation id="8261506727792406068">Panaikinti</translation>
-<translation id="8275038454117074363">Importuoti</translation>
-<translation id="8275818695183729150">Leisti (atliekant paieškas adreso juostoje)</translation>
 <translation id="8310344678080805313">Įprasti skirtukai</translation>
-<translation id="8374420395168535396">Paskutinį kartą sinchronizuota: prieš <ph name="DAYS"/> d.</translation>
 <translation id="8374821112118309944">Reikia atnaujinti „TalkBack“ versiją į naujesnę.</translation>
 <translation id="8396312449826231789">Tik patvirtintos svetainės</translation>
-<translation id="8413126021676339697">Rodyti visą istoriją</translation>
 <translation id="8413385045638830869">Pirmiausia paklausti (rekomenduojama)</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
-<translation id="8457451314607652708">Importuoti žymes</translation>
 <translation id="8481940801237642152">Jūsų ryšys su šia svetaine privatus, bet gali būti, kad kitas asmuo tinkle gali pakeisti puslapio išvaizdą.</translation>
-<translation id="8497726226069778601">Čia dar nėra nieko, ką galėtumėte peržiūrėti…</translation>
-<translation id="8514577642972634246">Įjungti inkognito režimą</translation>
 <translation id="8515416241041728525">Pridėti <ph name="ADD_ACCOUNT_USER_NAME"/> paskyrą</translation>
 <translation id="8518901949365209398">Šioje svetainėje naudojama nesudėtinga saugos konfigūracija („SHA-1“ parašai), todėl ryšys gali nebūti privatus.</translation>
 <translation id="8528538445849828817">Puslapio kalba: <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="854522910157234410">Atidaryti šį puslapį</translation>
 <translation id="8547287415299944404">Negalima išvalyti vaikų paskyrų naršymo istorijos</translation>
 <translation id="8562452229998620586">Čia bus rodomi išsaugoti slaptažodžiai.</translation>
-<translation id="856481929701340285">Užkl. svet. kompiuteriui</translation>
 <translation id="857943718398505171">Leidžiama (rekomenduojama)</translation>
 <translation id="8583805026567836021">Valomi paskyros duomenys</translation>
 <translation id="8588878054171169263">Išsaugoti vaizdą</translation>
@@ -518,12 +368,10 @@ Spustelėkite mygtuką „Atgal“, kad išeitumėte.</translation>
 
 Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsisiųsti turinį.</translation>
 <translation id="8660471606262461360">Iš „Google Payments“</translation>
-<translation id="8676374126336081632">Išvalyti įvestą tekstą</translation>
 <translation id="869891660844655955">Galiojimo data</translation>
 <translation id="8719023831149562936">Negalima perduoti esamo skirtuko</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
 <translation id="8730621377337864115">Atlikta</translation>
-<translation id="8793430725658173476">Kopijuoti URL</translation>
 <translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8820817407110198400">Žymės</translation>
 <translation id="8829678271838353305">Buvo prisijungta kaip <ph name="ACCOUNT_EMAIL_LAST"/>. Jei prisijungsite kaip <ph name="ACCOUNT_EMAIL_NEW"/>, paskyrose bus sujungti sinchronizuoti duomenys, pvz., žymės. Jei norite išlaikyti informaciją atskirai, <ph name="BEGIN_LINK"/>nustatymuose<ph name="END_LINK"/> išvalykite naršymo duomenis.</translation>
@@ -531,37 +379,27 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="885701979325669005">Saugykla</translation>
 <translation id="886510833909353412">Šifruoti viską naudojant slaptafrazę</translation>
 <translation id="8872441722924401214">Pasirinkite autentifikavimo sertifikatą</translation>
-<translation id="8901170036886848654">Žymių nerasta</translation>
 <translation id="8909135823018751308">Bendrinti…</translation>
 <translation id="8912362522468806198">„Google“ paskyra</translation>
 <translation id="8920114477895755567">Laukiama išsamios tėvų informacijos.</translation>
 <translation id="8928220460877261598">Prisijungėte prie „Chrome“.</translation>
 <translation id="8941248009481596111">Jūsų ryšys su šia svetaine privatus.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
-<translation id="8959122750345127698">Naršymas nepasiekiamas: <ph name="URL"/></translation>
 <translation id="8987061207681586800">Suasmeninkite „Chrome“</translation>
+<translation id="8997842057643556822">Nepavyko sukurti atsisiuntimo katalogo USB atmintyje.</translation>
 <translation id="9019902583201351841">Tvarko jūsų tėvai</translation>
 <translation id="9050666287014529139">Slaptafrazė</translation>
 <translation id="9060538597317784206">Peržiūrėkite programą „<ph name="APP_NAME"/>“ „Google Play“ parduotuvėje. Įvertinimas: <ph name="APP_RATING"/>.</translation>
-<translation id="9063523880881406963">Išjungti stalinio kompiuterio svetainės užklausą</translation>
 <translation id="9065203028668620118">Redaguoti</translation>
 <translation id="907015151729920253">Išmanioji kortelė</translation>
-<translation id="9070377983101773829">Pradėti paiešką balsu</translation>
-<translation id="9086455579313502267">Nepavyko pasiekti tinklo</translation>
 <translation id="9099292894781394535">Sutaupyti duomenys</translation>
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9133515669113036225">Iš naujo nustatyti įrenginio prisijungimo duomenis</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9154176715500758432">Likti šiame puslapyje</translation>
-<translation id="9156605176886108508">Nėra žymių aplankų</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="932327136139879170">Kontaktinė namų informacija</translation>
-<translation id="938850635132480979">Klaida: <ph name="ERROR_CODE"/></translation>
-<translation id="939736085109172342">Naujas aplankas</translation>
+<translation id="9219103736887031265">Vaizdai</translation>
 <translation id="945632385593298557">Prieiga prie mikrofono</translation>
-<translation id="963967414714199900">Paskutinį kartą sinchronizuota: ką tik</translation>
 <translation id="969096075394517431">Pakeisti kalbas</translation>
-<translation id="971774202801778802">Žymės URL</translation>
-<translation id="983192555821071799">Uždar. visų skirtukų lapus</translation>
 <translation id="988938288723502454">Nepavyko sukurti atsisiuntimo katalogo SD kortelėje.</translation>
 </translationbundle>

@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
-<translation id="1343000272198685031">Entrada para microfone</translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="137180024469554212">Desativar o bloqueio de rotação</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1723752762323179280">A sair da sessão</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
+<translation id="1753067873202720523">O seu Chromebook pode não carregar enquanto estiver ligado.</translation>
 <translation id="1812696562331527143">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>terceiros<ph name="END_LINK"/>).
 Prima Shift + Alt para mudar.</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">A transmitir $1 para $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Contas</translation>
 <translation id="2127372758936585790">Carregador de baixo consumo</translation>
 <translation id="2204305834655267233">Informações da rede</translation>
 <translation id="2208323208084708176">Modo de ambiente de trabalho unificado</translation>
+<translation id="2248649616066688669">Pode continuar a utilizar o Chromebook enquanto estiver ligado a um monitor externo, mesmo com a tampa fechada.</translation>
 <translation id="225680501294068881">A procurar dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
@@ -44,6 +43,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="252373100621549798">Apresentação Desconhecida</translation>
 <translation id="2532589005999780174">Modo de alto contraste</translation>
 <translation id="2562916301614567480">Rede Privada</translation>
+<translation id="2614835198358683673">É possível que não consiga carregar o seu Chromebook enquanto este se encontrar ligado. Considere utilizar o carregador oficial.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: A ligar...</translation>
 <translation id="2700058918926273959">A sessão termina em <ph name="SESSION_TIME_REMAINING"/>. A sua sessão será terminada.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
@@ -73,6 +73,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3294437725009624529">Convidado</translation>
 <translation id="3433830597744061105">Gerir contas</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3527846106059622359">A IU de novo início de sessão está LIGADA</translation>
 <translation id="3573179567135747900">Reverter alteração para <ph name="FROM_LOCALE"/> (requer reinicio)</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="3606978283550408104">Visualização em braille ligada.</translation>
@@ -102,6 +103,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">A transmitir ambiente de trabalho</translation>
 <translation id="4379753398862151997">Caro Monitor, não está a resultar entre nós. (Esse monitor não é suportado)</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME"/> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
@@ -112,29 +114,25 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
 <translation id="4957722034734105353">Saiba mais...</translation>
-<translation id="4961318399572185831">Transmitir ecrã</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Definições do Google Drive...</translation>
 <translation id="5102001756192215136">Restam <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="5238774010593222950">Não é possível iniciar sessão noutra conta.</translation>
 <translation id="544691375626129091">Já foram adicionados a esta sessão todos os utilizadores disponíveis.</translation>
 <translation id="5507786745520522457">Configurar dados móveis</translation>
+<translation id="5537725057119320332">Transmitir</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">A extensão &quot;<ph name="EXTENSION_NAME"/>&quot; pode ajudar a estabelecer ligação a esta rede.</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="5571066253365925590">Bluetooth ativado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Pode continuar a utilizar o <ph name="DEVICE_TYPE"/> enquanto estiver ligado a um monitor externo, mesmo com a tampa fechada.</translation>
 <translation id="5777841717266010279">Parar a partilha do ecrã?</translation>
+<translation id="5807965672380739016">Transmitir ambiente de trabalho para</translation>
 <translation id="5825747213122829519">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID"/>.
 Prima Shift + Alt para mudar.</translation>
 <translation id="5871632337994001636">Gerir dispositivos...</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
-<translation id="5927132638760172455">A transmitir para um recetor desconhecido</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="595202126637698455">Rastreio do desempenho ativado</translation>
 <translation id="5958529069007801266">Utilizador supervisionado</translation>
@@ -166,7 +164,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="68610848741840742">ChromeVox (respostas faladas)</translation>
 <translation id="6895424601869865703">Adicionar uma conta para <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Ligar-se a outra...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
@@ -174,7 +171,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="7052914147756339792">Definir imagem de fundo...</translation>
 <translation id="7097613348211027502">O ChromeVox (respostas faladas) está ativado.
 Prima Ctrl+Alt+Z para desativar.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">A transmitir $1</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">CAPS LOCK ativado.
 Prima Alt + Pesquisar ou Shift para cancelar.</translation>
@@ -191,7 +188,6 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="785750925697875037">Ver conta do telemóvel</translation>
 <translation id="7864539943188674973">Desativar Bluetooth</translation>
 <translation id="7904094684485781019">O administrador desta conta removeu a permissão de início de sessão integrado.</translation>
-<translation id="7957227661277029961">O <ph name="DEVICE_TYPE"/> pode não carregar enquanto estiver ligado. Considere utilizar o carregador oficial.</translation>
 <translation id="7982789257301363584">Rede</translation>
 <translation id="8054466585765276473">A calcular tempo da bateria.</translation>
 <translation id="8103386449138765447">Mensagens SMS: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8356164830168736643">Fechar <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Definições</translation>
-<translation id="8443356412772935865">A transmitir ecrã para $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> até estar carregada</translation>
-<translation id="8517041960877371778">O <ph name="DEVICE_TYPE"/> pode não carregar enquanto estiver ligado.</translation>
 <translation id="8528322925433439945">Telemóvel...</translation>
 <translation id="8654520615680304441">Ligar Wi-Fi...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
+<translation id="8697119993436624257">A IU de novo início de sessão está DESLIGADA</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Clique para ver</translation>
 <translation id="8828714802988429505">90°</translation>

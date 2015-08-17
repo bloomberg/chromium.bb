@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Dayakan papan kekunci pada skrin</translation>
-<translation id="1343000272198685031">Bicu Mikrofon</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="137180024469554212">Lumpuhkan kunci putaran</translation>
 <translation id="1383876407941801731">Carian</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Kursor tetikus besar</translation>
 <translation id="1602076796624386989">Dayakan data mudah alih</translation>
 <translation id="1621499497873603021">Masa yang tinggal sehingga bateri kosong, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Peranti Chrome</translation>
 <translation id="1723752762323179280">Keluar Dari Sesi</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
+<translation id="1753067873202720523">Chromebook anda mungkin tidak mengecas semasa dihidupkan.</translation>
 <translation id="1812696562331527143">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>pihak ke-3<ph name="END_LINK"/>).
 Tekan Shift + Alt untuk menukar.</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Klik automatik</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Menghantar $1 hingga $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Akaun</translation>
 <translation id="2127372758936585790">Pengecas berkuasa rendah</translation>
 <translation id="2204305834655267233">Maklumat Rangkaian</translation>
 <translation id="2208323208084708176">Mod desktop bersatu</translation>
+<translation id="2248649616066688669">Anda boleh menggunakan Chromebook anda semasa disambungkan ke paparan luaran, walaupun semasa penutup ditutup.</translation>
 <translation id="225680501294068881">Mengimbas untuk peranti...</translation>
 <translation id="2268130516524549846">Bluetooth dilumpuhkan</translation>
 <translation id="2268813581635650749">Log keluar semua</translation>
@@ -44,6 +43,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="252373100621549798">Paparan Tidak Diketahui</translation>
 <translation id="2532589005999780174">Mod kontras tinggi</translation>
 <translation id="2562916301614567480">Rangkaian Persendirian</translation>
+<translation id="2614835198358683673">Chromebook anda tidak boleh dicas semasa dihidupkan. Pertimbangkan untuk menggunakan pengecas rasmi.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Menyambung...</translation>
 <translation id="2700058918926273959">Sesi tamat dalam <ph name="SESSION_TIME_REMAINING"/>. Anda akan dilog keluar.</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
@@ -72,6 +72,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="3433830597744061105">Urus akaun</translation>
 <translation id="3473479545200714844">Penggadang skrin</translation>
+<translation id="3527846106059622359">UI log masuk baharu DIHIDUPKAN</translation>
 <translation id="3573179567135747900">Tukar kembali kepada &quot;<ph name="FROM_LOCALE"/>&quot; (perlu dimulakan semula)</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
 <translation id="3606978283550408104">Paparan Braille disambungkan.</translation>
@@ -101,6 +102,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">Menghantar desktop</translation>
 <translation id="4379753398862151997">Malang sekali, tidak wujud keserasian antara kita, Monitor. (Monitor itu tidak disokong)</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME"/> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
@@ -111,29 +113,25 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="4895488851634969361">Bateri penuh.</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4957722034734105353">Ketahui lebih lanjut...</translation>
-<translation id="4961318399572185831">Hantar skrin</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Tetapan Google Drive</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tinggal</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="5238774010593222950">Tidak dapat melog masuk ke akaun lain.</translation>
 <translation id="544691375626129091">Semua pengguna yang ada telah ditambahkan pada sesi ini.</translation>
 <translation id="5507786745520522457">Sediakan data mudah alih</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Sambungan &quot;<ph name="EXTENSION_NAME"/>&quot; boleh membantu menyambung ke rangkaian ini.</translation>
 <translation id="5565793151875479467">Proksi...</translation>
 <translation id="5571066253365925590">Bluetooth didayakan</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Anda boleh terus menggunakan <ph name="DEVICE_TYPE"/> anda semasa disambungkan ke paparan luaran, walaupun dengan penutupnya ditutupkan.</translation>
 <translation id="5777841717266010279">Hentikan perkongsian skrin?</translation>
+<translation id="5807965672380739016">Hantar desktop ke</translation>
 <translation id="5825747213122829519">Kaedah masukan anda telah ditukar kepada <ph name="INPUT_METHOD_ID"/>.
 Tekan Shift + Alt untuk menukar.</translation>
 <translation id="5871632337994001636">Uruskan peranti...</translation>
 <translation id="5895138241574237353">Mulakan Semula</translation>
-<translation id="5927132638760172455">Menghantar ke penerima yang tidak diketahui</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Berbalik</translation>
 <translation id="595202126637698455">Penjejakan prestasi didayakan</translation>
 <translation id="5958529069007801266">Pengguna diselia</translation>
@@ -165,7 +163,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="68610848741840742">ChromeVox (Maklum balas pertuturan)</translation>
 <translation id="6895424601869865703">Tambah akaun untuk <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Sertai yang lain...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
@@ -173,7 +170,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="7052914147756339792">Tetapkan kertas dinding...</translation>
 <translation id="7097613348211027502">ChromeVox (maklum balas pertuturan) didayakan.
 Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">Menghantar $1</translation>
 <translation id="7168224885072002358">Kembali kepada peleraian lama dalam <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">CAPS LOCK dihidupkan.
 Tekan Alt+Search atau Shift untuk membatalkan.</translation>
@@ -190,7 +187,6 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="785750925697875037">Lihat akaun mudah alih</translation>
 <translation id="7864539943188674973">Lumpuhkan Bluetooth</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> anda mungkin tidak akan dicas semasa dihidupkan. Pertimbangkan untuk menggunakan pengecas rasmi.</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8103386449138765447">Mesej SMS: <ph name="MESSAGE_COUNT"/></translation>
@@ -199,13 +195,12 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8356164830168736643">Tutup <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Tetapan</translation>
-<translation id="8443356412772935865">Menghantar skrin ke $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> sehingga penuh</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8528322925433439945">Mudah alih ...</translation>
 <translation id="8654520615680304441">Hidupkan Wi-Fi...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengecas berkuasa rendah disambungkan</translation>
+<translation id="8697119993436624257">UI log masuk baharu DIMATIKAN</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Klik untuk melihat</translation>
 <translation id="8828714802988429505">90°</translation>

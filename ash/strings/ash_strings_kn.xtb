@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">ನಿಲ್ಲಿಸು</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">ಆನ್‌-ಸ್ಕ್ರೀನ್‌ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸು</translation>
-<translation id="1343000272198685031">ಮೈಕ್ ಜ್ಯಾಕ್</translation>
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="137180024469554212">ತಿರುಗಿಸುವಿಕೆ ಲಾಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
 <translation id="1602076796624386989">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome ಸಾಧನ</translation>
 <translation id="1723752762323179280">ಸೆಷನ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
+<translation id="1753067873202720523">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ.</translation>
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID"/>* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK"/>3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK"/>).
 ಬದಲಿಸಲು Shift + Alt ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
 <translation id="1923539912171292317">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳು</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 ರಿಂದ $2 ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">ಖಾತೆಗಳು</translation>
 <translation id="2127372758936585790">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್</translation>
 <translation id="2204305834655267233">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ</translation>
 <translation id="2208323208084708176">ಏಕೀಕೃತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಮೋಡ್</translation>
+<translation id="2248649616066688669">ನಿಮ್ಮ Chromebook ಅನ್ನು ಬಾಹ್ಯ ಪ್ರದರ್ಶನಕ್ಕೆ ಸಂಪರ್ಕಗೊಳಿಸಿರುವಾಗ, ಅದರ ಮುಚ್ಚಳ ಮುಚ್ಚಿದ್ದರೂ ಅದನ್ನು ನೀವು ಬಳಸುತ್ತಲೇ ಇರಬಹುದು.</translation>
 <translation id="225680501294068881">ಸಾಧನಗಳಿಗಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2268130516524549846">Bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2268813581635650749">ಎಲ್ಲವನ್ನೂ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">ಅಜ್ಞಾತ ಪ್ರದರ್ಶನ</translation>
 <translation id="2532589005999780174">ಹೆಚ್ಚಿನ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್</translation>
 <translation id="2562916301614567480">ಖಾಸಗಿ ನೆಟ್‌ವರ್ಕ್‌</translation>
+<translation id="2614835198358683673">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಿ.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="2700058918926273959">ಸೆಷನ್ <ph name="SESSION_TIME_REMAINING"/> ರಲ್ಲಿ ಕೊನೆಗೊಳ್ಳಲಿದೆ. ನೀವು ಸೈನ್ ಔಟ್ ಆಗಲಿರುವಿರಿ.</translation>
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">ಅತಿಥಿ</translation>
 <translation id="3433830597744061105">ಖಾತೆಗಳನ್ನು ನಿರ್ವಹಿಸು</translation>
 <translation id="3473479545200714844">ಪರದೆ ವರ್ಧಕ</translation>
+<translation id="3527846106059622359">ಹೊಸ ಲಾಗಿನ್ UI ಆನ್ ಆಗಿದೆ</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3606978283550408104">ಬ್ರೇಲ್ ಪ್ರದರ್ಶನವನ್ನು ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">ಡೆಸ್ಕ್‌ಟಾಪ್ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="4379753398862151997">ಆತ್ಮೀಯ ಮಾನಿಟರ್, ನಮ್ಮ ನಡುವೆ ಸರಿಹೊಂದುತ್ತಿಲ್ಲ. (ಆ ಮಾನಿಟರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ)</translation>
 <translation id="4421231901400348175">ರಿಮೋಟ್ ಸಹಾಯದ ಮೂಲಕ <ph name="HELPER_NAME"/> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
 <translation id="4918086044614829423">ಸಮ್ಮತಿಸು</translation>
 <translation id="4957722034734105353">ಇನ್ನಷ್ಟು ತಿಳಿದುಕೊಳ್ಳಿ...</translation>
-<translation id="4961318399572185831">ಪರದೆಯನ್ನು ಬಿತ್ತರಿಸಿ</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google ಡ್ರೈವ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ಉಳಿದಿದೆ</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">ಬಿತ್ತರಿಸುವಿಕೆಯ ಸಾಧನಗಳು ಲಭ್ಯವಿದೆ</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
 <translation id="5238774010593222950">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್‌ ಇನ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="544691375626129091">ಈ ಸೆಷನ್‌ಗೆ ಎಲ್ಲಾ ಲಭ್ಯವಿರುವ ಬಳಕೆದಾರರನ್ನು ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="5507786745520522457">ಮೊಬೈಲ್ ಡೇಟಾ ಹೊಂದಿಸಿ</translation>
+<translation id="5537725057119320332">ಪಾತ್ರವರ್ಗ</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">ಈ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು &quot;<ph name="EXTENSION_NAME"/>&quot; ವಿಸ್ತರಣೆಯು ಸಹಾಯ ಮಾಡಬಹುದು.</translation>
 <translation id="5565793151875479467">ಪ್ರಾಕ್ಸಿ...</translation>
 <translation id="5571066253365925590">Bluetooth ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">ನಿಮ್ಮ <ph name="DEVICE_TYPE"/> ಅನ್ನು ಬಾಹ್ಯ ಪ್ರದರ್ಶನಕ್ಕೆ ಸಂಪರ್ಕಗೊಳಿಸಿರುವಾಗ ಲಿಡ್ ತೆರೆದಿದ್ದರೂ ಸಹ ನೀವು ಅದನ್ನು ಬಳಸುವುದನ್ನು ಮುಂದುವರಿಸಬಹುದು.</translation>
 <translation id="5777841717266010279">ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆ ನಿಲ್ಲಿಸುವುದೇ?</translation>
+<translation id="5807965672380739016">ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ಇದಕ್ಕೆ ಬಿತ್ತರಿಸಿ</translation>
 <translation id="5825747213122829519"><ph name="INPUT_METHOD_ID"/> ಗೆ ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ.
         ಬದಲಿಸಲು Shift + Alt ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="5871632337994001636">ಸಾಧನಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
-<translation id="5927132638760172455">ಅಪರಿಚಿತ ಸ್ವೀಕರಿಸುವವರಿಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
 <translation id="595202126637698455">ಕಾರ್ಯಕ್ಷಮತೆ ಟ್ರೇಸಿಂಗ್ ಸಕ್ರಿಯಗೊಂಡಿದೆ</translation>
 <translation id="5958529069007801266">ಮೇಲ್ವಿಚಾರಣೆಗೊಳಪಟ್ಟ ಬಳಕೆದಾರರು</translation>
@@ -166,14 +164,13 @@
 <translation id="68610848741840742">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> ಗಾಗಿ ಖಾತೆಯೊಂದನ್ನು ಸೇರಿಸು</translation>
 <translation id="6911468394164995108">ಇತರರನ್ನು ಸೇರಿ...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ಡ್ರೈವ್‌‌</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
 <translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
 <translation id="703171847531699602">ಯಾವುದೇ ಬಿತ್ತರಿಸುವಿಕೆಯ ಸಾಧನಗಳಿಲ್ಲ</translation>
 <translation id="7052914147756339792">ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಹೊಂದಿಸಿ...</translation>
 <translation id="7097613348211027502">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ) ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Ctrl+Alt+Z ಒತ್ತಿರಿ.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7209101170223508707">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ</translation>
@@ -190,7 +187,6 @@
 <translation id="785750925697875037">ಮೊಬೈಲ್ ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
-<translation id="7957227661277029961">ನಿಮ್ಮ <ph name="DEVICE_TYPE"/> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಲು ಪರಿಗಣಿಸಿ.</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="8103386449138765447">SMS ಸಂದೇಶಗಳು: <ph name="MESSAGE_COUNT"/></translation>
@@ -199,13 +195,12 @@
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> ಮುಚ್ಚಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
-<translation id="8443356412772935865">ಪರದೆಯನ್ನು $1 ಗೆ ಬಿತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
-<translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE"/> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
 <translation id="8654520615680304441">Wi-Fi ಆನ್ ಮಾಡಿ...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ</translation>
+<translation id="8697119993436624257">ಹೊಸ ಲಾಗಿನ್ UI ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="8828714802988429505">90°</translation>

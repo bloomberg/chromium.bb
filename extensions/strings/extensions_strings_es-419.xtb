@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Intercambiar datos con cualquier dispositivo de los siguientes dominios: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Se utiliza localización, pero default_locale no se especificó en el manifiesto.</translation>
 <translation id="2616366145935564096">Leer y modificar tus datos en <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">La aplicación &quot;<ph name="APP_NAME"/>&quot; está solicitando acceso a uno o más de tus dispositivos.</translation>
 <translation id="2753617847762399167">Ruta no válida (absoluta o relativa con '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">Esta extensión no pudo modificar una solicitud de red porque la modificación provocaba un conflicto con otra extensión.</translation>
 <translation id="2857834222104759979">Archivo de manifiesto no válido.</translation>
@@ -36,14 +37,17 @@
 <translation id="452039078290142656">dispositivos desconocidos de <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Leer los datos en <ph name="WEBSITE_1"/> y <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Usar tu micrófono</translation>
+<translation id="4776856853352853275">Seleccionar dispositivos USB</translation>
 <translation id="4811956658694082538">No se pudo instalar el paquete porque falló el proceso de ejecución de una utilidad. Prueba a reiniciar Chrome y vuelve a intentarlo.</translation>
 <translation id="4883436287898674711">Todos los sitios de <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Vista web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Administrar conexiones de red</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Esta extensión incluye el archivo de clave &quot;<ph name="KEY_PATH"/>&quot;. Probablemente no desees incluir ese archivo.</translation>
+<translation id="545850661681880228">Seleccionar un dispositivo HID</translation>
 <translation id="5627523580512561598">extensión <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Leer los datos en <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">La aplicación &quot;<ph name="APP_NAME"/>&quot; está solicitando acceso a uno de tus dispositivos.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Controlar el estado y la sincronización del adaptador Bluetooth</translation>
@@ -72,6 +76,7 @@
 <translation id="7257666756905341374">Leer los datos que copias y pegas</translation>
 <translation id="730515362922783851">Intercambiar datos con cualquier dispositivo de la red local o Internet</translation>
 <translation id="7809034755304591547">El administrador bloqueó la extensión <ph name="EXTENSION_NAME"/> (con ID &quot;<ph name="EXTENSION_ID"/>&quot;).</translation>
+<translation id="781637217073033149">Seleccionar dispositivos HID</translation>
 <translation id="7893008570150657497">Acceder a fotos, música y otros medios desde tu computadora</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Esta extensión no pudo asignar el nombre &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; a la descarga porque otra extensión (<ph name="EXTENSION_NAME"/>) determinó un nombre de archivo diferente: &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
@@ -81,6 +86,7 @@
 <translation id="8602184400052594090">El archivo de manifiesto falta o no se puede leer.</translation>
 <translation id="8620765578342452535">Configurar las conexiones de red</translation>
 <translation id="8636666366616799973">El paquete no es válido. Detalles: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">Selecciona un dispositivo USB</translation>
 <translation id="8662911384982557515">Cambiar la página principal por <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Esta extensión no pudo redireccionar una solicitud de red a <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> porque otra extensión (<ph name="EXTENSION_NAME"/>) la redireccionó a <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Desempaquetador de extensiones</translation>

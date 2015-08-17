@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Fă schimb de date cu orice dispozitiv din domeniile: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">A fost utilizată localizarea, dar nu s-a specificat default_locale în manifest.</translation>
 <translation id="2616366145935564096">Citește și modifică datele de pe <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Aplicația „<ph name="APP_NAME"/>” solicită accesul la cel puțin unul dintre dispozitivele tale.</translation>
 <translation id="2753617847762399167">Cale nevalidă (absolută sau relativă cu „..”): „<ph name="IMAGE_PATH"/>”</translation>
 <translation id="27822970480436970">Această extensie nu a reușit să modifice o solicitare în rețea, deoarece modificarea intră în conflict cu o altă extensie.</translation>
 <translation id="2857834222104759979">Fișierul manifest nu este valid.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Citește datele de pe un număr de site-uri</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> de la furnizorul <ph name="VENDOR_ID"/> (numărul de serie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Selectează un dispozitiv USB}multiple{Selectează dispozitive USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Pagina lansatorului „<ph name="PAGE"/>” nu poate fi încărcată.</translation>
 <translation id="3759933321830434300">Blochează părți din paginile web</translation>
 <translation id="388442998277590542">Nu se poate încărca pagina cu opțiuni „<ph name="OPTIONS_PAGE"/>”.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">dispozitive necunoscute de la <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Citește datele de pe <ph name="WEBSITE_1"/> și de pe <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Utilizează microfonul</translation>
+<translation id="4776856853352853275">Selectează dispozitivele USB</translation>
 <translation id="4811956658694082538">Pachetul nu a fost instalat, deoarece un proces al unui program utilitar s-a blocat. Încearcă să repornești Chrome și încearcă din nou.</translation>
 <translation id="4883436287898674711">Toate site-urile <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Afișare web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Gestionează conexiunile de rețea</translation>
-<translation id="5165983846722506205">{1,select, single{Selectează un dispozitiv HID}multiple{Selectează dispozitive HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Eticheta appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Această extensie include fișierul cheie „<ph name="KEY_PATH"/>”. Probabil că nu doriți să faceți asta.</translation>
+<translation id="545850661681880228">Selectează un dispozitiv HID</translation>
 <translation id="5627523580512561598">extensie <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Citește datele de pe <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Aplicația „<ph name="APP_NAME"/>” solicită accesul la unul dintre dispozitivele tale.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Controlează starea și conectarea adaptorului Bluetooth</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> de la furnizorul <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Fă schimb de date cu dispozitivul numit <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Extensia nu poate fi dezarhivată. Pentru a dezarhiva în siguranță o extensie, trebuie să existe o cale către directorul tău de profiluri care să nu conțină un link simbolic. Pentru profilul tău nu există nicio astfel de cale.</translation>
-<translation id="616804573177634438">{0,select, single{Aplicația „<ph name="APP_NAME"/>” solicită acces la unul dintre dispozitivele tale}multiple{Aplicația „<ph name="APP_NAME"/>” solicită acces la unul sau mai multe dintre dispozitivele tale}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Accesează informațiile despre dispozitivele Bluetooth conectate cu sistemul dvs. și descoperă dispozitivele Bluetooth din apropiere.</translation>
 <translation id="6344170822609224263">Accesează lista conexiunilor de rețea</translation>
 <translation id="6384275966486438344">Schimbați setările de căutare la: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Citește datele pe care le copiezi și le inserezi</translation>
 <translation id="730515362922783851">Fă schimb de date cu orice dispozitiv din rețeaua locală sau de pe internet</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (cu codul de extensie „<ph name="EXTENSION_ID"/>”) este blocată de administrator.</translation>
+<translation id="781637217073033149">Selectează dispozitivele HID</translation>
 <translation id="7893008570150657497">să acceseze fotografii, muzică și alte tipuri de conținut media de pe computer;</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Această extensie nu a reușit să denumească fișierul descărcat „<ph name="ATTEMPTED_FILENAME"/>”, deoarece altă extensie (<ph name="EXTENSION_NAME"/>) a stabilit alt nume de fișier, „<ph name="ACTUAL_FILENAME"/>”.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Fișierul manifest lipsește sau nu poate fi citit.</translation>
 <translation id="8620765578342452535">Configurează conexiunile la rețea</translation>
 <translation id="8636666366616799973">Pachetul nu este valid. Detalii: „<ph name="ERROR_MESSAGE"/>”.</translation>
+<translation id="8658591203505835552">Selectează un dispozitiv USB</translation>
 <translation id="8662911384982557515">Schimbă pagina de pornire la: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Această extensie nu a putut redirecționa o solicitare din rețea către <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, deoarece o altă extensie (<ph name="EXTENSION_NAME"/>) a redirecționat-o către <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Instrument de despachetare a extensiilor</translation>

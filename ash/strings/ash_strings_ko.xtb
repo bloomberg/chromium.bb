@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">중지</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>(<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">터치 키보드 사용</translation>
-<translation id="1343000272198685031">마이크 잭</translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="137180024469554212">회전 잠금 사용 안함</translation>
 <translation id="1383876407941801731">검색</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT"/>입니다.</translation>
-<translation id="164969095109328410">Chrome 기기</translation>
 <translation id="1723752762323179280">세션 종료</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
+<translation id="1753067873202720523">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다.</translation>
 <translation id="1812696562331527143">입력 방법이 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>타사<ph name="END_LINK"/>)(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>에 미러링</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1을(를) $2(으)로 전송 중</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/>(USB)</translation>
 <translation id="1987317783729300807">계정</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="2204305834655267233">네트워크 정보</translation>
 <translation id="2208323208084708176">통합 바탕화면 모드</translation>
+<translation id="2248649616066688669">Chromebook의 덮개를 닫아도 외부 디스플레이에 연결되어 있는 동안 계속 사용할 수 있습니다.</translation>
 <translation id="225680501294068881">기기 검색 중...</translation>
 <translation id="2268130516524549846">블루투스를 사용 안 함</translation>
 <translation id="2268813581635650749">모두 로그아웃</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">알 수 없는 디스플레이</translation>
 <translation id="2532589005999780174">고대비 모드</translation>
 <translation id="2562916301614567480">사설 네트워크</translation>
+<translation id="2614835198358683673">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다. 공식 충전기를 사용해보세요.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: 연결하는 중...</translation>
 <translation id="2700058918926273959">세션이 <ph name="SESSION_TIME_REMAINING"/> 후에 종료되어 로그아웃됩니다.</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">손님</translation>
 <translation id="3433830597744061105">계정 관리</translation>
 <translation id="3473479545200714844">화면 돋보기</translation>
+<translation id="3527846106059622359">새 로그인 UI 사용</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE"/>'(으)로 다시 변경(다시 시작해야 함)</translation>
 <translation id="3595596368722241419">배터리 충전 완료</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">아니요</translation>
 <translation id="4279490309300973883">미러링</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">바탕화면 전송</translation>
 <translation id="4379753398862151997">확장 데스크톱에 어울리지 않는 모니터네요. (지원되지 않는 모니터입니다.)</translation>
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME"/>와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">배터리 충전이 완료되었습니다.</translation>
 <translation id="4918086044614829423">수락</translation>
 <translation id="4957722034734105353">자세히 알아보기...</translation>
-<translation id="4961318399572185831">화면 전송</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google 문서함 설정...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">전송 기기를 사용할 수 있음</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="5238774010593222950">다른 계정에 로그인할 수 없습니다.</translation>
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5507786745520522457">모바일 데이터 설정</translation>
+<translation id="5537725057119320332">전송</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME"/>')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
 <translation id="5565793151875479467">프록시...</translation>
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> <ph name="SHORT_WEEKDAY"/></translation>
-<translation id="5759815399269068793">외부 디스플레이에 연결되어 있는 동안에는 덮개가 닫혀 있더라도 <ph name="DEVICE_TYPE"/>을(를) 계속 사용할 수 있습니다.</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
+<translation id="5807965672380739016">바탕화면 전송 대상</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="5871632337994001636">기기 관리...</translation>
 <translation id="5895138241574237353">다시 시작</translation>
-<translation id="5927132638760172455">알 수 없는 수신자로 전송 중</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">되돌리기</translation>
 <translation id="595202126637698455">성능 추적 사용 중</translation>
 <translation id="5958529069007801266">관리 대상 사용자</translation>
@@ -166,7 +164,6 @@
 <translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/>님의 계정 추가</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="7029814467594812963">세션 종료</translation>
@@ -174,7 +171,7 @@
 <translation id="7052914147756339792">배경화면 설정...</translation>
 <translation id="7097613348211027502">ChromeVox(음성 피드백)를 사용하도록 설정했습니다.
 사용 중지하려면 Ctrl+Alt+Z를 누르세요.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 전송</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>초 후 기존 해상도로 돌아갑니다.</translation>
 <translation id="7209101170223508707">CAPS LOCK이 켜져 있습니다.
 취소하려면 Alt+검색 또는 Shift 키를 누릅니다.</translation>
@@ -191,7 +188,6 @@
 <translation id="785750925697875037">모바일 계정 표시</translation>
 <translation id="7864539943188674973">블루투스 사용 안 함</translation>
 <translation id="7904094684485781019">이 계정의 관리자가 멀티 로그인을 허용하지 않습니다.</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/>이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다. 정품 충전기를 사용하는 것이 좋습니다.</translation>
 <translation id="7982789257301363584">네트워크</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="8103386449138765447">SMS 메시지: <ph name="MESSAGE_COUNT"/>개</translation>
@@ -200,13 +196,12 @@
 <translation id="8308637677604853869">이전 메뉴</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> 닫기</translation>
 <translation id="8428213095426709021">설정</translation>
-<translation id="8443356412772935865">화면을 $1(으)로 전송 중</translation>
 <translation id="8456362689280298700">충전 완료까지 <ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/>이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8528322925433439945">모바일 ...</translation>
 <translation id="8654520615680304441">Wi-Fi 사용...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
+<translation id="8697119993436624257">새 로그인 UI 사용 안함</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">클릭하여 보기</translation>
 <translation id="8828714802988429505">90°</translation>

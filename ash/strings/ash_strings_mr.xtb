@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">थांबा</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">ऑन-स्क्रीन कीबोर्ड सक्षम करा</translation>
-<translation id="1343000272198685031">माइक जॅक</translation>
 <translation id="1346748346194534595">उजवे</translation>
 <translation id="137180024469554212">फिरविणे लॉक करा अक्षम करा</translation>
 <translation id="1383876407941801731">शोधा</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1602076796624386989">मोबाइल डेटा सक्षम करा</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome डिव्हाइस</translation>
 <translation id="1723752762323179280">सत्रातून निर्गमन करत आहे</translation>
 <translation id="1747827819627189109">ऑन-स्क्रीन कीबोर्ड सक्षम</translation>
+<translation id="1753067873202720523">आपले Chromebook चालू असताना ते शुल्क आकारु शकत नाही.</translation>
 <translation id="1812696562331527143">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>तृतीय पक्षावर<ph name="END_LINK"/>)बदलली.
 स्‍विच करण्‍यासाठी Shift + Alt दाबा.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> वर मिरर करत आहे</translation>
 <translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 ते $2 कास्ट करत आहे...</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">खाती</translation>
 <translation id="2127372758936585790">निम्न-उर्जेचे चार्जर</translation>
 <translation id="2204305834655267233">नेटवर्क माहिती</translation>
 <translation id="2208323208084708176">एकीकृत डेस्कटॉप मोड</translation>
+<translation id="2248649616066688669">आपण Chromebook बाह्य प्रदर्शनाशी कनेक्ट केलेले असताना आणि बंद असलेल्या लीडसह देखील वापरणे सुरु ठेवू शकता.</translation>
 <translation id="225680501294068881">डिव्हाइसेससाठी स्कॅन करत आहे...</translation>
 <translation id="2268130516524549846">Bluetooth अक्षम</translation>
 <translation id="2268813581635650749">सर्व साइन आउट करा</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
 <translation id="2532589005999780174">उच्च तीव्रता मोड</translation>
 <translation id="2562916301614567480">खाजगी नेटवर्क</translation>
+<translation id="2614835198358683673">आपले Chromebook चालू असताना ते चार्ज होऊ शकत नाही. अधिकृत चार्जर वापरण्याचा विचार करा.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: कनेक्ट करत आहे...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> मध्ये सत्र समाप्त होते. आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">अतिथी</translation>
 <translation id="3433830597744061105">खाती व्यवस्थापित करा</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
+<translation id="3527846106059622359">नवीन लॉग इन UI चालू आहे</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="3606978283550408104">ब्रेल प्रदर्शन कनेक्ट केले.</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">नाही</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">डेस्कटॉप कास्ट करीत आहे</translation>
 <translation id="4379753398862151997">प्रिय मॉनिटर, हे आपल्या दरम्यान कार्य करत नाही. (तो मॉनिटर समर्थित नाही)</translation>
 <translation id="4421231901400348175">दूरस्त सहाय्याद्वारे <ph name="HELPER_NAME"/> सह आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
 <translation id="4430019312045809116">व्हॉल्यूम</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">बॅटरी भरली आहे.</translation>
 <translation id="4918086044614829423">स्वीकारा</translation>
 <translation id="4957722034734105353">अधिक जाणून घ्या...</translation>
-<translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google ड्राइव्ह सेटिंग्ज...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> शिल्‍लक</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="5238774010593222950">दुसर्‍या खात्यावर साइन इन करू शकत नाही.</translation>
 <translation id="544691375626129091">सर्व उपलब्‍ध वापरकर्ते आधीपासून या सत्रावर जोडले गेले आहेत.</translation>
 <translation id="5507786745520522457">मोबाइल डेटा सेट करा</translation>
+<translation id="5537725057119320332">कास्ट करा</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">या नेटवर्कवर कनेक्ट करण्यात &quot;<ph name="EXTENSION_NAME"/>&quot; विस्तार मदत करू शकतो.</translation>
 <translation id="5565793151875479467">प्रॉक्सी...</translation>
 <translation id="5571066253365925590">Bluetooth सक्षम</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">एखाद्या बाह्य प्रदर्शनाशी आपले <ph name="DEVICE_TYPE"/> कनेक्ट केलेले असताना आपण ते वापरणे सुरू ठेऊ शकता, लिड बंद केलेले असताना देखील.</translation>
 <translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
+<translation id="5807965672380739016">डेस्कटॉप यावर कास्ट करा</translation>
 <translation id="5825747213122829519">आपली इनपुट पद्धत <ph name="INPUT_METHOD_ID"/> मध्ये बदलली आहे.
 स्विच करण्यासाठी Shift + Alt दाबा.</translation>
 <translation id="5871632337994001636">डिव्हाइस व्यवस्थापित करा...</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
-<translation id="5927132638760172455">एका अज्ञात प्राप्तकर्त्यावर कास्ट करीत आहे</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">परत करा</translation>
 <translation id="595202126637698455">कार्यप्रदर्शन ट्रेसिंग सक्षम केले</translation>
 <translation id="5958529069007801266">पर्यवेक्षी वापरकर्ता</translation>
@@ -166,14 +164,13 @@
 <translation id="68610848741840742">ChromeVox (बोललेला अभिप्राय)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> सीठी खाते जोडा</translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
 <translation id="703171847531699602">कोणतेही कास्ट डिव्‍हाइसेस नाहीत</translation>
 <translation id="7052914147756339792">वॉलपेपर सेट करा...</translation>
 <translation id="7097613348211027502">ChromeVox (बोललेला अभिप्राय) सक्षम केलेला आहे. अक्षम करण्यासाठी Ctrl+Alt+Z दाबा.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 कास्ट करीत आहे</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
 <translation id="7209101170223508707">CAPS LOCK चालू आहे.
 रद्द करण्यासाठी Alt+Search किंवा Shift दाबा.</translation>
@@ -190,7 +187,6 @@
 <translation id="785750925697875037">मोबाइल खाते पहा</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करा</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
-<translation id="7957227661277029961">आपले <ph name="DEVICE_TYPE"/> चालू केलेले असते तेव्‍हा ते कदाचित चार्ज होणार नाही. अधिकृत चार्जर वापरून पहा.</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
 <translation id="8103386449138765447">SMS संदेश: <ph name="MESSAGE_COUNT"/></translation>
@@ -199,13 +195,12 @@
 <translation id="8308637677604853869">मागील मेनू</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> बंद करा</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
-<translation id="8443356412772935865">स्क्रीन $1 वर कास्ट करीत आहे</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> बाकी पूर्ण होण्यात</translation>
-<translation id="8517041960877371778">आपले <ph name="DEVICE_TYPE"/> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>
 <translation id="8654520615680304441">Wi-Fi चालू करा...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>
+<translation id="8697119993436624257">नवीन लॉग इन UI बंद आहे</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">पाहण्यासाठी क्लिक करा</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
 <translation id="1002108253973310084">偵測到不相容的通訊協定版本。請確認兩台電腦都安裝了最新版本的軟體，然後再試一次。</translation>
+<translation id="1023096696228309145">請與您要連線的電腦所屬使用者聯絡，要求對方按一下 [立即共用]，並告知您存取碼。</translation>
 <translation id="1050693411695664090">不佳</translation>
 <translation id="1152528166145813711">選取…</translation>
 <translation id="1199593201721843963">停用遠端連線</translation>
+<translation id="1261403020716313927">• 修正與遠端桌面中斷連線時會造成大量記憶體流失的問題。</translation>
 <translation id="1291443878853470558">您必須啟用遠端連線，才能透過 Chromoting 存取這台電腦。</translation>
 <translation id="1300633907480909701">透過 Android 裝置安全存取您的電腦。
 
@@ -15,7 +17,6 @@
 <translation id="1324095856329524885">(您的電腦目前暫不支援這項功能)</translation>
 <translation id="1342297293546459414">瀏覽及操作共用的電腦。</translation>
 <translation id="1450760146488584666">要求的物件不存在。</translation>
-<translation id="1480046233931937785">製作人員名單</translation>
 <translation id="1520828917794284345">將桌面調整為合適大小</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>
@@ -52,10 +53,8 @@
 <translation id="2124408767156847088">透過 Android 裝置安全存取您的電腦。</translation>
 <translation id="2208514473086078157">政策設定不允許以 Chrome 遠端桌面主機的形式共用這台電腦。如需協助，請與您的系統管理員聯絡。</translation>
 <translation id="2220529011494928058">回報問題</translation>
-<translation id="2221097377466213233">使用右邊的 Ctrl 做為 Windows 鍵 (Mac 上為 ⌘ 鍵)</translation>
 <translation id="2235518894410572517">共用這台電腦，開放給其他使用者瀏覽及操作。</translation>
 <translation id="2246783206985865117">這項設定受到您的網域政策管理。</translation>
-<translation id="2256115617011615191">立即重新啟動</translation>
 <translation id="225614027745146050">歡迎使用</translation>
 <translation id="228809120910082333">請在下方確認您的帳戶和 PIN，以便授予 Chromoting 存取權限。</translation>
 <translation id="2314101195544969792">您的「<ph name="APPLICATION_NAME"/>」工作階段已閒置一段時間，且即將中斷連線。</translation>
@@ -76,14 +75,11 @@
 <translation id="2851674870054673688">對方輸入存取碼之後，共用工作階段即會開始。</translation>
 <translation id="2851754573186462851">Chromium 應用程式串流</translation>
 <translation id="2855866366045322178">離線</translation>
-<translation id="2888969873284818612">發生網路錯誤。系統將在您的裝置恢復網路連線後重新啟動應用程式。</translation>
 <translation id="2894654864775534701">您目前登入的帳戶不是這台電腦的共用帳戶。</translation>
 <translation id="2919669478609886916">您目前正與另一位使用者共用這台電腦，您要繼續共用嗎？</translation>
 <translation id="2921543551052660690">您先前曾以<ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) 身分登入。如要透過該帳戶存取您的電腦，請使用該帳戶<ph name="LINK_BEGIN"/>登入 Chromium<ph name="LINK_END"/>，並重新安裝 Chromoting。</translation>
 <translation id="2926340305933667314">無法停用這台電腦的遠端存取功能，請稍後再試。</translation>
 <translation id="2939145106548231838">主機驗證</translation>
-<translation id="2998137343848432918">• 新增「製作人員名單」畫面。
-• 修正無法在鍵盤顯示時開啟全螢幕的問題。</translation>
 <translation id="3020807351229499221">無法更新 PIN，請稍後再試。</translation>
 <translation id="3025388528294795783">請將您遇到的問題告訴我們，以協助我們為您解決問題：</translation>
 <translation id="3027681561976217984">觸控模式</translation>
@@ -92,7 +88,6 @@
 <translation id="3150823315463303127">主機無法讀取政策。</translation>
 <translation id="3194245623920924351">Chrome 遠端桌面</translation>
 <translation id="3197730452537982411">遠端桌面</translation>
-<translation id="3244258558056547981">顯示 Cardboard 畫面。</translation>
 <translation id="3258789396564295715">您可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="327263477022142889">想要協助改善 Chrome 遠端桌面嗎？<ph name="LINK_BEGIN"/>請填寫我們的問卷調查<ph name="LINK_END"/>。</translation>
 <translation id="3286521253923406898">Chromoting 主機控制器</translation>
@@ -164,7 +159,6 @@
 <translation id="5254120496627797685">如果離開這個頁面，您的 Chrome 遠端桌面工作階段也會結束。</translation>
 <translation id="5285241842433869526">瞭解如何設定電腦以供遠端存取。</translation>
 <translation id="5308380583665731573">連線</translation>
-<translation id="5363265567587775042">請您要存取的電腦的使用者點選 [<ph name="SHARE"/>]，並提供存取碼給您。</translation>
 <translation id="5379087427956679853">Chrome 遠端桌面提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chrome 遠端桌面應用程式，請前往 <ph name="URL"/> 安裝。</translation>
 <translation id="5397086374758643919">Chrome 遠端桌面主機端解除安裝程式</translation>
 <translation id="5419185025274123272">無法重設應用程式。您仍然可以傳送錯誤報告。</translation>
@@ -233,6 +227,7 @@
 <translation id="7401733114166276557">Chrome 遠端桌面</translation>
 <translation id="7434397035092923453">用戶端遭拒絕存取：<ph name="CLIENT_USERNAME"/>。</translation>
 <translation id="7444276978508498879">已連線至用戶端：<ph name="CLIENT_USERNAME"/>。</translation>
+<translation id="7605995381616883502">新連線</translation>
 <translation id="7606912958770842224">啟用遠端連線</translation>
 <translation id="7649070708921625228">說明</translation>
 <translation id="7658239707568436148">取消</translation>

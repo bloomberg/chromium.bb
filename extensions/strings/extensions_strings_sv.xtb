@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Utväxla data med enheter i domänerna <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Lokalisering används, men default_locale specificeras inte i manifestet.</translation>
 <translation id="2616366145935564096">Läs och ändra dina uppgifter på <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Appen <ph name="APP_NAME"/> begär åtkomst till en eller flera av dina enheter.</translation>
 <translation id="2753617847762399167">Illegal sökväg (absolut eller relativ med &quot;..&quot;): <ph name="IMAGE_PATH"/></translation>
 <translation id="27822970480436970">Tillägget misslyckades att ändra en nätverksbegäran eftersom ändringen står i konflikt med ett annat tillägg.</translation>
 <translation id="2857834222104759979">Manifestfilen är ogiltig.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Läsa din data på ett antal webbplatser</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> från leverantören <ph name="VENDOR_ID"/> (serienummer <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Välj USB-enhet}multiple{Välj USB-enheter}other{ANVÄNDS INTE}}</translation>
 <translation id="3624204664103857160">Det gick inte att läsa in startsidan <ph name="PAGE"/>.</translation>
 <translation id="3759933321830434300">Blockera delar av webbsidor</translation>
 <translation id="388442998277590542">Det gick inte att läsa in alternativsidan <ph name="OPTIONS_PAGE"/>.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">okända enheter från <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Läsa din data på <ph name="WEBSITE_1"/> och <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Använd mikrofonen</translation>
+<translation id="4776856853352853275">Välj USB-enheter</translation>
 <translation id="4811956658694082538">Det gick inte att installera paketet eftersom en hjälpprocess kraschade. Testa att starta om Chrome och försöka igen.</translation>
 <translation id="4883436287898674711">Alla <ph name="WEBSITE_1"/>-webbplatser</translation>
 <translation id="5026754133087629784">Webbvy: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Hantera nätverksanslutningar</translation>
-<translation id="5165983846722506205">{1,select, single{Välj HID-enhet}multiple{Välj HID-enheter}other{ANVÄNDS INTE}}</translation>
 <translation id="5356315618422219272">Appvy: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Detta tillägg omfattar nyckelfilen <ph name="KEY_PATH"/>. Du vill antagligen inte göra detta.</translation>
+<translation id="545850661681880228">Välj en HID-enhet</translation>
 <translation id="5627523580512561598">tillägget <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Läsa din data på <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Appen <ph name="APP_NAME"/> begär åtkomst till en av dina enheter.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">Tilläggsvy: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Styr status och koppling för Bluetooth-adaptern</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> från leverantören <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Utväxla data med enheten <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Det går inte att packa upp tillägget. Ett tillägg kan bara packas upp säkert om det finns en sökväg till din profilkatalog som inte innehåller en symbollänk. Det finns ingen sådan sökväg för din profil.</translation>
-<translation id="616804573177634438">{0,select, single{Appen <ph name="APP_NAME"/> begär åtkomst till en av dina enheter.}multiple{Appen <ph name="APP_NAME"/> begär åtkomst till en eller flera av dina enheter.}other{ANVÄNDS INTE}}</translation>
 <translation id="6241530762627360640">Få åtkomst till information om Bluetooth-enheter som är kopplade till ditt system och upptäck Bluetooth-enheter i närheten.</translation>
 <translation id="6344170822609224263">Få åtkomst till en lista med nätverksanslutningar</translation>
 <translation id="6384275966486438344">Ändra sökinställningarna till: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Läsa data som du kopierar och klistrar in</translation>
 <translation id="730515362922783851">Utväxla data med enheter i det lokala nätverket eller via internet</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (tilläggs-ID <ph name="EXTENSION_ID"/>) har blockerats av administratören.</translation>
+<translation id="781637217073033149">Välj HID-enheter</translation>
 <translation id="7893008570150657497">Få åtkomst till foton, musik och andra medier från datorn</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Det gick inte att namnge nedladdningen <ph name="ATTEMPTED_FILENAME"/> eftersom ett annat tillägg (<ph name="EXTENSION_NAME"/>) valde ett annat filnamn <ph name="ACTUAL_FILENAME"/>.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Manifestfilen saknas eller är oläslig.</translation>
 <translation id="8620765578342452535">Konfigurera nätverksanslutningar</translation>
 <translation id="8636666366616799973">Paketet är ogiltigt. Information: <ph name="ERROR_MESSAGE"/></translation>
+<translation id="8658591203505835552">Välj en USB-enhet</translation>
 <translation id="8662911384982557515">Ändra startsida till: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Det gick inte att omdirigera nätverksbegäran till <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> eftersom ett annat tillägg (<ph name="EXTENSION_NAME"/>) omdirigerade det till <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Uppackare för tillägg</translation>

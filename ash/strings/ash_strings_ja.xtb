@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">中止</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>（<ph name="ANNOTATION"/>）</translation>
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
-<translation id="1343000272198685031">マイク差込口</translation>
 <translation id="1346748346194534595">右</translation>
 <translation id="137180024469554212">回転ロックを無効にする</translation>
 <translation id="1383876407941801731">検索</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1723752762323179280">セッションを終了</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
+<translation id="1753067873202720523">このメッセージが表示されているときは、Chromebook が充電されない可能性があります。</translation>
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID"/>*（<ph name="BEGIN_LINK"/>サードパーティ<ph name="END_LINK"/>）に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> へミラーリング</translation>
 <translation id="1923539912171292317">自動クリック</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 を $2 にキャストしています</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/>（USB）</translation>
 <translation id="1987317783729300807">アカウント</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
 <translation id="2204305834655267233">ネットワーク情報</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
+<translation id="2248649616066688669">外部ディスプレイに接続している間は、本体を閉じた状態でも Chromebook を使用できます。</translation>
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">不明なディスプレイ</translation>
 <translation id="2532589005999780174">ハイコントラスト モード</translation>
 <translation id="2562916301614567480">プライベート ネットワーク</translation>
+<translation id="2614835198358683673">この充電器がオンになっている間は、Chromebook が充電されない可能性があります。正規の充電器の使用をご検討ください。</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: 接続しています...</translation>
 <translation id="2700058918926273959">セッション終了まであと <ph name="SESSION_TIME_REMAINING"/>です。終了するとログアウトします。</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">ゲスト</translation>
 <translation id="3433830597744061105">アカウントを管理</translation>
 <translation id="3473479545200714844">画面拡大鏡</translation>
+<translation id="3527846106059622359">新しいログイン画面が有効になっています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE"/>」に戻します（再起動が必要です）</translation>
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="4279490309300973883">ミラーリングしています</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">デスクトップをキャスト中</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us.（このモニターはサポートされていません）</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME"/> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">バッテリー残量: 満。</translation>
 <translation id="4918086044614829423">承諾</translation>
 <translation id="4957722034734105353">詳細...</translation>
-<translation id="4961318399572185831">画面をキャスト</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google ドライブの設定...</translation>
 <translation id="5102001756192215136">残り時間: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>、<ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5238774010593222950">別のアカウントにログインできません。</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="5507786745520522457">モバイル データを設定する</translation>
+<translation id="5537725057119320332">キャスト</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME"/>」はこのネットワークへの接続をサポートします。</translation>
 <translation id="5565793151875479467">プロキシ...</translation>
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE"/> (<ph name="SHORT_WEEKDAY"/>)</translation>
-<translation id="5759815399269068793">外付けのディスプレイを接続している間は、カバーを閉じても <ph name="DEVICE_TYPE"/> を使い続けることができます。</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
+<translation id="5807965672380739016">デスクトップをキャスト</translation>
 <translation id="5825747213122829519">入力方法を <ph name="INPUT_METHOD_ID"/> に変更しました。
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="5871632337994001636">デバイスを管理...</translation>
 <translation id="5895138241574237353">再起動</translation>
-<translation id="5927132638760172455">不明な受信デバイスにキャストしています</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">元に戻す</translation>
 <translation id="595202126637698455">パフォーマンス追跡機能が有効です</translation>
 <translation id="5958529069007801266">監視対象ユーザー</translation>
@@ -166,7 +164,6 @@
 <translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> のアカウントを追加</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
@@ -174,7 +171,7 @@
 <translation id="7052914147756339792">壁紙を設定...</translation>
 <translation id="7097613348211027502">ChromeVox（音声フィードバック）が有効です。
 無効にするには Ctrl+Alt+Z を押してください。</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 をキャスト中</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> 秒後に元の解像度に戻ります</translation>
 <translation id="7209101170223508707">CapsLock がオンになっています。
 Alt+ 検索/Shift キーを押すと解除されます。</translation>
@@ -191,7 +188,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="785750925697875037">モバイル アカウントを表示</translation>
 <translation id="7864539943188674973">Bluetooth を無効にする</translation>
 <translation id="7904094684485781019">このアカウントの管理者がマルチ ログインを許可していません。</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> は電源がオンでも充電できない可能性があります。正規の充電器のご利用をおすすめします。</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
 <translation id="8103386449138765447">SMS メッセージ: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> を閉じる</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8443356412772935865">画面を $1 にキャストしています</translation>
 <translation id="8456362689280298700">フル充電まで: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="8528322925433439945">モバイル...</translation>
 <translation id="8654520615680304441">Wi-Fi をオンにする...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
+<translation id="8697119993436624257">新しいログイン画面が無効になっています</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">クリックして表示</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
 <translation id="1002108253973310084">En inkompatibel version av protokollet upptäcktes. Kontrollera att du har den senaste versionen av programvaran på båda datorerna och försök igen.</translation>
+<translation id="1023096696228309145">Be användaren vars dator du vill få tillgång till att klicka på länken Dela nu och ge dig åtkomstkoden.</translation>
 <translation id="1050693411695664090">Dålig</translation>
 <translation id="1152528166145813711">Välj …</translation>
 <translation id="1199593201721843963">Inaktivera fjärranslutningar</translation>
+<translation id="1261403020716313927">• En stor minnesläcka som uppstod när anslutningen till fjärrskrivbordet bröts har åtgärdats.</translation>
 <translation id="1291443878853470558">Du måste aktivera fjärranslutningar om du vill använda Chromoting för att få åtkomst till den här datorn.</translation>
 <translation id="1300633907480909701">Få säker åtkomst till dina datorer från Android-enheten.
 
@@ -15,7 +17,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1324095856329524885">(den här funktionen är ännu inte tillgänglig för din dator)</translation>
 <translation id="1342297293546459414">Visa och styra en delad dator.</translation>
 <translation id="1450760146488584666">Det begärda objektet finns inte.</translation>
-<translation id="1480046233931937785">Medverkande</translation>
 <translation id="1520828917794284345">Anpassa skrivbordets storlek</translation>
 <translation id="154040539590487450">Det gick inte att starta fjärråtkomsttjänsten.</translation>
 <translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
@@ -52,10 +53,8 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2124408767156847088">Få säker åtkomst till dina datorer från Android-enheten.</translation>
 <translation id="2208514473086078157">Enligt policyinställningarna får du inte dela den här datorn som en Chrome Remote Desktop-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="2220529011494928058">Rapportera ett problem</translation>
-<translation id="2221097377466213233">Använd höger Ctrl-tangent för Windows-tangenten (⌘ på Mac)</translation>
 <translation id="2235518894410572517">Dela den här datorn så att en annan användare kan visa och styra den.</translation>
 <translation id="2246783206985865117">Den här inställningen hanteras enligt domänprincipen.</translation>
-<translation id="2256115617011615191">Starta om nu</translation>
 <translation id="225614027745146050">Välkommen</translation>
 <translation id="228809120910082333">Bekräfta ditt konto och pinkoden nedan genom att tillåta åtkomst via Chromoting.</translation>
 <translation id="2314101195544969792">Sessionen med <ph name="APPLICATION_NAME"/> har varit inaktiv en stund och kommer snart att kopplas från.</translation>
@@ -76,14 +75,11 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2851674870054673688">När koden anges startar delningssessionen.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
-<translation id="2888969873284818612">Det uppstod ett nätverksfel. Vi startar om appen när enheten är online igen.</translation>
 <translation id="2894654864775534701">Datorn delas under ett annat konto.</translation>
 <translation id="2919669478609886916">Du delar nu den här datorn med en annan användare. Vill du fortsätta att dela?</translation>
 <translation id="2921543551052660690">Du har tidigare loggat in som <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Om du vill kunna ansluta till de datorer som sparats i det kontot <ph name="LINK_BEGIN"/>loggar du in i Chromium<ph name="LINK_END"/> med det kontot och installerar om Chromoting.</translation>
 <translation id="2926340305933667314">Det gick inte att inaktivera fjärråtkomst till den här datorn. Försök igen senare.</translation>
 <translation id="2939145106548231838">Autentisera till värd</translation>
-<translation id="2998137343848432918">• Saldoskärm tillagd.
-• Korrigering av problem när fullskärmsläget aktiveras med tangentbordet synligt.</translation>
 <translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
 <translation id="3025388528294795783">Hjälp oss att lösa problemet och berätta vad som har gått fel.</translation>
 <translation id="3027681561976217984">Tryckläge</translation>
@@ -92,7 +88,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="3150823315463303127">Värdenheten kunde inte läsa policyn.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3244258558056547981">Visa Cardboard-vy.</translation>
 <translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Vill du hjälpa till att förbättra Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Fyll i enkäten.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Chromoting Host Controller</translation>
@@ -164,7 +159,6 @@ Desktop Host</translation>
 <translation id="5254120496627797685">Om du lämnar sidan avslutas sessionen i Chrome Remote Desktop.</translation>
 <translation id="5285241842433869526">Läs mer om hur du konfigurerar en dator för fjärråtkomst.</translation>
 <translation id="5308380583665731573">Ansluta</translation>
-<translation id="5363265567587775042">Be användaren vars dator du vill använda att klicka på <ph name="SHARE"/> och ge dig åtkomstkoden.</translation>
 <translation id="5379087427956679853">Med Chrome Remote Desktop kan du dela din dator via internet på ett säkert sätt. Båda användarna måste köra appen Chrome Remote Desktop som du hittar på <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Det gick inte att återställa programmet. Du kan fortfarande skicka en felrapport.</translation>
@@ -233,6 +227,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Åtkomst nekad för klient: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Klient ansluten: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Ny anslutning</translation>
 <translation id="7606912958770842224">Aktivera fjärranslutningar</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

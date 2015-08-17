@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">பதிவுக் களம்:</translation>
 <translation id="1344588688991793829">Chromium தன்னிரப்பி அமைப்புகள்...</translation>
 <translation id="1426410128494586442">ஆம்</translation>
-<translation id="1455235771979731432">கார்டைப் புதுப்பிப்பதில் சிக்கல். இணைய இணைப்பைச் சரிபார்த்து, மீண்டும் முயற்சிக்கவும்.</translation>
 <translation id="1491151370853475546">இந்தப் பக்கத்தை மீண்டும் ஏற்று</translation>
-<translation id="1549470594296187301">இந்த அம்சத்தைப் பயன்படுத்த JavaScript இயக்கப்பட வேண்டும்.</translation>
 <translation id="1639239467298939599">ஏற்றுகிறது</translation>
 <translation id="1640180200866533862">பயனர் கொள்கைகள்</translation>
 <translation id="1644184664548287040">பிணைய உள்ளமைவு தவறானது மேலும் அதை இறக்குமதி செய்ய முடியவில்லை.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;நீக்குதலைச் செயல்தவிர்</translation>
 <translation id="2455981314101692989">இந்தப் படிவத்திற்கான தானியங்கு நிரப்புதலை இந்த வலைப்பக்கம் முடக்கியுள்ளது.</translation>
 <translation id="2479410451996844060">தவறான தேடல் URL.</translation>
-<translation id="2495083838625180221">JSON பார்சர்</translation>
 <translation id="2498091847651709837">புதிய கார்டை ஸ்கேன்செய்</translation>
 <translation id="2556876185419854533">&amp;திருத்தலைச் செயல்தவிர்</translation>
 <translation id="2581221116934462656">அடுத்த முறை இந்தத் தளத்திலிருந்து <ph name="LANGUAGE_NAME"/> பக்கங்களுக்கான மொழிப்பெயர்ப்பை <ph name="PRODUCT_NAME"/> வழங்குவதை விரும்புகிறீர்களா?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">தொடரலாம். அப்படி தொடர்ந்தால், ஐந்து நிமிடங்களுக்கு இந்த எச்சரிக்கை மீண்டும் காட்டப்படாது.</translation>
 <translation id="277499241957683684">சாதனப் பதிவு இல்லை</translation>
 <translation id="2835170189407361413">படிவத்தை அழி</translation>
-<translation id="2855922900409897335">உங்கள் <ph name="CREDIT_CARD"/> கார்டைச் சரிபார்க்கவும்</translation>
 <translation id="2958431318199492670">பிணைய உள்ளமைப்பானது ONC தரத்துடன் இணங்கவில்லை. உள்ளமைவின் பகுதிகள் இறக்குமதியாகாமல் போகக்கூடும்.</translation>
 <translation id="2972581237482394796">&amp;மீண்டும் செய்</translation>
 <translation id="3010559122411665027">பட்டியல் உள்ளீடு &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">தற்காலிக சேவையகப் பிழை</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">தீவு</translation>
-<translation id="3219579145727097045">கார்டின் முன்புறமுள்ள காலாவதி தேதி மற்றும் நான்கு இலக்க CVCஐ உள்ளிடவும்</translation>
 <translation id="3228969707346345236">பக்கம் முன்பே <ph name="LANGUAGE"/> இல் இருப்பதால் மொழிபெயர்ப்பு தோல்வியடைந்தது.</translation>
 <translation id="3270847123878663523">&amp;மறுவரிசைப்படுத்தலைச் செயல்தவிர்</translation>
 <translation id="333371639341676808">இந்த பக்கம் கூடுதல் உரையாடல்களை உருவாக்குவதைத் தடு.</translation>
-<translation id="3369366829301677151"><ph name="CREDIT_CARD"/>ஐப் புதுப்பித்து, சரிபார்க்கவும்</translation>
 <translation id="337363190475750230">விடுவித்தது</translation>
 <translation id="3377188786107721145">கொள்கையை அலசுவதில் பிழை</translation>
 <translation id="3380365263193509176">அறியப்படாத பிழை</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;நகர்த்தலை மீண்டும் செய்</translation>
 <translation id="3623476034248543066">மதிப்பைக் காட்டு</translation>
 <translation id="3650584904733503804">சரிபார்ப்பு வெற்றி</translation>
+<translation id="3667681724235208644">அசலைக் காட்டு</translation>
 <translation id="370665806235115550">நினைவேறுகிறது...</translation>
 <translation id="3712624925041724820">உரிமம் முடிந்தது</translation>
 <translation id="3739623965217189342">நீங்கள் நகலெடுத்த இணைப்பு</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">முரண்பாடான சாதன அடையாளங்காட்டி</translation>
 <translation id="3885155851504623709">வட்டாரம்</translation>
 <translation id="3934680773876859118">PDF ஆவணத்தை ஏற்றுவது தோல்வியடைந்தது</translation>
-<translation id="3963721102035795474">படித்தல் பயன்முறை</translation>
 <translation id="4030383055268325496">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
 <translation id="4058922952496707368">விசை &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">ப்ராக்ஸி உள்ளமைவானது, .pac ஸ்கிரிப்ட் URL ஐப் பயன்படுத்தும்படி அமைக்கப்பட்டிருக்கிறது, நிலையான ப்ராக்ஸி சேவையகங்களுக்கு அல்ல.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">எதிர்பார்த்த <ph name="VALUE_TYPE"/> மதிப்பு.</translation>
 <translation id="443673843213245140">ப்ராக்ஸி பயன்பாடு முடக்கப்பட்டுள்ளது. ஆனால் வெளிப்படையான ப்ராக்ஸி உள்ளமைவு குறிப்பிடப்பட்டுள்ளது.</translation>
 <translation id="4506176782989081258">சரிபார்ப்புப் பிழை: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Chrome இலிருந்து முகவரியை அகற்றவா?</translation>
 <translation id="4594403342090139922">&amp;நீக்குதலைச் செயல்தவிர்</translation>
 <translation id="4607653538520819196">இந்தப் பக்கத்தைத் தரவு சேமிப்பானால் ப்ராக்ஸி செய்ய முடியாது.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">கொள்கைகளை மீண்டும் ஏற்று</translation>
-<translation id="4800132727771399293">காலாவதியாகும் நேரத்தையும், CVCஐயும் சரிபார்த்து, மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="4813512666221746211">பிணைய பிழை</translation>
 <translation id="4850886885716139402">காட்சி</translation>
 <translation id="4923417429809017348">ஒரு அறியப்படாத மொழியிலிருந்து <ph name="LANGUAGE_LANGUAGE"/> -க்கு இந்தப் பக்கம் மொழிபெயர்க்கப்பட்டுள்ளது</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">நடப்புப் பயனர்</translation>
 <translation id="5813119285467412249">&amp;சேர்த்தலை மீண்டும் செய்</translation>
 <translation id="5872918882028971132">மூலப் பரிந்துரைகள்</translation>
-<translation id="587701087903783706">மொபைலுக்கு ஏற்ற காட்சியை மூடவும்</translation>
 <translation id="59107663811261420">இந்த வியாபாரிக்கு Google Payments இல் இந்த வகையான கார்டு ஆதரிக்கப்படாது. வேறொரு கார்டைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="5989320800837274978">ப்ராக்ஸி சேவையகம் சரிசெய்யப்படவும் இல்லை .pac ஸ்கிரிப்ட் URL குறிப்பிடப்படவுமில்லை.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376"><ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>ஐப் பார்க்க முயற்சிக்கிறீர்கள். தற்போது இந்தப் பக்கத்தை தரவு சேமிப்பானால் ப்ராக்ஸி செய்ய முடியாது.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> தேடல்</translation>
 <translation id="6644283850729428850">இந்தக் கொள்கை தவிர்க்கப்பட்டது.</translation>
-<translation id="6646897916597483132">கார்டின் முன்புறமுள்ள, 4 இலக்க CVCஐ உள்ளிடவும்</translation>
 <translation id="6753269504797312559">கொள்கை மதிப்பு</translation>
 <translation id="6831043979455480757">மொழிபெயர்</translation>
 <translation id="6839929833149231406">பகுதி</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">கட்டாயம்</translation>
 <translation id="7542995811387359312">இந்தப் படிவம் பாதுகாப்பான இணைப்பைப் பயன்படுத்தாத காரணத்தால், தானியங்கு கடன் அட்டை நிரப்புதல் முடக்கப்பட்டிருக்கிறது.</translation>
 <translation id="7568593326407688803">இந்தப் பக்கமானது<ph name="ORIGINAL_LANGUAGE"/>இல் உள்ளது இதை மொழிபெயர்க்க விரும்புகிறீர்களா?</translation>
-<translation id="7569952961197462199">Chrome இலிருந்து கிரெடிட் கார்டை அகற்றவா?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="7610193165460212391"><ph name="VALUE"/> என்ற மதிப்பு வரம்பை மீறியுள்ளது.</translation>
 <translation id="7752995774971033316">நிர்வகிக்கப்படாதது</translation>
 <translation id="777702478322588152">ப்ரீஃபெக்சர்</translation>
 <translation id="7791543448312431591">சேர்</translation>
 <translation id="7805768142964895445">நிலை</translation>
-<translation id="7813600968533626083">Chrome இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
-<translation id="7887683347370398519">CVCஐச் சோதித்து, மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="7935318582918952113">DOM டிஸ்டில்லர்</translation>
 <translation id="7956713633345437162">மொபைல் புக்மார்க்குகள்</translation>
 <translation id="7961015016161918242">எப்போதும் இல்லை</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">மீண்டும் முயற்சிக்கவும்</translation>
 <translation id="8790007591277257123">&amp;நீக்குதலை மீண்டும் செய்</translation>
 <translation id="8804164990146287819">தனியுரிமைக் கொள்கை</translation>
-<translation id="8824019021993735287">இப்போது உங்கள் கார்டுகளை Chrome ஆல் சரிபார்க்க முடியவில்லை. பின்னர் முயற்சிக்கவும்.</translation>
 <translation id="8834246243508017242">தொடர்புகளைப் பயன்படுத்தி தன்னிரப்பியை இயக்கு…</translation>
 <translation id="883848425547221593">மற்ற புக்மார்க்குகள்</translation>
 <translation id="8866481888320382733">கொள்கை அமைப்புகளை அலசுவதில் பிழை</translation>
 <translation id="8876793034577346603">அலசுவதில் பிணைய உள்ளமைவு தோல்வி.</translation>
 <translation id="8891727572606052622">தவறான ப்ராக்ஸி முறை.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> கட்டளையை இயக்கு: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">காலாவதி தேதி மற்றும் கார்டின் பின்புறமுள்ள மூன்று இலக்க CVCஐ உள்ளிடவும்</translation>
 <translation id="9020542370529661692">இந்தப் பக்கம் <ph name="TARGET_LANGUAGE"/> க்கு மொழிபெயர்க்கப்பட்டது</translation>
-<translation id="9125941078353557812">கார்டின் பின்புறமுள்ள, 3 இலக்க CVCஐ உள்ளிடவும்</translation>
 <translation id="9137013805542155359">அசலைக் காண்பி</translation>
 <translation id="9148507642005240123">&amp;திருத்தலைச் செயல்தவிர்</translation>
 <translation id="9154176715500758432">இந்தப் பக்கத்திலேயே இருக்க</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="9207861905230894330">கட்டுரையைச் சேர்ப்பதில் தோல்வி.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">படிவத்தை அழி</translation>
-<translation id="988159990683914416">டெவலப்பர் கட்டமைப்பு</translation>
 </translationbundle>

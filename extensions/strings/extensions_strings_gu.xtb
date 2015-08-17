@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">આ ડોમેન્સમાં કોઈપણ ઉપકરણ સાથે ડેટા વિનિમય કરો: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">લૉકલાઇઝેશન વપરાયુ, પરંતુ default_locale નો ઉલ્લેખ મેનિફેસ્ટમાં નહોતો.</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/> પર તમારો ડેટા વાંચો અને બદલો</translation>
+<translation id="2677911863018634147">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા એક અથવા વધુ ઉપકરણો પરની ઍક્સેસની વિનંતી કરી રહી છે.</translation>
 <translation id="2753617847762399167">ગેરકાયદેસર પાથ (નિરપેક્ષ અથવા '..' સાથે સંબંધિત): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">આ એક્સ્ટેંશન નેટવર્ક વિનંતીનું સંશોધન કરવામાં નિષ્ફળ રહ્યું છે કારણ કે સંશોધન બીજા એક્સ્ટેંશનથી વિરોધાભાસી છે.</translation>
 <translation id="2857834222104759979">મેનિફેસ્ટ ફાઇલ અમાન્ય છે.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">ઘણી વેબસાઇટ્સ પર તમારો ડેટા વાંચી શકે છે</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> વિક્રેતા તરફથી <ph name="PRODUCT_NAME"/> (શૃંખલા ક્રમાંક <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{USB ઉપકરણ પસંદ કરો}multiple{USB ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="3624204664103857160">લોન્ચર પૃષ્ઠ '<ph name="PAGE"/>' લોડ કરી શકાયું નથી.</translation>
 <translation id="3759933321830434300">વેબ પૃષ્ઠોના અવરોધિત ભાગ</translation>
 <translation id="388442998277590542">વિકલ્પોનું પૃષ્ઠ '<ph name="OPTIONS_PAGE"/>' લોડ કરી શકાયું નથી.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> થી અજાણ્યા ઉપકરણો</translation>
 <translation id="4542520061254486227"><ph name="WEBSITE_1"/> અને <ph name="WEBSITE_2"/> પર તમારો ડેટા વાંચી શકે છે</translation>
 <translation id="4761104368405085019">તમારા માઇક્રોફોનનો ઉપયોગ કરો</translation>
+<translation id="4776856853352853275">USB ઉપકરણો પસંદ કરો</translation>
 <translation id="4811956658694082538">એક ઉપયોગિતા પ્રક્રિયા ક્રેશ થઈ હોવાને કારણે પૅકેજ ઇન્સ્ટોલ કરી શકાયું નથી. Chrome પુનઃપ્રારંભ કરી અને ફરીથી પ્રયાસ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="4883436287898674711">તમામ <ph name="WEBSITE_1"/> સાઇટ્સ</translation>
 <translation id="5026754133087629784">વેબવ્યુ: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">નેટવર્ક કનેક્શન્સનું સંચાલન કરો</translation>
-<translation id="5165983846722506205">{1,select, single{HID ઉપકરણ પસંદ કરો}multiple{HID ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">આ એક્સટેન્શનમાં '<ph name="KEY_PATH"/>' કી ફાઇલ શામેલ છે. તમે કદાચ એ કરવા માંગતા નથી.</translation>
+<translation id="545850661681880228">એક HID ઉપકરણ પસંદ કરો</translation>
 <translation id="5627523580512561598">એક્સ્ટેંશન <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1"/> પર તમારો ડેટા વાંચી શકે છે</translation>
+<translation id="5751530153776468604">એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Bluetooth એડેપ્ટર સ્થિતિ અને જોડીનું નિયંત્રણ કરો</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="VENDOR_ID"/> વિક્રેતા તરફથી <ph name="PRODUCT_NAME"/></translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> નામના ઉપકરણ સાથે ડેટા વિનિમય કરો</translation>
 <translation id="6143635259298204954">એક્સ્ટેંશન અનપૅક કરી શકાતું નથી. એક્સ્ટેંશનને સુરક્ષિત રીતે અનપૅક કરવા માટે, તમારી પ્રોફાઇલ નિર્દેશિકાનો પાથ હોવો જોઈએ જે સિમલિંક ધરાવતો ન હોય. આવો કોઈ પાથ તમારી પ્રોફાઇલ માટે અસ્તિત્વમાં નથી.</translation>
-<translation id="616804573177634438">{0,select, single{એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}multiple{એપ્લિકેશન &quot;<ph name="APP_NAME"/>&quot; તમારા ઉપકરણો પૈકી એક પરની ઍક્સેસની વિનંતી કરી રહી છે.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">તમારા સિસ્ટમ સાથે જોડી બનાવેલા Bluetooth ઉપકરણો વિશેની માહિતી ઍક્સેસ કરો અને નજીકના Bluetooth ઉપકરણોની શોધ કરો.</translation>
 <translation id="6344170822609224263">નેટવર્ક કનેક્શન્સની ઍક્સેસ સૂચિ</translation>
 <translation id="6384275966486438344">આ પર તમારી શોધ સેટિંગ્સ બદલો: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">તમે કૉપિ અને પેસ્ટ કરો એ ડેટાને વાંચો</translation>
 <translation id="730515362922783851">સ્થાનિક નેટવર્ક અથવા ઈન્ટરનેટ પર કોઈપણ ઉપકરણ સાથે ડેટા વિનિમય કરો</translation>
 <translation id="7809034755304591547">વ્યવસ્થાપક દ્વારા <ph name="EXTENSION_NAME"/> (એક્સટેન્શન ID &quot;<ph name="EXTENSION_ID"/>&quot;) અવરોધિત કરેલ છે.</translation>
+<translation id="781637217073033149">HID ઉપકરણો પસંદ કરો</translation>
 <translation id="7893008570150657497">તમારા કમ્પ્યુટર પરથી ફોટા, સંગીત અને અન્ય મીડિયા ઍક્સેસ કરો</translation>
 <translation id="7972881773422714442">વિકલ્પો: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">આ એક્સટેન્શન &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; ને ડાઉનલોડ નામ આપવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME"/>) એ એક જુદું ફાઇલનામ &quot;<ph name="ACTUAL_FILENAME"/>&quot; નક્કી કર્યું છે.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">મેનિફેસ્ટ ફાઇલ ખૂટે છે અથવા વાંચવાયોગ્ય નથી.</translation>
 <translation id="8620765578342452535">નેટવર્ક કનેક્શન્સ ગોઠવો</translation>
 <translation id="8636666366616799973">પૅકેજ અમાન્ય છે. વિગતો: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">એક USB ઉપકરણ પસંદ કરો</translation>
 <translation id="8662911384982557515">તમારા હોમ પેજને આ પર બદલો: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> પર રીડાયરેક્ટ કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME"/>) એ તેને <ph name="ACTUAL_REDIRECT_DESTINATION"/> પર રીડાયરેક્ટ કર્યું છે.</translation>
 <translation id="8712265948125780616">વિસ્તાર અનપેકર</translation>

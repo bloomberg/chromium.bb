@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">דומיין הרשמה:</translation>
 <translation id="1344588688991793829">‏הגדרות מילוי אוטומטי של Chromium...</translation>
 <translation id="1426410128494586442">כן</translation>
-<translation id="1455235771979731432">הייתה בעיה באימות הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
-<translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
 <translation id="1639239467298939599">טוען</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
 <translation id="1644184664548287040">תצורת הרשת אינה חוקית ולא ניתן לייבא אותה.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;ביטול מחיקה</translation>
 <translation id="2455981314101692989">דף אינטרנט זה השבית מילוי אוטומטי של טופס זה.</translation>
 <translation id="2479410451996844060">כתובת אתר לא חוקית של חיפוש</translation>
-<translation id="2495083838625180221">‏מנתח JSON</translation>
 <translation id="2498091847651709837">סרוק כרטיס חדש</translation>
 <translation id="2556876185419854533">&amp;ביטול עריכה</translation>
 <translation id="2581221116934462656">האם תרצה ש-<ph name="PRODUCT_NAME"/> יציע לתרגם דפים ב<ph name="LANGUAGE_NAME"/> מהאתר הזה בפעם הבאה?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">אתה רשאי להמשיך. אם תמשיך אל הדף, האזהרה הזו לא תופיע שוב למשך חמש דקות.</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
 <translation id="2835170189407361413">נקה טופס</translation>
-<translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">‏תצורת הרשת אינה תואמת לתקן ONC. ייתכן שחלקים מהתצורה לא ייכללו בייבוא.</translation>
 <translation id="2972581237482394796">&amp;בצע שנית</translation>
 <translation id="3010559122411665027">רשומה ברשימה &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">שגיאת שרת זמנית</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">אי</translation>
-<translation id="3219579145727097045">‏הזן את תאריך סיום התוקף ו-CVC בן ארבע ספרות המופיע בחזית הכרטיס</translation>
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
 <translation id="333371639341676808">מנע מדף זה ליצור דיאלוגים נוספים.</translation>
-<translation id="3369366829301677151">עדכן ואמת את ה-<ph name="CREDIT_CARD"/> שלך</translation>
 <translation id="337363190475750230">ניהול התצורה בוטל</translation>
 <translation id="3377188786107721145">שגיאה בניתוח המדיניות</translation>
 <translation id="3380365263193509176">שגיאה לא ידועה</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;ביצוע מחדש של העברה</translation>
 <translation id="3623476034248543066">הצג ערך</translation>
 <translation id="3650584904733503804">האימות בוצע בהצלחה</translation>
+<translation id="3667681724235208644">הצג את המקור</translation>
 <translation id="370665806235115550">טוען...</translation>
 <translation id="3712624925041724820">אין מספיק רישיונות</translation>
 <translation id="3739623965217189342">קישור שהעתקת</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
 <translation id="3885155851504623709">קהילה</translation>
 <translation id="3934680773876859118">‏הטעינה של מסמך PDF נכשלה</translation>
-<translation id="3963721102035795474">מצב קורא</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
 <translation id="4058922952496707368">מפתח &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">‏השימוש בשרת Proxy הושבת, אך צויינה תצורת שרת Proxy מפורשת.</translation>
 <translation id="4506176782989081258">שגיאת אימות: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">‏האם להסיר את הכתובת מ-Chrome?</translation>
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
 <translation id="4607653538520819196">‏לא ניתן להעביר את הדף הזה דרך שרת proxy באמצעות חוסך הנתונים (Data Saver).</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
-<translation id="4800132727771399293">‏בדוק את תאריך התפוגה ואת ה-CVC ונסה שוב</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
-<translation id="587701087903783706">סגור את התצוגה הידידותית לנייד</translation>
 <translation id="59107663811261420">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments אצל הסוחר הזה. בחר כרטיס אחר.</translation>
 <translation id="5989320800837274978">‏לא צוינו שרתי Proxy קבועים ולא כתובת אתר של סקריפט ‎.pac</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">‏אתה מנסה ליצור קשר עם <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. לא ניתן כעת להעביר את הדף הזה דרך שרת proxy באמצעות חוסך הנתונים (Data Saver).</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> חיפוש</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
-<translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6831043979455480757">תרגם</translation>
 <translation id="6839929833149231406">אזור</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">הכרחי</translation>
 <translation id="7542995811387359312">מילוי אוטומטי של פרטי כרטיס אשראי מושבת כיוון שטופס זה אינו משתמש בחיבור מאובטח.</translation>
 <translation id="7568593326407688803">זהו דף ב<ph name="ORIGINAL_LANGUAGE"/>האם ברצונך לתרגם אותו?</translation>
-<translation id="7569952961197462199">‏האם להסיר את כרטיס האשראי מ-Chrome?</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
 <translation id="777702478322588152">משטרת מחוז</translation>
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="7805768142964895445">סטטוס</translation>
-<translation id="7813600968533626083">‏האם להסיר מ-Chrome הצעות בשביל טפסים?</translation>
-<translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">סימניות לנייד</translation>
 <translation id="7961015016161918242">אף פעם</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">נסה שוב</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
-<translation id="8824019021993735287">‏Chrome לא הצליח לאמת את כרטיס הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="8834246243508017242">הפעל מילוי אוטומטי באמצעות 'אנשי קשר'…</translation>
 <translation id="883848425547221593">סימניות אחרות</translation>
 <translation id="8866481888320382733">שגיאה בניתוח הגדרות המדיניות</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="8940229512486821554">הרץ את הפקודה של <ph name="EXTENSION_NAME"/>:‏ <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">‏הזן את תאריך סיום התוקף ו-CVC בן שלוש ספרות המופיע בגב הכרטיס</translation>
 <translation id="9020542370529661692">הדף הזה תורגם ל<ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">‏הזן את ה-CVC בן שלוש הספרות המופיע בגב הכרטיס</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9148507642005240123">&amp;ביטול עריכה</translation>
 <translation id="9154176715500758432">הישאר בדף זה</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="9207861905230894330">הוספת הפריט נכשלה.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">נקה את הטופס</translation>
-<translation id="988159990683914416">גירסת מפתחים</translation>
 </translationbundle>

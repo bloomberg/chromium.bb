@@ -1,49 +1,32 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
 <translation id="1056898198331236512">Avertissement</translation>
 <translation id="10614374240317010">Jamais enregistrés</translation>
-<translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
 <translation id="1080790410959514870">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME"/>. Cette opération va entraîner la suppression des données Chrome stockées sur l'appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="1086169178231554178">Carte SD non disponible</translation>
 <translation id="1091134514807961917">Vous êtes connecté au compte Google indiqué ci-dessous.</translation>
-<translation id="1095407227123756519">Ajoutez un compte pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="1098052486217676340">Terminé</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
 <translation id="1159783623621444829">Ce compte appartient à un enfant.</translation>
 <translation id="1173289567081511873">Vous êtes connecté aux comptes Google suivants. Ajoutez ou supprimez des comptes dans les paramètres Android.</translation>
 <translation id="1178581264944972037">Suspendre</translation>
-<translation id="1181037720776840403">Supprimer</translation>
-<translation id="1197267115302279827">Déplacer les favoris</translation>
 <translation id="119944043368869598">Tout effacer</translation>
-<translation id="1201402288615127009">Suivant</translation>
 <translation id="1206892813135768548">Copier le texte du lien</translation>
-<translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION"/></translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
-<translation id="129553762522093515">Récemment fermés</translation>
 <translation id="1312168552565502328">Effacer les cookies et les données du site</translation>
-<translation id="1359381790106966506">Modifier les autorisations</translation>
 <translation id="1369915414381695676">Site &quot;<ph name="SITE_NAME"/>&quot; ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
 <translation id="1379156015317873965">Améliorer les performances de chargement des pages</translation>
 <translation id="138361230106469022">Bonjour &quot;<ph name="FULL_NAME"/>&quot;</translation>
 <translation id="1383876407941801731">Rechercher</translation>
-<translation id="1389974829397082527">Aucun favori ici</translation>
 <translation id="1404122904123200417">Intégration sur <ph name="WEBSITE_URL"/></translation>
-<translation id="1412240523210238692">Sélection de texte</translation>
 <translation id="1416550906796893042">Version de l'application</translation>
-<translation id="1423209968422390786">L'accès aux données de localisation est <ph name="BEGIN_LINK"/>désactivé pour cet appareil<ph name="END_LINK"/>.</translation>
 <translation id="1445680696957526815">Les composants de Chrome ne sont pas compatibles entre eux. Une mise à jour de Chrome est peut-être en cours. Veuillez réessayer dans quelques minutes. Si le problème persiste, veuillez désinstaller Chrome, puis le réinstaller.</translation>
 <translation id="1446450296470737166">Autoriser le contrôle complet des appareils MIDI</translation>
-<translation id="145097072038377568">Désactivée dans les paramètres Android</translation>
 <translation id="1491151370853475546">Actualiser cette page</translation>
 <translation id="1506061864768559482">Moteur de recherche</translation>
-<translation id="1513352483775369820">Favoris et historique Web</translation>
-<translation id="1521530746149324532">Vous êtes passé en mode navigation privée</translation>
-<translation id="1557201757634521564">Détecter automatiquement l'encodage</translation>
-<translation id="1568822834048182062">Vos favoris, votre historique, vos mots de passe et d'autres paramètres seront synchronisés avec votre compte Google.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
-<translation id="1641113438599504367">Navigation sécurisée</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1647391597548383849">Accéder à votre caméra</translation>
 <translation id="1657479659644194568">Configurer Chrome</translation>
@@ -52,36 +35,19 @@
 <translation id="1742134235943978220">Traduction en <ph name="TARGET_LANGUAGE"/> terminée.</translation>
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1807246157184219062">Clair</translation>
-<translation id="1825719650605518411">Expérience de première utilisation</translation>
-<translation id="1829244130665387512">Rechercher sur la page</translation>
-<translation id="1832521218263067499">Incidents de sécurité</translation>
-<translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="1886021608051665693">Sélectionnez un compte Google Smart Lock</translation>
-<translation id="189172778771606813">Fermer le panneau de navigation</translation>
-<translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK"/>paramètres Android<ph name="END_LINK"/></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME"/></translation>
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
-<translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1984937141057606926">Autorisés, sauf cookies tiers</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="200669432486043882">Remplacer un fichier</translation>
-<translation id="2038563949887743358">Activer &quot;Voir version ordinateur&quot;</translation>
 <translation id="2060102051813087825">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
-<translation id="2073235970478114994">Charger les images</translation>
-<translation id="2077711166702792587">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran &quot;Aperçu&quot; de votre téléphone.</translation>
-<translation id="2079545284768500474">Annuler</translation>
-<translation id="2082238445998314030">Résultat <ph name="RESULT_NUMBER"/> sur <ph name="TOTAL_RESULTS"/></translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
-<translation id="2126426811489709554">Proposé par Chrome</translation>
-<translation id="213279576345780926">L'onglet &quot;<ph name="TAB_TITLE"/>&quot; a été fermé.</translation>
 <translation id="2139186145475833000">Ajouter à l'écran d'accueil</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
-<translation id="219985413780390209">Assurer votre protection et celle de votre appareil contre les sites dangereux</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME"/>, application Web : <ph name="APP_URL"/></translation>
-<translation id="2268044343513325586">Affiner</translation>
-<translation id="2316129865977710310">Non merci</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2354750644801399986">Interdire le suivi</translation>
@@ -90,9 +56,7 @@
 <translation id="2381756643783702095">Demander l'autorisation avant d'envoyer (recommandé)</translation>
 <translation id="2387895666653383613">Mise à l'échelle texte</translation>
 <translation id="238909021488141516">Une erreur s'est produite lors du téléchargement du contenu.</translation>
-<translation id="2409301052052350563">Audio en cours de lecture</translation>
 <translation id="2414886740292270097">Foncé</translation>
-<translation id="2433507940547922241">Apparence</translation>
 <translation id="2440823041667407902">Accès à la position</translation>
 <translation id="2476578072172137802">Paramètres du site</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -106,50 +70,30 @@
 <translation id="257931822824936280">Développé – Cliquer pour réduire</translation>
 <translation id="2593272815202181319">Monospace</translation>
 <translation id="2646820313617290661">Vos parents vous aident à gérer ces paramètres.</translation>
-<translation id="2678212031093903894">Sauvegardez et synchronisez vos favoris</translation>
-<translation id="2707726405694321444">Actualiser la page</translation>
+<translation id="2699916814609764774">Chemin d'accès au profil</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2718352093833049315">Wi-Fi uniquement</translation>
 <translation id="2731700343119398978">Veuillez patienter…</translation>
 <translation id="2748463065602559597">Cette page Google Chrome est sécurisée.</translation>
-<translation id="2770465223704140727">Retirer de la liste</translation>
-<translation id="2816165854387457183">Connexion lente détectée</translation>
-<translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">À propos de Chrome</translation>
-<translation id="2891154217021530873">Arrêter le chargement de la page</translation>
 <translation id="2902702728133930130">Échec du démarrage de Chrome, en raison d'une erreur inattendue.</translation>
 <translation id="2903493209154104877">Adresses</translation>
-<translation id="2904413602477443379">Sélectionner un dossier</translation>
 <translation id="2913331724188855103">Autoriser les sites à enregistrer et à lire les données des cookies (recommandé)</translation>
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1"/> et <ph name="PARENT_NAME_2"/>.</translation>
 <translation id="2960796085439532066">Copyright Google Inc. <ph name="YEAR"/>. Tous droits réservés.</translation>
-<translation id="2996809686854298943">Veuillez saisir une URL.</translation>
 <translation id="3003595280608617736">Aucune carte SD</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
-<translation id="3039671569659952257">Supprimer le dossier</translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
-<translation id="307329814453917357">Proposer de traduire des pages avec Google Traduction</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
-<translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
 <translation id="3102119246920354026">Vider le cache</translation>
-<translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
-<translation id="3158619413803296679">Sélectionner un favori</translation>
-<translation id="3184369589781594823">Voulez-vous importer tous les favoris du navigateur Android ?</translation>
-<translation id="3190152372525844641">Activer les autorisations pour Chrome dans les <ph name="BEGIN_LINK"/>paramètres Android<ph name="END_LINK"/></translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT"/> de données stockées</translation>
-<translation id="3207960819495026254">Favori</translation>
 <translation id="3227137524299004712">Micro</translation>
-<translation id="3232754137068452469">Application Web</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3254409185687681395">Ajouter cette page aux favoris</translation>
 <translation id="326254929494722411">Vous n'avez pas configuré de compte Google sur cet appareil.</translation>
-<translation id="3269093882174072735">Charger l'image</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
-<translation id="3287852534598822456">Ce favori n'existe plus. Veuillez actualiser la page.</translation>
 <translation id="3303414029551471755">Poursuivre et télécharger le contenu ?</translation>
-<translation id="3328801116991980348">Informations sur le site</translation>
-<translation id="3343085080042659442">Chrome n'est pas à jour. La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="3350687908700087792">Fermer tous les onglets de navigation privée</translation>
 <translation id="3358663646935160692">Ce compte est géré par <ph name="DOMAIN_NAME"/>.
 
@@ -158,8 +102,8 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="3414952576877147120">Taille :</translation>
 <translation id="346339498574870680">Copier l'URL de l'image</translation>
 <translation id="3485544713029068372">Smart Lock pour les mots de passe</translation>
+<translation id="3489120686474540259">Ajoutez un compte pour synchroniser vos onglets, vos favoris, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
-<translation id="3527085408025491307">Dossier</translation>
 <translation id="360480449234699036">Découvrez les thèmes abordés sur les sites Web sans quitter la page. La fonctionnalité Appuyer pour rechercher envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
 
 Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
@@ -169,13 +113,10 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3774280986422214650">Si vous activez cette fonctionnalité, vous participerez à une expérience qui consiste à envoyer par proxy des pages HTTPS via les serveurs Google.</translation>
 <translation id="3809549525127675114">Lecture de la vidéo &quot;<ph name="VIDEO_TITLE"/>&quot; terminée.</translation>
-<translation id="3828029223314399057">Rechercher dans les favoris</translation>
-<translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
 <translation id="3896036286668839683">Lecteur de certificats</translation>
 <translation id="3917783807003067648">Position bloquée</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
-<translation id="393697183122708255">Aucune recherche vocale activée dispo.</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3988213473815854515">Position autorisée</translation>
 <translation id="3992315671621218278">Enregistrer le lien</translation>
@@ -184,7 +125,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4062305924942672200">Informations légales</translation>
-<translation id="4084682180776658562">Favori</translation>
 <translation id="4089831646916293264">Cette fonctionnalité peut perturber l'accès aux services de données premium fournis par votre opérateur.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
@@ -193,16 +133,11 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4165986682804962316">Paramètres du site</translation>
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
 <translation id="4195643157523330669">Ouvrir dans un nouvel onglet</translation>
-<translation id="423410644998903704">Chrome doit disposer de l'accès à certaines autorisations pour les partager avec ce site.</translation>
 <translation id="4256782883801055595">Licences Open Source</translation>
-<translation id="4259722352634471385">La navigation sur <ph name="URL"/> est bloquée.</translation>
 <translation id="4269820728363426813">Copier l'adresse du lien</translation>
 <translation id="4271185234001491831">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/></translation>
 <translation id="4278390842282768270">Autorisé</translation>
-<translation id="4297410240212242334">Séparer les onglets et les applications</translation>
-<translation id="4307992518367153382">Options de base</translation>
 <translation id="4333969446981951071">En utilisant cette application, vous acceptez les <ph name="BEGIN_LINK1"/>Conditions d'utilisation<ph name="END_LINK1"/> et l'<ph name="BEGIN_LINK2"/>Avis de confidentialité<ph name="END_LINK2"/> de Chrome.</translation>
-<translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
 <translation id="4376501731284077108">Aucun contrôle</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="4412992751769744546">Autoriser les cookies tiers</translation>
@@ -211,33 +146,18 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4522570452068850558">Détails</translation>
 <translation id="4526249700380860531">Afficher et gérer les mots de passe enregistrés sur <ph name="BEGIN_LINK"/>passwords.google.com<ph name="END_LINK"/></translation>
 <translation id="4526792582053123229">Le HTTPS et la navigation privée empêchent la détection et l'optimisation des pages.</translation>
-<translation id="4532845899244822526">Sélectionner un dossier</translation>
-<translation id="4543087392704641517">Titre du favori</translation>
 <translation id="4543661749405994812">Copier l'adresse e-mail</translation>
 <translation id="4619298195800598081">Ouvrir original autre onglet</translation>
 <translation id="4645575059429386691">Géré par ton papa/ta maman</translation>
-<translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS"/> favoris ont été supprimés.</translation>
 <translation id="4684427112815847243">Tout synchroniser</translation>
 <translation id="4686372254213217147">Taille initiale</translation>
-<translation id="4690286298542128877">Les onglets vont être déplacés dans un sélecteur d'onglets au sein de Chrome.</translation>
 <translation id="4698413471314543145">Une fonctionnalité essentielle à l'exécution de Google Chrome est manquante. Soit vous n'avez pas terminé d'installer Google Chrome, soit la version installée n'est pas compatible avec cette version d'Android.</translation>
-<translation id="4720023427747327413">Ouvrir dans <ph name="PRODUCT_NAME"/></translation>
 <translation id="473775607612524610">Mettre à jour</translation>
-<translation id="4761374747761474835">Sélectionnez un compte pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="4773299976671772492">Interrompu</translation>
-<translation id="4797039098279997504">Appuyer ici pour revenir à l'adresse <ph name="URL_OF_THE_CURRENT_TAB"/></translation>
-<translation id="4803910478683254032">Échec de l'importation</translation>
 <translation id="4807098396393229769">Titulaire de la carte</translation>
 <translation id="4816465935029283692">Types de données</translation>
 <translation id="4827948050554950725">Ajouter une carte de paiement</translation>
-<translation id="4871370605780490696">Ajouter aux favoris</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
-<translation id="4885273946141277891">Le nombre d'instances de Chrome n'est pas compatible.</translation>
-<translation id="494334276486034338">Dernière synchronisation il y a <ph name="HOURS"/> heures</translation>
-<translation id="4943872375798546930">Aucun résultat</translation>
-<translation id="4970484396410298643">Accédez ici aux onglets ouverts sur votre ordinateur.
-
-Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de sélectionner &quot;Se connecter à Chrome&quot;.</translation>
 <translation id="497421865427891073">Avancer</translation>
 <translation id="4996978546172906250">Partager via</translation>
 <translation id="5000922062037820727">Bloquée (recommandé)</translation>
@@ -246,38 +166,29 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5032574515228824816">Invite</translation>
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
-<translation id="5042680980623431490">Un problème est survenu lors de l'importation des favoris du navigateur Android.</translation>
 <translation id="5063480226653192405">Utilisation</translation>
+<translation id="5085880389019676122">Mémoire USB indisponible</translation>
+<translation id="5098185943924922330">Aidez-nous à identifier les fonctionnalités et les améliorations sur lesquelles nous devons travailler en priorité en nous envoyant des informations sur les fichiers, les applications et les services en cours d'exécution au moment où vous constatez un plantage.
+
+        Les statistiques d'utilisation englobent des informations telles que les préférences, les clics sur les boutons et l'utilisation de la mémoire. Elles n'incluent pas d'URL de pages Web ni d'informations personnelles. Les rapports d'erreur contiennent des informations relatives au système au moment du plantage, et peuvent contenir des URL de pages Web ou des informations personnelles, en fonction des activités en cours lors de l'incident.</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
+<translation id="5118309162436926908">Connectez-vous pour synchroniser vos onglets, vos favoris, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5138299137310274655">Cette page est rédigée en <ph name="SOURCE_LANGUAGE"/>. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE"/> ?</translation>
-<translation id="5150703642582475397">Fusionner les onglets et les applications</translation>
 <translation id="515227803646670480">Effacer les données stockées</translation>
-<translation id="5161254044473106830">Veuillez saisir un titre.</translation>
 <translation id="5164482624172255778">Souhaitez-vous que Google Chrome vous propose de traduire les pages de ce site rédigées en <ph name="LANGUAGE"/> lors de votre prochaine visite ?</translation>
-<translation id="5168917394043976756">Ouvrir le panneau de navigation</translation>
-<translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
-<translation id="5184329579814168207">Ouvrir dans Chrome</translation>
+<translation id="5185769685341198552">Voulez-vous remplacer le fichier &quot;<ph name="FILE_NAME"/>&quot; existant dans le répertoire <ph name="DIRECTORY_NAME"/> ?</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
-<translation id="5210714456814679336">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils apparaîtront ici.</translation>
-<translation id="5228579091201413441">Activer la synchronisation</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
-<translation id="5275558766013849309">Les onglets figureront aux côtés des applications récentes.</translation>
-<translation id="5302048478445481009">Langue</translation>
 <translation id="5304593522240415983">Champ obligatoire.</translation>
-<translation id="5305985456140490686">Dernière synchronisation il y a <ph name="MINUTES"/> minutes</translation>
+<translation id="5308603654685598744">Si cette fonctionnalité est activée, une proposition de traduction des pages rédigées dans d'autres langues à l'aide de Google Traduction vous est envoyée dans Chrome.</translation>
 <translation id="5313967007315987356">Ajouter un site</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
-<translation id="5323972449344932352">Lancer Chrome</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
-<translation id="5327248766486351172">Nom</translation>
 <translation id="5335200807405507442">Prélecture des ressources de pages</translation>
-<translation id="5345040418939504969">Le favori &quot;<ph name="BOOKMARK_TITLE"/>&quot; a été supprimé.</translation>
-<translation id="5345083863238459644">L'accès aux données de localisation est également <ph name="BEGIN_LINK"/>désactivé pour cet appareil<ph name="END_LINK"/>.</translation>
 <translation id="5380554235172449987">Ne jamais envoyer</translation>
 <translation id="5414836363063783498">Validation en cours…</translation>
-<translation id="5423934151118863508">Les pages les plus consultées s'affichent ici.</translation>
 <translation id="5424715742813396254">Modifier nom et mot passe ou exception enregistrés
 </translation>
 <translation id="5435662027590074193"><ph name="SEARCH_ENGINE_NAME"/> (<ph name="SEARCH_ENGINE_DOMAIN"/>)</translation>
@@ -285,11 +196,9 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5487729733663684359">Les mises à jour de Chrome ne sont plus disponibles avec cette version d'Android.</translation>
 <translation id="5511351932351731210">Toujours envoyer</translation>
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME"/>.</translation>
-<translation id="5530766185686772672">Fermer onglets navig. privée</translation>
 <translation id="5565871407246142825">Cartes de paiement</translation>
 <translation id="5578795271662203820">Rechercher l'image sur <ph name="SEARCH_ENGINE"/></translation>
 <translation id="5595485650161345191">Modifier l'adresse</translation>
-<translation id="5596627076506792578">Plus d'options</translation>
 <translation id="5626134646977739690">Nom :</translation>
 <translation id="5626370437647899551">Ajouter un compte Google</translation>
 <translation id="563535393368633106">Demander l'autorisation avant d'accéder (recommandé)</translation>
@@ -299,21 +208,11 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5676636989614905379">Impossible de lire la vidéo sur &quot;<ph name="SCREEN_NAME"/>&quot;.</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
-<translation id="5712189971979076230">Aidez-nous à identifier les fonctionnalités et les améliorations sur lesquelles nous devons travailler en priorité en nous envoyant des informations sur les fichiers, les applications et les services en cours d'exécution au moment où vous constatez un plantage.
-
-Les statistiques d'utilisation englobent des informations telles que les préférences, les clics sur les boutons et l'utilisation de la mémoire. Elles n'incluent pas d'URL de pages Web ni d'informations personnelles. Les rapports d'erreur contiennent des informations relatives au système au moment du plantage, et peuvent contenir des URL de pages Web ou des informations personnelles, en fonction des activités en cours lors de l'incident.</translation>
 <translation id="5715468759630044318">Choisir un compte</translation>
-<translation id="5719837394786370183">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.
-
-Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
-<translation id="572328651809341494">Onglets récents</translation>
 <translation id="5733727110006255111">Lorsque cette fonctionnalité est activée, les pages consultées dans Chrome sont d'abord compressées via les serveurs Google avant d'être téléchargées, à l'exception des pages SSL et des pages de navigation privée.</translation>
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5765780083710877561">Description :</translation>
-<translation id="5771382037724542929">Voulez-vous vraiment remplacer le fichier <ph name="FILE_NAME"/> dans le répertoire &quot;<ph name="DIRECTORY_NAME"/>&quot; ?</translation>
 <translation id="5804241973901381774">Autorisations</translation>
-<translation id="5806294296882899667">Erreur de chargement du dossier par défaut.</translation>
-<translation id="5832934273103296195">Développé – Cliquer pour réduire</translation>
 <translation id="583891442612896534">Impossible de se connecter aux serveurs de Google dans Chrome pour la compression de données. Les sauvegardes de données peuvent être limitées.</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
@@ -322,69 +221,56 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5902828464777634901">Toutes les données locales stockées par ce site, y compris les cookies, seront supprimées.</translation>
 <translation id="5911030830365207728">Google Traduction</translation>
 <translation id="5916664084637901428">Activé</translation>
-<translation id="5939518447894949180">Réinitialiser</translation>
+<translation id="5917058779668915997">Vos onglets, vos favoris, votre historique et d'autres paramètres seront synchronisés avec votre compte Google.</translation>
 <translation id="5953603475187800576">Afficher les adresses et les cartes de paiement figurant sur Google Payments</translation>
 <translation id="5968595432776860642">Lecture de la vidéo &quot;<ph name="VIDEO_TITLE"/>&quot; en cours…</translation>
-<translation id="6010869025736512584">Accès à l'entrée vidéo en cours…</translation>
-<translation id="6012342843556706400">Chrome doit disposer de l'accès à votre position pour la partager avec ce site.</translation>
 <translation id="6027491994609789413">Lecture de la vidéo en cours…</translation>
-<translation id="6031101910111098835">Réduit – Cliquer pour développer</translation>
 <translation id="6036158371062192100">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
 Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="605721222689873409">AA</translation>
-<translation id="6060567974409584397">Appuyez pour revenir à l'onglet.</translation>
-<translation id="6066720739967032277">Affichez vos onglets ainsi que d'autres applications récemment utilisées sur l'écran &quot;Aperçu&quot; de votre téléphone. Vous pouvez contrôler ce réglage dans les <ph name="BEGIN_LINK"/>Paramètres<ph name="END_LINK"/>.</translation>
-<translation id="6075798973483050474">Modifier la page d'accueil</translation>
+<translation id="6064211167623632605">Chemin d'accès exécutable</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6112702117600201073">Actualisation de la page</translation>
-<translation id="6138140242378429169">Ouvrir la page adaptée aux mobiles</translation>
 <translation id="6140912465461743537">Pays/Région</translation>
 <translation id="6159335304067198720">Économies de données de <ph name="PERCENT"/></translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6177390657002841081">Activer l'Économiseur de données</translation>
 <translation id="6192792657125177640">Exceptions</translation>
-<translation id="6208263165776660488">Les onglets de Chrome ont été déplacés</translation>
 <translation id="6231464350722415003">Autoriser le langage JavaScript sur les sites Web que vous spécifiez, tout en le bloquant pour le reste du Web</translation>
 <translation id="624558823898732418">Langue cible : <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
+<translation id="6292937202013477045">Il se peut que des pirates tentent de voler vos informations (photos, mots de passe, messages, numéros de carte de paiement, etc.) à partir de <ph name="DOMAIN_NAME"/>.</translation>
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6317634962183824346">Système de synchronisation Android désactivé. Veuillez le réactiver, puis réessayer.</translation>
-<translation id="6324360525379265737">Déterminer automatiquement l'encodage des caractères</translation>
 <translation id="6333140779060797560">Partager via <ph name="APPLICATION"/></translation>
 <translation id="6337234675334993532">Chiffrement</translation>
-<translation id="6364438453358674297">Supprimer la suggestion de l'historique ?</translation>
 <translation id="6388207532828177975">Effacer et réinitialiser</translation>
-<translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
 <translation id="6409731863280057959">Fenêtres pop-up</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Suggestions de recherche et d'URL</translation>
 <translation id="6458785801851713928">La synchronisation n'est pas disponible pour votre domaine.</translation>
-<translation id="6464825623202322042">Cet appareil</translation>
 <translation id="6476911854266661814">La vidéo &quot;<ph name="VIDEO_TITLE"/>&quot; a été mise en pause.</translation>
+<translation id="6504836143156866575">Version de JavaScript</translation>
 <translation id="6512448926095770873">Quitter cette page</translation>
 <translation id="654446541061731451">Sélectionnez un onglet à partager.</translation>
-<translation id="6550675742724504774">Options</translation>
 <translation id="656628257199996201">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6570560778840017462">Vous ne serez pas déconnecté de votre <ph name="BEGIN_LINK"/>compte Google<ph name="END_LINK"/>.</translation>
 <translation id="6571070086367343653">Modifier la carte de paiement</translation>
 <translation id="6575643671698722332">Échec de la réinitialisation. Veuillez vous assurer que l'appareil connecté, puis réessayez.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
-<translation id="6612856669344839356">Enregistrer le favori</translation>
-<translation id="6627583120233659107">Modifier le dossier</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="666268767214822976">Utiliser un service de prédiction pour suggérer des requêtes associées et des sites populaires lorsque vous saisissez des termes dans la barre d'adresse</translation>
 <translation id="666981079809192359">Avis de confidentialité de Chrome</translation>
 <translation id="6671495933530132209">Copier l'image</translation>
-<translation id="6675018499747166670">Audio en cours de lecture. Appuyez pour revenir à l'onglet <ph name="URL_OF_THE_CURRENT_TAB"/>.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
-<translation id="6710213216561001401">Précédent</translation>
 <translation id="6738867403308150051">Téléchargement en cours…</translation>
+<translation id="6757714913056001524">Sélectionnez un compte pour synchroniser vos onglets, vos favoris, votre historique et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="6770414673596662518">Nous utilisons également le système de navigation sécurisée de Chrome pour détecter les pages nuisibles tout en vous protégeant de l'hameçonnage, des logiciels malveillants et des téléchargements dangereux.</translation>
 <translation id="6784675033504223784">Recherchez &quot;<ph name="SEARCH_TERM"/>&quot;.</translation>
 <translation id="6790428901817661496">Lire</translation>
@@ -392,40 +278,26 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6820686453637990663">Cryptogramme</translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="6846298663435243399">Chargement en cours…</translation>
-<translation id="6850830437481525139"><ph name="TAB_COUNT"/> onglets ont été fermés.</translation>
 <translation id="6857778194843072568">Envoyer via Wi-Fi uniquement</translation>
-<translation id="6868088497967843822">Connectez-vous pour récupérer vos favoris, votre historique, vos mots de passe et d'autres paramètres sur tous vos appareils.</translation>
 <translation id="6935223586406308151"><ph name="DOMAIN_NAME"/> a été ajouté à votre écran d'accueil.</translation>
-<translation id="6945221475159498467">Sélectionner</translation>
-<translation id="6963766334940102469">Supprimer des favoris</translation>
 <translation id="6964496835063002391">Ajouter un compte</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="6973630695168034713">Dossiers</translation>
 <translation id="6978479750597523876">Réinitialiser les paramètres de Google Traduction</translation>
-<translation id="6979922938747275756">Erreur lors du chargement des dossiers.</translation>
 <translation id="6981982820502123353">Accessibilité</translation>
 <translation id="6990079615885386641">Télécharger l'application sur le Google Play Store : <ph name="APP_ACTION"/></translation>
-<translation id="699220179437400583">Signaler automatiquement les incidents de sécurité potentiels à Google</translation>
 <translation id="6999892069268112724">Confirmer le compte Google</translation>
 <translation id="7019652137705190998">Mode navigation privée sur le Web ou connexion temporaire</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
-<translation id="7095930899177687653"><ph name="OPEN_TABS"/> onglets ouverts</translation>
 <translation id="7096034533295549981">Chargement vidéo…</translation>
-<translation id="7144878232160441200">Réessayer</translation>
-<translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
-<translation id="7201341158316793215">Suppression en cours…</translation>
-<translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL"/> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
-<translation id="724999909741939927">Importation des favoris en cours</translation>
-<translation id="7299721129597238157">Supprimer le favori</translation>
+<translation id="7232255641409319872">Autoriser les images sur les sites Web que vous spécifiez, tout en les bloquant pour le reste du Web</translation>
 <translation id="7324738665594301612">Dans le cadre d'une expérience, nous testons actuellement l'envoi par proxy de pages HTTPS via les serveurs Google.</translation>
-<translation id="7346909386216857016">OK</translation>
+<translation id="7358682983403815415">Vos onglets ouverts, vos favoris, votre historique et d'autres éléments sont en cours de synchronisation avec votre compte Google.</translation>
 <translation id="7363354739009474003">Chargement de la vidéo &quot;<ph name="VIDEO_TITLE"/>&quot; en cours…</translation>
 <translation id="7366340029385295517">Diffusion sur &quot;<ph name="SCREEN_NAME"/>&quot; en cours…</translation>
 <translation id="7375125077091615385">Type :</translation>
 <translation id="7378627244592794276">Non</translation>
-<translation id="7400418766976504921">URL</translation>
 <translation id="7400448254438078120">Impossible de caster la vidéo en raison de restrictions liées au site.</translation>
 <translation id="7423098979219808738">Demander d'abord</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
@@ -433,7 +305,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="748127970106343339">Confirmer la suppression de l'identifiant de l'appareil</translation>
 <translation id="7493994139787901920"><ph name="VERSION"/> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE"/>)</translation>
 <translation id="7498271377022651285">Veuillez patienter…</translation>
-<translation id="7501135638693251872">Tous les favoris</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7561196759112975576">Toujours</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
@@ -443,38 +314,27 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7634554953375732414">Votre connexion à ce site n'est pas privée.</translation>
 <translation id="7638584964844754484">Phrase secrète incorrecte.</translation>
 <translation id="7644305409888602715">Traduction de la page en <ph name="SOURCE_LANGUAGE"/> en cours…</translation>
-<translation id="764743049316168389">Dossier &quot;<ph name="FOLDER_NAME"/>&quot;</translation>
-<translation id="7648120236428811856">Connectez-vous à Chrome pour accéder à vos favoris à partir de n'importe quel appareil.</translation>
 <translation id="7648422057306047504">Chiffrer les mots de passe avec vos identifiants Google</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7665369617277396874">Ajouter un compte</translation>
 <translation id="7711895876052978264">Le site s'affiche en plein écran.
 Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>
-<translation id="7765158879357617694">Déplacer</translation>
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
-<translation id="7788788617745289808">Chrome doit disposer de l'accès à la caméra pour la partager avec ce site.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7811044698839470685">Seul quelqu'un connaissant votre mot de passe peut lire vos données chiffrées. Votre mot de passe n'est ni transmis à Google, ni stocké. En cas d'oubli, vous devrez réinitialiser la synchronisation.</translation>
-<translation id="7829298379596169484">Accès à l'entrée audio en cours…</translation>
-<translation id="7846076177841592234">Annuler la sélection</translation>
-<translation id="7851858861565204677">Autres appareils</translation>
-<translation id="7876243839304621966">Tout supprimer</translation>
+<translation id="7817177303494746697">Version de Blink</translation>
 <translation id="7925108652071887026">Données de saisie automatique</translation>
-<translation id="7926911226829060241">Vos favoris ouverts, votre historique, vos mots de passe et d'autres éléments sont en cours de synchronisation avec votre compte Google.</translation>
 <translation id="7947953824732555851">Accepter/Se connecter</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7963646190083259054">Fournisseur :</translation>
 <translation id="7977858705483383621">SafeSearch</translation>
 <translation id="7981795308302452224">Échec du lancement du téléchargement.</translation>
 <translation id="7987073022710626672">Conditions d'utilisation de Chrome</translation>
-<translation id="7989222512959629388">Enregistrement en cours…</translation>
 <translation id="7998918019931843664">Rouvrir un onglet fermé</translation>
 <translation id="7999064672810608036">Voulez-vous vraiment effacer toutes les données locales, y compris les cookies, et réinitialiser toutes les autorisations pour ce site Web ?</translation>
-<translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
-<translation id="8035133914807600019">Nouveau dossier…</translation>
 <translation id="8069239273282989646">Après compression</translation>
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8084156870963450514">Connectez-vous pour accéder à tous vos contenus Web sur n'importe quel appareil.</translation>
@@ -482,33 +342,23 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 <translation id="8109148095642131923">Échec de l'ajout de l'élément téléchargé au gestionnaire de téléchargement.</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8137558756159375272">La fonction &quot;Appuyer pour rechercher&quot; transmet le mot sélectionné et la page actuelle en tant que contexte vers la fonction de recherche Google. Vous pouvez la désactiver dans les <ph name="BEGIN_LINK"/>paramètres<ph name="END_LINK"/>.</translation>
-<translation id="8143660160623733249">Nom du dossier</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS"/> comptes</translation>
 <translation id="8168435359814927499">Contenu</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
 <translation id="8237438615979997762">Les données stockées sur cet appareil et dans votre compte Google seront conservées. Toutefois, les nouvelles données ou les modifications apportées aux données ne seront pas synchronisées entre ces deux emplacements.</translation>
 <translation id="8261506727792406068">Supprimer</translation>
-<translation id="8275038454117074363">Importer</translation>
-<translation id="8275818695183729150">Autoriser (pour les recherches dans la barre d'adresse)</translation>
 <translation id="8310344678080805313">Onglets standards</translation>
-<translation id="8374420395168535396">Dernière synchronisation il y a <ph name="DAYS"/> jours</translation>
 <translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8396312449826231789">Uniquement les sites approuvés</translation>
-<translation id="8413126021676339697">Afficher l'historique complet</translation>
 <translation id="8413385045638830869">Demander d'abord (recommandé)</translation>
 <translation id="8428213095426709021">Paramètres</translation>
-<translation id="8457451314607652708">Importer les favoris</translation>
 <translation id="8481940801237642152">Votre connexion à ce site est privée, mais d'autres personnes connectées au réseau peuvent réussir à modifier l'apparence de la page.</translation>
-<translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
-<translation id="8514577642972634246">Activer le mode navigation privée</translation>
 <translation id="8515416241041728525">Ajouter compte pour <ph name="ADD_ACCOUNT_USER_NAME"/></translation>
 <translation id="8518901949365209398">Ce site utilise une configuration de sécurité faible (signatures SHA-1). Il est donc possible que votre connexion ne soit pas privée.</translation>
 <translation id="8528538445849828817">Langue de la page : <ph name="SOURCE_LANGUAGE"/></translation>
-<translation id="854522910157234410">Ouvrir cette page</translation>
 <translation id="8547287415299944404">L'historique de navigation des comptes pour enfants ne peut être effacé.</translation>
 <translation id="8562452229998620586">Les mots de passe enregistrés s'affichent ici.</translation>
-<translation id="856481929701340285">Voir version ordinateur</translation>
 <translation id="857943718398505171">Autorisée (recommandé)</translation>
 <translation id="8583805026567836021">Suppression des données du compte</translation>
 <translation id="8588878054171169263">Enregistrer l'image</translation>
@@ -518,12 +368,10 @@ Appuyez sur le bouton &quot;Retour&quot; pour quitter ce mode.</translation>
 
 Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le contenu que vous avez téléchargé.</translation>
 <translation id="8660471606262461360">Informations issues de Google Payments</translation>
-<translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="869891660844655955">Date d'expiration</translation>
 <translation id="8719023831149562936">Impossible de partager l'onglet actuel.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">OK</translation>
-<translation id="8793430725658173476">Copier l'URL</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="8829678271838353305">Le compte <ph name="ACCOUNT_EMAIL_LAST"/> est déjà connecté. Si vous vous connectez avec l'adresse <ph name="ACCOUNT_EMAIL_NEW"/>, les données synchronisées des deux comptes, telles que les favoris, vont être fusionnées. Pour ne pas fusionner ces informations, veuillez effacer vos données de navigation dans les <ph name="BEGIN_LINK"/>paramètres<ph name="END_LINK"/>.</translation>
@@ -531,37 +379,27 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="885701979325669005">Stockage</translation>
 <translation id="886510833909353412">Tout chiffrer à l'aide d'une phrase secrète</translation>
 <translation id="8872441722924401214">Sélectionnez un certificat pour l'authentification</translation>
-<translation id="8901170036886848654">Aucun favori trouvé.</translation>
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
 <translation id="8928220460877261598">Vous êtes désormais connecté à Chrome.</translation>
 <translation id="8941248009481596111">Votre connexion à ce site est privée.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
-<translation id="8959122750345127698">Impossible d'accéder à <ph name="URL"/>.</translation>
 <translation id="8987061207681586800">Personnalisez Chrome</translation>
+<translation id="8997842057643556822">Impossible de créer un dossier de téléchargement sur mémoire de stockage USB.</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>
 <translation id="9060538597317784206">Affichez l'application <ph name="APP_NAME"/> sur le Play Store. Note : <ph name="APP_RATING"/></translation>
-<translation id="9063523880881406963">Désactiver &quot;Voir version ordinateur&quot;</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="907015151729920253">Carte à puce</translation>
-<translation id="9070377983101773829">Démarrer la recherche vocale</translation>
-<translation id="9086455579313502267">Impossible d'accéder au réseau.</translation>
 <translation id="9099292894781394535">Économies de données</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9133515669113036225">Réinitialiser les identifiants de l'appareil</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9154176715500758432">Rester sur cette page</translation>
-<translation id="9156605176886108508">Aucun dossier pour les favoris</translation>
 <translation id="9206873250291191720">A</translation>
-<translation id="932327136139879170">Accueil</translation>
-<translation id="938850635132480979">Erreur <ph name="ERROR_CODE"/>.</translation>
-<translation id="939736085109172342">Nouveau dossier</translation>
+<translation id="9219103736887031265">Images</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
-<translation id="963967414714199900">Dernière synchronisation il y a quelques secondes</translation>
 <translation id="969096075394517431">Modifier les langues</translation>
-<translation id="971774202801778802">URL du favori</translation>
-<translation id="983192555821071799">Fermer tous les onglets</translation>
 <translation id="988938288723502454">Impossible de créer un dossier de téléchargement sur la carte SD.</translation>
 </translationbundle>

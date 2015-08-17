@@ -23,7 +23,6 @@
 <translation id="2148716181193084225">今天</translation>
 <translation id="2226276347425096477">请将该文本减少为 <ph name="MAX_CHARACTERS"/> 个字符或更少（您当前使用了 <ph name="CURRENT_LENGTH"/> 个字符）。</translation>
 <translation id="2247351761944213033"><ph name="YEAR"/> 年第 <ph name="WEEKNUMBER"/> 周</translation>
-<translation id="2291999235780842123">复选框</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="2507943997699731163">请填写此字段。</translation>
 <translation id="2548326553472216322">最近未执行搜索</translation>
@@ -37,7 +36,6 @@
 <translation id="2846343701378493991">1024（中等强度）</translation>
 <translation id="2901282870647571346">当前电影状态</translation>
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
-<translation id="2942448076852699108">突出显示的内容</translation>
 <translation id="3040011195152428237">链接</translation>
 <translation id="3075154866155599887">请输入一个有效值。该字段不完整或存在无效日期。</translation>
 <translation id="310520048233152454">请输入网址。</translation>

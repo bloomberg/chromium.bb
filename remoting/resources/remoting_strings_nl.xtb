@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
 <translation id="1002108253973310084">Er is een incompatibele versie gedetecteerd. Controleer of de nieuwste versie van de software is geïnstalleerd op beide computers en probeer het opnieuw.</translation>
+<translation id="1023096696228309145">Vraag de gebruiker tot wiens computer je toegang wilt hebben, op 'Nu delen' te klikken en je de toegangscode te geven.</translation>
 <translation id="1050693411695664090">Slecht</translation>
 <translation id="1152528166145813711">Selecteren…</translation>
 <translation id="1199593201721843963">Externe verbindingen uitschakelen</translation>
+<translation id="1261403020716313927">• Grote fout opgelost met een geheugenlek na het verbreken van de verbinding met Remote Desktop.</translation>
 <translation id="1291443878853470558">Je moet externe verbindingen inschakelen als je Chromoting wilt gebruiken voor toegang tot deze computer.</translation>
 <translation id="1300633907480909701">Veilig toegang tot je computers vanaf je Android-apparaat.
 
@@ -15,7 +17,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="1324095856329524885">(deze functie is nog niet beschikbaar voor je computer)</translation>
 <translation id="1342297293546459414">Een gedeelde computer bekijken en beheren.</translation>
 <translation id="1450760146488584666">Het gevraagde object bestaat niet.</translation>
-<translation id="1480046233931937785">Credits</translation>
 <translation id="1520828917794284345">Formaat van bureaublad aanpassen</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
@@ -52,10 +53,8 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2124408767156847088">Veilig toegang tot je computers vanaf je Android-apparaat.</translation>
 <translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met je systeembeheerder voor hulp.</translation>
 <translation id="2220529011494928058">Een probleem melden</translation>
-<translation id="2221097377466213233">Gebruik rechter Ctrl-toets als Windows-toets (⌘ op Mac)</translation>
 <translation id="2235518894410572517">De computer delen zodat een andere gebruiker deze kan bekijken en beheren.</translation>
 <translation id="2246783206985865117">Deze instelling wordt beheerd door je domeinbeleid.</translation>
-<translation id="2256115617011615191">Nu opnieuw starten</translation>
 <translation id="225614027745146050">Welkom</translation>
 <translation id="228809120910082333">Bevestig je account en pincode hieronder om toegang door Chromoting toe te staan.</translation>
 <translation id="2314101195544969792">Je <ph name="APPLICATION_NAME"/>-sessie is al enige tijd inactief. Binnenkort wordt de verbinding verbroken.</translation>
@@ -76,14 +75,11 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2851674870054673688">Zodra deze persoon de code opgeeft, wordt je deelsessie gestart.</translation>
 <translation id="2851754573186462851">Streaming via Chromium-app</translation>
 <translation id="2855866366045322178">offline</translation>
-<translation id="2888969873284818612">Er is een netwerkfout opgetreden. We starten de app opnieuw wanneer je apparaat weer online is.</translation>
 <translation id="2894654864775534701">Deze computer wordt momenteel via een ander account gedeeld.</translation>
 <translation id="2919669478609886916">Je deelt deze computer momenteel met een andere gebruiker. Wil je doorgaan met delen?</translation>
 <translation id="2921543551052660690">Je bent eerder ingelogd als <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Als je toegang wilt tot je computers met dat account, <ph name="LINK_BEGIN"/>log je in bij Chromium<ph name="LINK_END"/> met dat account en installeer je Chromoting opnieuw.</translation>
 <translation id="2926340305933667314">Kan externe toegang tot deze computer niet uitschakelen. Probeer het later opnieuw.</translation>
 <translation id="2939145106548231838">Verifiëren naar host</translation>
-<translation id="2998137343848432918">• Scherm 'Credits' toegevoegd.
-• Een probleem verholpen waarbij bij overschakelen naar volledig scherm het toetsenbord zichtbaar was.</translation>
 <translation id="3020807351229499221">Kan pincode niet updaten. Probeer het later opnieuw.</translation>
 <translation id="3025388528294795783">Vertel ons wat er is misgegaan zodat we je probleem kunnen oplossen:</translation>
 <translation id="3027681561976217984">Aanraakmodus</translation>
@@ -92,7 +88,6 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="3150823315463303127">Host kan het beleid niet lezen.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3244258558056547981">Cardboard-weergave tonen.</translation>
 <translation id="3258789396564295715">Je kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Wil je ons helpen Chrome Remote Desktop te verbeteren? <ph name="LINK_BEGIN"/>Vul de enquête in.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Controller voor Chromoting-host</translation>
@@ -164,7 +159,6 @@ Desktop-host</translation>
 <translation id="5254120496627797685">Als je deze pagina verlaat, wordt je Chrome Remote Desktop-sessie beëindigd.</translation>
 <translation id="5285241842433869526">Informatie over het instellen van een computer voor externe toegang.</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
-<translation id="5363265567587775042">Vraag de gebruiker tot wiens computer je toegang wilt hebben, op <ph name="SHARE"/> te klikken en je de toegangscode te geven.</translation>
 <translation id="5379087427956679853">Met Chrome Remote Desktop kun je je computer veilig delen via internet. Beide gebruikers moeten hiervoor de app Chrome Remote Desktop uitvoeren, die beschikbaar is op <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Verwijderprogramma voor Chrome Remote Desktop-host</translation>
 <translation id="5419185025274123272">Kan de app niet opnieuw instellen. Je kunt nog steeds een foutmelding verzenden.</translation>
@@ -233,6 +227,7 @@ Desktop-host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Toegang geweigerd voor client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Client verbonden: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Nieuwe verbinding</translation>
 <translation id="7606912958770842224">Externe verbindingen inschakelen</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Annuleren</translation>

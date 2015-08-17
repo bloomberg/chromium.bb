@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Domena upisa:</translation>
 <translation id="1344588688991793829">Postavke automatskog popunjavanja u Chromiumu...</translation>
 <translation id="1426410128494586442">Da</translation>
-<translation id="1455235771979731432">Pojavio se problem prilikom potvrđivanja vaše kartice. Provjerite internetsku vezu i pokušajte ponovo.</translation>
 <translation id="1491151370853475546">Ponovo učitaj ovu stranicu</translation>
-<translation id="1549470594296187301">Za upotrebu te značajke mora biti omogućen JavaScript.</translation>
 <translation id="1639239467298939599">Učitavanje</translation>
 <translation id="1640180200866533862">Korisnička pravila</translation>
 <translation id="1644184664548287040">Mrežna konfiguracija nije važeća i nije ju bilo moguće uvesti.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Poništi brisanje</translation>
 <translation id="2455981314101692989">Ova web-stranica ima onemogućeno automatsko popunjavanje za taj obrazac.</translation>
 <translation id="2479410451996844060">Nevažeći URL pretraživanja.</translation>
-<translation id="2495083838625180221">Raščlanjivanje JSON datoteka</translation>
 <translation id="2498091847651709837">Skeniraj novu karticu</translation>
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
 <translation id="2581221116934462656">Želite li da <ph name="PRODUCT_NAME"/> sljedeći put ponudi prijevod stranica ove web-lokacije na <ph name="LANGUAGE_NAME"/>?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Možete nastaviti. Ako otvorite stranicu, to će se upozorenje pojaviti tek za pet minuta.</translation>
 <translation id="277499241957683684">Zapis uređaja nije prisutan</translation>
 <translation id="2835170189407361413">Obriši obrazac</translation>
-<translation id="2855922900409897335">Potvrda kreditne kartice <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">Mrežna konfiguracija nije u skladu sa standardima ONC. Dijelove konfiguracije nije moguće uvesti.</translation>
 <translation id="2972581237482394796">&amp;Vrati poništeno</translation>
 <translation id="3010559122411665027">Unos popisa &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Privremena pogreška poslužitelja</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Otok</translation>
-<translation id="3219579145727097045">Unesite datum isteka i četveroznamenkasti CVC s prednje strane kartice</translation>
 <translation id="3228969707346345236">Prijevod nije uspio jer stranica već je na jeziku: <ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;Poništi promjenu rasporeda</translation>
 <translation id="333371639341676808">Spriječite ovu stranicu od stvaranja dodatnih dijaloga.</translation>
-<translation id="3369366829301677151">Ažurirajte i potvrdite karticu <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">Dodjela je uklonjena</translation>
 <translation id="3377188786107721145">Pogreška pri analizi pravila</translation>
 <translation id="3380365263193509176">Nepoznata pogreška</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Ponovi premještanje</translation>
 <translation id="3623476034248543066">Prikaži vrijednost</translation>
 <translation id="3650584904733503804">Valjanost je uspješna</translation>
+<translation id="3667681724235208644">Prikaži original</translation>
 <translation id="370665806235115550">Učitavanje...</translation>
 <translation id="3712624925041724820">Licence su potrošene</translation>
 <translation id="3739623965217189342">Veza koju ste kopirali</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Identifikator uređaja sukobljen je</translation>
 <translation id="3885155851504623709">Župa</translation>
 <translation id="3934680773876859118">Učitavanje dokumenta PDF nije uspjelo</translation>
-<translation id="3963721102035795474">Način čitača</translation>
 <translation id="4030383055268325496">&amp;Poništi dodavanje</translation>
 <translation id="4058922952496707368">Stavka &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Konfiguracija proxy poslužitelja postavljena je za upotrebu URL-a .pac skripte, a ne fiksnih proxy poslužitelja.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">Upotreba proxy poslužitelja onemogućena je, ali određena je izričita konfiguracija proxy poslužitelja.</translation>
 <translation id="4506176782989081258">Pogreška pri provjeri valjanosti: <ph name="VALIDATION_ERROR"/>.</translation>
-<translation id="4587425331216688090">Želite li s Chromea ukloniti adresu?</translation>
 <translation id="4594403342090139922">&amp;Poništi brisanje</translation>
 <translation id="4607653538520819196">Ušteda podataka ne može obraditi stranicu putem proxyja.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Ponovo učitaj pravila</translation>
-<translation id="4800132727771399293">Provjerite datum isteka i CVC pa pokušajte ponovo</translation>
 <translation id="4813512666221746211">Pogreška mreže</translation>
 <translation id="4850886885716139402">Prikaz</translation>
 <translation id="4923417429809017348">Ova je stranica prevedena s nepoznatog jezika na <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Trenutačni korisnik:</translation>
 <translation id="5813119285467412249">&amp;Ponovi dodavanje</translation>
 <translation id="5872918882028971132">Nadređeni prijedlozi</translation>
-<translation id="587701087903783706">Zatvori prikaz prilagođen mobilnim uređajima</translation>
 <translation id="59107663811261420">Google Payments ne podržava tu vrstu kartice za ovog trgovca. Odaberite neku drugu karticu.</translation>
 <translation id="5989320800837274978">Nisu određeni fiksni proxy poslužitelji ni URL .pac skripte.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Pokušavate pristupiti web-stranici <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Ušteda podataka trenutačno ne može obraditi tu stranicu putem proxyja.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Pretraživanje</translation>
 <translation id="6644283850729428850">Ovo je pravilo zastarjelo.</translation>
-<translation id="6646897916597483132">Unesite četveroznamenkasti CVC s prednje strane kartice</translation>
 <translation id="6753269504797312559">Vrijednost pravila</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Područje</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Obavezno</translation>
 <translation id="7542995811387359312">Automatsko popunjavanje kreditne kartice onemogućeno je jer se ovaj obrazac ne služi sigurnom vezom.</translation>
 <translation id="7568593326407688803">Ova je stranica na ovom jeziku:<ph name="ORIGINAL_LANGUAGE"/>Želite li je prevesti?</translation>
-<translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">Vrijednost je izvan raspona <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Nema upravitelja</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7813600968533626083">Želite li s Chromea ukloniti prijedlog za obrasce?</translation>
-<translation id="7887683347370398519">Provjerite CVC i pokušajte ponovo</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Mobilne oznake</translation>
 <translation id="7961015016161918242">Nikad</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="8790007591277257123">&amp;Ponovi brisanje</translation>
 <translation id="8804164990146287819">Pravila o privatnosti</translation>
-<translation id="8824019021993735287">Chrome nije uspio potvrditi vašu karticu u ovom trenutku. Pokušajte ponovo kasnije.</translation>
 <translation id="8834246243508017242">Omogući Automatsko popunjavanje pomoću Kontakata...</translation>
 <translation id="883848425547221593">Druge oznake</translation>
 <translation id="8866481888320382733">Pogreška pri analizi postavki pravila</translation>
 <translation id="8876793034577346603">Mrežna konfiguracija nije uspješno analizirana.</translation>
 <translation id="8891727572606052622">Nevažeći način proxy poslužitelja.</translation>
 <translation id="8940229512486821554">Pokretanje proširenja <ph name="EXTENSION_NAME"/> za naredbu: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Unesite datum isteka i troznamenkasti CVC s poleđine kartice</translation>
 <translation id="9020542370529661692">Ova je stranica prevedena na <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Unesite troznamenkasti CVC s prednje strane kartice</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9148507642005240123">&amp;Poništi uređivanje</translation>
 <translation id="9154176715500758432">Ostani na ovoj stranici</translation>
 <translation id="9170848237812810038">&amp;Poništi</translation>
 <translation id="9207861905230894330">Dodavanje članka nije uspjelo.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">IZBRIŠI OBRAZAC</translation>
-<translation id="988159990683914416">Sastavak razvojnog programera</translation>
 </translationbundle>

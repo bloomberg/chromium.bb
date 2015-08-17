@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
 <translation id="1426410128494586442">Yes</translation>
-<translation id="1455235771979731432">There was a problem verifying your card. Check your Internet connection and try again.</translation>
 <translation id="1491151370853475546">Reload this Page</translation>
-<translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
 <translation id="1639239467298939599">Loading</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="1644184664548287040">The network configuration is invalid and couldn't be imported.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Undo delete</translation>
 <translation id="2455981314101692989">This web page has disabled automatic filling for this form.</translation>
 <translation id="2479410451996844060">Invalid search URL.</translation>
-<translation id="2495083838625180221">JSON Parser</translation>
 <translation id="2498091847651709837">Scan new card</translation>
 <translation id="2556876185419854533">&amp;Undo Edit</translation>
 <translation id="2581221116934462656">Would you like <ph name="PRODUCT_NAME"/> to offer to translate <ph name="LANGUAGE_NAME"/> pages from this site next time?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">You may continue. If you continue to the page, this warning will not appear again for five minutes.</translation>
 <translation id="277499241957683684">Missing device record</translation>
 <translation id="2835170189407361413">Clear form</translation>
-<translation id="2855922900409897335">Verify your <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
 <translation id="3010559122411665027">List entry &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Temporary server error</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Island</translation>
-<translation id="3219579145727097045">Enter the expiration date and 4-digit CVC from the front of your card</translation>
 <translation id="3228969707346345236">The translation failed because the page is already in <ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;Undo Reorder</translation>
 <translation id="333371639341676808">Prevent this page from creating additional dialogues.</translation>
-<translation id="3369366829301677151">Update and verify your <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">Deprovisioned</translation>
 <translation id="3377188786107721145">Policy parse error</translation>
 <translation id="3380365263193509176">Unknown error</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Redo Move</translation>
 <translation id="3623476034248543066">Show value</translation>
 <translation id="3650584904733503804">Validation successful</translation>
+<translation id="3667681724235208644">View Original</translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
 <translation id="3739623965217189342">Link that you copied</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Conflicting device identifier</translation>
 <translation id="3885155851504623709">Parish</translation>
 <translation id="3934680773876859118">Failed to load PDF document</translation>
-<translation id="3963721102035795474">Reader Mode</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
 <translation id="4058922952496707368">Key &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Expected <ph name="VALUE_TYPE"/> value.</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Remove address from Chrome?</translation>
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4607653538520819196">This page cannot be proxied by Data Saver.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Reload policies</translation>
-<translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Current user</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
 <translation id="5872918882028971132">Parent Suggestions</translation>
-<translation id="587701087903783706">Close mobile-friendly view</translation>
 <translation id="59107663811261420">This type of card is not supported by Google Payments for this merchant. Please select a different card.</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">You are trying to reach <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. This page cannot be proxied by Data Saver at this time.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Search</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
-<translation id="6646897916597483132">Enter the 4-digit CVC from the front of your card</translation>
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6839929833149231406">Area</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Mandatory</translation>
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE"/>Would you like to translate it?</translation>
-<translation id="7569952961197462199">Remove credit card from Chrome?</translation>
 <translation id="7600965453749440009">Never translate <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">Value is out of range <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="7791543448312431591">Add</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7813600968533626083">Remove form suggestion from Chrome?</translation>
-<translation id="7887683347370398519">Check your CVC and try again</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Mobile bookmarks</translation>
 <translation id="7961015016161918242">Never</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
 <translation id="8804164990146287819">Privacy Policy</translation>
-<translation id="8824019021993735287">Chrome was unable to verify your card at this time. Please try again later.</translation>
 <translation id="8834246243508017242">Enable Autofill using Contacts…</translation>
 <translation id="883848425547221593">Other Bookmarks</translation>
 <translation id="8866481888320382733">Error parsing policy settings</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="8940229512486821554">Run <ph name="EXTENSION_NAME"/> command: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Enter the expiry date and 3-digit CVC from the back of your card</translation>
 <translation id="9020542370529661692">This page has been translated to <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Enter the 3-digit CVC from the back of your card</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9148507642005240123">&amp;Undo edit</translation>
 <translation id="9154176715500758432">Stay on this Page</translation>
 <translation id="9170848237812810038">&amp;Undo</translation>
 <translation id="9207861905230894330">Failed to add article.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">CLEAR FORM</translation>
-<translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

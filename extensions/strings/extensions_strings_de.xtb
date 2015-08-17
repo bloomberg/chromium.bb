@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Daten mit einem beliebigen Gerät in diesen Domains austauschen: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Lokalisierung wurde verwendet, in der Manifest-Datei war jedoch kein Wert für &quot;default_locale&quot; angegeben.</translation>
 <translation id="2616366145935564096">Eigene Daten auf <ph name="WEBSITE_1"/> lesen und ändern</translation>
+<translation id="2677911863018634147">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines oder mehrere Ihrer Geräte an.</translation>
 <translation id="2753617847762399167">Unzulässiger Pfad (absolut oder relativ mit &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="27822970480436970">Die Erweiterung konnte eine Netzwerkanfrage nicht modifizieren, da die Modifikation einen Konflikt mit einer anderen Erweiterung verursacht.</translation>
 <translation id="2857834222104759979">Manifest-Datei ist ungültig.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Ihre Daten auf verschiedenen Websites lesen</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> von Anbieter <ph name="VENDOR_ID"/> (Seriennummer <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{USB-Gerät auswählen}multiple{USB-Geräte auswählen}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Launcher-Seite &quot;<ph name="PAGE"/>&quot; konnte nicht geladen werden.</translation>
 <translation id="3759933321830434300">Teile von Webseiten blockieren</translation>
 <translation id="388442998277590542">Optionsseite &quot;<ph name="OPTIONS_PAGE"/>&quot; konnte nicht geladen werden.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">unbekannte Geräte von <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Ihre Daten auf <ph name="WEBSITE_1"/> und <ph name="WEBSITE_2"/> lesen</translation>
 <translation id="4761104368405085019">Ihr Mikrofon verwenden</translation>
+<translation id="4776856853352853275">USB-Geräte auswählen</translation>
 <translation id="4811956658694082538">Das Paket konnte nicht installiert werden, da der Prozess eines Dienstprogramms abgestürzt ist. Starten Sie Chrome neu und versuchen Sie es erneut.</translation>
 <translation id="4883436287898674711">Alle <ph name="WEBSITE_1"/>-Websites</translation>
 <translation id="5026754133087629784">Web-Ansicht: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Netzwerkverbindungen verwalten</translation>
-<translation id="5165983846722506205">{1,select, single{HID-Gerät auswählen}multiple{HID-Geräte auswählen}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Die Erweiterung enthält die Schlüsseldatei &quot;<ph name="KEY_PATH"/>&quot;. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
+<translation id="545850661681880228">HID-Gerät auswählen</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME"/>-Erweiterung</translation>
 <translation id="5678955352098267522">Ihre Daten auf <ph name="WEBSITE_1"/> lesen</translation>
+<translation id="5751530153776468604">Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines Ihrer Geräte an.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Bluetooth-Adapterstatus und -Pairing steuern</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> von Anbieter <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Daten mit dem Gerät mit dem Namen &quot;<ph name="HOSTNAME"/>&quot; austauschen</translation>
 <translation id="6143635259298204954">Erweiterung kann nicht entpackt werden. Damit eine Erweiterung sicher entpackt werden kann, muss ein Pfad zu Ihrem Profilverzeichnis zur Verfügung stehen, der keine symbolische Verbindung enthält. Für Ihr Profil besteht kein solcher Pfad.</translation>
-<translation id="616804573177634438">{0,select, single{Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines Ihrer Geräte an.}multiple{Die Anwendung &quot;<ph name="APP_NAME"/>&quot; fordert Zugriff auf eines oder mehrere Ihrer Geräte an.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Auf Informationen zu Bluetooth-Geräten mit Pairing mit Ihrem System zugreifen und Bluetooth-Geräte in der Nähe finden</translation>
 <translation id="6344170822609224263">Auf Liste der Netzwerkverbindungen zugreifen</translation>
 <translation id="6384275966486438344">Sucheinstellungen in <ph name="SEARCH_HOST"/> ändern</translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Daten lesen, die Sie kopieren und einfügen</translation>
 <translation id="730515362922783851">Daten mit einem beliebigen Gerät im lokalen Netzwerk oder Internet austauschen</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Erweiterungs-ID &quot;<ph name="EXTENSION_ID"/>&quot;) wurde vom Administrator blockiert.</translation>
+<translation id="781637217073033149">HID-Geräte auswählen</translation>
 <translation id="7893008570150657497">Auf Fotos, Musik und andere Medien auf Ihrem Computer zugreifen</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) einen anderen Dateinamen &quot;<ph name="ACTUAL_FILENAME"/>&quot; festgelegt hat.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Manifest-Datei fehlt oder ist nicht lesbar.</translation>
 <translation id="8620765578342452535">Netzwerkverbindungen konfigurieren</translation>
 <translation id="8636666366616799973">Paket ist ungültig. Details: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
+<translation id="8658591203505835552">USB-Gerät auswählen</translation>
 <translation id="8662911384982557515">Startseite zu <ph name="HOME_PAGE"/> ändern</translation>
 <translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) sie an <ph name="ACTUAL_REDIRECT_DESTINATION"/> weitergeleitet hat.</translation>
 <translation id="8712265948125780616">Erweiterungsentpacker</translation>

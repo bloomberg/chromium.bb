@@ -2,7 +2,6 @@
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
 <translation id="1016765312371154165">Chrome nie został poprawnie zamknięty.</translation>
 <translation id="103396972844768118">Ważna informacja dotycząca Twoich danych Chrome</translation>
-<translation id="1061441684050139317">Aby zezwolić stronie na wykorzystanie mikrofonu, Chrome musi mieć do niego dostęp.</translation>
 <translation id="1065672644894730302">Nie można odczytać ustawień. Niektóre funkcje mogą być niedostępne, a zmiany w ustawieniach nie zostaną zapisane.</translation>
 <translation id="1073391069195728457">Chrome – powiadomienia</translation>
 <translation id="1104959162601287462">System operacyjny &amp;Chrome – informacje</translation>
@@ -53,7 +52,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2485422356828889247">Odinstaluj</translation>
 <translation id="2576431527583832481">Chrome jest teraz jeszcze lepszy! Dostępna jest nowa wersja.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
-<translation id="2588322182880276190">Logo Chrome</translation>
 <translation id="2596415276201385844">Aby nawiązać bezpieczne połączenie, Twój zegar musi mieć ustawioną prawidłową godzinę. Jest to wymagane, ponieważ certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Ponieważ zegar Twojego urządzenia nie jest ustawiony prawidłowo, Chrome nie może zweryfikować tych certyfikatów.</translation>
 <translation id="2664962310688259219">Licencje oprogramowania typu open source w Chrome OS</translation>
 <translation id="2665296953892887393">Pomóż nam ulepszyć Google Chrome, przesyłając do Google raporty o awariach i <ph name="UMA_LINK"/></translation>
@@ -61,6 +59,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2681064822612051220">W systemie znaleziono zainstalowaną przeglądarkę Google Chrome, która powoduje konflikt. Odinstaluj ją i spróbuj ponownie.</translation>
 <translation id="2689103672227170538">To rozszerzenie ustawiło inną stronę wyświetlaną po uruchomieniu Chrome.</translation>
 <translation id="2704356438731803243">Jeśli chcesz, by Twoje bieżące dane Chrome były przechowywane oddzielnie, możesz utworzyć nowego użytkownika Chrome dla użytkownika <ph name="USER_NAME"/>.</translation>
+<translation id="2721687379934343312">Na komputerach z systemem Mac hasła są zapisane w pęku kluczy. Inni użytkownicy Chrome udostępniający to konto systemu OS X mogą uzyskiwać do nich dostęp i je synchronizować.</translation>
 <translation id="2748463065602559597">Przeglądasz bezpieczną stronę Google Chrome.</translation>
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
 <translation id="2770231113462710648">Zmień przeglądarkę domyślną na:</translation>
@@ -91,13 +90,11 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="386202838227397562">Zamknij wszystkie okna przeglądarki Google Chrome i spróbuj ponownie.</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3889417619312448367">Odinstaluj Google Chrome</translation>
-<translation id="4011219958405096740">Gdy ta funkcja jest włączona, używany będzie proces logowania w Chrome oparty na iframe. Jeśli nie, logowanie będzie oparte na WebView.</translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
 <translation id="4053720452172726777">Dostosowywanie i kontrolowanie Google Chrome</translation>
 <translation id="4147555960264124640">Logujesz się na zarządzane konto i przekazujesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME"/>. Będzie można je usunąć w Panelu kont Google, ale nie będzie można ich powiązać z innym kontem. <ph name="LEARN_MORE"/></translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
 <translation id="4167057906098955729">Tutaj możesz zobaczyć wszystkie powiadomienia z aplikacji, rozszerzeń i stron internetowych w Chrome.</translation>
-<translation id="423410644998903704">Aby zezwolić stronie na wykorzystanie uprawnień, Chrome musi je mieć.</translation>
 <translation id="4251615635259297716">Połączyć Twoje dane Chrome z tym kontem?</translation>
 <translation id="4273752058983339720">Google Chrome uruchamia się automatycznie po włączeniu komputera.</translation>
 <translation id="4309555186815777032">(wymaga <ph name="BEGIN_BUTTON"/>ponownego uruchomienia<ph name="END_BUTTON"/> Chrome)</translation>
@@ -109,7 +106,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4458285410772214805">Wyloguj się i zaloguj ponownie, by zmiana zaczęła obowiązywać.</translation>
 <translation id="4480040274068703980">System operacyjny Chrome nie może zsynchronizować danych z powodu błędu logowania.</translation>
 <translation id="4513711165509885787">Szczegóły płatności zostały zapisane w Chrome.</translation>
-<translation id="4519152997629025674">Google Chrome może korzystać z <ph name="BEGIN_LINK"/>usług sieciowych<ph name="END_LINK"/>, by poprawić wygodę użytkowania. Można je wyłączyć w dowolnym momencie.</translation>
 <translation id="4561051373932531560">W przeglądarce Google Chrome możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić na niego za pośrednictwem usługi Skype!</translation>
 <translation id="4567424176335768812">Jesteś zalogowany jako <ph name="USER_EMAIL_ADDRESS"/>. Teraz możesz korzystać ze swoich zakładek, historii i innych ustawień na wszystkich zalogowanych urządzeniach.</translation>
 <translation id="4631713731678262610">Ukryj w menu Chrome</translation>
@@ -153,11 +149,8 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
 <translation id="5620765574781326016">Poznaj tematy omawiane w witrynach, nie opuszczając strony.</translation>
 <translation id="568643307450491754">Zakładki są dostępne w menu Chrome i na pasku zakładek.</translation>
 <translation id="573759479754913123">System operacyjny &amp;Chrome – informacje</translation>
-<translation id="5785746630574083988">Ponowne uruchomienie w trybie Windows 8 spowoduje zamknięcie i ponowne otwarcie aplikacji Chrome.</translation>
-<translation id="5799551393681493217">Włącza procesy logowania w Chrome oparte na iframe. Ta flaga zastępuje internetowy proces logowania.</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>
 <translation id="5877064549588274448">Kanał został zmieniony. Aby zastosować zmiany, uruchom ponownie urządzenie.</translation>
-<translation id="5931853610562009806">Na Macach hasła można zapisywać w pęku kluczy. Inni użytkownicy Chrome dzielący to konto OS X mogą z nich korzystać i je synchronizować.</translation>
 <translation id="5940385492829620908">Tu są Twoje strony, zakładki i inne dane z Chrome.</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="597770749449734237">Włącza dodatkowe skróty klawiszowe, które przydają się przy debugowaniu Google Chrome.</translation>
@@ -169,7 +162,6 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
           &gt;
           <ph name="PROXIES_TITLE"/>
           i upewnij się, że w konfiguracji wybrano połączenie bez serwera proxy lub bezpośrednie.</translation>
-<translation id="6012342843556706400">Aby zezwolić stronie na wykorzystanie danych o lokalizacji, Chrome musi mieć do nich dostęp.</translation>
 <translation id="6014844626092547096">Jesteś zalogowany w Chrome. Administrator wyłączył synchronizację.</translation>
 <translation id="6049075767726609708">Administrator zainstalował w tym systemie przeglądarkę Google Chrome i jest ona dostępna dla wszystkich użytkowników. Przeglądarka Google Chrome zainstalowana na poziomie użytkownika zostanie teraz zastąpiona przez instalację systemową.</translation>
 <translation id="6113794647360055231">Chrome jest jeszcze lepszy</translation>
@@ -186,7 +178,6 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
         i odznacz „<ph name="NO_PREFETCH_DESCRIPTION"/>”.
         Jeśli nie rozwiąże to problemu, zalecamy ponowne wybranie tej opcji,
         by poprawić wydajność.</translation>
-<translation id="6368805772029492593">Dla większego bezpieczeństwa Google Chrome szyfruje dane.</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Trwa pobieranie pliku. Czy chcesz je anulować i wyjść z Google Chrome?}few{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Google Chrome?}many{Trwa pobieranie # plików. Czy chcesz je anulować i wyjść z Google Chrome?}other{Trwa pobieranie # pliku. Czy chcesz je anulować i wyjść z Google Chrome?}}</translation>
 <translation id="6598387184982954187">Używasz adresu <ph name="PROFILE_EMAIL"/> do synchronizowania danych w Chrome. Aby zaktualizować ustawienia synchronizacji lub używać Chrome bez konta Google, wejdź na stronę <ph name="SETTINGS_LINK"/>.</translation>
@@ -239,21 +230,16 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
 <translation id="7473891865547856676">Nie, dziękuję</translation>
 <translation id="7494905215383356681">Licencje oprogramowania typu open source w Chrome</translation>
 <translation id="7592736734348559088">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
-<translation id="7626032353295482388">Chrome - witamy!</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
 <translation id="7761834446675418963">Otwórz Chrome, klikając swoją nazwę, i rozpocznij przeglądanie.</translation>
 <translation id="7781002470561365167">Dostępna jest nowa wersja przeglądarki Google Chrome.</translation>
-<translation id="7784335114585804598">U&amp;ruchom Chrome ponownie w trybie Windows 8</translation>
 <translation id="7787950393032327779">Wygląda na to, że profil jest używany przez inny proces Google Chrome (<ph name="PROCESS_ID"/>) na innym komputerze (<ph name="HOST_NAME"/>). Chrome zablokował profil, by zapobiec jego uszkodzeniu. Jeśli masz pewność, że żadne inne procesy nie używają tego profilu, możesz go odblokować i ponownie uruchomić Chrome.</translation>
-<translation id="7788788617745289808">Aby zezwolić stronie na wykorzystanie aparatu, Chrome musi mieć do niego dostęp.</translation>
 <translation id="7808348361785373670">Usuń z Chrome...</translation>
-<translation id="781069973841903133">Ponowne uruchomienie Chrome w trybie pojemnym spowoduje zamknięcie i ponowne uruchomienie aplikacji Chrome.</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
 <translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
 <translation id="7908968924842975895">Ten komputer nie będzie otrzymywać aktualizacji Google Chrome, ponieważ zawiera sprzęt, który nie jest już obsługiwany.</translation>
 <translation id="7984945080620862648">Nie możesz teraz odwiedzić strony <ph name="SITE"/>, bo wysłała ona zakodowane poświadczenia, których Chrome nie może przetworzyć. Błędy sieci i ataki są zazwyczaj przejściowe, więc prawdopodobnie strona będzie wkrótce działać.</translation>
 <translation id="8000275528373650868">Google Chrome wymaga systemu Windows Vista bądź Windows XP z dodatkiem SP2 lub nowszym.</translation>
-<translation id="8005540215158006229">Chrome jest już prawie gotowy.</translation>
 <translation id="8008534537613507642">Ponownie zainstaluj Chrome</translation>
 <translation id="8030318113982266900">Aktualizuję Twoje urządzenie do kanału: <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">Aby po usunięciu konta z Chrome zmiany zostały zastosowane, może być konieczne ponowne załadowanie otwartych kart.</translation>
@@ -265,11 +251,9 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
 <translation id="8205111949707227942">Opcjonalnie: pomóż nam udoskonalać system operacyjny Chrome poprzez automatyczne wysyłanie do Google statystyk użytkowania i raportów o awariach.</translation>
 <translation id="8227755444512189073">Chrome musi uruchomić zewnętrzną aplikację do obsługi linków <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="8255190535488645436">Google Chrome używa Twojej kamery i mikrofonu.</translation>
-<translation id="8274359292107649245">Otwórz Chrome na pulpicie</translation>
 <translation id="8286862437124483331">Google Chrome próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="8290100596633877290">O kurczę! Przeglądarka Google Chrome uległa awarii. Uruchomić ją teraz ponownie?</translation>
 <translation id="8406086379114794905">Pomóż ulepszać Chrome</translation>
-<translation id="8437332772351535342">Ponowne uruchomienie w trybie pulpitu spowoduje zamknięcie i ponowne otwarcie aplikacji Chrome.</translation>
 <translation id="8460191995881063249">Centrum powiadomień Chrome</translation>
 <translation id="853189717709780425">Logujesz się na konto zarządzane i przyznajesz jego administratorowi kontrolę nad swoim profilem Google Chrome. Twoje dane Chrome, takie jak aplikacje, zakładki, historia, hasła i inne ustawienia, zostaną trwale powiązane z użytkownikiem <ph name="USER_NAME"/>. Będzie je można usunąć w sekcji kont Panelu Google, ale nie będzie można powiązać ich z innym kontem.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -281,12 +265,10 @@ i nieprawidłowe dane logowania. Oznacza to, że osoba atakująca próbuje podsz
 <translation id="8669527147644353129">Pomoc Google Chrome</translation>
 <translation id="8679801911857917785">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome.</translation>
 <translation id="870251953148363156">Aktualizuj &amp;Google Chrome</translation>
-<translation id="8811903091068364646">U&amp;ruchom Chrome ponownie na pulpicie</translation>
 <translation id="8823341990149967727">Chrome jest nieaktualny</translation>
 <translation id="884296878221830158">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chrome lub kliknięciu przycisku strony startowej.</translation>
 <translation id="8851136666856101339">główny</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
-<translation id="8889942196804715220">Uruchom ponownie w trybie pojemnym Chrome</translation>
 <translation id="8987477933582888019">Przeglądarka</translation>
 <translation id="9026991721384951619">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="9102715433345326100">Ten plik jest złośliwy i został zablokowany przez Chrome.</translation>

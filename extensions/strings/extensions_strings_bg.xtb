@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Обмен на данни с всяко устройство в домейните: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Беше използвана локализация, но променливата „default_locale“ не беше посочена в манифеста.</translation>
 <translation id="2616366145935564096">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Приложението „<ph name="APP_NAME"/>“ иска достъп до едно или повече от устройствата ви.</translation>
 <translation id="2753617847762399167">Непозволен път (абсолютен или относителен с (..): „<ph name="IMAGE_PATH"/>“</translation>
 <translation id="27822970480436970">Това разширение не успя да промени заявка от мрежата, защото промяната влезе в конфликт с друго разширение.</translation>
 <translation id="2857834222104759979">Файлът на манифеста е невалиден.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (сериен номер <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Четене на данните ви от редица уебсайтове</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> от доставчик <ph name="VENDOR_ID"/> (сериен номер <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Избор на USB устройство}multiple{Избор на USB устройства}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Страницата „<ph name="PAGE"/>“ в стартовия панел не можа да се зареди.</translation>
 <translation id="3759933321830434300">Блокиране на части от уеб страници</translation>
 <translation id="388442998277590542">Страницата за опции „<ph name="OPTIONS_PAGE"/>“ не можа да се зареди.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">неизвестни устройства от <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Четене на данните ви от <ph name="WEBSITE_1"/> и <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Използване на микрофона ви</translation>
+<translation id="4776856853352853275">Избор на USB устройства</translation>
 <translation id="4811956658694082538">Пакетът не можа да се инсталира поради срив на помощен процес. Рестартирайте Chrome и опитайте отново.</translation>
 <translation id="4883436287898674711">Всички <ph name="WEBSITE_1"/> сайта</translation>
 <translation id="5026754133087629784">Изглед в мрежата: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Управление на мрежовите връзки</translation>
-<translation id="5165983846722506205">{1,select, single{Избор на HID устройство}multiple{Избор на HID устройства}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Изглед за приложението: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Разширението включва файла с ключ „<ph name="KEY_PATH"/>“. Вероятно не искате да направите това.</translation>
+<translation id="545850661681880228">Избор на HID устройство</translation>
 <translation id="5627523580512561598">разширението „<ph name="EXTENSION_NAME"/>“</translation>
 <translation id="5678955352098267522">Четене на данните ви от <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Приложението „<ph name="APP_NAME"/>“ иска достъп до едно от устройствата ви.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Контролиране на състоянието и сдвояването на адаптера за Bluetooth</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> от доставчик <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Обмен на данни с устройството с име „<ph name="HOSTNAME"/>“</translation>
 <translation id="6143635259298204954">Разширението не може да се разпакетира.  За да направите това по безопасен начин, трябва да има път към директорията в потребителския ви профил, който не съдържа символна връзка.  Не съществува такъв път за потребителския ви профил.</translation>
-<translation id="616804573177634438">{0,select, single{Приложението „<ph name="APP_NAME"/>“ иска достъп до едно от устройствата ви.}multiple{Приложението „<ph name="APP_NAME"/>“ иска достъп до едно или повече от устройствата ви.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Да осъществява достъп до информацията за сдвоените със системата ви устройства с Bluetooth и да открива тези, които са наблизо.</translation>
 <translation id="6344170822609224263">Достъп до списъка с мрежови връзки</translation>
 <translation id="6384275966486438344">Променете настройките си за търсене на: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Четене на данните, които копирате и поставяте</translation>
 <translation id="730515362922783851">Обмен на данни с всяко устройство в локалната мрежа или интернет</translation>
 <translation id="7809034755304591547">Разширението <ph name="EXTENSION_NAME"/> (идентификационен номер „<ph name="EXTENSION_ID"/>“) е блокирано от администратора.</translation>
+<translation id="781637217073033149">Избор на HID устройства</translation>
 <translation id="7893008570150657497">Да осъществява достъп до снимки, музика и друга медия от компютъра ви.</translation>
 <translation id="7972881773422714442">Опции: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Това разширение не успя да наименува изтеглянето „<ph name="ATTEMPTED_FILENAME"/>“, защото друго разширение (<ph name="EXTENSION_NAME"/>) определи различно файлово име – „<ph name="ACTUAL_FILENAME"/>“.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Файлът на манифеста липсва или не може да бъде прочетен.</translation>
 <translation id="8620765578342452535">Конфигуриране на мрежовите връзки</translation>
 <translation id="8636666366616799973">Пакетът е невалиден. Подробности: „<ph name="ERROR_MESSAGE"/>“.</translation>
+<translation id="8658591203505835552">Избор на USB устройство</translation>
 <translation id="8662911384982557515">Промяна на началната ви страница на <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Това разширение не успя да пренасочи заявка от мрежата към <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, защото друго разширение (<ph name="EXTENSION_NAME"/>) я пренасочи към <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Разпакетиране на разширения</translation>

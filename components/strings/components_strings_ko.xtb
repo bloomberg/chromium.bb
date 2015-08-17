@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">등록 도메인:</translation>
 <translation id="1344588688991793829">Chromium 자동완성 설정...</translation>
 <translation id="1426410128494586442">예</translation>
-<translation id="1455235771979731432">카드를 인증하는 중에 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="1491151370853475546">페이지 새로고침</translation>
-<translation id="1549470594296187301">이 기능을 이용하려면 자바스크립트를 사용하도록 설정해야 합니다.</translation>
 <translation id="1639239467298939599">로드 중</translation>
 <translation id="1640180200866533862">사용자 정책</translation>
 <translation id="1644184664548287040">네트워크 구성이 잘못되어 가져올 수 없습니다.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">삭제 실행 취소(&amp;U)</translation>
 <translation id="2455981314101692989">이 웹페이지에서는 이 양식에 대한 자동완성 기능을 사용할 수 없습니다.</translation>
 <translation id="2479410451996844060">검색 URL이 잘못됨</translation>
-<translation id="2495083838625180221">JSON 파서</translation>
 <translation id="2498091847651709837">새 카드 스캔</translation>
 <translation id="2556876185419854533">수정 실행 취소(&amp;U)</translation>
 <translation id="2581221116934462656">다음에 <ph name="PRODUCT_NAME"/>에서 이 사이트의 <ph name="LANGUAGE_NAME"/> 페이지를 번역하시겠습니까?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">계속 사용할 수 있습니다. 이 페이지를 계속 이용하는 경우 5분 동안 이 경고가 다시 표시되지 않습니다.</translation>
 <translation id="277499241957683684">기기 기록 없음</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
-<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> 인증</translation>
 <translation id="2958431318199492670">네트워크 설정이 ONC 표준을 준수하지 않습니다. 일부 설정을 가져올 수 없습니다.</translation>
 <translation id="2972581237482394796">다시 실행(&amp;R)</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX"/>': <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">일시적인 서버 오류</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">섬</translation>
-<translation id="3219579145727097045">신용카드의 유효기간과 카드 앞면의 4자리 CVC를 입력하세요.</translation>
 <translation id="3228969707346345236">페이지가 <ph name="LANGUAGE"/>(으)로 되어 있으므로 번역하지 못했습니다.</translation>
 <translation id="3270847123878663523">재정렬 실행 취소(&amp;U)</translation>
 <translation id="333371639341676808">이 페이지가 추가적인 대화를 생성하지 않도록 차단합니다.</translation>
-<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> 업데이트 및 확인</translation>
 <translation id="337363190475750230">사용 중단됨</translation>
 <translation id="3377188786107721145">정책 파싱 오류</translation>
 <translation id="3380365263193509176">알 수 없는 오류가 발생했습니다.</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">이동 다시 실행(&amp;R)</translation>
 <translation id="3623476034248543066">값 표시</translation>
 <translation id="3650584904733503804">유효성 검사 성공</translation>
+<translation id="3667681724235208644">원본 페이지 보기</translation>
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="3712624925041724820">라이선스 만료됨</translation>
 <translation id="3739623965217189342">복사한 링크</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
 <translation id="3885155851504623709">교구</translation>
 <translation id="3934680773876859118">PDF 문서를 로드하지 못했습니다.</translation>
-<translation id="3963721102035795474">리더 모드</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
 <translation id="4058922952496707368">'<ph name="SUBKEY"/>' 키: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">프록시 설정이 고정 프록시 서버가 아닌 .pac 스크립트 URL을 사용하도록 설정됩니다.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">예상 <ph name="VALUE_TYPE"/> 값입니다.</translation>
 <translation id="443673843213245140">프록시 사용은 중지되었지만 명시적 프록시 설정이 지정되어 있습니다.</translation>
 <translation id="4506176782989081258">유효성 검사 오류 <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Chrome에서 주소를 삭제하시겠습니까?</translation>
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
 <translation id="4607653538520819196">이 페이지는 데이터 세이버에 의해 프록시될 수 없습니다.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
-<translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="4923417429809017348">페이지가 알 수 없는 언어에서 <ph name="LANGUAGE_LANGUAGE"/>(으)로 번역되었습니다.</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">현재 사용자</translation>
 <translation id="5813119285467412249">추가 다시 실행(&amp;R)</translation>
 <translation id="5872918882028971132">상위 추천</translation>
-<translation id="587701087903783706">모바일 친화적 보기 닫기</translation>
 <translation id="59107663811261420">이 판매자의 Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
 <translation id="5989320800837274978">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되지 않았습니다.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376"><ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>에 접속을 시도하고 있습니다. 이 페이지는 현재 데이터 세이버에 의해 프록시될 수 없습니다.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 검색</translation>
 <translation id="6644283850729428850">이 정책은 사용되지 않습니다.</translation>
-<translation id="6646897916597483132">카드 앞면의 4자리 CVC를 입력하세요.</translation>
 <translation id="6753269504797312559">정책 값</translation>
 <translation id="6831043979455480757">번역</translation>
 <translation id="6839929833149231406">지역</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">필수</translation>
 <translation id="7542995811387359312">양식에 보안 연결이 사용되지 않아 신용카드 자동 채우기가 사용 중지되었습니다.</translation>
 <translation id="7568593326407688803">이 페이지는<ph name="ORIGINAL_LANGUAGE"/>로 되어 있습니다. 번역하시겠습니까?</translation>
-<translation id="7569952961197462199">Chrome에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> 번역 안함</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE"/>)이 범위를 벗어났습니다.</translation>
 <translation id="7752995774971033316">관리되지 않음</translation>
 <translation id="777702478322588152">도</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="7805768142964895445">상태</translation>
-<translation id="7813600968533626083">Chrome에서 추천검색어를 삭제하시겠습니까?</translation>
-<translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">모바일 북마크</translation>
 <translation id="7961015016161918242">완료되지 않음</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
 <translation id="8804164990146287819">개인정보취급방침</translation>
-<translation id="8824019021993735287">현재 Chrome에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8834246243508017242">주소록을 사용해 자동완성 기능 사용 설정…</translation>
 <translation id="883848425547221593">기타 북마크</translation>
 <translation id="8866481888320382733">정책 설정을 파싱하는 중 오류 발생</translation>
 <translation id="8876793034577346603">네트워크 설정을 파싱하지 못했습니다.</translation>
 <translation id="8891727572606052622">프록시 모드가 잘못되었습니다.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> 명령어 실행: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">신용카드의 유효기간과 카드 뒷면의 3자리 CVC를 입력하세요.</translation>
 <translation id="9020542370529661692">이 페이지는 <ph name="TARGET_LANGUAGE"/>로 번역되었습니다.</translation>
-<translation id="9125941078353557812">카드 뒷면의 3자리 CVC를 입력하세요.</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9148507642005240123">수정 실행 취소(&amp;U)</translation>
 <translation id="9154176715500758432">이 페이지에 머무르기</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="9207861905230894330">글을 추가하지 못했습니다.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">양식 지우기</translation>
-<translation id="988159990683914416">개발자 빌드</translation>
 </translationbundle>

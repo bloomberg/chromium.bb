@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">تبادل البيانات مع أي جهاز في النطاقات: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">‏تم استخدام التعريب، ولكن لم يتم تحديد default_locale في البيان.</translation>
 <translation id="2616366145935564096">قراءة بياناتك وتغييرها في <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد أو أكثر من أجهزتك.</translation>
 <translation id="2753617847762399167">مسار غير قانوني (أساسي أو منتسب مع '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">أخفقت هذه الإضافة في تعديل طلب الشبكة نظرًا لتعارض التعديل مع إضافة أخرى.</translation>
 <translation id="2857834222104759979">ملف البيان غير صالح.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">قراءة بياناتك على عدد من مواقع الويب</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> من المورّد <ph name="VENDOR_ID"/> (الرقم التسلسلي <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{‏تحديد جهاز USB}multiple{‏تحديد أجهزة USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">‏تعذر تحميل صفحة launcher &quot;<ph name="PAGE"/>&quot;.</translation>
 <translation id="3759933321830434300">الأجزاء المقيدة من صفحات الويب</translation>
 <translation id="388442998277590542">تعذر تحميل صفحة الخيارات &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">أجهزة غير معروفة من <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">قراءة بياناتك على <ph name="WEBSITE_1"/> و<ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">استخدام الميكروفون</translation>
+<translation id="4776856853352853275">‏تحديد أجهزة USB</translation>
 <translation id="4811956658694082538">‏تعذر تثبيت الحزمة بسبب تعطل معالجة الأداة المساعدة. جرّب إعادة تشغيل Chrome وحاول مرة أخرى.</translation>
 <translation id="4883436287898674711">جميع مواقع <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">عرض الويب: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">إدارة اتصالات الشبكة</translation>
-<translation id="5165983846722506205">{1,select, single{‏تحديد جهاز واجهة بشرية HID}multiple{‏تحديد أجهزة واجهة بشرية HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">عرض التطبيق: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">تتضمن هذه الإضافة ملف المفتاح '<ph name="KEY_PATH"/>'. ربما لا تريد إجراء ذلك.</translation>
+<translation id="545850661681880228">‏تحديد جهاز واجهة بشرية (HID)</translation>
 <translation id="5627523580512561598">الإضافة <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">قراءة بياناتك على <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد من أجهزتك.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">التحكم في حالة محول بلوتوث وإقرانه</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> من المورّد <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">تبادل البيانات مع الجهاز المسمى <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">لا يمكن فك ضغط الإضافة.  لفك ضغط الإضافة بشكل آمن، يجب أن يكون هناك مسار إلى دليل ملفك الشخصي، ولا يحتوي على رابط رمزي.  ليس هناك مثل هذا المسار لملفك الشخصي.</translation>
-<translation id="616804573177634438">{0,select, single{يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد من أجهزتك.}multiple{يطلب تطبيق &quot;<ph name="APP_NAME"/>&quot; الدخول إلى واحد أو أكثر من أجهزتك.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">الوصول إلى معلومات حول أجهزة البلوتوث المقترنة بنظامك واكتشاف أجهزة البلوتوث القريبة.</translation>
 <translation id="6344170822609224263">قائمة الدخول لاتصالات الشبكة</translation>
 <translation id="6384275966486438344">تغيير إعدادات البحث لـ: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">قراءة البيانات التي نسختها ولصقتها</translation>
 <translation id="730515362922783851">تبادل البيانات مع أي جهاز على الشبكة المحلية أو الإنترنت</translation>
 <translation id="7809034755304591547">تم حظر <ph name="EXTENSION_NAME"/> (معرف الإضافة &quot;<ph name="EXTENSION_ID"/>&quot;) من قِبل المشرف.</translation>
+<translation id="781637217073033149">‏تحديد أجهزة واجهة بشرية (HID)</translation>
 <translation id="7893008570150657497">الوصول إلى الصور والموسيقى والوسائط الأخرى من جهاز الكمبيوتر</translation>
 <translation id="7972881773422714442">الخيارات: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">أخفقت هذه الإضافة في تسمية التنزيل &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; نظرًا لأن هناك إضافة أخرى (<ph name="EXTENSION_NAME"/>) قد حددت اسم ملف آخر &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">ملف البيان مفقود أو غير قابل للقراءة.</translation>
 <translation id="8620765578342452535">تهيئة اتصالات الشبكة</translation>
 <translation id="8636666366616799973">الحزمة غير صالحة. التفاصيل: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="8658591203505835552">‏تحديد جهاز USB</translation>
 <translation id="8662911384982557515">تغيير الصفحة الرئيسية إلى: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">أخفقت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME"/>) إلى <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">أداة فك ضغط الإضافات</translation>

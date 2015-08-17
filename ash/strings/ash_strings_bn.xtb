@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">অন-স্ক্রিন কীবোর্ড সক্ষম করুন</translation>
-<translation id="1343000272198685031">মাইক জ্যাক</translation>
 <translation id="1346748346194534595">ডান</translation>
 <translation id="137180024469554212">আবর্তন লক অক্ষম করুন</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1602076796624386989">মোবাইল ডেটা সক্রিয় করুন</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT"/> সময় বাকি আছে</translation>
-<translation id="164969095109328410">Chrome ডিভাইস</translation>
 <translation id="1723752762323179280">সেশন থেকে প্রস্থান করা হচ্ছে</translation>
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
+<translation id="1753067873202720523">চালু থাকার সময় আপনার Chromebook চার্জ নাও হতে পারে৷</translation>
 <translation id="1812696562331527143">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>৩য় পক্ষ<ph name="END_LINK"/>) এ পরিবর্তিত হয়েছে৷
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> তে প্রতিবিম্বিত হচ্ছে</translation>
 <translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
 <translation id="1957803754585243749">০°</translation>
-<translation id="1963814843110128691">১ ডলার থেকে ২ ডলারে কাস্ট করা হচ্ছে</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">অ্যাকাউন্টসমূহ</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
 <translation id="2204305834655267233">নেটওয়ার্ক তথ্য</translation>
 <translation id="2208323208084708176">একীভূত ডেস্কটপ মোড</translation>
+<translation id="2248649616066688669">Chromebook এর সঙ্গে একটি বহিস্থিত প্রদর্শন সংযুক্ত থাকাকালীন আপনি এটি ব্যবহার করা চালিয়ে যেতে পারেন এমনকি যখন এটির লিড বন্ধ থাকে তখনো।</translation>
 <translation id="225680501294068881">ডিভাইসগুলির জন্য স্ক্যান করা হচ্ছে...</translation>
 <translation id="2268130516524549846">ব্লুটুথ অক্ষমিত</translation>
 <translation id="2268813581635650749">সবগুলি সাইন আউট করুন</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
 <translation id="2562916301614567480">ব্যক্তিগত নেটওয়ার্ক</translation>
+<translation id="2614835198358683673">চালু থাকার সময় আপনার Chromebook চার্জ নাও হতে পারে৷ এটির নিজস্ব চার্জার ব্যবহার করার কথা বিবেচনা করুন৷</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: সংযুক্ত হচ্ছে...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/> এর মধ্যে সেশন শেষ হয়ে যাবে৷ আপনাকে সাইন আউট করা হবে৷</translation>
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
@@ -73,6 +73,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3294437725009624529">অতিথি</translation>
 <translation id="3433830597744061105">অ্যাকাউন্টগুলি পরিচালনা করুন</translation>
 <translation id="3473479545200714844">স্ক্রীন ম্যাগনিফায়ার</translation>
+<translation id="3527846106059622359">নতুন লগইন UI চালু আছে</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
@@ -102,6 +103,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4250680216510889253">না</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">ডেস্কটপ কাস্ট করা হচ্ছে</translation>
 <translation id="4379753398862151997">Dear Monitor, it's not working out between us. (এই মনিটরটি সমর্থিত নয়)</translation>
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME"/>-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
@@ -112,29 +114,25 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4895488851634969361">ব্যাটারি পূর্ণ৷</translation>
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="4957722034734105353">আরো জানুন...</translation>
-<translation id="4961318399572185831">স্ক্রীন কাস্ট করুন</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google ড্রাইভ সেটিংস ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> বাকি</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="5222676887888702881">সাইন আউট</translation>
 <translation id="5238774010593222950">অন্য অ্যাকাউন্টে সাইন ইন করা যাবে না।</translation>
 <translation id="544691375626129091">সমস্ত উপলব্ধ ব্যবহারকারীকে ইতিমধ্যেই এই সেশনে যোগ করা হয়েছে৷</translation>
 <translation id="5507786745520522457">মোবাইল ডেটা সেটআপ করুন</translation>
+<translation id="5537725057119320332">কাস্ট করুন</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; এক্সটেনশানটি এই নেটওয়ার্কের সাথে সংযোগ স্থাপন করতে সাহায্য করতে পারে৷</translation>
 <translation id="5565793151875479467">প্রক্সি...</translation>
 <translation id="5571066253365925590">ব্লুটুথ সক্ষমিত</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">আপনি আপনার <ph name="DEVICE_TYPE"/> কে একটি বহিস্থ প্রদর্শনের সাথে সংযুক্ত থাকা অবস্থায়, এমনকি ঢাকনা বন্ধ থাকলেও, সেটি ব্যবহার করতে পারবেন।</translation>
 <translation id="5777841717266010279">স্ক্রীন ভাগ করা থামাবেন?</translation>
+<translation id="5807965672380739016">এতে ডেস্কটপ কাস্ট করুন</translation>
 <translation id="5825747213122829519">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID"/> এ পরিবর্তিত হয়েছে৷
 স্যুইচ করতে Shift + Alt টিপুন৷</translation>
 <translation id="5871632337994001636">ডিভাইসগুলি পরিচালন করুন...</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
-<translation id="5927132638760172455">একটি অজানা রিসিভারে কাস্টিং করা হচ্ছে</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">ফেরান</translation>
 <translation id="595202126637698455">কার্য-সম্পাদনা ট্রেস করা সক্ষম রয়েছে</translation>
 <translation id="5958529069007801266">তত্ত্বাবধানে থাকা ব্যবহারকারী</translation>
@@ -166,14 +164,13 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="68610848741840742">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> এর জন্য একটি অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="6911468394164995108">অন্যান্য যোগদান ...</translation>
-<translation id="6915678159055240887">ক্রোমবাক্স</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
 <translation id="7029814467594812963">সেশন থেকে প্রস্থান</translation>
 <translation id="703171847531699602">কোনো কাস্ট ডিভাইস নেই</translation>
 <translation id="7052914147756339792">ওয়ালপেপার সেট করুন...</translation>
 <translation id="7097613348211027502">ChromeVox (কথ্য প্রতিক্রিয়া) সক্ষম রয়েছে৷ অক্ষম করার জন্য Ctrl+Alt+Z টিপুন৷</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 কাস্ট করা হচ্ছে</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
 <translation id="7209101170223508707">CAPS LOCK চালু আছে৷
 Alt+Search অথবা বাতিল করতে Shift টিপুন৷</translation>
@@ -190,7 +187,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="785750925697875037">মোবাইল অ্যাকাউন্ট দেখুন</translation>
 <translation id="7864539943188674973">ব্লুটুথ অক্ষম করুন</translation>
 <translation id="7904094684485781019">এই অ্যাকাউন্টের প্রশাসক একাধিক সাইন ইন অননুমোদিত করেছেন৷</translation>
-<translation id="7957227661277029961">আপনার <ph name="DEVICE_TYPE"/> চালু থাকা অবস্থায় চার্জ নাও হতে পারে। এটির মূল চার্জার ব্যবহারের কথা ভাবুন।</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="8054466585765276473">ব্যাটারি সময় গণনা করা হচ্ছে।</translation>
 <translation id="8103386449138765447">SMS বার্তা: <ph name="MESSAGE_COUNT"/></translation>
@@ -199,13 +195,12 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> বন্ধ করুন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
-<translation id="8443356412772935865">১ ডলারে স্ক্রীন কাস্টিং করা হচ্ছে</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> বাকি পুরো চার্জ হতে</translation>
-<translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE"/> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
 <translation id="8528322925433439945">মোবাইল ...</translation>
 <translation id="8654520615680304441">Wi-Fi চালু করুন...</translation>
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
+<translation id="8697119993436624257">নতুন লগইন UI বন্ধ আছে</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">দেখার জন্য ক্লিক করুন</translation>
 <translation id="8828714802988429505">৯০°</translation>

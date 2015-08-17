@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Anmeldedomain:</translation>
 <translation id="1344588688991793829">AutoFill-Einstellungen für Chromium...</translation>
 <translation id="1426410128494586442">Ja</translation>
-<translation id="1455235771979731432">Beim Bestätigen Ihrer Karte ist ein Problem aufgetreten. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
-<translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
 <translation id="1640180200866533862">Nutzerrichtlinien</translation>
 <translation id="1644184664548287040">Die Netzwerkkonfiguration ist ungültig und konnte nicht importiert werden.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Löschen rückgängig machen</translation>
 <translation id="2455981314101692989">Auf dieser Webseite ist die AutoFill-Funktion für das Formular deaktiviert.</translation>
 <translation id="2479410451996844060">Ungültige Such-URL</translation>
-<translation id="2495083838625180221">JSON-Parser</translation>
 <translation id="2498091847651709837">Neue Karte scannen</translation>
 <translation id="2556876185419854533">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="2581221116934462656">Soll in <ph name="PRODUCT_NAME"/> ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website angeboten werden, die auf <ph name="LANGUAGE_NAME"/> sind?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Sie können zu der Seite gehen. In diesem Fall wird diese Warnung fünf Minuten lang nicht mehr angezeigt.</translation>
 <translation id="277499241957683684">Fehlender Gerätedatensatz</translation>
 <translation id="2835170189407361413">Formular leeren</translation>
-<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> bestätigen</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
 <translation id="3010559122411665027">Listeneintrag &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Vorübergehender Serverfehler</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Insel</translation>
-<translation id="3219579145727097045">Geben Sie das Ablaufdatum und den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
 <translation id="3228969707346345236">Die Übersetzung ist fehlgeschlagen, weil die Seite bereits auf <ph name="LANGUAGE"/> ist.</translation>
 <translation id="3270847123878663523">&amp;Neu anordnen rückgängig machen</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
-<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> aktualisieren und bestätigen</translation>
 <translation id="337363190475750230">Bereitstellung aufgehoben</translation>
 <translation id="3377188786107721145">Fehler beim Parsen der Richtlinie</translation>
 <translation id="3380365263193509176">Unbekannter Fehler</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
 <translation id="3623476034248543066">Wert zeigen</translation>
 <translation id="3650584904733503804">Überprüfung erfolgreich</translation>
+<translation id="3667681724235208644">Original ansehen</translation>
 <translation id="370665806235115550">Wird geladen...</translation>
 <translation id="3712624925041724820">Lizenzen aufgebraucht</translation>
 <translation id="3739623965217189342">Von Ihnen kopierter Link</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">In Konflikt stehende Gerätekennung</translation>
 <translation id="3885155851504623709">Gemeinde</translation>
 <translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
-<translation id="3963721102035795474">Lesemodus</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="4058922952496707368">Schlüssel &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Die Proxy-Konfiguration ist auf die Verwendung einer PAC-Skript-URL und nicht die von festen Proxyservern eingestellt.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Erwarteter <ph name="VALUE_TYPE"/>-Wert</translation>
 <translation id="443673843213245140">Die Proxy-Nutzung ist deaktiviert, es ist jedoch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="4506176782989081258">Fehler bei der Überprüfung: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Adresse aus Chrome entfernen?</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4607653538520819196">Datenkomprimierungs-Proxy kann für diese Seite nicht verwendet werden</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
-<translation id="4800132727771399293">Prüfen Sie Ihr Ablaufdatum und Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE"/> übersetzt.</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
 <translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
 <translation id="5872918882028971132">Vorschläge für Eltern</translation>
-<translation id="587701087903783706">Für Mobilgeräte optimierte Ansicht schließen</translation>
 <translation id="59107663811261420">Dieser Kartentyp wird von Google Payments für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Sie versuchen, <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> zu erreichen. Für diese Seite kann der Datenkomprimierungs-Proxy derzeit nicht verwendet werden.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>-Suche</translation>
 <translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
-<translation id="6646897916597483132">Geben Sie den vierstelligen CVC-Code auf der Vorderseite Ihrer Karte ein.</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Verbindlich</translation>
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE"/>Soll sie übersetzt werden?</translation>
-<translation id="7569952961197462199">Kreditkarte aus Chrome entfernen?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> nie übersetzen</translation>
 <translation id="7610193165460212391">Wert liegt außerhalb des zulässigen Bereichs (<ph name="VALUE"/>).</translation>
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="777702478322588152">Präfektur</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="7805768142964895445">Status</translation>
-<translation id="7813600968533626083">Vorschlag für das Formular aus Chrome entfernen?</translation>
-<translation id="7887683347370398519">Prüfen Sie Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Mobile Lesezeichen</translation>
 <translation id="7961015016161918242">Nie</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8804164990146287819">Datenschutzerklärung</translation>
-<translation id="8824019021993735287">Ihre Karte konnte momentan nicht überprüft werden. Bitte versuchen Sie es später erneut.</translation>
 <translation id="8834246243508017242">AutoFill aktivieren und dazu die Kontakte verwenden…</translation>
 <translation id="883848425547221593">Andere Lesezeichen</translation>
 <translation id="8866481888320382733">Fehler beim Parsen der Richtlinieneinstellungen</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/>-Befehl ausführen: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Geben Sie das Ablaufdatum und den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
 <translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE"/> vor.</translation>
-<translation id="9125941078353557812">Geben Sie den dreistelligen CVC-Code auf der Rückseite Ihrer Karte ein.</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>
 <translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="9207861905230894330">Der Artikel konnte nicht hinzugefügt werden.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">Formular leeren</translation>
-<translation id="988159990683914416">Entwickler-Build</translation>
 </translationbundle>

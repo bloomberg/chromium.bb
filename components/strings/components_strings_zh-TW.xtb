@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
 <translation id="1426410128494586442">是</translation>
-<translation id="1455235771979731432">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
 <translation id="1491151370853475546">重新載入這個網頁</translation>
-<translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
 <translation id="1639239467298939599">載入中</translation>
 <translation id="1640180200866533862">使用者政策</translation>
 <translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">復原刪除(&amp;U)</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>
 <translation id="2479410451996844060">無效的搜尋網址。</translation>
-<translation id="2495083838625180221">JSON 剖析器</translation>
 <translation id="2498091847651709837">掃描新信用卡</translation>
 <translation id="2556876185419854533">復原編輯(&amp;U)</translation>
 <translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME"/> 翻譯這個網站的<ph name="LANGUAGE_NAME"/>網頁嗎？</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">您可以繼續操作。如果您繼續造訪網頁，後續 5 分鐘內將不會再看到這項警告。</translation>
 <translation id="277499241957683684">沒有裝置紀錄</translation>
 <translation id="2835170189407361413">清除表單</translation>
-<translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX"/>」：<ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">島</translation>
-<translation id="3219579145727097045">請輸入有效期限和信用卡正面的四位數信用卡安全碼</translation>
 <translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE"/>，翻譯作業失敗。</translation>
 <translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
 <translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
-<translation id="3369366829301677151">更新並驗證您的 <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">已取消佈建</translation>
 <translation id="3377188786107721145">政策解析錯誤</translation>
 <translation id="3380365263193509176">未知的錯誤</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">重做移動(&amp;R)</translation>
 <translation id="3623476034248543066">顯示政策值</translation>
 <translation id="3650584904733503804">驗證成功</translation>
+<translation id="3667681724235208644">查看原始網頁</translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="3712624925041724820">授權已用盡</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
 <translation id="3885155851504623709">轄區</translation>
 <translation id="3934680773876859118">無法載入 PDF 文件</translation>
-<translation id="3963721102035795474">閱讀器模式</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
 <translation id="4058922952496707368">鍵「<ph name="SUBKEY"/>」：<ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE"/>」值。</translation>
 <translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
 <translation id="4506176782989081258">驗證錯誤：<ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">要從 Chrome 中移除地址嗎？</translation>
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
 <translation id="4607653538520819196">Data Saver 無法對這個網頁執行 Proxy 處理。</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="4726672564094551039">重新載入政策</translation>
-<translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">目前使用者</translation>
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5872918882028971132">家長建議</translation>
-<translation id="587701087903783706">關閉適合透過行動裝置瀏覽的檢視模式</translation>
 <translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">您嘗試連線至 <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>。Data Saver 目前無法對這個網頁執行 Proxy 處理。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜尋</translation>
 <translation id="6644283850729428850">這項政策已遭取代。</translation>
-<translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6839929833149231406">區</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">強制</translation>
 <translation id="7542995811387359312">由於這個表單並未採用加密連線方式，所以信用卡自動填入功能已停用。</translation>
 <translation id="7568593326407688803">此網頁為<ph name="ORIGINAL_LANGUAGE"/>您要翻譯網頁內容嗎？</translation>
-<translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
 <translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">值超出 <ph name="VALUE"/> 的範圍。</translation>
 <translation id="7752995774971033316">未管理</translation>
 <translation id="777702478322588152">縣</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="7805768142964895445">狀態</translation>
-<translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
-<translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="7961015016161918242">永不</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
-<translation id="8824019021993735287">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="8834246243508017242">啟用「使用聯絡人資料自動填入」功能…</translation>
 <translation id="883848425547221593">其他書籤</translation>
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
 <translation id="8940229512486821554">執行 <ph name="EXTENSION_NAME"/> 指令：<ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">請輸入有效期限和信用卡背面的三位數信用卡安全碼</translation>
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">請輸入信用卡背面的三位數信用卡安全碼</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9148507642005240123">復原編輯(&amp;U)</translation>
 <translation id="9154176715500758432">停留在此頁</translation>
 <translation id="9170848237812810038">取消(&amp;U)</translation>
 <translation id="9207861905230894330">無法新增文章。</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">清除表單</translation>
-<translation id="988159990683914416">開發人員版本</translation>
 </translationbundle>

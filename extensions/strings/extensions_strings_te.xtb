@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">ఈ డొమైన్‌ల్లో ఏ పరికరంతోనైనా డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">స్థానీకరణ ఉపయోగించబడింది, కానీ మానిఫెస్ట్ లో default_locale పేర్కొనబడలేదు.</translation>
 <translation id="2616366145935564096"><ph name="WEBSITE_1"/>లో ఉన్న మీ డేటాని చదవడం మరియు మార్చడం</translation>
+<translation id="2677911863018634147">&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ ఒకటి లేదా అంతకంటే ఎక్కువ పరికరాలకు ప్రాప్యతను అభ్యర్థిస్తోంది.</translation>
 <translation id="2753617847762399167">చట్టవిరుద్ధ పథం (ఖచ్చితంగా లేదా '..'కు సంబంధిత): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">నెట్‌వర్క్ అభ్యర్థనను సవరించడంలో ఈ పొడిగింపు విఫలమైంది ఎందుకంటే సవరణ మరొక పొడిగింపుతో వైరుధ్యంలో ఉంది.</translation>
 <translation id="2857834222104759979">వివరాల ఫైల్ చెల్లనిది.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">అనేక వెబ్‌సైట్‌ల్లోని మీ డేటాను చదవండి</translation>
 <translation id="3466070586188012397"><ph name="VENDOR_ID"/> విక్రేత నుండి <ph name="PRODUCT_NAME"/> (క్రమ సంఖ్య <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{USB పరికరాన్ని ఎంచుకోండి}multiple{USB పరికరాలను ఎంచుకోండి}other{UNUSED}}</translation>
 <translation id="3624204664103857160">లాంచర్ పేజీ '<ph name="PAGE"/>'ని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="3759933321830434300">వెబ్ పేజీల్లో భాగాలను బ్లాక్ చేయండి</translation>
 <translation id="388442998277590542">ఎంపికల పేజీ '<ph name="OPTIONS_PAGE"/>'ని లోడ్ చెయ్యడం సాధ్యం కాలేదు.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> అందించిన తెలియని పరికరాలు</translation>
 <translation id="4542520061254486227"><ph name="WEBSITE_1"/> మరియు <ph name="WEBSITE_2"/>లోని మీ డేటాను చదవండి</translation>
 <translation id="4761104368405085019">మీ మైక్రోఫోన్‌ను ఉపయోగించండి</translation>
+<translation id="4776856853352853275">USB పరికరాలను ఎంచుకోండి</translation>
 <translation id="4811956658694082538">వినియోగ ప్రాసెస్ క్రాష్ అయినందున ప్యాకేజీని ఇన్‌స్టాల్ చేయలేకపోయింది. Chromeను పునఃప్రారంభించి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4883436287898674711">అన్ని <ph name="WEBSITE_1"/> వెబ్‌సైట్‌లు</translation>
 <translation id="5026754133087629784">వెబ్ వీక్షణ: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">నెట్‌వర్క్ కనెక్షన్‌లను నిర్వహించండి</translation>
-<translation id="5165983846722506205">{1,select, single{HID పరికరాన్ని ఎంచుకోండి}multiple{HID పరికరాలను ఎంచుకోండి}other{UNUSED}}</translation>
 <translation id="5356315618422219272">అనువర్తన వీక్షణ: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">ఈ పొడిగింపు '<ph name="KEY_PATH"/>' కీ ఫైల్‌ను కలిగి ఉంది. బహుశా మీరు దాన్ని చేయకూడదు.</translation>
+<translation id="545850661681880228">HID పరికరాన్ని ఎంచుకోండి</translation>
 <translation id="5627523580512561598">పొడిగింపు <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1"/>లోని మీ డేటాను చదవండి</translation>
+<translation id="5751530153776468604">&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ పరికరాల్లో ఒకదానికి ప్రాప్యతను అభ్యర్థిస్తోంది.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">పొడిగింపు వీక్షణ: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">బ్లూటూత్ అడాప్టర్ స్థితిని మరియు జత చేసే విధానాన్ని నియంత్రించడానికి అనుమతి</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="VENDOR_ID"/> విక్రేత నుండి <ph name="PRODUCT_NAME"/></translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> పేరు గల పరికరంతో డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి</translation>
 <translation id="6143635259298204954">ఎక్స్‌టెన్‌షన్‌ అన్‌ప్యాక్ చేయబడదు.  ఒక ఎక్స్‌టెన్‌షన్‌‌ను సురక్షితంగా అన్‌ప్యాక్ చేయడానికి, మీ ప్రొఫైల్ డైరెక్టరీకి సింలింక్ ఉండని గమ్యమార్గం తప్పనిసరిగా ఉండాలి.  మీ ప్రొఫైల్‌కు అటువంటి గమ్యమార్గం లేదు.</translation>
-<translation id="616804573177634438">{0,select, single{&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ పరికరాల్లో ఒకదానికి ప్రాప్యతను అభ్యర్థిస్తోంది.}multiple{&quot;<ph name="APP_NAME"/>&quot; అనువర్తనం మీ పరికరాల్లో ఒకదానికి లేదా అంతకంటే ఎక్కువ వాటికి ప్రాప్యతను అభ్యర్థిస్తోంది.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">మీ సిస్టమ్‌తో జత చేయబడిన బ్లూటూత్ పరికరాలకు సంబంధించిన సమాచారాన్ని ప్రాప్యత చేయడానికి మరియు సమీపంలోని బ్లూటూత్ పరికరాలను కనుగొనడానికి అనుమతి.</translation>
 <translation id="6344170822609224263">నెట్‌వర్క్ కనెక్షన్‌ల జాబితాను ప్రాప్యత చేయండి</translation>
 <translation id="6384275966486438344">మీ శోధన సెట్టింగ్‌లను దీనికి మార్చండి: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">మీరు కాపీ చేసి అతికించే డేటాను చదవడం</translation>
 <translation id="730515362922783851">స్థానిక నెట్‌వర్క్‌ లేదా ఇంటర్నెట్‌లో ఏ పరికరంతోనైనా డేటాను ఇచ్చిపుచ్చుకోవడానికి అనుమతి</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (పొడిగింపు ID &quot;<ph name="EXTENSION_ID"/>&quot;)ని నిర్వాహకుడు బ్లాక్ చేసారు.</translation>
+<translation id="781637217073033149">HID పరికరాలను ఎంచుకోండి</translation>
 <translation id="7893008570150657497">మీ కంప్యూటర్ నుండి ఫోటోలు, సంగీతం మరియు ఇతర మీడియాను ప్రాప్యత చేయండి</translation>
 <translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">ఈ పొడిగింపు డౌన్‌లోడ్ యొక్క పేరును &quot;<ph name="ATTEMPTED_FILENAME"/>&quot;గా పేర్కొనడంలో విఫలమైంది ఎందుకంటే మరో పొడిగింపు (<ph name="EXTENSION_NAME"/>) &quot;<ph name="ACTUAL_FILENAME"/>&quot; అనే వేరే ఫైల్ పేరుని నిశ్చయించింది.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">మానిఫెస్ట్ ఫైల్ తప్పిపోయింది లేదా చదవలేనిది.</translation>
 <translation id="8620765578342452535">నెట్‌వర్క్ కనెక్షన్‌లను కాన్ఫిగర్ చేయడానికి అనుమతి</translation>
 <translation id="8636666366616799973">ప్యాకేజీ చెల్లనిది. వివరాలు: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">USB పరికరాన్ని ఎంచుకోండి</translation>
 <translation id="8662911384982557515">మీ హోమ్ పేజీని దీనికి మార్చండి: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>) నెట్‌వర్క్ అభ్యర్థనను <ph name="ACTUAL_REDIRECT_DESTINATION"/>కు దారి మళ్లించినందున ఈ పొడిగింపు దీన్ని <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>కు దారి మళ్లించడంలో విఫలమైంది.</translation>
 <translation id="8712265948125780616">ఎక్స్‌టెన్షన్ అన్‌ప్యాకర్</translation>

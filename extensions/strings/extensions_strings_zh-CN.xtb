@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">与下列网域中的任何设备交换数据：<ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">已使用本地化功能，但未在清单中指定 default_locale。</translation>
 <translation id="2616366145935564096">读取和更改您在<ph name="WEBSITE_1"/>上的数据</translation>
+<translation id="2677911863018634147">“<ph name="APP_NAME"/>”应用请求访问您的一台或多台设备。</translation>
 <translation id="2753617847762399167">非法路径（具有“..”的绝对或相对路径）：“<ph name="IMAGE_PATH"/>”</translation>
 <translation id="27822970480436970">此扩展程序无法修改网络请求，因为这一修改与其他扩展程序产生了冲突。</translation>
 <translation id="2857834222104759979">清单文件无效。</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/>（序列号为 <ph name="SERIAL_NUMBER"/>）</translation>
 <translation id="344630545793878684">读取您在一些网站上的数据</translation>
 <translation id="3466070586188012397">来自供应商 <ph name="VENDOR_ID"/> 的<ph name="PRODUCT_NAME"/>（序列号为 <ph name="SERIAL_NUMBER"/>）</translation>
-<translation id="3560114062880914682">{1,select, single{选择 1 台 USB 设备}multiple{选择多台 USB 设备}other{UNUSED}}</translation>
 <translation id="3624204664103857160">无法加载启动器页面“<ph name="PAGE"/>”。</translation>
 <translation id="3759933321830434300">屏蔽部分网页</translation>
 <translation id="388442998277590542">无法加载选项页“<ph name="OPTIONS_PAGE"/>”。</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">来自<ph name="VENDOR_NAME"/>的未知设备</translation>
 <translation id="4542520061254486227">读取您在 <ph name="WEBSITE_1"/> 和 <ph name="WEBSITE_2"/> 上的数据</translation>
 <translation id="4761104368405085019">使用您的麦克风</translation>
+<translation id="4776856853352853275">选择 USB 设备</translation>
 <translation id="4811956658694082538">某个实用程序进程崩溃了，因此软件包无法安装。请重新启动 Chrome，然后重试。</translation>
 <translation id="4883436287898674711">所有<ph name="WEBSITE_1"/>网站</translation>
 <translation id="5026754133087629784">网页视图：<ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">管理网络连接</translation>
-<translation id="5165983846722506205">{1,select, single{选择 1 台 HID 设备}multiple{选择多台 HID 设备}other{UNUSED}}</translation>
 <translation id="5356315618422219272">应用视图：<ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">此扩展程序包含密钥文件“<ph name="KEY_PATH"/>”，您最好不要执行此操作。</translation>
+<translation id="545850661681880228">选择 HID 设备</translation>
 <translation id="5627523580512561598">扩展程序“<ph name="EXTENSION_NAME"/>”</translation>
 <translation id="5678955352098267522">读取您在 <ph name="WEBSITE_1"/> 上的数据</translation>
+<translation id="5751530153776468604">“<ph name="APP_NAME"/>”应用请求访问您的某台设备。</translation>
 <translation id="588705686677293479">SurfaceWorker：<ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">控制蓝牙适配器状态和配对</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721">来自供应商 <ph name="VENDOR_ID"/> 的<ph name="PRODUCT_NAME"/></translation>
 <translation id="6075907793831890935">与名为“<ph name="HOSTNAME"/>”的设备交换数据</translation>
 <translation id="6143635259298204954">无法将扩展程序解包。要安全地将扩展程序解包，您的个人资料目录中的解包路径不得包含符号链接。您的个人资料中不存在这样的路径。</translation>
-<translation id="616804573177634438">{0,select, single{“<ph name="APP_NAME"/>”应用请求访问您的某台设备。}multiple{“<ph name="APP_NAME"/>”应用请求访问您的一台或多台设备。}other{UNUSED}}</translation>
 <translation id="6241530762627360640">获取与您的系统配对的蓝牙设备的相关信息，以及发现附近的蓝牙设备。</translation>
 <translation id="6344170822609224263">网络连接的访问权限列表</translation>
 <translation id="6384275966486438344">将您的搜索设置更改为：<ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">读取您复制和粘贴的数据</translation>
 <translation id="730515362922783851">与本地网络或互联网中的任何设备交换数据</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/>（扩展程序 ID为“<ph name="EXTENSION_ID"/>”）已被管理员阻止。</translation>
+<translation id="781637217073033149">选择 HID 设备</translation>
 <translation id="7893008570150657497">通过计算机访问照片、音乐和其他媒体</translation>
 <translation id="7972881773422714442">选项：<ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">此扩展程序无法将下载的文件命名为“<ph name="ATTEMPTED_FILENAME"/>”，因为另一扩展程序 (<ph name="EXTENSION_NAME"/>) 已将此文件命名为“<ph name="ACTUAL_FILENAME"/>”。</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">清单文件缺失或不可读。</translation>
 <translation id="8620765578342452535">配置网络连接</translation>
 <translation id="8636666366616799973">程序包无效。详细信息：“<ph name="ERROR_MESSAGE"/>”。</translation>
+<translation id="8658591203505835552">选择 USB 设备</translation>
 <translation id="8662911384982557515">将您的主页更改为：<ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">此扩展程序无法将该网络请求重新定向到 <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>，因为其他扩展程序（<ph name="EXTENSION_NAME"/>）已将其重新定向到 <ph name="ACTUAL_REDIRECT_DESTINATION"/>。</translation>
 <translation id="8712265948125780616">扩展程序解压缩程序</translation>

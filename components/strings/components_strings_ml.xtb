@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">എൻറോൾമെന്റ് ഡൊമെയ്ൻ:</translation>
 <translation id="1344588688991793829">Chromium ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
 <translation id="1426410128494586442">അതെ</translation>
-<translation id="1455235771979731432">നിങ്ങളുടെ കാർഡ് പരിശോധിച്ചുറപ്പിക്കുന്നതിൽ ഒരു പ്രശ്‌നമുണ്ടായിരുന്നു. ഇന്റർ‌നെറ്റ് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="1491151370853475546">ഈ പേജ് വീണ്ടും ലോഡുചെയ്യുക</translation>
-<translation id="1549470594296187301">ഈ ഫീച്ചർ ഉപയോഗിക്കാൻ JavaScript പ്രവർത്തനക്ഷമമാക്കിയിരിക്കണം.</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
 <translation id="1640180200866533862">ഉപയോക്തൃ നയങ്ങൾ</translation>
 <translation id="1644184664548287040">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ അസാധുവായതിനാൽ ഇമ്പോർട്ടുചെയ്യാൻ കഴിഞ്ഞില്ല.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;ഇല്ലാതാക്കൽ പഴയപടിയാക്കുക</translation>
 <translation id="2455981314101692989">ഈ വെബ്പേജ് ഈ ഫോമിനായുള്ള സ്വപ്രേരിത ഫില്ലിംഗിനെ അപ്രാപ്തമാക്കി.</translation>
 <translation id="2479410451996844060">തിരയൽ URL അസാധുവാണ്.</translation>
-<translation id="2495083838625180221">JSON പാഴ്‌സർ</translation>
 <translation id="2498091847651709837">പുതിയ കാർഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2556876185419854533">&amp;എഡിറ്റുചെയ്യുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="2581221116934462656">അടുത്ത തവണ ഈ സൈറ്റിൽ നിന്ന് <ph name="LANGUAGE_NAME"/> പേജുകൾ വിവർത്തനം ചെയ്യാനായി <ph name="PRODUCT_NAME"/> ഓഫർ ചെയ്യുന്നതിൽ നിങ്ങൾക്ക് താൽപ്പര്യമുണ്ടോ?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">നിങ്ങൾക്ക് തുടരാം. പേജിൽ തുടരുകയാണെങ്കിൽ, അഞ്ച് മിനിറ്റിന് ഈ മുന്നറിയിപ്പ് വീണ്ടും ദൃശ്യമാകുന്നതല്ല.</translation>
 <translation id="277499241957683684">ഉപകരണ റെക്കോർഡ് കാണുന്നില്ല</translation>
 <translation id="2835170189407361413">ഫോം മായ്‌ക്കുക</translation>
-<translation id="2855922900409897335">നിങ്ങളുടെ <ph name="CREDIT_CARD"/> പരിശോധിച്ചുറപ്പിക്കുക</translation>
 <translation id="2958431318199492670">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ ONC സ്റ്റാൻഡേർഡിന് അനുസൃതമായി പ്രവർത്തിക്കുന്നില്ല. കോൺഫിഗറേഷൻ ഭാഗങ്ങൾ ഇമ്പോർട്ടുചെയ്‌തേക്കില്ല.</translation>
 <translation id="2972581237482394796">&amp;വീണ്ടും ചെയ്യുക</translation>
 <translation id="3010559122411665027">ലിസ്റ്റ് എൻട്രി &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">താൽക്കാലികമായ സെർവർ പിശക്</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">ഐലന്‍ഡ്</translation>
-<translation id="3219579145727097045">നിങ്ങളുടെ കാർഡിന്റെ മുന്നിലുള്ള കാലഹരണപ്പെടൽ തീയതിയും 4-അക്ക CVC-യും നൽകുക</translation>
 <translation id="3228969707346345236"><ph name="LANGUAGE"/> ല്‍‌ ഈ പേജ് ഇതിനകം ഉള്ളതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="3270847123878663523">&amp;പുനഃക്രമീകരിക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="333371639341676808">അധികമുള്ള ഡയലോഗുകള്‍ സൃഷ്ടിക്കുന്നതില്‍ നിന്ന് ഈ പേജിനെ തടയൂ.</translation>
-<translation id="3369366829301677151">അപ്‌ഡേറ്റുചെയ്‌ത് നിങ്ങളുടെ <ph name="CREDIT_CARD"/> പരിശോധിച്ചുറപ്പിക്കുക</translation>
 <translation id="337363190475750230">ഡിപ്രൊവിഷൻ ചെയ്‌തു</translation>
 <translation id="3377188786107721145">നയം പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="3380365263193509176">അജ്ഞാതമായ പിശക്</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;നീക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="3623476034248543066">മൂല്യം കാണിക്കുക</translation>
 <translation id="3650584904733503804">മൂല്യനിർണ്ണയം വിജയകരം</translation>
+<translation id="3667681724235208644">യഥാർത്ഥമായത് കാണുക</translation>
 <translation id="370665806235115550">ലോഡ്ചെയ്യുന്നു...</translation>
 <translation id="3712624925041724820">ലൈസൻസുകൾ കാലഹരണപ്പെട്ടു</translation>
 <translation id="3739623965217189342">നിങ്ങൾ പകർത്തിയ ലിങ്ക്</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">വിരുദ്ധ ഉപകരണ ഐഡന്റിഫയർ</translation>
 <translation id="3885155851504623709">പാരിഷ്</translation>
 <translation id="3934680773876859118">PDF പ്രമാണം ലോഡുചെയ്യുന്നത് പരാജയപ്പെട്ടു</translation>
-<translation id="3963721102035795474">റീഡർ മോഡ്</translation>
 <translation id="4030383055268325496">&amp;ചേർക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="4058922952496707368">കീ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">പ്രോക്‌സി കോൺഫിഗറേഷൻ .pac സ്‌ക്രിപ്റ്റ് URL ഉപയോഗിക്കുന്നതിനായി സജ്ജീകരിച്ചിരിക്കുന്നു, സ്ഥിരമായ പ്രോക്‌സി സെർവറുകൾ ഉപയോഗിക്കുന്നതിനായല്ല.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">പ്രതീക്ഷിച്ച <ph name="VALUE_TYPE"/> മൂല്യം.</translation>
 <translation id="443673843213245140">പ്രോക്‌സി ഉപയോഗം അപ്രാപ്‌തമാക്കി പക്ഷെ ഒരു വ്യക്തമായ പ്രോക്‌സി കോൺഫിഗറേഷൻ നിർദ്ദേശിച്ചു.</translation>
 <translation id="4506176782989081258">മൂല്യനിർണ്ണയ പിശക്: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Chrome-ൽ നിന്ന് വിലാസം നീക്കംചെയ്യണോ?</translation>
 <translation id="4594403342090139922">&amp;ഇല്ലാതാക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="4607653538520819196">ഡാറ്റ സേവർ വഴി ഈ പേജ് പ്രോക്‌സി ചെയ്യാനാവില്ല.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">നയങ്ങൾ വീണ്ടും ലോഡുചെയ്യുക</translation>
-<translation id="4800132727771399293">നിങ്ങളുടെ കാലഹരണ തീയതിയും CVC യും പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="4813512666221746211">നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
 <translation id="4850886885716139402">കാണുക</translation>
 <translation id="4923417429809017348">ഈ പേജിനെ അറിയപ്പെടാത്ത ഒരു ഭാഷയില്‍‌ നിന്നും <ph name="LANGUAGE_LANGUAGE"/> എന്നതിലേക്ക് വിവര്‍‌ത്തനം ചെയ്തു</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">നിലവിലെ ഉപയോക്താവ്</translation>
 <translation id="5813119285467412249">&amp;ചേർക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="5872918882028971132">പാരന്റ് നിർദ്ദേശങ്ങൾ</translation>
-<translation id="587701087903783706">മൊബൈൽ-സൗഹൃദ കാഴ്‌ച അടയ്‌ക്കുക</translation>
 <translation id="59107663811261420">ഈ വ്യാപരിയ്‌ക്കായി ഈ തരത്തിലുള്ള കാർഡ് Google പേയ്‌മെന്റ് പിന്തുണയ്ക്കുന്നില്ല. മറ്റൊരു കാർഡ് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="5989320800837274978">ഒരു സ്ഥിരമായ പ്രോക്സി സെർവർ അല്ലെങ്കിൽ ഒരു .pac സ്‌ക്രിപ്റ്റ് URL വ്യക്തമാക്കിയിട്ടില്ല.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">നിങ്ങൾ <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> എന്നതിൽ എത്താൻ ശ്രമിക്കുന്നു. ഇപ്പോൾ ഈ പേജ് ഡാറ്റ സേവർ വഴി പ്രോക്‌സി ചെയ്യാനാകില്ല.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> തിരയല്‍</translation>
 <translation id="6644283850729428850">ഈ നയം ഒഴിവാക്കി.</translation>
-<translation id="6646897916597483132">നിങ്ങളുടെ കാർഡിന്റെ മുന്നിലുള്ള 4 അക്ക CVC നൽകുക</translation>
 <translation id="6753269504797312559">നയ മൂല്യം</translation>
 <translation id="6831043979455480757">വിവര്‍‌ത്തനം ചെയ്യുക</translation>
 <translation id="6839929833149231406">ഏരിയ</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">നിർബന്ധിതം</translation>
 <translation id="7542995811387359312">ഈ ഫോം ഒരു സുരക്ഷിത കണക്ഷന്‍ ഉപയോഗിക്കാത്തതിനാല്‍ സ്വപ്രേരിത ക്രെഡിറ്റ് കാര്‍ഡ് പൂരിപ്പിക്കല്‍ അപ്രാപ്തമാക്കി.</translation>
 <translation id="7568593326407688803">ഈ പേജ്<ph name="ORIGINAL_LANGUAGE"/>ലാണ് നിങ്ങളത് വിവര്‍‌ത്തനം ചെയ്യാന്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നോ?</translation>
-<translation id="7569952961197462199">Chrome-ൽ നിന്ന് ക്രെഡിറ്റ് കാർഡ് നീക്കംചെയ്യണോ?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
 <translation id="7610193165460212391">മൂല്യം പരിധിക്ക് പുറത്താണ് <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">നിയന്ത്രിക്കാനാകാത്തത്</translation>
 <translation id="777702478322588152">പ്രിഫെക്‌ചർ</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="7805768142964895445">നില</translation>
-<translation id="7813600968533626083">Chrome-ൽ നിന്നുള്ള നിർദ്ദേശം നീക്കംചെയ്യണോ?</translation>
-<translation id="7887683347370398519">നിങ്ങളുടെ CVC പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="7935318582918952113">DOM ഡിസ്‌റ്റിലർ</translation>
 <translation id="7956713633345437162">മൊബൈൽ ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7961015016161918242">ഒരിക്കലും</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="8790007591277257123">&amp;ഇല്ലാതാക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="8804164990146287819">സ്വകാര്യത നയം</translation>
-<translation id="8824019021993735287">Chrome-ന് ഇപ്പോൾ നിങ്ങളുടെ കാർഡ് പരിശോധിപ്പിച്ചുറപ്പിക്കാൻ കഴിഞ്ഞില്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="8834246243508017242">കോൺടാക്‌റ്റുകൾ ഉപയോഗിച്ച് ഓട്ടോഫിൽ പ്രവർത്തനക്ഷമമാക്കുക…</translation>
 <translation id="883848425547221593">മറ്റുള്ള ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌</translation>
 <translation id="8866481888320382733">നയ ക്രമീകരണങ്ങൾ പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="8876793034577346603">നെറ്റ്‌വർക്ക് കോൺഫിഗറേഷൻ പാഴ്‌സുചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="8891727572606052622">അസാധുവായ പ്രോക്സി മോഡ്</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> കമാന്‍റ്:<ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">നിങ്ങളുടെ കാർഡിന്റെ പുറകിലുള്ള കാലഹരണപ്പെടൽ തീയതിയും 3-അക്ക CVC-യും നൽകുക</translation>
 <translation id="9020542370529661692">ഈ പേജ് <ph name="TARGET_LANGUAGE"/>-ലേക്ക് വിവർത്തനം ചെയ്‌തു</translation>
-<translation id="9125941078353557812">നിങ്ങളുടെ കാർഡിന്റെ പുറകിലുള്ള 3 അക്ക CVC നൽകുക</translation>
 <translation id="9137013805542155359">യഥാര്‍ത്ഥമായത് കാണിക്കുക</translation>
 <translation id="9148507642005240123">&amp;എഡിറ്റുചെയ്യുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="9154176715500758432">ഈ പേജില്‍ നില്‍ക്കുക</translation>
 <translation id="9170848237812810038">‍&amp;പൂര്‍വാവസ്ഥയിലാക്കുക</translation>
 <translation id="9207861905230894330">ലേഖനം ചേർക്കുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">ഫോം മായ്‌ക്കുക</translation>
-<translation id="988159990683914416">വികാസക പതിപ്പ്</translation>
 </translationbundle>

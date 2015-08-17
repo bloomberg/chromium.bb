@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Домен уписнице:</translation>
 <translation id="1344588688991793829">Подешавања Chromium аутоматског попуњавања...</translation>
 <translation id="1426410128494586442">Да</translation>
-<translation id="1455235771979731432">Дошло је до проблема при верификацији картице. Проверите интернет везу и покушајте поново.</translation>
 <translation id="1491151370853475546">Поново учитај ову страницу</translation>
-<translation id="1549470594296187301">JavaScript мора да буде омогућен да бисте користили ову функцију.</translation>
 <translation id="1639239467298939599">Учитавање</translation>
 <translation id="1640180200866533862">Смернице за кориснике</translation>
 <translation id="1644184664548287040">Конфигурација мреже је неважећа и не може да се увезе.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Опозови брисање</translation>
 <translation id="2455981314101692989">Ова веб-страница је онемогућила аутоматско попуњавање за овај образац.</translation>
 <translation id="2479410451996844060">Неважећа URL адреса претраге.</translation>
-<translation id="2495083838625180221">Рашчлањивач JSON датотека</translation>
 <translation id="2498091847651709837">Скенирајте нову картицу</translation>
 <translation id="2556876185419854533">&amp;Опозови измену</translation>
 <translation id="2581221116934462656">Желите ли да вам <ph name="PRODUCT_NAME"/> следећи пут понуди да преведе странице чији је језик <ph name="LANGUAGE_NAME"/> на овом сајту?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Можете да наставите. Ако наставите до странице, ово упозорење се неће поново појавити у наредних пет минута.</translation>
 <translation id="277499241957683684">Недостаје евиденција уређаја</translation>
 <translation id="2835170189407361413">Обриши образац</translation>
-<translation id="2855922900409897335">Верификујте <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">Конфигурација мреже није у складу са ONC стандардом. Делови конфигурације не могу да се увезу.</translation>
 <translation id="2972581237482394796">&amp;Понови радњу</translation>
 <translation id="3010559122411665027">Унос на листи „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Привремена грешка на серверу</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Острво</translation>
-<translation id="3219579145727097045">Унесите датум истека и четвороцифрени CVC који се налази на предњој страни картице</translation>
 <translation id="3228969707346345236">Превод није успео јер је страница већ на језику <ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;Опозови промену редоследа</translation>
 <translation id="333371639341676808">Спречите ову страницу да прави додатне дијалоге.</translation>
-<translation id="3369366829301677151">Ажурирајте и верификујте <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">Онемогућен је</translation>
 <translation id="3377188786107721145">Грешка при рашчлањивању смерница</translation>
 <translation id="3380365263193509176">Непозната грешка</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Понови премештање</translation>
 <translation id="3623476034248543066">Прикажи вредност</translation>
 <translation id="3650584904733503804">Потврда ваљаности је успела</translation>
+<translation id="3667681724235208644">Прикажи оригинал</translation>
 <translation id="370665806235115550">Учитава се...</translation>
 <translation id="3712624925041724820">Нема више лиценци</translation>
 <translation id="3739623965217189342">Линк који сте копирали</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Неусаглашени идентификатор уређаја</translation>
 <translation id="3885155851504623709">Парохија</translation>
 <translation id="3934680773876859118">Учитавање PDF документа није успело</translation>
-<translation id="3963721102035795474">Режим читаоца</translation>
 <translation id="4030383055268325496">&amp;Опозови додавање</translation>
 <translation id="4058922952496707368">Кључ „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Конфигурација проксија је подешена да користи URL адресу .pac скрипте, а не фиксне прокси сервере.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Очекивана вредност je <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">Коришћење проксија је онемогућено, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="4506176782989081258">Грешка при потврди ваљаности: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Желите ли да уклоните адресу из Chrome-а?</translation>
 <translation id="4594403342090139922">&amp;Опозови брисање</translation>
 <translation id="4607653538520819196">Уштеда података не може да пренесе ову страницу.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Поново учитај смернице</translation>
-<translation id="4800132727771399293">Проверите датум истека и CVC и покушајте поново</translation>
 <translation id="4813512666221746211">Грешка на мрежи</translation>
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4923417429809017348">Ова страница је преведена са непознатог језика на <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Тренутни корисник</translation>
 <translation id="5813119285467412249">&amp;Понови додавање</translation>
 <translation id="5872918882028971132">Предлози родитеља</translation>
-<translation id="587701087903783706">Затвори приказ прилагођен мобилним уређајима</translation>
 <translation id="59107663811261420">Google Payments не подржава овај тип картице за овог продавца. Изаберите неку другу картицу.</translation>
 <translation id="5989320800837274978">Нису наведени ни фиксни прокси сервери нити URL адреса .pac скрипте.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Покушавате да одете на <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Уштеда података тренутно не може да пренесе ту страницу.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> претрага</translation>
 <translation id="6644283850729428850">Ове смернице су застареле.</translation>
-<translation id="6646897916597483132">Унесите четвороцифрени CVC који се налази на предњој страни картице</translation>
 <translation id="6753269504797312559">Вредност смерница</translation>
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="6839929833149231406">Област</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Обавезно</translation>
 <translation id="7542995811387359312">Онемогућено је аутоматско попуњавање кредитне картице зато што овај образац не користи безбедну везу.</translation>
 <translation id="7568593326407688803">Ова страница је на језику:<ph name="ORIGINAL_LANGUAGE"/>Желите ли да је преведете?</translation>
-<translation id="7569952961197462199">Желите ли да уклоните кредитну картицу из Chrome-а?</translation>
 <translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">Вредност је изван опсега <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Не управља</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791543448312431591">Додај</translation>
 <translation id="7805768142964895445">Статус</translation>
-<translation id="7813600968533626083">Желите ли да уклоните предлог из Chrome-а?</translation>
-<translation id="7887683347370398519">Проверите CVC и покушајте поново</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Обележивачи на мобилном уређају</translation>
 <translation id="7961015016161918242">Никад</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Покушајте поново</translation>
 <translation id="8790007591277257123">&amp;Понови брисање</translation>
 <translation id="8804164990146287819">Политика приватности</translation>
-<translation id="8824019021993735287">Chrome овог пута није успео да верификује картицу. Покушајте поново касније.</translation>
 <translation id="8834246243508017242">Омогућавање аутоматског попуњавања контактима…</translation>
 <translation id="883848425547221593">Остали обележивачи</translation>
 <translation id="8866481888320382733">Грешка при рашчлањивању подешавања смерница</translation>
 <translation id="8876793034577346603">Рашчлањивање конфигурације мреже није успело.</translation>
 <translation id="8891727572606052622">Неважећи режим проксија.</translation>
 <translation id="8940229512486821554">Покрените <ph name="EXTENSION_NAME"/> команду: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Унесите датум истека и троцифрени CVC који се налази на полеђини картице</translation>
 <translation id="9020542370529661692">Ова страница је преведена на <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Унесите троцифрени CVC који се налази на полеђини картице</translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>
 <translation id="9148507642005240123">&amp;Опозови измену</translation>
 <translation id="9154176715500758432">Остани на овој страници</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>
 <translation id="9207861905230894330">Додавање чланка није успело.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">ОБРИШИ ОБРАЗАЦ</translation>
-<translation id="988159990683914416">Верзија за програмере</translation>
 </translationbundle>

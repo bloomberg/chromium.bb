@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">નોંધણી ડોમેન:</translation>
 <translation id="1344588688991793829">Chromium સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="1426410128494586442">હા</translation>
-<translation id="1455235771979731432">તમારું કાર્ડ ચકાસવામાં એક સમસ્યા આવી હતી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1491151370853475546">આ પૃષ્ઠને ફરીથી લોડ કરો</translation>
-<translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
 <translation id="1644184664548287040">નેટવર્ક ગોઠવણી અમાન્ય છે અને આયાત કરી શકાઇ નથી.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
 <translation id="2455981314101692989">આ વેબપૃષ્ઠે આ ફોર્મનું આપમેળે ભરણ અક્ષમ કર્યું છે.</translation>
 <translation id="2479410451996844060">અમાન્ય શોધ URL.</translation>
-<translation id="2495083838625180221">JSON વિશ્લેશક</translation>
 <translation id="2498091847651709837">નવું કાર્ડ સ્કૅન કરો</translation>
 <translation id="2556876185419854533">&amp;સંપાદિત કરવું પૂર્વવત્‌ કરો</translation>
 <translation id="2581221116934462656">શું તમે <ph name="PRODUCT_NAME"/> ને આ સાઇટથી આગલી વખતે <ph name="LANGUAGE_NAME"/> પૃષ્ઠોમાં અનુવાદની ઓફર કરવા માગો છો?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">તમે ચાલુ રાખી શકો છો. જો તમે પૃષ્ઠ પર ચાલુ રહો છો, તો આ ચેતવણી પાંચ મિનિટ માટે ફરીથી દેખાશે નહીં.</translation>
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
 <translation id="2835170189407361413">ફોર્મ સાફ કરો</translation>
-<translation id="2855922900409897335">તમારું <ph name="CREDIT_CARD"/> ચકાસો</translation>
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>&quot; એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">અસ્થાયી સર્વર ભૂલ</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
-<translation id="3219579145727097045">તમારા કાર્ડની આગળની બાજુ પરથી સમાપ્તિ તારીખ અને 4-અંકનો CVC દાખલ કરો</translation>
 <translation id="3228969707346345236">ભાષાંતર નિષ્ફળ રહ્યું કારણ કે પૃષ્ઠ પહેલાથી જ <ph name="LANGUAGE"/> માં છે.</translation>
 <translation id="3270847123878663523">&amp;પુનઃક્રમાંકિત કરવું પૂર્વવત્ કરો</translation>
 <translation id="333371639341676808">આ પૃષ્ઠને વધારાનાં સંવાદો બનાવવાથી રોકો.</translation>
-<translation id="3369366829301677151">તમારું <ph name="CREDIT_CARD"/> અપડેટ કરો અને ચકાસો</translation>
 <translation id="337363190475750230">જોગવાઈ દૂર કરી</translation>
 <translation id="3377188786107721145">નીતિ વિશ્લેષણ ભૂલ</translation>
 <translation id="3380365263193509176">અજ્ઞાત ભૂલ</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="3623476034248543066">કિંમત બતાવો</translation>
 <translation id="3650584904733503804">માન્યતા સફળ</translation>
+<translation id="3667681724235208644">મૂળ જુઓ</translation>
 <translation id="370665806235115550">લોડ કરી રહ્યું છે...</translation>
 <translation id="3712624925041724820">લાઇસેંસીસ પૂર્ણ</translation>
 <translation id="3739623965217189342">તમે કૉપિ કરેલ લિંક</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">વિરોધાભાસી ઉપકરણ ઓળખકર્તા</translation>
 <translation id="3885155851504623709">પૅરિશ</translation>
 <translation id="3934680773876859118">PDF દસ્તાવેજ લોડ કરવામાં નિષ્ફળ રહ્યા</translation>
-<translation id="3963721102035795474">રીડર મોડ</translation>
 <translation id="4030383055268325496">&amp;ઉમેરવું પૂર્વવત્ કરો</translation>
 <translation id="4058922952496707368">કી &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">પ્રોક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URL નો ઉપયોગ કરવા માટે સેટ છે, નિયત પ્રોક્સી સર્વર્સ માટે નહીં.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE"/> મૂલ્ય.</translation>
 <translation id="443673843213245140">પ્રોક્સીનો ઉપયોગ અક્ષમ કરેલો છે પણ એક સ્પષ્ટ પ્રોક્સી ગોઠવણી ઉલ્લેખિત છે.</translation>
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Chrome માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="4594403342090139922">&amp;કાઢી નાખવું પૂર્વવત્‌ કરો</translation>
 <translation id="4607653538520819196">આ પૃષ્ઠ ડેટા સેવર દ્વારા પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
-<translation id="4800132727771399293">તમારી સમાપ્તિ તારીખ અને CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="4813512666221746211">નેટવર્ક ભૂલ</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE"/> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
 <translation id="5813119285467412249">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="5872918882028971132">પેરેન્ટ સૂચનો</translation>
-<translation id="587701087903783706">મોબાઇલ-અનુકૂળ દૃશ્ય બંધ કરો</translation>
 <translation id="59107663811261420">આ વેપારી માટે Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
 <translation id="5989320800837274978">નિયત પ્રોક્સી સર્વર્સ અથવા .pac સ્ક્રિપ્ટનો URL નો ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">તમે <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> પર પહોંચવાનો પ્રયાસ કરી રહ્યાં છો. ડેટા સેવર દ્વારા આ સમયે આ પૃષ્ઠ પ્રોક્સી કરી શકાતું નથી.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> શોધ</translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
-<translation id="6646897916597483132">તમારા કાર્ડની આગળની બાજુ પરથી 4-અંકનો CVC દાખલ કરો</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6839929833149231406">વિસ્તાર</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">ફરજિયાત</translation>
 <translation id="7542995811387359312">આપમેળે ક્રેડિટ કાર્ડ ભરણ અક્ષમ કર્યું છે કારણ કે આ ફોર્મ સુરક્ષિત કનેક્શનનો ઉપયોગ કરતું નથી.</translation>
 <translation id="7568593326407688803">આ પૃષ્ઠ<ph name="ORIGINAL_LANGUAGE"/>માં છે શું તમે તેને અનુવાદિત કરવા માંગો છો?</translation>
-<translation id="7569952961197462199">Chrome માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> નું ક્યારેય અનુવાદ કરશો નહીં</translation>
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE"/> શ્રેણી બહારનું છે.</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
 <translation id="777702478322588152">પ્રીફેચર</translation>
 <translation id="7791543448312431591">ઉમેરો</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
-<translation id="7813600968533626083">Chrome માંથી ફોર્મ સૂચનો દૂર કરીએ?</translation>
-<translation id="7887683347370398519">તમારું CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">મોબાઇલ બુકમાર્ક્સ</translation>
 <translation id="7961015016161918242">ક્યારેય નહીં</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">ફરી પ્રયાસ કરો</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
 <translation id="8804164990146287819">ગોપનીયતા નીતિ</translation>
-<translation id="8824019021993735287">આ સમયે Chrome તમારું કાર્ડ ચકાસવા અસમર્થ હતું. કૃપા કરીને પછી ફરીથી પ્રયત્ન કરશો.</translation>
 <translation id="8834246243508017242">સંપર્કોનો ઉપયોગ કરીને સ્વતઃભરણ સક્ષમ કરો...</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> આદેશ ચલાવો: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">તમારા કાર્ડની પાછળની બાજુ પરથી સમાપ્તિ તારીખ અને 3-અંકનો CVC દાખલ કરો</translation>
 <translation id="9020542370529661692">આ પૃષ્ઠનો <ph name="TARGET_LANGUAGE"/> માં અનુવાદ કરવામાં આવ્યો છે</translation>
-<translation id="9125941078353557812">તમારા કાર્ડની પાછળની બાજુ પરથી 3-અંકનો CVC દાખલ કરો</translation>
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="9148507642005240123">&amp;સંપાદિત કરવું પૂર્વવત્‌ કરો</translation>
 <translation id="9154176715500758432">આ પૃષ્ઠ પર રહો</translation>
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
 <translation id="9207861905230894330">લેખ ઉમેરવામાં નિષ્ફળ થયાં.</translation>
 <translation id="933712198907837967">ડાઇનર્સ ક્લબ</translation>
-<translation id="935608979562296692">ફોર્મ સાફ કરો</translation>
-<translation id="988159990683914416">વિકાસકર્તા બિલ્ડ</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Vaihtaa tietoja minkä tahansa seuraavia verkkotunnuksia käyttävien laitteiden kanssa: <ph name="DOMAINS"/>.</translation>
 <translation id="2350172092385603347">Lokalisaatiota käytetään, mutta default_locale ei ole määritetty luettelossa.</translation>
 <translation id="2616366145935564096">lukea ja muuttaa tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Sovellus <ph name="APP_NAME"/> pyytää käyttölupaa yhteen tai useampaan laitteeseesi.</translation>
 <translation id="2753617847762399167">Luvaton polku (absoluuttinen tai kohteeseen '..' liittyvä): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">Tämä laajennus ei voinut muuttaa verkkopyyntöä, koska muutos on ristiriidassa toisen laajennuksen kanssa.</translation>
 <translation id="2857834222104759979">Luettelotiedosto on virheellinen.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Lukea tietojasi useissa sivustoissa</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> toimittajalta <ph name="VENDOR_ID"/> (sarjanumero <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Valitse USB-laite}multiple{Valitse USB-laitteet}other{EI KÄYTÖSSÄ}}</translation>
 <translation id="3624204664103857160">Käynnistyssivun <ph name="PAGE"/> lataaminen ei onnistu.</translation>
 <translation id="3759933321830434300">Estä joitain verkkosivujen osia</translation>
 <translation id="388442998277590542">Asetussivun <ph name="OPTIONS_PAGE"/> lataaminen epäonnistui.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">myyjän <ph name="VENDOR_NAME"/> tuntemattomat laitteet</translation>
 <translation id="4542520061254486227">Lukea tietojasi sivustoissa <ph name="WEBSITE_1"/> ja <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Käyttää mikrofonia</translation>
+<translation id="4776856853352853275">Valitse USB-laitteita</translation>
 <translation id="4811956658694082538">Pakettia ei voi asentaa, koska apuohjelmaprosessi kaatui. Käynnistä Chrome uudelleen ja yritä uudelleen.</translation>
 <translation id="4883436287898674711">Kaikki verkkotunnuksen <ph name="WEBSITE_1"/> sivustot</translation>
 <translation id="5026754133087629784">Verkkonäkymä: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">hallinnoida verkkoyhteyksiä</translation>
-<translation id="5165983846722506205">{1,select, single{Valitse HID-laite}multiple{Valitse HID-laitteet}other{EI KÄYTÖSSÄ}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Tämä laajennus sisältää avaintiedoston <ph name="KEY_PATH"/>. Et todennäköisesti halua sitä.</translation>
+<translation id="545850661681880228">Valitse HID-laite</translation>
 <translation id="5627523580512561598">laajennus <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Lukea tietojasi sivustossa <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Sovellus <ph name="APP_NAME"/> pyytää käyttöoikeutta yhteen laitteistasi.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Hallinnoida Bluetooth-sovittimen tilaa ja laiteparin muodostusta.</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> toimittajalta <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Vaihtaa tietoja isäntää <ph name="HOSTNAME"/> käyttävän laitteen kanssa.</translation>
 <translation id="6143635259298204954">Laajennuksen purkaminen epäonnistui. Voit purkaa laajennuksen määrittämällä polun profiilihakemistoon, joka ei sisällä symlink-määritettä. Profiilissasi ei ole kyseistä polkua.</translation>
-<translation id="616804573177634438">{0,select, single{Sovellus <ph name="APP_NAME"/> pyytää laitteesi käyttöoikeutta.}multiple{Sovellus <ph name="APP_NAME"/> pyytää yhden tai useamman laitteesi käyttöoikeutta.}other{EI KÄYTÖSSÄ}}</translation>
 <translation id="6241530762627360640">Käyttää järjestelmäsi kanssa laitepariksi liitettyjen Bluetooth-laitteiden tietoja ja löytää lähellä olevia Bluetooth-laitteita.</translation>
 <translation id="6344170822609224263">Pääsy verkkoyhteysluetteloon</translation>
 <translation id="6384275966486438344">Ota käyttöön seuraava hakukone: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Lukea kopioimiasi ja liittämiäsi tietoja</translation>
 <translation id="730515362922783851">Vaihtaa tietoja minkä tahansa paikallisverkossa tai internetissä olevan laitteen kanssa.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (laajennustunnus <ph name="EXTENSION_ID"/>) on järjestelmänvalvojan kiellettyjen laajennuksien luettelossa.</translation>
+<translation id="781637217073033149">Valitse HID-laitteet</translation>
 <translation id="7893008570150657497">käyttää valokuvia, musiikkia ja muuta tietokoneesi mediaa</translation>
 <translation id="7972881773422714442">Vaihtoehdot: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Laajennus ei voinut antaa lataukselle nimeä <ph name="ATTEMPTED_FILENAME"/>, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) määritti toisen tiedostonimen (<ph name="ACTUAL_FILENAME"/>).</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Luettelotiedosto puuttuu tai sitä ei voi lukea.</translation>
 <translation id="8620765578342452535">Määrittää verkkoyhteydet</translation>
 <translation id="8636666366616799973">Paketti on virheellinen. Tietoja: <ph name="ERROR_MESSAGE"/>.</translation>
+<translation id="8658591203505835552">Valitse USB-laite</translation>
 <translation id="8662911384982557515">Vaihda aloitussivuksi <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Tämä laajennus ei uudelleenohjannut verkkopyyntöä kohteeseen <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) uudelleenohjasi sen kohteeseen <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Laajennuksien purkaja</translation>

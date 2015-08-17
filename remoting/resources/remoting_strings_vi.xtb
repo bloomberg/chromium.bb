@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
 <translation id="1002108253973310084">Đã phát hiện một phiên bản giao thức không tương thích. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm trên cả hai máy tính và thử lại.</translation>
+<translation id="1023096696228309145">Yêu cầu người dùng có máy tính mà bạn muốn truy cập nhấp vào ‘Chia sẻ ngay bây giờ’ và cung cấp cho bạn mã truy cập.</translation>
 <translation id="1050693411695664090">Kém</translation>
 <translation id="1152528166145813711">Chọn…</translation>
 <translation id="1199593201721843963">Tắt kết nối từ xa</translation>
+<translation id="1261403020716313927">• Đã khắc phục lỗi rò rỉ lớn bộ nhớ khi ngắt kết nối khỏi máy tính từ xa.</translation>
 <translation id="1291443878853470558">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Kết nối từ xa trên Chrome để truy cập vào máy tính này.</translation>
 <translation id="1300633907480909701">Truy cập máy tính an toàn từ thiết bị Android của bạn.
 
@@ -15,7 +17,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1324095856329524885">(tính năng này chưa khả dụng đối với máy tính của bạn)</translation>
 <translation id="1342297293546459414">Xem và kiểm soát máy tính dùng chung.</translation>
 <translation id="1450760146488584666">Đối tượng yêu cầu không tồn tại.</translation>
-<translation id="1480046233931937785">Tín dụng</translation>
 <translation id="1520828917794284345">Thay đổi kích thước màn hình cho vừa</translation>
 <translation id="154040539590487450">Không thể bắt đầu dịch vụ truy cập từ xa.</translation>
 <translation id="1546934824884762070">Đã xảy ra lỗi không mong muốn. Vui lòng báo cáo vấn đề này cho nhà phát triển.</translation>
@@ -52,10 +53,8 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2124408767156847088">Truy cập máy tính an toàn từ thiết bị Android của bạn.</translation>
 <translation id="2208514473086078157">Cài đặt chính sách không cho phép chia sẻ máy tính này dưới dạng máy chủ lưu trữ Chrome Remote Desktop. Liên hệ với quản trị viên hệ thống của bạn để được hỗ trợ.</translation>
 <translation id="2220529011494928058">Báo cáo sự cố</translation>
-<translation id="2221097377466213233">Sử dụng phím Ctrl bên phải cho phím Win (⌘ trên máy Mac)</translation>
 <translation id="2235518894410572517">Chia sẻ máy tính này để người dùng khác xem và kiểm soát.</translation>
 <translation id="2246783206985865117">Cài đặt này do chính sách miền của bạn quản lý.</translation>
-<translation id="2256115617011615191">Khởi động lại ngay</translation>
 <translation id="225614027745146050">Chào mừng</translation>
 <translation id="228809120910082333">Vui lòng xác nhận tài khoản và mã PIN của bạn bên dưới để cho phép truy cập theo kết nối từ xa trên Chrome.</translation>
 <translation id="2314101195544969792">Phiên <ph name="APPLICATION_NAME"/> của bạn đã không hoạt động một thời gian và sẽ sớm bị ngắt kết nối.</translation>
@@ -76,14 +75,11 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2851674870054673688">Sau khi họ nhập mã, phiên chia sẻ của bạn sẽ bắt đầu.</translation>
 <translation id="2851754573186462851">Phát trực tuyến ứng dụng Chromium</translation>
 <translation id="2855866366045322178">ngoại tuyến</translation>
-<translation id="2888969873284818612">Đã xảy ra lỗi mạng. Chúng tôi sẽ khởi động lại ứng dụng khi thiết bị của bạn trực tuyến trở lại.</translation>
 <translation id="2894654864775534701">Máy tính này hiện được chia sẻ dưới một tài khoản khác.</translation>
 <translation id="2919669478609886916">Bạn hiện đang chia sẻ máy này với một người dùng khác. Bạn có muốn tiếp tục chia sẻ không?</translation>
 <translation id="2921543551052660690">Trước đó, bạn đã đăng nhập bằng <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>).  Để truy cập máy tính của bạn bằng tài khoản đó, hãy <ph name="LINK_BEGIN"/>đăng nhập vào Chromium<ph name="LINK_END"/> bằng tài khoản đó và cài đặt lại Kết nối từ xa trên Chrome.</translation>
 <translation id="2926340305933667314">Không thể tắt kết nối từ xa với máy tính này. Vui lòng thử lại sau.</translation>
 <translation id="2939145106548231838">Xác thực với máy chủ lưu trữ</translation>
-<translation id="2998137343848432918">• Đã thêm màn hình Ghi nhận tác giả.
-• Đã khắc phục sự cố khi chuyển sang chế độ toàn màn hình với bàn phím hiển thị.</translation>
 <translation id="3020807351229499221">Không thể cập nhật mã PIN. Vui lòng thử lại sau.</translation>
 <translation id="3025388528294795783">Để giúp chúng tôi giải quyết sự cố của bạn, vui lòng cho chúng tôi biết vấn đề đã xảy ra:</translation>
 <translation id="3027681561976217984">Chế độ cảm ứng</translation>
@@ -92,7 +88,6 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="3150823315463303127">Máy chủ không đọc được chính sách.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Máy tính từ xa</translation>
-<translation id="3244258558056547981">Hiển thị chế độ xem Cardboard.</translation>
 <translation id="3258789396564295715">Bạn có thể truy cập an toàn vào máy tính này bằng Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Bạn muốn trợ giúp cải tiến ứng dụng Chrome Remote Desktop? Hãy <ph name="LINK_BEGIN"/>tham gia khảo sát.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Trình điều khiển máy chủ kết nối từ xa trên Chrome</translation>
@@ -164,7 +159,6 @@ Remote Desktop</translation>
 <translation id="5254120496627797685">Thoát khỏi trang này sẽ kết thúc phiên Chrome Remote Desktop của bạn.</translation>
 <translation id="5285241842433869526">Tìm hiểu cách thiết lập máy tính để truy cập từ xa.</translation>
 <translation id="5308380583665731573">Kết nối</translation>
-<translation id="5363265567587775042">Yêu cầu người dùng có máy tính bạn muốn truy cập nhấp vào “<ph name="SHARE"/>” và cung cấp cho bạn mã truy cập.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop cho phép bạn chia sẻ máy tính của mình một cách an toàn qua Web. Cả hai người dùng đều phải chạy ứng dụng Chrome Remote Desktop mà bạn có thể tìm thấy tại <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Trình gỡ cài đặt máy chủ Chrome Remote Desktop</translation>
 <translation id="5419185025274123272">Không thể đặt lại ứng dụng. Bạn sẽ vẫn có thể gửi báo cáo lỗi.</translation>
@@ -233,6 +227,7 @@ Remote Desktop</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Truy cập bị từ chối đối với ứng dụng khách: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Ứng dụng khách đã kết nối: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Kết nối mới</translation>
 <translation id="7606912958770842224">Bật kết nối từ xa</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>

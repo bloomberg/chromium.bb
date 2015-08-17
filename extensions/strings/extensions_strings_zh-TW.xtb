@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">與下列網域中的任何裝置交換資料：<ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">已使用語言代碼，但是仍未在資訊清單中指定 default_locale。</translation>
 <translation id="2616366145935564096">讀取以及變更您在 <ph name="WEBSITE_1"/> 網站上的資料</translation>
+<translation id="2677911863018634147">「<ph name="APP_NAME"/>」應用程式要求存取您的一或多個裝置。</translation>
 <translation id="2753617847762399167">路徑無效 (絕對路徑或「..」相對路徑)：「<ph name="IMAGE_PATH"/>」</translation>
 <translation id="27822970480436970">這個擴充功能無法修改網路要求，因為執行修改會與其他擴充功能相衝突。</translation>
 <translation id="2857834222104759979">資訊清單檔案無效。</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">讀取您在多個網站上產生的資料</translation>
 <translation id="3466070586188012397">供應商 <ph name="VENDOR_ID"/> 提供的 <ph name="PRODUCT_NAME"/> (序號：<ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{選取一個 USB 裝置}multiple{選取多個 USB 裝置}other{UNUSED}}</translation>
 <translation id="3624204664103857160">無法載入啟動器頁面「<ph name="PAGE"/>」。</translation>
 <translation id="3759933321830434300">封鎖網頁部分內容</translation>
 <translation id="388442998277590542">無法載入「<ph name="OPTIONS_PAGE"/>」選項頁面。</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">由 <ph name="VENDOR_NAME"/> 製造的不明裝置</translation>
 <translation id="4542520061254486227">讀取您在 <ph name="WEBSITE_1"/> 和 <ph name="WEBSITE_2"/> 上產生的資料</translation>
 <translation id="4761104368405085019">使用您的麥克風</translation>
+<translation id="4776856853352853275">選取一或多個 USB 裝置</translation>
 <translation id="4811956658694082538">公用程式處理程序當機，因此無法安裝套件。請重新啟動 Chrome，然後再試一次。</translation>
 <translation id="4883436287898674711">所有 <ph name="WEBSITE_1"/> 網站</translation>
 <translation id="5026754133087629784">Webview：<ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">管理網路連線</translation>
-<translation id="5165983846722506205">{1,select, single{選取一個 HID 裝置}multiple{選取多個 HID 裝置}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Appview：<ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">這個擴充功能含有金鑰檔「<ph name="KEY_PATH"/>」。您不妨重新考慮是否仍要進行。</translation>
+<translation id="545850661681880228">選取一個 HID 裝置</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME"/> 擴充功能</translation>
 <translation id="5678955352098267522">讀取您在 <ph name="WEBSITE_1"/> 上產生的資料</translation>
+<translation id="5751530153776468604">「<ph name="APP_NAME"/>」應用程式要求存取您的其中一個裝置。</translation>
 <translation id="588705686677293479">SurfaceWorker：<ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView：<ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">控制藍牙介面卡狀態與連線配對功能</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721">供應商 <ph name="VENDOR_ID"/> 提供的 <ph name="PRODUCT_NAME"/></translation>
 <translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME"/> 的裝置交換資料</translation>
 <translation id="6143635259298204954">無法為擴充功能解除封裝。如要安全解除封裝，設定檔目錄的路徑不能包含符號連結。您的設定檔中沒有符合條件的路徑。</translation>
-<translation id="616804573177634438">{0,select, single{「<ph name="APP_NAME"/>」應用程式要求存取您的其中一個裝置。}multiple{「<ph name="APP_NAME"/>」應用程式要求存取您的一或多個裝置。}other{UNUSED}}</translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資訊並搜尋附近的藍牙裝置。</translation>
 <translation id="6344170822609224263">存取網路連線清單</translation>
 <translation id="6384275966486438344">將您的搜尋設定變更為：<ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">讀取您複製和貼上的資料</translation>
 <translation id="730515362922783851">與區域網路或網際網路中的任何裝置交換資料</translation>
 <translation id="7809034755304591547">管理員已封鎖 <ph name="EXTENSION_NAME"/> (擴充功能 ID「<ph name="EXTENSION_ID"/>」)。</translation>
+<translation id="781637217073033149">選取多個 HID 裝置</translation>
 <translation id="7893008570150657497">存取您電腦中的相片、音樂及其他媒體</translation>
 <translation id="7972881773422714442">選項：<ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">擴充功能無法將下載的檔案命名為「<ph name="ATTEMPTED_FILENAME"/>」，因為其他擴充功能 (<ph name="EXTENSION_NAME"/>) 已為將此檔案命名為「<ph name="ACTUAL_FILENAME"/>」。</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">資訊清單檔案遺失或無法讀取。</translation>
 <translation id="8620765578342452535">設定網路連線</translation>
 <translation id="8636666366616799973">套件無效，詳細資料：<ph name="ERROR_MESSAGE"/>。</translation>
+<translation id="8658591203505835552">選取一個 USB 裝置</translation>
 <translation id="8662911384982557515">將您的首頁變更為：<ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">這個擴充功能無法將網路要求重新導向至 <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>，因為其他擴充功能 (<ph name="EXTENSION_NAME"/>) 已將要求重新導向至 <ph name="ACTUAL_REDIRECT_DESTINATION"/>。</translation>
 <translation id="8712265948125780616">擴充功能解壓縮工具</translation>

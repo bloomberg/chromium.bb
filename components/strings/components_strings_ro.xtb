@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Domeniu de înregistrare:</translation>
 <translation id="1344588688991793829">Setări de completare automată în Chromium...</translation>
 <translation id="1426410128494586442">Da</translation>
-<translation id="1455235771979731432">A apărut o eroare la confirmarea cardului. Verifică conexiunea la internet și încearcă din nou.</translation>
 <translation id="1491151370853475546">Reîncărcați această pagină</translation>
-<translation id="1549470594296187301">Trebuie să activezi JavaScript pentru a folosi această funcție.</translation>
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
 <translation id="1644184664548287040">Configurația rețelei este nevalidă și nu a putut fi importată.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Anulați ștergerea</translation>
 <translation id="2455981314101692989">Această pagină web a dezactivat completarea automată a formularului.</translation>
 <translation id="2479410451996844060">Adresă URL de căutare nevalidă.</translation>
-<translation id="2495083838625180221">Analizor JSON</translation>
 <translation id="2498091847651709837">Scanează un card nou</translation>
 <translation id="2556876185419854533">&amp;Anulați editarea</translation>
 <translation id="2581221116934462656">Dorești ca produsul <ph name="PRODUCT_NAME"/> să ofere traducerea paginilor din <ph name="LANGUAGE_NAME"/> de pe acest site data următoare când îl accesezi?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Poți continua. Dacă accesezi pagina, acest avertisment nu se va mai afișa în următoarele 5 minute.</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
 <translation id="2835170189407361413">Golește formularul</translation>
-<translation id="2855922900409897335">Confirmă <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">Configurația rețelei nu respectă standardul ONC. Este posibil ca anumite părți ale configurației să nu fie importate.</translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Eroare temporară de server</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Insulă</translation>
-<translation id="3219579145727097045">Introdu data de expirare și codul CVC alcătuit din 4 cifre înscris pe fața cardului</translation>
 <translation id="3228969707346345236">Pagina nu a fost tradusă, deoarece aceasta este deja în <ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;Anulați reordonarea</translation>
 <translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
-<translation id="3369366829301677151">Actualizează și confirmă cardul <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">Scos din uz</translation>
 <translation id="3377188786107721145">Eroare la analizarea politicii</translation>
 <translation id="3380365263193509176">Eroare necunoscută</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Repetați mutarea</translation>
 <translation id="3623476034248543066">Afișați valoarea</translation>
 <translation id="3650584904733503804">Validarea a reușit</translation>
+<translation id="3667681724235208644">Vedeți pagina originală</translation>
 <translation id="370665806235115550">Se încarcă…</translation>
 <translation id="3712624925041724820">Licențe epuizate</translation>
 <translation id="3739623965217189342">Linkul copiat de tine</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
 <translation id="3885155851504623709">Parohie</translation>
 <translation id="3934680773876859118">Documentul PDF nu a fost încărcat</translation>
-<translation id="3963721102035795474">Modul Cititor</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
 <translation id="4058922952496707368">Cheie „<ph name="SUBKEY"/>”: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Configurația pentru proxy este setată să utilizeze o adresă URL pentru scripturi .pac, și nu servere proxy fixe.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Se aștepta valoarea <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
 <translation id="4506176782989081258">Eroare de validare: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Elimini adresa din Chrome?</translation>
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
 <translation id="4607653538520819196">Această pagină nu poate fi gestionată prin proxy de Economizorul de date.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Reîncărcați politicile</translation>
-<translation id="4800132727771399293">Verifică data de expirare și codul CVC și încearcă din nou</translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Utilizator curent</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="5872918882028971132">Sugestii parentale</translation>
-<translation id="587701087903783706">Închide afișarea pentru dispozitive mobile</translation>
 <translation id="59107663811261420">Acest tip de card nu este acceptat de Google Payments pentru acest comerciant. Selectează alt card.</translation>
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Încerci să accesezi <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. În prezent, această pagină nu poate fi gestionată prin proxy de Economizorul de date.</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE"/></translation>
 <translation id="6644283850729428850">Această politică este învechită.</translation>
-<translation id="6646897916597483132">Introdu codul CVC alcătuit din 4 cifre înscris pe fața a cardului</translation>
 <translation id="6753269504797312559">Valoarea politicii</translation>
 <translation id="6831043979455480757">Tradu</translation>
 <translation id="6839929833149231406">Zonă</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Obligatorie</translation>
 <translation id="7542995811387359312">Completarea automată a cardului de credit este dezactivată, deoarece acest formular nu utilizează o conexiune sigură.</translation>
 <translation id="7568593326407688803">Această pagină este în <ph name="ORIGINAL_LANGUAGE"/> Vrei să fie tradusă?</translation>
-<translation id="7569952961197462199">Elimini cardul de credit din Chrome?</translation>
 <translation id="7600965453749440009">Nu traduce niciodată din <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">Valoarea este în afara intervalului <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Negestionat</translation>
 <translation id="777702478322588152">Prefectură</translation>
 <translation id="7791543448312431591">Adaugă</translation>
 <translation id="7805768142964895445">Stare</translation>
-<translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
-<translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Marcaje mobile</translation>
 <translation id="7961015016161918242">Niciodată</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Încearcă din nou</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
 <translation id="8804164990146287819">Politica de confidențialitate</translation>
-<translation id="8824019021993735287">Momentan, Chrome nu a putut confirma cardul. Încearcă mai târziu.</translation>
 <translation id="8834246243508017242">Activați completarea automată folosind Agenda…</translation>
 <translation id="883848425547221593">Alte marcaje</translation>
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
 <translation id="8940229512486821554">Execută comanda <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Introdu data de expirare și codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>
 <translation id="9020542370529661692">Această pagină a fost tradusă în <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Introdu codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9148507642005240123">&amp;Anulați editarea</translation>
 <translation id="9154176715500758432">Rămâi pe pagină</translation>
 <translation id="9170848237812810038">&amp;Anulează</translation>
 <translation id="9207861905230894330">Articolul nu a fost adăugat.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">GOLEȘTE FORMULARUL</translation>
-<translation id="988159990683914416">Versiune de programare</translation>
 </translationbundle>

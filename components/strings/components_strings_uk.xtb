@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Домен реєстрації:</translation>
 <translation id="1344588688991793829">Налаштування автозаповнення Chromium…</translation>
 <translation id="1426410128494586442">так</translation>
-<translation id="1455235771979731432">Не вдалося підтвердити дані картки. Перевірте з’єднання з Інтернетом і повторіть спробу.</translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
-<translation id="1549470594296187301">Щоб користуватися цією функцією, потрібно ввімкнути JavaScript.</translation>
 <translation id="1639239467298939599">Завантаження</translation>
 <translation id="1640180200866533862">Правила користувача</translation>
 <translation id="1644184664548287040">Конфігурація мережі недійсна та не може імпортуватися.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Відмінити видалення</translation>
 <translation id="2455981314101692989">На цій веб-сторінці вимкнено автоматичне заповнення цієї форми.</translation>
 <translation id="2479410451996844060">Недійсна URL-адреса для пошуку.</translation>
-<translation id="2495083838625180221">Синтаксичний аналізатор файлів JSON</translation>
 <translation id="2498091847651709837">Сканувати нову картку</translation>
 <translation id="2556876185419854533">&amp;Відмінити редагування</translation>
 <translation id="2581221116934462656">Хочете, щоб наступного разу <ph name="PRODUCT_NAME"/> пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE_NAME"/>?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Можна продовжити. Якщо перейти на сторінку, це попередження не відображатиметься протягом п’яти хвилин.</translation>
 <translation id="277499241957683684">Відсутній запис пристрою</translation>
 <translation id="2835170189407361413">Очистити форму</translation>
-<translation id="2855922900409897335">Підтвердьте дані своєї картки <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">Конфігурація мережі не відповідає стандарту ONC. Вона може імпортуватися частково.</translation>
 <translation id="2972581237482394796">&amp;Повторити</translation>
 <translation id="3010559122411665027">Елемент списку &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Тимчасова помилка сервера</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Острів</translation>
-<translation id="3219579145727097045">Введіть дату закінчення терміну дії та код CVC з 4 цифр, розташований на звороті вашої картки</translation>
 <translation id="3228969707346345236">Помилка перекладу. Сторінку вже перекладено такою мовою: <ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;Відмінити перевпорядкування</translation>
 <translation id="333371639341676808">Заборонити створення додаткових діалогових вікон цією сторінкою.</translation>
-<translation id="3369366829301677151">Оновіть і підтвердьте дані своєї картки <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">Деініціалізовано</translation>
 <translation id="3377188786107721145">Помилка аналізу правила</translation>
 <translation id="3380365263193509176">Невідома помилка</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Повторити переміщення</translation>
 <translation id="3623476034248543066">Показати значення</translation>
 <translation id="3650584904733503804">Перевірку закінчено</translation>
+<translation id="3667681724235208644">Переглянути оригінальну сторінку</translation>
 <translation id="370665806235115550">Завантаження...</translation>
 <translation id="3712624925041724820">Ліцензії вичерпано</translation>
 <translation id="3739623965217189342">Скопійоване посилання</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Конфліктуючий ідентифікатор пристрою</translation>
 <translation id="3885155851504623709">Община</translation>
 <translation id="3934680773876859118">Не вдалося завантажити документ PDF</translation>
-<translation id="3963721102035795474">Режим перегляду</translation>
 <translation id="4030383055268325496">&amp;Відмінити додавання</translation>
 <translation id="4058922952496707368">Ключ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Конфігурацію проксі-сервера налаштовано на використання URL-адреси сценарію .pac, а не фіксованих проксі-серверів.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Очікуване значення: <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">Використання проксі-сервера вимкнено, але чітко вказано налаштування проксі-сервера.</translation>
 <translation id="4506176782989081258">Помилка перевірки: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Видалити адресу з Chrome?</translation>
 <translation id="4594403342090139922">&amp;Відмінити видалення</translation>
 <translation id="4607653538520819196">Не вдається відкрити цю сторінку через проксі-сервер.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Перезавантажити правила</translation>
-<translation id="4800132727771399293">Перевірте дату закінчення терміну дії та код CVC та повторіть спробу</translation>
 <translation id="4813512666221746211">Помилка мережі</translation>
 <translation id="4850886885716139402">Перегляд</translation>
 <translation id="4923417429809017348">Цю сторінку перекладено з невідомої мови оригіналу такою мовою: <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Поточний користувач</translation>
 <translation id="5813119285467412249">&amp;Повторити додавання</translation>
 <translation id="5872918882028971132">Поради для батьків</translation>
-<translation id="587701087903783706">Закрити вікно налаштування для мобільних пристроїв</translation>
 <translation id="59107663811261420">Цей продавець не приймає такий тип картки в Google Payments. Виберіть іншу картку.</translation>
 <translation id="5989320800837274978">Не вказано ні фіксованих проксі-серверів, ні URL-адрес сценарію .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Ви намагаєтеся перейти на сторінку <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Не вдається відкрити цю сторінку через проксі-сервер.</translation>
 <translation id="6628463337424475685">Пошук <ph name="ENGINE"/></translation>
 <translation id="6644283850729428850">Це правило більше не використовується.</translation>
-<translation id="6646897916597483132">Введіть код CVC з 4 цифр, розташований на звороті вашої картки</translation>
 <translation id="6753269504797312559">Значення правила</translation>
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="6839929833149231406">Регіон або територія</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Обов’язкове</translation>
 <translation id="7542995811387359312">Автоматичне заповнення кредитної картки вимкнено, оскільки ця форма не використовує безпечне з'єднання.</translation>
 <translation id="7568593326407688803">Мова цієї сторінки:<ph name="ORIGINAL_LANGUAGE"/>Перекласти її?</translation>
-<translation id="7569952961197462199">Видалити дані кредитної картки з Chrome?</translation>
 <translation id="7600965453749440009">Ніколи не перекладати з такої мови: <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">Значення за межами діапазону <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Некерований клієнт</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="7805768142964895445">Статус</translation>
-<translation id="7813600968533626083">Видалити дані для автозаповнення форм із Chrome?</translation>
-<translation id="7887683347370398519">Перевірте код CVC й повторіть спробу</translation>
 <translation id="7935318582918952113">Дистилятор DOM</translation>
 <translation id="7956713633345437162">Закладки для мобільних пристроїв</translation>
 <translation id="7961015016161918242">Ніколи</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
 <translation id="8804164990146287819">Політика конфіденційності</translation>
-<translation id="8824019021993735287">Не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="8834246243508017242">Увімкнути &quot;Автозаповнення за допомогою контактів&quot;…</translation>
 <translation id="883848425547221593">Інші закладки</translation>
 <translation id="8866481888320382733">Помилка аналізу налаштувань правила</translation>
 <translation id="8876793034577346603">Помилка аналізу конфігурації мережі.</translation>
 <translation id="8891727572606052622">Недійсний режим проксі-сервера.</translation>
 <translation id="8940229512486821554">Запустити команду розширення <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Введіть дату закінчення терміну дії та код CVC з 3 цифр, розташований на звороті вашої картки</translation>
 <translation id="9020542370529661692">Цю сторінку перекладено такою мовою: <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Введіть код CVC з 3 цифр, розташований на звороті вашої картки</translation>
 <translation id="9137013805542155359">Показати оригінал</translation>
 <translation id="9148507642005240123">&amp;Відмінити редагування</translation>
 <translation id="9154176715500758432">Залишатися на цій сторінці</translation>
 <translation id="9170848237812810038">&amp;Скасувати</translation>
 <translation id="9207861905230894330">Не вдалося додати статтю.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">ОЧИСТИТИ ФОРМУ</translation>
-<translation id="988159990683914416">Конструкція розробника</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Exchange data with any device in the domains: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Localisation used, but default_locale wasn't specified in the manifest.</translation>
 <translation id="2616366145935564096">Read and change your data on <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one or more of your devices.</translation>
 <translation id="2753617847762399167">Illegal path (absolute or relative with '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">This extension failed to modify a network request because the modification conflicted with another extension.</translation>
 <translation id="2857834222104759979">Manifest file is invalid.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Read your data on a number of websites</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> from vendor <ph name="VENDOR_ID"/> (serial number <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Select a USB device}multiple{Select USB devices}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Could not load launcher page '<ph name="PAGE"/>'.</translation>
 <translation id="3759933321830434300">Block parts of web pages</translation>
 <translation id="388442998277590542">Could not load options page '<ph name="OPTIONS_PAGE"/>'.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">unknown devices from <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Read your data on <ph name="WEBSITE_1"/> and <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Use your microphone</translation>
+<translation id="4776856853352853275">Select USB devices</translation>
 <translation id="4811956658694082538">Could not install package because a utility process crashed. Try restarting Chrome and trying again.</translation>
 <translation id="4883436287898674711">All <ph name="WEBSITE_1"/> sites</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Manage network connections</translation>
-<translation id="5165983846722506205">{1,select, single{Select a HID device}multiple{Select HID devices}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">This extension includes the key file '<ph name="KEY_PATH"/>'. You probably don't want to do that.</translation>
+<translation id="545850661681880228">Select an HID device</translation>
 <translation id="5627523580512561598">extension <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Read your data on <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one of your devices.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Control Bluetooth adaptor state and pairing</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> from vendor <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Exchange data with the device named <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Cannot unpack extension.  To unpack an extension safely, there must be a path to your profile directory that does not contain a symlink.  No such path exists for your profile.</translation>
-<translation id="616804573177634438">{0,select, single{The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one of your devices.}multiple{The application &quot;<ph name="APP_NAME"/>&quot; is requesting access to one or more of your devices.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
 <translation id="6344170822609224263">Access list of network connections</translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Read data that you copy and paste</translation>
 <translation id="730515362922783851">Exchange data with any device on the local network or Internet</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (extension ID &quot;<ph name="EXTENSION_ID"/>&quot;) is blocked by the administrator.</translation>
+<translation id="781637217073033149">Select HID devices</translation>
 <translation id="7893008570150657497">Access photos, music and other media from your computer</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">This extension failed to name the download &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; because another extension (<ph name="EXTENSION_NAME"/>) determined a different filename &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Manifest file is missing or unreadable.</translation>
 <translation id="8620765578342452535">Configure network connections</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">Select a USB device</translation>
 <translation id="8662911384982557515">Change your home page to: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> because another extension (<ph name="EXTENSION_NAME"/>) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>

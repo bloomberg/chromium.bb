@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
-<translation id="1343000272198685031">Mic Jack</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="137180024469554212">റൊട്ടേഷൻ ലോക്ക് പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1602076796624386989">മൊബൈൽ ഡാറ്റ പ്രാപ്‌തമാക്കുക</translation>
 <translation id="1621499497873603021">ബാറ്ററി ശൂന്യമാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome ഉപകരണം</translation>
 <translation id="1723752762323179280">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
 <translation id="1747827819627189109">ഓൺ‌ സ്‌ക്രീൻ കീ‌ബോർഡ് പ്രവർത്തനക്ഷമമാക്കി</translation>
+<translation id="1753067873202720523">നിങ്ങളുടെ Chromebook ഓണായിരിക്കുമ്പോൾ ചാർജ്ജുചെയ്യാനിടയില്ല.</translation>
 <translation id="1812696562331527143">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>മൂന്നാം കക്ഷി<ph name="END_LINK"/>) എന്നതിലേയ്‌ക്ക് മാറ്റി.
 സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> എന്നതിലേക്ക് മിറർചെയ്യുന്നു</translation>
 <translation id="1923539912171292317">യാന്ത്രിക ക്ലിക്കുകൾ</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1എന്നതിനെ $2 എന്നതിലേക്ക് കാസ്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">അക്കൗണ്ടുകൾ‌</translation>
 <translation id="2127372758936585790">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ</translation>
 <translation id="2204305834655267233">നെറ്റ്‌വർക്ക് വിവരം</translation>
 <translation id="2208323208084708176">ഏകീകൃത ഡെസ്‌ക്‌ടോപ്പ് മോഡ്</translation>
+<translation id="2248649616066688669">നിങ്ങളുടെ Chromebook ഒരു ബാഹ്യ ഡിസ്‌പ്ലേയിൽ കണക്‌റ്റുചെയ്തിരിക്കുമ്പോൾ, ലിഡ് അടച്ചിരിക്കുകയാണെങ്കിൽപ്പോലും നിങ്ങൾക്ക് Chromebook ഉപയോഗിക്കുന്നത് തുടരാം.</translation>
 <translation id="225680501294068881">ഉപകരണങ്ങൾക്കായി സ്‌കാൻ ചെയ്യുന്നു...</translation>
 <translation id="2268130516524549846">Bluetooth അപ്രാപ്‌തമാക്കി</translation>
 <translation id="2268813581635650749">എല്ലാം സൈൻ ഔട്ട് ചെയ്യുക</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">അജ്ഞാത പ്രദർശനം</translation>
 <translation id="2532589005999780174">ഉയർന്ന ദൃശ്യതീവ്രത മോഡ്</translation>
 <translation id="2562916301614567480">സ്വകാര്യ നെറ്റ്‌വർക്ക്</translation>
+<translation id="2614835198358683673">ഓണായിരിക്കുമ്പോൾ നിങ്ങളുടെ Chromebook ചാർജ് ചെയ്യാനിടയില്ല. ഔദ്യോഗിക ചാർജ്ജർ ഉപയോഗിക്കുന്നത് പരിഗണിക്കുക.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: കണക്റ്റുചെയ്യുന്നു...</translation>
 <translation id="2700058918926273959"><ph name="SESSION_TIME_REMAINING"/>-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു. നിങ്ങൾ സൈൻ ഔട്ടാകും.</translation>
 <translation id="2727977024730340865">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജ്ജറിലേക്ക് പ്ലഗ് ചെയ്‌തിരിക്കുന്നു. ബാറ്ററി ചാർജുചെയ്യൽ വിശ്വസനീയമാകണമെന്നില്ല.</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">അതിഥി</translation>
 <translation id="3433830597744061105">അക്കൗണ്ടുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="3473479545200714844">സ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
+<translation id="3527846106059622359">പുതിയ ലോഗിൻ UI ഓണാണ്</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; എന്നതിലേക്ക് തിരികെ മാറുക (റീസ്റ്റാര്‍ട്ട് ആവശ്യമാണ്)</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റുചെയ്‌തു.</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">ഇല്ല</translation>
 <translation id="4279490309300973883">മിററിംഗ്</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">ഡെസ്‌ക്‌ടോപ്പ് കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="4379753398862151997">പ്രിയ മോണിറ്റർ, ഇത് നമുക്കിടയിൽ പ്രവർത്തിക്കുന്നില്ല. (ആ മോണിറ്റർ പിന്തുണയ്‌ക്കുന്നില്ല)</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME"/> ഉപയോഗിച്ച് നിങ്ങളുടെ വിദൂര സഹായി മുഖേന സ്‌ക്രീനിന്റെ നിയന്ത്രണം പങ്കിടുക.</translation>
 <translation id="4430019312045809116">അളവ്</translation>
@@ -112,28 +114,24 @@
 <translation id="4895488851634969361">ബാറ്ററി ചാർജുചെയ്യൽ പൂർണ്ണമായി.</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4957722034734105353">കൂടുതലറിയുക...</translation>
-<translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google ഡ്രൈവ് ക്രമീകരണങ്ങൾ...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> ശേഷിക്കുന്നു</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
 <translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
 <translation id="5238774010593222950">മറ്റൊരു അക്കൗണ്ടിൽ സൈൻ ഇൻ ചെയ്യാനാകില്ല.</translation>
 <translation id="544691375626129091">ലഭ്യമായ എല്ലാ ഉപയോക്താക്കളേയും ഈ സെഷനിൽ ഇതിനകം ചേർത്തു.</translation>
 <translation id="5507786745520522457">മൊബൈൽ ഡാറ്റ സജ്ജീകരിക്കുക</translation>
+<translation id="5537725057119320332">കാസ്‌റ്റുചെയ്യുക</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">ഈ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റുചെയ്യാൻ &quot;<ph name="EXTENSION_NAME"/>&quot; വിപുലീകരണത്തിന് സഹായിക്കാനാകും.</translation>
 <translation id="5565793151875479467">പ്രോക്‌സി...</translation>
 <translation id="5571066253365925590">Bluetooth പ്രാപ്‌തമാക്കി</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793"><ph name="DEVICE_TYPE"/> ഒരു ബാഹ്യ ഡിസ്‌പ്ലേയിലേക്ക് കണക്റ്റുചെയ്‌തിരിക്കുമ്പോൾ, ലിഡ് അടച്ചിരിക്കുമ്പോൾപ്പോലും നിങ്ങൾക്കത് ഉപയോഗിക്കാം.</translation>
 <translation id="5777841717266010279">സ്‌ക്രീൻ പങ്കിടൽ നിർത്തണോ?</translation>
+<translation id="5807965672380739016">ഇതിലേക്ക് ഡെസ്‌ക്‌ടോപ്പ് കാസ്റ്റുചെയ്യുക</translation>
 <translation id="5825747213122829519">നിങ്ങളുടെ ഇൻപുട്ട് രീതി <ph name="INPUT_METHOD_ID"/> എന്നതിലേയ്‌ക്ക് മാറ്റി. സ്വിച്ചുചെയ്യുന്നതിന് Shift + Alt അമർത്തുക.</translation>
 <translation id="5871632337994001636">ഉപകരണങ്ങൾ നിയന്ത്രിക്കുക...</translation>
 <translation id="5895138241574237353">പുനരാരംഭിക്കുക</translation>
-<translation id="5927132638760172455">ഒരു അജ്ഞാത റിസീവറിലേക്ക് കാസ്റ്റുചെയ്യുന്നു</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">പഴയപടിയാക്കുക</translation>
 <translation id="595202126637698455">പ്രകടനം പിന്തുടരൽ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="5958529069007801266">സൂപ്പർവൈസുചെയ്‌ത ഉപയോക്താവ്</translation>
@@ -165,14 +163,13 @@
 <translation id="68610848741840742">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> എന്നയാൾക്കായി ഒരു അക്കൗണ്ട് ചേർക്കുക</translation>
 <translation id="6911468394164995108">മറ്റുള്ളവ ചേർക്കുക...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ഡ്രൈവ്</translation>
 <translation id="6981982820502123353">പ്രവേശനക്ഷമത</translation>
 <translation id="7029814467594812963">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="703171847531699602">കാസ്റ്റ് ഉപകരണങ്ങളൊന്നും ഇല്ല</translation>
 <translation id="7052914147756339792">വാൾപേപ്പർ സജ്ജമാക്കുക...</translation>
 <translation id="7097613348211027502">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്) പ്രവർത്തനക്ഷമമാണ്. പ്രവർത്തനരഹിതമാക്കാൻ Ctrl+Alt+Z അമർത്തുക.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
 <translation id="7209101170223508707">CAPS LOCK ഓണാണ്.
 റദ്ദാക്കുന്നതിന് Alt+തിരയൽ അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
@@ -189,7 +186,6 @@
 <translation id="785750925697875037">മൊബൈൽ അക്കൗണ്ട് കാണുക</translation>
 <translation id="7864539943188674973">Bluetooth അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
-<translation id="7957227661277029961">നിങ്ങളുടെ <ph name="DEVICE_TYPE"/> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകില്ലായിരിക്കാം. ഔദ്യോഗിക ചാർജ്ജർ ഉപയോഗിക്കുന്നകാര്യം പരിഗണിക്കുക.</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
 <translation id="8103386449138765447">SMS സന്ദേശങ്ങൾ: <ph name="MESSAGE_COUNT"/></translation>
@@ -198,13 +194,12 @@
 <translation id="8308637677604853869">മുൻ മെനു</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> അടയ്‌ക്കുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
-<translation id="8443356412772935865">സ്‌ക്രീൻ $1 എന്നതിലേക്ക് കാസ്റ്റുചെയ്യുന്നു</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> നിറയാൻ</translation>
-<translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE"/> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
 <translation id="8528322925433439945">മൊബൈൽ ...</translation>
 <translation id="8654520615680304441">Wi-Fi ഓണാക്കുക...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">കുറഞ്ഞ തോതിൽ വൈദ്യുതി പ്രവഹിക്കുന്ന ചാർജർ കണക്റ്റുചെയ്‌തു</translation>
+<translation id="8697119993436624257">പുതിയ ലോഗിൻ UI ഓഫാണ്</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">കാണുന്നതിന് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="1344588688991793829">Configuració d'Emplenament automàtic de Chromium...</translation>
 <translation id="1426410128494586442">Sí</translation>
-<translation id="1455235771979731432">S'ha produït un problema en verificar la targeta. Comproveu la connexió a Internet i torneu-ho a provar.</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
-<translation id="1549470594296187301">Heu d'activar el JavaScript per utilitzar aquesta funció.</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
 <translation id="1644184664548287040">La configuració de la xarxa no és vàlida i no s'ha pogut importar.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Desfés la supressió</translation>
 <translation id="2455981314101692989">Aquesta pàgina web ha desactivat l'emplenament automàtic per a aquest formulari.</translation>
 <translation id="2479410451996844060">URL de cerca no vàlid.</translation>
-<translation id="2495083838625180221">Analitzador JSON</translation>
 <translation id="2498091847651709837">Escaneja una targeta nova</translation>
 <translation id="2556876185419854533">&amp;Desfés la modificació</translation>
 <translation id="2581221116934462656">La propera vegada, voleu que <ph name="PRODUCT_NAME"/> ofereixi la traducció de les pàgines escrites en <ph name="LANGUAGE_NAME"/> d'aquest lloc?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Podeu continuar. Si accediu a la pàgina, no es tornarà a mostrar aquest advertiment fins d'aquí a cinc minuts.</translation>
 <translation id="277499241957683684">Falta el registre del dispositiu</translation>
 <translation id="2835170189407361413">Esborra el formulari</translation>
-<translation id="2855922900409897335">Verifica la targeta <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">La configuració de la xarxa no compleix l'estàndard ONC. Pot ser que algunes opcions de configuració no s'hagin importat.</translation>
 <translation id="2972581237482394796">&amp;Refés</translation>
 <translation id="3010559122411665027">Entrada de llista &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Error temporal del servidor</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Illa</translation>
-<translation id="3219579145727097045">Introduïu la data de caducitat i el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>
 <translation id="3228969707346345236">S'ha produït un error en fer la traducció perquè la pàgina ja està en <ph name="LANGUAGE"/>.</translation>
 <translation id="3270847123878663523">&amp;Desfés el canvi d'ordre</translation>
 <translation id="333371639341676808">Evita que aquesta pàgina creï diàlegs addicionals.</translation>
-<translation id="3369366829301677151">Actualitzeu i verifiqueu <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">No administrat</translation>
 <translation id="3377188786107721145">S'ha produït un error en analitzar la política</translation>
 <translation id="3380365263193509176">Error desconegut</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Refés el moviment</translation>
 <translation id="3623476034248543066">Mostra el valor</translation>
 <translation id="3650584904733503804">Validació correcta</translation>
+<translation id="3667681724235208644">Mostra l'original</translation>
 <translation id="370665806235115550">S'està carregant...</translation>
 <translation id="3712624925041724820">Llicències exhaurides</translation>
 <translation id="3739623965217189342">Enllaç que heu copiat</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">L'identificador del dispositiu ja s'està utilitzant</translation>
 <translation id="3885155851504623709">Diòcesi</translation>
 <translation id="3934680773876859118">No es pot carregar el document en format PDF</translation>
-<translation id="3963721102035795474">Mode de lector</translation>
 <translation id="4030383055268325496">&amp;Desfés l'addició</translation>
 <translation id="4058922952496707368">Tecla &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">La configuració del servidor intermediari s'ha definit perquè utilitzi un URL d'script .pac, en lloc de servidors intermedis fixos.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE"/> esperat.</translation>
 <translation id="443673843213245140">L'ús d'un servidor intermediari no està activat, però s'ha especificat una configuració explícita d'un servidor intermediari.</translation>
 <translation id="4506176782989081258">Error de validació: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Voleu suprimir l'adreça de Chrome?</translation>
 <translation id="4594403342090139922">&amp;Desfés la supressió</translation>
 <translation id="4607653538520819196">Economitzador de dades no pot enviar aquesta pàgina a un servidor intermediari.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Torna a carregar les polítiques</translation>
-<translation id="4800132727771399293">Comproveu la data de caducitat i el CVC i torneu-ho a provar</translation>
 <translation id="4813512666221746211">Error de xarxa</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Usuari actual</translation>
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
 <translation id="5872918882028971132">Suggeriments per als responsables</translation>
-<translation id="587701087903783706">Tanca la visualització adaptada per a mòbils</translation>
 <translation id="59107663811261420">Google Payments no admet aquest tipus de targeta per a aquest comerciant. Seleccioneu-ne una altra.</translation>
 <translation id="5989320800837274978">No s'especifiquen servidors intermediaris ni URL d'script .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Esteu intentant accedir a <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. En aquest moment Economitzador de dades no pot enviar aquesta pàgina a un servidor intermediari.</translation>
 <translation id="6628463337424475685">Cerca de <ph name="ENGINE"/></translation>
 <translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
-<translation id="6646897916597483132">Introduïu el CVC de quatre dígits que trobareu a la part davantera de la targeta</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="6839929833149231406">Àrea</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Obligatòria</translation>
 <translation id="7542995811387359312">L'emplenament automàtic de targetes de crèdit està desactivat perquè el formulari no utilitza una connexió segura.</translation>
 <translation id="7568593326407688803">Aquesta pàgina està en<ph name="ORIGINAL_LANGUAGE"/>Voleu traduir-la?</translation>
-<translation id="7569952961197462199">Voleu suprimir la targeta de crèdit de Chrome?</translation>
 <translation id="7600965453749440009">No tradueixis mai de: <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">El valor es troba fora de l'interval <ph name="VALUE"/> .</translation>
 <translation id="7752995774971033316">Sense gestionar</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7791543448312431591">Afegeix</translation>
 <translation id="7805768142964895445">Estat</translation>
-<translation id="7813600968533626083">Voleu suprimir el suggeriment de formulari de Chrome?</translation>
-<translation id="7887683347370398519">Comproveu el CVC i torneu-ho a provar</translation>
 <translation id="7935318582918952113">Destil·lador DOM</translation>
 <translation id="7956713633345437162">Adreces d'interès per a mòbils</translation>
 <translation id="7961015016161918242">Mai</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>
 <translation id="8804164990146287819">Política de privadesa</translation>
-<translation id="8824019021993735287">Chrome no ha pogut verificar la vostra targeta. Torneu-ho a provar més tard.</translation>
 <translation id="8834246243508017242">Activa l'emplenament automàtic mitjançant els contactes...</translation>
 <translation id="883848425547221593">Altres adreces d'interès</translation>
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
 <translation id="8940229512486821554">Executa l'ordre <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Introduïu la data de caducitat i el CVC de tres dígits que trobareu a la part posterior de la targeta</translation>
 <translation id="9020542370529661692">Aquesta pàgina s'ha traduït a <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Introduïu el CVC de tres dígits que trobareu a la part posterior de la targeta</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9148507642005240123">&amp;Desfés la modificació</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="9207861905230894330">No s'ha pogut afegir l'article.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">ESBORRA EL FORMULARI</translation>
-<translation id="988159990683914416">Muntatge del desenvolupador</translation>
 </translationbundle>

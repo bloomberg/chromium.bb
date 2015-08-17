@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Zobraziť klávesnicu na obrazovke</translation>
-<translation id="1343000272198685031">Konektor mikrofónu</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="137180024469554212">Vypnúť zámku otáčania</translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Veľký kurzor myši</translation>
 <translation id="1602076796624386989">Povoliť mobilné dátové pripojenie</translation>
 <translation id="1621499497873603021">Čas zostávajúci do vybitia batérie: <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Zariadenie Chrome</translation>
 <translation id="1723752762323179280">Ukončenie relácie</translation>
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
+<translation id="1753067873202720523">Keď bude Chromebook zapnutý, možno sa nedobije.</translation>
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tretia strana<ph name="END_LINK"/>).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Automatické kliknutia</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Prebieha prenášanie zo zariadenia $1 na zariadenie $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Účty</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="2204305834655267233">Informácie o sieti</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
+<translation id="2248649616066688669">Chromebook môžete používať aj počas jeho pripojenia k externej obrazovke (dokonca aj so zavretým krytom).</translation>
 <translation id="225680501294068881">Hľadajú sa zariadenia...</translation>
 <translation id="2268130516524549846">Rozhranie Bluetooth je zakázané</translation>
 <translation id="2268813581635650749">Odhlásiť všetkých</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">Neznáma obrazovka</translation>
 <translation id="2532589005999780174">Režim s vysokým kontrastom</translation>
 <translation id="2562916301614567480">Súkromná sieť</translation>
+<translation id="2614835198358683673">Chromebook sa nesmie dobíjať v čase, keď je zapnutý. Zvážte použitie oficiálnej nabíjačky.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: pripája sa...</translation>
 <translation id="2700058918926273959">Relácia sa skončí o <ph name="SESSION_TIME_REMAINING"/>. Následne budete odhlásený/-á.</translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
@@ -73,6 +73,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3294437725009624529">Hosť</translation>
 <translation id="3433830597744061105">Správa účtov</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3527846106059622359">Nové používateľské rozhranie na prihlásenie je ZAPNUTÉ</translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE"/>“ (vyžaduje sa reštart)</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
@@ -102,6 +103,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="4279490309300973883">Zrkadlenie</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">Prenáša sa pracovná plocha</translation>
 <translation id="4379753398862151997">Milý monitor, medzi nami to nefunguje. (Tento monitor sa nepodporuje)</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME"/>.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
@@ -112,29 +114,25 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4895488851634969361">Batéria je úplne nabitá.</translation>
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="4957722034734105353">Viac informácií...</translation>
-<translation id="4961318399572185831">Prenášanie obrazovky</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Nastavenia služby Disk Google...</translation>
 <translation id="5102001756192215136">zostáva <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Dostupné zariadenia na prenos</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5238774010593222950">Nie je možné prihlásiť sa do iného účtu.</translation>
 <translation id="544691375626129091">Do tejto relácie už boli pridaní všetci dostupní používatelia</translation>
 <translation id="5507786745520522457">Nastaviť mobilné dáta</translation>
+<translation id="5537725057119320332">Prenášať</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">Rozšírenie <ph name="EXTENSION_NAME"/> vám môže pomôcť pripojiť sa k tejto sieti.</translation>
 <translation id="5565793151875479467">Server proxy...</translation>
 <translation id="5571066253365925590">Rozhranie Bluetooth je povolené</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Pokračujte v používaní zariadenia <ph name="DEVICE_TYPE"/> pripojeného k externej obrazovke, aj keď má zatvorený kryt.</translation>
 <translation id="5777841717266010279">Chcete ukončiť zdieľanie obrazovky?</translation>
+<translation id="5807965672380739016">Prenášať pracovnú plochu na</translation>
 <translation id="5825747213122829519">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>.
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
 <translation id="5871632337994001636">Spravovať zariadenia...</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
-<translation id="5927132638760172455">Prebieha prenášanie na neznámy prijímač</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
 <translation id="595202126637698455">Sledovanie výkonnosti je povolené</translation>
 <translation id="5958529069007801266">Kontrolovaný používateľ</translation>
@@ -166,7 +164,6 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="68610848741840742">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="6895424601869865703">Pridať účet pre používateľa <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
@@ -174,7 +171,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="7052914147756339792">Nastavenie tapety...</translation>
 <translation id="7097613348211027502">Hlasová odozva ChromeVox je aktívna.
 Deaktivujete ju stlačením kombinácie klávesov Ctrl+Alt+Z.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">Prenáša sa karta $1</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">Kláves CAPS LOCK je zapnutý.
 Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translation>
@@ -191,7 +188,6 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="785750925697875037">Zobraziť mobilný účet</translation>
 <translation id="7864539943188674973">Zakázať rozhranie Bluetooth</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
-<translation id="7957227661277029961">Zariadenie <ph name="DEVICE_TYPE"/> sa nemusí nabíjať, keď je zapnuté. Skúste použiť oficiálnu nabíjačku.</translation>
 <translation id="7982789257301363584">Sieť</translation>
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
 <translation id="8103386449138765447">Správy SMS: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="8308637677604853869">Predchádzajúca ponuka</translation>
 <translation id="8356164830168736643">Zavrieť okno <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Nastavenia</translation>
-<translation id="8443356412772935865">Prebieha prenášanie obrazovky na zariadenie $1</translation>
 <translation id="8456362689280298700">čas do úplného nabitia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE"/> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8528322925433439945">Mobilné siete...</translation>
 <translation id="8654520615680304441">Zapnúť sieť Wi-Fi...</translation>
 <translation id="8673028979667498656">270 °</translation>
 <translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>
+<translation id="8697119993436624257">Nové používateľské rozhranie na prihlásenie je VYPNUTÉ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Zobrazíte ju kliknutím tu</translation>
 <translation id="8828714802988429505">90 °</translation>

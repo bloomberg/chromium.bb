@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
 <translation id="1426410128494586442">是</translation>
-<translation id="1455235771979731432">验证您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="1491151370853475546">重新加载此页</translation>
-<translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">撤消删除(&amp;U)</translation>
 <translation id="2455981314101692989">该网页已对该表单停用自动填充功能。</translation>
 <translation id="2479410451996844060">搜索网址无效。</translation>
-<translation id="2495083838625180221">JSON 解析器</translation>
 <translation id="2498091847651709837">扫描新的信用卡</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
 <translation id="2581221116934462656">您希望 <ph name="PRODUCT_NAME"/> 下次翻译此网站的<ph name="LANGUAGE_NAME"/>网页吗？</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">您可以继续。如果您继续前往该页面，那么在接下来的 5 分钟内将不会再看到此警告。</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
 <translation id="2835170189407361413">清除表单</translation>
-<translation id="2855922900409897335">验证您的 <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">网络配置不符合 ONC 标准。无法导入配置的某些部分。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX"/>”：<ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">服务器临时错误</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">岛</translation>
-<translation id="3219579145727097045">输入信用卡正面显示的到期日期和 4 位数银行卡验证码 (CVC)</translation>
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE"/>网页，因此无法翻译。</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="333371639341676808">禁止此页再显示对话框。</translation>
-<translation id="3369366829301677151">更新并验证您的 <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">已取消配置</translation>
 <translation id="3377188786107721145">策略解析错误</translation>
 <translation id="3380365263193509176">未知错误</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">恢复移动(&amp;R)</translation>
 <translation id="3623476034248543066">显示值</translation>
 <translation id="3650584904733503804">验证成功</translation>
+<translation id="3667681724235208644">查看原始页面</translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="3712624925041724820">许可已用尽</translation>
 <translation id="3739623965217189342">您复制的链接</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
 <translation id="3885155851504623709">区</translation>
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>
-<translation id="3963721102035795474">阅读器模式</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY"/>”键：<ph name="ERROR"/></translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE"/>值。</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4607653538520819196">此网页不能由流量节省程序代理进行处理。</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">重新加载政策</translation>
-<translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE"/>。</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5872918882028971132">家长建议</translation>
-<translation id="587701087903783706">关闭适合移动设备的视图</translation>
 <translation id="59107663811261420">Google Payments 不支持使用这种类型的信用卡向此商家付款，请选择其他卡。</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">您正在尝试访问 <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>。此网页目前不能由流量节省程序代理进行处理。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> 搜索</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
-<translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6839929833149231406">地域</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">强制</translation>
 <translation id="7542995811387359312">由于该表单不使用安全连接，因此自动填写信用卡信息的功能已停用。</translation>
 <translation id="7568593326407688803">此网页为<ph name="ORIGINAL_LANGUAGE"/>网页，是否需要翻译？</translation>
-<translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE"/>)。</translation>
 <translation id="7752995774971033316">非托管</translation>
 <translation id="777702478322588152">县</translation>
 <translation id="7791543448312431591">添加</translation>
 <translation id="7805768142964895445">状态</translation>
-<translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
-<translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="7961015016161918242">一律不</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">重试</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8804164990146287819">隐私权政策</translation>
-<translation id="8824019021993735287">Chrome 目前无法验证您的信用卡，请稍后重试。</translation>
 <translation id="8834246243508017242">允许利用通讯录中的信息自动填充…</translation>
 <translation id="883848425547221593">其他书签</translation>
 <translation id="8866481888320382733">解析策略设置时出错</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
 <translation id="8940229512486821554">运行 <ph name="EXTENSION_NAME"/> 命令：<ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">输入信用卡背面显示的到期日期和 3 位数银行卡验证码 (CVC)</translation>
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">输入信用卡背面显示的 3 位数银行卡验证码 (CVC)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
 <translation id="9154176715500758432">留在此页</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="9207861905230894330">无法添加文章。</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">清除表单内容</translation>
-<translation id="988159990683914416">开发者内部版本</translation>
 </translationbundle>

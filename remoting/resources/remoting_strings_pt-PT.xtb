@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
 <translation id="1002108253973310084">Foi detetada uma versão de protocolo incompatível. Certifique-se de que tem a versão mais recente do software instalada em ambos os computadores e tente novamente.</translation>
+<translation id="1023096696228309145">Solicite ao utilizador a cujo computador pretende aceder que clique em &quot;Partilhar Agora&quot; e que indique o código de acesso.</translation>
 <translation id="1050693411695664090">Má</translation>
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="1199593201721843963">Desativar ligações remotas</translation>
+<translation id="1261403020716313927">• Foi corrigida uma grande perda de memória ao desligar do ambiente de trabalho remoto.</translation>
 <translation id="1291443878853470558">Se pretende utilizar o Chromoting para aceder a este computador, é necessário ativar as ligações remotas.</translation>
 <translation id="1300633907480909701">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.
 
@@ -15,7 +17,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1324095856329524885">(esta funcionalidade ainda não está disponível para o seu computador)</translation>
 <translation id="1342297293546459414">Ver e controlar um computador partilhado.</translation>
 <translation id="1450760146488584666">O objeto solicitado não existe.</translation>
-<translation id="1480046233931937785">Créditos</translation>
 <translation id="1520828917794284345">Redimensionar o ambiente de trabalho para ajustar ao tamanho</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
@@ -52,10 +53,8 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2124408767156847088">Aceda aos seus computadores em segurança a partir do seu dispositivo Android.</translation>
 <translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o administrador do sistema para obter assistência.</translation>
 <translation id="2220529011494928058">Comunicar um problema</translation>
-<translation id="2221097377466213233">Utilizar a tecla Ctrl direita para a tecla Win (⌘ no Mac)</translation>
 <translation id="2235518894410572517">Partilhar este computador para que outro utilizador o possa ver e controlar.</translation>
 <translation id="2246783206985865117">Esta definição é gerida pela política do seu domínio.</translation>
-<translation id="2256115617011615191">Reiniciar agora</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="228809120910082333">Confirme a sua conta e PIN abaixo para permitir o acesso do Chromoting.</translation>
 <translation id="2314101195544969792">A sua sessão de <ph name="APPLICATION_NAME"/> está inativa há algum tempo e será desligada dentro de momentos.</translation>
@@ -76,14 +75,11 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2851674870054673688">A sessão de partilha começa assim que introduzirem o código.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
-<translation id="2888969873284818612">Ocorreu um erro de rede. Quando o dispositivo estiver online novamente, reiniciamos a aplicação.</translation>
 <translation id="2894654864775534701">Atualmente, este computador é partilhado através de outra conta.</translation>
 <translation id="2919669478609886916">Está atualmente a partilhar este computador com outro utilizador. Pretende continuar a partilhar?</translation>
 <translation id="2921543551052660690">Iniciou sessão anteriormente como <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Para aceder aos computadores nessa conta, <ph name="LINK_BEGIN"/>inicie sessão no Chromium<ph name="LINK_END"/> com essa conta e reinstale o Chromoting.</translation>
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
 <translation id="2939145106548231838">Autenticar para anfitrião</translation>
-<translation id="2998137343848432918">• Adição do ecrã Créditos.
-• Correção de um problema ao abrir o modo de ecrã inteiro com o teclado visível.</translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
 <translation id="3025388528294795783">Para nos ajudar a resolver o problema, diga-nos o que correu mal:</translation>
 <translation id="3027681561976217984">Modo tátil</translation>
@@ -92,7 +88,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3150823315463303127">O anfitrião não conseguiu ler a política.</translation>
 <translation id="3194245623920924351">Ambiente de Trabalho Remoto</translation>
 <translation id="3197730452537982411">Ambiente de Trabalho Remoto</translation>
-<translation id="3244258558056547981">Mostrar vista do Cardboard.</translation>
 <translation id="3258789396564295715">Pode aceder com segurança ao computador utilizando o Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="327263477022142889">Pretende ajudar a melhorar o Ambiente de Trabalho Remoto do Chrome? <ph name="LINK_BEGIN"/>Responda ao inquérito.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Controlador do Anfitrião do Chromoting</translation>
@@ -164,7 +159,6 @@ Remoto do Chrome</translation>
 <translation id="5254120496627797685">Se sair desta página, terminará a sessão do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="5285241842433869526">Saiba como configurar um computador para acesso remoto.</translation>
 <translation id="5308380583665731573">Ligar</translation>
-<translation id="5363265567587775042">Solicite ao utilizador a cujo computador pretende aceder para clicar em &quot;<ph name="SHARE"/>&quot; e dar-lhe o código de acesso.</translation>
 <translation id="5379087427956679853">O Ambiente de Trabalho Remoto do Chrome permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Ambiente de Trabalho Remoto do Chrome, que pode ser encontrada em <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Desinstalador do Anfitrião do Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="5419185025274123272">Não foi possível repor a aplicação. Ainda pode enviar um relatório de erros.</translation>
@@ -233,6 +227,7 @@ Remoto do Chrome</translation>
 <translation id="7401733114166276557">Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="7434397035092923453">Acesso negado ao cliente: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Cliente ligado: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Nova ligação</translation>
 <translation id="7606912958770842224">Ativar ligações remotas</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

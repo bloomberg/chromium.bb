@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sk">
 <translation id="1002108253973310084">Bola zistená nekompatibilná verzia protokolu. Uistite sa, že máte na oboch počítačoch nainštalovanú najnovšiu verziu príslušného softvéru a skúste to znova.</translation>
+<translation id="1023096696228309145">Požiadajte používateľa, ku ktorého počítaču chcete pristupovať, aby klikol na možnosť Zdieľať tento počítač a poskytol vám prístupový kód.</translation>
 <translation id="1050693411695664090">Slabé</translation>
 <translation id="1152528166145813711">Vyberte…</translation>
 <translation id="1199593201721843963">Zakázať vzdialené pripojenia</translation>
+<translation id="1261403020716313927">• Oprava veľkého úniku pamäte pri odpojení od vzdialenej pracovnej plochy.</translation>
 <translation id="1291443878853470558">Ak chcete použiť na prístup k tomuto počítaču aplikáciu Chromoting, musíte povoliť vzdialené pripojenia.</translation>
 <translation id="1300633907480909701">Zaistite bezpečný prístup k svojim počítačom zo zariadenia s Androidom.
 
@@ -15,7 +17,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1324095856329524885">(táto funkcia zatiaľ nie je k dispozícii pre váš počítač)</translation>
 <translation id="1342297293546459414">Zobrazte a ovládajte zdieľaný počítač.</translation>
 <translation id="1450760146488584666">Požadovaný objekt neexistuje</translation>
-<translation id="1480046233931937785">Poďakovanie</translation>
 <translation id="1520828917794284345">Prispôsobiť veľkosť pracovnej plochy obrazovke klienta</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="1546934824884762070">Vyskytla sa neočakávaná chyba. Nahláste tento problém vývojárom.</translation>
@@ -52,10 +53,8 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2124408767156847088">Zaistite bezpečný prístup k svojim počítačom zo zariadenia s Androidom.</translation>
 <translation id="2208514473086078157">Nastavenia pravidiel nepovoľujú zdieľanie tohto počítača ako hostiteľa Vzdialenej plochy Chrome. Požiadajte o pomoc svojho správcu systému.</translation>
 <translation id="2220529011494928058">Nahlásiť problém</translation>
-<translation id="2221097377466213233">Použitím pravého klávesa Ctrl vyvoláte kláves Win (kláves ⌘ na počítači Mac)</translation>
 <translation id="2235518894410572517">Zdieľať tento počítač, aby ho mohol iný používateľ zobraziť a ovládať.</translation>
 <translation id="2246783206985865117">Toto nastavenie je spravované pravidlami domény.</translation>
-<translation id="2256115617011615191">Reštartovať</translation>
 <translation id="225614027745146050">Vitajte</translation>
 <translation id="228809120910082333">Ak chcete povoliť prístup k funkcii Chromoting, potvrďte svoj účet a kód PIN nižšie.</translation>
 <translation id="2314101195544969792">Relácia vašej aplikácie <ph name="APPLICATION_NAME"/> je už istý čas neaktívna a čoskoro bude odpojená.</translation>
@@ -76,14 +75,11 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="2851674870054673688">Vaša relácia zdieľania začne okamžite po zadaní kódu.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
-<translation id="2888969873284818612">Vyskytla sa chyba siete. Keď bude vaše zariadenie znova online, aplikáciu reštartujeme.</translation>
 <translation id="2894654864775534701">Tento počítač je momentálne zdieľaný pod iným účtom</translation>
 <translation id="2919669478609886916">Momentálne zdieľate tento počítač s iným používateľom. Chcete pokračovať v zdieľaní?</translation>
 <translation id="2921543551052660690">Predtým ste sa prihlásili ako používateľ <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Ak chcete získať prístup k počítačom v danom účte, musíte sa <ph name="LINK_BEGIN"/>prihlásiť do prehliadača Chromium<ph name="LINK_END"/> pomocou daného účtu a znova nainštalovať funkciu Chromoting.</translation>
 <translation id="2926340305933667314">Vzdialený prístup k tomuto počítaču sa nepodarilo zakázať. Skúste to znova neskôr.</translation>
 <translation id="2939145106548231838">Overenie na účely hostenia</translation>
-<translation id="2998137343848432918">• Pridaná obrazovka Kredity
-• Opravený problém pri prepnutí do režimu celej obrazovky s viditeľnou klávesnicou</translation>
 <translation id="3020807351229499221">Aktualizácia kódu PIN sa nepodarila. Skúste to znova neskôr.</translation>
 <translation id="3025388528294795783">Pomôžte nám vyriešiť váš problém. Dajte nám vedieť, čo sa stalo:</translation>
 <translation id="3027681561976217984">Dotykový režim</translation>
@@ -92,7 +88,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="3150823315463303127">Hostiteľovi sa nepodarilo prečítať pravidlá</translation>
 <translation id="3194245623920924351">Vzdialená plocha Chrome</translation>
 <translation id="3197730452537982411">Vzdialená plocha</translation>
-<translation id="3244258558056547981">Prepnúť na zobrazenie Cardboard</translation>
 <translation id="3258789396564295715">K tomuto počítaču môžete bezpečne pristupovať pomocou Vzdialenej plochy Chrome.</translation>
 <translation id="327263477022142889">Chcete pomôcť vylepšiť funkciu Vzdialená plocha Chrome? <ph name="LINK_BEGIN"/>Zúčastnite sa prieskumu.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Ovládač hostiteľa funkcie Chromoting</translation>
@@ -164,7 +159,6 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="5254120496627797685">Ak opustíte túto stránku, relácia Vzdialenej plochy Chrome sa ukončí.</translation>
 <translation id="5285241842433869526">Prečítajte si, ako na počítači nastaviť vzdialený prístup.</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
-<translation id="5363265567587775042">Požiadajte používateľa s počítačom, do ktorého chcete získať prístup, aby klikol na tlačidlo <ph name="SHARE"/> a poskytol vám prístupový kód.</translation>
 <translation id="5379087427956679853">Vzdialená plocha Chrome vám umožňuje bezpečne zdieľať váš počítač cez internet. Obaja používatelia musia mať spustenú aplikáciu Vzdialená plocha Chrome, ktorú nájdete na adrese <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Nástroj na odinštalovanie hostiteľa Vzdialenej plochy Chrome</translation>
 <translation id="5419185025274123272">Aplikáciu sa nepodarilo resetovať. Stále však môžete odoslať hlásenie o chybách.</translation>
@@ -233,6 +227,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="7401733114166276557">Vzdialená plocha Chrome</translation>
 <translation id="7434397035092923453">Prístup bol odmietnutý klientskemu programu: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Klient je pripojený: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Nové pripojenie</translation>
 <translation id="7606912958770842224">Povoliť vzdialené pripojenia</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7658239707568436148">Zrušiť</translation>

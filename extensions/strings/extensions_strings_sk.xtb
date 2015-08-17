@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Vymieňať údaje s ktorýmkoľvek zariadením z nasledujúcich domén: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Lokalizácia sa použila, parameter default_locale však nebol v manifeste určený.</translation>
 <translation id="2616366145935564096">Čítať a meniť údaje pre <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému alebo viacerým vašim zariadeniam.</translation>
 <translation id="2753617847762399167">Neplatná cesta (absolútna alebo relatívna s '..'): <ph name="IMAGE_PATH"/></translation>
 <translation id="27822970480436970">Tomuto rozšíreniu sa nepodarilo upraviť žiadosť siete, pretože úprava bola v rozpore s ďalším rozšírením.</translation>
 <translation id="2857834222104759979">Súbor manifestu je neplatný.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (sériové číslo: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Čítať vaše údaje na viacerých webových stránkach</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> od dodávateľa <ph name="VENDOR_ID"/> (sériové číslo: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Výber zariadenia USB}multiple{Výber zariadení USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Nepodarilo sa načítať stránku spúšťača <ph name="PAGE"/>.</translation>
 <translation id="3759933321830434300">Blokovať časti webových stránok</translation>
 <translation id="388442998277590542">Nepodarilo sa načítať stránku s možnosťami „<ph name="OPTIONS_PAGE"/>“.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">neznáme zariadenia od dodávateľa <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Čítať vaše údaje na weboch <ph name="WEBSITE_1"/> a <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Používať mikrofón</translation>
+<translation id="4776856853352853275">Výber zariadení USB</translation>
 <translation id="4811956658694082538">Balík sa nepodarilo nainštalovať z dôvodu zlyhania procesu nástroja. Reštartujte prehliadač Chrome a skúste to znova.</translation>
 <translation id="4883436287898674711">Všetky weby <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Spravovať sieťové pripojenia</translation>
-<translation id="5165983846722506205">{1,select, single{Výber zariadenia HID}multiple{Výber zariadení HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Značka appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Toto rozšírenie obsahuje súbor kľúča <ph name="KEY_PATH"/>. Pravdepodobne to nechcete urobiť.</translation>
+<translation id="545850661681880228">Výber zariadenia HID</translation>
 <translation id="5627523580512561598">rozšírenie <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Čítať vaše údaje na: <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému z vašich zariadení.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">Zobrazenie rozšírenia: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Ovládanie stavu a párovania adaptéra Bluetooth</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> od dodávateľa <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Vymieňať údaje so zariadením s názvom <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Rozšírenie sa nepodarilo rozbaliť. Aby bolo rozbalenie rozšírenia bezpečné, musíte zadať cestu k profilovému adresáru, ktorá neobsahuje žiadny odkaz symlink. Pre váš profil nie je k dispozícii žiadna takáto cesta.</translation>
-<translation id="616804573177634438">{0,select, single{Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému z vašich zariadení.}multiple{Aplikácia <ph name="APP_NAME"/> žiada o prístup k jednému alebo viacerým vašim zariadeniam.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Prístup k informáciám o zariadeniach Bluetooth spárovaných s vaším systémom a objavovanie zariadení Bluetooth v blízkosti.</translation>
 <translation id="6344170822609224263">Pristupovať k zoznamu sieťových pripojení</translation>
 <translation id="6384275966486438344">Zmeniť nastavenia vyhľadávania na: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Čítať údaje, ktoré kopírujete a prilepujete</translation>
 <translation id="730515362922783851">Vymieňať údaje s ktorýmkoľvek zariadením v miestnej sieti alebo na internete</translation>
 <translation id="7809034755304591547">Rozšírenie <ph name="EXTENSION_NAME"/> (ID rozšírenia „<ph name="EXTENSION_ID"/>“) bolo správcom zablokované.</translation>
+<translation id="781637217073033149">Výber zariadení HID</translation>
 <translation id="7893008570150657497">Mať prístup k fotkám, hudbe a ďalším médiám z vášho počítača</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Tomuto rozšíreniu sa nepodarilo pomenovať stiahnutý súbor s názvom „<ph name="ATTEMPTED_FILENAME"/>„, pretože ďalšie rozšírenie (<ph name="EXTENSION_NAME"/>) určilo odlišný názov súboru „<ph name="ACTUAL_FILENAME"/>“.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Súbor manifestu chýba alebo je nečitateľný.</translation>
 <translation id="8620765578342452535">Konfigurovať sieťové pripojenia</translation>
 <translation id="8636666366616799973">Package is invalid. Details: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">Výber zariadenia USB</translation>
 <translation id="8662911384982557515">Zmeniť domovskú stránku na: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Tomuto rozšíreniu sa nepodarilo presmerovať žiadosť o siete na stránky <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, pretože ju iné rozšírenie (<ph name="EXTENSION_NAME"/>) presmerovalo na stránky <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Extension Unpacker</translation>

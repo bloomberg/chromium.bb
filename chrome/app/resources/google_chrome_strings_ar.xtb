@@ -2,7 +2,6 @@
 <translation id="1001534784610492198">‏أرشيف المثبت تالف أو غير صالح. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="1016765312371154165">‏لم يتم إيقاف تشغيل Chrome بشكل صحيح.</translation>
 <translation id="103396972844768118">‏معلومات مهمة بخصوص بياناتك في Chrome</translation>
-<translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="1073391069195728457">‏Chrome - الإشعارات</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
@@ -55,7 +54,6 @@
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2576431527583832481">‏لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
-<translation id="2588322182880276190">‏شعار Chrome</translation>
 <translation id="2596415276201385844">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="2664962310688259219">‏تراخيص مفتوحة المصدر لنظام التشغيل Chrome</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK"/> إلى Google</translation>
@@ -63,6 +61,7 @@
 <translation id="2681064822612051220">‏تم العثور على تثبيت متضارب لـ Google Chrome على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
 <translation id="2704356438731803243">‏إذا كنت تفضل الإبقاء على بيانات Chrome الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chrome جديد للمستخدم <ph name="USER_NAME"/>.</translation>
+<translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="2748463065602559597">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="2769762047821873045">‏ليس Google Chrome متصفحك الافتراضي.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
@@ -93,13 +92,11 @@
 <translation id="386202838227397562">‏الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="3870154837782082782">Google Inc‎.‎</translation>
 <translation id="3889417619312448367">‏إزالة Google Chrome</translation>
-<translation id="4011219958405096740">‏عند تمكينه، سيستخدم تدفق تسجيل دخول Chrome القائم على iframe؛ وإلا سيستخدم تدفقًا قائمًا على عرض الويب.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
 <translation id="4053720452172726777">‏تخصيص Google Chrome والتحكم فيه</translation>
 <translation id="4147555960264124640">‏إنك تسجل الدخول باستخدام حساب مُدار وتمنح المشرف إمكانية التحكم في ملفك الشخصي في Google Chrome. وسيتم ربط بيانات Chrome التابعة لك، مثل التطبيقات والإشارات المرجعية والسجلّ وكلمات المرور والإعدادات الأخرى بالمستخدم <ph name="USER_NAME"/>. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. <ph name="LEARN_MORE"/></translation>
 <translation id="4149882025268051530">‏فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="4167057906098955729">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chrome والإضافات ومواقع الويب هنا.</translation>
-<translation id="423410644998903704">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الأذونات لمشاركتها مع موقع الويب هذا.</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="4273752058983339720">‏تمت تهيئة Google Chrome لإطلاقه تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="4309555186815777032">‏(<ph name="BEGIN_BUTTON"/>إعادة تشغيل<ph name="END_BUTTON"/> Chrome مطلوبة)</translation>
@@ -110,7 +107,6 @@
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
 <translation id="4480040274068703980">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="4513711165509885787">‏تم حفظ تفاصيل الفوترة في Chrome.</translation>
-<translation id="4519152997629025674">‏يستخدم Google Chrome <ph name="BEGIN_LINK"/>خدمات الويب<ph name="END_LINK"/> لتحسين تجربة التصفح. يمكنك تعطيل هذه الخدمات اختياريًا في أي وقت.</translation>
 <translation id="4561051373932531560">‏يتيح لك Google Chrome النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS"/>. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="4631713731678262610">‏الإخفاء في قائمة Chrome</translation>
@@ -159,11 +155,8 @@
 <translation id="5620765574781326016">تعرّف على موضوعات على مواقع الويب دون مغادرة الصفحة.</translation>
 <translation id="568643307450491754">‏ابحث عن الإشارات المرجعية في قائمة Chrome أو على شريط الإشارات المرجعية.</translation>
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
-<translation id="5785746630574083988">‏ستؤدي إعادة التشغيل في وضع Windows 8 إلى إغلاق تطبيقات Chrome وإعادة تشغيلها.</translation>
-<translation id="5799551393681493217">‏يمكن تدفقات تسجيل الدخول لمتصفح Chrome القائمة على iframe. تلغي هذه العلامة تمكين-تسجيل الدخول-القائم-على الموقع.</translation>
 <translation id="5855036575689098185">‏البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
-<translation id="5931853610562009806">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="5940385492829620908">‏الويب والإشارات المرجعية وغيرها من عناصر Chrome توجد هنا.</translation>
 <translation id="5941830788786076944">‏جعل Google Chrome المتصفّح الافتراضي</translation>
 <translation id="597770749449734237">‏لتمكين اختصارات لوحة مفاتيح إضافية والتي تكون مفيدة لتصحيح أخطاء Google Chrome.</translation>
@@ -175,7 +168,6 @@
           &gt;
           <ph name="PROXIES_TITLE"/>
           وتأكد من ضبط التهيئة على &quot;بلا خادم وكيل&quot; أو &quot;مباشر.&quot;</translation>
-<translation id="6012342843556706400">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الموقع لمشاركته مع موقع الويب هذا.</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! عطّل المشرف المزامنة.</translation>
 <translation id="6049075767726609708">‏قام أحد المشرفين بتثبيت Google Chrome على هذا الجهاز، وهو متاح لجميع المستخدمين. سيحل Google Chrome على مستوى النظام محل النسخة المثبتة على مستوى المستخدم لديك الآن.</translation>
 <translation id="6113794647360055231">‏Chrome أصبح أفضل</translation>
@@ -192,7 +184,6 @@
         وألغ تحديد <ph name="NO_PREFETCH_DESCRIPTION"/>
         إذا لم يعمل ذلك على حل المشكلة، نوصي بتحديد هذا الخيار
         مرة من أجل أداء أفضل.</translation>
-<translation id="6368805772029492593">‏لمزيد من الأمان، سيشفر Google Chrome بياناتك</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏هناك تنزيل قيد التقدم حاليًا. هل تريد إلغاء التنزيل والخروج من Google Chrome؟}zero{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}two{‏هناك تنزيلان (#) قيد التقدم حاليًا. هل تريد إلغاء التنزيلين والخروج من Google Chrome؟}few{‏هناك # تنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}many{‏هناك # تنزيلاً قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}other{‏هناك # من التنزيلات قيد التقدم حاليًا. هل تريد إلغاء التنزيلات والخروج من Google Chrome؟}}</translation>
 <translation id="6598387184982954187">‏أنت تستخدم <ph name="PROFILE_EMAIL"/> لمزامنة عناصرك في Chrome. لتحديث تفضيل المزامنة أو استخدام Chrome بدون حساب Google، يمكنك الانتقال إلى <ph name="SETTINGS_LINK"/>.</translation>
@@ -245,21 +236,16 @@
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="7494905215383356681">‏تراخيص مفتوحة المصدر لـ Chrome</translation>
 <translation id="7592736734348559088">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
-<translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
 <translation id="7761834446675418963">‏انقر على اسمك لفتح Chrome وبدء التصفح.</translation>
 <translation id="7781002470561365167">‏يتوفر إصدار جديد من متصفح Google Chrome.</translation>
-<translation id="7784335114585804598">‏إع&amp;ادة تشغيل Chrome في وضع Windows 8</translation>
 <translation id="7787950393032327779">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Google Chrome (<ph name="PROCESS_ID"/>) على جهاز كمبيوتر آخر (<ph name="HOST_NAME"/>). وقد تمّ قفل الملف الشخصي من جانب Chrome لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chrome مجددًا.</translation>
-<translation id="7788788617745289808">‏يحتاج Chrome الحصول على حق الوصول إلى الكاميرا لمشاركتها مع هذا الموقع.</translation>
 <translation id="7808348361785373670">‏جارٍ الإزالة من Chrome...</translation>
-<translation id="781069973841903133">‏ستؤدي إعادة التشغيل في وضع Chrome المجسم إلى إغلاق تطبيقات Chrome وإعادة تشغيلها.</translation>
 <translation id="7825851276765848807">‏فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="7890208801193284374">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chrome على النحو الذي يريدونه.</translation>
 <translation id="7908968924842975895">‏لن يتلقى هذا الكمبيوتر تحديثات Google Chrome بعد الآن نظرًا لأن أجهزته لم تعد متوافقة.</translation>
 <translation id="7984945080620862648">‏لا يمكنك زيارة <ph name="SITE"/> الآن لأن موقع الويب أرسل بيانات اعتماد مختلطة يتعذر على Chrome معالجتها. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة لاحقًا على الأرجح.</translation>
 <translation id="8000275528373650868">‏يتطلب Google Chrome نظام التشغيل Windows Vista أو Windows XP المزود بحزمة الخدمة SP2 أو الأعلى منها.</translation>
-<translation id="8005540215158006229">‏Chrome جاهز تقريبًا.</translation>
 <translation id="8008534537613507642">‏إعادة تثبيت Chrome</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="8032142183999901390">‏بعد إزالة حسابك من Chrome، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
@@ -269,11 +255,9 @@
 <translation id="8205111949707227942">‏اختياري: ساعد في تحسين Chrome OS عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="8227755444512189073">تقتضي معالجة روابط <ph name="SCHEME"/> تشغيل تطبيق خارجيّ. والرّابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="8255190535488645436">‏يستخدم Google Chrome الكاميرا والميكروفون.</translation>
-<translation id="8274359292107649245">‏فتح Chrome على سطح المكتب</translation>
 <translation id="8286862437124483331">‏يحاول Google Chrome عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="8290100596633877290">‏للأسف! تعطل Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>
-<translation id="8437332772351535342">‏ستؤدي إعادة التشغيل في وضع سطح المكتب إلى إغلاق تطبيقات Chrome وإعادة تشغيلها.</translation>
 <translation id="8460191995881063249">‏مركز إشعارات Chrome</translation>
 <translation id="853189717709780425">‏أنت تسجل الدخول بحساب يخضع لإدارة شخص آخر وتمنح مشرفه إمكانية التحكم في ملفك الشخصي في Google Chrome. سيتم ربط بياناتك في Chrome دائمًا بالحساب <ph name="USER_NAME"/> مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى. وستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -285,12 +269,10 @@
 <translation id="8669527147644353129">‏مساعد Google Chrome</translation>
 <translation id="8679801911857917785">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome.</translation>
 <translation id="870251953148363156">‏&amp;تحديث Google Chrome</translation>
-<translation id="8811903091068364646">‏إع&amp;ادة تشغيل Chrome على سطح المكتب</translation>
 <translation id="8823341990149967727">‏إصدار Chrome قديم</translation>
 <translation id="884296878221830158">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chrome أو النقر على زر الصفحة الرئيسية.</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
-<translation id="8889942196804715220">‏إعادة التشغيل في وضع Chrome المجسم</translation>
 <translation id="8987477933582888019">متصفح الويب</translation>
 <translation id="9026991721384951619">‏تعذر على نظام التشغيل Chrome مزامنة البيانات نظرًا لأن تفاصيل تسجيل الدخول إلى حسابك قديمة.</translation>
 <translation id="9102715433345326100">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chrome حظره.</translation>

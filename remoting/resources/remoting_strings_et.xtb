@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="et">
 <translation id="1002108253973310084">Leiti protokolli ühildumatu versioon. Veenduge, et mõlemas arvutis oleks installitud tarkvara uusim versioon, ja proovige uuesti.</translation>
+<translation id="1023096696228309145">Paluge kasutajal, kelle arvutisse soovite juurde pääseda, klõpsata valikul „Jaga nüüd” ja anda teile seejärel pääsukood.</translation>
 <translation id="1050693411695664090">Halb</translation>
 <translation id="1152528166145813711">Valige ...</translation>
 <translation id="1199593201721843963">Keela kaugühendused</translation>
+<translation id="1261403020716313927">• Parandati suur mäluleke kaugtöölaua ühenduse katkestamisel.</translation>
 <translation id="1291443878853470558">Kui soovite rakendusega Chromoting arvuti juurde pääseda, siis lubage kaugühendused.</translation>
 <translation id="1300633907480909701">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.
 
@@ -15,7 +17,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1324095856329524885">(see funktsioon ei ole veel teie arvutis saadaval)</translation>
 <translation id="1342297293546459414">Vaadake ja juhtige jagatud arvutit.</translation>
 <translation id="1450760146488584666">Nõutavat objekti ei ole.</translation>
-<translation id="1480046233931937785">Tiitrid</translation>
 <translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
 <translation id="154040539590487450">Kaugühenduse teenuse käivitamine ebaõnnestus.</translation>
 <translation id="1546934824884762070">Ilmnes ootamatu viga. Teatage sellest probleemist arendajatele.</translation>
@@ -52,10 +53,8 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2124408767156847088">Hankige oma Android-seadmest turvaliselt juurdepääs oma arvutitele.</translation>
 <translation id="2208514473086078157">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga</translation>
 <translation id="2220529011494928058">Probleemist teatamine</translation>
-<translation id="2221097377466213233">Kasuta Windowsis parempoolset juhtklahvi Ctrl (Maci puhul klahv ⌘)</translation>
 <translation id="2235518894410572517">Jagage seda arvutit teise kasutajaga, nii et ta näeb ja saab arvutit juhtida.</translation>
 <translation id="2246783206985865117">Seda seadet juhivad teie domeeni eeskirjad.</translation>
-<translation id="2256115617011615191">Taaskäivita kohe</translation>
 <translation id="225614027745146050">Tere tulemast</translation>
 <translation id="228809120910082333">Chromootimise abil juurdepääsu lubamiseks kinnitage allpool oma konto ja PIN-kood.</translation>
 <translation id="2314101195544969792">Teie rakenduse <ph name="APPLICATION_NAME"/> seanss on olnud mõnda aega passiivne ja ühendus katkestatakse peagi.</translation>
@@ -76,14 +75,11 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2851674870054673688">Kui ta on koodi sisestanud, algab teie jagamisseanss.</translation>
 <translation id="2851754573186462851">Chromiumi rakenduste voogesitus</translation>
 <translation id="2855866366045322178">võrguühenduseta</translation>
-<translation id="2888969873284818612">Ilmnes võrguviga. Rakendus taaskäivitatakse, kui seadmes on taas võrguühendus.</translation>
 <translation id="2894654864775534701">Seda arvutit jagatakse praegu teise kontoga.</translation>
 <translation id="2919669478609886916">Jagate seda seadet praegu teise kasutajaga. Kas soovite jagamist jätkata?</translation>
 <translation id="2921543551052660690">Olete varem sisse loginud kasutajana <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Sellel kontol oma arvutitele juurdepääsemiseks <ph name="LINK_BEGIN"/>logige Chromiumi sisse<ph name="LINK_END"/> selle kontoga ja installige chromootimine uuesti.</translation>
 <translation id="2926340305933667314">Arvuti kaugühenduste keelamine ebaõnnestus. Proovige hiljem uuesti.</translation>
 <translation id="2939145106548231838">Hostiga autentimine</translation>
-<translation id="2998137343848432918">• Lisati osaliste ekraan.
-• Parandati probleem, mille puhul täisekraanirežiimis oli klaviatuur nähtaval.</translation>
 <translation id="3020807351229499221">PIN-koodi värskendamine ebaõnnestus. Proovige hiljem uuesti.</translation>
 <translation id="3025388528294795783">Probleemi lahendamisel abistamiseks öelge meile, mis läks valesti:</translation>
 <translation id="3027681561976217984">Puuterežiim</translation>
@@ -92,7 +88,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="3150823315463303127">Hostil ei õnnestunud eeskirju lugeda.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3244258558056547981">Kuva Cardboardi kuva.</translation>
 <translation id="3258789396564295715">Pääsete turvaliselt arvuti juurde Chrome Remote Desktopi abil.</translation>
 <translation id="327263477022142889">Kas soovite aidata Chrome'i kaugtöölauda täiustada? <ph name="LINK_BEGIN"/>Vastake küsitlusele.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Chromootimise hosti kontroller</translation>
@@ -164,7 +159,6 @@ Desktopi host</translation>
 <translation id="5254120496627797685">Lehelt lahkudes katkeb teie Chrome Remote Desktopi seanss.</translation>
 <translation id="5285241842433869526">Vaadake, kuidas seadistada arvuti kaugjuurdepääsu jaoks.</translation>
 <translation id="5308380583665731573">Ühendamine</translation>
-<translation id="5363265567587775042">Paluge kasutajal, kelle arvutile soovite juurde pääseda, klõpsata nupul „<ph name="SHARE"/>” ja anda teile juurdepääsukood.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop võimaldab arvutit turvaliselt veebi kaudu jagada. Mõlema kasutaja arvutis peab töötama rakendus Chrome Remote Desktop, mille leiate aadressilt <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Chrome Remote Desktopi hosti desinstaller</translation>
 <translation id="5419185025274123272">Rakendust ei saanud lähtestada. Saate siiski saata veaaruande.</translation>
@@ -233,6 +227,7 @@ Desktopi host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Järgmisele kliendile on juurdepääs keelatud: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Ühendatud klient: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Uus ühendus</translation>
 <translation id="7606912958770842224">Luba kaugühendused</translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7658239707568436148">Tühista</translation>

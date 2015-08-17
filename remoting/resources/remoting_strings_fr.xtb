@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
 <translation id="1002108253973310084">Une version de protocole incompatible a été détectée. Veuillez vous assurer que vous utilisez la dernière version du logiciel sur les deux ordinateurs, puis réessayer.</translation>
+<translation id="1023096696228309145">Demandez à l'utilisateur possédant l'ordinateur auquel vous souhaitez accéder de cliquer sur &quot;Partager&quot;, puis de vous communiquer le code d'accès.</translation>
 <translation id="1050693411695664090">Médiocre</translation>
 <translation id="1152528166145813711">Sélectionner…</translation>
 <translation id="1199593201721843963">Désactiver les connexions à distance</translation>
+<translation id="1261403020716313927">• Réparation de l'importante fuite de mémoire lors de la déconnexion du Bureau à distance.</translation>
 <translation id="1291443878853470558">Si vous souhaitez utiliser Google Chromoting pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
 <translation id="1300633907480909701">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android.
 
@@ -15,7 +17,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1324095856329524885">Cette fonctionnalité n'est pas encore disponible pour votre ordinateur.</translation>
 <translation id="1342297293546459414">Voir et contrôler un ordinateur partagé</translation>
 <translation id="1450760146488584666">L'objet demandé n'existe pas.</translation>
-<translation id="1480046233931937785">Remerciements</translation>
 <translation id="1520828917794284345">Ajuster le bureau à la taille du client</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
@@ -52,10 +53,8 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2124408767156847088">Accédez à vos ordinateurs en toute sécurité depuis votre appareil Android</translation>
 <translation id="2208514473086078157">Les paramètres des règles n'autorisent pas le partage de cet ordinateur en tant qu'hôte du bureau à distance Google Chrome. Veuillez contacter votre administrateur système pour obtenir de l'aide.</translation>
 <translation id="2220529011494928058">Signaler un problème</translation>
-<translation id="2221097377466213233">Utiliser la touche Ctrl de droite comme touche Windows (ou ⌘ sur un Mac)</translation>
 <translation id="2235518894410572517">Partager cet ordinateur et permettre à un utilisateur de le voir et de le contrôler</translation>
 <translation id="2246783206985865117">Ce paramètre est géré par les règles de votre domaine</translation>
-<translation id="2256115617011615191">Redémarrer maintenant</translation>
 <translation id="225614027745146050">Bienvenue</translation>
 <translation id="228809120910082333">Veuillez confirmer le compte et le code d'accès ci-dessous pour autoriser l'accès de Chromoting à votre compte.</translation>
 <translation id="2314101195544969792">Votre session <ph name="APPLICATION_NAME"/> est inactive depuis un certain temps et risque de se fermer bientôt.</translation>
@@ -76,14 +75,11 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2851674870054673688">Votre session de partage débutera une fois le code saisi.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">hors connexion</translation>
-<translation id="2888969873284818612">Une erreur réseau s'est produite. L'application va être redémarrée lorsque votre appareil sera de nouveau en ligne.</translation>
 <translation id="2894654864775534701">Cet ordinateur est actuellement partagé sous un autre compte.</translation>
 <translation id="2919669478609886916">Vous partagez actuellement cette machine avec un autre utilisateur. Voulez-vous continuer ce partage ?</translation>
 <translation id="2921543551052660690">Vous vous êtes auparavant connecté avec le nom d'utilisateur &quot;<ph name="USER_NAME"/>&quot; (<ph name="USER_EMAIL"/>). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN"/>connectez-vous à Chromium<ph name="LINK_END"/> avec ce compte, puis réinstallez Chromoting.</translation>
 <translation id="2926340305933667314">Échec de la désactivation de l'accès à distance pour cet ordinateur. Veuillez réessayer ultérieurement.</translation>
 <translation id="2939145106548231838">S'authentifier auprès de l'hôte</translation>
-<translation id="2998137343848432918">• Ajout d'un écran de remerciements
-• Résolution d'un problème lors du passage au plein écran avec le clavier visible</translation>
 <translation id="3020807351229499221">Échec de la mise à jour du code d'accès. Veuillez réessayer ultérieurement.</translation>
 <translation id="3025388528294795783">Afin de nous aider à résoudre votre problème, veuillez nous fournir plus de détails :</translation>
 <translation id="3027681561976217984">Mode Écran tactile</translation>
@@ -92,7 +88,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="3150823315463303127">L'hôte n'est pas parvenu à lire les règles.</translation>
 <translation id="3194245623920924351">Bureau à distance Chrome</translation>
 <translation id="3197730452537982411">Bureau à distance</translation>
-<translation id="3244258558056547981">Afficher la vue Cardboard</translation>
 <translation id="3258789396564295715">Vous pouvez accéder à cet ordinateur en toute sécurité via le bureau à distance Google Chrome.</translation>
 <translation id="327263477022142889">Vous voulez nous aider à améliorer le Bureau à distance Chrome ? <ph name="LINK_BEGIN"/>Répondez à notre enquête<ph name="LINK_END"/>.</translation>
 <translation id="3286521253923406898">Contrôleur de l'hôte Chromoting</translation>
@@ -164,7 +159,6 @@ Google Chrome</translation>
 <translation id="5254120496627797685">En quittant cette page, vous mettrez fin à la session du bureau à distance Google Chrome.</translation>
 <translation id="5285241842433869526">Découvrez comment configurer l'accès à distance sur un ordinateur.</translation>
 <translation id="5308380583665731573">Connexion</translation>
-<translation id="5363265567587775042">Demandez à l'utilisateur de l'ordinateur auquel vous souhaitez accéder de cliquer sur &quot;<ph name="SHARE"/>&quot; et de vous donner le code d'accès.</translation>
 <translation id="5379087427956679853">L'application Bureau à distance Google Chrome vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Programme de désinstallation de l'hôte Bureau à distance Google Chrome</translation>
 <translation id="5419185025274123272">Impossible de réinitialiser l'application. Vous pouvez toujours envoyer un rapport de bug.</translation>
@@ -233,6 +227,7 @@ Google Chrome</translation>
 <translation id="7401733114166276557">Bureau à distance Google Chrome</translation>
 <translation id="7434397035092923453">Accès refusé au client : <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Client connecté : <ph name="CLIENT_USERNAME"/></translation>
+<translation id="7605995381616883502">Nouvelle connexion</translation>
 <translation id="7606912958770842224">Activer les connexions à distance</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7658239707568436148">Annuler</translation>

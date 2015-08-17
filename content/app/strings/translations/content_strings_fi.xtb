@@ -23,7 +23,6 @@
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2226276347425096477">Lyhennä tämä teksti alle <ph name="MAX_CHARACTERS"/> merkkiin (tällä hetkellä käytössä <ph name="CURRENT_LENGTH"/> merkkiä).</translation>
 <translation id="2247351761944213033">Viikko <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
-<translation id="2291999235780842123">valintaruutu</translation>
 <translation id="248395913932153421">Päivä</translation>
 <translation id="2507943997699731163">Täytä tämä kenttä.</translation>
 <translation id="2548326553472216322">Ei viimeisimpiä hakuja</translation>
@@ -37,7 +36,6 @@
 <translation id="2846343701378493991">1024 (keskitaso)</translation>
 <translation id="2901282870647571346">elokuvan nykyinen tila</translation>
 <translation id="2908441821576996758">Anna pilkuilla erotettu sähköpostiosoitteiden luettelo.</translation>
-<translation id="2942448076852699108">korostettu sisältö</translation>
 <translation id="3040011195152428237">linkki</translation>
 <translation id="3075154866155599887">Anna kelvollinen arvo. Kentän arvo on puutteellinen tai annettu päivä on virheellinen.</translation>
 <translation id="310520048233152454">Anna URL-osoite.</translation>

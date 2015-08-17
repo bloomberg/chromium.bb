@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">የምዝገባ ጎራ፦</translation>
 <translation id="1344588688991793829">የChromium ራስ-ሙላ ቅንብሮች...</translation>
 <translation id="1426410128494586442">አዎ</translation>
-<translation id="1455235771979731432">የእርስዎን ካርድ ማረጋገጥ ላይ ችግር ነበር። የእርስዎን የበይነመረብ ግንኙነት ይፈትሹ እና እንደገና ይሞክሩ።</translation>
 <translation id="1491151370853475546">ይህን ገጽ ዳግም ይጫኑ</translation>
-<translation id="1549470594296187301">ይህን ባህሪ ለመጠቀም ጃቫስክሪፕት መንቃት አለበት።</translation>
 <translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="1640180200866533862">የተጠቃሚ መምሪያዎች</translation>
 <translation id="1644184664548287040">የአውታረ መረቡ ውቅር ልክ ያልሆነ እና ሊመጣ የማይችል ነው።</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;ስረዛን ቀልብስ</translation>
 <translation id="2455981314101692989">ይህ ድረ-ገጽ ለዚህ ቅጽ ራስ-መሙላትን አሰናክሏል።</translation>
 <translation id="2479410451996844060">ልክ ያልሆነ የፍለጋ ዩአርኤል።</translation>
-<translation id="2495083838625180221">JSON ተንታኝ</translation>
 <translation id="2498091847651709837">አዲስ ካርድ ቃኝ</translation>
 <translation id="2556876185419854533">&amp;አርትዕን ቀልብስ</translation>
 <translation id="2581221116934462656">ቀጣዩ ጊዜ ላይ <ph name="PRODUCT_NAME"/> በዚህ ጣቢያ ያሉ የ<ph name="LANGUAGE_NAME"/> ገጾችን እንዲተረጉምልዎ ይፈልጋሉ?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">መቀጠል ይችላሉ። ወደ ገጹ ከቀጠሉ፣ ይህ ማስጠንቀቂያ ለአምስት ደቂቃዎች ዳግመኛ አይታይም።</translation>
 <translation id="277499241957683684">የሚጎድል የመሣሪያ መዝገብ</translation>
 <translation id="2835170189407361413">ቅጽ አጽዳ</translation>
-<translation id="2855922900409897335">የእርስዎን <ph name="CREDIT_CARD"/> ያረጋግጡ</translation>
 <translation id="2958431318199492670">የአውታረ መረብ ውቅሩ በኦ ኤን ሲ መስፈርቱ አይገዛም። አንዳንድ የውቅሩ ክፍሎች ላይመጡ ይችላሉ።</translation>
 <translation id="2972581237482394796">&amp;ድገም</translation>
 <translation id="3010559122411665027">የዝርዝር ግቤት «<ph name="ENTRY_INDEX"/>»፦ <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">ጊዜያዊ የአገልጋይ ስህተት</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">ደሴት</translation>
-<translation id="3219579145727097045">የጊዜ ማብቂያ ቀን እና በካርድዎ ፊት ላይ ያለውን ባለ4 አኃዝ CVCን ያስገቡ</translation>
 <translation id="3228969707346345236">ገጹ አስቀድሞ በ<ph name="LANGUAGE"/> ስለሆነ ትርጉሙ አልተሳካም።</translation>
 <translation id="3270847123878663523">&amp;ዳግም ደርድርን ቀልብስ</translation>
 <translation id="333371639341676808">ይህ ገጽ ተጨማሪ ማገናኛዎችን እንዳይፈጥር አግድ።</translation>
-<translation id="3369366829301677151">የእርስዎን <ph name="CREDIT_CARD"/> ያዘምኑ እና ያረጋግጡ</translation>
 <translation id="337363190475750230">አቅርቦት ተቋርጧል</translation>
 <translation id="3377188786107721145">የመምሪያ ትንተና ስህተት</translation>
 <translation id="3380365263193509176">ያልታወቀ ስህተት</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;ውሰድን ድገም</translation>
 <translation id="3623476034248543066">እሴት አሳይ</translation>
 <translation id="3650584904733503804">ማረጋገጥ ተሳክቷል</translation>
+<translation id="3667681724235208644">የመጀመሪያውን ይመልከቱ</translation>
 <translation id="370665806235115550">በመጫን ላይ...</translation>
 <translation id="3712624925041724820">ሁሉም ፍቃዶች ተሞክረዋል</translation>
 <translation id="3739623965217189342">እርስዎ የቀዱት አገናኝ</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">የሚጋጭ የመሣሪያ ለዪ</translation>
 <translation id="3885155851504623709">ቤተ-ክህነት አካባቢ</translation>
 <translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>
-<translation id="3963721102035795474">የአንባቢ ሁነታ</translation>
 <translation id="4030383055268325496">&amp;አክልን ቀልብስ</translation>
 <translation id="4058922952496707368">ቁልፍ «<ph name="SUBKEY"/>»፦ <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">የተኪ ውቅር ቋሚ አገልጋዮችን ሳይሆን የ.pac ስክሪፕት ዩአርኤል ለመጠቀም ነው የተዋቀረው።</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">የተጠበቀው የ<ph name="VALUE_TYPE"/> ዋጋ ነው።</translation>
 <translation id="443673843213245140">የተኪ መጠቀም ተሰናክሏል ግን ግልጽ የሆነ የተኪ ውቅር ተገልጿል።</translation>
 <translation id="4506176782989081258">የማረጋገጥ ስህተት፦ <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">አድራሻ ከChrome ይወገድ?</translation>
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="4607653538520819196">ይህ ገጽ በውሂብ አስቀማጭ በኩል ሊተካ አይችልም።</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">መምሪያዎችን ዳግም ጫን</translation>
-<translation id="4800132727771399293">የእርስዎን የአገልግሎት ማብቂያ ቀን እና CVC ይፈትሹ እና እንደገና ይሞክሩ</translation>
 <translation id="4813512666221746211">የአውታረ መረብ ስህተት</translation>
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="4923417429809017348">ገጹ ከማይታወቅ ቋንቋ ወደ <ph name="LANGUAGE_LANGUAGE"/> ተተርጉሟል</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">የአሁኑ ተጠቃሚ</translation>
 <translation id="5813119285467412249">&amp;አክልን ድገም</translation>
 <translation id="5872918882028971132">የወላጅ አስተያየት ጥቆማዎች</translation>
-<translation id="587701087903783706">ለሞባይል-አመቺ እይታን ይዝጉ</translation>
 <translation id="59107663811261420">ይህ የካርድ አይነት ለዚህ ነጋዴ በGoogle ክፍያዎች አይደገፍም። እባክዎ የተለየ ካርድ ይምረጡ።</translation>
 <translation id="5989320800837274978">ቋሚ ተኪ አገልጋዮችም ሆኑ የ.pac ስክሪፕት ዩአርኤል አልተገለጹም።</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">ወደ <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> ለመድረስ እየሞከሩ ነው። ይህ ገጽ በዚህ ጊዜ ላይ በውሂብ አስቀማጭ ተኪ ሊደረግ አይችልም።</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> ፍለጋ</translation>
 <translation id="6644283850729428850">ይህ መመሪያ ተቋርጧል።</translation>
-<translation id="6646897916597483132">በካርድዎ ፊት ላይ ያለውን ባለ4 አኃዝ CVCን ያስገቡ</translation>
 <translation id="6753269504797312559">የመምሪያ እሴት</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="6839929833149231406">አካባቢ</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">ግዴታ</translation>
 <translation id="7542995811387359312">ይህ ቅጽ ደህንነቱ የተጠበቀ ግንኙነት ስለማይጠቀም የክሬዲት ካርድ ራስ-መሙላት ተሰናክሏል።</translation>
 <translation id="7568593326407688803">ይህ ገጽ በ<ph name="ORIGINAL_LANGUAGE"/>ነው። መተርጎም ይፈልጋሉ?</translation>
-<translation id="7569952961197462199">ክሬዲት ካርድ ከChrome ይወገድ?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ን በጭራሽ አትተርጉም</translation>
 <translation id="7610193165460212391">እሴት ከክልል <ph name="VALUE"/> ውጪ ነው።</translation>
 <translation id="7752995774971033316">አይቀናበርም</translation>
 <translation id="777702478322588152">የፕሪፌክት ስልጣን</translation>
 <translation id="7791543448312431591">አክል</translation>
 <translation id="7805768142964895445">ሁኔታ</translation>
-<translation id="7813600968533626083">የአስተያየት ጥቆማ ከChrome ይወገድ?</translation>
-<translation id="7887683347370398519">የእርስዎን CVC ይፈትሹ እና እንደገና ይሞክሩ</translation>
 <translation id="7935318582918952113">የDOM ማጣሪያ</translation>
 <translation id="7956713633345437162">የተንቀሳቃሽ ስልክ ዕልባቶች</translation>
 <translation id="7961015016161918242">በፍጹም</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8790007591277257123">&amp;ሰርዝን ድገም</translation>
 <translation id="8804164990146287819">የግላዊነት መመሪያ</translation>
-<translation id="8824019021993735287">Chrome የእርስዎን ካርድ በዚህ ጊዜ ላይ ለማረጋገጥ አልቻለም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="8834246243508017242">እውቂያዎችን በመጠቀም የራስ ሰር መሙላትን አንቃ…</translation>
 <translation id="883848425547221593">ሌላ እልባቶች</translation>
 <translation id="8866481888320382733">የመምሪያ ቅንብሮችን መተንተን ላይ ስህተት</translation>
 <translation id="8876793034577346603">የአውታረ መረብ ውቅር ሊተነተን አልቻለም።</translation>
 <translation id="8891727572606052622">ልክ ያልሆነ የተኪ ሁነታ።</translation>
 <translation id="8940229512486821554">የ<ph name="EXTENSION_NAME"/> ትዕዛዝ ያሂዱ፦ <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">የጊዜ ማብቂያ ቀን እና በካርድዎ ጀርባ ላይ ያለው ባለ3 አኃዝ CVCን ያስገቡ</translation>
 <translation id="9020542370529661692">ይህ ገጽ ወደ <ph name="TARGET_LANGUAGE"/> ተተርጉሟል</translation>
-<translation id="9125941078353557812">በካርድዎ ኋላ ላይ ያለውን ባለ3 አኃዝ CVCን ያስገቡ</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9148507642005240123">&amp;አርትዕን ቀልብስ</translation>
 <translation id="9154176715500758432">በዚሁ ገጽ ላይ ቆይ</translation>
 <translation id="9170848237812810038">&amp;ቀልብስ</translation>
 <translation id="9207861905230894330">ጽሑፍ ማከል አልተቻለም።</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">ቅጽን አጽዳ</translation>
-<translation id="988159990683914416">የገንቢዎች ግንባታ</translation>
 </translationbundle>

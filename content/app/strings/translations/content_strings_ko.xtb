@@ -23,7 +23,6 @@
 <translation id="2148716181193084225">오늘</translation>
 <translation id="2226276347425096477">이 텍스트를 <ph name="MAX_CHARACTERS"/>자 이하로 줄이세요(현재 <ph name="CURRENT_LENGTH"/>자 사용 중).</translation>
 <translation id="2247351761944213033"><ph name="YEAR"/>, <ph name="WEEKNUMBER"/>번째 주</translation>
-<translation id="2291999235780842123">체크박스</translation>
 <translation id="248395913932153421">일</translation>
 <translation id="2507943997699731163">이 입력란을 작성하세요.</translation>
 <translation id="2548326553472216322">최근 수행된 검색 없음</translation>
@@ -37,7 +36,6 @@
 <translation id="2846343701378493991">1024(중간 등급)</translation>
 <translation id="2901282870647571346">현재 영화 상태</translation>
 <translation id="2908441821576996758">이메일 주소를 쉼표로 구분하여 입력하세요.</translation>
-<translation id="2942448076852699108">강조표시된 콘텐츠</translation>
 <translation id="3040011195152428237">링크</translation>
 <translation id="3075154866155599887">유효한 값을 입력하세요. 입력을 완료하지 않았거나 날짜가 잘못되었습니다.</translation>
 <translation id="310520048233152454">URL을 입력하세요.</translation>

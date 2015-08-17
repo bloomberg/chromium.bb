@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Badilisha data kwa kifaa chochote kwenye vikoa: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Usanidi wa eneo umetumiwa, lakini eneo_chaguo-msingi halikubainishwa katika ratiba</translation>
 <translation id="2616366145935564096">Kusoma na kubadilisha data yako kwenye <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Programu &quot;<ph name="APP_NAME"/>&quot; inaomba uwezo wa kufikia kifaa chako kimoja au zaidi.</translation>
 <translation id="2753617847762399167">Njia haramu (kabisa au kiasi na '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">Kiendelezi hiki kimeshindwa kurekebisha ombi la mtandao kwa sababu ya ukizano wa urekebishaji na kirefusho kingine.</translation>
 <translation id="2857834222104759979">Faili ya ratiba sio halali.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (nambari tambulishi <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Soma data yako kwenye tovuti kadhaa</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> kutoka kwa mchuuzi <ph name="VENDOR_ID"/> (nambari tambulishi <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Chagua kifaa cha USB}multiple{Chagua vifaa vya USB}other{HAVIJATUMIKA}}</translation>
 <translation id="3624204664103857160">Haikuweza kupakia ukurasa wa kifungua programu '<ph name="PAGE"/>'.</translation>
 <translation id="3759933321830434300">Zuia sehemu za kurasa za mtandao</translation>
 <translation id="388442998277590542">Isingeweza kupakia ukurasa wa chaguo <ph name="OPTIONS_PAGE"/> '.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">vifaa visivyojulikana kutoka kwa <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Soma data yako kwenye <ph name="WEBSITE_1"/> na <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Tumia kipazasauti chako</translation>
+<translation id="4776856853352853275">Chagua vifaa vya USB</translation>
 <translation id="4811956658694082538">Haikuweza kusakinisha kifurushi kwa sababu mchakato wa utekelezaji umeacha kufanya kazi. Jaribu kuzima na kuwasha Chrome na ujaribu tena.</translation>
 <translation id="4883436287898674711">Tovuti zote <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Mwonekano wa wavuti: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Dhibiti miunganisho ya mtandao</translation>
-<translation id="5165983846722506205">{1,select, single{Chagua kifaa cha HID}multiple{Chagua vifaa vya HID}other{HAVIJATUMIKA}}</translation>
 <translation id="5356315618422219272">Mwonekano wa programu: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Kiendelezi hiki kinajumuisha faili muhimu '<ph name="KEY_PATH"/>'. Huenda hutaki kufanya hivyo.</translation>
+<translation id="545850661681880228">Chagua kifaa cha HID</translation>
 <translation id="5627523580512561598">kiendelezi <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Soma data yako kwenye <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Programu &quot;<ph name="APP_NAME"/>&quot; inaomba uwezo wa kufikia mojawapo ya vifaa vyako.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Dhibiti hali na uoanishaji wa adapta ya Bluetooth</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> kutoa kwa mchuuzi <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Badilisha data kwa kifaa kiitwacho <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Haiwezi kufungua kiendelezi. Ili kufungua kiendelezi kwa usalama, sharti kuwe na kijia katika saraka yako ya maelezo mafupi ambacho hakina kiungo cha mfumo. Hakuna vijia kama hivyo vilivyopo kwa maelezo yako mafupi.</translation>
-<translation id="616804573177634438">{0,select, single{Programu ya &quot;<ph name="APP_NAME"/>&quot; inaomba idhini ya kufikia mojawapo ya vifaa vyako.}multiple{Programu ya &quot;<ph name="APP_NAME"/>&quot; inaomba idhini ya kufikia mojawapo au zaidi ya vifaa vyako.}other{HAVIJATUMIKA}}</translation>
 <translation id="6241530762627360640">Fikia maelezo kuhusu vifaa vya Bluetooth vilivyooanishwa na mfumo wako na ugundue vifaa vya karibu vya Bluetooth.</translation>
 <translation id="6344170822609224263">Pata orodha ya miunganisho ya mtandao</translation>
 <translation id="6384275966486438344">Badilisha mipangilio yako ya kutafuta iwe: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Soma data unayonakili na kubandika</translation>
 <translation id="730515362922783851">Badilisha data kwa kifaa chochote kwenye mtandao au intaneti ya karibu</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (Kitambulisho ya kiendelezi &quot;<ph name="EXTENSION_ID"/>&quot;) kimezuiwa na msimamizi.</translation>
+<translation id="781637217073033149">Chagua vifaa vya HID</translation>
 <translation id="7893008570150657497">Fikia picha, muziki, na midia nyingine kwenye kompyuta yako</translation>
 <translation id="7972881773422714442">Chaguzi: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Kiendelezi hiki kimeshindwa kukipa kipakuliwa jina &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; kwa sababu kipakuliwa kingine (<ph name="EXTENSION_NAME"/>) kimechagua jina tofauti la faili &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Faili ya ratiba haipatikani au haisomeki.</translation>
 <translation id="8620765578342452535">Sanidi miunganisho ya mtandao</translation>
 <translation id="8636666366616799973">Furushi ni batili. Maelezo: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">Chagua kifaa cha USB</translation>
 <translation id="8662911384982557515">Badilisha ukurasa wako wa mwanzo uwe: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME"/>) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Kipakuaji cha Viendelezi</translation>

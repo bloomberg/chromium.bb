@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Trao đổi dữ liệu với bất kỳ thiết bị nào trong miền: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Sử dụng bản địa hóa nhưng không chỉ định default_locale trong tệp kê khai.</translation>
 <translation id="2616366145935564096">Đọc và thay đổi dữ liệu của bạn trên <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một hoặc nhiều thiết bị của bạn.</translation>
 <translation id="2753617847762399167">Đường dẫn không hợp lệ (tuyệt đối hoặc tương đối với '..'): '<ph name="IMAGE_PATH"/>'</translation>
 <translation id="27822970480436970">Tiện ích này không thể sửa đổi yêu cầu mạng vì việc sửa đổi xung đột với một tiện ích khác.</translation>
 <translation id="2857834222104759979">Tệp kê khai không hợp lệ.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Đọc dữ liệu của bạn trên một số trang web</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> từ nhà cung cấp <ph name="VENDOR_ID"/> (số sê-ri <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Chọn thiết bị USB}multiple{Chọn thiết bị USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Không thể tải trang trình chạy '<ph name="PAGE"/>'.</translation>
 <translation id="3759933321830434300">Chặn các phần của trang web</translation>
 <translation id="388442998277590542">Không thể tải trang tùy chọn '<ph name="OPTIONS_PAGE"/>'.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">thiết bị không xác định từ <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1"/> và <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Sử dụng micrô của bạn</translation>
+<translation id="4776856853352853275">Chọn thiết bị USB</translation>
 <translation id="4811956658694082538">Không thể cài đặt gói vì một quá trình tiện ích bị lỗi. Thử khởi động lại Chrome rồi thử lại.</translation>
 <translation id="4883436287898674711">Tất cả trang web <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Chế độ xem web: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Quản lý kết nối mạng</translation>
-<translation id="5165983846722506205">{1,select, single{Chọn thiết bị HID}multiple{Chọn thiết bị HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Tiện ích này bao gồm tệp khóa '<ph name="KEY_PATH"/>'. Bạn có thể không muốn thực hiện việc đó.</translation>
+<translation id="545850661681880228">Chọn thiết bị HID</translation>
 <translation id="5627523580512561598">tiện ích <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">Đọc dữ liệu của bạn trên <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Kiểm soát ghép nối và trạng thái bộ đổi nguồn Bluetooth</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> từ nhà cung cấp <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Trao đổi dữ liệu với thiết bị có tên <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Không thể giải nén tiện ích.  Để giải nén tiện ích một cách an toàn, phải có đường dẫn đến thư mục hồ sơ không chứa liên kết dạng biểu tượng của bạn.  Không có đường dẫn như vậy tồn tại cho hồ sơ của bạn.</translation>
-<translation id="616804573177634438">{0,select, single{Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một trong các thiết bị của bạn.}multiple{Ứng dụng &quot;<ph name="APP_NAME"/>&quot; đang yêu cầu quyền truy cập vào một hoặc nhiều thiết bị của bạn.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">Truy cập thông tin về thiết bị Bluetooth được ghép nối với hệ thống của bạn và khám phá các thiết bị Bluetooth lân cận.</translation>
 <translation id="6344170822609224263">Truy cập danh sách kết nối mạng</translation>
 <translation id="6384275966486438344">Thay đổi cài đặt tìm kiếm của bạn thành: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Đọc dữ liệu bạn sao chép và dán</translation>
 <translation id="730515362922783851">Trao đổi dữ liệu với bất kỳ thiết bị nào trên mạng cục bộ hoặc internet</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID tiện ích &quot;<ph name="EXTENSION_ID"/>&quot;) bị quản trị viên chặn.</translation>
+<translation id="781637217073033149">Chọn thiết bị HID</translation>
 <translation id="7893008570150657497">Truy cập ảnh, nhạc và các phương tiện khác từ máy tính của bạn</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Tiện ích này không thể đặt tên cho bản tải xuống &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; vì một tiện ích khác (<ph name="EXTENSION_NAME"/>) đã xác định tên tệp khác &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Tệp kê khai bị thiếu hoặc không thể đọc được.</translation>
 <translation id="8620765578342452535">Định cấu hình kết nối mạng</translation>
 <translation id="8636666366616799973">Gói không hợp lệ. Chi tiết: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8658591203505835552">Chọn thiết bị USB</translation>
 <translation id="8662911384982557515">Thay đổi trang chủ của bạn thành: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Tiện ích này không thể chuyển hướng yêu cầu mạng đến <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> do tiện ích khác (<ph name="EXTENSION_NAME"/>) đã chuyển hướng yêu cầu mạng này đến <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Trình giải nén tiện ích</translation>

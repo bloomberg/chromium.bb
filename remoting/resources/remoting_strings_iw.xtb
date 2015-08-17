@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
 <translation id="1002108253973310084">זוהתה גרסת פרוטוקול לא תואמת. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה בשני המחשבים ונסה שוב.</translation>
+<translation id="1023096696228309145">בקש מהמשתמש שברצונך לגשת אל המחשב שלו שילחץ על 'שתף עכשיו' וייתן לך את קוד הגישה.</translation>
 <translation id="1050693411695664090">איכות גרועה</translation>
 <translation id="1152528166145813711">בחר...</translation>
 <translation id="1199593201721843963">השבת חיבורים מרוחקים</translation>
+<translation id="1261403020716313927">• תוקנה דליפת זיכרון גדולה בניתוק משולחן עבודה מרוחק.</translation>
 <translation id="1291443878853470558">‏אם ברצונך להשתמש ב-Chromoting כדי לגשת למחשב זה, עליך להפעיל חיבורים מרוחקים.</translation>
 <translation id="1300633907480909701">‏גש למחשבים שלך באופן מאובטח ממכשיר Android שלך.
 
@@ -15,7 +17,6 @@
 <translation id="1324095856329524885">(התכונה הזו אינה זמינה עדיין בשביל המחשב שלך)</translation>
 <translation id="1342297293546459414">הצג תוכן של מחשב משותף ושלוט בו.</translation>
 <translation id="1450760146488584666">האובייקט המבוקש אינו קיים.</translation>
-<translation id="1480046233931937785">שותפים לעשייה</translation>
 <translation id="1520828917794284345">שנה את גודל שולחן העבודה</translation>
 <translation id="154040539590487450">הפעלת שירות הגישה מרחוק נכשלה.</translation>
 <translation id="1546934824884762070">אירעה שגיאה לא צפויה. דווח על בעיה זו למפתחים.</translation>
@@ -52,10 +53,8 @@
 <translation id="2124408767156847088">‏גש למחשבים שלך באופן מאובטח ממכשיר Android שלך.</translation>
 <translation id="2208514473086078157">‏הגדרות המדיניות אינן מאפשרות שיתוף של מחשב זה כמארח שולחן עבודה מרוחק של Chrome. פנה למנהל המערכת שלך לקבלת סיוע.</translation>
 <translation id="2220529011494928058">דווח על בעיה</translation>
-<translation id="2221097377466213233">‏השתמש במקש Ctrl למקש Win (⌘ ב-Mac)</translation>
 <translation id="2235518894410572517">שתף מחשב זה ואפשר למשתמש אחר להציג את התוכן שלו ולשלוט בו.</translation>
 <translation id="2246783206985865117">ההגדרה הזו מנוהלת על ידי מדיניות הדומיין שלך.</translation>
-<translation id="2256115617011615191">הפעל מחדש כעת</translation>
 <translation id="225614027745146050">ברוכים הבאים</translation>
 <translation id="228809120910082333">‏אשר את החשבון ומספר ה-PIN שלך שמפורטים למטה, כדי לאפשר גישה באמצעות Chromoting.</translation>
 <translation id="2314101195544969792">לא הייתה פעילות ב-<ph name="APPLICATION_NAME"/> במשך זמן-מה. אתה תנותק בקרוב.</translation>
@@ -76,14 +75,11 @@
 <translation id="2851674870054673688">לאחר שהמשתמש יזין את הקוד, השיתוף יתחיל לפעול.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">לא מקוון</translation>
-<translation id="2888969873284818612">אירעה שגיאת רשת. נפעיל את היישום מחדש כשהמכשיר יהיה שוב מקוון.</translation>
 <translation id="2894654864775534701">המחשב הזו משותף כרגע כחלק מחשבון אחר.</translation>
 <translation id="2919669478609886916">אתה משתף כעת את המחשב הזה עם משתמש אחר. האם ברצונך להמשיך את השיתוף?</translation>
 <translation id="2921543551052660690">‏נכנסת בעבר כ-<ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). כדי להיכנס למחשבים שלך בחשבון הזה, <ph name="LINK_BEGIN"/>היכנס אל Chromium<ph name="LINK_END"/> עם החשבון והתקן מחדש את Chromoting.</translation>
 <translation id="2926340305933667314">הניסיון להשבית גישה מרחוק למחשב זה נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="2939145106548231838">אמת מול המארח</translation>
-<translation id="2998137343848432918">• נוסף מסך המציג את פרטי הכניסה.
-• תוקנה בעיה בעת המעבר למסך מלא כשהמקלדת מוצגת.</translation>
 <translation id="3020807351229499221">‏הניסיון לעדכן את ה-PIN נכשל. נסה שוב מאוחר יותר.</translation>
 <translation id="3025388528294795783">כדי לעזור לנו לפתור את הבעיה שבה נתקלת, ספר לנו מה קרה:</translation>
 <translation id="3027681561976217984">מצב מסך מגע</translation>
@@ -92,7 +88,6 @@
 <translation id="3150823315463303127">המארח לא הצליח לקרוא את המדיניות.</translation>
 <translation id="3194245623920924351">‏שולחן עבודה מרוחק של Chrome</translation>
 <translation id="3197730452537982411">שולחן עבודה מרוחק</translation>
-<translation id="3244258558056547981">‏הצג את תצוגת Cardboard.</translation>
 <translation id="3258789396564295715">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="327263477022142889">‏רוצה לעזור לשפר את שולחן העבודה המרוחק של Chrome‏? <ph name="LINK_BEGIN"/>השב על הסקר.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">‏בקר מארח Chromoting</translation>
@@ -164,7 +159,6 @@ Chromoting</translation>
 <translation id="5254120496627797685">‏יציאה מדף זה תגרום לסיום הפעילות של 'שולחן עבודה מרוחק של Chrome'.</translation>
 <translation id="5285241842433869526">למד כיצד להגדיר מחשב לגישה מרחוק.</translation>
 <translation id="5308380583665731573">התחברות</translation>
-<translation id="5363265567587775042">בקש מבעל המחשב שאליו אתה רוצה לגשת שילחץ על “<ph name="SHARE"/>” וייתן לך את קוד הגישה.</translation>
 <translation id="5379087427956679853">‏'שולחן עבודה מרוחק של Chrome' מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום 'שולחן עבודה מרוחק של Chrome', שניתן למצוא בכתובת <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">‏מסיר ההתקנה של מארח שולחן העבודה המרוחק של Chrome‏</translation>
 <translation id="5419185025274123272">לא ניתן היה לאפס את היישום. תוכל עדיין לשלוח דוח באגים.</translation>
@@ -233,6 +227,7 @@ Chromoting</translation>
 <translation id="7401733114166276557">‏שולחן עבודה מרוחק של Chrome</translation>
 <translation id="7434397035092923453">נדחתה גישה עבור לקוח: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">לקוח שהתחבר: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">חיבור חדש</translation>
 <translation id="7606912958770842224">הפעל חיבורים מרוחקים</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7658239707568436148">ביטול</translation>

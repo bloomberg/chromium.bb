@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Aktivér skærmtastatur</translation>
-<translation id="1343000272198685031">Stik til mikrofon</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="137180024469554212">Deaktiver låsning af rotation</translation>
 <translation id="1383876407941801731">Søg</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome-enhed</translation>
 <translation id="1723752762323179280">Afslutter session</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
+<translation id="1753067873202720523">Din Chromebook oplades muligvis ikke, når den er tændt.</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Caster $1 til $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Konti</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="2204305834655267233">Netværksoplysninger</translation>
 <translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
+<translation id="2248649616066688669">Du kan fortsætte med at bruge din Chromebook, mens den er sluttet til en ekstern skærm, også selvom låget er klappet ned.</translation>
 <translation id="225680501294068881">Scanner efter enheder...</translation>
 <translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
@@ -44,6 +43,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
 <translation id="2562916301614567480">Privat netværk</translation>
+<translation id="2614835198358683673">Din Chromebook oplades muligvis ikke, når den er tændt. Anvend eventuelt den officielle oplader.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
 <translation id="2700058918926273959">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>. Du vil blive logget af.</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
@@ -73,6 +73,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="3433830597744061105">Administrer konti</translation>
 <translation id="3473479545200714844">Skærmforstørrer</translation>
+<translation id="3527846106059622359">Ny brugergrænseflade for login er slået TIL</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
@@ -102,6 +103,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">Caster skrivebord</translation>
 <translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME"/> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
@@ -112,29 +114,25 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4957722034734105353">Flere oplysninger...</translation>
-<translation id="4961318399572185831">Cast skærm</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="5507786745520522457">Konfigurer mobildata</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5543001071567407895">sms</translation>
 <translation id="5548285847212963613">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Du kan fortsætte med at bruge din <ph name="DEVICE_TYPE"/>, mens den er sluttet til en ekstern skærm, selv når den er klappet sammen.</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
+<translation id="5807965672380739016">Cast skrivebord til</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
 Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="5871632337994001636">Administrer enheder...</translation>
 <translation id="5895138241574237353">Genstart</translation>
-<translation id="5927132638760172455">Caster til en ukendt modtager</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Fortryd</translation>
 <translation id="595202126637698455">Sporing af ydelsen er aktiveret</translation>
 <translation id="5958529069007801266">Overvåget bruger</translation>
@@ -166,7 +164,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="68610848741840742">ChromeVox (talefeedback)</translation>
 <translation id="6895424601869865703">Føj en konto til <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drev</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="7029814467594812963">Afslut session</translation>
@@ -174,7 +171,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="7052914147756339792">Vælg baggrund...</translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">Caster $1</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
 Tryk på Alt+Søg eller Shift for at annullere.</translation>
@@ -191,7 +188,6 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
 <translation id="7864539943188674973">Deaktiver Bluetooth</translation>
 <translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
-<translation id="7957227661277029961">Din <ph name="DEVICE_TYPE"/> kan muligvis ikke oplades, mens den er tændt. Overvej at bruge den officielle oplader.</translation>
 <translation id="7982789257301363584">Netværk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
 <translation id="8356164830168736643">Luk <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Indstillinger</translation>
-<translation id="8443356412772935865">Caster skærm til $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
-<translation id="8517041960877371778">Din <ph name="DEVICE_TYPE"/> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
+<translation id="8697119993436624257">Ny brugergrænseflade for login er slået FRA</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Klik for at se det</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fil">
 <translation id="1002108253973310084">Nakakita ng hindi tugmang bersyon ng protocol. Pakitiyak na na-install mo ang pinakabagong bersyon ng software sa parehong computer at subukang muli.</translation>
+<translation id="1023096696228309145">Hilingin sa user na nagmamay-ari ng computer na nais mong i-access na i-click ang ‘Ibahagi Ngayon’ at ibigay sa iyo ang access code.</translation>
 <translation id="1050693411695664090">Mahina</translation>
 <translation id="1152528166145813711">Pumili…</translation>
 <translation id="1199593201721843963">Huwag paganahin ang mga malayuang koneksyon</translation>
+<translation id="1261403020716313927">• Inayos ang isang malaking memory leak sa pagdiskonekta mula sa remote na desktop.</translation>
 <translation id="1291443878853470558">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Chromoting upang i-access ang computer na ito.</translation>
 <translation id="1300633907480909701">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.
 
@@ -15,7 +17,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1324095856329524885">(hindi pa available ang feature na ito para sa iyong computer)</translation>
 <translation id="1342297293546459414">Tumingin at magkontrol ng nakabahaging computer.</translation>
 <translation id="1450760146488584666">Hindi umiiral ang hiniling na bagay.</translation>
-<translation id="1480046233931937785">Mga Credit</translation>
 <translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
@@ -52,10 +53,8 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2124408767156847088">Ligtas na i-access ang iyong mga computer mula sa iyong Android device.</translation>
 <translation id="2208514473086078157">Hindi pinapahintulutan ng mga setting ng patakaran ang pagbabahagi sa computer na ito bilang host ng Remote na Desktop ng Chrome. Makipag-ugnay sa iyong system administrator para sa tulong.</translation>
 <translation id="2220529011494928058">Mag-ulat ng isyu</translation>
-<translation id="2221097377466213233">Gamitin ang Ctrl sa kanan para sa Win key (⌘ sa Mac)</translation>
 <translation id="2235518894410572517">Ibahagi ang computer na ito upang makita at makontrol ng isa pang user.</translation>
 <translation id="2246783206985865117">Pinamamahalaan ang setting na ito ng iyong patakaran sa domain.</translation>
-<translation id="2256115617011615191">I-restart ngayon</translation>
 <translation id="225614027745146050">Maligayang pagdating</translation>
 <translation id="228809120910082333">Pakikumpirma ang iyong account at PIN sa ibaba upang payagan ang pag-access ng Chromoting.</translation>
 <translation id="2314101195544969792">Ilang sandali nang hindi aktibo ang iyong session ng <ph name="APPLICATION_NAME"/> at aalisin na ito sa pagkakakonekta maya-maya.</translation>
@@ -76,14 +75,11 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2851674870054673688">Sa sandaling ilagay nila ang code, magsisimula ang iyong session ng pagbabahagi.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">naka-offline</translation>
-<translation id="2888969873284818612">Nagkaroon ng error sa network. Ire-restart namin ang app kapag on-line nang muli ang iyong device.</translation>
 <translation id="2894654864775534701">Kasalukuyang ibinabahagi ang computer na ito sa ilalim ng ibang account.</translation>
 <translation id="2919669478609886916">Kasalukuyan mong ibinabahagi ang machine na ito sa isa pang user. Nais mo bang ituloy ang pagbabahagi?</translation>
 <translation id="2921543551052660690">Nag-sign in ka dati bilang <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>).  Upang ma-access ang iyong mga computer sa account na iyon, <ph name="LINK_BEGIN"/>mag-sign in sa Chromium<ph name="LINK_END"/> gamit ang account na iyon at muling i-install ang Chromoting.</translation>
 <translation id="2926340305933667314">Nabigo ang hindi pagpapagana sa malayuang access sa computer na ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="2939145106548231838">Patunayan upang ma-host</translation>
-<translation id="2998137343848432918">• Nagdagdag ng screen ng Mga Credit.
-• Nag-ayos ng problema kapag nagfu-full-screen habang nakikita ang keyboard.</translation>
 <translation id="3020807351229499221">Nabigong i-update ang PIN. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="3025388528294795783">Upang tulungan kaming lutasin ang iyong problema, pakilahad sa amin kung ano ang maling nangyari:</translation>
 <translation id="3027681561976217984">Touch mode</translation>
@@ -92,7 +88,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3150823315463303127">Hindi nabasa ng host ang patakaran.</translation>
 <translation id="3194245623920924351">Remote na Desktop ng Chrome</translation>
 <translation id="3197730452537982411">Remote na Desktop</translation>
-<translation id="3244258558056547981">Ipakita ang Cardboard view.</translation>
 <translation id="3258789396564295715">Maaari mong ligtas na ma-access ang computer na ito gamit ang Remote na Desktop ng Chrome.</translation>
 <translation id="327263477022142889">Gustong tulungang mapabuti ang Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Sagutan ang survey.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Controller ng Chromoting Host</translation>
@@ -164,7 +159,6 @@ Desktop ng Chrome</translation>
 <translation id="5254120496627797685">Tatapusin ng pag-alis sa pahinang ito ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="5285241842433869526">Alamin kung paano mag-set up ng isang computer para sa malayuang pag-access.</translation>
 <translation id="5308380583665731573">Kumonekta</translation>
-<translation id="5363265567587775042">Hilingin sa user na may-ari ng computer na gusto mong i-access na i-click ang “<ph name="SHARE"/>” at ibigay sa iyo ang access code.</translation>
 <translation id="5379087427956679853">Binibigyang-daan ka ng Remote na Desktop ng Chrome na ligtas na maibahagi ang iyong computer sa Web. Dapat na nagpapatakbo ang parehong user ng app ng Remote na Desktop ng Chrome, na matatagpuan sa <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Uninstaller ng Host ng Remote na Desktop ng Chrome</translation>
 <translation id="5419185025274123272">Hindi ma-reset ang application. Maaari ka pa ring magpadala ng ulat sa bug.</translation>
@@ -233,6 +227,7 @@ Desktop ng Chrome</translation>
 <translation id="7401733114166276557">Remote na Desktop ng Chrome</translation>
 <translation id="7434397035092923453">Tinanggihan ang pag-access para sa client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Nakakonekta ang client: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Bagong koneksyon</translation>
 <translation id="7606912958770842224">Paganahin ang mga malayuang koneksyon</translation>
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7658239707568436148">Ikansela</translation>

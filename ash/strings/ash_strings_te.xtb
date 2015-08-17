@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">ఆపు</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">స్క్రీన్‌లో కీబోర్డ్‌ను ప్రారంభించండి</translation>
-<translation id="1343000272198685031">మైక్ జాక్</translation>
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="137180024469554212">రొటేషన్ లాక్‌ను నిలిపివేయండి</translation>
 <translation id="1383876407941801731">శోధించు</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">పెద్ద మౌస్ కర్సర్</translation>
 <translation id="1602076796624386989">మొబైల్ డేటాను ప్రారంభించు</translation>
 <translation id="1621499497873603021">బ్యాటరీ ఖాళీ కావడానికి మిగిలి ఉన్న సమయం, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome పరికరం</translation>
 <translation id="1723752762323179280">సెషన్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="1747827819627189109">స్క్రీన్‌పై కనిపించే కీబోర్డ్ ప్రారంభించబడింది</translation>
+<translation id="1753067873202720523">మీ Chromebook ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="1812696562331527143">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3వ పక్షం<ph name="END_LINK"/>)కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>కు దర్పణం చేస్తోంది</translation>
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1 నుండి $2కి ప్రసారం చేస్తోంది</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">ఖాతాలు</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="2204305834655267233">నెట్‌వర్క్ సమాచారం</translation>
 <translation id="2208323208084708176">ఏకీకృత డెస్క్‌టాప్ మోడ్</translation>
+<translation id="2248649616066688669">మీ Chromebook బాహ్య డిస్‌ప్లేకి కనెక్ట్ చేయబడినప్పుడు మూత మూసివేసి ఉన్నప్పటికీ కూడా మీరు దాన్ని ఉపయోగించడం కొనసాగించవచ్చు.</translation>
 <translation id="225680501294068881">పరికరాల కోసం స్కాన్ చేస్తోంది...</translation>
 <translation id="2268130516524549846">Bluetooth నిలిపివేయబడింది</translation>
 <translation id="2268813581635650749">అందరినీ సైన్ అవుట్ చేయి</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
 <translation id="2532589005999780174">అధిక కాంట్రాస్ట్ మోడ్</translation>
 <translation id="2562916301614567480">ప్రైవేట్ నెట్‌వర్క్</translation>
+<translation id="2614835198358683673">మీ Chromebook ప్రారంభించబడినప్పుడు ఛార్జ్ కాకపోవచ్చు. అధికారిక ఛార్జర్‌ను ఉపయోగించడానికి ప్రయత్నించండి.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: కనెక్ట్ అవుతోంది...</translation>
 <translation id="2700058918926273959">సెషన్ <ph name="SESSION_TIME_REMAINING"/>లో ముగుస్తుంది. మీరు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">అతిథి</translation>
 <translation id="3433830597744061105">ఖాతాలను నిర్వహించు</translation>
 <translation id="3473479545200714844">స్క్రీన్ మాగ్నిఫైయర్</translation>
+<translation id="3527846106059622359">కొత్త లాగిన్ UI ఆన్‌లో ఉంది</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot;కు వెనుకకి మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="3595596368722241419">బ్యాటరీ  నిండింది</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">డెస్క్‌టాప్‌ను ప్రసారం చేస్తున్నాము</translation>
 <translation id="4379753398862151997">ప్రియమైన మానిటర్, ఇది మన మధ్య పని చేయడం లేదు. (ఆ మానిటర్‌కు మద్దతు లేదు)</translation>
 <translation id="4421231901400348175">రిమోట్ సహాయం విధానంలో మీ స్క్రీన్ నియంత్రణ <ph name="HELPER_NAME"/>కి భాగస్వామ్యం చేయబడుతోంది.</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">బ్యాటరీ నిండింది.</translation>
 <translation id="4918086044614829423">ఆమోదించు</translation>
 <translation id="4957722034734105353">మరింత తెలుసుకోండి...</translation>
-<translation id="4961318399572185831">స్క్రీన్ ప్రసారం చేయండి</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> మిగిలి ఉంది</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="5238774010593222950">మరొక ఖాతాకు సైన్ ఇన్ చేయడం సాధ్యపడదు.</translation>
 <translation id="544691375626129091">అందుబాటులో ఉన్న వినియోగదారులందరూ ఇప్పటికే ఈ సెషన్‌కు జోడించబడ్డారు.</translation>
 <translation id="5507786745520522457">మొబైల్ డేటాను సెటప్ చేయండి</translation>
+<translation id="5537725057119320332">Cast</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; పొడిగింపు ఈ నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో సహాయపడగలదు.</translation>
 <translation id="5565793151875479467">ప్రాక్సీ...</translation>
 <translation id="5571066253365925590">Bluetooth ప్రారంభించబడింది</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">మీరు మీ <ph name="DEVICE_TYPE"/>ను బాహ్య డిస్‌ప్లే‌కి కనెక్ట్ చేసినప్పుడు దాని మూత మూసివేసినప్పటికీ ఉపయోగించడం కొనసాగించవచ్చు.</translation>
 <translation id="5777841717266010279">స్క్రీన్ భాగస్వామ్యాన్ని ఆపివేయాలా?</translation>
+<translation id="5807965672380739016">డెస్క్‌టాప్‌ను దీనికి/వీటికి ప్రసారం చేయవచ్చు</translation>
 <translation id="5825747213122829519">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
 <translation id="5871632337994001636">పరికరాలను నిర్వహించండి...</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
-<translation id="5927132638760172455">తెలియని స్వీకర్తకు ప్రసారం చేస్తోంది</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
 <translation id="595202126637698455">పనితీరుని గుర్తించడం ప్రారంభించబడింది</translation>
 <translation id="5958529069007801266">పర్యవేక్షించబడే వినియోగదారు</translation>
@@ -166,7 +164,6 @@
 <translation id="68610848741840742">ChromeVox (చదవబడే అభిప్రాయం)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> కోసం ఖాతాని జోడించు</translation>
 <translation id="6911468394164995108">మరొక దానిలో చేరండి...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google డిస్క్</translation>
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
@@ -174,7 +171,7 @@
 <translation id="7052914147756339792">వాల్‌పేపర్‌ను సెట్ చేయి...</translation>
 <translation id="7097613348211027502">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది.
 నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1ని ప్రసారం చేస్తున్నాము</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
 <translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
@@ -191,7 +188,6 @@
 <translation id="785750925697875037">మొబైల్ ఖాతాని వీక్షించండి</translation>
 <translation id="7864539943188674973">Bluetoothని నిలిపివేయి</translation>
 <translation id="7904094684485781019">ఈ ఖాతా నిర్వాహకులు బహుళ సైన్-ఇన్‌కు అనుమతించలేదు.</translation>
-<translation id="7957227661277029961">మీ <ph name="DEVICE_TYPE"/> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు. అధికారిక ఛార్జర్‌ను ఉపయోగించి ప్రయత్నించండి.</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>
 <translation id="8103386449138765447">SMS సందేశాలు: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@
 <translation id="8308637677604853869">మునుపటి మెను</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/>ని మూసివేయి</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
-<translation id="8443356412772935865">స్క్రీన్‌ను $1కి ప్రసారం చేస్తోంది</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/>లో పూర్తవుతుంది</translation>
-<translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE"/> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8528322925433439945">మొబైల్ ...</translation>
 <translation id="8654520615680304441">Wi-Fiని ప్రారంభించు...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
+<translation id="8697119993436624257">కొత్త లాగిన్ UI ఆఫ్‌లో ఉంది</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">వీక్షించడానికి క్లిక్ చేసినప్పుడు</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Atura</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Activa el teclat en pantalla</translation>
-<translation id="1343000272198685031">Connector per al micròfon</translation>
 <translation id="1346748346194534595">A la dreta</translation>
 <translation id="137180024469554212">Desactiveu el bloqueig de la rotació</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Cursor del ratolí gran</translation>
 <translation id="1602076796624386989">Activa les dades mòbils</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Dispositiu Chrome</translation>
 <translation id="1723752762323179280">S'està tancant la sessió</translation>
 <translation id="1747827819627189109">Teclat en pantalla activat</translation>
+<translation id="1753067873202720523">Pot ser que el Chromebook no es carregui mentre estigui activat.</translation>
 <translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>tercers<ph name="END_LINK"/>).
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">S'està emetent $1 a $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Comptes</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="2204305834655267233">Informació de la xarxa</translation>
 <translation id="2208323208084708176">Mode d'escriptori unificat</translation>
+<translation id="2248649616066688669">Podeu continuar utilitzant el dispositiu Chromebook mentre estigui connectat a una pantalla externa, encara que la tapa estigui tancada.</translation>
 <translation id="225680501294068881">S'estan cercant dispositius...</translation>
 <translation id="2268130516524549846">S'ha desactivat el Bluetooth</translation>
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
@@ -44,6 +43,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
 <translation id="2532589005999780174">Mode de contrast elevat</translation>
 <translation id="2562916301614567480">Xarxa privada</translation>
+<translation id="2614835198358683673">És possible que el vostre Chromebook no es carregui mentre estigui encès. Proveu de fer servir un carregador oficial.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: s'està connectant...</translation>
 <translation id="2700058918926273959">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING"/> i es tancarà.</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
@@ -73,6 +73,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="3433830597744061105">Gestiona els comptes</translation>
 <translation id="3473479545200714844">Lupa</translation>
+<translation id="3527846106059622359">La nova IU d'inici de sessió està activada</translation>
 <translation id="3573179567135747900">Torna a canviar a &quot;<ph name="FROM_LOCALE"/>&quot; (requereix reiniciar)</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="3606978283550408104">S'ha connectat la pantalla Braille.</translation>
@@ -102,6 +103,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">S'està emetent l'escriptori</translation>
 <translation id="4379753398862151997">Estimat monitor, això no funciona. (El monitor no és compatible)</translation>
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME"/> mitjançant l'Assistència remota.</translation>
 <translation id="4430019312045809116">Volum</translation>
@@ -112,29 +114,25 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="4895488851634969361">La bateria està carregada.</translation>
 <translation id="4918086044614829423">Accepta</translation>
 <translation id="4957722034734105353">Més informació...</translation>
-<translation id="4961318399572185831">Emet la pantalla</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Configuració de Google Drive...</translation>
 <translation id="5102001756192215136">Temps d'autonomia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5238774010593222950">No es pot iniciar la sessió a un altre compte.</translation>
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
 <translation id="5507786745520522457">Configura les dades mòbils</translation>
+<translation id="5537725057119320332">Emet</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">L'extensió &quot;<ph name="EXTENSION_NAME"/>&quot; pot ajudar a connectar-se a aquesta xarxa.</translation>
 <translation id="5565793151875479467">Servidor intermediari...</translation>
 <translation id="5571066253365925590">S'ha activat el Bluetooth</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Podeu continuar utilitzant el dispositiu <ph name="DEVICE_TYPE"/> mentre està connectat a una pantalla externa, fins i tot amb la tapa tancada.</translation>
 <translation id="5777841717266010279">Voleu deixar de compartir la pantalla?</translation>
+<translation id="5807965672380739016">Emet l'escriptori a</translation>
 <translation id="5825747213122829519">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>.
 Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="5871632337994001636">Gestiona els dispositius...</translation>
 <translation id="5895138241574237353">Reinicia</translation>
-<translation id="5927132638760172455">S'està emetent a un receptor desconegut</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="595202126637698455">Seguiment del rendiment activat</translation>
 <translation id="5958529069007801266">Usuari supervisat</translation>
@@ -166,7 +164,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="68610848741840742">ChromeVox (comentaris de veu)</translation>
 <translation id="6895424601869865703">Afegeix un compte per a <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
@@ -174,7 +171,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="7052914147756339792">Estableix fons de pantalla...</translation>
 <translation id="7097613348211027502">ChromeVox (comentaris de veu) està activat.
 Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">S'està emetent $1</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">Bloq Maj està activat.
 Premeu Alt+Cerca o Maj per cancel·lar.</translation>
@@ -191,7 +188,6 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="785750925697875037">Mostra el compte mòbil</translation>
 <translation id="7864539943188674973">Desactiva el Bluetooth</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
-<translation id="7957227661277029961">És possible que el dispositiu <ph name="DEVICE_TYPE"/> no es carregui mentre està encès. Us recomanem que utilitzeu el carregador oficial.</translation>
 <translation id="7982789257301363584">Xarxa</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8103386449138765447">Missatges SMS: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8356164830168736643">Tanca <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Configuració</translation>
-<translation id="8443356412772935865">S'està emetent la pantalla a $1</translation>
 <translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE"/> no es carregui mentre està encès.</translation>
 <translation id="8528322925433439945">Xarxes mòbils...</translation>
 <translation id="8654520615680304441">Activa la Wi-Fi...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">S'ha connectat un carregador de baix consum</translation>
+<translation id="8697119993436624257">La nova IU d'inici de sessió està desactivada</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Feu clic per visualitzar-la</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
 <translation id="1002108253973310084">An incompatible protocol version was detected. Please make sure that you have the latest version of the software installed on both computers and try again.</translation>
+<translation id="1023096696228309145">Ask the user whose computer you wish to access to click ‘Share Now’ and give you the access code.</translation>
 <translation id="1050693411695664090">Poor</translation>
 <translation id="1152528166145813711">Select…</translation>
 <translation id="1199593201721843963">Disable remote connections</translation>
+<translation id="1261403020716313927">• Fixed large memory leak on disconnection from remote desktop.</translation>
 <translation id="1291443878853470558">You must enable remote connections if you want to use Chromoting to access this computer.</translation>
 <translation id="1300633907480909701">Securely access your computers from your Android device.
 
@@ -15,7 +17,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="1324095856329524885">(this feature is not yet available for your computer)</translation>
 <translation id="1342297293546459414">See and control a shared computer.</translation>
 <translation id="1450760146488584666">The requested object does not exist.</translation>
-<translation id="1480046233931937785">Credits</translation>
 <translation id="1520828917794284345">Resize desktop to fit</translation>
 <translation id="154040539590487450">Failed to start remote access service.</translation>
 <translation id="1546934824884762070">An unexpected error occurred. Please report this problem to the developers.</translation>
@@ -52,10 +53,8 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2124408767156847088">Securely access your computers from your Android device.</translation>
 <translation id="2208514473086078157">Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.</translation>
 <translation id="2220529011494928058">Report an issue</translation>
-<translation id="2221097377466213233">Use right Ctrl for Win key (⌘ on Mac)</translation>
 <translation id="2235518894410572517">Share this computer for another user to see and control.</translation>
 <translation id="2246783206985865117">This setting is managed by your domain policy.</translation>
-<translation id="2256115617011615191">Restart now</translation>
 <translation id="225614027745146050">Welcome</translation>
 <translation id="228809120910082333">Please confirm your account and PIN below to allow access by Chromoting.</translation>
 <translation id="2314101195544969792">Your <ph name="APPLICATION_NAME"/> session has been inactive for a while and will be disconnected shortly.</translation>
@@ -76,14 +75,11 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2851674870054673688">Once they have entered the code your sharing session will begin.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">offline</translation>
-<translation id="2888969873284818612">A network error occurred. We will restart the app when your device is on-line again.</translation>
 <translation id="2894654864775534701">This computer is currently shared under a different account.</translation>
 <translation id="2919669478609886916">You are currently sharing this machine with another user. Do you want to continue sharing?</translation>
 <translation id="2921543551052660690">You have previously signed in as <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). To access your computers in that account, <ph name="LINK_BEGIN"/>sign in to Chromium<ph name="LINK_END"/> with that account and re-install Chromoting.</translation>
 <translation id="2926340305933667314">Failed to disable remote access to this computer. Please try again later.</translation>
 <translation id="2939145106548231838">Authenticate to host</translation>
-<translation id="2998137343848432918">• Added Credits screen.
-• Fixed a problem when going full-screen with the keyboard visible.</translation>
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
 <translation id="3025388528294795783">To help us solve your problem, please tell us what went wrong:</translation>
 <translation id="3027681561976217984">Touch mode</translation>
@@ -92,7 +88,6 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3150823315463303127">Host failed to read the policy.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3244258558056547981">Show Cardboard view.</translation>
 <translation id="3258789396564295715">You may securely access this computer using Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Want to help improve Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Take the survey.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Chromoting Host Controller</translation>
@@ -164,7 +159,6 @@ Desktop Host</translation>
 <translation id="5254120496627797685">Leaving this page will end your Chrome Remote Desktop session.</translation>
 <translation id="5285241842433869526">Learn how to set up a computer for remote access.</translation>
 <translation id="5308380583665731573">Connect</translation>
-<translation id="5363265567587775042">Ask the user whose computer you wish to access to click “<ph name="SHARE"/>” and give you the access code.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop allows you to securely share your computer over the Web. Both users must be running the Chrome Remote Desktop app, which can be found at <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">Could not reset the application. You can still send a bug report.</translation>
@@ -233,6 +227,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Access denied for client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Client connected: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">New connection</translation>
 <translation id="7606912958770842224">Enable remote connections</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>

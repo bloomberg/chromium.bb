@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">በጎራዎች ውስጥ ካለ ከማናቸውም መሣሪያ ጋር ውሂብ ተለዋወጥ፦ <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">አካባቢያዊነት ተጠቅሟል ነገር ግን በማኒፌስት ወስጥ default_locale አልተገለጸም።</translation>
 <translation id="2616366145935564096">ውሂብዎን በ<ph name="WEBSITE_1"/> ላይ ያነብባል እና ይቀይራል</translation>
+<translation id="2677911863018634147">መተግበሪያ «<ph name="APP_NAME"/>» የአንድ ወይም ተጨማሪ መሣሪያዎችዎ መዳረሻ እየጠየቁ ነው።</translation>
 <translation id="2753617847762399167">ህገወጥ ዱካ (በ«..» ፍጹማዊ ወይም አንጻራዊ)፦ «<ph name="IMAGE_PATH"/>»</translation>
 <translation id="27822970480436970">ለውጡ ከሌላ ቅጥያ ጋር ስለተጋጨ ይህ ቅጥያ የአውታረ መረብ ጥያቄ መቀየር አልተሳካለትም።</translation>
 <translation id="2857834222104759979">ገላጭ ፋይሉ ልክ አይደለም።</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (ተከታታይ ቁጥር <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">የእርስዎን ውሂብ በበርካታ የድር ጣቢያዎች ላይ ያንብቡ</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> ከ<ph name="VENDOR_ID"/> ሻጭ (ተከታታይ ቁጥር <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{USB መሣሪያ ይምረጡ}multiple{USB መሣሪያዎች ይምረጡ}other{በጥቅም ላይ ያልዋለ}}</translation>
 <translation id="3624204664103857160">የማስጀመሪያ ገጽ «<ph name="PAGE"/>»ን መጫን አልተቻለም።</translation>
 <translation id="3759933321830434300">የድረ-ገጾች ክፍሎችን ያግዳል</translation>
 <translation id="388442998277590542">የአማራጮች ገጽ «<ph name="OPTIONS_PAGE"/>»ን መጫን አልተቻለም።</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">ከ<ph name="VENDOR_NAME"/> የመጡ ያልታወቁ መሣሪያዎች</translation>
 <translation id="4542520061254486227">የእርስዎን ውሂብ በ<ph name="WEBSITE_1"/> እና በ<ph name="WEBSITE_2"/> ላይ ያንብቡ</translation>
 <translation id="4761104368405085019">ማይክፎሮንዎን ይጠቀማል</translation>
+<translation id="4776856853352853275">የዩኤስቢ መሣሪያዎችን ይምረጡ</translation>
 <translation id="4811956658694082538">የመገልገያ ሂደት ስለተጨናገፈ ጥቅሉን መጫን አልተቻለም። Chromeን እንደገና አስጀምረው እንደገና ይሞክሩት።</translation>
 <translation id="4883436287898674711">ሁሉም የ<ph name="WEBSITE_1"/> ጣቢያዎች</translation>
 <translation id="5026754133087629784">የድር እይታ፦ <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">የአውታረ መረብ ግንኙነቶች አቀናብር</translation>
-<translation id="5165983846722506205">{1,select, single{HID መሣሪያ ይምረጡ}multiple{HID መሣሪያዎች ይምረጡ}other{በጥቅም ላይ ያልዋለ}}</translation>
 <translation id="5356315618422219272">የመተግበሪያ እይታ፦ <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">ይህ ቅጥያ የቁልፍ ፋይል «<ph name="KEY_PATH"/>»ን ያካትታል። ይህንን ማድረግ ላይፈልጉ ይችላሉ።</translation>
+<translation id="545850661681880228">HID መሣሪያ ይምረጡ</translation>
 <translation id="5627523580512561598">ቅጥያ <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">የእርስዎን ውሂብ በ<ph name="WEBSITE_1"/> ላይ ያንብቡ</translation>
+<translation id="5751530153776468604">መተግበሪያ «<ph name="APP_NAME"/>» የአንዱ መሣሪያዎ መዳረሻ እየጠየቀ ነው።</translation>
 <translation id="588705686677293479">SurfaceWorker፦ <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView፦ <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">የብሉቱዝ አስማሚ ሁኔታ እና ማጣመርን ይቆጣጠራል</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> ከ<ph name="VENDOR_ID"/> ሻጭ</translation>
 <translation id="6075907793831890935"><ph name="HOSTNAME"/> ከሚባል መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
 <translation id="6143635259298204954">ቅጥያ መበተን አልተቻለም።  አንድ ቅጥያ ደህንነቱ በተጠበቀ ሁኔታ ለመበተን ተምሳሌታዊ መጠሪያ ያልያዘ ወደ የመገለጫዎ አቃፊ የሚወስድ ዱካ መኖር አለበት።  ምንም እንደዚህ ያለ ወደ መገለጫዎ የሚወስድ ዱካ የለም።</translation>
-<translation id="616804573177634438">{0,select, single{መተግበሪያ «<ph name="APP_NAME"/>» የአንዱን መሣሪያዎን መዳረሻ እየጠየቀ ነው።}multiple{መተግበሪያ «<ph name="APP_NAME"/>» የአንድ ወይም ተጨማሪ መሣሪያዎችዎን መዳረሻ እየጠየቀ ነው።}other{በጥቅም ላይ ያልዋለ}}</translation>
 <translation id="6241530762627360640">ከስርዓትዎ ጋር ስለተጣመሩ የብሉቱዝ መሣሪያዎች ያለ መረጃ ይደርሳልና አቅራቢያ ያሉ የብሉቱዝ መሣሪያዎችን ያገኛል።</translation>
 <translation id="6344170822609224263">የአውታረ መረብ ግንኙነቶች ዝርዝር ይደርሳል</translation>
 <translation id="6384275966486438344">የፍለጋ ቅንብሮችዎን ወደሚከተለው ይለውጡ፦ <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">የሚቀዱትን እና የሚለጥፉትን ውሂብ ያነብባል</translation>
 <translation id="730515362922783851">በአካባቢ አውታረመረብ ወይም በይነመረብ ላይ ከማናቸውም መሣሪያ ጋር ውሂብ ተለዋወጥ</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (የቅጥያ መታወቂያ «<ph name="EXTENSION_ID"/>») በአስተዳዳሪው ታግዷል።</translation>
+<translation id="781637217073033149">HID መሣሪያዎች ይምረጡ</translation>
 <translation id="7893008570150657497">የኮምፒውተርዎን ፎቶዎች፣ ሙዚቃ እና ሌላ ማህደረ  መረጃ  ይደርሳል</translation>
 <translation id="7972881773422714442">አማራጮች፦ <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">ይህ ቅጥያ የወረደውን «<ph name="ATTEMPTED_FILENAME"/>» ብሎ መሰየም አልተሳካለትም፣ ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ሌላ የፋይል ስም «<ph name="ACTUAL_FILENAME"/>» ስለወሰነ ነው።</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">ገላጭ ፋይሉ ጠፍቷል ወይም ተነባቢ አይደለም።</translation>
 <translation id="8620765578342452535">የአውታረ መረብ ግንኙነቶችን ያዋቅራል</translation>
 <translation id="8636666366616799973">ጥቅሉ ልክ አይደለም። ዝርዝሮች፦ «<ph name="ERROR_MESSAGE"/>»።</translation>
+<translation id="8658591203505835552">የዩኤስቢ መሣሪያ ይምረጡ</translation>
 <translation id="8662911384982557515">መነሻ ገጽዎን ወደዚህ ይቀይሩት፦ <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">ይህ ቅጥያ አንድ የአውታረ መረብ ጥያቄ ወደ <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> ማዞር አልተሳካለትም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ወደ <ph name="ACTUAL_REDIRECT_DESTINATION"/> አዙሮታል።</translation>
 <translation id="8712265948125780616">ቅጥያ ማራገፊያ</translation>

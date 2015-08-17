@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">تبادل اطلاعات با هر دستگاهی در دامنه‌های: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">‏بومی سازی استفاده شده است، اما default_locale در اظهارنامه مشخص نشده است.</translation>
 <translation id="2616366145935564096">خواندن و تغییر اطلاعات شما در <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یک یا چند دستگاه شما را دارد.</translation>
 <translation id="2753617847762399167">مسیر غیرمجاز (مطلق یا نسبی با «..»): «<ph name="IMAGE_PATH"/>»</translation>
 <translation id="27822970480436970">این برنامهٔ افزودنی قادر به تغییر درخواست شبکه به دلیل تغییری متداخل با یک برنامهٔ افزودنی دیگر نیست.</translation>
 <translation id="2857834222104759979">فایل اظهارنامه نامعتبر است.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">خواندن داده‌های شما در تعدادی از وب‌سایت‌ها</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> از فروشنده <ph name="VENDOR_ID"/> (شماره سریال <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{‏انتخاب دستگاه USB}multiple{‏انتخاب دستگاه‌های USB}other{UNUSED}}</translation>
 <translation id="3624204664103857160">صفحه راه‌انداز «<ph name="PAGE"/>» بارگیری نشد.</translation>
 <translation id="3759933321830434300">مسدود کردن بخش‌هایی از صفحات وب</translation>
 <translation id="388442998277590542">صفحه گزینه‌ها &quot;<ph name="OPTIONS_PAGE"/>&quot; بارگیری نشد.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">دستگاه‌های ناشناس از <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">خواندن داده‌های شما در <ph name="WEBSITE_1"/> و <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">استفاده از میکروفون خود</translation>
+<translation id="4776856853352853275">‏انتخاب دستگاه‌های USB</translation>
 <translation id="4811956658694082538">‏بسته نصب نشد چون پردازش برنامه سودمند انجام نشد. سعی کنید chrome را راه‌اندازی مجدد نمایید و دوباره امتحان کنید.</translation>
 <translation id="4883436287898674711">همه سایت‌های <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">نمای وب: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">مدیریت اتصالات شبکه</translation>
-<translation id="5165983846722506205">{1,select, single{‏انتخاب دستگاه HID}multiple{‏انتخاب دستگاه‌های HID}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">این برنامهٔ افزودنی شامل فایل کلید «<ph name="KEY_PATH"/>» است. احتمالاً نمی‌خواهید این کار را انجام دهید.</translation>
+<translation id="545850661681880228">‏انتخاب دستگاه HID</translation>
 <translation id="5627523580512561598">برنامهٔ افزودنی <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">خواندن داده‌های شما در <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یکی از دستگاه‌هایتان را دارد.</translation>
 <translation id="588705686677293479">‏SurfaceWorker: ‏<ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">کنترل حالت آداپتور بلوتوث و مرتبط‌سازی</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> از فروشنده <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">تبادل اطلاعات با دستگاهی به نام <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">بسته برنامهٔ افزودنی را نمی‌توان باز کرد.  برای باز کردن ایمن بسته برنامهٔ افزودنی، باید یک مسیر در فهرست نمایهٔ شما وجود داشته باشد که فاقد پیوند نمادی باشد.  چنین مسیری برای نمایهٔ شما وجود ندارد.</translation>
-<translation id="616804573177634438">{0,select, single{برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یکی از دستگاه‌هایتان را دارد.}multiple{برنامه «<ph name="APP_NAME"/>» درخواست دسترسی به یک یا چند دستگاه‌هتان را دارد.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="6344170822609224263">فهرست دسترسی از اتصالات شبکه</translation>
 <translation id="6384275966486438344">تغییر تنظیمات جستجویتان به: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">خواندن اطلاعاتی که کپی و جای‌گذاری می‌کنید</translation>
 <translation id="730515362922783851">تبادل اطلاعات با هر دستگاهی بر روی شبکه محلی یا اینترنت</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (شناسه فایل افزودنی &quot;<ph name="EXTENSION_ID"/>&quot;) توسط سرپرست مسدود شده است.</translation>
+<translation id="781637217073033149">‏انتخاب دستگاه‌های HID</translation>
 <translation id="7893008570150657497">دسترسی به عکس‌ها، موسیقی، و دیگر رسانه‌ها از رایانه شما</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری دانلود «<ph name="ATTEMPTED_FILENAME"/>» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME"/>) نام فایل دیگری «<ph name="ACTUAL_FILENAME"/>» را تعیین کرد.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">فایل اظهارنامه وجود ندارد یا قابل خواندن نیست.</translation>
 <translation id="8620765578342452535">پیکربندی اتصالات شبکه</translation>
 <translation id="8636666366616799973">بسته نامعتبر است. جزئیات: &quot;<ph name="ERROR_MESSAGE"/>&quot;</translation>
+<translation id="8658591203505835552">‏انتخاب دستگاه USB</translation>
 <translation id="8662911384982557515">تغییر صفحه اصلی شما به: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">این فایل افزودنی نتوانست درخواست شبکه را به <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> مجدداً هدایت کند چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME"/>) آن را به <ph name="ACTUAL_REDIRECT_DESTINATION"/> مجدداً هدایت کرد.</translation>
 <translation id="8712265948125780616">بازکننده بسته افزونه</translation>

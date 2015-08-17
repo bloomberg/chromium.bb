@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es-419">
 <translation id="1002108253973310084">Se detectó una versión de protocolo incompatible. Asegúrate de que tienes instalada la última versión del software en ambas computadoras y vuelve a intentarlo.</translation>
+<translation id="1023096696228309145">Solicita que el usuario de la computadora a la que deseas acceder haga clic en &quot;Compartir ahora&quot; y te proporcione el código de acceso.</translation>
 <translation id="1050693411695664090">Mala</translation>
 <translation id="1152528166145813711">Selecciona...</translation>
 <translation id="1199593201721843963">Inhabilitar conexiones remotas</translation>
+<translation id="1261403020716313927">• Se corrigió una pérdida de memoria considerable al desconectar la aplicación del escritorio remoto.</translation>
 <translation id="1291443878853470558">Debes habilitar las conexiones remotas si deseas usar Chromoting para acceder a esta computadora.</translation>
 <translation id="1300633907480909701">Accede de forma segura a tus computadoras desde el dispositivo Android.
 
@@ -15,7 +17,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1324095856329524885">(Esta función aún no está disponible para tu computadora).</translation>
 <translation id="1342297293546459414">Permite ver y controlar una computadora compartida.</translation>
 <translation id="1450760146488584666">El objeto solicitado no existe.</translation>
-<translation id="1480046233931937785">Créditos</translation>
 <translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
 <translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
 <translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>
@@ -52,10 +53,8 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2124408767156847088">Acceder de forma segura a tus computadoras desde el dispositivo Android</translation>
 <translation id="2208514473086078157">La configuración de la política no permite compartir esta computadora como host de Escritorio remoto de Chrome. Comunícate con el administrador de tu sistema para obtener ayuda.</translation>
 <translation id="2220529011494928058">Informar un problema</translation>
-<translation id="2221097377466213233">Usar Ctrl derecho para tecla de Windows (⌘ en Mac)</translation>
 <translation id="2235518894410572517">Comparte esta computadora con otro usuario para que este pueda verla y controlarla.</translation>
 <translation id="2246783206985865117">Esta cuenta está administrada por la política de tu dominio.</translation>
-<translation id="2256115617011615191">Reiniciar ahora</translation>
 <translation id="225614027745146050">Bienvenido</translation>
 <translation id="228809120910082333">Confirma la cuenta y el PIN a continuación para permitir el acceso de Chromoting.</translation>
 <translation id="2314101195544969792">La sesión de <ph name="APPLICATION_NAME"/> estuvo inactiva por un tiempo y se desconectará en breve.</translation>
@@ -76,14 +75,11 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2851674870054673688">Una vez que se haya ingresado el código, se iniciará la sesión compartida.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">Sin conexión</translation>
-<translation id="2888969873284818612">Se produjo un error en la red. Reiniciaremos la aplicación cuando el dispositivo esté en línea nuevamente.</translation>
 <translation id="2894654864775534701">Actualmente, la computadora se comparte con una cuenta diferente.</translation>
 <translation id="2919669478609886916">En este momento compartes esta computadora con otro usuario. ¿Deseas continuar compartiéndola?</translation>
 <translation id="2921543551052660690">Accediste previamente como <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Para acceder a las computadoras en esa cuenta, <ph name="LINK_BEGIN"/>accede a Chromium<ph name="LINK_END"/> con esa cuenta y vuelve a instalar Chromoting.</translation>
 <translation id="2926340305933667314">No se pudo inhabilitar el acceso remoto a esta computadora. Vuelve a intentarlo más tarde.</translation>
 <translation id="2939145106548231838">Autenticarse en host</translation>
-<translation id="2998137343848432918">• Se agregó la pantalla Créditos.
-• Se solucionó un problema con el acceso al modo de pantalla completa con el teclado visible.</translation>
 <translation id="3020807351229499221">No se pudo actualizar el PIN. Vuelve a intentarlo más tarde.</translation>
 <translation id="3025388528294795783">Para que te ayudemos a resolver el problema, indícanos qué sucede:</translation>
 <translation id="3027681561976217984">Modo táctil</translation>
@@ -92,7 +88,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3150823315463303127">El host no pudo leer la política.</translation>
 <translation id="3194245623920924351">Escritorio remoto de Chrome</translation>
 <translation id="3197730452537982411">Escritorio remoto</translation>
-<translation id="3244258558056547981">Mostrar vista de Cardboard</translation>
 <translation id="3258789396564295715">Puedes acceder a esta computadora sin correr riesgos a través del Escritorio remoto de Chrome.</translation>
 <translation id="327263477022142889">¿Quieres ayudar a mejorar el Escritorio remoto de Chrome? <ph name="LINK_BEGIN"/>Realiza la encuesta<ph name="LINK_END"/>.</translation>
 <translation id="3286521253923406898">Controlador del host de Chromoting</translation>
@@ -164,7 +159,6 @@ remoto de Chrome</translation>
 <translation id="5254120496627797685">Al abandonar esta página, se cerrará la sesión en el Escritorio remoto de Chrome.</translation>
 <translation id="5285241842433869526">Más información sobre cómo configurar una computadora para el acceso remoto</translation>
 <translation id="5308380583665731573">Conectar</translation>
-<translation id="5363265567587775042">Solicita al usuario a cuya computadora quieres tener acceso que haga clic en &quot;<ph name="SHARE"/>&quot; y te envíe el código de acceso correspondiente.</translation>
 <translation id="5379087427956679853">Escritorio remoto de Chrome te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben usar la aplicación Escritorio remoto de Chrome, que está disponible en <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Desinstalador del host del Escritorio remoto de Chrome</translation>
 <translation id="5419185025274123272">No se pudo restablecer la aplicación. Puedes enviar un informe de errores.</translation>
@@ -233,6 +227,7 @@ remoto de Chrome</translation>
 <translation id="7401733114166276557">Escritorio remoto de Chrome</translation>
 <translation id="7434397035092923453">Acceso rechazado para cliente: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME"/></translation>
+<translation id="7605995381616883502">Nueva conexión</translation>
 <translation id="7606912958770842224">Habilitar conexiones remotas</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

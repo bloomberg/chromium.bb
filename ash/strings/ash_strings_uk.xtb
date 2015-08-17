@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Увімкнути екранну клавіатуру</translation>
-<translation id="1343000272198685031">Роз’єм для мікрофона</translation>
 <translation id="1346748346194534595">Праворуч</translation>
 <translation id="137180024469554212">Розблокувати обертання</translation>
 <translation id="1383876407941801731">Пошук</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Великий курсор миші</translation>
 <translation id="1602076796624386989">Увімкнути передавання мобільних даних</translation>
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Пристрій Chrome</translation>
 <translation id="1723752762323179280">Завершення сеансу</translation>
 <translation id="1747827819627189109">Екранну клавіатуру ввімкнено</translation>
+<translation id="1753067873202720523">Ваш Chromebook може не заряджатися, поки він увімкнений.</translation>
 <translation id="1812696562331527143">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>третя сторона<ph name="END_LINK"/>).
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Автоматичні кліки</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Трансляція вкладки &quot;$1&quot; на $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Облікові записи</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
 <translation id="2204305834655267233">Інформація про мережу</translation>
 <translation id="2208323208084708176">Режим уніфікованого комп’ютера</translation>
+<translation id="2248649616066688669">Ви можете продовжувати користуватися Chromebook, поки він під’єднаний до зовнішнього екрана, навіть якщо кришку закрито.</translation>
 <translation id="225680501294068881">Пошук пристроїв...</translation>
 <translation id="2268130516524549846">Bluetooth вимкнено</translation>
 <translation id="2268813581635650749">Вийти з усіх облікових записів</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">Невідомий дисплей</translation>
 <translation id="2532589005999780174">Режим високого контрасту</translation>
 <translation id="2562916301614567480">Приватна мережа</translation>
+<translation id="2614835198358683673">Ваш Chromebook може не заряджатися, якщо ввімкнений. Спробуйте скористатися офіційним зарядним пристроєм.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Під’єднання…</translation>
 <translation id="2700058918926273959">Сеанс закінчиться через <ph name="SESSION_TIME_REMAINING"/>. Ви вийдете.</translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">Гість</translation>
 <translation id="3433830597744061105">Керувати обліковими записами</translation>
 <translation id="3473479545200714844">Лупа</translation>
+<translation id="3527846106059622359">Новий інтерфейс входу ВВІМКНЕНО</translation>
 <translation id="3573179567135747900">Повернутися до мови &quot;<ph name="FROM_LOCALE"/>&quot; (потрібно перезавантажитися)</translation>
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
 <translation id="3606978283550408104">Брайлівський дисплей під’єднано.</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">ні</translation>
 <translation id="4279490309300973883">Дзеркальне відображення</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">Трансляція робочого стола</translation>
 <translation id="4379753398862151997">Прикро, але контакту з монітором немає. (Цей монітор не підтримується)</translation>
 <translation id="4421231901400348175">Спільний доступ до екрана для користувача <ph name="HELPER_NAME"/> через віддалену допомогу.</translation>
 <translation id="4430019312045809116">Гучність</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
 <translation id="4918086044614829423">Прийняти</translation>
 <translation id="4957722034734105353">Докладніше...</translation>
-<translation id="4961318399572185831">Трансляція екрана</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Налаштування Google Диска...</translation>
 <translation id="5102001756192215136">Залишилося <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Доступні пристрої для трансляції</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
 <translation id="544691375626129091">Усіх доступних користувачів уже додано до цього сеансу.</translation>
 <translation id="5507786745520522457">Налаштувати мобільне передавання даних</translation>
+<translation id="5537725057119320332">Акторський склад</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">За допомогою розширення <ph name="EXTENSION_NAME"/> можна під’єднуватися до цієї мережі.</translation>
 <translation id="5565793151875479467">Проксі-сервер...</translation>
 <translation id="5571066253365925590">Bluetooth увімкнено</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Ви можете користуватися пристроєм <ph name="DEVICE_TYPE"/>, коли він під’єднаний до зовнішнього екрана, навіть якщо кришку закрито.</translation>
 <translation id="5777841717266010279">Скасувати спільний доступ до екрана?</translation>
+<translation id="5807965672380739016">Транслювати робочий стіл на пристрій</translation>
 <translation id="5825747213122829519">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>.
 Щоб переключитися, натисніть Shift + Alt.</translation>
 <translation id="5871632337994001636">Керування пристроями…</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
-<translation id="5927132638760172455">Трансляція на невідомий приймач</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Повернути</translation>
 <translation id="595202126637698455">Відстеження ефективності ввімкнено</translation>
 <translation id="5958529069007801266">Контрольований користувач</translation>
@@ -166,7 +164,6 @@
 <translation id="68610848741840742">ChromeVox (голосові підказки)</translation>
 <translation id="6895424601869865703">Додати обліковий запис користувача <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Під’єднатися до іншої...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
@@ -174,7 +171,7 @@
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
 <translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.
 Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">Транслюється $1</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
 Натисніть Alt+клавішу пошуку або Shift, щоб скасувати.</translation>
@@ -191,7 +188,6 @@
 <translation id="785750925697875037">Переглянути обліковий запис для мобільних пристроїв</translation>
 <translation id="7864539943188674973">Вимкнути Bluetooth</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
-<translation id="7957227661277029961">Пристрій <ph name="DEVICE_TYPE"/> може не заряджатися, коли він увімкнений. Скористайтесь зарядним пристроєм, який входить у комплект.</translation>
 <translation id="7982789257301363584">Мережа</translation>
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="8103386449138765447">SMS повідомлень: <ph name="MESSAGE_COUNT"/></translation>
@@ -200,13 +196,12 @@
 <translation id="8308637677604853869">Попереднє меню</translation>
 <translation id="8356164830168736643">Закрити вікно <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Налаштування</translation>
-<translation id="8443356412772935865">Трансляція екрана на $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до повного зарядження</translation>
-<translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE"/> може не заряджатися, коли він увімкнений.</translation>
 <translation id="8528322925433439945">Мобільні ...</translation>
 <translation id="8654520615680304441">Увімкнення Wi-Fi…</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
+<translation id="8697119993436624257">Новий інтерфейс входу ВИМКНЕНО</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Натисніть, щоб переглянути</translation>
 <translation id="8828714802988429505">90°</translation>

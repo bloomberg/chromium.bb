@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">Adatok cseréje bármilyen eszközzel a következő domainekben: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Fordítás használatban, de a default_locale (alapértelmezett nyelv- és országkód) nincs megadva a jegyzékfájlban.</translation>
 <translation id="2616366145935564096">Adatainak olvasása és módosítása itt: <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egy vagy több eszközéhez.</translation>
 <translation id="2753617847762399167">Szabálytalan útvonal (abszolút vagy relatív „..” taggal): „<ph name="IMAGE_PATH"/>”</translation>
 <translation id="27822970480436970">A bővítmény nem tudta módosítani a hálózati lekérést, mivel a módosítás egy másik bővítménnyel ütközött.</translation>
 <translation id="2857834222104759979">A jegyzékfájl érvénytelen.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Adatok beolvasása számos webhelyen</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> termék a következő forgalmazótól: <ph name="VENDOR_ID"/> (sorozatszám: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{USB-eszköz kiválasztása}multiple{USB-eszközök kiválasztása}other{UNUSED}}</translation>
 <translation id="3624204664103857160">Nem lehet betölteni az indítóoldalt: „<ph name="PAGE"/>”.</translation>
 <translation id="3759933321830434300">Weboldalak adott részeinek letiltása</translation>
 <translation id="388442998277590542">Nem lehet betölteni a(z) &quot;<ph name="OPTIONS_PAGE"/>&quot; opcióoldalt.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656"><ph name="VENDOR_NAME"/> szolgáltatótól származó ismeretlen eszközök</translation>
 <translation id="4542520061254486227">Adatok beolvasása a következő webhelyeken: <ph name="WEBSITE_1"/> és <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">Mikrofon használata</translation>
+<translation id="4776856853352853275">USB-eszközök kiválasztása</translation>
 <translation id="4811956658694082538">Nem lehetett telepíteni a csomagot, mert egy segédprogram-folyamat összeomlott. Indítsa újra a Chrome-ot, majd próbálja újra.</translation>
 <translation id="4883436287898674711">Minden <ph name="WEBSITE_1"/> webhelyen</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">Hálózati kapcsolatok kezelése</translation>
-<translation id="5165983846722506205">{1,select, single{HID eszköz kiválasztása}multiple{HID eszközök kiválasztása}other{UNUSED}}</translation>
 <translation id="5356315618422219272">Alkalmazásnézet: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">Ez a bővítmény a(z) &quot;<ph name="KEY_PATH"/>&quot; kulcsfájlt tartalmazza. Ezt Ön valószínűleg nem szeretné.</translation>
+<translation id="545850661681880228">HID-eszköz kiválasztása</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME"/> bővítmény</translation>
 <translation id="5678955352098267522">Adatok beolvasása a következő webhelyen: <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egyik eszközéhez.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">Bluetooth-adapter állapotának és párosításának vezérlése</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/>, forgalmazó: <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">Adatok cseréje a(z) <ph name="HOSTNAME"/> nevű eszközzel</translation>
 <translation id="6143635259298204954">Nem lehet kicsomagolni a bővítményt. A bővítmények biztonságos kicsomagolásához kell lennie egy olyan elérési útnak a profilkönyvtárban, amelyben nem szerepel közvetett hivatkozás (symlink). Ilyen elérési út nem létezik a profiljában.</translation>
-<translation id="616804573177634438">{0,select, single{A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egyik eszközéhez.}multiple{A(z) „<ph name="APP_NAME"/>” alkalmazás hozzáférést kér egy vagy több eszközéhez.}other{UNUSED}}</translation>
 <translation id="6241530762627360640">A rendszerrel párosított Bluetooth-eszközökkel kapcsolatos információk elérése és a közeli Bluetooth-eszközök felderítése.</translation>
 <translation id="6344170822609224263">A hálózati kapcsolatok hozzáférési listája</translation>
 <translation id="6384275966486438344">A keresési beállítások módosítása a következőre: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">Az Ön által másolt és beillesztett adatok olvasása</translation>
 <translation id="730515362922783851">Adatok cseréje bármilyen eszközzel a helyi hálózaton vagy az interneten</translation>
 <translation id="7809034755304591547">A(z) <ph name="EXTENSION_NAME"/> bővítményt (bővítményazonosító: „<ph name="EXTENSION_ID"/>”) blokkolta a rendszergazda.</translation>
+<translation id="781637217073033149">HID-eszközök kiválasztása</translation>
 <translation id="7893008570150657497">Fényképek, zene és egyéb multimédiás anyagok elérése a számítógépről</translation>
 <translation id="7972881773422714442">Lehetőségek: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">Ez a bővítmény nem tudta elnevezni a(z) „<ph name="ATTEMPTED_FILENAME"/>” letöltést, mert egy másik bővítmény (<ph name="EXTENSION_NAME"/>) eltérő fájlnevet határozott meg: „<ph name="ACTUAL_FILENAME"/>”.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">A jegyzékfájl hiányzik vagy nem olvasható.</translation>
 <translation id="8620765578342452535">Hálózati kapcsolatok beállítása</translation>
 <translation id="8636666366616799973">A csomag érvénytelen. Részletek: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="8658591203505835552">USB-eszköz kiválasztása</translation>
 <translation id="8662911384982557515">Kezdőlap módosítása a következőre: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">A bővítmény nem tudta átirányítani a hálózati kérést <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> felé, mivel egy másik bővítmény (<ph name="EXTENSION_NAME"/>) átirányította azt a következőre: <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Bővítmény-kicsomagoló</translation>

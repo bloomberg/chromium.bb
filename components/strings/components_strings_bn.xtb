@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="1344588688991793829">Chromium স্বতঃপূর্ণ সেটিংস...</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
-<translation id="1455235771979731432">আপনার কার্ডটি যাচাই করতে একটি সমস্যা হয়েছিল৷ আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="1491151370853475546">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
-<translation id="1549470594296187301">এই বৈশিষ্ট্যটি ব্যবহার করার জন্য JavaScript সক্ষম করা প্রয়োজন।</translation>
 <translation id="1639239467298939599">লোড হচ্ছে</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
 <translation id="1644184664548287040">নেটওয়ার্ক কনফিগারেশনটি অবৈধ এবং আমদানি করা যায়নি৷</translation>
@@ -58,7 +56,6 @@
 <translation id="2396249848217231973">&amp;মুছে ফেলাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="2455981314101692989">এই ওয়েবপৃষ্ঠাটি এই ফর্মটির জন্য  স্বয়ংক্রিয় পূরণ ফর্মকে অক্ষম করেছে৷</translation>
 <translation id="2479410451996844060">অবৈধ অনুসন্ধানের URL৷</translation>
-<translation id="2495083838625180221">JSON বিশ্লেষক</translation>
 <translation id="2498091847651709837">নতুন কার্ড স্ক্যান করুন</translation>
 <translation id="2556876185419854533">&amp;সম্পাদনাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="2581221116934462656">আপনি কি পরবর্তী সময়ে এই সাইটটির <ph name="LANGUAGE_NAME"/> পৃষ্ঠাগুলিকে অনুবাদ করে দেওয়ার জন্য <ph name="PRODUCT_NAME"/> কে বলতে চান?</translation>
@@ -70,7 +67,6 @@
 <translation id="2774256287122201187">আপনি অবিরত রাখতে পারেন৷ আপনি যদি পৃষ্ঠাটিতে অবিরত করেন এই সতর্কতা পরবর্তী পাঁচ মিনিটের জন্য উপস্থিত হবে না৷</translation>
 <translation id="277499241957683684">ডিভাইস রেকর্ড অনুপস্থিত</translation>
 <translation id="2835170189407361413">ফর্ম সাফ করুন</translation>
-<translation id="2855922900409897335">আপনার <ph name="CREDIT_CARD"/> যাচাই করুন৷</translation>
 <translation id="2958431318199492670">নেটওয়ার্ক কনফিগারেশন ONC মানকের সাথে সম্মত নয়৷ কনফিগারেশনের অংশগুলি আমদানিকৃত নাও হতে পারে৷</translation>
 <translation id="2972581237482394796">&amp;পুনরায় করুন</translation>
 <translation id="3010559122411665027">তালিকার এন্ট্রি &quot; <ph name="ENTRY_INDEX"/> &quot;: <ph name="ERROR"/></translation>
@@ -80,11 +76,9 @@
 <translation id="3150653042067488994">সাময়িক সার্ভার ত্রুটি</translation>
 <translation id="3169472444629675720">আবিষ্কার করুন</translation>
 <translation id="3174168572213147020">দ্বীপ</translation>
-<translation id="3219579145727097045">আপনার কার্ডের সামনে থাকা ৪ সংখ্যার CVC এবং মেয়াদ শেষের তারিখ লিখুন</translation>
 <translation id="3228969707346345236">পৃষ্ঠাটি ইতিমধ্যে <ph name="LANGUAGE"/>-এ থাকার কারণে অনুবাদ ব্যর্থ হয়েছে৷</translation>
 <translation id="3270847123878663523">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="333371639341676808">এই পৃষ্ঠাটিকে অতিরিক্ত কথোপকথন তৈরি করা থেকে আটকান৷</translation>
-<translation id="3369366829301677151">আপনার <ph name="CREDIT_CARD"/> আপডেট করুন এবং যাচাই করুন</translation>
 <translation id="337363190475750230">প্রদান করবে না</translation>
 <translation id="3377188786107721145">নীতি বিশ্লেষণ ত্রুটি</translation>
 <translation id="3380365263193509176">অজানা ত্রুটি</translation>
@@ -96,6 +90,7 @@
 <translation id="3583757800736429874">&amp;সরানোর কাজটি পুনরায় করুন</translation>
 <translation id="3623476034248543066">মান দেখান</translation>
 <translation id="3650584904733503804">বৈধতা যাচাইকরণ সফল হয়েছে</translation>
+<translation id="3667681724235208644">আসলটি দেখুন</translation>
 <translation id="370665806235115550">লোড হচ্ছে...</translation>
 <translation id="3712624925041724820">লাইসেন্সগুলির মেয়াদ শেষ হয়ে গেছে</translation>
 <translation id="3739623965217189342">আপনার অনুলিপি করা লিঙ্ক</translation>
@@ -104,7 +99,6 @@
 <translation id="3884278016824448484">পরস্পর বিরোধী ডিভাইস সনাক্তকারী</translation>
 <translation id="3885155851504623709">পারিশ</translation>
 <translation id="3934680773876859118">PDF  দস্তাবেজ লোড হতে ব্যর্থ</translation>
-<translation id="3963721102035795474">পাঠক মোড</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4058922952496707368">কী &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">প্রক্সি কনফিগারেশনটি .pac স্ক্রিপ্ট URL-এ ব্যবহার করাতে সেট থাকে স্থির প্রক্সি সার্ভারগুলিতে নয়৷</translation>
@@ -122,12 +116,10 @@
 <translation id="4372948949327679948">প্রত্যাশিত <ph name="VALUE_TYPE"/> মান৷</translation>
 <translation id="443673843213245140">প্রক্সির ব্যবহার অক্ষম করা হয়েছে কিন্তু কোনো স্পষ্ট প্রক্সি কনফিগারেশান নির্দিষ্ট করা হয়েছে৷</translation>
 <translation id="4506176782989081258">যাচাইকরণের ত্রুটি: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Chrome থেকে ঠিকানা সরাবেন?</translation>
 <translation id="4594403342090139922">&amp;মুছে ফেলাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="4607653538520819196">এই পৃষ্ঠাটিকে ডেটা সেভার মারফত প্রক্সী করা যাবে না।</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">নীতিগুলি পুনঃলোড করুন</translation>
-<translation id="4800132727771399293">আপনার মেয়াদ শেষের তারিখ এবং CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
 <translation id="4813512666221746211">নেটওয়ার্ক  ত্রুটি</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE"/>-এ অনুবাদ করা হয়েছে</translation>
@@ -160,7 +152,6 @@
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
 <translation id="5813119285467412249">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="5872918882028971132">মূল প্রস্তাবনাগুলি</translation>
-<translation id="587701087903783706">মোবাইল সহায়ক দৃশ্য বন্ধ করুন</translation>
 <translation id="59107663811261420">এই বণিকের জন্য এই ধরনের কার্ড Google Payments দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -179,7 +170,6 @@
 <translation id="6597614308054261376">আপনি <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>-এ পৌঁছানোর চেষ্টা করছেন। এখন এই পৃষ্ঠাটি ডেটা সেভার মারফত প্রক্সী করা যাবে না।</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> অনুসন্ধান</translation>
 <translation id="6644283850729428850">এই নীতিটি অসমর্থিত হয়েছে৷</translation>
-<translation id="6646897916597483132">আপনার কার্ডের সামনে থেকে ৪ সংখ্যার CVC লিখুন</translation>
 <translation id="6753269504797312559">নীতি মান</translation>
 <translation id="6831043979455480757">অনুবাদ</translation>
 <translation id="6839929833149231406">এলাকা</translation>
@@ -211,15 +201,12 @@
 <translation id="7537536606612762813">বাধ্যতামূলক</translation>
 <translation id="7542995811387359312">স্বয়ংক্রিয় ক্রেডিট কার্ড পূরণটি অক্ষম রয়েছে কারণ এই ফর্মটি কোনও সুরক্ষিত সংযোগ ব্যবহার করে না৷</translation>
 <translation id="7568593326407688803">এই পৃষ্ঠাটি<ph name="ORIGINAL_LANGUAGE"/>ভাষাতে আছে আপনি কি এটিকে অনুবাদ করতে চাইবেন?</translation>
-<translation id="7569952961197462199">Chrome থেকে ক্রেডিট কার্ড সরাবেন?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/> কখনও অনুবাদ করবেন না</translation>
 <translation id="7610193165460212391">সীমার বাইরে মান <ph name="VALUE"/>৷</translation>
 <translation id="7752995774971033316">অপরিচালিত</translation>
 <translation id="777702478322588152">জেলা</translation>
 <translation id="7791543448312431591">যুক্ত করুন</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
-<translation id="7813600968533626083">Chrome থেকে ফর্ম প্রস্তাবনা সরাবেন?</translation>
-<translation id="7887683347370398519">আপনার CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">মোবাইল বুকমার্ক</translation>
 <translation id="7961015016161918242">কখনই নয়</translation>
@@ -248,22 +235,17 @@
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
-<translation id="8824019021993735287">Chrome এই মুহূর্তে আপনার কার্ড যাচাই করতে অক্ষম হয়েছে৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="8834246243508017242">পরিচিতিগুলি ব্যবহার করে স্বতঃপূর্ণ সক্ষম করুন...</translation>
 <translation id="883848425547221593">অন্যান্য বুকমার্ক</translation>
 <translation id="8866481888320382733">নীতি সেটিংস বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="8876793034577346603">নেটওয়ার্ক কনফিগারেশন বিশ্লেষণ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="8891727572606052622">প্রক্সি মোড অবৈধ৷</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/>আদেশটি <ph name="SEARCH_TERMS"/>চালনা করুন</translation>
-<translation id="8988760548304185580">আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC এবং মেয়াদ শেষের তারিখ লিখুন</translation>
 <translation id="9020542370529661692">এই পৃষ্ঠাটি <ph name="TARGET_LANGUAGE"/> এ অনুবাদ করা হয়েছে</translation>
-<translation id="9125941078353557812">আপনার কার্ডের পিছনে থাকা ৩ সংখ্যার CVC লিখুন</translation>
 <translation id="9137013805542155359">প্রকৃত রূপ দেখান</translation>
 <translation id="9148507642005240123">&amp;সম্পাদনাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="9154176715500758432">এই পৃষ্ঠাতে থাকুন</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="9207861905230894330">নিবন্ধ যোগ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">ফর্ম সাফ করুন</translation>
-<translation id="988159990683914416">বিকাশকারী বিল্ড</translation>
 </translationbundle>

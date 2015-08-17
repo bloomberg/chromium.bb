@@ -1,6 +1,5 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
-<translation id="108122890477367602">以 Windows 8 模式重新启动 Chromium(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="1144202035120576837"><ph name="SITE"/> 通常使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE"/> 时，此网站返回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE"/>，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN"/>；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -13,7 +12,6 @@
 <translation id="1396446129537741364">Chromium 正尝试显示密码。</translation>
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
 <translation id="1444754455097148408">Chromium开放源代码许可</translation>
-<translation id="1461885241643463646">启用基于 iframe 的 Chromium 登录流程。此项会覆盖 --enable-web-based-signin。</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
 <translation id="1644918877723739397">Chromium 会将此密码存储在您的<ph name="SAVED_PASSWORD_LINK"/>中，并会在您下次需要时自动填充此密码。</translation>
@@ -27,16 +25,13 @@
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
 <translation id="1779356040007214683">为了提高 Chromium 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="1808667845054772817">重新安装Chromium</translation>
-<translation id="1816404578968201294">Chromium 需要具有位置信息访问权限，才能批准此网站的分享请求。</translation>
 <translation id="1869480248812203386">您可以选择自动向Google报告可能出现的安全事件详情，以帮助我们提高Chromium的安全性和易用性。</translation>
 <translation id="1881322772814446296">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME"/> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。您可以选择创建新的个人资料来单独存储您现有的 Chromium 数据。<ph name="LEARN_MORE"/></translation>
 <translation id="1929939181775079593">Chromium 未响应。要立即重新启动吗？</translation>
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
-<translation id="2097986737970966220">以桌面模式打开 Chromium</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
-<translation id="2233513990531887259">以 Chromium 沉浸模式重新启动</translation>
 <translation id="2241627712206172106">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chromium。</translation>
 <translation id="225614027745146050">欢迎</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
@@ -49,12 +44,10 @@
 <translation id="2572494885440352020">Chromium 帮助程序</translation>
 <translation id="2602806952220118310">Chromium - 通知</translation>
 <translation id="2615699638672665509">此计算机很快将停止接收Chromium更新，因为其硬件不再受支持。</translation>
-<translation id="2636877269779209383">Chromium 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="2648074677641340862">安装过程中出现操作系统错误。请重新下载 Chromium。</translation>
 <translation id="2673087257647337101">即将更新到最新版本！重新启动 Chromium 以完成更新。</translation>
 <translation id="2685838254101182273">Chromium 已停止更新，并且不再支持您的操作系统版本。</translation>
 <translation id="2705212601509139398">此网站使用的 Chromium 内嵌框架插件即将不受支持。请卸载该插件，然后下载一款兼容的浏览器。</translation>
-<translation id="2718390899429598676">为了提高安全性，Chromium 将对您的数据进行加密。</translation>
 <translation id="2732467638532545152">您的计算机运行的是旧版Microsoft Windows，无法处理此网站的安全证书。因此，Chromium无法确定该证书是来自<ph name="SITE"/>，还是来自您所在的网络中假冒<ph name="SITE"/>的用户。请将您的计算机更新到更高版本的Windows。</translation>
 <translation id="275588974610408078">Chromium 未提供崩溃报告。</translation>
 <translation id="2770231113462710648">将默认浏览器更改为：</translation>
@@ -85,8 +78,6 @@
 <translation id="352783484088404971">从Chromium中移除…</translation>
 <translation id="3549345495227188780">Chromium 操作系统使用入门</translation>
 <translation id="3582788516608077514">正在更新 Chromium...</translation>
-<translation id="358997566136285270">Chromium 徽标</translation>
-<translation id="3595526210123705352">若以 Windows 8 模式重新启动，将会关闭并重新启动您的 Chromium 应用。</translation>
 <translation id="3656661827369545115">启动计算机时自动启动Chromium</translation>
 <translation id="3736987306260231966">您的计算机未连接到互联网，因此 Chromium 无法显示该网页。</translation>
 <translation id="3738139272394829648">触摸搜索</translation>
@@ -97,9 +88,7 @@
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="3883381313049582448">使用由Chromium生成的密码</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
-<translation id="390894725198123737">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chromium 用户都能够访问或同步处理这些密码。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
-<translation id="4075965373589665797">若以桌面模式重新启动，将会关闭并重新启动您的 Chromium 应用。</translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告<ph name="END_BOLD"/>：Chromium 无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
 <translation id="421369550622382712">在这里，您可以找到适用于 Chromium 的精彩应用、游戏、扩展程序和主题背景。</translation>
@@ -137,7 +126,6 @@
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
 <translation id="5772805321386874569">（需要<ph name="BEGIN_BUTTON"/>重新启动<ph name="END_BUTTON"/> Chromium）</translation>
-<translation id="5796460469508169315">Chromium 即将准备就绪。</translation>
 <translation id="580822234363523061">依次转到 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”，并确保您已将配置设为“无代理”或“直接连接”。</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
 <translation id="5823381412099532241">Chromium无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chromium。</translation>
@@ -160,7 +148,6 @@
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL"/>同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chromium，请前往<ph name="SETTINGS_LINK"/>部分。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6613594504749178791">您所做的更改会在下次重新启动 Chromium 时生效。</translation>
-<translation id="6637001341228460105">Chromium 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="6638567566961868659">在 Chromium 菜单或书签栏中查找您的书签。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6717134281241384636">您的个人资料来自更高版本的 Chromium，因此无法使用。
@@ -171,7 +158,7 @@
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
-<translation id="6900895776413482243">若以 Chromium 沉浸模式重新启动，将会关闭并重新启动您的 Chromium 应用。</translation>
+<translation id="6899795326977034905">在 Mac 上，密码会保存到您的钥匙串 (Keychain) 中，可供其他共用此 OS X 帐户的 Chromium 用户访问或同步。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">模块已加载到 Chromium 中</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
@@ -180,7 +167,6 @@
 <translation id="705851970750939768">更新 Chromium</translation>
 <translation id="7064610482057367130">未找到要更新的Chromium安装实例。</translation>
 <translation id="7066436765290594559">Chromium操作系统无法同步您的数据。请更新您的同步密码。</translation>
-<translation id="7090955637699162649">Chromium 可能会使用<ph name="BEGIN_LINK"/>网络服务<ph name="END_LINK"/>来改善您的浏览体验。不过，您可以随时停用这些服务。</translation>
 <translation id="7138853919861947730">Chromium 可能会使用网络服务改善您的浏览体验。</translation>
 <translation id="7162152143154757523">Chromium 会将您在浏览器中输入的内容发送到 Google 服务器，并让您使用 Google 搜索所用的拼写检查技术，从而为您提供更智能的拼写检查功能。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
@@ -205,7 +191,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="761356813943268536">Chromium 正在使用您的摄像头和麦克风。</translation>
 <translation id="7617377681829253106">Chromium现在更好用了</translation>
 <translation id="7641113255207688324">Chromium 不是您的默认浏览器。</translation>
-<translation id="7723128346970903111">启用此项后，将使用基于 iframe 的 Chromium 登录流程；否则，将使用基于 WebView 的流程。</translation>
 <translation id="7729447699958282447">由于您的网域停用了同步功能，Chromium无法同步您的数据。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
 <translation id="7861509383340276692">前往 Chromium 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”部分，然后取消选中“<ph name="NO_PREFETCH_DESCRIPTION"/>”。如果这无法解决该问题，我们建议您重新选中此选项，以便改善性能。</translation>
@@ -213,7 +198,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7962572577636132072">Chromium会自动更新，因此您使用的始终都是最新版本。</translation>
 <translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME"/>”版…</translation>
-<translation id="8033665941300843262">Chromium 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="805745970029938373">您可以在此处查看来自 Chromium 应用、扩展程序和网站的所有通知。</translation>
 <translation id="811857857463334932">此计算机将不再接收Chromium更新，因为其硬件不再受支持。</translation>
 <translation id="8134284582177628525">如果您与<ph name="PROFILE_NAME"/>共用这台计算机，将您的帐户添加到Chromium，即可在单独的环境中浏览。或者，您也可以取消与其Google帐户的关联。</translation>
@@ -224,7 +208,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
 <translation id="85843667276690461">获取 Chromium 使用帮助</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR"/> The Chromium Authors。保留所有权利。</translation>
-<translation id="8605166112420372522">以桌面模式重新启动 Chromium(&amp;R)</translation>
 <translation id="8610831143142469229">对防火墙或防病毒软件进行设置，以允许 Chromium 访问该网络。</translation>
 <translation id="8621669128220841554">未指定的错误导致安装失败。请重新下载 Chromium。</translation>
 <translation id="8628626585870903697">Chromium 未包含运行打印预览所需的 PDF 查看器。</translation>

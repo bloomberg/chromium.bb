@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">停止</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>（<ph name="ANNOTATION"/>）</translation>
 <translation id="1330145147221172764">启用屏幕键盘</translation>
-<translation id="1343000272198685031">麦克风插孔</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="137180024469554212">停用旋转锁定</translation>
 <translation id="1383876407941801731">搜索</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT"/>后耗尽</translation>
-<translation id="164969095109328410">Chrome设备</translation>
 <translation id="1723752762323179280">退出会话</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
+<translation id="1753067873202720523">您的 Chromebook 在处于打开状态时可能无法充电。</translation>
 <translation id="1812696562331527143">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”*（<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>）。
 按 Shift + Alt 键可切换。</translation>
 <translation id="1882897271359938046">正在镜像到<ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">自动点击</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">正在将$1投射至$2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">帐户</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
 <translation id="2204305834655267233">网络信息</translation>
 <translation id="2208323208084708176">统一桌面模式</translation>
+<translation id="2248649616066688669">Chromebook连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
 <translation id="225680501294068881">正在查找设备...</translation>
 <translation id="2268130516524549846">蓝牙已停用</translation>
 <translation id="2268813581635650749">全部退出</translation>
@@ -44,6 +43,7 @@
 <translation id="252373100621549798">未知展示广告</translation>
 <translation id="2532589005999780174">高反差模式</translation>
 <translation id="2562916301614567480">专用网</translation>
+<translation id="2614835198358683673">您的 Chromebook 在开启期间可能无法充电。建议您使用产品原装的充电器。</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在连接...</translation>
 <translation id="2700058918926273959">会话将在<ph name="SESSION_TIME_REMAINING"/>后结束，到时您将自动退出。</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
@@ -73,6 +73,7 @@
 <translation id="3294437725009624529">访客</translation>
 <translation id="3433830597744061105">管理帐户</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
+<translation id="3527846106059622359">新版登录界面处于启用状态</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE"/>”（需要重启）</translation>
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
@@ -102,6 +103,7 @@
 <translation id="4250680216510889253">否</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">正在投射桌面</translation>
 <translation id="4379753398862151997">嗨！显示器，咱们合不来。（系统不支持该显示器）</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME"/>共享您屏幕的控制权限。</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -112,29 +114,25 @@
 <translation id="4895488851634969361">电池电量已满。</translation>
 <translation id="4918086044614829423">接受</translation>
 <translation id="4957722034734105353">了解详情...</translation>
-<translation id="4961318399572185831">投射屏幕</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google 云端硬盘设置...</translation>
 <translation id="5102001756192215136">可用时长：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>，<ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">有可用的投射设备</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="5238774010593222950">无法登录其他帐户。</translation>
 <translation id="544691375626129091">所有可参加的用户均已添加到此会话中。</translation>
 <translation id="5507786745520522457">设置移动数据网络</translation>
+<translation id="5537725057119320332">投射</translation>
 <translation id="5543001071567407895">短信</translation>
 <translation id="5548285847212963613">扩展程序“<ph name="EXTENSION_NAME"/>”可帮助连接到此网络。</translation>
 <translation id="5565793151875479467">代理...</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
-<translation id="5759815399269068793"><ph name="DEVICE_TYPE"/> 连接到外接显示器时，即使合上盖子，也可继续使用。</translation>
 <translation id="5777841717266010279">要停止屏幕共享吗？</translation>
+<translation id="5807965672380739016">将桌面投射至</translation>
 <translation id="5825747213122829519">您的输入法已更改为“<ph name="INPUT_METHOD_ID"/>”。
 按 Shift + Alt 键可进行切换。</translation>
 <translation id="5871632337994001636">管理设备…</translation>
 <translation id="5895138241574237353">重新启动</translation>
-<translation id="5927132638760172455">正在投射至未知接收器</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">还原</translation>
 <translation id="595202126637698455">已启用性能跟踪</translation>
 <translation id="5958529069007801266">受监管用户</translation>
@@ -166,7 +164,6 @@
 <translation id="68610848741840742">ChromeVox（语音反馈）</translation>
 <translation id="6895424601869865703">为<ph name="GIVEN_NAME"/>添加一个帐户</translation>
 <translation id="6911468394164995108">连接其他网络...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="7029814467594812963">退出会话</translation>
@@ -174,7 +171,7 @@
 <translation id="7052914147756339792">设置壁纸...</translation>
 <translation id="7097613348211027502">已启用ChromeVox（语音反馈）。
 如要停用，请按Ctrl+Alt+Z。</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">正在投射“$1”</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>秒后恢复到原分辨率</translation>
 <translation id="7209101170223508707">Caps Lock 已开启。
 按 Alt + 搜索键或 Shift 可取消。</translation>
@@ -191,7 +188,6 @@
 <translation id="785750925697875037">查看移动帐户</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
 <translation id="7904094684485781019">此帐户的管理员已停用多帐户登录。</translation>
-<translation id="7957227661277029961">您的 <ph name="DEVICE_TYPE"/> 在开启时可能无法充电。建议您使用原装充电器。</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8103386449138765447">短信数：<ph name="MESSAGE_COUNT"/> 条</translation>
@@ -200,13 +196,12 @@
 <translation id="8308637677604853869">上一菜单</translation>
 <translation id="8356164830168736643">关闭“<ph name="WINDOW_TITLE"/>”</translation>
 <translation id="8428213095426709021">设置</translation>
-<translation id="8443356412772935865">正在将屏幕投射至$1</translation>
 <translation id="8456362689280298700">电池充满还需 <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE"/> 在开启时可能无法充电。</translation>
 <translation id="8528322925433439945">移动...</translation>
 <translation id="8654520615680304441">启用 Wi-Fi...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
+<translation id="8697119993436624257">新版登录界面处于停用状态</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">点击即可查看</translation>
 <translation id="8828714802988429505">90°</translation>

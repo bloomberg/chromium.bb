@@ -15,6 +15,7 @@
 <translation id="2270627217422354837">razmjenjivati podatke s bilo kojim uređajem na domenama: <ph name="DOMAINS"/></translation>
 <translation id="2350172092385603347">Lokalizacija je korištena, ali default_locale nije naveden u manifestu.</translation>
 <translation id="2616366145935564096">pročitati i promijeniti vaše podatke na <ph name="WEBSITE_1"/></translation>
+<translation id="2677911863018634147">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup nekom od vaših uređaja.</translation>
 <translation id="2753617847762399167">Neispravna putanja (apsolutna ili relativna u odnosu na &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
 <translation id="27822970480436970">Ovo proširenje nije uspjelo izmijeniti mrežni zahtjev jer je izmjena u sukobu s drugim proširenjem.</translation>
 <translation id="2857834222104759979">Datoteka manifesta nije važeća.</translation>
@@ -26,7 +27,6 @@
 <translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (serijski broj <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">čitati vaše podatke s raznih web-lokacija</translation>
 <translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> dobavljača <ph name="VENDOR_ID"/> (serijski broj <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="3560114062880914682">{1,select, single{Odabir USB uređaja}multiple{Odabir USB uređaja}other{NE UPOTREBLJAVA SE}}</translation>
 <translation id="3624204664103857160">Nije uspjelo učitavanje stranice pokretača &quot;<ph name="PAGE"/>&quot;.</translation>
 <translation id="3759933321830434300">blokirati dijelove web-stranica</translation>
 <translation id="388442998277590542">Nije uspjelo učitavanje stranice opcija &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
@@ -37,15 +37,17 @@
 <translation id="452039078290142656">nepoznati uređaji dobavljača <ph name="VENDOR_NAME"/></translation>
 <translation id="4542520061254486227">čitati vaše podatke s web-lokacija <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
 <translation id="4761104368405085019">upotrijebiti vaš mikrofon</translation>
+<translation id="4776856853352853275">Odaberite USB uređaje</translation>
 <translation id="4811956658694082538">Nije bilo moguće instalirati paket jer se uslužni proces srušio. Ponovo pokrenite Chrome i pokušajte opet.</translation>
 <translation id="4883436287898674711">Sve web-lokacije <ph name="WEBSITE_1"/></translation>
 <translation id="5026754133087629784">Prikaz web-lokacije: <ph name="WEBVIEW_TAG_NAME"/></translation>
 <translation id="5127881134400491887">upravljati mrežnim vezama</translation>
-<translation id="5165983846722506205">{1,select, single{Odabir HID uređaja}multiple{Odabir HID uređaja}other{NE UPOTREBLJAVA SE}}</translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
 <translation id="5456409301717116725">To proširenje uključuje ključnu datoteku &quot;<ph name="KEY_PATH"/>&quot;. Vjerojatno ne želite to učiniti.</translation>
+<translation id="545850661681880228">Odabir HID uređaja</translation>
 <translation id="5627523580512561598">proširenje <ph name="EXTENSION_NAME"/></translation>
 <translation id="5678955352098267522">čitati vaše podatke s web-lokacije <ph name="WEBSITE_1"/></translation>
+<translation id="5751530153776468604">Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup jednom od vaših uređaja.</translation>
 <translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
 <translation id="5971037678316050792">upravljati stanjem i uparivanjem Bluetootha</translation>
@@ -54,7 +56,6 @@
 <translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> dobavljača <ph name="VENDOR_ID"/></translation>
 <translation id="6075907793831890935">razmjenjivati podatke s uređajem naziva <ph name="HOSTNAME"/></translation>
 <translation id="6143635259298204954">Ne mogu otpakirati proširenje. Kako biste sigurno otpakirali proširenje, mora postojati putanja do direktorija vašeg profila koja ne sadrži simboličku vezu. Za vaš profil ne postoji takva putanja.</translation>
-<translation id="616804573177634438">{0,select, single{Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup nekom od vaših uređaja.}multiple{Aplikacija &quot;<ph name="APP_NAME"/>&quot; zahtijeva pristup nekom od vaših uređaja}other{NE UPOTREBLJAVA SE}}</translation>
 <translation id="6241530762627360640">pristupiti informacijama o Bluetooth uređajima uparenim s vašim sustavom i otkrivati Bluetooth uređaje u blizini</translation>
 <translation id="6344170822609224263">pristupiti popisu mrežnih veza</translation>
 <translation id="6384275966486438344">promijeniti postavke pretraživanja u: <ph name="SEARCH_HOST"/></translation>
@@ -75,6 +76,7 @@
 <translation id="7257666756905341374">čitati podatke koje kopirate i lijepite</translation>
 <translation id="730515362922783851">razmjenjivati podatke s bilo kojim uređajem na lokalnoj mreži ili internetu</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID proširenja &quot;<ph name="EXTENSION_ID"/>&quot;) blokirao je administrator.</translation>
+<translation id="781637217073033149">Odabir HID uređaja</translation>
 <translation id="7893008570150657497">pristupiti fotografijama, glazbi i drugim medijima s vašeg računala</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
 <translation id="8047248493720652249">To proširenje nije uspjelo dodijeliti naziv preuzimanju &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; jer je drugo proširenje (<ph name="EXTENSION_NAME"/>) odredilo drugačiji naziv datoteke &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
@@ -84,6 +86,7 @@
 <translation id="8602184400052594090">Datoteka manifesta nedostaje ili nije čitljiva.</translation>
 <translation id="8620765578342452535">Konfiguracija mrežnih veza</translation>
 <translation id="8636666366616799973">Paket je nevažeći. Pojedinosti &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="8658591203505835552">Odaberite USB uređaj</translation>
 <translation id="8662911384982557515">promijeniti vašu početnu stranicu u: <ph name="HOME_PAGE"/></translation>
 <translation id="8670869118777164560">Ovo proširenje nije uspjelo preusmjeriti mrežni zahtjev na odredište <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> jer ga je drugo proširenje (<ph name="EXTENSION_NAME"/>) preusmjerilo na odredište <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="8712265948125780616">Otpakiravanje proširenja</translation>

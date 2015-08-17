@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
 <translation id="1426410128494586442">بله</translation>
-<translation id="1455235771979731432">هنگام تأیید کارت‌تان مشکلی رخ داد. اتصال اینترنت را بررسی کرده و دوباره امتحان کنید.</translation>
 <translation id="1491151370853475546">تازه‌سازی این صفحه</translation>
-<translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
 <translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1644184664548287040">پیکربندی شبکه نامعتبر است و نتوانست وارد شود.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;واگرد حذف</translation>
 <translation id="2455981314101692989">این صفحهٔ وب، تکمیل خودکار این فرم را غیر فعال کرده است.</translation>
 <translation id="2479410451996844060">‏URL جستجو نامعتبر است.</translation>
-<translation id="2495083838625180221">‏تجزیه‌کننده JSON</translation>
 <translation id="2498091847651709837">اسکن کارت جدید</translation>
 <translation id="2556876185419854533">&amp;واگرد ویرایش</translation>
 <translation id="2581221116934462656">مایلید دفعه بعد <ph name="PRODUCT_NAME"/> پیشنهاد دهد صفحه‌های <ph name="LANGUAGE_NAME"/> از این سایت ترجمه شوند؟</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">می‌توانید ادامه دهید. اگر رفتن به صفحه را ادامه دهید، این هشدار به مدت پنج دقیقه دوباره ظاهر نمی‌شود.</translation>
 <translation id="277499241957683684">ثبت دستگاه موجود نیست</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
-<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> را تأیید کنید</translation>
 <translation id="2958431318199492670">‏پیکربندی شبکه با استاندارد ONC تطابق ندارد. بخشی از پیکربندی ممکن است وارد نشود.</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
 <translation id="3010559122411665027">ورودی لیست &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">خطای موقت سرور</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
 <translation id="3174168572213147020">جزیره</translation>
-<translation id="3219579145727097045">‏تاریخ انقضا و کد تأیید چهار رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="3228969707346345236">ترجمه انجام نشد زیرا صفحه در حال حاضر به زبان <ph name="LANGUAGE"/> است.</translation>
 <translation id="3270847123878663523">&amp;واگرد ترتیب‌بندی مجدد</translation>
 <translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
-<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> را به‌روزرسانی و تأیید کنید</translation>
 <translation id="337363190475750230">لغو مجوز شد</translation>
 <translation id="3377188786107721145">خطای تجزیه خط‌مشی</translation>
 <translation id="3380365263193509176">خطای ناشناخته</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
 <translation id="3623476034248543066">نشان دادن مقدار</translation>
 <translation id="3650584904733503804">ارزیابی موفق بود</translation>
+<translation id="3667681724235208644">مشاهده مورد اصلی</translation>
 <translation id="370665806235115550">در حال بارگیری...</translation>
 <translation id="3712624925041724820">مجوزها دیگر معتبر نیستند</translation>
 <translation id="3739623965217189342">پیوندی که کپی کرده‌اید</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
 <translation id="3885155851504623709">بخش</translation>
 <translation id="3934680773876859118">‏بارگیری سند PDF انجام نشد</translation>
-<translation id="3963721102035795474">حالت «خواننده»</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="4058922952496707368">کلید &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">مقدار مورد انتظار <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
 <translation id="4506176782989081258">خطای ارزیابی: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">‏آدرس از Chrome پاک شود؟</translation>
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
 <translation id="4607653538520819196">این صفحه نمی‌تواند با «صرفه‌جویی در مصرف داده» پشتیبانی شود.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
-<translation id="4800132727771399293">‏تاریخ انقضا و CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE"/> ترجمه شده است.</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">کاربر کنونی</translation>
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5872918882028971132">پیشنهادات والدین</translation>
-<translation id="587701087903783706">بستن نمای مناسب دستگاه همراه</translation>
 <translation id="59107663811261420">‏Google Payments این نوع کارت را برای این تاجر پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">می‌خواهید به <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> دسترسی پیدا کنید. این صفحه نمی‌تواند در این زمان با «صرفه‌جویی در مصرف داده» پشتیبانی شود.</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE"/></translation>
 <translation id="6644283850729428850">این قانون قدیمی شده است.</translation>
-<translation id="6646897916597483132">‏کد تأیید چهار رقمی CVC را از روی کارت‌تان وارد کنید</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6839929833149231406">منطقه حکومتی</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">اجباری</translation>
 <translation id="7542995811387359312">تکمیل خودکار کارت اعتباری غیر فعال است زیرا این فرم از یک اتصال امن استفاده نمی‌کند.</translation>
 <translation id="7568593326407688803">این صفحه به <ph name="ORIGINAL_LANGUAGE"/> است، آیا مایلید ترجمه شود؟</translation>
-<translation id="7569952961197462199">‏کارت اعتباری از Chrome پاک شود؟</translation>
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE"/> ترجمه نشود</translation>
 <translation id="7610193165460212391">مقدار خارج از محدوده <ph name="VALUE"/> است.</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
 <translation id="777702478322588152">حوزه اداری</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7805768142964895445">وضعیت</translation>
-<translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
-<translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
 <translation id="8804164990146287819">خط‌مشی رازداری</translation>
-<translation id="8824019021993735287">‏Chrome در حال حاضر نمی‌تواند کارت‌تان را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="8834246243508017242">فعال‌سازی تکمیل خودکار با استفاده از مخاطبین…</translation>
 <translation id="883848425547221593">نشانک‌های دیگر</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="8940229512486821554">اجرای فرمان <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">‏تاریخ انقضا و کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE"/> ترجمه شده است</translation>
-<translation id="9125941078353557812">‏کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9148507642005240123">&amp;واگرد ویرایش</translation>
 <translation id="9154176715500758432">ماندن در این صفحه</translation>
 <translation id="9170848237812810038">&amp;واگرد</translation>
 <translation id="9207861905230894330">افزودن مقاله ناموفق بود.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">پاک کردن فرم</translation>
-<translation id="988159990683914416">ساخت برنامه‌نویس</translation>
 </translationbundle>

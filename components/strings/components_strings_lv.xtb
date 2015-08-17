@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Reģistrācijas domēns:</translation>
 <translation id="1344588688991793829">Chromium automātiskās aizpildes iestatījumi...</translation>
 <translation id="1426410128494586442">Jā</translation>
-<translation id="1455235771979731432">Verificējot jūsu karti, radās problēma. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
-<translation id="1549470594296187301">Lai izmantotu šo funkciju, ir jābūt iespējotai valodai JavaScript.</translation>
 <translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="1640180200866533862">Lietotāja politikas</translation>
 <translation id="1644184664548287040">Tīkla konfigurācija nav derīga, un to nevarēja importēt.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Atsaukt dzēšanu</translation>
 <translation id="2455981314101692989">Šajā tīmekļa lapā ir atspējota šīs veidlapas automātiskā aizpilde.</translation>
 <translation id="2479410451996844060">Nederīgs meklēšanas URL.</translation>
-<translation id="2495083838625180221">JSON parsētājs</translation>
 <translation id="2498091847651709837">Skenēt jaunu karti</translation>
 <translation id="2556876185419854533">&amp;Labojuma atsaukšana</translation>
 <translation id="2581221116934462656">Vai vēlaties, lai <ph name="PRODUCT_NAME"/> nākamreiz piedāvātu tulkot šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME"/>?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Jūs varat turpināt. Ja turpināsiet lietot lapu, šis brīdinājums netiks rādīts vēlreiz piecas minūtes.</translation>
 <translation id="277499241957683684">Trūkst ierīces ieraksta.</translation>
 <translation id="2835170189407361413">Notīrīt veidlapu</translation>
-<translation id="2855922900409897335">Verificējiet kredītkarti <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">Tīkla konfigurācija neatbilst standartam ONC. Iespējams, konfigurācijas daļas netiks importētas.</translation>
 <translation id="2972581237482394796">&amp;Pāratsaukt</translation>
 <translation id="3010559122411665027">Saraksta ieraksts “<ph name="ENTRY_INDEX"/>”: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Īslaicīga servera kļūda</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Sala</translation>
-<translation id="3219579145727097045">Ievadiet derīguma termiņu un 4 ciparu CVC kodu, kas ir norādīts jūsu kredītkartes priekšpusē.</translation>
 <translation id="3228969707346345236">Tulkošana neizdevās, jo lapa jau ir <ph name="LANGUAGE"/> valodā.</translation>
 <translation id="3270847123878663523">&amp;Pārkārtošanas atsaukšana</translation>
 <translation id="333371639341676808">Neļaujiet šai lapai veidot papildu dialogus.</translation>
-<translation id="3369366829301677151">Atjauniniet un verificējiet kredītkartes <ph name="CREDIT_CARD"/> informāciju</translation>
 <translation id="337363190475750230">Tika noņemta piekļuve</translation>
 <translation id="3377188786107721145">Radās politikas parsēšanas kļūda.</translation>
 <translation id="3380365263193509176">Nezināma kļūda</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Pārvietošanas atsaukuma atcelšana</translation>
 <translation id="3623476034248543066">Rādīt vērtību</translation>
 <translation id="3650584904733503804">Validācija bija veiksmīga.</translation>
+<translation id="3667681724235208644">Skatīt sākotnējo</translation>
 <translation id="370665806235115550">Notiek ielāde...</translation>
 <translation id="3712624925041724820">Nav pietiekami daudz licenču.</translation>
 <translation id="3739623965217189342">Jūsu kopētā saite</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
 <translation id="3885155851504623709">Pagasts</translation>
 <translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
-<translation id="3963721102035795474">Lasītāja režīms</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
 <translation id="4058922952496707368">Atslēga <ph name="SUBKEY"/>: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Starpniekserveris ir iestatīts, lai tas lietotu .pac skripta URL, nevis fiksētus starpniekserverus.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Tika gaidīta vērtība <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">Starpniekservera lietošana ir atspējota, bet ir norādīta atklāta starpniekservera konfigurācija.</translation>
 <translation id="4506176782989081258">Validācijas kļūda: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Vai noņemt adresi no pārlūka Chrome?</translation>
 <translation id="4594403342090139922">&amp;Dzēšanas atsaukšana</translation>
 <translation id="4607653538520819196">Datu lietojuma samazinātājs nevar apstrādāt šo lapu, izmantojot starpniekserveri.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Atkārtoti ielādēt politikas</translation>
-<translation id="4800132727771399293">Pārbaudiet derīguma termiņu un CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="4813512666221746211">Tīkla kļūda</translation>
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE"/></translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
 <translation id="5813119285467412249">&amp;Pievienošanas atsaukuma atcelšana</translation>
 <translation id="5872918882028971132">Vecāku ieteikumi</translation>
-<translation id="587701087903783706">Aizvērt mobilajām ierīcēm piemēroto skatījumu</translation>
 <translation id="59107663811261420">Šis kartes veids šim tirgotājam pakalpojumā Google Payments netiek atbalstīts. Lūdzu, atlasiet citu karti.</translation>
 <translation id="5989320800837274978">Nav norādīti nedz fiksēti starpniekserveri, nedz .pac skripta URL.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Jūs mēģināt atvērt vietni <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Pašlaik datu lietojuma samazinātājs nevar apstrādāt šo lapu, izmantojot starpniekserveri.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> meklēšana</translation>
 <translation id="6644283850729428850">Šī politika ir izbeigta.</translation>
-<translation id="6646897916597483132">Ievadiet 4 ciparu CVC kodu, kas norādīts jūsu kredītkartes priekšpusē.</translation>
 <translation id="6753269504797312559">Politikas vērtība</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="6839929833149231406">Apgabals</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Obligāti</translation>
 <translation id="7542995811387359312">Automātiska kredītkartes numura ievadīšana ir atspējota, jo šai veidlapai netiek izmantots drošs savienojums.</translation>
 <translation id="7568593326407688803">Šī lapa ir rakstīta<ph name="ORIGINAL_LANGUAGE"/>valodā. Vai vēlaties to tulkot?</translation>
-<translation id="7569952961197462199">Vai noņemt kredītkarti no pārlūka Chrome?</translation>
 <translation id="7600965453749440009">Nekad netulkot saturu, kas rakstīts <ph name="LANGUAGE"/> valodā</translation>
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="777702478322588152">Prefektūra</translation>
 <translation id="7791543448312431591">Pievienot</translation>
 <translation id="7805768142964895445">Statuss</translation>
-<translation id="7813600968533626083">Vai noņemt veidlapas ieteikumu no pārlūka Chrome?</translation>
-<translation id="7887683347370398519">Pārbaudiet CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Mobilās grāmatzīmes</translation>
 <translation id="7961015016161918242">Nekad</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Mēģināt vēlreiz</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
 <translation id="8804164990146287819">Konfidencialitātes politika</translation>
-<translation id="8824019021993735287">Pārlūks Chrome pašlaik nevarēja verificēt jūsu karti. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="8834246243508017242">Iespējot automātisko aizpildi, izmantojot kontaktpersonas...</translation>
 <translation id="883848425547221593">Citas grāmatzīmes</translation>
 <translation id="8866481888320382733">Parsējot politikas iestatījumus, radās kļūda.</translation>
 <translation id="8876793034577346603">Neizdevās parsēt tīkla konfigurāciju.</translation>
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
 <translation id="8940229512486821554">Izpildīt <ph name="EXTENSION_NAME"/> komandu: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Ievadiet derīguma termiņu un 3 ciparu CVC kodu, kas ir norādīts jūsu kredītkartes aizmugurē.</translation>
 <translation id="9020542370529661692">Šī lapa ir tulkota <ph name="TARGET_LANGUAGE"/> valodā.</translation>
-<translation id="9125941078353557812">Ievadiet 3 ciparu CVC kodu, kas norādīts jūsu kredītkartes aizmugurē.</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9148507642005240123">&amp;Atsaukt labojumu</translation>
 <translation id="9154176715500758432">Palikt šajā lapā</translation>
 <translation id="9170848237812810038">&amp;Atsaukt</translation>
 <translation id="9207861905230894330">Rakstu neizdevās pievienot.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">NOTĪRĪT VEIDLAPU</translation>
-<translation id="988159990683914416">Attīstītāja konstrukcija</translation>
 </translationbundle>

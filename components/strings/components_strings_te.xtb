@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">నమోదిత డొమైన్:</translation>
 <translation id="1344588688991793829">Chromium స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
 <translation id="1426410128494586442">అవును</translation>
-<translation id="1455235771979731432">మీ కార్డ్‌ను ధృవీకరించడంలో సమస్య ఏర్పడింది. మీ ఇంటర్నెట్ కనెక్షన్ తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="1491151370853475546">ఈ పేజీని మళ్లీ లోడ్ చేయి</translation>
-<translation id="1549470594296187301">ఈ లక్షణాన్ని ఉపయోగించడానికి జావాస్క్రిప్ట్ తప్పనిసరిగా ప్రారంభించాలి.</translation>
 <translation id="1639239467298939599">లోడ్ అవుతోంది</translation>
 <translation id="1640180200866533862">వినియోగదారు విధానాలు</translation>
 <translation id="1644184664548287040">నెట్‌వర్క్ కాన్ఫిగరేషన్ చెల్లదు మరియు దిగుమతి చేయడం సాధ్యం కాదు.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
 <translation id="2455981314101692989">ఈ వెబ్‌పేజీ ఈ ఫారమ్‌ కోసం స్వయంచాలకంగా పూర్తి చెయ్యడాన్ని ఆపివేసింది.</translation>
 <translation id="2479410451996844060">చెల్లని శోధన URL.</translation>
-<translation id="2495083838625180221">JSON పార్సర్</translation>
 <translation id="2498091847651709837">కొత్త కార్డ్‌ను స్కాన్ చేయండి</translation>
 <translation id="2556876185419854533">&amp;సవరించడాన్ని రద్దు చేయి</translation>
 <translation id="2581221116934462656">మీరు ఈ సైట్‌కు తదుపరిసారి వచ్చినప్పుడు <ph name="LANGUAGE_NAME"/>లో ఉన్న పేజీలకు <ph name="PRODUCT_NAME"/> అనువాదం ఆఫర్ చేయాలని కోరుకుంటున్నారా?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">మీరు కొనసాగించవచ్చు. మీరు పేజీకి కొనసాగిస్తే, ఈ హెచ్చరిక ఐదు నిమిషాల పాటు మళ్లీ కనిపించదు.</translation>
 <translation id="277499241957683684">పరికరం రికార్డ్ లేదు</translation>
 <translation id="2835170189407361413">ఫారమ్‌ను తుడిచివేయి</translation>
-<translation id="2855922900409897335">మీ <ph name="CREDIT_CARD"/>ని ధృవీకరించండి</translation>
 <translation id="2958431318199492670">నెట్‌వర్క్ కాన్ఫిగరేషన్ ONC ప్రమాణానికి అనుకూలంగా లేదు. కాన్ఫిగరేషన్‌లోని భాగాలు దిగుమతి కాకపోయి ఉండకపోవచ్చు.</translation>
 <translation id="2972581237482394796">&amp;పునరావృతం</translation>
 <translation id="3010559122411665027">జాబితా నమోదు &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">తాత్కాలిక సర్వర్ లోపం</translation>
 <translation id="3169472444629675720">కనుగొను</translation>
 <translation id="3174168572213147020">దీవి</translation>
-<translation id="3219579145727097045">మీ కార్డ్ గడువు ముగింపు తేదీ మరియు దాని వెనుకవైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="3228969707346345236">పేజీ ఇప్పటికే <ph name="LANGUAGE"/>లో ఉన్నందున అనువాదం విఫలమైంది.</translation>
 <translation id="3270847123878663523">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
 <translation id="333371639341676808">అదనపు డైలాగ్‌లను సృష్టించకుండా ఈ పేజీని అడ్డుకో</translation>
-<translation id="3369366829301677151">మీ <ph name="CREDIT_CARD"/>ని నవీకరించి, ధృవీకరించండి</translation>
 <translation id="337363190475750230">కేటాయింపు తీసివేయబడింది</translation>
 <translation id="3377188786107721145">విధాన అన్వయ లోపం</translation>
 <translation id="3380365263193509176">తెలియని లోపం</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;తరలించడాన్ని పునరావృతం చేయి</translation>
 <translation id="3623476034248543066">విలువను చూపండి</translation>
 <translation id="3650584904733503804">ప్రామాణీకరణ విజయవంతం అయింది</translation>
+<translation id="3667681724235208644">అసలైనదాన్ని వీక్షించండి</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
 <translation id="3712624925041724820">లైసెన్స్‌లు అయిపోయాయి</translation>
 <translation id="3739623965217189342">మీరు కాపీ చేసిన లింక్</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">వైరుధ్యమైన పరికరం ఐడెంటిఫైయర్</translation>
 <translation id="3885155851504623709">పారిష్</translation>
 <translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
-<translation id="3963721102035795474">పాఠకుని మోడ్</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="4058922952496707368">కీ &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">ప్రాక్సీ కాన్ఫిగరేషన్ స్థిరమైన ప్రాక్సీ సర్వర్‌లను కాకుండా, ఒక .pac స్క్రిప్ట్ URLను ఉపయోగించడానికి సెట్ చేయబడింది.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">ఆశిస్తున్న <ph name="VALUE_TYPE"/> విలువ.</translation>
 <translation id="443673843213245140">ప్రాక్సీని ఉపయోగించడం ఆపివేయబడింది కానీ స్పష్టమైన ప్రాక్సీ కాన్ఫిగరేషన్ పేర్కొనబడింది.</translation>
 <translation id="4506176782989081258">ధృవీకరణ లోపం: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Chrome నుండి చిరునామాను తీసివేయాలా?</translation>
 <translation id="4594403342090139922">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
 <translation id="4607653538520819196">ఈ పేజీ డేటా సేవర్ ద్వారా ప్రాక్సీ చేయబడదు.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">విధానాలను మళ్లీ లోడ్ చేయి</translation>
-<translation id="4800132727771399293">మీ గడువు ముగింపు తేదీ మరియు CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
 <translation id="4813512666221746211">నెట్‌వర్క్ లోపం</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE"/>కు అనువదించబడింది</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
 <translation id="5813119285467412249">&amp;జోడించడాన్ని పునరావృతం చేయి</translation>
 <translation id="5872918882028971132">తల్లి/తండ్రి సూచనలు</translation>
-<translation id="587701087903783706">మొబైల్-అనుకూలం వీక్షణను మూసివేయి</translation>
 <translation id="59107663811261420">ఈ వ్యాపారి కోసం Google Payments ఈ రకమైన కార్డ్‌కి మద్దతివ్వదు. దయచేసి వేరొక కార్డ్‌ను ఎంచుకోండి.</translation>
 <translation id="5989320800837274978">స్థిర ప్రాక్సీ సర్వర్‌లు లేదా ఒక .pac స్క్రిప్ట్ URL పేర్కొనబడలేదు.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">మీరు <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>ని సందర్శించడానికి ప్రయత్నిస్తున్నారు. ప్రస్తుతం ఈ పేజీ డేటా సేవర్ ద్వారా ప్రాక్సీ చేయబడదు.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> శోధన</translation>
 <translation id="6644283850729428850">ఈ విధానం విలువ తగ్గించబడింది.</translation>
-<translation id="6646897916597483132">మీ కార్డ్ ముందువైపు ఉండే 4 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="6753269504797312559">విధానం విలువ</translation>
 <translation id="6831043979455480757">అనువదించు</translation>
 <translation id="6839929833149231406">ప్రాంతం</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">తప్పనిసరి</translation>
 <translation id="7542995811387359312">ఈ ఫారమ్ సురక్షిత కనెక్షన్‌ని ఉపయోగించనందున స్వయంచాలకంగా క్రెడిట్ కార్డ్ పూర్తి చెయ్యడం ఆపివేయబడింది.</translation>
 <translation id="7568593326407688803">ఈ పేజీ<ph name="ORIGINAL_LANGUAGE"/>లో ఉంది మీరు దీన్ని అనువదించాలనుకుంటున్నారా?</translation>
-<translation id="7569952961197462199">Chrome నుండి క్రెడిట్ కార్డ్‌ను తీసివేయాలా?</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE"/>ను ఎప్పటికీ అనువదించవద్దు</translation>
 <translation id="7610193165460212391">విలువ <ph name="VALUE"/> పరిధి వెలుపల ఉంది.</translation>
 <translation id="7752995774971033316">నిర్వహించడం లేదు</translation>
 <translation id="777702478322588152">అధికారిక నివాసం</translation>
 <translation id="7791543448312431591">జోడించు</translation>
 <translation id="7805768142964895445">స్థితి</translation>
-<translation id="7813600968533626083">Chrome నుండి ఫారమ్ సూచనను తీసివేయాలా?</translation>
-<translation id="7887683347370398519">మీ CVCని తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి</translation>
 <translation id="7935318582918952113">DOM డిస్టిల్లర్</translation>
 <translation id="7956713633345437162">మొబైల్ బుక్‌మార్క్‌లు</translation>
 <translation id="7961015016161918242">ఎప్పుడూ లేదు</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>
-<translation id="8824019021993735287">Chrome ప్రస్తుతం మీ కార్డ్‌ను ధృవీకరించలేకపోయింది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="8834246243508017242">పరిచయాలను ఉపయోగించి స్వీయపూర్తిని ప్రారంభించండి…</translation>
 <translation id="883848425547221593">ఇతర బుక్‌మార్క్‌లు:</translation>
 <translation id="8866481888320382733">విధాన సెట్టింగ్‌లను అన్వయించడంలో లోపం</translation>
 <translation id="8876793034577346603">నెట్‌వర్క్ కాన్ఫిగరేషన్ అన్వయించబడటంలో విఫలమైంది.</translation>
 <translation id="8891727572606052622">చెల్లని ప్రాక్సీ మోడ్.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> ఆదేశాన్ని అమలు చెయ్యి: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">మీ కార్డ్ గడువు ముగింపు తేదీ మరియు దాని వెనుకవైపు ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="9020542370529661692">ఈ పేజీ <ph name="TARGET_LANGUAGE"/>కి అనువదించబడింది</translation>
-<translation id="9125941078353557812">మీ కార్డ్ వెనుకవైపు ఉండే 3 అంకెల CVCని నమోదు చేయండి</translation>
 <translation id="9137013805542155359">అసలును చూపించు</translation>
 <translation id="9148507642005240123">&amp;సవరించడాన్ని రద్దు చేయి</translation>
 <translation id="9154176715500758432">ఈ పేజీపై ఉండు</translation>
 <translation id="9170848237812810038">&amp;అన్డు</translation>
 <translation id="9207861905230894330">కథనాన్ని జోడించడంలో విఫలమైంది.</translation>
 <translation id="933712198907837967">డైనర్స్ క్లబ్</translation>
-<translation id="935608979562296692">ఫారమ్‌ను తీసివేయండి</translation>
-<translation id="988159990683914416">డెవలపర్ బిల్డ్</translation>
 </translationbundle>

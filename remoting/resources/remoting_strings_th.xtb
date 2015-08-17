@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
 <translation id="1002108253973310084">ระบบตรวจพบเวอร์ชันของโปรโตคอลที่เข้ากันไม่ได้ โปรดตรวจสอบว่าคุณมีซอฟต์แวร์เวอร์ชันล่าสุดติดตั้งอยู่บนคอมพิวเตอร์ทั้ง 2 เครื่องแล้ว และลองอีกครั้ง</translation>
+<translation id="1023096696228309145">ขอให้ผู้ใช้ที่คุณต้องการเข้าถึงคอมพิวเตอร์ของเขาคลิกที่ &quot;แชร์เดี๋ยวนี้&quot; และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="1050693411695664090">แย่</translation>
 <translation id="1152528166145813711">เลือก…</translation>
 <translation id="1199593201721843963">ปิดใช้งานการเชื่อมต่อระยะไกล</translation>
+<translation id="1261403020716313927">• แก้ไขการรั่วไหลอย่างมากของหน่วยความจำเมื่อยกเลิกการเชื่อมต่อจากเดสก์ท็อปเครื่องอื่น</translation>
 <translation id="1291443878853470558">คุณต้องเปิดใช้งานการเชื่อมต่อระยะไกลหากคุณต้องการใช้ Chromoting ในการเข้าถึงคอมพิวเตอร์เครื่องนี้</translation>
 <translation id="1300633907480909701">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์ Android ได้อย่างปลอดภัย
 
@@ -15,7 +17,6 @@
 <translation id="1324095856329524885">(คุณลักษณะนี้ยังไม่มีให้ใช้งานในคอมพิวเตอร์ของคุณ)</translation>
 <translation id="1342297293546459414">ดูและควบคุมคอมพิวเตอร์ที่ใช้งานร่วมกัน</translation>
 <translation id="1450760146488584666">ออบเจ็กต์ที่ขอไม่มีอยู่</translation>
-<translation id="1480046233931937785">เครดิต</translation>
 <translation id="1520828917794284345">ปรับขนาดเดสก์ท็อปให้พอดี</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="1546934824884762070">เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดรายงานปัญหานี้ให้นักพัฒนาซอฟต์แวร์ทราบ</translation>
@@ -52,10 +53,8 @@
 <translation id="2124408767156847088">เข้าถึงคอมพิวเตอร์ของคุณจากอุปกรณ์ Android ได้อย่างปลอดภัย</translation>
 <translation id="2208514473086078157">การตั้งค่านโยบายไม่อนุญาตให้แชร์คอมพิวเตอร์นี้เป็นโฮสต์ Chrome Remote Desktop โปรดติดต่อขอรับความช่วยเหลือจากผู้ดูแลระบบของคุณ</translation>
 <translation id="2220529011494928058">รายงานปัญหา</translation>
-<translation id="2221097377466213233">ใช้ Ctrl ขวาสำหรับแป้น Win (⌘ สำหรับ Mac)</translation>
 <translation id="2235518894410572517">แชร์คอมพิวเตอร์นี้เพื่อให้ผู้ใช้อื่นเห็นและควบคุมคอมพิวเตอร์ได้</translation>
 <translation id="2246783206985865117">การตั้งค่านี้ได้รับการจัดการโดยนโยบายโดเมนของคุณ</translation>
-<translation id="2256115617011615191">รีสตาร์ทเลย</translation>
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
 <translation id="228809120910082333">โปรดยืนยันบัญชีและ PIN ของคุณด้านล่างเพื่อให้สามารถเข้าถึงโดย Chromoting</translation>
 <translation id="2314101195544969792">เซสชัน <ph name="APPLICATION_NAME"/> ไม่มีการใช้งานมาระยะหนึ่งแล้ว และระบบจะยกเลิกการเชื่อมต่อเร็วๆ นี้</translation>
@@ -76,14 +75,11 @@
 <translation id="2851674870054673688">เมื่อพวกเขาป้อนรหัสแล้ว เซสชันการแชร์ของคุณจะเริ่มขึ้น</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">ออฟไลน์</translation>
-<translation id="2888969873284818612">เกิดข้อผิดพลาดในเครือข่าย เราจะรีสตาร์ทแอปเมื่ออุปกรณ์ของคุณออนไลน์อีกครั้ง</translation>
 <translation id="2894654864775534701">มีการแชร์คอมพิวเตอร์เครื่องนี้ภายใต้บัญชีที่ต่างกันอยู่ในขณะนี้</translation>
 <translation id="2919669478609886916">ขณะนี้คุณกำลังแชร์คอมพิวเตอร์เครื่องนี้กับผู้ใช้อื่น คุณต้องการแชร์ต่อไปหรือไม่</translation>
 <translation id="2921543551052660690">ก่อนหน้านี้คุณได้ลงชื่อเข้าใช้เป็น <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>) หากต้องการเข้าถึงคอมพิวเตอร์ในบัญชีนั้น ให้<ph name="LINK_BEGIN"/>ลงชื่อเข้าใช้ Chromium<ph name="LINK_END"/> ด้วยบัญชีนั้นและติดตั้ง Chromoting อีกครั้ง</translation>
 <translation id="2926340305933667314">ไม่สามารถปิดใช้งานการเข้าถึงคอมพิวเตอร์เครื่องนี้จากระยะไกล โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="2939145106548231838">ตรวจสอบสิทธิ์ตามที่โฮสต์กำหนด</translation>
-<translation id="2998137343848432918">• เพิ่มหน้าจอรายชื่อทีมงาน
-• แก้ไขปัญหาเมื่อขยายเต็มหน้าจอโดยแสดงแป้นพิมพ์</translation>
 <translation id="3020807351229499221">ไม่สามารถอัปเดต PIN โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="3025388528294795783">เพื่อช่วยเราในการแก้ปัญหา โปรดบอกปัญหาให้เราทราบ:</translation>
 <translation id="3027681561976217984">โหมดสัมผัส</translation>
@@ -92,7 +88,6 @@
 <translation id="3150823315463303127">โฮสต์ไม่สามารถอ่านนโยบายได้</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3244258558056547981">แสดงมุมมอง Cardboard</translation>
 <translation id="3258789396564295715">คุณสามารถเข้าถึงคอมพิวเตอร์เครื่องนี้ได้อย่างปลอดภัยโดยใช้ Chrome Remote Desktop</translation>
 <translation id="327263477022142889">หากต้องการช่วยปรับปรุง Chrome Remote Desktop โปรด<ph name="LINK_BEGIN"/>ตอบแบบสำรวจ<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Chromoting Host Controller</translation>
@@ -164,7 +159,6 @@ Desktop Host</translation>
 <translation id="5254120496627797685">การออกจากหน้านี้จะสิ้นสุดเซสชัน Chrome Remote Desktop ของคุณ</translation>
 <translation id="5285241842433869526">เรียนรู้วิธีตั้งค่าคอมพิวเตอร์สำหรับการเข้าถึงระยะไกล</translation>
 <translation id="5308380583665731573">เชื่อมต่อ</translation>
-<translation id="5363265567587775042">ขอให้ผู้ใช้ที่เป็นเจ้าของคอมพิวเตอร์ที่คุณต้องการใช้งานคลิก “<ph name="SHARE"/>” และให้รหัสการเข้าถึงแก่คุณ</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop อนุญาตให้คุณแชร์คอมพิวเตอร์ของคุณผ่านเว็บอย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องเรียกใช้แอปพลิเคชัน Chrome Remote Desktop ซึ่งสามารถรับได้ที่ <ph name="URL"/></translation>
 <translation id="5397086374758643919">Chrome Remote Desktop Host Uninstaller</translation>
 <translation id="5419185025274123272">ไม่สามารถรีเซ็ตแอปพลิเคชันนี้ คุณยังคงสามารถส่งรายงานข้อบกพร่องได้</translation>
@@ -233,6 +227,7 @@ Desktop Host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">การเข้าถึงถูกปฏิเสธสำหรับไคลเอ็นต์: <ph name="CLIENT_USERNAME"/></translation>
 <translation id="7444276978508498879">ไคลเอ็นต์ที่เชื่อมต่อ: <ph name="CLIENT_USERNAME"/></translation>
+<translation id="7605995381616883502">การเชื่อมต่อใหม่</translation>
 <translation id="7606912958770842224">เปิดใช้งานการเชื่อมต่อระยะไกล</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>

@@ -14,9 +14,7 @@
 <translation id="1339601241726513588">Domena za prijavo:</translation>
 <translation id="1344588688991793829">Nastavitve samodejnega izpolnjevanja v Chromiumu …</translation>
 <translation id="1426410128494586442">Da</translation>
-<translation id="1455235771979731432">Težava pri preverjanju kartice. Preverite internetno povezavo in poskusite znova.</translation>
 <translation id="1491151370853475546">Znova naloži stran</translation>
-<translation id="1549470594296187301">Če želite uporabljati to funkcijo, mora biti omogočen JavaScript.</translation>
 <translation id="1639239467298939599">Nalaganje</translation>
 <translation id="1640180200866533862">Uporabniški pravilniki</translation>
 <translation id="1644184664548287040">Omrežna konfiguracija ni veljavna in je ni mogoče uvoziti.</translation>
@@ -57,7 +55,6 @@
 <translation id="2396249848217231973">&amp;Razveljavi izbris</translation>
 <translation id="2455981314101692989">Spletna stran je onemogočila samodejno izpolnjevanje za ta obrazec.</translation>
 <translation id="2479410451996844060">Neveljaven URL iskanja.</translation>
-<translation id="2495083838625180221">Razčlenjevalnik za JSON</translation>
 <translation id="2498091847651709837">Optično branje nove kartice</translation>
 <translation id="2556876185419854533">&amp;Razveljavi urejanje</translation>
 <translation id="2581221116934462656">Želite, da <ph name="PRODUCT_NAME"/> naslednjič ponudi prevajanje strani v jeziku <ph name="LANGUAGE_NAME"/> na tem spletnem mestu?</translation>
@@ -69,7 +66,6 @@
 <translation id="2774256287122201187">Lahko nadaljujete. Če nadaljujete na stran, to opozorilo ne bo prikazano naslednjih pet minut.</translation>
 <translation id="277499241957683684">Manjka zapis o napravi</translation>
 <translation id="2835170189407361413">Počisti obrazec</translation>
-<translation id="2855922900409897335">Preverjanje kartice <ph name="CREDIT_CARD"/></translation>
 <translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX"/>«: <ph name="ERROR"/></translation>
@@ -79,11 +75,9 @@
 <translation id="3150653042067488994">Začasna napaka strežnika</translation>
 <translation id="3169472444629675720">Discover</translation>
 <translation id="3174168572213147020">Otok</translation>
-<translation id="3219579145727097045">Vnesite datum poteka in štirimestno kodo CVC na sprednji strani kartice</translation>
 <translation id="3228969707346345236">Prevod ni uspel, ker je stran že v jeziku <ph name="LANGUAGE"/></translation>
 <translation id="3270847123878663523">&amp;Razveljavi razvrstitev</translation>
 <translation id="333371639341676808">Tej strani preprečite, da bi ustvarila dodatna pogovorna okna.</translation>
-<translation id="3369366829301677151">Posodobitev in preverjanje kartice <ph name="CREDIT_CARD"/></translation>
 <translation id="337363190475750230">Nepripravljen</translation>
 <translation id="3377188786107721145">Napaka pri razčlenjevanju pravilnika</translation>
 <translation id="3380365263193509176">Neznana napaka</translation>
@@ -95,6 +89,7 @@
 <translation id="3583757800736429874">&amp;Uveljavi premik</translation>
 <translation id="3623476034248543066">Pokaži vrednost</translation>
 <translation id="3650584904733503804">Preverjanje veljavnosti uspešno</translation>
+<translation id="3667681724235208644">Ogled izvirnika</translation>
 <translation id="370665806235115550">Nalagam ...</translation>
 <translation id="3712624925041724820">Ni dovolj licenc</translation>
 <translation id="3739623965217189342">Povezava, ki ste jo kopirali</translation>
@@ -103,7 +98,6 @@
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
 <translation id="3885155851504623709">Okrožje</translation>
 <translation id="3934680773876859118">Dokumenta PDF ni bilo mogoče naložiti</translation>
-<translation id="3963721102035795474">Način bralnika</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
 <translation id="4058922952496707368">Ključ »<ph name="SUBKEY"/>«: <ph name="ERROR"/></translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
@@ -121,12 +115,10 @@
 <translation id="4372948949327679948">Pričakovana vrednost je vrste <ph name="VALUE_TYPE"/>.</translation>
 <translation id="443673843213245140">Uporaba strežnika proxy je onemogočena, vendar je njegova konfiguracija izrecno določena.</translation>
 <translation id="4506176782989081258">Napaka pri preverjanju veljavnosti: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="4587425331216688090">Želite odstraniti naslov iz Chroma?</translation>
 <translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
 <translation id="4607653538520819196">Te strani ni mogoče prenesti prek strežnika proxy za varčevanje s podatki.</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4726672564094551039">Znova naloži pravilnike</translation>
-<translation id="4800132727771399293">Preverite datum poteka in številko CVC ter poskusite znova</translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE"/>«</translation>
@@ -159,7 +151,6 @@
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
 <translation id="5872918882028971132">Predlogi staršev</translation>
-<translation id="587701087903783706">Zapri pogled, prilagojen mobilnim napravam</translation>
 <translation id="59107663811261420">Ta vrsta kartice ni podprta v storitvi Google Payments pri tem trgovcu. Izberite drugo kartico.</translation>
 <translation id="5989320800837274978">Določeni niso ne stalni strežniki proxy ne URL skripta .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -178,7 +169,6 @@
 <translation id="6597614308054261376">Doseči poskušate <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Te strani trenutno ni mogoče prenesti prek strežnika proxy za varčevanje s podatki.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> Iskanje</translation>
 <translation id="6644283850729428850">Ta pravilnik je zastarel.</translation>
-<translation id="6646897916597483132">Vnesite štirimestno kodo CVC na sprednji strani kartice</translation>
 <translation id="6753269504797312559">Vrednost pravilnika</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Območje</translation>
@@ -210,15 +200,12 @@
 <translation id="7537536606612762813">Obvezen</translation>
 <translation id="7542995811387359312">Samodejno izpolnjevanje podatkov o kreditni kartici je onemogočeno, ker ta obrazec ne uporablja varne povezave.</translation>
 <translation id="7568593326407688803">Ta stran je v jeziku:<ph name="ORIGINAL_LANGUAGE"/>Jo želite prevesti?</translation>
-<translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
 <translation id="7600965453749440009">Nikoli ne prevedi iz jezika: <ph name="LANGUAGE"/></translation>
 <translation id="7610193165460212391">Vrednost je zunaj obsega <ph name="VALUE"/>.</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="7805768142964895445">Stanje</translation>
-<translation id="7813600968533626083">Želite odstraniti predlog obrazca iz Chroma?</translation>
-<translation id="7887683347370398519">Preverite CVC in poskusite znova</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7956713633345437162">Zaznamki mobilne naprave</translation>
 <translation id="7961015016161918242">Nikoli</translation>
@@ -247,22 +234,17 @@
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
-<translation id="8824019021993735287">Trenutno trenutno ni mogel preveriti vaše kartice. Poskusite znova pozneje.</translation>
 <translation id="8834246243508017242">Omogoči samodejno izpolnjevanje s stiki …</translation>
 <translation id="883848425547221593">Drugi zaznamki</translation>
 <translation id="8866481888320382733">Napaka pri razčlenjevanju nastavitev pravilnika</translation>
 <translation id="8876793034577346603">Omrežne konfiguracije ni bilo mogoče razčleniti.</translation>
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="8940229512486821554">Zaženi <ph name="EXTENSION_NAME"/> ukaz: <ph name="SEARCH_TERMS"/></translation>
-<translation id="8988760548304185580">Vnesite datum poteka in trimestno kodo CVC na hrbtni strani kartice</translation>
 <translation id="9020542370529661692">Ta stran je prevedena v jezik <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="9125941078353557812">Vnesite trimestno kodo CVC na hrbtni strani kartice</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9148507642005240123">&amp;Razveljavi urejanje</translation>
 <translation id="9154176715500758432">Ostani na tej strani</translation>
 <translation id="9170848237812810038">&amp;Razveljavi</translation>
 <translation id="9207861905230894330">Članka ni bilo mogoče dodati.</translation>
 <translation id="933712198907837967">Diners Club</translation>
-<translation id="935608979562296692">POČISTI OBRAZEC</translation>
-<translation id="988159990683914416">Različica za razvijalce</translation>
 </translationbundle>

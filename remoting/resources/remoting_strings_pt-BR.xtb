@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
 <translation id="1002108253973310084">Foi detectada uma versão incompatível do protocolo. Certifique-se de que você tenha a versão mais recente do software instalada em ambos os computadores e tente novamente.</translation>
+<translation id="1023096696228309145">Solicite ao usuário cujo computador você deseja acessar que clique em &quot;Compartilhar agora&quot; e que forneça a você o código de acesso.</translation>
 <translation id="1050693411695664090">Insatisfatória</translation>
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="1199593201721843963">Desativar conexões remotas</translation>
+<translation id="1261403020716313927">• Corrigida grande perda de memória na desconexão da área de trabalho remota.</translation>
 <translation id="1291443878853470558">Ative conexões remotas se desejar usar o Chromoting para acessar este computador.</translation>
 <translation id="1300633907480909701">Acesse com segurança seus computadores no seu dispositivo Android.
 
@@ -15,7 +17,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1324095856329524885">Este recurso ainda não está disponível para seu computador</translation>
 <translation id="1342297293546459414">Ver e controlar um computador compartilhado.</translation>
 <translation id="1450760146488584666">O objeto solicitado não existe.</translation>
-<translation id="1480046233931937785">Créditos</translation>
 <translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Informe este problema aos desenvolvedores.</translation>
@@ -52,10 +53,8 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2124408767156847088">Acesse com segurança seus computadores no seu dispositivo Android.</translation>
 <translation id="2208514473086078157">As definições da política não permitem compartilhar este computador como um host da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para obter ajuda.</translation>
 <translation id="2220529011494928058">Informar um problema</translation>
-<translation id="2221097377466213233">Usar Ctrl da direita para enviar tecla Win (⌘ no Mac)</translation>
 <translation id="2235518894410572517">Compartilhe este computador para que outro usuário possa visualizá-lo e controlá-lo.</translation>
 <translation id="2246783206985865117">Esta configuração é gerenciada pela política do seu domínio.</translation>
-<translation id="2256115617011615191">Reiniciar agora</translation>
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="228809120910082333">Confirme sua conta e seu PIN abaixo para permitir acesso pelo Chromoting.</translation>
 <translation id="2314101195544969792">Sua sessão do <ph name="APPLICATION_NAME"/> está inativa há um tempo e será desconectada em breve.</translation>
@@ -76,14 +75,11 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2851674870054673688">Assim que o código for inserido, sua sessão de compartilhamento será iniciada.</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
 <translation id="2855866366045322178">off-line</translation>
-<translation id="2888969873284818612">Ocorreu um erro de rede. Reiniciaremos o aplicativo quando seu dispositivo estiver on-line novamente.</translation>
 <translation id="2894654864775534701">Atualmente, este computador é compartilhado com uma conta diferente.</translation>
 <translation id="2919669478609886916">Esta máquina está sendo compartilhada com outro usuário. Deseja continuar compartilhando?</translation>
 <translation id="2921543551052660690">Você fez login anteriormente como <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>).  Para acessar seus computadores nessa conta, <ph name="LINK_BEGIN"/>faça login no Chromium<ph name="LINK_END"/> usando essa conta e reinstale o Chromoting.</translation>
 <translation id="2926340305933667314">Falha ao desativar o acesso remoto a este computador. Tente novamente mais tarde.</translation>
 <translation id="2939145106548231838">Autenticar para host</translation>
-<translation id="2998137343848432918">• Adição da tela &quot;Créditos&quot;.
-• Correção de um problema que ocorria ao entrar no modo tela cheia com o teclado visível.</translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
 <translation id="3025388528294795783">Para nos ajudar a resolver seu problema, diga o que deu errado:</translation>
 <translation id="3027681561976217984">Modo de toque</translation>
@@ -92,7 +88,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="3150823315463303127">Não foi possível para o host ler a política.</translation>
 <translation id="3194245623920924351">Área de trabalho remota do Google Chrome</translation>
 <translation id="3197730452537982411">Computador remoto</translation>
-<translation id="3244258558056547981">Mostrar visualização do Cardboard.</translation>
 <translation id="3258789396564295715">Você pode acessar este computador com segurança, usando a Área de trabalho remota do Google Chrome.</translation>
 <translation id="327263477022142889">Quer ajudar a melhorar a Área de trabalho remota do Google Chrome? <ph name="LINK_BEGIN"/>Responda à pesquisa.<ph name="LINK_END"/></translation>
 <translation id="3286521253923406898">Controlador do host do Chromoting</translation>
@@ -164,7 +159,6 @@ remota do Google Chrome</translation>
 <translation id="5254120496627797685">Abandonar esta página encerrará sua sessão na Área de trabalho remota do Google Chrome.</translation>
 <translation id="5285241842433869526">Saiba como configurar um computador para acesso remoto.</translation>
 <translation id="5308380583665731573">Conectar-se</translation>
-<translation id="5363265567587775042">Peça ao usuário do computador que você deseja acessar que clique em &quot;<ph name="SHARE"/>&quot; e forneça o código de acesso para você.</translation>
 <translation id="5379087427956679853">A Área de trabalho remota do Google Chrome permite que você compartilhe seu computador com segurança através da Web. Para isso, é preciso que os usuários executem simultaneamente o aplicativo da Área de trabalho remota do Google Chrome, disponível em <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Desinstalador do host da Área de trabalho remota do Google Chrome</translation>
 <translation id="5419185025274123272">Não foi possível redefinir o aplicativo. Você ainda pode enviar um relatório de bug.</translation>
@@ -233,6 +227,7 @@ remota do Google Chrome</translation>
 <translation id="7401733114166276557">Área de trabalho remota do Google Chrome</translation>
 <translation id="7434397035092923453">Acesso negado para o cliente <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Nova conexão</translation>
 <translation id="7606912958770842224">Ativar conexões remotas</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

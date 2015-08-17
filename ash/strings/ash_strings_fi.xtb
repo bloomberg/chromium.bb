@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Pysäytä</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Ota ruutunäppäimistö käyttöön</translation>
-<translation id="1343000272198685031">Mikrofoniliitäntä</translation>
 <translation id="1346748346194534595">Oikealle</translation>
 <translation id="137180024469554212">Poista näytön kierron lukitus käytöstä</translation>
 <translation id="1383876407941801731">Haku</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Suuri hiiren osoitin</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT"/> kuluttua</translation>
-<translation id="164969095109328410">Chrome-laite</translation>
 <translation id="1723752762323179280">Käyttökerran lopettaminen</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
+<translation id="1753067873202720523">Chromebook ei välttämättä lataudu sen ollessa päällä.</translation>
 <translation id="1812696562331527143">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>kolmas osapuoli<ph name="END_LINK"/>).
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1882897271359938046">Peilataan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Automaattiset klikkaukset</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">Suoratoistetaan kohteesta $1 kohteeseen $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Tilit</translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
 <translation id="2204305834655267233">Verkon tiedot</translation>
 <translation id="2208323208084708176">Yhtenäisen työpöydän tila</translation>
+<translation id="2248649616066688669">Voit käyttää Chromebookia sen ollessa yhdistettynä ulkoiseen näyttöön, vaikka laitteen kansi olisi kiinni.</translation>
 <translation id="225680501294068881">Etsitään laitteita...</translation>
 <translation id="2268130516524549846">Bluetooth pois käytöstä</translation>
 <translation id="2268813581635650749">Kirjaa kaikki ulos</translation>
@@ -44,6 +43,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="252373100621549798">Tuntematon näyttö</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="2562916301614567480">Yksityinen verkko</translation>
+<translation id="2614835198358683673">Chromebookisi ei välttämättä lataudu sen ollessa päällä. Harkitse virallisen laturin käyttämistä.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Yhdistetään…</translation>
 <translation id="2700058918926273959">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING"/>. Sinut kirjataan ulos.</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
@@ -72,6 +72,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="3433830597744061105">Hallinnoi tilejä</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
+<translation id="3527846106059622359">Uusi kirjautumiskäyttöliittymä ON käytössä.</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE"/> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="3595596368722241419">Akku täynnä</translation>
 <translation id="3606978283550408104">Pistekirjoitusnäyttö on yhdistetty.</translation>
@@ -101,6 +102,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">Suoratoistetaan työpöytää</translation>
 <translation id="4379753398862151997">Arvoisa näyttö, suhteemme ei toimi. (Näyttöä ei tueta)</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME"/> kanssa Etätuen kautta.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
@@ -111,29 +113,25 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4895488851634969361">Akku on täynnä.</translation>
 <translation id="4918086044614829423">Hyväksy</translation>
 <translation id="4957722034734105353">Lisätietoja...</translation>
-<translation id="4961318399572185831">Suoratoista näyttö</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google Driven asetukset...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>.<ph name="MINUTE"/> jäljellä</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Cast-laitteita käytettävissä</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="5238774010593222950">Kirjautuminen toiseen tiliin ei onnistu.</translation>
 <translation id="544691375626129091">Kaikki käytettävissä olevat käyttäjät on jo lisätty tähän istuntoon.</translation>
 <translation id="5507786745520522457">Ota mobiiliverkon data käyttöön</translation>
+<translation id="5537725057119320332">Lähetä</translation>
 <translation id="5543001071567407895">Tekstiviesti</translation>
 <translation id="5548285847212963613">Laajennus <ph name="EXTENSION_NAME"/> voi auttaa muodostamaan yhteyden tähän verkkoon.</translation>
 <translation id="5565793151875479467">Välityspalvelin...</translation>
 <translation id="5571066253365925590">Bluetooth käytössä</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Voit jatkaa laitteen <ph name="DEVICE_TYPE"/> käyttöä, kun se on liitettynä ulkoiseen näyttöön, vaikka laitteen kansi olisi kiinni.</translation>
 <translation id="5777841717266010279">Lopetetaanko näytön jakaminen?</translation>
+<translation id="5807965672380739016">Suoratoista työpöytä:</translation>
 <translation id="5825747213122829519">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>.
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="5871632337994001636">Hallinnoi laitteita…</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
-<translation id="5927132638760172455">Suoratoistetaan tuntemattomaan vastaanottimeen</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Palauta</translation>
 <translation id="595202126637698455">Tehokkuuden seuranta on käytössä</translation>
 <translation id="5958529069007801266">Valvottu käyttäjä</translation>
@@ -165,14 +163,13 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="68610848741840742">ChromeVox (äänipalaute)</translation>
 <translation id="6895424601869865703">Lisää tili käyttäjälle <ph name="GIVEN_NAME"/></translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="703171847531699602">Ei suoratoistolaitteita</translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
 <translation id="7097613348211027502">ChromeVox (äänipalaute) on käytössä. Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">Suoratoistetaan $1</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">CAPS LOCK on päällä. Peruuta painamalla Alt + hakupainike tai Shift.</translation>
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
@@ -188,7 +185,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="785750925697875037">Näytä mobiilitili</translation>
 <translation id="7864539943188674973">Poista Bluetooth käytöstä</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> ei välttämättä lataudu, kun se on käynnissä. Suosittelemme virallisen laturin käyttämistä.</translation>
 <translation id="7982789257301363584">Verkko</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
 <translation id="8103386449138765447">Tekstiviestit: <ph name="MESSAGE_COUNT"/></translation>
@@ -197,13 +193,12 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8308637677604853869">Edellinen valikko</translation>
 <translation id="8356164830168736643">Sulje <ph name="WINDOW_TITLE"/></translation>
 <translation id="8428213095426709021">Asetukset</translation>
-<translation id="8443356412772935865">Suoratoistetaan näyttö kohteeseen $1</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> kunnes akku on ladattu</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> ei välttämättä lataudu, kun se on käynnissä.</translation>
 <translation id="8528322925433439945">Mobiiliverkot...</translation>
 <translation id="8654520615680304441">Ota Wi-Fi käyttöön…</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pienitehoinen laturi kytketty</translation>
+<translation id="8697119993436624257">Uusi kirjautumiskäyttöliittymä EI ole käytössä.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Näytä klikkaamalla</translation>
 <translation id="8828714802988429505">90°</translation>

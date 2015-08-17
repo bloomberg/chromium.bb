@@ -6,7 +6,6 @@
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
-<translation id="1343000272198685031">Mikrofon Jakı</translation>
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="137180024469554212">Döndürme kilidini devre dışı bırak</translation>
 <translation id="1383876407941801731">Ara</translation>
@@ -17,20 +16,20 @@
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
 <translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT"/></translation>
-<translation id="164969095109328410">Chrome cihaz</translation>
 <translation id="1723752762323179280">Oturumdan Çıkış Yapılıyor</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
+<translation id="1753067873202720523">Chromebook'unuz açıkken şarj olmayabilir.</translation>
 <translation id="1812696562331527143">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3. taraf<ph name="END_LINK"/>) olarak değiştirildi.
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="1882897271359938046">Şuraya yansıtılıyor: <ph name="DISPLAY_NAME"/></translation>
 <translation id="1923539912171292317">Otomatik tıklamalar</translation>
 <translation id="1957803754585243749">0°</translation>
-<translation id="1963814843110128691">$1, şuraya yayınlanıyor: $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
 <translation id="1987317783729300807">Hesaplar</translation>
 <translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
 <translation id="2204305834655267233">Ağ Bilgisi</translation>
 <translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
+<translation id="2248649616066688669">Chromebook'unuz harici bir ekrana bağlıyken, kapağı kapalı olsa da cihazınızı kullanmaya devam edebilirsiniz.</translation>
 <translation id="225680501294068881">Cihazlar taranıyor...</translation>
 <translation id="2268130516524549846">Bluetooth devre dışı</translation>
 <translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
@@ -44,6 +43,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="252373100621549798">Bilinmeyen Görünüm</translation>
 <translation id="2532589005999780174">Yüksek kontrast modu</translation>
 <translation id="2562916301614567480">Özel Ağ</translation>
+<translation id="2614835198358683673">Chromebook'unuz açıkken şarj edilemeyebilir. Orijinal şarj cihazını kullanmayı düşünün.</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Bağlanıyor...</translation>
 <translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
@@ -73,6 +73,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="3433830597744061105">Hesapları yönet</translation>
 <translation id="3473479545200714844">Ekran büyüteci</translation>
+<translation id="3527846106059622359">Yeni giriş kullanıcı arayüzü AÇIK</translation>
 <translation id="3573179567135747900">Tekrar &quot;<ph name="FROM_LOCALE"/>&quot; ayarına dön (yeniden başlatmak gerekir)</translation>
 <translation id="3595596368722241419">Pil tam dolu</translation>
 <translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
@@ -102,6 +103,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
 <translation id="4321179778687042513">ctrl</translation>
+<translation id="4373966964907728675">Masaüstü yayınlanıyor</translation>
 <translation id="4379753398862151997">Sevgili Monitör, aramızdaki bu ilişki yürümüyor. (Bu monitör desteklenmiyor)</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME"/> ile paylaşılıyor.</translation>
 <translation id="4430019312045809116">Ses</translation>
@@ -112,29 +114,25 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="4895488851634969361">Pil dolu.</translation>
 <translation id="4918086044614829423">Kabul et</translation>
 <translation id="4957722034734105353">Daha fazla bilgi edinin...</translation>
-<translation id="4961318399572185831">Ekranı yayınla</translation>
-<translation id="5011233892417813670">Chromebook</translation>
 <translation id="5045002648206642691">Google Drive ayarları...</translation>
 <translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> kaldı</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5238774010593222950">Başka bir hesapta oturum açamıyorum.</translation>
 <translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
 <translation id="5507786745520522457">Mobil verileri ayarla</translation>
+<translation id="5537725057119320332">Yayınla</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; uzantısı bu ağa bağlanmaya yardımcı olabilir.</translation>
 <translation id="5565793151875479467">Proxy...</translation>
 <translation id="5571066253365925590">Bluetooth etkin</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5759815399269068793">Kapağı kapalı olsa da <ph name="DEVICE_TYPE"/> cihazınızı harici bir ekrana bağlı iken kullanmaya devam edebilirsiniz.</translation>
 <translation id="5777841717266010279">Ekran paylaşma durdurulsun mu?</translation>
+<translation id="5807965672380739016">Masaüstünü şuraya yayınla:</translation>
 <translation id="5825747213122829519">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/> olarak değiştirildi.
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="5871632337994001636">Cihazları yönet...</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
-<translation id="5927132638760172455">Bilinmeyen bir alıcıya yayınlanıyor</translation>
-<translation id="5932901536148835538">Chromebit</translation>
 <translation id="5947494881799873997">Geri döndür</translation>
 <translation id="595202126637698455">Performans izleme etkin</translation>
 <translation id="5958529069007801266">Denetlenen kullanıcı</translation>
@@ -167,7 +165,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>
 <translation id="6895424601869865703"><ph name="GIVEN_NAME"/> için bir hesap ekle</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
@@ -175,7 +172,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
 <translation id="7097613348211027502">ChromeVox (sesli geri bildirim) etkin.
 Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
-<translation id="714034171374937760">Chromebase</translation>
+<translation id="7113420380180868673">$1 yayınlanıyor</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="7209101170223508707">CAPS LOCK açık.
 İptal için Alt+Arama veya Üst Karakter tuşlarına basın.</translation>
@@ -192,7 +189,6 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="785750925697875037">Mobil hesabı görüntüle</translation>
 <translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> cihazınız açıkken şarj olmayabilir. Onaylı bir şarj cihazı kullanmayı düşünün.</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
 <translation id="8103386449138765447">SMS mesajları: <ph name="MESSAGE_COUNT"/></translation>
@@ -201,13 +197,12 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> penceresini kapat</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
-<translation id="8443356412772935865">Ekran şuraya yayınlanıyor: $1</translation>
 <translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/> </translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8528322925433439945">Mobile...</translation>
 <translation id="8654520615680304441">Kablosuz'u aç...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
+<translation id="8697119993436624257">Yeni giriş kullanıcı arayüzü KAPALI</translation>
 <translation id="8814190375133053267">Kablosuz</translation>
 <translation id="882279321799040148">Görüntülemek için tıklayın</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -1,8 +1,10 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
 <translation id="1002108253973310084">È stata rilevata una versione incompatibile del protocollo. Verifica che la versione più recente del software sia installata su entrambi i computer e riprova.</translation>
+<translation id="1023096696228309145">Chiedi all'utente del computer a cui desideri accedere di fare clic su &quot;Condividi ora&quot; e di fornirti il codice di accesso.</translation>
 <translation id="1050693411695664090">Scadente</translation>
 <translation id="1152528166145813711">Seleziona…</translation>
 <translation id="1199593201721843963">Disattiva connessioni remote</translation>
+<translation id="1261403020716313927">• Risoluzione della perdita rilevante di memoria al momento della disconnessione da Remote Desktop.</translation>
 <translation id="1291443878853470558">Per accedere a questo computer utilizzando Chromoting devi attivare le connessioni remote.</translation>
 <translation id="1300633907480909701">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.
 
@@ -15,7 +17,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1324095856329524885">(questa funzione non è ancora disponibile per il tuo computer)</translation>
 <translation id="1342297293546459414">Visualizza e controlla un computer condiviso.</translation>
 <translation id="1450760146488584666">L'oggetto richiesto non esiste.</translation>
-<translation id="1480046233931937785">Riconoscimenti</translation>
 <translation id="1520828917794284345">Adatta dimensioni desktop</translation>
 <translation id="154040539590487450">Impossibile avviare il servizio di accesso remoto.</translation>
 <translation id="1546934824884762070">Si è verificato un errore imprevisto. Segnala il problema agli sviluppatori.</translation>
@@ -52,10 +53,8 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2124408767156847088">Accedi in sicurezza ai tuoi computer dal tuo dispositivo Android.</translation>
 <translation id="2208514473086078157">Le impostazioni criterio non consentono la condivisione di questo computer come host Chrome Remote Desktop. Contatta l'amministratore di sistema per ricevere assistenza.</translation>
 <translation id="2220529011494928058">Segnala un problema</translation>
-<translation id="2221097377466213233">Utilizza il tasto Ctrl di destra e il tasto Windows (⌘ su Mac)</translation>
 <translation id="2235518894410572517">Condividi questo computer per consentire la visione e il controllo a un altro utente.</translation>
 <translation id="2246783206985865117">Questa impostazione è gestita dalle norme sui domini.</translation>
-<translation id="2256115617011615191">Riavvia adesso</translation>
 <translation id="225614027745146050">Benvenuto</translation>
 <translation id="228809120910082333">Conferma il tuo account e il PIN per consentire l'accesso tramite Chromoting.</translation>
 <translation id="2314101195544969792">La tua sessione in <ph name="APPLICATION_NAME"/> non è attiva da un po' di tempo e verrà disconnessa a breve.</translation>
@@ -76,14 +75,11 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2851674870054673688">Una volta inserito il codice, la sessione di condivisione avrà inizio.</translation>
 <translation id="2851754573186462851">Chromium App Stream</translation>
 <translation id="2855866366045322178">non in linea</translation>
-<translation id="2888969873284818612">Si è verificato un errore di rete. L'app sarà riavviata quando il dispositivo tornerà online.</translation>
 <translation id="2894654864775534701">Questo computer è attualmente condiviso con un altro account.</translation>
 <translation id="2919669478609886916">Stai condividendo questo computer con un altro utente. Continuare la condivisione?</translation>
 <translation id="2921543551052660690">Hai già eseguito l'accesso come <ph name="USER_NAME"/> (<ph name="USER_EMAIL"/>). Per accedere ai tuoi computer nell'account in questione, <ph name="LINK_BEGIN"/>accedi a Chromium<ph name="LINK_END"/> con tale account e installa di nuovo Chromoting.</translation>
 <translation id="2926340305933667314">Impossibile disattivare l'accesso remoto a questo computer. Riprova più tardi.</translation>
 <translation id="2939145106548231838">Esegui autenticazione host</translation>
-<translation id="2998137343848432918">• Aggiunta la schermata Riconoscimenti.
-• Risolto un problema relativo alla modalità a schermo intero con la tastiera visibile.</translation>
 <translation id="3020807351229499221">Impossibile aggiornare il PIN. Riprova più tardi.</translation>
 <translation id="3025388528294795783">Per aiutarci a risolvere il tuo problema, spiegaci che cosa è successo:</translation>
 <translation id="3027681561976217984">Modalità multi-touch</translation>
@@ -92,7 +88,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="3150823315463303127">L'host non è riuscito a leggere la norma.</translation>
 <translation id="3194245623920924351">Chrome Remote Desktop</translation>
 <translation id="3197730452537982411">Remote Desktop</translation>
-<translation id="3244258558056547981">Mostra visualizzazione Cardboard.</translation>
 <translation id="3258789396564295715">Puoi accedere a questo computer in sicurezza utilizzando Chrome Remote Desktop.</translation>
 <translation id="327263477022142889">Vuoi contribuire a migliorare Chrome Remote Desktop? <ph name="LINK_BEGIN"/>Rispondi al sondaggio<ph name="LINK_END"/>.</translation>
 <translation id="3286521253923406898">Controller host Chromoting</translation>
@@ -164,7 +159,6 @@ Remote Desktop</translation>
 <translation id="5254120496627797685">Se esci da questa pagina, la sessione Chrome Remote Desktop verrà terminata.</translation>
 <translation id="5285241842433869526">Scopri come configurare l'accesso remoto per un computer.</translation>
 <translation id="5308380583665731573">Connessione</translation>
-<translation id="5363265567587775042">Chiedi al proprietario del computer a cui vuoi accedere di fare clic su &quot;<ph name="SHARE"/>&quot; e fornirti il codice di accesso.</translation>
 <translation id="5379087427956679853">Chrome Remote Desktop ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chrome Remote Desktop, reperibile all'indirizzo <ph name="URL"/>.</translation>
 <translation id="5397086374758643919">Programma di disinstallazione host Chrome Remote Desktop</translation>
 <translation id="5419185025274123272">Impossibile ripristinare l'applicazione. Puoi comunque inviare una segnalazione di bug.</translation>
@@ -233,6 +227,7 @@ Remote Desktop</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Accesso negato per client: <ph name="CLIENT_USERNAME"/>.</translation>
 <translation id="7444276978508498879">Client connesso: <ph name="CLIENT_USERNAME"/>.</translation>
+<translation id="7605995381616883502">Nuova connessione</translation>
 <translation id="7606912958770842224">Attiva connessioni remote</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7658239707568436148">Annulla</translation>
