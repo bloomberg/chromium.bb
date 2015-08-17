@@ -764,11 +764,8 @@ connect_to_socket(const char *name)
 
 	if (name == NULL)
 		name = getenv("WAYLAND_DISPLAY");
-	if (name == NULL) {
-		wl_log("error: WAYLAND_DISPLAY not set in the environment.\n");
-		errno = ENOENT;
-		return -1;
-	}
+	if (name == NULL)
+		name = "wayland-0";
 
 	fd = wl_os_socket_cloexec(PF_LOCAL, SOCK_STREAM, 0);
 	if (fd < 0)
@@ -872,7 +869,8 @@ wl_display_connect_to_fd(int fd)
  * \return A \ref wl_display object or \c NULL on failure
  *
  * Connect to the Wayland display named \c name. If \c name is \c NULL,
- * its value will be replaced with the WAYLAND_DISPLAY environment variable.
+ * its value will be replaced with the WAYLAND_DISPLAY environment
+ * variable if it is set, otherwise display "wayland-0" will be used.
  *
  * \memberof wl_display
  */
