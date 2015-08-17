@@ -82,8 +82,7 @@ public:
     bool isExpensiveToPaint() const { return m_surface->isExpensiveToPaint(); }
     bool isSurfaceValid() const;
     bool restoreSurface() const;
-    void didDraw(const FloatRect&) const;
-    bool wasDrawnToAfterSnapshot() const { return m_snapshotState == DrawnToAfterSnapshot; }
+    void didDraw(const FloatRect& rect) const { m_surface->didDraw(rect); }
 
     void setFilterQuality(SkFilterQuality filterQuality) { m_surface->setFilterQuality(filterQuality); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
@@ -139,12 +138,6 @@ public:
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
 
-    enum SnapshotState {
-        InitialSnapshotState,
-        DidAcquireSnapshot,
-        DrawnToAfterSnapshot,
-    };
-    mutable SnapshotState m_snapshotState;
     OwnPtr<ImageBufferSurface> m_surface;
     ImageBufferClient* m_client;
 };

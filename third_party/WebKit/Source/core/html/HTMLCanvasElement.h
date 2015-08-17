@@ -138,7 +138,6 @@ public:
     AffineTransform baseTransform() const;
 
     bool is3D() const;
-    bool isAnimated2D() const;
 
     bool hasImageBuffer() const { return m_imageBuffer; }
     void discardImageBuffer();

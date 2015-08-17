@@ -434,11 +434,6 @@ bool HTMLCanvasElement::is3D() const
     return m_context && m_context->is3d();
 }
 
-bool HTMLCanvasElement::isAnimated2D() const
-{
-    return m_context && m_context->is2d() && hasImageBuffer() && m_imageBuffer->wasDrawnToAfterSnapshot();
-}
-
 void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
 {
     m_size = size;

@@ -149,9 +149,6 @@ void ImageBuffer::resetCanvas(SkCanvas* canvas) const
 
 PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const
 {
-    if (m_snapshotState == InitialSnapshotState)
-        m_snapshotState = DidAcquireSnapshot;
-
     if (!isSurfaceValid())
         return nullptr;
     return m_surface->newImageSnapshot();
@@ -159,17 +156,12 @@ PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const
 
 PassRefPtr<Image> ImageBuffer::newImageSnapshot() const
 {
-    RefPtr<SkImage> snapshot = newSkImageSnapshot();
+    if (!isSurfaceValid())
+        return nullptr;
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot();
     if (!snapshot)
         return nullptr;
     return StaticBitmapImage::create(snapshot);
-}
-
-void ImageBuffer::didDraw(const FloatRect& rect) const
-{
-    if (m_snapshotState == DidAcquireSnapshot)
-        m_snapshotState = DrawnToAfterSnapshot;
-    m_surface->didDraw(rect);
 }
 
 WebLayer* ImageBuffer::platformLayer() const
