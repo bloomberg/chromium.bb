@@ -31,7 +31,6 @@
 #include "platform/PlatformMouseEvent.h"
 
 namespace blink {
-
 class DataTransfer;
 class EventDispatcher;
 
@@ -47,7 +46,7 @@ public:
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
-        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer*,
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         bool isSimulated = false, PlatformMouseEvent::SyntheticEventType = PlatformMouseEvent::RealOrIndistinguishable,
         double uiCreateTime = 0);
 
@@ -82,14 +81,13 @@ public:
     Node* toElement() const;
     Node* fromElement() const;
 
-    DataTransfer* dataTransfer() const { return isDragEvent() ? m_dataTransfer.get() : 0; }
+    virtual DataTransfer* dataTransfer() const { return 0; }
 
     bool fromTouch() const { return m_syntheticEventType == PlatformMouseEvent::FromTouch; }
 
     const AtomicString& interfaceName() const override;
 
     bool isMouseEvent() const override;
-    bool isDragEvent() const final;
     int which() const final;
 
     PassRefPtrWillBeRawPtr<EventDispatchMediator> createMediator() override;
@@ -101,7 +99,7 @@ protected:
         int detail, int screenX, int screenY, int windowX, int windowY,
         int movementX, int movementY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, short button, unsigned short buttons,
-        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, DataTransfer*,
+        PassRefPtrWillBeRawPtr<EventTarget> relatedTarget,
         bool isSimulated, PlatformMouseEvent::SyntheticEventType, double uiCreateTime = 0);
 
     MouseEvent(const AtomicString& type, const MouseEventInit&);
@@ -112,7 +110,6 @@ private:
     short m_button;
     unsigned short m_buttons;
     RefPtrWillBeMember<EventTarget> m_relatedTarget;
-    PersistentWillBeMember<DataTransfer> m_dataTransfer;
     PlatformMouseEvent::SyntheticEventType m_syntheticEventType;
 };
 

@@ -1176,6 +1176,9 @@ interface DocumentType
     getter systemId
     method constructor
     method remove
+interface DragEvent
+    getter dataTransfer
+    method constructor
 interface DynamicsCompressorNode
     getter attack
     getter knee
@@ -3321,7 +3324,6 @@ interface MouseEvent
     getter clientX
     getter clientY
     getter ctrlKey
-    getter dataTransfer
     getter fromElement
     getter layerX
     getter layerY
