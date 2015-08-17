@@ -30,7 +30,7 @@ bool CheckValues(const std::string& name,
                  int maximum,
                  size_t bucket_count) {
   if (!base::Histogram::InspectConstructionArguments(
-      name, &minimum, &maximum, &bucket_count))
+          name, &minimum, &maximum, &bucket_count))
     return false;
   base::HistogramBase* histogram =
       base::StatisticsRecorder::FindHistogram(name);
@@ -47,17 +47,18 @@ bool CheckLinearValues(const std::string& name, int maximum) {
 
 // The interval between external metrics collections in seconds
 static const int kExternalMetricsCollectionIntervalSeconds = 30;
-const char kEventsFilePath[] = "/data/share/chrome/metrics/uma-events";
 
 ExternalMetrics::ExternalMetrics(
-    CastStabilityMetricsProvider* stability_provider)
+    CastStabilityMetricsProvider* stability_provider,
+    const std::string& uma_events_file)
     : stability_provider_(stability_provider),
-      uma_events_file_(kEventsFilePath),
+      uma_events_file_(uma_events_file),
       weak_factory_(this) {
   DCHECK(stability_provider);
 }
 
 ExternalMetrics::~ExternalMetrics() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 }
 
 void ExternalMetrics::StopAndDestroy() {
@@ -66,12 +67,19 @@ void ExternalMetrics::StopAndDestroy() {
 }
 
 void ExternalMetrics::Start() {
-  ScheduleCollector();
+  bool result = content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&ExternalMetrics::CollectEventsAndReschedule,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kExternalMetricsCollectionIntervalSeconds));
+  DCHECK(result);
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
   content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
+      content::BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&CastStabilityMetricsProvider::LogExternalCrash,
                  base::Unretained(stability_provider_),
                  crash_kind));
@@ -108,9 +116,11 @@ int ExternalMetrics::CollectEvents() {
           DLOG(ERROR) << "Invalid histogram: " << sample.name();
           break;
         }
-        UMA_HISTOGRAM_CUSTOM_COUNTS_NO_CACHE(
-            sample.name(), sample.sample(), sample.min(), sample.max(),
-            sample.bucket_count());
+        UMA_HISTOGRAM_CUSTOM_COUNTS_NO_CACHE(sample.name(),
+                                             sample.sample(),
+                                             sample.min(),
+                                             sample.max(),
+                                             sample.bucket_count());
         break;
       case ::metrics::MetricSample::LINEAR_HISTOGRAM:
         if (!CheckLinearValues(sample.name(), sample.max())) {
@@ -130,11 +140,8 @@ int ExternalMetrics::CollectEvents() {
 }
 
 void ExternalMetrics::CollectEventsAndReschedule() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   CollectEvents();
-  ScheduleCollector();
-}
-
-void ExternalMetrics::ScheduleCollector() {
   bool result = content::BrowserThread::PostDelayedTask(
       content::BrowserThread::FILE,
       FROM_HERE,

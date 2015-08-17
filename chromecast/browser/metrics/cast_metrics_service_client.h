@@ -70,15 +70,12 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   // Starts/stops the metrics service.
   void EnableMetricsService(bool enabled);
 
-  std::string client_id() const {
-    return client_id_;
-  }
+  std::string client_id() const { return client_id_; }
 
  private:
-  CastMetricsServiceClient(
-      base::TaskRunner* io_task_runner,
-      PrefService* pref_service,
-      net::URLRequestContextGetter* request_context);
+  CastMetricsServiceClient(base::TaskRunner* io_task_runner,
+                           PrefService* pref_service,
+                           net::URLRequestContextGetter* request_context);
 
   // Returns whether or not metrics reporting is enabled.
   bool IsReportingEnabled();
@@ -93,6 +90,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
 
 #if defined(OS_LINUX)
   ExternalMetrics* external_metrics_;
+  ExternalMetrics* platform_metrics_;
 #endif  // defined(OS_LINUX)
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;

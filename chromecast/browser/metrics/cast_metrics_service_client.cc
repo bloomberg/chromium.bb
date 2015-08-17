@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/base/path_utils.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/browser/metrics/platform_metrics_providers.h"
 #include "chromecast/common/pref_names.h"
@@ -38,6 +39,10 @@ const int kStandardUploadIntervalMinutes = 5;
 
 const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 
+#if defined(OS_LINUX)
+const char kExternalUmaEventsRelativePath[] = "metrics/uma-events";
+const char kPlatformUmaEventsPath[] = "/data/share/chrome/metrics/uma-events";
+#endif  // defined(OS_LINUX)
 }  // namespace
 
 // static
@@ -45,9 +50,8 @@ scoped_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
     base::TaskRunner* io_task_runner,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context) {
-  return make_scoped_ptr(new CastMetricsServiceClient(io_task_runner,
-                                                      pref_service,
-                                                      request_context));
+  return make_scoped_ptr(new CastMetricsServiceClient(
+      io_task_runner, pref_service, request_context));
 }
 
 void CastMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -104,8 +108,6 @@ scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
   }
 }
 
-
-
 bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
   // Chromecast behaves as "off the record" w/r/t recording browsing state,
   // but this value is about not disabling metrics because of it.
@@ -158,11 +160,10 @@ CastMetricsServiceClient::CreateUploader(
   }
   DCHECK(!uma_server_url.empty());
   return scoped_ptr< ::metrics::MetricsLogUploader>(
-      new ::metrics::NetMetricsLogUploader(
-          request_context_,
-          uma_server_url,
-          ::metrics::kDefaultMetricsMimeType,
-          on_upload_complete));
+      new ::metrics::NetMetricsLogUploader(request_context_,
+                                           uma_server_url,
+                                           ::metrics::kDefaultMetricsMimeType,
+                                           on_upload_complete));
 }
 
 base::TimeDelta CastMetricsServiceClient::GetStandardUploadInterval() {
@@ -190,18 +191,20 @@ CastMetricsServiceClient::CastMetricsServiceClient(
     net::URLRequestContextGetter* request_context)
     : io_task_runner_(io_task_runner),
       pref_service_(pref_service),
-      cast_service_(NULL),
-#if !defined(OS_ANDROID)
-      external_metrics_(NULL),
-#endif  // !defined(OS_ANDROID)
+      cast_service_(nullptr),
+#if defined(OS_LINUX)
+      external_metrics_(nullptr),
+      platform_metrics_(nullptr),
+#endif  // defined(OS_LINUX)
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       request_context_(request_context) {
 }
 
 CastMetricsServiceClient::~CastMetricsServiceClient() {
-#if !defined(OS_ANDROID)
+#if defined(OS_LINUX)
   DCHECK(!external_metrics_);
-#endif  // !defined(OS_ANDROID)
+  DCHECK(!platform_metrics_);
+#endif  // defined(OS_LINUX)
 }
 
 void CastMetricsServiceClient::Initialize(CastService* cast_service) {
@@ -218,9 +221,7 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
       base::Bind(&CastMetricsServiceClient::LoadClientInfo,
                  base::Unretained(this)));
   metrics_service_.reset(new ::metrics::MetricsService(
-      metrics_state_manager_.get(),
-      this,
-      pref_service_));
+      metrics_state_manager_.get(), this, pref_service_));
 
   // Always create a client id as it may also be used by crash reporting,
   // (indirectly) included in feedback, and can be queried during setup.
@@ -259,11 +260,16 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   if (IsReportingEnabled())
     metrics_service_->Start();
 
+#if defined(OS_LINUX)
   // Start external metrics collection, which feeds data from external
   // processes into the main external metrics.
-#if defined(OS_LINUX)
-  external_metrics_ = new ExternalMetrics(stability_provider);
+  external_metrics_ = new ExternalMetrics(
+      stability_provider,
+      GetHomePathASCII(kExternalUmaEventsRelativePath).value());
   external_metrics_->Start();
+  platform_metrics_ =
+      new ExternalMetrics(stability_provider, kPlatformUmaEventsPath);
+  platform_metrics_->Start();
 #endif  // defined(OS_LINUX)
 }
 
@@ -273,10 +279,13 @@ void CastMetricsServiceClient::Finalize() {
   metrics_service_->RecordCompletedSessionEnd();
 #endif  // !defined(OS_ANDROID)
 
-  // Stop metrics service cleanly before destructing CastMetricsServiceClient.
 #if defined(OS_LINUX)
+  // Stop metrics service cleanly before destructing CastMetricsServiceClient.
+  // The pointer will be deleted in StopAndDestroy().
   external_metrics_->StopAndDestroy();
-  external_metrics_ = NULL;
+  external_metrics_ = nullptr;
+  platform_metrics_->StopAndDestroy();
+  platform_metrics_ = nullptr;
 #endif  // defined(OS_LINUX)
   metrics_service_->Stop();
 }
