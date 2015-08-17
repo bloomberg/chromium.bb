@@ -57,8 +57,8 @@ void ServiceRegistryImpl::ConnectToRemoteService(
         std::make_pair(service_name.as_string(), handle.release()));
     return;
   }
-  remote_provider_->ConnectToService(mojo::String::From(service_name),
-                                     handle.Pass());
+  remote_provider_->ConnectToService(
+      mojo::String::From(service_name.as_string()), handle.Pass());
 }
 
 bool ServiceRegistryImpl::IsBound() const {
