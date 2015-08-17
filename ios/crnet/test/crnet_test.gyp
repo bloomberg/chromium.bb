@@ -24,9 +24,6 @@
             'crnet_http_tests.mm',
             'crnet_test_runner.mm',
           ],
-          'mac_bundle_resources': [
-            'Default.png',
-          ],
           'include_dirs': [
             '../../..',
             '..',
