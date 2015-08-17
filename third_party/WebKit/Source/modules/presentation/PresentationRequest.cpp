@@ -19,6 +19,7 @@
 #include "modules/presentation/PresentationError.h"
 #include "modules/presentation/PresentationSession.h"
 #include "modules/presentation/PresentationSessionCallbacks.h"
+#include "platform/UserGestureIndicator.h"
 
 namespace blink {
 
@@ -81,6 +82,11 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    if (!UserGestureIndicator::processingUserGesture()) {
+        resolver->reject(DOMException::create(InvalidAccessError, "PresentationRequest::start() requires user gesture."));
+        return promise;
+    }
 
     WebPresentationClient* client = presentationClient(executionContext());
     if (!client) {
