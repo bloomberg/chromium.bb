@@ -563,6 +563,8 @@ extern int           drmOpen(const char *name, const char *busid);
 #define DRM_NODE_PRIMARY 0
 #define DRM_NODE_CONTROL 1
 #define DRM_NODE_RENDER  2
+#define DRM_NODE_MAX     3
+
 extern int           drmOpenWithType(const char *name, const char *busid,
                                      int type);
 
@@ -758,6 +760,38 @@ extern int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle);
 
 extern char *drmGetPrimaryDeviceNameFromFd(int fd);
 extern char *drmGetRenderDeviceNameFromFd(int fd);
+
+#define DRM_BUS_PCI   0
+
+typedef struct _drmPciBusInfo {
+    uint16_t domain;
+    uint8_t bus;
+    uint8_t dev;
+    uint8_t func;
+} drmPciBusInfo, *drmPciBusInfoPtr;
+
+typedef struct _drmPciDeviceInfo {
+    uint16_t vendor_id;
+    uint16_t device_id;
+    uint16_t subvendor_id;
+    uint16_t subdevice_id;
+    uint8_t revision_id;
+} drmPciDeviceInfo, *drmPciDeviceInfoPtr;
+
+typedef struct _drmDevice {
+    char **nodes; /* DRM_NODE_MAX sized array */
+    int available_nodes; /* DRM_NODE_* bitmask */
+    int bustype;
+    union {
+        drmPciBusInfoPtr pci;
+    } businfo;
+    union {
+        drmPciDeviceInfoPtr pci;
+    } deviceinfo;
+} drmDevice, *drmDevicePtr;
+
+extern int drmGetDevices(drmDevicePtr devices[], int max_devices);
+extern void drmFreeDevices(drmDevicePtr devices[], int count);
 
 #if defined(__cplusplus)
 }
