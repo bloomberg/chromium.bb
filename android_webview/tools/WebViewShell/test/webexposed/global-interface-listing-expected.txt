@@ -3206,6 +3206,7 @@ interface PerformanceResourceTiming
     getter responseEnd
     getter responseStart
     getter secureConnectionStart
+    getter workerStart
     method constructor
 interface PerformanceTiming
     getter connectEnd
