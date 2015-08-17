@@ -728,7 +728,7 @@ extern void drmMsg(const char *format, ...) DRM_PRINTFLIKE(1, 2);
 extern int drmSetMaster(int fd);
 extern int drmDropMaster(int fd);
 
-#define DRM_EVENT_CONTEXT_VERSION 2
+#define DRM_EVENT_CONTEXT_VERSION 3
 
 typedef struct _drmEventContext {
 
@@ -747,6 +747,13 @@ typedef struct _drmEventContext {
 				  unsigned int tv_sec,
 				  unsigned int tv_usec,
 				  void *user_data);
+
+	void (*page_flip_handler2)(int fd,
+				   unsigned int sequence,
+				   unsigned int tv_sec,
+				   unsigned int tv_usec,
+				   unsigned int crtc_id,
+				   void *user_data);
 
 } drmEventContext, *drmEventContextPtr;
 

@@ -889,6 +889,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 	int len, i;
 	struct drm_event *e;
 	struct drm_event_vblank *vblank;
+	void *user_data;
 
 	/* The DRM read semantics guarantees that we always get only
 	 * complete events. */
@@ -915,15 +916,22 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 					      U642VOID (vblank->user_data));
 			break;
 		case DRM_EVENT_FLIP_COMPLETE:
-			if (evctx->version < 2 ||
-			    evctx->page_flip_handler == NULL)
-				break;
 			vblank = (struct drm_event_vblank *) e;
-			evctx->page_flip_handler(fd,
-						 vblank->sequence,
-						 vblank->tv_sec,
-						 vblank->tv_usec,
-						 U642VOID (vblank->user_data));
+			user_data = U642VOID (vblank->user_data);
+
+			if (evctx->version >= 3 && evctx->page_flip_handler2)
+				evctx->page_flip_handler2(fd,
+							 vblank->sequence,
+							 vblank->tv_sec,
+							 vblank->tv_usec,
+							 vblank->crtc_id,
+							 user_data);
+			else if (evctx->version >= 2 && evctx->page_flip_handler)
+				evctx->page_flip_handler(fd,
+							 vblank->sequence,
+							 vblank->tv_sec,
+							 vblank->tv_usec,
+							 user_data);
 			break;
 		default:
 			break;
