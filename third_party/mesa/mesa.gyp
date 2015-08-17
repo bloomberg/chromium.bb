@@ -136,6 +136,8 @@
         'clang_warning_flags': [
           '-Wno-tautological-constant-out-of-range-compare',
           '-Wno-mismatched-tags',  # Fixed upstream.
+          # https://bugs.freedesktop.org/show_bug.cgi?id=91645:
+          '-Wno-overloaded-virtual',
         ],
         'clang_warning_flags_unset': [
           # Don't warn about string->bool used in asserts.
