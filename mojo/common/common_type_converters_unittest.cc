@@ -106,6 +106,13 @@ TEST(CommonTypeConvertersTest, StdStringToArrayUint8) {
   EXPECT_EQ('a', data[3]);
 }
 
+TEST(CommonTypeConvertersTest, EmptyStringToArrayUint8) {
+  Array<uint8_t> data = Array<uint8_t>::From(std::string());
+
+  ASSERT_EQ(0ul, data.size());
+  EXPECT_FALSE(data.is_null());
+}
+
 }  // namespace test
 }  // namespace common
 }  // namespace mojo

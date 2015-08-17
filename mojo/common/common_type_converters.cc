@@ -39,7 +39,7 @@ base::string16 TypeConverter<base::string16, String>::Convert(
 
 std::string TypeConverter<std::string, Array<uint8_t> >::Convert(
     const Array<uint8_t>& input) {
-  if (input.is_null())
+  if (input.is_null() || input.size() == 0u)
     return std::string();
 
   return std::string(reinterpret_cast<const char*>(&input.front()),
@@ -49,7 +49,8 @@ std::string TypeConverter<std::string, Array<uint8_t> >::Convert(
 Array<uint8_t> TypeConverter<Array<uint8_t>, std::string>::Convert(
     const std::string& input) {
   Array<uint8_t> result(input.size());
-  memcpy(&result.front(), input.c_str(), input.size());
+  if (input.size() > 0)
+    memcpy(&result.front(), input.c_str(), input.size());
   return result.Pass();
 }
 
