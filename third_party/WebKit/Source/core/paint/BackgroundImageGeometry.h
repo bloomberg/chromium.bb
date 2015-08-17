@@ -53,7 +53,7 @@ public:
 
     void clip(const IntRect&);
 
-    void setHasNonLocalGeometry(bool hasNonLocalGeometry = true) { m_hasNonLocalGeometry = hasNonLocalGeometry; }
+    void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
     bool hasNonLocalGeometry() const { return m_hasNonLocalGeometry; }
 
 private:
