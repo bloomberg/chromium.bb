@@ -172,9 +172,9 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(ret, 0)
       self.assertEqual(self.upload_mock.call_count, 3)
       for call_args in self.upload_mock.call_args_list:
-        url, sym_item = call_args[0]
+        url, sym_element = call_args[0]
         self.assertEqual(url, expected_url)
-        self.assertTrue(sym_item.sym_file.endswith('.sym'))
+        self.assertTrue(sym_element.symbol_item.sym_file.endswith('.sym'))
 
   def testOfficialUploadURL(self):
     """Verify we upload to the real crash server for official builds"""
@@ -208,7 +208,7 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
   def testFailedFileList(self):
     """Verify the failed file list is populated with the right content"""
     def UploadSymbol(*args, **kwargs):
-      kwargs['failed_queue'].put(args[1].sym_file)
+      kwargs['failed_queue'].put(args[1].symbol_item.sym_file)
       kwargs['num_errors'].value = 4
     self.upload_mock.side_effect = UploadSymbol
     with parallel_unittest.ParallelMock():
@@ -235,7 +235,8 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
 
       # Since upload order is arbitrary, we have to do a manual scan for each
       # path ourselves against the uploaded file list.
-      found_syms = [x[0][1].sym_file for x in self.upload_mock.call_args_list]
+      found_syms = [x[0][1].symbol_item.sym_file
+                    for x in self.upload_mock.call_args_list]
       for found_sym in found_syms:
         for path in sym_paths:
           if found_sym.endswith(path):
@@ -378,7 +379,8 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
   def testUploadSymbolNormal(self):
     """Verify we try to upload on a normal file"""
     osutils.Touch(self.sym_file)
-    ret = upload_symbols.UploadSymbol(self.url, self.sym_item)
+    sym_element = upload_symbols.SymbolElement(self.sym_item, None)
+    ret = upload_symbols.UploadSymbol(self.url, sym_element)
     self.assertEqual(ret, 0)
     self.upload_mock.assert_called_with(self.url, self.sym_item)
     self.assertEqual(self.upload_mock.call_count, 1)
@@ -387,8 +389,9 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     """Verify that when the error count gets too high, we stop uploading"""
     errors = ctypes.c_int(10000)
     # Pass in garbage values so that we crash if num_errors isn't handled.
-    ret = upload_symbols.UploadSymbol(None, self.sym_item, sleep=None,
-                                      num_errors=errors)
+    ret = upload_symbols.UploadSymbol(
+        None, upload_symbols.SymbolElement(self.sym_item, None), sleep=None,
+        num_errors=errors)
     self.assertEqual(ret, 0)
 
   def testUploadRetryErrors(self, side_effect=None):
@@ -398,7 +401,8 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     self.upload_mock.side_effect = side_effect
     errors = ctypes.c_int()
     item = upload_symbols.FakeItem(sym_file='/dev/null')
-    ret = upload_symbols.UploadSymbol(self.url, item, num_errors=errors)
+    element = upload_symbols.SymbolElement(item, None)
+    ret = upload_symbols.UploadSymbol(self.url, element, num_errors=errors)
     self.assertEqual(ret, 1)
     self.upload_mock.assert_called_with(self.url, item)
     self.assertTrue(self.upload_mock.call_count >= upload_symbols.MAX_RETRIES)
@@ -420,7 +424,9 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
         'STACK CFI 1234',
     ))
     osutils.WriteFile(self.sym_file, content)
-    ret = upload_symbols.UploadSymbol(self.url, self.sym_item, file_limit=1)
+    ret = upload_symbols.UploadSymbol(
+        self.url, upload_symbols.SymbolElement(self.sym_item, None),
+        file_limit=1)
     self.assertEqual(ret, 0)
     # Make sure the item passed to the upload has a temp file and not the
     # original -- only the temp one has been stripped down.
@@ -435,7 +441,9 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
       f.truncate(upload_symbols.CRASH_SERVER_FILE_LIMIT + 100)
       f.seek(0)
       f.write('STACK CFI 1234\n\n')
-    ret = upload_symbols.UploadSymbol(self.url, self.sym_item)
+    ret = upload_symbols.UploadSymbol(
+        self.url,
+        upload_symbols.SymbolElement(self.sym_item, None))
     self.assertEqual(ret, 0)
     # Make sure the item passed to the upload has a temp file and not the
     # original -- only the temp one has been truncated.

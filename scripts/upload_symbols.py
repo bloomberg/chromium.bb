@@ -11,6 +11,7 @@ for those executables involved).
 
 from __future__ import print_function
 
+import collections
 import ctypes
 import datetime
 import errno
@@ -145,6 +146,12 @@ ERROR_ADJUST_FAIL = 1.0
 ERROR_ADJUST_PASS = -0.5
 
 
+# A named tuple which hold a SymbolItem object and
+# a isolateserver._IsolateServerPushState item.
+SymbolElement = collections.namedtuple(
+    'SymbolElement', ('symbol_item', 'opaque_push_state'))
+
+
 def GetUploadTimeout(path):
   """How long to wait for a specific file to upload to the crash server.
 
@@ -270,14 +277,18 @@ def _UpdateCounter(counter, adj):
     _Update()
 
 
-def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
+def UploadSymbol(upload_url, symbol_element, file_limit=DEFAULT_FILE_LIMIT,
                  sleep=0, num_errors=None, watermark_errors=None,
                  failed_queue=None, passed_queue=None):
-  """Upload |sym_item| to |upload_url|
+  """Upload |sym_element.symbol_item| to |upload_url|
 
   Args:
     upload_url: The crash server to upload things to
-    sym_item: A SymbolItem containing the path to the breakpad symbol to upload
+    symbol_element: A SymbolElement tuple. symbol_element.symbol_item is a
+                    SymbolItem object containing the path to the breakpad symbol
+                    to upload. symbol_element.opaque_push_state is an object of
+                    _IsolateServerPushState or None if the item doesn't have
+                    a push state.
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: Number of seconds to sleep before running
     num_errors: An object to update with the error count (needs a .value member)
@@ -288,8 +299,8 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
   Returns:
     The number of errors that were encountered.
   """
-  sym_file = sym_item.sym_file
-  upload_item = sym_item
+  sym_file = symbol_element.symbol_item.sym_file
+  upload_item = symbol_element.symbol_item
 
   if num_errors is None:
     num_errors = ctypes.c_int()
@@ -321,7 +332,7 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
                                   if not x.startswith('STACK CFI')])
 
         upload_item = FakeItem(sym_file=temp_sym_file.name,
-                               sym_header=sym_item.sym_header)
+                               sym_header=symbol_element.symbol_item.sym_header)
 
     # Hopefully the crash server will let it through.  But it probably won't.
     # Not sure what the best answer is in this case.
@@ -344,7 +355,7 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
       success = True
 
       if passed_queue:
-        passed_queue.put(sym_item)
+        passed_queue.put(symbol_element)
     except urllib2.HTTPError as e:
       logging.warning('could not upload: %s: HTTP %s: %s',
                       os.path.basename(sym_file), e.code, e.reason)
@@ -392,24 +403,30 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
 
   Args:
     dedupe_namespace: The isolateserver namespace to dedupe uploaded symbols.
-    dedupe_queue: The queue to read SymbolItems from
+    dedupe_queue: The queue to read SymbolElements from
   """
   if dedupe_queue is None:
     return
 
-  item = None
+  sym_file = ''
   try:
     with timeout_util.Timeout(DEDUPE_TIMEOUT):
       storage = isolateserver.get_storage_api(constants.ISOLATESERVER,
                                               dedupe_namespace)
-    for item in iter(dedupe_queue.get, None):
-      with timeout_util.Timeout(DEDUPE_TIMEOUT):
-        logging.debug('sending %s to dedupe server', item.sym_file)
-        storage.push(item, item.content(0))
-        logging.debug('sent %s', item.sym_file)
+    for symbol_element in iter(dedupe_queue.get, None):
+      if not symbol_element or not symbol_element.symbol_item:
+        continue
+      symbol_item = symbol_element.symbol_item
+      push_state = symbol_element.opaque_push_state
+      sym_file = symbol_item.sym_file if symbol_item.sym_file else ''
+      if push_state is not None:
+        with timeout_util.Timeout(DEDUPE_TIMEOUT):
+          logging.debug('sending %s to dedupe server', sym_file)
+          symbol_item.prepare(SymbolItem.ALGO)
+          storage.push(symbol_item, push_state, symbol_item.content())
+          logging.debug('sent %s', sym_file)
     logging.info('dedupe notification finished; exiting')
   except Exception:
-    sym_file = item.sym_file if (item and item.sym_file) else ''
     logging.warning('posting %s to dedupe server failed',
                     os.path.basename(sym_file), exc_info=True)
 
@@ -434,20 +451,25 @@ def SymbolDeduplicator(storage, sym_paths):
     sym_paths: List of symbol files to check against the dedupe server
 
   Returns:
-    List of symbol files that have not been uploaded before
+    List of SymbolElement objects that have not been uploaded before
   """
   if not sym_paths:
     return sym_paths
 
   items = [SymbolItem(x) for x in sym_paths]
+  for item in items:
+    item.prepare(SymbolItem.ALGO)
   if storage:
     try:
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
         items = storage.contains(items)
+      return [SymbolElement(symbol_item=item, opaque_push_state=push_state)
+              for (item, push_state) in items.iteritems()]
     except Exception:
       logging.warning('talking to dedupe server failed', exc_info=True)
 
-  return items
+  return [SymbolElement(symbol_item=item, opaque_push_state=None)
+          for item in items]
 
 
 def IsTarball(path):
