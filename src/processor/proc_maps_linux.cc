@@ -5,11 +5,9 @@
 #include "google_breakpad/processor/proc_maps_linux.h"
 
 #include <fcntl.h>
-#include <stdio.h>
-
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
-#endif
+#include <stdio.h>
 
 #include "processor/logging.h"
 
