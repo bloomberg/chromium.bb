@@ -1828,7 +1828,7 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 	if (format[1])
 		n_formats = 2;
 	if (gl_renderer->output_create(&output->base,
-				       (EGLNativeDisplayType)output->surface,
+				       (EGLNativeWindowType)output->surface,
 				       output->surface,
 				       gl_renderer->opaque_attribs,
 				       format,
