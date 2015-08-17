@@ -787,7 +787,7 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
           FAIL();
       }
     } else {
-      switch(p) {
+      switch (p) {
         case HIGHEST:
           EXPECT_EQ(0, spdy_prio);
           break;
