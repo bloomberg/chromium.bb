@@ -166,6 +166,9 @@ match !%"^_~" ing - 346
 
 #   10.5   Lower Wordsigns
 
+
+attribute 1 +=*,.?!"'“”‘’  punctuation with only lower dots (except hyphens)
+
 class lowerdotspunc +=*,.?!"'“”‘’
 #class lowerdotspunc +=*,.?!"'“”‘’-—‐‑–—
 #class upperdotspunc ()<>{}[]%$#@~^&:;|_\\/
