@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_IO_THREAD_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 

@@ -1491,7 +1491,7 @@ float IOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
   if (base::StringToDouble(GetVariationParam(quic_trial_params,
                                              "load_server_info_time_to_srtt"),
                            &value)) {
-    return (float)value;
+    return static_cast<float>(value);
   }
   return 0.0f;
 }
@@ -1545,7 +1545,7 @@ float IOThread::GetQuicPacketLossThreshold(
   if (base::StringToDouble(GetVariationParam(quic_trial_params,
                                              "packet_loss_threshold"),
                            &value)) {
-    return (float)value;
+    return static_cast<float>(value);
   }
   return 0.0f;
 }
