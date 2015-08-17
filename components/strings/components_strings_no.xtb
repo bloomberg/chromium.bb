@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
-<translation id="2774256287122201187">Du kan fortsette. Hvis du fortsetter til siden, vises ikke denne advarselen igjen før det har gått fem minutter.</translation>
-<translation id="3963721102035795474">Lesermodus</translation>
-<translation id="7485870689360869515">Ingen data ble funnet.</translation>
-<translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
-<translation id="5172758083709347301">Datamaskin</translation>
-<translation id="7180611975245234373">Last inn på nytt</translation>
-<translation id="8208216423136871611">Ikke lagre</translation>
-<translation id="777702478322588152">Prefektur</translation>
-<translation id="2972581237482394796">Gjø&amp;r om</translation>
-<translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE"/></translation>
-<translation id="2262243747453050782">HTTP-feil</translation>
-<translation id="1339601241726513588">Registreringsdomene:</translation>
-<translation id="7298195798382681320">Anbefalt</translation>
-<translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY"/>»: <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">JavaScript-varsel</translation>
-<translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
-<translation id="6628463337424475685"><ph name="ENGINE"/> Søk</translation>
-<translation id="2498091847651709837">Skann nytt kort</translation>
-<translation id="6831043979455480757">Oversett</translation>
-<translation id="1228893227497259893">Feil enhetsidentifikator</translation>
-<translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
-<translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE"/>-verdi.</translation>
-<translation id="2094505752054353250">Domenene samsvarer ikke</translation>
-<translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7537536606612762813">Obligatorisk</translation>
-<translation id="2958431318199492670">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres.</translation>
-<translation id="3583757800736429874">&amp;Flytt likevel</translation>
-<translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">Manglende enhetsoppføring</translation>
-<translation id="1491151370853475546">Last inn denne siden på nytt</translation>
-<translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE"/></translation>
-<translation id="1227633850867390598">Skjul verdien</translation>
-<translation id="6753269504797312559">Retningslinjeverdi</translation>
-<translation id="3369366829301677151">Oppdater og bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
-<translation id="8834246243508017242">Aktiver autofyll for Kontakter</translation>
-<translation id="7275334191706090484">Administrerte bokmerker</translation>
-<translation id="7400418766976504921">Nettadresse</translation>
-<translation id="7378627244592794276">Nei takk</translation>
-<translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
 <translation id="1055184225775184556">&amp;Angre tilleggingen</translation>
-<translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
-<translation id="4850886885716139402">Visning</translation>
-<translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
-<translation id="6874604403660855544">&amp;Legg til likevel</translation>
-<translation id="4607653538520819196">Denne siden kan ikke sendes gjennom Datasparing.</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Område</translation>
-<translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
-<translation id="8988760548304185580">Skriv inn utløpsdatoen og den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
-<translation id="8940229512486821554">Kjør <ph name="EXTENSION_NAME"/>-kommando: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">Ukjent feil</translation>
-<translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
-<translation id="3452404311384756672">Hentingsintervall:</translation>
-<translation id="409504436206021213">Ikke last inn på nytt</translation>
-<translation id="7441627299479586546">Feil emne for innstillinger</translation>
-<translation id="3885155851504623709">Kommune</translation>
-<translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
-<translation id="1426410128494586442">Ja</translation>
-<translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="7108649287766967076">Oversettelsen til <ph name="TARGET_LANGUAGE"/> mislyktes.</translation>
-<translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
-<translation id="3219579145727097045">Skriv inn utløpsdatoen og den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
-<translation id="59107663811261420">Denne korttypen støttes ikke av Google Payments for denne selgeren. Velg et annet kort.</translation>
-<translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
-<translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
-<translation id="8437238597147034694">&amp;Angre flyttingen</translation>
-<translation id="5813119285467412249">&amp;Legg til likevel</translation>
-<translation id="333371639341676808">Hindre denne siden i å opprette flere dialogbokser.</translation>
-<translation id="5523118979700054094">Navn på retningslinje</translation>
-<translation id="7791543448312431591">Legg til</translation>
-<translation id="2053553514270667976">Postnummer</translation>
-<translation id="1644184664548287040">Nettverkskonfigurasjonen er ugyldig og kan ikke importeres.</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">Innstillingene ble ikke funnet</translation>
-<translation id="3150653042067488994">Midlertidig tjenerfeil</translation>
-<translation id="7087282848513945231">Fylke</translation>
-<translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
-<translation id="8194797478851900357">&amp;Angre flyttingen</translation>
-<translation id="6458467102616083041">Ignorert fordi standardsøk er deaktivert i henhold til retningslinje.</translation>
-<translation id="6259156558325130047">&amp;Omorganiser likevel</translation>
-<translation id="1227224963052638717">Ukjent innstilling.</translation>
-<translation id="4250680216510889253">Nei</translation>
-<translation id="9207861905230894330">Kunne ikke legge til artikkelen.</translation>
-<translation id="5872918882028971132">Overordnede forslag</translation>
-<translation id="337363190475750230">Godkjenningen er opphevet</translation>
-<translation id="2367567093518048410">Nivå</translation>
-<translation id="7977590112176369853">&lt;skriv inn søk&gt;</translation>
-<translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
-<translation id="5317780077021120954">Lagre</translation>
-<translation id="8530504477309582336">Denne korttypen støttes ikke av Google Payments. Velg et annet kort.</translation>
-<translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE"/>.</translation>
-<translation id="3739623965217189342">En link du kopierte</translation>
-<translation id="8790007591277257123">&amp;Slett likevel</translation>
-<translation id="8311778656528046050">Er du sikker på at du vil laste inn denne siden på nytt?</translation>
-<translation id="370665806235115550">Laster inn...</translation>
-<translation id="2096368010154057602">Avdeling</translation>
-<translation id="6529602333819889595">&amp;Slett likevel</translation>
-<translation id="4258748452823770588">Dårlig signatur</translation>
-<translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
-<translation id="2030481566774242610">Mener du <ph name="LINK"/>?</translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
-<translation id="3145945101586104090">Kunne ikke avkode responsen</translation>
-<translation id="2328300916057834155">Ignorerte ugyldig bokmerke ved indeks <ph name="ENTRY_INDEX"/></translation>
-<translation id="883848425547221593">Andre bokmerker</translation>
-<translation id="2181821976797666341">Retningslinjer</translation>
-<translation id="3174168572213147020">Øy</translation>
-<translation id="9137013805542155359">Vis original</translation>
-<translation id="2213606439339815911">Henter oppføringer …</translation>
-<translation id="6263376278284652872"><ph name="DOMAIN"/>-bokmerker</translation>
-<translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="8218327578424803826">Tilordnet posisjon:</translation>
-<translation id="3542684924769048008">Bruk passord for:</translation>
-<translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
-<translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
-<translation id="7139724024395191329">Emirat</translation>
-<translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
-<translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
-<translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="6970216967273061347">Område</translation>
-<translation id="3427342743765426898">&amp;Endre likevel</translation>
-<translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX"/>»: <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
-<translation id="6445051938772793705">Land</translation>
-<translation id="5031870354684148875">Om Google Oversett</translation>
-<translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK"/>bufret kopi<ph name="END_LINK"/> av <ph name="URL"/></translation>
-<translation id="8201077131113104583">Ugyldig oppdaterings-URL for utvidelse med ID «<ph name="EXTENSION_ID"/>».</translation>
-<translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
-<translation id="2025186561304664664">Mellomtjeneren er innstilt på automatisk konfigurasjon.</translation>
-<translation id="1853748787962613237">Kunne ikke vise artikkelen.</translation>
-<translation id="5455374756549232013">Feil tidsstempel for enhetsinnstillinger</translation>
-<translation id="2025623846716345241">Bekreft ny innlasting</translation>
-<translation id="1962204205936693436"><ph name="DOMAIN"/>-bokmerker</translation>
-<translation id="4300246636397505754">Overordnede forslag</translation>
-<translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
-<translation id="2495083838625180221">JSON Parser</translation>
-<translation id="1973335181906896915">Serialiseringsfeil</translation>
-<translation id="5989320800837274978">Verken statiske proxytjenere eller en nettadresse med .pac-skript er angitt.</translation>
-<translation id="7805768142964895445">Status</translation>
-<translation id="2113977810652731515">Kort</translation>
+<translation id="106701514854093668">Bokmerker for skrivebord</translation>
+<translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE"/></translation>
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
-<translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
-<translation id="5439770059721715174">Skjemavalideringsfeil i «<ph name="ERROR_PATH"/>»: <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">Bokmerkerad</translation>
-<translation id="587701087903783706">Avslutt mobilvennlig visning</translation>
-<translation id="7208899522964477531">Søk på <ph name="SITE_NAME"/> etter <ph name="SEARCH_TERMS"/></translation>
-<translation id="7956713633345437162">Bokmerker for mobil</translation>
-<translation id="5089810972385038852">Fylke / delstat</translation>
-<translation id="647261751007945333">Enhetsinnstillinger</translation>
-<translation id="2556876185419854533">&amp;Angre endringen</translation>
-<translation id="213826338245044447">Bokmerker for mobil</translation>
-<translation id="4594403342090139922">&amp;Angre slettingen</translation>
-<translation id="8571890674111243710">Oversett siden til <ph name="LANGUAGE"/></translation>
-<translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
-<translation id="2114841414352855701">Ignorert fordi det ble overstyrt av <ph name="POLICY_NAME"/>.</translation>
-<translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE"/>.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
-<translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="1734864079702812349">Amex</translation>
-<translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
-<translation id="3105172416063519923">Ressurs-ID:</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
-<translation id="2587841377698384444">ID for katalog-API:</translation>
-<translation id="7752995774971033316">Administreres ikke</translation>
-<translation id="3712624925041724820">Lisensene er oppbrukt</translation>
-<translation id="4926049483395192435">Må angis.</translation>
-<translation id="1455235771979731432">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
-<translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
-<translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE"/>? Rapportér denne feilen</translation>
-<translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
-<translation id="8725066075913043281">Prøv igjen</translation>
-<translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
-<translation id="1640180200866533862">Brukerretningslinjer</translation>
-<translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
-<translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
-<translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
-<translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
-<translation id="2354001756790975382">Andre bokmerker</translation>
-<translation id="3650584904733503804">Valideringen var vellykket</translation>
-<translation id="2359808026110333948">Fortsett</translation>
-<translation id="6915804003454593391">Bruker:</translation>
-<translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
-<translation id="2270192940992995399">Kunne ikke finne artikkelen.</translation>
-<translation id="4726672564094551039">Last inn retningslinjer på nytt</translation>
-<translation id="9170848237812810038">&amp;Angre</translation>
-<translation id="9154176715500758432">Bli værende på denne siden</translation>
-<translation id="2392959068659972793">Vis innstillinger uten verdi</translation>
-<translation id="9148507642005240123">&amp;Angre endringen</translation>
-<translation id="5470861586879999274">&amp;Endre likevel</translation>
-<translation id="5190835502935405962">Bokmerkerad</translation>
-<translation id="6965978654500191972">Enhet</translation>
-<translation id="5295309862264981122">Bekreft navigering</translation>
-<translation id="8249320324621329438">Sist hentet:</translation>
-<translation id="194030505837763158">Gå til <ph name="LINK"/></translation>
+<translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
+<translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
+<translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
+<translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK"/>bufret kopi<ph name="END_LINK"/> av <ph name="URL"/></translation>
+<translation id="1227224963052638717">Ukjent innstilling.</translation>
+<translation id="1227633850867390598">Skjul verdien</translation>
+<translation id="1228893227497259893">Feil enhetsidentifikator</translation>
 <translation id="1285320974508926690">Oversett aldri dette nettstedet</translation>
+<translation id="1339601241726513588">Registreringsdomene:</translation>
 <translation id="1344588688991793829">Innstillinger for autofyll i Chromium</translation>
-<translation id="6282194474023008486">Postnummer</translation>
-<translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
-<translation id="3623476034248543066">Vis verdien</translation>
-<translation id="9020542370529661692">Denne siden har blitt oversatt til <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="5631439013527180824">Ugyldig token for enhetsadministrering</translation>
-<translation id="560412284261940334">Administrering støttes ikke</translation>
-<translation id="6512448926095770873">Forlat siden</translation>
+<translation id="1426410128494586442">Ja</translation>
+<translation id="1455235771979731432">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
+<translation id="1491151370853475546">Last inn denne siden på nytt</translation>
+<translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
 <translation id="1639239467298939599">Laster inn</translation>
-<translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE"/> fra et ukjent språk</translation>
-<translation id="4813512666221746211">Nettverksfeil</translation>
+<translation id="1640180200866533862">Brukerretningslinjer</translation>
+<translation id="1644184664548287040">Nettverkskonfigurasjonen er ugyldig og kan ikke importeres.</translation>
+<translation id="1693754753824026215">Varsel fra <ph name="SITE"/>:</translation>
+<translation id="1734864079702812349">Amex</translation>
+<translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
+<translation id="1853748787962613237">Kunne ikke vise artikkelen.</translation>
+<translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
 <translation id="1875753206475436906">heuristic type: <ph name="HEURISTIC_TYPE"/>
     server type: <ph name="SERVER_TYPE"/>
     field signature: <ph name="FIELD_SIGNATURE"/>
     form signature: <ph name="FORM_SIGNATURE"/>
     experiment id: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
-<translation id="2479410451996844060">Ugyldig nettadresse for søk.</translation>
-<translation id="5509780412636533143">Administrerte bokmerker</translation>
-<translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
-<translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
-<translation id="4120075327926916474">Vil du at Google Chrome skal lagre denne kredittkortinformasjonen for utfylling av nettskjemaer?</translation>
-<translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
-<translation id="1693754753824026215">Varsel fra <ph name="SITE"/>:</translation>
-<translation id="4269787794583293679">(Uten brukernavn)</translation>
-<translation id="7988324688042446538">Bokmerker for skrivebord</translation>
-<translation id="8488350697529856933">Gjelder for</translation>
-<translation id="6165508094623778733">Les mer</translation>
-<translation id="5565735124758917034">Aktiv</translation>
-<translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE"/>Vil du ha den oversatt?</translation>
-<translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
-<translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
-<translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
-<translation id="9125941078353557812">Skriv inn den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
-<translation id="106701514854093668">Bokmerker for skrivebord</translation>
-<translation id="6154808779448689242">Det returnerte tokenet for enhetsinnstillinger samsvarer ikke med det gjeldende tokenet</translation>
-<translation id="7995512525968007366">Ikke spesifisert</translation>
-<translation id="7961015016161918242">Aldri</translation>
-<translation id="2835170189407361413">Slett skjemaet</translation>
-<translation id="6550675742724504774">Alternativer</translation>
-<translation id="8804164990146287819">Personvernregler</translation>
-<translation id="988159990683914416">Utviklerversjon</translation>
-<translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
-<translation id="7182878459783632708">Ingen retningslinjer er angitt</translation>
-<translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
-<translation id="8364627913115013041">Ikke angitt.</translation>
-<translation id="8713130696108419660">Feil innledende signatur</translation>
-<translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
+<translation id="194030505837763158">Gå til <ph name="LINK"/></translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/>-bokmerker</translation>
+<translation id="1973335181906896915">Serialiseringsfeil</translation>
+<translation id="2025186561304664664">Mellomtjeneren er innstilt på automatisk konfigurasjon.</translation>
+<translation id="2025623846716345241">Bekreft ny innlasting</translation>
+<translation id="2030481566774242610">Mener du <ph name="LINK"/>?</translation>
+<translation id="2053553514270667976">Postnummer</translation>
 <translation id="20817612488360358">Innstillinger for systemmellomtjener er stilt inn på å brukes, men en uttrykkelig mellomtjenerkonfigurasjon er også angitt.</translation>
-<translation id="2639739919103226564">Status:</translation>
-<translation id="8824019021993735287">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
-<translation id="4968547170521245791">Kan ikke sende gjennom proxy-tjeneren</translation>
-<translation id="385051799172605136">Tilbake</translation>
-<translation id="4196861286325780578">&amp;Flytt likevel</translation>
-<translation id="5095208057601539847">Provins</translation>
-<translation id="2581221116934462656">Vil du at <ph name="PRODUCT_NAME"/> skal tilby å oversette sider på <ph name="LANGUAGE_NAME"/> fra dette nettstedet neste gang?</translation>
+<translation id="2094505752054353250">Domenene samsvarer ikke</translation>
+<translation id="2096368010154057602">Avdeling</translation>
+<translation id="2113977810652731515">Kort</translation>
+<translation id="2114841414352855701">Ignorert fordi det ble overstyrt av <ph name="POLICY_NAME"/>.</translation>
+<translation id="213826338245044447">Bokmerker for mobil</translation>
+<translation id="2181821976797666341">Retningslinjer</translation>
+<translation id="2212735316055980242">Innstillingene ble ikke funnet</translation>
+<translation id="2213606439339815911">Henter oppføringer …</translation>
+<translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
+<translation id="2262243747453050782">HTTP-feil</translation>
+<translation id="2270192940992995399">Kunne ikke finne artikkelen.</translation>
+<translation id="2328300916057834155">Ignorerte ugyldig bokmerke ved indeks <ph name="ENTRY_INDEX"/></translation>
+<translation id="2354001756790975382">Andre bokmerker</translation>
+<translation id="2359808026110333948">Fortsett</translation>
+<translation id="2367567093518048410">Nivå</translation>
+<translation id="2392959068659972793">Vis innstillinger uten verdi</translation>
 <translation id="2396249848217231973">&amp;Angre slettingen</translation>
-<translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2455981314101692989">Denne nettsiden har deaktivert automatisk utfylling for dette skjemaet.</translation>
-<translation id="6597614308054261376">Du prøver å nå <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Denne siden kan ikke sendes gjennom Datasparing akkurat nå.</translation>
-<translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
-<translation id="5720705177508910913">Gjeldende bruker</translation>
+<translation id="2479410451996844060">Ugyldig nettadresse for søk.</translation>
+<translation id="2495083838625180221">JSON Parser</translation>
+<translation id="2498091847651709837">Skann nytt kort</translation>
+<translation id="2556876185419854533">&amp;Angre endringen</translation>
+<translation id="2581221116934462656">Vil du at <ph name="PRODUCT_NAME"/> skal tilby å oversette sider på <ph name="LANGUAGE_NAME"/> fra dette nettstedet neste gang?</translation>
+<translation id="2587841377698384444">ID for katalog-API:</translation>
+<translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
+<translation id="2639739919103226564">Status:</translation>
+<translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
+<translation id="2721148159707890343">Forespørselen var vellykket</translation>
+<translation id="2774256287122201187">Du kan fortsette. Hvis du fortsetter til siden, vises ikke denne advarselen igjen før det har gått fem minutter.</translation>
+<translation id="277499241957683684">Manglende enhetsoppføring</translation>
+<translation id="2835170189407361413">Slett skjemaet</translation>
+<translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
+<translation id="2958431318199492670">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres.</translation>
+<translation id="2972581237482394796">Gjø&amp;r om</translation>
+<translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX"/>»: <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">Feil type enhetsinnstillinger</translation>
+<translation id="3105172416063519923">Ressurs-ID:</translation>
+<translation id="3145945101586104090">Kunne ikke avkode responsen</translation>
+<translation id="3150653042067488994">Midlertidig tjenerfeil</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3174168572213147020">Øy</translation>
+<translation id="3219579145727097045">Skriv inn utløpsdatoen og den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
+<translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE"/>.</translation>
+<translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
+<translation id="333371639341676808">Hindre denne siden i å opprette flere dialogbokser.</translation>
+<translation id="3369366829301677151">Oppdater og bekreft følgende kort: <ph name="CREDIT_CARD"/></translation>
+<translation id="337363190475750230">Godkjenningen er opphevet</translation>
+<translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
+<translation id="3380365263193509176">Ukjent feil</translation>
 <translation id="3380864720620200369">Klient-ID:</translation>
+<translation id="3427342743765426898">&amp;Endre likevel</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">Hentingsintervall:</translation>
+<translation id="3542684924769048008">Bruk passord for:</translation>
+<translation id="3583757800736429874">&amp;Flytt likevel</translation>
+<translation id="3623476034248543066">Vis verdien</translation>
+<translation id="3650584904733503804">Valideringen var vellykket</translation>
+<translation id="370665806235115550">Laster inn...</translation>
+<translation id="3712624925041724820">Lisensene er oppbrukt</translation>
+<translation id="3739623965217189342">En link du kopierte</translation>
+<translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
+<translation id="385051799172605136">Tilbake</translation>
+<translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
+<translation id="3885155851504623709">Kommune</translation>
+<translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
+<translation id="3963721102035795474">Lesermodus</translation>
+<translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
+<translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY"/>»: <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
+<translation id="409504436206021213">Ikke last inn på nytt</translation>
+<translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
+<translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
+<translation id="4120075327926916474">Vil du at Google Chrome skal lagre denne kredittkortinformasjonen for utfylling av nettskjemaer?</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">Ugyldig bekreftelsessignatur</translation>
+<translation id="4196861286325780578">&amp;Flytt likevel</translation>
+<translation id="4250680216510889253">Nei</translation>
+<translation id="4258748452823770588">Dårlig signatur</translation>
+<translation id="4269787794583293679">(Uten brukernavn)</translation>
+<translation id="4300246636397505754">Overordnede forslag</translation>
+<translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE"/>-verdi.</translation>
+<translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
+<translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR"/></translation>
+<translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
+<translation id="4594403342090139922">&amp;Angre slettingen</translation>
+<translation id="4607653538520819196">Denne siden kan ikke sendes gjennom Datasparing.</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">Last inn retningslinjer på nytt</translation>
+<translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
+<translation id="4813512666221746211">Nettverksfeil</translation>
+<translation id="4850886885716139402">Visning</translation>
+<translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE"/> fra et ukjent språk</translation>
+<translation id="4926049483395192435">Må angis.</translation>
+<translation id="4968547170521245791">Kan ikke sende gjennom proxy-tjeneren</translation>
+<translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
+<translation id="5031870354684148875">Om Google Oversett</translation>
+<translation id="5089810972385038852">Fylke / delstat</translation>
+<translation id="5095208057601539847">Provins</translation>
+<translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
+<translation id="5172758083709347301">Datamaskin</translation>
+<translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE"/>? Rapportér denne feilen</translation>
+<translation id="5190835502935405962">Bokmerkerad</translation>
+<translation id="5295309862264981122">Bekreft navigering</translation>
+<translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
+<translation id="5317780077021120954">Lagre</translation>
+<translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
+<translation id="5439770059721715174">Skjemavalideringsfeil i «<ph name="ERROR_PATH"/>»: <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">Feil tidsstempel for enhetsinnstillinger</translation>
+<translation id="5470861586879999274">&amp;Endre likevel</translation>
+<translation id="5509780412636533143">Administrerte bokmerker</translation>
+<translation id="5523118979700054094">Navn på retningslinje</translation>
+<translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
+<translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
+<translation id="5565735124758917034">Aktiv</translation>
+<translation id="560412284261940334">Administrering støttes ikke</translation>
+<translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
+<translation id="5631439013527180824">Ugyldig token for enhetsadministrering</translation>
+<translation id="5720705177508910913">Gjeldende bruker</translation>
+<translation id="5813119285467412249">&amp;Legg til likevel</translation>
+<translation id="5872918882028971132">Overordnede forslag</translation>
+<translation id="587701087903783706">Avslutt mobilvennlig visning</translation>
+<translation id="59107663811261420">Denne korttypen støttes ikke av Google Payments for denne selgeren. Velg et annet kort.</translation>
+<translation id="5989320800837274978">Verken statiske proxytjenere eller en nettadresse med .pac-skript er angitt.</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">Det returnerte tokenet for enhetsinnstillinger samsvarer ikke med det gjeldende tokenet</translation>
+<translation id="6165508094623778733">Les mer</translation>
+<translation id="6259156558325130047">&amp;Omorganiser likevel</translation>
+<translation id="6263376278284652872"><ph name="DOMAIN"/>-bokmerker</translation>
+<translation id="6282194474023008486">Postnummer</translation>
+<translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
+<translation id="6445051938772793705">Land</translation>
+<translation id="6458467102616083041">Ignorert fordi standardsøk er deaktivert i henhold til retningslinje.</translation>
+<translation id="647261751007945333">Enhetsinnstillinger</translation>
+<translation id="6512448926095770873">Forlat siden</translation>
+<translation id="6529602333819889595">&amp;Slett likevel</translation>
+<translation id="6550675742724504774">Alternativer</translation>
+<translation id="6597614308054261376">Du prøver å nå <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Denne siden kan ikke sendes gjennom Datasparing akkurat nå.</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> Søk</translation>
+<translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
+<translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
+<translation id="6753269504797312559">Retningslinjeverdi</translation>
+<translation id="6831043979455480757">Oversett</translation>
+<translation id="6839929833149231406">Område</translation>
+<translation id="6874604403660855544">&amp;Legg til likevel</translation>
+<translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
+<translation id="6915804003454593391">Bruker:</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">Enhet</translation>
+<translation id="6970216967273061347">Område</translation>
+<translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
+<translation id="6980028882292583085">JavaScript-varsel</translation>
+<translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7087282848513945231">Fylke</translation>
+<translation id="7108649287766967076">Oversettelsen til <ph name="TARGET_LANGUAGE"/> mislyktes.</translation>
+<translation id="7139724024395191329">Emirat</translation>
+<translation id="7180611975245234373">Last inn på nytt</translation>
+<translation id="7182878459783632708">Ingen retningslinjer er angitt</translation>
+<translation id="7186367841673660872">Denne siden har blitt oversatt fra<ph name="ORIGINAL_LANGUAGE"/>til<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">Søk på <ph name="SITE_NAME"/> etter <ph name="SEARCH_TERMS"/></translation>
+<translation id="7275334191706090484">Administrerte bokmerker</translation>
+<translation id="7298195798382681320">Anbefalt</translation>
+<translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
+<translation id="7378627244592794276">Nei takk</translation>
+<translation id="7400418766976504921">Nettadresse</translation>
+<translation id="7441627299479586546">Feil emne for innstillinger</translation>
+<translation id="7485870689360869515">Ingen data ble funnet.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7537536606612762813">Obligatorisk</translation>
+<translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
+<translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE"/>Vil du ha den oversatt?</translation>
+<translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
+<translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE"/></translation>
+<translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE"/>.</translation>
+<translation id="7752995774971033316">Administreres ikke</translation>
+<translation id="777702478322588152">Prefektur</translation>
+<translation id="7791543448312431591">Legg til</translation>
+<translation id="7805768142964895445">Status</translation>
+<translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
+<translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">Bokmerker for mobil</translation>
+<translation id="7961015016161918242">Aldri</translation>
+<translation id="7977590112176369853">&lt;skriv inn søk&gt;</translation>
+<translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE"/> til <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="7988324688042446538">Bokmerker for skrivebord</translation>
+<translation id="7995512525968007366">Ikke spesifisert</translation>
+<translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversette den til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
+<translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
+<translation id="8194797478851900357">&amp;Angre flyttingen</translation>
+<translation id="8201077131113104583">Ugyldig oppdaterings-URL for utvidelse med ID «<ph name="EXTENSION_ID"/>».</translation>
+<translation id="8208216423136871611">Ikke lagre</translation>
+<translation id="8218327578424803826">Tilordnet posisjon:</translation>
+<translation id="8249320324621329438">Sist hentet:</translation>
+<translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
+<translation id="8311778656528046050">Er du sikker på at du vil laste inn denne siden på nytt?</translation>
+<translation id="8349305172487531364">Bokmerkerad</translation>
+<translation id="8364627913115013041">Ikke angitt.</translation>
+<translation id="8437238597147034694">&amp;Angre flyttingen</translation>
+<translation id="8488350697529856933">Gjelder for</translation>
+<translation id="8530504477309582336">Denne korttypen støttes ikke av Google Payments. Velg et annet kort.</translation>
+<translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
+<translation id="8571890674111243710">Oversett siden til <ph name="LANGUAGE"/></translation>
+<translation id="8713130696108419660">Feil innledende signatur</translation>
+<translation id="8725066075913043281">Prøv igjen</translation>
+<translation id="8790007591277257123">&amp;Slett likevel</translation>
+<translation id="8804164990146287819">Personvernregler</translation>
+<translation id="8824019021993735287">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
+<translation id="8834246243508017242">Aktiver autofyll for Kontakter</translation>
+<translation id="883848425547221593">Andre bokmerker</translation>
+<translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
+<translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
+<translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
+<translation id="8940229512486821554">Kjør <ph name="EXTENSION_NAME"/>-kommando: <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">Skriv inn utløpsdatoen og den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
+<translation id="9020542370529661692">Denne siden har blitt oversatt til <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="9125941078353557812">Skriv inn den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
+<translation id="9137013805542155359">Vis original</translation>
+<translation id="9148507642005240123">&amp;Angre endringen</translation>
+<translation id="9154176715500758432">Bli værende på denne siden</translation>
+<translation id="9170848237812810038">&amp;Angre</translation>
+<translation id="9207861905230894330">Kunne ikke legge til artikkelen.</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
+<translation id="988159990683914416">Utviklerversjon</translation>
 </translationbundle>

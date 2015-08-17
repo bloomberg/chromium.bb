@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
-<translation id="8008366997883261463">Пас</translation>
-<translation id="7165320105431587207">Конфигурација мреже није успела</translation>
-<translation id="4387004326333427325">Сертификат за потврду аутентичности је одбијен даљински</translation>
-<translation id="6943836128787782965">HTTP get није успео</translation>
+<translation id="1119447706177454957">Интерна грешка</translation>
+<translation id="153454903766751181">Покретање модема за мобилну мрежу...</translation>
+<translation id="158849752021629804">Потребна је матична мрежа</translation>
 <translation id="1661867754829461514">Недостаје PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Повезује се...</translation>
+<translation id="1773212559869067373">Сертификат за потврду аутентичности је одбијен локално</translation>
+<translation id="1829129547161959350">Пингвин</translation>
+<translation id="1850504506766569011">Wi-Fi је искључен.</translation>
+<translation id="2288278176040912387">Грамофон</translation>
+<translation id="2354174487190027830">Активирање мреже <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
+<translation id="2563185590376525700">Жаба</translation>
+<translation id="2563856802393254086">Честитамо! Услуга преноса података „<ph name="NAME"/>“ је активирана и спремна за коришћење.</translation>
+<translation id="2649120831653069427">Риба</translation>
+<translation id="2670531586141364277">Активација мреже „<ph name="NAME"/>“ захтева мрежну везу.</translation>
+<translation id="2894654529758326923">Информације</translation>
+<translation id="2951236788251446349">Медуза</translation>
+<translation id="2966449113954629791">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију за <ph name="NAME"/> да бисте купили још података.</translation>
+<translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
+<translation id="3871838685472846647">Мобилни уређај је активиран</translation>
+<translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Киви</translation>
 <translation id="40400351611212369">Грешка при активацији мреже</translation>
 <translation id="4237016987259239829">Грешка мрежне везе</translation>
+<translation id="4274292172790327596">Непозната грешка</translation>
+<translation id="4326192123064055915">Кафа</translation>
+<translation id="4387004326333427325">Сертификат за потврду аутентичности је одбијен даљински</translation>
+<translation id="4442424173763614572">DNS претрага није успела</translation>
+<translation id="4448844063988177157">Тражење Wi-Fi мрежа...</translation>
+<translation id="4479639480957787382">Етернет</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Повезује се...</translation>
 <translation id="4508265954913339219">Активација није успела</translation>
 <translation id="4559767610552730302">Бокех</translation>
-<translation id="8688591111840995413">Погрешна лозинка</translation>
-<translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
-<translation id="153454903766751181">Покретање модема за мобилну мрежу...</translation>
-<translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
+<translation id="4935975195727477204">Цвет газаније</translation>
+<translation id="5045550434625856497">Нетачна лозинка</translation>
+<translation id="5097002363526479830">Повезивање са мрежом „<ph name="NAME"/>“ није успело: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Шах</translation>
+<translation id="5257456363153333584">Вилин коњиц</translation>
 <translation id="5431825016875453137">Отворени VPN/L2TP</translation>
-<translation id="8808686172382650546">Мачка</translation>
-<translation id="7170041865419449892">Изван опсега</translation>
-<translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
-<translation id="7973962044839454485">Провера аутентичности преко протокола PPP није успела због нетачног корисничког имена или лозинке</translation>
-<translation id="6549021752953852991">Није доступна ниједна мобилна мрежа</translation>
+<translation id="5864471791310927901">Проналажење DHCP-а није успело</translation>
+<translation id="6232116551750539448">Веза са мрежом <ph name="NAME"/> је прекинута</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Активирање...</translation>
+<translation id="6312403991423642364">Непозната грешка на мрежи</translation>
 <translation id="6490455614072479501">Повезивање са „<ph name="NAME"/>“ није успело: <ph name="DETAILS"/>
         Порука сервера: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Активација мреже „<ph name="NAME"/>“ захтева мрежну везу.</translation>
-<translation id="4442424173763614572">DNS претрага није успела</translation>
-<translation id="7874779702599364982">Претраживање мобилних мрежа...</translation>
-<translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Сертификат за потврду аутентичности је одбијен локално</translation>
-<translation id="2563185590376525700">Жаба</translation>
-<translation id="7256405249507348194">Непозната грешка: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Информације</translation>
-<translation id="6935521024859866267">Наопачке</translation>
-<translation id="7925247922861151263">Провера потврде идентитета, овлашћења и приступа није успела</translation>
-<translation id="4479639480957787382">Етернет</translation>
-<translation id="6312403991423642364">Непозната грешка на мрежи</translation>
-<translation id="4326192123064055915">Кафа</translation>
-<translation id="2354174487190027830">Активирање мреже <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Пингвин</translation>
-<translation id="515594325917491223">Шах</translation>
-<translation id="5097002363526479830">Повезивање са мрежом „<ph name="NAME"/>“ није успело: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi је искључен.</translation>
-<translation id="2966449113954629791">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију за <ph name="NAME"/> да бисте купили још података.</translation>
-<translation id="8132793192354020517">Успостављена је веза са <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Интерна грешка</translation>
-<translation id="5045550434625856497">Нетачна лозинка</translation>
-<translation id="6232116551750539448">Веза са мрежом <ph name="NAME"/> је прекинута</translation>
-<translation id="4274292172790327596">Непозната грешка</translation>
-<translation id="4448844063988177157">Тражење Wi-Fi мрежа...</translation>
-<translation id="7229570126336867161">Потребан је EVDO</translation>
-<translation id="9044646465488564462">Повезивање са мрежом није успело: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi је укључен.</translation>
-<translation id="3871838685472846647">Мобилни уређај је активиран</translation>
-<translation id="3958548648197196644">Киви</translation>
+<translation id="6549021752953852991">Није доступна ниједна мобилна мрежа</translation>
 <translation id="6732801395666424405">Сертификати нису отпремљени</translation>
-<translation id="8300849813060516376">OTASP није успео</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Активирање...</translation>
-<translation id="8714406895390098252">Бицикл</translation>
-<translation id="5257456363153333584">Вилин коњиц</translation>
-<translation id="158849752021629804">Потребна је матична мрежа</translation>
-<translation id="2649120831653069427">Риба</translation>
-<translation id="2288278176040912387">Грамофон</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">Проналажење DHCP-а није успело</translation>
-<translation id="9046895021617826162">Повезивање није успело</translation>
-<translation id="8372369524088641025">Неисправна WEP шифра</translation>
-<translation id="2951236788251446349">Медуза</translation>
-<translation id="8000066093800657092">Нема мреже</translation>
-<translation id="2563856802393254086">Честитамо! Услуга преноса података „<ph name="NAME"/>“ је активирана и спремна за коришћење.</translation>
-<translation id="4935975195727477204">Цвет газаније</translation>
+<translation id="6935521024859866267">Наопачке</translation>
+<translation id="6943836128787782965">HTTP get није успео</translation>
+<translation id="7165320105431587207">Конфигурација мреже није успела</translation>
+<translation id="7170041865419449892">Изван опсега</translation>
+<translation id="7229570126336867161">Потребан је EVDO</translation>
+<translation id="7256405249507348194">Непозната грешка: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Корисничко име/лозинка је нетачна или EAP потврда аутентичности није успела</translation>
+<translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
+<translation id="7874779702599364982">Претраживање мобилних мрежа...</translation>
+<translation id="7925247922861151263">Провера потврде идентитета, овлашћења и приступа није успела</translation>
+<translation id="7973962044839454485">Провера аутентичности преко протокола PPP није успела због нетачног корисничког имена или лозинке</translation>
+<translation id="8000066093800657092">Нема мреже</translation>
+<translation id="8008366997883261463">Пас</translation>
+<translation id="8132793192354020517">Успостављена је веза са <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP није успео</translation>
+<translation id="8372369524088641025">Неисправна WEP шифра</translation>
+<translation id="8454013096329229812">Wi-Fi је укључен.</translation>
+<translation id="8688591111840995413">Погрешна лозинка</translation>
+<translation id="8714406895390098252">Бицикл</translation>
+<translation id="8808686172382650546">Мачка</translation>
+<translation id="9044646465488564462">Повезивање са мрежом није успело: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Повезивање није успело</translation>
 </translationbundle>

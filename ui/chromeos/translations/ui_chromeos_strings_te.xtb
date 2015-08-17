@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="te">
-<translation id="8008366997883261463">జాక్ రస్సెల్ టెర్రియర్</translation>
-<translation id="7165320105431587207">నెట్‌వర్క్‌ని కాన్ఫిగర్ చేయడంలో విఫలమైంది</translation>
-<translation id="4387004326333427325">ప్రామాణీకరణ ప్రమాణపత్రం రిమోట్‌లో తిరస్కరించబడింది</translation>
-<translation id="6943836128787782965">HTTP పొందడంలో విఫలమైంది</translation>
+<translation id="1119447706177454957">అంతర్గత లోపం</translation>
+<translation id="153454903766751181">సెల్యులార్ మోడెమ్‌ను ప్రారంభిస్తోంది...</translation>
+<translation id="158849752021629804"> హోమ్  నెట్‌వర్క్ అవసరం</translation>
 <translation id="1661867754829461514">PIN లేదు</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: కనెక్ట్ అవుతోంది...</translation>
+<translation id="1773212559869067373">ప్రామాణీకరణ ప్రమాణపత్రం స్థానికంగా తిరస్కరించబడింది</translation>
+<translation id="1829129547161959350">పెంగ్విన్</translation>
+<translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
+<translation id="2288278176040912387">రికార్డ్ ప్లేయర్</translation>
+<translation id="2354174487190027830"><ph name="NAME"/>ని సక్రియం చేస్తోంది</translation>
+<translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
+<translation id="2563185590376525700">కప్ప</translation>
+<translation id="2563856802393254086">అభినందనలు! మీ '<ph name="NAME"/>' డేటా సేవ సక్రియం చేయబడింది మరియు పని చేయడానికి సిద్ధంగా ఉంది.</translation>
+<translation id="2649120831653069427">రెయిన్‌బోఫిష్</translation>
+<translation id="2670531586141364277">'<ph name="NAME"/>'ను సక్రియం చేయడానికి నెట్‌వర్క్ కనెక్షన్ అవసరం.</translation>
+<translation id="2894654529758326923">సమాచారం</translation>
+<translation id="2951236788251446349">జెల్లీఫిష్</translation>
+<translation id="2966449113954629791">మీకు అనుమతించిన మొబైల్ డేటాను మీరు ఉపయోగించి ఉండవచ్చు. మరింత డేటాను కొనుగోలు చేయడానికి <ph name="NAME"/> సక్రియ పోర్టల్‌ను సందర్శించండి.</translation>
+<translation id="3846575436967432996">నెట్‌వర్క్ సమాచారం అందుబాటులో లేదు</translation>
+<translation id="3871838685472846647">సెల్యులార్ సక్రియం చేయబడింది</translation>
+<translation id="3901991538546252627"><ph name="NAME"/>కి కనెక్ట్ చేస్తోంది</translation>
+<translation id="3958548648197196644">కివి</translation>
 <translation id="40400351611212369">నెట్‌వర్క్‌ను సక్రియం చేయడంలో లోపం</translation>
 <translation id="4237016987259239829">నెట్‌వర్క్ కనెక్షన్ లోపం</translation>
+<translation id="4274292172790327596">గుర్తించబడని లోపం</translation>
+<translation id="4326192123064055915">కాఫీ</translation>
+<translation id="4387004326333427325">ప్రామాణీకరణ ప్రమాణపత్రం రిమోట్‌లో తిరస్కరించబడింది</translation>
+<translation id="4442424173763614572">DNS శోధన విఫలమైంది</translation>
+<translation id="4448844063988177157">Wi-Fi నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
+<translation id="4479639480957787382">ఈథర్నెట్</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: కనెక్ట్ అవుతోంది...</translation>
 <translation id="4508265954913339219">సక్రియం  చేయడం విఫలమైంది</translation>
 <translation id="4559767610552730302">బొకే</translation>
-<translation id="8688591111840995413">పాస్‌వర్డ్ చెల్లదు</translation>
-<translation id="3846575436967432996">నెట్‌వర్క్ సమాచారం అందుబాటులో లేదు</translation>
-<translation id="153454903766751181">సెల్యులార్ మోడెమ్‌ను ప్రారంభిస్తోంది...</translation>
-<translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
+<translation id="4935975195727477204">గజేనియా పుష్పం</translation>
+<translation id="5045550434625856497">తప్పు పాస్‌వర్డ్</translation>
+<translation id="5097002363526479830">'<ph name="NAME"/>'కు నెట్‌వర్క్‌కు కనెక్ట్ చేయడానికి విఫలమైంది: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">చదరంగం</translation>
+<translation id="5257456363153333584">తూనీగ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">పిల్లి</translation>
-<translation id="7170041865419449892">పరిధిని దాటింది</translation>
-<translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
-<translation id="7973962044839454485">వినియోగదారు పేరు లేదా పాస్‌వర్డ్ తప్పు అయినందున PPP ప్రామాణీకరణ విఫలమైంది</translation>
-<translation id="6549021752953852991">సెల్యులార్ నెట్‌వర్క్ అందుబాటులో లేదు</translation>
+<translation id="5864471791310927901">DHCP లుక్‌అప్ విఫలమైంది</translation>
+<translation id="6232116551750539448"><ph name="NAME"/>కి కనెక్షన్ కోల్పోయింది</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: సక్రియం చేస్తోంది...</translation>
+<translation id="6312403991423642364">తెలియని నెట్‌వర్క్ లోపం</translation>
 <translation id="6490455614072479501">'<ph name="NAME"/>'కి కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS"/>
         సర్వర్ సందేశం: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">'<ph name="NAME"/>'ను సక్రియం చేయడానికి నెట్‌వర్క్ కనెక్షన్ అవసరం.</translation>
-<translation id="4442424173763614572">DNS శోధన విఫలమైంది</translation>
-<translation id="7874779702599364982">సెల్యులార్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
-<translation id="3901991538546252627"><ph name="NAME"/>కి కనెక్ట్ చేస్తోంది</translation>
-<translation id="1773212559869067373">ప్రామాణీకరణ ప్రమాణపత్రం స్థానికంగా తిరస్కరించబడింది</translation>
-<translation id="2563185590376525700">కప్ప</translation>
-<translation id="7256405249507348194">గుర్తించబడని లోపం: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">సమాచారం</translation>
-<translation id="6935521024859866267">తలక్రిందులుగా</translation>
-<translation id="7925247922861151263">AAA తనిఖీ విఫలమైంది</translation>
-<translation id="4479639480957787382">ఈథర్నెట్</translation>
-<translation id="6312403991423642364">తెలియని నెట్‌వర్క్ లోపం</translation>
-<translation id="4326192123064055915">కాఫీ</translation>
-<translation id="2354174487190027830"><ph name="NAME"/>ని సక్రియం చేస్తోంది</translation>
-<translation id="1829129547161959350">పెంగ్విన్</translation>
-<translation id="515594325917491223">చదరంగం</translation>
-<translation id="5097002363526479830">'<ph name="NAME"/>'కు నెట్‌వర్క్‌కు కనెక్ట్ చేయడానికి విఫలమైంది: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
-<translation id="2966449113954629791">మీకు అనుమతించిన మొబైల్ డేటాను మీరు ఉపయోగించి ఉండవచ్చు. మరింత డేటాను కొనుగోలు చేయడానికి <ph name="NAME"/> సక్రియ పోర్టల్‌ను సందర్శించండి.</translation>
-<translation id="8132793192354020517"><ph name="NAME"/>కు కనెక్ట్ చేయబడింది</translation>
-<translation id="1119447706177454957">అంతర్గత లోపం</translation>
-<translation id="5045550434625856497">తప్పు పాస్‌వర్డ్</translation>
-<translation id="6232116551750539448"><ph name="NAME"/>కి కనెక్షన్ కోల్పోయింది</translation>
-<translation id="4274292172790327596">గుర్తించబడని లోపం</translation>
-<translation id="4448844063988177157">Wi-Fi నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
-<translation id="7229570126336867161">EVDO అవసరం</translation>
-<translation id="9044646465488564462">నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
-<translation id="3871838685472846647">సెల్యులార్ సక్రియం చేయబడింది</translation>
-<translation id="3958548648197196644">కివి</translation>
+<translation id="6549021752953852991">సెల్యులార్ నెట్‌వర్క్ అందుబాటులో లేదు</translation>
 <translation id="6732801395666424405">ప్రమాణపత్రాలు లోడ్ కాలేదు</translation>
-<translation id="8300849813060516376">OTASP విఫలమైంది</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: సక్రియం చేస్తోంది...</translation>
-<translation id="8714406895390098252">సైకిల్</translation>
-<translation id="5257456363153333584">తూనీగ</translation>
-<translation id="158849752021629804"> హోమ్  నెట్‌వర్క్ అవసరం</translation>
-<translation id="2649120831653069427">రెయిన్‌బోఫిష్</translation>
-<translation id="2288278176040912387">రికార్డ్ ప్లేయర్</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/>ని సక్రియం చెయ్యి</translation>
-<translation id="5864471791310927901">DHCP లుక్‌అప్ విఫలమైంది</translation>
-<translation id="9046895021617826162">కనెక్ట్ విఫలమైంది</translation>
-<translation id="8372369524088641025">తప్పుడు WEP కీ</translation>
-<translation id="2951236788251446349">జెల్లీఫిష్</translation>
-<translation id="8000066093800657092">ఏ నెట్‌వర్క్ లేదు</translation>
-<translation id="2563856802393254086">అభినందనలు! మీ '<ph name="NAME"/>' డేటా సేవ సక్రియం చేయబడింది మరియు పని చేయడానికి సిద్ధంగా ఉంది.</translation>
-<translation id="4935975195727477204">గజేనియా పుష్పం</translation>
+<translation id="6935521024859866267">తలక్రిందులుగా</translation>
+<translation id="6943836128787782965">HTTP పొందడంలో విఫలమైంది</translation>
+<translation id="7165320105431587207">నెట్‌వర్క్‌ని కాన్ఫిగర్ చేయడంలో విఫలమైంది</translation>
+<translation id="7170041865419449892">పరిధిని దాటింది</translation>
+<translation id="7229570126336867161">EVDO అవసరం</translation>
+<translation id="7256405249507348194">గుర్తించబడని లోపం: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">వినియోగదారు పేరు/పాస్‌వర్డ్ తప్పు లేదా EAP-ప్రామాణీకరణ విఫలమైంది</translation>
+<translation id="735745346212279324">VPN డిస్‌కనెక్ట్ చేయబడింది</translation>
+<translation id="7874779702599364982">సెల్యులార్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
+<translation id="7925247922861151263">AAA తనిఖీ విఫలమైంది</translation>
+<translation id="7973962044839454485">వినియోగదారు పేరు లేదా పాస్‌వర్డ్ తప్పు అయినందున PPP ప్రామాణీకరణ విఫలమైంది</translation>
+<translation id="8000066093800657092">ఏ నెట్‌వర్క్ లేదు</translation>
+<translation id="8008366997883261463">జాక్ రస్సెల్ టెర్రియర్</translation>
+<translation id="8132793192354020517"><ph name="NAME"/>కు కనెక్ట్ చేయబడింది</translation>
+<translation id="8300849813060516376">OTASP విఫలమైంది</translation>
+<translation id="8372369524088641025">తప్పుడు WEP కీ</translation>
+<translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
+<translation id="8688591111840995413">పాస్‌వర్డ్ చెల్లదు</translation>
+<translation id="8714406895390098252">సైకిల్</translation>
+<translation id="8808686172382650546">పిల్లి</translation>
+<translation id="9044646465488564462">నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">కనెక్ట్ విఫలమైంది</translation>
 </translationbundle>

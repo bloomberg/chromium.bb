@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sv">
-<translation id="2094750046714988961">Det går inte att starta profileraren eftersom den externa lagringsplatsen inte är klar</translation>
 <translation id="1256337885411059545">Det går inte att spela upp video</translation>
-<translation id="2520230379124234395">Profileraren har startats</translation>
-<translation id="4859501799452851758">Profileringen är klar. Resultaten finns i <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Det går tyvärr inte att spela upp videon på den här enheten.</translation>
-<translation id="2410828433627930127">Det går tyvärr inte att spela upp den här videon.</translation>
-<translation id="7096034533295549981">Videon läses in</translation>
 <translation id="1542044944667958430">Webbsökning</translation>
-<translation id="6849295950938417341">Det gick inte att starta profileraren</translation>
+<translation id="2094750046714988961">Det går inte att starta profileraren eftersom den externa lagringsplatsen inte är klar</translation>
+<translation id="2410828433627930127">Det går tyvärr inte att spela upp den här videon.</translation>
+<translation id="2520230379124234395">Profileraren har startats</translation>
+<translation id="273860350361291195">Det går tyvärr inte att spela upp videon på den här enheten.</translation>
+<translation id="4859501799452851758">Profileringen är klar. Resultaten finns i <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Dela</translation>
+<translation id="6849295950938417341">Det gick inte att starta profileraren</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Videon läses in</translation>
 </translationbundle>

@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
-<translation id="2094750046714988961">לא ניתן להפעיל את יוצר הפרופילים משום שהאחסון החיצוני אינו מוכן</translation>
 <translation id="1256337885411059545">לא ניתן להפעיל את הסרטון</translation>
-<translation id="2520230379124234395">יוצר הפרופילים הופעל</translation>
-<translation id="4859501799452851758">יוצר הפרופילים סיים את פעולתו. התוצאות נמצאות ב-<ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">מצטערים. הזרמת הסרטון הזה למכשיר הזה אינה חוקית.</translation>
-<translation id="2410828433627930127">מצטערים. לא ניתן להפעיל את הסרטון הזה.</translation>
-<translation id="7096034533295549981">טוען סרטון</translation>
 <translation id="1542044944667958430">‏חיפוש Google</translation>
-<translation id="6849295950938417341">נכשלה פתיחת יוצר הפרופילים</translation>
+<translation id="2094750046714988961">לא ניתן להפעיל את יוצר הפרופילים משום שהאחסון החיצוני אינו מוכן</translation>
+<translation id="2410828433627930127">מצטערים. לא ניתן להפעיל את הסרטון הזה.</translation>
+<translation id="2520230379124234395">יוצר הפרופילים הופעל</translation>
+<translation id="273860350361291195">מצטערים. הזרמת הסרטון הזה למכשיר הזה אינה חוקית.</translation>
+<translation id="4859501799452851758">יוצר הפרופילים סיים את פעולתו. התוצאות נמצאות ב-<ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">שתף</translation>
+<translation id="6849295950938417341">נכשלה פתיחת יוצר הפרופילים</translation>
 <translation id="6965382102122355670">אישור</translation>
+<translation id="7096034533295549981">טוען סרטון</translation>
 </translationbundle>

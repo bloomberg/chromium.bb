@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ms">
-<translation id="8008366997883261463">Anjing Jack Russel Terrier</translation>
-<translation id="7165320105431587207">Gagal mengkonfigurasi rangkaian</translation>
-<translation id="4387004326333427325">Sijil pengesahan ditolak dari jauh</translation>
-<translation id="6943836128787782965">HTTP gagal</translation>
+<translation id="1119447706177454957">Ralat dalaman</translation>
+<translation id="153454903766751181">Memulakan modem selular...</translation>
+<translation id="158849752021629804">Perlukan rangkaian rumah</translation>
 <translation id="1661867754829461514">PIN tiada</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Menyambung...</translation>
+<translation id="1773212559869067373">Sijil pengesahan ditolak secara setempat</translation>
+<translation id="1829129547161959350">Penguin</translation>
+<translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
+<translation id="2288278176040912387">Pemain Piring Hitam</translation>
+<translation id="2354174487190027830">Mengaktifkan <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
+<translation id="2563185590376525700">Katak</translation>
+<translation id="2563856802393254086">Tahniah! Perkhidmatan data '<ph name="NAME"/>' anda telah diaktifkan dan sedia untuk digunakan.</translation>
+<translation id="2649120831653069427">Ikan Pelangi</translation>
+<translation id="2670531586141364277">Pengaktifan '<ph name="NAME"/>' memerlukan sambungan rangkaian.</translation>
+<translation id="2894654529758326923">Maklumat</translation>
+<translation id="2951236788251446349">Obor-obor</translation>
+<translation id="2966449113954629791">Anda mungkin telah menggunakan peruntukan data mudah alih anda. Lawati <ph name="NAME"/>portal pengaktifan untuk membeli lebih banyak data.</translation>
+<translation id="3846575436967432996">Tiada maklumat rangkaian tersedia</translation>
+<translation id="3871838685472846647">Selular diaktifkan</translation>
+<translation id="3901991538546252627">Menyambung ke <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Ralat Pengaktifan Rangkaian</translation>
 <translation id="4237016987259239829">Ralat Sambungan Rangkaian</translation>
+<translation id="4274292172790327596">Ralat tidak dikenali</translation>
+<translation id="4326192123064055915">Kopi</translation>
+<translation id="4387004326333427325">Sijil pengesahan ditolak dari jauh</translation>
+<translation id="4442424173763614572">Carian DNS gagal</translation>
+<translation id="4448844063988177157">Mencari rangkaian Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Menyambung...</translation>
 <translation id="4508265954913339219">Pengaktifan gagal</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Kata laluan salah</translation>
-<translation id="3846575436967432996">Tiada maklumat rangkaian tersedia</translation>
-<translation id="153454903766751181">Memulakan modem selular...</translation>
-<translation id="735745346212279324">VPN diputuskan sambungan</translation>
+<translation id="4935975195727477204">Bunga Gazania</translation>
+<translation id="5045550434625856497">Kata laluan tidak sah</translation>
+<translation id="5097002363526479830">Gagal untuk bersambung ke rangkaian '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Catur</translation>
+<translation id="5257456363153333584">Pepatung</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">Kucing</translation>
-<translation id="7170041865419449892">Di luar lingkungan</translation>
-<translation id="2544853746127077729">Sijil pengesahan ditolak oleh rangkaian</translation>
-<translation id="7973962044839454485">Pengesahan PPP gagal disebabkan oleh nama pengguna atau kata laluan yang salah</translation>
-<translation id="6549021752953852991">Tiada rangkaian selular tersedia</translation>
+<translation id="5864471791310927901">Carian DHCP gagal</translation>
+<translation id="6232116551750539448">Sambungan ke <ph name="NAME"/> telah hilang</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Mengaktifkan...</translation>
+<translation id="6312403991423642364">Ralat rangkaian tidak diketahui</translation>
 <translation id="6490455614072479501">Gagal bersambung ke '<ph name="NAME"/>': <ph name="DETAILS"/>
         Mesej pelayan: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Pengaktifan '<ph name="NAME"/>' memerlukan sambungan rangkaian.</translation>
-<translation id="4442424173763614572">Carian DNS gagal</translation>
-<translation id="7874779702599364982">Mencari rangkaian selular...</translation>
-<translation id="3901991538546252627">Menyambung ke <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Sijil pengesahan ditolak secara setempat</translation>
-<translation id="2563185590376525700">Katak</translation>
-<translation id="7256405249507348194">Ralat yang tidak dikenal pasti: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Maklumat</translation>
-<translation id="6935521024859866267">Terbalik</translation>
-<translation id="7925247922861151263">Gagal periksa AAA</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Ralat rangkaian tidak diketahui</translation>
-<translation id="4326192123064055915">Kopi</translation>
-<translation id="2354174487190027830">Mengaktifkan <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Penguin</translation>
-<translation id="515594325917491223">Catur</translation>
-<translation id="5097002363526479830">Gagal untuk bersambung ke rangkaian '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
-<translation id="2966449113954629791">Anda mungkin telah menggunakan peruntukan data mudah alih anda. Lawati <ph name="NAME"/>portal pengaktifan untuk membeli lebih banyak data.</translation>
-<translation id="8132793192354020517">Disambungkan ke <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Ralat dalaman</translation>
-<translation id="5045550434625856497">Kata laluan tidak sah</translation>
-<translation id="6232116551750539448">Sambungan ke <ph name="NAME"/> telah hilang</translation>
-<translation id="4274292172790327596">Ralat tidak dikenali</translation>
-<translation id="4448844063988177157">Mencari rangkaian Wi-Fi...</translation>
-<translation id="7229570126336867161">Perlukan EVDO</translation>
-<translation id="9044646465488564462">Gagal bersambung ke rangkaian: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi dihidupkan.</translation>
-<translation id="3871838685472846647">Selular diaktifkan</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">Tiada rangkaian selular tersedia</translation>
 <translation id="6732801395666424405">Sijil tidak dimuatkan</translation>
-<translation id="8300849813060516376">OTASP gagal</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Mengaktifkan...</translation>
-<translation id="8714406895390098252">Basikal</translation>
-<translation id="5257456363153333584">Pepatung</translation>
-<translation id="158849752021629804">Perlukan rangkaian rumah</translation>
-<translation id="2649120831653069427">Ikan Pelangi</translation>
-<translation id="2288278176040912387">Pemain Piring Hitam</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">Carian DHCP gagal</translation>
-<translation id="9046895021617826162">Gagal disambungkan</translation>
-<translation id="8372369524088641025">Kekunci WEP teruk</translation>
-<translation id="2951236788251446349">Obor-obor</translation>
-<translation id="8000066093800657092">Tiada rangkaian</translation>
-<translation id="2563856802393254086">Tahniah! Perkhidmatan data '<ph name="NAME"/>' anda telah diaktifkan dan sedia untuk digunakan.</translation>
-<translation id="4935975195727477204">Bunga Gazania</translation>
+<translation id="6935521024859866267">Terbalik</translation>
+<translation id="6943836128787782965">HTTP gagal</translation>
+<translation id="7165320105431587207">Gagal mengkonfigurasi rangkaian</translation>
+<translation id="7170041865419449892">Di luar lingkungan</translation>
+<translation id="7229570126336867161">Perlukan EVDO</translation>
+<translation id="7256405249507348194">Ralat yang tidak dikenal pasti: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Nama pengguna/kata laluan tidak betul atau EAP-auth gagal</translation>
+<translation id="735745346212279324">VPN diputuskan sambungan</translation>
+<translation id="7874779702599364982">Mencari rangkaian selular...</translation>
+<translation id="7925247922861151263">Gagal periksa AAA</translation>
+<translation id="7973962044839454485">Pengesahan PPP gagal disebabkan oleh nama pengguna atau kata laluan yang salah</translation>
+<translation id="8000066093800657092">Tiada rangkaian</translation>
+<translation id="8008366997883261463">Anjing Jack Russel Terrier</translation>
+<translation id="8132793192354020517">Disambungkan ke <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP gagal</translation>
+<translation id="8372369524088641025">Kekunci WEP teruk</translation>
+<translation id="8454013096329229812">Wi-Fi dihidupkan.</translation>
+<translation id="8688591111840995413">Kata laluan salah</translation>
+<translation id="8714406895390098252">Basikal</translation>
+<translation id="8808686172382650546">Kucing</translation>
+<translation id="9044646465488564462">Gagal bersambung ke rangkaian: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Gagal disambungkan</translation>
 </translationbundle>

@@ -1,93 +1,96 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bn">
-<translation id="4542520061254486227"><ph name="WEBSITE_1"/> এবং <ph name="WEBSITE_2"/> আপনার ডেটা পড়ে</translation>
-<translation id="3983586614702900908">একটি অজানা বিক্রেতা থেকে ডিভাইসগুলি</translation>
-<translation id="730515362922783851">স্থানীয় নেটওয়ার্ক বা ইন্টারনেটে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="3624204664103857160">লঞ্চার পৃষ্ঠা '<ph name="PAGE"/>' লোড করা যায়নি৷</translation>
-<translation id="8804398419035066391">সহযোগী ওয়েবসাইটগুলির মাধ্যমে যোগাযোগ করুন</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (এক্সটেশন ID &quot;<ph name="EXTENSION_ID"/>&quot;) টি প্রশাসকের দ্বারা অবরুদ্ধ করা আছে৷</translation>
 <translation id="1005274289863221750">আপনার মাইক্রোফোন ও ক্যামেরা ব্যবহার করুন</translation>
-<translation id="2857834222104759979">তালিকা ফাইল অবৈধ৷</translation>
-<translation id="6384275966486438344">আপনার অনুসন্ধানের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST"/></translation>
-<translation id="1445572445564823378">এই এক্সটেনশানটির গতি কমে যাচ্ছে <ph name="PRODUCT_NAME"/>৷ আপনাকে <ph name="PRODUCT_NAME"/>-এর সম্পাদনা পুনঃস্থাপন করার জন্য এটিকে অক্ষম করা উচিত৷</translation>
-<translation id="7003844668372540529"><ph name="VENDOR_NAME"/> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID"/></translation>
 <translation id="1033780634303702874">আপনার সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
-<translation id="288042212351694283">আপনার ইউনিভার্সাল ২য় ফ্যাক্টর ডিভাইসগুলির অ্যাক্সেস রয়েছে</translation>
-<translation id="3163201441334626963"><ph name="VENDOR_ID"/> বিক্রেতার থেকে অজানা পণ্য <ph name="PRODUCT_ID"/></translation>
-<translation id="6027032947578871493"><ph name="VENDOR_NAME"/> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="4115165561519362854"><ph name="EXTENSION_VERSION"/> এর কোনো সর্বনিম্ন সংস্করণ রাখতে, এই মেশিনের প্রশাসকের জন্য <ph name="EXTENSION_NAME"/> প্রয়োজন৷ এটিকে যতক্ষণ না পর্যন্ত সেই সংস্করণে আপডেট করা হচ্ছে (বা উচ্চতর) এটি সক্ষমিত হবে না৷</translation>
-<translation id="6075907793831890935"><ph name="HOSTNAME"/> নামের ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="5971037678316050792">Bluetooth অ্যাডাপ্টারের স্থিতি ও যুক্ত করা নিয়ন্ত্রণ করে</translation>
-<translation id="677806580227005219">মাইমহ্যান্ডলার: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
-<translation id="6241530762627360640">আপনার সিস্টেমের সঙ্গে যুক্ত করা Bluetooth ডিভাইসগুলির সম্পর্কে তথ্য অ্যাক্সেস করুন এবং কাছাকাছি  Bluetooth ডিভাইসগুলি খুঁজুন।</translation>
-<translation id="8749863574775030885">একটি অজানা বিক্রেতা থেকে USB ডিভাইস অ্যাক্সেস করুন</translation>
-<translation id="3115238746683532089"><ph name="VENDOR_ID"/> বিক্রেতার থেকেঅজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8284835137979141223"><ph name="VENDOR_NAME"/> এর <ph name="PRODUCT_NAME"/></translation>
-<translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT"/>' লোড করা যায়নি৷</translation>
-<translation id="6068932090455285721"><ph name="VENDOR_ID"/> বিক্রেতার থেকে <ph name="PRODUCT_NAME"/></translation>
-<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
-<translation id="9131487537093447019">Bluetooth ডিভাইসগুলি থেকে বার্তা পাঠান ও গ্রহণ করুন।</translation>
-<translation id="5678955352098267522"><ph name="WEBSITE_1"/>এ আপনার ডেটা পড়ে</translation>
-<translation id="5456409301717116725">এই এক্সটেনশানটি '<ph name="KEY_PATH"/>' মুখ্য ফাইলকে অন্তর্ভুক্ত করে৷ আপনি সম্ভবত এটি করতে চাইবেন না৷</translation>
-<translation id="7257666756905341374">আপনি যে ডেটা প্রতিলিপি ও লেপন করেন তা পড়ুন</translation>
-<translation id="2350172092385603347">স্থানীয়করণ ব্যবহৃত হয়েছে, কিন্তু default_locale তালিকাতে উল্লেখ ছিল না৷</translation>
-<translation id="3759933321830434300">ওয়েব পৃষ্ঠাগুলির অংশগুলি অবরুদ্ধ করুন</translation>
-<translation id="6143635259298204954">এক্সটেনশনটি প্যাকমুক্ত করতে পারে না৷  নিরাপদে কোনও এক্সটেনশন প্যাকমুক্ত করতে, আপনার প্রোফাইল ডিরেক্টরিতে অবশ্যই এমন একটি পথ থাকতে হবে যেখানে কোনও সিমলিঙ্ক থাকে না৷  এই জাতীয় কোনও পথ আপনার প্রোফাইলে বিদ্যমান নেই৷</translation>
-<translation id="8712265948125780616">এক্সটেনশান আনপ্যাকার</translation>
-<translation id="149347756975725155">এক্সটেনশান আইকন '<ph name="ICON"/>' লোড করা যায়নি৷</translation>
-<translation id="8825366169884721447">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের অনুরোধ শীর্ষক &quot;<ph name="HEADER_NAME"/>&quot; এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এর সঙ্গে বিরোধ আছে৷</translation>
-<translation id="6731255991101203740">এটিকে আনজিপ করার জন্য ডিরেক্টরি তৈরি করা যায়নি: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="4233778200880751280"><ph name="ABOUT_PAGE"/> সম্পর্কিত পৃষ্ঠা লোড করা গেল না।</translation>
-<translation id="388442998277590542">বিকল্প পৃষ্ঠা '<ph name="OPTIONS_PAGE"/>' লোড করা যায়নি৷</translation>
-<translation id="5127881134400491887">নেটওয়ার্ক সংযোগগুলি পরিচালনা করুন</translation>
-<translation id="6344170822609224263">নেটওয়ার্ক সংযোগের তালিকা অ্যাক্সেস করে</translation>
-<translation id="7039326228527141150">USB ডিভাইসগুলি <ph name="VENDOR_NAME"/> থেকে অ্যাক্সেস করুন</translation>
-<translation id="2616366145935564096"><ph name="WEBSITE_1"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
-<translation id="4444304522807523469">USB বা স্থানীয় নেটওয়ার্কের মাধ্যমে সংযুক্ত দস্তাবেজ স্ক্যানার অ্যাক্সেস করে</translation>
-<translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, ও <ph name="WEBSITE_3"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
-<translation id="8670869118777164560">এই এক্সটেনশনটি <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>এ একটি নেটওয়ার্কের পুনঃনির্দেশ অনুরোধ করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এটিকে <ph name="ACTUAL_REDIRECT_DESTINATION"/> এ পুনঃনির্দেশ করেছে৷</translation>
-<translation id="6840444547062817500">এই এক্সটেনশানটি খুব ঘন ঘন নিজের থেকে পুনরায় লোড হয়৷</translation>
-<translation id="2270450558902169558"><ph name="DOMAIN"/> ডোমেনের মধ্যে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="8047248493720652249">এই এক্সটেনশানটি ডাউনলোড &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; এর নাম দিতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশান (<ph name="EXTENSION_NAME"/>) একটি ভিন্ন ফাইল নাম &quot;<ph name="ACTUAL_FILENAME"/>&quot; নির্ধারণ করেছে৷</translation>
-<translation id="452039078290142656"><ph name="VENDOR_NAME"/> থেকে অজানা ডিভাইসগুলি</translation>
-<translation id="5026754133087629784">ওয়েবদর্শন: <ph name="WEBVIEW_TAG_NAME"/></translation>
-<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="2753617847762399167">আইনি পথ (পূর্ণ অথবা '..' এর সাথে সম্পর্কিত: '<ph name="IMAGE_PATH"/>'</translation>
-<translation id="8284279544186306258">সব <ph name="WEBSITE_1"/> সাইট</translation>
-<translation id="8662911384982557515">আপনার হোম পৃষ্ঠাকে এতে পরিবর্তিত করুন: <ph name="HOME_PAGE"/></translation>
-<translation id="27822970480436970">এই এক্সটেনশানটি নেটওয়ার্কের অনুরোধ সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনের অন্য এক্সটেনশানের সঙ্গে বিরোধ হয়েছে৷</translation>
-<translation id="2241053333139545397">কয়েকটি ওয়েবসাইটে আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
-<translation id="8602184400052594090">তালিকা ফাইল পাওয়া যাচ্ছে না অথবা পঠনযোগ্য৷</translation>
-<translation id="2270627217422354837"><ph name="DOMAINS"/> ডোমেনসমূহের মধ্যে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="7093866338626856921"><ph name="HOSTNAMES"/>: নামের্ ডিভাইসসমূহের সাথে ডেটা বিনিময় করুন</translation>
-<translation id="4883436287898674711">সব <ph name="WEBSITE_1"/> সাইট</translation>
-<translation id="9111791539553342076">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের প্রতিক্রিয়া শীর্ষক &quot;<ph name="HEADER_NAME"/>&quot; এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এর সঙ্গে বিরোধ রয়েছে৷</translation>
-<translation id="9150045010208374699">আপনার ক্যামেরা ব্যবহার করুন</translation>
-<translation id="5356315618422219272">অ্যাপ্লিকেশান দর্শন: <ph name="APPVIEW_TAG_NAME"/></translation>
-<translation id="8341840687457896278">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের শংসাপত্রগুলি প্রদান করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) ভিন্ন শংসাপত্রগুলি প্রদান করেছে৷</translation>
-<translation id="5627523580512561598">এক্সটেনশান <ph name="EXTENSION_NAME"/></translation>
-<translation id="7893008570150657497">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়াতে অ্যাক্সেস করুন</translation>
-<translation id="3369521687965833290">এক্সটেনশন প্যাকমুক্ত করতে পারেনা৷  কোনও এক্সটেনশনকে সুরক্ষিতভাবে প্যাকমুক্ত করতে, আপনার প্রোফাইল ডিরেক্টরিতে অবশ্যই এমন একটি পথ থাকবে যা চালক অক্ষরটি দিয়ে শুরু হবে এবং এতে কোন জাংশন, মাউন্ট পয়েন্ট বা সিমলিঙ্ক থাকবে না৷  আপনার প্রোফাইলে এ জাতীয় কোনও পথ বিদ্যমান নেই৷</translation>
-<translation id="4811956658694082538">একটি ইউটিলিটি প্রক্রিয়া ক্র্যাশ করার কারণে প্যাকেজটি ইনস্টল করা যায়নি। Chrome কে পুনরায় চালু করার চেষ্টা করুন এবং আবার চেষ্টা করুন।</translation>
-<translation id="641087317769093025">এক্সটেনশান আনজিপ করা যায়নি</translation>
-<translation id="4761104368405085019">আপনার মাইক্রোফোন ব্যবহার করুন</translation>
-<translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME"/> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
-<translation id="6580950983454333167"><ph name="VENDOR_NAME"/> এর পক্ষ থেকে <ph name="PRODUCT_NAME"/> (ক্রমিক সংখ্যা <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>
-<translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">এই USB ডিভাইসগুলির মধ্যে যে কোনোটি অ্যাক্সেস করুন</translation>
-<translation id="6698810901424468597"><ph name="WEBSITE_1"/> ও <ph name="WEBSITE_2"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
-<translation id="2159915644201199628">চিত্র ডিকোড করা যায়নি: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="2048182445208425546">আপনার নেটওয়ার্ক ট্রাফিক অ্যাক্সেস করে</translation>
-<translation id="1256619696651732561">এক্সটেনশান ম্যানিফেস্ট বিশ্লেষক</translation>
-<translation id="5972529113578162692">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME"/> ইন্সটল করা প্রয়োজন। এটি আনইন্সটল করা যাবে না।</translation>
 <translation id="1135328998467923690">এই প্যাকেজটি অবৈধ: '<ph name="ERROR_CODE"/>'৷</translation>
-<translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, এবং <ph name="WEBSITE_3"/>-এ আপনার ডেটা পড়ে</translation>
-<translation id="2087653731648927289">USB এর মাধ্যমে যেকোনো <ph name="PRODUCT_NAME_AND_VENDOR"/> অ্যাক্সেস করুন</translation>
+<translation id="1256619696651732561">এক্সটেনশান ম্যানিফেস্ট বিশ্লেষক</translation>
+<translation id="1445572445564823378">এই এক্সটেনশানটির গতি কমে যাচ্ছে <ph name="PRODUCT_NAME"/>৷ আপনাকে <ph name="PRODUCT_NAME"/>-এর সম্পাদনা পুনঃস্থাপন করার জন্য এটিকে অক্ষম করা উচিত৷</translation>
+<translation id="149347756975725155">এক্সটেনশান আইকন '<ph name="ICON"/>' লোড করা যায়নি৷</translation>
 <translation id="1803557475693955505">পৃষ্ঠভূমি পৃষ্ঠা '<ph name="BACKGROUND_PAGE"/>' লোড করা যায়নি৷</translation>
+<translation id="2048182445208425546">আপনার নেটওয়ার্ক ট্রাফিক অ্যাক্সেস করে</translation>
+<translation id="2087653731648927289">USB এর মাধ্যমে যেকোনো <ph name="PRODUCT_NAME_AND_VENDOR"/> অ্যাক্সেস করুন</translation>
+<translation id="2159915644201199628">চিত্র ডিকোড করা যায়নি: '<ph name="IMAGE_NAME"/>'</translation>
+<translation id="2241053333139545397">কয়েকটি ওয়েবসাইটে আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
+<translation id="2270450558902169558"><ph name="DOMAIN"/> ডোমেনের মধ্যে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="2270627217422354837"><ph name="DOMAINS"/> ডোমেনসমূহের মধ্যে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="2350172092385603347">স্থানীয়করণ ব্যবহৃত হয়েছে, কিন্তু default_locale তালিকাতে উল্লেখ ছিল না৷</translation>
+<translation id="2616366145935564096"><ph name="WEBSITE_1"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
+<translation id="2753617847762399167">আইনি পথ (পূর্ণ অথবা '..' এর সাথে সম্পর্কিত: '<ph name="IMAGE_PATH"/>'</translation>
+<translation id="27822970480436970">এই এক্সটেনশানটি নেটওয়ার্কের অনুরোধ সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনের অন্য এক্সটেনশানের সঙ্গে বিরোধ হয়েছে৷</translation>
+<translation id="2857834222104759979">তালিকা ফাইল অবৈধ৷</translation>
+<translation id="288042212351694283">আপনার ইউনিভার্সাল ২য় ফ্যাক্টর ডিভাইসগুলির অ্যাক্সেস রয়েছে</translation>
 <translation id="2988488679308982380">এই প্যাকেজটি ইনস্টল করতে পারেনি: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="3466070586188012397"><ph name="VENDOR_ID"/> বিক্রেতার থেকে <ph name="PRODUCT_NAME"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
-<translation id="8636666366616799973">প্যাকেজটি অবৈধ৷ বিশদ বিবরণ: '<ph name="ERROR_MESSAGE"/>'৷</translation>
+<translation id="3115238746683532089"><ph name="VENDOR_ID"/> বিক্রেতার থেকেঅজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID"/> বিক্রেতার থেকে অজানা পণ্য <ph name="PRODUCT_ID"/></translation>
+<translation id="3369521687965833290">এক্সটেনশন প্যাকমুক্ত করতে পারেনা৷  কোনও এক্সটেনশনকে সুরক্ষিতভাবে প্যাকমুক্ত করতে, আপনার প্রোফাইল ডিরেক্টরিতে অবশ্যই এমন একটি পথ থাকবে যা চালক অক্ষরটি দিয়ে শুরু হবে এবং এতে কোন জাংশন, মাউন্ট পয়েন্ট বা সিমলিঙ্ক থাকবে না৷  আপনার প্রোফাইলে এ জাতীয় কোনও পথ বিদ্যমান নেই৷</translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">কতগুলি ওয়েবসাইটে আপনার ডেটা পড়ে</translation>
+<translation id="3466070586188012397"><ph name="VENDOR_ID"/> বিক্রেতার থেকে <ph name="PRODUCT_NAME"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3560114062880914682">{1,select, single{একটি USB ডিভাইস নির্বাচন করুন}multiple{USB ডিভাইসগুলি নির্বাচন করুন}other{অব্যবহৃত}}</translation>
+<translation id="3624204664103857160">লঞ্চার পৃষ্ঠা '<ph name="PAGE"/>' লোড করা যায়নি৷</translation>
+<translation id="3759933321830434300">ওয়েব পৃষ্ঠাগুলির অংশগুলি অবরুদ্ধ করুন</translation>
+<translation id="388442998277590542">বিকল্প পৃষ্ঠা '<ph name="OPTIONS_PAGE"/>' লোড করা যায়নি৷</translation>
+<translation id="3983586614702900908">একটি অজানা বিক্রেতা থেকে ডিভাইসগুলি</translation>
+<translation id="4115165561519362854"><ph name="EXTENSION_VERSION"/> এর কোনো সর্বনিম্ন সংস্করণ রাখতে, এই মেশিনের প্রশাসকের জন্য <ph name="EXTENSION_NAME"/> প্রয়োজন৷ এটিকে যতক্ষণ না পর্যন্ত সেই সংস্করণে আপডেট করা হচ্ছে (বা উচ্চতর) এটি সক্ষমিত হবে না৷</translation>
+<translation id="4233778200880751280"><ph name="ABOUT_PAGE"/> সম্পর্কিত পৃষ্ঠা লোড করা গেল না।</translation>
+<translation id="4444304522807523469">USB বা স্থানীয় নেটওয়ার্কের মাধ্যমে সংযুক্ত দস্তাবেজ স্ক্যানার অ্যাক্সেস করে</translation>
+<translation id="452039078290142656"><ph name="VENDOR_NAME"/> থেকে অজানা ডিভাইসগুলি</translation>
+<translation id="4542520061254486227"><ph name="WEBSITE_1"/> এবং <ph name="WEBSITE_2"/> আপনার ডেটা পড়ে</translation>
+<translation id="4761104368405085019">আপনার মাইক্রোফোন ব্যবহার করুন</translation>
+<translation id="4811956658694082538">একটি ইউটিলিটি প্রক্রিয়া ক্র্যাশ করার কারণে প্যাকেজটি ইনস্টল করা যায়নি। Chrome কে পুনরায় চালু করার চেষ্টা করুন এবং আবার চেষ্টা করুন।</translation>
+<translation id="4883436287898674711">সব <ph name="WEBSITE_1"/> সাইট</translation>
+<translation id="5026754133087629784">ওয়েবদর্শন: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="5127881134400491887">নেটওয়ার্ক সংযোগগুলি পরিচালনা করুন</translation>
+<translation id="5165983846722506205">{1,select, single{একটি HID ডিভাইস নির্বাচন করুন}multiple{HID ডিভাইসগুলি নির্বাচন করুন}other{অব্যবহৃত}}</translation>
+<translation id="5356315618422219272">অ্যাপ্লিকেশান দর্শন: <ph name="APPVIEW_TAG_NAME"/></translation>
+<translation id="5456409301717116725">এই এক্সটেনশানটি '<ph name="KEY_PATH"/>' মুখ্য ফাইলকে অন্তর্ভুক্ত করে৷ আপনি সম্ভবত এটি করতে চাইবেন না৷</translation>
+<translation id="5627523580512561598">এক্সটেনশান <ph name="EXTENSION_NAME"/></translation>
+<translation id="5678955352098267522"><ph name="WEBSITE_1"/>এ আপনার ডেটা পড়ে</translation>
+<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
+<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
+<translation id="5971037678316050792">Bluetooth অ্যাডাপ্টারের স্থিতি ও যুক্ত করা নিয়ন্ত্রণ করে</translation>
+<translation id="5972529113578162692">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME"/> ইন্সটল করা প্রয়োজন। এটি আনইন্সটল করা যাবে না।</translation>
+<translation id="6027032947578871493"><ph name="VENDOR_NAME"/> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID"/> (সিরিয়াল নম্বর <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6068932090455285721"><ph name="VENDOR_ID"/> বিক্রেতার থেকে <ph name="PRODUCT_NAME"/></translation>
+<translation id="6075907793831890935"><ph name="HOSTNAME"/> নামের ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="6143635259298204954">এক্সটেনশনটি প্যাকমুক্ত করতে পারে না৷  নিরাপদে কোনও এক্সটেনশন প্যাকমুক্ত করতে, আপনার প্রোফাইল ডিরেক্টরিতে অবশ্যই এমন একটি পথ থাকতে হবে যেখানে কোনও সিমলিঙ্ক থাকে না৷  এই জাতীয় কোনও পথ আপনার প্রোফাইলে বিদ্যমান নেই৷</translation>
+<translation id="616804573177634438">{0,select, single{&quot;<ph name="APP_NAME"/>&quot; অ্যাপ্লিকেশানটি আপনার কোনো একটি ডিভাইসে অ্যাক্সেস করার জন্য অনুরোধ করছে।}multiple{&quot;<ph name="APP_NAME"/>&quot; অ্যাপ্লিকেশানটি আপনার কোনো একটি বা একাধিক ডিভাইসে অ্যাক্সেস করার জন্য অনুরোধ করছে।}other{অব্যবহৃত}}</translation>
+<translation id="6241530762627360640">আপনার সিস্টেমের সঙ্গে যুক্ত করা Bluetooth ডিভাইসগুলির সম্পর্কে তথ্য অ্যাক্সেস করুন এবং কাছাকাছি  Bluetooth ডিভাইসগুলি খুঁজুন।</translation>
+<translation id="6344170822609224263">নেটওয়ার্ক সংযোগের তালিকা অ্যাক্সেস করে</translation>
+<translation id="6384275966486438344">আপনার অনুসন্ধানের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST"/></translation>
+<translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, ও <ph name="WEBSITE_3"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
+<translation id="641087317769093025">এক্সটেনশান আনজিপ করা যায়নি</translation>
+<translation id="657064425229075395">পশ্চাদপট লিপি '<ph name="BACKGROUND_SCRIPT"/>' লোড করা যায়নি৷</translation>
+<translation id="6580950983454333167"><ph name="VENDOR_NAME"/> এর পক্ষ থেকে <ph name="PRODUCT_NAME"/> (ক্রমিক সংখ্যা <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6698810901424468597"><ph name="WEBSITE_1"/> ও <ph name="WEBSITE_2"/> এ আপনার ডেটা পড়ুন এবং পরিবর্তন করুন</translation>
+<translation id="6731255991101203740">এটিকে আনজিপ করার জন্য ডিরেক্টরি তৈরি করা যায়নি: '<ph name="DIRECTORY_PATH"/>'</translation>
+<translation id="677806580227005219">মাইমহ্যান্ডলার: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
+<translation id="6840444547062817500">এই এক্সটেনশানটি খুব ঘন ঘন নিজের থেকে পুনরায় লোড হয়৷</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME"/> এর থেকে অজানা পণ্য <ph name="PRODUCT_ID"/></translation>
+<translation id="7039326228527141150">USB ডিভাইসগুলি <ph name="VENDOR_NAME"/> থেকে অ্যাক্সেস করুন</translation>
+<translation id="7093866338626856921"><ph name="HOSTNAMES"/>: নামের্ ডিভাইসসমূহের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, এবং <ph name="WEBSITE_3"/>-এ আপনার ডেটা পড়ে</translation>
+<translation id="7154130902455071009">আপনার সূচনা পৃষ্ঠাকে এতে পরিবর্তন করুন: <ph name="START_PAGE"/></translation>
+<translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME"/> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
+<translation id="7257666756905341374">আপনি যে ডেটা প্রতিলিপি ও লেপন করেন তা পড়ুন</translation>
+<translation id="730515362922783851">স্থানীয় নেটওয়ার্ক বা ইন্টারনেটে যে কোনো ডিভাইসের সাথে ডেটা বিনিময় করুন</translation>
+<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (এক্সটেশন ID &quot;<ph name="EXTENSION_ID"/>&quot;) টি প্রশাসকের দ্বারা অবরুদ্ধ করা আছে৷</translation>
+<translation id="7893008570150657497">আপনার কম্পিউটার থেকে ফটো, সঙ্গীত ও অন্য মিডিয়াতে অ্যাক্সেস করুন</translation>
+<translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8047248493720652249">এই এক্সটেনশানটি ডাউনলোড &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; এর নাম দিতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশান (<ph name="EXTENSION_NAME"/>) একটি ভিন্ন ফাইল নাম &quot;<ph name="ACTUAL_FILENAME"/>&quot; নির্ধারণ করেছে৷</translation>
+<translation id="8284279544186306258">সব <ph name="WEBSITE_1"/> সাইট</translation>
+<translation id="8284835137979141223"><ph name="VENDOR_NAME"/> এর <ph name="PRODUCT_NAME"/></translation>
+<translation id="8341840687457896278">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের শংসাপত্রগুলি প্রদান করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) ভিন্ন শংসাপত্রগুলি প্রদান করেছে৷</translation>
+<translation id="8602184400052594090">তালিকা ফাইল পাওয়া যাচ্ছে না অথবা পঠনযোগ্য৷</translation>
+<translation id="8620765578342452535">নেটওয়ার্ক সংযোগ কনফিগার করুন</translation>
+<translation id="8636666366616799973">প্যাকেজটি অবৈধ৷ বিশদ বিবরণ: '<ph name="ERROR_MESSAGE"/>'৷</translation>
+<translation id="8662911384982557515">আপনার হোম পৃষ্ঠাকে এতে পরিবর্তিত করুন: <ph name="HOME_PAGE"/></translation>
+<translation id="8670869118777164560">এই এক্সটেনশনটি <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>এ একটি নেটওয়ার্কের পুনঃনির্দেশ অনুরোধ করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এটিকে <ph name="ACTUAL_REDIRECT_DESTINATION"/> এ পুনঃনির্দেশ করেছে৷</translation>
+<translation id="8712265948125780616">এক্সটেনশান আনপ্যাকার</translation>
+<translation id="8749863574775030885">একটি অজানা বিক্রেতা থেকে USB ডিভাইস অ্যাক্সেস করুন</translation>
+<translation id="8804398419035066391">সহযোগী ওয়েবসাইটগুলির মাধ্যমে যোগাযোগ করুন</translation>
+<translation id="8825366169884721447">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের অনুরোধ শীর্ষক &quot;<ph name="HEADER_NAME"/>&quot; এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এর সঙ্গে বিরোধ আছে৷</translation>
+<translation id="9111791539553342076">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের প্রতিক্রিয়া শীর্ষক &quot;<ph name="HEADER_NAME"/>&quot; এর সংশোধন করতে ব্যর্থ হয়েছে কারণ সংশোধনটির অন্য এক্সটেনশন (<ph name="EXTENSION_NAME"/>) এর সঙ্গে বিরোধ রয়েছে৷</translation>
+<translation id="9131487537093447019">Bluetooth ডিভাইসগুলি থেকে বার্তা পাঠান ও গ্রহণ করুন।</translation>
+<translation id="9150045010208374699">আপনার ক্যামেরা ব্যবহার করুন</translation>
 </translationbundle>

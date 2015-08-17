@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
-<translation id="2094750046714988961">外部儲存空間尚未準備就緒，因此無法啟動分析器</translation>
 <translation id="1256337885411059545">無法播放影片</translation>
-<translation id="2520230379124234395">分析器已啟動</translation>
-<translation id="4859501799452851758">分析器已執行完成，請參閱 <ph name="FILENAME"/> 查看分析結果。</translation>
-<translation id="273860350361291195">很抱歉，這部影片的格式有誤，無法透過這個裝置串流播放。</translation>
-<translation id="2410828433627930127">很抱歉，無法播放這部影片。</translation>
-<translation id="7096034533295549981">正在載入影片</translation>
 <translation id="1542044944667958430">網頁搜尋</translation>
-<translation id="6849295950938417341">無法啟動分析器</translation>
+<translation id="2094750046714988961">外部儲存空間尚未準備就緒，因此無法啟動分析器</translation>
+<translation id="2410828433627930127">很抱歉，無法播放這部影片。</translation>
+<translation id="2520230379124234395">分析器已啟動</translation>
+<translation id="273860350361291195">很抱歉，這部影片的格式有誤，無法透過這個裝置串流播放。</translation>
+<translation id="4859501799452851758">分析器已執行完成，請參閱 <ph name="FILENAME"/> 查看分析結果。</translation>
 <translation id="6527303717912515753">分享</translation>
+<translation id="6849295950938417341">無法啟動分析器</translation>
 <translation id="6965382102122355670">確定</translation>
+<translation id="7096034533295549981">正在載入影片</translation>
 </translationbundle>

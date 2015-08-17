@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="id">
-<translation id="8008366997883261463">Anjing</translation>
-<translation id="7165320105431587207">Gagal mengonfigurasi jaringan</translation>
-<translation id="4387004326333427325">Sertifikat atutentikasi ditolak dari jarak jauh</translation>
-<translation id="6943836128787782965">HTTP gagal</translation>
+<translation id="1119447706177454957">Kesalahan internal</translation>
+<translation id="153454903766751181">Memulai modem seluler...</translation>
+<translation id="158849752021629804">Memerlukan jaringan rumah</translation>
 <translation id="1661867754829461514">PIN hilang</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Menyambung...</translation>
+<translation id="1773212559869067373">Sertifikat autentikasi ditolak secara lokal</translation>
+<translation id="1829129547161959350">Penguin</translation>
+<translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
+<translation id="2288278176040912387">Pemutar piringan hitam</translation>
+<translation id="2354174487190027830">Mengaktifkan <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
+<translation id="2563185590376525700">Katak</translation>
+<translation id="2563856802393254086">Selamat! Layanan data '<ph name="NAME"/>' Anda telah diaktifkan dan siap digunakan.</translation>
+<translation id="2649120831653069427">Ikan Pelangi</translation>
+<translation id="2670531586141364277">Aktivasi '<ph name="NAME"/>' membutuhkan sambungan jaringan.</translation>
+<translation id="2894654529758326923">Informasi</translation>
+<translation id="2951236788251446349">Ubur-ubur</translation>
+<translation id="2966449113954629791">Data seluler Anda yang diizinkan mungkin telah habis. Kunjungi portal aktivasi <ph name="NAME"/> untuk membeli data lagi.</translation>
+<translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
+<translation id="3871838685472846647">Seluler Diaktifkan</translation>
+<translation id="3901991538546252627">Menyambung ke <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Burung Kiwi</translation>
 <translation id="40400351611212369">Kesalahan Aktivasi Jaringan</translation>
 <translation id="4237016987259239829">Kesalahan Koneksi Jaringan</translation>
+<translation id="4274292172790327596">Kesalahan tak dikenal</translation>
+<translation id="4326192123064055915">Kopi</translation>
+<translation id="4387004326333427325">Sertifikat atutentikasi ditolak dari jarak jauh</translation>
+<translation id="4442424173763614572">Pencarian DNS gagal</translation>
+<translation id="4448844063988177157">Menelusuri jaringan Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Menyambung...</translation>
 <translation id="4508265954913339219">Aktivasi gagal</translation>
 <translation id="4559767610552730302">Efek Bokeh</translation>
-<translation id="8688591111840995413">Sandi lemah</translation>
-<translation id="3846575436967432996">Tidak tersedia informasi jaringan</translation>
-<translation id="153454903766751181">Memulai modem seluler...</translation>
-<translation id="735745346212279324">VPN terputus</translation>
+<translation id="4935975195727477204">Bunga Gazania</translation>
+<translation id="5045550434625856497">Sandi salah</translation>
+<translation id="5097002363526479830">Gagal menyambung ke jaringan '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Catur</translation>
+<translation id="5257456363153333584">Capung</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">Kucing</translation>
-<translation id="7170041865419449892">Di luar jangkauan</translation>
-<translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
-<translation id="7973962044839454485">Autentifikasi PDB gagal karena nama pengguna dan sandi salah</translation>
-<translation id="6549021752953852991">Jaringan seluler tidak tersedia</translation>
+<translation id="5864471791310927901">Pencarian DHCP gagal</translation>
+<translation id="6232116551750539448">Sambungan ke <ph name="NAME"/> terputus</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Mengaktifkan...</translation>
+<translation id="6312403991423642364">Kesalahan jaringan tidak dikenal</translation>
 <translation id="6490455614072479501">Gagal menyambungkan ke '<ph name="NAME"/>': <ph name="DETAILS"/>
         Pesan server: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Aktivasi '<ph name="NAME"/>' membutuhkan sambungan jaringan.</translation>
-<translation id="4442424173763614572">Pencarian DNS gagal</translation>
-<translation id="7874779702599364982">Menelusuri jaringan seluler...</translation>
-<translation id="3901991538546252627">Menyambung ke <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Sertifikat autentikasi ditolak secara lokal</translation>
-<translation id="2563185590376525700">Katak</translation>
-<translation id="7256405249507348194">Kesalahan tidak dikenal: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Informasi</translation>
-<translation id="6935521024859866267">Terbalik</translation>
-<translation id="7925247922861151263">Pemeriksaan AAA gagal</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Kesalahan jaringan tidak dikenal</translation>
-<translation id="4326192123064055915">Kopi</translation>
-<translation id="2354174487190027830">Mengaktifkan <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Penguin</translation>
-<translation id="515594325917491223">Catur</translation>
-<translation id="5097002363526479830">Gagal menyambung ke jaringan '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi dinonaktifkan.</translation>
-<translation id="2966449113954629791">Data seluler Anda yang diizinkan mungkin telah habis. Kunjungi portal aktivasi <ph name="NAME"/> untuk membeli data lagi.</translation>
-<translation id="8132793192354020517">Tersambung ke <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Kesalahan internal</translation>
-<translation id="5045550434625856497">Sandi salah</translation>
-<translation id="6232116551750539448">Sambungan ke <ph name="NAME"/> terputus</translation>
-<translation id="4274292172790327596">Kesalahan tak dikenal</translation>
-<translation id="4448844063988177157">Menelusuri jaringan Wi-Fi...</translation>
-<translation id="7229570126336867161">Memerlukan EVDO</translation>
-<translation id="9044646465488564462">Gagal menyambung ke jaringan: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi diaktifkan.</translation>
-<translation id="3871838685472846647">Seluler Diaktifkan</translation>
-<translation id="3958548648197196644">Burung Kiwi</translation>
+<translation id="6549021752953852991">Jaringan seluler tidak tersedia</translation>
 <translation id="6732801395666424405">Sertifikat tidak dimuat</translation>
-<translation id="8300849813060516376">OTASP gagal</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Mengaktifkan...</translation>
-<translation id="8714406895390098252">Sepeda</translation>
-<translation id="5257456363153333584">Capung</translation>
-<translation id="158849752021629804">Memerlukan jaringan rumah</translation>
-<translation id="2649120831653069427">Ikan Pelangi</translation>
-<translation id="2288278176040912387">Pemutar piringan hitam</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">Pencarian DHCP gagal</translation>
-<translation id="9046895021617826162">Gagal menyambung</translation>
-<translation id="8372369524088641025">Kunci WEP yang buruk</translation>
-<translation id="2951236788251446349">Ubur-ubur</translation>
-<translation id="8000066093800657092">Tidak ada jaringan</translation>
-<translation id="2563856802393254086">Selamat! Layanan data '<ph name="NAME"/>' Anda telah diaktifkan dan siap digunakan.</translation>
-<translation id="4935975195727477204">Bunga Gazania</translation>
+<translation id="6935521024859866267">Terbalik</translation>
+<translation id="6943836128787782965">HTTP gagal</translation>
+<translation id="7165320105431587207">Gagal mengonfigurasi jaringan</translation>
+<translation id="7170041865419449892">Di luar jangkauan</translation>
+<translation id="7229570126336867161">Memerlukan EVDO</translation>
+<translation id="7256405249507348194">Kesalahan tidak dikenal: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Nama pengguna/sandi salah atau autentikasi EAP gagal</translation>
+<translation id="735745346212279324">VPN terputus</translation>
+<translation id="7874779702599364982">Menelusuri jaringan seluler...</translation>
+<translation id="7925247922861151263">Pemeriksaan AAA gagal</translation>
+<translation id="7973962044839454485">Autentifikasi PDB gagal karena nama pengguna dan sandi salah</translation>
+<translation id="8000066093800657092">Tidak ada jaringan</translation>
+<translation id="8008366997883261463">Anjing</translation>
+<translation id="8132793192354020517">Tersambung ke <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP gagal</translation>
+<translation id="8372369524088641025">Kunci WEP yang buruk</translation>
+<translation id="8454013096329229812">Wi-Fi diaktifkan.</translation>
+<translation id="8688591111840995413">Sandi lemah</translation>
+<translation id="8714406895390098252">Sepeda</translation>
+<translation id="8808686172382650546">Kucing</translation>
+<translation id="9044646465488564462">Gagal menyambung ke jaringan: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Gagal menyambung</translation>
 </translationbundle>

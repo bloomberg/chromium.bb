@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
-<translation id="2094750046714988961">ไม่สามารถเริ่มโปรแกรมโปรไฟล์เลอร์ได้เนื่องจากที่จัดเก็บข้อมูลภายนอกไม่พร้อมใช้งาน</translation>
 <translation id="1256337885411059545">ไม่สามารถเล่นวิดีโอ</translation>
-<translation id="2520230379124234395">เริ่มโปรแกรมโปรไฟล์เลอร์แล้ว</translation>
-<translation id="4859501799452851758">โปรแกรมโปรไฟล์เลอร์ดำเนินการเสร็จแล้ว ผลลัพธ์อยู่ใน <ph name="FILENAME"/></translation>
-<translation id="273860350361291195">ขออภัย ไม่สามารถสตรีมวิดีโอไปยังอุปกรณ์นี้</translation>
-<translation id="2410828433627930127">ขออภัย วิดีโอนี้เล่นไม่ได้</translation>
-<translation id="7096034533295549981">กำลังโหลดวิดีโอ</translation>
 <translation id="1542044944667958430">ค้นเว็บ</translation>
-<translation id="6849295950938417341">ไม่สามารถเริ่มโปรแกรมโปรไฟล์เลอร์</translation>
+<translation id="2094750046714988961">ไม่สามารถเริ่มโปรแกรมโปรไฟล์เลอร์ได้เนื่องจากที่จัดเก็บข้อมูลภายนอกไม่พร้อมใช้งาน</translation>
+<translation id="2410828433627930127">ขออภัย วิดีโอนี้เล่นไม่ได้</translation>
+<translation id="2520230379124234395">เริ่มโปรแกรมโปรไฟล์เลอร์แล้ว</translation>
+<translation id="273860350361291195">ขออภัย ไม่สามารถสตรีมวิดีโอไปยังอุปกรณ์นี้</translation>
+<translation id="4859501799452851758">โปรแกรมโปรไฟล์เลอร์ดำเนินการเสร็จแล้ว ผลลัพธ์อยู่ใน <ph name="FILENAME"/></translation>
 <translation id="6527303717912515753">แชร์</translation>
+<translation id="6849295950938417341">ไม่สามารถเริ่มโปรแกรมโปรไฟล์เลอร์</translation>
 <translation id="6965382102122355670">ตกลง</translation>
+<translation id="7096034533295549981">กำลังโหลดวิดีโอ</translation>
 </translationbundle>

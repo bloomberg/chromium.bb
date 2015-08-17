@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
-<translation id="2094750046714988961">Harici depolama birimi hazır olmadığından profil düzenleyici başlatılamıyor</translation>
 <translation id="1256337885411059545">Video oynatılamıyor</translation>
-<translation id="2520230379124234395">Profil düzenleyici başlatıldı</translation>
-<translation id="4859501799452851758">Profil düzenleyici tamamlandı. Sonuçlar <ph name="FILENAME"/> dosyasındadır.</translation>
-<translation id="273860350361291195">Bu video maalesef bu cihaza akışla gönderilmek için uygun değil.</translation>
-<translation id="2410828433627930127">Maalesef bu video oynatılamıyor.</translation>
-<translation id="7096034533295549981">Video yükleniyor</translation>
 <translation id="1542044944667958430">Web arama</translation>
-<translation id="6849295950938417341">Profil düzenleyici başlatılamadı</translation>
+<translation id="2094750046714988961">Harici depolama birimi hazır olmadığından profil düzenleyici başlatılamıyor</translation>
+<translation id="2410828433627930127">Maalesef bu video oynatılamıyor.</translation>
+<translation id="2520230379124234395">Profil düzenleyici başlatıldı</translation>
+<translation id="273860350361291195">Bu video maalesef bu cihaza akışla gönderilmek için uygun değil.</translation>
+<translation id="4859501799452851758">Profil düzenleyici tamamlandı. Sonuçlar <ph name="FILENAME"/> dosyasındadır.</translation>
 <translation id="6527303717912515753">Paylaş</translation>
+<translation id="6849295950938417341">Profil düzenleyici başlatılamadı</translation>
 <translation id="6965382102122355670">Tamam</translation>
+<translation id="7096034533295549981">Video yükleniyor</translation>
 </translationbundle>

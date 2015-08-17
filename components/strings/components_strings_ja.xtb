@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
-<translation id="2774256287122201187">続行できますが、このページに移動するとこの警告は今後 5 分間表示されません。</translation>
-<translation id="3963721102035795474">リーダーモード</translation>
-<translation id="7485870689360869515">データが見つかりません。</translation>
-<translation id="3884278016824448484">競合するデバイス識別子です</translation>
-<translation id="5172758083709347301">マシン</translation>
-<translation id="7180611975245234373">更新</translation>
-<translation id="8208216423136871611">保存しない</translation>
-<translation id="777702478322588152">都道府県</translation>
-<translation id="2972581237482394796">やり直し(&amp;R)</translation>
-<translation id="7600965453749440009"><ph name="LANGUAGE"/>を翻訳しない</translation>
-<translation id="2262243747453050782">HTTP エラーです</translation>
-<translation id="1339601241726513588">登録ドメイン:</translation>
-<translation id="7298195798382681320">推奨</translation>
-<translation id="4058922952496707368">キー「<ph name="SUBKEY"/>」: <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">JavaScript のアラート</translation>
-<translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
-<translation id="6628463337424475685"><ph name="ENGINE"/> 検索</translation>
-<translation id="2498091847651709837">新しいカードをスキャン</translation>
-<translation id="6831043979455480757">翻訳</translation>
-<translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
-<translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
-<translation id="4372948949327679948"><ph name="VALUE_TYPE"/> 値が想定されます。</translation>
-<translation id="2094505752054353250">ドメインが一致しません</translation>
-<translation id="7012363358306927923">中国銀聯</translation>
-<translation id="7537536606612762813">必須</translation>
-<translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
-<translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
-<translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">デバイス レコードがありません</translation>
-<translation id="1491151370853475546">このページを再読み込み</translation>
-<translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314"><ph name="LANGUAGE"/>を常に翻訳</translation>
-<translation id="1227633850867390598">値を非表示</translation>
-<translation id="6753269504797312559">ポリシーの値</translation>
-<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> の更新と確認</translation>
-<translation id="8834246243508017242">連絡先からの自動入力を有効にする...</translation>
-<translation id="7275334191706090484">管理対象のブックマーク</translation>
-<translation id="7400418766976504921">URL</translation>
-<translation id="7378627244592794276">いいえ</translation>
-<translation id="2704283930420550640">値が有効な形式ではありません。</translation>
 <translation id="1055184225775184556">追加の取り消し（&amp;U）</translation>
-<translation id="7813600968533626083">Chrome から候補を削除してもよろしいですか？</translation>
-<translation id="4850886885716139402">表示</translation>
-<translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
-<translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
-<translation id="4607653538520819196">データセーバーはこのページをプロキシ送信できません。</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">地域</translation>
-<translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
-<translation id="8988760548304185580">カードの裏面に記載されている有効期限と 3 桁の CVC を入力します</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> コマンドを実行: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">不明なエラー</translation>
-<translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
-<translation id="3452404311384756672">取得間隔:</translation>
-<translation id="409504436206021213">再読み込みしない</translation>
-<translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
-<translation id="3885155851504623709">教区</translation>
-<translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
-<translation id="1426410128494586442">はい</translation>
-<translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>に翻訳できませんでした。</translation>
-<translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
-<translation id="3219579145727097045">カードの表側に記載されている有効期限と 4 桁の CVC を入力します</translation>
-<translation id="59107663811261420">この販売者に対し、この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
-<translation id="4079302484614802869">プロキシは固定プロキシ サーバーではなく .pac スクリプト URL を使用するように設定されています。</translation>
-<translation id="5540224163453853">リクエストされた記事が見つかりませんでした。</translation>
-<translation id="8437238597147034694">移動の取り消し（&amp;U）</translation>
-<translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
-<translation id="333371639341676808">このページでこれ以上ダイアログボックスを生成しない</translation>
-<translation id="5523118979700054094">ポリシー名</translation>
-<translation id="7791543448312431591">追加</translation>
-<translation id="2053553514270667976">郵便番号</translation>
-<translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">ポリシーが見つかりません</translation>
-<translation id="3150653042067488994">一時的なサーバー エラーです</translation>
-<translation id="7087282848513945231">郡</translation>
-<translation id="1132774398110320017">Chrome の自動入力設定...</translation>
-<translation id="8194797478851900357">移動の取り消し（&amp;U）</translation>
-<translation id="6458467102616083041">ポリシーによってデフォルトの検索が無効にされているため無視されます。</translation>
-<translation id="6259156558325130047">順序変更のやり直し（&amp;R）</translation>
-<translation id="1227224963052638717">不明なポリシー。</translation>
-<translation id="4250680216510889253">いいえ</translation>
-<translation id="9207861905230894330">記事を追加できませんでした。</translation>
-<translation id="5872918882028971132">保護者からのおすすめ</translation>
-<translation id="337363190475750230">プロビジョニングが解除されました</translation>
-<translation id="2367567093518048410">レベル</translation>
-<translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
-<translation id="552553974213252141">テキストは正しく抽出されましたか？</translation>
-<translation id="5317780077021120954">保存</translation>
-<translation id="8530504477309582336">この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
-<translation id="7610193165460212391">値（<ph name="VALUE"/>）が範囲外です。</translation>
-<translation id="3739623965217189342">コピーしたリンク</translation>
-<translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
-<translation id="8311778656528046050">このページを再読み込みしてもよろしいですか？</translation>
-<translation id="370665806235115550">読み込み中...</translation>
-<translation id="2096368010154057602">県</translation>
-<translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
-<translation id="4258748452823770588">署名が不適切です</translation>
-<translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
-<translation id="2030481566774242610">もしかして: <ph name="LINK"/></translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
-<translation id="3145945101586104090">応答をデコードできませんでした</translation>
-<translation id="2328300916057834155">インデックス <ph name="ENTRY_INDEX"/> の無効なブックマークを無視しました</translation>
-<translation id="883848425547221593">その他のブックマーク</translation>
-<translation id="2181821976797666341">ポリシー</translation>
-<translation id="3174168572213147020">島</translation>
-<translation id="9137013805542155359">原文のページを表示</translation>
-<translation id="2213606439339815911">エントリを取得しています...</translation>
-<translation id="6263376278284652872"><ph name="DOMAIN"/> のブックマーク</translation>
-<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
-<translation id="8218327578424803826">割り当てられた場所:</translation>
-<translation id="3542684924769048008">次のパスワードを使用:</translation>
-<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> の確認</translation>
-<translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
-<translation id="4587425331216688090">Chrome からアドレスを削除してもよろしいですか？</translation>
-<translation id="7139724024395191329">管轄区域</translation>
-<translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
-<translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
-<translation id="7983301409776629893">常に<ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳する</translation>
-<translation id="6970216967273061347">地区</translation>
-<translation id="3427342743765426898">編集のやり直し（&amp;R）</translation>
-<translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX"/>」: <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
-<translation id="6445051938772793705">国</translation>
-<translation id="5031870354684148875">Google 翻訳について</translation>
-<translation id="1152921474424827756"><ph name="URL"/> の<ph name="BEGIN_LINK"/>キャッシュ コピー<ph name="END_LINK"/>にアクセスします</translation>
-<translation id="8201077131113104583">ID「<ph name="EXTENSION_ID"/>」の拡張機能に対する無効な更新 URL です。</translation>
-<translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
-<translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
-<translation id="1853748787962613237">記事を表示できませんでした。</translation>
-<translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
-<translation id="2025623846716345241">再読み込みに関する確認</translation>
-<translation id="1962204205936693436"><ph name="DOMAIN"/> のブックマーク</translation>
-<translation id="4300246636397505754">保護者からのおすすめ</translation>
-<translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
-<translation id="2495083838625180221">JSON パーサー</translation>
-<translation id="1973335181906896915">シリアル化エラーです</translation>
-<translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
-<translation id="7805768142964895445">ステータス</translation>
-<translation id="2113977810652731515">カード</translation>
+<translation id="106701514854093668">パソコンのブックマーク</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/>を常に翻訳</translation>
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
-<translation id="536296301121032821">ポリシー設定を保存できませんでした</translation>
-<translation id="5439770059721715174">「<ph name="ERROR_PATH"/>」でスキーマ確認エラー: <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">ブックマーク バー</translation>
-<translation id="587701087903783706">モバイル向け画面を閉じる</translation>
-<translation id="7208899522964477531"><ph name="SITE_NAME"/> で <ph name="SEARCH_TERMS"/> を検索</translation>
-<translation id="7956713633345437162">モバイルのブックマーク</translation>
-<translation id="5089810972385038852">都道府県 / 州</translation>
-<translation id="647261751007945333">デバイス ポリシー</translation>
-<translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
-<translation id="213826338245044447">モバイルのブックマーク</translation>
-<translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
-<translation id="8571890674111243710">ページを<ph name="LANGUAGE"/>に翻訳しています...</translation>
-<translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
-<translation id="2114841414352855701"><ph name="POLICY_NAME"/> によって上書きされるため無視されます。</translation>
-<translation id="3228969707346345236">このページは既に<ph name="LANGUAGE"/>なので、翻訳できません。</translation>
-<translation id="7521387064766892559">Javascript</translation>
-<translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE"/>です。<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
-<translation id="1734864079702812349">AMEX</translation>
-<translation id="8891727572606052622">プロキシ モードが無効です。</translation>
-<translation id="3105172416063519923">アセット ID:</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
-<translation id="2587841377698384444">Directory API ID:</translation>
-<translation id="7752995774971033316">管理されていません</translation>
-<translation id="3712624925041724820">ライセンスを使い切りました</translation>
-<translation id="4926049483395192435">指定する必要があります。</translation>
-<translation id="1455235771979731432">カードの確認中に問題が発生しました。インターネット接続を確認してから、もう一度お試しください。</translation>
-<translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
-<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>でない場合はこのエラーを報告する</translation>
-<translation id="8088680233425245692">記事を表示できませんでした。</translation>
-<translation id="8725066075913043281">やり直し</translation>
-<translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
-<translation id="1640180200866533862">ユーザー ポリシー</translation>
-<translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
-<translation id="2597378329261239068">このドキュメントはパスワードで保護されています。パスワードを入力してください。</translation>
-<translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
-<translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
-<translation id="2354001756790975382">その他のブックマーク</translation>
-<translation id="3650584904733503804">検証が正常に完了しました</translation>
-<translation id="2359808026110333948">続行</translation>
-<translation id="6915804003454593391">ユーザー:</translation>
-<translation id="3377188786107721145">ポリシー解析エラーです</translation>
-<translation id="2270192940992995399">記事が見つかりませんでした。</translation>
-<translation id="4726672564094551039">ポリシーを再読み込み</translation>
-<translation id="9170848237812810038">取消(&amp;U)</translation>
-<translation id="9154176715500758432">このページにとどまる</translation>
-<translation id="2392959068659972793">値が設定されていないポリシーを表示する</translation>
-<translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>
-<translation id="5470861586879999274">編集のやり直し（&amp;R）</translation>
-<translation id="5190835502935405962">ブックマーク バー</translation>
-<translation id="6965978654500191972">デバイス</translation>
-<translation id="5295309862264981122">ナビゲーションの確認</translation>
-<translation id="8249320324621329438">前回の取得:</translation>
-<translation id="194030505837763158"><ph name="LINK"/> に移動します</translation>
+<translation id="111844081046043029">このページから移動してもよろしいですか？</translation>
+<translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
+<translation id="1132774398110320017">Chrome の自動入力設定...</translation>
+<translation id="1152921474424827756"><ph name="URL"/> の<ph name="BEGIN_LINK"/>キャッシュ コピー<ph name="END_LINK"/>にアクセスします</translation>
+<translation id="1227224963052638717">不明なポリシー。</translation>
+<translation id="1227633850867390598">値を非表示</translation>
+<translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="1339601241726513588">登録ドメイン:</translation>
 <translation id="1344588688991793829">Chromium の自動入力設定...</translation>
-<translation id="6282194474023008486">郵便番号</translation>
-<translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
-<translation id="3623476034248543066">値を表示</translation>
-<translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE"/>に翻訳されています</translation>
-<translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
-<translation id="560412284261940334">管理はサポートされていません</translation>
-<translation id="6512448926095770873">このページを離れる</translation>
+<translation id="1426410128494586442">はい</translation>
+<translation id="1455235771979731432">カードの確認中に問題が発生しました。インターネット接続を確認してから、もう一度お試しください。</translation>
+<translation id="1491151370853475546">このページを再読み込み</translation>
+<translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
 <translation id="1639239467298939599">読み込み中</translation>
-<translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました。</translation>
-<translation id="4813512666221746211">ネットワーク エラー</translation>
+<translation id="1640180200866533862">ユーザー ポリシー</translation>
+<translation id="1644184664548287040">ネットワーク設定が無効なためインポートできませんでした。</translation>
+<translation id="1693754753824026215">ページ <ph name="SITE"/> の記述:</translation>
+<translation id="1734864079702812349">AMEX</translation>
+<translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
+<translation id="1853748787962613237">記事を表示できませんでした。</translation>
+<translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
 <translation id="1875753206475436906">ヒューリスティック タイプ: <ph name="HEURISTIC_TYPE"/>
     サーバー タイプ: <ph name="SERVER_TYPE"/>
     フィールドの署名: <ph name="FIELD_SIGNATURE"/>
     フォームの署名: <ph name="FORM_SIGNATURE"/>
     テスト用 ID: 「<ph name="EXPERIMENT_ID"/>」</translation>
-<translation id="2479410451996844060">検索 URL が無効です。</translation>
-<translation id="5509780412636533143">管理対象のブックマーク</translation>
-<translation id="935608979562296692">フォームをクリア</translation>
-<translation id="8866481888320382733">ポリシー設定の解析中にエラーが発生しました</translation>
-<translation id="4120075327926916474">このクレジットカード情報を Chrome に保存してウェブ フォームの自動入力に使用しますか？</translation>
-<translation id="6644283850729428850">このポリシーは廃止されました。</translation>
-<translation id="1693754753824026215">ページ <ph name="SITE"/> の記述:</translation>
-<translation id="4269787794583293679">（ユーザー名なし）</translation>
-<translation id="7988324688042446538">パソコンのブックマーク</translation>
-<translation id="8488350697529856933">適用先</translation>
-<translation id="6165508094623778733">詳しく見る</translation>
-<translation id="5565735124758917034">有効</translation>
-<translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE"/>のページです。翻訳しますか？</translation>
-<translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
-<translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
-<translation id="4171400957073367226">確認用の署名に問題があります</translation>
-<translation id="9125941078353557812">カードの裏面に記載されている 3 桁の CVC を入力します</translation>
-<translation id="106701514854093668">パソコンのブックマーク</translation>
-<translation id="6154808779448689242">返されたポリシー トークンは現在のトークンと一致しません</translation>
-<translation id="7995512525968007366">指定なし</translation>
-<translation id="7961015016161918242">使用しない</translation>
-<translation id="2835170189407361413">フォームをクリア</translation>
-<translation id="6550675742724504774">オプション</translation>
-<translation id="8804164990146287819">プライバシー ポリシー</translation>
-<translation id="988159990683914416">Developer Build</translation>
-<translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
-<translation id="7182878459783632708">ポリシーが設定されていません</translation>
-<translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
-<translation id="8364627913115013041">未設定</translation>
-<translation id="8713130696108419660">無効なイニシャル署名です</translation>
-<translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
+<translation id="194030505837763158"><ph name="LINK"/> に移動します</translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> のブックマーク</translation>
+<translation id="1973335181906896915">シリアル化エラーです</translation>
+<translation id="2025186561304664664">プロキシは自動設定になっています。</translation>
+<translation id="2025623846716345241">再読み込みに関する確認</translation>
+<translation id="2030481566774242610">もしかして: <ph name="LINK"/></translation>
+<translation id="2053553514270667976">郵便番号</translation>
 <translation id="20817612488360358">システム プロキシ設定を使用するように設定されていますが、明示的なプロキシの設定も指定されています。</translation>
-<translation id="2639739919103226564">ステータス:</translation>
-<translation id="8824019021993735287">現在、Chrome でカードを確認できません。しばらくしてからもう一度お試しください。</translation>
-<translation id="4968547170521245791">プロキシ不可</translation>
-<translation id="385051799172605136">戻る</translation>
-<translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
-<translation id="5095208057601539847">地方</translation>
-<translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME"/> でこのサイトの<ph name="LANGUAGE_NAME"/>ページを翻訳しますか？</translation>
+<translation id="2094505752054353250">ドメインが一致しません</translation>
+<translation id="2096368010154057602">県</translation>
+<translation id="2113977810652731515">カード</translation>
+<translation id="2114841414352855701"><ph name="POLICY_NAME"/> によって上書きされるため無視されます。</translation>
+<translation id="213826338245044447">モバイルのブックマーク</translation>
+<translation id="2181821976797666341">ポリシー</translation>
+<translation id="2212735316055980242">ポリシーが見つかりません</translation>
+<translation id="2213606439339815911">エントリを取得しています...</translation>
+<translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
+<translation id="2262243747453050782">HTTP エラーです</translation>
+<translation id="2270192940992995399">記事が見つかりませんでした。</translation>
+<translation id="2328300916057834155">インデックス <ph name="ENTRY_INDEX"/> の無効なブックマークを無視しました</translation>
+<translation id="2354001756790975382">その他のブックマーク</translation>
+<translation id="2359808026110333948">続行</translation>
+<translation id="2367567093518048410">レベル</translation>
+<translation id="2392959068659972793">値が設定されていないポリシーを表示する</translation>
 <translation id="2396249848217231973">削除の取り消し（&amp;U）</translation>
-<translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2455981314101692989">このウェブページでは、フォームへの自動入力が無効になっています。</translation>
-<translation id="6597614308054261376"><ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> にアクセスしようとしています。データセーバーは現在、このページをプロキシ送信できません。</translation>
-<translation id="8308427013383895095">ネットワーク接続に問題があったため翻訳できませんでした。</translation>
-<translation id="5720705177508910913">現在のユーザー</translation>
+<translation id="2479410451996844060">検索 URL が無効です。</translation>
+<translation id="2495083838625180221">JSON パーサー</translation>
+<translation id="2498091847651709837">新しいカードをスキャン</translation>
+<translation id="2556876185419854533">編集の取り消し（&amp;U）</translation>
+<translation id="2581221116934462656">次回、<ph name="PRODUCT_NAME"/> でこのサイトの<ph name="LANGUAGE_NAME"/>ページを翻訳しますか？</translation>
+<translation id="2587841377698384444">Directory API ID:</translation>
+<translation id="2597378329261239068">このドキュメントはパスワードで保護されています。パスワードを入力してください。</translation>
+<translation id="2639739919103226564">ステータス:</translation>
+<translation id="2704283930420550640">値が有効な形式ではありません。</translation>
+<translation id="2721148159707890343">リクエストを正常に送信しました</translation>
+<translation id="2774256287122201187">続行できますが、このページに移動するとこの警告は今後 5 分間表示されません。</translation>
+<translation id="277499241957683684">デバイス レコードがありません</translation>
+<translation id="2835170189407361413">フォームをクリア</translation>
+<translation id="2855922900409897335"><ph name="CREDIT_CARD"/> の確認</translation>
+<translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
+<translation id="2972581237482394796">やり直し(&amp;R)</translation>
+<translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX"/>」: <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
+<translation id="3105172416063519923">アセット ID:</translation>
+<translation id="3145945101586104090">応答をデコードできませんでした</translation>
+<translation id="3150653042067488994">一時的なサーバー エラーです</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3174168572213147020">島</translation>
+<translation id="3219579145727097045">カードの表側に記載されている有効期限と 4 桁の CVC を入力します</translation>
+<translation id="3228969707346345236">このページは既に<ph name="LANGUAGE"/>なので、翻訳できません。</translation>
+<translation id="3270847123878663523">順序変更の取り消し（&amp;U）</translation>
+<translation id="333371639341676808">このページでこれ以上ダイアログボックスを生成しない</translation>
+<translation id="3369366829301677151"><ph name="CREDIT_CARD"/> の更新と確認</translation>
+<translation id="337363190475750230">プロビジョニングが解除されました</translation>
+<translation id="3377188786107721145">ポリシー解析エラーです</translation>
+<translation id="3380365263193509176">不明なエラー</translation>
 <translation id="3380864720620200369">クライアント ID:</translation>
+<translation id="3427342743765426898">編集のやり直し（&amp;R）</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">取得間隔:</translation>
+<translation id="3542684924769048008">次のパスワードを使用:</translation>
+<translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
+<translation id="3623476034248543066">値を表示</translation>
+<translation id="3650584904733503804">検証が正常に完了しました</translation>
+<translation id="370665806235115550">読み込み中...</translation>
+<translation id="3712624925041724820">ライセンスを使い切りました</translation>
+<translation id="3739623965217189342">コピーしたリンク</translation>
+<translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
+<translation id="385051799172605136">戻る</translation>
+<translation id="3884278016824448484">競合するデバイス識別子です</translation>
+<translation id="3885155851504623709">教区</translation>
+<translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>
+<translation id="3963721102035795474">リーダーモード</translation>
+<translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
+<translation id="4058922952496707368">キー「<ph name="SUBKEY"/>」: <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">プロキシは固定プロキシ サーバーではなく .pac スクリプト URL を使用するように設定されています。</translation>
+<translation id="409504436206021213">再読み込みしない</translation>
+<translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
+<translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
+<translation id="4120075327926916474">このクレジットカード情報を Chrome に保存してウェブ フォームの自動入力に使用しますか？</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">確認用の署名に問題があります</translation>
+<translation id="4196861286325780578">移動のやり直し（&amp;R）</translation>
+<translation id="4250680216510889253">いいえ</translation>
+<translation id="4258748452823770588">署名が不適切です</translation>
+<translation id="4269787794583293679">（ユーザー名なし）</translation>
+<translation id="4300246636397505754">保護者からのおすすめ</translation>
+<translation id="4372948949327679948"><ph name="VALUE_TYPE"/> 値が想定されます。</translation>
+<translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
+<translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR"/></translation>
+<translation id="4587425331216688090">Chrome からアドレスを削除してもよろしいですか？</translation>
+<translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
+<translation id="4607653538520819196">データセーバーはこのページをプロキシ送信できません。</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">ポリシーを再読み込み</translation>
+<translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
+<translation id="4813512666221746211">ネットワーク エラー</translation>
+<translation id="4850886885716139402">表示</translation>
+<translation id="4923417429809017348">このページは、不明な言語から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました。</translation>
+<translation id="4926049483395192435">指定する必要があります。</translation>
+<translation id="4968547170521245791">プロキシ不可</translation>
+<translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
+<translation id="5019198164206649151">代替ストアの状態が不適切です</translation>
+<translation id="5031870354684148875">Google 翻訳について</translation>
+<translation id="5089810972385038852">都道府県 / 州</translation>
+<translation id="5095208057601539847">地方</translation>
+<translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
+<translation id="5172758083709347301">マシン</translation>
+<translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE"/>でない場合はこのエラーを報告する</translation>
+<translation id="5190835502935405962">ブックマーク バー</translation>
+<translation id="5295309862264981122">ナビゲーションの確認</translation>
+<translation id="5299298092464848405">ポリシーの解析中にエラーが発生しました</translation>
+<translation id="5317780077021120954">保存</translation>
+<translation id="536296301121032821">ポリシー設定を保存できませんでした</translation>
+<translation id="5439770059721715174">「<ph name="ERROR_PATH"/>」でスキーマ確認エラー: <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">ポリシーのタイムスタンプが不適切です</translation>
+<translation id="5470861586879999274">編集のやり直し（&amp;R）</translation>
+<translation id="5509780412636533143">管理対象のブックマーク</translation>
+<translation id="5523118979700054094">ポリシー名</translation>
+<translation id="552553974213252141">テキストは正しく抽出されましたか？</translation>
+<translation id="5540224163453853">リクエストされた記事が見つかりませんでした。</translation>
+<translation id="5565735124758917034">有効</translation>
+<translation id="560412284261940334">管理はサポートされていません</translation>
+<translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
+<translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
+<translation id="5720705177508910913">現在のユーザー</translation>
+<translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
+<translation id="5872918882028971132">保護者からのおすすめ</translation>
+<translation id="587701087903783706">モバイル向け画面を閉じる</translation>
+<translation id="59107663811261420">この販売者に対し、この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
+<translation id="5989320800837274978">固定プロキシ サーバーと .pac スクリプト URL のどちらも指定されていません。</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">返されたポリシー トークンは現在のトークンと一致しません</translation>
+<translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6259156558325130047">順序変更のやり直し（&amp;R）</translation>
+<translation id="6263376278284652872"><ph name="DOMAIN"/> のブックマーク</translation>
+<translation id="6282194474023008486">郵便番号</translation>
+<translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
+<translation id="6445051938772793705">国</translation>
+<translation id="6458467102616083041">ポリシーによってデフォルトの検索が無効にされているため無視されます。</translation>
+<translation id="647261751007945333">デバイス ポリシー</translation>
+<translation id="6512448926095770873">このページを離れる</translation>
+<translation id="6529602333819889595">削除のやり直し（&amp;R）</translation>
+<translation id="6550675742724504774">オプション</translation>
+<translation id="6597614308054261376"><ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/> にアクセスしようとしています。データセーバーは現在、このページをプロキシ送信できません。</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> 検索</translation>
+<translation id="6644283850729428850">このポリシーは廃止されました。</translation>
+<translation id="6646897916597483132">カードの表側に記載されている 4 桁の CVC を入力します</translation>
+<translation id="6753269504797312559">ポリシーの値</translation>
+<translation id="6831043979455480757">翻訳</translation>
+<translation id="6839929833149231406">地域</translation>
+<translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
+<translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
+<translation id="6915804003454593391">ユーザー:</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">デバイス</translation>
+<translation id="6970216967273061347">地区</translation>
+<translation id="6973656660372572881">固定プロキシ サーバーと .pac スクリプト URL の両方が指定されています。</translation>
+<translation id="6980028882292583085">JavaScript のアラート</translation>
+<translation id="7012363358306927923">中国銀聯</translation>
+<translation id="7087282848513945231">郡</translation>
+<translation id="7108649287766967076"><ph name="TARGET_LANGUAGE"/>に翻訳できませんでした。</translation>
+<translation id="7139724024395191329">管轄区域</translation>
+<translation id="7180611975245234373">更新</translation>
+<translation id="7182878459783632708">ポリシーが設定されていません</translation>
+<translation id="7186367841673660872">このページは<ph name="ORIGINAL_LANGUAGE"/>から<ph name="LANGUAGE_LANGUAGE"/>に翻訳されました</translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531"><ph name="SITE_NAME"/> で <ph name="SEARCH_TERMS"/> を検索</translation>
+<translation id="7275334191706090484">管理対象のブックマーク</translation>
+<translation id="7298195798382681320">推奨</translation>
+<translation id="7334320624316649418">順序変更のやり直し（&amp;R）</translation>
+<translation id="7378627244592794276">いいえ</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
+<translation id="7485870689360869515">データが見つかりません。</translation>
+<translation id="7521387064766892559">Javascript</translation>
+<translation id="7537536606612762813">必須</translation>
+<translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
+<translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE"/>のページです。翻訳しますか？</translation>
+<translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE"/>を翻訳しない</translation>
+<translation id="7610193165460212391">値（<ph name="VALUE"/>）が範囲外です。</translation>
+<translation id="7752995774971033316">管理されていません</translation>
+<translation id="777702478322588152">都道府県</translation>
+<translation id="7791543448312431591">追加</translation>
+<translation id="7805768142964895445">ステータス</translation>
+<translation id="7813600968533626083">Chrome から候補を削除してもよろしいですか？</translation>
+<translation id="7887683347370398519">CVC を確認してからもう一度お試しください</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">モバイルのブックマーク</translation>
+<translation id="7961015016161918242">使用しない</translation>
+<translation id="7977590112176369853">&lt;検索キーワードを入力&gt;</translation>
+<translation id="7983301409776629893">常に<ph name="ORIGINAL_LANGUAGE"/>から<ph name="TARGET_LANGUAGE"/>に翻訳する</translation>
+<translation id="7988324688042446538">パソコンのブックマーク</translation>
+<translation id="7995512525968007366">指定なし</translation>
+<translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE"/>です。<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
+<translation id="8088680233425245692">記事を表示できませんでした。</translation>
+<translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
+<translation id="8194797478851900357">移動の取り消し（&amp;U）</translation>
+<translation id="8201077131113104583">ID「<ph name="EXTENSION_ID"/>」の拡張機能に対する無効な更新 URL です。</translation>
+<translation id="8208216423136871611">保存しない</translation>
+<translation id="8218327578424803826">割り当てられた場所:</translation>
+<translation id="8249320324621329438">前回の取得:</translation>
+<translation id="8308427013383895095">ネットワーク接続に問題があったため翻訳できませんでした。</translation>
+<translation id="8311778656528046050">このページを再読み込みしてもよろしいですか？</translation>
+<translation id="8349305172487531364">ブックマーク バー</translation>
+<translation id="8364627913115013041">未設定</translation>
+<translation id="8437238597147034694">移動の取り消し（&amp;U）</translation>
+<translation id="8488350697529856933">適用先</translation>
+<translation id="8530504477309582336">この種類のカードは Google ペイメントでご利用いただけません。別のカードを選択してください。</translation>
+<translation id="8553075262323480129">ページの言語を検出できないため翻訳できません。</translation>
+<translation id="8571890674111243710">ページを<ph name="LANGUAGE"/>に翻訳しています...</translation>
+<translation id="8713130696108419660">無効なイニシャル署名です</translation>
+<translation id="8725066075913043281">やり直し</translation>
+<translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
+<translation id="8804164990146287819">プライバシー ポリシー</translation>
+<translation id="8824019021993735287">現在、Chrome でカードを確認できません。しばらくしてからもう一度お試しください。</translation>
+<translation id="8834246243508017242">連絡先からの自動入力を有効にする...</translation>
+<translation id="883848425547221593">その他のブックマーク</translation>
+<translation id="8866481888320382733">ポリシー設定の解析中にエラーが発生しました</translation>
+<translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
+<translation id="8891727572606052622">プロキシ モードが無効です。</translation>
+<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> コマンドを実行: <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">カードの裏面に記載されている有効期限と 3 桁の CVC を入力します</translation>
+<translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE"/>に翻訳されています</translation>
+<translation id="9125941078353557812">カードの裏面に記載されている 3 桁の CVC を入力します</translation>
+<translation id="9137013805542155359">原文のページを表示</translation>
+<translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>
+<translation id="9154176715500758432">このページにとどまる</translation>
+<translation id="9170848237812810038">取消(&amp;U)</translation>
+<translation id="9207861905230894330">記事を追加できませんでした。</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">フォームをクリア</translation>
+<translation id="988159990683914416">Developer Build</translation>
 </translationbundle>

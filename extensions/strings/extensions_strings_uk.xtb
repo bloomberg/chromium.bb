@@ -1,93 +1,96 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="uk">
-<translation id="4542520061254486227">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
-<translation id="3983586614702900908">пристрої від невідомого постачальника</translation>
-<translation id="730515362922783851">Обмінюватися даними з будь-яким пристроєм у локальній мережі чи Інтернеті</translation>
-<translation id="3624204664103857160">Не вдалося завантажити сторінку панелі запуску &quot;<ph name="PAGE"/>&quot;.</translation>
-<translation id="8804398419035066391">Обмінюватися даними з певними веб-сайтами</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ідентифікатор розширення &quot;<ph name="EXTENSION_ID"/>&quot;) заблоковано адміністратором.</translation>
 <translation id="1005274289863221750">Використовувати ваш мікрофон і камеру</translation>
-<translation id="2857834222104759979">Файл маніфесту недійсний.</translation>
-<translation id="6384275966486438344">Використовувати пошукову систему <ph name="SEARCH_HOST"/></translation>
-<translation id="1445572445564823378">Це розширення сповільнює <ph name="PRODUCT_NAME"/>. Щоб відновити ефективність <ph name="PRODUCT_NAME"/>, потрібно його вимкнути.</translation>
-<translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
-<translation id="288042212351694283">Доступ до ваших пристроїв Universal 2nd Factor</translation>
-<translation id="3163201441334626963">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/></translation>
-<translation id="6027032947578871493">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="4115165561519362854">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/> принаймні такої версії: <ph name="EXTENSION_VERSION"/>. Ви не зможете ввімкнути це розширення, доки не оновите його до цієї версії (або новішої).</translation>
-<translation id="6075907793831890935">Обмінюватися даними з пристроєм із назвою <ph name="HOSTNAME"/></translation>
-<translation id="5971037678316050792">Керувати станом і під’єднанням адаптера Bluetooth</translation>
-<translation id="677806580227005219">Обробник MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
-<translation id="6241530762627360640">Переглядати інформацію про пристрої Bluetooth, підключені до вашої системи, і знаходити пристрої Bluetooth поблизу.</translation>
-<translation id="8749863574775030885">Отримувати доступ до пристроїв USB від невідомого постачальника</translation>
-<translation id="3115238746683532089">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/></translation>
-<translation id="657064425229075395">Не вдалося завантажити фоновий сценарій &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/></translation>
-<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
-<translation id="9131487537093447019">Обмінюватися повідомленнями на пристроях Bluetooth.</translation>
-<translation id="5678955352098267522">Переглядати ваші дані на веб-сайті <ph name="WEBSITE_1"/></translation>
-<translation id="5456409301717116725">Це розширення включає файл ключа &quot;<ph name="KEY_PATH"/>&quot;. Можливо, ви не хочете цього робити.</translation>
-<translation id="7257666756905341374">Читати дані, які ви копіюєте та вставляєте</translation>
-<translation id="2350172092385603347">Використано локалізацію, але параметр мови за умовчанням (default_locale) не визначено в маніфесті.</translation>
-<translation id="3759933321830434300">Блокувати частини веб-сторінок</translation>
-<translation id="6143635259298204954">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який не містить символьного посилання. Для вашого профілю такого шляху немає.</translation>
-<translation id="8712265948125780616">Засіб розпакування розширень</translation>
-<translation id="149347756975725155">Не вдалося завантажити піктограму розширення &quot;<ph name="ICON"/>&quot;.</translation>
-<translation id="8825366169884721447">Це розширення не змінило заголовок запиту &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="6731255991101203740">Не вдалося створити каталог для розпакування: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
-<translation id="388442998277590542">Не вдалося завантажити сторінку параметрів &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
-<translation id="5127881134400491887">Керувати мережевими з’єднаннями</translation>
-<translation id="6344170822609224263">Отримувати доступ до списку мережевих з’єднань</translation>
-<translation id="7039326228527141150">Отримувати доступ до пристроїв USB від постачальника <ph name="VENDOR_NAME"/></translation>
-<translation id="2616366145935564096">Читати та змінювати свої дані на веб-сайті <ph name="WEBSITE_1"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
-<translation id="4444304522807523469">Отримувати доступ до сканерів документів, під’єднаних через USB або локальну мережу</translation>
-<translation id="6408118934673775994">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
-<translation id="8670869118777164560">Це розширення не переспрямувало запит мережі на сторінку <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) переспрямувало його на сторінку <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
-<translation id="6840444547062817500">Це розширення перезавантажувалося надто часто.</translation>
-<translation id="2270450558902169558">Обмінюватися даними з будь-яким пристроєм у домені <ph name="DOMAIN"/></translation>
-<translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження &quot;<ph name="ATTEMPTED_FILENAME"/>&quot;, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) визначило іншу назву файлу &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="452039078290142656">невідомі пристрої від постачальника <ph name="VENDOR_NAME"/></translation>
-<translation id="5026754133087629784">Веб-перегляд: <ph name="WEBVIEW_TAG_NAME"/></translation>
-<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="2753617847762399167">Заборонений шлях (узагалі або у зв’язку з &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
-<translation id="8284279544186306258">усі сайти <ph name="WEBSITE_1"/></translation>
-<translation id="8662911384982557515">Зробити <ph name="HOME_PAGE"/> домашньою сторінкою</translation>
-<translation id="27822970480436970">Цьому розширенню не вдалося змінити запит мережі, оскільки зміна не сумісна з іншим розширенням.</translation>
-<translation id="2241053333139545397">Читати та змінювати свої дані на декількох веб-сайтах</translation>
-<translation id="8602184400052594090">Файл маніфесту відсутній або його не можна розпізнати.</translation>
-<translation id="2270627217422354837">Обмінюватися даними з будь-яким пристроєм у доменах: <ph name="DOMAINS"/></translation>
-<translation id="7093866338626856921">Обмінюватися даними з пристроями з назвами: <ph name="HOSTNAMES"/></translation>
-<translation id="4883436287898674711">Усі сайти <ph name="WEBSITE_1"/></translation>
-<translation id="9111791539553342076">Це розширення не змінило заголовок відповіді &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="9150045010208374699">Використовувати вашу камеру</translation>
-<translation id="5356315618422219272">Тег Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
-<translation id="8341840687457896278">Це розширення не надало облікові дані на запит мережі, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) надало інші облікові дані.</translation>
-<translation id="5627523580512561598">розширення <ph name="EXTENSION_NAME"/></translation>
-<translation id="7893008570150657497">Отримувати доступ до фотографій, музики й інших медіа-файлів із вашого комп’ютера</translation>
-<translation id="3369521687965833290">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який починається буквою диску та не містить точок з’єднання, під’єднання чи символьного посилання. Для вашого профілю такого шляху немає.</translation>
-<translation id="4811956658694082538">Не вдалося встановити пакет, оскільки відбувся збій процесу службової програми. Перезапустіть Chrome і повторіть спробу.</translation>
-<translation id="641087317769093025">Не вдалося розпакувати розширення</translation>
-<translation id="4761104368405085019">Використовувати ваш мікрофон</translation>
-<translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME"/>. Його не можна видаляти чи змінювати.</translation>
-<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Налаштувати з’єднання з мережею</translation>
-<translation id="7154130902455071009">Зробити <ph name="START_PAGE"/> домашньою сторінкою</translation>
 <translation id="1036511912703768636">Отримувтаи доступ до цих пристроїв USB</translation>
-<translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
-<translation id="2159915644201199628">Не вдалося декодувати зображення: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="2048182445208425546">Отримувати доступ до трафіку мережі</translation>
-<translation id="1256619696651732561">Синтаксичний аналізатор маніфесту розширення</translation>
-<translation id="5972529113578162692">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/>. Його неможливо видалити.</translation>
 <translation id="1135328998467923690">Пакет недійсний: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
-<translation id="7131040479572660648">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
-<translation id="2087653731648927289">Отримувтаи доступ до продукту <ph name="PRODUCT_NAME_AND_VENDOR"/> через USB</translation>
+<translation id="1256619696651732561">Синтаксичний аналізатор маніфесту розширення</translation>
+<translation id="1445572445564823378">Це розширення сповільнює <ph name="PRODUCT_NAME"/>. Щоб відновити ефективність <ph name="PRODUCT_NAME"/>, потрібно його вимкнути.</translation>
+<translation id="149347756975725155">Не вдалося завантажити піктограму розширення &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="1803557475693955505">Не вдалося завантажити фонову сторінку &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2048182445208425546">Отримувати доступ до трафіку мережі</translation>
+<translation id="2087653731648927289">Отримувтаи доступ до продукту <ph name="PRODUCT_NAME_AND_VENDOR"/> через USB</translation>
+<translation id="2159915644201199628">Не вдалося декодувати зображення: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
+<translation id="2241053333139545397">Читати та змінювати свої дані на декількох веб-сайтах</translation>
+<translation id="2270450558902169558">Обмінюватися даними з будь-яким пристроєм у домені <ph name="DOMAIN"/></translation>
+<translation id="2270627217422354837">Обмінюватися даними з будь-яким пристроєм у доменах: <ph name="DOMAINS"/></translation>
+<translation id="2350172092385603347">Використано локалізацію, але параметр мови за умовчанням (default_locale) не визначено в маніфесті.</translation>
+<translation id="2616366145935564096">Читати та змінювати свої дані на веб-сайті <ph name="WEBSITE_1"/></translation>
+<translation id="2753617847762399167">Заборонений шлях (узагалі або у зв’язку з &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
+<translation id="27822970480436970">Цьому розширенню не вдалося змінити запит мережі, оскільки зміна не сумісна з іншим розширенням.</translation>
+<translation id="2857834222104759979">Файл маніфесту недійсний.</translation>
+<translation id="288042212351694283">Доступ до ваших пристроїв Universal 2nd Factor</translation>
 <translation id="2988488679308982380">Неможливо встановити пакет: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
-<translation id="8636666366616799973">Пакет недійсний. Деталі: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="3115238746683532089">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3163201441334626963">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_ID"/></translation>
+<translation id="3369521687965833290">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який починається буквою диску та не містить точок з’єднання, під’єднання чи символьного посилання. Для вашого профілю такого шляху немає.</translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Переглядати ваші дані на декількох веб-сайтах</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3560114062880914682">{1,select, single{Вибрати пристрій USB}multiple{Вибрати пристрої USB}other{UNUSED}}</translation>
+<translation id="3624204664103857160">Не вдалося завантажити сторінку панелі запуску &quot;<ph name="PAGE"/>&quot;.</translation>
+<translation id="3759933321830434300">Блокувати частини веб-сторінок</translation>
+<translation id="388442998277590542">Не вдалося завантажити сторінку параметрів &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="3983586614702900908">пристрої від невідомого постачальника</translation>
+<translation id="4115165561519362854">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/> принаймні такої версії: <ph name="EXTENSION_VERSION"/>. Ви не зможете ввімкнути це розширення, доки не оновите його до цієї версії (або новішої).</translation>
+<translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
+<translation id="4444304522807523469">Отримувати доступ до сканерів документів, під’єднаних через USB або локальну мережу</translation>
+<translation id="452039078290142656">невідомі пристрої від постачальника <ph name="VENDOR_NAME"/></translation>
+<translation id="4542520061254486227">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
+<translation id="4761104368405085019">Використовувати ваш мікрофон</translation>
+<translation id="4811956658694082538">Не вдалося встановити пакет, оскільки відбувся збій процесу службової програми. Перезапустіть Chrome і повторіть спробу.</translation>
+<translation id="4883436287898674711">Усі сайти <ph name="WEBSITE_1"/></translation>
+<translation id="5026754133087629784">Веб-перегляд: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="5127881134400491887">Керувати мережевими з’єднаннями</translation>
+<translation id="5165983846722506205">{1,select, single{Вибрати пристрій HID}multiple{Вибрати пристрої HID}other{UNUSED}}</translation>
+<translation id="5356315618422219272">Тег Appview: <ph name="APPVIEW_TAG_NAME"/></translation>
+<translation id="5456409301717116725">Це розширення включає файл ключа &quot;<ph name="KEY_PATH"/>&quot;. Можливо, ви не хочете цього робити.</translation>
+<translation id="5627523580512561598">розширення <ph name="EXTENSION_NAME"/></translation>
+<translation id="5678955352098267522">Переглядати ваші дані на веб-сайті <ph name="WEBSITE_1"/></translation>
+<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
+<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
+<translation id="5971037678316050792">Керувати станом і під’єднанням адаптера Bluetooth</translation>
+<translation id="5972529113578162692">Адміністратор цього комп’ютера вимагає встановити розширення <ph name="EXTENSION_NAME"/>. Його неможливо видалити.</translation>
+<translation id="6027032947578871493">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер: <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_ID"/></translation>
+<translation id="6075907793831890935">Обмінюватися даними з пристроєм із назвою <ph name="HOSTNAME"/></translation>
+<translation id="6143635259298204954">Неможливо розпакувати розширення. Щоб безпечно розпакувати розширення, має бути шлях до каталогу вашого профілю, який не містить символьного посилання. Для вашого профілю такого шляху немає.</translation>
+<translation id="616804573177634438">{0,select, single{Додаток <ph name="APP_NAME"/> запитує доступ до одного з ваших пристроїв.}multiple{Додаток <ph name="APP_NAME"/> запитує доступ до одного чи декількох ваших пристроїв.}other{UNUSED}}</translation>
+<translation id="6241530762627360640">Переглядати інформацію про пристрої Bluetooth, підключені до вашої системи, і знаходити пристрої Bluetooth поблизу.</translation>
+<translation id="6344170822609224263">Отримувати доступ до списку мережевих з’єднань</translation>
+<translation id="6384275966486438344">Використовувати пошукову систему <ph name="SEARCH_HOST"/></translation>
+<translation id="6408118934673775994">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
+<translation id="641087317769093025">Не вдалося розпакувати розширення</translation>
+<translation id="657064425229075395">Не вдалося завантажити фоновий сценарій &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/> (серійний номер <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6698810901424468597">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1"/> і <ph name="WEBSITE_2"/></translation>
+<translation id="6731255991101203740">Не вдалося створити каталог для розпакування: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
+<translation id="677806580227005219">Обробник MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
+<translation id="6840444547062817500">Це розширення перезавантажувалося надто часто.</translation>
+<translation id="7003844668372540529">Невідомий продукт <ph name="PRODUCT_ID"/> від постачальника <ph name="VENDOR_NAME"/></translation>
+<translation id="7039326228527141150">Отримувати доступ до пристроїв USB від постачальника <ph name="VENDOR_NAME"/></translation>
+<translation id="7093866338626856921">Обмінюватися даними з пристроями з назвами: <ph name="HOSTNAMES"/></translation>
+<translation id="7131040479572660648">Переглядати ваші дані на веб-сайтах <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> і <ph name="WEBSITE_3"/></translation>
+<translation id="7154130902455071009">Зробити <ph name="START_PAGE"/> домашньою сторінкою</translation>
+<translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME"/>. Його не можна видаляти чи змінювати.</translation>
+<translation id="7257666756905341374">Читати дані, які ви копіюєте та вставляєте</translation>
+<translation id="730515362922783851">Обмінюватися даними з будь-яким пристроєм у локальній мережі чи Інтернеті</translation>
+<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ідентифікатор розширення &quot;<ph name="EXTENSION_ID"/>&quot;) заблоковано адміністратором.</translation>
+<translation id="7893008570150657497">Отримувати доступ до фотографій, музики й інших медіа-файлів із вашого комп’ютера</translation>
+<translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження &quot;<ph name="ATTEMPTED_FILENAME"/>&quot;, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) визначило іншу назву файлу &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
+<translation id="8284279544186306258">усі сайти <ph name="WEBSITE_1"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> від постачальника <ph name="VENDOR_NAME"/></translation>
+<translation id="8341840687457896278">Це розширення не надало облікові дані на запит мережі, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) надало інші облікові дані.</translation>
+<translation id="8602184400052594090">Файл маніфесту відсутній або його не можна розпізнати.</translation>
+<translation id="8620765578342452535">Налаштувати з’єднання з мережею</translation>
+<translation id="8636666366616799973">Пакет недійсний. Деталі: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="8662911384982557515">Зробити <ph name="HOME_PAGE"/> домашньою сторінкою</translation>
+<translation id="8670869118777164560">Це розширення не переспрямувало запит мережі на сторінку <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) переспрямувало його на сторінку <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="8712265948125780616">Засіб розпакування розширень</translation>
+<translation id="8749863574775030885">Отримувати доступ до пристроїв USB від невідомого постачальника</translation>
+<translation id="8804398419035066391">Обмінюватися даними з певними веб-сайтами</translation>
+<translation id="8825366169884721447">Це розширення не змінило заголовок запиту &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9111791539553342076">Це розширення не змінило заголовок відповіді &quot;<ph name="HEADER_NAME"/>&quot; в запиті мережі, оскільки виник конфлікт з іншим розширенням (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9131487537093447019">Обмінюватися повідомленнями на пристроях Bluetooth.</translation>
+<translation id="9150045010208374699">Використовувати вашу камеру</translation>
 </translationbundle>

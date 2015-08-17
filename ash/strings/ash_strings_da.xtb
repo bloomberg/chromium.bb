@@ -1,224 +1,224 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
-<translation id="3595596368722241419">Batteri helt opladet</translation>
-<translation id="6895424601869865703">Føj en konto til <ph name="GIVEN_NAME"/></translation>
+<translation id="1013923882670373915">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE"/></translation>
+<translation id="112308213915226829">Skjul hylde automatisk</translation>
+<translation id="1195412055398077112">overscan</translation>
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
-<translation id="5548285847212963613">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; kan hjælpe med at oprette forbindelse til dette netværk.</translation>
-<translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
+<translation id="1272079795634619415">Stop</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="1330145147221172764">Aktivér skærmtastatur</translation>
 <translation id="1343000272198685031">Stik til mikrofon</translation>
-<translation id="30155388420722288">Knappen Overflow</translation>
-<translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
-<translation id="8673028979667498656">270°</translation>
-<translation id="5571066253365925590">Bluetooth er aktiveret</translation>
-<translation id="5895138241574237353">Genstart</translation>
-<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> er roteret til <ph name="ROTATION"/></translation>
-<translation id="9074739597929991885">Bluetooth</translation>
-<translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
-<translation id="6713285437468012787">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
-<translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
-<translation id="9151726767154816831">Genstart, og udfør en powerwash for at opdatere</translation>
-<translation id="370649949373421643">Aktivér Wi-Fi</translation>
-<translation id="3626281679859535460">Lysstyrke</translation>
-<translation id="3621202678540785336">Input</translation>
-<translation id="7348093485538360975">Skærmtastatur</translation>
-<translation id="595202126637698455">Sporing af ydelsen er aktiveret</translation>
-<translation id="8054466585765276473">Beregner batteritid.</translation>
-<translation id="7982789257301363584">Netværk</translation>
-<translation id="2303600792989757991">Skift vinduesoversigt</translation>
-<translation id="5565793151875479467">Proxy...</translation>
-<translation id="938582441709398163">Tastaturoverlejring</translation>
-<translation id="6047696787498798094">Skærmdeling ophører, når du skifter til en anden bruger. Vil du fortsætte?</translation>
-<translation id="6979158407327259162">Google Drev</translation>
-<translation id="3683428399328702079">Opløsningen for <ph name="DISPLAY_NAME"/> er ændret til <ph name="RESOLUTION"/></translation>
-<translation id="2297568595583585744">Statusbakke</translation>
-<translation id="2946640296642327832">Aktivér Bluetooth</translation>
-<translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME"/></translation>
-<translation id="8206859287963243715">Mobil</translation>
-<translation id="6596816719288285829">IP-adresse</translation>
-<translation id="8517041960877371778">Din <ph name="DEVICE_TYPE"/> kan muligvis ikke oplades, mens den er tændt.</translation>
-<translation id="3621712662352432595">Lydindstillinger</translation>
+<translation id="1346748346194534595">Højre</translation>
+<translation id="137180024469554212">Deaktiver låsning af rotation</translation>
+<translation id="1383876407941801731">Søg</translation>
+<translation id="1426410128494586442">Ja</translation>
+<translation id="1467432559032391204">Venstre</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
+<translation id="1510238584712386396">Applikationsliste</translation>
+<translation id="15373452373711364">Stor musemarkør</translation>
+<translation id="1602076796624386989">Aktivér mobildata</translation>
+<translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
+<translation id="164969095109328410">Chrome-enhed</translation>
+<translation id="1723752762323179280">Afslutter session</translation>
+<translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Tryk på Shift+Alt for at ændre den.</translation>
-<translation id="6043994281159824495">Log ud nu</translation>
-<translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
-<translation id="2127372758936585790">Oplader ved lav kraft</translation>
-<translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
-<translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
-<translation id="5871632337994001636">Administrer enheder...</translation>
-<translation id="785750925697875037">Vis mobilkonto</translation>
-<translation id="8356164830168736643">Luk <ph name="WINDOW_TITLE"/></translation>
-<translation id="7864539943188674973">Deaktiver Bluetooth</translation>
-<translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
-<translation id="9080206825613744995">Mikrofonen er i brug.</translation>
-<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
-<translation id="3126069444801937830">Genstart for at opdatere</translation>
-<translation id="2268813581635650749">Log alle ud</translation>
-<translation id="15373452373711364">Stor musemarkør</translation>
-<translation id="3294437725009624529">Gæst</translation>
-<translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
-<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
-<translation id="2942516765047364088">Hyldeplacering</translation>
-<translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
-<translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
-<translation id="1723752762323179280">Afslutter session</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
-<translation id="1426410128494586442">Ja</translation>
-<translation id="4804818685124855865">Afbryd</translation>
-<translation id="2963773877003373896">mod3</translation>
-<translation id="5222676887888702881">Log ud</translation>
-<translation id="2391579633712104609">180°</translation>
-<translation id="1272079795634619415">Stop</translation>
-<translation id="4957722034734105353">Flere oplysninger...</translation>
-<translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
-<translation id="4279490309300973883">Spejling</translation>
-<translation id="2509468283778169019">CAPS LOCK er slået til</translation>
-<translation id="3892641579809465218">Intern skærm</translation>
-<translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
-<translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
-<translation id="8654520615680304441">Slå Wi-Fi til...</translation>
-<translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME"/> via Fjernsupport.</translation>
-<translation id="6650933572246256093">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY"/></translation>
-<translation id="8828714802988429505">90°</translation>
-<translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
-Tryk på Shift+Alt for at ændre den.</translation>
-<translation id="2562916301614567480">Privat netværk</translation>
-<translation id="4250680216510889253">Nej</translation>
-<translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
-<translation id="6426039856985689743">Deaktiver mobildata</translation>
-<translation id="3087734570205094154">Bund</translation>
-<translation id="3742055079367172538">Skærmbilledet blev taget</translation>
-<translation id="8878886163241303700">Udvider skærm</translation>
-<translation id="714034171374937760">Chromebase</translation>
-<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
-<translation id="3967919079500697218">Din administrator har deaktiveret muligheden for at tage skærmbilleder.</translation>
-<translation id="372094107052732682">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
-<translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
-<translation id="9194617393863864469">Log ind med en anden bruger...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
-<translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primær)</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE"/> % tilbage</translation>
-<translation id="9089416786594320554">Indtastningsmetoder</translation>
-<translation id="2700058918926273959">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>. Du vil blive logget af.</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
-<translation id="1963814843110128691">Caster $1 til $2</translation>
-<translation id="3963445509666917109">Højttaler (indbygget)</translation>
-<translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
-<translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
-<translation id="5759815399269068793">Du kan fortsætte med at bruge din <ph name="DEVICE_TYPE"/>, mens den er sluttet til en ekstern skærm, selv når den er klappet sammen.</translation>
-<translation id="2825619548187458965">Hylde</translation>
-<translation id="4430019312045809116">Lydstyrke</translation>
-<translation id="5932901536148835538">Chromebit</translation>
-<translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
-<translation id="1383876407941801731">Søg</translation>
-<translation id="2204305834655267233">Netværksoplysninger</translation>
-<translation id="137180024469554212">Deaktiver låsning af rotation</translation>
-<translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
-<translation id="5980301590375426705">Afslut gæstesession</translation>
-<translation id="8308637677604853869">Forrige menu</translation>
-<translation id="4321179778687042513">ctrl</translation>
-<translation id="3625258641415618104">Skærmbilleder er deaktiveret</translation>
-<translation id="1346748346194534595">Højre</translation>
-<translation id="8528322925433439945">Mobil...</translation>
-<translation id="3157169093162779309">Aktivér låsning af rotation</translation>
-<translation id="8428213095426709021">Indstillinger</translation>
-<translation id="2372145515558759244">Synkroniserer apps...</translation>
-<translation id="1987317783729300807">Konti</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
-<translation id="1467432559032391204">Venstre</translation>
-<translation id="5543001071567407895">sms</translation>
-<translation id="1957803754585243749">0°</translation>
-<translation id="4527045527269911712">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse.</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="1923539912171292317">Automatiske klik</translation>
-<translation id="703171847531699602">Ingen Cast-enheder</translation>
-<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
-<translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT"/>.</translation>
-<translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
-<translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
+<translation id="1923539912171292317">Automatiske klik</translation>
+<translation id="1957803754585243749">0°</translation>
+<translation id="1963814843110128691">Caster $1 til $2</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
+<translation id="1987317783729300807">Konti</translation>
+<translation id="2127372758936585790">Oplader ved lav kraft</translation>
+<translation id="2204305834655267233">Netværksoplysninger</translation>
+<translation id="2208323208084708176">Samlet skrivebordstilstand</translation>
+<translation id="225680501294068881">Scanner efter enheder...</translation>
+<translation id="2268130516524549846">Bluetooth er deaktiveret</translation>
+<translation id="2268813581635650749">Log alle ud</translation>
+<translation id="2297568595583585744">Statusbakke</translation>
+<translation id="2303600792989757991">Skift vinduesoversigt</translation>
+<translation id="2372145515558759244">Synkroniserer apps...</translation>
+<translation id="2391579633712104609">180°</translation>
+<translation id="2429753432712299108">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY"/></translation>
+<translation id="2475982808118771221">Der opstod en fejl</translation>
+<translation id="2509468283778169019">CAPS LOCK er slået til</translation>
+<translation id="252373100621549798">Ukendt skærm</translation>
+<translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
+<translation id="2562916301614567480">Privat netværk</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
+<translation id="2700058918926273959">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>. Du vil blive logget af.</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME"/>, <ph name="BATTERY"/></translation>
-<translation id="3784455785234192852">Lås</translation>
-<translation id="2805756323405976993">Apps</translation>
-<translation id="2872961005593481000">Sluk</translation>
-<translation id="3433830597744061105">Administrer konti</translation>
-<translation id="742594950370306541">Kameraet er i brug.</translation>
-<translation id="7052914147756339792">Vælg baggrund...</translation>
-<translation id="2532589005999780174">Tilstanden Høj kontrast</translation>
-<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
-<translation id="3473479545200714844">Skærmforstørrer</translation>
-<translation id="7957227661277029961">Din <ph name="DEVICE_TYPE"/> kan muligvis ikke oplades, mens den er tændt. Overvej at bruge den officielle oplader.</translation>
-<translation id="882279321799040148">Klik for at se det</translation>
-<translation id="5011233892417813670">Chromebook</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> understøtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION"/></translation>
-<translation id="1602076796624386989">Aktivér mobildata</translation>
-<translation id="68610848741840742">ChromeVox (talefeedback)</translation>
-<translation id="6981982820502123353">Hjælpefunktioner</translation>
-<translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>.</translation>
-<translation id="5977415296283489383">Hovedtelefon</translation>
-<translation id="225680501294068881">Scanner efter enheder...</translation>
-<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
-<translation id="5978382165065462689">Skærmdeling via Fjernsupport.</translation>
-<translation id="737451040872859086">Mikrofon (indbygget)</translation>
-<translation id="2475982808118771221">Der opstod en fejl</translation>
-<translation id="3783640748446814672">alt</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
-<translation id="7029814467594812963">Afslut session</translation>
-<translation id="479989351350248267">søg</translation>
-<translation id="4872237917498892622">Alt+Søg eller Shift</translation>
-<translation id="2429753432712299108">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY"/></translation>
-<translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
-<translation id="2983818520079887040">Indstillinger...</translation>
-<translation id="6452181791372256707">Afvis</translation>
-<translation id="1330145147221172764">Aktivér skærmtastatur</translation>
-<translation id="1195412055398077112">overscan</translation>
-<translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som &quot;<ph name="NAME"/>&quot; med adressen <ph name="ADDRESS"/></translation>
-<translation id="112308213915226829">Skjul hylde automatisk</translation>
-<translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
-<translation id="5958529069007801266">Overvåget bruger</translation>
-<translation id="3709443003275901162">9 eller flere</translation>
-<translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
-<translation id="6248847161401822652">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
-<translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % opladet og oplades nu.</translation>
-<translation id="4895488851634969361">Batteriet er helt opladet.</translation>
-<translation id="615957422585914272">Vis skærmtastatur</translation>
-<translation id="8443356412772935865">Caster skærm til $1</translation>
-<translation id="5947494881799873997">Fortryd</translation>
-<translation id="7593891976182323525">Søg eller Shift</translation>
-<translation id="7649070708921625228">Hjælp</translation>
-<translation id="164969095109328410">Chrome-enhed</translation>
+<translation id="2805756323405976993">Apps</translation>
+<translation id="2819276065543622893">Du bliver logget ud nu.</translation>
+<translation id="2825619548187458965">Hylde</translation>
+<translation id="2872961005593481000">Sluk</translation>
+<translation id="2942516765047364088">Hyldeplacering</translation>
+<translation id="2946640296642327832">Aktivér Bluetooth</translation>
+<translation id="2963773877003373896">mod3</translation>
+<translation id="2964193600955408481">Deaktiver Wi-Fi</translation>
+<translation id="2983818520079887040">Indstillinger...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
+<translation id="3009178788565917040">Output</translation>
+<translation id="30155388420722288">Knappen Overflow</translation>
+<translation id="3019353588588144572">Resterende tid, indtil batteriet er fuldt opladet, <ph name="TIME_REMAINING"/></translation>
 <translation id="3050422059534974565">CAPS LOCK er slået til.
 Tryk på Søg eller Shift for at annullere.</translation>
-<translation id="397105322502079400">Beregner...</translation>
-<translation id="1013923882670373915">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast denne pinkode på den pågældende enhed: <ph name="PINCODE"/></translation>
-<translation id="2819276065543622893">Du bliver logget ud nu.</translation>
-<translation id="4961318399572185831">Cast skærm</translation>
-<translation id="5507786745520522457">Konfigurer mobildata</translation>
-<translation id="6165508094623778733">Flere oplysninger</translation>
-<translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
-<translation id="5927132638760172455">Caster til en ukendt modtager</translation>
-<translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
-<translation id="6550675742724504774">Valgmuligheder</translation>
-<translation id="6406704438230478924">altgr</translation>
+<translation id="3077734595579995578">shift</translation>
+<translation id="3087734570205094154">Bund</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
+<translation id="3126069444801937830">Genstart for at opdatere</translation>
+<translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
+<translation id="3157169093162779309">Aktivér låsning af rotation</translation>
+<translation id="3294437725009624529">Gæst</translation>
+<translation id="3433830597744061105">Administrer konti</translation>
+<translation id="3473479545200714844">Skærmforstørrer</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
-<translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="3595596368722241419">Batteri helt opladet</translation>
+<translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
+<translation id="3621202678540785336">Input</translation>
+<translation id="3621712662352432595">Lydindstillinger</translation>
+<translation id="3625258641415618104">Skærmbilleder er deaktiveret</translation>
+<translation id="3626281679859535460">Lysstyrke</translation>
+<translation id="3626637461649818317"><ph name="PERCENTAGE"/> % tilbage</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
+<translation id="3683428399328702079">Opløsningen for <ph name="DISPLAY_NAME"/> er ændret til <ph name="RESOLUTION"/></translation>
+<translation id="370649949373421643">Aktivér Wi-Fi</translation>
+<translation id="3709443003275901162">9 eller flere</translation>
+<translation id="372094107052732682">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
+<translation id="3742055079367172538">Skærmbilledet blev taget</translation>
+<translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
+<translation id="3783640748446814672">alt</translation>
+<translation id="3784455785234192852">Lås</translation>
+<translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
+<translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
+<translation id="3892641579809465218">Intern skærm</translation>
+<translation id="3963445509666917109">Højttaler (indbygget)</translation>
+<translation id="3967919079500697218">Din administrator har deaktiveret muligheden for at tage skærmbilleder.</translation>
+<translation id="397105322502079400">Beregner...</translation>
+<translation id="4053612967614057854">Deaktiver skærmtastatur</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primær)</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>
+<translation id="4250680216510889253">Nej</translation>
+<translation id="4279490309300973883">Spejling</translation>
+<translation id="4321179778687042513">ctrl</translation>
+<translation id="4379753398862151997">Kære Skærm. Det fungerer ikke mellem os. (Denne skærm understøttes ikke)</translation>
+<translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME"/> via Fjernsupport.</translation>
+<translation id="4430019312045809116">Lydstyrke</translation>
+<translation id="4527045527269911712">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse.</translation>
+<translation id="479989351350248267">søg</translation>
+<translation id="4804818685124855865">Afbryd</translation>
+<translation id="4872237917498892622">Alt+Søg eller Shift</translation>
+<translation id="4895488851634969361">Batteriet er helt opladet.</translation>
+<translation id="4918086044614829423">Accepter</translation>
+<translation id="4957722034734105353">Flere oplysninger...</translation>
+<translation id="4961318399572185831">Cast skærm</translation>
+<translation id="5011233892417813670">Chromebook</translation>
+<translation id="5045002648206642691">Google Drev-indstillinger...</translation>
+<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
+<translation id="5168181903108465623">Tilgængelige Cast-enheder</translation>
+<translation id="5222676887888702881">Log ud</translation>
+<translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
+<translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
+<translation id="5507786745520522457">Konfigurer mobildata</translation>
+<translation id="5543001071567407895">sms</translation>
+<translation id="5548285847212963613">Udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; kan hjælpe med at oprette forbindelse til dette netværk.</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="5571066253365925590">Bluetooth er aktiveret</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/> d. <ph name="DATE"/></translation>
+<translation id="5759815399269068793">Du kan fortsætte med at bruge din <ph name="DEVICE_TYPE"/>, mens den er sluttet til en ekstern skærm, selv når den er klappet sammen.</translation>
+<translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
+<translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
+Tryk på Shift+Alt for at ændre den.</translation>
+<translation id="5871632337994001636">Administrer enheder...</translation>
+<translation id="5895138241574237353">Genstart</translation>
+<translation id="5927132638760172455">Caster til en ukendt modtager</translation>
+<translation id="5932901536148835538">Chromebit</translation>
+<translation id="5947494881799873997">Fortryd</translation>
+<translation id="595202126637698455">Sporing af ydelsen er aktiveret</translation>
+<translation id="5958529069007801266">Overvåget bruger</translation>
+<translation id="5977415296283489383">Hovedtelefon</translation>
+<translation id="5978382165065462689">Skærmdeling via Fjernsupport.</translation>
+<translation id="5980301590375426705">Afslut gæstesession</translation>
+<translation id="6043994281159824495">Log ud nu</translation>
+<translation id="6047696787498798094">Skærmdeling ophører, når du skifter til en anden bruger. Vil du fortsætte?</translation>
+<translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT"/>.</translation>
+<translation id="607652042414456612">Din computer kan registreres af Bluetooth-enheder i nærheden, og den vil blive vist som &quot;<ph name="NAME"/>&quot; med adressen <ph name="ADDRESS"/></translation>
+<translation id="615957422585914272">Vis skærmtastatur</translation>
+<translation id="6165508094623778733">Flere oplysninger</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="6248847161401822652">Tryk på Ctrl+Shift+Q to gange for at afslutte.</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> er roteret til <ph name="ROTATION"/></translation>
+<translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER"/></translation>
+<translation id="639644700271529076">CAPS LOCK er deaktiveret</translation>
+<translation id="6406704438230478924">altgr</translation>
+<translation id="6426039856985689743">Deaktiver mobildata</translation>
+<translation id="6452181791372256707">Afvis</translation>
+<translation id="6459472438155181876">Udvider skærmen til <ph name="DISPLAY_NAME"/></translation>
+<translation id="6550675742724504774">Valgmuligheder</translation>
+<translation id="6585808820553845416">Sessionen slutter om <ph name="SESSION_TIME_REMAINING"/>.</translation>
+<translation id="6596816719288285829">IP-adresse</translation>
+<translation id="6650933572246256093">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; vil gerne have parringstilladelse. Indtast din adgangsnøgle på enheden: <ph name="PASSKEY"/></translation>
+<translation id="6713285437468012787">Bluetooth-enheden &quot;<ph name="DEVICE_NAME"/>&quot; er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
+<translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE"/> % opladet og oplades nu.</translation>
+<translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
+<translation id="68610848741840742">ChromeVox (talefeedback)</translation>
+<translation id="6895424601869865703">Føj en konto til <ph name="GIVEN_NAME"/></translation>
+<translation id="6911468394164995108">Vælg et andet...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
+<translation id="6979158407327259162">Google Drev</translation>
+<translation id="6981982820502123353">Hjælpefunktioner</translation>
+<translation id="7029814467594812963">Afslut session</translation>
+<translation id="703171847531699602">Ingen Cast-enheder</translation>
+<translation id="7052914147756339792">Vælg baggrund...</translation>
 <translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
 Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
-<translation id="5045002648206642691">Google Drev-indstillinger...</translation>
-<translation id="1510238584712386396">Applikationsliste</translation>
+<translation id="714034171374937760">Chromebase</translation>
+<translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
 Tryk på Alt+Søg eller Shift for at annullere.</translation>
+<translation id="7348093485538360975">Skærmtastatur</translation>
+<translation id="737451040872859086">Mikrofon (indbygget)</translation>
+<translation id="742594950370306541">Kameraet er i brug.</translation>
+<translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> understøtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION"/></translation>
+<translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
+<translation id="7593891976182323525">Søg eller Shift</translation>
+<translation id="7649070708921625228">Hjælp</translation>
+<translation id="7814236020522506259"><ph name="HOUR"/> og <ph name="MINUTE"/></translation>
+<translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
+<translation id="785750925697875037">Vis mobilkonto</translation>
+<translation id="7864539943188674973">Deaktiver Bluetooth</translation>
+<translation id="7904094684485781019">Administratoren for denne konto tillader ikke samlet login fra flere konti.</translation>
+<translation id="7957227661277029961">Din <ph name="DEVICE_TYPE"/> kan muligvis ikke oplades, mens den er tændt. Overvej at bruge den officielle oplader.</translation>
+<translation id="7982789257301363584">Netværk</translation>
+<translation id="8054466585765276473">Beregner batteritid.</translation>
+<translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="8190698733819146287">Tilpas sprog og indtastning...</translation>
+<translation id="8206859287963243715">Mobil</translation>
+<translation id="8308637677604853869">Forrige menu</translation>
+<translation id="8356164830168736643">Luk <ph name="WINDOW_TITLE"/></translation>
+<translation id="8428213095426709021">Indstillinger</translation>
+<translation id="8443356412772935865">Caster skærm til $1</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
+<translation id="8517041960877371778">Din <ph name="DEVICE_TYPE"/> kan muligvis ikke oplades, mens den er tændt.</translation>
+<translation id="8528322925433439945">Mobil...</translation>
+<translation id="8654520615680304441">Slå Wi-Fi til...</translation>
+<translation id="8673028979667498656">270°</translation>
+<translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="882279321799040148">Klik for at se det</translation>
+<translation id="8828714802988429505">90°</translation>
+<translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="8940956008527784070">Batteriniveauet er lavt (<ph name="PERCENTAGE"/> %)</translation>
-<translation id="4918086044614829423">Accepter</translation>
-<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> tilbage</translation>
-<translation id="3009178788565917040">Output</translation>
-<translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
-<translation id="6911468394164995108">Vælg et andet...</translation>
-<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
-<translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>
-<translation id="3077734595579995578">shift</translation>
-<translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Deaktiver skærmtastatur</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9080206825613744995">Mikrofonen er i brug.</translation>
+<translation id="9089416786594320554">Indtastningsmetoder</translation>
+<translation id="9151726767154816831">Genstart, og udfør en powerwash for at opdatere</translation>
+<translation id="9194617393863864469">Log ind med en anden bruger...</translation>
+<translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
+<translation id="923686485342484400">Tryk på Control+Shift+Q to gange for at logge ud.</translation>
+<translation id="938582441709398163">Tastaturoverlejring</translation>
+<translation id="939252827960237676">Skærmbilledet kunne ikke gemmes</translation>
 </translationbundle>

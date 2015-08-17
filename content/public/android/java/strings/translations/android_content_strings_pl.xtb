@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pl">
-<translation id="2094750046714988961">Nie można uruchomić narzędzia do profilowania, ponieważ zewnętrzna pamięć masowa nie jest gotowa</translation>
 <translation id="1256337885411059545">Nie można odtworzyć filmu</translation>
-<translation id="2520230379124234395">Narzędzie do profilowania zostało uruchomione</translation>
-<translation id="4859501799452851758">Profilowanie zakończone. Wyniki zostały zapisane w pliku <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Tego filmu nie można przesłać na to urządzenie.</translation>
-<translation id="2410828433627930127">Tego filmu nie można odtworzyć.</translation>
-<translation id="7096034533295549981">Wczytuję film</translation>
 <translation id="1542044944667958430">Wyszukaj w Google</translation>
-<translation id="6849295950938417341">Nie można uruchomić narzędzia do profilowania</translation>
+<translation id="2094750046714988961">Nie można uruchomić narzędzia do profilowania, ponieważ zewnętrzna pamięć masowa nie jest gotowa</translation>
+<translation id="2410828433627930127">Tego filmu nie można odtworzyć.</translation>
+<translation id="2520230379124234395">Narzędzie do profilowania zostało uruchomione</translation>
+<translation id="273860350361291195">Tego filmu nie można przesłać na to urządzenie.</translation>
+<translation id="4859501799452851758">Profilowanie zakończone. Wyniki zostały zapisane w pliku <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Udostępnij</translation>
+<translation id="6849295950938417341">Nie można uruchomić narzędzia do profilowania</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Wczytuję film</translation>
 </translationbundle>

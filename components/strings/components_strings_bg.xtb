@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
-<translation id="2774256287122201187">Може да продължите към страницата. Ако го направите, това предупреждение няма да се показва пет минути.</translation>
-<translation id="3963721102035795474">Режим за четене</translation>
-<translation id="7485870689360869515">Няма намерени данни.</translation>
-<translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
-<translation id="5172758083709347301">Машината</translation>
-<translation id="7180611975245234373">Опресняване</translation>
-<translation id="8208216423136871611">Без запазване</translation>
-<translation id="777702478322588152">Префектура</translation>
-<translation id="2972581237482394796">&amp;Възстановяване</translation>
-<translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
-<translation id="2262243747453050782">HTTP грешка</translation>
-<translation id="1339601241726513588">Домейн за записване:</translation>
-<translation id="7298195798382681320">Препоръчително</translation>
-<translation id="4058922952496707368">Ключ „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">Уведомление за JavaScript</translation>
-<translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
-<translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE"/></translation>
-<translation id="2498091847651709837">Сканиране на нова карта</translation>
-<translation id="6831043979455480757">Превод</translation>
-<translation id="1228893227497259893">Грешен идентификатор на обект</translation>
-<translation id="6337534724793800597">Филтриране на правилата по име</translation>
-<translation id="4372948949327679948">Очаквана е стойност от тип <ph name="VALUE_TYPE"/>.</translation>
-<translation id="2094505752054353250">Несъответствие в домейна</translation>
-<translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7537536606612762813">Задължително</translation>
-<translation id="2958431318199492670">Конфигурацията на мрежата не спазва стандарта на ONC. Възможно е части от нея да не са импортирани.</translation>
-<translation id="3583757800736429874">&amp;Възстановяване на преместването</translation>
-<translation id="7887683347370398519">Прегледайте кода за проверка и опитайте отново</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">Липсващ запис за устройството</translation>
-<translation id="1491151370853475546">Презареждане на тази страница</translation>
-<translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE"/></translation>
-<translation id="1227633850867390598">Скриване на стойността</translation>
-<translation id="6753269504797312559">Стойност за правилото</translation>
-<translation id="3369366829301677151">Актуализиране и потвърждаване на <ph name="CREDIT_CARD"/></translation>
-<translation id="8834246243508017242">Активиране на използването на контактите при автоматично попълване…</translation>
-<translation id="7275334191706090484">Управлявани отметки</translation>
-<translation id="7400418766976504921">URL адрес</translation>
-<translation id="7378627244592794276">Не</translation>
-<translation id="2704283930420550640">Стойността не съответства на формата.</translation>
 <translation id="1055184225775184556">&amp;Отмяна на добавянето</translation>
-<translation id="7813600968533626083">Предложението за формуляри да се премахне ли от Chrome?</translation>
-<translation id="4850886885716139402">Изглед</translation>
-<translation id="8091372947890762290">В сървъра се изчаква активиране</translation>
-<translation id="6874604403660855544">&amp;Възстановяване на добавянето</translation>
-<translation id="4607653538520819196">Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Район</translation>
-<translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
-<translation id="8988760548304185580">Въведете датата на валидност и трицифрения код за проверка от гърба на картата си</translation>
-<translation id="8940229512486821554">Изпълнете командата за <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">Неизвестна грешка</translation>
-<translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
-<translation id="3452404311384756672">Интервал на извличане:</translation>
-<translation id="409504436206021213">Без презареждане</translation>
-<translation id="7441627299479586546">Грешен предмет на правилото</translation>
-<translation id="3885155851504623709">Община</translation>
-<translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
-<translation id="1426410128494586442">Да</translation>
-<translation id="4506176782989081258">Грешка при потвърждаването: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE"/> не бе успешен.</translation>
-<translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
-<translation id="3219579145727097045">Въведете датата на валидност и четирицифрения код за проверка от лицевата страна на картата си</translation>
-<translation id="59107663811261420">Този тип карта не се поддържа от Google Payments за този търговец. Моля, изберете друга.</translation>
-<translation id="4079302484614802869">За конфигурацията на прокси сървъра е зададено да използва URL адрес на скрипт във формат .pac, а не фиксирани прокси сървъри.</translation>
-<translation id="5540224163453853">Заявената статия не можа да бъде намерена.</translation>
-<translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
-<translation id="5813119285467412249">&amp;Възстановяване на добавянето</translation>
-<translation id="333371639341676808">Да не се показват допълнителни диалогови прозорци от тази страница.</translation>
-<translation id="5523118979700054094">Име на правилото</translation>
-<translation id="7791543448312431591">Добавяне</translation>
-<translation id="2053553514270667976">Пощенски код</translation>
-<translation id="1644184664548287040">Конфигурацията на мрежата е невалидна и не можа да се импортира.</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">Правилото не е намерено</translation>
-<translation id="3150653042067488994">Временна грешка в сървъра</translation>
-<translation id="7087282848513945231">Окръг</translation>
-<translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
-<translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
-<translation id="6458467102616083041">Бе пренебрегнато, защото основното търсене е деактивирано от правило.</translation>
-<translation id="6259156558325130047">&amp;Възстановяване на пренареждането</translation>
-<translation id="1227224963052638717">Неизвестно правило.</translation>
-<translation id="4250680216510889253">Не</translation>
-<translation id="9207861905230894330">Добавянето на статията не бе успешно.</translation>
-<translation id="5872918882028971132">Основни предложения</translation>
-<translation id="337363190475750230">Обезпечаването е отменено</translation>
-<translation id="2367567093518048410">Ниво</translation>
-<translation id="7977590112176369853">&lt;въведете заявка&gt;</translation>
-<translation id="552553974213252141">Текстът правилно ли бе извлечен?</translation>
-<translation id="5317780077021120954">Запазване</translation>
-<translation id="8530504477309582336">Този тип карта не се поддържа от Google Payments. Моля, изберете друга.</translation>
-<translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE"/>.</translation>
-<translation id="3739623965217189342">Копирана от вас връзка</translation>
-<translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
-<translation id="8311778656528046050">Наистина ли искате да презаредите тази страница?</translation>
-<translation id="370665806235115550">Зарежда се...</translation>
-<translation id="2096368010154057602">Департамент</translation>
-<translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
-<translation id="4258748452823770588">Невалиден подпис</translation>
-<translation id="3024663005179499861">Грешен тип на правилото</translation>
-<translation id="2030481566774242610">Може би имахте предвид <ph name="LINK"/>?</translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
-<translation id="3145945101586104090">Декодирането на отговора не бе успешно</translation>
-<translation id="2328300916057834155">Пренебрегната бе невалидна отметка в индекс <ph name="ENTRY_INDEX"/></translation>
-<translation id="883848425547221593">Други отметки</translation>
-<translation id="2181821976797666341">Правила</translation>
-<translation id="3174168572213147020">Остров</translation>
-<translation id="9137013805542155359">Показване на оригинала</translation>
-<translation id="2213606439339815911">Записите се извличат...</translation>
-<translation id="6263376278284652872">Отметки от <ph name="DOMAIN"/></translation>
-<translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="8218327578424803826">Зададено местоположение:</translation>
-<translation id="3542684924769048008">Използване на паролата за:</translation>
-<translation id="2855922900409897335">Потвърждаване на <ph name="CREDIT_CARD"/></translation>
-<translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4587425331216688090">Адресът да се премахне ли от Chrome?</translation>
-<translation id="7139724024395191329">Емирство</translation>
-<translation id="6646897916597483132">Въведете четирицифрения код за проверка от лицевата страна на картата си</translation>
-<translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
-<translation id="7983301409776629893">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="6970216967273061347">Окръг</translation>
-<translation id="3427342743765426898">&amp;Възстановяване на редактирането</translation>
-<translation id="3010559122411665027">Списъчен запис „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Кредитната карта да се премахне ли от Chrome?</translation>
-<translation id="6445051938772793705">Държава</translation>
-<translation id="5031870354684148875">Всичко за Google Преводач</translation>
-<translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK"/>кеширано копие<ph name="END_LINK"/> на <ph name="URL"/></translation>
-<translation id="8201077131113104583">Невалиден URL адрес за актуализиране на разширението с идентификационен номер <ph name="EXTENSION_ID"/>.</translation>
-<translation id="6891596781022320156">Нивото на правилото не се поддържа.</translation>
-<translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
-<translation id="1853748787962613237">Показването на статията не бе успешно.</translation>
-<translation id="5455374756549232013">Невалидно клеймо за дата и час на правилото</translation>
-<translation id="2025623846716345241">Потвърждаване на презареждането</translation>
-<translation id="1962204205936693436">Отметки от <ph name="DOMAIN"/></translation>
-<translation id="4300246636397505754">Основни предложения</translation>
-<translation id="111844081046043029">Наистина ли искате да излезете от тази страница?</translation>
-<translation id="2495083838625180221">Синтактичен анализ на JSON</translation>
-<translation id="1973335181906896915">Грешка при сериализирането</translation>
-<translation id="5989320800837274978">Не са посочени нито фиксирани прокси сървъри, нито URL адрес на скрипт във формат .pac.</translation>
-<translation id="7805768142964895445">Състояние</translation>
-<translation id="2113977810652731515">Карта</translation>
+<translation id="106701514854093668">Настолни отметки</translation>
+<translation id="1103523840287552314">Винаги да се превежда от <ph name="LANGUAGE"/></translation>
 <translation id="1113869188872983271">&amp;Отмяна на пренареждането</translation>
-<translation id="536296301121032821">Съхраняването на настройките за правилото не бе успешно</translation>
-<translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH"/>“: <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">Лента на отметките</translation>
-<translation id="587701087903783706">Затваряне на изгледа за мобилни устройства</translation>
-<translation id="7208899522964477531">Търсене с <ph name="SITE_NAME"/> на <ph name="SEARCH_TERMS"/></translation>
-<translation id="7956713633345437162">Мобилни отметки</translation>
-<translation id="5089810972385038852">Щат</translation>
-<translation id="647261751007945333">Правила за устройството</translation>
-<translation id="2556876185419854533">&amp;Отмяна на редактирането</translation>
-<translation id="213826338245044447">Мобилни отметки</translation>
-<translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
-<translation id="8571890674111243710">Превод на страницата на <ph name="LANGUAGE"/>...</translation>
-<translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
-<translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME"/>.</translation>
-<translation id="3228969707346345236">Преводът не бе успешен, защото страницата вече е на <ph name="LANGUAGE"/>.</translation>
-<translation id="7521387064766892559">Javascript</translation>
-<translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="1734864079702812349">Amex</translation>
-<translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
-<translation id="3105172416063519923">ID на актива:</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
-<translation id="2587841377698384444">ID на API за директории:</translation>
-<translation id="7752995774971033316">Не се управлява</translation>
-<translation id="3712624925041724820">Лицензите са изчерпани</translation>
-<translation id="4926049483395192435">Трябва да се посочи.</translation>
-<translation id="1455235771979731432">При потвърждаването на картата ви възникна проблем. Проверете връзката си с интернет и опитайте отново.</translation>
-<translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
-<translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE"/>? Подайте сигнал за тази грешка</translation>
-<translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
-<translation id="8725066075913043281">Опитайте отново</translation>
-<translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
-<translation id="1640180200866533862">Правила за потребителите</translation>
-<translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
-<translation id="2597378329261239068">Този документ е защитен с парола.  Моля, въведете я.</translation>
-<translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
-<translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
-<translation id="2354001756790975382">Други отметки</translation>
-<translation id="3650584904733503804">Потвърждаването е успешно</translation>
-<translation id="2359808026110333948">Напред</translation>
-<translation id="6915804003454593391">Потребител:</translation>
-<translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
-<translation id="2270192940992995399">Намирането на статията не бе успешно.</translation>
-<translation id="4726672564094551039">Презареждане на правилата</translation>
-<translation id="9170848237812810038">&amp;Отмяна</translation>
-<translation id="9154176715500758432">Нека остана на тази страница</translation>
-<translation id="2392959068659972793">Да се показват правилата без зададена стойност</translation>
-<translation id="9148507642005240123">&amp;Отмяна на редактирането</translation>
-<translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
-<translation id="5190835502935405962">Лента на отметките</translation>
-<translation id="6965978654500191972">Устройство</translation>
-<translation id="5295309862264981122">Потвърждение на навигацията</translation>
-<translation id="8249320324621329438">Последно извличане:</translation>
-<translation id="194030505837763158">Към <ph name="LINK"/></translation>
+<translation id="111844081046043029">Наистина ли искате да излезете от тази страница?</translation>
+<translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
+<translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
+<translation id="1152921474424827756">Вижте <ph name="BEGIN_LINK"/>кеширано копие<ph name="END_LINK"/> на <ph name="URL"/></translation>
+<translation id="1227224963052638717">Неизвестно правило.</translation>
+<translation id="1227633850867390598">Скриване на стойността</translation>
+<translation id="1228893227497259893">Грешен идентификатор на обект</translation>
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
+<translation id="1339601241726513588">Домейн за записване:</translation>
 <translation id="1344588688991793829">Настройки за Автоматично попълване в Chromium...</translation>
-<translation id="6282194474023008486">Пощенски код</translation>
-<translation id="443673843213245140">Използването на прокси сървър е деактивирано, но е посочена изрична негова конфигурация.</translation>
-<translation id="3623476034248543066">Показване на стойността</translation>
-<translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
-<translation id="560412284261940334">Управлението не се поддържа</translation>
-<translation id="6512448926095770873">Излизане от тази страница</translation>
+<translation id="1426410128494586442">Да</translation>
+<translation id="1455235771979731432">При потвърждаването на картата ви възникна проблем. Проверете връзката си с интернет и опитайте отново.</translation>
+<translation id="1491151370853475546">Презареждане на тази страница</translation>
+<translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
 <translation id="1639239467298939599">Зарежда се</translation>
-<translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4813512666221746211">Грешка в мрежата</translation>
+<translation id="1640180200866533862">Правила за потребителите</translation>
+<translation id="1644184664548287040">Конфигурацията на мрежата е невалидна и не можа да се импортира.</translation>
+<translation id="1693754753824026215">Страницата на адрес <ph name="SITE"/> показва:</translation>
+<translation id="1734864079702812349">Amex</translation>
+<translation id="1821930232296380041">Заявката или параметрите й са невалидни</translation>
+<translation id="1853748787962613237">Показването на статията не бе успешно.</translation>
+<translation id="1871208020102129563">За прокси сървъра е зададено да използва фиксирани прокси сървъри, а не URL адрес на скрипт във формат .pac.</translation>
 <translation id="1875753206475436906">евристичен тип: <ph name="HEURISTIC_TYPE"/>
 тип сървър: <ph name="SERVER_TYPE"/>
 подпис в полето: <ph name="FIELD_SIGNATURE"/>
 подпис във формуляра: <ph name="FORM_SIGNATURE"/>
 идентификатор на експеримента: „<ph name="EXPERIMENT_ID"/>“</translation>
-<translation id="2479410451996844060">Невалиден URL адрес за търсене.</translation>
-<translation id="5509780412636533143">Управлявани отметки</translation>
-<translation id="935608979562296692">ИЗЧИСТВАНЕ НА ФОРМУЛЯРА</translation>
-<translation id="8866481888320382733">Грешка при синтактичния анализ на настройките за правилото</translation>
-<translation id="4120075327926916474">Искате ли Chrome да запази тази информация за кредитната карта за попълване на уеб формуляри?</translation>
-<translation id="6644283850729428850">Това правило е оттеглено.</translation>
-<translation id="1693754753824026215">Страницата на адрес <ph name="SITE"/> показва:</translation>
-<translation id="4269787794583293679">(Няма потребителско име)</translation>
-<translation id="7988324688042446538">Настолни отметки</translation>
-<translation id="8488350697529856933">Прилага се към</translation>
-<translation id="6165508094623778733">Научете повече</translation>
-<translation id="5565735124758917034">Активно</translation>
-<translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE"/>Искате ли да я преведете?</translation>
-<translation id="8876793034577346603">Синтактичният анализ на конфигурацията на мрежата не бе успешен.</translation>
-<translation id="4800132727771399293">Прегледайте датата на валидност и кода за проверка и оптитайте отново</translation>
-<translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
-<translation id="9125941078353557812">Въведете трицифрения код за проверка от гърба на картата си</translation>
-<translation id="106701514854093668">Настолни отметки</translation>
-<translation id="6154808779448689242">Изведеното означение на правилото не съответства на текущото</translation>
-<translation id="7995512525968007366">Не е посочено</translation>
-<translation id="7961015016161918242">Никога</translation>
-<translation id="2835170189407361413">Изчистване на формуляра</translation>
-<translation id="6550675742724504774">Опции</translation>
-<translation id="8804164990146287819">Декларация за поверителност</translation>
-<translation id="988159990683914416">Компилирана програма за програмисти</translation>
-<translation id="7334320624316649418">&amp;Възстановяване на пренареждането</translation>
-<translation id="7182878459783632708">Няма зададени правила</translation>
-<translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
-<translation id="8364627913115013041">Не е зададено.</translation>
-<translation id="8713130696108419660">Лош подпис посредством първоначалния ключ</translation>
-<translation id="3270847123878663523">&amp;Отмяна на пренареждането</translation>
+<translation id="194030505837763158">Към <ph name="LINK"/></translation>
+<translation id="1962204205936693436">Отметки от <ph name="DOMAIN"/></translation>
+<translation id="1973335181906896915">Грешка при сериализирането</translation>
+<translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
+<translation id="2025623846716345241">Потвърждаване на презареждането</translation>
+<translation id="2030481566774242610">Може би имахте предвид <ph name="LINK"/>?</translation>
+<translation id="2053553514270667976">Пощенски код</translation>
 <translation id="20817612488360358">За използване са зададени системни настройки за прокси сървъра, но е посочена и изрична конфигурация.</translation>
-<translation id="2639739919103226564">Състояние:</translation>
-<translation id="8824019021993735287">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
-<translation id="4968547170521245791">Работата като прокси сървър не е възможна</translation>
-<translation id="385051799172605136">Назад</translation>
-<translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
-<translation id="5095208057601539847">Провинция</translation>
-<translation id="2581221116934462656">Искате ли следващия път <ph name="PRODUCT_NAME"/> да предложи превод на написаните на <ph name="LANGUAGE_NAME"/> страници от този сайт?</translation>
+<translation id="2094505752054353250">Несъответствие в домейна</translation>
+<translation id="2096368010154057602">Департамент</translation>
+<translation id="2113977810652731515">Карта</translation>
+<translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME"/>.</translation>
+<translation id="213826338245044447">Мобилни отметки</translation>
+<translation id="2181821976797666341">Правила</translation>
+<translation id="2212735316055980242">Правилото не е намерено</translation>
+<translation id="2213606439339815911">Записите се извличат...</translation>
+<translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
+<translation id="2262243747453050782">HTTP грешка</translation>
+<translation id="2270192940992995399">Намирането на статията не бе успешно.</translation>
+<translation id="2328300916057834155">Пренебрегната бе невалидна отметка в индекс <ph name="ENTRY_INDEX"/></translation>
+<translation id="2354001756790975382">Други отметки</translation>
+<translation id="2359808026110333948">Напред</translation>
+<translation id="2367567093518048410">Ниво</translation>
+<translation id="2392959068659972793">Да се показват правилата без зададена стойност</translation>
 <translation id="2396249848217231973">&amp;Отмяна на изтриването</translation>
-<translation id="3934680773876859118">PDF документът не успя да се зареди</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2455981314101692989">Тази уеб страница е деактивирала автоматичното попълване за този формуляр.</translation>
-<translation id="6597614308054261376">Опитвате се да достигнете до <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Понастоящем Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
-<translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
-<translation id="5720705177508910913">Текущият потребител</translation>
+<translation id="2479410451996844060">Невалиден URL адрес за търсене.</translation>
+<translation id="2495083838625180221">Синтактичен анализ на JSON</translation>
+<translation id="2498091847651709837">Сканиране на нова карта</translation>
+<translation id="2556876185419854533">&amp;Отмяна на редактирането</translation>
+<translation id="2581221116934462656">Искате ли следващия път <ph name="PRODUCT_NAME"/> да предложи превод на написаните на <ph name="LANGUAGE_NAME"/> страници от този сайт?</translation>
+<translation id="2587841377698384444">ID на API за директории:</translation>
+<translation id="2597378329261239068">Този документ е защитен с парола.  Моля, въведете я.</translation>
+<translation id="2639739919103226564">Състояние:</translation>
+<translation id="2704283930420550640">Стойността не съответства на формата.</translation>
+<translation id="2721148159707890343">Заявката е успешна</translation>
+<translation id="2774256287122201187">Може да продължите към страницата. Ако го направите, това предупреждение няма да се показва пет минути.</translation>
+<translation id="277499241957683684">Липсващ запис за устройството</translation>
+<translation id="2835170189407361413">Изчистване на формуляра</translation>
+<translation id="2855922900409897335">Потвърждаване на <ph name="CREDIT_CARD"/></translation>
+<translation id="2958431318199492670">Конфигурацията на мрежата не спазва стандарта на ONC. Възможно е части от нея да не са импортирани.</translation>
+<translation id="2972581237482394796">&amp;Възстановяване</translation>
+<translation id="3010559122411665027">Списъчен запис „<ph name="ENTRY_INDEX"/>“: <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">Грешен тип на правилото</translation>
+<translation id="3105172416063519923">ID на актива:</translation>
+<translation id="3145945101586104090">Декодирането на отговора не бе успешно</translation>
+<translation id="3150653042067488994">Временна грешка в сървъра</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3174168572213147020">Остров</translation>
+<translation id="3219579145727097045">Въведете датата на валидност и четирицифрения код за проверка от лицевата страна на картата си</translation>
+<translation id="3228969707346345236">Преводът не бе успешен, защото страницата вече е на <ph name="LANGUAGE"/>.</translation>
+<translation id="3270847123878663523">&amp;Отмяна на пренареждането</translation>
+<translation id="333371639341676808">Да не се показват допълнителни диалогови прозорци от тази страница.</translation>
+<translation id="3369366829301677151">Актуализиране и потвърждаване на <ph name="CREDIT_CARD"/></translation>
+<translation id="337363190475750230">Обезпечаването е отменено</translation>
+<translation id="3377188786107721145">Грешка при синтактичния анализ на правилото</translation>
+<translation id="3380365263193509176">Неизвестна грешка</translation>
 <translation id="3380864720620200369">Идент. № на клиентската програма:</translation>
+<translation id="3427342743765426898">&amp;Възстановяване на редактирането</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">Интервал на извличане:</translation>
+<translation id="3542684924769048008">Използване на паролата за:</translation>
+<translation id="3583757800736429874">&amp;Възстановяване на преместването</translation>
+<translation id="3623476034248543066">Показване на стойността</translation>
+<translation id="3650584904733503804">Потвърждаването е успешно</translation>
+<translation id="370665806235115550">Зарежда се...</translation>
+<translation id="3712624925041724820">Лицензите са изчерпани</translation>
+<translation id="3739623965217189342">Копирана от вас връзка</translation>
+<translation id="375403751935624634">Преводът не бе успешен поради грешка в сървъра.</translation>
+<translation id="385051799172605136">Назад</translation>
+<translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
+<translation id="3885155851504623709">Община</translation>
+<translation id="3934680773876859118">PDF документът не успя да се зареди</translation>
+<translation id="3963721102035795474">Режим за четене</translation>
+<translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
+<translation id="4058922952496707368">Ключ „<ph name="SUBKEY"/>“: <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">За конфигурацията на прокси сървъра е зададено да използва URL адрес на скрипт във формат .pac, а не фиксирани прокси сървъри.</translation>
+<translation id="409504436206021213">Без презареждане</translation>
+<translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
+<translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
+<translation id="4120075327926916474">Искате ли Chrome да запази тази информация за кредитната карта за попълване на уеб формуляри?</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
+<translation id="4196861286325780578">&amp;Възстановяване на преместването</translation>
+<translation id="4250680216510889253">Не</translation>
+<translation id="4258748452823770588">Невалиден подпис</translation>
+<translation id="4269787794583293679">(Няма потребителско име)</translation>
+<translation id="4300246636397505754">Основни предложения</translation>
+<translation id="4372948949327679948">Очаквана е стойност от тип <ph name="VALUE_TYPE"/>.</translation>
+<translation id="443673843213245140">Използването на прокси сървър е деактивирано, но е посочена изрична негова конфигурация.</translation>
+<translation id="4506176782989081258">Грешка при потвърждаването: <ph name="VALIDATION_ERROR"/></translation>
+<translation id="4587425331216688090">Адресът да се премахне ли от Chrome?</translation>
+<translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
+<translation id="4607653538520819196">Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">Презареждане на правилата</translation>
+<translation id="4800132727771399293">Прегледайте датата на валидност и кода за проверка и оптитайте отново</translation>
+<translation id="4813512666221746211">Грешка в мрежата</translation>
+<translation id="4850886885716139402">Изглед</translation>
+<translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4926049483395192435">Трябва да се посочи.</translation>
+<translation id="4968547170521245791">Работата като прокси сървър не е възможна</translation>
+<translation id="498957508165411911">Да се преведе ли от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="5019198164206649151">Допълнителното хранилище е в лошо състояние</translation>
+<translation id="5031870354684148875">Всичко за Google Преводач</translation>
+<translation id="5089810972385038852">Щат</translation>
+<translation id="5095208057601539847">Провинция</translation>
+<translation id="5145883236150621069">В отговора за правилото присъства код на грешка</translation>
+<translation id="5172758083709347301">Машината</translation>
+<translation id="5179510805599951267">Не е на <ph name="ORIGINAL_LANGUAGE"/>? Подайте сигнал за тази грешка</translation>
+<translation id="5190835502935405962">Лента на отметките</translation>
+<translation id="5295309862264981122">Потвърждение на навигацията</translation>
+<translation id="5299298092464848405">Грешка при синтактичния анализ на правилото</translation>
+<translation id="5317780077021120954">Запазване</translation>
+<translation id="536296301121032821">Съхраняването на настройките за правилото не бе успешно</translation>
+<translation id="5439770059721715174">При потвърждаване на схемата възникна грешка в/ъв „<ph name="ERROR_PATH"/>“: <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">Невалидно клеймо за дата и час на правилото</translation>
+<translation id="5470861586879999274">&amp;Възстановяване на редактирането</translation>
+<translation id="5509780412636533143">Управлявани отметки</translation>
+<translation id="5523118979700054094">Име на правилото</translation>
+<translation id="552553974213252141">Текстът правилно ли бе извлечен?</translation>
+<translation id="5540224163453853">Заявената статия не можа да бъде намерена.</translation>
+<translation id="5565735124758917034">Активно</translation>
+<translation id="560412284261940334">Управлението не се поддържа</translation>
+<translation id="5629630648637658800">Зареждането на настройките за правилото не бе успешно</translation>
+<translation id="5631439013527180824">Невалидно означение за управление на устройството</translation>
+<translation id="5720705177508910913">Текущият потребител</translation>
+<translation id="5813119285467412249">&amp;Възстановяване на добавянето</translation>
+<translation id="5872918882028971132">Основни предложения</translation>
+<translation id="587701087903783706">Затваряне на изгледа за мобилни устройства</translation>
+<translation id="59107663811261420">Този тип карта не се поддържа от Google Payments за този търговец. Моля, изберете друга.</translation>
+<translation id="5989320800837274978">Не са посочени нито фиксирани прокси сървъри, нито URL адрес на скрипт във формат .pac.</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">Изведеното означение на правилото не съответства на текущото</translation>
+<translation id="6165508094623778733">Научете повече</translation>
+<translation id="6259156558325130047">&amp;Възстановяване на пренареждането</translation>
+<translation id="6263376278284652872">Отметки от <ph name="DOMAIN"/></translation>
+<translation id="6282194474023008486">Пощенски код</translation>
+<translation id="6337534724793800597">Филтриране на правилата по име</translation>
+<translation id="6445051938772793705">Държава</translation>
+<translation id="6458467102616083041">Бе пренебрегнато, защото основното търсене е деактивирано от правило.</translation>
+<translation id="647261751007945333">Правила за устройството</translation>
+<translation id="6512448926095770873">Излизане от тази страница</translation>
+<translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
+<translation id="6550675742724504774">Опции</translation>
+<translation id="6597614308054261376">Опитвате се да достигнете до <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Понастоящем Икономия на данни не може да служи като прокси сървър за тази страница.</translation>
+<translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE"/></translation>
+<translation id="6644283850729428850">Това правило е оттеглено.</translation>
+<translation id="6646897916597483132">Въведете четирицифрения код за проверка от лицевата страна на картата си</translation>
+<translation id="6753269504797312559">Стойност за правилото</translation>
+<translation id="6831043979455480757">Превод</translation>
+<translation id="6839929833149231406">Район</translation>
+<translation id="6874604403660855544">&amp;Възстановяване на добавянето</translation>
+<translation id="6891596781022320156">Нивото на правилото не се поддържа.</translation>
+<translation id="6915804003454593391">Потребител:</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">Устройство</translation>
+<translation id="6970216967273061347">Окръг</translation>
+<translation id="6973656660372572881">Посочени са както фиксирани прокси сървъри, така и URL адрес на скрипт във формат .pac.</translation>
+<translation id="6980028882292583085">Уведомление за JavaScript</translation>
+<translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7087282848513945231">Окръг</translation>
+<translation id="7108649287766967076">Преводът на <ph name="TARGET_LANGUAGE"/> не бе успешен.</translation>
+<translation id="7139724024395191329">Емирство</translation>
+<translation id="7180611975245234373">Опресняване</translation>
+<translation id="7182878459783632708">Няма зададени правила</translation>
+<translation id="7186367841673660872">Тази страница е преведена от<ph name="ORIGINAL_LANGUAGE"/>на<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">Търсене с <ph name="SITE_NAME"/> на <ph name="SEARCH_TERMS"/></translation>
+<translation id="7275334191706090484">Управлявани отметки</translation>
+<translation id="7298195798382681320">Препоръчително</translation>
+<translation id="7334320624316649418">&amp;Възстановяване на пренареждането</translation>
+<translation id="7378627244592794276">Не</translation>
+<translation id="7400418766976504921">URL адрес</translation>
+<translation id="7441627299479586546">Грешен предмет на правилото</translation>
+<translation id="7485870689360869515">Няма намерени данни.</translation>
+<translation id="7521387064766892559">Javascript</translation>
+<translation id="7537536606612762813">Задължително</translation>
+<translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
+<translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE"/>Искате ли да я преведете?</translation>
+<translation id="7569952961197462199">Кредитната карта да се премахне ли от Chrome?</translation>
+<translation id="7600965453749440009">Никога да не се превежда от <ph name="LANGUAGE"/></translation>
+<translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE"/>.</translation>
+<translation id="7752995774971033316">Не се управлява</translation>
+<translation id="777702478322588152">Префектура</translation>
+<translation id="7791543448312431591">Добавяне</translation>
+<translation id="7805768142964895445">Състояние</translation>
+<translation id="7813600968533626083">Предложението за формуляри да се премахне ли от Chrome?</translation>
+<translation id="7887683347370398519">Прегледайте кода за проверка и опитайте отново</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">Мобилни отметки</translation>
+<translation id="7961015016161918242">Никога</translation>
+<translation id="7977590112176369853">&lt;въведете заявка&gt;</translation>
+<translation id="7983301409776629893">Винаги да се превежда от <ph name="ORIGINAL_LANGUAGE"/> на <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="7988324688042446538">Настолни отметки</translation>
+<translation id="7995512525968007366">Не е посочено</translation>
+<translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE"/>. Да се преведе ли на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
+<translation id="8091372947890762290">В сървъра се изчаква активиране</translation>
+<translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
+<translation id="8201077131113104583">Невалиден URL адрес за актуализиране на разширението с идентификационен номер <ph name="EXTENSION_ID"/>.</translation>
+<translation id="8208216423136871611">Без запазване</translation>
+<translation id="8218327578424803826">Зададено местоположение:</translation>
+<translation id="8249320324621329438">Последно извличане:</translation>
+<translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
+<translation id="8311778656528046050">Наистина ли искате да презаредите тази страница?</translation>
+<translation id="8349305172487531364">Лента на отметките</translation>
+<translation id="8364627913115013041">Не е зададено.</translation>
+<translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
+<translation id="8488350697529856933">Прилага се към</translation>
+<translation id="8530504477309582336">Този тип карта не се поддържа от Google Payments. Моля, изберете друга.</translation>
+<translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
+<translation id="8571890674111243710">Превод на страницата на <ph name="LANGUAGE"/>...</translation>
+<translation id="8713130696108419660">Лош подпис посредством първоначалния ключ</translation>
+<translation id="8725066075913043281">Опитайте отново</translation>
+<translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
+<translation id="8804164990146287819">Декларация за поверителност</translation>
+<translation id="8824019021993735287">Chrome не можа да потвърди картата ви. Моля, опитайте отново по-късно.</translation>
+<translation id="8834246243508017242">Активиране на използването на контактите при автоматично попълване…</translation>
+<translation id="883848425547221593">Други отметки</translation>
+<translation id="8866481888320382733">Грешка при синтактичния анализ на настройките за правилото</translation>
+<translation id="8876793034577346603">Синтактичният анализ на конфигурацията на мрежата не бе успешен.</translation>
+<translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
+<translation id="8940229512486821554">Изпълнете командата за <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">Въведете датата на валидност и трицифрения код за проверка от гърба на картата си</translation>
+<translation id="9020542370529661692">Тази страница е преведена на <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="9125941078353557812">Въведете трицифрения код за проверка от гърба на картата си</translation>
+<translation id="9137013805542155359">Показване на оригинала</translation>
+<translation id="9148507642005240123">&amp;Отмяна на редактирането</translation>
+<translation id="9154176715500758432">Нека остана на тази страница</translation>
+<translation id="9170848237812810038">&amp;Отмяна</translation>
+<translation id="9207861905230894330">Добавянето на статията не бе успешно.</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">ИЗЧИСТВАНЕ НА ФОРМУЛЯРА</translation>
+<translation id="988159990683914416">Компилирана програма за програмисти</translation>
 </translationbundle>

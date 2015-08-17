@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="nl">
-<translation id="8008366997883261463">Jack Russell-terriër</translation>
-<translation id="7165320105431587207">Kan netwerk niet configureren</translation>
-<translation id="4387004326333427325">Verificatiecertificaat afgewezen op afstand</translation>
-<translation id="6943836128787782965">Ophalen van HTTP mislukt</translation>
+<translation id="1119447706177454957">Interne fout</translation>
+<translation id="153454903766751181">Mobiele modem initialiseren...</translation>
+<translation id="158849752021629804">Thuisnetwerk vereist</translation>
 <translation id="1661867754829461514">Pincode ontbreekt</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: verbinden...</translation>
+<translation id="1773212559869067373">Verificatiecertificaat lokaal geweigerd</translation>
+<translation id="1829129547161959350">Pinguïn</translation>
+<translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
+<translation id="2288278176040912387">Platenspeler</translation>
+<translation id="2354174487190027830"><ph name="NAME"/> activeren</translation>
+<translation id="2544853746127077729">Verificatiecertificaat geweigerd door netwerk</translation>
+<translation id="2563185590376525700">Kikker</translation>
+<translation id="2563856802393254086">Gefeliciteerd! Je gegevensservice '<ph name="NAME"/>' is geactiveerd en kan worden gebruikt.</translation>
+<translation id="2649120831653069427">Regenboogvis</translation>
+<translation id="2670531586141364277">Voor activering van '<ph name="NAME"/>' is een netwerkverbinding vereist.</translation>
+<translation id="2894654529758326923">Informatie</translation>
+<translation id="2951236788251446349">Kwal</translation>
+<translation id="2966449113954629791">Je hebt misschien je mobiele gegevensquotum verbruikt. Ga naar de activeringsportal van <ph name="NAME"/> om meer gegevens te kopen.</translation>
+<translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
+<translation id="3871838685472846647">Mobiel geactiveerd</translation>
+<translation id="3901991538546252627">Verbinding maken met <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Fout bij netwerkactivering</translation>
 <translation id="4237016987259239829">Fout bij netwerkverbinding</translation>
+<translation id="4274292172790327596">Onbekende fout</translation>
+<translation id="4326192123064055915">Koffie</translation>
+<translation id="4387004326333427325">Verificatiecertificaat afgewezen op afstand</translation>
+<translation id="4442424173763614572">DNS-lookup mislukt</translation>
+<translation id="4448844063988177157">Zoeken naar wifi-netwerken...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: verbinden...</translation>
 <translation id="4508265954913339219">Activering mislukt</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Slecht wachtwoord</translation>
-<translation id="3846575436967432996">Geen netwerkinformatie beschikbaar</translation>
-<translation id="153454903766751181">Mobiele modem initialiseren...</translation>
-<translation id="735745346212279324">Verbinding met VPN verbroken</translation>
+<translation id="4935975195727477204">Bloem</translation>
+<translation id="5045550434625856497">Onjuist wachtwoord</translation>
+<translation id="5097002363526479830">Kan geen verbinding maken met het netwerk '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Schaken</translation>
+<translation id="5257456363153333584">Libel</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Kat</translation>
-<translation id="7170041865419449892">Geen bereik</translation>
-<translation id="2544853746127077729">Verificatiecertificaat geweigerd door netwerk</translation>
-<translation id="7973962044839454485">PPP-verificatie mislukt wegens een onjuiste gebruikersnaam of wachtwoord</translation>
-<translation id="6549021752953852991">Geen mobiel netwerk beschikbaar</translation>
+<translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
+<translation id="6232116551750539448">Verbinding met <ph name="NAME"/> is verbroken</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: activeren...</translation>
+<translation id="6312403991423642364">Onbekende netwerkfout</translation>
 <translation id="6490455614072479501">Verbinding maken met '<ph name="NAME"/>' is mislukt: <ph name="DETAILS"/>
         Melding van de server: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Voor activering van '<ph name="NAME"/>' is een netwerkverbinding vereist.</translation>
-<translation id="4442424173763614572">DNS-lookup mislukt</translation>
-<translation id="7874779702599364982">Zoeken naar mobiele netwerken...</translation>
-<translation id="3901991538546252627">Verbinding maken met <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Verificatiecertificaat lokaal geweigerd</translation>
-<translation id="2563185590376525700">Kikker</translation>
-<translation id="7256405249507348194">Onbekende fout: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Informatie</translation>
-<translation id="6935521024859866267">Ondersteboven</translation>
-<translation id="7925247922861151263">AAA-controle mislukt</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Onbekende netwerkfout</translation>
-<translation id="4326192123064055915">Koffie</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> activeren</translation>
-<translation id="1829129547161959350">Pinguïn</translation>
-<translation id="515594325917491223">Schaken</translation>
-<translation id="5097002363526479830">Kan geen verbinding maken met het netwerk '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wifi is uitgeschakeld.</translation>
-<translation id="2966449113954629791">Je hebt misschien je mobiele gegevensquotum verbruikt. Ga naar de activeringsportal van <ph name="NAME"/> om meer gegevens te kopen.</translation>
-<translation id="8132793192354020517">Verbonden met <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Interne fout</translation>
-<translation id="5045550434625856497">Onjuist wachtwoord</translation>
-<translation id="6232116551750539448">Verbinding met <ph name="NAME"/> is verbroken</translation>
-<translation id="4274292172790327596">Onbekende fout</translation>
-<translation id="4448844063988177157">Zoeken naar wifi-netwerken...</translation>
-<translation id="7229570126336867161">EVDO vereist</translation>
-<translation id="9044646465488564462">Kan geen verbinding maken met netwerk: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
-<translation id="3871838685472846647">Mobiel geactiveerd</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">Geen mobiel netwerk beschikbaar</translation>
 <translation id="6732801395666424405">Certificaten niet geladen</translation>
-<translation id="8300849813060516376">OTASP mislukt</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: activeren...</translation>
-<translation id="8714406895390098252">Fiets</translation>
-<translation id="5257456363153333584">Libel</translation>
-<translation id="158849752021629804">Thuisnetwerk vereist</translation>
-<translation id="2649120831653069427">Regenboogvis</translation>
-<translation id="2288278176040912387">Platenspeler</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> activeren</translation>
-<translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
-<translation id="9046895021617826162">Verbinding mislukt</translation>
-<translation id="8372369524088641025">Slechte WEP-sleutel</translation>
-<translation id="2951236788251446349">Kwal</translation>
-<translation id="8000066093800657092">Geen netwerk</translation>
-<translation id="2563856802393254086">Gefeliciteerd! Je gegevensservice '<ph name="NAME"/>' is geactiveerd en kan worden gebruikt.</translation>
-<translation id="4935975195727477204">Bloem</translation>
+<translation id="6935521024859866267">Ondersteboven</translation>
+<translation id="6943836128787782965">Ophalen van HTTP mislukt</translation>
+<translation id="7165320105431587207">Kan netwerk niet configureren</translation>
+<translation id="7170041865419449892">Geen bereik</translation>
+<translation id="7229570126336867161">EVDO vereist</translation>
+<translation id="7256405249507348194">Onbekende fout: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Gebruikersnaam/wachtwoord onjuist of EAP-verificatie mislukt</translation>
+<translation id="735745346212279324">Verbinding met VPN verbroken</translation>
+<translation id="7874779702599364982">Zoeken naar mobiele netwerken...</translation>
+<translation id="7925247922861151263">AAA-controle mislukt</translation>
+<translation id="7973962044839454485">PPP-verificatie mislukt wegens een onjuiste gebruikersnaam of wachtwoord</translation>
+<translation id="8000066093800657092">Geen netwerk</translation>
+<translation id="8008366997883261463">Jack Russell-terriër</translation>
+<translation id="8132793192354020517">Verbonden met <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP mislukt</translation>
+<translation id="8372369524088641025">Slechte WEP-sleutel</translation>
+<translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
+<translation id="8688591111840995413">Slecht wachtwoord</translation>
+<translation id="8714406895390098252">Fiets</translation>
+<translation id="8808686172382650546">Kat</translation>
+<translation id="9044646465488564462">Kan geen verbinding maken met netwerk: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Verbinding mislukt</translation>
 </translationbundle>

@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
-<translation id="8008366997883261463">कुत्रा</translation>
-<translation id="7165320105431587207">नेटवर्क कॉन्फिगर करण्यात अयशस्वी</translation>
-<translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र दूरस्थपणे नाकारले</translation>
-<translation id="6943836128787782965">HTTP अयशस्वी झाले</translation>
+<translation id="1119447706177454957">अंतर्गत त्रुटी</translation>
+<translation id="153454903766751181">सेल्युलर मोडेम आरंभ करत आहे...</translation>
+<translation id="158849752021629804">मुख्यपृष्ठ नेटवर्क आवश्यक</translation>
 <translation id="1661867754829461514">PIN गहाळ आहे </translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: कनेक्ट करत आहे...</translation>
+<translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र स्थानिकपणे नाकारले</translation>
+<translation id="1829129547161959350">पेंग्विन</translation>
+<translation id="1850504506766569011">Wi-Fi बंद आहे.</translation>
+<translation id="2288278176040912387">रेकॉर्ड प्लेयर</translation>
+<translation id="2354174487190027830"><ph name="NAME"/> सक्रिय करत आहे</translation>
+<translation id="2544853746127077729">प्रमाणीकरण प्रमाणपत्र नेटवर्कद्वारे नाकारले</translation>
+<translation id="2563185590376525700">बेडूक</translation>
+<translation id="2563856802393254086">अभिनंदन! आपली '<ph name="NAME"/>' डेटा सेवा सक्रिय केली गेली आहे आणि वापरण्यास  सज्ज आहे.</translation>
+<translation id="2649120831653069427">रेनबोफिश</translation>
+<translation id="2670531586141364277">'<ph name="NAME"/>' च्या सक्रियणास नेटवर्क कनेक्शन आवश्यक आहे.</translation>
+<translation id="2894654529758326923">माहिती</translation>
+<translation id="2951236788251446349">जेलिफिश</translation>
+<translation id="2966449113954629791">आपण आपली मोबाईल डेटा सूट वापरली असू शकते. अधिक डेटा विकत घेण्यासाठी <ph name="NAME"/> सक्रियकरण पोर्टलला भेट द्या.</translation>
+<translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
+<translation id="3871838685472846647">सेल्युलर सक्रिय केले</translation>
+<translation id="3901991538546252627"><ph name="NAME"/> वर कनेक्ट करीत आहे</translation>
+<translation id="3958548648197196644">किवी</translation>
 <translation id="40400351611212369">नेटवर्क सक्रियण त्रुटी</translation>
 <translation id="4237016987259239829">नेटवर्क कनेक्शन त्रुटी</translation>
+<translation id="4274292172790327596">अपरिचित त्रुटी</translation>
+<translation id="4326192123064055915">कॉफी</translation>
+<translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र दूरस्थपणे नाकारले</translation>
+<translation id="4442424173763614572">DNS लुकअप अयश्सवी</translation>
+<translation id="4448844063988177157">Wi-Fi नेटवर्कचा शोधत आहे...</translation>
+<translation id="4479639480957787382">इथरनेट</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: कनेक्ट करत आहे...</translation>
 <translation id="4508265954913339219">सक्रियन अयशस्वी</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">चुकीचा संकेतशब्द</translation>
-<translation id="3846575436967432996">कोणतीही नेटवर्क माहिती उपलब्ध नाही</translation>
-<translation id="153454903766751181">सेल्युलर मोडेम आरंभ करत आहे...</translation>
-<translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
+<translation id="4935975195727477204">गॅझानियाचे फूल</translation>
+<translation id="5045550434625856497">अयोग्य संकेतशब्द</translation>
+<translation id="5097002363526479830">'<ph name="NAME"/>': नेटवर्कशी कनेक्ट करण्यात अयशस्वी. <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">बुद्धिबळ</translation>
+<translation id="5257456363153333584">ड्रॅगनफ्लाय</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">मांजर</translation>
-<translation id="7170041865419449892">परिक्षेत्राबाहेर</translation>
-<translation id="2544853746127077729">प्रमाणीकरण प्रमाणपत्र नेटवर्कद्वारे नाकारले</translation>
-<translation id="7973962044839454485">अयोग्य वापरकर्तानावामुळे किंवा संकेतशब्दामुळे PPP प्रमाणीकरण अयशस्वी झाले</translation>
-<translation id="6549021752953852991">कोणतेही सेल्युलर नेटवर्क उपलब्ध नाही</translation>
+<translation id="5864471791310927901">DHCP लुकअप अयशस्वी</translation>
+<translation id="6232116551750539448"><ph name="NAME"/> वरील कनेक्शन गमावले गेले आहे</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: सक्रिय करत आहे...</translation>
+<translation id="6312403991423642364">अज्ञात नेटवर्क त्रुटी</translation>
 <translation id="6490455614072479501">'<ph name="NAME"/>' शी कनेक्ट करण्यात अयशस्वी: <ph name="DETAILS"/>
         सर्व्हर संदेश: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">'<ph name="NAME"/>' च्या सक्रियणास नेटवर्क कनेक्शन आवश्यक आहे.</translation>
-<translation id="4442424173763614572">DNS लुकअप अयश्सवी</translation>
-<translation id="7874779702599364982">सेल्यूलर नेटवर्कसाठी शोधत आहे...</translation>
-<translation id="3901991538546252627"><ph name="NAME"/> वर कनेक्ट करीत आहे</translation>
-<translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र स्थानिकपणे नाकारले</translation>
-<translation id="2563185590376525700">बेडूक</translation>
-<translation id="7256405249507348194">अपरिचित त्रुटी: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">माहिती</translation>
-<translation id="6935521024859866267">उलट सुलट</translation>
-<translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
-<translation id="6312403991423642364">अज्ञात नेटवर्क त्रुटी</translation>
-<translation id="4326192123064055915">कॉफी</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> सक्रिय करत आहे</translation>
-<translation id="1829129547161959350">पेंग्विन</translation>
-<translation id="515594325917491223">बुद्धिबळ</translation>
-<translation id="5097002363526479830">'<ph name="NAME"/>': नेटवर्कशी कनेक्ट करण्यात अयशस्वी. <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi बंद आहे.</translation>
-<translation id="2966449113954629791">आपण आपली मोबाईल डेटा सूट वापरली असू शकते. अधिक डेटा विकत घेण्यासाठी <ph name="NAME"/> सक्रियकरण पोर्टलला भेट द्या.</translation>
-<translation id="8132793192354020517"><ph name="NAME"/> शी कनेक्ट केलेले</translation>
-<translation id="1119447706177454957">अंतर्गत त्रुटी</translation>
-<translation id="5045550434625856497">अयोग्य संकेतशब्द</translation>
-<translation id="6232116551750539448"><ph name="NAME"/> वरील कनेक्शन गमावले गेले आहे</translation>
-<translation id="4274292172790327596">अपरिचित त्रुटी</translation>
-<translation id="4448844063988177157">Wi-Fi नेटवर्कचा शोधत आहे...</translation>
-<translation id="7229570126336867161">EVDO आवश्यक आहे</translation>
-<translation id="9044646465488564462">नेटवर्कशी कनेक्ट करण्यात अयशस्वी: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi चालू आहे.</translation>
-<translation id="3871838685472846647">सेल्युलर सक्रिय केले</translation>
-<translation id="3958548648197196644">किवी</translation>
+<translation id="6549021752953852991">कोणतेही सेल्युलर नेटवर्क उपलब्ध नाही</translation>
 <translation id="6732801395666424405">लोड न झालेली प्रमाणपत्रे</translation>
-<translation id="8300849813060516376">OTASP बिघडले</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: सक्रिय करत आहे...</translation>
-<translation id="8714406895390098252">सायकल</translation>
-<translation id="5257456363153333584">ड्रॅगनफ्लाय</translation>
-<translation id="158849752021629804">मुख्यपृष्ठ नेटवर्क आवश्यक</translation>
-<translation id="2649120831653069427">रेनबोफिश</translation>
-<translation id="2288278176040912387">रेकॉर्ड प्लेयर</translation>
 <translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">DHCP लुकअप अयशस्वी</translation>
-<translation id="9046895021617826162">कनेक्ट करण्यात अयशस्वी</translation>
-<translation id="8372369524088641025">खराब WEP की</translation>
-<translation id="2951236788251446349">जेलिफिश</translation>
-<translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
-<translation id="2563856802393254086">अभिनंदन! आपली '<ph name="NAME"/>' डेटा सेवा सक्रिय केली गेली आहे आणि वापरण्यास  सज्ज आहे.</translation>
-<translation id="4935975195727477204">गॅझानियाचे फूल</translation>
+<translation id="6935521024859866267">उलट सुलट</translation>
+<translation id="6943836128787782965">HTTP अयशस्वी झाले</translation>
+<translation id="7165320105431587207">नेटवर्क कॉन्फिगर करण्यात अयशस्वी</translation>
+<translation id="7170041865419449892">परिक्षेत्राबाहेर</translation>
+<translation id="7229570126336867161">EVDO आवश्यक आहे</translation>
+<translation id="7256405249507348194">अपरिचित त्रुटी: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">वापरकर्तानाव/संकेतशब्द चुकीचा किंवा EAP-प्रमाणीकरण अयशस्वी</translation>
+<translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
+<translation id="7874779702599364982">सेल्यूलर नेटवर्कसाठी शोधत आहे...</translation>
+<translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
+<translation id="7973962044839454485">अयोग्य वापरकर्तानावामुळे किंवा संकेतशब्दामुळे PPP प्रमाणीकरण अयशस्वी झाले</translation>
+<translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
+<translation id="8008366997883261463">कुत्रा</translation>
+<translation id="8132793192354020517"><ph name="NAME"/> शी कनेक्ट केलेले</translation>
+<translation id="8300849813060516376">OTASP बिघडले</translation>
+<translation id="8372369524088641025">खराब WEP की</translation>
+<translation id="8454013096329229812">Wi-Fi चालू आहे.</translation>
+<translation id="8688591111840995413">चुकीचा संकेतशब्द</translation>
+<translation id="8714406895390098252">सायकल</translation>
+<translation id="8808686172382650546">मांजर</translation>
+<translation id="9044646465488564462">नेटवर्कशी कनेक्ट करण्यात अयशस्वी: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">कनेक्ट करण्यात अयशस्वी</translation>
 </translationbundle>

@@ -1,93 +1,96 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
-<translation id="4542520061254486227">Llegir les dades dels llocs <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
-<translation id="3983586614702900908">dispositius d'un proveïdor desconegut</translation>
-<translation id="730515362922783851">Intercanviar dades amb un altre dispositiu de la xarxa local o d'Internet</translation>
-<translation id="3624204664103857160">No s'ha pogut carregar la pàgina del menú <ph name="PAGE"/>.</translation>
-<translation id="8804398419035066391">Comunicar-se amb llocs web cooperatius</translation>
-<translation id="7809034755304591547">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME"/> (amb l'ID d'extensió <ph name="EXTENSION_ID"/>).</translation>
 <translation id="1005274289863221750">Utilitzar el micròfon i la càmera</translation>
-<translation id="2857834222104759979">El fitxer de manifest no és vàlid.</translation>
-<translation id="6384275966486438344">Canvia la configuració de la cerca a: <ph name="SEARCH_HOST"/></translation>
-<translation id="1445572445564823378">Aquesta extensió està alentint <ph name="PRODUCT_NAME"/>. L'heu de desactivar per restaurar el rendiment de: <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7003844668372540529">Producte desconegut <ph name="PRODUCT_ID"/> de: <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Accedeix als dispositius en sèrie</translation>
-<translation id="288042212351694283">Accés als dispositius Universal 2nd Factor</translation>
-<translation id="3163201441334626963">Producte desconegut <ph name="PRODUCT_ID"/> del proveïdor <ph name="VENDOR_ID"/></translation>
-<translation id="6027032947578871493">Producte desconegut <ph name="PRODUCT_ID"/> de: <ph name="VENDOR_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="4115165561519362854">L'administrador d'aquest ordinador requereix que <ph name="EXTENSION_NAME"/> tingui com a mínim la versió <ph name="EXTENSION_VERSION"/>. No es pot activar fins que no s'hagi actualitzat a aquesta versió (o posterior).</translation>
-<translation id="6075907793831890935">Intercanviar dades amb el dispositiu <ph name="HOSTNAME"/></translation>
-<translation id="5971037678316050792">Controlar l'estat i l'emparellament de l'adaptador Bluetooth</translation>
-<translation id="677806580227005219">Gestor MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
-<translation id="6241530762627360640">Accedir a informació sobre els dispositius Bluetooth emparellats amb el sistema i descobrir dispositius Bluetooth a prop</translation>
-<translation id="8749863574775030885">Accedir a dispositius USB d'un proveïdor desconegut</translation>
-<translation id="3115238746683532089">Producte desconegut <ph name="PRODUCT_ID"/> del proveïdor <ph name="VENDOR_ID"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> proporcionat per <ph name="VENDOR_NAME"/></translation>
-<translation id="657064425229075395">No s'ha pogut carregar l'script en segon pla &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> del proveïdor <ph name="VENDOR_ID"/></translation>
-<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
-<translation id="9131487537093447019">Enviar missatges a dispositius Bluetooth i rebre'n</translation>
-<translation id="5678955352098267522">Llegir les dades del lloc <ph name="WEBSITE_1"/></translation>
-<translation id="5456409301717116725">Aquesta extensió inclou el fitxer de clau &quot;<ph name="KEY_PATH"/>&quot;. És probable que això no sigui convenient.</translation>
-<translation id="7257666756905341374">Llegeix les dades que es copiïn i s'enganxin</translation>
-<translation id="2350172092385603347">S'ha utilitzat localització, però no s'ha especificat default_locale al manifest.</translation>
-<translation id="3759933321830434300">Bloqueig d'elements de pàgines web</translation>
-<translation id="6143635259298204954">No es pot desempaquetar l'extensió. Per desempaquetar l'extensió amb seguretat, cal un camí al directori del perfil que no contingui un enllaç simbòlic. No hi ha cap camí d'aquestes característiques al vostre perfil.</translation>
-<translation id="8712265948125780616">Eina per desempaquetar extensions</translation>
-<translation id="149347756975725155">No s'ha pogut carregar la icona d'extensió &quot;<ph name="ICON"/>&quot;.</translation>
-<translation id="8825366169884721447">Aquesta extensió no ha pogut modificar la capçalera de la sol·licitud &quot;<ph name="HEADER_NAME"/>&quot; d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="6731255991101203740">No s'ha pogut crear un directori per descomprimir: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
-<translation id="4233778200880751280">No s'ha pogut carregar la pàgina d'informació &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
-<translation id="388442998277590542">No s'ha pogut carregar la pàgina d'opcions &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
-<translation id="5127881134400491887">Gestioneu les connexions de xarxa</translation>
-<translation id="6344170822609224263">Accedir a la llista de connexions de xarxa</translation>
-<translation id="7039326228527141150">Accedir a dispositius USB del proveïdor <ph name="VENDOR_NAME"/></translation>
-<translation id="2616366145935564096">Llegir i modificar les dades del lloc web <ph name="WEBSITE_1"/></translation>
-<translation id="5960890139610307736">Visualització de l'extensió: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
-<translation id="4444304522807523469">Accedir als escàners del document adjunts mitjançant USB o a la xarxa local</translation>
-<translation id="6408118934673775994">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
-<translation id="8670869118777164560">Aquesta extensió no ha pogut redirigir una sol·licitud de xarxa a <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> perquè una altra extensió (<ph name="EXTENSION_NAME"/>) l'ha redirigida a <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
-<translation id="6840444547062817500">Aquesta extensió s'ha tornat a carregar massa vegades.</translation>
-<translation id="2270450558902169558">Intercanviar dades amb un altre dispositiu del domini <ph name="DOMAIN"/></translation>
-<translation id="8047248493720652249">Aquesta extensió no ha pogut posar nom a la baixada &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; perquè una altra extensió (<ph name="EXTENSION_NAME"/>) ha indicat un nom de fitxer diferent &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="452039078290142656">dispositius desconeguts del proveïdor <ph name="VENDOR_NAME"/></translation>
-<translation id="5026754133087629784">Visualització del web: <ph name="WEBVIEW_TAG_NAME"/></translation>
-<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="2753617847762399167">Camí il·legal (absolut o relatiu amb &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
-<translation id="8284279544186306258">tots els llocs de <ph name="WEBSITE_1"/></translation>
-<translation id="8662911384982557515">Canvia la pàgina d'inici per: <ph name="HOME_PAGE"/></translation>
-<translation id="27822970480436970">Aquesta extensió no ha pogut modificar una sol·licitud de xarxa perquè la modificació està en conflicte amb una altra extensió.</translation>
-<translation id="2241053333139545397">Llegir i modificar les dades d'una sèrie de llocs web</translation>
-<translation id="8602184400052594090">El fitxer de manifest falta o bé no es pot llegir.</translation>
-<translation id="2270627217422354837">Intercanviar dades amb un altre dispositiu dels dominis <ph name="DOMAINS"/></translation>
-<translation id="7093866338626856921">Intercanviar dades amb els dispositius <ph name="HOSTNAMES"/></translation>
-<translation id="4883436287898674711">Tots els llocs de <ph name="WEBSITE_1"/></translation>
-<translation id="9111791539553342076">Aquesta extensió no ha pogut modificar la capçalera de resposta &quot;<ph name="HEADER_NAME"/>&quot; d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="9150045010208374699">Utilitzar la càmera</translation>
-<translation id="5356315618422219272">Vista de l'aplicació: <ph name="APPVIEW_TAG_NAME"/></translation>
-<translation id="8341840687457896278">Aquesta extensió no ha pogut proporcionar credencials a una sol·licitud de xarxa perquè una altra extensió (<ph name="EXTENSION_NAME"/>) ha proporcionat unes credencials diferents.</translation>
-<translation id="5627523580512561598">extensió <ph name="EXTENSION_NAME"/></translation>
-<translation id="7893008570150657497">Accedir a fotos, a música i a d'altres elements multimèdia de l'equip</translation>
-<translation id="3369521687965833290">No es pot desempaquetar l'extensió. Per desempaquetar l'extensió amb seguretat, cal un camí al directori del perfil que comenci amb la lletra d'una unitat i no contingui cap unió, punt de muntatge o enllaç simbòlic. No hi ha cap camí d'aquestes característiques al vostre perfil.</translation>
-<translation id="4811956658694082538">No s'ha pogut instal·lar el paquet perquè un dels processos d'utilitat ha fallat. Reinicieu Chrome i torneu-ho a provar.</translation>
-<translation id="641087317769093025">No s'ha pogut descomprimir l'extensió</translation>
-<translation id="4761104368405085019">Utilitzar el micròfon</translation>
-<translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME"/>. No es pot eliminar o modificar.</translation>
-<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configurar les connexions de xarxa</translation>
-<translation id="7154130902455071009">Canvia la pàgina d'inici per: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Accedir a qualsevol d'aquests dispositius USB</translation>
-<translation id="6698810901424468597">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
-<translation id="2159915644201199628">No s'ha pogut descodificar la imatge: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
-<translation id="2048182445208425546">Accedir al trànsit de xarxa</translation>
-<translation id="1256619696651732561">Analitzador per a manifests d'extensions</translation>
-<translation id="5972529113578162692">L'administrador d'aquest dispositiu requereix que l'extensió <ph name="EXTENSION_NAME"/> estigui instal·lada. No es pot desinstal·lar.</translation>
 <translation id="1135328998467923690">El paquet no és vàlid: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
-<translation id="7131040479572660648">Llegir les dades dels llocs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
-<translation id="2087653731648927289">Accedir a qualsevol <ph name="PRODUCT_NAME_AND_VENDOR"/> per USB</translation>
+<translation id="1256619696651732561">Analitzador per a manifests d'extensions</translation>
+<translation id="1445572445564823378">Aquesta extensió està alentint <ph name="PRODUCT_NAME"/>. L'heu de desactivar per restaurar el rendiment de: <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="149347756975725155">No s'ha pogut carregar la icona d'extensió &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="1803557475693955505">No s'ha pogut carregar la pàgina en segon pla &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2048182445208425546">Accedir al trànsit de xarxa</translation>
+<translation id="2087653731648927289">Accedir a qualsevol <ph name="PRODUCT_NAME_AND_VENDOR"/> per USB</translation>
+<translation id="2159915644201199628">No s'ha pogut descodificar la imatge: &quot;<ph name="IMAGE_NAME"/>&quot;</translation>
+<translation id="2241053333139545397">Llegir i modificar les dades d'una sèrie de llocs web</translation>
+<translation id="2270450558902169558">Intercanviar dades amb un altre dispositiu del domini <ph name="DOMAIN"/></translation>
+<translation id="2270627217422354837">Intercanviar dades amb un altre dispositiu dels dominis <ph name="DOMAINS"/></translation>
+<translation id="2350172092385603347">S'ha utilitzat localització, però no s'ha especificat default_locale al manifest.</translation>
+<translation id="2616366145935564096">Llegir i modificar les dades del lloc web <ph name="WEBSITE_1"/></translation>
+<translation id="2753617847762399167">Camí il·legal (absolut o relatiu amb &quot;..&quot;): &quot;<ph name="IMAGE_PATH"/>&quot;</translation>
+<translation id="27822970480436970">Aquesta extensió no ha pogut modificar una sol·licitud de xarxa perquè la modificació està en conflicte amb una altra extensió.</translation>
+<translation id="2857834222104759979">El fitxer de manifest no és vàlid.</translation>
+<translation id="288042212351694283">Accés als dispositius Universal 2nd Factor</translation>
 <translation id="2988488679308982380">No s'ha pogut instal·lar el paquet: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> del proveïdor <ph name="VENDOR_ID"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="7972881773422714442">Opcions: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
-<translation id="8636666366616799973">El paquet no és vàlid. Detalls: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="3115238746683532089">Producte desconegut <ph name="PRODUCT_ID"/> del proveïdor <ph name="VENDOR_ID"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3163201441334626963">Producte desconegut <ph name="PRODUCT_ID"/> del proveïdor <ph name="VENDOR_ID"/></translation>
+<translation id="3369521687965833290">No es pot desempaquetar l'extensió. Per desempaquetar l'extensió amb seguretat, cal un camí al directori del perfil que comenci amb la lletra d'una unitat i no contingui cap unió, punt de muntatge o enllaç simbòlic. No hi ha cap camí d'aquestes característiques al vostre perfil.</translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Llegir les dades d'una sèrie de llocs web</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> del proveïdor <ph name="VENDOR_ID"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3560114062880914682">{1,select, single{Seleccioneu un dispositiu USB}multiple{Seleccioneu dispositius USB}other{UNUSED}}</translation>
+<translation id="3624204664103857160">No s'ha pogut carregar la pàgina del menú <ph name="PAGE"/>.</translation>
+<translation id="3759933321830434300">Bloqueig d'elements de pàgines web</translation>
+<translation id="388442998277590542">No s'ha pogut carregar la pàgina d'opcions &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="3983586614702900908">dispositius d'un proveïdor desconegut</translation>
+<translation id="4115165561519362854">L'administrador d'aquest ordinador requereix que <ph name="EXTENSION_NAME"/> tingui com a mínim la versió <ph name="EXTENSION_VERSION"/>. No es pot activar fins que no s'hagi actualitzat a aquesta versió (o posterior).</translation>
+<translation id="4233778200880751280">No s'ha pogut carregar la pàgina d'informació &quot;<ph name="ABOUT_PAGE"/>&quot;.</translation>
+<translation id="4444304522807523469">Accedir als escàners del document adjunts mitjançant USB o a la xarxa local</translation>
+<translation id="452039078290142656">dispositius desconeguts del proveïdor <ph name="VENDOR_NAME"/></translation>
+<translation id="4542520061254486227">Llegir les dades dels llocs <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
+<translation id="4761104368405085019">Utilitzar el micròfon</translation>
+<translation id="4811956658694082538">No s'ha pogut instal·lar el paquet perquè un dels processos d'utilitat ha fallat. Reinicieu Chrome i torneu-ho a provar.</translation>
+<translation id="4883436287898674711">Tots els llocs de <ph name="WEBSITE_1"/></translation>
+<translation id="5026754133087629784">Visualització del web: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="5127881134400491887">Gestioneu les connexions de xarxa</translation>
+<translation id="5165983846722506205">{1,select, single{Seleccioneu un dispositiu HID}multiple{Seleccioneu dispositius HID}other{UNUSED}}</translation>
+<translation id="5356315618422219272">Vista de l'aplicació: <ph name="APPVIEW_TAG_NAME"/></translation>
+<translation id="5456409301717116725">Aquesta extensió inclou el fitxer de clau &quot;<ph name="KEY_PATH"/>&quot;. És probable que això no sigui convenient.</translation>
+<translation id="5627523580512561598">extensió <ph name="EXTENSION_NAME"/></translation>
+<translation id="5678955352098267522">Llegir les dades del lloc <ph name="WEBSITE_1"/></translation>
+<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
+<translation id="5960890139610307736">Visualització de l'extensió: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
+<translation id="5971037678316050792">Controlar l'estat i l'emparellament de l'adaptador Bluetooth</translation>
+<translation id="5972529113578162692">L'administrador d'aquest dispositiu requereix que l'extensió <ph name="EXTENSION_NAME"/> estigui instal·lada. No es pot desinstal·lar.</translation>
+<translation id="6027032947578871493">Producte desconegut <ph name="PRODUCT_ID"/> de: <ph name="VENDOR_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> del proveïdor <ph name="VENDOR_ID"/></translation>
+<translation id="6075907793831890935">Intercanviar dades amb el dispositiu <ph name="HOSTNAME"/></translation>
+<translation id="6143635259298204954">No es pot desempaquetar l'extensió. Per desempaquetar l'extensió amb seguretat, cal un camí al directori del perfil que no contingui un enllaç simbòlic. No hi ha cap camí d'aquestes característiques al vostre perfil.</translation>
+<translation id="616804573177634438">{0,select, single{L'aplicació <ph name="APP_NAME"/> sol·licita accés a un dels vostres dispositius.}multiple{L'aplicació <ph name="APP_NAME"/> sol·licita accés a almenys un dels vostres dispositius.}other{UNUSED}}</translation>
+<translation id="6241530762627360640">Accedir a informació sobre els dispositius Bluetooth emparellats amb el sistema i descobrir dispositius Bluetooth a prop</translation>
+<translation id="6344170822609224263">Accedir a la llista de connexions de xarxa</translation>
+<translation id="6384275966486438344">Canvia la configuració de la cerca a: <ph name="SEARCH_HOST"/></translation>
+<translation id="6408118934673775994">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
+<translation id="641087317769093025">No s'ha pogut descomprimir l'extensió</translation>
+<translation id="657064425229075395">No s'ha pogut carregar l'script en segon pla &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (número de sèrie <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6698810901424468597">Llegir i modificar les dades dels llocs web <ph name="WEBSITE_1"/> i <ph name="WEBSITE_2"/></translation>
+<translation id="6731255991101203740">No s'ha pogut crear un directori per descomprimir: &quot;<ph name="DIRECTORY_PATH"/>&quot;</translation>
+<translation id="677806580227005219">Gestor MIME: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
+<translation id="6840444547062817500">Aquesta extensió s'ha tornat a carregar massa vegades.</translation>
+<translation id="7003844668372540529">Producte desconegut <ph name="PRODUCT_ID"/> de: <ph name="VENDOR_NAME"/></translation>
+<translation id="7039326228527141150">Accedir a dispositius USB del proveïdor <ph name="VENDOR_NAME"/></translation>
+<translation id="7093866338626856921">Intercanviar dades amb els dispositius <ph name="HOSTNAMES"/></translation>
+<translation id="7131040479572660648">Llegir les dades dels llocs <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> i <ph name="WEBSITE_3"/></translation>
+<translation id="7154130902455071009">Canvia la pàgina d'inici per: <ph name="START_PAGE"/></translation>
+<translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME"/>. No es pot eliminar o modificar.</translation>
+<translation id="7257666756905341374">Llegeix les dades que es copiïn i s'enganxin</translation>
+<translation id="730515362922783851">Intercanviar dades amb un altre dispositiu de la xarxa local o d'Internet</translation>
+<translation id="7809034755304591547">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME"/> (amb l'ID d'extensió <ph name="EXTENSION_ID"/>).</translation>
+<translation id="7893008570150657497">Accedir a fotos, a música i a d'altres elements multimèdia de l'equip</translation>
+<translation id="7972881773422714442">Opcions: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8047248493720652249">Aquesta extensió no ha pogut posar nom a la baixada &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; perquè una altra extensió (<ph name="EXTENSION_NAME"/>) ha indicat un nom de fitxer diferent &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
+<translation id="8284279544186306258">tots els llocs de <ph name="WEBSITE_1"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> proporcionat per <ph name="VENDOR_NAME"/></translation>
+<translation id="8341840687457896278">Aquesta extensió no ha pogut proporcionar credencials a una sol·licitud de xarxa perquè una altra extensió (<ph name="EXTENSION_NAME"/>) ha proporcionat unes credencials diferents.</translation>
+<translation id="8602184400052594090">El fitxer de manifest falta o bé no es pot llegir.</translation>
+<translation id="8620765578342452535">Configurar les connexions de xarxa</translation>
+<translation id="8636666366616799973">El paquet no és vàlid. Detalls: &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="8662911384982557515">Canvia la pàgina d'inici per: <ph name="HOME_PAGE"/></translation>
+<translation id="8670869118777164560">Aquesta extensió no ha pogut redirigir una sol·licitud de xarxa a <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> perquè una altra extensió (<ph name="EXTENSION_NAME"/>) l'ha redirigida a <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="8712265948125780616">Eina per desempaquetar extensions</translation>
+<translation id="8749863574775030885">Accedir a dispositius USB d'un proveïdor desconegut</translation>
+<translation id="8804398419035066391">Comunicar-se amb llocs web cooperatius</translation>
+<translation id="8825366169884721447">Aquesta extensió no ha pogut modificar la capçalera de la sol·licitud &quot;<ph name="HEADER_NAME"/>&quot; d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9111791539553342076">Aquesta extensió no ha pogut modificar la capçalera de resposta &quot;<ph name="HEADER_NAME"/>&quot; d'una sol·licitud de xarxa perquè la modificació entrava en conflicte amb una altra extensió (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9131487537093447019">Enviar missatges a dispositius Bluetooth i rebre'n</translation>
+<translation id="9150045010208374699">Utilitzar la càmera</translation>
 </translationbundle>

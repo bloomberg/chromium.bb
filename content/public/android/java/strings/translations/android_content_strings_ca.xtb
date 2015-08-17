@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ca">
-<translation id="2094750046714988961">No es pot iniciar el generador de perfils perquè l'emmagatzematge extern no està preparat.</translation>
 <translation id="1256337885411059545">No es pot reproduir el vídeo</translation>
-<translation id="2520230379124234395">El generador de perfils s'ha iniciat.</translation>
-<translation id="4859501799452851758">El generador de perfils ha finalitzat. Els resultats són a <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Aquest vídeo no és vàlid per reproduir-lo en temps real en aquest dispositiu.</translation>
-<translation id="2410828433627930127">No es pot reproduir aquest vídeo.</translation>
-<translation id="7096034533295549981">Carregant vídeo</translation>
 <translation id="1542044944667958430">Cerca al web</translation>
-<translation id="6849295950938417341">S'ha produït un error en iniciar el generador de perfils.</translation>
+<translation id="2094750046714988961">No es pot iniciar el generador de perfils perquè l'emmagatzematge extern no està preparat.</translation>
+<translation id="2410828433627930127">No es pot reproduir aquest vídeo.</translation>
+<translation id="2520230379124234395">El generador de perfils s'ha iniciat.</translation>
+<translation id="273860350361291195">Aquest vídeo no és vàlid per reproduir-lo en temps real en aquest dispositiu.</translation>
+<translation id="4859501799452851758">El generador de perfils ha finalitzat. Els resultats són a <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Comparteix</translation>
+<translation id="6849295950938417341">S'ha produït un error en iniciar el generador de perfils.</translation>
 <translation id="6965382102122355670">D'acord</translation>
+<translation id="7096034533295549981">Carregant vídeo</translation>
 </translationbundle>

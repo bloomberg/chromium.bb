@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-CN">
-<translation id="8008366997883261463">杰克罗素梗犬</translation>
-<translation id="7165320105431587207">无法配置网络</translation>
-<translation id="4387004326333427325">身份验证证书遭到远程拒绝</translation>
-<translation id="6943836128787782965">HTTP 获取请求失败</translation>
+<translation id="1119447706177454957">内部错误</translation>
+<translation id="153454903766751181">正在初始化蜂窝调制解调器...</translation>
+<translation id="158849752021629804">需要家庭网络</translation>
 <translation id="1661867754829461514">缺少 PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>：正在连接...</translation>
+<translation id="1773212559869067373">身份验证证书遭到本地拒绝</translation>
+<translation id="1829129547161959350">企鹅</translation>
+<translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
+<translation id="2288278176040912387">电唱机</translation>
+<translation id="2354174487190027830">正在激活“<ph name="NAME"/>”</translation>
+<translation id="2544853746127077729">身份验证证书遭到网络拒绝</translation>
+<translation id="2563185590376525700">青蛙</translation>
+<translation id="2563856802393254086">恭喜！“<ph name="NAME"/>”数据服务已激活，您可以开始使用了。</translation>
+<translation id="2649120831653069427">彩虹鱼</translation>
+<translation id="2670531586141364277">激活“<ph name="NAME"/>”需要连接网络。</translation>
+<translation id="2894654529758326923">信息</translation>
+<translation id="2951236788251446349">海蜇</translation>
+<translation id="2966449113954629791">您的移动数据量可能已用完。请访问“<ph name="NAME"/>”激活门户网站，购买更多数据。</translation>
+<translation id="3846575436967432996">没有可用的网络信息</translation>
+<translation id="3871838685472846647">蜂窝网络已激活</translation>
+<translation id="3901991538546252627">正在连接：<ph name="NAME"/></translation>
+<translation id="3958548648197196644">猕猴桃</translation>
 <translation id="40400351611212369">网络激活错误</translation>
 <translation id="4237016987259239829">网络连接错误</translation>
+<translation id="4274292172790327596">未识别的错误</translation>
+<translation id="4326192123064055915">咖啡</translation>
+<translation id="4387004326333427325">身份验证证书遭到远程拒绝</translation>
+<translation id="4442424173763614572">DNS 查找失败</translation>
+<translation id="4448844063988177157">正在搜索 Wi-Fi 网络...</translation>
+<translation id="4479639480957787382">以太网</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>：正在连接...</translation>
 <translation id="4508265954913339219">激活失败</translation>
 <translation id="4559767610552730302">焦外成像</translation>
-<translation id="8688591111840995413">密码错误</translation>
-<translation id="3846575436967432996">没有可用的网络信息</translation>
-<translation id="153454903766751181">正在初始化蜂窝调制解调器...</translation>
-<translation id="735745346212279324">VPN 连接已断开</translation>
+<translation id="4935975195727477204">杂色菊</translation>
+<translation id="5045550434625856497">密码不正确</translation>
+<translation id="5097002363526479830">无法连接到网络“<ph name="NAME"/>”：<ph name="DETAILS"/></translation>
+<translation id="515594325917491223">国际象棋</translation>
+<translation id="5257456363153333584">蜻蜓</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">猫</translation>
-<translation id="7170041865419449892">超出范围</translation>
-<translation id="2544853746127077729">身份验证证书遭到网络拒绝</translation>
-<translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
-<translation id="6549021752953852991">没有可用的蜂窝网络</translation>
+<translation id="5864471791310927901">DHCP 查找失败</translation>
+<translation id="6232116551750539448">与“<ph name="NAME"/>”的连接已中断</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>：正在激活…</translation>
+<translation id="6312403991423642364">未知网络错误</translation>
 <translation id="6490455614072479501">无法连接到“<ph name="NAME"/>”：<ph name="DETAILS"/>
         服务器消息：<ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">激活“<ph name="NAME"/>”需要连接网络。</translation>
-<translation id="4442424173763614572">DNS 查找失败</translation>
-<translation id="7874779702599364982">正在搜索蜂窝网络...</translation>
-<translation id="3901991538546252627">正在连接：<ph name="NAME"/></translation>
-<translation id="1773212559869067373">身份验证证书遭到本地拒绝</translation>
-<translation id="2563185590376525700">青蛙</translation>
-<translation id="7256405249507348194">无法识别的错误：<ph name="DESC"/></translation>
-<translation id="2894654529758326923">信息</translation>
-<translation id="6935521024859866267">倒栽葱蝴蝶</translation>
-<translation id="7925247922861151263">AAA 检查失败</translation>
-<translation id="4479639480957787382">以太网</translation>
-<translation id="6312403991423642364">未知网络错误</translation>
-<translation id="4326192123064055915">咖啡</translation>
-<translation id="2354174487190027830">正在激活“<ph name="NAME"/>”</translation>
-<translation id="1829129547161959350">企鹅</translation>
-<translation id="515594325917491223">国际象棋</translation>
-<translation id="5097002363526479830">无法连接到网络“<ph name="NAME"/>”：<ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
-<translation id="2966449113954629791">您的移动数据量可能已用完。请访问“<ph name="NAME"/>”激活门户网站，购买更多数据。</translation>
-<translation id="8132793192354020517">已连接到 <ph name="NAME"/></translation>
-<translation id="1119447706177454957">内部错误</translation>
-<translation id="5045550434625856497">密码不正确</translation>
-<translation id="6232116551750539448">与“<ph name="NAME"/>”的连接已中断</translation>
-<translation id="4274292172790327596">未识别的错误</translation>
-<translation id="4448844063988177157">正在搜索 Wi-Fi 网络...</translation>
-<translation id="7229570126336867161">需要 EVDO</translation>
-<translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi 已打开。</translation>
-<translation id="3871838685472846647">蜂窝网络已激活</translation>
-<translation id="3958548648197196644">猕猴桃</translation>
+<translation id="6549021752953852991">没有可用的蜂窝网络</translation>
 <translation id="6732801395666424405">未加载证书</translation>
-<translation id="8300849813060516376">OTASP 失败</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>：正在激活…</translation>
-<translation id="8714406895390098252">自行车</translation>
-<translation id="5257456363153333584">蜻蜓</translation>
-<translation id="158849752021629804">需要家庭网络</translation>
-<translation id="2649120831653069427">彩虹鱼</translation>
-<translation id="2288278176040912387">电唱机</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">DHCP 查找失败</translation>
-<translation id="9046895021617826162">连接失败</translation>
-<translation id="8372369524088641025">WEP 密钥错误</translation>
-<translation id="2951236788251446349">海蜇</translation>
-<translation id="8000066093800657092">未连接任何网络</translation>
-<translation id="2563856802393254086">恭喜！“<ph name="NAME"/>”数据服务已激活，您可以开始使用了。</translation>
-<translation id="4935975195727477204">杂色菊</translation>
+<translation id="6935521024859866267">倒栽葱蝴蝶</translation>
+<translation id="6943836128787782965">HTTP 获取请求失败</translation>
+<translation id="7165320105431587207">无法配置网络</translation>
+<translation id="7170041865419449892">超出范围</translation>
+<translation id="7229570126336867161">需要 EVDO</translation>
+<translation id="7256405249507348194">无法识别的错误：<ph name="DESC"/></translation>
 <translation id="7297443947353982503">用户名/密码错误或 EAP 身份验证失败</translation>
+<translation id="735745346212279324">VPN 连接已断开</translation>
+<translation id="7874779702599364982">正在搜索蜂窝网络...</translation>
+<translation id="7925247922861151263">AAA 检查失败</translation>
+<translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
+<translation id="8000066093800657092">未连接任何网络</translation>
+<translation id="8008366997883261463">杰克罗素梗犬</translation>
+<translation id="8132793192354020517">已连接到 <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP 失败</translation>
+<translation id="8372369524088641025">WEP 密钥错误</translation>
+<translation id="8454013096329229812">Wi-Fi 已打开。</translation>
+<translation id="8688591111840995413">密码错误</translation>
+<translation id="8714406895390098252">自行车</translation>
+<translation id="8808686172382650546">猫</translation>
+<translation id="9044646465488564462">无法连接到网络：<ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">连接失败</translation>
 </translationbundle>

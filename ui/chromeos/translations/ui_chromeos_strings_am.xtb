@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="am">
-<translation id="8008366997883261463">ጃክ ራሰል ቴሪየር</translation>
-<translation id="7165320105431587207">አውታረ መረቡን ማዋቀር አልተሳካም</translation>
-<translation id="4387004326333427325">የማረጋገጫ ምስክር ወረቀት በርቀት ተቀባይነት አላገኘም</translation>
-<translation id="6943836128787782965">ኤችቲቲፒ ማግኘት አልተሳካም</translation>
+<translation id="1119447706177454957">ውስጣዊ ስህተት</translation>
+<translation id="153454903766751181">ተንቀሳቃሽ ሞደምን በማስጀመር ላይ...</translation>
+<translation id="158849752021629804">የቤት አውታረ መረብ ያስፈልጋል</translation>
 <translation id="1661867754829461514">ፒን ይጎድላል</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>፦ በመገናኘት ላይ...</translation>
+<translation id="1773212559869067373">የማረጋገጫ ምስክር ወረቀት በአካባቢው ተቀባይነት አላገኘም</translation>
+<translation id="1829129547161959350">ፔንግዊን</translation>
+<translation id="1850504506766569011">Wi-Fi ጠፍቷል።</translation>
+<translation id="2288278176040912387">የሙዚቃ ማጫወቻ</translation>
+<translation id="2354174487190027830"><ph name="NAME"/>ን በማግበር ላይ</translation>
+<translation id="2544853746127077729">የማረጋገጫ ምስክር ወረቀት በአውታረ መረቡ ተቀባይነት አላገኘም</translation>
+<translation id="2563185590376525700">እንቁራሪት</translation>
+<translation id="2563856802393254086">እንኳን ደስ አለዎት! የእርስዎ «<ph name="NAME"/>» ውሂብ አገልግሎት ገባሪ ሆኖ ለመሄድ ዝግጁ ነው።</translation>
+<translation id="2649120831653069427">የቀስተዳመና አሳ</translation>
+<translation id="2670531586141364277">«<ph name="NAME"/>»ን ማግበር የአውታረ መረብ ግንኙነት ያስፈልገዋል።</translation>
+<translation id="2894654529758326923">መረጃ</translation>
+<translation id="2951236788251446349">ዝልግልግ አሳ</translation>
+<translation id="2966449113954629791">የተሰጠዎት ሞባይል ውሂብ ጨርሰው ሊሆኑ ይችላሉ። ተጨማሪ ውሂብ ለመግዛት የ<ph name="NAME"/> ማስገበሪያ በር ይጎብኙ።</translation>
+<translation id="3846575436967432996">ምንም የአውታረ መረብ መረጃ አይገኝም</translation>
+<translation id="3871838685472846647">በድምጸ ተያያዥ ሞደም የገበረ</translation>
+<translation id="3901991538546252627">ከ<ph name="NAME"/> ጋር በመገናኘት ላይ</translation>
+<translation id="3958548648197196644">ኪዊ</translation>
 <translation id="40400351611212369">የአውታረ መረብ ማግበር ስህተት</translation>
 <translation id="4237016987259239829">የአውታረመረብ ግንኙነት ስህተት</translation>
+<translation id="4274292172790327596">ያልታወቀ ስህተት</translation>
+<translation id="4326192123064055915">ቡና</translation>
+<translation id="4387004326333427325">የማረጋገጫ ምስክር ወረቀት በርቀት ተቀባይነት አላገኘም</translation>
+<translation id="4442424173763614572">የዲ ኤን ኤስ ፍለጋ አልተሳካም</translation>
+<translation id="4448844063988177157">የWi-Fi አውታረ መረቦችን በመፈለግ ላይ…</translation>
+<translation id="4479639480957787382">ኢተርኔት</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>፦ በመገናኘት ላይ...</translation>
 <translation id="4508265954913339219">ማግበር አልተሳካም</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">መጥፎ የይለፍ ቃል</translation>
-<translation id="3846575436967432996">ምንም የአውታረ መረብ መረጃ አይገኝም</translation>
-<translation id="153454903766751181">ተንቀሳቃሽ ሞደምን በማስጀመር ላይ...</translation>
-<translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
+<translation id="4935975195727477204">የጋንዛኒያ አበባ</translation>
+<translation id="5045550434625856497">ትክክል ያልሆነ የይለፍ ቃል</translation>
+<translation id="5097002363526479830">ከአውታረ መረብ «<ph name="NAME"/>» ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">ቼዝ</translation>
+<translation id="5257456363153333584">የውሃ ተርብ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">ድመት</translation>
-<translation id="7170041865419449892">ከክልል ውጪ</translation>
-<translation id="2544853746127077729">የማረጋገጫ ምስክር ወረቀት በአውታረ መረቡ ተቀባይነት አላገኘም</translation>
-<translation id="7973962044839454485">PPP ማረጋገጫ በተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል ምክንያት አልተሳካም</translation>
-<translation id="6549021752953852991">ምንም የተንቀሳቃሽ ሞደም አውታረ መረብ አይገኝም</translation>
+<translation id="5864471791310927901">የDHCP ፍለጋ አልተሳካም</translation>
+<translation id="6232116551750539448">ወደ <ph name="NAME"/> ግንኙነት ጠፍቷል</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>፦ በማግበር ላይ...</translation>
+<translation id="6312403991423642364">ያልታወቀ የአውታረ መረብ ስህተት</translation>
 <translation id="6490455614072479501">ወደ «<ph name="NAME"/>» ማገናኘት አልተቻለም፦ <ph name="DETAILS"/>
         የአገልጋይ መልዕክት፦ <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">«<ph name="NAME"/>»ን ማግበር የአውታረ መረብ ግንኙነት ያስፈልገዋል።</translation>
-<translation id="4442424173763614572">የዲ ኤን ኤስ ፍለጋ አልተሳካም</translation>
-<translation id="7874779702599364982">የድምጸ ተያያዥ ሞደም አውታረ መረቦችን በመፈለግ ላይ...</translation>
-<translation id="3901991538546252627">ከ<ph name="NAME"/> ጋር በመገናኘት ላይ</translation>
-<translation id="1773212559869067373">የማረጋገጫ ምስክር ወረቀት በአካባቢው ተቀባይነት አላገኘም</translation>
-<translation id="2563185590376525700">እንቁራሪት</translation>
-<translation id="7256405249507348194">ያልታወቀ ስህተት፦ <ph name="DESC"/></translation>
-<translation id="2894654529758326923">መረጃ</translation>
-<translation id="6935521024859866267">ወደ ታች የተገለበጠ</translation>
-<translation id="7925247922861151263">የAAA ማረጋገጥ አልተሳካም</translation>
-<translation id="4479639480957787382">ኢተርኔት</translation>
-<translation id="6312403991423642364">ያልታወቀ የአውታረ መረብ ስህተት</translation>
-<translation id="4326192123064055915">ቡና</translation>
-<translation id="2354174487190027830"><ph name="NAME"/>ን በማግበር ላይ</translation>
-<translation id="1829129547161959350">ፔንግዊን</translation>
-<translation id="515594325917491223">ቼዝ</translation>
-<translation id="5097002363526479830">ከአውታረ መረብ «<ph name="NAME"/>» ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi ጠፍቷል።</translation>
-<translation id="2966449113954629791">የተሰጠዎት ሞባይል ውሂብ ጨርሰው ሊሆኑ ይችላሉ። ተጨማሪ ውሂብ ለመግዛት የ<ph name="NAME"/> ማስገበሪያ በር ይጎብኙ።</translation>
-<translation id="8132793192354020517">ከ<ph name="NAME"/> ጋር ተገናኝቷል</translation>
-<translation id="1119447706177454957">ውስጣዊ ስህተት</translation>
-<translation id="5045550434625856497">ትክክል ያልሆነ የይለፍ ቃል</translation>
-<translation id="6232116551750539448">ወደ <ph name="NAME"/> ግንኙነት ጠፍቷል</translation>
-<translation id="4274292172790327596">ያልታወቀ ስህተት</translation>
-<translation id="4448844063988177157">የWi-Fi አውታረ መረቦችን በመፈለግ ላይ…</translation>
-<translation id="7229570126336867161">ኢቪዲኦ ያስፈልጋል</translation>
-<translation id="9044646465488564462">ከአውታረ መረብ ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
-<translation id="3871838685472846647">በድምጸ ተያያዥ ሞደም የገበረ</translation>
-<translation id="3958548648197196644">ኪዊ</translation>
+<translation id="6549021752953852991">ምንም የተንቀሳቃሽ ሞደም አውታረ መረብ አይገኝም</translation>
 <translation id="6732801395666424405">የእውቅና ማረጋገጫዎች አልተጫኑም</translation>
-<translation id="8300849813060516376">OTASP አልተሳካም</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>፦ በማግበር ላይ...</translation>
-<translation id="8714406895390098252">ቢስክሌት</translation>
-<translation id="5257456363153333584">የውሃ ተርብ</translation>
-<translation id="158849752021629804">የቤት አውታረ መረብ ያስፈልጋል</translation>
-<translation id="2649120831653069427">የቀስተዳመና አሳ</translation>
-<translation id="2288278176040912387">የሙዚቃ ማጫወቻ</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/>ን አግብር</translation>
-<translation id="5864471791310927901">የDHCP ፍለጋ አልተሳካም</translation>
-<translation id="9046895021617826162">ማገናኘት አልተሳካም</translation>
-<translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
-<translation id="2951236788251446349">ዝልግልግ አሳ</translation>
-<translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
-<translation id="2563856802393254086">እንኳን ደስ አለዎት! የእርስዎ «<ph name="NAME"/>» ውሂብ አገልግሎት ገባሪ ሆኖ ለመሄድ ዝግጁ ነው።</translation>
-<translation id="4935975195727477204">የጋንዛኒያ አበባ</translation>
+<translation id="6935521024859866267">ወደ ታች የተገለበጠ</translation>
+<translation id="6943836128787782965">ኤችቲቲፒ ማግኘት አልተሳካም</translation>
+<translation id="7165320105431587207">አውታረ መረቡን ማዋቀር አልተሳካም</translation>
+<translation id="7170041865419449892">ከክልል ውጪ</translation>
+<translation id="7229570126336867161">ኢቪዲኦ ያስፈልጋል</translation>
+<translation id="7256405249507348194">ያልታወቀ ስህተት፦ <ph name="DESC"/></translation>
 <translation id="7297443947353982503">የተጠቃሚ ስም/ይለፍ ቃል ትክክል አይደለም ወይም EAP-auth አልተሳካም</translation>
+<translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
+<translation id="7874779702599364982">የድምጸ ተያያዥ ሞደም አውታረ መረቦችን በመፈለግ ላይ...</translation>
+<translation id="7925247922861151263">የAAA ማረጋገጥ አልተሳካም</translation>
+<translation id="7973962044839454485">PPP ማረጋገጫ በተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል ምክንያት አልተሳካም</translation>
+<translation id="8000066093800657092">ምንም አውታረ መረብ የለም</translation>
+<translation id="8008366997883261463">ጃክ ራሰል ቴሪየር</translation>
+<translation id="8132793192354020517">ከ<ph name="NAME"/> ጋር ተገናኝቷል</translation>
+<translation id="8300849813060516376">OTASP አልተሳካም</translation>
+<translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
+<translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
+<translation id="8688591111840995413">መጥፎ የይለፍ ቃል</translation>
+<translation id="8714406895390098252">ቢስክሌት</translation>
+<translation id="8808686172382650546">ድመት</translation>
+<translation id="9044646465488564462">ከአውታረ መረብ ጋር መገናኘት አልተሳካም፦ <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">ማገናኘት አልተሳካም</translation>
 </translationbundle>

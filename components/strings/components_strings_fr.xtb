@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fr">
-<translation id="2774256287122201187">Vous pouvez continuer. Si vous accédez à la page, cet avertissement ne s'affichera pas pendant cinq minutes.</translation>
-<translation id="3963721102035795474">Mode lecture</translation>
-<translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
-<translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
-<translation id="5172758083709347301">Ordinateur</translation>
-<translation id="7180611975245234373">Actualiser</translation>
-<translation id="8208216423136871611">Ne pas enregistrer</translation>
-<translation id="777702478322588152">Préfecture</translation>
-<translation id="2972581237482394796">&amp;Rétablir</translation>
-<translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/> </translation>
-<translation id="2262243747453050782">Erreur HTTP.</translation>
-<translation id="1339601241726513588">Domaine d'enregistrement :</translation>
-<translation id="7298195798382681320">Recommandé</translation>
-<translation id="4058922952496707368">Clé &quot;<ph name="SUBKEY"/>&quot; : <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">Alerte JavaScript</translation>
-<translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
-<translation id="6628463337424475685">Recherche <ph name="ENGINE"/></translation>
-<translation id="2498091847651709837">Lire une nouvelle carte</translation>
-<translation id="6831043979455480757">Traduire</translation>
-<translation id="1228893227497259893">Identifiant d'entité incorrect.</translation>
-<translation id="6337534724793800597">Filtrer les règles par nom</translation>
-<translation id="4372948949327679948">Valeur attendue : <ph name="VALUE_TYPE"/>.</translation>
-<translation id="2094505752054353250">Le domaine ne correspond pas</translation>
-<translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7537536606612762813">Obligatoire</translation>
-<translation id="2958431318199492670">La configuration du réseau ne respecte pas les normes de l'ONC. Il est possible que des parties de la configuration ne soient pas importées.</translation>
-<translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
-<translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
-<translation id="1491151370853475546">Actualiser cette page</translation>
-<translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE"/></translation>
-<translation id="1227633850867390598">Masquer la valeur</translation>
-<translation id="6753269504797312559">Valeur de la règle</translation>
-<translation id="3369366829301677151">Mettre à jour votre <ph name="CREDIT_CARD"/> et la valider</translation>
-<translation id="8834246243508017242">Activer la saisie automatique à l'aide de la fonctionnalité Contacts</translation>
-<translation id="7275334191706090484">Favoris gérés</translation>
-<translation id="7400418766976504921">URL</translation>
-<translation id="7378627244592794276">Non</translation>
-<translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
 <translation id="1055184225775184556">&amp;Annuler l'ajout</translation>
-<translation id="7813600968533626083">Supprimer la suggestion de saisie de formulaire de Chrome ?</translation>
-<translation id="4850886885716139402">Afficher</translation>
-<translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
-<translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
-<translation id="4607653538520819196">Impossible d'envoyer cette page par proxy via l'économiseur de données</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Région</translation>
-<translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
-<translation id="8988760548304185580">Saisissez la date d'expiration et le code CVC à trois chiffres figurant au dos de votre carte.</translation>
-<translation id="8940229512486821554">Exécuter la commande <ph name="EXTENSION_NAME"/> : <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">Erreur inconnue.</translation>
-<translation id="112840717907525620">Cache de la règle valide.</translation>
-<translation id="3452404311384756672">Intervalle de récupération :</translation>
-<translation id="409504436206021213">Ne pas actualiser</translation>
-<translation id="7441627299479586546">Objet de la règle incorrect.</translation>
-<translation id="3885155851504623709">Paroisse</translation>
-<translation id="6973656660372572881">Les serveurs proxy déterminés et une URL de script .pac sont spécifiés tous les deux.</translation>
-<translation id="1426410128494586442">Oui</translation>
-<translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR"/>.</translation>
-<translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
-<translation id="3219579145727097045">Saisissez la date d'expiration et le code CVC à quatre chiffres figurant au recto de votre carte.</translation>
-<translation id="59107663811261420">Ce type de carte n'est pas compatible avec Google Payments pour ce marchand. Veuillez sélectionner une autre carte.</translation>
-<translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
-<translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
-<translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
-<translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
-<translation id="333371639341676808">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
-<translation id="5523118979700054094">Nom de la règle</translation>
-<translation id="7791543448312431591">Ajouter</translation>
-<translation id="2053553514270667976">Code postal</translation>
-<translation id="1644184664548287040">Impossible d'importer la configuration du réseau : elle n'est pas valide.</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">Règle introuvable.</translation>
-<translation id="3150653042067488994">Erreur temporaire du serveur.</translation>
-<translation id="7087282848513945231">Comté</translation>
-<translation id="1132774398110320017">Paramètres de saisie automatique de Chrome…</translation>
-<translation id="8194797478851900357">&amp;Annuler le déplacement</translation>
-<translation id="6458467102616083041">Ignoré parce que la recherche par défaut est désactivée par une règle.</translation>
-<translation id="6259156558325130047">&amp;Rétablir la réorganisation</translation>
-<translation id="1227224963052638717">Règle inconnue</translation>
-<translation id="4250680216510889253">Non</translation>
-<translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
-<translation id="5872918882028971132">Suggestions des parents</translation>
-<translation id="337363190475750230">Révoqué</translation>
-<translation id="2367567093518048410">Niveau</translation>
-<translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
-<translation id="552553974213252141">Le texte a-t-il été extrait correctement ?</translation>
-<translation id="5317780077021120954">Enregistrer</translation>
-<translation id="8530504477309582336">Ce type de carte n'est pas compatible avec Google Payments. Veuillez sélectionner une autre carte.</translation>
-<translation id="7610193165460212391">La valeur <ph name="VALUE"/> est hors limites.</translation>
-<translation id="3739623965217189342">Lien copié</translation>
-<translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
-<translation id="8311778656528046050">Voulez-vous vraiment actualiser cette page ?</translation>
-<translation id="370665806235115550">Chargement...</translation>
-<translation id="2096368010154057602">Département</translation>
-<translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
-<translation id="4258748452823770588">Signature incorrecte.</translation>
-<translation id="3024663005179499861">Type de règle incorrect.</translation>
-<translation id="2030481566774242610">Essayez avec <ph name="LINK"/></translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">Cette valeur n'est plus utilisée dans le cadre de cette règle.</translation>
-<translation id="3145945101586104090">Échec du décodage de la réponse.</translation>
-<translation id="2328300916057834155">Favori non valide ignoré (index <ph name="ENTRY_INDEX"/>)</translation>
-<translation id="883848425547221593">Autres favoris</translation>
-<translation id="2181821976797666341">Règles</translation>
-<translation id="3174168572213147020">Île</translation>
-<translation id="9137013805542155359">Afficher l'original</translation>
-<translation id="2213606439339815911">Obtention des entrées en cours…</translation>
-<translation id="6263376278284652872">Favoris de <ph name="DOMAIN"/></translation>
-<translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE"/> cette page affichée en <ph name="ORIGINAL_LANGUAGE"/> ?</translation>
-<translation id="8218327578424803826">Position attribuée :</translation>
-<translation id="3542684924769048008">Utiliser un mot de passe pour :</translation>
-<translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD"/></translation>
-<translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE"/>a été traduite en<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
-<translation id="7139724024395191329">Émirat</translation>
-<translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>
-<translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
-<translation id="7983301409776629893">Toujours traduire en <ph name="TARGET_LANGUAGE"/> les pages en <ph name="ORIGINAL_LANGUAGE"/></translation>
-<translation id="6970216967273061347">District</translation>
-<translation id="3427342743765426898">&amp;Rétablir la modification</translation>
-<translation id="3010559122411665027">Entrée de la liste &quot;<ph name="ENTRY_INDEX"/>&quot; : <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Supprimer les données de carte de paiement de Chrome ?</translation>
-<translation id="6445051938772793705">Pays</translation>
-<translation id="5031870354684148875">À propos de Google Traduction</translation>
-<translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK"/>copie mise en cache<ph name="END_LINK"/> de <ph name="URL"/>.</translation>
-<translation id="8201077131113104583">URL de mise à jour non valide pour l'extension associée à l'identifiant &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
-<translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
-<translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
-<translation id="1853748787962613237">Échec de l'affichage de l'article.</translation>
-<translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
-<translation id="2025623846716345241">Confirmer l'actualisation</translation>
-<translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN"/></translation>
-<translation id="4300246636397505754">Suggestions des parents</translation>
-<translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
-<translation id="2495083838625180221">Analyse de fichiers JSON</translation>
-<translation id="1973335181906896915">Erreur de sérialisation.</translation>
-<translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
-<translation id="7805768142964895445">État</translation>
-<translation id="2113977810652731515">Carte</translation>
+<translation id="106701514854093668">Favoris sur l'ordinateur</translation>
+<translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE"/></translation>
 <translation id="1113869188872983271">&amp;Annuler la réorganisation</translation>
-<translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
-<translation id="5439770059721715174">Erreur de validation du schéma au niveau de &quot;<ph name="ERROR_PATH"/>&quot; : <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">Barre de favoris</translation>
-<translation id="587701087903783706">Fermer l'affichage adapté aux mobiles</translation>
-<translation id="7208899522964477531">Rechercher <ph name="SEARCH_TERMS"/> sur <ph name="SITE_NAME"/></translation>
-<translation id="7956713633345437162">Favoris sur mobile</translation>
-<translation id="5089810972385038852">État</translation>
-<translation id="647261751007945333">Règles relatives aux appareils</translation>
-<translation id="2556876185419854533">&amp;Annuler la modification</translation>
-<translation id="213826338245044447">Favoris sur mobile</translation>
-<translation id="4594403342090139922">&amp;Annuler la suppression</translation>
-<translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE"/>...</translation>
-<translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
-<translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME"/>.</translation>
-<translation id="3228969707346345236">La traduction a échoué, car la page est déjà en <ph name="LANGUAGE"/>.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
-<translation id="8034522405403831421">Cette page est rédigée en <ph name="SOURCE_LANGUAGE"/>. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE"/> ?</translation>
-<translation id="1734864079702812349">American Express</translation>
-<translation id="8891727572606052622">Mode proxy non valide.</translation>
-<translation id="3105172416063519923">ID d'élément :</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
-<translation id="2587841377698384444">ID de l'API d'annuaire :</translation>
-<translation id="7752995774971033316">Non géré</translation>
-<translation id="3712624925041724820">Licences épuisées.</translation>
-<translation id="4926049483395192435">Doit être spécifié.</translation>
-<translation id="1455235771979731432">Un problème est survenu lors de la validation de votre carte. Veuillez vérifier votre connexion Internet et réessayer.</translation>
-<translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
-<translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE"/> ? Signaler l'erreur</translation>
-<translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
-<translation id="8725066075913043281">Réessayer</translation>
-<translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
-<translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
-<translation id="375403751935624634">Échec de la traduction en raison d'une erreur de serveur</translation>
-<translation id="2597378329261239068">Ce document est protégé par mot de passe. Veuillez saisir ce dernier.</translation>
-<translation id="5629630648637658800">Échec du chargement des paramètres de la règle.</translation>
-<translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
-<translation id="2354001756790975382">Autres favoris</translation>
-<translation id="3650584904733503804">Validation réussie.</translation>
-<translation id="2359808026110333948">Continuer</translation>
-<translation id="6915804003454593391">Utilisateur :</translation>
-<translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
-<translation id="2270192940992995399">Échec de la détection de l'article.</translation>
-<translation id="4726672564094551039">Actualiser les règles</translation>
-<translation id="9170848237812810038">Ann&amp;uler</translation>
-<translation id="9154176715500758432">Rester sur cette page</translation>
-<translation id="2392959068659972793">Afficher les règles non paramétrées</translation>
-<translation id="9148507642005240123">&amp;Annuler la modification</translation>
-<translation id="5470861586879999274">&amp;Rétablir la modification</translation>
-<translation id="5190835502935405962">Barre de favoris</translation>
-<translation id="6965978654500191972">Périphérique</translation>
-<translation id="5295309862264981122">Confirmer la navigation</translation>
-<translation id="8249320324621329438">Dernière récupération :</translation>
-<translation id="194030505837763158">Accédez à <ph name="LINK"/></translation>
+<translation id="111844081046043029">Voulez-vous vraiment quitter cette page ?</translation>
+<translation id="112840717907525620">Cache de la règle valide.</translation>
+<translation id="1132774398110320017">Paramètres de saisie automatique de Chrome…</translation>
+<translation id="1152921474424827756">Accédez à une <ph name="BEGIN_LINK"/>copie mise en cache<ph name="END_LINK"/> de <ph name="URL"/>.</translation>
+<translation id="1227224963052638717">Règle inconnue</translation>
+<translation id="1227633850867390598">Masquer la valeur</translation>
+<translation id="1228893227497259893">Identifiant d'entité incorrect.</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
+<translation id="1339601241726513588">Domaine d'enregistrement :</translation>
 <translation id="1344588688991793829">Paramètres de saisie automatique de Chromium…</translation>
-<translation id="6282194474023008486">Code postal</translation>
-<translation id="443673843213245140">L'utilisation d'un proxy est désactivée, mais une configuration de proxy explicite est spécifiée.</translation>
-<translation id="3623476034248543066">Afficher la valeur</translation>
-<translation id="9020542370529661692">Cette page a été traduite en <ph name="TARGET_LANGUAGE"/>.</translation>
-<translation id="5631439013527180824">Jeton de gestion de l'appareil non valide.</translation>
-<translation id="560412284261940334">Gestion non acceptée.</translation>
-<translation id="6512448926095770873">Quitter cette page</translation>
+<translation id="1426410128494586442">Oui</translation>
+<translation id="1455235771979731432">Un problème est survenu lors de la validation de votre carte. Veuillez vérifier votre connexion Internet et réessayer.</translation>
+<translation id="1491151370853475546">Actualiser cette page</translation>
+<translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
-<translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE"/>.</translation>
-<translation id="4813512666221746211">Erreur réseau.</translation>
+<translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
+<translation id="1644184664548287040">Impossible d'importer la configuration du réseau : elle n'est pas valide.</translation>
+<translation id="1693754753824026215">La page à l'adresse <ph name="SITE"/> indique :</translation>
+<translation id="1734864079702812349">American Express</translation>
+<translation id="1821930232296380041">La demande ou ses paramètres ne sont pas valides.</translation>
+<translation id="1853748787962613237">Échec de l'affichage de l'article.</translation>
+<translation id="1871208020102129563">Le proxy est configuré pour utiliser des serveurs proxy déterminés, pas une URL de script .pac.</translation>
 <translation id="1875753206475436906">type heuristique : <ph name="HEURISTIC_TYPE"/>
     type de serveur : <ph name="SERVER_TYPE"/>
     signature du champ : <ph name="FIELD_SIGNATURE"/>
     signature du formulaire : <ph name="FORM_SIGNATURE"/>
     identifiant de test : &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
-<translation id="2479410451996844060">URL de recherche incorrecte</translation>
-<translation id="5509780412636533143">Favoris gérés</translation>
-<translation id="935608979562296692">EFFACER LE FORMULAIRE</translation>
-<translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
-<translation id="4120075327926916474">Voulez-vous que Google Chrome enregistre ces informations de carte de paiement pour le remplissage de formulaires Web ?</translation>
-<translation id="6644283850729428850">Cette règle est obsolète.</translation>
-<translation id="1693754753824026215">La page à l'adresse <ph name="SITE"/> indique :</translation>
-<translation id="4269787794583293679">(aucun nom d'utilisateur)</translation>
-<translation id="7988324688042446538">Favoris sur l'ordinateur</translation>
-<translation id="8488350697529856933">S'applique à</translation>
-<translation id="6165508094623778733">En savoir plus</translation>
-<translation id="5565735124758917034">Actif</translation>
-<translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE"/>Voulez-vous la traduire ?</translation>
-<translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
-<translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
-<translation id="4171400957073367226">Signature de validation non valide.</translation>
-<translation id="9125941078353557812">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>
-<translation id="106701514854093668">Favoris sur l'ordinateur</translation>
-<translation id="6154808779448689242">Le jeton de la règle renvoyé ne correspond pas au jeton actuel.</translation>
-<translation id="7995512525968007366">Non spécifié</translation>
-<translation id="7961015016161918242">Jamais</translation>
-<translation id="2835170189407361413">Effacer le formulaire</translation>
-<translation id="6550675742724504774">Options</translation>
-<translation id="8804164990146287819">Règles de confidentialité</translation>
-<translation id="988159990683914416">Build de développement</translation>
-<translation id="7334320624316649418">&amp;Rétablir la réorganisation</translation>
-<translation id="7182878459783632708">Aucune règle n'est définie</translation>
-<translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
-<translation id="8364627913115013041">Non définie</translation>
-<translation id="8713130696108419660">Signature initiale incorrecte.</translation>
-<translation id="3270847123878663523">&amp;Annuler la réorganisation</translation>
+<translation id="194030505837763158">Accédez à <ph name="LINK"/></translation>
+<translation id="1962204205936693436">Favoris du domaine <ph name="DOMAIN"/></translation>
+<translation id="1973335181906896915">Erreur de sérialisation.</translation>
+<translation id="2025186561304664664">Le proxy est défini sur la configuration automatique.</translation>
+<translation id="2025623846716345241">Confirmer l'actualisation</translation>
+<translation id="2030481566774242610">Essayez avec <ph name="LINK"/></translation>
+<translation id="2053553514270667976">Code postal</translation>
 <translation id="20817612488360358">Les paramètres de proxy du système sont configurés pour être utilisés, mais une configuration de proxy explicite est également spécifiée.</translation>
-<translation id="2639739919103226564">État :</translation>
-<translation id="8824019021993735287">Impossible de valider votre carte pour le moment. Veuillez réessayer ultérieurement.</translation>
-<translation id="4968547170521245791">Proxy impossible</translation>
-<translation id="385051799172605136">Retour</translation>
-<translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
-<translation id="5095208057601539847">Province</translation>
-<translation id="2581221116934462656">Souhaitez-vous que <ph name="PRODUCT_NAME"/> vous propose de traduire les pages en <ph name="LANGUAGE_NAME"/> de ce site lors de votre prochaine visite ?</translation>
+<translation id="2094505752054353250">Le domaine ne correspond pas</translation>
+<translation id="2096368010154057602">Département</translation>
+<translation id="2113977810652731515">Carte</translation>
+<translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME"/>.</translation>
+<translation id="213826338245044447">Favoris sur mobile</translation>
+<translation id="2181821976797666341">Règles</translation>
+<translation id="2212735316055980242">Règle introuvable.</translation>
+<translation id="2213606439339815911">Obtention des entrées en cours…</translation>
+<translation id="225207911366869382">Cette valeur n'est plus utilisée dans le cadre de cette règle.</translation>
+<translation id="2262243747453050782">Erreur HTTP.</translation>
+<translation id="2270192940992995399">Échec de la détection de l'article.</translation>
+<translation id="2328300916057834155">Favori non valide ignoré (index <ph name="ENTRY_INDEX"/>)</translation>
+<translation id="2354001756790975382">Autres favoris</translation>
+<translation id="2359808026110333948">Continuer</translation>
+<translation id="2367567093518048410">Niveau</translation>
+<translation id="2392959068659972793">Afficher les règles non paramétrées</translation>
 <translation id="2396249848217231973">&amp;Annuler la suppression</translation>
-<translation id="3934680773876859118">Échec du chargement du document PDF</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2455981314101692989">Cette page Web a désactivé la saisie automatique dans ce formulaire.</translation>
-<translation id="6597614308054261376">Vous essayez d'accéder à <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Cette page ne peut pas être envoyée par proxy via l'économiseur de données pour le moment.</translation>
-<translation id="8308427013383895095">Échec de la traduction en raison d'un problème de connexion réseau</translation>
-<translation id="5720705177508910913">Utilisateur actuel</translation>
+<translation id="2479410451996844060">URL de recherche incorrecte</translation>
+<translation id="2495083838625180221">Analyse de fichiers JSON</translation>
+<translation id="2498091847651709837">Lire une nouvelle carte</translation>
+<translation id="2556876185419854533">&amp;Annuler la modification</translation>
+<translation id="2581221116934462656">Souhaitez-vous que <ph name="PRODUCT_NAME"/> vous propose de traduire les pages en <ph name="LANGUAGE_NAME"/> de ce site lors de votre prochaine visite ?</translation>
+<translation id="2587841377698384444">ID de l'API d'annuaire :</translation>
+<translation id="2597378329261239068">Ce document est protégé par mot de passe. Veuillez saisir ce dernier.</translation>
+<translation id="2639739919103226564">État :</translation>
+<translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
+<translation id="2721148159707890343">Demande réussie.</translation>
+<translation id="2774256287122201187">Vous pouvez continuer. Si vous accédez à la page, cet avertissement ne s'affichera pas pendant cinq minutes.</translation>
+<translation id="277499241957683684">Enregistrement de l'appareil manquant.</translation>
+<translation id="2835170189407361413">Effacer le formulaire</translation>
+<translation id="2855922900409897335">Valider votre <ph name="CREDIT_CARD"/></translation>
+<translation id="2958431318199492670">La configuration du réseau ne respecte pas les normes de l'ONC. Il est possible que des parties de la configuration ne soient pas importées.</translation>
+<translation id="2972581237482394796">&amp;Rétablir</translation>
+<translation id="3010559122411665027">Entrée de la liste &quot;<ph name="ENTRY_INDEX"/>&quot; : <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">Type de règle incorrect.</translation>
+<translation id="3105172416063519923">ID d'élément :</translation>
+<translation id="3145945101586104090">Échec du décodage de la réponse.</translation>
+<translation id="3150653042067488994">Erreur temporaire du serveur.</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3174168572213147020">Île</translation>
+<translation id="3219579145727097045">Saisissez la date d'expiration et le code CVC à quatre chiffres figurant au recto de votre carte.</translation>
+<translation id="3228969707346345236">La traduction a échoué, car la page est déjà en <ph name="LANGUAGE"/>.</translation>
+<translation id="3270847123878663523">&amp;Annuler la réorganisation</translation>
+<translation id="333371639341676808">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
+<translation id="3369366829301677151">Mettre à jour votre <ph name="CREDIT_CARD"/> et la valider</translation>
+<translation id="337363190475750230">Révoqué</translation>
+<translation id="3377188786107721145">Erreur d'analyse de la règle.</translation>
+<translation id="3380365263193509176">Erreur inconnue.</translation>
 <translation id="3380864720620200369">ID client :</translation>
+<translation id="3427342743765426898">&amp;Rétablir la modification</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">Intervalle de récupération :</translation>
+<translation id="3542684924769048008">Utiliser un mot de passe pour :</translation>
+<translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
+<translation id="3623476034248543066">Afficher la valeur</translation>
+<translation id="3650584904733503804">Validation réussie.</translation>
+<translation id="370665806235115550">Chargement...</translation>
+<translation id="3712624925041724820">Licences épuisées.</translation>
+<translation id="3739623965217189342">Lien copié</translation>
+<translation id="375403751935624634">Échec de la traduction en raison d'une erreur de serveur</translation>
+<translation id="385051799172605136">Retour</translation>
+<translation id="3884278016824448484">Identifiant de l'appareil en conflit.</translation>
+<translation id="3885155851504623709">Paroisse</translation>
+<translation id="3934680773876859118">Échec du chargement du document PDF</translation>
+<translation id="3963721102035795474">Mode lecture</translation>
+<translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
+<translation id="4058922952496707368">Clé &quot;<ph name="SUBKEY"/>&quot; : <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">La configuration du proxy est définie pour utiliser une URL de script .pac, et non pas des serveurs proxy déterminés.</translation>
+<translation id="409504436206021213">Ne pas actualiser</translation>
+<translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
+<translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
+<translation id="4120075327926916474">Voulez-vous que Google Chrome enregistre ces informations de carte de paiement pour le remplissage de formulaires Web ?</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">Signature de validation non valide.</translation>
+<translation id="4196861286325780578">&amp;Rétablir le déplacement</translation>
+<translation id="4250680216510889253">Non</translation>
+<translation id="4258748452823770588">Signature incorrecte.</translation>
+<translation id="4269787794583293679">(aucun nom d'utilisateur)</translation>
+<translation id="4300246636397505754">Suggestions des parents</translation>
+<translation id="4372948949327679948">Valeur attendue : <ph name="VALUE_TYPE"/>.</translation>
+<translation id="443673843213245140">L'utilisation d'un proxy est désactivée, mais une configuration de proxy explicite est spécifiée.</translation>
+<translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR"/>.</translation>
+<translation id="4587425331216688090">Supprimer l'adresse de Chrome ?</translation>
+<translation id="4594403342090139922">&amp;Annuler la suppression</translation>
+<translation id="4607653538520819196">Impossible d'envoyer cette page par proxy via l'économiseur de données</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">Actualiser les règles</translation>
+<translation id="4800132727771399293">Veuillez vérifier la date d'expiration et le code CVC, puis réessayez.</translation>
+<translation id="4813512666221746211">Erreur réseau.</translation>
+<translation id="4850886885716139402">Afficher</translation>
+<translation id="4923417429809017348">Cette page rédigée dans une langue non identifiée a été traduite en <ph name="LANGUAGE_LANGUAGE"/>.</translation>
+<translation id="4926049483395192435">Doit être spécifié.</translation>
+<translation id="4968547170521245791">Proxy impossible</translation>
+<translation id="498957508165411911">Traduire en <ph name="TARGET_LANGUAGE"/> cette page affichée en <ph name="ORIGINAL_LANGUAGE"/> ?</translation>
+<translation id="5019198164206649151">L'espace de stockage destiné à la sauvegarde est en mauvais état.</translation>
+<translation id="5031870354684148875">À propos de Google Traduction</translation>
+<translation id="5089810972385038852">État</translation>
+<translation id="5095208057601539847">Province</translation>
+<translation id="5145883236150621069">Code d'erreur présent dans la réponse de la règle.</translation>
+<translation id="5172758083709347301">Ordinateur</translation>
+<translation id="5179510805599951267">Cette page n'est pas rédigée en <ph name="ORIGINAL_LANGUAGE"/> ? Signaler l'erreur</translation>
+<translation id="5190835502935405962">Barre de favoris</translation>
+<translation id="5295309862264981122">Confirmer la navigation</translation>
+<translation id="5299298092464848405">Erreur d'analyse de la règle.</translation>
+<translation id="5317780077021120954">Enregistrer</translation>
+<translation id="536296301121032821">Échec du stockage des paramètres de la règle.</translation>
+<translation id="5439770059721715174">Erreur de validation du schéma au niveau de &quot;<ph name="ERROR_PATH"/>&quot; : <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">Horodatage de la règle incorrect.</translation>
+<translation id="5470861586879999274">&amp;Rétablir la modification</translation>
+<translation id="5509780412636533143">Favoris gérés</translation>
+<translation id="5523118979700054094">Nom de la règle</translation>
+<translation id="552553974213252141">Le texte a-t-il été extrait correctement ?</translation>
+<translation id="5540224163453853">Impossible de trouver l'article demandé.</translation>
+<translation id="5565735124758917034">Actif</translation>
+<translation id="560412284261940334">Gestion non acceptée.</translation>
+<translation id="5629630648637658800">Échec du chargement des paramètres de la règle.</translation>
+<translation id="5631439013527180824">Jeton de gestion de l'appareil non valide.</translation>
+<translation id="5720705177508910913">Utilisateur actuel</translation>
+<translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
+<translation id="5872918882028971132">Suggestions des parents</translation>
+<translation id="587701087903783706">Fermer l'affichage adapté aux mobiles</translation>
+<translation id="59107663811261420">Ce type de carte n'est pas compatible avec Google Payments pour ce marchand. Veuillez sélectionner une autre carte.</translation>
+<translation id="5989320800837274978">Aucun serveur proxy déterminé ou URL de script .pac n'a été indiqué.</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">Le jeton de la règle renvoyé ne correspond pas au jeton actuel.</translation>
+<translation id="6165508094623778733">En savoir plus</translation>
+<translation id="6259156558325130047">&amp;Rétablir la réorganisation</translation>
+<translation id="6263376278284652872">Favoris de <ph name="DOMAIN"/></translation>
+<translation id="6282194474023008486">Code postal</translation>
+<translation id="6337534724793800597">Filtrer les règles par nom</translation>
+<translation id="6445051938772793705">Pays</translation>
+<translation id="6458467102616083041">Ignoré parce que la recherche par défaut est désactivée par une règle.</translation>
+<translation id="647261751007945333">Règles relatives aux appareils</translation>
+<translation id="6512448926095770873">Quitter cette page</translation>
+<translation id="6529602333819889595">&amp;Rétablir la suppression</translation>
+<translation id="6550675742724504774">Options</translation>
+<translation id="6597614308054261376">Vous essayez d'accéder à <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Cette page ne peut pas être envoyée par proxy via l'économiseur de données pour le moment.</translation>
+<translation id="6628463337424475685">Recherche <ph name="ENGINE"/></translation>
+<translation id="6644283850729428850">Cette règle est obsolète.</translation>
+<translation id="6646897916597483132">Saisissez le code CVC à quatre chiffres indiqué au recto de votre carte.</translation>
+<translation id="6753269504797312559">Valeur de la règle</translation>
+<translation id="6831043979455480757">Traduire</translation>
+<translation id="6839929833149231406">Région</translation>
+<translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
+<translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
+<translation id="6915804003454593391">Utilisateur :</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">Périphérique</translation>
+<translation id="6970216967273061347">District</translation>
+<translation id="6973656660372572881">Les serveurs proxy déterminés et une URL de script .pac sont spécifiés tous les deux.</translation>
+<translation id="6980028882292583085">Alerte JavaScript</translation>
+<translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7087282848513945231">Comté</translation>
+<translation id="7108649287766967076">Échec de la traduction en <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="7139724024395191329">Émirat</translation>
+<translation id="7180611975245234373">Actualiser</translation>
+<translation id="7182878459783632708">Aucune règle n'est définie</translation>
+<translation id="7186367841673660872">Cette page en<ph name="ORIGINAL_LANGUAGE"/>a été traduite en<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">Rechercher <ph name="SEARCH_TERMS"/> sur <ph name="SITE_NAME"/></translation>
+<translation id="7275334191706090484">Favoris gérés</translation>
+<translation id="7298195798382681320">Recommandé</translation>
+<translation id="7334320624316649418">&amp;Rétablir la réorganisation</translation>
+<translation id="7378627244592794276">Non</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7441627299479586546">Objet de la règle incorrect.</translation>
+<translation id="7485870689360869515">Aucune donnée n'a été trouvée.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7537536606612762813">Obligatoire</translation>
+<translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
+<translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE"/>Voulez-vous la traduire ?</translation>
+<translation id="7569952961197462199">Supprimer les données de carte de paiement de Chrome ?</translation>
+<translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE"/> </translation>
+<translation id="7610193165460212391">La valeur <ph name="VALUE"/> est hors limites.</translation>
+<translation id="7752995774971033316">Non géré</translation>
+<translation id="777702478322588152">Préfecture</translation>
+<translation id="7791543448312431591">Ajouter</translation>
+<translation id="7805768142964895445">État</translation>
+<translation id="7813600968533626083">Supprimer la suggestion de saisie de formulaire de Chrome ?</translation>
+<translation id="7887683347370398519">Veuillez vérifier votre code CVC et réessayer.</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">Favoris sur mobile</translation>
+<translation id="7961015016161918242">Jamais</translation>
+<translation id="7977590112176369853">&lt;saisir une requête&gt;</translation>
+<translation id="7983301409776629893">Toujours traduire en <ph name="TARGET_LANGUAGE"/> les pages en <ph name="ORIGINAL_LANGUAGE"/></translation>
+<translation id="7988324688042446538">Favoris sur l'ordinateur</translation>
+<translation id="7995512525968007366">Non spécifié</translation>
+<translation id="8034522405403831421">Cette page est rédigée en <ph name="SOURCE_LANGUAGE"/>. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE"/> ?</translation>
+<translation id="8088680233425245692">Échec de l'affichage de l'article.</translation>
+<translation id="8091372947890762290">Activation en attente sur le serveur.</translation>
+<translation id="8194797478851900357">&amp;Annuler le déplacement</translation>
+<translation id="8201077131113104583">URL de mise à jour non valide pour l'extension associée à l'identifiant &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
+<translation id="8208216423136871611">Ne pas enregistrer</translation>
+<translation id="8218327578424803826">Position attribuée :</translation>
+<translation id="8249320324621329438">Dernière récupération :</translation>
+<translation id="8308427013383895095">Échec de la traduction en raison d'un problème de connexion réseau</translation>
+<translation id="8311778656528046050">Voulez-vous vraiment actualiser cette page ?</translation>
+<translation id="8349305172487531364">Barre de favoris</translation>
+<translation id="8364627913115013041">Non définie</translation>
+<translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
+<translation id="8488350697529856933">S'applique à</translation>
+<translation id="8530504477309582336">Ce type de carte n'est pas compatible avec Google Payments. Veuillez sélectionner une autre carte.</translation>
+<translation id="8553075262323480129">La traduction a échoué, car nous n'avons pas pu déterminer la langue de la page.</translation>
+<translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE"/>...</translation>
+<translation id="8713130696108419660">Signature initiale incorrecte.</translation>
+<translation id="8725066075913043281">Réessayer</translation>
+<translation id="8790007591277257123">&amp;Rétablir la suppression</translation>
+<translation id="8804164990146287819">Règles de confidentialité</translation>
+<translation id="8824019021993735287">Impossible de valider votre carte pour le moment. Veuillez réessayer ultérieurement.</translation>
+<translation id="8834246243508017242">Activer la saisie automatique à l'aide de la fonctionnalité Contacts</translation>
+<translation id="883848425547221593">Autres favoris</translation>
+<translation id="8866481888320382733">Erreur d'analyse des paramètres de la règle.</translation>
+<translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
+<translation id="8891727572606052622">Mode proxy non valide.</translation>
+<translation id="8940229512486821554">Exécuter la commande <ph name="EXTENSION_NAME"/> : <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">Saisissez la date d'expiration et le code CVC à trois chiffres figurant au dos de votre carte.</translation>
+<translation id="9020542370529661692">Cette page a été traduite en <ph name="TARGET_LANGUAGE"/>.</translation>
+<translation id="9125941078353557812">Saisissez le code CVC à trois chiffres indiqué au dos de votre carte.</translation>
+<translation id="9137013805542155359">Afficher l'original</translation>
+<translation id="9148507642005240123">&amp;Annuler la modification</translation>
+<translation id="9154176715500758432">Rester sur cette page</translation>
+<translation id="9170848237812810038">Ann&amp;uler</translation>
+<translation id="9207861905230894330">Échec de l'ajout de l'article.</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">EFFACER LE FORMULAIRE</translation>
+<translation id="988159990683914416">Build de développement</translation>
 </translationbundle>

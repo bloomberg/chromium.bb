@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="vi">
-<translation id="2774256287122201187">Bạn có thể tiếp tục. Nếu bạn tiếp tục đến trang, cảnh báo này sẽ không xuất hiện lại sau năm phút.</translation>
-<translation id="3963721102035795474">Chế độ đọc</translation>
-<translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
-<translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
-<translation id="5172758083709347301">Máy</translation>
-<translation id="7180611975245234373">Làm mới</translation>
-<translation id="8208216423136871611">Không lưu</translation>
-<translation id="777702478322588152">Quận</translation>
-<translation id="2972581237482394796">&amp;Làm lại</translation>
-<translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE"/></translation>
-<translation id="2262243747453050782">Lỗi HTTP</translation>
-<translation id="1339601241726513588">Tên miền đăng ký:</translation>
-<translation id="7298195798382681320">Được đề xuất</translation>
-<translation id="4058922952496707368">Khóa &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">Cảnh báo JavaScript</translation>
-<translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
-<translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE"/></translation>
-<translation id="2498091847651709837">Quét thẻ mới</translation>
-<translation id="6831043979455480757">Dịch</translation>
-<translation id="1228893227497259893">Số nhận dạng tổ chức không đúng</translation>
-<translation id="6337534724793800597">Lọc chính sách theo tên</translation>
-<translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE"/> mong đợi.</translation>
-<translation id="2094505752054353250">Miền không khớp</translation>
-<translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7537536606612762813">Bắt buộc</translation>
-<translation id="2958431318199492670">Cấu hình mạng không tuân thủ tiêu chuẩn ONC. Các bộ phận của cấu hình có thể không được nhập.</translation>
-<translation id="3583757800736429874">&amp;Làm lại di chuyển</translation>
-<translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">Thiếu hồ sơ thiết bị</translation>
-<translation id="1491151370853475546">Tải lại trang này</translation>
-<translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE"/></translation>
-<translation id="1227633850867390598">Ẩn giá trị</translation>
-<translation id="6753269504797312559">Giá trị chính sách</translation>
-<translation id="3369366829301677151">Cập nhật và xác minh <ph name="CREDIT_CARD"/> của bạn</translation>
-<translation id="8834246243508017242">Bật Tự động điền bằng Liên hệ…</translation>
-<translation id="7275334191706090484">Dấu trang được quản lý</translation>
-<translation id="7400418766976504921">URL</translation>
-<translation id="7378627244592794276">Không</translation>
-<translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
 <translation id="1055184225775184556">&amp;Hoàn tác thêm</translation>
-<translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
-<translation id="4850886885716139402">Xem</translation>
-<translation id="8091372947890762290">Kích hoạt đang chờ xử lý trên máy chủ</translation>
-<translation id="6874604403660855544">&amp;Làm lại thêm</translation>
-<translation id="4607653538520819196">Trình tiết kiệm dữ liệu không thể ủy quyền trang này.</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Khu vực</translation>
-<translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
-<translation id="8988760548304185580">Nhập ngày hết hạn và CVC gồm 3 chữ số ở mặt sau thẻ của bạn</translation>
-<translation id="8940229512486821554">Chạy <ph name="EXTENSION_NAME"/> lệnh: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">Lỗi không xác định</translation>
-<translation id="112840717907525620">Bộ nhớ cache chính sách OK</translation>
-<translation id="3452404311384756672">Khoảng thời gian tìm nạp:</translation>
-<translation id="409504436206021213">Không tải lại</translation>
-<translation id="7441627299479586546">Chủ đề chính sách sai</translation>
-<translation id="3885155851504623709">Xã</translation>
-<translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
-<translation id="1426410128494586442">Có</translation>
-<translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR"/>.</translation>
-<translation id="7108649287766967076">Bản dịch sang <ph name="TARGET_LANGUAGE"/> không thành công.</translation>
-<translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
-<translation id="3219579145727097045">Nhập ngày hết hạn và CVC gồm 4 chữ số ở mặt trước thẻ của bạn</translation>
-<translation id="59107663811261420">Loại thẻ này không được Google Payments hỗ trợ cho người bán này. Vui lòng chọn thẻ khác.</translation>
-<translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
-<translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
-<translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
-<translation id="5813119285467412249">&amp;Làm lại thêm</translation>
-<translation id="333371639341676808">Ngăn không cho trang này tạo hộp thoại bổ sung.</translation>
-<translation id="5523118979700054094">Tên chính sách</translation>
-<translation id="7791543448312431591">Thêm</translation>
-<translation id="2053553514270667976">Mã zip</translation>
-<translation id="1644184664548287040">Cấu hình mạng không hợp lệ và không thể nhập được.</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">Không tìm thấy chính sách</translation>
-<translation id="3150653042067488994">Lỗi máy chủ tạm thời</translation>
-<translation id="7087282848513945231">Hạt</translation>
-<translation id="1132774398110320017">Cài đặt tự động điền trên Chrome...</translation>
-<translation id="8194797478851900357">&amp;Hoàn tác di chuyển</translation>
-<translation id="6458467102616083041">Bị bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
-<translation id="6259156558325130047">&amp;Làm lại sắp xếp lại</translation>
-<translation id="1227224963052638717">Chính sách không xác định.</translation>
-<translation id="4250680216510889253">Không</translation>
-<translation id="9207861905230894330">Không thêm được bài viết.</translation>
-<translation id="5872918882028971132">Đề xuất chính</translation>
-<translation id="337363190475750230">Đã hủy cấp phép</translation>
-<translation id="2367567093518048410">Mức độ</translation>
-<translation id="7977590112176369853">&lt;nhập truy vấn&gt;</translation>
-<translation id="552553974213252141">Văn bản đã được trích xuất chính xác chưa?</translation>
-<translation id="5317780077021120954">Lưu</translation>
-<translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>
-<translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE"/>.</translation>
-<translation id="3739623965217189342">Liên kết đã sao chép</translation>
-<translation id="8790007591277257123">&amp;Làm lại xóa</translation>
-<translation id="8311778656528046050">Bạn có chắc chắn muốn tải lại trang này không?</translation>
-<translation id="370665806235115550">Đang tải...</translation>
-<translation id="2096368010154057602">Khu hành chính</translation>
-<translation id="6529602333819889595">&amp;Làm lại xóa</translation>
-<translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
-<translation id="3024663005179499861">Loại chính sách sai</translation>
-<translation id="2030481566774242610">Ý của bạn là <ph name="LINK"/>?</translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">Giá trị này không được dùng cho chính sách này nữa.</translation>
-<translation id="3145945101586104090">Không thể giải mã phản hồi</translation>
-<translation id="2328300916057834155">Đã bỏ qua dấu trang không hợp lệ tại chỉ mục <ph name="ENTRY_INDEX"/></translation>
-<translation id="883848425547221593">Dấu trang Khác</translation>
-<translation id="2181821976797666341">Chính sách</translation>
-<translation id="3174168572213147020">Đảo</translation>
-<translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
-<translation id="2213606439339815911">Đang tìm nạp các mục nhập...</translation>
-<translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN"/></translation>
-<translation id="498957508165411911">Dịch từ <ph name="ORIGINAL_LANGUAGE"/> sang <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="8218327578424803826">Vị trí được gán:</translation>
-<translation id="3542684924769048008">Sử dụng mật khẩu cho:</translation>
-<translation id="2855922900409897335">Xác minh <ph name="CREDIT_CARD"/> của bạn</translation>
-<translation id="7186367841673660872">Trang này đã được dịch từ<ph name="ORIGINAL_LANGUAGE"/>sang<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4587425331216688090">Xóa địa chỉ khỏi Chrome?</translation>
-<translation id="7139724024395191329">Tiểu vương quốc</translation>
-<translation id="6646897916597483132">Nhập CVC gồm 4 chữ số ở mặt trước thẻ của bạn</translation>
-<translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
-<translation id="7983301409776629893">Luôn dịch <ph name="ORIGINAL_LANGUAGE"/> sang <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="6970216967273061347">Quận</translation>
-<translation id="3427342743765426898">&amp;Làm lại chỉnh sửa</translation>
-<translation id="3010559122411665027">Mục nhập danh sách &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
-<translation id="6445051938772793705">Quốc gia</translation>
-<translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
-<translation id="1152921474424827756">Truy cập <ph name="BEGIN_LINK"/>bản sao được lưu trong bộ nhớ cache<ph name="END_LINK"/> của <ph name="URL"/></translation>
-<translation id="8201077131113104583">URL cập nhật không hợp lệ cho tiện ích có ID &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
-<translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
-<translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
-<translation id="1853748787962613237">Không hiển thị được bài viết.</translation>
-<translation id="5455374756549232013">Dấu thời gian chính sách không hợp lệ</translation>
-<translation id="2025623846716345241">Xác nhận tải lại</translation>
-<translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN"/></translation>
-<translation id="4300246636397505754">Đề xuất chính</translation>
-<translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
-<translation id="2495083838625180221">Trình phân tích cú pháp JSON</translation>
-<translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
-<translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
-<translation id="7805768142964895445">Trạng thái</translation>
-<translation id="2113977810652731515">Thẻ</translation>
+<translation id="106701514854093668">Dấu trang máy tính</translation>
+<translation id="1103523840287552314">Luôn dịch <ph name="LANGUAGE"/></translation>
 <translation id="1113869188872983271">&amp;Hoàn tác sắp xếp lại</translation>
-<translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
-<translation id="5439770059721715174">Lỗi xác thực lược đồ tại &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">Thanh dấu trang</translation>
-<translation id="587701087903783706">Đóng chế độ xem thân thiện với thiết bị di động</translation>
-<translation id="7208899522964477531">Tìm kiếm <ph name="SITE_NAME"/> cho <ph name="SEARCH_TERMS"/></translation>
-<translation id="7956713633345437162">Dấu trang di động</translation>
-<translation id="5089810972385038852">Tiểu bang</translation>
-<translation id="647261751007945333">Chính sách thiết bị</translation>
-<translation id="2556876185419854533">&amp;Hoàn tác chỉnh sửa</translation>
-<translation id="213826338245044447">Dấu trang di động</translation>
-<translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
-<translation id="8571890674111243710">Đang dịch trang sang <ph name="LANGUAGE"/>...</translation>
-<translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
-<translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME"/> ghi đè.</translation>
-<translation id="3228969707346345236">Dịch thất bại vì trang đã bằng <ph name="LANGUAGE"/>.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
-<translation id="8034522405403831421">Trang này có ngôn ngữ là <ph name="SOURCE_LANGUAGE"/>. Dịch trang này sang <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="1734864079702812349">Amex</translation>
-<translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
-<translation id="3105172416063519923">ID phần tử:</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
-<translation id="2587841377698384444">ID API thư mục:</translation>
-<translation id="7752995774971033316">Không được quản lý</translation>
-<translation id="3712624925041724820">Giấy phép không đủ</translation>
-<translation id="4926049483395192435">Phải được chỉ định.</translation>
-<translation id="1455235771979731432">Đã xảy ra sự cố khi xác minh thẻ của bạn. Hãy kiểm tra kết nối Internet của bạn và thử lại.</translation>
-<translation id="7542995811387359312">Tính năng tự động điền thẻ tín dụng đã bị vô hiệu hóa vì biểu mẫu này không sử dụng kết nối an toàn.</translation>
-<translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE"/>? Báo cáo lỗi này</translation>
-<translation id="8088680233425245692">Không xem được bài viết.</translation>
-<translation id="8725066075913043281">Thử lại</translation>
-<translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
-<translation id="1640180200866533862">Chính sách người dùng</translation>
-<translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
-<translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
-<translation id="5629630648637658800">Không thể tải cài đặt chính sách</translation>
-<translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
-<translation id="2354001756790975382">Dấu trang khác</translation>
-<translation id="3650584904733503804">Xác thực thành công</translation>
-<translation id="2359808026110333948">Tiếp tục</translation>
-<translation id="6915804003454593391">Người dùng:</translation>
-<translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
-<translation id="2270192940992995399">Không tìm được bài viết.</translation>
-<translation id="4726672564094551039">Tải lại chính sách</translation>
-<translation id="9170848237812810038">H&amp;oàn tác</translation>
-<translation id="9154176715500758432">Ở lại Trang này</translation>
-<translation id="2392959068659972793">Hiển thị chính sách không có giá trị được đặt</translation>
-<translation id="9148507642005240123">&amp;Hoàn tác chỉnh sửa</translation>
-<translation id="5470861586879999274">&amp;Làm lại chỉnh sửa</translation>
-<translation id="5190835502935405962">Thanh Dấu trang</translation>
-<translation id="6965978654500191972">Thiết bị</translation>
-<translation id="5295309862264981122">Xác nhận Điều hướng</translation>
-<translation id="8249320324621329438">Tìm nạp lần cuối:</translation>
-<translation id="194030505837763158">Truy cập <ph name="LINK"/></translation>
+<translation id="111844081046043029">Bạn có chắc chắn muốn thoát khỏi trang này không?</translation>
+<translation id="112840717907525620">Bộ nhớ cache chính sách OK</translation>
+<translation id="1132774398110320017">Cài đặt tự động điền trên Chrome...</translation>
+<translation id="1152921474424827756">Truy cập <ph name="BEGIN_LINK"/>bản sao được lưu trong bộ nhớ cache<ph name="END_LINK"/> của <ph name="URL"/></translation>
+<translation id="1227224963052638717">Chính sách không xác định.</translation>
+<translation id="1227633850867390598">Ẩn giá trị</translation>
+<translation id="1228893227497259893">Số nhận dạng tổ chức không đúng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
+<translation id="1339601241726513588">Tên miền đăng ký:</translation>
 <translation id="1344588688991793829">Cài đặt tự động điền trong Chromium...</translation>
-<translation id="6282194474023008486">Mã bưu chính</translation>
-<translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
-<translation id="3623476034248543066">Hiển thị giá trị</translation>
-<translation id="9020542370529661692">Trang này đã được dịch sang <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="5631439013527180824">Mã thông báo quản lý thiết bị không hợp lệ</translation>
-<translation id="560412284261940334">Không hỗ trợ quản lý</translation>
-<translation id="6512448926095770873">Rời khỏi Trang này</translation>
+<translation id="1426410128494586442">Có</translation>
+<translation id="1455235771979731432">Đã xảy ra sự cố khi xác minh thẻ của bạn. Hãy kiểm tra kết nối Internet của bạn và thử lại.</translation>
+<translation id="1491151370853475546">Tải lại trang này</translation>
+<translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
 <translation id="1639239467298939599">Đang tải</translation>
-<translation id="3169472444629675720">Khám phá</translation>
-<translation id="4923417429809017348">Trang này đã được dịch từ một ngôn ngữ không xác định sang <ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4813512666221746211">Lỗi mạng</translation>
+<translation id="1640180200866533862">Chính sách người dùng</translation>
+<translation id="1644184664548287040">Cấu hình mạng không hợp lệ và không thể nhập được.</translation>
+<translation id="1693754753824026215">Trang trên <ph name="SITE"/> cho biết:</translation>
+<translation id="1734864079702812349">Amex</translation>
+<translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
+<translation id="1853748787962613237">Không hiển thị được bài viết.</translation>
+<translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
 <translation id="1875753206475436906">loại heuristic: <ph name="HEURISTIC_TYPE"/>
     loại máy chủ: <ph name="SERVER_TYPE"/>
     chữ ký trường: <ph name="FIELD_SIGNATURE"/>
     chữ ký biểu mẫu: <ph name="FORM_SIGNATURE"/>
     id thử nghiệm: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
-<translation id="2479410451996844060">URL tìm kiếm hợp lệ.</translation>
-<translation id="5509780412636533143">Dấu trang được quản lý</translation>
-<translation id="935608979562296692">XÓA BIỂU MẪU</translation>
-<translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
-<translation id="4120075327926916474">Bạn có muốn Chrome lưu thông tin thẻ tín dụng này để hoàn thành các biểu mẫu web không?</translation>
-<translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
-<translation id="1693754753824026215">Trang trên <ph name="SITE"/> cho biết:</translation>
-<translation id="4269787794583293679">(Không có tên người dùng)</translation>
-<translation id="7988324688042446538">Dấu trang máy tính</translation>
-<translation id="8488350697529856933">Áp dụng cho</translation>
-<translation id="6165508094623778733">Tìm hiểu thêm</translation>
-<translation id="5565735124758917034">Đang hoạt động</translation>
-<translation id="7568593326407688803">Trang này bằng<ph name="ORIGINAL_LANGUAGE"/>Bạn có muốn dịch trang này không?</translation>
-<translation id="8876793034577346603">Không thể phân tích cú pháp cấu hình mạng.</translation>
-<translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
-<translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
-<translation id="9125941078353557812">Nhập CVC gồm 3 chữ số ở mặt sau thẻ của bạn</translation>
-<translation id="106701514854093668">Dấu trang máy tính</translation>
-<translation id="6154808779448689242">Mã thông báo chính sách trả lại không phù hợp với mã thông báo hiện tại</translation>
-<translation id="7995512525968007366">Không chỉ định</translation>
-<translation id="7961015016161918242">Chưa bao giờ</translation>
-<translation id="2835170189407361413">Xóa biểu mẫu</translation>
-<translation id="6550675742724504774">Tùy chọn</translation>
-<translation id="8804164990146287819">Chính sách bảo mật</translation>
-<translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
-<translation id="7334320624316649418">&amp;Làm lại sắp xếp lại</translation>
-<translation id="7182878459783632708">Không có chính sách nào được đặt</translation>
-<translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
-<translation id="8364627913115013041">Chưa được đặt.</translation>
-<translation id="8713130696108419660">Chữ ký ban đầu không hợp lệ</translation>
-<translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
+<translation id="194030505837763158">Truy cập <ph name="LINK"/></translation>
+<translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN"/></translation>
+<translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
+<translation id="2025186561304664664">Proxy được đặt thành định cấu hình tự động.</translation>
+<translation id="2025623846716345241">Xác nhận tải lại</translation>
+<translation id="2030481566774242610">Ý của bạn là <ph name="LINK"/>?</translation>
+<translation id="2053553514270667976">Mã zip</translation>
 <translation id="20817612488360358">Cài đặt proxy hệ thống được đặt để sử dụng nhưng cấu hình proxy rõ ràng cũng được chỉ định.</translation>
-<translation id="2639739919103226564">Trạng thái:</translation>
-<translation id="8824019021993735287">Chrome không thể xác minh thẻ của bạn vào lúc này. Vui lòng thử lại sau.</translation>
-<translation id="4968547170521245791">Không thể ủy quyền</translation>
-<translation id="385051799172605136">Quay lại</translation>
-<translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
-<translation id="5095208057601539847">Tỉnh/thành phố</translation>
-<translation id="2581221116934462656">Bạn có muốn <ph name="PRODUCT_NAME"/> đưa ra đề nghị dịch các trang <ph name="LANGUAGE_NAME"/> từ trang web này vào lần sau không?</translation>
+<translation id="2094505752054353250">Miền không khớp</translation>
+<translation id="2096368010154057602">Khu hành chính</translation>
+<translation id="2113977810652731515">Thẻ</translation>
+<translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME"/> ghi đè.</translation>
+<translation id="213826338245044447">Dấu trang di động</translation>
+<translation id="2181821976797666341">Chính sách</translation>
+<translation id="2212735316055980242">Không tìm thấy chính sách</translation>
+<translation id="2213606439339815911">Đang tìm nạp các mục nhập...</translation>
+<translation id="225207911366869382">Giá trị này không được dùng cho chính sách này nữa.</translation>
+<translation id="2262243747453050782">Lỗi HTTP</translation>
+<translation id="2270192940992995399">Không tìm được bài viết.</translation>
+<translation id="2328300916057834155">Đã bỏ qua dấu trang không hợp lệ tại chỉ mục <ph name="ENTRY_INDEX"/></translation>
+<translation id="2354001756790975382">Dấu trang khác</translation>
+<translation id="2359808026110333948">Tiếp tục</translation>
+<translation id="2367567093518048410">Mức độ</translation>
+<translation id="2392959068659972793">Hiển thị chính sách không có giá trị được đặt</translation>
 <translation id="2396249848217231973">&amp;Hoàn tác xóa</translation>
-<translation id="3934680773876859118">Không thể tải tài liệu PDF</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="2455981314101692989">Trang web này đã vô hiệu hóa tính năng tự động điền cho biểu mẫu này.</translation>
-<translation id="6597614308054261376">Bạn đang cố gắng truy cập vào <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Trình tiết kiệm dữ liệu không thể ủy quyền trang này tại thời điểm này.</translation>
-<translation id="8308427013383895095">Không thể dịch do kết nối mạng có sự cố.</translation>
-<translation id="5720705177508910913">Người dùng hiện tại</translation>
+<translation id="2479410451996844060">URL tìm kiếm hợp lệ.</translation>
+<translation id="2495083838625180221">Trình phân tích cú pháp JSON</translation>
+<translation id="2498091847651709837">Quét thẻ mới</translation>
+<translation id="2556876185419854533">&amp;Hoàn tác chỉnh sửa</translation>
+<translation id="2581221116934462656">Bạn có muốn <ph name="PRODUCT_NAME"/> đưa ra đề nghị dịch các trang <ph name="LANGUAGE_NAME"/> từ trang web này vào lần sau không?</translation>
+<translation id="2587841377698384444">ID API thư mục:</translation>
+<translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
+<translation id="2639739919103226564">Trạng thái:</translation>
+<translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
+<translation id="2721148159707890343">Yêu cầu đã thành công</translation>
+<translation id="2774256287122201187">Bạn có thể tiếp tục. Nếu bạn tiếp tục đến trang, cảnh báo này sẽ không xuất hiện lại sau năm phút.</translation>
+<translation id="277499241957683684">Thiếu hồ sơ thiết bị</translation>
+<translation id="2835170189407361413">Xóa biểu mẫu</translation>
+<translation id="2855922900409897335">Xác minh <ph name="CREDIT_CARD"/> của bạn</translation>
+<translation id="2958431318199492670">Cấu hình mạng không tuân thủ tiêu chuẩn ONC. Các bộ phận của cấu hình có thể không được nhập.</translation>
+<translation id="2972581237482394796">&amp;Làm lại</translation>
+<translation id="3010559122411665027">Mục nhập danh sách &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">Loại chính sách sai</translation>
+<translation id="3105172416063519923">ID phần tử:</translation>
+<translation id="3145945101586104090">Không thể giải mã phản hồi</translation>
+<translation id="3150653042067488994">Lỗi máy chủ tạm thời</translation>
+<translation id="3169472444629675720">Khám phá</translation>
+<translation id="3174168572213147020">Đảo</translation>
+<translation id="3219579145727097045">Nhập ngày hết hạn và CVC gồm 4 chữ số ở mặt trước thẻ của bạn</translation>
+<translation id="3228969707346345236">Dịch thất bại vì trang đã bằng <ph name="LANGUAGE"/>.</translation>
+<translation id="3270847123878663523">&amp;Hoàn tác sắp xếp lại</translation>
+<translation id="333371639341676808">Ngăn không cho trang này tạo hộp thoại bổ sung.</translation>
+<translation id="3369366829301677151">Cập nhật và xác minh <ph name="CREDIT_CARD"/> của bạn</translation>
+<translation id="337363190475750230">Đã hủy cấp phép</translation>
+<translation id="3377188786107721145">Lỗi phân tích cú pháp chính sách</translation>
+<translation id="3380365263193509176">Lỗi không xác định</translation>
 <translation id="3380864720620200369">ID ứng dụng khách:</translation>
+<translation id="3427342743765426898">&amp;Làm lại chỉnh sửa</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">Khoảng thời gian tìm nạp:</translation>
+<translation id="3542684924769048008">Sử dụng mật khẩu cho:</translation>
+<translation id="3583757800736429874">&amp;Làm lại di chuyển</translation>
+<translation id="3623476034248543066">Hiển thị giá trị</translation>
+<translation id="3650584904733503804">Xác thực thành công</translation>
+<translation id="370665806235115550">Đang tải...</translation>
+<translation id="3712624925041724820">Giấy phép không đủ</translation>
+<translation id="3739623965217189342">Liên kết đã sao chép</translation>
+<translation id="375403751935624634">Không thể dịch do lỗi máy chủ.</translation>
+<translation id="385051799172605136">Quay lại</translation>
+<translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
+<translation id="3885155851504623709">Xã</translation>
+<translation id="3934680773876859118">Không thể tải tài liệu PDF</translation>
+<translation id="3963721102035795474">Chế độ đọc</translation>
+<translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
+<translation id="4058922952496707368">Khóa &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
+<translation id="409504436206021213">Không tải lại</translation>
+<translation id="4103249731201008433">Số sê-ri thiết bị không hợp lệ</translation>
+<translation id="4117700440116928470">Phạm vi chính sách không được hỗ trợ.</translation>
+<translation id="4120075327926916474">Bạn có muốn Chrome lưu thông tin thẻ tín dụng này để hoàn thành các biểu mẫu web không?</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
+<translation id="4196861286325780578">&amp;Làm lại di chuyển</translation>
+<translation id="4250680216510889253">Không</translation>
+<translation id="4258748452823770588">Chữ ký không hợp lệ</translation>
+<translation id="4269787794583293679">(Không có tên người dùng)</translation>
+<translation id="4300246636397505754">Đề xuất chính</translation>
+<translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE"/> mong đợi.</translation>
+<translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
+<translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR"/>.</translation>
+<translation id="4587425331216688090">Xóa địa chỉ khỏi Chrome?</translation>
+<translation id="4594403342090139922">&amp;Hoàn tác xóa</translation>
+<translation id="4607653538520819196">Trình tiết kiệm dữ liệu không thể ủy quyền trang này.</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">Tải lại chính sách</translation>
+<translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
+<translation id="4813512666221746211">Lỗi mạng</translation>
+<translation id="4850886885716139402">Xem</translation>
+<translation id="4923417429809017348">Trang này đã được dịch từ một ngôn ngữ không xác định sang <ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4926049483395192435">Phải được chỉ định.</translation>
+<translation id="4968547170521245791">Không thể ủy quyền</translation>
+<translation id="498957508165411911">Dịch từ <ph name="ORIGINAL_LANGUAGE"/> sang <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="5019198164206649151">Không thể lưu trữ do chương trình phụ trợ ở trạng thái xấu</translation>
+<translation id="5031870354684148875">Giới thiệu về Google Dịch</translation>
+<translation id="5089810972385038852">Tiểu bang</translation>
+<translation id="5095208057601539847">Tỉnh/thành phố</translation>
+<translation id="5145883236150621069">Mã lỗi có trong phản hồi chính sách</translation>
+<translation id="5172758083709347301">Máy</translation>
+<translation id="5179510805599951267">Không ở <ph name="ORIGINAL_LANGUAGE"/>? Báo cáo lỗi này</translation>
+<translation id="5190835502935405962">Thanh Dấu trang</translation>
+<translation id="5295309862264981122">Xác nhận Điều hướng</translation>
+<translation id="5299298092464848405">Lỗi phân tích cú pháp chính sách</translation>
+<translation id="5317780077021120954">Lưu</translation>
+<translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
+<translation id="5439770059721715174">Lỗi xác thực lược đồ tại &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">Dấu thời gian chính sách không hợp lệ</translation>
+<translation id="5470861586879999274">&amp;Làm lại chỉnh sửa</translation>
+<translation id="5509780412636533143">Dấu trang được quản lý</translation>
+<translation id="5523118979700054094">Tên chính sách</translation>
+<translation id="552553974213252141">Văn bản đã được trích xuất chính xác chưa?</translation>
+<translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
+<translation id="5565735124758917034">Đang hoạt động</translation>
+<translation id="560412284261940334">Không hỗ trợ quản lý</translation>
+<translation id="5629630648637658800">Không thể tải cài đặt chính sách</translation>
+<translation id="5631439013527180824">Mã thông báo quản lý thiết bị không hợp lệ</translation>
+<translation id="5720705177508910913">Người dùng hiện tại</translation>
+<translation id="5813119285467412249">&amp;Làm lại thêm</translation>
+<translation id="5872918882028971132">Đề xuất chính</translation>
+<translation id="587701087903783706">Đóng chế độ xem thân thiện với thiết bị di động</translation>
+<translation id="59107663811261420">Loại thẻ này không được Google Payments hỗ trợ cho người bán này. Vui lòng chọn thẻ khác.</translation>
+<translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">Mã thông báo chính sách trả lại không phù hợp với mã thông báo hiện tại</translation>
+<translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6259156558325130047">&amp;Làm lại sắp xếp lại</translation>
+<translation id="6263376278284652872">Dấu trang trên <ph name="DOMAIN"/></translation>
+<translation id="6282194474023008486">Mã bưu chính</translation>
+<translation id="6337534724793800597">Lọc chính sách theo tên</translation>
+<translation id="6445051938772793705">Quốc gia</translation>
+<translation id="6458467102616083041">Bị bỏ qua vì chính sách đã tắt tìm kiếm mặc định.</translation>
+<translation id="647261751007945333">Chính sách thiết bị</translation>
+<translation id="6512448926095770873">Rời khỏi Trang này</translation>
+<translation id="6529602333819889595">&amp;Làm lại xóa</translation>
+<translation id="6550675742724504774">Tùy chọn</translation>
+<translation id="6597614308054261376">Bạn đang cố gắng truy cập vào <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Trình tiết kiệm dữ liệu không thể ủy quyền trang này tại thời điểm này.</translation>
+<translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE"/></translation>
+<translation id="6644283850729428850">Chính sách này không được chấp thuận.</translation>
+<translation id="6646897916597483132">Nhập CVC gồm 4 chữ số ở mặt trước thẻ của bạn</translation>
+<translation id="6753269504797312559">Giá trị chính sách</translation>
+<translation id="6831043979455480757">Dịch</translation>
+<translation id="6839929833149231406">Khu vực</translation>
+<translation id="6874604403660855544">&amp;Làm lại thêm</translation>
+<translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
+<translation id="6915804003454593391">Người dùng:</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">Thiết bị</translation>
+<translation id="6970216967273061347">Quận</translation>
+<translation id="6973656660372572881">Cả hai máy chủ proxy cố định và URL tập lệnh .pac đều được chỉ định.</translation>
+<translation id="6980028882292583085">Cảnh báo JavaScript</translation>
+<translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7087282848513945231">Hạt</translation>
+<translation id="7108649287766967076">Bản dịch sang <ph name="TARGET_LANGUAGE"/> không thành công.</translation>
+<translation id="7139724024395191329">Tiểu vương quốc</translation>
+<translation id="7180611975245234373">Làm mới</translation>
+<translation id="7182878459783632708">Không có chính sách nào được đặt</translation>
+<translation id="7186367841673660872">Trang này đã được dịch từ<ph name="ORIGINAL_LANGUAGE"/>sang<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">Tìm kiếm <ph name="SITE_NAME"/> cho <ph name="SEARCH_TERMS"/></translation>
+<translation id="7275334191706090484">Dấu trang được quản lý</translation>
+<translation id="7298195798382681320">Được đề xuất</translation>
+<translation id="7334320624316649418">&amp;Làm lại sắp xếp lại</translation>
+<translation id="7378627244592794276">Không</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7441627299479586546">Chủ đề chính sách sai</translation>
+<translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7537536606612762813">Bắt buộc</translation>
+<translation id="7542995811387359312">Tính năng tự động điền thẻ tín dụng đã bị vô hiệu hóa vì biểu mẫu này không sử dụng kết nối an toàn.</translation>
+<translation id="7568593326407688803">Trang này bằng<ph name="ORIGINAL_LANGUAGE"/>Bạn có muốn dịch trang này không?</translation>
+<translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
+<translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE"/></translation>
+<translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE"/>.</translation>
+<translation id="7752995774971033316">Không được quản lý</translation>
+<translation id="777702478322588152">Quận</translation>
+<translation id="7791543448312431591">Thêm</translation>
+<translation id="7805768142964895445">Trạng thái</translation>
+<translation id="7813600968533626083">Xóa đề xuất biểu mẫu khỏi Chrome?</translation>
+<translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">Dấu trang di động</translation>
+<translation id="7961015016161918242">Chưa bao giờ</translation>
+<translation id="7977590112176369853">&lt;nhập truy vấn&gt;</translation>
+<translation id="7983301409776629893">Luôn dịch <ph name="ORIGINAL_LANGUAGE"/> sang <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="7988324688042446538">Dấu trang máy tính</translation>
+<translation id="7995512525968007366">Không chỉ định</translation>
+<translation id="8034522405403831421">Trang này có ngôn ngữ là <ph name="SOURCE_LANGUAGE"/>. Dịch trang này sang <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8088680233425245692">Không xem được bài viết.</translation>
+<translation id="8091372947890762290">Kích hoạt đang chờ xử lý trên máy chủ</translation>
+<translation id="8194797478851900357">&amp;Hoàn tác di chuyển</translation>
+<translation id="8201077131113104583">URL cập nhật không hợp lệ cho tiện ích có ID &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
+<translation id="8208216423136871611">Không lưu</translation>
+<translation id="8218327578424803826">Vị trí được gán:</translation>
+<translation id="8249320324621329438">Tìm nạp lần cuối:</translation>
+<translation id="8308427013383895095">Không thể dịch do kết nối mạng có sự cố.</translation>
+<translation id="8311778656528046050">Bạn có chắc chắn muốn tải lại trang này không?</translation>
+<translation id="8349305172487531364">Thanh dấu trang</translation>
+<translation id="8364627913115013041">Chưa được đặt.</translation>
+<translation id="8437238597147034694">&amp;Hoàn tác di chuyển</translation>
+<translation id="8488350697529856933">Áp dụng cho</translation>
+<translation id="8530504477309582336">Google Payments không hỗ trợ loại thẻ này. Vui lòng chọn thẻ khác.</translation>
+<translation id="8553075262323480129">Dịch thất bại do ngôn ngữ của trang không được xác định.</translation>
+<translation id="8571890674111243710">Đang dịch trang sang <ph name="LANGUAGE"/>...</translation>
+<translation id="8713130696108419660">Chữ ký ban đầu không hợp lệ</translation>
+<translation id="8725066075913043281">Thử lại</translation>
+<translation id="8790007591277257123">&amp;Làm lại xóa</translation>
+<translation id="8804164990146287819">Chính sách bảo mật</translation>
+<translation id="8824019021993735287">Chrome không thể xác minh thẻ của bạn vào lúc này. Vui lòng thử lại sau.</translation>
+<translation id="8834246243508017242">Bật Tự động điền bằng Liên hệ…</translation>
+<translation id="883848425547221593">Dấu trang Khác</translation>
+<translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
+<translation id="8876793034577346603">Không thể phân tích cú pháp cấu hình mạng.</translation>
+<translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
+<translation id="8940229512486821554">Chạy <ph name="EXTENSION_NAME"/> lệnh: <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">Nhập ngày hết hạn và CVC gồm 3 chữ số ở mặt sau thẻ của bạn</translation>
+<translation id="9020542370529661692">Trang này đã được dịch sang <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="9125941078353557812">Nhập CVC gồm 3 chữ số ở mặt sau thẻ của bạn</translation>
+<translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
+<translation id="9148507642005240123">&amp;Hoàn tác chỉnh sửa</translation>
+<translation id="9154176715500758432">Ở lại Trang này</translation>
+<translation id="9170848237812810038">H&amp;oàn tác</translation>
+<translation id="9207861905230894330">Không thêm được bài viết.</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">XÓA BIỂU MẪU</translation>
+<translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 </translationbundle>

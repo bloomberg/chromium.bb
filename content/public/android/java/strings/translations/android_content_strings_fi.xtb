@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="fi">
-<translation id="2094750046714988961">Profiiliohjelmaa ei voi käynnistää, koska ulkoinen tallennustila ei ole valmis</translation>
 <translation id="1256337885411059545">Videon toistaminen epäonnistui</translation>
-<translation id="2520230379124234395">Profiiliohjelma käynnistyi</translation>
-<translation id="4859501799452851758">Profiiliohjelma on valmis. Tulokset ovat tiedostossa <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Videota ei voi suoratoistaa tällä laitteella.</translation>
-<translation id="2410828433627930127">Tätä videota ei voi toistaa.</translation>
-<translation id="7096034533295549981">Videota ladataan</translation>
 <translation id="1542044944667958430">Verkkohaku</translation>
-<translation id="6849295950938417341">Profiiliohjelman käynnistys epäonnistui</translation>
+<translation id="2094750046714988961">Profiiliohjelmaa ei voi käynnistää, koska ulkoinen tallennustila ei ole valmis</translation>
+<translation id="2410828433627930127">Tätä videota ei voi toistaa.</translation>
+<translation id="2520230379124234395">Profiiliohjelma käynnistyi</translation>
+<translation id="273860350361291195">Videota ei voi suoratoistaa tällä laitteella.</translation>
+<translation id="4859501799452851758">Profiiliohjelma on valmis. Tulokset ovat tiedostossa <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Jaa</translation>
+<translation id="6849295950938417341">Profiiliohjelman käynnistys epäonnistui</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Videota ladataan</translation>
 </translationbundle>

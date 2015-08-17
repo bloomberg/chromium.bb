@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
-<translation id="8008366997883261463">Jack Russell Teriyeri</translation>
-<translation id="7165320105431587207">Ağ yapılandırılamadı</translation>
-<translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
-<translation id="6943836128787782965">HTTP get işlevi başarısız oldu</translation>
+<translation id="1119447706177454957">Dahili hata</translation>
+<translation id="153454903766751181">Hücresel modem başlatılıyor...</translation>
+<translation id="158849752021629804">Ev ağı gerekli</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Bağlanıyor...</translation>
+<translation id="1773212559869067373">Kimlik doğrulama sertifikası yerel olarak reddedildi</translation>
+<translation id="1829129547161959350">Penguen</translation>
+<translation id="1850504506766569011">Kablosuz kapalı.</translation>
+<translation id="2288278176040912387">Plak çalar</translation>
+<translation id="2354174487190027830"><ph name="NAME"/> etkinleştiriliyor</translation>
+<translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
+<translation id="2563185590376525700">Kurbağa</translation>
+<translation id="2563856802393254086">Tebrikler! '<ph name="NAME"/>' veri hizmetiniz etkinleştirildi ve kullanıma hazır.</translation>
+<translation id="2649120831653069427">Gökkuşağı Balığı</translation>
+<translation id="2670531586141364277">'<ph name="NAME"/>' ağının etkinleştirilmesi için ağ bağlantısı gereklidir.</translation>
+<translation id="2894654529758326923">Bilgiler</translation>
+<translation id="2951236788251446349">Denizanası</translation>
+<translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME"/> etkinleştirme portalını ziyaret edin.</translation>
+<translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
+<translation id="3871838685472846647">Cep Telefonu Etkinleştirildi</translation>
+<translation id="3901991538546252627"><ph name="NAME"/> ağına bağlanılıyor</translation>
+<translation id="3958548648197196644">Kivi</translation>
 <translation id="40400351611212369">Ağ Etkinleştirme Hatası</translation>
 <translation id="4237016987259239829">Ağ Bağlantısı Hatası</translation>
+<translation id="4274292172790327596">Tanınmayan hata</translation>
+<translation id="4326192123064055915">Kahve</translation>
+<translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
+<translation id="4442424173763614572">DNS arama başarısız oldu</translation>
+<translation id="4448844063988177157">Kablosuz ağlar aranıyor...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Bağlanıyor...</translation>
 <translation id="4508265954913339219">Etkinleştirme başarısız oldu</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Yanlış şifre</translation>
-<translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
-<translation id="153454903766751181">Hücresel modem başlatılıyor...</translation>
-<translation id="735745346212279324">VPN bağlantısı kesildi</translation>
+<translation id="4935975195727477204">Gazania Çiçeği</translation>
+<translation id="5045550434625856497">Yanlış şifre</translation>
+<translation id="5097002363526479830">'<ph name="NAME"/>' ağına bağlanamadı: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Satranç</translation>
+<translation id="5257456363153333584">Yusufçuk</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">Kedi</translation>
-<translation id="7170041865419449892">Aralık dışında</translation>
-<translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
-<translation id="7973962044839454485">Yanlış kullanıcı adı veya şifreden dolayı PPP kimlik doğrulaması başarısız oldu</translation>
-<translation id="6549021752953852991">Kullanılabilir hücresel ağ yok</translation>
+<translation id="5864471791310927901">DHCP araması başarısız oldu</translation>
+<translation id="6232116551750539448"><ph name="NAME"/> bağlantısı kaybedildi</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Etkinleştiriliyor...</translation>
+<translation id="6312403991423642364">Bilinmeyen ağ hatası</translation>
 <translation id="6490455614072479501">&quot;<ph name="NAME"/>&quot; ile bağlantı kurulamadı: <ph name="DETAILS"/>
         Sunucunun iletisi: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">'<ph name="NAME"/>' ağının etkinleştirilmesi için ağ bağlantısı gereklidir.</translation>
-<translation id="4442424173763614572">DNS arama başarısız oldu</translation>
-<translation id="7874779702599364982">Hücresel ağlar aranıyor...</translation>
-<translation id="3901991538546252627"><ph name="NAME"/> ağına bağlanılıyor</translation>
-<translation id="1773212559869067373">Kimlik doğrulama sertifikası yerel olarak reddedildi</translation>
-<translation id="2563185590376525700">Kurbağa</translation>
-<translation id="7256405249507348194">Tanınmayan hata: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Bilgiler</translation>
-<translation id="6935521024859866267">Baş Aşağı</translation>
-<translation id="7925247922861151263">AAA kontrolü başarısız oldu</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Bilinmeyen ağ hatası</translation>
-<translation id="4326192123064055915">Kahve</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> etkinleştiriliyor</translation>
-<translation id="1829129547161959350">Penguen</translation>
-<translation id="515594325917491223">Satranç</translation>
-<translation id="5097002363526479830">'<ph name="NAME"/>' ağına bağlanamadı: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Kablosuz kapalı.</translation>
-<translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME"/> etkinleştirme portalını ziyaret edin.</translation>
-<translation id="8132793192354020517"><ph name="NAME"/> ağına bağlanıldı</translation>
-<translation id="1119447706177454957">Dahili hata</translation>
-<translation id="5045550434625856497">Yanlış şifre</translation>
-<translation id="6232116551750539448"><ph name="NAME"/> bağlantısı kaybedildi</translation>
-<translation id="4274292172790327596">Tanınmayan hata</translation>
-<translation id="4448844063988177157">Kablosuz ağlar aranıyor...</translation>
-<translation id="7229570126336867161">EVDO gerekli</translation>
-<translation id="9044646465488564462">Şu ağa bağlanamadı: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Kablosuz açık.</translation>
-<translation id="3871838685472846647">Cep Telefonu Etkinleştirildi</translation>
-<translation id="3958548648197196644">Kivi</translation>
+<translation id="6549021752953852991">Kullanılabilir hücresel ağ yok</translation>
 <translation id="6732801395666424405">Sertifikalar yüklenmedi</translation>
-<translation id="8300849813060516376">OTASP başarısız oldu</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Etkinleştiriliyor...</translation>
-<translation id="8714406895390098252">Bisiklet</translation>
-<translation id="5257456363153333584">Yusufçuk</translation>
-<translation id="158849752021629804">Ev ağı gerekli</translation>
-<translation id="2649120831653069427">Gökkuşağı Balığı</translation>
-<translation id="2288278176040912387">Plak çalar</translation>
 <translation id="6857811139397017780">Şunu etkinleştir: <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">DHCP araması başarısız oldu</translation>
-<translation id="9046895021617826162">Bağlantı başarısız oldu</translation>
-<translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
-<translation id="2951236788251446349">Denizanası</translation>
-<translation id="8000066093800657092">Ağ yok</translation>
-<translation id="2563856802393254086">Tebrikler! '<ph name="NAME"/>' veri hizmetiniz etkinleştirildi ve kullanıma hazır.</translation>
-<translation id="4935975195727477204">Gazania Çiçeği</translation>
+<translation id="6935521024859866267">Baş Aşağı</translation>
+<translation id="6943836128787782965">HTTP get işlevi başarısız oldu</translation>
+<translation id="7165320105431587207">Ağ yapılandırılamadı</translation>
+<translation id="7170041865419449892">Aralık dışında</translation>
+<translation id="7229570126336867161">EVDO gerekli</translation>
+<translation id="7256405249507348194">Tanınmayan hata: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Kullanıcı adı/şifre yanlış veya EAP yetkilendirmesi başarısız oldu</translation>
+<translation id="735745346212279324">VPN bağlantısı kesildi</translation>
+<translation id="7874779702599364982">Hücresel ağlar aranıyor...</translation>
+<translation id="7925247922861151263">AAA kontrolü başarısız oldu</translation>
+<translation id="7973962044839454485">Yanlış kullanıcı adı veya şifreden dolayı PPP kimlik doğrulaması başarısız oldu</translation>
+<translation id="8000066093800657092">Ağ yok</translation>
+<translation id="8008366997883261463">Jack Russell Teriyeri</translation>
+<translation id="8132793192354020517"><ph name="NAME"/> ağına bağlanıldı</translation>
+<translation id="8300849813060516376">OTASP başarısız oldu</translation>
+<translation id="8372369524088641025">Hatalı WEP anahtarı</translation>
+<translation id="8454013096329229812">Kablosuz açık.</translation>
+<translation id="8688591111840995413">Yanlış şifre</translation>
+<translation id="8714406895390098252">Bisiklet</translation>
+<translation id="8808686172382650546">Kedi</translation>
+<translation id="9044646465488564462">Şu ağa bağlanamadı: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Bağlantı başarısız oldu</translation>
 </translationbundle>

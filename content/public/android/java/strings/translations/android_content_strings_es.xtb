@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
-<translation id="2094750046714988961">No se puede iniciar el creador de perfiles porque el almacenamiento externo no está listo</translation>
 <translation id="1256337885411059545">No se puede reproducir el vídeo.</translation>
-<translation id="2520230379124234395">Se ha iniciado el creador de perfiles</translation>
-<translation id="4859501799452851758">El creador de perfiles ha completado la operación. Los resultados se encuentran en el archivo <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Este vídeo no se puede reproducir en este dispositivo.</translation>
-<translation id="2410828433627930127">Este vídeo no se puede reproducir.</translation>
-<translation id="7096034533295549981">Cargando vídeo</translation>
 <translation id="1542044944667958430">Búsqueda web</translation>
-<translation id="6849295950938417341">No se ha podido iniciar el creador de perfiles</translation>
+<translation id="2094750046714988961">No se puede iniciar el creador de perfiles porque el almacenamiento externo no está listo</translation>
+<translation id="2410828433627930127">Este vídeo no se puede reproducir.</translation>
+<translation id="2520230379124234395">Se ha iniciado el creador de perfiles</translation>
+<translation id="273860350361291195">Este vídeo no se puede reproducir en este dispositivo.</translation>
+<translation id="4859501799452851758">El creador de perfiles ha completado la operación. Los resultados se encuentran en el archivo <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Compartir</translation>
+<translation id="6849295950938417341">No se ha podido iniciar el creador de perfiles</translation>
 <translation id="6965382102122355670">Aceptar</translation>
+<translation id="7096034533295549981">Cargando vídeo</translation>
 </translationbundle>

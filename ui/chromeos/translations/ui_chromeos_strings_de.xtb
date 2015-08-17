@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
-<translation id="8008366997883261463">Jack Russell</translation>
-<translation id="7165320105431587207">Fehler beim Konfigurieren des Netzwerks</translation>
-<translation id="4387004326333427325">Remoteablehnung des Authentifizierungszertifikats</translation>
-<translation id="6943836128787782965">HTTP-Abruf fehlgeschlagen</translation>
+<translation id="1119447706177454957">Interner Fehler</translation>
+<translation id="153454903766751181">Mobilfunkmodem wird initialisiert...</translation>
+<translation id="158849752021629804">Heimnetzwerk erforderlich</translation>
 <translation id="1661867754829461514">PIN fehlt</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Verbindung wird hergestellt...</translation>
+<translation id="1773212559869067373">Lokale Ablehnung des Authentifizierungszertifikats</translation>
+<translation id="1829129547161959350">Pinguin</translation>
+<translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
+<translation id="2288278176040912387">Plattenspieler</translation>
+<translation id="2354174487190027830"><ph name="NAME"/> wird aktiviert</translation>
+<translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
+<translation id="2563185590376525700">Frosch</translation>
+<translation id="2563856802393254086">Herzlichen Glückwunsch! Ihr Datendienst &quot;<ph name="NAME"/>&quot; wurde aktiviert und ist einsatzbereit.</translation>
+<translation id="2649120831653069427">Regenbogenfisch</translation>
+<translation id="2670531586141364277">Zum Aktivieren von &quot;<ph name="NAME"/>&quot; ist eine Netzwerkverbindung erforderlich.</translation>
+<translation id="2894654529758326923">Informationen</translation>
+<translation id="2951236788251446349">Qualle</translation>
+<translation id="2966449113954629791">Sie haben möglicherweise Ihr mobiles Datenkontingent aufgebraucht. Besuchen Sie das <ph name="NAME"/>-Aktivierungsportal, um weiteres Datenkontingent zu kaufen.</translation>
+<translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
+<translation id="3871838685472846647">Mobiler Datendienst aktiviert</translation>
+<translation id="3901991538546252627">Verbindung mit <ph name="NAME"/> wird hergestellt.</translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Fehler beim Aktivieren des Netzwerks</translation>
 <translation id="4237016987259239829">Fehler bei der Netzwerkverbindung</translation>
+<translation id="4274292172790327596">Unbekannter Fehler</translation>
+<translation id="4326192123064055915">Kaffee</translation>
+<translation id="4387004326333427325">Remoteablehnung des Authentifizierungszertifikats</translation>
+<translation id="4442424173763614572">DNS-Suche fehlgeschlagen</translation>
+<translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Verbindung wird hergestellt...</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Passwort ungültig</translation>
-<translation id="3846575436967432996">Keine Netzwerkinformationen verfügbar</translation>
-<translation id="153454903766751181">Mobilfunkmodem wird initialisiert...</translation>
-<translation id="735745346212279324">VPN-Verbindung getrennt</translation>
+<translation id="4935975195727477204">Mittagsgoldblume</translation>
+<translation id="5045550434625856497">Falsches Passwort</translation>
+<translation id="5097002363526479830">Fehler beim Herstellen einer Verbindung mit dem Netzwerk &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Schach</translation>
+<translation id="5257456363153333584">Libelle</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Katze</translation>
-<translation id="7170041865419449892">Außerhalb des Bereichs</translation>
-<translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
-<translation id="7973962044839454485">Fehler bei PPP-Authentifizierung aufgrund eines falschen Nutzernamens oder Passworts</translation>
-<translation id="6549021752953852991">Kein Mobilfunknetz verfügbar</translation>
+<translation id="5864471791310927901">DHCP-Suche fehlgeschlagen</translation>
+<translation id="6232116551750539448">Verbindung mit <ph name="NAME"/> wurde unterbrochen.</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Wird aktiviert...</translation>
+<translation id="6312403991423642364">Unbekannter Netzwerkfehler</translation>
 <translation id="6490455614072479501">Fehler bei der Verbindung mit &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
         Servernachricht: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Zum Aktivieren von &quot;<ph name="NAME"/>&quot; ist eine Netzwerkverbindung erforderlich.</translation>
-<translation id="4442424173763614572">DNS-Suche fehlgeschlagen</translation>
-<translation id="7874779702599364982">Suche nach Mobilfunknetzen läuft...</translation>
-<translation id="3901991538546252627">Verbindung mit <ph name="NAME"/> wird hergestellt.</translation>
-<translation id="1773212559869067373">Lokale Ablehnung des Authentifizierungszertifikats</translation>
-<translation id="2563185590376525700">Frosch</translation>
-<translation id="7256405249507348194">Unbekannter Fehler: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Informationen</translation>
-<translation id="6935521024859866267">Auf dem Kopf</translation>
-<translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Unbekannter Netzwerkfehler</translation>
-<translation id="4326192123064055915">Kaffee</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> wird aktiviert</translation>
-<translation id="1829129547161959350">Pinguin</translation>
-<translation id="515594325917491223">Schach</translation>
-<translation id="5097002363526479830">Fehler beim Herstellen einer Verbindung mit dem Netzwerk &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
-<translation id="2966449113954629791">Sie haben möglicherweise Ihr mobiles Datenkontingent aufgebraucht. Besuchen Sie das <ph name="NAME"/>-Aktivierungsportal, um weiteres Datenkontingent zu kaufen.</translation>
-<translation id="8132793192354020517">Verbunden mit <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Interner Fehler</translation>
-<translation id="5045550434625856497">Falsches Passwort</translation>
-<translation id="6232116551750539448">Verbindung mit <ph name="NAME"/> wurde unterbrochen.</translation>
-<translation id="4274292172790327596">Unbekannter Fehler</translation>
-<translation id="4448844063988177157">Suche nach WLAN-Netzwerken läuft...</translation>
-<translation id="7229570126336867161">EVDO erforderlich</translation>
-<translation id="9044646465488564462">Fehler beim Herstellen einer Verbindung mit dem Netzwerk: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">WLAN ist aktiviert.</translation>
-<translation id="3871838685472846647">Mobiler Datendienst aktiviert</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">Kein Mobilfunknetz verfügbar</translation>
 <translation id="6732801395666424405">Zertifikate nicht geladen</translation>
-<translation id="8300849813060516376">OTASP fehlgeschlagen</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Wird aktiviert...</translation>
-<translation id="8714406895390098252">Fahrrad</translation>
-<translation id="5257456363153333584">Libelle</translation>
-<translation id="158849752021629804">Heimnetzwerk erforderlich</translation>
-<translation id="2649120831653069427">Regenbogenfisch</translation>
-<translation id="2288278176040912387">Plattenspieler</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> aktivieren</translation>
-<translation id="5864471791310927901">DHCP-Suche fehlgeschlagen</translation>
-<translation id="9046895021617826162">Verbindungsaufbau fehlgeschlagen</translation>
-<translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
-<translation id="2951236788251446349">Qualle</translation>
-<translation id="8000066093800657092">Nicht verbunden</translation>
-<translation id="2563856802393254086">Herzlichen Glückwunsch! Ihr Datendienst &quot;<ph name="NAME"/>&quot; wurde aktiviert und ist einsatzbereit.</translation>
-<translation id="4935975195727477204">Mittagsgoldblume</translation>
+<translation id="6935521024859866267">Auf dem Kopf</translation>
+<translation id="6943836128787782965">HTTP-Abruf fehlgeschlagen</translation>
+<translation id="7165320105431587207">Fehler beim Konfigurieren des Netzwerks</translation>
+<translation id="7170041865419449892">Außerhalb des Bereichs</translation>
+<translation id="7229570126336867161">EVDO erforderlich</translation>
+<translation id="7256405249507348194">Unbekannter Fehler: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Nutzername/Passwort falsch oder Fehler bei EAP-Authentifizierung</translation>
+<translation id="735745346212279324">VPN-Verbindung getrennt</translation>
+<translation id="7874779702599364982">Suche nach Mobilfunknetzen läuft...</translation>
+<translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
+<translation id="7973962044839454485">Fehler bei PPP-Authentifizierung aufgrund eines falschen Nutzernamens oder Passworts</translation>
+<translation id="8000066093800657092">Nicht verbunden</translation>
+<translation id="8008366997883261463">Jack Russell</translation>
+<translation id="8132793192354020517">Verbunden mit <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP fehlgeschlagen</translation>
+<translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
+<translation id="8454013096329229812">WLAN ist aktiviert.</translation>
+<translation id="8688591111840995413">Passwort ungültig</translation>
+<translation id="8714406895390098252">Fahrrad</translation>
+<translation id="8808686172382650546">Katze</translation>
+<translation id="9044646465488564462">Fehler beim Herstellen einer Verbindung mit dem Netzwerk: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Verbindungsaufbau fehlgeschlagen</translation>
 </translationbundle>

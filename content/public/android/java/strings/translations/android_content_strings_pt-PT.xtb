@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-PT">
-<translation id="2094750046714988961">Não é possível iniciar o gerador de perfis, porque o armazenamento externo não está pronto</translation>
 <translation id="1256337885411059545">Impossível reproduzir vídeo</translation>
-<translation id="2520230379124234395">O gerador de perfis foi iniciado</translation>
-<translation id="4859501799452851758">O gerador de perfis terminou. Os resultados estão em <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Este vídeo não é válido para transmissão em fluxo contínuo neste dispositivo.</translation>
-<translation id="2410828433627930127">Não é possível reproduzir este vídeo.</translation>
-<translation id="7096034533295549981">A carregar vídeo</translation>
 <translation id="1542044944667958430">Pesquisa Web</translation>
-<translation id="6849295950938417341">Falha ao iniciar o gerador de perfis</translation>
+<translation id="2094750046714988961">Não é possível iniciar o gerador de perfis, porque o armazenamento externo não está pronto</translation>
+<translation id="2410828433627930127">Não é possível reproduzir este vídeo.</translation>
+<translation id="2520230379124234395">O gerador de perfis foi iniciado</translation>
+<translation id="273860350361291195">Este vídeo não é válido para transmissão em fluxo contínuo neste dispositivo.</translation>
+<translation id="4859501799452851758">O gerador de perfis terminou. Os resultados estão em <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Partilhar</translation>
+<translation id="6849295950938417341">Falha ao iniciar o gerador de perfis</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">A carregar vídeo</translation>
 </translationbundle>

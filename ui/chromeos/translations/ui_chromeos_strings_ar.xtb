@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
-<translation id="8008366997883261463">كلب</translation>
-<translation id="7165320105431587207">أخفقت تهيئة الشبكة</translation>
-<translation id="4387004326333427325">تم رفض شهادة المصادقة عن بُعد</translation>
-<translation id="6943836128787782965">‏أخفق الحصول على HTTP</translation>
+<translation id="1119447706177454957">خطأ داخلي</translation>
+<translation id="153454903766751181">جارٍ تهيئة المودم الخلوي...</translation>
+<translation id="158849752021629804">يلزم توفر الشبكة الرئيسية</translation>
 <translation id="1661867754829461514">رقم التعريف الشخصي غير موجود</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: جارٍ الاتصال...</translation>
+<translation id="1773212559869067373">تمّ رفض شهادة المصادقة محليًا</translation>
+<translation id="1829129547161959350">بطريق</translation>
+<translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
+<translation id="2288278176040912387">مشغّل أقراص مسجلة</translation>
+<translation id="2354174487190027830">تنشيط <ph name="NAME"/></translation>
+<translation id="2544853746127077729">تمّ رفض شهادة المصادقة بواسطة الشبكة</translation>
+<translation id="2563185590376525700">ضفدع</translation>
+<translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME"/>' وهي جاهزة للعمل.</translation>
+<translation id="2649120831653069427">أسماك رينبو فيش</translation>
+<translation id="2670531586141364277">يتطلب تنشيط '<ph name="NAME"/>' اتصالاً بالشبكة.</translation>
+<translation id="2894654529758326923">المعلومات</translation>
+<translation id="2951236788251446349">قنديل البحر</translation>
+<translation id="2966449113954629791">يبدو أنك قد استنفدت القدر المتاح لك من بيانات الجوّال. يُمكنك الانتقال إلى منفذ تنشيط <ph name="NAME"/> لشراء مزيد من البيانات.</translation>
+<translation id="3846575436967432996">لا توجد معلومات متاحة حول الشبكة</translation>
+<translation id="3871838685472846647">تم تنشيط الخلوي</translation>
+<translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME"/></translation>
+<translation id="3958548648197196644">كيوي</translation>
 <translation id="40400351611212369">خطأ تنشيط الشبكة</translation>
 <translation id="4237016987259239829">خطأ في اتصال الشبكة</translation>
+<translation id="4274292172790327596">خطأ غير معروف</translation>
+<translation id="4326192123064055915">قهوة</translation>
+<translation id="4387004326333427325">تم رفض شهادة المصادقة عن بُعد</translation>
+<translation id="4442424173763614572">أخفق البحث في نظام أسماء النطاقات</translation>
+<translation id="4448844063988177157">‏جارِ البحث عن شبكات Wi-Fi...</translation>
+<translation id="4479639480957787382">إيثرنت</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: جارٍ الاتصال...</translation>
 <translation id="4508265954913339219">أخفقت عملية التنشيط</translation>
 <translation id="4559767610552730302">‏تأثير Bokeh</translation>
-<translation id="8688591111840995413">كلمة مرور سيئة</translation>
-<translation id="3846575436967432996">لا توجد معلومات متاحة حول الشبكة</translation>
-<translation id="153454903766751181">جارٍ تهيئة المودم الخلوي...</translation>
-<translation id="735745346212279324">تم قطع اتصال الشبكة الظاهرية الخاصة</translation>
+<translation id="4935975195727477204">زهرة غازانيا</translation>
+<translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
+<translation id="5097002363526479830">أخفق الاتصال بشبكة &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">شطرنج</translation>
+<translation id="5257456363153333584">يعسوب</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">قط</translation>
-<translation id="7170041865419449892">خارج النطاق</translation>
-<translation id="2544853746127077729">تمّ رفض شهادة المصادقة بواسطة الشبكة</translation>
-<translation id="7973962044839454485">‏أخفقت مصادقة PPP نظرًا لوجود خطأ في اسم المستخدم أو كلمة المرور</translation>
-<translation id="6549021752953852991">لا تتوفر شبكة خلوية</translation>
+<translation id="5864471791310927901">‏أخفق بحث DHCP</translation>
+<translation id="6232116551750539448">انقطع الاتصال بـ <ph name="NAME"/></translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: جارٍ التنشيط...</translation>
+<translation id="6312403991423642364">خطأ غير معروف</translation>
 <translation id="6490455614072479501">أخفق الاتصال بـ &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
         رسالة الخادم: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">يتطلب تنشيط '<ph name="NAME"/>' اتصالاً بالشبكة.</translation>
-<translation id="4442424173763614572">أخفق البحث في نظام أسماء النطاقات</translation>
-<translation id="7874779702599364982">جارٍ البحث عن شبكات للهاتف الجوال...</translation>
-<translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME"/></translation>
-<translation id="1773212559869067373">تمّ رفض شهادة المصادقة محليًا</translation>
-<translation id="2563185590376525700">ضفدع</translation>
-<translation id="7256405249507348194">خطأ غير معروف: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">المعلومات</translation>
-<translation id="6935521024859866267">رأسًا على عقب</translation>
-<translation id="7925247922861151263">‏أخفق فحص AAA</translation>
-<translation id="4479639480957787382">إيثرنت</translation>
-<translation id="6312403991423642364">خطأ غير معروف</translation>
-<translation id="4326192123064055915">قهوة</translation>
-<translation id="2354174487190027830">تنشيط <ph name="NAME"/></translation>
-<translation id="1829129547161959350">بطريق</translation>
-<translation id="515594325917491223">شطرنج</translation>
-<translation id="5097002363526479830">أخفق الاتصال بشبكة &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">‏تم إيقاف تشغيل Wi-Fi.</translation>
-<translation id="2966449113954629791">يبدو أنك قد استنفدت القدر المتاح لك من بيانات الجوّال. يُمكنك الانتقال إلى منفذ تنشيط <ph name="NAME"/> لشراء مزيد من البيانات.</translation>
-<translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME"/></translation>
-<translation id="1119447706177454957">خطأ داخلي</translation>
-<translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
-<translation id="6232116551750539448">انقطع الاتصال بـ <ph name="NAME"/></translation>
-<translation id="4274292172790327596">خطأ غير معروف</translation>
-<translation id="4448844063988177157">‏جارِ البحث عن شبكات Wi-Fi...</translation>
-<translation id="7229570126336867161">‏يلزم توفر EVDO</translation>
-<translation id="9044646465488564462">أخفق الاتصال بالشبكة: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
-<translation id="3871838685472846647">تم تنشيط الخلوي</translation>
-<translation id="3958548648197196644">كيوي</translation>
+<translation id="6549021752953852991">لا تتوفر شبكة خلوية</translation>
 <translation id="6732801395666424405">لم يتم تحميل الشهادات</translation>
-<translation id="8300849813060516376">‏أخفقت OTASP</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: جارٍ التنشيط...</translation>
-<translation id="8714406895390098252">دراجة</translation>
-<translation id="5257456363153333584">يعسوب</translation>
-<translation id="158849752021629804">يلزم توفر الشبكة الرئيسية</translation>
-<translation id="2649120831653069427">أسماك رينبو فيش</translation>
-<translation id="2288278176040912387">مشغّل أقراص مسجلة</translation>
 <translation id="6857811139397017780">تنشيط <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">‏أخفق بحث DHCP</translation>
-<translation id="9046895021617826162">أخفق الاتصال</translation>
-<translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
-<translation id="2951236788251446349">قنديل البحر</translation>
-<translation id="8000066093800657092">لا شبكة</translation>
-<translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME"/>' وهي جاهزة للعمل.</translation>
-<translation id="4935975195727477204">زهرة غازانيا</translation>
+<translation id="6935521024859866267">رأسًا على عقب</translation>
+<translation id="6943836128787782965">‏أخفق الحصول على HTTP</translation>
+<translation id="7165320105431587207">أخفقت تهيئة الشبكة</translation>
+<translation id="7170041865419449892">خارج النطاق</translation>
+<translation id="7229570126336867161">‏يلزم توفر EVDO</translation>
+<translation id="7256405249507348194">خطأ غير معروف: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">‏اسم المستخدم/كلمة المرور غير صحيحة أو أخفقت مصادقة EAP</translation>
+<translation id="735745346212279324">تم قطع اتصال الشبكة الظاهرية الخاصة</translation>
+<translation id="7874779702599364982">جارٍ البحث عن شبكات للهاتف الجوال...</translation>
+<translation id="7925247922861151263">‏أخفق فحص AAA</translation>
+<translation id="7973962044839454485">‏أخفقت مصادقة PPP نظرًا لوجود خطأ في اسم المستخدم أو كلمة المرور</translation>
+<translation id="8000066093800657092">لا شبكة</translation>
+<translation id="8008366997883261463">كلب</translation>
+<translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME"/></translation>
+<translation id="8300849813060516376">‏أخفقت OTASP</translation>
+<translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
+<translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
+<translation id="8688591111840995413">كلمة مرور سيئة</translation>
+<translation id="8714406895390098252">دراجة</translation>
+<translation id="8808686172382650546">قط</translation>
+<translation id="9044646465488564462">أخفق الاتصال بالشبكة: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">أخفق الاتصال</translation>
 </translationbundle>

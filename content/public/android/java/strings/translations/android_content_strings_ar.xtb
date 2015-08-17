@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ar">
-<translation id="2094750046714988961">لا يمكن بدء المحلل لأن وحدة التخزين الخارجية غير جاهزة</translation>
 <translation id="1256337885411059545">لا يمكن تشغيل الفيديو</translation>
-<translation id="2520230379124234395">تم بدء المحلل</translation>
-<translation id="4859501799452851758">انتهى المحلل. توجد النتائج في <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">عذرًا، هذا الفيديو غير صالح للبث إلى هذا الجهاز.</translation>
-<translation id="2410828433627930127">عذرًا، لا يمكن تشغيل هذا الفيديو.</translation>
-<translation id="7096034533295549981">تحميل الفيديو</translation>
 <translation id="1542044944667958430">بحث الويب</translation>
-<translation id="6849295950938417341">أخفق بدء المحلل</translation>
+<translation id="2094750046714988961">لا يمكن بدء المحلل لأن وحدة التخزين الخارجية غير جاهزة</translation>
+<translation id="2410828433627930127">عذرًا، لا يمكن تشغيل هذا الفيديو.</translation>
+<translation id="2520230379124234395">تم بدء المحلل</translation>
+<translation id="273860350361291195">عذرًا، هذا الفيديو غير صالح للبث إلى هذا الجهاز.</translation>
+<translation id="4859501799452851758">انتهى المحلل. توجد النتائج في <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">مشاركة</translation>
+<translation id="6849295950938417341">أخفق بدء المحلل</translation>
 <translation id="6965382102122355670">موافق</translation>
+<translation id="7096034533295549981">تحميل الفيديو</translation>
 </translationbundle>

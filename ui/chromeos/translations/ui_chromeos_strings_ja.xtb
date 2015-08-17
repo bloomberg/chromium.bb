@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ja">
-<translation id="8008366997883261463">犬</translation>
-<translation id="7165320105431587207">ネットワークを設定できませんでした</translation>
-<translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
-<translation id="6943836128787782965">HTTP を取得できませんでした</translation>
+<translation id="1119447706177454957">内部エラー</translation>
+<translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
+<translation id="158849752021629804">ホーム ネットワークが必要です</translation>
 <translation id="1661867754829461514">PIN がありません</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: 接続しています...</translation>
+<translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
+<translation id="1829129547161959350">ペンギン</translation>
+<translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
+<translation id="2288278176040912387">レコード プレーヤー</translation>
+<translation id="2354174487190027830"><ph name="NAME"/> を有効にしています</translation>
+<translation id="2544853746127077729">認証証明書がネットワークによって拒否されました</translation>
+<translation id="2563185590376525700">カエル</translation>
+<translation id="2563856802393254086">「<ph name="NAME"/>」データ サービスが有効になり、使用できるようになりました。</translation>
+<translation id="2649120831653069427">熱帯魚</translation>
+<translation id="2670531586141364277">「<ph name="NAME"/>」を有効にするにはネットワークに接続する必要があります。</translation>
+<translation id="2894654529758326923">情報</translation>
+<translation id="2951236788251446349">クラゲ</translation>
+<translation id="2966449113954629791">モバイル データの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME"/> の有効化ポータルにアクセスしてください。</translation>
+<translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
+<translation id="3871838685472846647">携帯電話が有効になりました</translation>
+<translation id="3901991538546252627"><ph name="NAME"/> に接続しています</translation>
+<translation id="3958548648197196644">キウイ</translation>
 <translation id="40400351611212369">ネットワーク有効化エラー</translation>
 <translation id="4237016987259239829">ネットワーク接続エラー</translation>
+<translation id="4274292172790327596">不明なエラー</translation>
+<translation id="4326192123064055915">コーヒー</translation>
+<translation id="4387004326333427325">認証証明書がリモートで拒否されました</translation>
+<translation id="4442424173763614572">DNS を検索できませんでした</translation>
+<translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
+<translation id="4479639480957787382">イーサネット</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: 接続しています...</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
 <translation id="4559767610552730302">ピンぼけ</translation>
-<translation id="8688591111840995413">不正なパスワード</translation>
-<translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
-<translation id="153454903766751181">セルラー モデムを初期化しています...</translation>
-<translation id="735745346212279324">VPN が切断されました</translation>
+<translation id="4935975195727477204">花</translation>
+<translation id="5045550434625856497">パスワードが正しくありません</translation>
+<translation id="5097002363526479830">ネットワーク「<ph name="NAME"/>」に接続できませんでした: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">チェス</translation>
+<translation id="5257456363153333584">トンボ</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">ネコ</translation>
-<translation id="7170041865419449892">圏外</translation>
-<translation id="2544853746127077729">認証証明書がネットワークによって拒否されました</translation>
-<translation id="7973962044839454485">ユーザー名またはパスワードが正しくないため、PPP 認証に失敗しました</translation>
-<translation id="6549021752953852991">利用可能なセルラー ネットワークがありません</translation>
+<translation id="5864471791310927901">DHCP を検索できませんでした</translation>
+<translation id="6232116551750539448"><ph name="NAME"/> への接続が切断されました</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: 有効にしています...</translation>
+<translation id="6312403991423642364">ネットワークが不明なためエラーが発生しました</translation>
 <translation id="6490455614072479501">「<ph name="NAME"/>」に接続できませんでした: <ph name="DETAILS"/>
         サーバー メッセージ: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">「<ph name="NAME"/>」を有効にするにはネットワークに接続する必要があります。</translation>
-<translation id="4442424173763614572">DNS を検索できませんでした</translation>
-<translation id="7874779702599364982">携帯電話ネットワークを検索しています...</translation>
-<translation id="3901991538546252627"><ph name="NAME"/> に接続しています</translation>
-<translation id="1773212559869067373">認証証明書がローカルで拒否されました</translation>
-<translation id="2563185590376525700">カエル</translation>
-<translation id="7256405249507348194">不明なエラー: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">情報</translation>
-<translation id="6935521024859866267">逆さま</translation>
-<translation id="7925247922861151263">AAA を確認できませんでした</translation>
-<translation id="4479639480957787382">イーサネット</translation>
-<translation id="6312403991423642364">ネットワークが不明なためエラーが発生しました</translation>
-<translation id="4326192123064055915">コーヒー</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> を有効にしています</translation>
-<translation id="1829129547161959350">ペンギン</translation>
-<translation id="515594325917491223">チェス</translation>
-<translation id="5097002363526479830">ネットワーク「<ph name="NAME"/>」に接続できませんでした: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
-<translation id="2966449113954629791">モバイル データの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME"/> の有効化ポータルにアクセスしてください。</translation>
-<translation id="8132793192354020517"><ph name="NAME"/> に接続しました</translation>
-<translation id="1119447706177454957">内部エラー</translation>
-<translation id="5045550434625856497">パスワードが正しくありません</translation>
-<translation id="6232116551750539448"><ph name="NAME"/> への接続が切断されました</translation>
-<translation id="4274292172790327596">不明なエラー</translation>
-<translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
-<translation id="7229570126336867161">EVDO が必要です</translation>
-<translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
-<translation id="3871838685472846647">携帯電話が有効になりました</translation>
-<translation id="3958548648197196644">キウイ</translation>
+<translation id="6549021752953852991">利用可能なセルラー ネットワークがありません</translation>
 <translation id="6732801395666424405">証明書が読み込まれていません</translation>
-<translation id="8300849813060516376">OTASP に失敗しました</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: 有効にしています...</translation>
-<translation id="8714406895390098252">自転車</translation>
-<translation id="5257456363153333584">トンボ</translation>
-<translation id="158849752021629804">ホーム ネットワークが必要です</translation>
-<translation id="2649120831653069427">熱帯魚</translation>
-<translation id="2288278176040912387">レコード プレーヤー</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> を有効にする</translation>
-<translation id="5864471791310927901">DHCP を検索できませんでした</translation>
-<translation id="9046895021617826162">接続に失敗しました</translation>
-<translation id="8372369524088641025">WEP キーが正しくありません</translation>
-<translation id="2951236788251446349">クラゲ</translation>
-<translation id="8000066093800657092">ネットワーク接続なし</translation>
-<translation id="2563856802393254086">「<ph name="NAME"/>」データ サービスが有効になり、使用できるようになりました。</translation>
-<translation id="4935975195727477204">花</translation>
+<translation id="6935521024859866267">逆さま</translation>
+<translation id="6943836128787782965">HTTP を取得できませんでした</translation>
+<translation id="7165320105431587207">ネットワークを設定できませんでした</translation>
+<translation id="7170041865419449892">圏外</translation>
+<translation id="7229570126336867161">EVDO が必要です</translation>
+<translation id="7256405249507348194">不明なエラー: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">ユーザー名/パスワードが正しくないか、EAP 認証に失敗しました</translation>
+<translation id="735745346212279324">VPN が切断されました</translation>
+<translation id="7874779702599364982">携帯電話ネットワークを検索しています...</translation>
+<translation id="7925247922861151263">AAA を確認できませんでした</translation>
+<translation id="7973962044839454485">ユーザー名またはパスワードが正しくないため、PPP 認証に失敗しました</translation>
+<translation id="8000066093800657092">ネットワーク接続なし</translation>
+<translation id="8008366997883261463">犬</translation>
+<translation id="8132793192354020517"><ph name="NAME"/> に接続しました</translation>
+<translation id="8300849813060516376">OTASP に失敗しました</translation>
+<translation id="8372369524088641025">WEP キーが正しくありません</translation>
+<translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
+<translation id="8688591111840995413">不正なパスワード</translation>
+<translation id="8714406895390098252">自転車</translation>
+<translation id="8808686172382650546">ネコ</translation>
+<translation id="9044646465488564462">ネットワークに接続できませんでした: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">接続に失敗しました</translation>
 </translationbundle>

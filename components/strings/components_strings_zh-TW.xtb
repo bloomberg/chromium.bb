@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
-<translation id="2774256287122201187">您可以繼續操作。如果您繼續造訪網頁，後續 5 分鐘內將不會再看到這項警告。</translation>
-<translation id="3963721102035795474">閱讀器模式</translation>
-<translation id="7485870689360869515">找不到任何資料。</translation>
-<translation id="3884278016824448484">裝置識別碼發生衝突</translation>
-<translation id="5172758083709347301">本機</translation>
-<translation id="7180611975245234373">重新整理</translation>
-<translation id="8208216423136871611">不要儲存</translation>
-<translation id="777702478322588152">縣</translation>
-<translation id="2972581237482394796">重做(&amp;R)</translation>
-<translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE"/></translation>
-<translation id="2262243747453050782">HTTP 錯誤</translation>
-<translation id="1339601241726513588">註冊網域：</translation>
-<translation id="7298195798382681320">建議採用</translation>
-<translation id="4058922952496707368">鍵「<ph name="SUBKEY"/>」：<ph name="ERROR"/></translation>
-<translation id="6980028882292583085">JavaScript 通知</translation>
-<translation id="5299298092464848405">解析政策時發生錯誤</translation>
-<translation id="6628463337424475685"><ph name="ENGINE"/> 搜尋</translation>
-<translation id="2498091847651709837">掃描新信用卡</translation>
-<translation id="6831043979455480757">翻譯</translation>
-<translation id="1228893227497259893">實體識別碼錯誤</translation>
-<translation id="6337534724793800597">依名稱篩選政策</translation>
-<translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE"/>」值。</translation>
-<translation id="2094505752054353250">網域不符</translation>
-<translation id="7012363358306927923">中國銀聯</translation>
-<translation id="7537536606612762813">強制</translation>
-<translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
-<translation id="3583757800736429874">重做移動(&amp;R)</translation>
-<translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">沒有裝置紀錄</translation>
-<translation id="1491151370853475546">重新載入這個網頁</translation>
-<translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE"/></translation>
-<translation id="1227633850867390598">隱藏政策值</translation>
-<translation id="6753269504797312559">政策值</translation>
-<translation id="3369366829301677151">更新並驗證您的 <ph name="CREDIT_CARD"/></translation>
-<translation id="8834246243508017242">啟用「使用聯絡人資料自動填入」功能…</translation>
-<translation id="7275334191706090484">受管理書籤</translation>
-<translation id="7400418766976504921">網址</translation>
-<translation id="7378627244592794276">不需要</translation>
-<translation id="2704283930420550640">政策值格式不符。</translation>
 <translation id="1055184225775184556">復原新增(&amp;U)</translation>
-<translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
-<translation id="4850886885716139402">檢視</translation>
-<translation id="8091372947890762290">尚未在伺服器上啟動</translation>
-<translation id="6874604403660855544">重做新增(&amp;R)</translation>
-<translation id="4607653538520819196">Data Saver 無法對這個網頁執行 Proxy 處理。</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">區</translation>
-<translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
-<translation id="8988760548304185580">請輸入有效期限和信用卡背面的三位數信用卡安全碼</translation>
-<translation id="8940229512486821554">執行 <ph name="EXTENSION_NAME"/> 指令：<ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">未知的錯誤</translation>
-<translation id="112840717907525620">政策快取正確</translation>
-<translation id="3452404311384756672">擷取間隔：</translation>
-<translation id="409504436206021213">不要重新載入</translation>
-<translation id="7441627299479586546">政策主體有誤</translation>
-<translation id="3885155851504623709">轄區</translation>
-<translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
-<translation id="1426410128494586442">是</translation>
-<translation id="4506176782989081258">驗證錯誤：<ph name="VALIDATION_ERROR"/></translation>
-<translation id="7108649287766967076">無法將網頁內容翻譯成<ph name="TARGET_LANGUAGE"/>。</translation>
-<translation id="4103249731201008433">裝置序號無效</translation>
-<translation id="3219579145727097045">請輸入有效期限和信用卡正面的四位數信用卡安全碼</translation>
-<translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
-<translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
-<translation id="5540224163453853">找不到要求的文章。</translation>
-<translation id="8437238597147034694">復原移動(&amp;U)</translation>
-<translation id="5813119285467412249">重做新增(&amp;R)</translation>
-<translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
-<translation id="5523118979700054094">政策名稱</translation>
-<translation id="7791543448312431591">新增</translation>
-<translation id="2053553514270667976">郵遞區號</translation>
-<translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
-<translation id="4668929960204016307">，</translation>
-<translation id="2212735316055980242">找不到政策</translation>
-<translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
-<translation id="7087282848513945231">郡</translation>
-<translation id="1132774398110320017">Chrome 自動填入設定...</translation>
-<translation id="8194797478851900357">復原移動(&amp;U)</translation>
-<translation id="6458467102616083041">由於政策停用了預設搜尋，因此遭到略過。</translation>
-<translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
-<translation id="1227224963052638717">不明政策。</translation>
-<translation id="4250680216510889253">否</translation>
-<translation id="9207861905230894330">無法新增文章。</translation>
-<translation id="5872918882028971132">家長建議</translation>
-<translation id="337363190475750230">已取消佈建</translation>
-<translation id="2367567093518048410">等級</translation>
-<translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
-<translation id="552553974213252141">擷取的文字是否正確？</translation>
-<translation id="5317780077021120954">儲存</translation>
-<translation id="8530504477309582336">Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
-<translation id="7610193165460212391">值超出 <ph name="VALUE"/> 的範圍。</translation>
-<translation id="3739623965217189342">您複製的連結</translation>
-<translation id="8790007591277257123">重做刪除(&amp;R)</translation>
-<translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
-<translation id="370665806235115550">載入中…</translation>
-<translation id="2096368010154057602">省</translation>
-<translation id="6529602333819889595">重做刪除(&amp;R)</translation>
-<translation id="4258748452823770588">簽名有誤</translation>
-<translation id="3024663005179499861">政策類型有誤</translation>
-<translation id="2030481566774242610">您要找的是 <ph name="LINK"/> 嗎？</translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">這個政策值已遭汰換。</translation>
-<translation id="3145945101586104090">無法將回應解碼</translation>
-<translation id="2328300916057834155">已忽略索引「<ph name="ENTRY_INDEX"/>」的無效書籤</translation>
-<translation id="883848425547221593">其他書籤</translation>
-<translation id="2181821976797666341">政策</translation>
-<translation id="3174168572213147020">島</translation>
-<translation id="9137013805542155359">顯示原文</translation>
-<translation id="2213606439339815911">正在擷取項目...</translation>
-<translation id="6263376278284652872"><ph name="DOMAIN"/> 書籤</translation>
-<translation id="498957508165411911">將網頁內容由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="TARGET_LANGUAGE"/>？</translation>
-<translation id="8218327578424803826">指派的位置：</translation>
-<translation id="3542684924769048008">選擇密碼：</translation>
-<translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD"/></translation>
-<translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4587425331216688090">要從 Chrome 中移除地址嗎？</translation>
-<translation id="7139724024395191329">大公國</translation>
-<translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
-<translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
-<translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="TARGET_LANGUAGE"/></translation>
-<translation id="6970216967273061347">區</translation>
-<translation id="3427342743765426898">重做編輯(&amp;R)</translation>
-<translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX"/>」：<ph name="ERROR"/></translation>
-<translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
-<translation id="6445051938772793705">國家/地區</translation>
-<translation id="5031870354684148875">關於「Google 翻譯」</translation>
-<translation id="1152921474424827756">存取 <ph name="URL"/> 的<ph name="BEGIN_LINK"/>頁庫存檔副本<ph name="END_LINK"/></translation>
-<translation id="8201077131113104583">擴充功能 (ID：「<ph name="EXTENSION_ID"/>」) 的更新網址無效。</translation>
-<translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
-<translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
-<translation id="1853748787962613237">無法顯示文章。</translation>
-<translation id="5455374756549232013">政策時間戳記有誤</translation>
-<translation id="2025623846716345241">確認重新載入</translation>
-<translation id="1962204205936693436"><ph name="DOMAIN"/> 書籤</translation>
-<translation id="4300246636397505754">家長建議</translation>
-<translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
-<translation id="2495083838625180221">JSON 剖析器</translation>
-<translation id="1973335181906896915">序列化錯誤</translation>
-<translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
-<translation id="7805768142964895445">狀態</translation>
-<translation id="2113977810652731515">信用卡</translation>
+<translation id="106701514854093668">電腦版書籤</translation>
+<translation id="1103523840287552314">一律翻譯<ph name="LANGUAGE"/></translation>
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
-<translation id="536296301121032821">無法儲存政策設定</translation>
-<translation id="5439770059721715174">「<ph name="ERROR_PATH"/>」發生架構驗證錯誤：<ph name="ERROR"/></translation>
-<translation id="8349305172487531364">書籤列</translation>
-<translation id="587701087903783706">關閉適合透過行動裝置瀏覽的檢視模式</translation>
-<translation id="7208899522964477531">在 <ph name="SITE_NAME"/> 上搜尋 <ph name="SEARCH_TERMS"/></translation>
-<translation id="7956713633345437162">行動版書籤</translation>
-<translation id="5089810972385038852">州</translation>
-<translation id="647261751007945333">裝置政策</translation>
-<translation id="2556876185419854533">復原編輯(&amp;U)</translation>
-<translation id="213826338245044447">行動版書籤</translation>
-<translation id="4594403342090139922">復原刪除(&amp;U)</translation>
-<translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE"/>...</translation>
-<translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
-<translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME"/>」覆寫了，因此遭到略過。</translation>
-<translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE"/>，翻譯作業失敗。</translation>
-<translation id="7521387064766892559">JavaScript</translation>
-<translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
-<translation id="1734864079702812349">Amex</translation>
-<translation id="8891727572606052622">Proxy 模式無效。</translation>
-<translation id="3105172416063519923">資產 ID：</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
-<translation id="2587841377698384444">Directory API ID：</translation>
-<translation id="7752995774971033316">未管理</translation>
-<translation id="3712624925041724820">授權已用盡</translation>
-<translation id="4926049483395192435">必須指定。</translation>
-<translation id="1455235771979731432">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
-<translation id="7542995811387359312">由於這個表單並未採用加密連線方式，所以信用卡自動填入功能已停用。</translation>
-<translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE"/>嗎？請回報此錯誤</translation>
-<translation id="8088680233425245692">無法查看文章。</translation>
-<translation id="8725066075913043281">再試一次</translation>
-<translation id="1821930232296380041">要求或要求參數無效</translation>
-<translation id="1640180200866533862">使用者政策</translation>
-<translation id="375403751935624634">伺服器錯誤，翻譯作業失敗。</translation>
-<translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
-<translation id="5629630648637658800">無法載入政策設定</translation>
-<translation id="4030383055268325496">復原新增(&amp;U)</translation>
-<translation id="2354001756790975382">其他書籤</translation>
-<translation id="3650584904733503804">驗證成功</translation>
-<translation id="2359808026110333948">繼續</translation>
-<translation id="6915804003454593391">使用者：</translation>
-<translation id="3377188786107721145">政策解析錯誤</translation>
-<translation id="2270192940992995399">找不到文章。</translation>
-<translation id="4726672564094551039">重新載入政策</translation>
-<translation id="9170848237812810038">取消(&amp;U)</translation>
-<translation id="9154176715500758432">停留在此頁</translation>
-<translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
-<translation id="9148507642005240123">復原編輯(&amp;U)</translation>
-<translation id="5470861586879999274">重做編輯(&amp;R)</translation>
-<translation id="5190835502935405962">書籤列</translation>
-<translation id="6965978654500191972">裝置</translation>
-<translation id="5295309862264981122">確認瀏覽</translation>
-<translation id="8249320324621329438">上次擷取時間：</translation>
-<translation id="194030505837763158">前往 <ph name="LINK"/></translation>
+<translation id="111844081046043029">您確定要離開此網頁嗎?</translation>
+<translation id="112840717907525620">政策快取正確</translation>
+<translation id="1132774398110320017">Chrome 自動填入設定...</translation>
+<translation id="1152921474424827756">存取 <ph name="URL"/> 的<ph name="BEGIN_LINK"/>頁庫存檔副本<ph name="END_LINK"/></translation>
+<translation id="1227224963052638717">不明政策。</translation>
+<translation id="1227633850867390598">隱藏政策值</translation>
+<translation id="1228893227497259893">實體識別碼錯誤</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
+<translation id="1339601241726513588">註冊網域：</translation>
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
-<translation id="6282194474023008486">郵遞區號</translation>
-<translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
-<translation id="3623476034248543066">顯示政策值</translation>
-<translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE"/></translation>
-<translation id="5631439013527180824">裝置管理符記無效</translation>
-<translation id="560412284261940334">系統不支援管理</translation>
-<translation id="6512448926095770873">離開此頁</translation>
+<translation id="1426410128494586442">是</translation>
+<translation id="1455235771979731432">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
+<translation id="1491151370853475546">重新載入這個網頁</translation>
+<translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
 <translation id="1639239467298939599">載入中</translation>
-<translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4813512666221746211">網路錯誤</translation>
+<translation id="1640180200866533862">使用者政策</translation>
+<translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
+<translation id="1693754753824026215"><ph name="SITE"/> 的網頁顯示：</translation>
+<translation id="1734864079702812349">Amex</translation>
+<translation id="1821930232296380041">要求或要求參數無效</translation>
+<translation id="1853748787962613237">無法顯示文章。</translation>
+<translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
 <translation id="1875753206475436906">啟發式演算法類型：<ph name="HEURISTIC_TYPE"/>
     伺服器類型：<ph name="SERVER_TYPE"/>
     欄位簽名：<ph name="FIELD_SIGNATURE"/>
     表單簽名：<ph name="FORM_SIGNATURE"/>
     實驗 ID：「<ph name="EXPERIMENT_ID"/>」</translation>
-<translation id="2479410451996844060">無效的搜尋網址。</translation>
-<translation id="5509780412636533143">受管理書籤</translation>
-<translation id="935608979562296692">清除表單</translation>
-<translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
-<translation id="4120075327926916474">您希望 Google Chrome 儲存此信用卡資訊，方便您填妥網路表單嗎？</translation>
-<translation id="6644283850729428850">這項政策已遭取代。</translation>
-<translation id="1693754753824026215"><ph name="SITE"/> 的網頁顯示：</translation>
-<translation id="4269787794583293679">(沒有使用者名稱)</translation>
-<translation id="7988324688042446538">電腦版書籤</translation>
-<translation id="8488350697529856933">適用對象</translation>
-<translation id="6165508094623778733">瞭解詳情</translation>
-<translation id="5565735124758917034">管理中</translation>
-<translation id="7568593326407688803">此網頁為<ph name="ORIGINAL_LANGUAGE"/>您要翻譯網頁內容嗎？</translation>
-<translation id="8876793034577346603">無法解析網路設定。</translation>
-<translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
-<translation id="4171400957073367226">驗證簽名無效</translation>
-<translation id="9125941078353557812">請輸入信用卡背面的三位數信用卡安全碼</translation>
-<translation id="106701514854093668">電腦版書籤</translation>
-<translation id="6154808779448689242">傳回的政策符記與目前符記不相符</translation>
-<translation id="7995512525968007366">未指定</translation>
-<translation id="7961015016161918242">永不</translation>
-<translation id="2835170189407361413">清除表單</translation>
-<translation id="6550675742724504774">選項</translation>
-<translation id="8804164990146287819">隱私權政策</translation>
-<translation id="988159990683914416">開發人員版本</translation>
-<translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
-<translation id="7182878459783632708">沒有設定任何政策</translation>
-<translation id="5019198164206649151">備份儲存狀態不佳</translation>
-<translation id="8364627913115013041">未設定。</translation>
-<translation id="8713130696108419660">初始簽名錯誤</translation>
-<translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
+<translation id="194030505837763158">前往 <ph name="LINK"/></translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> 書籤</translation>
+<translation id="1973335181906896915">序列化錯誤</translation>
+<translation id="2025186561304664664">Proxy 已設為自動設定。</translation>
+<translation id="2025623846716345241">確認重新載入</translation>
+<translation id="2030481566774242610">您要找的是 <ph name="LINK"/> 嗎？</translation>
+<translation id="2053553514270667976">郵遞區號</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
-<translation id="2639739919103226564">狀態：</translation>
-<translation id="8824019021993735287">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
-<translation id="4968547170521245791">無法執行 Proxy 處理</translation>
-<translation id="385051799172605136">返回</translation>
-<translation id="4196861286325780578">重做移動(&amp;R)</translation>
-<translation id="5095208057601539847">省</translation>
-<translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME"/> 翻譯這個網站的<ph name="LANGUAGE_NAME"/>網頁嗎？</translation>
+<translation id="2094505752054353250">網域不符</translation>
+<translation id="2096368010154057602">省</translation>
+<translation id="2113977810652731515">信用卡</translation>
+<translation id="2114841414352855701">由於政策被「<ph name="POLICY_NAME"/>」覆寫了，因此遭到略過。</translation>
+<translation id="213826338245044447">行動版書籤</translation>
+<translation id="2181821976797666341">政策</translation>
+<translation id="2212735316055980242">找不到政策</translation>
+<translation id="2213606439339815911">正在擷取項目...</translation>
+<translation id="225207911366869382">這個政策值已遭汰換。</translation>
+<translation id="2262243747453050782">HTTP 錯誤</translation>
+<translation id="2270192940992995399">找不到文章。</translation>
+<translation id="2328300916057834155">已忽略索引「<ph name="ENTRY_INDEX"/>」的無效書籤</translation>
+<translation id="2354001756790975382">其他書籤</translation>
+<translation id="2359808026110333948">繼續</translation>
+<translation id="2367567093518048410">等級</translation>
+<translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
 <translation id="2396249848217231973">復原刪除(&amp;U)</translation>
-<translation id="3934680773876859118">無法載入 PDF 文件</translation>
-<translation id="6965382102122355670">確定</translation>
-<translation id="2721148159707890343">要求成功</translation>
 <translation id="2455981314101692989">這個網頁已停用這個表單的自動填入功能。</translation>
-<translation id="6597614308054261376">您嘗試連線至 <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>。Data Saver 目前無法對這個網頁執行 Proxy 處理。</translation>
-<translation id="8308427013383895095">網路連線發生問題，翻譯作業失敗。</translation>
-<translation id="5720705177508910913">目前使用者</translation>
+<translation id="2479410451996844060">無效的搜尋網址。</translation>
+<translation id="2495083838625180221">JSON 剖析器</translation>
+<translation id="2498091847651709837">掃描新信用卡</translation>
+<translation id="2556876185419854533">復原編輯(&amp;U)</translation>
+<translation id="2581221116934462656">您下次要讓 <ph name="PRODUCT_NAME"/> 翻譯這個網站的<ph name="LANGUAGE_NAME"/>網頁嗎？</translation>
+<translation id="2587841377698384444">Directory API ID：</translation>
+<translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
+<translation id="2639739919103226564">狀態：</translation>
+<translation id="2704283930420550640">政策值格式不符。</translation>
+<translation id="2721148159707890343">要求成功</translation>
+<translation id="2774256287122201187">您可以繼續操作。如果您繼續造訪網頁，後續 5 分鐘內將不會再看到這項警告。</translation>
+<translation id="277499241957683684">沒有裝置紀錄</translation>
+<translation id="2835170189407361413">清除表單</translation>
+<translation id="2855922900409897335">驗證您的 <ph name="CREDIT_CARD"/></translation>
+<translation id="2958431318199492670">網路設定未遵循 ONC 標準，系統可能無法匯入部分設定。</translation>
+<translation id="2972581237482394796">重做(&amp;R)</translation>
+<translation id="3010559122411665027">清單項目「<ph name="ENTRY_INDEX"/>」：<ph name="ERROR"/></translation>
+<translation id="3024663005179499861">政策類型有誤</translation>
+<translation id="3105172416063519923">資產 ID：</translation>
+<translation id="3145945101586104090">無法將回應解碼</translation>
+<translation id="3150653042067488994">伺服器暫時發生錯誤</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3174168572213147020">島</translation>
+<translation id="3219579145727097045">請輸入有效期限和信用卡正面的四位數信用卡安全碼</translation>
+<translation id="3228969707346345236">網頁已經是<ph name="LANGUAGE"/>，翻譯作業失敗。</translation>
+<translation id="3270847123878663523">復原重新排序(&amp;U)</translation>
+<translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
+<translation id="3369366829301677151">更新並驗證您的 <ph name="CREDIT_CARD"/></translation>
+<translation id="337363190475750230">已取消佈建</translation>
+<translation id="3377188786107721145">政策解析錯誤</translation>
+<translation id="3380365263193509176">未知的錯誤</translation>
 <translation id="3380864720620200369">用戶端 ID：</translation>
+<translation id="3427342743765426898">重做編輯(&amp;R)</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">擷取間隔：</translation>
+<translation id="3542684924769048008">選擇密碼：</translation>
+<translation id="3583757800736429874">重做移動(&amp;R)</translation>
+<translation id="3623476034248543066">顯示政策值</translation>
+<translation id="3650584904733503804">驗證成功</translation>
+<translation id="370665806235115550">載入中…</translation>
+<translation id="3712624925041724820">授權已用盡</translation>
+<translation id="3739623965217189342">您複製的連結</translation>
+<translation id="375403751935624634">伺服器錯誤，翻譯作業失敗。</translation>
+<translation id="385051799172605136">返回</translation>
+<translation id="3884278016824448484">裝置識別碼發生衝突</translation>
+<translation id="3885155851504623709">轄區</translation>
+<translation id="3934680773876859118">無法載入 PDF 文件</translation>
+<translation id="3963721102035795474">閱讀器模式</translation>
+<translation id="4030383055268325496">復原新增(&amp;U)</translation>
+<translation id="4058922952496707368">鍵「<ph name="SUBKEY"/>」：<ph name="ERROR"/></translation>
+<translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
+<translation id="409504436206021213">不要重新載入</translation>
+<translation id="4103249731201008433">裝置序號無效</translation>
+<translation id="4117700440116928470">系統不支援這項政策的範圍。</translation>
+<translation id="4120075327926916474">您希望 Google Chrome 儲存此信用卡資訊，方便您填妥網路表單嗎？</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">驗證簽名無效</translation>
+<translation id="4196861286325780578">重做移動(&amp;R)</translation>
+<translation id="4250680216510889253">否</translation>
+<translation id="4258748452823770588">簽名有誤</translation>
+<translation id="4269787794583293679">(沒有使用者名稱)</translation>
+<translation id="4300246636397505754">家長建議</translation>
+<translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE"/>」值。</translation>
+<translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
+<translation id="4506176782989081258">驗證錯誤：<ph name="VALIDATION_ERROR"/></translation>
+<translation id="4587425331216688090">要從 Chrome 中移除地址嗎？</translation>
+<translation id="4594403342090139922">復原刪除(&amp;U)</translation>
+<translation id="4607653538520819196">Data Saver 無法對這個網頁執行 Proxy 處理。</translation>
+<translation id="4668929960204016307">，</translation>
+<translation id="4726672564094551039">重新載入政策</translation>
+<translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
+<translation id="4813512666221746211">網路錯誤</translation>
+<translation id="4850886885716139402">檢視</translation>
+<translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4926049483395192435">必須指定。</translation>
+<translation id="4968547170521245791">無法執行 Proxy 處理</translation>
+<translation id="498957508165411911">將網頁內容由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="TARGET_LANGUAGE"/>？</translation>
+<translation id="5019198164206649151">備份儲存狀態不佳</translation>
+<translation id="5031870354684148875">關於「Google 翻譯」</translation>
+<translation id="5089810972385038852">州</translation>
+<translation id="5095208057601539847">省</translation>
+<translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
+<translation id="5172758083709347301">本機</translation>
+<translation id="5179510805599951267">網頁內容不是<ph name="ORIGINAL_LANGUAGE"/>嗎？請回報此錯誤</translation>
+<translation id="5190835502935405962">書籤列</translation>
+<translation id="5295309862264981122">確認瀏覽</translation>
+<translation id="5299298092464848405">解析政策時發生錯誤</translation>
+<translation id="5317780077021120954">儲存</translation>
+<translation id="536296301121032821">無法儲存政策設定</translation>
+<translation id="5439770059721715174">「<ph name="ERROR_PATH"/>」發生架構驗證錯誤：<ph name="ERROR"/></translation>
+<translation id="5455374756549232013">政策時間戳記有誤</translation>
+<translation id="5470861586879999274">重做編輯(&amp;R)</translation>
+<translation id="5509780412636533143">受管理書籤</translation>
+<translation id="5523118979700054094">政策名稱</translation>
+<translation id="552553974213252141">擷取的文字是否正確？</translation>
+<translation id="5540224163453853">找不到要求的文章。</translation>
+<translation id="5565735124758917034">管理中</translation>
+<translation id="560412284261940334">系統不支援管理</translation>
+<translation id="5629630648637658800">無法載入政策設定</translation>
+<translation id="5631439013527180824">裝置管理符記無效</translation>
+<translation id="5720705177508910913">目前使用者</translation>
+<translation id="5813119285467412249">重做新增(&amp;R)</translation>
+<translation id="5872918882028971132">家長建議</translation>
+<translation id="587701087903783706">關閉適合透過行動裝置瀏覽的檢視模式</translation>
+<translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
+<translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">傳回的政策符記與目前符記不相符</translation>
+<translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
+<translation id="6263376278284652872"><ph name="DOMAIN"/> 書籤</translation>
+<translation id="6282194474023008486">郵遞區號</translation>
+<translation id="6337534724793800597">依名稱篩選政策</translation>
+<translation id="6445051938772793705">國家/地區</translation>
+<translation id="6458467102616083041">由於政策停用了預設搜尋，因此遭到略過。</translation>
+<translation id="647261751007945333">裝置政策</translation>
+<translation id="6512448926095770873">離開此頁</translation>
+<translation id="6529602333819889595">重做刪除(&amp;R)</translation>
+<translation id="6550675742724504774">選項</translation>
+<translation id="6597614308054261376">您嘗試連線至 <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>。Data Saver 目前無法對這個網頁執行 Proxy 處理。</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> 搜尋</translation>
+<translation id="6644283850729428850">這項政策已遭取代。</translation>
+<translation id="6646897916597483132">請輸入信用卡正面的四位數信用卡安全碼</translation>
+<translation id="6753269504797312559">政策值</translation>
+<translation id="6831043979455480757">翻譯</translation>
+<translation id="6839929833149231406">區</translation>
+<translation id="6874604403660855544">重做新增(&amp;R)</translation>
+<translation id="6891596781022320156">系統不支援這項政策的層級。</translation>
+<translation id="6915804003454593391">使用者：</translation>
+<translation id="6965382102122355670">確定</translation>
+<translation id="6965978654500191972">裝置</translation>
+<translation id="6970216967273061347">區</translation>
+<translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
+<translation id="6980028882292583085">JavaScript 通知</translation>
+<translation id="7012363358306927923">中國銀聯</translation>
+<translation id="7087282848513945231">郡</translation>
+<translation id="7108649287766967076">無法將網頁內容翻譯成<ph name="TARGET_LANGUAGE"/>。</translation>
+<translation id="7139724024395191329">大公國</translation>
+<translation id="7180611975245234373">重新整理</translation>
+<translation id="7182878459783632708">沒有設定任何政策</translation>
+<translation id="7186367841673660872">此網頁內容已由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">在 <ph name="SITE_NAME"/> 上搜尋 <ph name="SEARCH_TERMS"/></translation>
+<translation id="7275334191706090484">受管理書籤</translation>
+<translation id="7298195798382681320">建議採用</translation>
+<translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
+<translation id="7378627244592794276">不需要</translation>
+<translation id="7400418766976504921">網址</translation>
+<translation id="7441627299479586546">政策主體有誤</translation>
+<translation id="7485870689360869515">找不到任何資料。</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7537536606612762813">強制</translation>
+<translation id="7542995811387359312">由於這個表單並未採用加密連線方式，所以信用卡自動填入功能已停用。</translation>
+<translation id="7568593326407688803">此網頁為<ph name="ORIGINAL_LANGUAGE"/>您要翻譯網頁內容嗎？</translation>
+<translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
+<translation id="7600965453749440009">一律不翻譯<ph name="LANGUAGE"/></translation>
+<translation id="7610193165460212391">值超出 <ph name="VALUE"/> 的範圍。</translation>
+<translation id="7752995774971033316">未管理</translation>
+<translation id="777702478322588152">縣</translation>
+<translation id="7791543448312431591">新增</translation>
+<translation id="7805768142964895445">狀態</translation>
+<translation id="7813600968533626083">要從 Chrome 中移除建議嗎？</translation>
+<translation id="7887683347370398519">請檢查您的 CVC，然後再試一次</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">行動版書籤</translation>
+<translation id="7961015016161918242">永不</translation>
+<translation id="7977590112176369853">&lt;輸入查詢&gt;</translation>
+<translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE"/>翻譯成<ph name="TARGET_LANGUAGE"/></translation>
+<translation id="7988324688042446538">電腦版書籤</translation>
+<translation id="7995512525968007366">未指定</translation>
+<translation id="8034522405403831421">這個網頁的內容是<ph name="SOURCE_LANGUAGE"/>，需要翻譯成<ph name="TARGET_LANGUAGE"/>嗎？</translation>
+<translation id="8088680233425245692">無法查看文章。</translation>
+<translation id="8091372947890762290">尚未在伺服器上啟動</translation>
+<translation id="8194797478851900357">復原移動(&amp;U)</translation>
+<translation id="8201077131113104583">擴充功能 (ID：「<ph name="EXTENSION_ID"/>」) 的更新網址無效。</translation>
+<translation id="8208216423136871611">不要儲存</translation>
+<translation id="8218327578424803826">指派的位置：</translation>
+<translation id="8249320324621329438">上次擷取時間：</translation>
+<translation id="8308427013383895095">網路連線發生問題，翻譯作業失敗。</translation>
+<translation id="8311778656528046050">您確定要重新載入這個網頁？</translation>
+<translation id="8349305172487531364">書籤列</translation>
+<translation id="8364627913115013041">未設定。</translation>
+<translation id="8437238597147034694">復原移動(&amp;U)</translation>
+<translation id="8488350697529856933">適用對象</translation>
+<translation id="8530504477309582336">Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
+<translation id="8553075262323480129">無法判定網頁的語言，翻譯作業失敗。</translation>
+<translation id="8571890674111243710">正在將網頁翻譯成<ph name="LANGUAGE"/>...</translation>
+<translation id="8713130696108419660">初始簽名錯誤</translation>
+<translation id="8725066075913043281">再試一次</translation>
+<translation id="8790007591277257123">重做刪除(&amp;R)</translation>
+<translation id="8804164990146287819">隱私權政策</translation>
+<translation id="8824019021993735287">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
+<translation id="8834246243508017242">啟用「使用聯絡人資料自動填入」功能…</translation>
+<translation id="883848425547221593">其他書籤</translation>
+<translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
+<translation id="8876793034577346603">無法解析網路設定。</translation>
+<translation id="8891727572606052622">Proxy 模式無效。</translation>
+<translation id="8940229512486821554">執行 <ph name="EXTENSION_NAME"/> 指令：<ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">請輸入有效期限和信用卡背面的三位數信用卡安全碼</translation>
+<translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE"/></translation>
+<translation id="9125941078353557812">請輸入信用卡背面的三位數信用卡安全碼</translation>
+<translation id="9137013805542155359">顯示原文</translation>
+<translation id="9148507642005240123">復原編輯(&amp;U)</translation>
+<translation id="9154176715500758432">停留在此頁</translation>
+<translation id="9170848237812810038">取消(&amp;U)</translation>
+<translation id="9207861905230894330">無法新增文章。</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">清除表單</translation>
+<translation id="988159990683914416">開發人員版本</translation>
 </translationbundle>

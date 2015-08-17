@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hu">
-<translation id="2774256287122201187">Folytathatja a böngészést. Ha továbblép az oldalra, akkor ez a figyelmeztetés a következő öt percben nem fog újra megjelenni.</translation>
-<translation id="3963721102035795474">Olvasási mód</translation>
-<translation id="7485870689360869515">Nem található adat.</translation>
-<translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
-<translation id="5172758083709347301">Számítógép</translation>
-<translation id="7180611975245234373">Frissítés</translation>
-<translation id="8208216423136871611">Ne mentse</translation>
-<translation id="777702478322588152">Prefektúra</translation>
-<translation id="2972581237482394796">&amp;Újra</translation>
-<translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE"/> nyelvű szöveget</translation>
-<translation id="2262243747453050782">HTTP hiba</translation>
-<translation id="1339601241726513588">Regisztrációs domain:</translation>
-<translation id="7298195798382681320">Ajánlott</translation>
-<translation id="4058922952496707368">&quot;<ph name="SUBKEY"/>&quot; kulcs: <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">JavaScript-figyelmeztetés</translation>
-<translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
-<translation id="6628463337424475685">Keresés: <ph name="ENGINE"/></translation>
-<translation id="2498091847651709837">Új kártya beolvasása</translation>
-<translation id="6831043979455480757">Fordítás</translation>
-<translation id="1228893227497259893">Helytelen entitásazonosító</translation>
-<translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
-<translation id="4372948949327679948">Várt <ph name="VALUE_TYPE"/> érték.</translation>
-<translation id="2094505752054353250">Domainkeveredés</translation>
-<translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7537536606612762813">Kötelező</translation>
-<translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
-<translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
-<translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">Hiányzó eszközrekord</translation>
-<translation id="1491151370853475546">Az oldal újratöltése</translation>
-<translation id="8553075262323480129">A fordítás nem sikerült, mivel az oldal nyelvét nem lehet megállapítani.</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314"><ph name="LANGUAGE"/> - mindig legyen lefordítva</translation>
-<translation id="1227633850867390598">Érték elrejtése</translation>
-<translation id="6753269504797312559">Házirend értéke</translation>
-<translation id="3369366829301677151">Aktualizálja és igazolja a következő kártyáját: <ph name="CREDIT_CARD"/></translation>
-<translation id="8834246243508017242">Az Ismerősöket felhasználó Automatikus kitöltés engedélyezése…</translation>
-<translation id="7275334191706090484">Kezelt könyvjelzők</translation>
-<translation id="7400418766976504921">URL</translation>
-<translation id="7378627244592794276">Nem</translation>
-<translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="1055184225775184556">&amp;Hozzáadás visszavonása</translation>
-<translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
-<translation id="4850886885716139402">Nézet</translation>
-<translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
-<translation id="6874604403660855544">&amp;Hozzáadás újra</translation>
-<translation id="4607653538520819196">Ez az oldal nem jeleníthető meg az Adatforgalom-csökkentő használatával.</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Körzet</translation>
-<translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
-<translation id="8988760548304185580">Adja meg a lejárati dátumot, és a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
-<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> futtatása a következő paranccsal: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">Ismeretlen hiba</translation>
-<translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
-<translation id="3452404311384756672">Lekérési intervallum:</translation>
-<translation id="409504436206021213">Ne töltse újra</translation>
-<translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
-<translation id="3885155851504623709">Körzet</translation>
-<translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
-<translation id="1426410128494586442">Igen</translation>
-<translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="7108649287766967076">A(z) <ph name="TARGET_LANGUAGE"/> nyelvre fordítás sikertelen volt.</translation>
-<translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
-<translation id="3219579145727097045">Adja meg a lejárati dátumot, és a kártya elején szereplő négyjegyű CVC-kódot</translation>
-<translation id="59107663811261420">A Google Payments ennél a kereskedőnél nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon másik kártyát.</translation>
-<translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
-<translation id="5540224163453853">A kért cikk nem található.</translation>
-<translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
-<translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
-<translation id="333371639341676808">Ez az oldal ne nyisson meg további párbeszédablakokat.</translation>
-<translation id="5523118979700054094">Az irányelv neve</translation>
-<translation id="7791543448312431591">Hozzáadás</translation>
-<translation id="2053553514270667976">Irányítószám</translation>
-<translation id="1644184664548287040">A hálózati konfiguráció érvénytelen és nem importálható.</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">Nem találhatók irányelvek</translation>
-<translation id="3150653042067488994">Átmeneti szerverhiba</translation>
-<translation id="7087282848513945231">Megye</translation>
-<translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
-<translation id="8194797478851900357">&amp;Áthelyezés visszavonása</translation>
-<translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
-<translation id="6259156558325130047">&amp;Átrendezés újra</translation>
-<translation id="1227224963052638717">Ismeretlen házirend</translation>
-<translation id="4250680216510889253">Nem</translation>
-<translation id="9207861905230894330">A cikk hozzáadása sikertelen.</translation>
-<translation id="5872918882028971132">Szülői javaslatok</translation>
-<translation id="337363190475750230">Deaktiválva</translation>
-<translation id="2367567093518048410">Szint</translation>
-<translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
-<translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
-<translation id="5317780077021120954">Mentés</translation>
-<translation id="8530504477309582336">A Google Payments nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>
-<translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE"/>.</translation>
-<translation id="3739623965217189342">Átmásolt link</translation>
-<translation id="8790007591277257123">&amp;Törlés újra</translation>
-<translation id="8311778656528046050">Biztos, hogy újra szeretné tölteni ezt az oldalt?</translation>
-<translation id="370665806235115550">Betöltés…</translation>
-<translation id="2096368010154057602">Megye</translation>
-<translation id="6529602333819889595">&amp;Törlés újra</translation>
-<translation id="4258748452823770588">Rossz aláírás</translation>
-<translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
-<translation id="2030481566774242610">Erre gondolt: <ph name="LINK"/>?</translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">Ez az érték elavult ennél a házirendnél.</translation>
-<translation id="3145945101586104090">Nem sikerült dekódolni a választ</translation>
-<translation id="2328300916057834155">Mellőzött érvénytelen könyvjelző a(z) <ph name="ENTRY_INDEX"/>. indexnél</translation>
-<translation id="883848425547221593">Egyéb könyvjelzők</translation>
-<translation id="2181821976797666341">Házirendek</translation>
-<translation id="3174168572213147020">Sziget</translation>
-<translation id="9137013805542155359">Eredeti megjelenítése</translation>
-<translation id="2213606439339815911">Bejegyzések lekérése...</translation>
-<translation id="6263376278284652872"><ph name="DOMAIN"/> könyvjelzők</translation>
-<translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE"/> nyelvről <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
-<translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
-<translation id="3542684924769048008">Jelszó használata a következőre:</translation>
-<translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD"/> kártya igazolása</translation>
-<translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről fordítottuk<ph name="LANGUAGE_LANGUAGE"/>nyelvre.</translation>
-<translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
-<translation id="7139724024395191329">Emírség</translation>
-<translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
-<translation id="5145883236150621069">Az irányelv válasza hibakódot tartalmaz</translation>
-<translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE"/> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE"/> nyelvre</translation>
-<translation id="6970216967273061347">Kerület</translation>
-<translation id="3427342743765426898">&amp;Szerkesztés újra</translation>
-<translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>.&quot; listabejegyzés: <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
-<translation id="6445051938772793705">Ország</translation>
-<translation id="5031870354684148875">A Google Fordító leírása</translation>
-<translation id="1152921474424827756">A(z) <ph name="URL"/> egy <ph name="BEGIN_LINK"/>tárolt változatának<ph name="END_LINK"/> megtekintése</translation>
-<translation id="8201077131113104583">A(z) „<ph name="EXTENSION_ID"/>” azonosítójú bővítmény frissítési URL-je érvénytelen.</translation>
-<translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
-<translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
-<translation id="1853748787962613237">Nem sikerült megjeleníteni a cikket.</translation>
-<translation id="5455374756549232013">Hibás az irányelv időbélyege</translation>
-<translation id="2025623846716345241">Újratöltés megerősítése</translation>
-<translation id="1962204205936693436">A(z) <ph name="DOMAIN"/> könyvjelzői</translation>
-<translation id="4300246636397505754">Szülői javaslatok</translation>
-<translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
-<translation id="2495083838625180221">JSON Parser</translation>
-<translation id="1973335181906896915">Szerializálási hiba</translation>
-<translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
-<translation id="7805768142964895445">Állapot</translation>
-<translation id="2113977810652731515">Kártya</translation>
+<translation id="106701514854093668">Asztali könyvjelzők</translation>
+<translation id="1103523840287552314"><ph name="LANGUAGE"/> - mindig legyen lefordítva</translation>
 <translation id="1113869188872983271">&amp;Átrendezés visszavonása</translation>
-<translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
-<translation id="5439770059721715174">Sémaérvényesítési hiba a következőnél: „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">Könyvjelzősáv</translation>
-<translation id="587701087903783706">A mobilbarát nézet bezárása</translation>
-<translation id="7208899522964477531">Keresés <ph name="SITE_NAME"/> keresővel a következő kifejezésre: &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
-<translation id="7956713633345437162">Mobil könyvjelzők</translation>
-<translation id="5089810972385038852">Állam</translation>
-<translation id="647261751007945333">Eszközházirendek</translation>
-<translation id="2556876185419854533">&amp;Szerkesztés visszavonása</translation>
-<translation id="213826338245044447">Mobil könyvjelzők</translation>
-<translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
-<translation id="8571890674111243710">Oldal fordítása erre a nyelvre: <ph name="LANGUAGE"/>...</translation>
-<translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
-<translation id="2114841414352855701">A rendszer figyelmen kívül hagyja, mivel a(z) <ph name="POLICY_NAME"/> felülírta.</translation>
-<translation id="3228969707346345236">A fordítás nem sikerült, mert az oldal már ezen a nyelven van: <ph name="LANGUAGE"/>.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
-<translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
-<translation id="1734864079702812349">American Express</translation>
-<translation id="8891727572606052622">Érvénytelen proxymód.</translation>
-<translation id="3105172416063519923">Tartalomazonosító:</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
-<translation id="2587841377698384444">Könyvtár API-azonosítója:</translation>
-<translation id="7752995774971033316">Nem kezelt</translation>
-<translation id="3712624925041724820">Az engedélyek elfogytak</translation>
-<translation id="4926049483395192435">Meg kell határozni.</translation>
-<translation id="1455235771979731432">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, és próbálja újra.</translation>
-<translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
-<translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE"/> nyelven van? Hiba bejelentése</translation>
-<translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
-<translation id="8725066075913043281">Újrapróbálás</translation>
-<translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
-<translation id="1640180200866533862">Felhasználói házirendek</translation>
-<translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
-<translation id="2597378329261239068">Ez a dokumentum jelszóval védett. Kérjük, adja meg a jelszót.</translation>
-<translation id="5629630648637658800">Az irányelv-beállítások betöltése sikertelen</translation>
-<translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
-<translation id="2354001756790975382">További könyvjelzők</translation>
-<translation id="3650584904733503804">Sikeres érvényesítés</translation>
-<translation id="2359808026110333948">Folytatás</translation>
-<translation id="6915804003454593391">Felhasználó:</translation>
-<translation id="3377188786107721145">Irányelv-előfeldolgozási hiba</translation>
-<translation id="2270192940992995399">Nem sikerült megtalálni a cikket.</translation>
-<translation id="4726672564094551039">Házirendek újratöltése</translation>
-<translation id="9170848237812810038">&amp;Visszavonás</translation>
-<translation id="9154176715500758432">Maradok ezen az oldalon</translation>
-<translation id="2392959068659972793">Beállított értékkel nem rendelkező házirendek megjelenítése</translation>
-<translation id="9148507642005240123">&amp;Szerkesztés visszavonása</translation>
-<translation id="5470861586879999274">&amp;Szerkesztés újra</translation>
-<translation id="5190835502935405962">Könyvjelzősáv</translation>
-<translation id="6965978654500191972">Készülék</translation>
-<translation id="5295309862264981122">Navigálás megerősítése</translation>
-<translation id="8249320324621329438">Utolsó lekérés:</translation>
-<translation id="194030505837763158">Ugrás ide: <ph name="LINK"/></translation>
+<translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
+<translation id="112840717907525620">Irányelv-gyorsítótár OK</translation>
+<translation id="1132774398110320017">A Chrome Automatikus kitöltési beállításai…</translation>
+<translation id="1152921474424827756">A(z) <ph name="URL"/> egy <ph name="BEGIN_LINK"/>tárolt változatának<ph name="END_LINK"/> megtekintése</translation>
+<translation id="1227224963052638717">Ismeretlen házirend</translation>
+<translation id="1227633850867390598">Érték elrejtése</translation>
+<translation id="1228893227497259893">Helytelen entitásazonosító</translation>
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
+<translation id="1339601241726513588">Regisztrációs domain:</translation>
 <translation id="1344588688991793829">A Chromium Automatikus kitöltési beállításai…</translation>
-<translation id="6282194474023008486">Irányítószám</translation>
-<translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
-<translation id="3623476034248543066">Érték megjelenítése</translation>
-<translation id="9020542370529661692">Az oldalt lefordítottuk <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
-<translation id="5631439013527180824">Érvénytelen eszközkezelési token</translation>
-<translation id="560412284261940334">A kezelés nem támogatott</translation>
-<translation id="6512448926095770873">Az oldal elhagyása</translation>
+<translation id="1426410128494586442">Igen</translation>
+<translation id="1455235771979731432">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, és próbálja újra.</translation>
+<translation id="1491151370853475546">Az oldal újratöltése</translation>
+<translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
 <translation id="1639239467298939599">Betöltés</translation>
-<translation id="3169472444629675720">Discover</translation>
-<translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE"/> nyelvre</translation>
-<translation id="4813512666221746211">Hálózati hiba</translation>
+<translation id="1640180200866533862">Felhasználói házirendek</translation>
+<translation id="1644184664548287040">A hálózati konfiguráció érvénytelen és nem importálható.</translation>
+<translation id="1693754753824026215">A <ph name="SITE"/> webhelyen lévő oldal közlendője:</translation>
+<translation id="1734864079702812349">American Express</translation>
+<translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
+<translation id="1853748787962613237">Nem sikerült megjeleníteni a cikket.</translation>
+<translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
 <translation id="1875753206475436906">heurisztika típusa: <ph name="HEURISTIC_TYPE"/>
     szerver típusa: <ph name="SERVER_TYPE"/>
     mező aláírása: <ph name="FIELD_SIGNATURE"/>
     űrlap aláírása: <ph name="FORM_SIGNATURE"/>
     kísérlet azonosítója: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
-<translation id="2479410451996844060">Érvénytelen keresési URL</translation>
-<translation id="5509780412636533143">Kezelt könyvjelzők</translation>
-<translation id="935608979562296692">ŰRLAP TÖRLÉSE</translation>
-<translation id="8866481888320382733">Irányelv-beállítások előfeldolgozási hibája</translation>
-<translation id="4120075327926916474">Szeretné, hogy a Chrome elmentse ezt a bankkártya-információt a internetes űrlapok kitöltéséhez?</translation>
-<translation id="6644283850729428850">Ez a házirend már elavult.</translation>
-<translation id="1693754753824026215">A <ph name="SITE"/> webhelyen lévő oldal közlendője:</translation>
-<translation id="4269787794583293679">(Nincs felhasználónév)</translation>
-<translation id="7988324688042446538">Asztali könyvjelzők</translation>
-<translation id="8488350697529856933">A következőre érvényes</translation>
-<translation id="6165508094623778733">További információ</translation>
-<translation id="5565735124758917034">Aktív</translation>
-<translation id="7568593326407688803">Az oldal nyelve<ph name="ORIGINAL_LANGUAGE"/>Kívánja lefordítani?</translation>
-<translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
-<translation id="4800132727771399293">Ellenőrizze a lejárati dátumot és a CVC-t, majd próbálja újra</translation>
-<translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
-<translation id="9125941078353557812">Adja meg a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
-<translation id="106701514854093668">Asztali könyvjelzők</translation>
-<translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
-<translation id="7995512525968007366">Nincs megadva</translation>
-<translation id="7961015016161918242">Soha</translation>
-<translation id="2835170189407361413">Űrlap törlése</translation>
-<translation id="6550675742724504774">Beállítások</translation>
-<translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
-<translation id="988159990683914416">Fejlesztői változat</translation>
-<translation id="7334320624316649418">&amp;Átrendezés újra</translation>
-<translation id="7182878459783632708">Nincsenek beállított házirendek</translation>
-<translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
-<translation id="8364627913115013041">Nincs beállítva.</translation>
-<translation id="8713130696108419660">Helytelen első aláírás</translation>
-<translation id="3270847123878663523">&amp;Átrendezés visszavonása</translation>
+<translation id="194030505837763158">Ugrás ide: <ph name="LINK"/></translation>
+<translation id="1962204205936693436">A(z) <ph name="DOMAIN"/> könyvjelzői</translation>
+<translation id="1973335181906896915">Szerializálási hiba</translation>
+<translation id="2025186561304664664">Automatikusan konfigurálhatóra beállított proxy.</translation>
+<translation id="2025623846716345241">Újratöltés megerősítése</translation>
+<translation id="2030481566774242610">Erre gondolt: <ph name="LINK"/>?</translation>
+<translation id="2053553514270667976">Irányítószám</translation>
 <translation id="20817612488360358">A rendszer proxybeállításai konfigurálva vannak a használathoz, de kifejezett proxykonfiguráció is meg van adva.</translation>
-<translation id="2639739919103226564">Állapot:</translation>
-<translation id="8824019021993735287">A Chrome ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
-<translation id="4968547170521245791">A helyettesítés (proxy) nem hajtható végre</translation>
-<translation id="385051799172605136">Vissza</translation>
-<translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
-<translation id="5095208057601539847">Tartomány</translation>
-<translation id="2581221116934462656">Szeretné, hogy a(z) <ph name="PRODUCT_NAME"/> legközelebb felajánlja a webhely <ph name="LANGUAGE_NAME"/> nyelvű oldalainak lefordítását?</translation>
+<translation id="2094505752054353250">Domainkeveredés</translation>
+<translation id="2096368010154057602">Megye</translation>
+<translation id="2113977810652731515">Kártya</translation>
+<translation id="2114841414352855701">A rendszer figyelmen kívül hagyja, mivel a(z) <ph name="POLICY_NAME"/> felülírta.</translation>
+<translation id="213826338245044447">Mobil könyvjelzők</translation>
+<translation id="2181821976797666341">Házirendek</translation>
+<translation id="2212735316055980242">Nem találhatók irányelvek</translation>
+<translation id="2213606439339815911">Bejegyzések lekérése...</translation>
+<translation id="225207911366869382">Ez az érték elavult ennél a házirendnél.</translation>
+<translation id="2262243747453050782">HTTP hiba</translation>
+<translation id="2270192940992995399">Nem sikerült megtalálni a cikket.</translation>
+<translation id="2328300916057834155">Mellőzött érvénytelen könyvjelző a(z) <ph name="ENTRY_INDEX"/>. indexnél</translation>
+<translation id="2354001756790975382">További könyvjelzők</translation>
+<translation id="2359808026110333948">Folytatás</translation>
+<translation id="2367567093518048410">Szint</translation>
+<translation id="2392959068659972793">Beállított értékkel nem rendelkező házirendek megjelenítése</translation>
 <translation id="2396249848217231973">&amp;Törlés visszavonása</translation>
-<translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2455981314101692989">A weboldal letiltotta az automatikus kitöltést erre az űrlapra.</translation>
-<translation id="6597614308054261376">A következő webhelyet próbálja elérni: <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Az Adatforgalom-csökkentő jelenleg nem tudja megjeleníteni ezt az oldalt.</translation>
-<translation id="8308427013383895095">A fordítás a hálózati kapcsolat problémája miatt nem sikerült.</translation>
-<translation id="5720705177508910913">Jelenlegi felhasználó</translation>
+<translation id="2479410451996844060">Érvénytelen keresési URL</translation>
+<translation id="2495083838625180221">JSON Parser</translation>
+<translation id="2498091847651709837">Új kártya beolvasása</translation>
+<translation id="2556876185419854533">&amp;Szerkesztés visszavonása</translation>
+<translation id="2581221116934462656">Szeretné, hogy a(z) <ph name="PRODUCT_NAME"/> legközelebb felajánlja a webhely <ph name="LANGUAGE_NAME"/> nyelvű oldalainak lefordítását?</translation>
+<translation id="2587841377698384444">Könyvtár API-azonosítója:</translation>
+<translation id="2597378329261239068">Ez a dokumentum jelszóval védett. Kérjük, adja meg a jelszót.</translation>
+<translation id="2639739919103226564">Állapot:</translation>
+<translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
+<translation id="2721148159707890343">Sikeres kérés</translation>
+<translation id="2774256287122201187">Folytathatja a böngészést. Ha továbblép az oldalra, akkor ez a figyelmeztetés a következő öt percben nem fog újra megjelenni.</translation>
+<translation id="277499241957683684">Hiányzó eszközrekord</translation>
+<translation id="2835170189407361413">Űrlap törlése</translation>
+<translation id="2855922900409897335">A(z) <ph name="CREDIT_CARD"/> kártya igazolása</translation>
+<translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
+<translation id="2972581237482394796">&amp;Újra</translation>
+<translation id="3010559122411665027">&quot;<ph name="ENTRY_INDEX"/>.&quot; listabejegyzés: <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">Nem megfelelő irányelvtípus</translation>
+<translation id="3105172416063519923">Tartalomazonosító:</translation>
+<translation id="3145945101586104090">Nem sikerült dekódolni a választ</translation>
+<translation id="3150653042067488994">Átmeneti szerverhiba</translation>
+<translation id="3169472444629675720">Discover</translation>
+<translation id="3174168572213147020">Sziget</translation>
+<translation id="3219579145727097045">Adja meg a lejárati dátumot, és a kártya elején szereplő négyjegyű CVC-kódot</translation>
+<translation id="3228969707346345236">A fordítás nem sikerült, mert az oldal már ezen a nyelven van: <ph name="LANGUAGE"/>.</translation>
+<translation id="3270847123878663523">&amp;Átrendezés visszavonása</translation>
+<translation id="333371639341676808">Ez az oldal ne nyisson meg további párbeszédablakokat.</translation>
+<translation id="3369366829301677151">Aktualizálja és igazolja a következő kártyáját: <ph name="CREDIT_CARD"/></translation>
+<translation id="337363190475750230">Deaktiválva</translation>
+<translation id="3377188786107721145">Irányelv-előfeldolgozási hiba</translation>
+<translation id="3380365263193509176">Ismeretlen hiba</translation>
 <translation id="3380864720620200369">Ügyfél-azonosító:</translation>
+<translation id="3427342743765426898">&amp;Szerkesztés újra</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">Lekérési intervallum:</translation>
+<translation id="3542684924769048008">Jelszó használata a következőre:</translation>
+<translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
+<translation id="3623476034248543066">Érték megjelenítése</translation>
+<translation id="3650584904733503804">Sikeres érvényesítés</translation>
+<translation id="370665806235115550">Betöltés…</translation>
+<translation id="3712624925041724820">Az engedélyek elfogytak</translation>
+<translation id="3739623965217189342">Átmásolt link</translation>
+<translation id="375403751935624634">A fordítás a szerver hibája miatt nem sikerült.</translation>
+<translation id="385051799172605136">Vissza</translation>
+<translation id="3884278016824448484">Eszközazonosító-ütközés</translation>
+<translation id="3885155851504623709">Körzet</translation>
+<translation id="3934680773876859118">PDF dokumentum betöltése sikertelen</translation>
+<translation id="3963721102035795474">Olvasási mód</translation>
+<translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
+<translation id="4058922952496707368">&quot;<ph name="SUBKEY"/>&quot; kulcs: <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
+<translation id="409504436206021213">Ne töltse újra</translation>
+<translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
+<translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
+<translation id="4120075327926916474">Szeretné, hogy a Chrome elmentse ezt a bankkártya-információt a internetes űrlapok kitöltéséhez?</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">Hibás igazoló aláírás.</translation>
+<translation id="4196861286325780578">&amp;Áthelyezés újra</translation>
+<translation id="4250680216510889253">Nem</translation>
+<translation id="4258748452823770588">Rossz aláírás</translation>
+<translation id="4269787794583293679">(Nincs felhasználónév)</translation>
+<translation id="4300246636397505754">Szülői javaslatok</translation>
+<translation id="4372948949327679948">Várt <ph name="VALUE_TYPE"/> érték.</translation>
+<translation id="443673843213245140">A proxy használata le van tiltva, de kifejezett proxykonfiguráció van megadva.</translation>
+<translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR"/></translation>
+<translation id="4587425331216688090">Eltávolítja a címet a Chrome-ból?</translation>
+<translation id="4594403342090139922">&amp;Törlés visszavonása</translation>
+<translation id="4607653538520819196">Ez az oldal nem jeleníthető meg az Adatforgalom-csökkentő használatával.</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">Házirendek újratöltése</translation>
+<translation id="4800132727771399293">Ellenőrizze a lejárati dátumot és a CVC-t, majd próbálja újra</translation>
+<translation id="4813512666221746211">Hálózati hiba</translation>
+<translation id="4850886885716139402">Nézet</translation>
+<translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE"/> nyelvre</translation>
+<translation id="4926049483395192435">Meg kell határozni.</translation>
+<translation id="4968547170521245791">A helyettesítés (proxy) nem hajtható végre</translation>
+<translation id="498957508165411911">Lefordítja <ph name="ORIGINAL_LANGUAGE"/> nyelvről <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
+<translation id="5019198164206649151">A háttértároló állapota nem megfelelő</translation>
+<translation id="5031870354684148875">A Google Fordító leírása</translation>
+<translation id="5089810972385038852">Állam</translation>
+<translation id="5095208057601539847">Tartomány</translation>
+<translation id="5145883236150621069">Az irányelv válasza hibakódot tartalmaz</translation>
+<translation id="5172758083709347301">Számítógép</translation>
+<translation id="5179510805599951267">Nem <ph name="ORIGINAL_LANGUAGE"/> nyelven van? Hiba bejelentése</translation>
+<translation id="5190835502935405962">Könyvjelzősáv</translation>
+<translation id="5295309862264981122">Navigálás megerősítése</translation>
+<translation id="5299298092464848405">Irányelv-előfeldolgozási hiba</translation>
+<translation id="5317780077021120954">Mentés</translation>
+<translation id="536296301121032821">Az irányelv-beállítások tárolása sikertelen</translation>
+<translation id="5439770059721715174">Sémaérvényesítési hiba a következőnél: „<ph name="ERROR_PATH"/>”: <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">Hibás az irányelv időbélyege</translation>
+<translation id="5470861586879999274">&amp;Szerkesztés újra</translation>
+<translation id="5509780412636533143">Kezelt könyvjelzők</translation>
+<translation id="5523118979700054094">Az irányelv neve</translation>
+<translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
+<translation id="5540224163453853">A kért cikk nem található.</translation>
+<translation id="5565735124758917034">Aktív</translation>
+<translation id="560412284261940334">A kezelés nem támogatott</translation>
+<translation id="5629630648637658800">Az irányelv-beállítások betöltése sikertelen</translation>
+<translation id="5631439013527180824">Érvénytelen eszközkezelési token</translation>
+<translation id="5720705177508910913">Jelenlegi felhasználó</translation>
+<translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
+<translation id="5872918882028971132">Szülői javaslatok</translation>
+<translation id="587701087903783706">A mobilbarát nézet bezárása</translation>
+<translation id="59107663811261420">A Google Payments ennél a kereskedőnél nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon másik kártyát.</translation>
+<translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">A visszaadott irányelvtoken nem egyezik az aktuális tokennel</translation>
+<translation id="6165508094623778733">További információ</translation>
+<translation id="6259156558325130047">&amp;Átrendezés újra</translation>
+<translation id="6263376278284652872"><ph name="DOMAIN"/> könyvjelzők</translation>
+<translation id="6282194474023008486">Irányítószám</translation>
+<translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
+<translation id="6445051938772793705">Ország</translation>
+<translation id="6458467102616083041">A rendszer figyelmen kívül hagyja, mivel az alapértelmezett keresést házirend tiltja le.</translation>
+<translation id="647261751007945333">Eszközházirendek</translation>
+<translation id="6512448926095770873">Az oldal elhagyása</translation>
+<translation id="6529602333819889595">&amp;Törlés újra</translation>
+<translation id="6550675742724504774">Beállítások</translation>
+<translation id="6597614308054261376">A következő webhelyet próbálja elérni: <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Az Adatforgalom-csökkentő jelenleg nem tudja megjeleníteni ezt az oldalt.</translation>
+<translation id="6628463337424475685">Keresés: <ph name="ENGINE"/></translation>
+<translation id="6644283850729428850">Ez a házirend már elavult.</translation>
+<translation id="6646897916597483132">Adja meg a kártya elején szereplő négyjegyű CVC-kódot</translation>
+<translation id="6753269504797312559">Házirend értéke</translation>
+<translation id="6831043979455480757">Fordítás</translation>
+<translation id="6839929833149231406">Körzet</translation>
+<translation id="6874604403660855544">&amp;Hozzáadás újra</translation>
+<translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
+<translation id="6915804003454593391">Felhasználó:</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">Készülék</translation>
+<translation id="6970216967273061347">Kerület</translation>
+<translation id="6973656660372572881">Mindkét fix proxyszerver és egy .Pac típusú szkript URL-címe meg van adva.</translation>
+<translation id="6980028882292583085">JavaScript-figyelmeztetés</translation>
+<translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7087282848513945231">Megye</translation>
+<translation id="7108649287766967076">A(z) <ph name="TARGET_LANGUAGE"/> nyelvre fordítás sikertelen volt.</translation>
+<translation id="7139724024395191329">Emírség</translation>
+<translation id="7180611975245234373">Frissítés</translation>
+<translation id="7182878459783632708">Nincsenek beállított házirendek</translation>
+<translation id="7186367841673660872">Ezt az oldalt<ph name="ORIGINAL_LANGUAGE"/>nyelvről fordítottuk<ph name="LANGUAGE_LANGUAGE"/>nyelvre.</translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">Keresés <ph name="SITE_NAME"/> keresővel a következő kifejezésre: &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
+<translation id="7275334191706090484">Kezelt könyvjelzők</translation>
+<translation id="7298195798382681320">Ajánlott</translation>
+<translation id="7334320624316649418">&amp;Átrendezés újra</translation>
+<translation id="7378627244592794276">Nem</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7441627299479586546">Az irányelv tárgya nem megfelelő</translation>
+<translation id="7485870689360869515">Nem található adat.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7537536606612762813">Kötelező</translation>
+<translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
+<translation id="7568593326407688803">Az oldal nyelve<ph name="ORIGINAL_LANGUAGE"/>Kívánja lefordítani?</translation>
+<translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
+<translation id="7600965453749440009">Soha ne fordítsa le a(z) <ph name="LANGUAGE"/> nyelvű szöveget</translation>
+<translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE"/>.</translation>
+<translation id="7752995774971033316">Nem kezelt</translation>
+<translation id="777702478322588152">Prefektúra</translation>
+<translation id="7791543448312431591">Hozzáadás</translation>
+<translation id="7805768142964895445">Állapot</translation>
+<translation id="7813600968533626083">Eltávolítja a javaslatot a Chrome-ból?</translation>
+<translation id="7887683347370398519">Ellenőrizze a CVC-t, majd próbálja újra</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">Mobil könyvjelzők</translation>
+<translation id="7961015016161918242">Soha</translation>
+<translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
+<translation id="7983301409776629893">A(z) <ph name="ORIGINAL_LANGUAGE"/> nyelvű szövegeket mindig fordítsa <ph name="TARGET_LANGUAGE"/> nyelvre</translation>
+<translation id="7988324688042446538">Asztali könyvjelzők</translation>
+<translation id="7995512525968007366">Nincs megadva</translation>
+<translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
+<translation id="8088680233425245692">Nem sikerült megtekinteni a cikket.</translation>
+<translation id="8091372947890762290">Az aktiválás függőben van a szerveren</translation>
+<translation id="8194797478851900357">&amp;Áthelyezés visszavonása</translation>
+<translation id="8201077131113104583">A(z) „<ph name="EXTENSION_ID"/>” azonosítójú bővítmény frissítési URL-je érvénytelen.</translation>
+<translation id="8208216423136871611">Ne mentse</translation>
+<translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
+<translation id="8249320324621329438">Utolsó lekérés:</translation>
+<translation id="8308427013383895095">A fordítás a hálózati kapcsolat problémája miatt nem sikerült.</translation>
+<translation id="8311778656528046050">Biztos, hogy újra szeretné tölteni ezt az oldalt?</translation>
+<translation id="8349305172487531364">Könyvjelzősáv</translation>
+<translation id="8364627913115013041">Nincs beállítva.</translation>
+<translation id="8437238597147034694">&amp;Áthelyezés visszavonása</translation>
+<translation id="8488350697529856933">A következőre érvényes</translation>
+<translation id="8530504477309582336">A Google Payments nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon egy másikat.</translation>
+<translation id="8553075262323480129">A fordítás nem sikerült, mivel az oldal nyelvét nem lehet megállapítani.</translation>
+<translation id="8571890674111243710">Oldal fordítása erre a nyelvre: <ph name="LANGUAGE"/>...</translation>
+<translation id="8713130696108419660">Helytelen első aláírás</translation>
+<translation id="8725066075913043281">Újrapróbálás</translation>
+<translation id="8790007591277257123">&amp;Törlés újra</translation>
+<translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
+<translation id="8824019021993735287">A Chrome ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
+<translation id="8834246243508017242">Az Ismerősöket felhasználó Automatikus kitöltés engedélyezése…</translation>
+<translation id="883848425547221593">Egyéb könyvjelzők</translation>
+<translation id="8866481888320382733">Irányelv-beállítások előfeldolgozási hibája</translation>
+<translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
+<translation id="8891727572606052622">Érvénytelen proxymód.</translation>
+<translation id="8940229512486821554"><ph name="EXTENSION_NAME"/> futtatása a következő paranccsal: <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">Adja meg a lejárati dátumot, és a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
+<translation id="9020542370529661692">Az oldalt lefordítottuk <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
+<translation id="9125941078353557812">Adja meg a kártya hátoldalán szereplő háromjegyű CVC-kódot</translation>
+<translation id="9137013805542155359">Eredeti megjelenítése</translation>
+<translation id="9148507642005240123">&amp;Szerkesztés visszavonása</translation>
+<translation id="9154176715500758432">Maradok ezen az oldalon</translation>
+<translation id="9170848237812810038">&amp;Visszavonás</translation>
+<translation id="9207861905230894330">A cikk hozzáadása sikertelen.</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">ŰRLAP TÖRLÉSE</translation>
+<translation id="988159990683914416">Fejlesztői változat</translation>
 </translationbundle>

@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="es">
-<translation id="8008366997883261463">Terrier Jack Russell</translation>
-<translation id="7165320105431587207">Error al configurar la red</translation>
-<translation id="4387004326333427325">Certificado de autenticación rechazado de forma remota</translation>
-<translation id="6943836128787782965">Error al obtener HTTP</translation>
+<translation id="1119447706177454957">Error interno</translation>
+<translation id="153454903766751181">Iniciando módem móvil...</translation>
+<translation id="158849752021629804">Es necesaria una red doméstica.</translation>
 <translation id="1661867754829461514">Falta el PIN.</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: conectando...</translation>
+<translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
+<translation id="1829129547161959350">Pingüino</translation>
+<translation id="1850504506766569011">La conexión Wi-Fi está desactivada.</translation>
+<translation id="2288278176040912387">Tocadiscos</translation>
+<translation id="2354174487190027830">Activación de <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
+<translation id="2563185590376525700">Rana</translation>
+<translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME"/> se ha activado y está listo para que lo uses.</translation>
+<translation id="2649120831653069427">Pez arcoíris</translation>
+<translation id="2670531586141364277">La activación de <ph name="NAME"/> requiere una conexión de red.</translation>
+<translation id="2894654529758326923">Información</translation>
+<translation id="2951236788251446349">Medusa</translation>
+<translation id="2966449113954629791">Es posible que hayas agotado los datos de tu plan de datos móviles. Accede al portal de activación de <ph name="NAME"/> para comprar más datos.</translation>
+<translation id="3846575436967432996">No hay información de red disponible.</translation>
+<translation id="3871838685472846647">Móvil activado</translation>
+<translation id="3901991538546252627">Conectando con: <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Error de activación de red</translation>
 <translation id="4237016987259239829">Error de conexión de red</translation>
+<translation id="4274292172790327596">Error desconocido</translation>
+<translation id="4326192123064055915">Café</translation>
+<translation id="4387004326333427325">Certificado de autenticación rechazado de forma remota</translation>
+<translation id="4442424173763614572">Error al buscar DNS</translation>
+<translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: conectando...</translation>
 <translation id="4508265954913339219">Error de activación</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Contraseña incorrecta</translation>
-<translation id="3846575436967432996">No hay información de red disponible.</translation>
-<translation id="153454903766751181">Iniciando módem móvil...</translation>
-<translation id="735745346212279324">VPN desconectada</translation>
+<translation id="4935975195727477204">Gazania</translation>
+<translation id="5045550434625856497">Contraseña incorrecta</translation>
+<translation id="5097002363526479830">Error al establecer conexión con la red &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Ajedrez</translation>
+<translation id="5257456363153333584">Libélula</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Gato</translation>
-<translation id="7170041865419449892">Fuera del alcance</translation>
-<translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
-<translation id="7973962044839454485">Se ha producido un error en la autenticación de PPP porque la contraseña o el nombre de usuario son incorrectos</translation>
-<translation id="6549021752953852991">No hay ninguna red móvil disponible.</translation>
+<translation id="5864471791310927901">Error de búsqueda de DHCP</translation>
+<translation id="6232116551750539448">Se ha perdido la conexión a <ph name="NAME"/></translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Activando...</translation>
+<translation id="6312403991423642364">Error desconocido de red</translation>
 <translation id="6490455614072479501">Error al conectarse a &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
         Mensaje del servidor: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">La activación de <ph name="NAME"/> requiere una conexión de red.</translation>
-<translation id="4442424173763614572">Error al buscar DNS</translation>
-<translation id="7874779702599364982">Buscando redes móviles...</translation>
-<translation id="3901991538546252627">Conectando con: <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
-<translation id="2563185590376525700">Rana</translation>
-<translation id="7256405249507348194">Error no reconocido: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Información</translation>
-<translation id="6935521024859866267">Boca abajo</translation>
-<translation id="7925247922861151263">Error de comprobación de AAA</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Error desconocido de red</translation>
-<translation id="4326192123064055915">Café</translation>
-<translation id="2354174487190027830">Activación de <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Pingüino</translation>
-<translation id="515594325917491223">Ajedrez</translation>
-<translation id="5097002363526479830">Error al establecer conexión con la red &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">La conexión Wi-Fi está desactivada.</translation>
-<translation id="2966449113954629791">Es posible que hayas agotado los datos de tu plan de datos móviles. Accede al portal de activación de <ph name="NAME"/> para comprar más datos.</translation>
-<translation id="8132793192354020517">Conectado a <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Error interno</translation>
-<translation id="5045550434625856497">Contraseña incorrecta</translation>
-<translation id="6232116551750539448">Se ha perdido la conexión a <ph name="NAME"/></translation>
-<translation id="4274292172790327596">Error desconocido</translation>
-<translation id="4448844063988177157">Buscando redes Wi-Fi...</translation>
-<translation id="7229570126336867161">Es necesario el estándar EVDO.</translation>
-<translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">La conexión Wi-Fi está activada.</translation>
-<translation id="3871838685472846647">Móvil activado</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">No hay ninguna red móvil disponible.</translation>
 <translation id="6732801395666424405">No se han cargado los certificados</translation>
-<translation id="8300849813060516376">Error de OTASP</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Activando...</translation>
-<translation id="8714406895390098252">Bicicleta</translation>
-<translation id="5257456363153333584">Libélula</translation>
-<translation id="158849752021629804">Es necesaria una red doméstica.</translation>
-<translation id="2649120831653069427">Pez arcoíris</translation>
-<translation id="2288278176040912387">Tocadiscos</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">Error de búsqueda de DHCP</translation>
-<translation id="9046895021617826162">Error de conexión</translation>
-<translation id="8372369524088641025">Clave WEP incorrecta</translation>
-<translation id="2951236788251446349">Medusa</translation>
-<translation id="8000066093800657092">Ninguna red</translation>
-<translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME"/> se ha activado y está listo para que lo uses.</translation>
-<translation id="4935975195727477204">Gazania</translation>
+<translation id="6935521024859866267">Boca abajo</translation>
+<translation id="6943836128787782965">Error al obtener HTTP</translation>
+<translation id="7165320105431587207">Error al configurar la red</translation>
+<translation id="7170041865419449892">Fuera del alcance</translation>
+<translation id="7229570126336867161">Es necesario el estándar EVDO.</translation>
+<translation id="7256405249507348194">Error no reconocido: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Nombre de usuario o contraseña incorrectos o error de autenticación EAP</translation>
+<translation id="735745346212279324">VPN desconectada</translation>
+<translation id="7874779702599364982">Buscando redes móviles...</translation>
+<translation id="7925247922861151263">Error de comprobación de AAA</translation>
+<translation id="7973962044839454485">Se ha producido un error en la autenticación de PPP porque la contraseña o el nombre de usuario son incorrectos</translation>
+<translation id="8000066093800657092">Ninguna red</translation>
+<translation id="8008366997883261463">Terrier Jack Russell</translation>
+<translation id="8132793192354020517">Conectado a <ph name="NAME"/></translation>
+<translation id="8300849813060516376">Error de OTASP</translation>
+<translation id="8372369524088641025">Clave WEP incorrecta</translation>
+<translation id="8454013096329229812">La conexión Wi-Fi está activada.</translation>
+<translation id="8688591111840995413">Contraseña incorrecta</translation>
+<translation id="8714406895390098252">Bicicleta</translation>
+<translation id="8808686172382650546">Gato</translation>
+<translation id="9044646465488564462">Error al establecer conexión con la red: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Error de conexión</translation>
 </translationbundle>

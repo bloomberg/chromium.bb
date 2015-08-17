@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ru">
-<translation id="2094750046714988961">Не удалось запустить профайлер, поскольку внешнее хранилище недоступно</translation>
 <translation id="1256337885411059545">Не удается воспроизвести видео</translation>
-<translation id="2520230379124234395">Профайлер запущен</translation>
-<translation id="4859501799452851758">Работа профайлера завершена. Результаты сохранены в файле <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Невозможно воспроизвести видео на этом устройстве</translation>
-<translation id="2410828433627930127">Невозможно воспроизвести видео.</translation>
-<translation id="7096034533295549981">Загрузка видео…</translation>
 <translation id="1542044944667958430">Веб-поиск</translation>
-<translation id="6849295950938417341">Не удалось запустить профайлер</translation>
+<translation id="2094750046714988961">Не удалось запустить профайлер, поскольку внешнее хранилище недоступно</translation>
+<translation id="2410828433627930127">Невозможно воспроизвести видео.</translation>
+<translation id="2520230379124234395">Профайлер запущен</translation>
+<translation id="273860350361291195">Невозможно воспроизвести видео на этом устройстве</translation>
+<translation id="4859501799452851758">Работа профайлера завершена. Результаты сохранены в файле <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Поделиться</translation>
+<translation id="6849295950938417341">Не удалось запустить профайлер</translation>
 <translation id="6965382102122355670">ОК</translation>
+<translation id="7096034533295549981">Загрузка видео…</translation>
 </translationbundle>

@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="en-GB">
-<translation id="8008366997883261463">Jack Russell Terrier</translation>
-<translation id="7165320105431587207">Failed to configure network</translation>
-<translation id="4387004326333427325">Authentication certificate rejected remotely</translation>
-<translation id="6943836128787782965">HTTP get failed</translation>
+<translation id="1119447706177454957">Internal error</translation>
+<translation id="153454903766751181">Initialising mobile modem...</translation>
+<translation id="158849752021629804">Need home network</translation>
 <translation id="1661867754829461514">PIN missing</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Connecting...</translation>
+<translation id="1773212559869067373">Authentication certificate rejected locally</translation>
+<translation id="1829129547161959350">Penguin</translation>
+<translation id="1850504506766569011">Wi-Fi is turned off.</translation>
+<translation id="2288278176040912387">Record player</translation>
+<translation id="2354174487190027830">Activating <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Authentication certificate rejected by network</translation>
+<translation id="2563185590376525700">Frog</translation>
+<translation id="2563856802393254086">Congratulations! Your '<ph name="NAME"/>' data service has been activated and is ready to go.</translation>
+<translation id="2649120831653069427">Rainbowfish</translation>
+<translation id="2670531586141364277">Activation of '<ph name="NAME"/>' requires a network connection.</translation>
+<translation id="2894654529758326923">Information</translation>
+<translation id="2951236788251446349">Jellyfish</translation>
+<translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME"/> activation portal to buy more data.</translation>
+<translation id="3846575436967432996">No network information available</translation>
+<translation id="3871838685472846647">Mobile Activated</translation>
+<translation id="3901991538546252627">Connecting to <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Network Activation Error</translation>
 <translation id="4237016987259239829">Network Connection Error</translation>
+<translation id="4274292172790327596">Unrecognised error</translation>
+<translation id="4326192123064055915">Coffee</translation>
+<translation id="4387004326333427325">Authentication certificate rejected remotely</translation>
+<translation id="4442424173763614572">DNS lookup failed</translation>
+<translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Connecting...</translation>
 <translation id="4508265954913339219">Activation failed</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Bad password</translation>
-<translation id="3846575436967432996">No network information available</translation>
-<translation id="153454903766751181">Initialising mobile modem...</translation>
-<translation id="735745346212279324">VPN disconnected</translation>
+<translation id="4935975195727477204">Gazania Flower</translation>
+<translation id="5045550434625856497">Incorrect password</translation>
+<translation id="5097002363526479830">Failed to connect to the network '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Chess</translation>
+<translation id="5257456363153333584">Dragonfly</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">Cat</translation>
-<translation id="7170041865419449892">Out of range</translation>
-<translation id="2544853746127077729">Authentication certificate rejected by network</translation>
-<translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
-<translation id="6549021752953852991">No mobile network available</translation>
+<translation id="5864471791310927901">DHCP look-up failed</translation>
+<translation id="6232116551750539448">Connection to <ph name="NAME"/> has been lost</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Activating...</translation>
+<translation id="6312403991423642364">Unknown network error</translation>
 <translation id="6490455614072479501">Failed to connect to '<ph name="NAME"/>': <ph name="DETAILS"/>
         Server message: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Activation of '<ph name="NAME"/>' requires a network connection.</translation>
-<translation id="4442424173763614572">DNS lookup failed</translation>
-<translation id="7874779702599364982">Searching for cellular networks...</translation>
-<translation id="3901991538546252627">Connecting to <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Authentication certificate rejected locally</translation>
-<translation id="2563185590376525700">Frog</translation>
-<translation id="7256405249507348194">Unrecognised error: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Information</translation>
-<translation id="6935521024859866267">Upside Down</translation>
-<translation id="7925247922861151263">AAA check failed</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Unknown network error</translation>
-<translation id="4326192123064055915">Coffee</translation>
-<translation id="2354174487190027830">Activating <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Penguin</translation>
-<translation id="515594325917491223">Chess</translation>
-<translation id="5097002363526479830">Failed to connect to the network '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi is turned off.</translation>
-<translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME"/> activation portal to buy more data.</translation>
-<translation id="8132793192354020517">Connected to <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Internal error</translation>
-<translation id="5045550434625856497">Incorrect password</translation>
-<translation id="6232116551750539448">Connection to <ph name="NAME"/> has been lost</translation>
-<translation id="4274292172790327596">Unrecognised error</translation>
-<translation id="4448844063988177157">Searching for Wi-Fi networks...</translation>
-<translation id="7229570126336867161">Need EVDO</translation>
-<translation id="9044646465488564462">Failed to connect to network: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi is turned on.</translation>
-<translation id="3871838685472846647">Mobile Activated</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">No mobile network available</translation>
 <translation id="6732801395666424405">Certificates not loaded</translation>
-<translation id="8300849813060516376">OTASP failed</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Activating...</translation>
-<translation id="8714406895390098252">Bicycle</translation>
-<translation id="5257456363153333584">Dragonfly</translation>
-<translation id="158849752021629804">Need home network</translation>
-<translation id="2649120831653069427">Rainbowfish</translation>
-<translation id="2288278176040912387">Record player</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">DHCP look-up failed</translation>
-<translation id="9046895021617826162">Connection failed</translation>
-<translation id="8372369524088641025">Bad WEP key</translation>
-<translation id="2951236788251446349">Jellyfish</translation>
-<translation id="8000066093800657092">No network</translation>
-<translation id="2563856802393254086">Congratulations! Your '<ph name="NAME"/>' data service has been activated and is ready to go.</translation>
-<translation id="4935975195727477204">Gazania Flower</translation>
+<translation id="6935521024859866267">Upside Down</translation>
+<translation id="6943836128787782965">HTTP get failed</translation>
+<translation id="7165320105431587207">Failed to configure network</translation>
+<translation id="7170041865419449892">Out of range</translation>
+<translation id="7229570126336867161">Need EVDO</translation>
+<translation id="7256405249507348194">Unrecognised error: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
+<translation id="735745346212279324">VPN disconnected</translation>
+<translation id="7874779702599364982">Searching for cellular networks...</translation>
+<translation id="7925247922861151263">AAA check failed</translation>
+<translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
+<translation id="8000066093800657092">No network</translation>
+<translation id="8008366997883261463">Jack Russell Terrier</translation>
+<translation id="8132793192354020517">Connected to <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP failed</translation>
+<translation id="8372369524088641025">Bad WEP key</translation>
+<translation id="8454013096329229812">Wi-Fi is turned on.</translation>
+<translation id="8688591111840995413">Bad password</translation>
+<translation id="8714406895390098252">Bicycle</translation>
+<translation id="8808686172382650546">Cat</translation>
+<translation id="9044646465488564462">Failed to connect to network: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Connection failed</translation>
 </translationbundle>

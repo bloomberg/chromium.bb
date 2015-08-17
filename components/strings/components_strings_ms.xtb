@@ -1,268 +1,268 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ms">
-<translation id="2774256287122201187">Anda boleh teruskan. Jika anda terus ke halaman, amaran ini tidak akan muncul lagi selama lima minit.</translation>
-<translation id="3963721102035795474">Mod Pembaca</translation>
-<translation id="7485870689360869515">Tiada data dijumpai.</translation>
-<translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
-<translation id="5172758083709347301">Mesin</translation>
-<translation id="7180611975245234373">Muat semula</translation>
-<translation id="8208216423136871611">Jangan simpan</translation>
-<translation id="777702478322588152">Wilayah</translation>
-<translation id="2972581237482394796">&amp;Buat Semula</translation>
-<translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE"/></translation>
-<translation id="2262243747453050782">Ralat HTTP</translation>
-<translation id="1339601241726513588">Domain pendaftaran:</translation>
-<translation id="7298195798382681320">Disyorkan</translation>
-<translation id="4058922952496707368">Kekunci &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
-<translation id="6980028882292583085">Makluman Javascript</translation>
-<translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
-<translation id="6628463337424475685"><ph name="ENGINE"/> Carian</translation>
-<translation id="2498091847651709837">Imbas kad baharu</translation>
-<translation id="6831043979455480757">Terjemah</translation>
-<translation id="1228893227497259893">Pengecam entiti yang salah</translation>
-<translation id="6337534724793800597">Tapis dasar mengikut nama</translation>
-<translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE"/> yang dijangka.</translation>
-<translation id="2094505752054353250">Domain tidak padan</translation>
-<translation id="7012363358306927923">China UnionPay</translation>
-<translation id="7537536606612762813">Wajib</translation>
-<translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
-<translation id="3583757800736429874">&amp;Buat Semula Pindahkan</translation>
-<translation id="7887683347370398519">Semak CVC anda dan cuba lagi</translation>
-<translation id="933712198907837967">Diners Club</translation>
-<translation id="277499241957683684">Tiada rekod peranti</translation>
-<translation id="1491151370853475546">Muatkan semula Halaman Ini</translation>
-<translation id="8553075262323480129">Gagal terjemahan kerana bahasa halaman tidak dapat ditentukan.</translation>
-<translation id="7935318582918952113">DOM Distiller</translation>
-<translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE"/></translation>
-<translation id="1227633850867390598">Sembunyikan nilai</translation>
-<translation id="6753269504797312559">Nilai dasar</translation>
-<translation id="3369366829301677151">Kemaskinikan dan sahkan <ph name="CREDIT_CARD"/> anda</translation>
-<translation id="8834246243508017242">Dayakan Auto-Isian menggunakan Kenalan ...</translation>
-<translation id="7275334191706090484">Penanda Halaman Terurus</translation>
-<translation id="7400418766976504921">URL</translation>
-<translation id="7378627244592794276">Tidak</translation>
-<translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
 <translation id="1055184225775184556">&amp;Buat Asal Tambahkan</translation>
-<translation id="7813600968533626083">Alih keluar cadangan borang daripada Chrome?</translation>
-<translation id="4850886885716139402">Lihat</translation>
-<translation id="8091372947890762290">Pengaktifan belum selesai pada pelayan</translation>
-<translation id="6874604403660855544">&amp;Buat semula tambahkan</translation>
-<translation id="4607653538520819196">Halaman ini tidak boleh diproksikan oleh Penjimat Data.</translation>
-<translation id="719464814642662924">Visa</translation>
-<translation id="6839929833149231406">Kawasan</translation>
-<translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
-<translation id="8988760548304185580">Masukkan tarikh tamat tempoh dan CVC 3 digit dari bahagian belakang kad anda</translation>
-<translation id="8940229512486821554">Jalankan perintah <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
-<translation id="3380365263193509176">Ralat tidak diketahui</translation>
-<translation id="112840717907525620">Cache dasar OK</translation>
-<translation id="3452404311384756672">Selang masa ambil:</translation>
-<translation id="409504436206021213">Jangan Muat Semula</translation>
-<translation id="7441627299479586546">Subjek dasar salah</translation>
-<translation id="3885155851504623709">Mukim</translation>
-<translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
-<translation id="1426410128494586442">Ya</translation>
-<translation id="4506176782989081258">Ralat pengesahan: <ph name="VALIDATION_ERROR"/></translation>
-<translation id="7108649287766967076">Terjemahan kepada <ph name="TARGET_LANGUAGE"/> gagal.</translation>
-<translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
-<translation id="3219579145727097045">Masukkan tarikh tamat tempoh dan CVC 4 digit dari bahagian depan kad anda</translation>
-<translation id="59107663811261420">Kad jenis ini tidak disokong oleh Google Payments untuk pedagang ini. Sila pilih kad yang lain.</translation>
-<translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
-<translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
-<translation id="8437238597147034694">&amp;Buat asal pindahkan</translation>
-<translation id="5813119285467412249">&amp;Buat Semula Tambahkan</translation>
-<translation id="333371639341676808">Halang halaman ini daripada mencipta dialog tambahan.</translation>
-<translation id="5523118979700054094">Nama dasar</translation>
-<translation id="7791543448312431591">Tambah</translation>
-<translation id="2053553514270667976">Poskod</translation>
-<translation id="1644184664548287040">Konfigurasi rangkaian tidak sah dan tidak boleh diimport.</translation>
-<translation id="4668929960204016307">,</translation>
-<translation id="2212735316055980242">Dasar tidak dijumpai</translation>
-<translation id="3150653042067488994">Ralat pelayan sementara</translation>
-<translation id="7087282848513945231">Daerah</translation>
-<translation id="1132774398110320017">Tetapan Auto Isi Chrome...</translation>
-<translation id="8194797478851900357">&amp;Buat Asal Pindahkan</translation>
-<translation id="6458467102616083041">Diabaikan kerana carian lalai dilumpuhkan oleh dasar.</translation>
-<translation id="6259156558325130047">&amp;Buat Asal Susun Semula</translation>
-<translation id="1227224963052638717">Dasar tidak diketahui.</translation>
-<translation id="4250680216510889253">Tidak</translation>
-<translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
-<translation id="5872918882028971132">Cadangan Ibu Bapa</translation>
-<translation id="337363190475750230">Nyahperuntukkan</translation>
-<translation id="2367567093518048410">Tahap</translation>
-<translation id="7977590112176369853">&lt;masukkan pertanyaan&gt;</translation>
-<translation id="552553974213252141">Adakah teks diekstrak dengan betul?</translation>
-<translation id="5317780077021120954">Simpan</translation>
-<translation id="8530504477309582336">Kad jenis ini tidak disokong oleh Google Payments. Sila pilih kad yang lain.</translation>
-<translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE"/></translation>
-<translation id="3739623965217189342">Pautan yang anda salin</translation>
-<translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>
-<translation id="8311778656528046050">Adakah anda pasti mahu memuat semula halaman ini?</translation>
-<translation id="370665806235115550">Memuatkan...</translation>
-<translation id="2096368010154057602">Jabatan</translation>
-<translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
-<translation id="4258748452823770588">Tandatangan tidak elok</translation>
-<translation id="3024663005179499861">Jenis dasar salah</translation>
-<translation id="2030481566774242610">Adakah anda maksudkan <ph name="LINK"/>?</translation>
-<translation id="3450660100078934250">MasterCard</translation>
-<translation id="4148925816941278100">American Express</translation>
-<translation id="225207911366869382">Nilai ini tidak lagi digunakan untuk dasar ini.</translation>
-<translation id="3145945101586104090">Gagal menyahkod balasan</translation>
-<translation id="2328300916057834155">Mengabaikan penanda halaman tidak sah pada indeks <ph name="ENTRY_INDEX"/></translation>
-<translation id="883848425547221593">Penanda Halaman Lain</translation>
-<translation id="2181821976797666341">Dasar</translation>
-<translation id="3174168572213147020">Pulau</translation>
-<translation id="9137013805542155359">Paparkan asal</translation>
-<translation id="2213606439339815911">Mengambil entri…</translation>
-<translation id="6263376278284652872">Penanda halaman <ph name="DOMAIN"/></translation>
-<translation id="498957508165411911">Terjemahkan daripada <ph name="ORIGINAL_LANGUAGE"/> kepada <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="8218327578424803826">Lokasi yang Ditentukan:</translation>
-<translation id="3542684924769048008">Gunakan kata laluan untuk:</translation>
-<translation id="2855922900409897335">Mengesahkan <ph name="CREDIT_CARD"/> anda</translation>
-<translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE"/>ke<ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4587425331216688090">Alih keluar alamat daripada Chrome?</translation>
-<translation id="7139724024395191329">Emiriah</translation>
-<translation id="6646897916597483132">Masukkan CVC 4 digit dari bahagian depan kad anda</translation>
-<translation id="5145883236150621069">Terdapat kod ralat dalam balasan dasar</translation>
-<translation id="7983301409776629893">Sentiasa terjemahkan <ph name="ORIGINAL_LANGUAGE"/> ke <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="6970216967273061347">Daerah</translation>
-<translation id="3427342743765426898">&amp;Buat Semula Edit</translation>
-<translation id="3010559122411665027">Masukan senarai &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
-<translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
-<translation id="6445051938772793705">Negara</translation>
-<translation id="5031870354684148875">Mengenai Terjemahan Google</translation>
-<translation id="1152921474424827756">Akses <ph name="BEGIN_LINK"/>salinan cache<ph name="END_LINK"/> <ph name="URL"/></translation>
-<translation id="8201077131113104583">URL kemas kini tidak sah untuk sambungan dengan ID &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
-<translation id="6891596781022320156">Tahap dasar tidak disokong.</translation>
-<translation id="2025186561304664664">Proksi ditetapkan kepada auto konfigurasi.</translation>
-<translation id="1853748787962613237">Gagal memaparkan artikel.</translation>
-<translation id="5455374756549232013">Cap waktu dasar tidak elok</translation>
-<translation id="2025623846716345241">Sahkan Muat Semula</translation>
-<translation id="1962204205936693436"><ph name="DOMAIN"/> Penanda halaman</translation>
-<translation id="4300246636397505754">Cadangan ibu bapa</translation>
-<translation id="111844081046043029">Adakah anda pasti anda mahu meninggalkan halaman ini?</translation>
-<translation id="2495083838625180221">Penghurai JSON</translation>
-<translation id="1973335181906896915">Ralat penyirian</translation>
-<translation id="5989320800837274978">Pelayan proksi tetap begitu juga URL skrip .pac, kedua-duanya tidak ditetapkan.</translation>
-<translation id="7805768142964895445">Status</translation>
-<translation id="2113977810652731515">Kad</translation>
+<translation id="106701514854093668">Penanda Halaman Desktop</translation>
+<translation id="1103523840287552314">Sentiasa terjemahkan <ph name="LANGUAGE"/></translation>
 <translation id="1113869188872983271">&amp;Buat asal susun semula</translation>
-<translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
-<translation id="5439770059721715174">Ralat pengesahan skema di &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
-<translation id="8349305172487531364">Bar penanda halaman</translation>
-<translation id="587701087903783706">Tutup paparan mesra mudah alih</translation>
-<translation id="7208899522964477531">Cari <ph name="SITE_NAME"/> untuk <ph name="SEARCH_TERMS"/></translation>
-<translation id="7956713633345437162">Penanda halaman mudah alih</translation>
-<translation id="5089810972385038852">Negeri</translation>
-<translation id="647261751007945333">Dasar peranti</translation>
-<translation id="2556876185419854533">&amp;Buat Asal Edit</translation>
-<translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
-<translation id="4594403342090139922">&amp;Buat asal Pemadaman</translation>
-<translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE"/>...</translation>
-<translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
-<translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME"/>.</translation>
-<translation id="3228969707346345236">Gagal terjemah kerana halaman sudah dalam <ph name="LANGUAGE"/>.</translation>
-<translation id="7521387064766892559">JavaScript</translation>
-<translation id="8034522405403831421">Halaman ini dalam <ph name="SOURCE_LANGUAGE"/>. Terjemahkannya kepada <ph name="TARGET_LANGUAGE"/>?</translation>
-<translation id="1734864079702812349">Amex</translation>
-<translation id="8891727572606052622">Mod proksi tidak sah.</translation>
-<translation id="3105172416063519923">ID Aset:</translation>
-<translation id="6008256403891681546">JCB</translation>
-<translation id="1549470594296187301">Javascript mesti didayakan untuk menggunakan ciri ini.</translation>
-<translation id="2587841377698384444">ID API Direktori:</translation>
-<translation id="7752995774971033316">Tidak Diurus</translation>
-<translation id="3712624925041724820">Kehabisan lesen</translation>
-<translation id="4926049483395192435">Mesti ditentukan.</translation>
-<translation id="1455235771979731432">Terdapat masalah mengesahkan kad anda. Semak sambungan internet anda dan cuba lagi.</translation>
-<translation id="7542995811387359312">Pengisian kad kredit automatik dilumpuhkan kerana borang ini tidak menggunakan sambungan selamat.</translation>
-<translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE"/>? Laporkan ralat ini</translation>
-<translation id="8088680233425245692">Gagal melihat artikel.</translation>
-<translation id="8725066075913043281">Cuba lagi</translation>
-<translation id="1821930232296380041">Permintaan atau parameter permintaan tidak sah</translation>
-<translation id="1640180200866533862">Dasar pengguna</translation>
-<translation id="375403751935624634">Gagal menterjemah disebabkan ralat pelayan.</translation>
-<translation id="2597378329261239068">Dokumen ini dilindungi kata laluan.  Sila masukkan kata laluan.</translation>
-<translation id="5629630648637658800">Gagal memuatkan tetapan dasar</translation>
-<translation id="4030383055268325496">&amp;Buat asal tambahkan</translation>
-<translation id="2354001756790975382">Penanda halaman lain</translation>
-<translation id="3650584904733503804">Pengesahan berjaya</translation>
-<translation id="2359808026110333948">Teruskan</translation>
-<translation id="6915804003454593391">Pengguna:</translation>
-<translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
-<translation id="2270192940992995399">Gagal menemui artikel.</translation>
-<translation id="4726672564094551039">Muat semula dasar</translation>
-<translation id="9170848237812810038">&amp;Buat asal</translation>
-<translation id="9154176715500758432">Kekal di Halaman ini</translation>
-<translation id="2392959068659972793">Paparkan dasar tanpa nilai yang ditetapkan</translation>
-<translation id="9148507642005240123">&amp;Buat asal edit</translation>
-<translation id="5470861586879999274">&amp;Buat semula edit</translation>
-<translation id="5190835502935405962">Bar Penanda Halaman</translation>
-<translation id="6965978654500191972">Peranti</translation>
-<translation id="5295309862264981122">Sahkan Navigasi</translation>
-<translation id="8249320324621329438">Diambil kali terakhir:</translation>
-<translation id="194030505837763158">Pergi ke <ph name="LINK"/></translation>
+<translation id="111844081046043029">Adakah anda pasti anda mahu meninggalkan halaman ini?</translation>
+<translation id="112840717907525620">Cache dasar OK</translation>
+<translation id="1132774398110320017">Tetapan Auto Isi Chrome...</translation>
+<translation id="1152921474424827756">Akses <ph name="BEGIN_LINK"/>salinan cache<ph name="END_LINK"/> <ph name="URL"/></translation>
+<translation id="1227224963052638717">Dasar tidak diketahui.</translation>
+<translation id="1227633850867390598">Sembunyikan nilai</translation>
+<translation id="1228893227497259893">Pengecam entiti yang salah</translation>
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
+<translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1344588688991793829">Tetapan Auto Isi Chromium...</translation>
-<translation id="6282194474023008486">Poskod</translation>
-<translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
-<translation id="3623476034248543066">Tunjukkan nilai</translation>
-<translation id="9020542370529661692">Halaman ini telah diterjemahkan kepada <ph name="TARGET_LANGUAGE"/></translation>
-<translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
-<translation id="560412284261940334">Pengurusan tidak disokong</translation>
-<translation id="6512448926095770873">Tinggalkan Halaman ini</translation>
+<translation id="1426410128494586442">Ya</translation>
+<translation id="1455235771979731432">Terdapat masalah mengesahkan kad anda. Semak sambungan internet anda dan cuba lagi.</translation>
+<translation id="1491151370853475546">Muatkan semula Halaman Ini</translation>
+<translation id="1549470594296187301">Javascript mesti didayakan untuk menggunakan ciri ini.</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
-<translation id="3169472444629675720">Temui</translation>
-<translation id="4923417429809017348">Halaman ini diterjemahkan dari bahasa yang tidak diketahui ke <ph name="LANGUAGE_LANGUAGE"/></translation>
-<translation id="4813512666221746211">Ralat rangkaian</translation>
+<translation id="1640180200866533862">Dasar pengguna</translation>
+<translation id="1644184664548287040">Konfigurasi rangkaian tidak sah dan tidak boleh diimport.</translation>
+<translation id="1693754753824026215">Halaman di <ph name="SITE"/> menyatakan:</translation>
+<translation id="1734864079702812349">Amex</translation>
+<translation id="1821930232296380041">Permintaan atau parameter permintaan tidak sah</translation>
+<translation id="1853748787962613237">Gagal memaparkan artikel.</translation>
+<translation id="1871208020102129563">Proksi ditetapkan untuk menggunakan pelayan proksi tetap, bukannya URL skrip .pac.</translation>
 <translation id="1875753206475436906">jenis heuristik: <ph name="HEURISTIC_TYPE"/>
     jenis pelayan: <ph name="SERVER_TYPE"/>
     tandatangan medan: <ph name="FIELD_SIGNATURE"/>
     tandatangan borang: <ph name="FORM_SIGNATURE"/>
     id percubaan: &quot;<ph name="EXPERIMENT_ID"/>&quot;</translation>
-<translation id="2479410451996844060">URL carian tidak sah.</translation>
-<translation id="5509780412636533143">Penanda halaman terurus</translation>
-<translation id="935608979562296692">KOSONGKAN BORANG</translation>
-<translation id="8866481888320382733">Ralat semasa menghuraikan tetapan dasar</translation>
-<translation id="4120075327926916474">Adakah anda mahu Chrome menyimpan maklumat kad kredit ini dengan melengkapkan borang web?</translation>
-<translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
-<translation id="1693754753824026215">Halaman di <ph name="SITE"/> menyatakan:</translation>
-<translation id="4269787794583293679">(Tiada nama pengguna)</translation>
-<translation id="7988324688042446538">Penanda halaman desktop</translation>
-<translation id="8488350697529856933">Diguna pakai untuk</translation>
-<translation id="6165508094623778733">Ketahui lebih lanjut</translation>
-<translation id="5565735124758917034">Aktif</translation>
-<translation id="7568593326407688803">Halaman ini adalah dalam<ph name="ORIGINAL_LANGUAGE"/>Adakah anda ingin menterjemahkannya?</translation>
-<translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>
-<translation id="4800132727771399293">Semak tarikh tamat tempoh serta CVC anda dan cuba lagi</translation>
-<translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
-<translation id="9125941078353557812">Masukkan CVC 3 digit dari bahagian belakang kad anda</translation>
-<translation id="106701514854093668">Penanda Halaman Desktop</translation>
-<translation id="6154808779448689242">Token dasar yang dikembalikan tidak sepadan dengan token semasa</translation>
-<translation id="7995512525968007366">Tidak Ditentukan</translation>
-<translation id="7961015016161918242">Tidak sama sekali</translation>
-<translation id="2835170189407361413">Kosongkan borang</translation>
-<translation id="6550675742724504774">Pilihan</translation>
-<translation id="8804164990146287819">Dasar Privasi</translation>
-<translation id="988159990683914416">Binaan Pemaju</translation>
-<translation id="7334320624316649418">&amp;Buat semula susun semula</translation>
-<translation id="7182878459783632708">Tiada dasar ditetapkan</translation>
-<translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>
-<translation id="8364627913115013041">Tidak ditetapkan.</translation>
-<translation id="8713130696108419660">Tandatangan parap tidak elok</translation>
-<translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
+<translation id="194030505837763158">Pergi ke <ph name="LINK"/></translation>
+<translation id="1962204205936693436"><ph name="DOMAIN"/> Penanda halaman</translation>
+<translation id="1973335181906896915">Ralat penyirian</translation>
+<translation id="2025186561304664664">Proksi ditetapkan kepada auto konfigurasi.</translation>
+<translation id="2025623846716345241">Sahkan Muat Semula</translation>
+<translation id="2030481566774242610">Adakah anda maksudkan <ph name="LINK"/>?</translation>
+<translation id="2053553514270667976">Poskod</translation>
 <translation id="20817612488360358">Tetapan proksi sistem telah sedia untuk digunakan tetapi konfigurasi proksi jelas juga telah ditentukan.</translation>
-<translation id="2639739919103226564">Status:</translation>
-<translation id="8824019021993735287">Chrome tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi kemudian.</translation>
-<translation id="4968547170521245791">Tidak boleh Proksi</translation>
-<translation id="385051799172605136">Kembali</translation>
-<translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>
-<translation id="5095208057601539847">Wilayah</translation>
-<translation id="2581221116934462656">Adakah anda ingin <ph name="PRODUCT_NAME"/> menawarkan halaman <ph name="LANGUAGE_NAME"/> dari tapak ini diterjemah pada masa akan datang?</translation>
+<translation id="2094505752054353250">Domain tidak padan</translation>
+<translation id="2096368010154057602">Jabatan</translation>
+<translation id="2113977810652731515">Kad</translation>
+<translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME"/>.</translation>
+<translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
+<translation id="2181821976797666341">Dasar</translation>
+<translation id="2212735316055980242">Dasar tidak dijumpai</translation>
+<translation id="2213606439339815911">Mengambil entri…</translation>
+<translation id="225207911366869382">Nilai ini tidak lagi digunakan untuk dasar ini.</translation>
+<translation id="2262243747453050782">Ralat HTTP</translation>
+<translation id="2270192940992995399">Gagal menemui artikel.</translation>
+<translation id="2328300916057834155">Mengabaikan penanda halaman tidak sah pada indeks <ph name="ENTRY_INDEX"/></translation>
+<translation id="2354001756790975382">Penanda halaman lain</translation>
+<translation id="2359808026110333948">Teruskan</translation>
+<translation id="2367567093518048410">Tahap</translation>
+<translation id="2392959068659972793">Paparkan dasar tanpa nilai yang ditetapkan</translation>
 <translation id="2396249848217231973">&amp;Buat asal pemadaman</translation>
-<translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
-<translation id="6965382102122355670">OK</translation>
-<translation id="2721148159707890343">Permintaan berjaya</translation>
 <translation id="2455981314101692989">Halaman web ini melumpuhkan pengisian automatik untuk borang ini.</translation>
-<translation id="6597614308054261376">Anda sedang cuba menghubungi <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Halaman ini tidak boleh diproksikan oleh Penjimat Data pada masa ini.</translation>
-<translation id="8308427013383895095">Gagal terjemahan kerana masalah dengan sambungan rangkaian.</translation>
-<translation id="5720705177508910913">Pengguna semasa</translation>
+<translation id="2479410451996844060">URL carian tidak sah.</translation>
+<translation id="2495083838625180221">Penghurai JSON</translation>
+<translation id="2498091847651709837">Imbas kad baharu</translation>
+<translation id="2556876185419854533">&amp;Buat Asal Edit</translation>
+<translation id="2581221116934462656">Adakah anda ingin <ph name="PRODUCT_NAME"/> menawarkan halaman <ph name="LANGUAGE_NAME"/> dari tapak ini diterjemah pada masa akan datang?</translation>
+<translation id="2587841377698384444">ID API Direktori:</translation>
+<translation id="2597378329261239068">Dokumen ini dilindungi kata laluan.  Sila masukkan kata laluan.</translation>
+<translation id="2639739919103226564">Status:</translation>
+<translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
+<translation id="2721148159707890343">Permintaan berjaya</translation>
+<translation id="2774256287122201187">Anda boleh teruskan. Jika anda terus ke halaman, amaran ini tidak akan muncul lagi selama lima minit.</translation>
+<translation id="277499241957683684">Tiada rekod peranti</translation>
+<translation id="2835170189407361413">Kosongkan borang</translation>
+<translation id="2855922900409897335">Mengesahkan <ph name="CREDIT_CARD"/> anda</translation>
+<translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
+<translation id="2972581237482394796">&amp;Buat Semula</translation>
+<translation id="3010559122411665027">Masukan senarai &quot;<ph name="ENTRY_INDEX"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="3024663005179499861">Jenis dasar salah</translation>
+<translation id="3105172416063519923">ID Aset:</translation>
+<translation id="3145945101586104090">Gagal menyahkod balasan</translation>
+<translation id="3150653042067488994">Ralat pelayan sementara</translation>
+<translation id="3169472444629675720">Temui</translation>
+<translation id="3174168572213147020">Pulau</translation>
+<translation id="3219579145727097045">Masukkan tarikh tamat tempoh dan CVC 4 digit dari bahagian depan kad anda</translation>
+<translation id="3228969707346345236">Gagal terjemah kerana halaman sudah dalam <ph name="LANGUAGE"/>.</translation>
+<translation id="3270847123878663523">&amp;Buat asal Susun semula</translation>
+<translation id="333371639341676808">Halang halaman ini daripada mencipta dialog tambahan.</translation>
+<translation id="3369366829301677151">Kemaskinikan dan sahkan <ph name="CREDIT_CARD"/> anda</translation>
+<translation id="337363190475750230">Nyahperuntukkan</translation>
+<translation id="3377188786107721145">Ralat menghuraikan dasar</translation>
+<translation id="3380365263193509176">Ralat tidak diketahui</translation>
 <translation id="3380864720620200369">ID Pelanggan:</translation>
+<translation id="3427342743765426898">&amp;Buat Semula Edit</translation>
+<translation id="3450660100078934250">MasterCard</translation>
+<translation id="3452404311384756672">Selang masa ambil:</translation>
+<translation id="3542684924769048008">Gunakan kata laluan untuk:</translation>
+<translation id="3583757800736429874">&amp;Buat Semula Pindahkan</translation>
+<translation id="3623476034248543066">Tunjukkan nilai</translation>
+<translation id="3650584904733503804">Pengesahan berjaya</translation>
+<translation id="370665806235115550">Memuatkan...</translation>
+<translation id="3712624925041724820">Kehabisan lesen</translation>
+<translation id="3739623965217189342">Pautan yang anda salin</translation>
+<translation id="375403751935624634">Gagal menterjemah disebabkan ralat pelayan.</translation>
+<translation id="385051799172605136">Kembali</translation>
+<translation id="3884278016824448484">Pengecam peranti bercanggah</translation>
+<translation id="3885155851504623709">Mukim</translation>
+<translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
+<translation id="3963721102035795474">Mod Pembaca</translation>
+<translation id="4030383055268325496">&amp;Buat asal tambahkan</translation>
+<translation id="4058922952496707368">Kekunci &quot;<ph name="SUBKEY"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
+<translation id="409504436206021213">Jangan Muat Semula</translation>
+<translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
+<translation id="4117700440116928470">Skop dasar tidak disokong.</translation>
+<translation id="4120075327926916474">Adakah anda mahu Chrome menyimpan maklumat kad kredit ini dengan melengkapkan borang web?</translation>
+<translation id="4148925816941278100">American Express</translation>
+<translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
+<translation id="4196861286325780578">&amp;Buat semula pindahkan</translation>
+<translation id="4250680216510889253">Tidak</translation>
+<translation id="4258748452823770588">Tandatangan tidak elok</translation>
+<translation id="4269787794583293679">(Tiada nama pengguna)</translation>
+<translation id="4300246636397505754">Cadangan ibu bapa</translation>
+<translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE"/> yang dijangka.</translation>
+<translation id="443673843213245140">Penggunaan proksi dilumpuhkan tetapi konfigurasi proksi yang jelas dinyatakan.</translation>
+<translation id="4506176782989081258">Ralat pengesahan: <ph name="VALIDATION_ERROR"/></translation>
+<translation id="4587425331216688090">Alih keluar alamat daripada Chrome?</translation>
+<translation id="4594403342090139922">&amp;Buat asal Pemadaman</translation>
+<translation id="4607653538520819196">Halaman ini tidak boleh diproksikan oleh Penjimat Data.</translation>
+<translation id="4668929960204016307">,</translation>
+<translation id="4726672564094551039">Muat semula dasar</translation>
+<translation id="4800132727771399293">Semak tarikh tamat tempoh serta CVC anda dan cuba lagi</translation>
+<translation id="4813512666221746211">Ralat rangkaian</translation>
+<translation id="4850886885716139402">Lihat</translation>
+<translation id="4923417429809017348">Halaman ini diterjemahkan dari bahasa yang tidak diketahui ke <ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="4926049483395192435">Mesti ditentukan.</translation>
+<translation id="4968547170521245791">Tidak boleh Proksi</translation>
+<translation id="498957508165411911">Terjemahkan daripada <ph name="ORIGINAL_LANGUAGE"/> kepada <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>
+<translation id="5031870354684148875">Mengenai Terjemahan Google</translation>
+<translation id="5089810972385038852">Negeri</translation>
+<translation id="5095208057601539847">Wilayah</translation>
+<translation id="5145883236150621069">Terdapat kod ralat dalam balasan dasar</translation>
+<translation id="5172758083709347301">Mesin</translation>
+<translation id="5179510805599951267">Bukan dalam <ph name="ORIGINAL_LANGUAGE"/>? Laporkan ralat ini</translation>
+<translation id="5190835502935405962">Bar Penanda Halaman</translation>
+<translation id="5295309862264981122">Sahkan Navigasi</translation>
+<translation id="5299298092464848405">Ralat semasa menghuraikan dasar</translation>
+<translation id="5317780077021120954">Simpan</translation>
+<translation id="536296301121032821">Gagal menyimpan tetapan dasar</translation>
+<translation id="5439770059721715174">Ralat pengesahan skema di &quot;<ph name="ERROR_PATH"/>&quot;: <ph name="ERROR"/></translation>
+<translation id="5455374756549232013">Cap waktu dasar tidak elok</translation>
+<translation id="5470861586879999274">&amp;Buat semula edit</translation>
+<translation id="5509780412636533143">Penanda halaman terurus</translation>
+<translation id="5523118979700054094">Nama dasar</translation>
+<translation id="552553974213252141">Adakah teks diekstrak dengan betul?</translation>
+<translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
+<translation id="5565735124758917034">Aktif</translation>
+<translation id="560412284261940334">Pengurusan tidak disokong</translation>
+<translation id="5629630648637658800">Gagal memuatkan tetapan dasar</translation>
+<translation id="5631439013527180824">Token pengurusan peranti tidak sah</translation>
+<translation id="5720705177508910913">Pengguna semasa</translation>
+<translation id="5813119285467412249">&amp;Buat Semula Tambahkan</translation>
+<translation id="5872918882028971132">Cadangan Ibu Bapa</translation>
+<translation id="587701087903783706">Tutup paparan mesra mudah alih</translation>
+<translation id="59107663811261420">Kad jenis ini tidak disokong oleh Google Payments untuk pedagang ini. Sila pilih kad yang lain.</translation>
+<translation id="5989320800837274978">Pelayan proksi tetap begitu juga URL skrip .pac, kedua-duanya tidak ditetapkan.</translation>
+<translation id="6008256403891681546">JCB</translation>
+<translation id="6154808779448689242">Token dasar yang dikembalikan tidak sepadan dengan token semasa</translation>
+<translation id="6165508094623778733">Ketahui lebih lanjut</translation>
+<translation id="6259156558325130047">&amp;Buat Asal Susun Semula</translation>
+<translation id="6263376278284652872">Penanda halaman <ph name="DOMAIN"/></translation>
+<translation id="6282194474023008486">Poskod</translation>
+<translation id="6337534724793800597">Tapis dasar mengikut nama</translation>
+<translation id="6445051938772793705">Negara</translation>
+<translation id="6458467102616083041">Diabaikan kerana carian lalai dilumpuhkan oleh dasar.</translation>
+<translation id="647261751007945333">Dasar peranti</translation>
+<translation id="6512448926095770873">Tinggalkan Halaman ini</translation>
+<translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
+<translation id="6550675742724504774">Pilihan</translation>
+<translation id="6597614308054261376">Anda sedang cuba menghubungi <ph name="BEGIN_BOLD"/><ph name="SITE"/><ph name="END_BOLD"/>. Halaman ini tidak boleh diproksikan oleh Penjimat Data pada masa ini.</translation>
+<translation id="6628463337424475685"><ph name="ENGINE"/> Carian</translation>
+<translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
+<translation id="6646897916597483132">Masukkan CVC 4 digit dari bahagian depan kad anda</translation>
+<translation id="6753269504797312559">Nilai dasar</translation>
+<translation id="6831043979455480757">Terjemah</translation>
+<translation id="6839929833149231406">Kawasan</translation>
+<translation id="6874604403660855544">&amp;Buat semula tambahkan</translation>
+<translation id="6891596781022320156">Tahap dasar tidak disokong.</translation>
+<translation id="6915804003454593391">Pengguna:</translation>
+<translation id="6965382102122355670">OK</translation>
+<translation id="6965978654500191972">Peranti</translation>
+<translation id="6970216967273061347">Daerah</translation>
+<translation id="6973656660372572881">Pelayan proksi tetap dan juga URL skrip .pac tidak ditetapkan.</translation>
+<translation id="6980028882292583085">Makluman Javascript</translation>
+<translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7087282848513945231">Daerah</translation>
+<translation id="7108649287766967076">Terjemahan kepada <ph name="TARGET_LANGUAGE"/> gagal.</translation>
+<translation id="7139724024395191329">Emiriah</translation>
+<translation id="7180611975245234373">Muat semula</translation>
+<translation id="7182878459783632708">Tiada dasar ditetapkan</translation>
+<translation id="7186367841673660872">Halaman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE"/>ke<ph name="LANGUAGE_LANGUAGE"/></translation>
+<translation id="719464814642662924">Visa</translation>
+<translation id="7208899522964477531">Cari <ph name="SITE_NAME"/> untuk <ph name="SEARCH_TERMS"/></translation>
+<translation id="7275334191706090484">Penanda Halaman Terurus</translation>
+<translation id="7298195798382681320">Disyorkan</translation>
+<translation id="7334320624316649418">&amp;Buat semula susun semula</translation>
+<translation id="7378627244592794276">Tidak</translation>
+<translation id="7400418766976504921">URL</translation>
+<translation id="7441627299479586546">Subjek dasar salah</translation>
+<translation id="7485870689360869515">Tiada data dijumpai.</translation>
+<translation id="7521387064766892559">JavaScript</translation>
+<translation id="7537536606612762813">Wajib</translation>
+<translation id="7542995811387359312">Pengisian kad kredit automatik dilumpuhkan kerana borang ini tidak menggunakan sambungan selamat.</translation>
+<translation id="7568593326407688803">Halaman ini adalah dalam<ph name="ORIGINAL_LANGUAGE"/>Adakah anda ingin menterjemahkannya?</translation>
+<translation id="7569952961197462199">Alih keluar kad kredit daripada Chrome?</translation>
+<translation id="7600965453749440009">Jangan sekali-kali terjemahkan <ph name="LANGUAGE"/></translation>
+<translation id="7610193165460212391">Nilai berada di luar julat <ph name="VALUE"/></translation>
+<translation id="7752995774971033316">Tidak Diurus</translation>
+<translation id="777702478322588152">Wilayah</translation>
+<translation id="7791543448312431591">Tambah</translation>
+<translation id="7805768142964895445">Status</translation>
+<translation id="7813600968533626083">Alih keluar cadangan borang daripada Chrome?</translation>
+<translation id="7887683347370398519">Semak CVC anda dan cuba lagi</translation>
+<translation id="7935318582918952113">DOM Distiller</translation>
+<translation id="7956713633345437162">Penanda halaman mudah alih</translation>
+<translation id="7961015016161918242">Tidak sama sekali</translation>
+<translation id="7977590112176369853">&lt;masukkan pertanyaan&gt;</translation>
+<translation id="7983301409776629893">Sentiasa terjemahkan <ph name="ORIGINAL_LANGUAGE"/> ke <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="7988324688042446538">Penanda halaman desktop</translation>
+<translation id="7995512525968007366">Tidak Ditentukan</translation>
+<translation id="8034522405403831421">Halaman ini dalam <ph name="SOURCE_LANGUAGE"/>. Terjemahkannya kepada <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8088680233425245692">Gagal melihat artikel.</translation>
+<translation id="8091372947890762290">Pengaktifan belum selesai pada pelayan</translation>
+<translation id="8194797478851900357">&amp;Buat Asal Pindahkan</translation>
+<translation id="8201077131113104583">URL kemas kini tidak sah untuk sambungan dengan ID &quot;<ph name="EXTENSION_ID"/>&quot;.</translation>
+<translation id="8208216423136871611">Jangan simpan</translation>
+<translation id="8218327578424803826">Lokasi yang Ditentukan:</translation>
+<translation id="8249320324621329438">Diambil kali terakhir:</translation>
+<translation id="8308427013383895095">Gagal terjemahan kerana masalah dengan sambungan rangkaian.</translation>
+<translation id="8311778656528046050">Adakah anda pasti mahu memuat semula halaman ini?</translation>
+<translation id="8349305172487531364">Bar penanda halaman</translation>
+<translation id="8364627913115013041">Tidak ditetapkan.</translation>
+<translation id="8437238597147034694">&amp;Buat asal pindahkan</translation>
+<translation id="8488350697529856933">Diguna pakai untuk</translation>
+<translation id="8530504477309582336">Kad jenis ini tidak disokong oleh Google Payments. Sila pilih kad yang lain.</translation>
+<translation id="8553075262323480129">Gagal terjemahan kerana bahasa halaman tidak dapat ditentukan.</translation>
+<translation id="8571890674111243710">Menterjemah halaman ke <ph name="LANGUAGE"/>...</translation>
+<translation id="8713130696108419660">Tandatangan parap tidak elok</translation>
+<translation id="8725066075913043281">Cuba lagi</translation>
+<translation id="8790007591277257123">&amp;Buat semula pemadaman</translation>
+<translation id="8804164990146287819">Dasar Privasi</translation>
+<translation id="8824019021993735287">Chrome tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi kemudian.</translation>
+<translation id="8834246243508017242">Dayakan Auto-Isian menggunakan Kenalan ...</translation>
+<translation id="883848425547221593">Penanda Halaman Lain</translation>
+<translation id="8866481888320382733">Ralat semasa menghuraikan tetapan dasar</translation>
+<translation id="8876793034577346603">Konfigurasi rangkaian gagal dihuraikan.</translation>
+<translation id="8891727572606052622">Mod proksi tidak sah.</translation>
+<translation id="8940229512486821554">Jalankan perintah <ph name="EXTENSION_NAME"/>: <ph name="SEARCH_TERMS"/></translation>
+<translation id="8988760548304185580">Masukkan tarikh tamat tempoh dan CVC 3 digit dari bahagian belakang kad anda</translation>
+<translation id="9020542370529661692">Halaman ini telah diterjemahkan kepada <ph name="TARGET_LANGUAGE"/></translation>
+<translation id="9125941078353557812">Masukkan CVC 3 digit dari bahagian belakang kad anda</translation>
+<translation id="9137013805542155359">Paparkan asal</translation>
+<translation id="9148507642005240123">&amp;Buat asal edit</translation>
+<translation id="9154176715500758432">Kekal di Halaman ini</translation>
+<translation id="9170848237812810038">&amp;Buat asal</translation>
+<translation id="9207861905230894330">Gagal menambahkan artikel.</translation>
+<translation id="933712198907837967">Diners Club</translation>
+<translation id="935608979562296692">KOSONGKAN BORANG</translation>
+<translation id="988159990683914416">Binaan Pemaju</translation>
 </translationbundle>

@@ -1,93 +1,96 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="lt">
-<translation id="4542520061254486227">Skaityti duomenis svetainėse <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
-<translation id="3983586614702900908">nežinomų tiekėjų įrenginiai</translation>
-<translation id="730515362922783851">Keistis duomenimis su bet kuriuo įrenginiu vietiniame tinkle ar internete</translation>
-<translation id="3624204664103857160">Nepavyko įkelti paleidimo priemonės puslapio „<ph name="PAGE"/>“.</translation>
-<translation id="8804398419035066391">Susisiekti su bendradarbiaujančiomis svetainėmis</translation>
-<translation id="7809034755304591547">Administratorius užblokavo „<ph name="EXTENSION_NAME"/>“ (plėtinio ID „<ph name="EXTENSION_ID"/>“).</translation>
 <translation id="1005274289863221750">Naudoti mikrofoną ir kamerą</translation>
-<translation id="2857834222104759979">Neteisingas deklaracijos failas.</translation>
-<translation id="6384275966486438344">Pakeiskite paieškos nustatymus į: <ph name="SEARCH_HOST"/></translation>
-<translation id="1445572445564823378">Dėl šio plėtinio lėčiau veikia „<ph name="PRODUCT_NAME"/>“. Kad atkurtumėte „<ph name="PRODUCT_NAME"/>“ našumą, turite jo neleisti.</translation>
-<translation id="7003844668372540529">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
 <translation id="1033780634303702874">Pasiekti nuosekliuosius įtaisus</translation>
-<translation id="288042212351694283">Pasiekiami bendrieji 2 veiksnio įrenginiai</translation>
-<translation id="3163201441334626963">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“</translation>
-<translation id="6027032947578871493">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš „<ph name="VENDOR_NAME"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="4115165561519362854">Šio kompiuterio administratorius reikalauja, kad „<ph name="EXTENSION_NAME"/>“ būtų bent <ph name="EXTENSION_VERSION"/> versijos. Negalėsite įgalinti plėtinio, kol neatnaujinsite jo į nurodytą (ar naujesnę) versiją.</translation>
-<translation id="6075907793831890935">Keistis duomenimis su įrenginiu, kurio pavadinimas <ph name="HOSTNAME"/></translation>
-<translation id="5971037678316050792">Valdyti „Bluetooth“ adapterio būseną ir susiejimą</translation>
-<translation id="677806580227005219">MIME tvarkyklė: „<ph name="MIMEHANDLERVIEW_TAG_NAME"/>“</translation>
-<translation id="6241530762627360640">Pasiekti informaciją apie „Bluetooth“ įrenginius, susietus su sistema, ir aptikti netoliese esančius „Bluetooth“ įrenginius.</translation>
-<translation id="8749863574775030885">Pasiekti nežinomų tiekėjų USB įrenginius</translation>
-<translation id="3115238746683532089">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8284835137979141223">„<ph name="PRODUCT_NAME"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
-<translation id="657064425229075395">Nepavyko įkelti foninio scenarijaus „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
-<translation id="6068932090455285721">„<ph name="PRODUCT_NAME"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“</translation>
-<translation id="588705686677293479">„SurfaceWorker“: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
-<translation id="9131487537093447019">Siųsti pranešimus į „Bluetooth“ įrenginius ir gauti pranešimus iš jų.</translation>
-<translation id="5678955352098267522">Skaityti duomenis svetainėje <ph name="WEBSITE_1"/></translation>
-<translation id="5456409301717116725">Šiame plėtinyje yra rakto failas „<ph name="KEY_PATH"/>“. Neturėtumėte to daryti.</translation>
-<translation id="7257666756905341374">Skaityti kopijuojamus ir įklijuojamus duomenis</translation>
-<translation id="2350172092385603347">Naudotas lokalizavimas, bet deklaracijoje nenurodyta numatytoji lokalė.</translation>
-<translation id="3759933321830434300">Blokuoti tinklalapių dalis</translation>
-<translation id="6143635259298204954">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuriame nebūtų virtualiojo katalogo. Nėra tokio tipo jūsų profilio kelio.</translation>
-<translation id="8712265948125780616">Plėtinių išskleidimo priemonė</translation>
-<translation id="149347756975725155">Nepavyko įkelti „<ph name="ICON"/>“ plėtinio piktogramos.</translation>
-<translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
-<translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH"/>“</translation>
-<translation id="4233778200880751280">Nepavyko įkelti informacijos puslapio „<ph name="ABOUT_PAGE"/>“.</translation>
-<translation id="388442998277590542">Nepavyko įkelti parinkčių puslapio „<ph name="OPTIONS_PAGE"/>“.</translation>
-<translation id="5127881134400491887">Valdyti tinklo ryšius</translation>
-<translation id="6344170822609224263">Pasiekti tinklo ryšių sąrašą</translation>
-<translation id="7039326228527141150">Pasiekti „<ph name="VENDOR_NAME"/>“ USB įrenginius</translation>
-<translation id="2616366145935564096">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/></translation>
-<translation id="5960890139610307736">Plėtinio peržiūra: „<ph name="EXTENSIONVIEW_TAG_NAME"/>“</translation>
-<translation id="4444304522807523469">Pasiekti dokumentų skaitytuvus, prijungtus per USB jungtį ar vietiniame tinkle</translation>
-<translation id="6408118934673775994">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/></translation>
-<translation id="8670869118777164560">Šiam plėtiniui peradresuojant tinklo užklausą <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) peradresavo ją <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
-<translation id="6840444547062817500">Šis plėtinys buvo per dažnai įkeltas iš naujo.</translation>
-<translation id="2270450558902169558">Keistis duomenimis su bet kuriuo įrenginiu iš domeno <ph name="DOMAIN"/></translation>
-<translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME"/>“, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME"/>“.</translation>
-<translation id="452039078290142656">nežinomi „<ph name="VENDOR_NAME"/>“ įrenginiai</translation>
-<translation id="5026754133087629784">Žiniatinklio rodinys: <ph name="WEBVIEW_TAG_NAME"/></translation>
-<translation id="3393440416772303020">„<ph name="PRODUCT_NAME"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="2753617847762399167">Netinkamas kelias (absoliutus arba susijęs su „..“): „<ph name="IMAGE_PATH"/>“</translation>
-<translation id="8284279544186306258">visos <ph name="WEBSITE_1"/> svetainės</translation>
-<translation id="8662911384982557515">Pakeisti pagrindinį puslapį į: <ph name="HOME_PAGE"/></translation>
-<translation id="27822970480436970">Šiam plėtiniui nepavyko pakeisti tinklo užklausos, nes pakeitimas nesuderinamas su kitu plėtiniu.</translation>
-<translation id="2241053333139545397">Skaityti ir keisti duomenis keliose svetainėse</translation>
-<translation id="8602184400052594090">Trūksta deklaracijos arba ji nenuskaitoma.</translation>
-<translation id="2270627217422354837">Keistis duomenimis su bet kuriuo įrenginiu iš šių domenų: <ph name="DOMAINS"/></translation>
-<translation id="7093866338626856921">Keistis duomenimis su įrenginiais, kurių pavadinimai: <ph name="HOSTNAMES"/></translation>
-<translation id="4883436287898674711">Visos <ph name="WEBSITE_1"/> svetainės</translation>
-<translation id="9111791539553342076">Šiam plėtiniui keičiant tinklo užklausos atsakymo antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
-<translation id="9150045010208374699">Naudoti kamerą</translation>
-<translation id="5356315618422219272">Programų rodinys: <ph name="APPVIEW_TAG_NAME"/></translation>
-<translation id="8341840687457896278">Šiam plėtiniui pateikiant įgaliojimą tinklo užklausai įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) pateikė kitokį įgaliojimą.</translation>
-<translation id="5627523580512561598">„<ph name="EXTENSION_NAME"/>“ plėtinys</translation>
-<translation id="7893008570150657497">Pasiekti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
-<translation id="3369521687965833290">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuris turi prasidėti disko vardu ir kuriame negali būti sujungimo, įrengimo taško ar virtualiojo katalogo.</translation>
-<translation id="4811956658694082538">Nepavyko įdiegti paketo, nes užstrigo priemonės procesas. Bandykite iš naujo paleisti „Chrome“ ir bandykite dar kartą.</translation>
-<translation id="641087317769093025">Nepavyko išarchyvuoti plėtinio</translation>
-<translation id="4761104368405085019">Naudoti mikrofoną</translation>
-<translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME"/>“. Jo negalima pašalinti ar pakeisti.</translation>
-<translation id="6580950983454333167">„<ph name="PRODUCT_NAME"/>“, pardavėjas „<ph name="VENDOR_NAME"/>“ (serijos numeris <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Konfigūruoti tinklo ryšius</translation>
-<translation id="7154130902455071009">Pakeiskite pradžios puslapį į: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Pasiekti bet kurį iš šių USB įrenginių</translation>
-<translation id="6698810901424468597">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
-<translation id="2159915644201199628">Nepavyko iššifruoti vaizdo: „<ph name="IMAGE_NAME"/>“</translation>
-<translation id="2048182445208425546">Pasiekti tinklo srautą</translation>
-<translation id="1256619696651732561">Plėtinio aprašo analizavimo įrankis</translation>
-<translation id="5972529113578162692">Šio įrenginio administratorius reikalauja, kad „<ph name="EXTENSION_NAME"/>“ plėtinys būtų įdiegtas. Jo negalima pašalinti.</translation>
 <translation id="1135328998467923690">Paketas netinkamas: „<ph name="ERROR_CODE"/>“.</translation>
-<translation id="7131040479572660648">Skaityti duomenis svetainėse <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/></translation>
-<translation id="2087653731648927289">Pasiekti bet kokį „<ph name="PRODUCT_NAME_AND_VENDOR"/>“ įrenginį per USB</translation>
+<translation id="1256619696651732561">Plėtinio aprašo analizavimo įrankis</translation>
+<translation id="1445572445564823378">Dėl šio plėtinio lėčiau veikia „<ph name="PRODUCT_NAME"/>“. Kad atkurtumėte „<ph name="PRODUCT_NAME"/>“ našumą, turite jo neleisti.</translation>
+<translation id="149347756975725155">Nepavyko įkelti „<ph name="ICON"/>“ plėtinio piktogramos.</translation>
 <translation id="1803557475693955505">Nepavyko įkelti fono puslapio „<ph name="BACKGROUND_PAGE"/>“.</translation>
+<translation id="2048182445208425546">Pasiekti tinklo srautą</translation>
+<translation id="2087653731648927289">Pasiekti bet kokį „<ph name="PRODUCT_NAME_AND_VENDOR"/>“ įrenginį per USB</translation>
+<translation id="2159915644201199628">Nepavyko iššifruoti vaizdo: „<ph name="IMAGE_NAME"/>“</translation>
+<translation id="2241053333139545397">Skaityti ir keisti duomenis keliose svetainėse</translation>
+<translation id="2270450558902169558">Keistis duomenimis su bet kuriuo įrenginiu iš domeno <ph name="DOMAIN"/></translation>
+<translation id="2270627217422354837">Keistis duomenimis su bet kuriuo įrenginiu iš šių domenų: <ph name="DOMAINS"/></translation>
+<translation id="2350172092385603347">Naudotas lokalizavimas, bet deklaracijoje nenurodyta numatytoji lokalė.</translation>
+<translation id="2616366145935564096">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/></translation>
+<translation id="2753617847762399167">Netinkamas kelias (absoliutus arba susijęs su „..“): „<ph name="IMAGE_PATH"/>“</translation>
+<translation id="27822970480436970">Šiam plėtiniui nepavyko pakeisti tinklo užklausos, nes pakeitimas nesuderinamas su kitu plėtiniu.</translation>
+<translation id="2857834222104759979">Neteisingas deklaracijos failas.</translation>
+<translation id="288042212351694283">Pasiekiami bendrieji 2 veiksnio įrenginiai</translation>
 <translation id="2988488679308982380">Nepavyko įdiegti paketo: „<ph name="ERROR_CODE"/>“</translation>
-<translation id="3466070586188012397">„<ph name="PRODUCT_NAME"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME"/>“</translation>
-<translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE"/>“.</translation>
+<translation id="3115238746683532089">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3163201441334626963">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“</translation>
+<translation id="3369521687965833290">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuris turi prasidėti disko vardu ir kuriame negali būti sujungimo, įrengimo taško ar virtualiojo katalogo.</translation>
+<translation id="3393440416772303020">„<ph name="PRODUCT_NAME"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Skaityti duomenys daugybėje svetainių</translation>
+<translation id="3466070586188012397">„<ph name="PRODUCT_NAME"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3560114062880914682">{1,select, single{Pasirinkite USB įrenginį}multiple{Pasirinkite USB įrenginius}other{UNUSED}}</translation>
+<translation id="3624204664103857160">Nepavyko įkelti paleidimo priemonės puslapio „<ph name="PAGE"/>“.</translation>
+<translation id="3759933321830434300">Blokuoti tinklalapių dalis</translation>
+<translation id="388442998277590542">Nepavyko įkelti parinkčių puslapio „<ph name="OPTIONS_PAGE"/>“.</translation>
+<translation id="3983586614702900908">nežinomų tiekėjų įrenginiai</translation>
+<translation id="4115165561519362854">Šio kompiuterio administratorius reikalauja, kad „<ph name="EXTENSION_NAME"/>“ būtų bent <ph name="EXTENSION_VERSION"/> versijos. Negalėsite įgalinti plėtinio, kol neatnaujinsite jo į nurodytą (ar naujesnę) versiją.</translation>
+<translation id="4233778200880751280">Nepavyko įkelti informacijos puslapio „<ph name="ABOUT_PAGE"/>“.</translation>
+<translation id="4444304522807523469">Pasiekti dokumentų skaitytuvus, prijungtus per USB jungtį ar vietiniame tinkle</translation>
+<translation id="452039078290142656">nežinomi „<ph name="VENDOR_NAME"/>“ įrenginiai</translation>
+<translation id="4542520061254486227">Skaityti duomenis svetainėse <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
+<translation id="4761104368405085019">Naudoti mikrofoną</translation>
+<translation id="4811956658694082538">Nepavyko įdiegti paketo, nes užstrigo priemonės procesas. Bandykite iš naujo paleisti „Chrome“ ir bandykite dar kartą.</translation>
+<translation id="4883436287898674711">Visos <ph name="WEBSITE_1"/> svetainės</translation>
+<translation id="5026754133087629784">Žiniatinklio rodinys: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="5127881134400491887">Valdyti tinklo ryšius</translation>
+<translation id="5165983846722506205">{1,select, single{Pasirinkite HID įrenginį}multiple{Pasirinkite HID įrenginius}other{UNUSED}}</translation>
+<translation id="5356315618422219272">Programų rodinys: <ph name="APPVIEW_TAG_NAME"/></translation>
+<translation id="5456409301717116725">Šiame plėtinyje yra rakto failas „<ph name="KEY_PATH"/>“. Neturėtumėte to daryti.</translation>
+<translation id="5627523580512561598">„<ph name="EXTENSION_NAME"/>“ plėtinys</translation>
+<translation id="5678955352098267522">Skaityti duomenis svetainėje <ph name="WEBSITE_1"/></translation>
+<translation id="588705686677293479">„SurfaceWorker“: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
+<translation id="5960890139610307736">Plėtinio peržiūra: „<ph name="EXTENSIONVIEW_TAG_NAME"/>“</translation>
+<translation id="5971037678316050792">Valdyti „Bluetooth“ adapterio būseną ir susiejimą</translation>
+<translation id="5972529113578162692">Šio įrenginio administratorius reikalauja, kad „<ph name="EXTENSION_NAME"/>“ plėtinys būtų įdiegtas. Jo negalima pašalinti.</translation>
+<translation id="6027032947578871493">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš „<ph name="VENDOR_NAME"/>“ (serijos numeris: <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6068932090455285721">„<ph name="PRODUCT_NAME"/>“ iš teikėjo „<ph name="VENDOR_ID"/>“</translation>
+<translation id="6075907793831890935">Keistis duomenimis su įrenginiu, kurio pavadinimas <ph name="HOSTNAME"/></translation>
+<translation id="6143635259298204954">Nepavyksta išpakuoti plėtinio. Kad būtų galima saugiai išpakuoti plėtinį, turi būti nurodytas kelias į profilio katalogą, kuriame nebūtų virtualiojo katalogo. Nėra tokio tipo jūsų profilio kelio.</translation>
+<translation id="616804573177634438">{0,select, single{Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną iš jūsų įrenginių}multiple{Programa „<ph name="APP_NAME"/>“ prašo leidimo pasiekti vieną ar daugiau iš jūsų įrenginių.}other{UNUSED}}</translation>
+<translation id="6241530762627360640">Pasiekti informaciją apie „Bluetooth“ įrenginius, susietus su sistema, ir aptikti netoliese esančius „Bluetooth“ įrenginius.</translation>
+<translation id="6344170822609224263">Pasiekti tinklo ryšių sąrašą</translation>
+<translation id="6384275966486438344">Pakeiskite paieškos nustatymus į: <ph name="SEARCH_HOST"/></translation>
+<translation id="6408118934673775994">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/></translation>
+<translation id="641087317769093025">Nepavyko išarchyvuoti plėtinio</translation>
+<translation id="657064425229075395">Nepavyko įkelti foninio scenarijaus „<ph name="BACKGROUND_SCRIPT"/>“.</translation>
+<translation id="6580950983454333167">„<ph name="PRODUCT_NAME"/>“, pardavėjas „<ph name="VENDOR_NAME"/>“ (serijos numeris <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6698810901424468597">Skaityti ir keisti duomenis <ph name="WEBSITE_1"/> ir <ph name="WEBSITE_2"/></translation>
+<translation id="6731255991101203740">Nepavyko sukurti išarchyvavimo katalogo: „<ph name="DIRECTORY_PATH"/>“</translation>
+<translation id="677806580227005219">MIME tvarkyklė: „<ph name="MIMEHANDLERVIEW_TAG_NAME"/>“</translation>
+<translation id="6840444547062817500">Šis plėtinys buvo per dažnai įkeltas iš naujo.</translation>
+<translation id="7003844668372540529">Nežinomas produktas „<ph name="PRODUCT_ID"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
+<translation id="7039326228527141150">Pasiekti „<ph name="VENDOR_NAME"/>“ USB įrenginius</translation>
+<translation id="7093866338626856921">Keistis duomenimis su įrenginiais, kurių pavadinimai: <ph name="HOSTNAMES"/></translation>
+<translation id="7131040479572660648">Skaityti duomenis svetainėse <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> ir <ph name="WEBSITE_3"/></translation>
+<translation id="7154130902455071009">Pakeiskite pradžios puslapį į: <ph name="START_PAGE"/></translation>
+<translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME"/>“. Jo negalima pašalinti ar pakeisti.</translation>
+<translation id="7257666756905341374">Skaityti kopijuojamus ir įklijuojamus duomenis</translation>
+<translation id="730515362922783851">Keistis duomenimis su bet kuriuo įrenginiu vietiniame tinkle ar internete</translation>
+<translation id="7809034755304591547">Administratorius užblokavo „<ph name="EXTENSION_NAME"/>“ (plėtinio ID „<ph name="EXTENSION_ID"/>“).</translation>
+<translation id="7893008570150657497">Pasiekti nuotraukas, muziką ir kitą mediją iš kompiuterio</translation>
+<translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME"/>“</translation>
+<translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME"/>“, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME"/>“.</translation>
+<translation id="8284279544186306258">visos <ph name="WEBSITE_1"/> svetainės</translation>
+<translation id="8284835137979141223">„<ph name="PRODUCT_NAME"/>“ iš „<ph name="VENDOR_NAME"/>“</translation>
+<translation id="8341840687457896278">Šiam plėtiniui pateikiant įgaliojimą tinklo užklausai įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) pateikė kitokį įgaliojimą.</translation>
+<translation id="8602184400052594090">Trūksta deklaracijos arba ji nenuskaitoma.</translation>
+<translation id="8620765578342452535">Konfigūruoti tinklo ryšius</translation>
+<translation id="8636666366616799973">Paketas netinkamas. Išsami informacija: „<ph name="ERROR_MESSAGE"/>“.</translation>
+<translation id="8662911384982557515">Pakeisti pagrindinį puslapį į: <ph name="HOME_PAGE"/></translation>
+<translation id="8670869118777164560">Šiam plėtiniui peradresuojant tinklo užklausą <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) peradresavo ją <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="8712265948125780616">Plėtinių išskleidimo priemonė</translation>
+<translation id="8749863574775030885">Pasiekti nežinomų tiekėjų USB įrenginius</translation>
+<translation id="8804398419035066391">Susisiekti su bendradarbiaujančiomis svetainėmis</translation>
+<translation id="8825366169884721447">Šiam plėtiniui keičiant tinklo užklausos antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
+<translation id="9111791539553342076">Šiam plėtiniui keičiant tinklo užklausos atsakymo antraštę „<ph name="HEADER_NAME"/>“ įvyko klaida, nes dėl pakeitimo kilo konfliktas su kitu plėtiniu („<ph name="EXTENSION_NAME"/>“).</translation>
+<translation id="9131487537093447019">Siųsti pranešimus į „Bluetooth“ įrenginius ir gauti pranešimus iš jų.</translation>
+<translation id="9150045010208374699">Naudoti kamerą</translation>
 </translationbundle>

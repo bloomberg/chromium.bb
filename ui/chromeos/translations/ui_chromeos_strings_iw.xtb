@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="iw">
-<translation id="8008366997883261463">כלב</translation>
-<translation id="7165320105431587207">כשל בהגדרת התצורה של הרשת</translation>
-<translation id="4387004326333427325">אישור האימות נדחה מרחוק</translation>
-<translation id="6943836128787782965">‏פעולת get של HTTP נכשלה</translation>
+<translation id="1119447706177454957">שגיאה פנימית</translation>
+<translation id="153454903766751181">מאתחל מודם סלולרי...</translation>
+<translation id="158849752021629804">יש צורך ברשת ביתית</translation>
 <translation id="1661867754829461514">‏חסר PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: מתחבר...</translation>
+<translation id="1773212559869067373">אישור האימות נדחה מקומית</translation>
+<translation id="1829129547161959350">פינגווין</translation>
+<translation id="1850504506766569011">‏Wi-Fi כבוי.</translation>
+<translation id="2288278176040912387">פטיפון</translation>
+<translation id="2354174487190027830">מפעיל את <ph name="NAME"/></translation>
+<translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
+<translation id="2563185590376525700">צפרדע</translation>
+<translation id="2563856802393254086">ברכותינו! שירות הנתונים שלך, '<ph name="NAME"/>', הופעל ומוכן לשימוש.</translation>
+<translation id="2649120831653069427">דג</translation>
+<translation id="2670531586141364277">הפעלה של '<ph name="NAME"/>' מצריכה חיבור לרשת.</translation>
+<translation id="2894654529758326923">מידע</translation>
+<translation id="2951236788251446349">מדוזה</translation>
+<translation id="2966449113954629791">ייתכן שהשתמשת בכל מכסת הנתונים לנייד שלך. בקר בפורטל ההפעלה של <ph name="NAME"/> לרכישת נתונים נוספים.</translation>
+<translation id="3846575436967432996">אין מידע רשת זמין</translation>
+<translation id="3871838685472846647">סלולרי הופעל</translation>
+<translation id="3901991538546252627">מתחבר אל: <ph name="NAME"/></translation>
+<translation id="3958548648197196644">קיווי</translation>
 <translation id="40400351611212369">שגיאה בהפעלת רשת</translation>
 <translation id="4237016987259239829">שגיאת חיבור רשת</translation>
+<translation id="4274292172790327596">שגיאה לא מזוהה</translation>
+<translation id="4326192123064055915">קפה</translation>
+<translation id="4387004326333427325">אישור האימות נדחה מרחוק</translation>
+<translation id="4442424173763614572">‏חיפוש ה-DNS נכשל</translation>
+<translation id="4448844063988177157">‏מחפש רשתות Wi-Fi...</translation>
+<translation id="4479639480957787382">אתרנט</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: מתחבר...</translation>
 <translation id="4508265954913339219">ההפעלה נכשלה</translation>
 <translation id="4559767610552730302">טשטוש</translation>
-<translation id="8688591111840995413">סיסמה שגויה</translation>
-<translation id="3846575436967432996">אין מידע רשת זמין</translation>
-<translation id="153454903766751181">מאתחל מודם סלולרי...</translation>
-<translation id="735745346212279324">‏VPN מנותק</translation>
+<translation id="4935975195727477204">פרח גזניה</translation>
+<translation id="5045550434625856497">סיסמה שגויה</translation>
+<translation id="5097002363526479830">ההתחברות לרשת נכשלה '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">שח-מט</translation>
+<translation id="5257456363153333584">שפירית</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">חתול</translation>
-<translation id="7170041865419449892">מחוץ לטווח</translation>
-<translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
-<translation id="7973962044839454485">‏אימות PPP נכשל בשל שם משתמש או סיסמה שגויים</translation>
-<translation id="6549021752953852991">אין רשת סלולרית זמינה</translation>
+<translation id="5864471791310927901">‏חיפוש DHCP נכשל</translation>
+<translation id="6232116551750539448">החיבור אל <ph name="NAME"/> נותק</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: מפעיל...</translation>
+<translation id="6312403991423642364">שגיאת רשת לא ידועה</translation>
 <translation id="6490455614072479501">הניסיון להתחבר אל '<ph name="NAME"/>' נכשל: <ph name="DETAILS"/>
 הודעת השרת: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">הפעלה של '<ph name="NAME"/>' מצריכה חיבור לרשת.</translation>
-<translation id="4442424173763614572">‏חיפוש ה-DNS נכשל</translation>
-<translation id="7874779702599364982">מחפש רשתות סלולריות...</translation>
-<translation id="3901991538546252627">מתחבר אל: <ph name="NAME"/></translation>
-<translation id="1773212559869067373">אישור האימות נדחה מקומית</translation>
-<translation id="2563185590376525700">צפרדע</translation>
-<translation id="7256405249507348194">שגיאה לא מזוהה: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">מידע</translation>
-<translation id="6935521024859866267">פרפר הפוך</translation>
-<translation id="7925247922861151263">‏בדיקת AAA נכשלה</translation>
-<translation id="4479639480957787382">אתרנט</translation>
-<translation id="6312403991423642364">שגיאת רשת לא ידועה</translation>
-<translation id="4326192123064055915">קפה</translation>
-<translation id="2354174487190027830">מפעיל את <ph name="NAME"/></translation>
-<translation id="1829129547161959350">פינגווין</translation>
-<translation id="515594325917491223">שח-מט</translation>
-<translation id="5097002363526479830">ההתחברות לרשת נכשלה '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">‏Wi-Fi כבוי.</translation>
-<translation id="2966449113954629791">ייתכן שהשתמשת בכל מכסת הנתונים לנייד שלך. בקר בפורטל ההפעלה של <ph name="NAME"/> לרכישת נתונים נוספים.</translation>
-<translation id="8132793192354020517">מחובר ל<ph name="NAME"/></translation>
-<translation id="1119447706177454957">שגיאה פנימית</translation>
-<translation id="5045550434625856497">סיסמה שגויה</translation>
-<translation id="6232116551750539448">החיבור אל <ph name="NAME"/> נותק</translation>
-<translation id="4274292172790327596">שגיאה לא מזוהה</translation>
-<translation id="4448844063988177157">‏מחפש רשתות Wi-Fi...</translation>
-<translation id="7229570126336867161">‏יש צורך ב-EVDO</translation>
-<translation id="9044646465488564462">ההתחברות לרשת נכשלה: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
-<translation id="3871838685472846647">סלולרי הופעל</translation>
-<translation id="3958548648197196644">קיווי</translation>
+<translation id="6549021752953852991">אין רשת סלולרית זמינה</translation>
 <translation id="6732801395666424405">האישורים לא נטענו</translation>
-<translation id="8300849813060516376">‏OTASP נכשל</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: מפעיל...</translation>
-<translation id="8714406895390098252">אופניים</translation>
-<translation id="5257456363153333584">שפירית</translation>
-<translation id="158849752021629804">יש צורך ברשת ביתית</translation>
-<translation id="2649120831653069427">דג</translation>
-<translation id="2288278176040912387">פטיפון</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">‏חיפוש DHCP נכשל</translation>
-<translation id="9046895021617826162">החיבור נכשל</translation>
-<translation id="8372369524088641025">‏מקש WEP גרוע</translation>
-<translation id="2951236788251446349">מדוזה</translation>
-<translation id="8000066093800657092">אין רשת</translation>
-<translation id="2563856802393254086">ברכותינו! שירות הנתונים שלך, '<ph name="NAME"/>', הופעל ומוכן לשימוש.</translation>
-<translation id="4935975195727477204">פרח גזניה</translation>
+<translation id="6935521024859866267">פרפר הפוך</translation>
+<translation id="6943836128787782965">‏פעולת get של HTTP נכשלה</translation>
+<translation id="7165320105431587207">כשל בהגדרת התצורה של הרשת</translation>
+<translation id="7170041865419449892">מחוץ לטווח</translation>
+<translation id="7229570126336867161">‏יש צורך ב-EVDO</translation>
+<translation id="7256405249507348194">שגיאה לא מזוהה: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">‏שם משתמש/סיסמה שגויים, או שאימות EAP נכשל</translation>
+<translation id="735745346212279324">‏VPN מנותק</translation>
+<translation id="7874779702599364982">מחפש רשתות סלולריות...</translation>
+<translation id="7925247922861151263">‏בדיקת AAA נכשלה</translation>
+<translation id="7973962044839454485">‏אימות PPP נכשל בשל שם משתמש או סיסמה שגויים</translation>
+<translation id="8000066093800657092">אין רשת</translation>
+<translation id="8008366997883261463">כלב</translation>
+<translation id="8132793192354020517">מחובר ל<ph name="NAME"/></translation>
+<translation id="8300849813060516376">‏OTASP נכשל</translation>
+<translation id="8372369524088641025">‏מקש WEP גרוע</translation>
+<translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
+<translation id="8688591111840995413">סיסמה שגויה</translation>
+<translation id="8714406895390098252">אופניים</translation>
+<translation id="8808686172382650546">חתול</translation>
+<translation id="9044646465488564462">ההתחברות לרשת נכשלה: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">החיבור נכשל</translation>
 </translationbundle>

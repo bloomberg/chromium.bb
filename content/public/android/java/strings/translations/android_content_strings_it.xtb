@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="it">
-<translation id="2094750046714988961">Impossibile avviare profiler perché la memoria esterna non è pronta</translation>
 <translation id="1256337885411059545">Impossibile riprodurre il video</translation>
-<translation id="2520230379124234395">Profiler avviato</translation>
-<translation id="4859501799452851758">Profiler ha finito. I risultati sono in <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Spiacenti, questo video non può essere visualizzato in streaming su questo dispositivo.</translation>
-<translation id="2410828433627930127">Spiacenti, impossibile riprodurre il video.</translation>
-<translation id="7096034533295549981">Caricamento video</translation>
 <translation id="1542044944667958430">Ricerca Google</translation>
-<translation id="6849295950938417341">Impossibile avviare profiler</translation>
+<translation id="2094750046714988961">Impossibile avviare profiler perché la memoria esterna non è pronta</translation>
+<translation id="2410828433627930127">Spiacenti, impossibile riprodurre il video.</translation>
+<translation id="2520230379124234395">Profiler avviato</translation>
+<translation id="273860350361291195">Spiacenti, questo video non può essere visualizzato in streaming su questo dispositivo.</translation>
+<translation id="4859501799452851758">Profiler ha finito. I risultati sono in <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Condividi</translation>
+<translation id="6849295950938417341">Impossibile avviare profiler</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Caricamento video</translation>
 </translationbundle>

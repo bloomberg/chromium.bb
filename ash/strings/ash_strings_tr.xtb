@@ -1,225 +1,225 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="tr">
-<translation id="3595596368722241419">Pil tam dolu</translation>
-<translation id="6895424601869865703"><ph name="GIVEN_NAME"/> için bir hesap ekle</translation>
+<translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda şu PIN kodunu girin: <ph name="PINCODE"/></translation>
+<translation id="112308213915226829">Rafı otomatik gizle</translation>
+<translation id="1195412055398077112">fazla tarama</translation>
 <translation id="1270290102613614947">Dokunmatik klavye devre dışı</translation>
-<translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; uzantısı bu ağa bağlanmaya yardımcı olabilir.</translation>
-<translation id="7814236020522506259"><ph name="HOUR"/> ve <ph name="MINUTE"/></translation>
+<translation id="1272079795634619415">Durdur</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
 <translation id="1343000272198685031">Mikrofon Jakı</translation>
-<translation id="30155388420722288">Taşma Düğmesi</translation>
-<translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
-<translation id="8673028979667498656">270°</translation>
-<translation id="5571066253365925590">Bluetooth etkin</translation>
-<translation id="5895138241574237353">Yeniden başlat</translation>
-<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> dönme ayarı <ph name="ROTATION"/> olarak değiştirildi</translation>
-<translation id="9074739597929991885">Bluetooth</translation>
-<translation id="2268130516524549846">Bluetooth devre dışı</translation>
-<translation id="6713285437468012787">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşlendi ve artık tüm kullanıcılar tarafından kullanılabilir. Bu eşlemeyi Ayarlar'ı kullanarak kaldırabilirsiniz.</translation>
-<translation id="3775358506042162758">Çoklu oturum açmada en fazla üç hesabınız olabilir.</translation>
-<translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>
-<translation id="370649949373421643">Kablosuzu Etkinleştir</translation>
-<translation id="3626281679859535460">Parlaklık</translation>
-<translation id="3621202678540785336">Giriş</translation>
-<translation id="7348093485538360975">Ekran klavyesi</translation>
-<translation id="595202126637698455">Performans izleme etkin</translation>
-<translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
-<translation id="7982789257301363584">Ağ</translation>
-<translation id="2303600792989757991">Pencere genel bakışını değiştir</translation>
-<translation id="5565793151875479467">Proxy...</translation>
-<translation id="938582441709398163">Klavye Yer Paylaşımı</translation>
-<translation id="6047696787498798094">Başka bir kullanıcıya geçtiğinizde ekran paylaşma özelliği durur. Devam etmek istiyor musunuz?</translation>
-<translation id="6979158407327259162">Google Drive</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> çözünürlüğü <ph name="RESOLUTION"/> olarak değiştirildi</translation>
-<translation id="2297568595583585744">Durum tepsisi</translation>
-<translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
-<translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME"/></translation>
-<translation id="8206859287963243715">Cep telefonu</translation>
-<translation id="6596816719288285829">IP Adresi</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> cihazınız açıkken şarj olmayabilir.</translation>
-<translation id="3621712662352432595">Ses Ayarları</translation>
+<translation id="1346748346194534595">Sağa</translation>
+<translation id="137180024469554212">Döndürme kilidini devre dışı bırak</translation>
+<translation id="1383876407941801731">Ara</translation>
+<translation id="1426410128494586442">Evet</translation>
+<translation id="1467432559032391204">Sola</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
+<translation id="1510238584712386396">Başlatıcı</translation>
+<translation id="15373452373711364">Büyük fare imleci</translation>
+<translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
+<translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT"/></translation>
+<translation id="164969095109328410">Chrome cihaz</translation>
+<translation id="1723752762323179280">Oturumdan Çıkış Yapılıyor</translation>
+<translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="1812696562331527143">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3. taraf<ph name="END_LINK"/>) olarak değiştirildi.
 Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
-<translation id="6043994281159824495">Şimdi çıkış yap</translation>
-<translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
-<translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
-<translation id="3799026279081545374">Şarj cihazınız sorunlu olabilir. ABD'de yaşıyorsanız yardım almak ve cihazı yenisiyle değiştirmek için lütfen 866-628-1371 numaralı telefonu arayın. İngiltere'de yaşıyorsanız 0800-026-0613 numaralı telefonu, İrlanda'da yaşıyorsanız 1-800-832-664 numaralı telefonu, Kanada'da yaşıyorsanız 866-628-1372 numaralı telefonu, Avustralya'da yaşıyorsanız lütfen 1-800-067-460 numaralı telefonu arayın.</translation>
-<translation id="3891340733213178823">Oturumu kapatmak için Ctrl+ÜstKrktr+Q tuşlarına iki defa basın.</translation>
-<translation id="5871632337994001636">Cihazları yönet...</translation>
-<translation id="785750925697875037">Mobil hesabı görüntüle</translation>
-<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> penceresini kapat</translation>
-<translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
-<translation id="939252827960237676">Ekran görüntüsü kaydedilemedi</translation>
-<translation id="9080206825613744995">Mikrofon kullanımda.</translation>
-<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
-<translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
-<translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
-<translation id="15373452373711364">Büyük fare imleci</translation>
-<translation id="3294437725009624529">Misafir</translation>
-<translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
-<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
-<translation id="2942516765047364088">Raf konumu</translation>
-<translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
-<translation id="5238774010593222950">Başka bir hesapta oturum açamıyorum.</translation>
-<translation id="1723752762323179280">Oturumdan Çıkış Yapılıyor</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
-<translation id="1426410128494586442">Evet</translation>
-<translation id="4804818685124855865">Bağlantıyı kes</translation>
-<translation id="2963773877003373896">mod3</translation>
-<translation id="5222676887888702881">Çıkış</translation>
-<translation id="2391579633712104609">180°</translation>
-<translation id="1272079795634619415">Durdur</translation>
-<translation id="4957722034734105353">Daha fazla bilgi edinin...</translation>
-<translation id="2964193600955408481">Kablosuz bağlantıyı devre dışı bırak</translation>
-<translation id="4279490309300973883">Yansıtılıyor</translation>
-<translation id="2509468283778169019">CAPS LOCK açık</translation>
-<translation id="3892641579809465218">Dahili Ekran</translation>
-<translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra &quot;<ph name="FROM_LOCALE"/>&quot; olan dil &quot;<ph name="TO_LOCALE"/>&quot; olarak değiştirildi.</translation>
-<translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
-<translation id="8654520615680304441">Kablosuz'u aç...</translation>
-<translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME"/> ile paylaşılıyor.</translation>
-<translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY"/></translation>
-<translation id="8828714802988429505">90°</translation>
-<translation id="5825747213122829519">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/> olarak değiştirildi.
-Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
-<translation id="2562916301614567480">Özel Ağ</translation>
-<translation id="4250680216510889253">Hayır</translation>
-<translation id="4379753398862151997">Sevgili Monitör, aramızdaki bu ilişki yürümüyor. (Bu monitör desteklenmiyor)</translation>
-<translation id="6426039856985689743">Mobil verileri devre dışı bırak</translation>
-<translation id="3087734570205094154">Alt</translation>
-<translation id="3742055079367172538">Ekran görüntüsü alındı</translation>
-<translation id="8878886163241303700">Genişletilmiş ekran</translation>
-<translation id="714034171374937760">Chromebase</translation>
-<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
-<translation id="3967919079500697218">Ekran görüntüsü alabilme işlevi yöneticiniz tarafından devre dışı bırakılmıştır.</translation>
-<translation id="372094107052732682">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
-<translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
-<translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
-<translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (birincil)</translation>
-<translation id="3626637461649818317">%<ph name="PERCENTAGE"/> kaldı</translation>
-<translation id="9089416786594320554">Giriş yöntemleri</translation>
-<translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
-<translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
-<translation id="1963814843110128691">$1, şuraya yayınlanıyor: $2</translation>
-<translation id="3963445509666917109">Hoparlör (Dahili)</translation>
-<translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
-<translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
-<translation id="5759815399269068793">Kapağı kapalı olsa da <ph name="DEVICE_TYPE"/> cihazınızı harici bir ekrana bağlı iken kullanmaya devam edebilirsiniz.</translation>
-<translation id="2825619548187458965">Raf</translation>
-<translation id="4430019312045809116">Ses</translation>
-<translation id="5932901536148835538">Chromebit</translation>
-<translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
-<translation id="1383876407941801731">Ara</translation>
-<translation id="2204305834655267233">Ağ Bilgisi</translation>
-<translation id="137180024469554212">Döndürme kilidini devre dışı bırak</translation>
-<translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT"/></translation>
-<translation id="5980301590375426705">Misafir oturumundan çık</translation>
-<translation id="8308637677604853869">Önceki menü</translation>
-<translation id="4321179778687042513">ctrl</translation>
-<translation id="3625258641415618104">Ekran görüntüleri devre dışı</translation>
-<translation id="1346748346194534595">Sağa</translation>
-<translation id="8528322925433439945">Mobile...</translation>
-<translation id="3157169093162779309">Döndürme kilidini etkinleştir</translation>
-<translation id="8428213095426709021">Ayarlar</translation>
-<translation id="2372145515558759244">Uygulamalar senkronize ediliyor...</translation>
-<translation id="1987317783729300807">Hesaplar</translation>
-<translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/> </translation>
-<translation id="1467432559032391204">Sola</translation>
-<translation id="5543001071567407895">SMS</translation>
-<translation id="1957803754585243749">0°</translation>
-<translation id="4527045527269911712">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor.</translation>
-<translation id="8814190375133053267">Kablosuz</translation>
-<translation id="1923539912171292317">Otomatik tıklamalar</translation>
-<translation id="703171847531699602">Yayın cihazı yok</translation>
-<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Bağlanıyor...</translation>
-<translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> içinde otomatik olarak çıkış yapacaksınız.</translation>
-<translation id="252373100621549798">Bilinmeyen Görünüm</translation>
 <translation id="1882897271359938046">Şuraya yansıtılıyor: <ph name="DISPLAY_NAME"/></translation>
-<translation id="5777841717266010279">Ekran paylaşma durdurulsun mu?</translation>
+<translation id="1923539912171292317">Otomatik tıklamalar</translation>
+<translation id="1957803754585243749">0°</translation>
+<translation id="1963814843110128691">$1, şuraya yayınlanıyor: $2</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
+<translation id="1987317783729300807">Hesaplar</translation>
+<translation id="2127372758936585790">Düşük güçlü şarj cihazı</translation>
+<translation id="2204305834655267233">Ağ Bilgisi</translation>
+<translation id="2208323208084708176">Birleştirilmiş masaüstü modu</translation>
+<translation id="225680501294068881">Cihazlar taranıyor...</translation>
+<translation id="2268130516524549846">Bluetooth devre dışı</translation>
+<translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
+<translation id="2297568595583585744">Durum tepsisi</translation>
+<translation id="2303600792989757991">Pencere genel bakışını değiştir</translation>
+<translation id="2372145515558759244">Uygulamalar senkronize ediliyor...</translation>
+<translation id="2391579633712104609">180°</translation>
+<translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY"/></translation>
+<translation id="2475982808118771221">Bir hata oluştu</translation>
+<translation id="2509468283778169019">CAPS LOCK açık</translation>
+<translation id="252373100621549798">Bilinmeyen Görünüm</translation>
+<translation id="2532589005999780174">Yüksek kontrast modu</translation>
+<translation id="2562916301614567480">Özel Ağ</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Bağlanıyor...</translation>
+<translation id="2700058918926273959">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor. Süre dolduğunda oturumunuz kapatılacaktır.</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="2761704814324807722">Durum tepsisi, saat: <ph name="TIME"/>, <ph name="BATTERY"/></translation>
-<translation id="3784455785234192852">Kilitle</translation>
-<translation id="2805756323405976993">Uygulamalar</translation>
-<translation id="2872961005593481000">Kapat</translation>
-<translation id="3433830597744061105">Hesapları yönet</translation>
-<translation id="742594950370306541">Kamera kullanımda.</translation>
-<translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
-<translation id="2532589005999780174">Yüksek kontrast modu</translation>
-<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING"/></translation>
-<translation id="3473479545200714844">Ekran büyüteci</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> cihazınız açıkken şarj olmayabilir. Onaylı bir şarj cihazı kullanmayı düşünün.</translation>
-<translation id="882279321799040148">Görüntülemek için tıklayın</translation>
-<translation id="5011233892417813670">Chromebook</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> çözünürlüğünü desteklemiyor. Çözünürlük <ph name="FALLBACK_RESOLUTION"/> olarak değiştirildi</translation>
-<translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
-<translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>
-<translation id="6981982820502123353">Erişilebilirlik</translation>
-<translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor.</translation>
-<translation id="5977415296283489383">Kulaklık</translation>
-<translation id="225680501294068881">Cihazlar taranıyor...</translation>
-<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5978382165065462689">Ekranınızın kontrolü Uzaktan Yardım kullanılarak paylaşılıyor.</translation>
-<translation id="737451040872859086">Mikrofon (Dahili)</translation>
-<translation id="2475982808118771221">Bir hata oluştu</translation>
-<translation id="3783640748446814672">alt</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/>, <ph name="DOMAIN"/> tarafından yönetilen herkese açık bir oturumdur</translation>
-<translation id="7029814467594812963">Oturumdan çık</translation>
-<translation id="479989351350248267">ara</translation>
-<translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
-<translation id="2429753432712299108">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY"/></translation>
-<translation id="9201131092683066720">Pil %<ph name="PERCENTAGE"/> dolu.</translation>
-<translation id="2983818520079887040">Ayarlar...</translation>
-<translation id="6452181791372256707">Reddet</translation>
-<translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
-<translation id="1195412055398077112">fazla tarama</translation>
-<translation id="607652042414456612">Bilgisayarınız yakındaki Bluetooth cihazlar tarafından keşfedilebilir durumdadır. Ayrıca,
-<ph name="ADDRESS"/> adresine sahip &quot;<ph name="NAME"/>&quot; olarak görünecek</translation>
-<translation id="112308213915226829">Rafı otomatik gizle</translation>
-<translation id="7573962313813535744">Yuva modu</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
-<translation id="5958529069007801266">Denetlenen kullanıcı</translation>
-<translation id="3709443003275901162">9+</translation>
-<translation id="639644700271529076">CAPS LOCK kapalı</translation>
-<translation id="6248847161401822652">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
-<translation id="6785414152754474415">Pil %<ph name="PERCENTAGE"/> dolu ve şarj oluyor.</translation>
-<translation id="4895488851634969361">Pil dolu.</translation>
-<translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
-<translation id="8443356412772935865">Ekran şuraya yayınlanıyor: $1</translation>
-<translation id="5947494881799873997">Geri döndür</translation>
-<translation id="7593891976182323525">Arama veya Üst Karakter</translation>
-<translation id="7649070708921625228">Yardım</translation>
-<translation id="164969095109328410">Chrome cihaz</translation>
+<translation id="2805756323405976993">Uygulamalar</translation>
+<translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
+<translation id="2825619548187458965">Raf</translation>
+<translation id="2872961005593481000">Kapat</translation>
+<translation id="2942516765047364088">Raf konumu</translation>
+<translation id="2946640296642327832">Bluetooth'u etkinleştir</translation>
+<translation id="2963773877003373896">mod3</translation>
+<translation id="2964193600955408481">Kablosuz bağlantıyı devre dışı bırak</translation>
+<translation id="2983818520079887040">Ayarlar...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/>, <ph name="DOMAIN"/> tarafından yönetilen herkese açık bir oturumdur</translation>
+<translation id="3009178788565917040">Çıkış</translation>
+<translation id="30155388420722288">Taşma Düğmesi</translation>
+<translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING"/></translation>
 <translation id="3050422059534974565">CAPS LOCK açık.
 İptal için Arama veya Üst Karakter tuşlarına basın.</translation>
-<translation id="397105322502079400">Hesaplanııyor...</translation>
-<translation id="1013923882670373915">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda şu PIN kodunu girin: <ph name="PINCODE"/></translation>
-<translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
-<translation id="4961318399572185831">Ekranı yayınla</translation>
-<translation id="5507786745520522457">Mobil verileri ayarla</translation>
-<translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
-<translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
-<translation id="5927132638760172455">Bilinmeyen bir alıcıya yayınlanıyor</translation>
-<translation id="743058460480092004">Kamera ve mikrofon kullanımda.</translation>
-<translation id="6550675742724504774">Seçenekler</translation>
-<translation id="6406704438230478924">altgr</translation>
+<translation id="3077734595579995578">üstkrktr</translation>
+<translation id="3087734570205094154">Alt</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
+<translation id="3126069444801937830">Güncellemek için yeniden başlat</translation>
+<translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
+<translation id="3157169093162779309">Döndürme kilidini etkinleştir</translation>
+<translation id="3294437725009624529">Misafir</translation>
+<translation id="3433830597744061105">Hesapları yönet</translation>
+<translation id="3473479545200714844">Ekran büyüteci</translation>
 <translation id="3573179567135747900">Tekrar &quot;<ph name="FROM_LOCALE"/>&quot; ayarına dön (yeniden başlatmak gerekir)</translation>
-<translation id="8103386449138765447">SMS mesajları: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="3595596368722241419">Pil tam dolu</translation>
+<translation id="3606978283550408104">Braille ekranı bağlandı.</translation>
+<translation id="3621202678540785336">Giriş</translation>
+<translation id="3621712662352432595">Ses Ayarları</translation>
+<translation id="3625258641415618104">Ekran görüntüleri devre dışı</translation>
+<translation id="3626281679859535460">Parlaklık</translation>
+<translation id="3626637461649818317">%<ph name="PERCENTAGE"/> kaldı</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
+<translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> çözünürlüğü <ph name="RESOLUTION"/> olarak değiştirildi</translation>
+<translation id="370649949373421643">Kablosuzu Etkinleştir</translation>
+<translation id="3709443003275901162">9+</translation>
+<translation id="372094107052732682">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
+<translation id="3742055079367172538">Ekran görüntüsü alındı</translation>
+<translation id="3775358506042162758">Çoklu oturum açmada en fazla üç hesabınız olabilir.</translation>
+<translation id="3783640748446814672">alt</translation>
+<translation id="3784455785234192852">Kilitle</translation>
+<translation id="3799026279081545374">Şarj cihazınız sorunlu olabilir. ABD'de yaşıyorsanız yardım almak ve cihazı yenisiyle değiştirmek için lütfen 866-628-1371 numaralı telefonu arayın. İngiltere'de yaşıyorsanız 0800-026-0613 numaralı telefonu, İrlanda'da yaşıyorsanız 1-800-832-664 numaralı telefonu, Kanada'da yaşıyorsanız 866-628-1372 numaralı telefonu, Avustralya'da yaşıyorsanız lütfen 1-800-067-460 numaralı telefonu arayın.</translation>
+<translation id="3891340733213178823">Oturumu kapatmak için Ctrl+ÜstKrktr+Q tuşlarına iki defa basın.</translation>
+<translation id="3892641579809465218">Dahili Ekran</translation>
+<translation id="3963445509666917109">Hoparlör (Dahili)</translation>
+<translation id="3967919079500697218">Ekran görüntüsü alabilme işlevi yöneticiniz tarafından devre dışı bırakılmıştır.</translation>
+<translation id="397105322502079400">Hesaplanııyor...</translation>
+<translation id="4053612967614057854">Ekran klavyesini devre dışı bırak</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (birincil)</translation>
+<translation id="412065659894267608">Tam dolana kadar <ph name="HOUR"/> sa <ph name="MINUTE"/> dk var</translation>
+<translation id="4250680216510889253">Hayır</translation>
+<translation id="4279490309300973883">Yansıtılıyor</translation>
+<translation id="4321179778687042513">ctrl</translation>
+<translation id="4379753398862151997">Sevgili Monitör, aramızdaki bu ilişki yürümüyor. (Bu monitör desteklenmiyor)</translation>
+<translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME"/> ile paylaşılıyor.</translation>
+<translation id="4430019312045809116">Ses</translation>
+<translation id="4527045527269911712">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor.</translation>
+<translation id="479989351350248267">ara</translation>
+<translation id="4804818685124855865">Bağlantıyı kes</translation>
+<translation id="4872237917498892622">Alt+Arama veya Üst Karakter</translation>
+<translation id="4895488851634969361">Pil dolu.</translation>
+<translation id="4918086044614829423">Kabul et</translation>
+<translation id="4957722034734105353">Daha fazla bilgi edinin...</translation>
+<translation id="4961318399572185831">Ekranı yayınla</translation>
+<translation id="5011233892417813670">Chromebook</translation>
+<translation id="5045002648206642691">Google Drive ayarları...</translation>
+<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> kaldı</translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
+<translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
+<translation id="5222676887888702881">Çıkış</translation>
+<translation id="5238774010593222950">Başka bir hesapta oturum açamıyorum.</translation>
+<translation id="544691375626129091">Mevcut tüm kullanıcılar zaten bu oturuma eklenmiş.</translation>
+<translation id="5507786745520522457">Mobil verileri ayarla</translation>
+<translation id="5543001071567407895">SMS</translation>
+<translation id="5548285847212963613">&quot;<ph name="EXTENSION_NAME"/>&quot; uzantısı bu ağa bağlanmaya yardımcı olabilir.</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="5571066253365925590">Bluetooth etkin</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5759815399269068793">Kapağı kapalı olsa da <ph name="DEVICE_TYPE"/> cihazınızı harici bir ekrana bağlı iken kullanmaya devam edebilirsiniz.</translation>
+<translation id="5777841717266010279">Ekran paylaşma durdurulsun mu?</translation>
+<translation id="5825747213122829519">Giriş yönteminiz <ph name="INPUT_METHOD_ID"/> olarak değiştirildi.
+Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
+<translation id="5871632337994001636">Cihazları yönet...</translation>
+<translation id="5895138241574237353">Yeniden başlat</translation>
+<translation id="5927132638760172455">Bilinmeyen bir alıcıya yayınlanıyor</translation>
+<translation id="5932901536148835538">Chromebit</translation>
+<translation id="5947494881799873997">Geri döndür</translation>
+<translation id="595202126637698455">Performans izleme etkin</translation>
+<translation id="5958529069007801266">Denetlenen kullanıcı</translation>
+<translation id="5977415296283489383">Kulaklık</translation>
+<translation id="5978382165065462689">Ekranınızın kontrolü Uzaktan Yardım kullanılarak paylaşılıyor.</translation>
+<translation id="5980301590375426705">Misafir oturumundan çık</translation>
+<translation id="6043994281159824495">Şimdi çıkış yap</translation>
+<translation id="6047696787498798094">Başka bir kullanıcıya geçtiğinizde ekran paylaşma özelliği durur. Devam etmek istiyor musunuz?</translation>
+<translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> içinde otomatik olarak çıkış yapacaksınız.</translation>
+<translation id="607652042414456612">Bilgisayarınız yakındaki Bluetooth cihazlar tarafından keşfedilebilir durumdadır. Ayrıca,
+<ph name="ADDRESS"/> adresine sahip &quot;<ph name="NAME"/>&quot; olarak görünecek</translation>
+<translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
+<translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
+<translation id="6248847161401822652">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> dönme ayarı <ph name="ROTATION"/> olarak değiştirildi</translation>
+<translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> numaradan SMS alındı</translation>
+<translation id="639644700271529076">CAPS LOCK kapalı</translation>
+<translation id="6406704438230478924">altgr</translation>
+<translation id="6426039856985689743">Mobil verileri devre dışı bırak</translation>
+<translation id="6452181791372256707">Reddet</translation>
+<translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME"/></translation>
+<translation id="6550675742724504774">Seçenekler</translation>
+<translation id="6585808820553845416">Oturumun süresi <ph name="SESSION_TIME_REMAINING"/> içinde bitiyor.</translation>
+<translation id="6596816719288285829">IP Adresi</translation>
+<translation id="6650933572246256093">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY"/></translation>
+<translation id="6713285437468012787">&quot;<ph name="DEVICE_NAME"/>&quot; adlı Bluetooth cihaz eşlendi ve artık tüm kullanıcılar tarafından kullanılabilir. Bu eşlemeyi Ayarlar'ı kullanarak kaldırabilirsiniz.</translation>
+<translation id="6785414152754474415">Pil %<ph name="PERCENTAGE"/> dolu ve şarj oluyor.</translation>
+<translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
+<translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>
+<translation id="6895424601869865703"><ph name="GIVEN_NAME"/> için bir hesap ekle</translation>
+<translation id="6911468394164995108">Başka ağa katıl...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
+<translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981982820502123353">Erişilebilirlik</translation>
+<translation id="7029814467594812963">Oturumdan çık</translation>
+<translation id="703171847531699602">Yayın cihazı yok</translation>
+<translation id="7052914147756339792">Duvar kağıdını ayarla...</translation>
 <translation id="7097613348211027502">ChromeVox (sesli geri bildirim) etkin.
 Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
-<translation id="5045002648206642691">Google Drive ayarları...</translation>
-<translation id="1510238584712386396">Başlatıcı</translation>
+<translation id="714034171374937760">Chromebase</translation>
+<translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> saniye içinde eski çözünürlüğe dönülüyor</translation>
 <translation id="7209101170223508707">CAPS LOCK açık.
 İptal için Alt+Arama veya Üst Karakter tuşlarına basın.</translation>
+<translation id="7348093485538360975">Ekran klavyesi</translation>
+<translation id="737451040872859086">Mikrofon (Dahili)</translation>
+<translation id="742594950370306541">Kamera kullanımda.</translation>
+<translation id="743058460480092004">Kamera ve mikrofon kullanımda.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>, <ph name="SPECIFIED_RESOLUTION"/> çözünürlüğünü desteklemiyor. Çözünürlük <ph name="FALLBACK_RESOLUTION"/> olarak değiştirildi</translation>
+<translation id="7573962313813535744">Yuva modu</translation>
+<translation id="7593891976182323525">Arama veya Üst Karakter</translation>
+<translation id="7649070708921625228">Yardım</translation>
+<translation id="7814236020522506259"><ph name="HOUR"/> ve <ph name="MINUTE"/></translation>
+<translation id="7823564328645135659">Ayarlarınız senkronize edildikten sonra &quot;<ph name="FROM_LOCALE"/>&quot; olan dil &quot;<ph name="TO_LOCALE"/>&quot; olarak değiştirildi.</translation>
+<translation id="785750925697875037">Mobil hesabı görüntüle</translation>
+<translation id="7864539943188674973">Bluetooth'u devre dışı bırak</translation>
+<translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
+<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> cihazınız açıkken şarj olmayabilir. Onaylı bir şarj cihazı kullanmayı düşünün.</translation>
+<translation id="7982789257301363584">Ağ</translation>
+<translation id="8054466585765276473">Pilin süresi hesaplanıyor.</translation>
+<translation id="8103386449138765447">SMS mesajları: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="8190698733819146287">Dilleri ve girişi özelleştir...</translation>
+<translation id="8206859287963243715">Cep telefonu</translation>
+<translation id="8308637677604853869">Önceki menü</translation>
+<translation id="8356164830168736643"><ph name="WINDOW_TITLE"/> penceresini kapat</translation>
+<translation id="8428213095426709021">Ayarlar</translation>
+<translation id="8443356412772935865">Ekran şuraya yayınlanıyor: $1</translation>
+<translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/> </translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> cihazınız açıkken şarj olmayabilir.</translation>
+<translation id="8528322925433439945">Mobile...</translation>
+<translation id="8654520615680304441">Kablosuz'u aç...</translation>
+<translation id="8673028979667498656">270°</translation>
+<translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
+<translation id="8814190375133053267">Kablosuz</translation>
+<translation id="882279321799040148">Görüntülemek için tıklayın</translation>
+<translation id="8828714802988429505">90°</translation>
+<translation id="8878886163241303700">Genişletilmiş ekran</translation>
 <translation id="8940956008527784070">Pil gücü az (%<ph name="PERCENTAGE"/>)</translation>
-<translation id="4918086044614829423">Kabul et</translation>
-<translation id="5102001756192215136"><ph name="HOUR"/>:<ph name="MINUTE"/> kaldı</translation>
-<translation id="3009178788565917040">Çıkış</translation>
-<translation id="3147142846278915599">Launcher (uygulamalar senkronize ediliyor...)</translation>
-<translation id="6911468394164995108">Başka ağa katıl...</translation>
-<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
-<translation id="412065659894267608">Tam dolana kadar <ph name="HOUR"/> sa <ph name="MINUTE"/> dk var</translation>
-<translation id="3077734595579995578">üstkrktr</translation>
-<translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> numaradan SMS alındı</translation>
-<translation id="4053612967614057854">Ekran klavyesini devre dışı bırak</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9080206825613744995">Mikrofon kullanımda.</translation>
+<translation id="9089416786594320554">Giriş yöntemleri</translation>
+<translation id="9151726767154816831">Güncellemek için yeniden başlatın ve Powerwash uygulayın</translation>
+<translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
+<translation id="9201131092683066720">Pil %<ph name="PERCENTAGE"/> dolu.</translation>
+<translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
+<translation id="938582441709398163">Klavye Yer Paylaşımı</translation>
+<translation id="939252827960237676">Ekran görüntüsü kaydedilemedi</translation>
 </translationbundle>

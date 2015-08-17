@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="th">
-<translation id="8008366997883261463">สุนัข</translation>
-<translation id="7165320105431587207">ล้มเหลวในการกำหนดค่าเครือข่าย</translation>
-<translation id="4387004326333427325">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากระยะไกล</translation>
-<translation id="6943836128787782965">การรับ HTTP ล้มเหลว</translation>
+<translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
+<translation id="153454903766751181">กำลังเริ่มต้นโมเด็มมือถือ...</translation>
+<translation id="158849752021629804">ต้องใช้เครือข่ายในประเทศ</translation>
 <translation id="1661867754829461514">ไม่พบ PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: กำลังเชื่อมต่อ...</translation>
+<translation id="1773212559869067373">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธในท้องถิ่น</translation>
+<translation id="1829129547161959350">นกเพนกวิน</translation>
+<translation id="1850504506766569011">WiFi ปิดอยู่</translation>
+<translation id="2288278176040912387">เครื่องเล่นแผ่นเสียง</translation>
+<translation id="2354174487190027830">กำลังเปิดใช้งาน <ph name="NAME"/></translation>
+<translation id="2544853746127077729">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากเครือข่าย</translation>
+<translation id="2563185590376525700">กบ</translation>
+<translation id="2563856802393254086">ขอแสดงความยินดี! บริการข้อมูล &quot;<ph name="NAME"/>&quot; ของคุณได้เปิดใช้งานและพร้อมใช้งานแล้ว</translation>
+<translation id="2649120831653069427">ปลาเรนโบว์</translation>
+<translation id="2670531586141364277">การเปิดใช้งานของ &quot;<ph name="NAME"/>&quot; จำเป็นต้องมีการเชื่อมต่อเครือข่าย</translation>
+<translation id="2894654529758326923">ข้อมูล</translation>
+<translation id="2951236788251446349">แมงกะพรุน</translation>
+<translation id="2966449113954629791">คุณอาจใช้ข้อมูลมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME"/> เพื่อซื้อข้อมูลเพิ่มเติม</translation>
+<translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
+<translation id="3871838685472846647">เปิดใช้งานโทรศัพท์มือถือแล้ว</translation>
+<translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME"/></translation>
+<translation id="3958548648197196644">กีวี</translation>
 <translation id="40400351611212369">ข้อผิดพลาดการเปิดใช้งานเครือข่าย</translation>
 <translation id="4237016987259239829">ข้อผิดพลาดการเชื่อมต่อเครือข่าย</translation>
+<translation id="4274292172790327596">ข้อผิดพลาดที่ไม่รู้จัก</translation>
+<translation id="4326192123064055915">กาแฟ</translation>
+<translation id="4387004326333427325">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากระยะไกล</translation>
+<translation id="4442424173763614572">การค้นหา DNS ล้มเหลว</translation>
+<translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
+<translation id="4479639480957787382">อีเทอร์เน็ต</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: กำลังเชื่อมต่อ...</translation>
 <translation id="4508265954913339219">การเปิดใช้งานล้มเหลว</translation>
 <translation id="4559767610552730302">ชัดตื้น</translation>
-<translation id="8688591111840995413">รหัสผ่านไม่ถูกต้อง</translation>
-<translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
-<translation id="153454903766751181">กำลังเริ่มต้นโมเด็มมือถือ...</translation>
-<translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
+<translation id="4935975195727477204">ดอกทานตะวัน</translation>
+<translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
+<translation id="5097002363526479830">ไม่สามารถเชื่อมต่อเครือข่าย &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">หมากรุก</translation>
+<translation id="5257456363153333584">แมลงปอ</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">แมว</translation>
-<translation id="7170041865419449892">อยู่นอกระยะสัญญาณ</translation>
-<translation id="2544853746127077729">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากเครือข่าย</translation>
-<translation id="7973962044839454485">การตรวจสอบสิทธิ์ PPP ล้มเหลวเนื่องจากชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
-<translation id="6549021752953852991">ไม่มีเครือข่ายมือถือที่ใช้งานได้</translation>
+<translation id="5864471791310927901">การค้นหา DHCP ล้มเหลว</translation>
+<translation id="6232116551750539448">ขาดการเชื่อมต่อกับ <ph name="NAME"/></translation>
+<translation id="6267036997247669271"><ph name="NAME"/> กำลังเปิดใช้งาน...</translation>
+<translation id="6312403991423642364">ข้อผิดพลาดเครือข่ายที่ไม่รู้จัก</translation>
 <translation id="6490455614072479501">เชื่อมต่อกับ &quot;<ph name="NAME"/>&quot; ไม่ได้: <ph name="DETAILS"/>
         ข้อความเซิร์ฟเวอร์: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">การเปิดใช้งานของ &quot;<ph name="NAME"/>&quot; จำเป็นต้องมีการเชื่อมต่อเครือข่าย</translation>
-<translation id="4442424173763614572">การค้นหา DNS ล้มเหลว</translation>
-<translation id="7874779702599364982">กำลังค้นหาเครือข่ายโทรศัพท์มือถือ...</translation>
-<translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME"/></translation>
-<translation id="1773212559869067373">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธในท้องถิ่น</translation>
-<translation id="2563185590376525700">กบ</translation>
-<translation id="7256405249507348194">ข้อผิดพลาดที่ไม่รู้จัก: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">ข้อมูล</translation>
-<translation id="6935521024859866267">กลับหัว</translation>
-<translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>
-<translation id="4479639480957787382">อีเทอร์เน็ต</translation>
-<translation id="6312403991423642364">ข้อผิดพลาดเครือข่ายที่ไม่รู้จัก</translation>
-<translation id="4326192123064055915">กาแฟ</translation>
-<translation id="2354174487190027830">กำลังเปิดใช้งาน <ph name="NAME"/></translation>
-<translation id="1829129547161959350">นกเพนกวิน</translation>
-<translation id="515594325917491223">หมากรุก</translation>
-<translation id="5097002363526479830">ไม่สามารถเชื่อมต่อเครือข่าย &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">WiFi ปิดอยู่</translation>
-<translation id="2966449113954629791">คุณอาจใช้ข้อมูลมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME"/> เพื่อซื้อข้อมูลเพิ่มเติม</translation>
-<translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME"/></translation>
-<translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
-<translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
-<translation id="6232116551750539448">ขาดการเชื่อมต่อกับ <ph name="NAME"/></translation>
-<translation id="4274292172790327596">ข้อผิดพลาดที่ไม่รู้จัก</translation>
-<translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
-<translation id="7229570126336867161">ต้องใช้ EVDO</translation>
-<translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">WiFi เปิดอยู่</translation>
-<translation id="3871838685472846647">เปิดใช้งานโทรศัพท์มือถือแล้ว</translation>
-<translation id="3958548648197196644">กีวี</translation>
+<translation id="6549021752953852991">ไม่มีเครือข่ายมือถือที่ใช้งานได้</translation>
 <translation id="6732801395666424405">ยังไม่ได้โหลดใบรับรอง</translation>
-<translation id="8300849813060516376">OTASP ล้มเหลว</translation>
-<translation id="6267036997247669271"><ph name="NAME"/> กำลังเปิดใช้งาน...</translation>
-<translation id="8714406895390098252">จักรยาน</translation>
-<translation id="5257456363153333584">แมลงปอ</translation>
-<translation id="158849752021629804">ต้องใช้เครือข่ายในประเทศ</translation>
-<translation id="2649120831653069427">ปลาเรนโบว์</translation>
-<translation id="2288278176040912387">เครื่องเล่นแผ่นเสียง</translation>
 <translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">การค้นหา DHCP ล้มเหลว</translation>
-<translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
-<translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
-<translation id="2951236788251446349">แมงกะพรุน</translation>
-<translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
-<translation id="2563856802393254086">ขอแสดงความยินดี! บริการข้อมูล &quot;<ph name="NAME"/>&quot; ของคุณได้เปิดใช้งานและพร้อมใช้งานแล้ว</translation>
-<translation id="4935975195727477204">ดอกทานตะวัน</translation>
+<translation id="6935521024859866267">กลับหัว</translation>
+<translation id="6943836128787782965">การรับ HTTP ล้มเหลว</translation>
+<translation id="7165320105431587207">ล้มเหลวในการกำหนดค่าเครือข่าย</translation>
+<translation id="7170041865419449892">อยู่นอกระยะสัญญาณ</translation>
+<translation id="7229570126336867161">ต้องใช้ EVDO</translation>
+<translation id="7256405249507348194">ข้อผิดพลาดที่ไม่รู้จัก: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">ชื่อผู้ใช้/รหัสผ่านไม่ถูกต้องหรือการตรวจสอบสิทธิ์ EAP ล้มเหลว</translation>
+<translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
+<translation id="7874779702599364982">กำลังค้นหาเครือข่ายโทรศัพท์มือถือ...</translation>
+<translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>
+<translation id="7973962044839454485">การตรวจสอบสิทธิ์ PPP ล้มเหลวเนื่องจากชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
+<translation id="8000066093800657092">ไม่มีเครือข่าย</translation>
+<translation id="8008366997883261463">สุนัข</translation>
+<translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP ล้มเหลว</translation>
+<translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
+<translation id="8454013096329229812">WiFi เปิดอยู่</translation>
+<translation id="8688591111840995413">รหัสผ่านไม่ถูกต้อง</translation>
+<translation id="8714406895390098252">จักรยาน</translation>
+<translation id="8808686172382650546">แมว</translation>
+<translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
 </translationbundle>

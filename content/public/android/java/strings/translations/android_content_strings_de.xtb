@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="de">
-<translation id="2094750046714988961">Profiler kann nicht gestartet werden, da der externe Speicher nicht bereit ist.</translation>
 <translation id="1256337885411059545">Videowiedergabe nicht möglich</translation>
-<translation id="2520230379124234395">Profiler gestartet</translation>
-<translation id="4859501799452851758">Profiler ist fertig. Die Ergebnisse befinden sich in der Datei <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Leider ist dieses Video nicht für Streaming auf diesem Gerät gültig.</translation>
-<translation id="2410828433627930127">Dieses Video kann leider nicht abgespielt werden.</translation>
-<translation id="7096034533295549981">Video wird geladen</translation>
 <translation id="1542044944667958430">Websuche</translation>
-<translation id="6849295950938417341">Profiler konnte nicht gestartet werden.</translation>
+<translation id="2094750046714988961">Profiler kann nicht gestartet werden, da der externe Speicher nicht bereit ist.</translation>
+<translation id="2410828433627930127">Dieses Video kann leider nicht abgespielt werden.</translation>
+<translation id="2520230379124234395">Profiler gestartet</translation>
+<translation id="273860350361291195">Leider ist dieses Video nicht für Streaming auf diesem Gerät gültig.</translation>
+<translation id="4859501799452851758">Profiler ist fertig. Die Ergebnisse befinden sich in der Datei <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Teilen</translation>
+<translation id="6849295950938417341">Profiler konnte nicht gestartet werden.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Video wird geladen</translation>
 </translationbundle>

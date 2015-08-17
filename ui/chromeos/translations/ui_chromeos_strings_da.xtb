@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="da">
-<translation id="8008366997883261463">Jack Russell-terrier</translation>
-<translation id="7165320105431587207">Netværket kunne ikke konfigureres</translation>
-<translation id="4387004326333427325">Godkendelsescertifikatet blev afvist eksternt</translation>
-<translation id="6943836128787782965">Det lykkedes ikke at hente HTTP</translation>
+<translation id="1119447706177454957">Intern fejl</translation>
+<translation id="153454903766751181">Initialiserer mobilmodem...</translation>
+<translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="1661867754829461514">Pinkode mangler</translation>
-<translation id="4508225577814909926"><ph name="NAME"/> : Opretter forbindelse...</translation>
+<translation id="1773212559869067373">Godkendelsescertifikatet blev afvist lokalt</translation>
+<translation id="1829129547161959350">Pingvin</translation>
+<translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
+<translation id="2288278176040912387">Pladespiller</translation>
+<translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
+<translation id="2563185590376525700">Frø</translation>
+<translation id="2563856802393254086">Datatjenesten &quot;<ph name="NAME"/>&quot; er blevet aktiveret og er klar til brug.</translation>
+<translation id="2649120831653069427">Regnbuefisk</translation>
+<translation id="2670531586141364277">Aktivering af &quot;<ph name="NAME"/>&quot; kræver en netværksforbindelse.</translation>
+<translation id="2894654529758326923">Oplysninger</translation>
+<translation id="2951236788251446349">Vandmand</translation>
+<translation id="2966449113954629791">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME"/> for at købe mere data.</translation>
+<translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
+<translation id="3871838685472846647">Aktiveret for mobil</translation>
+<translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Fejl under aktivering af netværk</translation>
 <translation id="4237016987259239829">Netværkforbindelsesfejl</translation>
+<translation id="4274292172790327596">Fejlen genkendes ikke</translation>
+<translation id="4326192123064055915">Kaffe</translation>
+<translation id="4387004326333427325">Godkendelsescertifikatet blev afvist eksternt</translation>
+<translation id="4442424173763614572">DNS-opslag mislykkedes</translation>
+<translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/> : Opretter forbindelse...</translation>
 <translation id="4508265954913339219">Aktiveringen mislykkedes</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Forkert adgangskode</translation>
-<translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
-<translation id="153454903766751181">Initialiserer mobilmodem...</translation>
-<translation id="735745346212279324">VPN afbrudt</translation>
+<translation id="4935975195727477204">Blomst</translation>
+<translation id="5045550434625856497">Ugyldig adgangskode</translation>
+<translation id="5097002363526479830">Der kunne ikke oprettes forbindelse til netværket &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Skak</translation>
+<translation id="5257456363153333584">Guldsmed</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Kat</translation>
-<translation id="7170041865419449892">Intet signal</translation>
-<translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
-<translation id="7973962044839454485">PPP-godkendelsen mislykkedes på grund af forkert brugernavn eller adgangskode</translation>
-<translation id="6549021752953852991">Der er ingen tilgængelige mobilnetværk</translation>
+<translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
+<translation id="6232116551750539448">Forbindelsen til <ph name="NAME"/> er afbrudt.</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Aktiverer...</translation>
+<translation id="6312403991423642364">Ukendt netværksfejl</translation>
 <translation id="6490455614072479501">Der kunne ikke oprettes forbindelse til &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
         Servermeddelelse: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Aktivering af &quot;<ph name="NAME"/>&quot; kræver en netværksforbindelse.</translation>
-<translation id="4442424173763614572">DNS-opslag mislykkedes</translation>
-<translation id="7874779702599364982">Søger efter mobilnetværk...</translation>
-<translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Godkendelsescertifikatet blev afvist lokalt</translation>
-<translation id="2563185590376525700">Frø</translation>
-<translation id="7256405249507348194">Ukendt fejl: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Oplysninger</translation>
-<translation id="6935521024859866267">På hovedet</translation>
-<translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Ukendt netværksfejl</translation>
-<translation id="4326192123064055915">Kaffe</translation>
-<translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Pingvin</translation>
-<translation id="515594325917491223">Skak</translation>
-<translation id="5097002363526479830">Der kunne ikke oprettes forbindelse til netværket &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
-<translation id="2966449113954629791">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME"/> for at købe mere data.</translation>
-<translation id="8132793192354020517">Forbundet til <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Intern fejl</translation>
-<translation id="5045550434625856497">Ugyldig adgangskode</translation>
-<translation id="6232116551750539448">Forbindelsen til <ph name="NAME"/> er afbrudt.</translation>
-<translation id="4274292172790327596">Fejlen genkendes ikke</translation>
-<translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
-<translation id="7229570126336867161">EVDO mangler</translation>
-<translation id="9044646465488564462">Det var ikke muligt at oprette forbindelse til netværket: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi er slået til.</translation>
-<translation id="3871838685472846647">Aktiveret for mobil</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">Der er ingen tilgængelige mobilnetværk</translation>
 <translation id="6732801395666424405">Certifikaterne blev ikke indlæst</translation>
-<translation id="8300849813060516376">OTASP mislykkedes</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Aktiverer...</translation>
-<translation id="8714406895390098252">Cykel</translation>
-<translation id="5257456363153333584">Guldsmed</translation>
-<translation id="158849752021629804">Hjemmenetværk mangler</translation>
-<translation id="2649120831653069427">Regnbuefisk</translation>
-<translation id="2288278176040912387">Pladespiller</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
-<translation id="9046895021617826162">Forbindelsen mislykkedes</translation>
-<translation id="8372369524088641025">Ugyldig WEP-nøgle</translation>
-<translation id="2951236788251446349">Vandmand</translation>
-<translation id="8000066093800657092">Intet netværk</translation>
-<translation id="2563856802393254086">Datatjenesten &quot;<ph name="NAME"/>&quot; er blevet aktiveret og er klar til brug.</translation>
-<translation id="4935975195727477204">Blomst</translation>
+<translation id="6935521024859866267">På hovedet</translation>
+<translation id="6943836128787782965">Det lykkedes ikke at hente HTTP</translation>
+<translation id="7165320105431587207">Netværket kunne ikke konfigureres</translation>
+<translation id="7170041865419449892">Intet signal</translation>
+<translation id="7229570126336867161">EVDO mangler</translation>
+<translation id="7256405249507348194">Ukendt fejl: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Brugernavn/adgangskode er forkert, eller også mislykkedes EAP-godkendelsen</translation>
+<translation id="735745346212279324">VPN afbrudt</translation>
+<translation id="7874779702599364982">Søger efter mobilnetværk...</translation>
+<translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
+<translation id="7973962044839454485">PPP-godkendelsen mislykkedes på grund af forkert brugernavn eller adgangskode</translation>
+<translation id="8000066093800657092">Intet netværk</translation>
+<translation id="8008366997883261463">Jack Russell-terrier</translation>
+<translation id="8132793192354020517">Forbundet til <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP mislykkedes</translation>
+<translation id="8372369524088641025">Ugyldig WEP-nøgle</translation>
+<translation id="8454013096329229812">Wi-Fi er slået til.</translation>
+<translation id="8688591111840995413">Forkert adgangskode</translation>
+<translation id="8714406895390098252">Cykel</translation>
+<translation id="8808686172382650546">Kat</translation>
+<translation id="9044646465488564462">Det var ikke muligt at oprette forbindelse til netværket: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Forbindelsen mislykkedes</translation>
 </translationbundle>

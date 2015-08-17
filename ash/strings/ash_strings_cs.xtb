@@ -1,221 +1,221 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="cs">
-<translation id="3595596368722241419">Baterie je nabitá</translation>
-<translation id="6895424601869865703">Přidat účet pro uživatele <ph name="GIVEN_NAME"/></translation>
+<translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE"/></translation>
+<translation id="112308213915226829">Automaticky skrývat poličku</translation>
+<translation id="1195412055398077112">přesah obrazu</translation>
 <translation id="1270290102613614947">Softwarová klávesnice je deaktivována</translation>
-<translation id="5548285847212963613">S připojení k této síti může pomoci rozšíření <ph name="EXTENSION_NAME"/>.</translation>
-<translation id="7814236020522506259"><ph name="HOUR"/> a <ph name="MINUTE"/></translation>
-<translation id="1343000272198685031">Konektor mikrofonu</translation>
-<translation id="30155388420722288">Tlačítko přetečení</translation>
-<translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
-<translation id="8673028979667498656">270°</translation>
-<translation id="5571066253365925590">Rozhraní Bluetooth aktivováno</translation>
-<translation id="5895138241574237353">Restartovat</translation>
-<translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME"/> byl otočen o <ph name="ROTATION"/></translation>
-<translation id="9074739597929991885">Bluetooth</translation>
-<translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
-<translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
-<translation id="3775358506042162758">V rámci vícenásobného přihlášení lze používat maximálně tři účty.</translation>
-<translation id="9151726767154816831">Chcete-li zařízení aktualizovat, restartujte je a resetujte pomocí funkce Powerwash</translation>
-<translation id="370649949373421643">Povolit Wi-Fi</translation>
-<translation id="3626281679859535460">Jas</translation>
-<translation id="3621202678540785336">Vstup</translation>
-<translation id="7348093485538360975">Softwarová klávesnice</translation>
-<translation id="595202126637698455">Sledování výkonu aktivováno</translation>
-<translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
-<translation id="7982789257301363584">Síť</translation>
-<translation id="2303600792989757991">Přepnutí přehledu okna</translation>
-<translation id="5565793151875479467">Proxy server...</translation>
-<translation id="938582441709398163">Překryvná klávesnice</translation>
-<translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
-<translation id="6979158407327259162">Disk Google</translation>
-<translation id="3683428399328702079">Rozlišení displeje <ph name="DISPLAY_NAME"/> bylo změněno na <ph name="RESOLUTION"/></translation>
-<translation id="2297568595583585744">Stavový panel</translation>
-<translation id="2946640296642327832">Zapnout Bluetooth</translation>
-<translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
-<translation id="8206859287963243715">Mobil</translation>
-<translation id="6596816719288285829">IP adresa</translation>
-<translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE"/> zapnuté, nebude se nabíjet.</translation>
-<translation id="3621712662352432595">Nastavení zvuku</translation>
-<translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>* <ph name="BEGIN_LINK"/>třetí strany<ph name="END_LINK"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
-<translation id="6043994281159824495">Odhlásit se</translation>
-<translation id="5168181903108465623">Dostupná zařízení Cast</translation>
-<translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
-<translation id="3799026279081545374">Je možné, že máte vadnou nabíječku. Pokud žijete v USA, požádejte o pomoc a výměnu na čísle 866-628-1371. Pokud žijete ve Spojeném království, volejte na číslo 0800-026-0613. Pokud žijete v Irsku, volejte na číslo 1-800-832-664. Pokud žijete v Kanadě, volejte na číslo 866-628-1372. Pokud žijete v Austrálii, volejte na číslo 1-800-067-460.</translation>
-<translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
-<translation id="5871632337994001636">Spravovat zařízení...</translation>
-<translation id="785750925697875037">Zobrazit mobilní účet</translation>
-<translation id="8356164830168736643">Zavřít okno <ph name="WINDOW_TITLE"/></translation>
-<translation id="7864539943188674973">Vypnout Bluetooth</translation>
-<translation id="939252827960237676">Uložení snímku obrazovky se nezdařilo</translation>
-<translation id="9080206825613744995">Mikrofon je používán.</translation>
-<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
-<translation id="3126069444801937830">Restartovat a aktualizovat</translation>
-<translation id="2268813581635650749">Odhlásit vše</translation>
-<translation id="15373452373711364">Velký kurzor myši</translation>
-<translation id="3294437725009624529">Host</translation>
-<translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
-<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
-<translation id="2942516765047364088">Pozice na poličce</translation>
-<translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
-<translation id="5238774010593222950">K dalšímu účtu se nelze přihlásit.</translation>
-<translation id="1723752762323179280">Ukončení relace</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
-<translation id="1426410128494586442">Ano</translation>
-<translation id="4804818685124855865">Odpojit</translation>
-<translation id="2963773877003373896">mod3</translation>
-<translation id="5222676887888702881">Odhlásit se</translation>
-<translation id="2391579633712104609">180°</translation>
 <translation id="1272079795634619415">Zastavit</translation>
-<translation id="4957722034734105353">Další informace...</translation>
-<translation id="2964193600955408481">Vypnout Wi-Fi</translation>
-<translation id="4279490309300973883">Zrcadlení</translation>
-<translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
-<translation id="3892641579809465218">Interní displej</translation>
-<translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE"/> na jazyk <ph name="TO_LOCALE"/>.</translation>
-<translation id="3606978283550408104">Je připojen hmatový displej.</translation>
-<translation id="8654520615680304441">Zapnout Wi-Fi...</translation>
-<translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME"/>.</translation>
-<translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY"/></translation>
-<translation id="8828714802988429505">90°</translation>
-<translation id="5825747213122829519">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
-<translation id="2562916301614567480">Soukromá síť</translation>
-<translation id="4250680216510889253">Ne</translation>
-<translation id="4379753398862151997">Drahý monitore, nějak to mezi námi nefunguje. (Monitor není podporován.)</translation>
-<translation id="6426039856985689743">Zakázat  mobilní datové připojení</translation>
-<translation id="3087734570205094154">Až dolů</translation>
-<translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
-<translation id="8878886163241303700">Rozšíření obrazovky</translation>
-<translation id="714034171374937760">Chromebase</translation>
-<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
-<translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
-<translation id="372094107052732682">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
-<translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
-<translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
-<translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primární)</translation>
-<translation id="3626637461649818317">Zbývá <ph name="PERCENTAGE"/> %</translation>
-<translation id="9089416786594320554">Metody zadávání dat</translation>
-<translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING"/>. Poté budete odhlášeni.</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
-<translation id="1963814843110128691">Odesílání karty $1 do televize $2</translation>
-<translation id="3963445509666917109">Reproduktor (interní)</translation>
-<translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
-<translation id="2208323208084708176">Jednotný režim klasické plochy</translation>
-<translation id="5759815399269068793">Když je zařízení <ph name="DEVICE_TYPE"/> připojeno k externímu displeji, můžete ho používat i se zavřeným víkem.</translation>
-<translation id="2825619548187458965">Polička</translation>
-<translation id="4430019312045809116">Hlasitost</translation>
-<translation id="5932901536148835538">Chromebit</translation>
-<translation id="544691375626129091">Do této relace již byli přidáni všichni dostupní uživatelé.</translation>
-<translation id="1383876407941801731">Vyhledávání</translation>
-<translation id="2204305834655267233">Informace o síti</translation>
-<translation id="137180024469554212">Vypnout zámek otáčení</translation>
-<translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT"/></translation>
-<translation id="5980301590375426705">Odhlásit hosta</translation>
-<translation id="8308637677604853869">Předchozí nabídka</translation>
-<translation id="4321179778687042513">ctrl</translation>
-<translation id="3625258641415618104">Snímky obrazovky zakázány</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="1330145147221172764">Povolit softwarovou klávesnici</translation>
+<translation id="1343000272198685031">Konektor mikrofonu</translation>
 <translation id="1346748346194534595">Doprava</translation>
-<translation id="8528322925433439945">Mobilní sítě...</translation>
-<translation id="3157169093162779309">Zapnout zámek otáčení</translation>
-<translation id="8428213095426709021">Nastavení</translation>
-<translation id="2372145515558759244">Synchronizace aplikací...</translation>
-<translation id="1987317783729300807">Účty</translation>
-<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do úplného nabití</translation>
+<translation id="137180024469554212">Vypnout zámek otáčení</translation>
+<translation id="1383876407941801731">Vyhledávání</translation>
+<translation id="1426410128494586442">Ano</translation>
 <translation id="1467432559032391204">Doleva</translation>
-<translation id="5543001071567407895">SMS</translation>
-<translation id="1957803754585243749">0°</translation>
-<translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování.</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="1923539912171292317">Automatická kliknutí</translation>
-<translation id="703171847531699602">Nejsou k dispozici žádná zařízení Cast</translation>
-<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Připojování...</translation>
-<translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT"/> budete automaticky odhlášeni.</translation>
-<translation id="252373100621549798">Neznámý displej</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
+<translation id="1510238584712386396">Spouštěč</translation>
+<translation id="15373452373711364">Velký kurzor myši</translation>
+<translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
+<translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT"/></translation>
+<translation id="164969095109328410">Zařízení Chrome</translation>
+<translation id="1723752762323179280">Ukončení relace</translation>
+<translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
+<translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>* <ph name="BEGIN_LINK"/>třetí strany<ph name="END_LINK"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
 <translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME"/></translation>
-<translation id="5777841717266010279">Ukončit sdílení obrazovky?</translation>
+<translation id="1923539912171292317">Automatická kliknutí</translation>
+<translation id="1957803754585243749">0°</translation>
+<translation id="1963814843110128691">Odesílání karty $1 do televize $2</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
+<translation id="1987317783729300807">Účty</translation>
+<translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
+<translation id="2204305834655267233">Informace o síti</translation>
+<translation id="2208323208084708176">Jednotný režim klasické plochy</translation>
+<translation id="225680501294068881">Vyhledávání zařízení…</translation>
+<translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
+<translation id="2268813581635650749">Odhlásit vše</translation>
+<translation id="2297568595583585744">Stavový panel</translation>
+<translation id="2303600792989757991">Přepnutí přehledu okna</translation>
+<translation id="2372145515558759244">Synchronizace aplikací...</translation>
+<translation id="2391579633712104609">180°</translation>
+<translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY"/></translation>
+<translation id="2475982808118771221">Došlo k chybě</translation>
+<translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
+<translation id="252373100621549798">Neznámý displej</translation>
+<translation id="2532589005999780174">Režim vysokého kontrastu</translation>
+<translation id="2562916301614567480">Soukromá síť</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Připojování...</translation>
+<translation id="2700058918926273959">Relace skončí za <ph name="SESSION_TIME_REMAINING"/>. Poté budete odhlášeni.</translation>
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME"/>, <ph name="BATTERY"/></translation>
-<translation id="3784455785234192852">Uzamknout</translation>
-<translation id="2805756323405976993">Aplikace</translation>
-<translation id="2872961005593481000">Vypnout</translation>
-<translation id="3433830597744061105">Spravovat účty</translation>
-<translation id="742594950370306541">Kamera je používána.</translation>
-<translation id="7052914147756339792">Nastavení tapety...</translation>
-<translation id="2532589005999780174">Režim vysokého kontrastu</translation>
-<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
-<translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING"/></translation>
-<translation id="3473479545200714844">Lupa obrazovky</translation>
-<translation id="7957227661277029961">Je možné, že když bude zařízení <ph name="DEVICE_TYPE"/> zapnuté, nebude se nabíjet. Doporučujeme použít oficiální nabíječku.</translation>
-<translation id="882279321799040148">Kliknutím jej zobrazíte</translation>
-<translation id="5011233892417813670">Chromebook</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> rozlišení <ph name="SPECIFIED_RESOLUTION"/> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION"/>.</translation>
-<translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
-<translation id="68610848741840742">ChromeVox (hlasová odezva)</translation>
-<translation id="6981982820502123353">Usnadnění</translation>
-<translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING"/>.</translation>
-<translation id="5977415296283489383">Sluchátka</translation>
-<translation id="225680501294068881">Vyhledávání zařízení…</translation>
-<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
-<translation id="5978382165065462689">Ovládání obrazovky je sdíleno prostřednictvím Vzdálené pomoci.</translation>
-<translation id="737451040872859086">Mikrofon (interní)</translation>
-<translation id="2475982808118771221">Došlo k chybě</translation>
-<translation id="3783640748446814672">alt</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je veřejná relace spravovaná doménou <ph name="DOMAIN"/>.</translation>
-<translation id="7029814467594812963">Ukončit relaci</translation>
-<translation id="479989351350248267">search</translation>
-<translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
-<translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY"/></translation>
-<translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE"/> %.</translation>
-<translation id="2983818520079887040">Nastavení...</translation>
-<translation id="6452181791372256707">Odmítnout</translation>
-<translation id="1330145147221172764">Povolit softwarovou klávesnici</translation>
-<translation id="1195412055398077112">přesah obrazu</translation>
-<translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME"/>“ a adresou <ph name="ADDRESS"/>.</translation>
-<translation id="112308213915226829">Automaticky skrývat poličku</translation>
-<translation id="7573962313813535744">Ukotvený režim</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
-<translation id="5958529069007801266">Dozorovaný uživatel</translation>
-<translation id="3709443003275901162">&gt;9</translation>
-<translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
-<translation id="6248847161401822652">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
-<translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE"/> % a nabíjí se.</translation>
-<translation id="4895488851634969361">Baterie je plně nabita.</translation>
-<translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
-<translation id="8443356412772935865">Odesílání obrazovky do televize $1</translation>
-<translation id="5947494881799873997">Vrátit zpět</translation>
-<translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
-<translation id="7649070708921625228">Nápověda</translation>
-<translation id="164969095109328410">Zařízení Chrome</translation>
-<translation id="3050422059534974565">CAPS LOCK je zapnutý. Vypnete jej stisknutím klávesy Vyhledávání nebo Shift.</translation>
-<translation id="397105322502079400">Probíhá výpočet…</translation>
-<translation id="1013923882670373915">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. Zadejte prosím v zařízení tento kód PIN: <ph name="PINCODE"/></translation>
+<translation id="2805756323405976993">Aplikace</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
-<translation id="4961318399572185831">Odesílání obrazovky</translation>
-<translation id="5507786745520522457">Nastavit mobilní datové připojení</translation>
-<translation id="6165508094623778733">Další informace</translation>
-<translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS"/></translation>
-<translation id="5927132638760172455">Odesílání do neznámého přijímače</translation>
-<translation id="743058460480092004">Kamera a mikrofon jsou používány.</translation>
-<translation id="6550675742724504774">Možnosti</translation>
-<translation id="6406704438230478924">altgr</translation>
+<translation id="2825619548187458965">Polička</translation>
+<translation id="2872961005593481000">Vypnout</translation>
+<translation id="2942516765047364088">Pozice na poličce</translation>
+<translation id="2946640296642327832">Zapnout Bluetooth</translation>
+<translation id="2963773877003373896">mod3</translation>
+<translation id="2964193600955408481">Vypnout Wi-Fi</translation>
+<translation id="2983818520079887040">Nastavení...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je veřejná relace spravovaná doménou <ph name="DOMAIN"/>.</translation>
+<translation id="3009178788565917040">Výstup</translation>
+<translation id="30155388420722288">Tlačítko přetečení</translation>
+<translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING"/></translation>
+<translation id="3050422059534974565">CAPS LOCK je zapnutý. Vypnete jej stisknutím klávesy Vyhledávání nebo Shift.</translation>
+<translation id="3077734595579995578">shift</translation>
+<translation id="3087734570205094154">Až dolů</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (Bluetooth)</translation>
+<translation id="3126069444801937830">Restartovat a aktualizovat</translation>
+<translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
+<translation id="3157169093162779309">Zapnout zámek otáčení</translation>
+<translation id="3294437725009624529">Host</translation>
+<translation id="3433830597744061105">Spravovat účty</translation>
+<translation id="3473479545200714844">Lupa obrazovky</translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE"/> (vyžaduje restart)</translation>
-<translation id="8103386449138765447">Zprávy SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="3595596368722241419">Baterie je nabitá</translation>
+<translation id="3606978283550408104">Je připojen hmatový displej.</translation>
+<translation id="3621202678540785336">Vstup</translation>
+<translation id="3621712662352432595">Nastavení zvuku</translation>
+<translation id="3625258641415618104">Snímky obrazovky zakázány</translation>
+<translation id="3626281679859535460">Jas</translation>
+<translation id="3626637461649818317">Zbývá <ph name="PERCENTAGE"/> %</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
+<translation id="3683428399328702079">Rozlišení displeje <ph name="DISPLAY_NAME"/> bylo změněno na <ph name="RESOLUTION"/></translation>
+<translation id="370649949373421643">Povolit Wi-Fi</translation>
+<translation id="3709443003275901162">&gt;9</translation>
+<translation id="372094107052732682">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
+<translation id="3742055079367172538">Byl vytvořen snímek obrazovky</translation>
+<translation id="3775358506042162758">V rámci vícenásobného přihlášení lze používat maximálně tři účty.</translation>
+<translation id="3783640748446814672">alt</translation>
+<translation id="3784455785234192852">Uzamknout</translation>
+<translation id="3799026279081545374">Je možné, že máte vadnou nabíječku. Pokud žijete v USA, požádejte o pomoc a výměnu na čísle 866-628-1371. Pokud žijete ve Spojeném království, volejte na číslo 0800-026-0613. Pokud žijete v Irsku, volejte na číslo 1-800-832-664. Pokud žijete v Kanadě, volejte na číslo 866-628-1372. Pokud žijete v Austrálii, volejte na číslo 1-800-067-460.</translation>
+<translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
+<translation id="3892641579809465218">Interní displej</translation>
+<translation id="3963445509666917109">Reproduktor (interní)</translation>
+<translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
+<translation id="397105322502079400">Probíhá výpočet…</translation>
+<translation id="4053612967614057854">Zakázat softwarovou klávesnici</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (primární)</translation>
+<translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do nabití</translation>
+<translation id="4250680216510889253">Ne</translation>
+<translation id="4279490309300973883">Zrcadlení</translation>
+<translation id="4321179778687042513">ctrl</translation>
+<translation id="4379753398862151997">Drahý monitore, nějak to mezi námi nefunguje. (Monitor není podporován.)</translation>
+<translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME"/>.</translation>
+<translation id="4430019312045809116">Hlasitost</translation>
+<translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování.</translation>
+<translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">Odpojit</translation>
+<translation id="4872237917498892622">Alt + Vyhledávání nebo Shift</translation>
+<translation id="4895488851634969361">Baterie je plně nabita.</translation>
+<translation id="4918086044614829423">Přijmout</translation>
+<translation id="4957722034734105353">Další informace...</translation>
+<translation id="4961318399572185831">Odesílání obrazovky</translation>
+<translation id="5011233892417813670">Chromebook</translation>
+<translation id="5045002648206642691">Nastavení Disku Google...</translation>
+<translation id="5102001756192215136">Zbývá: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
+<translation id="5168181903108465623">Dostupná zařízení Cast</translation>
+<translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="5238774010593222950">K dalšímu účtu se nelze přihlásit.</translation>
+<translation id="544691375626129091">Do této relace již byli přidáni všichni dostupní uživatelé.</translation>
+<translation id="5507786745520522457">Nastavit mobilní datové připojení</translation>
+<translation id="5543001071567407895">SMS</translation>
+<translation id="5548285847212963613">S připojení k této síti může pomoci rozšíření <ph name="EXTENSION_NAME"/>.</translation>
+<translation id="5565793151875479467">Proxy server...</translation>
+<translation id="5571066253365925590">Rozhraní Bluetooth aktivováno</translation>
+<translation id="5597451508971090205"><ph name="SHORT_WEEKDAY"/>, <ph name="DATE"/></translation>
+<translation id="5759815399269068793">Když je zařízení <ph name="DEVICE_TYPE"/> připojeno k externímu displeji, můžete ho používat i se zavřeným víkem.</translation>
+<translation id="5777841717266010279">Ukončit sdílení obrazovky?</translation>
+<translation id="5825747213122829519">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID"/>. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
+<translation id="5871632337994001636">Spravovat zařízení...</translation>
+<translation id="5895138241574237353">Restartovat</translation>
+<translation id="5927132638760172455">Odesílání do neznámého přijímače</translation>
+<translation id="5932901536148835538">Chromebit</translation>
+<translation id="5947494881799873997">Vrátit zpět</translation>
+<translation id="595202126637698455">Sledování výkonu aktivováno</translation>
+<translation id="5958529069007801266">Dozorovaný uživatel</translation>
+<translation id="5977415296283489383">Sluchátka</translation>
+<translation id="5978382165065462689">Ovládání obrazovky je sdíleno prostřednictvím Vzdálené pomoci.</translation>
+<translation id="5980301590375426705">Odhlásit hosta</translation>
+<translation id="6043994281159824495">Odhlásit se</translation>
+<translation id="6047696787498798094">Pokud přepnete na jiného uživatele, sdílení obrazovky bude ukončeno. Chcete pokračovat?</translation>
+<translation id="6062360702481658777">Za <ph name="LOGOUT_TIME_LEFT"/> budete automaticky odhlášeni.</translation>
+<translation id="607652042414456612">Váš počítač mohou objevit okolní zařízení Bluetooth, ve kterých se bude zobrazovat s názvem „<ph name="NAME"/>“ a adresou <ph name="ADDRESS"/>.</translation>
+<translation id="615957422585914272">Zobrazit softwarovou klávesnici</translation>
+<translation id="6165508094623778733">Další informace</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/> %</translation>
+<translation id="6248847161401822652">Práci ukončíte dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
+<translation id="6310121235600822547">Displej <ph name="DISPLAY_NAME"/> byl otočen o <ph name="ROTATION"/></translation>
+<translation id="6359806961507272919">SMS z čísla <ph name="PHONE_NUMBER"/></translation>
+<translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
+<translation id="6406704438230478924">altgr</translation>
+<translation id="6426039856985689743">Zakázat  mobilní datové připojení</translation>
+<translation id="6452181791372256707">Odmítnout</translation>
+<translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME"/></translation>
+<translation id="6550675742724504774">Možnosti</translation>
+<translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING"/>.</translation>
+<translation id="6596816719288285829">IP adresa</translation>
+<translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY"/></translation>
+<translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME"/>“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
+<translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE"/> % a nabíjí se.</translation>
+<translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
+<translation id="68610848741840742">ChromeVox (hlasová odezva)</translation>
+<translation id="6895424601869865703">Přidat účet pro uživatele <ph name="GIVEN_NAME"/></translation>
+<translation id="6911468394164995108">Připojit k jiné...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
+<translation id="6979158407327259162">Disk Google</translation>
+<translation id="6981982820502123353">Usnadnění</translation>
+<translation id="7029814467594812963">Ukončit relaci</translation>
+<translation id="703171847531699602">Nejsou k dispozici žádná zařízení Cast</translation>
+<translation id="7052914147756339792">Nastavení tapety...</translation>
 <translation id="7097613348211027502">Funkce ChromeVox (hlasová odezva) je aktivní.
 Deaktivujete ji stisknutím kláves Ctrl+Alt+Z.</translation>
-<translation id="5045002648206642691">Nastavení Disku Google...</translation>
-<translation id="1510238584712386396">Spouštěč</translation>
+<translation id="714034171374937760">Chromebase</translation>
+<translation id="7168224885072002358">Původní rozlišení bude obnoveno za <ph name="TIMEOUT_SECONDS"/></translation>
 <translation id="7209101170223508707">CAPS LOCK je zapnutý. 
 Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</translation>
+<translation id="7348093485538360975">Softwarová klávesnice</translation>
+<translation id="737451040872859086">Mikrofon (interní)</translation>
+<translation id="742594950370306541">Kamera je používána.</translation>
+<translation id="743058460480092004">Kamera a mikrofon jsou používány.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> rozlišení <ph name="SPECIFIED_RESOLUTION"/> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION"/>.</translation>
+<translation id="7573962313813535744">Ukotvený režim</translation>
+<translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
+<translation id="7649070708921625228">Nápověda</translation>
+<translation id="7814236020522506259"><ph name="HOUR"/> a <ph name="MINUTE"/></translation>
+<translation id="7823564328645135659">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE"/> na jazyk <ph name="TO_LOCALE"/>.</translation>
+<translation id="785750925697875037">Zobrazit mobilní účet</translation>
+<translation id="7864539943188674973">Vypnout Bluetooth</translation>
+<translation id="7904094684485781019">Správce tohoto účtu zakázal vícenásobné přihlášení.</translation>
+<translation id="7957227661277029961">Je možné, že když bude zařízení <ph name="DEVICE_TYPE"/> zapnuté, nebude se nabíjet. Doporučujeme použít oficiální nabíječku.</translation>
+<translation id="7982789257301363584">Síť</translation>
+<translation id="8054466585765276473">Výpočet doby výdrže baterie.</translation>
+<translation id="8103386449138765447">Zprávy SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="8190698733819146287">Personalizovat jazyky a zadávání...</translation>
+<translation id="8206859287963243715">Mobil</translation>
+<translation id="8308637677604853869">Předchozí nabídka</translation>
+<translation id="8356164830168736643">Zavřít okno <ph name="WINDOW_TITLE"/></translation>
+<translation id="8428213095426709021">Nastavení</translation>
+<translation id="8443356412772935865">Odesílání obrazovky do televize $1</translation>
+<translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> do úplného nabití</translation>
+<translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE"/> zapnuté, nebude se nabíjet.</translation>
+<translation id="8528322925433439945">Mobilní sítě...</translation>
+<translation id="8654520615680304441">Zapnout Wi-Fi...</translation>
+<translation id="8673028979667498656">270°</translation>
+<translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="882279321799040148">Kliknutím jej zobrazíte</translation>
+<translation id="8828714802988429505">90°</translation>
+<translation id="8878886163241303700">Rozšíření obrazovky</translation>
 <translation id="8940956008527784070">Slabá baterie (<ph name="PERCENTAGE"/> %)</translation>
-<translation id="4918086044614829423">Přijmout</translation>
-<translation id="5102001756192215136">Zbývá: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="3009178788565917040">Výstup</translation>
-<translation id="3147142846278915599">Spouštěč (synchronizace aplikací...)</translation>
-<translation id="6911468394164995108">Připojit k jiné...</translation>
-<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
-<translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do nabití</translation>
-<translation id="3077734595579995578">shift</translation>
-<translation id="6359806961507272919">SMS z čísla <ph name="PHONE_NUMBER"/></translation>
-<translation id="4053612967614057854">Zakázat softwarovou klávesnici</translation>
+<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9080206825613744995">Mikrofon je používán.</translation>
+<translation id="9089416786594320554">Metody zadávání dat</translation>
+<translation id="9151726767154816831">Chcete-li zařízení aktualizovat, restartujte je a resetujte pomocí funkce Powerwash</translation>
+<translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
+<translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE"/> %.</translation>
+<translation id="923686485342484400">Odhlásíte se dvojitým stisknutím kombinace kláves Control Shift Q.</translation>
+<translation id="938582441709398163">Překryvná klávesnice</translation>
+<translation id="939252827960237676">Uložení snímku obrazovky se nezdařilo</translation>
 </translationbundle>

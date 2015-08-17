@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
-<translation id="2094750046714988961">Не можем да стартираме профайлера, защото външното хранилище не е готово</translation>
 <translation id="1256337885411059545">Видеоклипът не може да се пусне</translation>
-<translation id="2520230379124234395">Профайлерът стартира</translation>
-<translation id="4859501799452851758">Профайлерът приключи. Резултатите са в/ъв „<ph name="FILENAME"/>“.</translation>
-<translation id="273860350361291195">За съжаление този видеоклип не е валиден за поточно предаване към устройството.</translation>
-<translation id="2410828433627930127">За съжаление този видеоклип не може да се пусне.</translation>
-<translation id="7096034533295549981">Клип: Зарежда се</translation>
 <translation id="1542044944667958430">Търсене в мрежата</translation>
-<translation id="6849295950938417341">Стартирането на профайлера не бе успешно</translation>
+<translation id="2094750046714988961">Не можем да стартираме профайлера, защото външното хранилище не е готово</translation>
+<translation id="2410828433627930127">За съжаление този видеоклип не може да се пусне.</translation>
+<translation id="2520230379124234395">Профайлерът стартира</translation>
+<translation id="273860350361291195">За съжаление този видеоклип не е валиден за поточно предаване към устройството.</translation>
+<translation id="4859501799452851758">Профайлерът приключи. Резултатите са в/ъв „<ph name="FILENAME"/>“.</translation>
 <translation id="6527303717912515753">Споделяне</translation>
+<translation id="6849295950938417341">Стартирането на профайлера не бе успешно</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Клип: Зарежда се</translation>
 </translationbundle>

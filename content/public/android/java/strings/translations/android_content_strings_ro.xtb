@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="ro">
-<translation id="2094750046714988961">Instrumentul de creare a profilului nu poate porni, deoarece stocarea externă nu este gata</translation>
 <translation id="1256337885411059545">Nu se poate reda videoclipul</translation>
-<translation id="2520230379124234395">Instrumentul de creare a profilului a pornit</translation>
-<translation id="4859501799452851758">Instrumentul de creare a profilului a finalizat operația. Rezultatele apar în <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Ne pare rău, acest videoclip nu este valid pentru transmitere în flux pe acest dispozitiv.</translation>
-<translation id="2410828433627930127">Ne pare rău, acest videoclip nu poate fi redat.</translation>
-<translation id="7096034533295549981">Se încarcă video</translation>
 <translation id="1542044944667958430">Căutare pe web</translation>
-<translation id="6849295950938417341">Instrumentul de creare a profilului nu a putut porni</translation>
+<translation id="2094750046714988961">Instrumentul de creare a profilului nu poate porni, deoarece stocarea externă nu este gata</translation>
+<translation id="2410828433627930127">Ne pare rău, acest videoclip nu poate fi redat.</translation>
+<translation id="2520230379124234395">Instrumentul de creare a profilului a pornit</translation>
+<translation id="273860350361291195">Ne pare rău, acest videoclip nu este valid pentru transmitere în flux pe acest dispozitiv.</translation>
+<translation id="4859501799452851758">Instrumentul de creare a profilului a finalizat operația. Rezultatele apar în <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Trimite</translation>
+<translation id="6849295950938417341">Instrumentul de creare a profilului nu a putut porni</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Se încarcă video</translation>
 </translationbundle>

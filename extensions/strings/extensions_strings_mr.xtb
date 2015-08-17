@@ -1,93 +1,96 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="mr">
-<translation id="4542520061254486227"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा</translation>
-<translation id="3983586614702900908">अज्ञात विक्रेत्याकडील डिव्हाइसेस</translation>
-<translation id="730515362922783851">स्थानिक नेटवर्क किंवा इंटरनेटवरील कोणत्याही डिव्हाइससह डेटा अदलाबदल करा</translation>
-<translation id="3624204664103857160">लाँचर पृष्ठ '<ph name="PAGE"/>' लोड करू शकलो नाही.</translation>
-<translation id="8804398419035066391">वेबसाइटला सहकार्य करून संप्रेषण करा</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (विस्तार ID &quot;<ph name="EXTENSION_ID"/>&quot;) प्रशासकाद्वारे अवरोधित करण्यात आला आहे.</translation>
 <translation id="1005274289863221750">आपला मायक्रोफोन आणि कॅमेरा वापरा</translation>
-<translation id="2857834222104759979">मॅनिफेस्ट फाइल अवैध आहे.</translation>
-<translation id="6384275966486438344">आपल्या शोध सेटिंग्ज यावर बदला: <ph name="SEARCH_HOST"/></translation>
-<translation id="1445572445564823378">हा विस्तार <ph name="PRODUCT_NAME"/> मंद होत आहे. <ph name="PRODUCT_NAME"/> चे कार्यप्रदर्शन पुनर्संचयित करण्‍यासाठी आपण ते ‍अक्षम करणे आवश्‍यक आहे.</translation>
-<translation id="7003844668372540529"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन</translation>
 <translation id="1033780634303702874">आपल्या अनुक्रमिक डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="288042212351694283">आपल्या सर्वंकष 2 रा घटक डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="3163201441334626963"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन</translation>
-<translation id="6027032947578871493"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="4115165561519362854">या मशीनच्या प्रशासकाला <ph name="EXTENSION_NAME"/> कडे <ph name="EXTENSION_VERSION"/> ची किमान आवृत्ती असणे आवश्यक आहे. ही त्या आवृत्तीवर (किंवा उच्च) अद्यतनित करेपर्यंत हे सक्षम होऊ शकत नाही.</translation>
-<translation id="6075907793831890935"><ph name="HOSTNAME"/> नावाच्या डिव्हाइससह डेटा अदलाबदल करा</translation>
-<translation id="5971037678316050792">Bluetooth अडाप्टर स्थिती आणि जोडणी नियंत्रित करा</translation>
-<translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
-<translation id="6241530762627360640">आपल्या सिस्टीमशी जोडलेल्या Bluetooth डिव्हाइसविषयीच्या माहितीवर प्रवेश करा आणि जवळपासचे Bluetooth डिव्हाइसेस शोधा.</translation>
-<translation id="8749863574775030885">अज्ञात विक्रेत्याकडील USB डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="3115238746683532089"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8284835137979141223"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_NAME"/></translation>
-<translation id="657064425229075395">पार्श्वभूमी स्क्रिप्‍ट '<ph name="BACKGROUND_SCRIPT"/>' लोड करू शकले नाही.</translation>
-<translation id="6068932090455285721"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_NAME"/></translation>
-<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
-<translation id="9131487537093447019">Bluetooth डिव्हाइसेस वर संदेश पाठवा आणि त्यावरून प्राप्त करा.</translation>
-<translation id="5678955352098267522"><ph name="WEBSITE_1"/> वर आपला डेटा वाचा</translation>
-<translation id="5456409301717116725">हा विस्तार मुख्य फाइल '<ph name="KEY_PATH"/>' समाविष्ट करतो. आपण कदाचित ते करू इच्छित नसू शकता.</translation>
-<translation id="7257666756905341374">आपण कॉपी आणि पेस्ट करता तो डेटा वाचा</translation>
-<translation id="2350172092385603347">अनुवाद वापरले, परंतु मॅनिफेस्टमध्ये डीफॉल्ट_लोकॅल निर्दिष्ट नाही.</translation>
-<translation id="3759933321830434300">वेब पृष्ठांचे भाग अवरोधित करा</translation>
-<translation id="6143635259298204954">विस्तार अनपॅक करू नका. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निदेशिकेत सिमलिंक नसलेला पथ असणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
-<translation id="8712265948125780616">विस्तार अनपॅकर</translation>
-<translation id="149347756975725155">विस्तार प्रतीक '<ph name="ICON"/>' लोड करणे शक्य नाही.</translation>
-<translation id="8825366169884721447">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा विनंती शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
-<translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
-<translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE"/>' लोड करणे शक्य नाही.</translation>
-<translation id="5127881134400491887">नेटवर्क कनेक्शन व्यवस्थापित करा</translation>
-<translation id="6344170822609224263">नेटवर्क कनेक्शनच्या सूचीवर प्रवेश करा</translation>
-<translation id="7039326228527141150"><ph name="VENDOR_NAME"/> कडील USB डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="2616366145935564096"><ph name="WEBSITE_1"/> वर आपला डेटा वाचा आणि बदला</translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
-<translation id="4444304522807523469">USB द्वारा संलग्न केलेल्या किंवा स्थानिक नेटवर्कवरील दस्तऐवज स्कॅनरवर प्रवेश करा</translation>
-<translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वर आपला डेटा वाचा आणि बदला</translation>
-<translation id="8670869118777164560">हा विस्तार <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> वर एक नेटवर्क विनंती पुनर्निर्देशित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्ताराने तो <ph name="ACTUAL_REDIRECT_DESTINATION"/> वर पुनर्निर्देशित केला.</translation>
-<translation id="6840444547062817500">या विस्ताराने स्वतःस वारंवार रीलोड केले आहे.</translation>
-<translation id="2270450558902169558"><ph name="DOMAIN"/> डोमेनमध्ये कोणत्याही डिव्हाइससह डेटा अदलाबदल करा</translation>
-<translation id="8047248493720652249">दुसर्‍या विस्ताराने (<ph name="EXTENSION_NAME"/>) एक वेगळे फाईलनाव &quot;<ph name="ACTUAL_FILENAME"/>&quot; निर्धारित केल्यामुळे डाउनलोड &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; ला नाव देण्यात हा विस्तार अयशस्वी झाला.</translation>
-<translation id="452039078290142656"><ph name="VENDOR_NAME"/> कडील अज्ञात डिव्हाइस</translation>
-<translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME"/></translation>
-<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="2753617847762399167">बेकायदेशीर पथ ('..' सह अचूक किंवा संबंधित): '<ph name="IMAGE_PATH"/>'</translation>
-<translation id="8284279544186306258">सर्व <ph name="WEBSITE_1"/> साइट</translation>
-<translation id="8662911384982557515">आपले मुख्‍यपृष्‍ठ यावर बदला: <ph name="HOME_PAGE"/></translation>
-<translation id="27822970480436970">हा विस्तार नेटवर्क विनंती सुधारण्‍यात अयशस्वी झाला कारण सुधारणेचा दुसर्‍या विस्ताराशी विवाद झाला.</translation>
-<translation id="2241053333139545397">अनेक वेबसाइटवर आपला डेटा वाचा आणि बदला</translation>
-<translation id="8602184400052594090">मॅनिफेस्ट फाइल गहाळ किंवा अवाचनीय आहे.</translation>
-<translation id="2270627217422354837">डोमेनमध्ये कोणत्याही डिव्हाइससह डेटा अदलाबदल करा: <ph name="DOMAINS"/></translation>
-<translation id="7093866338626856921">या नावाच्या डिव्हाइसेससह डेटा अदलाबदल करा: <ph name="HOSTNAMES"/></translation>
-<translation id="4883436287898674711">सर्व <ph name="WEBSITE_1"/> साइट</translation>
-<translation id="9111791539553342076">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा प्रतिसाद शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
-<translation id="9150045010208374699">आपला कॅमेरा वापरा</translation>
-<translation id="5356315618422219272">अॅपदृश्य: <ph name="APPVIEW_TAG_NAME"/></translation>
-<translation id="8341840687457896278">हा विस्तार एका नेटवर्क विनंतीवर क्रेडेन्शियल प्रदान करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्ताराने वेगळी क्रेडेन्शियल प्रदान केली.</translation>
-<translation id="5627523580512561598">विस्तार <ph name="EXTENSION_NAME"/></translation>
-<translation id="7893008570150657497">आपल्या संगणकावरील फोटो, संगीत आणि इतर माध्यमांमध्ये प्रवेश करा</translation>
-<translation id="3369521687965833290">विस्तार अनपॅक करणे शक्य नाही. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निर्देशिकेत ड्राइव्ह अक्षरासह प्रारंभ होणारा पथ असणे आणि जंक्शन, माउंट पॉइंट किंवा सिमलिंक नसणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
-<translation id="4811956658694082538">उपयुक्तता प्रक्रिया क्रॅश झाल्यामुळे पॅकेज स्थापित करू शकलो नाही. Chrome रीस्टार्ट करून पहा आणि पुन्हा प्रयत्न करून पहा.</translation>
-<translation id="641087317769093025">विस्तार अनझिप करणे शक्य झाले नाही</translation>
-<translation id="4761104368405085019">आपला मायक्रोफोन वापरा</translation>
-<translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME"/> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
-<translation id="6580950983454333167"><ph name="VENDOR_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>) कडील <ph name="PRODUCT_NAME"/></translation>
-<translation id="8620765578342452535">नेटवर्क कनेक्‍शन कॉन्फिगर करा</translation>
-<translation id="7154130902455071009">आपले प्रारंभ पृष्ठ यावर बदला: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">यापैकी कोणत्याही USB डिव्हाइसेसवर प्रवेश करा</translation>
-<translation id="6698810901424468597"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा आणि बदला</translation>
-<translation id="2159915644201199628">प्रतिमा डीकोड करणे शक्य झाले नाही: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="2048182445208425546">आपल्या नेटवर्क रहदारीवर प्रवेश करा</translation>
-<translation id="1256619696651732561">विस्तार मॅनिफेस्ट विश्लेषक</translation>
-<translation id="5972529113578162692">या मशीनच्या प्रशासकासाठी <ph name="EXTENSION_NAME"/> स्थापित करणे आवश्यक आहे. हे विस्थापित केले जाऊ शकत नाही.</translation>
 <translation id="1135328998467923690">हे पॅकेज अवैध आहे: '<ph name="ERROR_CODE"/>'.</translation>
-<translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वर आपला डेटा वाचा</translation>
-<translation id="2087653731648927289">USB द्वारे कोणत्याही <ph name="PRODUCT_NAME_AND_VENDOR"/> वर प्रवेश करा</translation>
+<translation id="1256619696651732561">विस्तार मॅनिफेस्ट विश्लेषक</translation>
+<translation id="1445572445564823378">हा विस्तार <ph name="PRODUCT_NAME"/> मंद होत आहे. <ph name="PRODUCT_NAME"/> चे कार्यप्रदर्शन पुनर्संचयित करण्‍यासाठी आपण ते ‍अक्षम करणे आवश्‍यक आहे.</translation>
+<translation id="149347756975725155">विस्तार प्रतीक '<ph name="ICON"/>' लोड करणे शक्य नाही.</translation>
 <translation id="1803557475693955505">'पार्श्वभूमी पृष्ठ '<ph name="BACKGROUND_PAGE"/>'  लोड करणे शक्य नाही.</translation>
+<translation id="2048182445208425546">आपल्या नेटवर्क रहदारीवर प्रवेश करा</translation>
+<translation id="2087653731648927289">USB द्वारे कोणत्याही <ph name="PRODUCT_NAME_AND_VENDOR"/> वर प्रवेश करा</translation>
+<translation id="2159915644201199628">प्रतिमा डीकोड करणे शक्य झाले नाही: '<ph name="IMAGE_NAME"/>'</translation>
+<translation id="2241053333139545397">अनेक वेबसाइटवर आपला डेटा वाचा आणि बदला</translation>
+<translation id="2270450558902169558"><ph name="DOMAIN"/> डोमेनमध्ये कोणत्याही डिव्हाइससह डेटा अदलाबदल करा</translation>
+<translation id="2270627217422354837">डोमेनमध्ये कोणत्याही डिव्हाइससह डेटा अदलाबदल करा: <ph name="DOMAINS"/></translation>
+<translation id="2350172092385603347">अनुवाद वापरले, परंतु मॅनिफेस्टमध्ये डीफॉल्ट_लोकॅल निर्दिष्ट नाही.</translation>
+<translation id="2616366145935564096"><ph name="WEBSITE_1"/> वर आपला डेटा वाचा आणि बदला</translation>
+<translation id="2753617847762399167">बेकायदेशीर पथ ('..' सह अचूक किंवा संबंधित): '<ph name="IMAGE_PATH"/>'</translation>
+<translation id="27822970480436970">हा विस्तार नेटवर्क विनंती सुधारण्‍यात अयशस्वी झाला कारण सुधारणेचा दुसर्‍या विस्ताराशी विवाद झाला.</translation>
+<translation id="2857834222104759979">मॅनिफेस्ट फाइल अवैध आहे.</translation>
+<translation id="288042212351694283">आपल्या सर्वंकष 2 रा घटक डिव्हाइसेसवर प्रवेश करा</translation>
 <translation id="2988488679308982380">हे पॅकेज स्थापित करणे शक्य नाही: '<ph name="ERROR_CODE"/>'</translation>
-<translation id="3466070586188012397"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
-<translation id="8636666366616799973">पॅकेज अवैध आहे. तपशील: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="3115238746683532089"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3163201441334626963"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन</translation>
+<translation id="3369521687965833290">विस्तार अनपॅक करणे शक्य नाही. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निर्देशिकेत ड्राइव्ह अक्षरासह प्रारंभ होणारा पथ असणे आणि जंक्शन, माउंट पॉइंट किंवा सिमलिंक नसणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">अनेक वेबसाइटवर आपला डेटा वाचा</translation>
+<translation id="3466070586188012397"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3560114062880914682">{1,select, single{एक USB डिव्हाइस निवडा}multiple{USB डिव्हाइस निवडा}other{UNUSED}}</translation>
+<translation id="3624204664103857160">लाँचर पृष्ठ '<ph name="PAGE"/>' लोड करू शकलो नाही.</translation>
+<translation id="3759933321830434300">वेब पृष्ठांचे भाग अवरोधित करा</translation>
+<translation id="388442998277590542">पर्याय पृष्ठ '<ph name="OPTIONS_PAGE"/>' लोड करणे शक्य नाही.</translation>
+<translation id="3983586614702900908">अज्ञात विक्रेत्याकडील डिव्हाइसेस</translation>
+<translation id="4115165561519362854">या मशीनच्या प्रशासकाला <ph name="EXTENSION_NAME"/> कडे <ph name="EXTENSION_VERSION"/> ची किमान आवृत्ती असणे आवश्यक आहे. ही त्या आवृत्तीवर (किंवा उच्च) अद्यतनित करेपर्यंत हे सक्षम होऊ शकत नाही.</translation>
+<translation id="4233778200880751280">'<ph name="ABOUT_PAGE"/>' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
+<translation id="4444304522807523469">USB द्वारा संलग्न केलेल्या किंवा स्थानिक नेटवर्कवरील दस्तऐवज स्कॅनरवर प्रवेश करा</translation>
+<translation id="452039078290142656"><ph name="VENDOR_NAME"/> कडील अज्ञात डिव्हाइस</translation>
+<translation id="4542520061254486227"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा</translation>
+<translation id="4761104368405085019">आपला मायक्रोफोन वापरा</translation>
+<translation id="4811956658694082538">उपयुक्तता प्रक्रिया क्रॅश झाल्यामुळे पॅकेज स्थापित करू शकलो नाही. Chrome रीस्टार्ट करून पहा आणि पुन्हा प्रयत्न करून पहा.</translation>
+<translation id="4883436287898674711">सर्व <ph name="WEBSITE_1"/> साइट</translation>
+<translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="5127881134400491887">नेटवर्क कनेक्शन व्यवस्थापित करा</translation>
+<translation id="5165983846722506205">{1,select, single{एक HID डिव्हाइस निवडा}multiple{HID डिव्हाइस निवडा}other{UNUSED}}</translation>
+<translation id="5356315618422219272">अॅपदृश्य: <ph name="APPVIEW_TAG_NAME"/></translation>
+<translation id="5456409301717116725">हा विस्तार मुख्य फाइल '<ph name="KEY_PATH"/>' समाविष्ट करतो. आपण कदाचित ते करू इच्छित नसू शकता.</translation>
+<translation id="5627523580512561598">विस्तार <ph name="EXTENSION_NAME"/></translation>
+<translation id="5678955352098267522"><ph name="WEBSITE_1"/> वर आपला डेटा वाचा</translation>
+<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
+<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
+<translation id="5971037678316050792">Bluetooth अडाप्टर स्थिती आणि जोडणी नियंत्रित करा</translation>
+<translation id="5972529113578162692">या मशीनच्या प्रशासकासाठी <ph name="EXTENSION_NAME"/> स्थापित करणे आवश्यक आहे. हे विस्थापित केले जाऊ शकत नाही.</translation>
+<translation id="6027032947578871493"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन (अनुक्रमांक <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6068932090455285721"><ph name="VENDOR_ID"/> विक्रेत्याकडील <ph name="PRODUCT_NAME"/></translation>
+<translation id="6075907793831890935"><ph name="HOSTNAME"/> नावाच्या डिव्हाइससह डेटा अदलाबदल करा</translation>
+<translation id="6143635259298204954">विस्तार अनपॅक करू नका. विस्तार सुरक्षितपणे अनपॅक करण्यासाठी, आपल्या प्रोफाइल निदेशिकेत सिमलिंक नसलेला पथ असणे आवश्यक आहे. आपल्या प्रोफाइलसाठी असा कोणताही पथ विद्यमान नाही.</translation>
+<translation id="616804573177634438">{0,select, single{&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका डिव्हाइसवर प्रवेशाची विनंती करत आहे.}multiple{&quot;<ph name="APP_NAME"/>&quot; अनुप्रयोग आपल्या एका डिव्हाइसवर प्रवेशाची विनंती करत आहे.}other{UNUSED}}</translation>
+<translation id="6241530762627360640">आपल्या सिस्टीमशी जोडलेल्या Bluetooth डिव्हाइसविषयीच्या माहितीवर प्रवेश करा आणि जवळपासचे Bluetooth डिव्हाइसेस शोधा.</translation>
+<translation id="6344170822609224263">नेटवर्क कनेक्शनच्या सूचीवर प्रवेश करा</translation>
+<translation id="6384275966486438344">आपल्या शोध सेटिंग्ज यावर बदला: <ph name="SEARCH_HOST"/></translation>
+<translation id="6408118934673775994"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वर आपला डेटा वाचा आणि बदला</translation>
+<translation id="641087317769093025">विस्तार अनझिप करणे शक्य झाले नाही</translation>
+<translation id="657064425229075395">पार्श्वभूमी स्क्रिप्‍ट '<ph name="BACKGROUND_SCRIPT"/>' लोड करू शकले नाही.</translation>
+<translation id="6580950983454333167"><ph name="VENDOR_NAME"/> (अनुक्रमांक <ph name="SERIAL_NUMBER"/>) कडील <ph name="PRODUCT_NAME"/></translation>
+<translation id="6698810901424468597"><ph name="WEBSITE_1"/> आणि <ph name="WEBSITE_2"/> वर आपला डेटा वाचा आणि बदला</translation>
+<translation id="6731255991101203740">अनझिप करण्यासाठी निर्देशिका तयार करणे शक्य झाले नाही: '<ph name="DIRECTORY_PATH"/>'</translation>
+<translation id="677806580227005219">Mimehandler: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
+<translation id="6840444547062817500">या विस्ताराने स्वतःस वारंवार रीलोड केले आहे.</translation>
+<translation id="7003844668372540529"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_ID"/> अज्ञात उत्पादन</translation>
+<translation id="7039326228527141150"><ph name="VENDOR_NAME"/> कडील USB डिव्हाइसेसवर प्रवेश करा</translation>
+<translation id="7093866338626856921">या नावाच्या डिव्हाइसेससह डेटा अदलाबदल करा: <ph name="HOSTNAMES"/></translation>
+<translation id="7131040479572660648"><ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/>, आणि <ph name="WEBSITE_3"/> वर आपला डेटा वाचा</translation>
+<translation id="7154130902455071009">आपले प्रारंभ पृष्ठ यावर बदला: <ph name="START_PAGE"/></translation>
+<translation id="7217838517480956708">या मशीनच्या प्रशासकास <ph name="EXTENSION_NAME"/> स्थापन करणे आवश्यक आहे. हे काढले किंवा सुधारित केले जाऊ शकत नाही.</translation>
+<translation id="7257666756905341374">आपण कॉपी आणि पेस्ट करता तो डेटा वाचा</translation>
+<translation id="730515362922783851">स्थानिक नेटवर्क किंवा इंटरनेटवरील कोणत्याही डिव्हाइससह डेटा अदलाबदल करा</translation>
+<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (विस्तार ID &quot;<ph name="EXTENSION_ID"/>&quot;) प्रशासकाद्वारे अवरोधित करण्यात आला आहे.</translation>
+<translation id="7893008570150657497">आपल्या संगणकावरील फोटो, संगीत आणि इतर माध्यमांमध्ये प्रवेश करा</translation>
+<translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8047248493720652249">दुसर्‍या विस्ताराने (<ph name="EXTENSION_NAME"/>) एक वेगळे फाईलनाव &quot;<ph name="ACTUAL_FILENAME"/>&quot; निर्धारित केल्यामुळे डाउनलोड &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; ला नाव देण्यात हा विस्तार अयशस्वी झाला.</translation>
+<translation id="8284279544186306258">सर्व <ph name="WEBSITE_1"/> साइट</translation>
+<translation id="8284835137979141223"><ph name="VENDOR_NAME"/> कडील <ph name="PRODUCT_NAME"/></translation>
+<translation id="8341840687457896278">हा विस्तार एका नेटवर्क विनंतीवर क्रेडेन्शियल प्रदान करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्ताराने वेगळी क्रेडेन्शियल प्रदान केली.</translation>
+<translation id="8602184400052594090">मॅनिफेस्ट फाइल गहाळ किंवा अवाचनीय आहे.</translation>
+<translation id="8620765578342452535">नेटवर्क कनेक्‍शन कॉन्फिगर करा</translation>
+<translation id="8636666366616799973">पॅकेज अवैध आहे. तपशील: '<ph name="ERROR_MESSAGE"/>'.</translation>
+<translation id="8662911384982557515">आपले मुख्‍यपृष्‍ठ यावर बदला: <ph name="HOME_PAGE"/></translation>
+<translation id="8670869118777164560">हा विस्तार <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> वर एक नेटवर्क विनंती पुनर्निर्देशित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्ताराने तो <ph name="ACTUAL_REDIRECT_DESTINATION"/> वर पुनर्निर्देशित केला.</translation>
+<translation id="8712265948125780616">विस्तार अनपॅकर</translation>
+<translation id="8749863574775030885">अज्ञात विक्रेत्याकडील USB डिव्हाइसेसवर प्रवेश करा</translation>
+<translation id="8804398419035066391">वेबसाइटला सहकार्य करून संप्रेषण करा</translation>
+<translation id="8825366169884721447">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा विनंती शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
+<translation id="9111791539553342076">हा विस्तार एका नेटवर्क विनंतीचा &quot;<ph name="HEADER_NAME"/>&quot; हा प्रतिसाद शीर्षलेख सुधारित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्तारासह सुधारणेचा संघर्ष झाला.</translation>
+<translation id="9131487537093447019">Bluetooth डिव्हाइसेस वर संदेश पाठवा आणि त्यावरून प्राप्त करा.</translation>
+<translation id="9150045010208374699">आपला कॅमेरा वापरा</translation>
 </translationbundle>

@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sl">
-<translation id="8008366997883261463">Pes</translation>
-<translation id="7165320105431587207">Omrežja ni bilo mogoče konfigurirati</translation>
-<translation id="4387004326333427325">Potrdilo za preverjanje pristnosti je bilo zavrnjeno na oddaljeni lokaciji</translation>
-<translation id="6943836128787782965">Ukaz HTTP get ni uspel</translation>
+<translation id="1119447706177454957">Notranja napaka</translation>
+<translation id="153454903766751181">Inicializacija modema za mobilno omrežje ...</translation>
+<translation id="158849752021629804">Potrebno je domače omrežje</translation>
 <translation id="1661867754829461514">Manjka PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: vzpostavljanje povezave ...</translation>
+<translation id="1773212559869067373">Potrdilo za preverjanje pristnosti je bilo zavrnjeno lokalno</translation>
+<translation id="1829129547161959350">Pingvin</translation>
+<translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
+<translation id="2288278176040912387">Gramofon</translation>
+<translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Omrežje je zavrnilo potrdilo za preverjanje pristnosti</translation>
+<translation id="2563185590376525700">Žaba</translation>
+<translation id="2563856802393254086">Čestitamo. Podatkovna storitev omrežja »<ph name="NAME"/>« je aktivirana in lahko jo začnete uporabljati.</translation>
+<translation id="2649120831653069427">Riba mavričarka</translation>
+<translation id="2670531586141364277">Če želite aktivirati omrežje »<ph name="NAME"/>«, mora biti vzpostavljena omrežna povezava.</translation>
+<translation id="2894654529758326923">Podatki</translation>
+<translation id="2951236788251446349">Meduza</translation>
+<translation id="2966449113954629791">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME"/>.</translation>
+<translation id="3846575436967432996">Ni podatkov o omrežju</translation>
+<translation id="3871838685472846647">Mobilna aktivirana</translation>
+<translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kivi</translation>
 <translation id="40400351611212369">Napaka pri aktiviranju omrežja</translation>
 <translation id="4237016987259239829">Napaka omrežne povezave</translation>
+<translation id="4274292172790327596">Neprepoznana napaka</translation>
+<translation id="4326192123064055915">Kava</translation>
+<translation id="4387004326333427325">Potrdilo za preverjanje pristnosti je bilo zavrnjeno na oddaljeni lokaciji</translation>
+<translation id="4442424173763614572">Iskanje DNS ni uspelo</translation>
+<translation id="4448844063988177157">Iskanje omrežij Wi-Fi</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: vzpostavljanje povezave ...</translation>
 <translation id="4508265954913339219">Aktiviranje ni uspelo</translation>
 <translation id="4559767610552730302">Boke</translation>
-<translation id="8688591111840995413">Napačno geslo</translation>
-<translation id="3846575436967432996">Ni podatkov o omrežju</translation>
-<translation id="153454903766751181">Inicializacija modema za mobilno omrežje ...</translation>
-<translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
+<translation id="4935975195727477204">Roža</translation>
+<translation id="5045550434625856497">Napačno geslo</translation>
+<translation id="5097002363526479830">Povezava z omrežjem »<ph name="NAME"/>« ni uspela: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Šah</translation>
+<translation id="5257456363153333584">Kačji pastir</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Mačka</translation>
-<translation id="7170041865419449892">Zunaj dosega</translation>
-<translation id="2544853746127077729">Omrežje je zavrnilo potrdilo za preverjanje pristnosti</translation>
-<translation id="7973962044839454485">Preverjanje pristnosti PPP ni uspelo zaradi napačnega uporabniškega imena ali gesla</translation>
-<translation id="6549021752953852991">Mobilno omrežje ni na voljo</translation>
+<translation id="5864471791310927901">Iskanje DHCP-ja ni uspelo</translation>
+<translation id="6232116551750539448">Povezava z omrežjem <ph name="NAME"/> je prekinjena</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: Aktiviranje ...</translation>
+<translation id="6312403991423642364">Neznana napaka v omrežju</translation>
 <translation id="6490455614072479501">Povezava s/z »<ph name="NAME"/>« ni uspela: <ph name="DETAILS"/>
         Sporočilo strežnika: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Če želite aktivirati omrežje »<ph name="NAME"/>«, mora biti vzpostavljena omrežna povezava.</translation>
-<translation id="4442424173763614572">Iskanje DNS ni uspelo</translation>
-<translation id="7874779702599364982">Iskanje mobilnih omrežij ...</translation>
-<translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Potrdilo za preverjanje pristnosti je bilo zavrnjeno lokalno</translation>
-<translation id="2563185590376525700">Žaba</translation>
-<translation id="7256405249507348194">Neprepoznana napaka: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Podatki</translation>
-<translation id="6935521024859866267">Obrnjeno</translation>
-<translation id="7925247922861151263">Preverjanje AAA ni uspelo</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Neznana napaka v omrežju</translation>
-<translation id="4326192123064055915">Kava</translation>
-<translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Pingvin</translation>
-<translation id="515594325917491223">Šah</translation>
-<translation id="5097002363526479830">Povezava z omrežjem »<ph name="NAME"/>« ni uspela: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
-<translation id="2966449113954629791">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME"/>.</translation>
-<translation id="8132793192354020517">Povezava z <ph name="NAME"/> je vzpostavljena </translation>
-<translation id="1119447706177454957">Notranja napaka</translation>
-<translation id="5045550434625856497">Napačno geslo</translation>
-<translation id="6232116551750539448">Povezava z omrežjem <ph name="NAME"/> je prekinjena</translation>
-<translation id="4274292172790327596">Neprepoznana napaka</translation>
-<translation id="4448844063988177157">Iskanje omrežij Wi-Fi</translation>
-<translation id="7229570126336867161">Potreben je EVDO</translation>
-<translation id="9044646465488564462">Z omrežjem se ni bilo mogoče povezati: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
-<translation id="3871838685472846647">Mobilna aktivirana</translation>
-<translation id="3958548648197196644">Kivi</translation>
+<translation id="6549021752953852991">Mobilno omrežje ni na voljo</translation>
 <translation id="6732801395666424405">Potrdila niso naložena</translation>
-<translation id="8300849813060516376">Storitev OTASP ni uspela</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: Aktiviranje ...</translation>
-<translation id="8714406895390098252">Kolo</translation>
-<translation id="5257456363153333584">Kačji pastir</translation>
-<translation id="158849752021629804">Potrebno je domače omrežje</translation>
-<translation id="2649120831653069427">Riba mavričarka</translation>
-<translation id="2288278176040912387">Gramofon</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">Iskanje DHCP-ja ni uspelo</translation>
-<translation id="9046895021617826162">Vzpostavljanje povezave ni uspelo</translation>
-<translation id="8372369524088641025">Napačen ključ WEP</translation>
-<translation id="2951236788251446349">Meduza</translation>
-<translation id="8000066093800657092">Ni omrežja</translation>
-<translation id="2563856802393254086">Čestitamo. Podatkovna storitev omrežja »<ph name="NAME"/>« je aktivirana in lahko jo začnete uporabljati.</translation>
-<translation id="4935975195727477204">Roža</translation>
+<translation id="6935521024859866267">Obrnjeno</translation>
+<translation id="6943836128787782965">Ukaz HTTP get ni uspel</translation>
+<translation id="7165320105431587207">Omrežja ni bilo mogoče konfigurirati</translation>
+<translation id="7170041865419449892">Zunaj dosega</translation>
+<translation id="7229570126336867161">Potreben je EVDO</translation>
+<translation id="7256405249507348194">Neprepoznana napaka: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Napačno uporabniško ime/geslo ali preverjanje pristnosti EAP ni uspelo</translation>
+<translation id="735745346212279324">Povezava z navideznim zasebnim omrežjem je prekinjena</translation>
+<translation id="7874779702599364982">Iskanje mobilnih omrežij ...</translation>
+<translation id="7925247922861151263">Preverjanje AAA ni uspelo</translation>
+<translation id="7973962044839454485">Preverjanje pristnosti PPP ni uspelo zaradi napačnega uporabniškega imena ali gesla</translation>
+<translation id="8000066093800657092">Ni omrežja</translation>
+<translation id="8008366997883261463">Pes</translation>
+<translation id="8132793192354020517">Povezava z <ph name="NAME"/> je vzpostavljena </translation>
+<translation id="8300849813060516376">Storitev OTASP ni uspela</translation>
+<translation id="8372369524088641025">Napačen ključ WEP</translation>
+<translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
+<translation id="8688591111840995413">Napačno geslo</translation>
+<translation id="8714406895390098252">Kolo</translation>
+<translation id="8808686172382650546">Mačka</translation>
+<translation id="9044646465488564462">Z omrežjem se ni bilo mogoče povezati: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Vzpostavljanje povezave ni uspelo</translation>
 </translationbundle>

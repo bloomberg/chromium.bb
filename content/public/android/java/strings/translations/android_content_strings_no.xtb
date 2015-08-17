@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
-<translation id="2094750046714988961">Kan ikke starte profileringsverktøyet fordi ekstern lagring ikke er klar</translation>
 <translation id="1256337885411059545">Kan ikke spille av videoen</translation>
-<translation id="2520230379124234395">Profileringsverktøyet har startet</translation>
-<translation id="4859501799452851758">Profileringsverktøyet er ferdig. Du finner resultatene i <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Beklager, videoen er ikke gyldig for strømming på denne enheten.</translation>
-<translation id="2410828433627930127">Beklager, videoen kan ikke spilles av.</translation>
-<translation id="7096034533295549981">Laster inn videoen ...</translation>
 <translation id="1542044944667958430">Nettsøk</translation>
-<translation id="6849295950938417341">Kunne ikke starte profileringsverktøyet</translation>
+<translation id="2094750046714988961">Kan ikke starte profileringsverktøyet fordi ekstern lagring ikke er klar</translation>
+<translation id="2410828433627930127">Beklager, videoen kan ikke spilles av.</translation>
+<translation id="2520230379124234395">Profileringsverktøyet har startet</translation>
+<translation id="273860350361291195">Beklager, videoen er ikke gyldig for strømming på denne enheten.</translation>
+<translation id="4859501799452851758">Profileringsverktøyet er ferdig. Du finner resultatene i <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Del</translation>
+<translation id="6849295950938417341">Kunne ikke starte profileringsverktøyet</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="7096034533295549981">Laster inn videoen ...</translation>
 </translationbundle>

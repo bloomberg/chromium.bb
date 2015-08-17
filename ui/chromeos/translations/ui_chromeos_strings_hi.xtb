@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="hi">
-<translation id="8008366997883261463">श्वान</translation>
-<translation id="7165320105431587207">नेटवर्क कॉन्फ़िगर करने में विफल</translation>
-<translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र को दूरस्थ रूप से अस्वीकार किया गया</translation>
-<translation id="6943836128787782965">HTTP विफल हुआ</translation>
+<translation id="1119447706177454957">आंतरिक त्रुटि</translation>
+<translation id="153454903766751181">सेल्युलर मॉडम प्रारंभ हो रहा है...</translation>
+<translation id="158849752021629804">होम नेटवर्क की आवश्यकता है</translation>
 <translation id="1661867754829461514">पिन गुम</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: कनेक्ट हो रहा है...</translation>
+<translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र को स्थानीय रूप से अस्वीकार कर दिया गया</translation>
+<translation id="1829129547161959350">पेंगुइन</translation>
+<translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
+<translation id="2288278176040912387">रिकॉर्ड प्‍लेयर</translation>
+<translation id="2354174487190027830"><ph name="NAME"/> सक्रिय हो रहा है</translation>
+<translation id="2544853746127077729">नेटवर्क द्वारा प्रमाणीकरण प्रमाणपत्र अस्वीकार किया गया</translation>
+<translation id="2563185590376525700">मेढक</translation>
+<translation id="2563856802393254086">बधाई हो! आपकी '<ph name="NAME"/>' डेटा सेवा सक्रिय हो गई है और अब वह चलने के लिए तैयार है.</translation>
+<translation id="2649120831653069427">रेनबोफ़िश</translation>
+<translation id="2670531586141364277">'<ph name="NAME"/>' के सक्रियण के लिए नेटवर्क कनेक्शन आवश्यक है.</translation>
+<translation id="2894654529758326923">जानकारी</translation>
+<translation id="2951236788251446349">जेलीफ़िश</translation>
+<translation id="2966449113954629791">हो सकता है कि आपने अपनी मोबाइल डेटा छूट का उपयोग कर लिया हो. और डेटा खरीदने के लिए <ph name="NAME"/> सक्रियण पोर्टल पर जाएं.</translation>
+<translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
+<translation id="3871838685472846647">सेलुलर सक्रिय किया गया</translation>
+<translation id="3901991538546252627"><ph name="NAME"/> से कनेक्‍ट हो रहा है</translation>
+<translation id="3958548648197196644">कीवी</translation>
 <translation id="40400351611212369">नेटवर्क सक्रियण त्रुटि</translation>
 <translation id="4237016987259239829">नेटवर्क कनेक्शन त्रुटि</translation>
+<translation id="4274292172790327596">अपरिचित त्रुटि</translation>
+<translation id="4326192123064055915">कॉफ़ी</translation>
+<translation id="4387004326333427325">प्रमाणीकरण प्रमाणपत्र को दूरस्थ रूप से अस्वीकार किया गया</translation>
+<translation id="4442424173763614572">DNS लुकअप विफल</translation>
+<translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
+<translation id="4479639480957787382">इथरनेट</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: कनेक्ट हो रहा है...</translation>
 <translation id="4508265954913339219">सक्रियण विफल</translation>
 <translation id="4559767610552730302">बोके</translation>
-<translation id="8688591111840995413">खराब पासवर्ड</translation>
-<translation id="3846575436967432996">कोई नेटवर्क जानकारी उपलब्ध नहीं</translation>
-<translation id="153454903766751181">सेल्युलर मॉडम प्रारंभ हो रहा है...</translation>
-<translation id="735745346212279324">VPN डिस्कनेक्ट है</translation>
+<translation id="4935975195727477204">जीनिया का फूल</translation>
+<translation id="5045550434625856497">गलत पासवर्ड</translation>
+<translation id="5097002363526479830">नेटवर्क से कनेक्ट करने में विफल '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">शतरंज</translation>
+<translation id="5257456363153333584">ड्रेगनफ़्लाय</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="8808686172382650546">बिल्ली</translation>
-<translation id="7170041865419449892">सीमा से बाहर</translation>
-<translation id="2544853746127077729">नेटवर्क द्वारा प्रमाणीकरण प्रमाणपत्र अस्वीकार किया गया</translation>
-<translation id="7973962044839454485">किसी गलत उपयोगकर्ता नाम या पासवर्ड के कारण PPP प्रमाणीकरण विफल रहा</translation>
-<translation id="6549021752953852991">कोई सेल्युलर नेटवर्क उपलब्ध नहीं</translation>
+<translation id="5864471791310927901">DHCP लुकअप विफल</translation>
+<translation id="6232116551750539448"><ph name="NAME"/> से कनेक्शन टूट गया</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: सक्रिय हो रहा है...</translation>
+<translation id="6312403991423642364">अज्ञात नेटवर्क त्रुटि</translation>
 <translation id="6490455614072479501">'<ph name="NAME"/>' से कनेक्ट करने में विफल रहा: <ph name="DETAILS"/>
         सर्वर संदेश: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">'<ph name="NAME"/>' के सक्रियण के लिए नेटवर्क कनेक्शन आवश्यक है.</translation>
-<translation id="4442424173763614572">DNS लुकअप विफल</translation>
-<translation id="7874779702599364982">सेलुलर नेटवर्क खोज रहा है...</translation>
-<translation id="3901991538546252627"><ph name="NAME"/> से कनेक्‍ट हो रहा है</translation>
-<translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र को स्थानीय रूप से अस्वीकार कर दिया गया</translation>
-<translation id="2563185590376525700">मेढक</translation>
-<translation id="7256405249507348194">अपरिचित त्रुटि: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">जानकारी</translation>
-<translation id="6935521024859866267">ऊपरी भाग नीचे</translation>
-<translation id="7925247922861151263">AAA जांच विफल</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
-<translation id="6312403991423642364">अज्ञात नेटवर्क त्रुटि</translation>
-<translation id="4326192123064055915">कॉफ़ी</translation>
-<translation id="2354174487190027830"><ph name="NAME"/> सक्रिय हो रहा है</translation>
-<translation id="1829129547161959350">पेंगुइन</translation>
-<translation id="515594325917491223">शतरंज</translation>
-<translation id="5097002363526479830">नेटवर्क से कनेक्ट करने में विफल '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
-<translation id="2966449113954629791">हो सकता है कि आपने अपनी मोबाइल डेटा छूट का उपयोग कर लिया हो. और डेटा खरीदने के लिए <ph name="NAME"/> सक्रियण पोर्टल पर जाएं.</translation>
-<translation id="8132793192354020517"><ph name="NAME"/> से कनेक्ट है</translation>
-<translation id="1119447706177454957">आंतरिक त्रुटि</translation>
-<translation id="5045550434625856497">गलत पासवर्ड</translation>
-<translation id="6232116551750539448"><ph name="NAME"/> से कनेक्शन टूट गया</translation>
-<translation id="4274292172790327596">अपरिचित त्रुटि</translation>
-<translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
-<translation id="7229570126336867161">EVDO की आवश्यकता है</translation>
-<translation id="9044646465488564462">नेटवर्क से कनेक्ट करने में विफल रहा: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
-<translation id="3871838685472846647">सेलुलर सक्रिय किया गया</translation>
-<translation id="3958548648197196644">कीवी</translation>
+<translation id="6549021752953852991">कोई सेल्युलर नेटवर्क उपलब्ध नहीं</translation>
 <translation id="6732801395666424405">प्रमाणपत्र लोड नहीं किए गए हैं</translation>
-<translation id="8300849813060516376">OTASP विफल</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: सक्रिय हो रहा है...</translation>
-<translation id="8714406895390098252">साइकिल</translation>
-<translation id="5257456363153333584">ड्रेगनफ़्लाय</translation>
-<translation id="158849752021629804">होम नेटवर्क की आवश्यकता है</translation>
-<translation id="2649120831653069427">रेनबोफ़िश</translation>
-<translation id="2288278176040912387">रिकॉर्ड प्‍लेयर</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> को सक्रिय करें</translation>
-<translation id="5864471791310927901">DHCP लुकअप विफल</translation>
-<translation id="9046895021617826162">कनेक्ट करना विफल</translation>
-<translation id="8372369524088641025">ख़राब WEP कुंजी</translation>
-<translation id="2951236788251446349">जेलीफ़िश</translation>
-<translation id="8000066093800657092">नेटवर्क नहीं है</translation>
-<translation id="2563856802393254086">बधाई हो! आपकी '<ph name="NAME"/>' डेटा सेवा सक्रिय हो गई है और अब वह चलने के लिए तैयार है.</translation>
-<translation id="4935975195727477204">जीनिया का फूल</translation>
+<translation id="6935521024859866267">ऊपरी भाग नीचे</translation>
+<translation id="6943836128787782965">HTTP विफल हुआ</translation>
+<translation id="7165320105431587207">नेटवर्क कॉन्फ़िगर करने में विफल</translation>
+<translation id="7170041865419449892">सीमा से बाहर</translation>
+<translation id="7229570126336867161">EVDO की आवश्यकता है</translation>
+<translation id="7256405249507348194">अपरिचित त्रुटि: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">उपयोगकर्ता नाम/पासवर्ड गलत या EAP-प्रमाणीकरण विफल रहा</translation>
+<translation id="735745346212279324">VPN डिस्कनेक्ट है</translation>
+<translation id="7874779702599364982">सेलुलर नेटवर्क खोज रहा है...</translation>
+<translation id="7925247922861151263">AAA जांच विफल</translation>
+<translation id="7973962044839454485">किसी गलत उपयोगकर्ता नाम या पासवर्ड के कारण PPP प्रमाणीकरण विफल रहा</translation>
+<translation id="8000066093800657092">नेटवर्क नहीं है</translation>
+<translation id="8008366997883261463">श्वान</translation>
+<translation id="8132793192354020517"><ph name="NAME"/> से कनेक्ट है</translation>
+<translation id="8300849813060516376">OTASP विफल</translation>
+<translation id="8372369524088641025">ख़राब WEP कुंजी</translation>
+<translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
+<translation id="8688591111840995413">खराब पासवर्ड</translation>
+<translation id="8714406895390098252">साइकिल</translation>
+<translation id="8808686172382650546">बिल्ली</translation>
+<translation id="9044646465488564462">नेटवर्क से कनेक्ट करने में विफल रहा: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">कनेक्ट करना विफल</translation>
 </translationbundle>

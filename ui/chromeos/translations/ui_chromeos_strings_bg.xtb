@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="bg">
-<translation id="8008366997883261463">Джак Ръсел териер</translation>
-<translation id="7165320105431587207">Конфигурирането на мрежата не бе успешно</translation>
-<translation id="4387004326333427325">Сертификатът за удостоверяване бе отхвърлен отдалечено</translation>
-<translation id="6943836128787782965">Получаването на HTTP не бе успешно</translation>
+<translation id="1119447706177454957">Вътрешна грешка</translation>
+<translation id="153454903766751181">Клетъчният модем се подготвя за работа...</translation>
+<translation id="158849752021629804">Необходима е собствена мрежа</translation>
 <translation id="1661867754829461514">Липсва PIN</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: Установява се връзка...</translation>
+<translation id="1773212559869067373">Сертификатът за удостоверяване бе отхвърлен локално</translation>
+<translation id="1829129547161959350">Пингвин</translation>
+<translation id="1850504506766569011">Wi-Fi е изключен.</translation>
+<translation id="2288278176040912387">Грамофон</translation>
+<translation id="2354174487190027830">„<ph name="NAME"/>“ се активира</translation>
+<translation id="2544853746127077729">Сертификатът за удостоверяване бе отхвърлен от мрежата</translation>
+<translation id="2563185590376525700">Жаба</translation>
+<translation id="2563856802393254086">Поздравления! Услугата ви за данни „<ph name="NAME"/>“ е активирана и е готова за работа.</translation>
+<translation id="2649120831653069427">Риба дъга</translation>
+<translation id="2670531586141364277">За активирането на „<ph name="NAME"/>“ се изисква връзка с мрежата.</translation>
+<translation id="2894654529758326923">Информация</translation>
+<translation id="2951236788251446349">Медуза</translation>
+<translation id="2966449113954629791">Възможно е да сте изразходвали отпуснатите ви мобилни данни. Посетете портала за активиране „<ph name="NAME"/>“, за да купите още данни.</translation>
+<translation id="3846575436967432996">Не е налице информация за мрежата</translation>
+<translation id="3871838685472846647">Мобилната мрежа е активирана</translation>
+<translation id="3901991538546252627">Установява се връзка със: <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Киви</translation>
 <translation id="40400351611212369">Грешка при активиране на мрежата</translation>
 <translation id="4237016987259239829">Грешка при свързване към мрежата</translation>
+<translation id="4274292172790327596">Неразпозната грешка</translation>
+<translation id="4326192123064055915">Кафе</translation>
+<translation id="4387004326333427325">Сертификатът за удостоверяване бе отхвърлен отдалечено</translation>
+<translation id="4442424173763614572">Търсенето в DNS не бе успешно</translation>
+<translation id="4448844063988177157">Търсят се Wi-Fi мрежи...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: Установява се връзка...</translation>
 <translation id="4508265954913339219">Активирането не бе успешно</translation>
 <translation id="4559767610552730302">Боке</translation>
-<translation id="8688591111840995413">Неправилна парола</translation>
-<translation id="3846575436967432996">Не е налице информация за мрежата</translation>
-<translation id="153454903766751181">Клетъчният модем се подготвя за работа...</translation>
-<translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
+<translation id="4935975195727477204">Газания</translation>
+<translation id="5045550434625856497">Неправилна парола</translation>
+<translation id="5097002363526479830">Свързването с мрежата „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Шах</translation>
+<translation id="5257456363153333584">Водно конче</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Котка</translation>
-<translation id="7170041865419449892">Извън обхват</translation>
-<translation id="2544853746127077729">Сертификатът за удостоверяване бе отхвърлен от мрежата</translation>
-<translation id="7973962044839454485">Удостоверяването през PPP не бе успешно поради неправилно потребителско име или парола</translation>
-<translation id="6549021752953852991">Няма налична клетъчна мрежа</translation>
+<translation id="5864471791310927901">Търсенето на DHCP сървър не бе успешно</translation>
+<translation id="6232116551750539448">Връзката с/ъс <ph name="NAME"/> прекъсна</translation>
+<translation id="6267036997247669271">„<ph name="NAME"/>“: Активира се...</translation>
+<translation id="6312403991423642364">Неизвестна мрежова грешка</translation>
 <translation id="6490455614072479501">Свързването с/ъс „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/>
 Съобщение от сървъра: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">За активирането на „<ph name="NAME"/>“ се изисква връзка с мрежата.</translation>
-<translation id="4442424173763614572">Търсенето в DNS не бе успешно</translation>
-<translation id="7874779702599364982">Търсят се мобилни мрежи...</translation>
-<translation id="3901991538546252627">Установява се връзка със: <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Сертификатът за удостоверяване бе отхвърлен локално</translation>
-<translation id="2563185590376525700">Жаба</translation>
-<translation id="7256405249507348194">Неразпозната грешка: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Информация</translation>
-<translation id="6935521024859866267">Наопаки</translation>
-<translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Неизвестна мрежова грешка</translation>
-<translation id="4326192123064055915">Кафе</translation>
-<translation id="2354174487190027830">„<ph name="NAME"/>“ се активира</translation>
-<translation id="1829129547161959350">Пингвин</translation>
-<translation id="515594325917491223">Шах</translation>
-<translation id="5097002363526479830">Свързването с мрежата „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi е изключен.</translation>
-<translation id="2966449113954629791">Възможно е да сте изразходвали отпуснатите ви мобилни данни. Посетете портала за активиране „<ph name="NAME"/>“, за да купите още данни.</translation>
-<translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Вътрешна грешка</translation>
-<translation id="5045550434625856497">Неправилна парола</translation>
-<translation id="6232116551750539448">Връзката с/ъс <ph name="NAME"/> прекъсна</translation>
-<translation id="4274292172790327596">Неразпозната грешка</translation>
-<translation id="4448844063988177157">Търсят се Wi-Fi мрежи...</translation>
-<translation id="7229570126336867161">Необходим е EVDO</translation>
-<translation id="9044646465488564462">Свързването с мрежата не бе успешно: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi е включен.</translation>
-<translation id="3871838685472846647">Мобилната мрежа е активирана</translation>
-<translation id="3958548648197196644">Киви</translation>
+<translation id="6549021752953852991">Няма налична клетъчна мрежа</translation>
 <translation id="6732801395666424405">Сертификатите не са заредени</translation>
-<translation id="8300849813060516376">Безжичното осигуряване на услуга не бе успешно</translation>
-<translation id="6267036997247669271">„<ph name="NAME"/>“: Активира се...</translation>
-<translation id="8714406895390098252">Велосипед</translation>
-<translation id="5257456363153333584">Водно конче</translation>
-<translation id="158849752021629804">Необходима е собствена мрежа</translation>
-<translation id="2649120831653069427">Риба дъга</translation>
-<translation id="2288278176040912387">Грамофон</translation>
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">Търсенето на DHCP сървър не бе успешно</translation>
-<translation id="9046895021617826162">Свързването не бе успешно</translation>
-<translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
-<translation id="2951236788251446349">Медуза</translation>
-<translation id="8000066093800657092">Няма мрежа</translation>
-<translation id="2563856802393254086">Поздравления! Услугата ви за данни „<ph name="NAME"/>“ е активирана и е готова за работа.</translation>
-<translation id="4935975195727477204">Газания</translation>
+<translation id="6935521024859866267">Наопаки</translation>
+<translation id="6943836128787782965">Получаването на HTTP не бе успешно</translation>
+<translation id="7165320105431587207">Конфигурирането на мрежата не бе успешно</translation>
+<translation id="7170041865419449892">Извън обхват</translation>
+<translation id="7229570126336867161">Необходим е EVDO</translation>
+<translation id="7256405249507348194">Неразпозната грешка: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Потребителското име или паролата са неправилни или удостоверяването през EAP не бе успешно</translation>
+<translation id="735745346212279324">Връзката с виртуалната частна мрежа (VPN) е прекъсната</translation>
+<translation id="7874779702599364982">Търсят се мобилни мрежи...</translation>
+<translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
+<translation id="7973962044839454485">Удостоверяването през PPP не бе успешно поради неправилно потребителско име или парола</translation>
+<translation id="8000066093800657092">Няма мрежа</translation>
+<translation id="8008366997883261463">Джак Ръсел териер</translation>
+<translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME"/></translation>
+<translation id="8300849813060516376">Безжичното осигуряване на услуга не бе успешно</translation>
+<translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
+<translation id="8454013096329229812">Wi-Fi е включен.</translation>
+<translation id="8688591111840995413">Неправилна парола</translation>
+<translation id="8714406895390098252">Велосипед</translation>
+<translation id="8808686172382650546">Котка</translation>
+<translation id="9044646465488564462">Свързването с мрежата не бе успешно: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Свързването не бе успешно</translation>
 </translationbundle>

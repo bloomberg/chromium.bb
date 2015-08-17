@@ -1,224 +1,224 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="zh-TW">
-<translation id="3595596368722241419">電池已充滿</translation>
-<translation id="6895424601869865703">新增<ph name="GIVEN_NAME"/>的帳戶</translation>
+<translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE"/></translation>
+<translation id="112308213915226829">自動隱藏檔案櫃</translation>
+<translation id="1195412055398077112">遮視區域</translation>
 <translation id="1270290102613614947">螢幕小鍵盤已停用</translation>
-<translation id="5548285847212963613">「<ph name="EXTENSION_NAME"/>」擴充功能可協助連線至這個網路。</translation>
-<translation id="7814236020522506259"><ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
+<translation id="1272079795634619415">停止</translation>
+<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
+<translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="1343000272198685031">麥克風插孔</translation>
-<translation id="30155388420722288">溢位按鈕</translation>
-<translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
-<translation id="8673028979667498656">270 度</translation>
-<translation id="5571066253365925590">藍牙已啟用</translation>
-<translation id="5895138241574237353">重新啟動</translation>
-<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> 已旋轉到<ph name="ROTATION"/></translation>
-<translation id="9074739597929991885">藍牙</translation>
-<translation id="2268130516524549846">藍牙已停用</translation>
-<translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME"/>」已配對成功，可供所有使用者使用。如要移除配對，請使用「設定」。</translation>
-<translation id="3775358506042162758">多帳戶登入功能一次只能登入最多 3 個帳戶。</translation>
-<translation id="9151726767154816831">重新啟動並執行 Powerwash 即可更新</translation>
-<translation id="370649949373421643">啟用 Wi-Fi</translation>
-<translation id="3626281679859535460">亮度</translation>
-<translation id="3621202678540785336">輸入</translation>
-<translation id="7348093485538360975">螢幕小鍵盤</translation>
-<translation id="595202126637698455">效能追蹤已啟用</translation>
-<translation id="8054466585765276473">正在計算電池使用時間。</translation>
-<translation id="7982789257301363584">網路</translation>
-<translation id="2303600792989757991">切換視窗總覽</translation>
-<translation id="5565793151875479467">Proxy...</translation>
-<translation id="938582441709398163">鍵盤自訂快速鍵</translation>
-<translation id="6047696787498798094">切換到另一個使用者會停止共用螢幕，您要繼續嗎？</translation>
-<translation id="6979158407327259162">Google 雲端硬碟</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> 的解析度已變更為 <ph name="RESOLUTION"/></translation>
-<translation id="2297568595583585744">狀態匣</translation>
-<translation id="2946640296642327832">啟用藍牙</translation>
-<translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME"/> 畫面</translation>
-<translation id="8206859287963243715">手機</translation>
-<translation id="6596816719288285829">IP 位址</translation>
-<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> 在開啟時可能無法充電。</translation>
-<translation id="3621712662352432595">音訊設定</translation>
+<translation id="1346748346194534595">向右</translation>
+<translation id="137180024469554212">停用旋轉鎖定</translation>
+<translation id="1383876407941801731">搜尋</translation>
+<translation id="1426410128494586442">是</translation>
+<translation id="1467432559032391204">向左</translation>
+<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
+<translation id="1510238584712386396">啟動器</translation>
+<translation id="15373452373711364">大型滑鼠游標</translation>
+<translation id="1602076796624386989">啟用行動數據</translation>
+<translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT"/></translation>
+<translation id="164969095109328410">Chrome 裝置</translation>
+<translation id="1723752762323179280">結束工作階段</translation>
+<translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
 <translation id="1812696562331527143">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>第三方<ph name="END_LINK"/>)。
 按下 Shift + Alt 鍵即可切換。</translation>
-<translation id="6043994281159824495">立即登出</translation>
-<translation id="5168181903108465623">可用的投放裝置</translation>
-<translation id="2127372758936585790">低功率充電器</translation>
-<translation id="3799026279081545374">您的充電器可能有問題。如需相關協助或索取新的充電器，請致電 866-628-1371 (美國)、0800-026-0613 (英國)、1-800-832-664 (愛爾蘭)、866-628-1372 (加拿大) 或 1-800-067-460 (澳洲)。</translation>
-<translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
-<translation id="5871632337994001636">管理裝置...</translation>
-<translation id="785750925697875037">查看行動帳戶</translation>
-<translation id="8356164830168736643">關閉「<ph name="WINDOW_TITLE"/>」</translation>
-<translation id="7864539943188674973">停用藍牙</translation>
-<translation id="939252827960237676">無法儲存螢幕擷取畫面</translation>
-<translation id="9080206825613744995">麥克風正在使用中。</translation>
-<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
-<translation id="3126069444801937830">重新啟用即可更新</translation>
-<translation id="2268813581635650749">登出所有使用者</translation>
-<translation id="15373452373711364">大型滑鼠游標</translation>
-<translation id="3294437725009624529">訪客</translation>
-<translation id="8190698733819146287">自訂語言與輸入法...</translation>
-<translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
-<translation id="2942516765047364088">檔案櫃位置</translation>
-<translation id="8676770494376880701">已連接低功率充電器</translation>
-<translation id="5238774010593222950">無法登入其他帳戶。</translation>
-<translation id="1723752762323179280">結束工作階段</translation>
-<translation id="1484102317210609525"><ph name="DEVICE_NAME"/> (HDMI/DP)</translation>
-<translation id="1426410128494586442">是</translation>
-<translation id="4804818685124855865">中斷連線</translation>
-<translation id="2963773877003373896">mod3</translation>
-<translation id="5222676887888702881">登出</translation>
-<translation id="2391579633712104609">180 度</translation>
-<translation id="1272079795634619415">停止</translation>
-<translation id="4957722034734105353">瞭解詳情...</translation>
-<translation id="2964193600955408481">停用 WiFi</translation>
-<translation id="4279490309300973883">鏡像</translation>
-<translation id="2509468283778169019">大寫鍵已啟用</translation>
-<translation id="3892641579809465218">內部畫面</translation>
-<translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE"/>」變更為「<ph name="TO_LOCALE"/>」。</translation>
-<translation id="3606978283550408104">已連接點字顯示器。</translation>
-<translation id="8654520615680304441">開啟 Wi-Fi...</translation>
-<translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME"/>分享螢幕控制功能。</translation>
-<translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY"/></translation>
-<translation id="8828714802988429505">90 度</translation>
-<translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>。
-按下 Shift + Alt 鍵即可切換。</translation>
-<translation id="2562916301614567480">私人網路</translation>
-<translation id="4250680216510889253">否</translation>
-<translation id="4379753398862151997">Dear Monitor, it's not working out between us. (系統無法支援該顯示器)</translation>
-<translation id="6426039856985689743">停用行動數據</translation>
-<translation id="3087734570205094154">置底</translation>
-<translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
-<translation id="8878886163241303700">延伸螢幕</translation>
-<translation id="714034171374937760">Chromebase</translation>
-<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (藍牙)</translation>
-<translation id="3967919079500697218">您的管理員已停用拍攝螢幕擷取畫面功能。</translation>
-<translation id="372094107052732682">按兩下 Ctrl+Shift+Q 鍵即可結束。</translation>
-<translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
-<translation id="9194617393863864469">登入其他使用者帳戶...</translation>
-<translation id="6915678159055240887">Chromebox</translation>
-<translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
-<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (主要)</translation>
-<translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE"/>%</translation>
-<translation id="9089416786594320554">輸入法</translation>
-<translation id="2700058918926273959">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束，屆時系統會將您登出。</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
-<translation id="1963814843110128691">正在將 $1 投放到 $2</translation>
-<translation id="3963445509666917109">喇叭 (內部)</translation>
-<translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
-<translation id="2208323208084708176">整合桌面模式</translation>
-<translation id="5759815399269068793"><ph name="DEVICE_TYPE"/> 連接外接螢幕時仍可持續使用 (即使蓋上機蓋)。</translation>
-<translation id="2825619548187458965">檔案櫃</translation>
-<translation id="4430019312045809116">音量</translation>
-<translation id="5932901536148835538">Chromebit</translation>
-<translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
-<translation id="1383876407941801731">搜尋</translation>
-<translation id="2204305834655267233">網路資訊</translation>
-<translation id="137180024469554212">停用旋轉鎖定</translation>
-<translation id="1621499497873603021">電池剩餘使用時間：<ph name="TIME_LEFT"/></translation>
-<translation id="5980301590375426705">結束訪客工作階段</translation>
-<translation id="8308637677604853869">前一個選單</translation>
-<translation id="4321179778687042513">Ctrl</translation>
-<translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
-<translation id="1346748346194534595">向右</translation>
-<translation id="8528322925433439945">行動服務 ...</translation>
-<translation id="3157169093162779309">啟用旋轉鎖定</translation>
-<translation id="8428213095426709021">設定</translation>
-<translation id="2372145515558759244">正在同步處理應用程式...</translation>
-<translation id="1987317783729300807">帳戶</translation>
-<translation id="8456362689280298700">完成充電尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
-<translation id="1467432559032391204">向左</translation>
-<translation id="5543001071567407895">簡訊</translation>
-<translation id="1957803754585243749">0°</translation>
-<translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限。</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
-<translation id="1923539912171292317">自動點擊</translation>
-<translation id="703171847531699602">沒有投放裝置</translation>
-<translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在連線...</translation>
-<translation id="6062360702481658777">您將於 <ph name="LOGOUT_TIME_LEFT"/>後自動登出。</translation>
-<translation id="252373100621549798">顯示器不明</translation>
 <translation id="1882897271359938046">正在建立 <ph name="DISPLAY_NAME"/> 鏡像</translation>
-<translation id="5777841717266010279">停止共用螢幕？</translation>
+<translation id="1923539912171292317">自動點擊</translation>
+<translation id="1957803754585243749">0°</translation>
+<translation id="1963814843110128691">正在將 $1 投放到 $2</translation>
+<translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
+<translation id="1987317783729300807">帳戶</translation>
+<translation id="2127372758936585790">低功率充電器</translation>
+<translation id="2204305834655267233">網路資訊</translation>
+<translation id="2208323208084708176">整合桌面模式</translation>
+<translation id="225680501294068881">正在掃描裝置...</translation>
+<translation id="2268130516524549846">藍牙已停用</translation>
+<translation id="2268813581635650749">登出所有使用者</translation>
+<translation id="2297568595583585744">狀態匣</translation>
+<translation id="2303600792989757991">切換視窗總覽</translation>
+<translation id="2372145515558759244">正在同步處理應用程式...</translation>
+<translation id="2391579633712104609">180 度</translation>
+<translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY"/></translation>
+<translation id="2475982808118771221">發生錯誤</translation>
+<translation id="2509468283778169019">大寫鍵已啟用</translation>
+<translation id="252373100621549798">顯示器不明</translation>
+<translation id="2532589005999780174">高反差模式</translation>
+<translation id="2562916301614567480">私人網路</translation>
+<translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在連線...</translation>
+<translation id="2700058918926273959">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束，屆時系統會將您登出。</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME"/>，<ph name="BATTERY"/></translation>
-<translation id="3784455785234192852">鎖定</translation>
-<translation id="2805756323405976993">應用程式</translation>
-<translation id="2872961005593481000">關閉</translation>
-<translation id="3433830597744061105">管理帳戶</translation>
-<translation id="742594950370306541">攝影機正在使用中。</translation>
-<translation id="7052914147756339792">設定桌布...</translation>
-<translation id="2532589005999780174">高反差模式</translation>
-<translation id="511445211639755999"><ph name="RESOLUTION"/>，<ph name="OVERSCAN"/></translation>
-<translation id="3019353588588144572">電池剩餘充電時間：<ph name="TIME_REMAINING"/></translation>
-<translation id="3473479545200714844">畫面放大鏡</translation>
-<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> 在開啟時可能無法充電，建議您使用原廠充電器。</translation>
-<translation id="882279321799040148">按這裡瀏覽</translation>
-<translation id="5011233892417813670">Chromebook</translation>
-<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> 不支援 <ph name="SPECIFIED_RESOLUTION"/>，解析度已變更為 <ph name="FALLBACK_RESOLUTION"/></translation>
-<translation id="1602076796624386989">啟用行動數據</translation>
-<translation id="68610848741840742">ChromeVox (互動朗讀)</translation>
-<translation id="6981982820502123353">協助工具</translation>
-<translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束。</translation>
-<translation id="5977415296283489383">耳機</translation>
-<translation id="225680501294068881">正在掃描裝置...</translation>
-<translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
-<translation id="5978382165065462689">透過遠端協助分享螢幕控制功能。</translation>
-<translation id="737451040872859086">麥克風 (內部)</translation>
-<translation id="2475982808118771221">發生錯誤</translation>
-<translation id="3783640748446814672">Alt</translation>
-<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> 是受 <ph name="DOMAIN"/> 管理的公開工作階段</translation>
-<translation id="7029814467594812963">結束工作階段</translation>
-<translation id="479989351350248267">search</translation>
-<translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
-<translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY"/></translation>
-<translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE"/>%。</translation>
-<translation id="2983818520079887040">設定...</translation>
-<translation id="6452181791372256707">拒絕</translation>
-<translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
-<translation id="1195412055398077112">遮視區域</translation>
-<translation id="607652042414456612">您的電腦已開放附近的藍牙裝置搜尋，顯示名稱為「<ph name="NAME"/>」，位址則是 <ph name="ADDRESS"/></translation>
-<translation id="112308213915226829">自動隱藏檔案櫃</translation>
-<translation id="7573962313813535744">停駐模式</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
-<translation id="5958529069007801266">受監管的使用者</translation>
-<translation id="3709443003275901162">9+</translation>
-<translation id="639644700271529076">大寫鍵已關閉</translation>
-<translation id="6248847161401822652">按兩下 Control、Shift 和 Q 鍵即可結束。</translation>
-<translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE"/>% (充電中)。</translation>
-<translation id="4895488851634969361">電池電量已滿。</translation>
-<translation id="615957422585914272">顯示螢幕小鍵盤</translation>
-<translation id="8443356412772935865">正在將畫面投放到 $1</translation>
-<translation id="5947494881799873997">還原</translation>
-<translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
-<translation id="7649070708921625228">說明</translation>
-<translation id="164969095109328410">Chrome 裝置</translation>
+<translation id="2805756323405976993">應用程式</translation>
+<translation id="2819276065543622893">現在即將登出。</translation>
+<translation id="2825619548187458965">檔案櫃</translation>
+<translation id="2872961005593481000">關閉</translation>
+<translation id="2942516765047364088">檔案櫃位置</translation>
+<translation id="2946640296642327832">啟用藍牙</translation>
+<translation id="2963773877003373896">mod3</translation>
+<translation id="2964193600955408481">停用 WiFi</translation>
+<translation id="2983818520079887040">設定...</translation>
+<translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> 是受 <ph name="DOMAIN"/> 管理的公開工作階段</translation>
+<translation id="3009178788565917040">輸出</translation>
+<translation id="30155388420722288">溢位按鈕</translation>
+<translation id="3019353588588144572">電池剩餘充電時間：<ph name="TIME_REMAINING"/></translation>
 <translation id="3050422059534974565">大寫鍵已啟用。
 按下搜尋鍵或 Shift 鍵即可取消。</translation>
-<translation id="397105322502079400">計算中…</translation>
-<translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE"/></translation>
-<translation id="2819276065543622893">現在即將登出。</translation>
-<translation id="4961318399572185831">投放畫面</translation>
-<translation id="5507786745520522457">設定行動資料</translation>
-<translation id="6165508094623778733">瞭解詳情</translation>
-<translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS"/> 秒後還原成原來的解析度</translation>
-<translation id="5927132638760172455">正在投放至不明接收端</translation>
-<translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
-<translation id="6550675742724504774">選項</translation>
-<translation id="6406704438230478924">altgr</translation>
+<translation id="3077734595579995578">Shift</translation>
+<translation id="3087734570205094154">置底</translation>
+<translation id="3105990244222795498"><ph name="DEVICE_NAME"/> (藍牙)</translation>
+<translation id="3126069444801937830">重新啟用即可更新</translation>
+<translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
+<translation id="3157169093162779309">啟用旋轉鎖定</translation>
+<translation id="3294437725009624529">訪客</translation>
+<translation id="3433830597744061105">管理帳戶</translation>
+<translation id="3473479545200714844">畫面放大鏡</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE"/>」(需要重新啟動)</translation>
-<translation id="8103386449138765447">簡訊數：<ph name="MESSAGE_COUNT"/></translation>
+<translation id="3595596368722241419">電池已充滿</translation>
+<translation id="3606978283550408104">已連接點字顯示器。</translation>
+<translation id="3621202678540785336">輸入</translation>
+<translation id="3621712662352432595">音訊設定</translation>
+<translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
+<translation id="3626281679859535460">亮度</translation>
+<translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE"/>%</translation>
+<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
+<translation id="3683428399328702079"><ph name="DISPLAY_NAME"/> 的解析度已變更為 <ph name="RESOLUTION"/></translation>
+<translation id="370649949373421643">啟用 Wi-Fi</translation>
+<translation id="3709443003275901162">9+</translation>
+<translation id="372094107052732682">按兩下 Ctrl+Shift+Q 鍵即可結束。</translation>
+<translation id="3742055079367172538">已拍攝螢幕擷取畫面</translation>
+<translation id="3775358506042162758">多帳戶登入功能一次只能登入最多 3 個帳戶。</translation>
+<translation id="3783640748446814672">Alt</translation>
+<translation id="3784455785234192852">鎖定</translation>
+<translation id="3799026279081545374">您的充電器可能有問題。如需相關協助或索取新的充電器，請致電 866-628-1371 (美國)、0800-026-0613 (英國)、1-800-832-664 (愛爾蘭)、866-628-1372 (加拿大) 或 1-800-067-460 (澳洲)。</translation>
+<translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
+<translation id="3892641579809465218">內部畫面</translation>
+<translation id="3963445509666917109">喇叭 (內部)</translation>
+<translation id="3967919079500697218">您的管理員已停用拍攝螢幕擷取畫面功能。</translation>
+<translation id="397105322502079400">計算中…</translation>
+<translation id="4053612967614057854">停用螢幕小鍵盤</translation>
+<translation id="4066708417179825777"><ph name="PRIMARY_ACCOUNT"/> (主要)</translation>
+<translation id="412065659894267608">尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘才能充滿電</translation>
+<translation id="4250680216510889253">否</translation>
+<translation id="4279490309300973883">鏡像</translation>
+<translation id="4321179778687042513">Ctrl</translation>
+<translation id="4379753398862151997">Dear Monitor, it's not working out between us. (系統無法支援該顯示器)</translation>
+<translation id="4421231901400348175">透過遠端協助與<ph name="HELPER_NAME"/>分享螢幕控制功能。</translation>
+<translation id="4430019312045809116">音量</translation>
+<translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限。</translation>
+<translation id="479989351350248267">search</translation>
+<translation id="4804818685124855865">中斷連線</translation>
+<translation id="4872237917498892622">Alt + 搜尋鍵或 Shift 鍵</translation>
+<translation id="4895488851634969361">電池電量已滿。</translation>
+<translation id="4918086044614829423">接受</translation>
+<translation id="4957722034734105353">瞭解詳情...</translation>
+<translation id="4961318399572185831">投放畫面</translation>
+<translation id="5011233892417813670">Chromebook</translation>
+<translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
+<translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
+<translation id="511445211639755999"><ph name="RESOLUTION"/>，<ph name="OVERSCAN"/></translation>
+<translation id="5168181903108465623">可用的投放裝置</translation>
+<translation id="5222676887888702881">登出</translation>
+<translation id="5238774010593222950">無法登入其他帳戶。</translation>
+<translation id="544691375626129091">現有使用者已全部加入這個工作階段。</translation>
+<translation id="5507786745520522457">設定行動資料</translation>
+<translation id="5543001071567407895">簡訊</translation>
+<translation id="5548285847212963613">「<ph name="EXTENSION_NAME"/>」擴充功能可協助連線至這個網路。</translation>
+<translation id="5565793151875479467">Proxy...</translation>
+<translation id="5571066253365925590">藍牙已啟用</translation>
+<translation id="5597451508971090205"><ph name="DATE"/><ph name="SHORT_WEEKDAY"/></translation>
+<translation id="5759815399269068793"><ph name="DEVICE_TYPE"/> 連接外接螢幕時仍可持續使用 (即使蓋上機蓋)。</translation>
+<translation id="5777841717266010279">停止共用螢幕？</translation>
+<translation id="5825747213122829519">您的輸入法已變更為 <ph name="INPUT_METHOD_ID"/>。
+按下 Shift + Alt 鍵即可切換。</translation>
+<translation id="5871632337994001636">管理裝置...</translation>
+<translation id="5895138241574237353">重新啟動</translation>
+<translation id="5927132638760172455">正在投放至不明接收端</translation>
+<translation id="5932901536148835538">Chromebit</translation>
+<translation id="5947494881799873997">還原</translation>
+<translation id="595202126637698455">效能追蹤已啟用</translation>
+<translation id="5958529069007801266">受監管的使用者</translation>
+<translation id="5977415296283489383">耳機</translation>
+<translation id="5978382165065462689">透過遠端協助分享螢幕控制功能。</translation>
+<translation id="5980301590375426705">結束訪客工作階段</translation>
+<translation id="6043994281159824495">立即登出</translation>
+<translation id="6047696787498798094">切換到另一個使用者會停止共用螢幕，您要繼續嗎？</translation>
+<translation id="6062360702481658777">您將於 <ph name="LOGOUT_TIME_LEFT"/>後自動登出。</translation>
+<translation id="607652042414456612">您的電腦已開放附近的藍牙裝置搜尋，顯示名稱為「<ph name="NAME"/>」，位址則是 <ph name="ADDRESS"/></translation>
+<translation id="615957422585914272">顯示螢幕小鍵盤</translation>
+<translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="6248847161401822652">按兩下 Control、Shift 和 Q 鍵即可結束。</translation>
+<translation id="6310121235600822547"><ph name="DISPLAY_NAME"/> 已旋轉到<ph name="ROTATION"/></translation>
+<translation id="6359806961507272919">來自 <ph name="PHONE_NUMBER"/> 的簡訊</translation>
+<translation id="639644700271529076">大寫鍵已關閉</translation>
+<translation id="6406704438230478924">altgr</translation>
+<translation id="6426039856985689743">停用行動數據</translation>
+<translation id="6452181791372256707">拒絕</translation>
+<translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME"/> 畫面</translation>
+<translation id="6550675742724504774">選項</translation>
+<translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING"/>後結束。</translation>
+<translation id="6596816719288285829">IP 位址</translation>
+<translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME"/>」要求配對權限，請在裝置上輸入此密碼金鑰：<ph name="PASSKEY"/></translation>
+<translation id="6713285437468012787">藍牙裝置「<ph name="DEVICE_NAME"/>」已配對成功，可供所有使用者使用。如要移除配對，請使用「設定」。</translation>
+<translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE"/>% (充電中)。</translation>
+<translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
+<translation id="68610848741840742">ChromeVox (互動朗讀)</translation>
+<translation id="6895424601869865703">新增<ph name="GIVEN_NAME"/>的帳戶</translation>
+<translation id="6911468394164995108">加入其他網路...</translation>
+<translation id="6915678159055240887">Chromebox</translation>
+<translation id="6979158407327259162">Google 雲端硬碟</translation>
+<translation id="6981982820502123353">協助工具</translation>
+<translation id="7029814467594812963">結束工作階段</translation>
+<translation id="703171847531699602">沒有投放裝置</translation>
+<translation id="7052914147756339792">設定桌布...</translation>
 <translation id="7097613348211027502">ChromeVox (互動朗讀) 已啟用。
 可按 Ctrl+Alt+Z 鍵停用。</translation>
-<translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
-<translation id="1510238584712386396">啟動器</translation>
+<translation id="714034171374937760">Chromebase</translation>
+<translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS"/> 秒後還原成原來的解析度</translation>
 <translation id="7209101170223508707">大寫鍵已啟用。
 按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
+<translation id="7348093485538360975">螢幕小鍵盤</translation>
+<translation id="737451040872859086">麥克風 (內部)</translation>
+<translation id="742594950370306541">攝影機正在使用中。</translation>
+<translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> 不支援 <ph name="SPECIFIED_RESOLUTION"/>，解析度已變更為 <ph name="FALLBACK_RESOLUTION"/></translation>
+<translation id="7573962313813535744">停駐模式</translation>
+<translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
+<translation id="7649070708921625228">說明</translation>
+<translation id="7814236020522506259"><ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
+<translation id="7823564328645135659">同步處理您的設定後，系統已將語言從「<ph name="FROM_LOCALE"/>」變更為「<ph name="TO_LOCALE"/>」。</translation>
+<translation id="785750925697875037">查看行動帳戶</translation>
+<translation id="7864539943188674973">停用藍牙</translation>
+<translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
+<translation id="7957227661277029961"><ph name="DEVICE_TYPE"/> 在開啟時可能無法充電，建議您使用原廠充電器。</translation>
+<translation id="7982789257301363584">網路</translation>
+<translation id="8054466585765276473">正在計算電池使用時間。</translation>
+<translation id="8103386449138765447">簡訊數：<ph name="MESSAGE_COUNT"/></translation>
+<translation id="8190698733819146287">自訂語言與輸入法...</translation>
+<translation id="8206859287963243715">手機</translation>
+<translation id="8308637677604853869">前一個選單</translation>
+<translation id="8356164830168736643">關閉「<ph name="WINDOW_TITLE"/>」</translation>
+<translation id="8428213095426709021">設定</translation>
+<translation id="8443356412772935865">正在將畫面投放到 $1</translation>
+<translation id="8456362689280298700">完成充電尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘</translation>
+<translation id="8517041960877371778"><ph name="DEVICE_TYPE"/> 在開啟時可能無法充電。</translation>
+<translation id="8528322925433439945">行動服務 ...</translation>
+<translation id="8654520615680304441">開啟 Wi-Fi...</translation>
+<translation id="8673028979667498656">270 度</translation>
+<translation id="8676770494376880701">已連接低功率充電器</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="882279321799040148">按這裡瀏覽</translation>
+<translation id="8828714802988429505">90 度</translation>
+<translation id="8878886163241303700">延伸螢幕</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE"/>%)</translation>
-<translation id="4918086044614829423">接受</translation>
-<translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="3009178788565917040">輸出</translation>
-<translation id="3147142846278915599">啟動器 (正在同步處理應用程式...)</translation>
-<translation id="6911468394164995108">加入其他網路...</translation>
-<translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
-<translation id="412065659894267608">尚需 <ph name="HOUR"/> 小時 <ph name="MINUTE"/> 分鐘才能充滿電</translation>
-<translation id="3077734595579995578">Shift</translation>
-<translation id="6359806961507272919">來自 <ph name="PHONE_NUMBER"/> 的簡訊</translation>
-<translation id="4053612967614057854">停用螢幕小鍵盤</translation>
+<translation id="9074739597929991885">藍牙</translation>
+<translation id="9080206825613744995">麥克風正在使用中。</translation>
+<translation id="9089416786594320554">輸入法</translation>
+<translation id="9151726767154816831">重新啟動並執行 Powerwash 即可更新</translation>
+<translation id="9194617393863864469">登入其他使用者帳戶...</translation>
+<translation id="9201131092683066720">電池電量為 <ph name="PERCENTAGE"/>%。</translation>
+<translation id="923686485342484400">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
+<translation id="938582441709398163">鍵盤自訂快速鍵</translation>
+<translation id="939252827960237676">無法儲存螢幕擷取畫面</translation>
 </translationbundle>

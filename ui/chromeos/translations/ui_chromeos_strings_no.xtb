@@ -1,71 +1,71 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="no">
-<translation id="8008366997883261463">Jack Russell-terrier</translation>
-<translation id="7165320105431587207">Kunne ikke konfigurere nettverket</translation>
-<translation id="4387004326333427325">Autentiseringssertifikatet ble avvist eksternt</translation>
-<translation id="6943836128787782965">Henting av HTTP mislyktes</translation>
+<translation id="1119447706177454957">Intern feil</translation>
+<translation id="153454903766751181">Starter mobilmodemet ...</translation>
+<translation id="158849752021629804">Trenger hjemmenettverk</translation>
 <translation id="1661867754829461514">Personlig kode mangler</translation>
-<translation id="4508225577814909926"><ph name="NAME"/>: kobler til ...</translation>
+<translation id="1773212559869067373">Autentiseringssertifikatet ble avvist lokalt</translation>
+<translation id="1829129547161959350">Pingviner</translation>
+<translation id="1850504506766569011">Wi-Fi er slått av.</translation>
+<translation id="2288278176040912387">Platespiller</translation>
+<translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
+<translation id="2544853746127077729">Autentiseringssertifikatet ble avvist av nettverket</translation>
+<translation id="2563185590376525700">Frosk</translation>
+<translation id="2563856802393254086">Gratulerer! <ph name="NAME"/>-datatjenesten din er aktivert og klar til bruk.</translation>
+<translation id="2649120831653069427">Regnbuefisk</translation>
+<translation id="2670531586141364277">Aktivering av <ph name="NAME"/> krever nettverkstilkobling.</translation>
+<translation id="2894654529758326923">Informasjon</translation>
+<translation id="2951236788251446349">Stormanet</translation>
+<translation id="2966449113954629791">Du kan ha brukt opp mobildatakvoten din. Gå til aktiveringsportalen for <ph name="NAME"/> for å kjøpe mer data.</translation>
+<translation id="3846575436967432996">Ingen nettverksinformasjon tilgjengelig</translation>
+<translation id="3871838685472846647">Mobil aktivert</translation>
+<translation id="3901991538546252627">Kobler til <ph name="NAME"/></translation>
+<translation id="3958548648197196644">Kiwi</translation>
 <translation id="40400351611212369">Nettverksaktiveringsfeil</translation>
 <translation id="4237016987259239829">Feil i nettverkstilkobling</translation>
+<translation id="4274292172790327596">Ukjent feil</translation>
+<translation id="4326192123064055915">Kaffe</translation>
+<translation id="4387004326333427325">Autentiseringssertifikatet ble avvist eksternt</translation>
+<translation id="4442424173763614572">DNS-søk mislyktes</translation>
+<translation id="4448844063988177157">Søker etter Wi-Fi-nettverk ...</translation>
+<translation id="4479639480957787382">Ethernet</translation>
+<translation id="4508225577814909926"><ph name="NAME"/>: kobler til ...</translation>
 <translation id="4508265954913339219">Aktiveringen mislyktes</translation>
 <translation id="4559767610552730302">Bokeh</translation>
-<translation id="8688591111840995413">Feil passord</translation>
-<translation id="3846575436967432996">Ingen nettverksinformasjon tilgjengelig</translation>
-<translation id="153454903766751181">Starter mobilmodemet ...</translation>
-<translation id="735745346212279324">VPN frakoblet</translation>
+<translation id="4935975195727477204">Gazania-blomst</translation>
+<translation id="5045550434625856497">Feil passord</translation>
+<translation id="5097002363526479830">Kunne ikke koble til nettverket «<ph name="NAME"/>»: <ph name="DETAILS"/></translation>
+<translation id="515594325917491223">Sjakk</translation>
+<translation id="5257456363153333584">Øyenstikker</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
-<translation id="8808686172382650546">Katt</translation>
-<translation id="7170041865419449892">Utenfor rekkevidde</translation>
-<translation id="2544853746127077729">Autentiseringssertifikatet ble avvist av nettverket</translation>
-<translation id="7973962044839454485">PPP-autentiseringen mislyktes på grunn av feil brukernavn eller passord</translation>
-<translation id="6549021752953852991">Ingen tilgjengelige mobilnettverk.</translation>
+<translation id="5864471791310927901">DHCP-oppslag mislyktes</translation>
+<translation id="6232116551750539448">Tilkoblingen til <ph name="NAME"/> er brutt</translation>
+<translation id="6267036997247669271"><ph name="NAME"/>: aktiveres …</translation>
+<translation id="6312403991423642364">Ukjent nettverksfeil</translation>
 <translation id="6490455614072479501">Kunne ikke koble til «<ph name="NAME"/>»: <ph name="DETAILS"/>
         Tjenermelding: <ph name="SERVER_MSG"/></translation>
-<translation id="2670531586141364277">Aktivering av <ph name="NAME"/> krever nettverkstilkobling.</translation>
-<translation id="4442424173763614572">DNS-søk mislyktes</translation>
-<translation id="7874779702599364982">Søker etter mobilnettverk ...</translation>
-<translation id="3901991538546252627">Kobler til <ph name="NAME"/></translation>
-<translation id="1773212559869067373">Autentiseringssertifikatet ble avvist lokalt</translation>
-<translation id="2563185590376525700">Frosk</translation>
-<translation id="7256405249507348194">Ukjent feil: <ph name="DESC"/></translation>
-<translation id="2894654529758326923">Informasjon</translation>
-<translation id="6935521024859866267">Opp-ned</translation>
-<translation id="7925247922861151263">AAA-kontroll mislyktes</translation>
-<translation id="4479639480957787382">Ethernet</translation>
-<translation id="6312403991423642364">Ukjent nettverksfeil</translation>
-<translation id="4326192123064055915">Kaffe</translation>
-<translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
-<translation id="1829129547161959350">Pingviner</translation>
-<translation id="515594325917491223">Sjakk</translation>
-<translation id="5097002363526479830">Kunne ikke koble til nettverket «<ph name="NAME"/>»: <ph name="DETAILS"/></translation>
-<translation id="1850504506766569011">Wi-Fi er slått av.</translation>
-<translation id="2966449113954629791">Du kan ha brukt opp mobildatakvoten din. Gå til aktiveringsportalen for <ph name="NAME"/> for å kjøpe mer data.</translation>
-<translation id="8132793192354020517">Tilkoblet <ph name="NAME"/></translation>
-<translation id="1119447706177454957">Intern feil</translation>
-<translation id="5045550434625856497">Feil passord</translation>
-<translation id="6232116551750539448">Tilkoblingen til <ph name="NAME"/> er brutt</translation>
-<translation id="4274292172790327596">Ukjent feil</translation>
-<translation id="4448844063988177157">Søker etter Wi-Fi-nettverk ...</translation>
-<translation id="7229570126336867161">Krever EVDO</translation>
-<translation id="9044646465488564462">Kunne ikke koble til nettverket: <ph name="DETAILS"/></translation>
-<translation id="8454013096329229812">Wi-Fi er slått på.</translation>
-<translation id="3871838685472846647">Mobil aktivert</translation>
-<translation id="3958548648197196644">Kiwi</translation>
+<translation id="6549021752953852991">Ingen tilgjengelige mobilnettverk.</translation>
 <translation id="6732801395666424405">Sertifikater er ikke lastet inn</translation>
-<translation id="8300849813060516376">OTASP mislyktes</translation>
-<translation id="6267036997247669271"><ph name="NAME"/>: aktiveres …</translation>
-<translation id="8714406895390098252">Sykkel</translation>
-<translation id="5257456363153333584">Øyenstikker</translation>
-<translation id="158849752021629804">Trenger hjemmenettverk</translation>
-<translation id="2649120831653069427">Regnbuefisk</translation>
-<translation id="2288278176040912387">Platespiller</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
-<translation id="5864471791310927901">DHCP-oppslag mislyktes</translation>
-<translation id="9046895021617826162">Tilkoblingen mislyktes</translation>
-<translation id="8372369524088641025">Feil WEP-nøkkel</translation>
-<translation id="2951236788251446349">Stormanet</translation>
-<translation id="8000066093800657092">Ingen nettverk</translation>
-<translation id="2563856802393254086">Gratulerer! <ph name="NAME"/>-datatjenesten din er aktivert og klar til bruk.</translation>
-<translation id="4935975195727477204">Gazania-blomst</translation>
+<translation id="6935521024859866267">Opp-ned</translation>
+<translation id="6943836128787782965">Henting av HTTP mislyktes</translation>
+<translation id="7165320105431587207">Kunne ikke konfigurere nettverket</translation>
+<translation id="7170041865419449892">Utenfor rekkevidde</translation>
+<translation id="7229570126336867161">Krever EVDO</translation>
+<translation id="7256405249507348194">Ukjent feil: <ph name="DESC"/></translation>
 <translation id="7297443947353982503">Brukernavn/passord er galt, eller så mislyktes EAP-autorisasjonen</translation>
+<translation id="735745346212279324">VPN frakoblet</translation>
+<translation id="7874779702599364982">Søker etter mobilnettverk ...</translation>
+<translation id="7925247922861151263">AAA-kontroll mislyktes</translation>
+<translation id="7973962044839454485">PPP-autentiseringen mislyktes på grunn av feil brukernavn eller passord</translation>
+<translation id="8000066093800657092">Ingen nettverk</translation>
+<translation id="8008366997883261463">Jack Russell-terrier</translation>
+<translation id="8132793192354020517">Tilkoblet <ph name="NAME"/></translation>
+<translation id="8300849813060516376">OTASP mislyktes</translation>
+<translation id="8372369524088641025">Feil WEP-nøkkel</translation>
+<translation id="8454013096329229812">Wi-Fi er slått på.</translation>
+<translation id="8688591111840995413">Feil passord</translation>
+<translation id="8714406895390098252">Sykkel</translation>
+<translation id="8808686172382650546">Katt</translation>
+<translation id="9044646465488564462">Kunne ikke koble til nettverket: <ph name="DETAILS"/></translation>
+<translation id="9046895021617826162">Tilkoblingen mislyktes</translation>
 </translationbundle>

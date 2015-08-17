@@ -1,93 +1,96 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="pt-BR">
-<translation id="4542520061254486227">Leia seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
-<translation id="3983586614702900908">dispositivos de um fornecedor desconhecido</translation>
-<translation id="730515362922783851">Trocar dados com qualquer dispositivo da rede local ou Internet</translation>
-<translation id="3624204664103857160">Não foi possível carregar a página inicial '<ph name="PAGE"/>'.</translation>
-<translation id="8804398419035066391">Comunicar-se com websites colaborativos</translation>
-<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID de extensão &quot;<ph name="EXTENSION_ID"/>&quot;) está bloqueada pelo administrador.</translation>
 <translation id="1005274289863221750">Usar microfone e câmera</translation>
-<translation id="2857834222104759979">O arquivo de manifesto é inválido.</translation>
-<translation id="6384275966486438344">Alterar suas configurações de pesquisa para: <ph name="SEARCH_HOST"/></translation>
-<translation id="1445572445564823378">Esta extensão está deixando <ph name="PRODUCT_NAME"/> mais lento. Você deve desativá-lo para restaurar o desempenho de <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="7003844668372540529">Produto <ph name="PRODUCT_ID"/> desconhecido de <ph name="VENDOR_NAME"/></translation>
 <translation id="1033780634303702874">Acessar seus dispositivos de série</translation>
-<translation id="288042212351694283">Acessar seus dispositivos Universal 2nd Factor</translation>
-<translation id="3163201441334626963">Produto <ph name="PRODUCT_ID"/> desconhecido do fornecedor <ph name="VENDOR_ID"/></translation>
-<translation id="6027032947578871493">Produto <ph name="PRODUCT_ID"/> desconhecido de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="4115165561519362854">O administrador desta máquina requer que <ph name="EXTENSION_NAME"/> tenha, no mínimo, a versão <ph name="EXTENSION_VERSION"/> . Ele não pode ser ativado até que tenha sido atualizado para essa versão (ou superior).</translation>
-<translation id="6075907793831890935">Trocar dados com o dispositivo chamado <ph name="HOSTNAME"/></translation>
-<translation id="5971037678316050792">Controlar estado e pareamento do adaptador Bluetooth</translation>
-<translation id="677806580227005219">Gerenciador Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
-<translation id="6241530762627360640">Acessar informações sobre dispositivos Bluetooth pareados com seu sistema e descobrir dispositivos Bluetooth nas proximidades.</translation>
-<translation id="8749863574775030885">Acessar dispositivos USB de um fornecedor desconhecido</translation>
-<translation id="3115238746683532089">Produto <ph name="PRODUCT_ID"/> desconhecido do fornecedor <ph name="VENDOR_ID"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>
-<translation id="657064425229075395">Não foi possível carregar o script de plano de fundo &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
-<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> do fornecedor <ph name="VENDOR_ID"/></translation>
-<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
-<translation id="9131487537093447019">Enviar mensagens para e receber mensagens de dispositivos Bluetooth.</translation>
-<translation id="5678955352098267522">Leia seus dados em <ph name="WEBSITE_1"/></translation>
-<translation id="5456409301717116725">Esta extensão inclui o arquivo de chave '<ph name="KEY_PATH"/>'. Você provavelmente não quer fazer isso.</translation>
-<translation id="7257666756905341374">Ler dados que você copia e cola</translation>
-<translation id="2350172092385603347">Localização utilizada, mas default_locale não foi especificada no manifesto.</translation>
-<translation id="3759933321830434300">Bloquear partes das páginas da Web</translation>
-<translation id="6143635259298204954">Não é possível abrir a extensão.  Para abrir uma extensão com segurança, deve haver um caminho para o diretório de seu perfil que não contenha um symlink. Não existe um caminho assim para seu perfil.</translation>
-<translation id="8712265948125780616">Descompactador de extensão</translation>
-<translation id="149347756975725155">Não foi possível carregar o ícone de extensão &quot;<ph name="ICON"/>&quot;.</translation>
-<translation id="8825366169884721447">Esta extensão falhou ao modificar o cabeçalho da solicitação de rede &quot;<ph name="HEADER_NAME"/>&quot; porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="6731255991101203740">Não foi possível criar um diretório para descompactação: ​​'<ph name="DIRECTORY_PATH"/>'</translation>
-<translation id="4233778200880751280">Não foi possível carregar a página &quot;Sobre&quot; '<ph name="ABOUT_PAGE"/>'.</translation>
-<translation id="388442998277590542">Não foi possível carregar a página de opções &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
-<translation id="5127881134400491887">Gerenciar conexões de rede</translation>
-<translation id="6344170822609224263">Acessar lista de conexões de rede</translation>
-<translation id="7039326228527141150">Acessa dispositivos USB do <ph name="VENDOR_NAME"/></translation>
-<translation id="2616366145935564096">Ler e alterar seus dados em <ph name="WEBSITE_1"/></translation>
-<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
-<translation id="4444304522807523469">Acessar scanners de documentos acoplados via USB ou na rede local</translation>
-<translation id="6408118934673775994">Ler e alterar seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
-<translation id="8670869118777164560">Esta extensão falhou ao redirecionar uma solicitação da rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> porque outra extensão (<ph name="EXTENSION_NAME"/>) redirecionou a solicitação para <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
-<translation id="6840444547062817500">Esta extensão foi recarregada automaticamente com muita frequência.</translation>
-<translation id="2270450558902169558">Trocar dados com qualquer dispositivo no domínio <ph name="DOMAIN"/></translation>
-<translation id="8047248493720652249">Falha ao nomear o download &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; com esta extensão, porque outra extensão (<ph name="EXTENSION_NAME"/>) determinou um nome de arquivo diferente: &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
-<translation id="452039078290142656">dispositivos desconhecidos do <ph name="VENDOR_NAME"/></translation>
-<translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
-<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="2753617847762399167">Caminho ilegal (absoluto ou relativo com '..'): '<ph name="IMAGE_PATH"/>'</translation>
-<translation id="8284279544186306258">todos os sites de <ph name="WEBSITE_1"/></translation>
-<translation id="8662911384982557515">Alterar sua página inicial para: <ph name="HOME_PAGE"/></translation>
-<translation id="27822970480436970">Esta extensão não conseguiu modificar uma solicitação de rede pois a modificação entrou em conflito com outra extensão.</translation>
-<translation id="2241053333139545397">Ler e alterar seus dados em vários websites</translation>
-<translation id="8602184400052594090">O arquivo de manifesto está faltando ou não pode ser lido.</translation>
-<translation id="2270627217422354837">Trocar dados com qualquer dispositivo nos domínios: <ph name="DOMAINS"/></translation>
-<translation id="7093866338626856921">Trocar dados com os dispositivos chamados: <ph name="HOSTNAMES"/></translation>
-<translation id="4883436287898674711">Todos os sites de <ph name="WEBSITE_1"/></translation>
-<translation id="9111791539553342076">Esta extensão falhou ao modificar o cabeçalho de resposta &quot;<ph name="HEADER_NAME"/>&quot; de uma solicitação de rede porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
-<translation id="9150045010208374699">Usar câmera</translation>
-<translation id="5356315618422219272">Visualização do app: <ph name="APPVIEW_TAG_NAME"/></translation>
-<translation id="8341840687457896278">Esta extensão falhou ao fornecer credenciais a uma solicitação de rede porque outra extensão (<ph name="EXTENSION_NAME"/>) forneceu credenciais diferentes.</translation>
-<translation id="5627523580512561598">extensão <ph name="EXTENSION_NAME"/></translation>
-<translation id="7893008570150657497">Acessar fotos, música e outras mídias em seu computador</translation>
-<translation id="3369521687965833290">Não é possível abrir a extensão. Para abrir uma extensão com segurança, deve haver um caminho para o diretório de seu perfil que comece com uma letra de drive e não contenha uma junção, um mount point ou um symlink. Não existe um caminho assim para seu perfil.</translation>
-<translation id="4811956658694082538">Não foi possível instalar o pacote devido a uma falha no processo do utilitário. Reinicie o Google Chrome e tente novamente.</translation>
-<translation id="641087317769093025">Não foi possível descompactar a extensão</translation>
-<translation id="4761104368405085019">Usar microfone</translation>
-<translation id="7217838517480956708">O administrador desta máquina requer a instalação de <ph name="EXTENSION_NAME"/>. Não é possível remover ou modificá-lo.</translation>
-<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="8620765578342452535">Configurar conexões de rede</translation>
-<translation id="7154130902455071009">Alterar sua página inicial para: <ph name="START_PAGE"/></translation>
 <translation id="1036511912703768636">Acessar qualquer um desses dispositivos USB</translation>
-<translation id="6698810901424468597">Ler e alterar seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
-<translation id="2159915644201199628">Não foi possível decodificar a imagem: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="2048182445208425546">Acesse seu tráfego de rede</translation>
-<translation id="1256619696651732561">Analisador de manifesto de extensão</translation>
-<translation id="5972529113578162692">O administrador desta máquina requer a instalação da extensão <ph name="EXTENSION_NAME"/>. Ela não pode ser desinstalada.</translation>
 <translation id="1135328998467923690">O pacote é inválido: &quot;<ph name="ERROR_CODE"/>&quot;.</translation>
-<translation id="7131040479572660648">Leia seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
-<translation id="2087653731648927289">Acessar qualquer <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
+<translation id="1256619696651732561">Analisador de manifesto de extensão</translation>
+<translation id="1445572445564823378">Esta extensão está deixando <ph name="PRODUCT_NAME"/> mais lento. Você deve desativá-lo para restaurar o desempenho de <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="149347756975725155">Não foi possível carregar o ícone de extensão &quot;<ph name="ICON"/>&quot;.</translation>
 <translation id="1803557475693955505">Não foi possível carregar a página de fundo &quot;<ph name="BACKGROUND_PAGE"/>&quot;.</translation>
+<translation id="2048182445208425546">Acesse seu tráfego de rede</translation>
+<translation id="2087653731648927289">Acessar qualquer <ph name="PRODUCT_NAME_AND_VENDOR"/> via USB</translation>
+<translation id="2159915644201199628">Não foi possível decodificar a imagem: '<ph name="IMAGE_NAME"/>'</translation>
+<translation id="2241053333139545397">Ler e alterar seus dados em vários websites</translation>
+<translation id="2270450558902169558">Trocar dados com qualquer dispositivo no domínio <ph name="DOMAIN"/></translation>
+<translation id="2270627217422354837">Trocar dados com qualquer dispositivo nos domínios: <ph name="DOMAINS"/></translation>
+<translation id="2350172092385603347">Localização utilizada, mas default_locale não foi especificada no manifesto.</translation>
+<translation id="2616366145935564096">Ler e alterar seus dados em <ph name="WEBSITE_1"/></translation>
+<translation id="2753617847762399167">Caminho ilegal (absoluto ou relativo com '..'): '<ph name="IMAGE_PATH"/>'</translation>
+<translation id="27822970480436970">Esta extensão não conseguiu modificar uma solicitação de rede pois a modificação entrou em conflito com outra extensão.</translation>
+<translation id="2857834222104759979">O arquivo de manifesto é inválido.</translation>
+<translation id="288042212351694283">Acessar seus dispositivos Universal 2nd Factor</translation>
 <translation id="2988488679308982380">Não foi possível instalar o pacote: &quot;<ph name="ERROR_CODE"/>&quot;</translation>
-<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> do fornecedor <ph name="VENDOR_ID"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
-<translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
-<translation id="8636666366616799973">O pacote é inválido. Detalhes &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="3115238746683532089">Produto <ph name="PRODUCT_ID"/> desconhecido do fornecedor <ph name="VENDOR_ID"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3163201441334626963">Produto <ph name="PRODUCT_ID"/> desconhecido do fornecedor <ph name="VENDOR_ID"/></translation>
+<translation id="3369521687965833290">Não é possível abrir a extensão. Para abrir uma extensão com segurança, deve haver um caminho para o diretório de seu perfil que comece com uma letra de drive e não contenha uma junção, um mount point ou um symlink. Não existe um caminho assim para seu perfil.</translation>
+<translation id="3393440416772303020"><ph name="PRODUCT_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
 <translation id="344630545793878684">Leia seus dados em uma série de websites</translation>
+<translation id="3466070586188012397"><ph name="PRODUCT_NAME"/> do fornecedor <ph name="VENDOR_ID"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="3560114062880914682">{1,select, single{Selecione um dispositivo USB}multiple{Selecione dispositivos USB}other{UNUSED}}</translation>
+<translation id="3624204664103857160">Não foi possível carregar a página inicial '<ph name="PAGE"/>'.</translation>
+<translation id="3759933321830434300">Bloquear partes das páginas da Web</translation>
+<translation id="388442998277590542">Não foi possível carregar a página de opções &quot;<ph name="OPTIONS_PAGE"/>&quot;.</translation>
+<translation id="3983586614702900908">dispositivos de um fornecedor desconhecido</translation>
+<translation id="4115165561519362854">O administrador desta máquina requer que <ph name="EXTENSION_NAME"/> tenha, no mínimo, a versão <ph name="EXTENSION_VERSION"/> . Ele não pode ser ativado até que tenha sido atualizado para essa versão (ou superior).</translation>
+<translation id="4233778200880751280">Não foi possível carregar a página &quot;Sobre&quot; '<ph name="ABOUT_PAGE"/>'.</translation>
+<translation id="4444304522807523469">Acessar scanners de documentos acoplados via USB ou na rede local</translation>
+<translation id="452039078290142656">dispositivos desconhecidos do <ph name="VENDOR_NAME"/></translation>
+<translation id="4542520061254486227">Leia seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
+<translation id="4761104368405085019">Usar microfone</translation>
+<translation id="4811956658694082538">Não foi possível instalar o pacote devido a uma falha no processo do utilitário. Reinicie o Google Chrome e tente novamente.</translation>
+<translation id="4883436287898674711">Todos os sites de <ph name="WEBSITE_1"/></translation>
+<translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME"/></translation>
+<translation id="5127881134400491887">Gerenciar conexões de rede</translation>
+<translation id="5165983846722506205">{1,select, single{Selecione um dispositivo HID}multiple{Selecione dispositivos HID}other{UNUSED}}</translation>
+<translation id="5356315618422219272">Visualização do app: <ph name="APPVIEW_TAG_NAME"/></translation>
+<translation id="5456409301717116725">Esta extensão inclui o arquivo de chave '<ph name="KEY_PATH"/>'. Você provavelmente não quer fazer isso.</translation>
+<translation id="5627523580512561598">extensão <ph name="EXTENSION_NAME"/></translation>
+<translation id="5678955352098267522">Leia seus dados em <ph name="WEBSITE_1"/></translation>
+<translation id="588705686677293479">SurfaceWorker: <ph name="SURFACEWORKER_TAG_NAME"/></translation>
+<translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME"/></translation>
+<translation id="5971037678316050792">Controlar estado e pareamento do adaptador Bluetooth</translation>
+<translation id="5972529113578162692">O administrador desta máquina requer a instalação da extensão <ph name="EXTENSION_NAME"/>. Ela não pode ser desinstalada.</translation>
+<translation id="6027032947578871493">Produto <ph name="PRODUCT_ID"/> desconhecido de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6068932090455285721"><ph name="PRODUCT_NAME"/> do fornecedor <ph name="VENDOR_ID"/></translation>
+<translation id="6075907793831890935">Trocar dados com o dispositivo chamado <ph name="HOSTNAME"/></translation>
+<translation id="6143635259298204954">Não é possível abrir a extensão.  Para abrir uma extensão com segurança, deve haver um caminho para o diretório de seu perfil que não contenha um symlink. Não existe um caminho assim para seu perfil.</translation>
+<translation id="616804573177634438">{0,select, single{O aplicativo &quot;<ph name="APP_NAME"/>&quot; está solicitando acesso a um dos seus dispositivos.}multiple{O aplicativo &quot;<ph name="APP_NAME"/>&quot; está solicitando acesso a um ou mais dos seus dispositivos}other{UNUSED}}</translation>
+<translation id="6241530762627360640">Acessar informações sobre dispositivos Bluetooth pareados com seu sistema e descobrir dispositivos Bluetooth nas proximidades.</translation>
+<translation id="6344170822609224263">Acessar lista de conexões de rede</translation>
+<translation id="6384275966486438344">Alterar suas configurações de pesquisa para: <ph name="SEARCH_HOST"/></translation>
+<translation id="6408118934673775994">Ler e alterar seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
+<translation id="641087317769093025">Não foi possível descompactar a extensão</translation>
+<translation id="657064425229075395">Não foi possível carregar o script de plano de fundo &quot;<ph name="BACKGROUND_SCRIPT"/>&quot;.</translation>
+<translation id="6580950983454333167"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/> (número de série <ph name="SERIAL_NUMBER"/>)</translation>
+<translation id="6698810901424468597">Ler e alterar seus dados em <ph name="WEBSITE_1"/> e <ph name="WEBSITE_2"/></translation>
+<translation id="6731255991101203740">Não foi possível criar um diretório para descompactação: ​​'<ph name="DIRECTORY_PATH"/>'</translation>
+<translation id="677806580227005219">Gerenciador Mime: <ph name="MIMEHANDLERVIEW_TAG_NAME"/></translation>
+<translation id="6840444547062817500">Esta extensão foi recarregada automaticamente com muita frequência.</translation>
+<translation id="7003844668372540529">Produto <ph name="PRODUCT_ID"/> desconhecido de <ph name="VENDOR_NAME"/></translation>
+<translation id="7039326228527141150">Acessa dispositivos USB do <ph name="VENDOR_NAME"/></translation>
+<translation id="7093866338626856921">Trocar dados com os dispositivos chamados: <ph name="HOSTNAMES"/></translation>
+<translation id="7131040479572660648">Leia seus dados em <ph name="WEBSITE_1"/>, <ph name="WEBSITE_2"/> e <ph name="WEBSITE_3"/></translation>
+<translation id="7154130902455071009">Alterar sua página inicial para: <ph name="START_PAGE"/></translation>
+<translation id="7217838517480956708">O administrador desta máquina requer a instalação de <ph name="EXTENSION_NAME"/>. Não é possível remover ou modificá-lo.</translation>
+<translation id="7257666756905341374">Ler dados que você copia e cola</translation>
+<translation id="730515362922783851">Trocar dados com qualquer dispositivo da rede local ou Internet</translation>
+<translation id="7809034755304591547"><ph name="EXTENSION_NAME"/> (ID de extensão &quot;<ph name="EXTENSION_ID"/>&quot;) está bloqueada pelo administrador.</translation>
+<translation id="7893008570150657497">Acessar fotos, música e outras mídias em seu computador</translation>
+<translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME"/></translation>
+<translation id="8047248493720652249">Falha ao nomear o download &quot;<ph name="ATTEMPTED_FILENAME"/>&quot; com esta extensão, porque outra extensão (<ph name="EXTENSION_NAME"/>) determinou um nome de arquivo diferente: &quot;<ph name="ACTUAL_FILENAME"/>&quot;.</translation>
+<translation id="8284279544186306258">todos os sites de <ph name="WEBSITE_1"/></translation>
+<translation id="8284835137979141223"><ph name="PRODUCT_NAME"/> de <ph name="VENDOR_NAME"/></translation>
+<translation id="8341840687457896278">Esta extensão falhou ao fornecer credenciais a uma solicitação de rede porque outra extensão (<ph name="EXTENSION_NAME"/>) forneceu credenciais diferentes.</translation>
+<translation id="8602184400052594090">O arquivo de manifesto está faltando ou não pode ser lido.</translation>
+<translation id="8620765578342452535">Configurar conexões de rede</translation>
+<translation id="8636666366616799973">O pacote é inválido. Detalhes &quot;<ph name="ERROR_MESSAGE"/>&quot;.</translation>
+<translation id="8662911384982557515">Alterar sua página inicial para: <ph name="HOME_PAGE"/></translation>
+<translation id="8670869118777164560">Esta extensão falhou ao redirecionar uma solicitação da rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> porque outra extensão (<ph name="EXTENSION_NAME"/>) redirecionou a solicitação para <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
+<translation id="8712265948125780616">Descompactador de extensão</translation>
+<translation id="8749863574775030885">Acessar dispositivos USB de um fornecedor desconhecido</translation>
+<translation id="8804398419035066391">Comunicar-se com websites colaborativos</translation>
+<translation id="8825366169884721447">Esta extensão falhou ao modificar o cabeçalho da solicitação de rede &quot;<ph name="HEADER_NAME"/>&quot; porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9111791539553342076">Esta extensão falhou ao modificar o cabeçalho de resposta &quot;<ph name="HEADER_NAME"/>&quot; de uma solicitação de rede porque a modificação entrou em conflito com outra extensão (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9131487537093447019">Enviar mensagens para e receber mensagens de dispositivos Bluetooth.</translation>
+<translation id="9150045010208374699">Usar câmera</translation>
 </translationbundle>

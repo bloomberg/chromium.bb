@@ -1,13 +1,13 @@
 <?xml version="1.0" ?><!DOCTYPE translationbundle><translationbundle lang="sr">
-<translation id="2094750046714988961">Није могуће покренути програм за оптимизацију зато што спољна меморија није спремна</translation>
 <translation id="1256337885411059545">Није могуће пустити видео</translation>
-<translation id="2520230379124234395">Програм за оптимизацију је покренут</translation>
-<translation id="4859501799452851758">Програм за оптимизацију је завршио. Резултати су у датотеци <ph name="FILENAME"/>.</translation>
-<translation id="273860350361291195">Жао нам је, овај видео није погодан за стриминг на овом уређају.</translation>
-<translation id="2410828433627930127">Жао нам је, није могуће пустити овај видео.</translation>
-<translation id="7096034533295549981">Учитавање видеа</translation>
 <translation id="1542044944667958430">Веб-претрага</translation>
-<translation id="6849295950938417341">Покретање програма за оптимизацију није успело</translation>
+<translation id="2094750046714988961">Није могуће покренути програм за оптимизацију зато што спољна меморија није спремна</translation>
+<translation id="2410828433627930127">Жао нам је, није могуће пустити овај видео.</translation>
+<translation id="2520230379124234395">Програм за оптимизацију је покренут</translation>
+<translation id="273860350361291195">Жао нам је, овај видео није погодан за стриминг на овом уређају.</translation>
+<translation id="4859501799452851758">Програм за оптимизацију је завршио. Резултати су у датотеци <ph name="FILENAME"/>.</translation>
 <translation id="6527303717912515753">Дели</translation>
+<translation id="6849295950938417341">Покретање програма за оптимизацију није успело</translation>
 <translation id="6965382102122355670">Потврди</translation>
+<translation id="7096034533295549981">Учитавање видеа</translation>
 </translationbundle>
