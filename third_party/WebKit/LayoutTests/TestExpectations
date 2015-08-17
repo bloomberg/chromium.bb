@@ -100,7 +100,6 @@ crbug.com/518978 http/tests/notifications/click-window-focus-document.html [ Fai
 crbug.com/518979 http/tests/notifications/close-document.html [ Failure Pass ]
 crbug.com/518979 http/tests/notifications/request-permission-promise.html [ Failure Pass ]
 crbug.com/518981 http/tests/notifications/update-document.html [ Failure Pass ]
-crbug.com/518982 [ XP ] http/tests/security/cross-origin-css.html [ Pass Timeout ]
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518985 http/tests/serviceworker/request-end-to-end.html [ Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
