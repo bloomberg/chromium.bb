@@ -142,7 +142,14 @@ LayoutObject* HTMLCanvasElement::createLayoutObject(const ComputedStyle& style)
 
 void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
 {
-    SkFilterQuality filterQuality = ensureComputedStyle()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality;
+    SkFilterQuality filterQuality;
+    const ComputedStyle* style = ensureComputedStyle();
+    if (style && style->imageRendering() == ImageRenderingPixelated) {
+        filterQuality = kNone_SkFilterQuality;
+    } else {
+        filterQuality = kLow_SkFilterQuality;
+    }
+
     if (is3D()) {
         m_context->setFilterQuality(filterQuality);
         setNeedsCompositingUpdate();
