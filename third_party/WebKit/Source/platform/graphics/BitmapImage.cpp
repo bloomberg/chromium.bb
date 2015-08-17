@@ -50,7 +50,7 @@ PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(const SkBit
     RefPtr<BitmapImage> result = adoptRef(new BitmapImage(bitmap));
     result->m_frames[0].m_orientation = orientation;
     if (orientation.usesWidthAsHeight())
-        result->m_sizeRespectingOrientation = IntSize(result->m_size.height(), result->m_size.width());
+        result->m_sizeRespectingOrientation = result->m_size.transposedSize();
     return result.release();
 }
 

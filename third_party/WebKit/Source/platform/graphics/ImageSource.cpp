@@ -85,7 +85,7 @@ IntSize ImageSource::frameSizeAtIndex(size_t index, RespectImageOrientationEnum 
 
     IntSize size = m_decoder->frameSizeAtIndex(index);
     if ((shouldRespectOrientation == RespectImageOrientation) && m_decoder->orientationAtIndex(index).usesWidthAsHeight())
-        return IntSize(size.height(), size.width());
+        return size.transposedSize();
 
     return size;
 }
