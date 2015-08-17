@@ -409,20 +409,6 @@ EOF
   patch -p0
   popd
 
-  # This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
-  pushd "${LLVM_DIR}"
-  cat << 'EOF' |
---- test/Bindings/Go/go.test    (revision 223109)
-+++ test/Bindings/Go/go.test    (working copy)
-@@ -1,3 +1,3 @@
--; RUN: llvm-go test llvm.org/llvm/bindings/go/llvm
-+; RUN: true
- 
- ; REQUIRES: shell
-EOF
-  patch -p0
-  popd
-
   # The UBSan run-time, which is now bundled with the ASan run-time, doesn't work
   # on Mac OS X 10.8 (PR23539).
   pushd "${COMPILER_RT_DIR}"

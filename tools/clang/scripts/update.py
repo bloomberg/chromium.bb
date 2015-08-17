@@ -268,18 +268,6 @@ def ApplyLocalPatches():
 """
       ]
 
-  # This Go bindings test doesn't work after bootstrap on Linux, PR21552.
-  llvm_patches = [ r"""\
---- test/Bindings/Go/go.test    (revision 223109)
-+++ test/Bindings/Go/go.test    (working copy)
-@@ -1,3 +1,3 @@
--; RUN: llvm-go test llvm.org/llvm/bindings/go/llvm
-+; RUN: true
- 
- ; REQUIRES: shell
-"""
-      ]
-
   # The UBSan run-time, which is now bundled with the ASan run-time, doesn't
   # work on Mac OS X 10.8 (PR23539).
   compiler_rt_patches = [ r"""\
@@ -296,8 +284,7 @@ def ApplyLocalPatches():
 """
       ]
 
-  for path, patches in [(LLVM_DIR, llvm_patches),
-                        (CLANG_DIR, clang_patches),
+  for path, patches in [(CLANG_DIR, clang_patches),
                         (COMPILER_RT_DIR, compiler_rt_patches)]:
     print 'Applying patches in', path
     for patch in patches:
