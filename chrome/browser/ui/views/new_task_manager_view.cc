@@ -444,7 +444,7 @@ int NewTaskManagerView::TableModel::CompareValues(int row1,
   switch (column_id) {
     case IDS_TASK_MANAGER_TASK_COLUMN:
     case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
-      return TableModel::CompareValues(row1, row2, column_id);
+      return ui::TableModel::CompareValues(row1, row2, column_id);
 
     case IDS_TASK_MANAGER_NET_COLUMN:
       return ValueCompare(
