@@ -1329,6 +1329,9 @@
             '../ui/accessibility/accessibility.gyp:ax_gen',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
           ],
+          'export_dependent_settings': [
+            '../skia/skia.gyp:skia',
+          ],
           'sources': [
             # Source list duplicated in GN build.
             'public/test/content_browser_test.cc',
