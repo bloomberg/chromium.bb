@@ -23,12 +23,19 @@
 #include "content/shell/common/shell_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 // On Android symbolization happens in one step after all the tests ran, so this
 // test doesn't work there.
 // TODO(mac): figure out why symbolization doesn't happen in the renderer.
-#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+// http://crbug.com/521456
+// TODO(win): send PDB files for component build. http://crbug.com/521459
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX) && \
+    !(defined(COMPONENT_BUILD) && defined(OS_WIN))
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
   // Ensures that tests with MANUAL_ prefix don't run automatically.
@@ -62,6 +69,13 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
 
 // Tests that browser tests print the callstack when a child process crashes.
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
+#if defined(OS_WIN)
+  // Matches the same condition in RouteStdioToConsole, which makes this test
+  // fail on XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::CommandLine new_test =
