@@ -3928,8 +3928,10 @@ void WebViewImpl::setSelectionColors(unsigned activeBackgroundColor,
 
 void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPage)
 {
-    if (isNewNavigation && !isNavigationWithinPage)
+    if (isNewNavigation && !isNavigationWithinPage) {
         pageScaleConstraintsSet().setNeedsReset(true);
+        pageImportanceSignals().onCommitLoad();
+    }
 
     // Give the visual viewport's scroll layer its initial size.
     page()->frameHost().visualViewport().mainFrameDidChangeSize();

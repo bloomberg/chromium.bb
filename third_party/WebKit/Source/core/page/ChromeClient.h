@@ -228,7 +228,7 @@ public:
     virtual void textFieldDataListChanged(HTMLInputElement&) { }
     virtual void ajaxSucceeded(LocalFrame*) { }
 
-    // Input mehtod editor related functions.
+    // Input method editor related functions.
     virtual void didCancelCompositionOnSelectionChange() { }
     virtual void willSetInputMethodState() { }
     virtual void didUpdateTextOfFocusedElementByNonUserInput() { }

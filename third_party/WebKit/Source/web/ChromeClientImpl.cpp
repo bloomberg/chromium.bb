@@ -905,6 +905,8 @@ void ChromeClientImpl::didChangeValueInTextField(HTMLFormControlElement& element
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(element.document().frame());
     if (webframe->autofillClient())
         webframe->autofillClient()->textFieldDidChange(WebFormControlElement(&element));
+
+    m_webView->pageImportanceSignals().setHadFormInteraction();
 }
 
 void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)

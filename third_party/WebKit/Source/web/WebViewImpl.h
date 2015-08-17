@@ -49,6 +49,7 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
+#include "public/web/WebPageImportanceSignals.h"
 #include "public/web/WebView.h"
 #include "web/ChromeClientImpl.h"
 #include "web/ContextMenuClientImpl.h"
@@ -530,6 +531,8 @@ public:
 
     FloatSize elasticOverscroll() const { return m_elasticOverscroll; }
 
+    WebPageImportanceSignals& pageImportanceSignals() { return m_pageImportanceSignals; }
+
 private:
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
@@ -760,6 +763,8 @@ private:
     FloatSize m_elasticOverscroll;
 
     RefPtrWillBePersistent<EventListener> m_popupMouseWheelEventListener;
+
+    WebPageImportanceSignals m_pageImportanceSignals;
 };
 
 DEFINE_TYPE_CASTS(WebViewImpl, WebWidget, widget, widget->isWebView(), widget.isWebView());
