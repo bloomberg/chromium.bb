@@ -1113,6 +1113,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   // First user starts a download.
   NotificationAddObserver download_start_notification_observer1;
   ui_test_utils::NavigateToURL(browser1, url);
+  LOG(ERROR) << "aaa";
   download_start_notification_observer1.Wait();
 
   // Confirms that the download is started.
@@ -1129,6 +1130,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   // Second user starts a download.
   NotificationAddObserver download_start_notification_observer2;
   ui_test_utils::NavigateToURL(browser2, url);
+  LOG(ERROR) << "AAA";
   download_start_notification_observer2.Wait();
   std::string notification_id_user2_1 =
       download_start_notification_observer2.notification_id();
@@ -1142,6 +1144,7 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
   // Second user starts another download.
   NotificationAddObserver download_start_notification_observer3(2);
   ui_test_utils::NavigateToURL(browser2, url);
+  LOG(ERROR) << "BBB";
   download_start_notification_observer3.Wait();
   std::string notification_id_user2_2;
   std::string notification_id_user2_group;
@@ -1193,14 +1196,17 @@ IN_PROC_BROWSER_TEST_F(MultiProfileDownloadNotificationTest,
             GetNotification(notification_id_user2_2)->type());
 
   // Requests to complete the downloads.
+  NotificationUpdateObserver download_change_notification_observer;
   ui_test_utils::NavigateToURL(
       browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
 
   // Waits for the completion of downloads.
-  NotificationUpdateObserver download_change_notification_observer;
   while (download1->GetState() != content::DownloadItem::COMPLETE ||
          download2->GetState() != content::DownloadItem::COMPLETE ||
          download3->GetState() != content::DownloadItem::COMPLETE) {
+    // Requests again, since sometimes the request may fail.
+    ui_test_utils::NavigateToURL(
+        browser(), GURL(net::URLRequestSlowDownloadJob::kFinishDownloadUrl));
     download_change_notification_observer.Wait();
   }
 
