@@ -630,7 +630,6 @@
       'browser/extensions/activity_log/database_string_table_unittest.cc',
       'browser/extensions/activity_log/fullstream_ui_policy_unittest.cc',
       'browser/extensions/activity_log/hashed_ad_network_database_unittest.cc',
-      'browser/extensions/activity_log/uma_policy_unittest.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
       'browser/extensions/api/audio_modem/audio_modem_api_unittest.cc',
       'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',

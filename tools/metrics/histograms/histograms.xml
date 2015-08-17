@@ -9538,6 +9538,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.AdInjected" units="Extension Count">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -9546,6 +9549,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.AdLikelyInjected" units="Extension Count">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -9555,6 +9561,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.AdLikelyReplaced" units="Extension Count">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -9564,6 +9573,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.AdRemoved" units="Extension Count">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -9572,6 +9584,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.AdReplaced" units="Extension Count">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -9580,6 +9595,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.ContentScript">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that inject a content script.
@@ -9587,6 +9605,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedDiv">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create divs to add to the
@@ -9595,6 +9616,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedEmbed">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create 'embed' elements to
@@ -9603,6 +9627,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedIframe">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create iframes to add to
@@ -9611,6 +9638,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedInput">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create inputs to add to the
@@ -9619,6 +9649,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedLink">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create links to add to the
@@ -9627,6 +9660,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedObject">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create 'object' elements to
@@ -9635,6 +9671,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.CreatedScript">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that create script tags to add
@@ -9643,6 +9682,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.DocumentWrite">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that use document.write.
@@ -9650,6 +9692,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.ContentScript">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that inject a
@@ -9658,6 +9703,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.CreatedDiv">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that create divs
@@ -9666,6 +9714,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.CreatedEmbed">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that create
@@ -9682,6 +9733,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.CreatedInput">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that create
@@ -9690,6 +9744,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.CreatedLink">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that create links
@@ -9698,6 +9755,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.CreatedObject">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that create
@@ -9706,6 +9766,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.CreatedScript">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that create
@@ -9714,6 +9777,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.DocumentWrite">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that use
@@ -9722,6 +9788,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.InnerHtml">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that set
@@ -9730,6 +9799,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.InvokedDomMethod">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that invoke DOM
@@ -9738,6 +9810,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.ModifiedDom">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that set the
@@ -9746,6 +9821,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.Google.ReadDom">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each www.google.com pageload, the number of extensions that read from
@@ -9754,6 +9832,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.InnerHtml">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that set innerHTML.
@@ -9761,6 +9842,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.InvokedDomMethod">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that invoke DOM methods.
@@ -9768,6 +9852,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.ModifiedDom">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that set the value of DOM
@@ -9776,6 +9863,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ExtensionActivity.ReadDom">
+  <obsolete>
+    Deprecated with M46.
+  </obsolete>
   <owner>felt@chromium.org</owner>
   <summary>
     For each pageload, the number of extensions that read from the DOM.

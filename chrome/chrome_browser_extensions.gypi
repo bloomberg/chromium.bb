@@ -119,8 +119,6 @@
       'browser/extensions/activity_log/hashed_ad_network_database.h',
       'browser/extensions/activity_log/hashed_ad_networks.cc',
       'browser/extensions/activity_log/hashed_ad_networks.h',
-      'browser/extensions/activity_log/uma_policy.cc',
-      'browser/extensions/activity_log/uma_policy.h',
       'browser/extensions/api/activity_log_private/activity_log_private_api.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_api.h',
       'browser/extensions/api/audio_modem/audio_modem_api.cc',

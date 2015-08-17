@@ -171,10 +171,6 @@ class ActivityLog : public BrowserContextKeyedAPI,
   ActivityLogDatabasePolicy* database_policy_;
   ActivityLogPolicy::PolicyType database_policy_type_;
 
-  // The UMA policy is used for recording statistics about extension behavior.
-  // This policy is always in use, except for Incognito profiles.
-  ActivityLogPolicy* uma_policy_;
-
   Profile* profile_;
   bool db_enabled_;  // Whether logging to disk is currently enabled.
   // testing_mode_ controls which policy is selected.

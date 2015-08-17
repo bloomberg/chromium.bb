@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/counting_policy.h"
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
-#include "chrome/browser/extensions/activity_log/uma_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
@@ -352,7 +351,6 @@ ActivityLog* ActivityLog::GetInstance(content::BrowserContext* context) {
 ActivityLog::ActivityLog(content::BrowserContext* context)
     : database_policy_(NULL),
       database_policy_type_(ActivityLogPolicy::POLICY_INVALID),
-      uma_policy_(NULL),
       profile_(Profile::FromBrowserContext(context)),
       db_enabled_(false),
       testing_mode_(false),
@@ -383,10 +381,6 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
                        watchdog_apps_active_);
 
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-
-  if (!profile_->IsOffTheRecord())
-    uma_policy_ = new UmaPolicy(profile_);
-
   ChooseDatabasePolicy();
 }
 
@@ -423,8 +417,6 @@ void ActivityLog::SetDatabasePolicy(
 }
 
 ActivityLog::~ActivityLog() {
-  if (uma_policy_)
-    uma_policy_->Close();
   if (database_policy_)
     database_policy_->Close();
 }
@@ -532,8 +524,6 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
     }
   }
 
-  if (uma_policy_)
-    uma_policy_->ProcessAction(action);
   if (IsDatabaseEnabled() && database_policy_)
     database_policy_->ProcessAction(action);
   if (IsWatchdogAppActive())
