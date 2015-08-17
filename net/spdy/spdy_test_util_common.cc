@@ -609,9 +609,8 @@ namespace {
 // A ClientSocket used for CreateFakeSpdySession() below.
 class FakeSpdySessionClientSocket : public MockClientSocket {
  public:
-  FakeSpdySessionClientSocket(int read_result)
-      : MockClientSocket(BoundNetLog()),
-        read_result_(read_result) {}
+  explicit FakeSpdySessionClientSocket(int read_result)
+      : MockClientSocket(BoundNetLog()), read_result_(read_result) {}
 
   ~FakeSpdySessionClientSocket() override {}
 
