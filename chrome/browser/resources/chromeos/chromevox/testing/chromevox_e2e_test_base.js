@@ -118,20 +118,3 @@ ChromeVoxE2ETest.prototype = {
     return this.callbackHelper_.wrap(opt_callback);
   }
 };
-
-/**
- * Similar to |TEST_F|. Generates a test for the given |testFixture|,
- * |testName|, and |testFunction|.
- * Used this variant when an |isAsync| fixture wants to temporarily mix in an
- * sync test.
- * @param {string} testFixture Fixture name.
- * @param {string} testName Test name.
- * @param {function} testFunction The test impl.
- */
-function SYNC_TEST_F(testFixture, testName, testFunction) {
-  var wrappedTestFunction = function() {
-    testFunction.call(this);
-    testDone([true, '']);
-  };
-  TEST_F(testFixture, testName, wrappedTestFunction);
-}

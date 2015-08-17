@@ -13,7 +13,9 @@ GEN_INCLUDE(['../../testing/chromevox_e2e_test_base.js',
  * @constructor
  * @extends {ChromeVoxE2ETest}
  */
-function CvoxTtsBackgroundTest() {}
+function CvoxTtsBackgroundTest() {
+  ChromeVoxE2ETest.call(this);
+}
 
 CvoxTtsBackgroundTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype

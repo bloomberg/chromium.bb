@@ -65,7 +65,7 @@ TEST_F('CvoxUserCommandsUnitTest', 'TabHandling', function() {
  * Tests everything in the find next map to make sure there are no
  * typos and everything is valid.
  */
-TEST_F('CvoxUserCommandsUnitTest', 'FindNextMap', function() {
+SYNC_TEST_F('CvoxUserCommandsUnitTest', 'FindNextMap', function() {
   var findMap = cvox.ChromeVoxUserCommands.FIND_NEXT_MAP_;
   for (var find in findMap) {
     assertTrue(
@@ -80,7 +80,6 @@ TEST_F('CvoxUserCommandsUnitTest', 'FindNextMap', function() {
           j == 'backwardError');
     }
   }
-  testDone();
 });
 
 /**
@@ -88,7 +87,7 @@ TEST_F('CvoxUserCommandsUnitTest', 'FindNextMap', function() {
  * is valid.
  * @export
  */
-TEST_F('CvoxUserCommandsUnitTest', 'CommandsMap', function() {
+SYNC_TEST_F('CvoxUserCommandsUnitTest', 'CommandsMap', function() {
   var cmdMap = cvox.ChromeVoxUserCommands.CMD_WHITELIST_;
   var findMap = cvox.ChromeVoxUserCommands.FIND_NEXT_MAP_;
   for (var cmd in cmdMap) {
@@ -120,5 +119,4 @@ TEST_F('CvoxUserCommandsUnitTest', 'CommandsMap', function() {
           cmdMap[cmd].forward || cmdMap[cmd].backward);
     }
   }
-  testDone();
 });

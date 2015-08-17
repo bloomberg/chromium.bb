@@ -101,7 +101,7 @@ Background = function() {
         if (action == 'getIsClassicEnabled') {
           var url = msg['url'];
           var isClassicEnabled = this.shouldEnableClassicForUrl_(url);
-          cvox.ExtensionBridge.send({
+          port.postMessage({
             target: 'next',
             isClassicEnabled: isClassicEnabled
           });
@@ -674,7 +674,7 @@ Background.prototype = {
         mode === ChromeVoxMode.COMPAT ||
         mode === ChromeVoxMode.FORCE_NEXT) {
       if (!chrome.commands.onCommand.hasListener(this.onGotCommand))
-          chrome.commands.onCommand.addListener(this.onGotCommand);
+        chrome.commands.onCommand.addListener(this.onGotCommand);
     } else {
       if (chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.removeListener(this.onGotCommand);

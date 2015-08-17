@@ -31,7 +31,7 @@ var TestUtils = function() {};
  * @param {!Array=} opt_args Optional arguments to be substituted in the form
  *     $0, ... within the code block.
  * @return {string} The html text.
-*/
+ */
 TestUtils.extractHtmlFromCommentEncodedString =
     function(commentEncodedHtml, opt_args) {
   var stringified = commentEncodedHtml.toString();
@@ -41,3 +41,18 @@ TestUtils.extractHtmlFromCommentEncodedString =
   }
   return stringified.replace(/^[^\/]+\/\*!?/, '').replace(/\*\/[^\/]+$/, '');
 };
+
+/**
+ * Similar to |TEST_F|. Generates a test for the given |testFixture|,
+ * |testName|, and |testFunction|.
+ * Used this variant when an |isAsync| fixture wants to temporarily mix in an
+ * sync test.
+ * @param {string} testFixture Fixture name.
+ * @param {string} testName Test name.
+ * @param {function} testFunction The test impl.
+ */
+function SYNC_TEST_F(testFixture, testName, testFunction) {
+  TEST_F(testFixture, testName, function() {
+    this.newCallback(testFunction)();
+  });
+}

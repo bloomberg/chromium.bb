@@ -31,10 +31,10 @@ CallbackHelper.prototype = {
       }
       callback.apply(this.fixture_, arguments);
       if (--this.pendingCallbacks_ <= 0)
-        testDone();
+        CallbackHelper.testDone_();
     }.bind(this));
     // runAllActionsAsync catches exceptions and puts them in the test
-    // framework's list of errors and fails the test.
+    // framework's list of errors and fails the test if appropriate.
     var runAll = runAllActionsAsync(WhenTestDone.ASSERT, completionAction);
     ++this.pendingCallbacks_;
     return function() {
@@ -43,3 +43,11 @@ CallbackHelper.prototype = {
     }
   }
 };
+
+/**
+ * @private
+ */
+CallbackHelper.testDone_ = this.testDone;
+// Remove testDone for public use since direclty using it conflicts with
+// this callback helper.
+delete this.testDone;
