@@ -213,7 +213,10 @@ TEST_F(LocaleWinTest, dateFormat)
 
 TEST_F(LocaleWinTest, monthFormat)
 {
-    EXPECT_STREQ("MMMM, yyyy", monthFormat(EnglishUS).utf8().data());
+    // Month format for EnglishUS:
+    //  "MMMM, yyyy" on Windows 7 or older.
+    //  "MMMM yyyy" on Window 8 or later.
+    EXPECT_STREQ("MMMM yyyy", monthFormat(EnglishUS).replaceWithLiteral(',', "").utf8().data());
     EXPECT_STREQ("MMMM yyyy", monthFormat(FrenchFR).utf8().data());
     EXPECT_STREQ("yyyy\xE5\xB9\xB4M\xE6\x9C\x88", monthFormat(JapaneseJP).utf8().data());
 }
