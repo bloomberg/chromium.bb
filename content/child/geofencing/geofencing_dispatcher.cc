@@ -22,11 +22,10 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<GeofencingDispatcher>>::Leaky
-    g_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
-GeofencingDispatcher* const kHasBeenDeleted =
-    reinterpret_cast<GeofencingDispatcher*>(0x1);
+void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 
 int CurrentWorkerId() {
   return WorkerTaskRunner::Instance()->CurrentWorkerId();
@@ -36,7 +35,7 @@ int CurrentWorkerId() {
 
 GeofencingDispatcher::GeofencingDispatcher(ThreadSafeSender* sender)
     : thread_safe_sender_(sender) {
-  g_dispatcher_tls.Pointer()->Set(this);
+  g_dispatcher_tls.Pointer()->Set(static_cast<void*>(this));
 }
 
 GeofencingDispatcher::~GeofencingDispatcher() {
@@ -141,7 +140,8 @@ GeofencingDispatcher* GeofencingDispatcher::GetOrCreateThreadSpecificInstance(
     g_dispatcher_tls.Pointer()->Set(NULL);
   }
   if (g_dispatcher_tls.Pointer()->Get())
-    return g_dispatcher_tls.Pointer()->Get();
+    return static_cast<GeofencingDispatcher*>(
+        g_dispatcher_tls.Pointer()->Get());
 
   GeofencingDispatcher* dispatcher =
       new GeofencingDispatcher(thread_safe_sender);
@@ -153,7 +153,7 @@ GeofencingDispatcher* GeofencingDispatcher::GetOrCreateThreadSpecificInstance(
 GeofencingDispatcher* GeofencingDispatcher::GetThreadSpecificInstance() {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted)
     return NULL;
-  return g_dispatcher_tls.Pointer()->Get();
+  return static_cast<GeofencingDispatcher*>(g_dispatcher_tls.Pointer()->Get());
 }
 
 void GeofencingDispatcher::OnRegisterRegionComplete(int thread_id,

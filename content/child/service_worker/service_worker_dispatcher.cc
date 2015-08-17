@@ -34,11 +34,10 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<ThreadLocalPointer<ServiceWorkerDispatcher> >::Leaky
-    g_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
-ServiceWorkerDispatcher* const kHasBeenDeleted =
-    reinterpret_cast<ServiceWorkerDispatcher*>(0x1);
+void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 
 int CurrentWorkerId() {
   return WorkerTaskRunner::Instance()->CurrentWorkerId();
@@ -51,7 +50,7 @@ ServiceWorkerDispatcher::ServiceWorkerDispatcher(
     base::SingleThreadTaskRunner* main_thread_task_runner)
     : thread_safe_sender_(thread_safe_sender),
       main_thread_task_runner_(main_thread_task_runner) {
-  g_dispatcher_tls.Pointer()->Set(this);
+  g_dispatcher_tls.Pointer()->Set(static_cast<void*>(this));
 }
 
 ServiceWorkerDispatcher::~ServiceWorkerDispatcher() {
@@ -250,7 +249,8 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
     g_dispatcher_tls.Pointer()->Set(NULL);
   }
   if (g_dispatcher_tls.Pointer()->Get())
-    return g_dispatcher_tls.Pointer()->Get();
+    return static_cast<ServiceWorkerDispatcher*>(
+        g_dispatcher_tls.Pointer()->Get());
 
   ServiceWorkerDispatcher* dispatcher =
       new ServiceWorkerDispatcher(thread_safe_sender, main_thread_task_runner);
@@ -262,7 +262,8 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
 ServiceWorkerDispatcher* ServiceWorkerDispatcher::GetThreadSpecificInstance() {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted)
     return NULL;
-  return g_dispatcher_tls.Pointer()->Get();
+  return static_cast<ServiceWorkerDispatcher*>(
+      g_dispatcher_tls.Pointer()->Get());
 }
 
 void ServiceWorkerDispatcher::OnWorkerRunLoopStopped() {

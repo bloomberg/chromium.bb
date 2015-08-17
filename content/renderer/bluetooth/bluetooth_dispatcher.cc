@@ -66,11 +66,10 @@ namespace content {
 
 namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<BluetoothDispatcher>>::Leaky
-    g_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::ThreadLocalPointer<void>>::Leaky g_dispatcher_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
-BluetoothDispatcher* const kHasBeenDeleted =
-    reinterpret_cast<BluetoothDispatcher*>(0x1);
+void* const kHasBeenDeleted = reinterpret_cast<void*>(0x1);
 
 int CurrentWorkerId() {
   return WorkerTaskRunner::Instance()->CurrentWorkerId();
@@ -94,7 +93,7 @@ WebBluetoothDevice::VendorIDSource GetWebVendorIdSource(
 
 BluetoothDispatcher::BluetoothDispatcher(ThreadSafeSender* sender)
     : thread_safe_sender_(sender) {
-  g_dispatcher_tls.Pointer()->Set(this);
+  g_dispatcher_tls.Pointer()->Set(static_cast<void*>(this));
 }
 
 BluetoothDispatcher::~BluetoothDispatcher() {
@@ -108,7 +107,7 @@ BluetoothDispatcher* BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
     g_dispatcher_tls.Pointer()->Set(NULL);
   }
   if (g_dispatcher_tls.Pointer()->Get())
-    return g_dispatcher_tls.Pointer()->Get();
+    return static_cast<BluetoothDispatcher*>(g_dispatcher_tls.Pointer()->Get());
 
   BluetoothDispatcher* dispatcher = new BluetoothDispatcher(thread_safe_sender);
   if (CurrentWorkerId())
