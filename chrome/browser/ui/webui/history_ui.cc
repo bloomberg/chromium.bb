@@ -485,7 +485,8 @@ void BrowsingHistoryHandler::WebHistoryTimeout() {
 }
 
 void BrowsingHistoryHandler::QueryHistory(
-    base::string16 search_text, const history::QueryOptions& options) {
+    const base::string16& search_text,
+    const history::QueryOptions& options) {
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Anything in-flight is invalid.

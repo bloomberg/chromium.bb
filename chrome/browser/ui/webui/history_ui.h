@@ -133,7 +133,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   };
 
   // Core implementation of history querying.
-  void QueryHistory(base::string16 search_text,
+  void QueryHistory(const base::string16& search_text,
                     const history::QueryOptions& options);
 
   // Combines the query results from the local history database and the history
