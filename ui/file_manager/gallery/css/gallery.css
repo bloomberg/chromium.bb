@@ -452,10 +452,16 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   display: flex;
   height: 100%;
   opacity: 0;
+  pointer-events: none;
   position: absolute;
   top: 0;
   visibility: hidden;
   width: 100%;
+}
+
+.gallery .edit-mode-toolbar .options > *,
+.gallery .edit-mode-toolbar .exit-button-spacer > * {
+  pointer-events: auto;
 }
 
 .gallery .edit-mode-toolbar .exit-button-spacer {
