@@ -304,14 +304,14 @@ void PreconnectHelperForURL(int num_streams,
   session->http_stream_factory()->PreconnectStreams(num_streams, request,
                                                     ssl_config, ssl_config);
   mock_factory->WaitForPreconnects();
-};
+}
 
 void PreconnectHelper(const TestCase& test,
                       HttpNetworkSession* session) {
   GURL url = test.ssl ? GURL("https://www.google.com") :
       GURL("http://www.google.com");
   PreconnectHelperForURL(test.num_streams, url, session);
-};
+}
 
 template<typename ParentPool>
 class CapturePreconnectsSocketPool : public ParentPool {
