@@ -1075,6 +1075,11 @@ int amdgpu_read_mm_registers(amdgpu_device_handle dev, unsigned dword_offset,
 			     uint32_t *values);
 
 /**
+ * Flag to request VA address range in the 32bit address space
+*/
+#define AMDGPU_VA_RANGE_32_BIT		0x1
+
+/**
  * Allocate virtual address range
  *
  * \param dev - [in] Device handle. See #amdgpu_device_initialize()

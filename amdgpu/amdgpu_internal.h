@@ -66,6 +66,7 @@ struct amdgpu_va {
 	uint64_t address;
 	uint64_t size;
 	enum amdgpu_gpu_va_range range;
+	struct amdgpu_bo_va_mgr *vamgr;
 };
 
 struct amdgpu_device {
@@ -83,7 +84,10 @@ struct amdgpu_device {
 	pthread_mutex_t bo_table_mutex;
 	struct drm_amdgpu_info_device dev_info;
 	struct amdgpu_gpu_info info;
+	/** The global VA manager for the whole virtual address space */
 	struct amdgpu_bo_va_mgr *vamgr;
+	/** The VA manager for the 32bit address space */
+	struct amdgpu_bo_va_mgr *vamgr_32;
 };
 
 struct amdgpu_bo {
@@ -127,6 +131,11 @@ amdgpu_vamgr_get_global(struct amdgpu_device *dev);
 drm_private void
 amdgpu_vamgr_reference(struct amdgpu_bo_va_mgr **dst,
 		       struct amdgpu_bo_va_mgr *src);
+
+drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
+		       uint64_t max, uint64_t alignment);
+
+drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr);
 
 drm_private uint64_t
 amdgpu_vamgr_find_va(struct amdgpu_bo_va_mgr *mgr, uint64_t size,

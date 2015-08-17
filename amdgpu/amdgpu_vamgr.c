@@ -46,7 +46,7 @@ int amdgpu_va_range_query(amdgpu_device_handle dev,
 	return -EINVAL;
 }
 
-static void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
+drm_private void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 			      uint64_t max, uint64_t alignment)
 {
 	mgr->va_offset = start;
@@ -57,7 +57,7 @@ static void amdgpu_vamgr_init(struct amdgpu_bo_va_mgr *mgr, uint64_t start,
 	pthread_mutex_init(&mgr->bo_va_mutex, NULL);
 }
 
-static void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
+drm_private void amdgpu_vamgr_deinit(struct amdgpu_bo_va_mgr *mgr)
 {
 	struct amdgpu_bo_va_hole *hole;
 	LIST_FOR_EACH_ENTRY(hole, &mgr->va_holes, list) {
@@ -255,23 +255,39 @@ int amdgpu_va_range_alloc(amdgpu_device_handle dev,
 			  amdgpu_va_handle *va_range_handle,
 			  uint64_t flags)
 {
-	va_base_alignment = MAX2(va_base_alignment, dev->vamgr->va_alignment);
-	size = ALIGN(size, vamgr.va_alignment);
+	struct amdgpu_bo_va_mgr *vamgr;
 
-	*va_base_allocated = amdgpu_vamgr_find_va(dev->vamgr, size,
+	if (flags & AMDGPU_VA_RANGE_32_BIT)
+		vamgr = dev->vamgr_32;
+	else
+		vamgr = dev->vamgr;
+
+	va_base_alignment = MAX2(va_base_alignment, vamgr->va_alignment);
+	size = ALIGN(size, vamgr->va_alignment);
+
+	*va_base_allocated = amdgpu_vamgr_find_va(vamgr, size,
 					va_base_alignment, va_base_required);
+
+	if (!(flags & AMDGPU_VA_RANGE_32_BIT) &&
+	    (*va_base_allocated == AMDGPU_INVALID_VA_ADDRESS)) {
+		/* fallback to 32bit address */
+		vamgr = dev->vamgr_32;
+		*va_base_allocated = amdgpu_vamgr_find_va(vamgr, size,
+					va_base_alignment, va_base_required);
+	}
 
 	if (*va_base_allocated != AMDGPU_INVALID_VA_ADDRESS) {
 		struct amdgpu_va* va;
 		va = calloc(1, sizeof(struct amdgpu_va));
 		if(!va){
-			amdgpu_vamgr_free_va(dev->vamgr, *va_base_allocated, size);
+			amdgpu_vamgr_free_va(vamgr, *va_base_allocated, size);
 			return -ENOMEM;
 		}
 		va->dev = dev;
 		va->address = *va_base_allocated;
 		va->size = size;
 		va->range = va_range_type;
+		va->vamgr = vamgr;
 		*va_range_handle = va;
 	} else {
 		return -EINVAL;
@@ -284,7 +300,9 @@ int amdgpu_va_range_free(amdgpu_va_handle va_range_handle)
 {
 	if(!va_range_handle || !va_range_handle->address)
 		return 0;
-	amdgpu_vamgr_free_va(va_range_handle->dev->vamgr, va_range_handle->address,
+
+	amdgpu_vamgr_free_va(va_range_handle->vamgr,
+			va_range_handle->address,
 			va_range_handle->size);
 	free(va_range_handle);
 	return 0;
