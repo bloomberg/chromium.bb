@@ -252,6 +252,9 @@ DBusHandlerResult ObjectManager::HandleMessage(DBusConnection* connection,
   DCHECK(bus_);
   bus_->AssertOnDBusThread();
 
+  // Handle the message only if it is a signal.
+  // Note that the match rule in SetupMatchRuleAndFilter() is configured to
+  // only accept signals, but we check here just in case.
   if (dbus_message_get_type(raw_message) != DBUS_MESSAGE_TYPE_SIGNAL)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
@@ -266,7 +269,9 @@ DBusHandlerResult ObjectManager::HandleMessage(DBusConnection* connection,
 
   statistics::AddReceivedSignal(service_name_, interface, member);
 
-  // Only handle the PropertiesChanged signal.
+  // Handle the signal only if it is PropertiesChanged.
+  // Note that the match rule in SetupMatchRuleAndFilter() is configured to
+  // only accept PropertiesChanged signals, but we check here just in case.
   const std::string absolute_signal_name =
       GetAbsoluteMemberName(interface, member);
   const std::string properties_changed_signal_name =
@@ -276,13 +281,15 @@ DBusHandlerResult ObjectManager::HandleMessage(DBusConnection* connection,
 
   VLOG(1) << "Signal received: " << signal->ToString();
 
-  // Make sure that the signal originated from the correct sender.
+  // Handle the signal only if it is from the service that the ObjectManager
+  // instance is interested in.
+  // Note that the match rule in SetupMatchRuleAndFilter() is configured to
+  // only accept messages from the service name of our interest. However, the
+  // service='...' filter does not work as intended. See crbug.com/507206#14
+  // and #15 for details, hence it's necessary to check the sender here.
   std::string sender = signal->GetSender();
-  if (service_name_owner_ != sender) {
-    LOG(ERROR) << "Rejecting a message from a wrong sender.";
-    UMA_HISTOGRAM_COUNTS("DBus.RejectedSignalCount", 1);
+  if (service_name_owner_ != sender)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
 
   const ObjectPath path = signal->GetPath();
 
