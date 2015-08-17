@@ -78,14 +78,6 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
     ACTIVE_AND_LOADING,
   };
 
-  enum RequestClassification {
-    NORMAL_REQUEST,
-    // Low priority in-flight requests
-    IN_FLIGHT_DELAYABLE_REQUEST,
-    // High-priority requests received before the renderer has a <body>
-    LAYOUT_BLOCKING_REQUEST,
-  };
-
   ResourceScheduler();
   ~ResourceScheduler();
 
@@ -173,6 +165,41 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
     return outstanding_request_limit_;
   }
 
+  // Returns the priority level above which resources are considered
+  // layout-blocking if the html_body has not started.  It is also the threshold
+  // below which resources are considered delayable (and for completeness,
+  // a request that matches the threshold level is a high-priority but not
+  // layout-blocking request).
+  net::RequestPriority non_delayable_threshold() const {
+    return non_delayable_threshold_;
+  }
+
+  // Returns true if all delayable requests should be blocked while at least
+  // in_flight_layout_blocking_threshold() layout-blocking requests are
+  // in-flight during the layout-blocking phase of loading.
+  bool enable_in_flight_non_delayable_threshold() const {
+    return enable_in_flight_non_delayable_threshold_;
+  }
+
+  // Returns the number of in-flight layout-blocking requests above which
+  // all delayable requests should be blocked when
+  // enable_layout_blocking_threshold is set.
+  size_t in_flight_non_delayable_threshold() const {
+    return in_flight_non_delayable_threshold_;
+  }
+
+  // Returns the maximum number of delayable requests to allow be in-flight
+  // at any point in time while in the layout-blocking phase of loading.
+  size_t max_num_delayable_while_layout_blocking() const {
+    return max_num_delayable_while_layout_blocking_;
+  }
+
+  // Returns the maximum number of delayable requests to all be in-flight at
+  // any point in time (across all hosts).
+  size_t max_num_delayable_requests() const {
+    return max_num_delayable_requests_;
+  }
+
   enum ClientState {
     // Observable client.
     ACTIVE,
@@ -236,6 +263,11 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   size_t coalesced_clients_;
   bool limit_outstanding_requests_;
   size_t outstanding_request_limit_;
+  net::RequestPriority non_delayable_threshold_;
+  bool enable_in_flight_non_delayable_threshold_;
+  size_t in_flight_non_delayable_threshold_;
+  size_t max_num_delayable_while_layout_blocking_;
+  size_t max_num_delayable_requests_;
   // This is a repeating timer to initiate requests on COALESCED Clients.
   scoped_ptr<base::Timer> coalescing_timer_;
   RequestSet unowned_requests_;
