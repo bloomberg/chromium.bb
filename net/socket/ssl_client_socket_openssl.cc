@@ -1180,6 +1180,12 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
 
   GotoState(STATE_VERIFY_CERT_COMPLETE);
 
+  // OpenSSL decoded the certificate, but the platform certificate
+  // implementation could not. This is treated as a fatal SSL-level protocol
+  // error rather than a certificate error. See https://crbug.com/91341.
+  if (!server_cert_.get())
+    return ERR_SSL_SERVER_CERT_BAD_FORMAT;
+
   // If the certificate is bad and has been previously accepted, use
   // the previous status and bypass the error.
   base::StringPiece der_cert;
@@ -1194,15 +1200,6 @@ int SSLClientSocketOpenSSL::DoVerifyCert(int result) {
     server_cert_verify_result_.cert_status = cert_status;
     server_cert_verify_result_.verified_cert = server_cert_;
     return OK;
-  }
-
-  // When running in a sandbox, it may not be possible to create an
-  // X509Certificate*, as that may depend on OS functionality blocked
-  // in the sandbox.
-  if (!server_cert_.get()) {
-    server_cert_verify_result_.Reset();
-    server_cert_verify_result_.cert_status = CERT_STATUS_INVALID;
-    return ERR_CERT_INVALID;
   }
 
   std::string ocsp_response;

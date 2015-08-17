@@ -1102,6 +1102,27 @@ TEST_F(SSLClientSocketTest, ConnectMismatched) {
   EXPECT_TRUE(LogContainsEndEvent(entries, -1, NetLog::TYPE_SSL_CONNECT));
 }
 
+#if defined(OS_WIN)
+// Tests that certificates parsable by SSLClientSocket's internal SSL
+// implementation, but not X509Certificate are treated as fatal non-certificate
+// errors. This is regression test for https://crbug.com/91341.
+TEST_F(SSLClientSocketTest, ConnectBadValidity) {
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_BAD_VALIDITY);
+  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+
+  EXPECT_EQ(ERR_SSL_SERVER_CERT_BAD_FORMAT, rv);
+  EXPECT_FALSE(IsCertificateError(rv));
+
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+  EXPECT_FALSE(ssl_info.cert);
+}
+#endif  // defined(OS_WIN)
+
 // Attempt to connect to a page which requests a client certificate. It should
 // return an error code on connect.
 TEST_F(SSLClientSocketTest, ConnectClientAuthCertRequested) {

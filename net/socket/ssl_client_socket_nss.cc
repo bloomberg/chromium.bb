@@ -3026,6 +3026,12 @@ int SSLClientSocketNSS::DoVerifyCert(int result) {
 
   GotoState(STATE_VERIFY_CERT_COMPLETE);
 
+  // NSS decoded the certificate, but the platform certificate implementation
+  // could not. This is treated as a fatal SSL-level protocol error rather than
+  // a certificate error. See https://crbug.com/91341.
+  if (!core_->state().server_cert.get())
+    return ERR_SSL_SERVER_CERT_BAD_FORMAT;
+
   // If the certificate is expected to be bad we can use the expectation as
   // the cert status.
   base::StringPiece der_cert(
@@ -3040,14 +3046,6 @@ int SSLClientSocketNSS::DoVerifyCert(int result) {
     server_cert_verify_result_.cert_status = cert_status;
     server_cert_verify_result_.verified_cert = core_->state().server_cert;
     return OK;
-  }
-
-  // We may have failed to create X509Certificate object if we are
-  // running inside sandbox.
-  if (!core_->state().server_cert.get()) {
-    server_cert_verify_result_.Reset();
-    server_cert_verify_result_.cert_status = CERT_STATUS_INVALID;
-    return ERR_CERT_INVALID;
   }
 
   start_cert_verification_time_ = base::TimeTicks::Now();

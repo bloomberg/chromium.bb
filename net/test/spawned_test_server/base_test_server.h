@@ -67,6 +67,10 @@ class BaseTestServer {
       // Causes the testserver to use a hostname that is a domain
       // instead of an IP.
       CERT_COMMON_NAME_IS_DOMAIN,
+
+      // A certificate with invalid notBefore and notAfter times. Windows'
+      // certificate library will not parse this certificate.
+      CERT_BAD_VALIDITY,
     };
 
     // OCSPStatus enumerates the types of OCSP response that the testserver

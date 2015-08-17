@@ -347,6 +347,11 @@ NET_ERROR(SSL_FALLBACK_BEYOND_MINIMUM_VERSION, -165)
 // problem.
 NET_ERROR(ICANN_NAME_COLLISION, -166)
 
+// The SSL server presented a certificate which could not be decoded. This is
+// not a certificate error code as no X509Certificate object is available. This
+// error is fatal.
+NET_ERROR(SSL_SERVER_CERT_BAD_FORMAT, -167)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

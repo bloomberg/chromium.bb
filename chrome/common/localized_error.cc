@@ -328,6 +328,13 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_DETAILS_TEMPORARY_BACKOFF,
    SUGGEST_NONE,
   },
+  {net::ERR_SSL_SERVER_CERT_BAD_FORMAT,
+   IDS_ERRORPAGES_TITLE_LOAD_FAILED,
+   IDS_ERRORPAGES_HEADING_SSL_PROTOCOL_ERROR,
+   IDS_ERRORPAGES_SUMMARY_SSL_PROTOCOL_ERROR,
+   IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
+   SUGGEST_NONE,
+  },
 };
 
 // Special error page to be used in the case of navigating back to a page
