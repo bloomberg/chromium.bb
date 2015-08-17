@@ -35,7 +35,6 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -47,11 +46,11 @@ class Event;
 class EventListener;
 class EventTarget;
 class InjectedScriptManager;
-class InspectorDebuggerAgent;
 class InspectorDOMAgent;
 class JSONObject;
 class Node;
 class RegisteredEventListener;
+class V8DebuggerAgent;
 
 typedef String ErrorString;
 
@@ -60,7 +59,7 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
     , public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
-    static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InjectedScriptManager*, InspectorDOMAgent*, InspectorDebuggerAgent*);
+    static PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> create(InjectedScriptManager*, InspectorDOMAgent*, V8DebuggerAgent*);
 
     ~InspectorDOMDebuggerAgent() override;
     DECLARE_VIRTUAL_TRACE();
@@ -91,7 +90,7 @@ public:
     void didCancelAnimationFrame(ExecutionContext*, int callbackId);
     void willFireAnimationFrame(ExecutionContext*, int callbackId);
     void willHandleEvent(EventTarget*, Event*, EventListener*, bool useCapture);
-    void willEvaluateScript(const String& url, int lineNumber);
+    void willEvaluateScript();
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
@@ -101,7 +100,7 @@ public:
     void restore() override;
 
 private:
-    InspectorDOMDebuggerAgent(InjectedScriptManager*, InspectorDOMAgent*, InspectorDebuggerAgent*);
+    InspectorDOMDebuggerAgent(InjectedScriptManager*, InspectorDOMAgent*, V8DebuggerAgent*);
 
     void pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous);
     PassRefPtr<JSONObject> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
@@ -121,7 +120,7 @@ private:
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
     WillBeHeapHashMap<RawPtrWillBeMember<Node>, uint32_t> m_domBreakpoints;
 };
 

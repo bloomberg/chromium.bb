@@ -102,13 +102,13 @@ class InspectorBaseAgent : public InspectorAgent {
 public:
     ~InspectorBaseAgent() override { }
 
-    void setFrontend(InspectorFrontend* frontend) final
+    void setFrontend(InspectorFrontend* frontend) override
     {
         ASSERT(!m_frontend);
         m_frontend = FrontendClass::from(frontend);
     }
 
-    void clearFrontend() final
+    void clearFrontend() override
     {
         ErrorString error;
         disable(&error);

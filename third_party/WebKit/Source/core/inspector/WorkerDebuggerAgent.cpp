@@ -61,7 +61,7 @@ DEFINE_TRACE(WorkerDebuggerAgent)
 
 InjectedScript WorkerDebuggerAgent::defaultInjectedScript()
 {
-    return injectedScriptManager()->injectedScriptFor(m_inspectedWorkerGlobalScope->script()->scriptState());
+    return m_v8DebuggerAgent->injectedScriptManager()->injectedScriptFor(m_inspectedWorkerGlobalScope->script()->scriptState());
 }
 
 void WorkerDebuggerAgent::muteConsole()

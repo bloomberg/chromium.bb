@@ -45,9 +45,9 @@ namespace blink {
 class EventTarget;
 class InjectedScriptHostClient;
 class InspectorConsoleAgent;
-class InspectorDebuggerAgent;
 class JSONValue;
 class ScriptValue;
+class V8DebuggerAgent;
 class V8Debugger;
 
 class EventListenerInfo;
@@ -65,7 +65,7 @@ public:
 
     using InspectCallback = Function<void(PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>)>;
 
-    void init(InspectorConsoleAgent* consoleAgent, InspectorDebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, V8Debugger* debugger, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
+    void init(InspectorConsoleAgent* consoleAgent, V8DebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, V8Debugger* debugger, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
     {
         m_consoleAgent = consoleAgent;
         m_debuggerAgent = debuggerAgent;
@@ -109,7 +109,7 @@ private:
     InjectedScriptHost();
 
     RawPtrWillBeMember<InspectorConsoleAgent> m_consoleAgent;
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
     V8Debugger* m_debugger;
     WillBeHeapVector<OwnPtrWillBeMember<InspectableObject>> m_inspectedObjects;

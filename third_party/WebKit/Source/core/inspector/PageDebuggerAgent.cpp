@@ -136,7 +136,7 @@ void PageDebuggerAgent::overlaySteppedOver()
 InjectedScript PageDebuggerAgent::defaultInjectedScript()
 {
     ScriptState* scriptState = ScriptState::forMainWorld(m_pageAgent->inspectedFrame());
-    return injectedScriptManager()->injectedScriptFor(scriptState);
+    return m_v8DebuggerAgent->injectedScriptManager()->injectedScriptFor(scriptState);
 }
 
 void PageDebuggerAgent::didStartProvisionalLoad(LocalFrame* frame)
@@ -152,12 +152,12 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     // FIXME: what about nested objects?
     if (frame != m_pageAgent->inspectedFrame())
         return;
-    reset();
+    m_v8DebuggerAgent->reset();
 }
 
 void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, const int* executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
+    InjectedScript injectedScript = m_v8DebuggerAgent->injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -175,7 +175,7 @@ void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& ex
 
 void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, const int* executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
 {
-    InjectedScript injectedScript = injectedScriptForEval(errorString, executionContextId);
+    InjectedScript injectedScript = m_v8DebuggerAgent->injectedScriptForEval(errorString, executionContextId);
     if (injectedScript.isEmpty()) {
         *errorString = "Inspected frame has gone";
         return;
@@ -187,7 +187,7 @@ void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scri
     TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt()));
     InspectorInstrumentationCookie cookie;
     if (frame)
-        cookie = InspectorInstrumentation::willEvaluateScript(frame, sourceURL, TextPosition::minimumPosition().m_line.oneBasedInt());
+        cookie = InspectorInstrumentation::willEvaluateScript(frame);
 
     RefPtrWillBeRawPtr<LocalFrame> protect(frame);
     InspectorDebuggerAgent::runScript(errorString, scriptId, executionContextId, objectGroup, doNotPauseOnExceptionsAndMuteConsole, result, exceptionDetails);

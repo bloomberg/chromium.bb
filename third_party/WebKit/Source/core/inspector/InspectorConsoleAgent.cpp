@@ -31,11 +31,11 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
+#include "core/inspector/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "wtf/text/WTFString.h"
 

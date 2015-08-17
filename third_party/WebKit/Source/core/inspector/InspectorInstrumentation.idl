@@ -138,7 +138,7 @@ interface InspectorInstrumentation {
     void didRemoveTimer([Keep] ExecutionContext*, int timerId);
 
     [Debugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willCallFunction([Keep] ExecutionContext*, const DevToolsFunctionInfo&);
+    InspectorInstrumentationCookie willCallFunction(ExecutionContext*, const DevToolsFunctionInfo&);
 
     [Debugger, Inline=FastReturn]
     void didCallFunction(const InspectorInstrumentationCookie&);
@@ -180,7 +180,7 @@ interface InspectorInstrumentation {
     void didPerformExecutionContextTask(ExecutionContext*);
 
     [Debugger, DOMDebugger, Inline=FastReturn]
-    InspectorInstrumentationCookie willEvaluateScript(LocalFrame*, const String& url, int lineNumber);
+    InspectorInstrumentationCookie willEvaluateScript(LocalFrame*);
 
     [Debugger, Inline=FastReturn]
     void didEvaluateScript(const InspectorInstrumentationCookie&);

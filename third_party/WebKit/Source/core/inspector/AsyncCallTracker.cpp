@@ -37,7 +37,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/AsyncOperationMap.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/V8DebuggerAgent.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -137,7 +137,7 @@ static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
     return nullptr;
 }
 
-AsyncCallTracker::AsyncCallTracker(InspectorDebuggerAgent* debuggerAgent, InstrumentingAgents* instrumentingAgents)
+AsyncCallTracker::AsyncCallTracker(V8DebuggerAgent* debuggerAgent, InstrumentingAgents* instrumentingAgents)
     : m_debuggerAgent(debuggerAgent)
     , m_instrumentingAgents(instrumentingAgents)
 {
@@ -198,7 +198,7 @@ bool AsyncCallTracker::willFireTimer(ExecutionContext* context, int timerId)
         if (!data->m_intervalTimerIds.contains(timerId))
             data->m_timerCallChains.remove(timerId);
     } else {
-        willFireAsyncCall(InspectorDebuggerAgent::unknownAsyncOperationId);
+        willFireAsyncCall(V8DebuggerAgent::unknownAsyncOperationId);
     }
     return true;
 }
@@ -232,7 +232,7 @@ bool AsyncCallTracker::willFireAnimationFrame(ExecutionContext* context, int cal
         willFireAsyncCall(data->m_animationFrameCallChains.get(callbackId));
         data->m_animationFrameCallChains.remove(callbackId);
     } else {
-        willFireAsyncCall(InspectorDebuggerAgent::unknownAsyncOperationId);
+        willFireAsyncCall(V8DebuggerAgent::unknownAsyncOperationId);
     }
     return true;
 }
@@ -268,7 +268,7 @@ void AsyncCallTracker::willHandleEvent(EventTarget* eventTarget, Event* event, E
         if (ExecutionContextData* data = m_executionContextDataMap.get(context))
             willFireAsyncCall(data->m_eventCallChains.get(event));
         else
-            willFireAsyncCall(InspectorDebuggerAgent::unknownAsyncOperationId);
+            willFireAsyncCall(V8DebuggerAgent::unknownAsyncOperationId);
     }
 }
 
@@ -299,7 +299,7 @@ void AsyncCallTracker::willHandleXHREvent(XMLHttpRequest* xhr, Event* event)
     if (ExecutionContextData* data = m_executionContextDataMap.get(context))
         willFireAsyncCall(data->m_xhrCallChains.get(xhr));
     else
-        willFireAsyncCall(InspectorDebuggerAgent::unknownAsyncOperationId);
+        willFireAsyncCall(V8DebuggerAgent::unknownAsyncOperationId);
 }
 
 void AsyncCallTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
@@ -329,7 +329,7 @@ void AsyncCallTracker::willDeliverMutationRecords(ExecutionContext* context, Mut
         willFireAsyncCall(data->m_mutationObserverCallChains.get(observer));
         data->m_mutationObserverCallChains.remove(observer);
     } else {
-        willFireAsyncCall(InspectorDebuggerAgent::unknownAsyncOperationId);
+        willFireAsyncCall(V8DebuggerAgent::unknownAsyncOperationId);
     }
 }
 
@@ -360,7 +360,7 @@ void AsyncCallTracker::willPerformExecutionContextTask(ExecutionContext* context
         willFireAsyncCall(data->m_executionContextTaskCallChains.get(task));
         data->m_executionContextTaskCallChains.remove(task);
     } else {
-        willFireAsyncCall(InspectorDebuggerAgent::unknownAsyncOperationId);
+        willFireAsyncCall(V8DebuggerAgent::unknownAsyncOperationId);
     }
 }
 
@@ -406,7 +406,7 @@ void AsyncCallTracker::traceAsyncCallbackStarting(ExecutionContext* context, int
     ASSERT(context);
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
     ASSERT(operationId <= 0 || isKnownAsyncOperationId(context, operationId));
-    willFireAsyncCall(operationId > 0 ? operationId : InspectorDebuggerAgent::unknownAsyncOperationId);
+    willFireAsyncCall(operationId > 0 ? operationId : V8DebuggerAgent::unknownAsyncOperationId);
 }
 
 void AsyncCallTracker::didFireAsyncCall()
@@ -436,7 +436,7 @@ DEFINE_TRACE(AsyncCallTracker)
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_instrumentingAgents);
 #endif
-    InspectorDebuggerAgent::AsyncCallTrackingListener::trace(visitor);
+    V8DebuggerAgent::AsyncCallTrackingListener::trace(visitor);
 }
 
 } // namespace blink

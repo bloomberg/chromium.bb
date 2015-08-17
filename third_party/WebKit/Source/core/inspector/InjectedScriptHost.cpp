@@ -33,7 +33,7 @@
 
 #include "core/inspector/EventListenerInfo.h"
 #include "core/inspector/InspectorConsoleAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/JSONValues.h"
 
@@ -124,13 +124,13 @@ InjectedScriptHost::InspectableObject* InjectedScriptHost::inspectedObject(unsig
 void InjectedScriptHost::debugFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
-        m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::DebugCommandBreakpointSource);
+        m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::undebugFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
-        m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::DebugCommandBreakpointSource);
+        m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName)
@@ -143,13 +143,13 @@ void InjectedScriptHost::monitorFunction(const String& scriptId, int lineNumber,
         builder.append(functionName);
     builder.appendLiteral(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
     if (m_debuggerAgent)
-        m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::MonitorCommandBreakpointSource, builder.toString());
+        m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::MonitorCommandBreakpointSource, builder.toString());
 }
 
 void InjectedScriptHost::unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
-        m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, InspectorDebuggerAgent::MonitorCommandBreakpointSource);
+        m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::MonitorCommandBreakpointSource);
 }
 
 } // namespace blink

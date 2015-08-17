@@ -32,7 +32,7 @@
 #define AsyncCallTracker_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
+#include "core/inspector/V8DebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -47,20 +47,19 @@ class ExecutionContext;
 class ExecutionContextTask;
 class FormData;
 class HTTPHeaderMap;
-class InspectorDebuggerAgent;
 class KURL;
 class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker>, public InspectorDebuggerAgent::AsyncCallTrackingListener {
+class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker>, public V8DebuggerAgent::AsyncCallTrackingListener {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker);
 public:
-    AsyncCallTracker(InspectorDebuggerAgent*, InstrumentingAgents*);
+    AsyncCallTracker(V8DebuggerAgent*, InstrumentingAgents*);
     ~AsyncCallTracker() override;
 
-    // InspectorDebuggerAgent::AsyncCallTrackingListener implementation:
+    // V8DebuggerAgent::AsyncCallTrackingListener implementation:
     void asyncCallTrackingStateChanged(bool tracking) override;
     void resetAsyncOperations() override;
 
@@ -113,7 +112,7 @@ private:
 
     using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
-    RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
+    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 };
 

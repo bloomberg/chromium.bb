@@ -122,11 +122,12 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::O
 }
 
 V8DebuggerAgent::V8DebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, V8DebuggerAgent::Client* client, int contextGroupId)
-    : InspectorBaseAgent<V8DebuggerAgent, InspectorFrontend::Debugger>("Debugger")
-    , m_injectedScriptManager(injectedScriptManager)
+    : m_injectedScriptManager(injectedScriptManager)
     , m_debugger(debugger)
     , m_client(client)
     , m_contextGroupId(contextGroupId)
+    , m_state(nullptr)
+    , m_frontend(nullptr)
     , m_isolate(debugger->isolate())
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
@@ -207,7 +208,7 @@ void V8DebuggerAgent::enable(ErrorString*)
 
     enable();
 
-    ASSERT(frontend());
+    ASSERT(m_frontend);
 }
 
 void V8DebuggerAgent::disable(ErrorString*)
@@ -248,10 +249,18 @@ void V8DebuggerAgent::internalSetAsyncCallStackDepth(int depth)
         listener->asyncCallTrackingStateChanged(m_maxAsyncCallStackDepth);
 }
 
+void V8DebuggerAgent::clearFrontend()
+{
+    ErrorString error;
+    disable(&error);
+    ASSERT(m_frontend);
+    m_frontend = nullptr;
+}
+
 void V8DebuggerAgent::restore()
 {
     if (enabled()) {
-        frontend()->globalObjectCleared();
+        m_frontend->globalObjectCleared();
         enable();
         long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
         String error;
@@ -704,16 +713,6 @@ void V8DebuggerAgent::schedulePauseOnNextStatementIfSteppingInto()
     debugger().setPauseOnNextStatement(true);
 }
 
-void V8DebuggerAgent::didFireTimer()
-{
-    cancelPauseOnNextStatement();
-}
-
-void V8DebuggerAgent::didHandleEvent()
-{
-    cancelPauseOnNextStatement();
-}
-
 void V8DebuggerAgent::cancelPauseOnNextStatement()
 {
     if (m_javaScriptPauseScheduled || isPaused())
@@ -1108,8 +1107,8 @@ void V8DebuggerAgent::getPromiseById(ErrorString* errorString, int promiseId, co
 
 void V8DebuggerAgent::didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum eventType, PassRefPtr<TypeBuilder::Debugger::PromiseDetails> promise)
 {
-    if (frontend())
-        frontend()->promiseUpdated(eventType, promise);
+    if (m_frontend)
+        m_frontend->promiseUpdated(eventType, promise);
 }
 
 int V8DebuggerAgent::traceAsyncOperationStarting(const String& description)
@@ -1231,13 +1230,13 @@ void V8DebuggerAgent::traceAsyncOperationCompleted(int operationId)
         if (!m_pausingOnAsyncOperation && m_pausingAsyncOperations.isEmpty())
             clearStepIntoAsync();
     }
-    if (frontend() && shouldNotify)
-        frontend()->asyncOperationCompleted(operationId);
+    if (m_frontend && shouldNotify)
+        m_frontend->asyncOperationCompleted(operationId);
 }
 
 void V8DebuggerAgent::flushAsyncOperationEvents(ErrorString*)
 {
-    if (!frontend())
+    if (!m_frontend)
         return;
 
     for (int operationId : m_asyncOperationNotifications) {
@@ -1272,7 +1271,7 @@ void V8DebuggerAgent::flushAsyncOperationEvents(ErrorString*)
         }
 
         if (operation)
-            frontend()->asyncOperationStarted(operation.release());
+            m_frontend->asyncOperationStarted(operation.release());
     }
 
     m_asyncOperationNotifications.clear();
@@ -1330,15 +1329,6 @@ void V8DebuggerAgent::removeAsyncOperationBreakpoint(ErrorString* errorString, i
     m_asyncOperationBreakpoints.remove(operationId);
 }
 
-void V8DebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
-{
-    if (debugger().pauseOnExceptionsState() != V8Debugger::DontPauseOnExceptions) {
-        RefPtr<JSONObject> directive = JSONObject::create();
-        directive->setString("directiveText", directiveText);
-        breakProgram(InspectorFrontend::Debugger::Reason::CSPViolation, directive.release());
-    }
-}
-
 void V8DebuggerAgent::addAsyncCallTrackingListener(AsyncCallTrackingListener* listener)
 {
     m_asyncCallTrackingListeners.add(listener);
@@ -1350,14 +1340,14 @@ void V8DebuggerAgent::removeAsyncCallTrackingListener(AsyncCallTrackingListener*
     m_asyncCallTrackingListeners.remove(listener);
 }
 
-void V8DebuggerAgent::willCallFunction(ExecutionContext*, const DevToolsFunctionInfo& info)
+void V8DebuggerAgent::willCallFunction(int scriptId)
 {
     changeJavaScriptRecursionLevel(+1);
     // Fast return.
     if (m_scheduledDebuggerStep != StepInto)
         return;
     // Skip unknown scripts (e.g. InjectedScript).
-    if (!m_scripts.contains(String::number(info.scriptId())))
+    if (!m_scripts.contains(String::number(scriptId)))
         return;
     schedulePauseOnNextStatementIfSteppingInto();
 }
@@ -1367,7 +1357,7 @@ void V8DebuggerAgent::didCallFunction()
     changeJavaScriptRecursionLevel(-1);
 }
 
-void V8DebuggerAgent::willEvaluateScript(const String&, int)
+void V8DebuggerAgent::willEvaluateScript()
 {
     changeJavaScriptRecursionLevel(+1);
     schedulePauseOnNextStatementIfSteppingInto();
@@ -1508,9 +1498,9 @@ void V8DebuggerAgent::didParseSource(const ParsedScript& parsedScript)
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (!hasSyntaxError)
-        frontend()->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptParsed(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
     else
-        frontend()->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        m_frontend->scriptFailedToParse(parsedScript.scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts.set(parsedScript.scriptId, script);
 
@@ -1532,7 +1522,7 @@ void V8DebuggerAgent::didParseSource(const ParsedScript& parsedScript)
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
         RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(cookie.key, parsedScript.scriptId, breakpoint, UserBreakpointSource);
         if (location)
-            frontend()->breakpointResolved(cookie.key, location);
+            m_frontend->breakpointResolved(cookie.key, location);
     }
 }
 
@@ -1596,7 +1586,7 @@ V8DebuggerListener::SkipPauseRequest V8DebuggerAgent::didPause(v8::Local<v8::Con
     if (!m_asyncOperationNotifications.isEmpty())
         flushAsyncOperationEvents(nullptr);
 
-    frontend()->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
+    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
     m_scheduledDebuggerStep = NoStep;
     m_javaScriptPauseScheduled = false;
     m_steppingFromFramework = false;
@@ -1617,7 +1607,7 @@ void V8DebuggerAgent::didContinue()
     m_pausedScriptState = nullptr;
     m_currentCallStack.Reset();
     clearBreakDetails();
-    frontend()->resumed();
+    m_frontend->resumed();
 }
 
 bool V8DebuggerAgent::canBreakProgram()
@@ -1702,21 +1692,8 @@ void V8DebuggerAgent::reset()
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();
     promiseTracker().clear();
-    if (frontend())
-        frontend()->globalObjectCleared();
-}
-
-DEFINE_TRACE(V8DebuggerAgent)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_v8AsyncCallTracker);
-    visitor->trace(m_promiseTracker);
-    visitor->trace(m_asyncOperations);
-    visitor->trace(m_currentAsyncCallChain);
-    visitor->trace(m_asyncCallTrackingListeners);
-#endif
-    InspectorBaseAgent::trace(visitor);
+    if (m_frontend)
+        m_frontend->globalObjectCleared();
 }
 
 PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> V8DebuggerAgent::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)

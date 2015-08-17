@@ -39,8 +39,7 @@ class V8Debugger;
 typedef String ErrorString;
 
 class CORE_EXPORT V8DebuggerAgent
-    : public InspectorBaseAgent<V8DebuggerAgent, InspectorFrontend::Debugger>
-    , public V8DebuggerListener
+    : public V8DebuggerListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgent);
@@ -66,9 +65,11 @@ public:
 
     V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*, int contextGroupId);
     ~V8DebuggerAgent() override;
-    DECLARE_VIRTUAL_TRACE();
 
-    void restore() override;
+    void setInspectorState(InspectorState* state) { m_state = state; }
+    void setFrontend(InspectorFrontend::Debugger* frontend) { m_frontend = frontend; }
+    void clearFrontend();
+    void restore();
     void disable(ErrorString*) final;
 
     bool isPaused();
@@ -123,14 +124,12 @@ public:
     void removeAsyncOperationBreakpoint(ErrorString*, int operationId) final;
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
-    void didFireTimer();
-    void didHandleEvent();
+    void cancelPauseOnNextStatement();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
-    void scriptExecutionBlockedByCSP(const String& directiveText);
-    void willCallFunction(ExecutionContext*, const DevToolsFunctionInfo&);
+    void willCallFunction(int scriptId);
     void didCallFunction();
-    void willEvaluateScript(const String& url, int lineNumber);
+    void willEvaluateScript();
     void didEvaluateScript();
 
     bool enabled();
@@ -177,7 +176,6 @@ private:
     SkipPauseRequest shouldSkipStepPause();
 
     void schedulePauseOnNextStatementIfSteppingInto();
-    void cancelPauseOnNextStatement();
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>> currentCallFrames();
     PassRefPtr<TypeBuilder::Debugger::StackTrace> currentAsyncStackTrace();
@@ -229,6 +227,8 @@ private:
     V8Debugger* m_debugger;
     Client* m_client;
     int m_contextGroupId;
+    InspectorState* m_state;
+    InspectorFrontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;
     v8::Global<v8::Object> m_currentCallStack;
