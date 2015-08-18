@@ -61,7 +61,7 @@ PositionAlgorithm<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedCompu
     }
     if (Strategy::hasChildren(*m_anchorNode))
         return PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(m_anchorNode);
-    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_anchorNode, m_offsetInAnchor);
+    return PositionAlgorithm<Strategy>::editingPositionOf(m_anchorNode, m_offsetInAnchor);
 }
 
 template <typename Strategy>

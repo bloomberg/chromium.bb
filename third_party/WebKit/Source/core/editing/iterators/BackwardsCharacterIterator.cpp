@@ -46,7 +46,7 @@ PositionAlgorithm<Strategy> BackwardsCharacterIteratorAlgorithm<Strategy>::endPo
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.startContainer();
-            return PositionAlgorithm<Strategy>::createLegacyEditingPosition(n, m_textIterator.endOffset() - m_runOffset);
+            return PositionAlgorithm<Strategy>::editingPositionOf(n, m_textIterator.endOffset() - m_runOffset);
         }
         ASSERT(!m_runOffset);
     }

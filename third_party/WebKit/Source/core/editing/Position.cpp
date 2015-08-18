@@ -69,7 +69,7 @@ const TreeScope* PositionAlgorithm<Strategy>::commonAncestorTreeScope(const Posi
 
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset)
+PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::editingPositionOf(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset)
 {
     if (!anchorNode || anchorNode->isTextNode())
         return PositionAlgorithm<Strategy>(anchorNode, offset);
@@ -383,11 +383,11 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
         //      Going forward one character at a time is correct.
         //   2) The new offset is a bogus offset like (<br>, 1), and there is no child.
         //      Going from 0 to 1 is correct.
-        return createLegacyEditingPosition(node, (moveType == Character) ? uncheckedNextOffset(node, offset) : offset + 1);
+        return editingPositionOf(node, (moveType == Character) ? uncheckedNextOffset(node, offset) : offset + 1);
     }
 
     if (ContainerNode* parent = Strategy::parent(*node))
-        return createLegacyEditingPosition(parent, Strategy::index(*node) + 1);
+        return editingPositionOf(parent, Strategy::index(*node) + 1);
     return PositionAlgorithm<Strategy>(*this);
 }
 
@@ -576,7 +576,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundar
     // iterate backward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? createLegacyEditingPosition(m_anchorNode.get(), Strategy::caretMaxOffset(*m_anchorNode)) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? editingPositionOf(m_anchorNode.get(), Strategy::caretMaxOffset(*m_anchorNode)) : PositionAlgorithm<Strategy>(*this));
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -700,7 +700,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
     // iterate forward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? createLegacyEditingPosition(m_anchorNode.get(), Strategy::caretMaxOffset(*m_anchorNode)) : PositionAlgorithm<Strategy>(*this));
+    PositionIteratorAlgorithm<Strategy> lastVisible(isAfterAnchor() ? editingPositionOf(m_anchorNode.get(), Strategy::caretMaxOffset(*m_anchorNode)) : PositionAlgorithm<Strategy>(*this));
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -752,7 +752,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
         // Return position before tables and nodes which have content that can be ignored.
         if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
             if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
-                return createLegacyEditingPosition(currentNode, layoutObject->caretMinOffset());
+                return editingPositionOf(currentNode, layoutObject->caretMinOffset());
             continue;
         }
 

@@ -368,16 +368,16 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::startPosition() const
 {
     if (m_positionNode)
-        return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_positionNode, m_positionStartOffset);
-    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_startNode, m_startOffset);
+        return PositionAlgorithm<Strategy>::editingPositionOf(m_positionNode, m_positionStartOffset);
+    return PositionAlgorithm<Strategy>::editingPositionOf(m_startNode, m_startOffset);
 }
 
 template <typename Strategy>
 PositionAlgorithm<Strategy>SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (m_positionNode)
-        return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_positionNode, m_positionEndOffset);
-    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(m_startNode, m_startOffset);
+        return PositionAlgorithm<Strategy>::editingPositionOf(m_positionNode, m_positionEndOffset);
+    return PositionAlgorithm<Strategy>::editingPositionOf(m_startNode, m_startOffset);
 }
 
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;

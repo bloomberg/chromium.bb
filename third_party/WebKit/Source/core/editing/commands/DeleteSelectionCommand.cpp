@@ -560,7 +560,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                             offset = n->nodeIndex() + 1;
                     }
                     removeChildrenInRange(m_downstreamEnd.anchorNode(), offset, m_downstreamEnd.computeEditingOffset());
-                    m_downstreamEnd = createLegacyEditingPosition(m_downstreamEnd.anchorNode(), offset);
+                    m_downstreamEnd = Position::editingPositionOf(m_downstreamEnd.anchorNode(), offset);
                 }
             }
         }

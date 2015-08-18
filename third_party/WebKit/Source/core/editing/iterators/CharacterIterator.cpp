@@ -107,7 +107,7 @@ PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition(
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.currentContainer();
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-            return PositionAlgorithm<Strategy>::createLegacyEditingPosition(n, offset);
+            return PositionAlgorithm<Strategy>::editingPositionOf(n, offset);
         }
         ASSERT(!m_runOffset);
     }
@@ -121,7 +121,7 @@ PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::endPosition() 
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.currentContainer();
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-            return PositionAlgorithm<Strategy>::createLegacyEditingPosition(n, offset + 1);
+            return PositionAlgorithm<Strategy>::editingPositionOf(n, offset + 1);
         }
         ASSERT(!m_runOffset);
     }

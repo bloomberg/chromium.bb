@@ -2999,7 +2999,7 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
                 return PositionWithAffinity(candidate, affinity);
         }
         // FIXME: Eliminate legacy editing positions
-        return PositionWithAffinity(createLegacyEditingPosition(node, offset), affinity);
+        return PositionWithAffinity(Position::editingPositionOf(node, offset), affinity);
     }
 
     // We don't want to cross the boundary between editable and non-editable

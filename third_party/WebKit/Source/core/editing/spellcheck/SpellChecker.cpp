@@ -206,7 +206,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     ContainerNode* topNode = highestEditableRoot(position);
     // TODO(yosin): |lastOffsetForEditing()| is wrong here if
     // |editingIgnoresContent(highestEditableRoot())| returns true, e.g. <table>
-    spellingSearchEnd = createLegacyEditingPosition(topNode, EditingStrategy::lastOffsetForEditing(topNode));
+    spellingSearchEnd = Position::editingPositionOf(topNode, EditingStrategy::lastOffsetForEditing(topNode));
 
     // If spellingSearchRange starts in the middle of a word, advance to the next word so we start checking
     // at a word boundary. Going back by one char and then forward by a word does the trick.
@@ -266,9 +266,9 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // If we found neither bad grammar nor a misspelled word, wrap and try again (but don't bother if we started at the beginning of the
     // block rather than at a selection).
     if (startedWithSelection && !misspelledWord && !badGrammarPhrase) {
-        spellingSearchStart = createLegacyEditingPosition(topNode, 0);
+        spellingSearchStart = Position::editingPositionOf(topNode, 0);
         // going until the end of the very first chunk we tested is far enough
-        spellingSearchEnd = createLegacyEditingPosition(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
+        spellingSearchEnd = Position::editingPositionOf(searchEndNodeAfterWrap, searchEndOffsetAfterWrap);
 
         if (unifiedTextCheckerEnabled()) {
             grammarSearchStart = spellingSearchStart;

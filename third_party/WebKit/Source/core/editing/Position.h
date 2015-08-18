@@ -88,7 +88,7 @@ public:
     }
 
     static const TreeScope* commonAncestorTreeScope(const PositionAlgorithm<Strategy>&, const PositionAlgorithm<Strategy>& b);
-    static PositionAlgorithm<Strategy> createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
+    static PositionAlgorithm<Strategy> editingPositionOf(PassRefPtrWillBeRawPtr<Node> anchorNode, int offset);
 
     // For creating before/after positions:
     PositionAlgorithm(PassRefPtrWillBeRawPtr<Node> anchorNode, PositionAnchorType);
@@ -257,11 +257,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
-
-inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
-{
-    return Position::createLegacyEditingPosition(node, offset);
-}
 
 template <typename Strategy>
 bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)

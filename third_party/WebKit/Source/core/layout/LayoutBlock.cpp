@@ -1774,13 +1774,13 @@ Position LayoutBlock::positionForBox(InlineBox *box, bool start) const
         return Position();
 
     if (!box->layoutObject().nonPseudoNode())
-        return createLegacyEditingPosition(nonPseudoNode(), start ? caretMinOffset() : caretMaxOffset());
+        return Position::editingPositionOf(nonPseudoNode(), start ? caretMinOffset() : caretMaxOffset());
 
     if (!box->isInlineTextBox())
-        return createLegacyEditingPosition(box->layoutObject().nonPseudoNode(), start ? box->layoutObject().caretMinOffset() : box->layoutObject().caretMaxOffset());
+        return Position::editingPositionOf(box->layoutObject().nonPseudoNode(), start ? box->layoutObject().caretMinOffset() : box->layoutObject().caretMaxOffset());
 
     InlineTextBox* textBox = toInlineTextBox(box);
-    return createLegacyEditingPosition(box->layoutObject().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
+    return Position::editingPositionOf(box->layoutObject().nonPseudoNode(), start ? textBox->start() : textBox->start() + textBox->len());
 }
 
 static inline bool isEditingBoundary(LayoutObject* ancestor, LayoutObject* child)

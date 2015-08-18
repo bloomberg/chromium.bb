@@ -101,7 +101,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
             break;
 
         Position pos = isHTMLBRElement(*previousNode) ? positionBeforeNode(previousNode) :
-            createLegacyEditingPosition(previousNode, caretMaxOffset(previousNode));
+            Position::editingPositionOf(previousNode, caretMaxOffset(previousNode));
 
         if (pos.isCandidate())
             return pos;
@@ -123,7 +123,7 @@ static Position nextRootInlineBoxCandidatePosition(Node* node, const VisiblePosi
             break;
 
         Position pos;
-        pos = createLegacyEditingPosition(nextNode, caretMinOffset(nextNode));
+        pos = Position::editingPositionOf(nextNode, caretMinOffset(nextNode));
 
         if (pos.isCandidate())
             return pos;
@@ -464,7 +464,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
         return VisiblePosition();
 
     Document& d = boundary->document();
-    Position start = createLegacyEditingPosition(boundary, 0).parentAnchoredEquivalent();
+    Position start = Position::editingPositionOf(boundary, 0).parentAnchoredEquivalent();
     Position end = pos.parentAnchoredEquivalent();
 
     Vector<UChar, 1024> string;
@@ -562,7 +562,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    Position searchStart = createLegacyEditingPosition(start.anchorNode(), start.offsetInContainerNode());
+    Position searchStart = Position::editingPositionOf(start.anchorNode(), start.offsetInContainerNode());
     RangeBoundaryPoint searchEndPoint(boundary);
     searchEndPoint.setToEndOfNode(*boundary);
     Position searchEnd = searchEndPoint.toPosition();

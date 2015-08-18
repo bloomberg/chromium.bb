@@ -1057,13 +1057,13 @@ Node* TextIteratorAlgorithm<Strategy>::currentContainer() const
 template<typename Strategy>
 PositionAlgorithm<Strategy> TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
 {
-    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(currentContainer(), startOffsetInCurrentContainer());
+    return PositionAlgorithm<Strategy>::editingPositionOf(currentContainer(), startOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
 PositionAlgorithm<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
 {
-    return PositionAlgorithm<Strategy>::createLegacyEditingPosition(currentContainer(), endOffsetInCurrentContainer());
+    return PositionAlgorithm<Strategy>::editingPositionOf(currentContainer(), endOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
