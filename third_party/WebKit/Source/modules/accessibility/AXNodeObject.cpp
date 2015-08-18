@@ -1467,7 +1467,7 @@ String AXNodeObject::stringValue() const
         return String();
     }
 
-    if (isTextControl())
+    if (isNativeTextControl())
         return text();
 
     // FIXME: We might need to implement a value here for more types
