@@ -28,6 +28,7 @@ namespace blink {
 namespace {
 
 using Result = WebDataConsumerHandle::Result;
+const Result kShouldWait = WebDataConsumerHandle::ShouldWait;
 const Result kUnexpectedError = WebDataConsumerHandle::UnexpectedError;
 const Result kDone = WebDataConsumerHandle::Done;
 using Flags = WebDataConsumerHandle::Flags;
@@ -339,6 +340,86 @@ TEST_F(FetchBlobDataConsumerHandleTest, BodyLoadErrorTest)
     HandleReaderRunner<HandleReader> runner(handle.release());
     OwnPtr<HandleReadResult> r = runner.wait();
     EXPECT_EQ(kUnexpectedError, r->result());
+}
+
+TEST_F(FetchBlobDataConsumerHandleTest, DrainAsBlobDataHandle)
+{
+    auto factory = new StrictMock<MockLoaderFactory>;
+
+    RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
+    OwnPtr<FetchDataConsumerHandle> handle
+        = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
+
+    size_t size = 0;
+    EXPECT_EQ(blobDataHandle, handle->obtainReader(nullptr)->drainAsBlobDataHandle());
+    EXPECT_FALSE(handle->obtainReader(nullptr)->drainAsFormData());
+
+    EXPECT_EQ(kDone, handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size));
+}
+
+TEST_F(FetchBlobDataConsumerHandleTest, DrainAsFormData)
+{
+    auto factory = new StrictMock<MockLoaderFactory>;
+
+    RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
+    OwnPtr<FetchDataConsumerHandle> handle
+        = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
+
+    RefPtr<FormData> formData = handle->obtainReader(nullptr)->drainAsFormData();
+    ASSERT_TRUE(formData);
+    EXPECT_TRUE(formData->isSafeToSendToAnotherThread());
+    ASSERT_EQ(1u, formData->elements().size());
+    EXPECT_EQ(FormDataElement::encodedBlob, formData->elements()[0].m_type);
+    EXPECT_EQ(blobDataHandle->uuid(), formData->elements()[0].m_blobUUID);
+    EXPECT_EQ(blobDataHandle, formData->elements()[0].m_optionalBlobDataHandle);
+
+    EXPECT_FALSE(handle->obtainReader(nullptr)->drainAsBlobDataHandle());
+    size_t size;
+    EXPECT_EQ(kDone, handle->obtainReader(nullptr)->read(nullptr, 0, kNone, &size));
+}
+
+TEST_F(FetchBlobDataConsumerHandleTest, ZeroByteReadDoesNotAffectDraining)
+{
+    auto factory = new StrictMock<MockLoaderFactory>;
+
+    RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
+    OwnPtr<FetchDataConsumerHandle> handle
+        = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
+    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+
+    size_t readSize;
+    EXPECT_EQ(kShouldWait, reader->read(nullptr, 0, kNone, &readSize));
+    EXPECT_EQ(blobDataHandle, reader->drainAsBlobDataHandle());
+}
+
+TEST_F(FetchBlobDataConsumerHandleTest, OneByteReadAffectsDraining)
+{
+    auto factory = new StrictMock<MockLoaderFactory>;
+
+    RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
+    OwnPtr<FetchDataConsumerHandle> handle
+        = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
+    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+
+    size_t readSize;
+    char c;
+    EXPECT_EQ(kShouldWait, reader->read(&c, 1, kNone, &readSize));
+    EXPECT_FALSE(reader->drainAsFormData());
+}
+
+TEST_F(FetchBlobDataConsumerHandleTest, BeginReadAffectsDraining)
+{
+    auto factory = new StrictMock<MockLoaderFactory>;
+
+    RefPtr<BlobDataHandle> blobDataHandle = createBlobDataHandle("Once upon a time");
+    OwnPtr<FetchDataConsumerHandle> handle
+        = FetchBlobDataConsumerHandle::create(&document(), blobDataHandle, factory);
+    OwnPtr<FetchDataConsumerHandle::Reader> reader = handle->obtainReader(nullptr);
+
+    const void* buffer;
+    size_t available;
+    EXPECT_EQ(kShouldWait, reader->beginRead(&buffer, kNone, &available));
+    EXPECT_FALSE(reader->drainAsBlobDataHandle());
 }
 
 } // namespace

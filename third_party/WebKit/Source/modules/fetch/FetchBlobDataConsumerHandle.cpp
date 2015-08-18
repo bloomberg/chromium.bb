@@ -191,7 +191,7 @@ public:
                 return Done;
             m_readerContext->ensureStartLoader();
             Result r = m_reader->read(data, size, flags, readSize);
-            if (r != ShouldWait && !(r == Ok && *readSize == 0)) {
+            if (!(size == 0 && (r == Ok || r == ShouldWait))) {
                 // We read non-empty data, so we cannot use the blob data
                 // handle which represents the whole data.
                 m_readerContext->clearBlobDataHandleForDrain();
@@ -204,13 +204,8 @@ public:
             if (m_readerContext->drained())
                 return Done;
             m_readerContext->ensureStartLoader();
-            Result r = m_reader->beginRead(buffer, flags, available);
-            if (r != ShouldWait && !(r == Ok && *available == 0)) {
-                // We read non-empty data, so we cannot use the blob data
-                // handle which represents the whole data.
-                m_readerContext->clearBlobDataHandleForDrain();
-            }
-            return r;
+            m_readerContext->clearBlobDataHandleForDrain();
+            return m_reader->beginRead(buffer, flags, available);
         }
 
         Result endRead(size_t readSize) override
@@ -228,6 +223,16 @@ public:
             m_readerContext->setDrained();
             m_readerContext->clearBlobDataHandleForDrain();
             return blobDataHandle.release();
+        }
+
+        PassRefPtr<FormData> drainAsFormData() override
+        {
+            RefPtr<BlobDataHandle> handle = drainAsBlobDataHandle(AllowBlobWithInvalidSize);
+            if (!handle)
+                return nullptr;
+            RefPtr<FormData> formData = FormData::create();
+            formData->appendBlob(handle->uuid(), handle);
+            return formData.release();
         }
 
     private:

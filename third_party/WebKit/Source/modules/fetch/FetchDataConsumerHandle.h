@@ -7,6 +7,7 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/blob/BlobData.h"
+#include "platform/network/FormData.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -30,16 +31,31 @@ public:
             AllowBlobWithInvalidSize
         };
 
+        // The following "draining" functions drain and return the data. They
+        // can return null when it is impossible to drain, and in such cases the
+        // operation is no-op.
+        // When they return a non-null value, the data will be drained and
+        // subsequent calls of read() / beginRead() will return |Done|.
+        // Moreover subsequent calls of draining functions will return null.
+        //
+        // A draining function will return null when any data was read, i.e.
+        // read() / bedingRead() was called or any draining functions returned
+        // a non-null value. There is one exception: when read() is called
+        // with zero |size| and its return value is Ok or ShouldWait, no data
+        // is regarded as read.
+
         // Drains the data as a BlobDataHandle.
-        // If this function returns non-null BlobDataHandle:
-        // - The bytes that will be read from the returned BlobDataHandle
-        //   must be idential to the bytes that would be read through
-        //   WebDataConsumerHandle::Reader APIs without calling this function.
-        // - Subsequent calls to read() / beginRead() return |Done|.
-        // This function can return |nullptr|, and in such cases this
-        // function is no-op.
-        // This function returns |nullptr| when called during two-phase read.
+        // The returned non-null blob handle contains bytes that would be read
+        // through WebDataConsumerHandle::Reader APIs without calling this
+        // function.
+        // When |policy| is DisallowBlobWithInvalidSize, this function doesn't
+        // return a non-null blob handle with unspecified size.
         virtual PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy = DisallowBlobWithInvalidSize) { return nullptr; }
+
+        // Drains the data as a FormData.
+        // This function returns a non-null form data when the handle is made
+        // from a FormData-convertible value.
+        virtual PassRefPtr<FormData> drainAsFormData() { return nullptr; }
     };
 
     // TODO(yhirano): obtainReader() is currently non-virtual override, and

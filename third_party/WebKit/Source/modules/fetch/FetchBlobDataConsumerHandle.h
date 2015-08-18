@@ -17,6 +17,8 @@
 namespace blink {
 
 class ExecutionContext;
+// A FetchBlobDataConsumerHandle is created from a blob handle and it will
+// return a valid handle from drainAsBlobDataHandle as much as possible.
 class MODULES_EXPORT FetchBlobDataConsumerHandle final : public FetchDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(FetchBlobDataConsumerHandle);
 public:
