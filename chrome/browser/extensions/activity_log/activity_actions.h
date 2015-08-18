@@ -19,10 +19,6 @@ class ListValue;
 class DictionaryValue;
 }
 
-namespace rappor {
-class RapporService;
-}
-
 namespace extensions {
 
 // This is the interface for extension actions that are to be recorded in
@@ -42,42 +38,6 @@ class Action : public base::RefCountedThreadSafe<Action> {
     ACTION_ANY = 1001,              // Used for lookups of unspecified type.
   };
 
-  // The type of ad injection an action performed. Do not delete or reorder
-  // these metrics, as they are used in histogramming.
-  enum InjectionType {
-    // No ad injection occurred.
-    NO_AD_INJECTION = 0,
-    // A new ad was injected.
-    INJECTION_NEW_AD,
-    // An ad was removed.
-    INJECTION_REMOVED_AD,
-    // An ad was replaced.
-    INJECTION_REPLACED_AD,
-    // Something occurred which heuristically looks like an ad injection, but we
-    // didn't categorize it as such (likely because we didn't recognize it as
-    // an ad network). If our list is effective, this should be significantly
-    // lower than the non-LIKELY counterparts.
-    INJECTION_LIKELY_NEW_AD,
-    INJECTION_LIKELY_REPLACED_AD,
-
-    // Place any new injection types above this entry.
-    NUM_INJECTION_TYPES
-  };
-
-  // The type of ad which was injected.
-  // Do not delete or reorder items in this enum, as it is used in
-  // histogramming.
-  enum AdType {
-    AD_TYPE_NONE,
-    AD_TYPE_IFRAME,
-    AD_TYPE_EMBED,
-    AD_TYPE_ANCHOR,
-    AD_TYPE_SCRIPT,
-
-    // Place any new injection types above this entry.
-    NUM_AD_TYPES
-  };
-
   // A useful shorthand for methods that take or return collections of Action
   // objects.
   typedef std::vector<scoped_refptr<Action> > ActionVector;
@@ -93,12 +53,6 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   // Creates and returns a mutable copy of an Action.
   scoped_refptr<Action> Clone() const;
-
-  // Return the type of ad-injection performed in the |action|, or
-  // NO_AD_INJECTION if none was present.
-  // TODO(rdevlin.cronin): This isn't done.
-  // See crbug.com/357204.
-  InjectionType DidInjectAd(rappor::RapporService* rappor_service) const;
 
   // The extension which caused this record to be generated.
   const std::string& extension_id() const { return extension_id_; }
@@ -177,19 +131,6 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
  private:
   friend class base::RefCountedThreadSafe<Action>;
-
-  // Returns true if a given |url| could be an ad.
-  bool UrlCouldBeAd(const GURL& url) const;
-
-  // Uploads the URL to RAPPOR (preserving privacy) if this might have been an
-  // ad injection.
-  void MaybeUploadUrl(rappor::RapporService* rappor_service) const;
-
-  // Checks an action that modified the src or href of an element for ad
-  // injection.
-  InjectionType CheckAttrModification() const;
-  // Checks an action that adds an element for ad injection.
-  InjectionType CheckElementAddition() const;
 
   std::string extension_id_;
   base::Time time_;
