@@ -126,6 +126,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // request the URL.
   bool CanRequestURL(int child_id, const GURL& url);
 
+  // Whether the process is allowed to commit a document from the given URL.
+  // This is more restrictive than CanRequestURL, since CanRequestURL allows
+  // requests that might lead to cross-process navigations or external protocol
+  // handlers.
+  bool CanCommitURL(int child_id, const GURL& url);
+
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id, const storage::FileSystemURL& url);
   bool CanWriteFileSystemFile(int child_id, const storage::FileSystemURL& url);

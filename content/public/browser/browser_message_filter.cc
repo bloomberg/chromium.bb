@@ -17,6 +17,10 @@
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
 
+#if defined(OS_ANDROID)
+#include "content/browser/android/child_process_launcher_android.h"
+#endif
+
 using content::BrowserMessageFilter;
 
 namespace content {
@@ -184,8 +188,12 @@ void BrowserMessageFilter::ShutdownForBadMessage() {
   BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
       PROCESS_TYPE_RENDERER);
 
-  // TODO(nick): Shouldn't this call StopChildProcess on Android?
+#if defined(OS_ANDROID)
+  // Android requires a different approach for killing.
+  StopChildProcess(peer_process_.Handle());
+#else
   peer_process_.Terminate(content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+#endif
 }
 
 BrowserMessageFilter::~BrowserMessageFilter() {

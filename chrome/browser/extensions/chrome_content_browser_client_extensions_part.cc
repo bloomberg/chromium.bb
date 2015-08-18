@@ -35,10 +35,12 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"
+#include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/app_isolation_info.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
@@ -184,6 +186,8 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
 // static
 bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     content::RenderProcessHost* process_host, const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // We need to let most extension URLs commit in any process, since this can
   // be allowed due to web_accessible_resources.  Most hosted app URLs may also
   // load in any process (e.g., in an iframe).  However, the Chrome Web Store
@@ -203,6 +207,52 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     return false;
   }
   return true;
+}
+
+bool ChromeContentBrowserClientExtensionsPart::IsIllegalOrigin(
+    content::ResourceContext* resource_context,
+    int child_process_id,
+    const GURL& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Consider non-extension URLs safe; they will be checked elsewhere.
+  if (!origin.SchemeIs(extensions::kExtensionScheme))
+    return false;
+
+  // If there is no extension installed for the URL, it couldn't have committed.
+  // (If the extension was recently uninstalled, the tab would have closed.)
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  extensions::InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
+  const extensions::Extension* extension =
+      extension_info_map->extensions().GetExtensionOrAppByURL(origin);
+  if (!extension)
+    return true;
+
+  // Check for platform app origins.  These can only be committed by the app
+  // itself, or by one if its guests if there are accessible_resources.
+  const extensions::ProcessMap& process_map = extension_info_map->process_map();
+  if (extension->is_platform_app() &&
+      !process_map.Contains(extension->id(), child_process_id)) {
+    // This is a platform app origin not in the app's own process.  If there are
+    // no accessible resources, this is illegal.
+    if (!extension->GetManifestData(manifest_keys::kWebviewAccessibleResources))
+      return true;
+
+    // If there are accessible resources, the origin is only legal if the given
+    // process is a guest of the app.
+    std::string owner_extension_id;
+    int owner_process_id;
+    WebViewRendererState::GetInstance()->GetOwnerInfo(
+        child_process_id, &owner_process_id, &owner_extension_id);
+    const Extension* owner_extension =
+        extension_info_map->extensions().GetByID(owner_extension_id);
+    return !owner_extension || owner_extension != extension;
+  }
+
+  // With only the origin and not the full URL, we don't have enough information
+  // to validate hosted apps or web_accessible_resources in normal extensions.
+  // Assume they're legal.
+  return false;
 }
 
 // static

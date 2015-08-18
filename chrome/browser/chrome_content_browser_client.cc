@@ -993,6 +993,18 @@ bool ChromeContentBrowserClient::CanCommitURL(
 #endif
 }
 
+bool ChromeContentBrowserClient::IsIllegalOrigin(
+    content::ResourceContext* resource_context,
+    int child_process_id,
+    const GURL& origin) {
+#if defined(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientExtensionsPart::IsIllegalOrigin(
+      resource_context, child_process_id, origin);
+#else
+  return false;
+#endif
+}
+
 bool ChromeContentBrowserClient::ShouldAllowOpenURL(
     content::SiteInstance* site_instance, const GURL& url) {
   GURL from_url = site_instance->GetSiteURL();

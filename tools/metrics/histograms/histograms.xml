@@ -52498,6 +52498,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="92" label="WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
   <int value="93" label="BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
+  <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

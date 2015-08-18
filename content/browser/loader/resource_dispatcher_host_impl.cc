@@ -275,7 +275,9 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
 bool ShouldServiceRequest(int process_type,
                           int child_id,
                           const ResourceHostMsg_Request& request_data,
-                          storage::FileSystemContext* file_system_context) {
+                          const net::HttpRequestHeaders& headers,
+                          ResourceMessageFilter* filter,
+                          ResourceContext* resource_context) {
   if (process_type == PROCESS_TYPE_PLUGIN)
     return true;
 
@@ -287,6 +289,21 @@ bool ShouldServiceRequest(int process_type,
     VLOG(1) << "Denied unauthorized request for "
             << request_data.url.possibly_invalid_spec();
     return false;
+  }
+
+  // Check if the renderer is using an illegal Origin header.  If so, kill it.
+  std::string origin_string;
+  bool has_origin = headers.GetHeader("Origin", &origin_string) &&
+                    origin_string != "null";
+  if (has_origin) {
+    GURL origin(origin_string);
+    if (!policy->CanCommitURL(child_id, origin) ||
+        GetContentClient()->browser()->IsIllegalOrigin(resource_context,
+                                                       child_id, origin)) {
+      VLOG(1) << "Killed renderer for illegal origin: " << origin_string;
+      bad_message::ReceivedBadMessage(filter, bad_message::RDH_ILLEGAL_ORIGIN);
+      return false;
+    }
   }
 
   // Check if the renderer is permitted to upload the requested files.
@@ -303,7 +320,7 @@ bool ShouldServiceRequest(int process_type,
       }
       if (iter->type() == ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM) {
         storage::FileSystemURL url =
-            file_system_context->CrackURL(iter->filesystem_url());
+            filter->file_system_context()->CrackURL(iter->filesystem_url());
         if (!policy->CanReadFileSystemFile(child_id, url)) {
           NOTREACHED() << "Denied unauthorized upload of "
                        << iter->filesystem_url().spec();
@@ -1172,9 +1189,14 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // http://crbug.com/90971
   CHECK(ContainsKey(active_resource_contexts_, resource_context));
 
+  // Parse the headers before calling ShouldServiceRequest, so that they are
+  // available to be validated.
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(request_data.headers);
+
   if (is_shutdown_ ||
-      !ShouldServiceRequest(process_type, child_id, request_data,
-                            filter_->file_system_context())) {
+      !ShouldServiceRequest(process_type, child_id, request_data, headers,
+                            filter_, resource_context)) {
     AbortRequestBeforeItStarts(filter_, sync_result, request_id);
     return;
   }
@@ -1206,8 +1228,6 @@ void ResourceDispatcherHostImpl::BeginRequest(
   const Referrer referrer(request_data.referrer, request_data.referrer_policy);
   SetReferrerForRequest(new_request.get(), referrer);
 
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(request_data.headers);
   new_request->SetExtraRequestHeaders(headers);
 
   storage::BlobStorageContext* blob_context =

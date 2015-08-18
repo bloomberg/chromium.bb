@@ -166,8 +166,8 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     can_send_midi_sysex_ = true;
   }
 
-  // Determine whether permission has been granted to request |url|.
-  bool CanRequestURL(const GURL& url) {
+  // Determine whether permission has been granted to commit |url|.
+  bool CanCommitURL(const GURL& url) {
     // Having permission to a scheme implies permssion to all of its URLs.
     SchemeMap::const_iterator judgment(scheme_policy_.find(url.scheme()));
     if (judgment != scheme_policy_.end())
@@ -555,9 +555,6 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
   if (!url.is_valid())
     return false;  // Can't request invalid URLs.
 
-  if (IsWebSafeScheme(url.scheme()))
-    return true;  // The scheme has been white-listed for every child process.
-
   if (IsPseudoScheme(url.scheme())) {
     // There are a number of special cases for pseudo schemes.
 
@@ -581,10 +578,30 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;
   }
 
-  if (!GetContentClient()->browser()->IsHandledURL(url) &&
-      !net::URLRequest::IsHandledURL(url)) {
-    return true;  // This URL request is destined for ShellExecute.
-  }
+  // If the process can commit the URL, it can request it.
+  if (CanCommitURL(child_id, url))
+    return true;
+
+  // Also allow URLs destined for ShellExecute and not the browser itself.
+  return !GetContentClient()->browser()->IsHandledURL(url) &&
+         !net::URLRequest::IsHandledURL(url);
+}
+
+bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
+                                                  const GURL& url) {
+  if (!url.is_valid())
+    return false;  // Can't commit invalid URLs.
+
+  // Of all the pseudo schemes, only about:blank is allowed to commit.
+  if (IsPseudoScheme(url.scheme()))
+    return base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL);
+
+  // TODO(creis): Tighten this for Site Isolation, so that a URL from a site
+  // that is isolated can only be committed in a process dedicated to that site.
+  // CanRequestURL should still allow all web-safe schemes. See
+  // https://crbug.com/515309.
+  if (IsWebSafeScheme(url.scheme()))
+    return true;  // The scheme has been white-listed for every child process.
 
   {
     base::AutoLock lock(lock_);
@@ -594,8 +611,8 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
       return false;
 
     // Otherwise, we consult the child process's security state to see if it is
-    // allowed to request the URL.
-    return state->second->CanRequestURL(url);
+    // allowed to commit the URL.
+    return state->second->CanCommitURL(url);
   }
 }
 

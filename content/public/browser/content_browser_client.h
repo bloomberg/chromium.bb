@@ -217,7 +217,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   // more conservative check than IsSuitableHost, since it is used after a
   // navigation has committed to ensure that the process did not exceed its
   // authority.
+  // This is called on the UI thread.
   virtual bool CanCommitURL(RenderProcessHost* process_host, const GURL& url);
+
+  // Returns true if no URL within |origin| is allowed to commit in the given
+  // process.  Must return false if there exists at least one URL in |origin|
+  // that is allowed to commit.
+  // This is called on the IO thread.
+  virtual bool IsIllegalOrigin(ResourceContext* resource_context,
+                               int child_process_id,
+                               const GURL& origin);
 
   // Returns whether a URL should be allowed to open from a specific context.
   // This also applies in cases where the new URL will open in another process.

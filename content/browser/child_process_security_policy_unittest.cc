@@ -155,20 +155,34 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
 
   p->Add(kRendererID);
 
-  // Safe
+  // Safe to request or commit.
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("http://www.google.com/")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("https://www.paypal.com/")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("ftp://ftp.gnu.org/")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("data:text/html,<b>Hi</b>")));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID,
-                               GURL("view-source:http://www.google.com/")));
   EXPECT_TRUE(p->CanRequestURL(
       kRendererID, GURL("filesystem:http://localhost/temporary/a.gif")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("http://www.google.com/")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("https://www.paypal.com/")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("ftp://ftp.gnu.org/")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("data:text/html,<b>Hi</b>")));
+  EXPECT_TRUE(p->CanCommitURL(
+      kRendererID, GURL("filesystem:http://localhost/temporary/a.gif")));
 
-  // Dangerous
+  // Safe to request but not commit.
+  EXPECT_TRUE(p->CanRequestURL(kRendererID,
+                               GURL("view-source:http://www.google.com/")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID,
+                               GURL("view-source:http://www.google.com/")));
+
+  // Dangerous to request or commit.
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("file:///etc/passwd")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
+                                GURL("chrome://foo/bar")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID,
+                                GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID,
                                 GURL("chrome://foo/bar")));
 
   p->Remove(kRendererID);
@@ -184,24 +198,37 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("about:BlAnK")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("aBouT:BlAnK")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("aBouT:blank")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("about:blank")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("about:BlAnK")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("aBouT:BlAnK")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("aBouT:blank")));
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:memory")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:crash")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:cache")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:hang")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("about:memory")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("about:crash")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("about:cache")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("about:hang")));
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("aBoUt:memory")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:CrASh")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("abOuT:cAChe")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("aBoUt:memory")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("about:CrASh")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("abOuT:cAChe")));
 
   // Requests for about: pages should be denied.
   p->GrantRequestURL(kRendererID, GURL("about:crash"));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("about:crash")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("about:crash")));
 
   // These requests for chrome:// pages should be granted.
   GURL chrome_url("chrome://foo");
   p->GrantRequestURL(kRendererID, chrome_url);
   EXPECT_TRUE(p->CanRequestURL(kRendererID, chrome_url));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, chrome_url));
 
   p->Remove(kRendererID);
 }
@@ -213,8 +240,10 @@ TEST_F(ChildProcessSecurityPolicyTest, JavaScriptTest) {
   p->Add(kRendererID);
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("javascript:alert('xss')")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("javascript:alert('xss')")));
   p->GrantRequestURL(kRendererID, GURL("javascript:alert('xss')"));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("javascript:alert('xss')")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("javascript:alert('xss')")));
 
   p->Remove(kRendererID);
 }
@@ -225,16 +254,20 @@ TEST_F(ChildProcessSecurityPolicyTest, RegisterWebSafeSchemeTest) {
 
   p->Add(kRendererID);
 
-  // Currently, "asdf" is destined for ShellExecute, so it is allowed.
+  // Currently, "asdf" is destined for ShellExecute, so it is allowed to be
+  // requested but not committed.
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("asdf:rockers")));
 
   // Once we register "asdf", we default to deny.
   RegisterTestScheme("asdf");
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("asdf:rockers")));
 
   // We can allow new schemes by adding them to the whitelist.
   p->RegisterWebSafeScheme("asdf");
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("asdf:rockers")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("asdf:rockers")));
 
   // Cleanup.
   p->Remove(kRendererID);
@@ -247,13 +280,16 @@ TEST_F(ChildProcessSecurityPolicyTest, CanServiceCommandsTest) {
   p->Add(kRendererID);
 
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
   p->GrantRequestURL(kRendererID, GURL("file:///etc/passwd"));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
 
   // We should forget our state if we repeat a renderer id.
   p->Remove(kRendererID);
   p->Add(kRendererID);
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
   p->Remove(kRendererID);
 }
 
@@ -272,11 +308,25 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
   EXPECT_FALSE(p->CanRequestURL(
       kRendererID, GURL("view-source:view-source:http://www.google.com/")));
 
+  // View source URLs don't actually commit; the renderer is put into view
+  // source mode, and the inner URL commits.
+  EXPECT_FALSE(p->CanCommitURL(kRendererID,
+                               GURL("view-source:http://www.google.com/")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID,
+                               GURL("view-source:file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(
+      kRendererID, GURL("view-source:view-source:http://www.google.com/")));
+
+
   p->GrantRequestURL(kRendererID, GURL("view-source:file:///etc/passwd"));
   // View source needs to be able to request the embedded scheme.
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
   EXPECT_TRUE(p->CanRequestURL(kRendererID,
                                GURL("view-source:file:///etc/passwd")));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID,
+                               GURL("view-source:file:///etc/passwd")));
 
   p->Remove(kRendererID);
 }
@@ -291,14 +341,20 @@ TEST_F(ChildProcessSecurityPolicyTest, SpecificFile) {
   GURL sensitive_url("file:///etc/passwd");
   EXPECT_FALSE(p->CanRequestURL(kRendererID, icon_url));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, sensitive_url));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, icon_url));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, sensitive_url));
 
   p->GrantRequestSpecificFileURL(kRendererID, icon_url);
   EXPECT_TRUE(p->CanRequestURL(kRendererID, icon_url));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, sensitive_url));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, icon_url));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, sensitive_url));
 
   p->GrantRequestURL(kRendererID, icon_url);
   EXPECT_TRUE(p->CanRequestURL(kRendererID, icon_url));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, sensitive_url));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, icon_url));
+  EXPECT_TRUE(p->CanCommitURL(kRendererID, sensitive_url));
 
   p->Remove(kRendererID);
 }
