@@ -23,21 +23,14 @@ import sys
 from common import chromium_utils
 from common import gtest_utils
 
-# TODO(crbug.com/403564). We almost certainly shouldn't be importing this.
-import config
-
 from slave import annotation_utils
 from slave import build_directory
-from slave import gtest_slave_utils
 from slave import slave_utils
 from slave import xvfb
 
 USAGE = '%s [options] test.exe [test args]' % os.path.basename(sys.argv[0])
 
 CHROME_SANDBOX_PATH = '/opt/chromium/chrome_sandbox'
-
-# Directory to write JSON for test results into.
-DEST_DIR = 'gtest_results'
 
 # The directory that this script is in.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -129,95 +122,6 @@ def _RunGTestCommand(
   env.update({'CHROMIUM_TEST_LAUNCHER_BOT_MODE': '1'})
 
   return chromium_utils.RunCommand(command, pipes=pipes, env=env)
-
-
-def _GetMaster():
-  """Return the master name for the current host."""
-  return chromium_utils.GetActiveMaster()
-
-
-def _GetMasterString(master):
-  """Returns a message describing what the master is."""
-  return '[Running for master: "%s"]' % master
-
-
-def _GenerateJSONForTestResults(options, log_processor):
-  """Generates or updates a JSON file from the gtest results XML and upload the
-  file to the archive server.
-
-  The archived JSON file will be placed at:
-    www-dir/DEST_DIR/buildname/testname/results.json
-  on the archive server. NOTE: This will be deprecated.
-
-  Args:
-    options: command-line options that are supposed to have build_dir,
-        results_directory, builder_name, build_name and test_output_xml values.
-    log_processor: An instance of PerformanceLogProcessor or similar class.
-
-  Returns:
-    True upon success, False upon failure.
-  """
-  results_map = None
-  try:
-    results_map = gtest_slave_utils.GetResultsMap(log_processor)
-  except Exception as e:
-    # This error will be caught by the following 'not results_map' statement.
-    print 'Error: ', e
-
-  if not results_map:
-    print 'No data was available to update the JSON results'
-    # Consider this non-fatal.
-    return True
-
-  build_dir = os.path.abspath(options.build_dir)
-  slave_name = options.builder_name or slave_utils.SlaveBuildName(build_dir)
-
-  generate_json_options = copy.copy(options)
-  generate_json_options.build_name = slave_name
-  generate_json_options.input_results_xml = options.test_output_xml
-  generate_json_options.builder_base_url = '%s/%s/%s/%s' % (
-      config.Master.archive_url, DEST_DIR, slave_name, options.test_type)
-  generate_json_options.master_name = options.master_class_name or _GetMaster()
-  generate_json_options.test_results_server = config.Master.test_results_server
-
-  print _GetMasterString(generate_json_options.master_name)
-
-  generator = None
-
-  try:
-    if options.revision:
-      generate_json_options.chrome_revision = options.revision
-    else:
-      generate_json_options.chrome_revision = ''
-
-    if options.webkit_revision:
-      generate_json_options.webkit_revision = options.webkit_revision
-    else:
-      generate_json_options.webkit_revision = ''
-
-    # Generate results JSON file and upload it to the appspot server.
-    generator = gtest_slave_utils.GenerateJSONResults(
-        results_map, generate_json_options)
-
-  except Exception as e:
-    print 'Unexpected error while generating JSON: %s' % e
-    sys.excepthook(*sys.exc_info())
-    return False
-
-  # The code can throw all sorts of exceptions, including
-  # slave.gtest.networktransaction.NetworkTimeout so just trap everything.
-  # Earlier versions of this code ignored network errors, so until a
-  # retry mechanism is added, continue to do so rather than reporting
-  # an error.
-  try:
-    # Upload results JSON file to the appspot server.
-    gtest_slave_utils.UploadJSONResults(generator)
-  except Exception as e:
-    # Consider this non-fatal for the moment.
-    print 'Unexpected error while uploading JSON: %s' % e
-    sys.excepthook(*sys.exc_info())
-
-  return True
 
 
 def _BuildTestBinaryCommand(_build_dir, test_exe_path, options):
@@ -381,11 +285,6 @@ def _Main(options, args, extra_env):
     log_processor = gtest_utils.GTestJSONParser(
         options.build_properties.get('mastername'))
 
-  if options.generate_json_file:
-    if os.path.exists(options.test_output_xml):
-      # remove the old XML output file.
-      os.remove(options.test_output_xml)
-
   try:
     # TODO(dpranke): checking on test_exe is a temporary hack until we
     # can change the buildbot master to pass --xvfb instead of --no-xvfb
@@ -425,10 +324,6 @@ def _Main(options, args, extra_env):
       if options.use_symbolization_script:
         _SymbolizeSnippetsInJSON(options, json_file_name)
       log_processor.ProcessJSONFile(options.build_dir)
-
-  if options.generate_json_file:
-    if not _GenerateJSONForTestResults(options, log_processor):
-      return 1
 
   if options.annotate:
     annotation_utils.annotate(options.test_type, result, log_processor)
@@ -707,15 +602,6 @@ def main():
     if options.total_shards and options.shard_index:
       extra_env['GTEST_TOTAL_SHARDS'] = str(options.total_shards)
       extra_env['GTEST_SHARD_INDEX'] = str(options.shard_index - 1)
-
-    if options.results_directory:
-      options.test_output_xml = os.path.normpath(os.path.abspath(os.path.join(
-          options.results_directory, '%s.xml' % options.test_type)))
-      args.append('--gtest_output=xml:' + options.test_output_xml)
-    elif options.generate_json_file:
-      option_parser.error(
-          '--results-directory is required with --generate-json-file=True')
-      return 1
 
     return _Main(options, args, extra_env)
   finally:
