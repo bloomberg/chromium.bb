@@ -143,6 +143,12 @@ DownloadItemNotification::~DownloadItemNotification() {
 void DownloadItemNotification::OnNotificationClose() {
   visible_ = false;
 
+  if (item_->IsDangerous() && !item_->IsDone()) {
+    // TODO(yoshiki): Add metrics.
+    item_->Cancel(true /* by_user */);
+    return;
+  }
+
   if (image_decode_status_ == IN_PROGRESS) {
     image_decode_status_ = NOT_STARTED;
     ImageDecoder::Cancel(this);
@@ -195,12 +201,12 @@ void DownloadItemNotification::OnNotificationButtonClick(int button_index) {
   DownloadCommands::Command command = button_actions_->at(button_index);
   RecordButtonClickAction(command);
 
+  DownloadCommands(item_).ExecuteCommand(command);
+
   if (command != DownloadCommands::PAUSE &&
       command != DownloadCommands::RESUME) {
     CloseNotificationByUser();
   }
-
-  DownloadCommands(item_).ExecuteCommand(command);
 
   // Shows the notification again after clicking "Keep" on dangerous download.
   if (command == DownloadCommands::KEEP) {
@@ -229,8 +235,11 @@ void DownloadItemNotification::CloseNotificationByNonUser() {
 }
 
 void DownloadItemNotification::CloseNotificationByUser() {
+  if (!item_)
+    return;  // Item already removed.
   const std::string& notification_id = watcher()->id();
-  const ProfileID profile_id = NotificationUIManager::GetProfileID(profile());
+  Profile* profil = profile();
+  const ProfileID profile_id = NotificationUIManager::GetProfileID(profil);
   const std::string notification_id_in_message_center =
       ProfileNotification::GetProfileNotificationId(notification_id,
                                                     profile_id);
@@ -761,7 +770,9 @@ Browser* DownloadItemNotification::GetBrowser() const {
 }
 
 Profile* DownloadItemNotification::profile() const {
-  return Profile::FromBrowserContext(item_->GetBrowserContext());
+  content::BrowserContext* bt(item_->GetBrowserContext());
+  Profile* profile = Profile::FromBrowserContext(bt);
+  return profile;
 }
 
 bool DownloadItemNotification::IsNotificationVisible() const {

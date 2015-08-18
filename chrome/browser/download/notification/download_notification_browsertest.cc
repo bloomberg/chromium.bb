@@ -493,16 +493,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
             download_item()->GetDangerType());
   EXPECT_TRUE(download_item()->IsDangerous());
 
-  // Opens the message center.
-  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-
   NotificationRemoveObserver notification_close_observer;
 
+  EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
   // Clicks the "Discard" button.
   notification()->ButtonClick(0);  // 1st button: "Discard"
-  // Clicking makes the message center closed.
-  GetMessageCenter()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
 
+  EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
   // Confirms that the notification is closed.
   EXPECT_EQ(notification_id(), notification_close_observer.Wait());
 
