@@ -46,19 +46,6 @@ inline int snprintf(char* buffer, size_t size, const char* format, ...) {
   return result;
 }
 
-// TODO(mark) http://crbug.com/472900 crashpad shouldn't use base while
-// being DEPSed in. This backwards-compat hack is provided until crashpad is
-// updated.
-#if defined(OS_WIN)
-inline int strcasecmp(const char* s1, const char* s2) {
-  return _stricmp(s1, s2);
-}
-#else  // Posix
-inline int strcasecmp(const char* string1, const char* string2) {
-  return ::strcasecmp(string1, string2);
-}
-#endif
-
 // BSD-style safe and consistent string copy functions.
 // Copies |src| to |dst|, where |dst_size| is the total allocated size of |dst|.
 // Copies at most |dst_size|-1 characters, and always NULL terminates |dst|, as
