@@ -556,10 +556,9 @@ V8DebuggerListener::SkipPauseRequest V8DebuggerAgent::shouldSkipStepPause()
 PassRefPtr<TypeBuilder::Debugger::Location> V8DebuggerAgent::resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
 {
     ASSERT(enabled());
-    if (breakpointId.isEmpty()) {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    // FIXME: remove these checks once crbug.com/520702 is resolved.
+    RELEASE_ASSERT(!breakpointId.isEmpty());
+    RELEASE_ASSERT(!scriptId.isEmpty());
     ScriptsMap::iterator scriptIterator = m_scripts.find(scriptId);
     if (scriptIterator == m_scripts.end())
         return nullptr;
@@ -575,6 +574,7 @@ PassRefPtr<TypeBuilder::Debugger::Location> V8DebuggerAgent::resolveBreakpoint(c
 
     m_serverBreakpoints.set(debuggerBreakpointId, std::make_pair(breakpointId, source));
 
+    RELEASE_ASSERT(!breakpointId.isEmpty());
     BreakpointIdToDebuggerBreakpointIdsMap::iterator debuggerBreakpointIdsIterator = m_breakpointIdToDebuggerBreakpointIds.find(breakpointId);
     if (debuggerBreakpointIdsIterator == m_breakpointIdToDebuggerBreakpointIds.end())
         m_breakpointIdToDebuggerBreakpointIds.set(breakpointId, Vector<String>()).storedValue->value.append(debuggerBreakpointId);
