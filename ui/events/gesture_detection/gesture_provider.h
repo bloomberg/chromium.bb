@@ -34,13 +34,6 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
     GestureDetector::Config gesture_detector_config;
     ScaleGestureDetector::Config scale_gesture_detector_config;
 
-    // If |disable_click_delay| is true and double-tap support is disabled,
-    // there will be no delay before tap events. When double-tap support is
-    // enabled, there will always be a delay before a tap event is fired, in
-    // order to allow the double tap gesture to occur without firing any tap
-    // events.
-    bool disable_click_delay;
-
     // Whether double-tap detection is supported by the platform. If disabled,
     // there will be no delay before tap events. Defaults to true.
     bool double_tap_support_for_platform_enabled;

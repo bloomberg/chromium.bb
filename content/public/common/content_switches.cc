@@ -940,9 +940,6 @@ const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";
 const char kDisableGestureRequirementForMediaPlayback[] =
     "disable-gesture-requirement-for-media-playback";
 
-// Disable the click delay by sending click events during double tap.
-const char kDisableClickDelay[]             = "disable-click-delay";
-
 // Disable overscroll edge effects like those found in Android views.
 const char kDisableOverscrollEdgeEffect[]   = "disable-overscroll-edge-effect";
 

@@ -280,15 +280,6 @@ scoped_ptr<OverscrollControllerAndroid> CreateOverscrollController(
   return make_scoped_ptr(new OverscrollControllerAndroid(content_view_core));
 }
 
-ui::GestureProvider::Config CreateGestureProviderConfig() {
-  ui::GestureProvider::Config config = ui::GetGestureProviderConfig(
-      ui::GestureProviderConfigType::CURRENT_PLATFORM);
-  config.disable_click_delay =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableClickDelay);
-  return config;
-}
-
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   gfx::RectF rect = controller.GetRectBetweenBounds();
   if (rect.IsEmpty())
@@ -330,7 +321,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
-      gesture_provider_(CreateGestureProviderConfig(), this),
+      gesture_provider_(ui::GetGestureProviderConfig(
+                            ui::GestureProviderConfigType::CURRENT_PLATFORM),
+                        this),
       stylus_text_selector_(this),
       accelerated_surface_route_id_(0),
       using_browser_compositor_(CompositorImpl::IsInitialized()),

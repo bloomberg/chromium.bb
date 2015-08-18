@@ -1495,12 +1495,6 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableEphemeralAppsInWebstore)},
 #if defined(OS_ANDROID)
-    {"disable-click-delay",
-     IDS_FLAGS_DISABLE_CLICK_DELAY_NAME,
-     IDS_FLAGS_DISABLE_CLICK_DELAY_DESCRIPTION,
-     kOsAndroid,
-     // Java-only switch: CommandLine.DISABLE_CLICK_DELAY
-     SINGLE_VALUE_TYPE("disable-click-delay")},
     {"disable-pull-to-refresh-effect",
      IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_NAME,
      IDS_FLAGS_DISABLE_PULL_TO_REFRESH_EFFECT_DESCRIPTION,

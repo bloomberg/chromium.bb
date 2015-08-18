@@ -265,7 +265,6 @@ extern const char kWebRtcMaxCaptureFramerate[];
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kDisableGestureRequirementForMediaPlayback[];
-CONTENT_EXPORT extern const char kDisableClickDelay[];
 CONTENT_EXPORT extern const char kDisableOverscrollEdgeEffect[];
 CONTENT_EXPORT extern const char kDisablePullToRefreshEffect[];
 CONTENT_EXPORT extern const char kDisableScreenOrientationLock[];

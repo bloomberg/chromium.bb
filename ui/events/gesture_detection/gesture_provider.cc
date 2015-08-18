@@ -64,7 +64,6 @@ gfx::RectF ClampBoundingBox(const gfx::RectF& bounds,
 
 GestureProvider::Config::Config()
     : display(gfx::Display::kInvalidDisplayID, gfx::Rect(1, 1)),
-      disable_click_delay(false),
       double_tap_support_for_platform_enabled(true),
       gesture_begin_end_types_enabled(false),
       min_gesture_bounds_length(0),
@@ -414,7 +413,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
       if (e.GetEventTime() - current_down_time_ >
           config_.gesture_detector_config.double_tap_timeout) {
         return OnSingleTapConfirmed(e);
-      } else if (!IsDoubleTapEnabled() || config_.disable_click_delay) {
+      } else if (!IsDoubleTapEnabled()) {
         // If double-tap has been disabled, there is no need to wait
         // for the double-tap timeout.
         return OnSingleTapConfirmed(e);
