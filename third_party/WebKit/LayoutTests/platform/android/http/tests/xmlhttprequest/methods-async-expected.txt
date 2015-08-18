@@ -1,4 +1,4 @@
-GET and POST should not be the only HTTP methods implemented in XMLHttpRequest for SharedWorkers.
+Tests for bug 3812 - GET and POST should not be the only HTTP methods implemented in XMLHttpRequest.
 
 GET(""): GET(null bytes), Content-Type: null
 GET(null): GET(null bytes), Content-Type: null
@@ -12,13 +12,12 @@ PUT("123"): PUT(3 bytes), Content-Type: text/plain;charset=UTF-8
 DELETE(""): DELETE(0 bytes), Content-Type: text/plain;charset=UTF-8
 DELETE(null): DELETE(null bytes), Content-Type: null
 DELETE("123"): DELETE(3 bytes), Content-Type: text/plain;charset=UTF-8
-HEAD(""): HEAD(null bytes), Content-Type: null
-HEAD(null): HEAD(null bytes), Content-Type: null
-HEAD("123"): HEAD(null bytes), Content-Type: null
+HEAD(""): HEAD(0 bytes), Content-Type: null
+HEAD(null): HEAD(0 bytes), Content-Type: null
+HEAD("123"): HEAD(0 bytes), Content-Type: null
 WKFOOBAR(""): WKFOOBAR(0 bytes), Content-Type: text/plain;charset=UTF-8
 WKFOOBAR(null): WKFOOBAR(null bytes), Content-Type: null
 WKFOOBAR("123"): WKFOOBAR(3 bytes), Content-Type: text/plain;charset=UTF-8
 SEARCH(""): SEARCH(0 bytes), Content-Type: text/plain;charset=UTF-8
 SEARCH(null): SEARCH(null bytes), Content-Type: null
 SEARCH("123"): SEARCH(3 bytes), Content-Type: text/plain;charset=UTF-8
-DONE
