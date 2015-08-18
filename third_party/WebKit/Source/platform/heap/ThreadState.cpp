@@ -650,8 +650,6 @@ bool ThreadState::shouldScheduleIdleGC()
 
 bool ThreadState::shouldSchedulePreciseGC()
 {
-    if (gcState() != NoGCScheduled)
-        return false;
 #if ENABLE(IDLE_GC)
     return false;
 #else
