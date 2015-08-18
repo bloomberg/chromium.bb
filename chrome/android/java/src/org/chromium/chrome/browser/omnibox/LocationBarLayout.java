@@ -1433,6 +1433,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         mSuggestionList = new OmniboxSuggestionsList(getContext());
         mOmniboxResultsContainer.addView(mSuggestionList);
+        // Start with visibility GONE to ensure that show() is called. http://crbug.com/517438
+        mSuggestionList.setVisibility(GONE);
         mSuggestionList.setAdapter(mSuggestionListAdapter);
         mSuggestionList.setClipToPadding(false);
         mSuggestionListAdapter.setSuggestionDelegate(new OmniboxSuggestionDelegate() {
