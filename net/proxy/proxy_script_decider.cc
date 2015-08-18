@@ -138,10 +138,10 @@ const ProxyConfig& ProxyScriptDecider::effective_config() const {
   return effective_config_;
 }
 
-// TODO(eroman): Return a const-pointer.
-ProxyResolverScriptData* ProxyScriptDecider::script_data() const {
+const scoped_refptr<ProxyResolverScriptData>&
+ProxyScriptDecider::script_data() const {
   DCHECK_EQ(STATE_NONE, next_state_);
-  return script_data_.get();
+  return script_data_;
 }
 
 // Initialize the fallback rules.

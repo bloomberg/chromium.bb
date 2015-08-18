@@ -76,8 +76,7 @@ class NET_EXPORT_PRIVATE ProxyScriptDecider {
 
   const ProxyConfig& effective_config() const;
 
-  // TODO(eroman): Return a const-pointer.
-  ProxyResolverScriptData* script_data() const;
+  const scoped_refptr<ProxyResolverScriptData>& script_data() const;
 
   void set_quick_check_enabled(bool enabled) {
     quick_check_enabled_ = enabled;

@@ -234,7 +234,7 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1) {
   EXPECT_EQ(kFailedDownloading,
             decider.Start(config, base::TimeDelta(), true,
                           callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -269,7 +269,7 @@ TEST(ProxyScriptDeciderTest, CustomPacFails2) {
   EXPECT_EQ(kFailedParsing,
             decider.Start(config, base::TimeDelta(), true,
                           callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 }
 
 // Fail downloading the custom PAC script, because the fetcher was NULL.
@@ -285,7 +285,7 @@ TEST(ProxyScriptDeciderTest, HasNullProxyScriptFetcher) {
   EXPECT_EQ(ERR_UNEXPECTED,
             decider.Start(config, base::TimeDelta(), true,
                           callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 }
 
 // Succeeds in choosing autodetect (WPAD DNS).
@@ -549,7 +549,7 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomFails1) {
   EXPECT_EQ(kFailedDownloading,
             decider.Start(config, base::TimeDelta(), true,
                           callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (parsing).
@@ -570,7 +570,7 @@ TEST(ProxyScriptDeciderTest, AutodetectFailCustomFails2) {
   EXPECT_EQ(kFailedParsing,
             decider.Start(config, base::TimeDelta(), true,
                           callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 }
 
 // This is a copy-paste of CustomPacFails1, with the exception that we give it
@@ -594,7 +594,7 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithPositiveDelay) {
                       true, callback.callback()));
 
   EXPECT_EQ(kFailedDownloading, callback.WaitForResult());
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -634,7 +634,7 @@ TEST(ProxyScriptDeciderTest, CustomPacFails1_WithNegativeDelay) {
   EXPECT_EQ(kFailedDownloading,
             decider.Start(config, base::TimeDelta::FromSeconds(-5),
                           true, callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 
   // Check the NetLog was filled correctly.
   TestNetLogEntry::List entries;
@@ -724,7 +724,7 @@ TEST(ProxyScriptDeciderTest, AutodetectDhcpFailParse) {
   // it failed downloading, not that it failed parsing.
   EXPECT_EQ(kFailedDownloading,
       decider.Start(config, base::TimeDelta(), true, callback.callback()));
-  EXPECT_EQ(NULL, decider.script_data());
+  EXPECT_EQ(nullptr, decider.script_data());
 
   EXPECT_FALSE(decider.effective_config().has_pac_url());
 }
