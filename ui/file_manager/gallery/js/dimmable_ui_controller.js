@@ -5,11 +5,10 @@
 /**
  * Dimmable UI Controller.
  * @param {!HTMLElement} container Container.
- * @param {!NodeList} tools Tools.
  * @constructor
  * @struct
  */
-function DimmableUIController(container, tools) {
+function DimmableUIController(container) {
   /**
    * @private {!HTMLElement}
    * @const
@@ -17,10 +16,9 @@ function DimmableUIController(container, tools) {
   this.container_ = container;
 
   /**
-   * @private {!NodeList}
-   * @const
+   * @private {NodeList}
    */
-  this.tools_ = tools;
+  this.tools_ = null;
 
   /**
    * @private {number}
@@ -59,11 +57,6 @@ function DimmableUIController(container, tools) {
   this.container_.addEventListener('touchend', this.onTouchend_.bind(this));
   this.container_.addEventListener('touchcancel',
       this.onTouchcancel_.bind(this));
-
-  for (var i = 0; i < tools.length; i++) {
-    tools[i].addEventListener('mouseover', this.onMouseover_.bind(this));
-    tools[i].addEventListener('mouseout', this.onMouseout_.bind(this));
-  }
 }
 
 /**
@@ -261,6 +254,22 @@ DimmableUIController.prototype.onTimeout_ = function() {
   }
 
   this.show_(false /* hide */);
+};
+
+/**
+ * Sets tools which are controlled by this controller.
+ * This method must not be called more than once for an instance.
+ * @param {!NodeList} tools Tools.
+ */
+DimmableUIController.prototype.setTools = function(tools) {
+  assert(this.tools_ === null);
+
+  this.tools_ = tools;
+
+  for (var i = 0; i < this.tools_.length; i++) {
+    this.tools_[i].addEventListener('mouseover', this.onMouseover_.bind(this));
+    this.tools_[i].addEventListener('mouseout', this.onMouseout_.bind(this));
+  }
 };
 
 /**

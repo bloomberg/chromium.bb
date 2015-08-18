@@ -126,8 +126,7 @@ function Gallery(volumeManager) {
    * @private {!DimmableUIController}
    * @const
    */
-  this.dimmableUIController_ = new DimmableUIController(this.container_,
-      this.container_.querySelectorAll('.tool'));
+  this.dimmableUIController_ = new DimmableUIController(this.container_);
 
   this.thumbnailMode_ = new ThumbnailMode(
       assertInstanceof(document.querySelector('.thumbnail-view'), HTMLElement),
@@ -186,6 +185,10 @@ function Gallery(volumeManager) {
   window.addEventListener('pagehide', this.onPageHide_.bind(this));
 
   window.addEventListener('resize', this.resizeRenameField_.bind(this));
+
+  // We must call this method after elements of all tools have been attached to
+  // the DOM.
+  this.dimmableUIController_.setTools(document.querySelectorAll('.tool'));
 }
 
 /**
