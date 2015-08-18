@@ -580,6 +580,8 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     if (need_scissor) {
       glEnable(GL_SCISSOR_TEST);
       glScissor(xoffset, yoffset, width, height);
+    } else {
+      glDisable(GL_SCISSOR_TEST);
     }
     glViewport(0, 0, dest_width, dest_height);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
