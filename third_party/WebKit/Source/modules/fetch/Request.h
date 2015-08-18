@@ -68,7 +68,7 @@ private:
     Request(ExecutionContext*, FetchRequestData*, Headers*);
 
     const FetchRequestData* request() const { return m_request; }
-    static Request* createRequestWithRequestOrString(ScriptState*, Request*, const String&, const RequestInit&, ExceptionState&);
+    static Request* createRequestWithRequestOrString(ScriptState*, Request*, const String&, RequestInit&, ExceptionState&);
 
     String mimeType() const override;
 

@@ -47,7 +47,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState,
     return request;
 }
 
-Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Request* inputRequest, const String& inputString, const RequestInit& init, ExceptionState& exceptionState)
+Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Request* inputRequest, const String& inputString, RequestInit& init, ExceptionState& exceptionState)
 {
     // "1. Let |temporaryBody| be null."
     BodyStreamBuffer* temporaryBody = nullptr;
@@ -219,7 +219,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
 
     // "31. If either |init|'s body member is present or |temporaryBody| is
     // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
-    if (init.bodyBlobHandle || temporaryBody) {
+    if (init.body || temporaryBody) {
         if (request->method() == "GET" || request->method() == "HEAD") {
             exceptionState.throwTypeError("Request with GET/HEAD method cannot have body.");
             return nullptr;
@@ -227,7 +227,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     }
 
     // "32. If |init|'s body member is present, run these substeps:"
-    if (init.bodyBlobHandle) {
+    if (init.body) {
         // "1. Let |stream| and |Content-Type| be the result of extracting
         //  |init|'s body member."
         // "2. Set |temporaryBody| to |stream|.
@@ -235,9 +235,9 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         //  contains no header named `Content-Type`, append
         //  `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
         //  exception."
-        temporaryBody = new BodyStreamBuffer(FetchBlobDataConsumerHandle::create(scriptState->executionContext(), init.bodyBlobHandle));
-        if (!init.bodyBlobHandle->type().isEmpty() && !r->headers()->has("Content-Type", exceptionState)) {
-            r->headers()->append("Content-Type", init.bodyBlobHandle->type(), exceptionState);
+        temporaryBody = new BodyStreamBuffer(init.body.release());
+        if (!init.contentType.isEmpty() && !r->headers()->has("Content-Type", exceptionState)) {
+            r->headers()->append("Content-Type", init.contentType, exceptionState);
         }
         if (exceptionState.hadException())
             return nullptr;
@@ -281,7 +281,8 @@ Request* Request::create(ScriptState* scriptState, const String& input, Exceptio
 
 Request* Request::create(ScriptState* scriptState, const String& input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    return createRequestWithRequestOrString(scriptState, nullptr, input, RequestInit(scriptState->executionContext(), init, exceptionState), exceptionState);
+    RequestInit requestInit(scriptState->executionContext(), init, exceptionState);
+    return createRequestWithRequestOrString(scriptState, nullptr, input, requestInit, exceptionState);
 }
 
 Request* Request::create(ScriptState* scriptState, Request* input, ExceptionState& exceptionState)
@@ -291,7 +292,8 @@ Request* Request::create(ScriptState* scriptState, Request* input, ExceptionStat
 
 Request* Request::create(ScriptState* scriptState, Request* input, const Dictionary& init, ExceptionState& exceptionState)
 {
-    return createRequestWithRequestOrString(scriptState, input, String(), RequestInit(scriptState->executionContext(), init, exceptionState), exceptionState);
+    RequestInit requestInit(scriptState->executionContext(), init, exceptionState);
+    return createRequestWithRequestOrString(scriptState, input, String(), requestInit, exceptionState);
 }
 
 Request* Request::create(ExecutionContext* context, FetchRequestData* request)

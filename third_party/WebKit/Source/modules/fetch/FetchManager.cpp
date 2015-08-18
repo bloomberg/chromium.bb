@@ -358,12 +358,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag, bool corsPreflightFla
     }
 
     if (m_request->method() != "GET" && m_request->method() != "HEAD") {
-        if (BodyStreamBuffer* buffer = m_request->buffer()) {
-            RefPtr<BlobDataHandle> blobDataHandle = buffer->drainAsBlobDataHandle(FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
-            RefPtr<FormData> httpBody(FormData::create());
-            if (blobDataHandle)
-                httpBody->appendBlob(blobDataHandle->uuid(), blobDataHandle);
-            request.setHTTPBody(httpBody);
+        if (m_request->buffer()->hasBody()) {
+            request.setHTTPBody(m_request->buffer()->drainAsFormData());
         }
     }
     request.setFetchRedirectMode(m_request->redirect());

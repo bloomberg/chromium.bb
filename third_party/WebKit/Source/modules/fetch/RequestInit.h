@@ -7,13 +7,14 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "platform/heap/Handle.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class BlobDataHandle;
 class ExceptionState;
+class FetchDataConsumerHandle;
 class Headers;
 
 // FIXME: Use IDL dictionary instead of this class.
@@ -25,7 +26,8 @@ public:
     String method;
     Member<Headers> headers;
     Dictionary headersDictionary;
-    RefPtr<BlobDataHandle> bodyBlobHandle;
+    String contentType;
+    OwnPtr<FetchDataConsumerHandle> body;
     String mode;
     String credentials;
     String redirect;
