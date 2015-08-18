@@ -8,6 +8,7 @@
 #include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/url_constants.h"
 
 namespace sessions {
 
@@ -109,6 +110,18 @@ void ContentSerializedNavigationDriver::Sanitize(
     navigation->encoded_page_state_ =
         StripReferrerFromPageState(navigation->encoded_page_state_);
   }
+
+#if defined(OS_ANDROID)
+  // Rewrite the old new tab and welcome page URLs to the new NTP URL.
+  if (navigation->virtual_url_.SchemeIs(content::kChromeUIScheme) &&
+      (navigation->virtual_url_.host() == "welcome" ||
+       navigation->virtual_url_.host() == "newtab")) {
+    navigation->virtual_url_ = GURL("chrome-native://newtab/");
+    navigation->original_request_url_ = navigation->virtual_url_;
+    navigation->encoded_page_state_ = content::PageState::CreateFromURL(
+        navigation->virtual_url_).ToEncodedData();
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 std::string ContentSerializedNavigationDriver::StripReferrerFromPageState(
