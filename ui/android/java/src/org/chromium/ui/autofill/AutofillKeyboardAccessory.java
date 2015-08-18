@@ -67,14 +67,19 @@ public class AutofillKeyboardAccessory extends LinearLayout
     @SuppressLint("InlinedApi")
     public void showWithSuggestions(AutofillSuggestion[] suggestions, boolean isRtl) {
         removeAllViews();
+        int separatorPosition = -1;
         for (int i = 0; i < suggestions.length; i++) {
             AutofillSuggestion suggestion = suggestions[i];
             assert !TextUtils.isEmpty(suggestion.getLabel());
 
+            // Negative suggestion ID indiciates a tool like "settings" or "scan credit card."
+            // Non-negative suggestion ID indicates suggestions that can be filled into the form.
             View touchTarget;
             if (suggestion.getSuggestionId() < 0 && suggestion.getIconId() != 0) {
                 touchTarget = LayoutInflater.from(getContext()).inflate(
                         R.layout.autofill_keyboard_accessory_icon, this, false);
+
+                if (separatorPosition == -1) separatorPosition = i;
 
                 ImageView icon = (ImageView) touchTarget;
                 icon.setImageResource(suggestion.getIconId());
@@ -112,6 +117,12 @@ public class AutofillKeyboardAccessory extends LinearLayout
             }
 
             addView(touchTarget);
+        }
+
+        if (separatorPosition != -1) {
+            View separator = new View(getContext());
+            separator.setLayoutParams(new LinearLayout.LayoutParams(0, 0, 1));
+            addView(separator, separatorPosition);
         }
 
         ApiCompatibilityUtils.setLayoutDirection(
