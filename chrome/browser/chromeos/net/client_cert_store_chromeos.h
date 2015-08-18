@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SSL_CLIENT_CERT_STORE_CHROMEOS_H_
-#define NET_SSL_CLIENT_CERT_STORE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_STORE_CHROMEOS_H_
+#define CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_STORE_CHROMEOS_H_
 
 #include <string>
 
@@ -11,10 +11,12 @@
 #include "net/ssl/client_cert_store_nss.h"
 
 namespace net {
-
 class X509Certificate;
+}
 
-class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
+namespace chromeos {
+
+class ClientCertStoreChromeOS : public net::ClientCertStoreNSS {
  public:
   class CertFilter {
    public:
@@ -30,7 +32,7 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
     // (e.g. for a certain browser context or user).
     // This is only called once initialization is finished, see Init().
     virtual bool IsCertAllowed(
-        const scoped_refptr<X509Certificate>& cert) const = 0;
+        const scoped_refptr<net::X509Certificate>& cert) const = 0;
   };
 
   // This ClientCertStore will return only client certs that pass the filter
@@ -40,21 +42,21 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
       const PasswordDelegateFactory& password_delegate_factory);
   ~ClientCertStoreChromeOS() override;
 
-  // ClientCertStoreNSS:
-  void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                      CertificateList* selected_certs,
+  // net::ClientCertStoreNSS:
+  void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                      net::CertificateList* selected_certs,
                       const base::Closure& callback) override;
 
  protected:
-  // ClientCertStoreNSS:
+  // net::ClientCertStoreNSS:
   void GetClientCertsImpl(CERTCertList* cert_list,
-                          const SSLCertRequestInfo& request,
+                          const net::SSLCertRequestInfo& request,
                           bool query_nssdb,
-                          CertificateList* selected_certs) override;
+                          net::CertificateList* selected_certs) override;
 
  private:
-  void CertFilterInitialized(const SSLCertRequestInfo* request,
-                             CertificateList* selected_certs,
+  void CertFilterInitialized(const net::SSLCertRequestInfo* request,
+                             net::CertificateList* selected_certs,
                              const base::Closure& callback);
 
   scoped_ptr<CertFilter> cert_filter_;
@@ -62,6 +64,6 @@ class NET_EXPORT ClientCertStoreChromeOS : public ClientCertStoreNSS {
   DISALLOW_COPY_AND_ASSIGN(ClientCertStoreChromeOS);
 };
 
-}  // namespace net
+}  // namespace chromeos
 
-#endif  // NET_SSL_CLIENT_CERT_STORE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_NET_CLIENT_CERT_STORE_CHROMEOS_H_

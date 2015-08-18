@@ -710,6 +710,8 @@
         'browser/chromeos/mobile_config.h',
         'browser/chromeos/net/cert_verify_proc_chromeos.cc',
         'browser/chromeos/net/cert_verify_proc_chromeos.h',
+        "browser/chromeos/net/client_cert_store_chromeos.cc",
+        "browser/chromeos/net/client_cert_store_chromeos.h",
         'browser/chromeos/net/client_cert_filter_chromeos.cc',
         'browser/chromeos/net/client_cert_filter_chromeos.h',
         'browser/chromeos/net/delay_network_call.cc',

@@ -9,16 +9,15 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/cert/nss_profile_filter_chromeos.h"
-#include "net/ssl/client_cert_store_chromeos.h"
 
 namespace chromeos {
 
 // A client certificate filter that filters by applying a
 // NSSProfileFilterChromeOS.
-class ClientCertFilterChromeOS
-    : public net::ClientCertStoreChromeOS::CertFilter {
+class ClientCertFilterChromeOS : public ClientCertStoreChromeOS::CertFilter {
  public:
   // The internal NSSProfileFilterChromeOS will be initialized with the public
   // and private slot of the user with |username_hash| and with the system slot

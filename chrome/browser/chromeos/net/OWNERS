@@ -1,6 +1,7 @@
 per-file cert_verify_proc*=mattm@chromium.org
 per-file cert_verify_proc*=rsleevi@chromium.org
-per-file client_cert_filter*=mattm@chromium.org
-per-file client_cert_filter*=rsleevi@chromium.org
+per-file client_cert*=mattm@chromium.org
+per-file client_cert*=rsleevi@chromium.org
+per-file client_cert*=davidben@chromium.org
 per-file onc_utils*=pneubeck@chromium.org
 per-file proxy_config_handler*=pneubeck@chromium.org

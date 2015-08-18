@@ -276,8 +276,6 @@
           'cert/x509_util_nss_certs.cc',
           'cert_net/nss_ocsp.cc',
           'cert_net/nss_ocsp.h',
-          'ssl/client_cert_store_chromeos.cc',
-          'ssl/client_cert_store_chromeos.h',
           'ssl/client_cert_store_nss.cc',
           'ssl/client_cert_store_nss.h',
           'ssl/ssl_platform_key_nss.cc',

@@ -184,7 +184,6 @@
             'cert/nss_cert_database_unittest.cc',
             'cert/nss_cert_database_chromeos_unittest.cc',
             'cert/nss_profile_filter_chromeos_unittest.cc',
-            'ssl/client_cert_store_chromeos_unittest.cc',
             'ssl/client_cert_store_nss_unittest.cc',
           ],
         }],
