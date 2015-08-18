@@ -10,7 +10,7 @@
 var windowCreateOptions = {
   id: 'gallery',
   outerBounds: {
-    minWidth: 820,
+    minWidth: 860,
     minHeight: 554
   },
   frame: {
