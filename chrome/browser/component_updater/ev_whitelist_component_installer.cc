@@ -135,9 +135,11 @@ void EVWhitelistComponentInstallerTraits::ComponentReady(
           << path.value();
 
   const base::FilePath whitelist_file = GetInstalledPath(path);
-  content::BrowserThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&UpdateNewWhitelistData, whitelist_file,
-                            ev_whitelist_path_, version));
+  content::BrowserThread::PostAfterStartupTask(
+      FROM_HERE,
+      content::BrowserThread::GetBlockingPool(),
+      base::Bind(&UpdateNewWhitelistData, whitelist_file, ev_whitelist_path_,
+                            version));
 }
 
 bool EVWhitelistComponentInstallerTraits::VerifyInstallation(
