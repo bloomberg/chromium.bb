@@ -448,9 +448,10 @@ Viewport.prototype.imageToScreenRect = function(rect) {
  */
 Viewport.prototype.getCenteredRect_ = function(
     width, height, offsetX, offsetY) {
+  var screenBounds = this.getScreenBounds();
   return new ImageRect(
-      ~~((this.getScreenBounds().width - width) / 2) + offsetX,
-      ~~((this.getScreenBounds().height - height) / 2) + offsetY,
+      ~~((screenBounds.width - width) / 2) + offsetX,
+      ~~((screenBounds.height - height) / 2) + screenBounds.top + offsetY,
       width,
       height);
 };
@@ -497,7 +498,6 @@ Viewport.prototype.update_ = function() {
   // Image bounds on screen.
   this.imageBoundsOnScreen_ = this.getCenteredRect_(
       zoomedWidht, zoomedHeight, this.offsetX_, this.offsetY_);
-  this.imageBoundsOnScreen_.top += this.screenTop_;
 
   // Image bounds of element (that is not applied zoom and offset) on screen.
   var oldBounds = this.imageElementBoundsOnScreen_;
@@ -610,7 +610,7 @@ Viewport.prototype.getTransformation = function(width, height, opt_dx) {
       this.rotation_,
       this.zoom_,
       this.offsetX_ + (opt_dx || 0),
-      this.offsetY_ + this.screenTop_);
+      this.offsetY_);
 };
 
 /**
