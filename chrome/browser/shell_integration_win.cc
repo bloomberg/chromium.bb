@@ -207,23 +207,19 @@ base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
 }
 
 base::string16 GetAppForProtocolUsingRegistry(const GURL& url) {
-  base::string16 url_spec = base::ASCIIToUTF16(url.possibly_invalid_spec());
   const base::string16 cmd_key_path =
       base::ASCIIToUTF16(url.scheme() + "\\shell\\open\\command");
   base::win::RegKey cmd_key(HKEY_CLASSES_ROOT,
                             cmd_key_path.c_str(),
                             KEY_READ);
-  size_t split_offset = url_spec.find(L':');
-  if (split_offset == base::string16::npos)
-    return base::string16();
-  const base::string16 parameters = url_spec.substr(split_offset + 1,
-                                                    url_spec.length() - 1);
   base::string16 application_to_launch;
   if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
+    const base::string16 url_spec =
+        base::ASCIIToUTF16(url.possibly_invalid_spec());
     base::ReplaceSubstringsAfterOffset(&application_to_launch,
                                        0,
                                        L"%1",
-                                       parameters);
+                                       url_spec);
     return application_to_launch;
   }
   return base::string16();
