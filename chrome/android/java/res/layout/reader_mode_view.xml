@@ -24,7 +24,7 @@
         android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/main_icon"
-            android:src="@drawable/reader_mode_icon"
+            android:src="@drawable/infobar_mobile_friendly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
