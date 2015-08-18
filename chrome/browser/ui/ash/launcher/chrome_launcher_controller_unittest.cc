@@ -412,11 +412,16 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     launcher_controller_->SetShelfItemDelegateManagerForTest(nullptr);
-    if (!ash::Shell::HasInstance())
-      delete item_delegate_manager_;
     model_->RemoveObserver(model_observer_.get());
     model_observer_.reset();
     launcher_controller_.reset();
+
+    // item_delegate_manager_ must be deleted after launch_controller_,
+    // because launch_controller_ has a map of pointers to the data
+    // hold by item_delegate_manager_.
+    if (!ash::Shell::HasInstance())
+      delete item_delegate_manager_;
+
     model_.reset();
 
     BrowserWithTestWindowTest::TearDown();
