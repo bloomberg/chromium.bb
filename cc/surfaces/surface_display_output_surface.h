@@ -27,8 +27,7 @@ class CC_SURFACES_EXPORT SurfaceDisplayOutputSurface
   SurfaceDisplayOutputSurface(
       SurfaceManager* surface_manager,
       SurfaceIdAllocator* allocator,
-      const scoped_refptr<ContextProvider>& context_provider,
-      const scoped_refptr<ContextProvider>& worker_context_provider);
+      const scoped_refptr<ContextProvider>& context_provider);
   ~SurfaceDisplayOutputSurface() override;
 
   void set_display_client(OnscreenDisplayClient* display_client) {

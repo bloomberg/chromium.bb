@@ -74,8 +74,7 @@ LayerTreeSettings::LayerTreeSettings()
       gather_pixel_refs(false),
       use_compositor_animation_timelines(false),
       invert_viewport_scroll_order(false),
-      wait_for_beginframe_interval(true),
-      max_staging_buffers(32) {}
+      wait_for_beginframe_interval(true) {}
 
 LayerTreeSettings::~LayerTreeSettings() {}
 

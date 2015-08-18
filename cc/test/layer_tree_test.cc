@@ -107,9 +107,10 @@ DrawResult TestHooks::PrepareToDrawOnThread(
 void TestHooks::CreateResourceAndTileTaskWorkerPool(
     LayerTreeHostImpl* host_impl,
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-    scoped_ptr<ResourcePool>* resource_pool) {
+    scoped_ptr<ResourcePool>* resource_pool,
+    scoped_ptr<ResourcePool>* staging_resource_pool) {
   host_impl->LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
-      tile_task_worker_pool, resource_pool);
+      tile_task_worker_pool, resource_pool, staging_resource_pool);
 }
 
 // Adapts ThreadProxy for test. Injects test hooks for testing.
@@ -302,9 +303,10 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
 
   void CreateResourceAndTileTaskWorkerPool(
       scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-      scoped_ptr<ResourcePool>* resource_pool) override {
+      scoped_ptr<ResourcePool>* resource_pool,
+      scoped_ptr<ResourcePool>* staging_resource_pool) override {
     test_hooks_->CreateResourceAndTileTaskWorkerPool(
-        this, tile_task_worker_pool, resource_pool);
+        this, tile_task_worker_pool, resource_pool, staging_resource_pool);
   }
 
   void WillBeginImplFrame(const BeginFrameArgs& args) override {

@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/gpu_memory_buffer.h"
 
 // TODO(prashant.n): Including third_party/khronos/GLES2/gl2.h causes
 // redefinition errors as macros/functions defined in it conflict with
@@ -36,7 +35,6 @@ CC_EXPORT int BitsPerPixel(ResourceFormat format);
 CC_EXPORT GLenum GLDataType(ResourceFormat format);
 CC_EXPORT GLenum GLDataFormat(ResourceFormat format);
 CC_EXPORT GLenum GLInternalFormat(ResourceFormat format);
-CC_EXPORT gfx::BufferFormat BufferFormat(ResourceFormat format);
 
 }  // namespace cc
 

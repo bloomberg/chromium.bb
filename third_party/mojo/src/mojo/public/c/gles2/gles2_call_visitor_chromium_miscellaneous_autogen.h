@@ -9,4 +9,3 @@
 // DO NOT EDIT!
 
 VISIT_GL_CALL(ShallowFlushCHROMIUM, void, (), ())
-VISIT_GL_CALL(OrderingBarrierCHROMIUM, void, (), ())

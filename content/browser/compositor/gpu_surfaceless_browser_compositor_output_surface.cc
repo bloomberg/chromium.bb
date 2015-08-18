@@ -19,7 +19,6 @@ namespace content {
 GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         const scoped_refptr<ContextProviderCommandBuffer>& context,
-        const scoped_refptr<ContextProviderCommandBuffer>& worker_context,
         int surface_id,
         const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
         scoped_ptr<BrowserCompositorOverlayCandidateValidator>
@@ -28,7 +27,6 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         unsigned int internalformat,
         BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(context,
-                                        worker_context,
                                         vsync_manager,
                                         overlay_candidate_validator.Pass()),
       internalformat_(internalformat),

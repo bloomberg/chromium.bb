@@ -46,9 +46,13 @@ class RasterBufferImpl : public RasterBuffer {
     ContextProvider* context_provider = rasterizer_->resource_provider()
                                             ->output_surface()
                                             ->worker_context_provider();
-    DCHECK(context_provider);
 
-    ContextProvider::ScopedContextLock scoped_context(context_provider);
+    // The context lock must be held while accessing the context on a
+    // worker thread.
+    base::AutoLock context_lock(*context_provider->GetLock());
+
+    // Allow this worker thread to bind to context_provider.
+    context_provider->DetachFromThread();
 
     gfx::Rect playback_rect = raster_full_rect;
     if (resource_has_previous_content_) {
@@ -63,7 +67,10 @@ class RasterBufferImpl : public RasterBuffer {
                                  playback_rect, scale);
 
     // Barrier to sync worker context output to cc context.
-    scoped_context.ContextGL()->OrderingBarrierCHROMIUM();
+    context_provider->ContextGL()->OrderingBarrierCHROMIUM();
+
+    // Allow compositor thread to bind to context_provider.
+    context_provider->DetachFromThread();
   }
 
  private:

@@ -107,6 +107,10 @@ OutputSurface::~OutputSurface() {
     context_provider_->SetMemoryPolicyChangedCallback(
         ContextProvider::MemoryPolicyChangedCallback());
   }
+  if (worker_context_provider_.get()) {
+    worker_context_provider_->SetLostContextCallback(
+        ContextProvider::LostContextCallback());
+  }
 }
 
 bool OutputSurface::HasExternalStencilTest() const {
@@ -130,8 +134,14 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
 
   if (success && worker_context_provider_.get()) {
     success = worker_context_provider_->BindToCurrentThread();
-    if (success)
+    if (success) {
       worker_context_provider_->SetupLock();
+      // The destructor resets the context lost callback, so base::Unretained
+      // is safe, as long as the worker threads stop using the context before
+      // the output surface is destroyed.
+      worker_context_provider_->SetLostContextCallback(base::Bind(
+          &OutputSurface::DidLoseOutputSurface, base::Unretained(this)));
+    }
   }
 
   if (!success)
@@ -207,7 +217,11 @@ void OutputSurface::SetWorkerContextShouldAggressivelyFreeResources(
                "OutputSurface::SetWorkerContextShouldAggressivelyFreeResources",
                "aggressively_free_resources", aggressively_free_resources);
   if (auto* context_provider = worker_context_provider()) {
-    ContextProvider::ScopedContextLock scoped_context(context_provider);
+    // The context lock must be held while accessing the worker context.
+    base::AutoLock context_lock(*context_provider->GetLock());
+
+    // Allow context to bind to current thread.
+    context_provider->DetachFromThread();
 
     if (aggressively_free_resources) {
       context_provider->DeleteCachedResources();
@@ -217,6 +231,9 @@ void OutputSurface::SetWorkerContextShouldAggressivelyFreeResources(
       context_support->SetAggressivelyFreeResources(
           aggressively_free_resources);
     }
+
+    // Allow context to bind to other threads.
+    context_provider->DetachFromThread();
   }
 }
 

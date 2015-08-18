@@ -60,15 +60,13 @@ class FakeOutputSurface : public OutputSurface {
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_refptr<TestContextProvider> context_provider) {
-    return make_scoped_ptr(new FakeOutputSurface(
-        context_provider, TestContextProvider::Create(), true));
+    return make_scoped_ptr(new FakeOutputSurface(context_provider, true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
       scoped_ptr<TestWebGraphicsContext3D> context) {
-    return make_scoped_ptr(
-        new FakeOutputSurface(TestContextProvider::Create(context.Pass()),
-                              TestContextProvider::Create(), true));
+    return make_scoped_ptr(new FakeOutputSurface(
+        TestContextProvider::Create(context.Pass()), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegatingSoftware(

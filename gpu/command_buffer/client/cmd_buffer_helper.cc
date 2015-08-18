@@ -198,8 +198,7 @@ bool CommandBufferHelper::Finish() {
   if (put_ == get_offset()) {
     return true;
   }
-  DCHECK(HaveRingBuffer() ||
-         error::IsError(command_buffer_->GetLastState().error));
+  DCHECK(HaveRingBuffer());
   Flush();
   if (!WaitForGetOffsetInRange(put_, put_))
     return false;
