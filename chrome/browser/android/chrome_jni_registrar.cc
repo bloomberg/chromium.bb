@@ -96,6 +96,7 @@
 #include "chrome/browser/search_engines/template_url_service_android.h"
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
 #include "chrome/browser/speech/tts_android.h"
+#include "chrome/browser/spellchecker/spellchecker_session_bridge_android.h"
 #include "chrome/browser/ssl/connection_security_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_feedback_reporter_android.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
@@ -202,9 +203,9 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
 #if defined(ENABLE_MEDIA_ROUTER)
     {"ChromeMediaRouter", media_router::MediaRouterAndroid::Register},
     {"ChromeMediaRouterDialogController",
-        media_router::MediaRouterDialogControllerAndroid::Register},
+     media_router::MediaRouterDialogControllerAndroid::Register},
 #endif
-     {"ChromeWebContentsDelegateAndroid",
+    {"ChromeWebContentsDelegateAndroid",
      RegisterChromeWebContentsDelegateAndroid},
     {"CompositorView", RegisterCompositorView},
     {"ConfirmInfoBarDelegate", RegisterConfirmInfoBarDelegate},
@@ -298,6 +299,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ServiceTabLauncher", service_tab_launcher::RegisterServiceTabLauncherJni},
     {"SigninManager", SigninManagerAndroid::Register},
     {"SingleTabModel", RegisterSingleTabModel},
+    {"SpellCheckerSessionBridge", SpellCheckerSessionBridge::RegisterJNI},
     {"SqliteCursor", SQLiteCursor::RegisterSqliteCursor},
     {"SSLClientCertificateRequest", RegisterSSLClientCertificateRequestAndroid},
     {"StartupMetricUtils", RegisterStartupMetricUtils},

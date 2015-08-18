@@ -11,6 +11,8 @@
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 
+class SpellCheckerSessionBridge;
+
 // A message filter implementation that receives
 // the platform-specific spell checker requests from SpellCheckProvider.
 class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
@@ -50,6 +52,11 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
   std::map<int,int> tag_map_;
 
   int render_process_id_;
+
+#if defined(OS_ANDROID)
+  // Android-specific object used to query the Android spellchecker.
+  scoped_ptr<SpellCheckerSessionBridge> impl_;
+#endif
 
   // A JSON-RPC client that calls the Spelling service in the background.
   scoped_ptr<SpellingServiceClient> client_;
