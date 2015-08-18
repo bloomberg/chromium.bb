@@ -78,7 +78,8 @@ C++ Templates Angle Brackets Pitfall</a></td>
 <td>Automatic Types</td>
 <td><code>auto</code></td>
 <td>Automatic type deduction</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/auto">
+auto specifier</a></td>
 <td>Use according to the <a
 href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#auto">Google
 Style Guide on <code>auto</code></a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/OQyYSfH9m2M">Discussion thread</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/5-Bt3BJzAo0">Another discussion thread</a>.</td>
@@ -193,7 +194,8 @@ Style Guide</a>.
 <td>Null Pointer Constant</td>
 <td><code>nullptr</code></td>
 <td>Declares a type-safe null pointer</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/nullptr">
+nullptr</a></td>
 <td>Recommended for new code.
 <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/4mijeJHzxLg">Discussion thread</a>.
 <a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#0_and_nullptr/NULL">Google Style Guide</a>.
@@ -214,7 +216,8 @@ Note: <code>std::nullptr_t</code> is a library feature and not available.
 <td><code>for (<i>type</i> <i>var</i> : <i>range</i>)</code></td>
 <td>Facilitates a more concise syntax for iterating over the elements
 of a container (or a range of iterators) in a <code>for</code> loop</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/range-for">
+Range-based for loop</a></td>
 <td>As a rule of thumb, use <code>for (const auto& ...)</code>, <code>for (auto& ...)</code>, or <code>for (<i>concrete type</i> ...)</code>. For pointers, use <code>for (auto* ...)</code> to make clear that the copy of the loop variable is intended, and only a pointer is copied. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/hpzz4EqbVmc">Discussion thread</a></td>
 </tr>
 
@@ -249,7 +252,8 @@ Are Variadic macros nonstandard?</a></td>
 <td>Variadic Templates</td>
 <td><code>template &lt;<i>typename</i> ... <i>arg</i>&gt;</code></td>
 <td>Allows templates that accept a variable number of arguments</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/parameter_pack">
+Parameter pack</a></td>
 <td>Usage should be rare. Use instead of .pump files. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/6ItymeMXpMc">Discussion thread</a></td>
 </tr>
 
@@ -281,7 +285,8 @@ codebase.
 <td>Constant Expressions</td>
 <td><code>constexpr</code></td>
 <td>Compile-time constant expressions</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/constexpr">
+constexpr specifier</a></td>
 <td>Doesn't work in MSVS2013. Reevalute once it does. <a
 href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Use_of_constexpr">Google
 Style Guide on <code>constexpr</code></a></td>
@@ -332,7 +337,8 @@ Fundamental types</a></td>
 <td><code>string <i>var</i>=R&quot;(<i>raw_string</i>)&quot;;</code></td>
 <td>Allows a string to be encoded without any escape
 sequences, easing parsing in regex expressions, for example</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/string_literal">
+string literal</a></td>
 <td>Causes incorrect line numbers in MSVS2014 and gcc. Reevaluate once that works. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/2kWQHbbuMHI">Discussion thread</a></td>
 </tr>
 
@@ -340,7 +346,8 @@ sequences, easing parsing in regex expressions, for example</td>
 <td>Rvalue References (and Move Semantics)</td>
 <td><code>T(T&amp;&amp; t)</code> and <code>T&amp; operator=(T&amp;&amp; t)</code></td>
 <td>Reference that only binds to a temporary object</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/references#Rvalue_references">
+Rvalue references</a></td>
 <td>To be revisited in the future.  Allowed in exceptional cases where approved by the OWNERS of src/styleguide/c++/. <a href="https://groups.google.com/a/chromium.org/d/topic/chromium-dev/UnRaORb4TSw">Discussion thread</a></td>
 </tr>
 
@@ -463,7 +470,8 @@ Union declarations</a></td>
 <td>User-Defined Literals</td>
 <td><code><i>type</i> <i>var</i> = <i>literal_value</i>_<i>type</i></code></td>
 <td>Allows user-defined literal expressions</td>
-<td>TODO: documentation link</td>
+<td><a href="http://en.cppreference.com/w/cpp/language/user_literal">
+User-defined literals</a></td>
 <td></td>
 </tr>
 
