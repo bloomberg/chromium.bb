@@ -292,6 +292,8 @@
     void setFocused(boolean focused);
     void setInitialFocus(boolean reverse);
 
+    [TypeChecking=Interface] boolean ignoreLayoutWithPendingStylesheets(Document document);
+
     // These functions are for testing NetInfo. You must call setNetworkStateNotifierTestOnly(true)
     // before calling setNetworkConnectionInfo.
     void setNetworkStateNotifierTestOnly(boolean testOnly);

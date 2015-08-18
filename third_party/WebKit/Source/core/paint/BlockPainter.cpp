@@ -290,6 +290,12 @@ bool BlockPainter::hasCaret() const
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    // Avoid painting descendants of the root element when stylesheets haven't loaded. This eliminates FOUC.
+    // It's ok not to draw, because later on, when all the stylesheets do load, styleResolverChanged() on the Document
+    // will do a full paint invalidation.
+    if (m_layoutBlock.document().didLayoutWithPendingStylesheets() && !m_layoutBlock.isLayoutView())
+        return;
+
     if (m_layoutBlock.childrenInline()) {
         LineBoxListPainter(*m_layoutBlock.lineBoxes()).paint(&m_layoutBlock, paintInfo, paintOffset);
     } else {

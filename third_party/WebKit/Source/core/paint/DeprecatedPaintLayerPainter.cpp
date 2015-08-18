@@ -31,6 +31,17 @@
 
 namespace blink {
 
+static inline bool shouldSuppressPaintingLayer(DeprecatedPaintLayer* layer)
+{
+    // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
+    // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
+    // will do a full paintInvalidationForWholeLayoutObject().
+    if (layer->layoutObject()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->layoutObject()->isDocumentElement())
+        return true;
+
+    return false;
+}
+
 void DeprecatedPaintLayerPainter::paint(GraphicsContext* context, const LayoutRect& damageRect, const GlobalPaintFlags globalPaintFlags, LayoutObject* paintingRoot, PaintLayerFlags paintFlags)
 {
     DeprecatedPaintLayerPaintingInfo paintingInfo(&m_paintLayer, LayoutRect(enclosingIntRect(damageRect)), globalPaintFlags, LayoutSize(), paintingRoot);
@@ -58,6 +69,9 @@ void DeprecatedPaintLayerPainter::paintLayer(GraphicsContext* context, const Dep
 
     // Non self-painting leaf layers don't need to be painted as their layoutObject() should properly paint itself.
     if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant())
+        return;
+
+    if (shouldSuppressPaintingLayer(&m_paintLayer))
         return;
 
     // If this layer is totally invisible then there is nothing to paint.
