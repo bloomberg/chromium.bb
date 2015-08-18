@@ -87,6 +87,22 @@ int NaClEnvInWhitelist(char const *env_entry) {
                          EnvCmp);
 }
 
+static int VarIsInExtraEnv(char const *env_entry,
+                           char const *const *extra_env) {
+  if (extra_env != NULL) {
+    const char *name_end = strchr(env_entry, '=');
+    if (name_end != NULL) {
+      size_t compare_len = name_end + 1 - env_entry;
+      char const *const *ep;
+      for (ep = extra_env; *ep != NULL; ++ep) {
+        if (strncmp(env_entry, *ep, compare_len) == 0)
+          return 1;
+      }
+    }
+  }
+  return 0;
+}
+
 /* PRE: sizeof(char *) is a power of 2 */
 
 /*
@@ -130,9 +146,10 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp,
 
   if (envp) {
     for (p = envp; NULL != *p; ++p) {
-      if (!self->with_passthrough &&
-          !(self->with_whitelist && NaClEnvInWhitelist(*p)) &&
-          !NaClEnvIsPassThroughVar(*p)) {
+      if (VarIsInExtraEnv(*p, extra_env) ||
+          (!self->with_passthrough &&
+           !(self->with_whitelist && NaClEnvInWhitelist(*p)) &&
+           !NaClEnvIsPassThroughVar(*p))) {
         continue;
       }
       if (num_env == kMaxSize) {
@@ -165,7 +182,9 @@ int NaClEnvCleanserInit(struct NaClEnvCleanser *self, char const *const *envp,
   if (envp) {
     /* this assumes no other thread is tweaking envp */
     for (p = envp; NULL != *p; ++p) {
-      if (NaClEnvIsPassThroughVar(*p)) {
+      if (VarIsInExtraEnv(*p, extra_env)) {
+        continue;
+      } else if (NaClEnvIsPassThroughVar(*p)) {
         ptr_tbl[env] = *p + NACL_ENV_PREFIX_LENGTH;
       } else if (self->with_passthrough ||
                  (self->with_whitelist && NaClEnvInWhitelist(*p))) {

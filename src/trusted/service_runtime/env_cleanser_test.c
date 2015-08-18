@@ -80,6 +80,28 @@ static char const *const kFilteredEnvWithPassthrough[] = {
 };
 
 
+static char const *const kOverrideEnv[] = {
+  "LD_LIBRARY_PATH=nacl-sdk/lib",
+  NULL,
+};
+
+static char const *const kFilteredEnvWithPassthroughAndOverride[] = {
+  "FOOBAR",
+  "LC_TIME=%a, %B %d, %Y",
+  "QUUX",
+  "USER=bsy",
+  "LC_PAPER=en_US.UTF-8@legal",
+  "HOME=/home/bsy",
+  "PATH=/home/bsy/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+  "LANG=en_us.UTF-8",
+  "LC_MEASUREMENT=en_US.UTF-8",
+  "LD_LIBRARY_PATH=nacl-sdk/lib",
+  "LD_PRELOAD=libvalgrind.so",
+  "SHELL=/bin/sh",
+  NULL,
+};
+
+
 int StrInStrTbl(char const *str, char const *const *tbl) {
   int i;
 
@@ -231,6 +253,27 @@ int main(void) {
       PrintStrTbl("Original environment", kMurkyEnv);
       PrintStrTbl("Filtered environment", NaClEnvCleanserEnvironment(&nec));
       PrintStrTbl("Expected environment", kFilteredEnvWithPassthrough);
+    } else {
+      printf("OK\n");
+    }
+  }
+  NaClEnvCleanserDtor(&nec);
+
+  printf("\nEnvironment Filtering (with passthrough and override)\n");
+  NaClEnvCleanserCtor(&nec, 0, 1);
+  if (!NaClEnvCleanserInit(&nec, kMurkyEnv, kOverrideEnv)) {
+    printf("FAILED: NaClEnvCleanser Init failed\n");
+    ++errors;
+  } else {
+    if (!StrTblsHaveSameEntries(NaClEnvCleanserEnvironment(&nec),
+                                kFilteredEnvWithPassthroughAndOverride)) {
+      printf("ERROR: filtered env wrong\n");
+      ++errors;
+
+      PrintStrTbl("Original environment", kMurkyEnv);
+      PrintStrTbl("Filtered environment", NaClEnvCleanserEnvironment(&nec));
+      PrintStrTbl("Expected environment",
+                  kFilteredEnvWithPassthroughAndOverride);
     } else {
       printf("OK\n");
     }
