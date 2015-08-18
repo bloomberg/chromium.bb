@@ -299,7 +299,10 @@
               # places where this warning triggers.
               # See https://codereview.chromium.org/1222643002/ and
               # http://www.icu-project.org/trac/ticket/11759.
-              "-Wno-unused-const-variable",
+              '-Wno-unused-const-variable',
+              # ucnv2022.cpp contains three functions that are only used when
+              # certain preprocessor defines are set.
+              '-Wno-unused-function',
             ],
           },
           'cflags': [
