@@ -45,6 +45,46 @@
 
 namespace blink {
 
+class DOMObjectHolderBase {
+    WTF_MAKE_FAST_ALLOCATED(DOMObjectHolderBase);
+public:
+    DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
+        : m_wrapper(isolate, wrapper)
+        , m_world(0)
+    {
+    }
+    virtual ~DOMObjectHolderBase() { }
+
+    DOMWrapperWorld* world() const { return m_world; }
+    void setWorld(DOMWrapperWorld* world) { m_world = world; }
+    void setWeak(void (*callback)(const v8::WeakCallbackInfo<DOMObjectHolderBase>&))
+    {
+        m_wrapper.setWeak(this, callback);
+    }
+
+private:
+    ScopedPersistent<v8::Value> m_wrapper;
+    DOMWrapperWorld* m_world;
+};
+
+template<typename T>
+class DOMObjectHolder : public DOMObjectHolderBase {
+public:
+    static PassOwnPtr<DOMObjectHolder<T>> create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
+    {
+        return adoptPtr(new DOMObjectHolder(isolate, object, wrapper));
+    }
+
+private:
+    DOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
+        : DOMObjectHolderBase(isolate, wrapper)
+        , m_object(object)
+    {
+    }
+
+    Persistent<T> m_object;
+};
+
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
 DOMWrapperWorld* DOMWrapperWorld::worldOfInitializingWindow = 0;
 
@@ -220,6 +260,14 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(int worldId, const S
     else
         isolatedWorldContentSecurityPolicies().remove(worldId);
 }
+
+template<typename T>
+void DOMWrapperWorld::registerDOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
+{
+    registerDOMObjectHolderInternal(DOMObjectHolder<T>::create(isolate, object, wrapper));
+}
+
+template void DOMWrapperWorld::registerDOMObjectHolder(v8::Isolate*, ScriptFunction*, v8::Local<v8::Value>);
 
 void DOMWrapperWorld::registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase> holderBase)
 {

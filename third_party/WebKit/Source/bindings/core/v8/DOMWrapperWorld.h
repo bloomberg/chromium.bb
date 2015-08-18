@@ -54,6 +54,9 @@ enum WorldIdConstants {
     TestingWorldId,
 };
 
+class DOMObjectHolderBase;
+template<typename T> class DOMObjectHolder;
+
 // This class represent a collection of DOM wrappers for a specific world.
 class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
@@ -123,52 +126,9 @@ public:
         worldOfInitializingWindow = world;
     }
 
-private:
-    class DOMObjectHolderBase {
-    public:
-        DOMObjectHolderBase(v8::Isolate* isolate, v8::Local<v8::Value> wrapper)
-            : m_wrapper(isolate, wrapper)
-            , m_world(0)
-        {
-        }
-        virtual ~DOMObjectHolderBase() { }
-
-        DOMWrapperWorld* world() const { return m_world; }
-        void setWorld(DOMWrapperWorld* world) { m_world = world; }
-        void setWeak(void (*callback)(const v8::WeakCallbackInfo<DOMObjectHolderBase>&))
-        {
-            m_wrapper.setWeak(this, callback);
-        }
-
-    private:
-        ScopedPersistent<v8::Value> m_wrapper;
-        DOMWrapperWorld* m_world;
-    };
-
-    template<typename T>
-    class DOMObjectHolder : public DOMObjectHolderBase {
-    public:
-        static PassOwnPtr<DOMObjectHolder<T>> create(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
-        {
-            return adoptPtr(new DOMObjectHolder(isolate, object, wrapper));
-        }
-
-    private:
-        DOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
-            : DOMObjectHolderBase(isolate, wrapper)
-            , m_object(object)
-        {
-        }
-
-        Persistent<T> m_object;
-    };
-
 public:
     template<typename T>
-    void registerDOMObjectHolder(v8::Isolate* isolate, T* object, v8::Local<v8::Value> wrapper)
-    {
-        registerDOMObjectHolderInternal(DOMObjectHolder<T>::create(isolate, object, wrapper));
-    }
+    void registerDOMObjectHolder(v8::Isolate*, T*, v8::Local<v8::Value>);
 
 private:
     DOMWrapperWorld(v8::Isolate*, int worldId, int extensionGroup);
