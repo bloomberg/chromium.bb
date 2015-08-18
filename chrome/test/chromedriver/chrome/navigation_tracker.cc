@@ -12,9 +12,8 @@
 
 namespace {
 
-const std::string kDummyFrameUrl =
-    "data:text/html,<!--chromedriver dummy frame-->";
-
+const std::string kDummyFrameName = "chromedriver dummy frame";
+const std::string kDummyFrameUrl = "about:blank";
 const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
 
 }  // namespace
@@ -74,6 +73,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
        "    document.readyState == 'interactive';"
        "if (isLoaded) {"
        "  var frame = document.createElement('iframe');"
+       "  frame.name = '" + kDummyFrameName + "';"
        "  frame.src = '" + kDummyFrameUrl + "';"
        "  document.body.appendChild(frame);"
        "  window.setTimeout(function() {"
@@ -206,10 +206,13 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
       // If a child frame just navigated, check if it is the dummy frame that
       // was attached by IsPendingNavigation(). We don't want to track execution
       // contexts created and destroyed for this dummy frame.
+      std::string name;
+      if (!params.GetString("frame.name", &name))
+        return Status(kUnknownError, "missing or invalid 'frame.name'");
       std::string url;
       if (!params.GetString("frame.url", &url))
         return Status(kUnknownError, "missing or invalid 'frame.url'");
-      if (url == kDummyFrameUrl)
+      if (name == kDummyFrameName && url == kDummyFrameUrl)
         params.GetString("frame.id", &dummy_frame_id_);
     }
   } else if (method == "Runtime.executionContextsCleared") {
