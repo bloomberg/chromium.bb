@@ -137,9 +137,6 @@ class NET_EXPORT ProxyBypassRules {
   // See the unit-tests for more examples.
   //
   // Returns true if the rule was successfully added.
-  //
-  // TODO(eroman): support IPv6 literals without brackets.
-  //
   bool AddRuleFromString(const std::string& raw);
 
   // This is a variant of AddFromString, which interprets hostname patterns as
