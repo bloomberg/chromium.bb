@@ -1282,6 +1282,11 @@ public class ToolbarPhone extends ToolbarLayout
             if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
                 mUrlFocusLayoutAnimator.end();
                 mUrlFocusLayoutAnimator = null;
+                // After finishing the animation, force a re-layout of the location bar,
+                // so that the final translation position is correct (since onMeasure updates
+                // won't happen in tab switcher mode). crbug.com/518795.
+                layoutLocationBar(getMeasuredWidth());
+                updateUrlExpansionAnimation();
             }
             mNewTabButton.setEnabled(true);
             updateViewsForTabSwitcherMode(true);
