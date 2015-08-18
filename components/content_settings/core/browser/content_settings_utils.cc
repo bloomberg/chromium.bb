@@ -196,16 +196,4 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
       &(rules->script_rules));
 }
 
-uint32 PrefRegistrationFlagsForType(ContentSettingsType content_type) {
-  uint32 flags = PrefRegistry::NO_REGISTRATION_FLAGS;
-
-  if (IsContentSettingsTypeSyncable(content_type))
-    flags |= user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
-
-  if (IsContentSettingsTypeLossy(content_type))
-    flags |= PrefRegistry::LOSSY_PREF;
-
-  return flags;
-}
-
 }  // namespace content_settings

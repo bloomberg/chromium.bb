@@ -17,7 +17,6 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
-#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -39,12 +38,7 @@ const char kObsoleteMigratedDefaultContentSettings[] =
 const char kObsoleteMigratedDefaultMediaStreamSetting[] =
     "profile.migrated_default_media_stream_content_settings";
 
-ContentSetting GetDefaultValue(ContentSettingsType type) {
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS)
-    return PluginsFieldTrial::GetDefaultPluginsContentSetting();
-
-  const WebsiteSettingsInfo* info =
-      WebsiteSettingsRegistry::GetInstance()->Get(type);
+ContentSetting GetDefaultValue(const WebsiteSettingsInfo* info) {
   const base::Value* initial_default = info->initial_default_value();
   if (!initial_default)
     return CONTENT_SETTING_DEFAULT;
@@ -52,6 +46,10 @@ ContentSetting GetDefaultValue(ContentSettingsType type) {
   bool success = initial_default->GetAsInteger(&result);
   DCHECK(success);
   return static_cast<ContentSetting>(result);
+}
+
+ContentSetting GetDefaultValue(ContentSettingsType type) {
+  return GetDefaultValue(WebsiteSettingsRegistry::GetInstance()->Get(type));
 }
 
 const std::string& GetPrefName(ContentSettingsType type) {
@@ -86,10 +84,14 @@ class DefaultRuleIterator : public RuleIterator {
 void DefaultProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Register the default settings' preferences.
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    registry->RegisterIntegerPref(GetPrefName(type), GetDefaultValue(type),
-                                  PrefRegistrationFlagsForType(type));
+    const WebsiteSettingsInfo* info = website_settings->Get(type);
+    registry->RegisterIntegerPref(info->default_value_pref_name(),
+                                  GetDefaultValue(info),
+                                  info->GetPrefRegistrationFlags());
   }
 
   // Obsolete prefs -------------------------------------------------------
@@ -243,10 +245,9 @@ RuleIterator* DefaultProvider::GetRuleIterator(
     bool incognito) const {
   base::AutoLock lock(lock_);
   if (resource_identifier.empty()) {
-    ValueMap::const_iterator it(default_settings_.find(content_type));
-    if (it != default_settings_.end()) {
-      return new DefaultRuleIterator(it->second.get());
-    }
+    auto it(default_settings_.find(content_type));
+    if (it != default_settings_.end())
+      return new DefaultRuleIterator(it->second);
     NOTREACHED();
   }
   return new EmptyRuleIterator();
@@ -285,10 +286,10 @@ bool DefaultProvider::IsValueEmptyOrDefault(ContentSettingsType content_type,
 void DefaultProvider::ChangeSetting(ContentSettingsType content_type,
                                     base::Value* value) {
   if (!value) {
-    default_settings_[content_type].reset(
-        ContentSettingToValue(GetDefaultValue(content_type)).release());
+    default_settings_.set(content_type,
+                          ContentSettingToValue(GetDefaultValue(content_type)));
   } else {
-    default_settings_[content_type].reset(value->DeepCopy());
+    default_settings_.set(content_type, make_scoped_ptr(value->DeepCopy()));
   }
 }
 
@@ -350,16 +351,6 @@ scoped_ptr<base::Value> DefaultProvider::ReadFromPref(
     ContentSettingsType content_type) {
   int int_value = prefs_->GetInteger(GetPrefName(content_type));
   return ContentSettingToValue(IntToContentSetting(int_value)).Pass();
-}
-
-void DefaultProvider::ForceDefaultsToBeExplicit(ValueMap* value_map) {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    if (!(*value_map)[type].get()) {
-      (*value_map)[type].reset(ContentSettingToValue(
-          GetDefaultValue(type)).release());
-    }
-  }
 }
 
 void DefaultProvider::DiscardObsoletePreferences() {

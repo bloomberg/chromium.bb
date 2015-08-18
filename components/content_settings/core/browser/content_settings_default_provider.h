@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/linked_ptr.h"
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
@@ -50,9 +51,6 @@ class DefaultProvider : public ObservableProvider {
   void ShutdownOnUIThread() override;
 
  private:
-  typedef linked_ptr<base::Value> ValuePtr;
-  typedef std::map<ContentSettingsType, ValuePtr> ValueMap;
-
   // Reads all settings from the pref service.
   void ReadDefaultSettings();
 
@@ -62,10 +60,6 @@ class DefaultProvider : public ObservableProvider {
   // True if |value| is NULL or it is the default value for |content_type|.
   bool IsValueEmptyOrDefault(ContentSettingsType content_type,
                              base::Value* value);
-
-  // Forces the default settings in |value_map| to be explicitly set instead
-  // of themselves being CONTENT_SETTING_DEFAULT.
-  void ForceDefaultsToBeExplicit(ValueMap* value_map);
 
   // Reads the preference corresponding to |content_type|.
   scoped_ptr<base::Value> ReadFromPref(ContentSettingsType content_type);
@@ -82,7 +76,8 @@ class DefaultProvider : public ObservableProvider {
   void DiscardObsoletePreferences();
 
   // Copies of the pref data, so that we can read it on the IO thread.
-  ValueMap default_settings_;
+  base::ScopedPtrMap<ContentSettingsType, scoped_ptr<base::Value>>
+      default_settings_;
 
   PrefService* prefs_;
 

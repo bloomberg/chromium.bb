@@ -34,12 +34,6 @@ ContentSetting IntToContentSetting(int content_setting);
 ContentSettingsTypeHistogram ContentSettingTypeToHistogramValue(
     ContentSettingsType content_setting);
 
-// Whether this content setting should be synced.
-bool IsContentSettingsTypeSyncable(ContentSettingsType content_setting);
-
-// Whether this content setting can tolerate data being lost.
-bool IsContentSettingsTypeLossy(ContentSettingsType content_setting);
-
 struct ContentSettingPatternSource {
   ContentSettingPatternSource(const ContentSettingsPattern& primary_pattern,
                               const ContentSettingsPattern& secondary_patttern,

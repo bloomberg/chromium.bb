@@ -5,8 +5,10 @@
 #include "components/content_settings/core/browser/website_settings_info.h"
 
 #include "base/logging.h"
+#include "base/prefs/pref_registry.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace {
 
@@ -26,12 +28,16 @@ namespace content_settings {
 WebsiteSettingsInfo::WebsiteSettingsInfo(
     ContentSettingsType type,
     const std::string& name,
-    scoped_ptr<base::Value> initial_default_value)
+    scoped_ptr<base::Value> initial_default_value,
+    SyncStatus sync_status,
+    LossyStatus lossy_status)
     : type_(type),
       name_(name),
       pref_name_(GetPrefName(name, kPrefPrefix)),
       default_value_pref_name_(GetPrefName(name, kDefaultPrefPrefix)),
-      initial_default_value_(initial_default_value.Pass()) {
+      initial_default_value_(initial_default_value.Pass()),
+      sync_status_(sync_status),
+      lossy_status_(lossy_status) {
   // For legacy reasons the default value is currently restricted to be an int.
   // TODO(raymes): We should migrate the underlying pref to be a dictionary
   // rather than an int.
@@ -40,5 +46,17 @@ WebsiteSettingsInfo::WebsiteSettingsInfo(
 }
 
 WebsiteSettingsInfo::~WebsiteSettingsInfo() {}
+
+uint32 WebsiteSettingsInfo::GetPrefRegistrationFlags() const {
+  uint32 flags = PrefRegistry::NO_REGISTRATION_FLAGS;
+
+  if (sync_status_ == SYNCABLE)
+    flags |= user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+
+  if (lossy_status_ == LOSSY)
+    flags |= PrefRegistry::LOSSY_PREF;
+
+  return flags;
+}
 
 }  // namespace content_settings

@@ -57,9 +57,10 @@ void PrefProvider::RegisterProfilePrefs(
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    registry->RegisterDictionaryPref(
-        website_settings->Get(static_cast<ContentSettingsType>(i))->pref_name(),
-        PrefRegistrationFlagsForType(ContentSettingsType(i)));
+    const WebsiteSettingsInfo* info =
+        website_settings->Get(static_cast<ContentSettingsType>(i));
+    registry->RegisterDictionaryPref(info->pref_name(),
+                                     info->GetPrefRegistrationFlags());
   }
 
   // Obsolete prefs ----------------------------------------------------------

@@ -6,11 +6,12 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/plugins_field_trial.h"
 #include "components/content_settings/core/common/content_settings.h"
 
 namespace {
 
-base::LazyInstance<content_settings::WebsiteSettingsRegistry>::Leaky
+base::LazyInstance<content_settings::WebsiteSettingsRegistry>
     g_instance = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -34,57 +35,68 @@ WebsiteSettingsRegistry::WebsiteSettingsRegistry() {
 
   // Content settings (those with allow/block/ask/etc. values).
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_COOKIES, "cookies",
-                         CONTENT_SETTING_ALLOW);
+                         CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_IMAGES, "images",
-                         CONTENT_SETTING_ALLOW);
+                         CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript",
-                         CONTENT_SETTING_ALLOW);
+                         CONTENT_SETTING_ALLOW, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS, "plugins",
-                         CONTENT_SETTING_DEFAULT);
+                         PluginsFieldTrial::GetDefaultPluginsContentSetting(),
+                         WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_POPUPS, "popups",
-                         CONTENT_SETTING_BLOCK);
+                         CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION, "geolocation",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, "mixed-script",
-                         CONTENT_SETTING_DEFAULT);
+                         CONTENT_SETTING_DEFAULT,
+                         WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                         "media-stream-mic", CONTENT_SETTING_ASK);
+                         "media-stream-mic", CONTENT_SETTING_ASK,
+                         WebsiteSettingsInfo::UNSYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                         "media-stream-camera", CONTENT_SETTING_ASK);
+                         "media-stream-camera", CONTENT_SETTING_ASK,
+                         WebsiteSettingsInfo::UNSYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
-                         "protocol-handler", CONTENT_SETTING_DEFAULT);
+                         "protocol-handler", CONTENT_SETTING_DEFAULT,
+                         WebsiteSettingsInfo::UNSYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "ppapi-broker",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::UNSYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-                         "automatic-downloads", CONTENT_SETTING_ASK);
+                         "automatic-downloads", CONTENT_SETTING_ASK,
+                         WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midi-sysex",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE);
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, "push-messaging",
-                         CONTENT_SETTING_ASK);
+                         CONTENT_SETTING_ASK, WebsiteSettingsInfo::SYNCABLE);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                         "protected-media-identifier", CONTENT_SETTING_ASK);
+                         "protected-media-identifier", CONTENT_SETTING_ASK,
+                         WebsiteSettingsInfo::UNSYNCABLE);
 #endif
   RegisterContentSetting(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
-                         "durable-storage", CONTENT_SETTING_ASK);
+                         "durable-storage", CONTENT_SETTING_ASK,
+                         WebsiteSettingsInfo::UNSYNCABLE);
 
   // Website settings.
   RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-                         "auto-select-certificate");
+                         "auto-select-certificate",
+                         WebsiteSettingsInfo::NOT_LOSSY);
   RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_SSL_CERT_DECISIONS,
-                         "ssl-cert-decisions");
-  RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_APP_BANNER, "app-banner");
+                         "ssl-cert-decisions", WebsiteSettingsInfo::NOT_LOSSY);
+  RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_APP_BANNER, "app-banner",
+                         WebsiteSettingsInfo::LOSSY);
   RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-                         "site-engagement");
+                         "site-engagement", WebsiteSettingsInfo::LOSSY);
 
   // Deprecated.
-  RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream");
+  RegisterWebsiteSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM, "media-stream",
+                         WebsiteSettingsInfo::NOT_LOSSY);
 }
 
 WebsiteSettingsRegistry::~WebsiteSettingsRegistry() {}
@@ -105,19 +117,24 @@ const WebsiteSettingsInfo* WebsiteSettingsRegistry::GetByName(
   return nullptr;
 }
 
-void WebsiteSettingsRegistry::RegisterWebsiteSetting(ContentSettingsType type,
-                                                     const std::string& name) {
-  StoreWebsiteSettingsInfo(new WebsiteSettingsInfo(type, name, nullptr));
+void WebsiteSettingsRegistry::RegisterWebsiteSetting(
+    ContentSettingsType type,
+    const std::string& name,
+    WebsiteSettingsInfo::LossyStatus lossy_status) {
+  StoreWebsiteSettingsInfo(new WebsiteSettingsInfo(
+      type, name, nullptr, WebsiteSettingsInfo::UNSYNCABLE, lossy_status));
 }
 
 void WebsiteSettingsRegistry::RegisterContentSetting(
     ContentSettingsType type,
     const std::string& name,
-    ContentSetting initial_default_value) {
+    ContentSetting initial_default_value,
+    WebsiteSettingsInfo::SyncStatus sync_status) {
   scoped_ptr<base::Value> default_value(
       new base::FundamentalValue(static_cast<int>(initial_default_value)));
   StoreWebsiteSettingsInfo(
-      new WebsiteSettingsInfo(type, name, default_value.Pass()));
+      new WebsiteSettingsInfo(type, name, default_value.Pass(), sync_status,
+                              WebsiteSettingsInfo::NOT_LOSSY));
 }
 
 void WebsiteSettingsRegistry::StoreWebsiteSettingsInfo(

@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/prefs/pref_registry.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content_settings {
@@ -51,6 +53,8 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
   int setting;
   ASSERT_TRUE(info->initial_default_value()->GetAsInteger(&setting));
   EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+  EXPECT_EQ(user_prefs::PrefRegistrySyncable::SYNCABLE_PREF,
+            info->GetPrefRegistrationFlags());
 
   info = registry()->Get(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
   ASSERT_TRUE(info);
@@ -60,6 +64,15 @@ TEST_F(WebsiteSettingsRegistryTest, Properties) {
             info->default_value_pref_name());
   ASSERT_TRUE(info->initial_default_value()->GetAsInteger(&setting));
   EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+  EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
+            info->GetPrefRegistrationFlags());
+
+  info = registry()->Get(CONTENT_SETTINGS_TYPE_APP_BANNER);
+  EXPECT_EQ(PrefRegistry::LOSSY_PREF, info->GetPrefRegistrationFlags());
+
+  info = registry()->Get(CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
+  EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
+            info->GetPrefRegistrationFlags());
 }
 
 }  // namespace content_settings

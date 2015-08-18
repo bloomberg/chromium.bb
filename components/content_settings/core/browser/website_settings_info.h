@@ -21,9 +21,15 @@ namespace content_settings {
 // TODO(raymes): Move more properties into this class.
 class WebsiteSettingsInfo {
  public:
+  enum SyncStatus { SYNCABLE, UNSYNCABLE };
+
+  enum LossyStatus { LOSSY, NOT_LOSSY };
+
   WebsiteSettingsInfo(ContentSettingsType type,
                       const std::string& name,
-                      scoped_ptr<base::Value> initial_default_value);
+                      scoped_ptr<base::Value> initial_default_value,
+                      SyncStatus sync_status,
+                      LossyStatus lossy_status);
   ~WebsiteSettingsInfo();
 
   ContentSettingsType type() const { return type_; }
@@ -37,6 +43,8 @@ class WebsiteSettingsInfo {
     return initial_default_value_.get();
   }
 
+  uint32 GetPrefRegistrationFlags() const;
+
  private:
   const ContentSettingsType type_;
   const std::string name_;
@@ -44,6 +52,8 @@ class WebsiteSettingsInfo {
   const std::string pref_name_;
   const std::string default_value_pref_name_;
   const scoped_ptr<base::Value> initial_default_value_;
+  const SyncStatus sync_status_;
+  const LossyStatus lossy_status_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfo);
 };
