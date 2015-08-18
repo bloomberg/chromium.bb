@@ -43,11 +43,11 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             documents.append(toLocalFrame(frame)->document());
     }
 
-    for (size_t i = 0; i < documents.size(); ++i) {
-        if (documents[i]->view()) {
-            documents[i]->view()->scrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
+    for (auto& document : documents) {
+        if (document->view()) {
+            document->view()->scrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
 
-            if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = documents[i]->view()->animatingScrollableAreas()) {
+            if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
                 // Iterate over a copy, since ScrollableAreas may deregister
                 // themselves during the iteration.
                 Vector<ScrollableArea*> animatingScrollableAreasCopy;
@@ -56,17 +56,14 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
                     scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
             }
         }
+        DocumentAnimations::updateAnimationTimingForAnimationFrame(*document, monotonicAnimationStartTime);
+        SVGDocumentExtensions::serviceOnAnimationFrame(*document, monotonicAnimationStartTime);
+        document->serviceScriptedAnimations(monotonicAnimationStartTime);
     }
-
-    for (size_t i = 0; i < documents.size(); ++i) {
-        DocumentAnimations::updateAnimationTimingForAnimationFrame(*documents[i], monotonicAnimationStartTime);
-        SVGDocumentExtensions::serviceOnAnimationFrame(*documents[i], monotonicAnimationStartTime);
-    }
-
-    for (size_t i = 0; i < documents.size(); ++i)
-        documents[i]->serviceScriptedAnimations(monotonicAnimationStartTime);
 
 #if ENABLE(OILPAN)
+    // TODO(esprehn): Why is this here? It doesn't make sense to explicitly
+    // clear a stack allocated vector.
     documents.clear();
 #endif
 }
