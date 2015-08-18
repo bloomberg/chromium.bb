@@ -47,6 +47,17 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     }
 
     /**
+     * Tests that we can create several sessions.
+     */
+    @SmallTest
+    public void testSeveralSessions() {
+        ICustomTabsCallback cb = CustomTabsTestUtils.newDummyCallback();
+        assertEquals(true, mCustomTabsConnection.newSession(cb));
+        ICustomTabsCallback cb2 = CustomTabsTestUtils.newDummyCallback();
+        assertEquals(true, mCustomTabsConnection.newSession(cb2));
+    }
+
+    /**
      * Tests that {@link CustomTabsConnection#warmup(long)} succeeds and can
      * be issued multiple times.
      */
@@ -162,5 +173,62 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
         assertNotNull(threadCgroup);
         assertTrue(threadCgroup.equals("/bg_non_interactive")
                 || threadCgroup.equals("/apps/bg_non_interactive"));
+    }
+
+    /**
+     * Tests that predictions are throttled.
+     */
+    @SmallTest
+    public void testThrottleMayLaunchUrl() {
+        ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        int successfulRequests = 0;
+        // Send a burst of requests instead of checking for precise delays to avoid flakiness.
+        while (successfulRequests < 10) {
+            if (!mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, null)) break;
+            successfulRequests++;
+        }
+        assertTrue("10 requests in a row should not all succeed.", successfulRequests < 10);
+    }
+
+    /**
+     * Tests that the mayLaunchUrl() throttling is reset after a long enough wait.
+     */
+    @SmallTest
+    public void testThrottlingIsReset() {
+        ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, null);
+        // Depending on the timing, the delay should be 100 or 200ms here.
+        assertWarmupAndMayLaunchUrl(cb, URL, false);
+        // Wait for more than 2 * MAX_POSSIBLE_DELAY to clear the delay
+        try {
+            Thread.sleep(450); // 2 * MAX_POSSIBLE_DELAY + 50ms
+        } catch (InterruptedException e) {
+            fail();
+            return;
+        }
+        assertWarmupAndMayLaunchUrl(cb, URL, true);
+        // Check that the delay has been reset, by waiting for 100ms.
+        try {
+            Thread.sleep(150); // MIN_DELAY + 50ms margin
+        } catch (InterruptedException e) {
+            fail();
+            return;
+        }
+        assertWarmupAndMayLaunchUrl(cb, URL, true);
+    }
+
+    /**
+     * Tests that throttling applies across sessions.
+     */
+    @SmallTest
+    public void testThrottlingAcrossSessions() {
+        ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
+        mCustomTabsConnection.resetThrottling(Process.myUid());
+        ICustomTabsCallback cb2 = assertWarmupAndMayLaunchUrl(null, URL, true);
+        mCustomTabsConnection.resetThrottling(Process.myUid());
+        for (int i = 0; i < 10; i++) {
+            mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, null);
+        }
+        assertWarmupAndMayLaunchUrl(cb2, URL, false);
     }
 }

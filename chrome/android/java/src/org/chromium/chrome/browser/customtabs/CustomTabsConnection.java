@@ -50,11 +50,11 @@ import org.chromium.content_public.browser.WebContents;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -546,7 +546,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     @VisibleForTesting
     void cleanupAll() {
         synchronized (mLock) {
-            Set<IBinder> sessions = mSessionParams.keySet();
+            List<IBinder> sessions = new ArrayList<>(mSessionParams.keySet());
             for (IBinder session : sessions) cleanupAlreadyLocked(session);
         }
     }
