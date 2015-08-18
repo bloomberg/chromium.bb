@@ -799,7 +799,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
 
 bool FocusController::setFocusedElement(Element* element, PassRefPtrWillBeRawPtr<Frame> newFocusedFrame, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
-    RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = toLocalFrame(focusedFrame());
+    RefPtrWillBeRawPtr<LocalFrame> oldFocusedFrame = focusedFrame() && focusedFrame()->isLocalFrame() ? toLocalFrame(focusedFrame()) : nullptr;
     RefPtrWillBeRawPtr<Document> oldDocument = oldFocusedFrame ? oldFocusedFrame->document() : nullptr;
 
     Element* oldFocusedElement = oldDocument ? oldDocument->focusedElement() : nullptr;
