@@ -32,8 +32,8 @@ void DragBookmarks(Profile* profile,
   drag_data.Write(profile->GetPath(), &data);
 
   // Allow nested message loop so we get DnD events as we drag this around.
-  bool was_nested = base::MessageLoop::current()->IsNested();
-  base::MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
+      base::MessageLoop::current());
 
   int operation = ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK;
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
@@ -49,8 +49,6 @@ void DragBookmarks(Profile* profile,
     // WebContentsViewAura, instead of WebContentsViewViews.
     views::RunShellDrag(view, data, gfx::Point(), operation, source);
   }
-
-  base::MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 }
 
 }  // namespace chrome

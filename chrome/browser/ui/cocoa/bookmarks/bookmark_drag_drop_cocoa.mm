@@ -56,8 +56,8 @@ void DragBookmarks(Profile* profile,
   DCHECK(!nodes.empty());
 
   // Allow nested message loop so we get DnD events as we drag this around.
-  bool was_nested = base::MessageLoop::current()->IsNested();
-  base::MessageLoop::current()->SetNestableTasksAllowed(true);
+  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
+      base::MessageLoop::current());
 
   bookmarks::BookmarkNodeData drag_data(nodes);
   drag_data.SetOriginatingProfilePath(profile->GetPath());
@@ -91,8 +91,6 @@ void DragBookmarks(Profile* profile,
          pasteboard:[NSPasteboard pasteboardWithName:NSDragPboard]
              source:nil
           slideBack:YES];
-
-  base::MessageLoop::current()->SetNestableTasksAllowed(was_nested);
 }
 
 }  // namespace chrome
