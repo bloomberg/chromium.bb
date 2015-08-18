@@ -1106,7 +1106,6 @@
                    'rouslan+spellwatch@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
     'sync': ['tim+watch@chromium.org',
-             'maniscalco+watch@chromium.org',
              'maxbogue+watch@chromium.org',
              'plaree+watch@chromium.org',
              'pvalenzuela+watch@chromium.org',
