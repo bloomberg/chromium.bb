@@ -20779,6 +20779,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.DailyContentLength_DataReductionProxyEnabled_Unknown"
     units="KB">
+  <obsolete>
+    Deprecated. Moved to
+    Net.DailyContentLength_DataReductionProxyEnabled_UnknownBypass in M46.
+  </obsolete>
+  <owner>bengr@chromium.org</owner>
+  <owner>bolian@chromium.org</owner>
+  <summary>
+    The total content size in KB of all HTTP response bodies for requests that
+    were not served by the enabled data reduction proxy for unknown reasons in
+    the previous calendar day while the data reduction proxy setting was
+    enabled. The metric is reported when the first response in the current day
+    is received.
+  </summary>
+</histogram>
+
+<histogram
+    name="Net.DailyContentLength_DataReductionProxyEnabled_UnknownBypass"
+    units="KB">
   <owner>bengr@chromium.org</owner>
   <owner>bolian@chromium.org</owner>
   <summary>
@@ -73322,7 +73340,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="DataReductionProxy.MimeType">
   <suffix name="Application" label="Application mime-type"/>
-  <suffix name="Unknown" label="Unknown mime-type"/>
+  <suffix name="Unknown"
+      label="Deprecated. Moved to UnknownMime in M46. Unknown mime-type"/>
+  <suffix name="UnknownMime" label="Unknown mime-type"/>
   <suffix name="Video" label="Video mime-type"/>
   <affected-histogram name="Net.DailyContentLength"/>
   <affected-histogram name="Net.DailyContentLength_DataReductionProxyEnabled"/>

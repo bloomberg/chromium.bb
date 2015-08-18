@@ -124,9 +124,9 @@ void RecordDailyContentLengthHistograms(
                          original_length >> 10);
     UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_Video", received_length >> 10);
   } else if (is_mime_type_empty) {
-    UMA_HISTOGRAM_COUNTS("Net.DailyOriginalContentLength_Unknown",
+    UMA_HISTOGRAM_COUNTS("Net.DailyOriginalContentLength_UnknownMime",
                          original_length >> 10);
-    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_Unknown",
+    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_UnknownMime",
                          received_length >> 10);
   }
   int percent = 0;
@@ -164,10 +164,10 @@ void RecordDailyContentLengthHistograms(
         received_length_with_data_reduction_enabled >> 10);
   } else if (is_mime_type_empty) {
     UMA_HISTOGRAM_COUNTS(
-        "Net.DailyOriginalContentLength_DataReductionProxyEnabled_Unknown",
+        "Net.DailyOriginalContentLength_DataReductionProxyEnabled_UnknownMime",
         original_length_with_data_reduction_enabled >> 10);
     UMA_HISTOGRAM_COUNTS(
-        "Net.DailyContentLength_DataReductionProxyEnabled_Unknown",
+        "Net.DailyContentLength_DataReductionProxyEnabled_UnknownMime",
         received_length_with_data_reduction_enabled >> 10);
   }
 
@@ -216,7 +216,7 @@ void RecordDailyContentLengthHistograms(
 
   DCHECK_GE(unknown_length_with_data_reduction_enabled, 0);
   UMA_HISTOGRAM_COUNTS(
-      "Net.DailyContentLength_DataReductionProxyEnabled_Unknown",
+      "Net.DailyContentLength_DataReductionProxyEnabled_UnknownBypass",
       unknown_length_with_data_reduction_enabled >> 10);
   UMA_HISTOGRAM_PERCENTAGE(
       "Net.DailyContentPercent_DataReductionProxyEnabled_Unknown",
@@ -247,10 +247,11 @@ void RecordDailyContentLengthHistograms(
                          received_length_via_data_reduction_proxy >> 10);
   } else if (is_mime_type_empty) {
     UMA_HISTOGRAM_COUNTS(
-        "Net.DailyOriginalContentLength_ViaDataReductionProxy_Unknown",
+        "Net.DailyOriginalContentLength_ViaDataReductionProxy_UnknownMime",
         original_length_via_data_reduction_proxy >> 10);
-    UMA_HISTOGRAM_COUNTS("Net.DailyContentLength_ViaDataReductionProxy_Unknown",
-                         received_length_via_data_reduction_proxy >> 10);
+    UMA_HISTOGRAM_COUNTS(
+        "Net.DailyContentLength_ViaDataReductionProxy_UnknownMime",
+        received_length_via_data_reduction_proxy >> 10);
   }
 
   int percent_via_data_reduction_proxy = 0;
