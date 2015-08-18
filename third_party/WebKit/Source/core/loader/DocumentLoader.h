@@ -93,6 +93,7 @@ public:
 
     const AtomicString& responseMIMEType() const;
 
+    void didChangePerformanceTiming();
     void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource);
     void stopLoading();
     bool isLoading() const;
@@ -187,6 +188,8 @@ private:
 
     bool shouldContinueForResponse() const;
 
+    WeakPtrWillBeRawPtr<DocumentLoader> weakReference();
+
     RawPtrWillBeMember<LocalFrame> m_frame;
     PersistentWillBeMember<ResourceFetcher> m_fetcher;
 
@@ -217,6 +220,9 @@ private:
 
     RefPtrWillBeMember<MHTMLArchive> m_archive;
 
+#if !ENABLE(OILPAN)
+    WeakPtrFactory<DocumentLoader> m_weakFactory;
+#endif
     DocumentLoadTiming m_documentLoadTiming;
 
     double m_timeOfLastDataReceived;

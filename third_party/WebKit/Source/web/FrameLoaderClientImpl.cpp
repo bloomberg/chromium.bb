@@ -650,6 +650,12 @@ void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)
         m_webFrame->client()->didDispatchPingLoader(m_webFrame, url);
 }
 
+void FrameLoaderClientImpl::didChangePerformanceTiming()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didChangePerformanceTiming();
+}
+
 void FrameLoaderClientImpl::selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors)
 {
     if (WebFrameClient* client = m_webFrame->client())

@@ -27,15 +27,18 @@
 #define DocumentLoadTiming_h
 
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
+class DocumentLoader;
 class KURL;
 
 class CORE_EXPORT DocumentLoadTiming {
 public:
-    DocumentLoadTiming();
+    DocumentLoadTiming(WeakPtrWillBeRawPtr<DocumentLoader>);
 
     double monotonicTimeToZeroBasedDocumentTime(double) const;
     double monotonicTimeToPseudoWallTime(double) const;
@@ -72,6 +75,7 @@ public:
 private:
     void setRedirectStart(double);
     void markRedirectEnd();
+    void notifyDocumentTimingChanged();
 
     double m_referenceMonotonicTime;
     double m_referenceWallTime;
@@ -87,6 +91,8 @@ private:
     double m_loadEventEnd;
     bool m_hasCrossOriginRedirect;
     bool m_hasSameOriginAsPreviousDocument;
+
+    WeakPtrWillBeRawPtr<DocumentLoader> m_documentLoader;
 };
 
 } // namespace blink

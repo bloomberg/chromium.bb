@@ -421,6 +421,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)
     , m_pluginLoadingTimer(this, &Document::pluginLoadingTimerFired)
+    , m_documentTiming(this->weakReference())
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))
@@ -4386,13 +4387,18 @@ WeakPtrWillBeRawPtr<Document> Document::contextDocument()
     if (m_contextDocument)
         return m_contextDocument;
     if (m_frame) {
-#if ENABLE(OILPAN)
-        return this;
-#else
-        return m_weakFactory.createWeakPtr();
-#endif
+        return weakReference();
     }
     return WeakPtrWillBeRawPtr<Document>(nullptr);
+}
+
+WeakPtrWillBeRawPtr<Document> Document::weakReference()
+{
+#if ENABLE(OILPAN)
+    return this;
+#else
+    return m_weakFactory.createWeakPtr();
+#endif
 }
 
 PassRefPtrWillBeRawPtr<Attr> Document::createAttribute(const AtomicString& name, ExceptionState& exceptionState)

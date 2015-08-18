@@ -454,6 +454,9 @@ public:
     // A PingLoader was created, and a request dispatched to a URL.
     virtual void didDispatchPingLoader(WebLocalFrame*, const WebURL&) { }
 
+    // A performance timing event (e.g. first paint) occurred
+    virtual void didChangePerformanceTiming() { }
+
     // The loaders in this frame have been stopped.
     virtual void didAbortLoading(WebLocalFrame*) { }
 

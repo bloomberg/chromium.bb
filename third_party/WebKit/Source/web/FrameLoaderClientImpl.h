@@ -112,6 +112,7 @@ public:
     void didRunInsecureContent(SecurityOrigin*, const KURL& insecureURL) override;
     void didDetectXSS(const KURL&, bool didBlockEntirePage) override;
     void didDispatchPingLoader(const KURL&) override;
+    void didChangePerformanceTiming() override;
     void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) override;
     PassRefPtrWillBeRawPtr<DocumentLoader> createDocumentLoader(LocalFrame*, const ResourceRequest&, const SubstituteData&) override;
     WTF::String userAgent(const KURL&) override;

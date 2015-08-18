@@ -131,6 +131,9 @@ public:
     virtual void didDetectXSS(const KURL&, bool didBlockEntirePage) = 0;
     virtual void didDispatchPingLoader(const KURL&) = 0;
 
+    // Will be called when |PerformanceTiming| events are updated
+    virtual void didChangePerformanceTiming() { }
+
     // Transmits the change in the set of watched CSS selectors property
     // that match any element on the frame.
     virtual void selectorMatchChanged(const Vector<String>& addedSelectors, const Vector<String>& removedSelectors) = 0;

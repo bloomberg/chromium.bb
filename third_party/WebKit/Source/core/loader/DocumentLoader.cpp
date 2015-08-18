@@ -91,6 +91,10 @@ DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, co
     , m_isClientRedirect(false)
     , m_replacesCurrentHistoryItem(false)
     , m_navigationType(NavigationTypeOther)
+#if !ENABLE(OILPAN)
+    , m_weakFactory(this)
+#endif
+    , m_documentLoadTiming(this->weakReference())
     , m_timeOfLastDataReceived(0.0)
     , m_applicationCacheHost(ApplicationCacheHost::create(this))
     , m_state(NotStarted)
@@ -177,6 +181,12 @@ void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 
     if (resource)
         fetcher()->preloadStarted(resource.get());
+}
+
+void DocumentLoader::didChangePerformanceTiming()
+{
+    if (frameLoader())
+        frameLoader()->client()->didChangePerformanceTiming();
 }
 
 void DocumentLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource)
@@ -430,6 +440,15 @@ bool DocumentLoader::shouldContinueForResponse() const
         return false;
 
     return true;
+}
+
+WeakPtrWillBeRawPtr<DocumentLoader> DocumentLoader::weakReference()
+{
+#if ENABLE(OILPAN)
+    return this;
+#else
+    return m_weakFactory.createWeakPtr();
+#endif
 }
 
 void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse& response)

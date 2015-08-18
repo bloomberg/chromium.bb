@@ -26,11 +26,15 @@
 #ifndef DocumentTiming_h
 #define DocumentTiming_h
 
+#include "platform/heap/Handle.h"
+
 namespace blink {
+
+class Document;
 
 class DocumentTiming {
 public:
-    DocumentTiming();
+    DocumentTiming(WeakPtrWillBeRawPtr<Document>);
 
     void markDomLoading();
     void markDomInteractive();
@@ -47,12 +51,16 @@ public:
     double firstLayout() const { return m_firstLayout; }
 
 private:
+    void notifyDocumentTimingChanged();
+
     double m_domLoading;
     double m_domInteractive;
     double m_domContentLoadedEventStart;
     double m_domContentLoadedEventEnd;
     double m_domComplete;
     double m_firstLayout;
+
+    WeakPtrWillBeRawPtr<Document> m_document;
 };
 
 }
