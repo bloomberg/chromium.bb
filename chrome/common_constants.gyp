@@ -28,8 +28,6 @@
       'common/chrome_switches.h',
       'common/env_vars.cc',
       'common/env_vars.h',
-      'common/net/test_server_locations.cc',
-      'common/net/test_server_locations.h',
       'common/pref_font_script_names-inl.h',
       'common/pref_font_webkit_names.h',
       'common/pref_names.cc',
