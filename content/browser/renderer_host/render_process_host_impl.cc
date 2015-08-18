@@ -1257,6 +1257,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableNotifications,
     switches::kDisableOverlayScrollbar,
     switches::kDisablePermissionsAPI,
+    switches::kDisablePresentationAPI,
     switches::kDisablePinch,
     switches::kDisablePrefixedEncryptedMedia,
     switches::kDisableSeccompFilterSandbox,

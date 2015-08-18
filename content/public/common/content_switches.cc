@@ -216,6 +216,9 @@ const char kDisablePinch[]                  = "disable-pinch";
 // --extra-plugin-dir and --load-plugin switches.
 const char kDisablePluginsDiscovery[]       = "disable-plugins-discovery";
 
+// Disables the Presentation API.
+const char kDisablePresentationAPI[]        = "disable-presentation-api";
+
 // Taints all <canvas> elements, regardless of origin.
 const char kDisableReadingFromCanvas[]      = "disable-reading-from-canvas";
 

@@ -213,6 +213,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
         std::string("GeometryInterfaces"), true);
   }
 
+  if (command_line.HasSwitch(switches::kDisablePresentationAPI))
+    WebRuntimeFeatures::enablePresentationAPI(false);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
