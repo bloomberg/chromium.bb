@@ -5,32 +5,6 @@
 
 Import('env')
 
-non_exit_nexe = env.ComponentProgram('non_exit', 'non_exit.c',
-                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
-
-node = env.SelUniversalTest(
-    'hard_shutdown_test.out',
-    non_exit_nexe,
-    sel_universal_flags=['--no_app_channel',
-                         '--command_file',
-                         env.File('hard_shutdown_test.stdin')],
-    )
-env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_hard_shutdown_test')
-
-node = env.SelUniversalTest(
-    'force_shutdown_test.out',
-    non_exit_nexe,
-    sel_universal_flags=['--no_app_channel',
-                         '--command_file',
-                         env.File('hard_shutdown_test.stdin')],
-    )
-env.AddNodeToTestSuite(node,
-                       ['small_tests'],
-                       'run_force_shutdown_test')
-
-
 argv0_nexe = env.ComponentProgram('argv0_test', 'argv0_test.c',
                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
 node = env.CommandSelLdrTestNacl(
