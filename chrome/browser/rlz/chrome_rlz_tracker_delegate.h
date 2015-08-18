@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/rlz/rlz_tracker_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,9 +47,17 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called when a URL is opened from the Omnibox.
+  void OnURLOpenedFromOmnibox(OmniboxLog* log);
+
   content::NotificationRegistrar registrar_;
   base::Closure on_omnibox_search_callback_;
   base::Closure on_homepage_search_callback_;
+
+  // Subscription for receiving callbacks that a URL was opened from the
+  // omnibox.
+  scoped_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
+      omnibox_url_opened_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRLZTrackerDelegate);
 };

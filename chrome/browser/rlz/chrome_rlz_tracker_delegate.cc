@@ -142,8 +142,10 @@ bool ChromeRLZTrackerDelegate::ClearReferral() {
 void ChromeRLZTrackerDelegate::SetOmniboxSearchCallback(
     const base::Closure& callback) {
   DCHECK(!callback.is_null());
-  registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                 content::NotificationService::AllSources());
+  omnibox_url_opened_subscription_ =
+      OmniboxEventGlobalTracker::GetInstance()->RegisterCallback(
+          base::Bind(&ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox,
+                     base::Unretained(this)));
   on_omnibox_search_callback_ = callback;
 }
 
@@ -162,18 +164,6 @@ void ChromeRLZTrackerDelegate::Observe(
   using std::swap;
   base::Closure callback_to_run;
   switch (type) {
-    case chrome::NOTIFICATION_OMNIBOX_OPENED_URL:
-      // In M-36, we made NOTIFICATION_OMNIBOX_OPENED_URL fire more often than
-      // it did previously.  The RLZ folks want RLZ's "first search" detection
-      // to remain as unaffected as possible by this change.  This test is
-      // there to keep the old behavior.
-      if (!content::Details<OmniboxLog>(details).ptr()->is_popup_open)
-        break;
-      registrar_.Remove(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                        content::NotificationService::AllSources());
-      swap(callback_to_run, on_omnibox_search_callback_);
-      break;
-
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       // Firstly check if it is a Google search.
       content::LoadCommittedDetails* load_details =
@@ -222,4 +212,20 @@ void ChromeRLZTrackerDelegate::Observe(
 
   if (!callback_to_run.is_null())
     callback_to_run.Run();
+}
+
+void ChromeRLZTrackerDelegate::OnURLOpenedFromOmnibox(OmniboxLog* log) {
+  using std::swap;
+
+  // In M-36, we made NOTIFICATION_OMNIBOX_OPENED_URL fire more often than
+  // it did previously.  The RLZ folks want RLZ's "first search" detection
+  // to remain as unaffected as possible by this change.  This test is
+  // there to keep the old behavior.
+  if (!log->is_popup_open)
+    return;
+
+  omnibox_url_opened_subscription_.reset();
+  base::Closure omnibox_callback;
+  swap(omnibox_callback, on_omnibox_search_callback_);
+  omnibox_callback.Run();
 }
