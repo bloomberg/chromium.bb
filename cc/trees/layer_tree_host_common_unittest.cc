@@ -7672,17 +7672,6 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
   ExecuteCalculateDrawProperties(root.get());
   EXPECT_EQ(parent->draw_properties().num_unclipped_descendants, 1u);
 
-  // Ensure the dynamic update to input handlers happens.
-  child->SetHaveWheelEventHandlers(true);
-  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_input_handler);
-  ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_input_handler);
-
-  child->SetHaveWheelEventHandlers(false);
-  EXPECT_FALSE(root->draw_properties().layer_or_descendant_has_input_handler);
-  ExecuteCalculateDrawProperties(root.get());
-  EXPECT_FALSE(root->draw_properties().layer_or_descendant_has_input_handler);
-
   child->RequestCopyOfOutput(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
   EXPECT_TRUE(root->draw_properties().layer_or_descendant_has_copy_request);

@@ -58,6 +58,8 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     Layer* page_scale_layer,
     bool can_use_lcd_text,
     bool layers_always_allowed_lcd_text) {
+  LayerTreeHostCommon::PreCalculateMetaInformation(root_layer);
+
   EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
   gfx::Transform identity_matrix;
   gfx::Size device_viewport_size =

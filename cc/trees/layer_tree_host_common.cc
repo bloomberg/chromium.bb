@@ -1130,6 +1130,11 @@ static void PreCalculateMetaInformationInternal(
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   ValidateRenderSurface(layer);
 
+  if (!IsMetaInformationRecomputationNeeded(layer)) {
+    DCHECK(IsRootLayer(layer));
+    return;
+  }
+
   layer->set_sorted_for_recursion(false);
   layer->draw_properties().has_child_with_a_scroll_parent = false;
   layer->set_layer_or_descendant_is_drawn(false);
@@ -1138,11 +1143,6 @@ static void PreCalculateMetaInformationInternal(
   if (!HasInvertibleOrAnimatedTransform(layer)) {
     // Layers with singular transforms should not be drawn, the whole subtree
     // can be skipped.
-    return;
-  }
-
-  if (!IsMetaInformationRecomputationNeeded(layer)) {
-    DCHECK(IsRootLayer(layer));
     return;
   }
 
