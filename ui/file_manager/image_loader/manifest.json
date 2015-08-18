@@ -12,6 +12,7 @@
       "fileSystem": ["requestFileSystem"]
     },
     "fileManagerPrivate",
+    "https://www.google-analytics.com/",
     "https://www.googledrive.com/",
     "metricsPrivate",
     "storage"
