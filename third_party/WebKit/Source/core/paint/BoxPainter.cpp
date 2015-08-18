@@ -711,7 +711,8 @@ void BoxPainter::calculateBackgroundImageGeometry(const LayoutBoxModelObject& ob
     }
 
     if (backgroundRepeatX == RepeatFill) {
-        geometry.setPhaseX(geometry.tileSize().width() ? geometry.tileSize().width() - roundToInt(computedXPosition + left) % geometry.tileSize().width() : 0);
+        int xOffset = fillLayer.backgroundXOrigin() == RightEdge ? availableWidth - computedXPosition : computedXPosition;
+        geometry.setPhaseX(geometry.tileSize().width() ? geometry.tileSize().width() - roundToInt(xOffset + left) % geometry.tileSize().width() : 0);
         geometry.setSpaceSize(IntSize());
     } else if (backgroundRepeatX == SpaceFill && fillTileSize.width() > 0) {
         int space = getSpaceBetweenImageTiles(positioningAreaSize.width(), geometry.tileSize().width());
@@ -732,7 +733,8 @@ void BoxPainter::calculateBackgroundImageGeometry(const LayoutBoxModelObject& ob
     }
 
     if (backgroundRepeatY == RepeatFill) {
-        geometry.setPhaseY(geometry.tileSize().height() ? geometry.tileSize().height() - roundToInt(computedYPosition + top) % geometry.tileSize().height() : 0);
+        int yOffset = fillLayer.backgroundYOrigin() == BottomEdge ? availableHeight - computedYPosition : computedYPosition;
+        geometry.setPhaseY(geometry.tileSize().height() ? geometry.tileSize().height() - roundToInt(yOffset + top) % geometry.tileSize().height() : 0);
         geometry.setSpaceSize(IntSize(geometry.spaceSize().width(), 0));
     } else if (backgroundRepeatY == SpaceFill && fillTileSize.height() > 0) {
         int space = getSpaceBetweenImageTiles(positioningAreaSize.height(), geometry.tileSize().height());
