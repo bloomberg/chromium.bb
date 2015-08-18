@@ -9,8 +9,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.util.Log;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.Date;
@@ -39,7 +39,7 @@ import javax.annotation.concurrent.NotThreadSafe;
  */
 @NotThreadSafe
 public class ExponentialBackoffScheduler {
-    private static final String TAG = "ExponentialBackoffScheduler";
+    private static final String TAG = "cr.omaha";
 
     private static final String PREFERENCE_DELAY = "delay";
     private static final String PREFERENCE_FAILED_ATTEMPTS = "backoffFailedAttempts";
@@ -150,9 +150,13 @@ public class ExponentialBackoffScheduler {
      */
     @VisibleForTesting
     protected void setAlarm(AlarmManager am, long timestamp, PendingIntent retryPIntent) {
-        Log.v(TAG, "now(" + new Date(getCurrentTime()) + ") refiringAt("
+        Log.d(TAG, "now(" + new Date(getCurrentTime()) + ") refiringAt("
                 + new Date(timestamp) + ")");
-        am.set(AlarmManager.RTC, timestamp, retryPIntent);
+        try {
+            am.set(AlarmManager.RTC, timestamp, retryPIntent);
+        } catch (SecurityException e) {
+            Log.e(TAG, "Failed to set backoff alarm.");
+        }
     }
 
     /**

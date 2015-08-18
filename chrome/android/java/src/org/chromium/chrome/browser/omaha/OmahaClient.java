@@ -12,10 +12,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Looper;
-import android.util.Log;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -56,7 +56,7 @@ import java.util.UUID;
  * http://docs.google.com/a/google.com/document/d/1scTCovqASf5ktkOeVj8wFRkWTCeDYw2LrOBNn05CDB0/edit
  */
 public class OmahaClient extends IntentService {
-    private static final String TAG = "OmahaClient";
+    private static final String TAG = "cr.omaha";
 
     // Intent actions.
     private static final String ACTION_INITIALIZE =
@@ -388,7 +388,11 @@ public class OmahaClient extends IntentService {
     @VisibleForTesting
     protected void setAlarm(AlarmManager am, PendingIntent operation, int alarmType,
             long triggerAtTime) {
-        am.setRepeating(AlarmManager.RTC, triggerAtTime, MS_BETWEEN_REQUESTS, operation);
+        try {
+            am.setRepeating(AlarmManager.RTC, triggerAtTime, MS_BETWEEN_REQUESTS, operation);
+        } catch (SecurityException e) {
+            Log.e(TAG, "Failed to set repeating alarm.");
+        }
     }
 
     /**
