@@ -4,10 +4,14 @@
 
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/media/router/media_router_factory.h"
+#include "chrome/browser/media/router/media_router_mojo_impl.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model_delegate.h"
 
@@ -87,9 +91,25 @@ void MediaRouterContextualMenu::ExecuteCommand(int command_id,
       chrome::ShowSingletonTab(browser_, GURL(kCastLearnMorePageUrl));
       break;
     case IDC_MEDIA_ROUTER_REPORT_ISSUE:
-      NOTIMPLEMENTED();
+      ReportIssue();
       break;
     default:
       NOTREACHED();
   }
+}
+
+void MediaRouterContextualMenu::ReportIssue() {
+  // Opens feedback page loaded from the media router extension.
+  // This is temporary until feedback UI is redesigned.
+  media_router::MediaRouterMojoImpl* media_router =
+      static_cast<media_router::MediaRouterMojoImpl*>(
+          media_router::MediaRouterFactory::GetApiForBrowserContext(
+              static_cast<content::BrowserContext*>(browser_->profile())));
+  if (media_router->media_route_provider_extension_id().empty())
+    return;
+  std::string feedback_url(extensions::kExtensionScheme +
+                           std::string(url::kStandardSchemeSeparator) +
+                           media_router->media_route_provider_extension_id() +
+                           "/feedback.html");
+  chrome::ShowSingletonTab(browser_, GURL(feedback_url));
 }

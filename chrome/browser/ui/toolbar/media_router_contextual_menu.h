@@ -27,6 +27,8 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   base::string16 GetLabelForCommandId(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
+  void ReportIssue();
+
   Browser* browser_;
   ui::SimpleMenuModel menu_model_;
 
