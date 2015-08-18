@@ -59389,6 +59389,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="922" label="CSSValuePrefixedMaxContent"/>
   <int value="923" label="CSSValuePrefixedFitContent"/>
   <int value="924" label="CSSValuePrefixedFillAvailable"/>
+  <int value="925" label="FetchAPIRequestContext"/>
+  <int value="926" label="PresentationDefaultRequest"/>
+  <int value="927" label="PresentationAvailabilityChangeEventListener"/>
+  <int value="928" label="PresentationRequestConstructor"/>
+  <int value="929" label="PresentationRequestStart"/>
+  <int value="930" label="PresentationRequestJoin"/>
+  <int value="931" label="PresentationRequestGetAvailability"/>
+  <int value="932" label="PresentationRequestSessionConnectEventListener"/>
+  <int value="933" label="PresentationSessionClose"/>
+  <int value="934" label="PresentationSessionSend"/>
+  <int value="935" label="PresentationSessionStateChangeEventListener"/>
+  <int value="936" label="PresentationSessionMessageEventListener"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
