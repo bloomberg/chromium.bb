@@ -92,11 +92,12 @@ public:
 
     DECLARE_TRACE();
 
+    bool isContextInitialized() const { return m_scriptState && !!m_scriptState->perContextData(); }
+
 private:
     WorkerScriptController(WorkerGlobalScope*, v8::Isolate*);
     class WorkerGlobalScopeExecutionState;
 
-    bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
     v8::Isolate* isolate() const;
 
     // Evaluate a script file in the current execution environment.

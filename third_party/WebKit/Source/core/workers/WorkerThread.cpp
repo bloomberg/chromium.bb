@@ -250,6 +250,10 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     }
     m_workerGlobalScope->workerInspectorController()->workerContextInitialized(startMode == PauseWorkerGlobalScopeOnStart);
 
+    if (m_workerGlobalScope->script()->isContextInitialized()) {
+        m_workerReportingProxy.didInitializeWorkerContext();
+    }
+
     OwnPtrWillBeRawPtr<CachedMetadataHandler> handler(workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get()));
     bool success = m_workerGlobalScope->script()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);
     m_workerGlobalScope->didEvaluateWorkerScript();

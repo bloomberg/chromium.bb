@@ -33,6 +33,7 @@
 
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/heap/Handle.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebServiceWorkerContextProxy.h"
 #include "wtf/Forward.h"
@@ -88,6 +89,7 @@ public:
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override;
+    void didInitializeWorkerContext() override;
     void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     void workerGlobalScopeClosed() override;
     void willDestroyWorkerGlobalScope() override;
@@ -98,6 +100,7 @@ private:
 
     WebEmbeddedWorkerImpl& m_embeddedWorker;
     Document& m_document;
+    KURL m_documentURL;
 
     WebServiceWorkerContextClient& m_client;
 
