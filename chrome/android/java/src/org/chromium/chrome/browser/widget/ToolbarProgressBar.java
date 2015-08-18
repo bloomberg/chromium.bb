@@ -45,7 +45,6 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
 
     private boolean mIsStarted;
     private float mTargetProgress;
-    private float mTargetAlpha = 0.0f;
     AnimationLogic mAnimationLogic;
     private boolean mAnimationInitialized;
 
@@ -87,7 +86,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
      */
     public ToolbarProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
-        setAlpha(mTargetAlpha);
+        setAlpha(0.0f);
     }
 
     /**
@@ -134,7 +133,8 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         if (delayed) {
             updateVisibleProgress();
         } else {
-            mTargetAlpha = 0.0f;
+            removeCallbacks(mHideRunnable);
+            animate().cancel();
             setAlpha(0.0f);
         }
     }
@@ -158,7 +158,6 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     }
 
     private void animateAlphaTo(float targetAlpha) {
-        mTargetAlpha = targetAlpha;
         float alphaDiff = targetAlpha - getAlpha();
         if (alphaDiff != 0.0f) {
             animate().alpha(targetAlpha)
