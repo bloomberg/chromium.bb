@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
@@ -71,10 +72,8 @@ std::string RandomLabel() {
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
   std::string label(36, ' ');
-  for (size_t i = 0; i < label.size(); ++i) {
-    int random_char = base::RandGenerator(sizeof(kAlphabet) - 1);
-    label[i] = kAlphabet[random_char];
-  }
+  for (char& c : label)
+    c = kAlphabet[base::RandGenerator(arraysize(kAlphabet))];
   return label;
 }
 
