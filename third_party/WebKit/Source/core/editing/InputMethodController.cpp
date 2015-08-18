@@ -32,7 +32,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
-#include "core/editing/TypingCommand.h"
+#include "core/editing/commands/TypingCommand.h"
 #include "core/events/CompositionEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLTextAreaElement.h"

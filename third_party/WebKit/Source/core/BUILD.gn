@@ -288,7 +288,7 @@ source_set("remaining") {
     ]
   } else {  # !is_mac
     sources -= [
-      "editing/SmartReplaceCF.cpp",
+      "editing/commands/SmartReplaceCF.cpp",
     ]
   }
 }

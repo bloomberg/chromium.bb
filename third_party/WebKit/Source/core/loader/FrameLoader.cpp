@@ -43,7 +43,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
-#include "core/editing/UndoStack.h"
+#include "core/editing/commands/UndoStack.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
