@@ -258,7 +258,7 @@ SdchManager::GetDictionarySet(const GURL& target_url) {
 
   UMA_HISTOGRAM_COUNTS("Sdch3.Advertisement_Count", count);
   UMA_HISTOGRAM_BOOLEAN("Sdch3.AdvertisedWithSecureScheme",
-                        target_url.SchemeIsSecure());
+                        target_url.SchemeIsCryptographic());
 
   return result.Pass();
 }
