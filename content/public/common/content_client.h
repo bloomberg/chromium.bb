@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ui/base/layout.h"
+#include "url/url_util.h"
 
 class GURL;
 
@@ -89,7 +90,7 @@ class CONTENT_EXPORT ContentClient {
   // Gives the embedder a chance to register its own standard and saveable
   // url schemes early on in the startup sequence.
   virtual void AddAdditionalSchemes(
-      std::vector<std::string>* standard_schemes,
+      std::vector<url::SchemeWithType>* standard_schemes,
       std::vector<std::string>* savable_schemes) {}
 
   // Returns whether the given message should be sent in a swapped out renderer.

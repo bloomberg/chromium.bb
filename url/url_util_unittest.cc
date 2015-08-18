@@ -61,6 +61,38 @@ TEST(URLUtilTest, FindAndCompareScheme) {
   EXPECT_TRUE(found_scheme == Component(1, 11));
 }
 
+TEST(URLUtilTest, IsStandard) {
+  const char kHTTPScheme[] = "http";
+  EXPECT_TRUE(IsStandard(kHTTPScheme, Component(0, strlen(kHTTPScheme))));
+
+  const char kFooScheme[] = "foo";
+  EXPECT_FALSE(IsStandard(kFooScheme, Component(0, strlen(kFooScheme))));
+}
+
+TEST(URLUtilTest, GetStandardSchemeType) {
+  url::SchemeType scheme_type;
+
+  const char kHTTPScheme[] = "http";
+  scheme_type = url::SCHEME_WITHOUT_AUTHORITY;
+  EXPECT_TRUE(GetStandardSchemeType(kHTTPScheme,
+                                    Component(0, strlen(kHTTPScheme)),
+                                    &scheme_type));
+  EXPECT_EQ(url::SCHEME_WITH_PORT, scheme_type);
+
+  const char kFilesystemScheme[] = "filesystem";
+  scheme_type = url::SCHEME_WITH_PORT;
+  EXPECT_TRUE(GetStandardSchemeType(kFilesystemScheme,
+                                    Component(0, strlen(kFilesystemScheme)),
+                                    &scheme_type));
+  EXPECT_EQ(url::SCHEME_WITHOUT_AUTHORITY, scheme_type);
+
+  const char kFooScheme[] = "foo";
+  scheme_type = url::SCHEME_WITH_PORT;
+  EXPECT_FALSE(GetStandardSchemeType(kFooScheme,
+                                     Component(0, strlen(kFooScheme)),
+                                     &scheme_type));
+}
+
 TEST(URLUtilTest, ReplaceComponents) {
   Parsed parsed;
   RawCanonOutputT<char> output;
@@ -220,7 +252,7 @@ TEST(URLUtilTest, TestEncodeURIComponent) {
 }
 
 TEST(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
-  // This tests non-standard (in the sense that GIsStandard() == false)
+  // This tests non-standard (in the sense that IsStandard() == false)
   // hierarchical schemes.
   struct ResolveRelativeCase {
     const char* base;
