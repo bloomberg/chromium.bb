@@ -55,6 +55,11 @@
     'ext/skia_utils_win.cc',
   ],
   'conditions': [
+    [ 'OS == "ios"', {
+      'sources!': [
+        'ext/platform_canvas.cc',
+      ],
+    }],
     [ 'OS == "android" and '
       'enable_basic_printing==0 and enable_print_preview==0', {
       'sources!': [
