@@ -13,6 +13,7 @@
 #include "components/html_viewer/replicated_frame_state.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/tab/public/interfaces/frame_tree.mojom.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebRemoteFrameClient.h"
@@ -25,6 +26,7 @@ class WebFrame;
 }
 
 namespace mojo {
+class ApplicationImpl;
 class Rect;
 class ScopedViewPtr;
 class View;
@@ -167,6 +169,7 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       const NavigationPolicyInfo& info);
+  virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
                                       const blink::WebString& source_name,
                                       unsigned source_line,
@@ -175,6 +178,7 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
+  virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
   virtual blink::WebGeolocationClient* geolocationClient();
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
   virtual void didStartLoading(bool to_different_document);
@@ -324,6 +328,10 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<mojo::ScopedViewPtr> owned_view_;
 
   blink::WebTextInputInfo text_input_info_;
+
+  // This object is only valid in the context of performance tests.
+  tracing::StartupPerformanceDataCollectorPtr
+      startup_performance_data_collector_;
 
   base::WeakPtrFactory<HTMLFrame> weak_factory_;
 

@@ -103,6 +103,8 @@ source_set("lib") {
     "mock_web_blob_registry_impl.h",
     "replicated_frame_state.cc",
     "replicated_frame_state.h",
+    "stats_collection_controller.cc",
+    "stats_collection_controller.h",
     "test_html_viewer_impl.cc",
     "test_html_viewer_impl.h",
     "touch_handler.cc",
@@ -147,6 +149,7 @@ source_set("lib") {
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
     "//components/scheduler:scheduler",
+    "//components/startup_metric_utils",
     "//components/view_manager/gles2:lib",
     "//components/view_manager/public/interfaces",
     "//components/webcrypto",
@@ -165,6 +168,8 @@ source_set("lib") {
     "//mojo/platform_handle",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/services/tracing/public/cpp",
+    "//mojo/services/tracing/public/interfaces",
     "//net",
     "//skia",
     "//third_party/mojo_services/src/accessibility/public/interfaces",
@@ -203,6 +208,7 @@ source_set("lib") {
     "//components/clipboard",
     "//components/view_manager",
     "//mojo/services/network:network",
+    "//mojo/services/tracing",
   ]
 }
 

@@ -27,8 +27,7 @@ bool WasNonBrowserUIDisplayed();
 // been displayed or not.
 void SetNonBrowserUIDisplayed();
 
-// Call this as early as possible in the startup process to record a
-// timestamp.
+// Call this as early as possible in the startup process to record a timestamp.
 void RecordMainEntryPointTime();
 
 // Call this when the executable is loaded and main() is entered. Can be
@@ -36,12 +35,11 @@ void RecordMainEntryPointTime();
 // contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
 void RecordExeMainEntryTime();
 
-#if defined(OS_ANDROID)
-// On Android the entry point time is the time at which the Java code starts.
-// This is recorded on the Java side, and then passed to the C++ side once the
-// C++ library is loaded and running.
+// Call this with a previously recorded timestamp if unable to call
+// RecordMainEntryPointTime() directly on startup.
+// On Android, the entry point time is the time at which the Java code starts.
+// In Mojo, the entry point time is the time at which the shell starts.
 void RecordSavedMainEntryPointTime(const base::Time& entry_point_time);
-#endif // OS_ANDROID
 
 // Called just before the message loop is about to start. Entry point to record
 // startup stats.

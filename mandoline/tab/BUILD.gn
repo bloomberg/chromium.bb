@@ -32,6 +32,7 @@ source_set("lib") {
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/services/network/public/interfaces",
+    "//mojo/services/tracing/public/interfaces",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 

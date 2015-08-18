@@ -19,6 +19,7 @@
 #include "components/html_viewer/geolocation_client_impl.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/media_factory.h"
+#include "components/html_viewer/stats_collection_controller.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
@@ -247,6 +248,9 @@ void HTMLDocument::Load(URLResponsePtr response) {
         new DevToolsAgentImpl(main_frame, html_document_app_->shell()));
   }
 
+  startup_performance_data_collector_ =
+      StatsCollectionController::Install(main_frame, html_document_app_);
+
   GURL url(response->url);
 
   WebURLRequestExtraData* extra_data = new WebURLRequestExtraData;
@@ -398,6 +402,15 @@ void HTMLDocument::didAddMessageToConsole(
           << message.text.utf8();
 }
 
+void HTMLDocument::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
+  static bool recorded = false;
+  if (!recorded && startup_performance_data_collector_) {
+    startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTime(
+        base::Time::Now().ToInternalValue());
+    recorded = true;
+  }
+}
+
 void HTMLDocument::didFinishLoad(blink::WebLocalFrame* frame) {
   // TODO(msw): Notify AxProvider clients of updates on child frame loads.
   did_finish_load_ = true;
@@ -413,6 +426,15 @@ void HTMLDocument::didNavigateWithinPage(
     blink::WebHistoryCommitType commit_type) {
   if (navigator_host_.get())
     navigator_host_->DidNavigateLocally(history_item.urlString().utf8());
+}
+
+void HTMLDocument::didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame) {
+  static bool recorded = false;
+  if (!recorded && startup_performance_data_collector_) {
+    startup_performance_data_collector_->SetFirstVisuallyNonEmptyLayoutTime(
+        base::Time::Now().ToInternalValue());
+    recorded = true;
+  }
 }
 
 blink::WebEncryptedMediaClient* HTMLDocument::encryptedMediaClient() {

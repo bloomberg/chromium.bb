@@ -18,7 +18,6 @@ class WebView;
 }
 
 namespace mojo {
-class ApplicationImpl;
 class View;
 }
 
@@ -40,7 +39,6 @@ class HTMLFrameTreeManager {
   // Close() when done.
   static HTMLFrame* CreateFrameAndAttachToTree(
       GlobalState* global_state,
-      mojo::ApplicationImpl* app,
       mojo::View* view,
       scoped_ptr<DocumentResourceWaiter> resource_waiter,
       HTMLFrameDelegate* delegate);

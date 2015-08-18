@@ -22,6 +22,7 @@
 #include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
@@ -114,10 +115,12 @@ class HTMLDocument : public blink::WebViewClient,
                                       const blink::WebString& source_name,
                                       unsigned source_line,
                                       const blink::WebString& stack_trace);
+  virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
   virtual void didFinishLoad(blink::WebLocalFrame* frame);
   virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
                                      const blink::WebHistoryItem& history_item,
                                      blink::WebHistoryCommitType commit_type);
+  virtual void didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame);
   virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
 
  private:
@@ -188,6 +191,10 @@ class HTMLDocument : public blink::WebViewClient,
   scoped_ptr<DevToolsAgentImpl> devtools_agent_;
 
   DeleteCallback delete_callback_;
+
+  // This object is only valid in the context of performance tests.
+  tracing::StartupPerformanceDataCollectorPtr
+      startup_performance_data_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLDocument);
 };

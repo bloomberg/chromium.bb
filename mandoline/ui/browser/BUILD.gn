@@ -42,6 +42,8 @@ source_set("lib") {
     "//mojo/application/public/cpp:sources",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
+    "//mojo/services/tracing/public/cpp",
+    "//mojo/services/tracing/public/interfaces",
     "//skia",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//ui/gfx/geometry",

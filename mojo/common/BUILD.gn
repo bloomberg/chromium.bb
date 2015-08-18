@@ -105,7 +105,7 @@ if (!is_component_build) {
     deps = [
       "//base",
       "//mojo/application/public/cpp",
-      "//mojo/services/tracing:bindings",
+      "//mojo/services/tracing/public/interfaces",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
     ]
   }

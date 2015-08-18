@@ -11,16 +11,19 @@
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/common/weak_interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/services/tracing/tracing.mojom.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace tracing {
 
 class CollectorImpl;
 class TraceDataSink;
 
-class TracingApp : public mojo::ApplicationDelegate,
-                   public mojo::InterfaceFactory<TraceCoordinator>,
-                   public TraceCoordinator {
+class TracingApp
+    : public mojo::ApplicationDelegate,
+      public mojo::InterfaceFactory<TraceCoordinator>,
+      public TraceCoordinator,
+      public mojo::InterfaceFactory<StartupPerformanceDataCollector>,
+      public StartupPerformanceDataCollector {
  public:
   TracingApp();
   ~TracingApp() override;
@@ -34,10 +37,25 @@ class TracingApp : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<TraceCoordinator> request) override;
 
-  // tracing::TraceCoordinator implementation.
+  // mojo::InterfaceFactory<StartupPerformanceDataCollector> implementation.
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<StartupPerformanceDataCollector> request) override;
+
+  // TraceCoordinator implementation.
   void Start(mojo::ScopedDataPipeProducerHandle stream,
              const mojo::String& categories) override;
   void StopAndFlush() override;
+
+  // StartupPerformanceDataCollector implementation.
+  void SetShellProcessCreationTime(int64 time) override;
+  void SetBrowserMessageLoopStartTime(int64 time) override;
+  void SetBrowserWindowDisplayTime(int64 time) override;
+  void SetBrowserOpenTabsTime(int64 time) override;
+  void SetFirstWebContentsMainFrameLoadTime(int64 time) override;
+  void SetFirstVisuallyNonEmptyLayoutTime(int64 time) override;
+  void GetStartupPerformanceTimes(
+      const GetStartupPerformanceTimesCallback& callback) override;
 
   void AllDataCollected();
 
@@ -45,6 +63,9 @@ class TracingApp : public mojo::ApplicationDelegate,
   ScopedVector<CollectorImpl> collector_impls_;
   mojo::WeakInterfacePtrSet<TraceController> controller_ptrs_;
   mojo::WeakBindingSet<TraceCoordinator> coordinator_bindings_;
+  mojo::WeakBindingSet<StartupPerformanceDataCollector>
+      startup_performance_data_collector_bindings_;
+  StartupPerformanceTimes startup_performance_times_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingApp);
 };

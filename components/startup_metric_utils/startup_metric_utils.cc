@@ -232,13 +232,11 @@ void RecordExeMainEntryTime() {
   env->SetVar(kChromeMainTimeEnvVar, exe_load_time);
 }
 
-#if defined(OS_ANDROID)
 void RecordSavedMainEntryPointTime(const base::Time& entry_point_time) {
   DCHECK(!g_main_entry_time_was_recorded);
   g_main_entry_time_was_recorded = true;
   *MainEntryPointTimeInternal() = entry_point_time;
 }
-#endif // OS_ANDROID
 
 // Return the time recorded by RecordMainEntryPointTime().
 const base::Time MainEntryStartTime() {

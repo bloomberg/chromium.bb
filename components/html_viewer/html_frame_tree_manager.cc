@@ -16,7 +16,6 @@
 #include "components/html_viewer/html_frame_delegate.h"
 #include "components/html_viewer/html_viewer_switches.h"
 #include "components/view_manager/public/cpp/view_manager.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRemoteFrame.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
@@ -49,7 +48,6 @@ HTMLFrameTreeManager::TreeMap* HTMLFrameTreeManager::instances_ = nullptr;
 // static
 HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     GlobalState* global_state,
-    mojo::ApplicationImpl* app,
     mojo::View* view,
     scoped_ptr<DocumentResourceWaiter> resource_waiter,
     HTMLFrameDelegate* delegate) {

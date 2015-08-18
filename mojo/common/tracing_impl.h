@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/services/tracing/tracing.mojom.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace mojo {
 

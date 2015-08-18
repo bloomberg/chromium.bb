@@ -5,9 +5,6 @@
 #ifndef MOJO_RUNNER_SWITCHES_H_
 #define MOJO_RUNNER_SWITCHES_H_
 
-#include <set>
-#include <string>
-
 namespace switches {
 
 // All switches in alphabetical order. The switches should be documented

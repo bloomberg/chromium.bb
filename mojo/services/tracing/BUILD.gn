@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
-import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 mojo_native_application("tracing") {
   sources = [
@@ -17,12 +16,6 @@ mojo_native_application("tracing") {
   ]
 }
 
-mojom("bindings") {
-  sources = [
-    "tracing.mojom",
-  ]
-}
-
 source_set("lib") {
   sources = [
     "trace_data_sink.cc",
@@ -32,9 +25,9 @@ source_set("lib") {
   ]
 
   deps = [
-    ":bindings",
     "//base",
     "//mojo/application/public/cpp",
     "//mojo/common:common_base",
+    "//mojo/services/tracing/public/interfaces",
   ]
 }

@@ -6,7 +6,7 @@
 #define MOJO_COMMON_TRACING_CONTROLLER_IMPL_H_
 
 #include "base/memory/ref_counted_memory.h"
-#include "mojo/services/tracing/tracing.mojom.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 

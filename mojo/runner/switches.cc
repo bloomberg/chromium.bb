@@ -4,8 +4,6 @@
 
 #include "mojo/runner/switches.h"
 
-#include "base/basictypes.h"
-
 namespace switches {
 
 // Used internally by the main process to indicate that a new process should be

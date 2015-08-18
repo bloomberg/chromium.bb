@@ -5,9 +5,12 @@
 #include "mandoline/ui/browser/browser_manager.h"
 
 #include "base/command_line.h"
+#include "base/time/time.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_observer.h"
 #include "mandoline/ui/browser/browser.h"
+#include "mojo/services/tracing/public/cpp/switches.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 namespace mandoline {
 
@@ -54,6 +57,24 @@ void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
   // default URL.
   if (browsers_.empty())
     CreateBrowser(GURL(kGoogleURL));
+
+  // Record the browser startup time metrics for performance testing.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          tracing::kEnableStatsCollectionBindings)) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:tracing");
+    tracing::StartupPerformanceDataCollectorPtr collector;
+    app_->ConnectToService(request.Pass(), &collector);
+    // TODO(msw): When to record the browser message loop start time?
+    const base::Time startup_time = base::Time::Now();
+    collector->SetBrowserMessageLoopStartTime(startup_time.ToInternalValue());
+    // TODO(msw): When to record the browser window display time?
+    const base::Time display_time = base::Time::Now();
+    collector->SetBrowserWindowDisplayTime(display_time.ToInternalValue());
+    // TODO(msw): When to record the browser open tabs time?
+    const base::Time open_tabs_time = base::Time::Now();
+    collector->SetBrowserOpenTabsTime(open_tabs_time.ToInternalValue());
+  }
 }
 
 bool BrowserManager::ConfigureIncomingConnection(

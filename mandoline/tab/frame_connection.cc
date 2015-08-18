@@ -16,6 +16,7 @@
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
+#include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/interfaces/font_service.mojom.h"
@@ -56,6 +57,10 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   surfaces_interfaces.push_back(mojo::DisplayFactory::Name_);
   surfaces_interfaces.push_back(mojo::Surface::Name_);
   filter->filter.insert("mojo:surfaces_service", surfaces_interfaces.Pass());
+
+  mojo::Array<mojo::String> tracing_interfaces;
+  tracing_interfaces.push_back(tracing::StartupPerformanceDataCollector::Name_);
+  filter->filter.insert("mojo:tracing", tracing_interfaces.Pass());
 
   mojo::Array<mojo::String> view_manager_interfaces;
   view_manager_interfaces.push_back(mojo::Gpu::Name_);

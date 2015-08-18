@@ -8,9 +8,9 @@ include_rules = [
 
 specific_include_rules = {
   "trace_controller_impl\.h": [
-    "+mojo/services/tracing/tracing.mojom.h"
+    "+mojo/services/tracing/public/interfaces/tracing.mojom.h"
   ],
   "tracing_impl\.h": [
-    "+mojo/services/tracing/tracing.mojom.h"
+    "+mojo/services/tracing/public/interfaces/tracing.mojom.h"
   ],
 }

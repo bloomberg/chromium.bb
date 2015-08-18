@@ -38,6 +38,7 @@ TracingApp::~TracingApp() {}
 bool TracingApp::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<TraceCoordinator>(this);
+  connection->AddService<StartupPerformanceDataCollector>(this);
 
   // If someone connects to us they may want to use the TraceCoordinator
   // interface and/or they may want to expose themselves to be traced. Attempt
@@ -46,7 +47,8 @@ bool TracingApp::ConfigureIncomingConnection(
   // close the pipe if not.
   TraceControllerPtr controller_ptr;
   connection->ConnectToService(&controller_ptr);
-  controller_ptrs_.AddInterfacePtr(controller_ptr.Pass());
+  if (controller_ptr)
+    controller_ptrs_.AddInterfacePtr(controller_ptr.Pass());
   return true;
 }
 
@@ -54,6 +56,12 @@ void TracingApp::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<TraceCoordinator> request) {
   coordinator_bindings_.AddBinding(this, request.Pass());
+}
+
+void TracingApp::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<StartupPerformanceDataCollector> request) {
+  startup_performance_data_collector_bindings_.AddBinding(this, request.Pass());
 }
 
 void TracingApp::Start(mojo::ScopedDataPipeProducerHandle stream,
@@ -79,6 +87,41 @@ void TracingApp::StopAndFlush() {
       FROM_HERE,
       base::Bind(&TracingApp::AllDataCollected, base::Unretained(this)),
       base::TimeDelta::FromSeconds(1));
+}
+
+void TracingApp::SetShellProcessCreationTime(int64 time) {
+  if (startup_performance_times_.shell_process_creation_time == 0)
+    startup_performance_times_.shell_process_creation_time = time;
+}
+
+void TracingApp::SetBrowserMessageLoopStartTime(int64 time) {
+  if (startup_performance_times_.browser_message_loop_start_time == 0)
+    startup_performance_times_.browser_message_loop_start_time = time;
+}
+
+void TracingApp::SetBrowserWindowDisplayTime(int64 time) {
+  if (startup_performance_times_.browser_window_display_time == 0)
+    startup_performance_times_.browser_window_display_time = time;
+}
+
+void TracingApp::SetBrowserOpenTabsTime(int64 time) {
+  if (startup_performance_times_.browser_open_tabs_time == 0)
+    startup_performance_times_.browser_open_tabs_time = time;
+}
+
+void TracingApp::SetFirstWebContentsMainFrameLoadTime(int64 time) {
+  if (startup_performance_times_.first_web_contents_main_frame_load_time == 0)
+    startup_performance_times_.first_web_contents_main_frame_load_time = time;
+}
+
+void TracingApp::SetFirstVisuallyNonEmptyLayoutTime(int64 time) {
+  if (startup_performance_times_.first_visually_non_empty_layout_time == 0)
+    startup_performance_times_.first_visually_non_empty_layout_time = time;
+}
+
+void TracingApp::GetStartupPerformanceTimes(
+    const GetStartupPerformanceTimesCallback& callback) {
+  callback.Run(startup_performance_times_.Clone());
 }
 
 void TracingApp::AllDataCollected() {

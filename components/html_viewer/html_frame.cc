@@ -23,6 +23,7 @@
 #include "components/html_viewer/html_frame_properties.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/media_factory.h"
+#include "components/html_viewer/stats_collection_controller.h"
 #include "components/html_viewer/touch_handler.h"
 #include "components/html_viewer/web_layer_impl.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
@@ -162,6 +163,11 @@ HTMLFrame::HTMLFrame(CreateParams* params)
           blink::WebRemoteFrame::create(state_.tree_scope, this);
       local_web_frame->swap(remote_web_frame);
       web_frame_ = remote_web_frame;
+    } else {
+      // Collect startup perf data for local main frames in test environments.
+      // Child frames aren't tracked, and tracking remote frames is redundant.
+      startup_performance_data_collector_ =
+          StatsCollectionController::Install(web_frame_, GetLocalRootApp());
     }
   } else if (!params->allow_local_shared_frame && params->view &&
              id_ == params->view->id()) {
@@ -750,6 +756,15 @@ void HTMLFrame::didAddMessageToConsole(const blink::WebConsoleMessage& message,
           << message.text.utf8();
 }
 
+void HTMLFrame::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
+  static bool recorded = false;
+  if (!recorded && startup_performance_data_collector_) {
+    startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTime(
+        base::Time::Now().ToInternalValue());
+    recorded = true;
+  }
+}
+
 void HTMLFrame::didFinishLoad(blink::WebLocalFrame* frame) {
   if (GetLocalRoot() == this)
     delegate_->OnFrameDidFinishLoad();
@@ -760,6 +775,15 @@ void HTMLFrame::didNavigateWithinPage(blink::WebLocalFrame* frame,
                                       blink::WebHistoryCommitType commit_type) {
   GetLocalRoot()->server_->DidNavigateLocally(id_,
                                               history_item.urlString().utf8());
+}
+
+void HTMLFrame::didFirstVisuallyNonEmptyLayout(blink::WebLocalFrame* frame) {
+  static bool recorded = false;
+  if (!recorded && startup_performance_data_collector_) {
+    startup_performance_data_collector_->SetFirstVisuallyNonEmptyLayoutTime(
+        base::Time::Now().ToInternalValue());
+    recorded = true;
+  }
 }
 
 blink::WebGeolocationClient* HTMLFrame::geolocationClient() {

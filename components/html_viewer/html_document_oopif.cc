@@ -135,7 +135,7 @@ void HTMLDocumentOOPIF::Load() {
       resource_waiter_->ReleaseURLResponse().Pass();
 
   frame_ = HTMLFrameTreeManager::CreateFrameAndAttachToTree(
-      global_state_, html_document_app_, view, resource_waiter_.Pass(), this);
+      global_state_, view, resource_waiter_.Pass(), this);
 
   // TODO(yzshen): http://crbug.com/498986 Creating DevToolsAgentImpl instances
   // causes html_viewer_apptests flakiness currently. Before we fix that we
