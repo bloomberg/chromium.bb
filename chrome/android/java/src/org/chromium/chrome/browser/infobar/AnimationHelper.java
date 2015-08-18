@@ -9,6 +9,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -224,8 +225,10 @@ public class AnimationHelper implements ViewTreeObserver.OnGlobalLayoutListener 
                         || mAnimationType == ANIMATION_TYPE_SWAP)) {
                     TextView messageView = (TextView) mToShow.findViewById(R.id.infobar_message);
                     if (messageView != null) {
-                        mToShow.announceForAccessibility(mInfoBar.getContext().getString(
-                                        R.string.infobar_screen_position, messageView.getText()));
+                        Context context = mInfoBar.getContext();
+                        mToShow.announceForAccessibility(messageView.getText()
+                                + context.getString(R.string.infobar_screen_position));
+
                     }
                 }
             }
