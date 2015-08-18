@@ -138,14 +138,6 @@
   border-radius: 2px;
 }
 
-#incognito {
-  -webkit-margin-end: 0;
-  -webkit-margin-start: 16px;
-  /* This image is 128x128 so it'll work fine in 2x. */
-  content: url(../../../../ui/webui/resources/images/incognito_icon.png);
-  width: 48px;
-}
-
 #remove-wrapper {
   align-self: flex-start;
   margin: 0;
@@ -158,6 +150,14 @@
   };
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
+}
+
+#incognito {
+  bottom: 16px;
+  content: -webkit-image-set(url(1x/incognito_marker.png) 1x,
+                             url(2x/incognito_marker.png) 2x);
+  position: absolute;
+  right: 10px;
 }
 
 @media not all and (max-width: 1024px) {
