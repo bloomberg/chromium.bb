@@ -126,12 +126,12 @@ void SupervisedUserCreationScreenHandler::DeclareLocalizedValues(
 
   builder->Add("importExistingSupervisedUserTitle",
                IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE);
+  builder->Add("importSupervisedUserLink",
+               IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE);
   builder->Add("importExistingSupervisedUserText",
                IDS_IMPORT_EXISTING_SUPERVISED_USER_TEXT);
   builder->Add("supervisedUserCreationFlowImportButtonTitle",
                IDS_IMPORT_EXISTING_SUPERVISED_USER_OK);
-  builder->Add("importSupervisedUserLink",
-               IDS_PROFILES_IMPORT_EXISTING_SUPERVISED_USER_LINK);
   builder->Add("createSupervisedUserLink",
                IDS_CREATE_NEW_USER_LINK);
   builder->Add("importBubbleText", IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT);

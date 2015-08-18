@@ -11780,7 +11780,7 @@ I don't think this site should be blocked!
       <message name="IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
         Add account
       </message>
-      <message name="IDS_PROFILES_GAIA_REAUTH_TITLE" desc="Title of the account reauthentication view in the avatar menu bubble.">
+      <message name="IDS_PROFILES_GAIA_REAUTH_TITLE" desc="Title of the account reauthentication view in the avatar menu bubble. Also used in other places to indicate a reauthentication action.">
         Sign in again
       </message>
       <message name="IDS_PROFILES_ACCOUNT_REMOVAL_TITLE" desc="Title of the account removal view in the avatar menu bubble.">
@@ -13907,12 +13907,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_HTML" desc="Label for the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in, containing a link to the sign in page.">
           <ph name="BEGIN_SIGN_IN_LINK">&lt;a is="action-link" id="create-profile-supervised-sign-in-link"&gt;</ph>Sign in<ph name="END_SIGN_IN_LINK">&lt;/a&gt;</ph> to control and view the websites this person visits.
         </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_NOT_SIGNED_IN_LINK" desc="Text for the sign-in promo link, shown after the (disabled) 'Supervised user' checkbox in the create-profile dialog when the current user is not signed in.">
-          Sign in now
-        </message>
-        <message name="IDS_PROFILES_CREATE_SUPERVISED_SIGN_IN_AGAIN_LINK" desc="Text for the sign-in promo link, shown after the message telling the user that their sign-in credentials are out of date in the create supervised user dialog.">
-          Sign in again
-        </message>
         <message name="IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX" desc="Create Shortcut checkbox when creating a new profile">
           Create a desktop shortcut for this user
         </message>
@@ -13921,9 +13915,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
         <message name="IDS_PROFILES_REMOVE_SHORTCUT_BUTTON" desc="Remove Shortcut button when editing an existing profile">
           Remove desktop shortcut
-        </message>
-        <message name="IDS_PROFILES_IMPORT_EXISTING_SUPERVISED_USER_LINK" desc="Label for the 'Import an exisiting supervised user' link. During supervised user creation a custodian will have an option to import an existing supervised profile during the user creation flow.">
-          Import an existing supervised user
         </message>
 
         <!-- Supervised-user creation wizard dialogs -->
@@ -13960,7 +13951,7 @@ After you create a new supervised user, you can manage their settings at any tim
         </message>
 
         <!-- Import existing supervised user dialog -->
-        <message name="IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE" desc="Title for the dialog used to import existing supervised users. The dialog appears when the custodian clicks on 'Import existing supervised user' during the user creation flow. The dialog displays a list of existing supervised users for the custodian to choose from">
+        <message name="IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE" desc="Title for the dialog used to import existing supervised users. Also used as the text on the link that opens the dialog, shown during the user creation flow. The dialog displays a list of existing supervised users for the custodian to choose from.">
           Import an existing supervised user
         </message>
         <message name="IDS_IMPORT_EXISTING_SUPERVISED_USER_TEXT" desc="Text that instructs the user to choose one of the displayed supervised users to import to this device.">

@@ -99,7 +99,7 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesSupervisedAccountDetailsOutOfDate",
         IDS_PROFILES_CREATE_SUPERVISED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL },
     { "manageProfilesSupervisedSignInAgainLink",
-        IDS_PROFILES_CREATE_SUPERVISED_SIGN_IN_AGAIN_LINK },
+        IDS_PROFILES_GAIA_REAUTH_TITLE },
     { "manageProfilesConfirm", IDS_SAVE },
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
@@ -117,7 +117,7 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileShortcutButton", IDS_PROFILES_CREATE_SHORTCUT_BUTTON },
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },
     { "importExistingSupervisedUserLink",
-        IDS_PROFILES_IMPORT_EXISTING_SUPERVISED_USER_LINK },
+        IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
