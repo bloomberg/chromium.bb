@@ -182,7 +182,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
 
     bool parseFont(bool important);
-    void parseSystemFont(bool important);
+    bool parseSystemFont(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);

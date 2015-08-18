@@ -464,8 +464,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return true;
     }
 
-    int num = inShorthand() ? 1 : m_valueList->size();
-
     if (CSSParserFastPaths::isKeywordPropertyID(propId)) {
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
             return false;
@@ -506,7 +504,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
      */
     case CSSPropertyOverflow: {
         ShorthandScope scope(this, propId);
-        if (num != 1 || !parseValue(CSSPropertyOverflowY, important))
+        if (!parseValue(CSSPropertyOverflowY, important) || m_valueList->current())
             return false;
 
         RefPtrWillBeRawPtr<CSSValue> overflowXValue = nullptr;
@@ -532,28 +530,21 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
 
-    case CSSPropertyFontWeight:  { // normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
-        if (m_valueList->size() != 1)
-            return false;
-        return parseFontWeight(important);
-    }
+    case CSSPropertyFontWeight: // normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
+        return parseFontWeight(important) && !m_valueList->next();
 
     case CSSPropertyBorderSpacing: {
-        if (num == 1) {
-            ShorthandScope scope(this, CSSPropertyBorderSpacing);
-            if (!parseValue(CSSPropertyWebkitBorderHorizontalSpacing, important))
-                return false;
+        ShorthandScope scope(this, CSSPropertyBorderSpacing);
+        if (!parseValue(CSSPropertyWebkitBorderHorizontalSpacing, important))
+            return false;
+        if (!m_valueList->current()) {
             CSSValue* value = m_parsedProperties.last().value();
             addProperty(CSSPropertyWebkitBorderVerticalSpacing, value, important);
             return true;
         }
-        else if (num == 2) {
-            ShorthandScope scope(this, CSSPropertyBorderSpacing);
-            if (!parseValue(CSSPropertyWebkitBorderHorizontalSpacing, important) || !parseValue(CSSPropertyWebkitBorderVerticalSpacing, important))
-                return false;
-            return true;
-        }
-        return false;
+        if (!parseValue(CSSPropertyWebkitBorderVerticalSpacing, important))
+            return false;
+        return !m_valueList->current();
     }
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderVerticalSpacing:
@@ -978,15 +969,13 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius: {
-        if (num != 1 && num != 2)
-            return false;
         validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
         if (!validPrimitive)
             return false;
         RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1 = createPrimitiveNumericValue(value);
         RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2 = nullptr;
-        if (num == 2) {
-            value = m_valueList->next();
+        value = m_valueList->next();
+        if (value) {
             validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
             if (!validPrimitive)
                 return false;
@@ -994,6 +983,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         } else
             parsedValue2 = parsedValue1;
 
+        if (m_valueList->next())
+            return false;
         addProperty(propId, createPrimitiveValuePair(parsedValue1.release(), parsedValue2.release()), important);
         return true;
     }
@@ -1301,21 +1292,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         return parseGridShorthand(important);
 
     case CSSPropertyWebkitMarginCollapse: {
-        if (num == 1) {
-            ShorthandScope scope(this, CSSPropertyWebkitMarginCollapse);
-            if (!parseValue(webkitMarginCollapseShorthand().properties()[0], important))
-                return false;
+        ShorthandScope scope(this, CSSPropertyWebkitMarginCollapse);
+        if (!parseValue(webkitMarginCollapseShorthand().properties()[0], important))
+            return false;
+        if (!m_valueList->current()) {
             CSSValue* value = m_parsedProperties.last().value();
             addProperty(webkitMarginCollapseShorthand().properties()[1], value, important);
             return true;
         }
-        else if (num == 2) {
-            ShorthandScope scope(this, CSSPropertyWebkitMarginCollapse);
-            if (!parseValue(webkitMarginCollapseShorthand().properties()[0], important) || !parseValue(webkitMarginCollapseShorthand().properties()[1], important))
-                return false;
-            return true;
-        }
-        return false;
+        if (!parseValue(webkitMarginCollapseShorthand().properties()[1], important))
+            return false;
+        return !m_valueList->current();
     }
     case CSSPropertyWebkitColumnCount:
         parsedValue = parseColumnCount();
@@ -1449,10 +1436,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFont:
         // [ [ 'font-style' || 'font-variant' || 'font-weight' ]? 'font-size' [ / 'line-height' ]?
         // 'font-family' ] | caption | icon | menu | message-box | small-caption | status-bar | inherit
-        if (num == 1 && id >= CSSValueCaption && id <= CSSValueStatusBar) {
-            parseSystemFont(important);
-            return true;
-        }
+        if (id >= CSSValueCaption && id <= CSSValueStatusBar)
+            return parseSystemFont(important);
         return parseFont(important);
     case CSSPropertyListStyle:
         return parseShorthand(propId, listStyleShorthand(), important);
@@ -4650,12 +4635,12 @@ bool CSSPropertyParser::parseFont(bool important)
     return true;
 }
 
-void CSSPropertyParser::parseSystemFont(bool important)
+bool CSSPropertyParser::parseSystemFont(bool important)
 {
-    ASSERT(m_valueList->size() == 1);
     CSSValueID systemFontID = m_valueList->valueAt(0)->id;
     ASSERT(systemFontID >= CSSValueCaption && systemFontID <= CSSValueStatusBar);
-    m_valueList->next();
+    if (m_valueList->next())
+        return false;
 
     FontStyle fontStyle = FontStyleNormal;
     FontWeight fontWeight = FontWeightNormal;
@@ -4674,6 +4659,7 @@ void CSSPropertyParser::parseSystemFont(bool important)
     addProperty(CSSPropertyFontStretch, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyFontVariant, cssValuePool().createIdentifierValue(CSSValueNormal), important);
     addProperty(CSSPropertyLineHeight, cssValuePool().createIdentifierValue(CSSValueNormal), important);
+    return true;
 }
 
 class FontFamilyValueBuilder {
@@ -7440,9 +7426,7 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
         parsedValue = parseFontFaceUnicodeRange();
         break;
     case CSSPropertyFontWeight: // normal | bold | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
-        if (m_valueList->size() != 1)
-            return false;
-        return parseFontWeight(false);
+        return parseFontWeight(false) && !m_valueList->next();
     case CSSPropertyFontStretch:
     case CSSPropertyFontStyle:
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
