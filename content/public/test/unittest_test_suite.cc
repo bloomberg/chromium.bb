@@ -30,7 +30,8 @@ UnitTestTestSuite::UnitTestTestSuite(base::TestSuite* test_suite)
 #endif
 #if defined(USE_AURA)
   DCHECK(!aura::Env::GetInstanceDontCreate());
-  env_ = aura::Env::CreateInstance();
+  const bool create_event_source = true;
+  aura::Env::CreateInstance(create_event_source);
 #endif
   DCHECK(test_suite);
 #if !defined(OS_IOS)
@@ -43,7 +44,7 @@ UnitTestTestSuite::~UnitTestTestSuite() {
   blink_test_support_.reset();
 #endif
 #if defined(USE_AURA)
-  env_.reset();
+  aura::Env::DeleteInstance();
 #endif
 }
 

@@ -439,6 +439,7 @@ void Shell::PlatformExit() {
   device::BluetoothAdapterFactory::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
+  aura::Env::DeleteInstance();
 }
 
 void Shell::PlatformCleanUp() {

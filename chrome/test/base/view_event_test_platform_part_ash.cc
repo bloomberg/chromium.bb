@@ -27,7 +27,6 @@ class ViewEventTestPlatformPartAsh : public ViewEventTestPlatformPart {
  private:
   scoped_ptr<gfx::Screen> screen_;
   wm::WMState wm_state_;
-  scoped_ptr<aura::Env> env_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPartAsh);
 };
@@ -38,12 +37,12 @@ ViewEventTestPlatformPartAsh::ViewEventTestPlatformPartAsh(
   // http://crbug.com/154081 use ash::Shell code path below on win_ash bots when
   // interactive_ui_tests is brought up on that platform.
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
-  env_ = aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory);
 }
 
 ViewEventTestPlatformPartAsh::~ViewEventTestPlatformPartAsh() {
-  env_.reset();
+  aura::Env::DeleteInstance();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, nullptr);
 }
 

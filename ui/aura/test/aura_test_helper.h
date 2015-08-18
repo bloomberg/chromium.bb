@@ -10,10 +10,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 
-namespace aura {
-class Env;
-}
-
 namespace base {
 class MessageLoopForUI;
 }
@@ -61,7 +57,7 @@ class AuraTestHelper {
   base::MessageLoopForUI* message_loop_;
   bool setup_called_;
   bool teardown_called_;
-  scoped_ptr<aura::Env> env_;
+  bool env_created_;
   scoped_ptr<WindowTreeHost> host_;
   scoped_ptr<TestWindowTreeClient> stacking_client_;
   scoped_ptr<client::DefaultCaptureClient> capture_client_;

@@ -4,6 +4,7 @@
 
 #include "ui/views_content_client/views_content_client_main_parts_aura.h"
 
+#include "ui/aura/env.h"
 #include "ui/wm/core/wm_state.h"
 
 namespace ui {
@@ -24,6 +25,8 @@ void ViewsContentClientMainPartsAura::ToolkitInitialized() {
 }
 
 void ViewsContentClientMainPartsAura::PostMainMessageLoopRun() {
+  aura::Env::DeleteInstance();
+
   ViewsContentClientMainParts::PostMainMessageLoopRun();
 }
 

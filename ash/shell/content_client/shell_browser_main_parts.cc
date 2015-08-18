@@ -157,6 +157,8 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   chromeos::CrasAudioHandler::Shutdown();
 #endif
 
+  aura::Env::DeleteInstance();
+
   views_delegate_.reset();
 
   // The keyboard may have created a WebContents. The WebContents is destroyed

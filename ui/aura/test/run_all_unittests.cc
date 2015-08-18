@@ -16,17 +16,16 @@ class AuraTestSuite : public base::TestSuite {
  protected:
   void Initialize() override {
     base::TestSuite::Initialize();
-    env_ = aura::Env::CreateInstance();
+    aura::Env::CreateInstance(true);
     gfx::GLSurfaceTestSupport::InitializeOneOff();
   }
 
   void Shutdown() override {
-    env_.reset();
+    aura::Env::DeleteInstance();
     base::TestSuite::Shutdown();
   }
 
  private:
-  scoped_ptr<aura::Env> env_;
   DISALLOW_COPY_AND_ASSIGN(AuraTestSuite);
 };
 

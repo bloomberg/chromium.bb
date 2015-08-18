@@ -922,7 +922,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
 #if defined(USE_AURA)
-  env_.reset();
+  aura::Env::DeleteInstance();
 #endif
 
   trace_memory_controller_.reset();
@@ -1141,7 +1141,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
   ImageTransportFactory::Initialize();
 #if defined(USE_AURA)
-  env_->set_context_factory(GetContextFactory());
+  if (aura::Env::GetInstance()) {
+    aura::Env::GetInstance()->set_context_factory(GetContextFactory());
+  }
 #endif  // defined(USE_AURA)
 #endif  // defined(OS_ANDROID)
 
@@ -1286,7 +1288,7 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  env_ = aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
 #endif  // defined(USE_AURA)
 
   if (parts_)

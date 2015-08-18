@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
 #endif
 
 #if defined(USE_AURA)
-  scoped_ptr<aura::Env> env = aura::Env::CreateInstance();
+  aura::Env::CreateInstance(true);
   aura::Env::GetInstance()->set_context_factory(context_factory.get());
 #endif
   ui::InitializeInputMethodForTesting();
@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   ui::ShutdownInputMethod();
 
 #if defined(USE_AURA)
-  env.reset();
+  aura::Env::DeleteInstance();
 #endif
 
   return 0;
