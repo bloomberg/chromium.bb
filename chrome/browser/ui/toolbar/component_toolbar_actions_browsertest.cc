@@ -7,63 +7,12 @@
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
+#include "chrome/browser/ui/toolbar/mock_component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/common/feature_switch.h"
-
-namespace {
-
-const char kMockId[] = "mock_action";
-
-class MockComponentToolbarActionsFactory
-    : public ComponentToolbarActionsFactory {
- public:
-  explicit MockComponentToolbarActionsFactory(Browser* browser);
-  virtual ~MockComponentToolbarActionsFactory();
-
-  // ComponentToolbarActionsFactory:
-  ScopedVector<ToolbarActionViewController>
-      GetComponentToolbarActions(Browser* browser) override;
-
-  const std::vector<std::string> action_ids() const {
-    return action_ids_;
-  }
-
- private:
-  // A set of all action ids of created actions.
-  std::vector<std::string> action_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockComponentToolbarActionsFactory);
-};
-
-MockComponentToolbarActionsFactory::MockComponentToolbarActionsFactory(
-    Browser* browser) {
-  ComponentToolbarActionsFactory::SetTestingFactory(this);
-
-  ScopedVector<ToolbarActionViewController> actions =
-      GetComponentToolbarActions(browser);
-  for (auto it = actions.begin(); it != actions.end(); ++it) {
-    action_ids_.push_back((*it)->GetId());
-  }
-}
-
-MockComponentToolbarActionsFactory::~MockComponentToolbarActionsFactory() {
-  ComponentToolbarActionsFactory::SetTestingFactory(nullptr);
-}
-
-ScopedVector<ToolbarActionViewController>
-MockComponentToolbarActionsFactory::GetComponentToolbarActions(
-    Browser* browser) {
-  ScopedVector<ToolbarActionViewController> component_actions;
-  TestToolbarActionViewController* action =
-      new TestToolbarActionViewController(kMockId);
-  component_actions.push_back(action);
-  return component_actions.Pass();
-}
-
-}  // namespace
 
 class ComponentToolbarActionsBrowserTest : public InProcessBrowserTest {
  protected:
@@ -100,10 +49,11 @@ IN_PROC_BROWSER_TEST_F(ComponentToolbarActionsBrowserTest,
 
   // Even though the method says "ExtensionId", this actually refers to any id
   // for the action.
-  EXPECT_EQ(kMockId, browser_actions_bar.GetExtensionId(0));
+  EXPECT_EQ(ComponentToolbarActionsFactory::kActionIdForTesting,
+            browser_actions_bar.GetExtensionId(0));
 
   // There should only have been one created component action.
-  const std::vector<std::string> action_ids = mock_factory()->action_ids();
+  const std::vector<std::string>& action_ids = mock_factory()->action_ids();
   ASSERT_EQ(1u, action_ids.size());
 
   const std::vector<ToolbarActionViewController*>& actions =

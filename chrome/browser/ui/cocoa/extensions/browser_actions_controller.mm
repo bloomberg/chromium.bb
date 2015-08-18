@@ -563,7 +563,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   scoped_ptr<ui::NinePartImageIds> highlight;
   if (toolbarActionsBar_->is_highlighting()) {
     if (toolbarActionsBar_->highlight_type() ==
-            extensions::ExtensionToolbarModel::HIGHLIGHT_INFO)
+        ToolbarActionsModel::HIGHLIGHT_INFO)
       highlight.reset(
           new ui::NinePartImageIds(IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT)));
     else

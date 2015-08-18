@@ -522,6 +522,8 @@
       'browser/ui/toolbar/browser_actions_bar_browsertest.cc',
       'browser/ui/toolbar/browser_actions_bar_browsertest.h',
       'browser/ui/toolbar/component_toolbar_actions_browsertest.cc',
+      'browser/ui/toolbar/mock_component_toolbar_actions_factory.cc',
+      'browser/ui/toolbar/mock_component_toolbar_actions_factory.h',
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
       'browser/ui/website_settings/mock_permission_bubble_view.cc',

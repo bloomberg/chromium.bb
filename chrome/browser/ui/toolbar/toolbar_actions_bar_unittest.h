@@ -75,9 +75,7 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
   ToolbarActionsBar* overflow_bar() {
     return overflow_browser_action_test_util_->GetToolbarActionsBar();
   }
-  extensions::ExtensionToolbarModel* toolbar_model() {
-    return toolbar_model_;
-  }
+  ToolbarActionsModel* toolbar_model() { return toolbar_model_; }
   BrowserActionTestUtil* browser_action_test_util() {
     return browser_action_test_util_.get();
   }
@@ -86,8 +84,8 @@ class ToolbarActionsBarUnitTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  // The associated ExtensionToolbarModel (owned by the keyed service setup).
-  extensions::ExtensionToolbarModel* toolbar_model_;
+  // The associated ToolbarActionsModel (owned by the keyed service setup).
+  ToolbarActionsModel* toolbar_model_;
 
   // A BrowserActionTestUtil object constructed with the associated
   // ToolbarActionsBar.

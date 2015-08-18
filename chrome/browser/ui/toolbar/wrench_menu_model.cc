@@ -16,7 +16,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,9 +34,9 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
-#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
 #include "chrome/browser/ui/toolbar/recent_tabs_sub_menu_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -89,7 +88,7 @@ namespace {
 
 #if defined(OS_MACOSX)
 // An empty command used because of a bug in AppKit menus.
-// See comment in CreateExtensionToolbarOverflowMenu().
+// See comment in CreateActionToolbarOverflowMenu().
 const int kEmptyMenuItemCommand = 0;
 #endif
 
@@ -786,7 +785,7 @@ bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
   switch (command_id) {
 #if defined(OS_MACOSX)
     case kEmptyMenuItemCommand:
-      return false;  // Always hidden (see CreateExtensionToolbarOverflowMenu).
+      return false;  // Always hidden (see CreateActionToolbarOverflowMenu).
 #endif
 #if defined(OS_WIN)
     case IDC_VIEW_INCOMPATIBILITIES: {
@@ -883,7 +882,7 @@ bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
 // - Browser relaunch, quit.
 void WrenchMenuModel::Build() {
   if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
-    CreateExtensionToolbarOverflowMenu();
+    CreateActionToolbarOverflowMenu();
 
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
       l10n_util::GetStringUTF16(IDS_VIEW_INCOMPATIBILITIES));
@@ -1030,15 +1029,10 @@ bool WrenchMenuModel::AddGlobalErrorMenuItems() {
   return menu_items_added;
 }
 
-void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
+void WrenchMenuModel::CreateActionToolbarOverflowMenu() {
   // We only add the extensions overflow container if there are any icons that
-  // aren't shown in the main container or if there are component actions.
-  // TODO(apacible): Remove check for component actions when
-  // ExtensionToolbarModel can support them.
-  if (!extensions::ExtensionToolbarModel::Get(browser_->profile())->
-          all_icons_visible() ||
-      ComponentToolbarActionsFactory::GetInstance()->
-          GetNumComponentActions(browser_) > 0) {
+  // aren't shown in the main container.
+  if (!ToolbarActionsModel::Get(browser_->profile())->all_icons_visible()) {
 #if defined(OS_MACOSX)
     // There's a bug in AppKit menus, where if a menu item with a custom view
     // (like the extensions overflow menu) is the first menu item, it is not

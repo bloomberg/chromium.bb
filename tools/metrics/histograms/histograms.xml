@@ -46793,6 +46793,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of retries until the final response was recorded.</summary>
 </histogram>
 
+<histogram name="Toolbar.ActionsModel.ComponentActionsCount">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of component action icons the Browser Actions Container knows
+    about (visible or in the overflow bucket). Does not count icons that have
+    been permanently hidden by the user. Measured once per startup per
+    (non-incognito) profile.
+  </summary>
+</histogram>
+
+<histogram name="Toolbar.ActionsModel.OverallActionsCount">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The total number of action icons the Browser Actions Container knows about
+    (visible or in the overflow bucket). Does not count icons that have been
+    permanently hidden by the user. Measured once per startup per
+    (non-incognito) profile.
+  </summary>
+</histogram>
+
+<histogram name="Toolbar.ActionsModel.ToolbarActionsVisible">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of visible toolbar icons in the Browser Actions Container
+    (visible as in number of icons not in the overflow bucket). 0 means all
+    icons are in the overflow bucket. MAX_INT means the toolbar is always
+    showing all icons. Measured once per startup per (non-incognito) profile but
+    only for those profiles that have one or more browser actions showing in the
+    toolbar.
+  </summary>
+</histogram>
+
 <histogram name="TopSites.NumberOfApplyBlacklist">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of times TopSitesImpl::ApplyBlacklist is called.</summary>

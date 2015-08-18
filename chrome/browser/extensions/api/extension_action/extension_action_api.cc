@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
@@ -228,9 +228,9 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
     return browser->window()->GetLocationBar()->ShowPageActionPopup(
         extension, grant_active_tab_permissions);
   } else {
-    return ExtensionToolbarModel::Get(browser->profile())->
-        ShowExtensionActionPopup(
-            extension, browser, grant_active_tab_permissions);
+    return ToolbarActionsModel::Get(browser->profile())
+        ->ShowToolbarActionPopup(extension->id(), browser,
+                                 grant_active_tab_permissions);
   }
 }
 

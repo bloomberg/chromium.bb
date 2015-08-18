@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/common/feature_switch.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -137,7 +137,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
             toolbarController];
     ASSERT_TRUE(toolbarController_);
     wrenchMenuController_ = [toolbarController_ wrenchMenuController];
-    model_ = extensions::ExtensionToolbarModel::Get(profile());
+    model_ = ToolbarActionsModel::Get(profile());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -155,7 +155,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
 
   ToolbarController* toolbarController() { return toolbarController_; }
   WrenchMenuController* wrenchMenuController() { return wrenchMenuController_; }
-  extensions::ExtensionToolbarModel* model() { return model_; }
+  ToolbarActionsModel* model() { return model_; }
   NSView* wrenchButton() { return [toolbarController_ wrenchButton]; }
 
  private:
@@ -163,7 +163,7 @@ class BrowserActionButtonUiTest : public ExtensionBrowserTest {
 
   ToolbarController* toolbarController_ = nil;
   WrenchMenuController* wrenchMenuController_ = nil;
-  extensions::ExtensionToolbarModel* model_ = nullptr;
+  ToolbarActionsModel* model_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionButtonUiTest);
 };

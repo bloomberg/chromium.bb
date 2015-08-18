@@ -17,28 +17,28 @@ class ToolbarActionViewController;
 // components of chrome, such as ChromeCast.
 class ComponentToolbarActionsFactory {
  public:
+  // Component action IDs.
+  static const char kMediaRouterActionId[];
+  static const char kActionIdForTesting[];  // Only used for testing.
+
   ComponentToolbarActionsFactory();
-  ~ComponentToolbarActionsFactory();
+  virtual ~ComponentToolbarActionsFactory();
 
   static ComponentToolbarActionsFactory* GetInstance();
 
-  // Returns a collection of controllers for Chrome Actions. Declared virtual
-  // for testing.
+  // Returns a vector of IDs of the component actions.
+  static std::vector<std::string> GetComponentIds();
+
+  // Returns a collection of controllers for component actions. Declared
+  // virtual for testing.
   virtual ScopedVector<ToolbarActionViewController>
       GetComponentToolbarActions(Browser* browser);
-
-  // Returns the number of component actions.
-  int GetNumComponentActions(Browser* browser);
 
   // Sets the factory to use for testing purposes.
   // Ownership remains with the caller.
   static void SetTestingFactory(ComponentToolbarActionsFactory* factory);
 
  private:
-  // The number of component actions. Initially set to -1 to denote that the
-  // count has not been checked yet.
-  int num_component_actions_;
-
   DISALLOW_COPY_AND_ASSIGN(ComponentToolbarActionsFactory);
 };
 

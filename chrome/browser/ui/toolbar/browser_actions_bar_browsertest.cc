@@ -12,12 +12,12 @@
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -67,7 +67,7 @@ void BrowserActionsBarBrowserTest::SetUpCommandLine(
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
   browser_actions_bar_.reset(new BrowserActionTestUtil(browser()));
-  toolbar_model_ = extensions::ExtensionToolbarModel::Get(profile());
+  toolbar_model_ = ToolbarActionsModel::Get(profile());
 }
 
 void BrowserActionsBarBrowserTest::TearDownOnMainThread() {
@@ -147,19 +147,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MoveBrowserActions) {
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move C to first position. Order is C A B.
-  toolbar_model()->MoveExtensionIcon(extension_c()->id(), 0);
+  toolbar_model()->MoveActionIcon(extension_c()->id(), 0);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move B to third position. Order is still C A B.
-  toolbar_model()->MoveExtensionIcon(extension_b()->id(), 2);
+  toolbar_model()->MoveActionIcon(extension_b()->id(), 2);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(2));
 
   // Move B to middle position. Order is C B A.
-  toolbar_model()->MoveExtensionIcon(extension_b()->id(), 1);
+  toolbar_model()->MoveActionIcon(extension_b()->id(), 1);
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(2));

@@ -6,14 +6,15 @@
 
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/base/dragdrop/drop_target_event.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -61,10 +62,15 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
 
+  const extensions::ExtensionSet& extension_set =
+      extensions::ExtensionRegistry::Get(profile())->enabled_extensions();
+  const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
+      toolbar_model()->toolbar_items();
+
   // This order should be reflected in the underlying model.
-  EXPECT_EQ(extension_b(), toolbar_model()->toolbar_items()[0].get());
-  EXPECT_EQ(extension_a(), toolbar_model()->toolbar_items()[1].get());
-  EXPECT_EQ(extension_c(), toolbar_model()->toolbar_items()[2].get());
+  EXPECT_EQ(extension_b(), extension_set.GetByID(toolbar_items[0].id));
+  EXPECT_EQ(extension_a(), extension_set.GetByID(toolbar_items[1].id));
+  EXPECT_EQ(extension_c(), extension_set.GetByID(toolbar_items[2].id));
 
   // Simulate a drag and drop to the left.
   ui::OSExchangeData drop_data2;
@@ -181,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
 // Test that the BrowserActionsContainer responds correctly when the underlying
 // model enters highlight mode, and that browser actions are undraggable in
 // highlight mode. (Highlight mode itself it tested more thoroughly in the
-// ExtensionToolbarModel browsertests).
+// ToolbarActionsModel browsertests).
 IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   LoadExtensions();
 
@@ -198,11 +204,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, HighlightMode) {
   gfx::Point point(action_view->x(), action_view->y());
   EXPECT_TRUE(container->CanStartDragForView(action_view, point, point));
 
-  extensions::ExtensionIdList extension_ids;
-  extension_ids.push_back(extension_a()->id());
-  extension_ids.push_back(extension_b()->id());
-  toolbar_model()->HighlightExtensions(
-      extension_ids, extensions::ExtensionToolbarModel::HIGHLIGHT_WARNING);
+  std::vector<std::string> action_ids;
+  action_ids.push_back(extension_a()->id());
+  action_ids.push_back(extension_b()->id());
+  toolbar_model()->HighlightActions(action_ids,
+                                    ToolbarActionsModel::HIGHLIGHT_WARNING);
 
   // Only two browser actions should be visible.
   EXPECT_EQ(2, browser_actions_bar()->VisibleBrowserActions());
@@ -342,7 +348,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
 
   // Move extension C to the first position. Order should now be C A B, with
   // C and A visible in the main bar.
-  toolbar_model()->MoveExtensionIcon(extension_c()->id(), 0);
+  toolbar_model()->MoveActionIcon(extension_c()->id(), 0);
   overflow_bar()->Layout();  // Kick.
   EXPECT_EQ(extension_c()->id(), main_bar()->GetIdAt(0u));
   EXPECT_EQ(extension_a()->id(), main_bar()->GetIdAt(1u));

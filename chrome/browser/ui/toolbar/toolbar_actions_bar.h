@@ -10,8 +10,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -30,15 +30,14 @@ class ToolbarActionViewController;
 // A platform-independent version of the container for toolbar actions,
 // including extension actions and component actions.
 // This class manages the order of the actions, the actions' state, and owns the
-// action controllers, in addition to (for extensions) interfacing with the
-// extension toolbar model. Further, it manages dimensions for the bar,
-// excluding animations.
+// action controllers, in addition to interfacing with the toolbar actions
+// model. Further, it manages dimensions for the bar, excluding animations.
 // This can come in two flavors, main and "overflow". The main bar is visible
 // next to the omnibox, and the overflow bar is visible inside the chrome
 // (fka wrench) menu. The main bar can have only a single row of icons with
 // flexible width, whereas the overflow bar has multiple rows of icons with a
 // fixed width (the width of the menu).
-class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
+class ToolbarActionsBar : public ToolbarActionsModel::Observer {
  public:
   // A struct to contain the platform settings.
   struct PlatformSettings {
@@ -178,9 +177,9 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
     return suppress_animation_ || disable_animations_for_testing_;
   }
   bool is_highlighting() const { return model_ && model_->is_highlighting(); }
-  extensions::ExtensionToolbarModel::HighlightType highlight_type() const {
+  ToolbarActionsModel::HighlightType highlight_type() const {
     return model_ ? model_->highlight_type()
-                  : extensions::ExtensionToolbarModel::HIGHLIGHT_NONE;
+                  : ToolbarActionsModel::HIGHLIGHT_NONE;
   }
   const PlatformSettings& platform_settings() const {
     return platform_settings_;
@@ -206,17 +205,13 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
  private:
   using ToolbarActions = ScopedVector<ToolbarActionViewController>;
 
-  // ExtensionToolbarModel::Observer:
-  void OnToolbarExtensionAdded(const extensions::Extension* extension,
-                               int index) override;
-  void OnToolbarExtensionRemoved(
-      const extensions::Extension* extension) override;
-  void OnToolbarExtensionMoved(const extensions::Extension* extension,
-                               int index) override;
-  void OnToolbarExtensionUpdated(
-      const extensions::Extension* extension) override;
-  bool ShowExtensionActionPopup(const extensions::Extension* extension,
-                                bool grant_active_tab) override;
+  // ToolbarActionsModel::Observer:
+  void OnToolbarActionAdded(const std::string& action_id, int index) override;
+  void OnToolbarActionRemoved(const std::string& action_id) override;
+  void OnToolbarActionMoved(const std::string& action_id, int index) override;
+  void OnToolbarActionUpdated(const std::string& action_id) override;
+  bool ShowToolbarActionPopup(const std::string& action_id,
+                              bool grant_active_tab) override;
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
@@ -227,7 +222,7 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   void ResizeDelegate(gfx::Tween::Type tween_type, bool suppress_chevron);
 
   // Returns the action for the given |id|, if one exists.
-  ToolbarActionViewController* GetActionForId(const std::string& id);
+  ToolbarActionViewController* GetActionForId(const std::string& action_id);
 
   // Returns the current web contents.
   content::WebContents* GetCurrentWebContents();
@@ -251,7 +246,7 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   Browser* browser_;
 
   // The observed toolbar model.
-  extensions::ExtensionToolbarModel* model_;
+  ToolbarActionsModel* model_;
 
   // The controller for the main toolbar actions bar. This will be null if this
   // is the main bar.
@@ -267,8 +262,8 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
   // from toolbar_actions_).
   ToolbarActionViewController* popup_owner_;
 
-  ScopedObserver<extensions::ExtensionToolbarModel,
-                 extensions::ExtensionToolbarModel::Observer> model_observer_;
+  ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
+      model_observer_;
 
   // True if we should suppress layout, such as when we are creating or
   // adjusting a lot of actions at once.

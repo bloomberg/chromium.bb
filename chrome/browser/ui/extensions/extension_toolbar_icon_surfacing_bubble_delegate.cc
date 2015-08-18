@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/chromium_strings.h"
@@ -54,8 +54,7 @@ bool ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
       return false;
   }
 
-  if (!extensions::ExtensionToolbarModel::Get(profile)->
-          RedesignIsShowingNewIcons()) {
+  if (!ToolbarActionsModel::Get(profile)->RedesignIsShowingNewIcons()) {
     // We only show the bubble if there are any new icons present - otherwise,
     // the user won't see anything different, so we treat it as acknowledged.
     AcknowledgeInPrefs(prefs);
@@ -103,5 +102,5 @@ void ExtensionToolbarIconSurfacingBubbleDelegate::OnBubbleClosed(
     CloseAction action) {
   if (action == CLOSE_EXECUTE)
     AcknowledgeInPrefs(profile_->GetPrefs());
-  extensions::ExtensionToolbarModel::Get(profile_)->StopHighlighting();
+  ToolbarActionsModel::Get(profile_)->StopHighlighting();
 }

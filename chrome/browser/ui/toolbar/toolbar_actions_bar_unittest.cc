@@ -320,7 +320,7 @@ TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
     EXPECT_TRUE(VerifyToolbarOrder(expected_names, 3u, 3u));
   }
 
-  extensions::ExtensionIdList new_order;
+  std::vector<std::string> new_order;
   new_order.push_back(toolbar_actions_bar()->toolbar_actions_unordered()[1]->
       GetId());
   new_order.push_back(toolbar_actions_bar()->toolbar_actions_unordered()[2]->

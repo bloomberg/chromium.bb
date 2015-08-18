@@ -193,8 +193,8 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
   // clipboard menu content and the finalizing menu break.
   void CreateCutCopyPasteMenu();
 
-  // Add a menu item for the extension icons.
-  void CreateExtensionToolbarOverflowMenu();
+  // Add a menu item for the browser action icons.
+  void CreateActionToolbarOverflowMenu();
 
   // Appends everything needed for the zoom menu: a menu break, then the zoom
   // menu content and then another menu break.

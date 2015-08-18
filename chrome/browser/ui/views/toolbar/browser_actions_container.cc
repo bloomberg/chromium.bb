@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_badge_controller.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -702,10 +702,10 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // paint (one will be triggered by entering highlight mode).
   if (toolbar_actions_bar_->is_highlighting() &&
       !toolbar_action_views_.empty() && !in_overflow_mode()) {
-    extensions::ExtensionToolbarModel::HighlightType highlight_type =
+    ToolbarActionsModel::HighlightType highlight_type =
         toolbar_actions_bar_->highlight_type();
     views::Painter* painter =
-        highlight_type == extensions::ExtensionToolbarModel::HIGHLIGHT_INFO
+        highlight_type == ToolbarActionsModel::HIGHLIGHT_INFO
             ? info_highlight_painter_.get()
             : warning_highlight_painter_.get();
     views::Painter::PaintPainterAt(canvas, painter, GetLocalBounds());

@@ -20,13 +20,38 @@ base::LazyInstance<ComponentToolbarActionsFactory> lazy_factory =
 
 }  // namespace
 
-ComponentToolbarActionsFactory::ComponentToolbarActionsFactory()
-    : num_component_actions_(-1) {}
+// static
+const char ComponentToolbarActionsFactory::kMediaRouterActionId[] =
+    "media_router_action";
+const char ComponentToolbarActionsFactory::kActionIdForTesting[] =
+    "mock_action";
+
+ComponentToolbarActionsFactory::ComponentToolbarActionsFactory() {}
 ComponentToolbarActionsFactory::~ComponentToolbarActionsFactory() {}
 
 // static
 ComponentToolbarActionsFactory* ComponentToolbarActionsFactory::GetInstance() {
   return testing_factory_ ? testing_factory_ : &lazy_factory.Get();
+}
+
+// static
+std::vector<std::string> ComponentToolbarActionsFactory::GetComponentIds() {
+  std::vector<std::string> component_ids;
+
+  // This is currently behind the extension-action-redesign flag, as it is
+  // designed for the new toolbar.
+  if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
+    return component_ids;
+
+  if (testing_factory_) {
+    component_ids.push_back(
+        ComponentToolbarActionsFactory::kActionIdForTesting);
+  } else if (switches::MediaRouterEnabled()) {
+    component_ids.push_back(
+        ComponentToolbarActionsFactory::kMediaRouterActionId);
+  }
+
+  return component_ids;
 }
 
 ScopedVector<ToolbarActionViewController>
@@ -45,21 +70,10 @@ ComponentToolbarActionsFactory::GetComponentToolbarActions(Browser* browser) {
   // should be okay. If this changes, we should rethink this design to have,
   // e.g., RegisterChromeAction().
 
-#if defined(ENABLE_MEDIA_ROUTER)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableMediaRouter)) {
+  if (switches::MediaRouterEnabled())
     component_actions.push_back(new MediaRouterAction(browser));
-  }
-#endif
 
   return component_actions.Pass();
-}
-
-int ComponentToolbarActionsFactory::GetNumComponentActions(Browser* browser) {
-  if (num_component_actions_ == -1)
-    num_component_actions_ = GetComponentToolbarActions(browser).size();
-
-  return num_component_actions_;
 }
 
 // static

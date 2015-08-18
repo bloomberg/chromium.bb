@@ -10,10 +10,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_message_bubble.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_prefs.h"
@@ -162,8 +162,8 @@ void ExtensionMessageBubbleController::HighlightExtensionsIfNecessary() {
     did_highlight_ = true;
     const ExtensionIdList& extension_ids = GetExtensionIdList();
     DCHECK(!extension_ids.empty());
-    ExtensionToolbarModel::Get(profile())->HighlightExtensions(
-        extension_ids, ExtensionToolbarModel::HIGHLIGHT_WARNING);
+    ToolbarActionsModel::Get(profile())->HighlightActions(
+        extension_ids, ToolbarActionsModel::HIGHLIGHT_WARNING);
   }
 }
 
@@ -248,7 +248,7 @@ ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
 void ExtensionMessageBubbleController::OnClose() {
   AcknowledgeExtensions();
   if (did_highlight_)
-    ExtensionToolbarModel::Get(profile())->StopHighlighting();
+    ToolbarActionsModel::Get(profile())->StopHighlighting();
 }
 
 }  // namespace extensions

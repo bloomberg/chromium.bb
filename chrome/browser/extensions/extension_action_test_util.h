@@ -12,6 +12,7 @@
 #include "extensions/common/manifest.h"
 
 class Profile;
+class ToolbarActionsModel;
 
 namespace content {
 class WebContents;
@@ -19,7 +20,6 @@ class WebContents;
 
 namespace extensions {
 class Extension;
-class ExtensionToolbarModel;
 
 namespace extension_action_test_util {
 
@@ -51,15 +51,15 @@ scoped_refptr<const Extension> CreateActionExtension(
     ActionType action_type,
     Manifest::Location location);
 
-// Creates a new ExtensionToolbarModel for the given |profile|, and associates
+// Creates a new ToolbarActionsModel for the given |profile|, and associates
 // it with the profile as a keyed service.
 // This should only be used in unit tests (since it assumes the existence of
 // a TestExtensionSystem), but if running a browser test, the model should
 // already be created.
-ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile);
+ToolbarActionsModel* CreateToolbarModelForProfile(Profile* profile);
 // Like above, but doesn't run the ExtensionSystem::ready() task for the new
 // model.
-ExtensionToolbarModel* CreateToolbarModelForProfileWithoutWaitingForReady(
+ToolbarActionsModel* CreateToolbarModelForProfileWithoutWaitingForReady(
     Profile* profile);
 
 }  // namespace extension_action_test_util

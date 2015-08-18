@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_FACTORY_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_FACTORY_H_
+#ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_MODEL_FACTORY_H_
+#define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_MODEL_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -11,21 +11,19 @@
 
 class Profile;
 
-namespace extensions {
+class ToolbarActionsModel;
 
-class ExtensionToolbarModel;
-
-class ExtensionToolbarModelFactory : public BrowserContextKeyedServiceFactory {
+class ToolbarActionsModelFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ExtensionToolbarModel* GetForProfile(Profile* profile);
+  static ToolbarActionsModel* GetForProfile(Profile* profile);
 
-  static ExtensionToolbarModelFactory* GetInstance();
+  static ToolbarActionsModelFactory* GetInstance();
 
  private:
-  friend struct DefaultSingletonTraits<ExtensionToolbarModelFactory>;
+  friend struct DefaultSingletonTraits<ToolbarActionsModelFactory>;
 
-  ExtensionToolbarModelFactory();
-  ~ExtensionToolbarModelFactory() override;
+  ToolbarActionsModelFactory();
+  ~ToolbarActionsModelFactory() override;
 
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const override;
@@ -35,6 +33,4 @@ class ExtensionToolbarModelFactory : public BrowserContextKeyedServiceFactory {
   bool ServiceIsNULLWhileTesting() const override;
 };
 
-}  // namespace extensions
-
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_FACTORY_H_
+#endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_MODEL_FACTORY_H_

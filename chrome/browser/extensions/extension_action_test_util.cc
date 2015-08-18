@@ -8,15 +8,16 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
-#include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -35,7 +36,7 @@ size_t GetPageActionCount(content::WebContents* web_contents,
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   // Page actions are either stored in the location bar (and provided by the
   // LocationBarController), or in the main toolbar (and provided by the
-  // ExtensionToolbarModel), depending on whether or not the extension action
+  // ToolbarActionsModel), depending on whether or not the extension action
   // redesign is enabled.
   if (!FeatureSwitch::extension_action_redesign()->IsEnabled()) {
     std::vector<ExtensionAction*> page_actions =
@@ -51,44 +52,50 @@ size_t GetPageActionCount(content::WebContents* web_contents,
       }
     }
   } else {
-    ExtensionToolbarModel* toolbar_model =
-        ExtensionToolbarModel::Get(
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-    const ExtensionList& toolbar_extensions = toolbar_model->toolbar_items();
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    ToolbarActionsModel* toolbar_model = ToolbarActionsModel::Get(profile);
+    const std::vector<ToolbarActionsModel::ToolbarItem>& toolbar_items =
+        toolbar_model->toolbar_items();
     ExtensionActionManager* action_manager =
         ExtensionActionManager::Get(web_contents->GetBrowserContext());
-    for (ExtensionList::const_iterator iter = toolbar_extensions.begin();
-         iter != toolbar_extensions.end(); ++iter) {
-      ExtensionAction* extension_action = action_manager->GetPageAction(**iter);
-      if (extension_action &&
-          (!only_count_visible || extension_action->GetIsVisible(tab_id)))
-        ++count;
+    for (const ToolbarActionsModel::ToolbarItem& item : toolbar_items) {
+      if (item.type == ToolbarActionsModel::EXTENSION_ACTION) {
+        const Extension* extension =
+            ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+                item.id);
+        ExtensionAction* extension_action =
+            action_manager->GetPageAction(*extension);
+        if (extension_action &&
+            (!only_count_visible || extension_action->GetIsVisible(tab_id)))
+          ++count;
+      }
     }
   }
 
   return count;
 }
 
-// Creates a new ExtensionToolbarModel for the given |context|.
+// Creates a new ToolbarActionsModel for the given |context|.
 scoped_ptr<KeyedService> BuildToolbarModel(content::BrowserContext* context) {
-  return make_scoped_ptr(new extensions::ExtensionToolbarModel(
-      Profile::FromBrowserContext(context),
-      extensions::ExtensionPrefs::Get(context)));
+  return make_scoped_ptr(
+      new ToolbarActionsModel(Profile::FromBrowserContext(context),
+                              extensions::ExtensionPrefs::Get(context)));
 }
 
-// Creates a new ExtensionToolbarModel for the given profile, optionally
+// Creates a new ToolbarActionsModel for the given profile, optionally
 // triggering the extension system's ready signal.
-ExtensionToolbarModel* CreateToolbarModelImpl(Profile* profile,
-                                              bool wait_for_ready) {
-  ExtensionToolbarModel* model = ExtensionToolbarModel::Get(profile);
+ToolbarActionsModel* CreateToolbarModelImpl(Profile* profile,
+                                            bool wait_for_ready) {
+  ToolbarActionsModel* model = ToolbarActionsModel::Get(profile);
   if (model)
     return model;
 
   // No existing model means it's a new profile (since we, by default, don't
   // create the ToolbarModel in testing).
-  ExtensionToolbarModelFactory::GetInstance()->SetTestingFactory(
+  ToolbarActionsModelFactory::GetInstance()->SetTestingFactory(
       profile, &BuildToolbarModel);
-  model = ExtensionToolbarModel::Get(profile);
+  model = ToolbarActionsModel::Get(profile);
   if (wait_for_ready) {
     // Fake the extension system ready signal.
     // HACK ALERT! In production, the ready task on ExtensionSystem (and most
@@ -151,11 +158,11 @@ scoped_refptr<const Extension> CreateActionExtension(
                             Build();
 }
 
-ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile) {
+ToolbarActionsModel* CreateToolbarModelForProfile(Profile* profile) {
   return CreateToolbarModelImpl(profile, true);
 }
 
-ExtensionToolbarModel* CreateToolbarModelForProfileWithoutWaitingForReady(
+ToolbarActionsModel* CreateToolbarModelForProfileWithoutWaitingForReady(
     Profile* profile) {
   return CreateToolbarModelImpl(profile, false);
 }
