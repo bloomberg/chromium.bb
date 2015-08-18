@@ -190,6 +190,13 @@ def BuildRootGitCleanup(buildroot):
         cmd = ['branch', '-D'] + list(constants.CREATED_BRANCHES)
         git.RunGit(repo_git_store, cmd, error_code_ok=True)
 
+      if os.path.isdir(cwd):
+        # Above we deleted refs/heads/<branch> for each created branch, now we
+        # need to delete the bare ref <branch> if it was created somehow.
+        for ref in constants.CREATED_BRANCHES:
+          git.RunGit(cwd, ['update-ref', '-d', ref])
+
+
   # Cleanup all of the directories.
   dirs = [[attrs['name'], os.path.join(buildroot, attrs['path'])] for attrs in
           git.ManifestCheckout.Cached(buildroot).ListCheckouts()]
