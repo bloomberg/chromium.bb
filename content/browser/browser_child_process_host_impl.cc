@@ -58,6 +58,11 @@ void NotifyProcessCrashed(const ChildProcessData& data, int exit_code) {
                     BrowserChildProcessCrashed(data, exit_code));
 }
 
+void NotifyProcessKilled(const ChildProcessData& data, int exit_code) {
+  FOR_EACH_OBSERVER(BrowserChildProcessObserver, g_observers.Get(),
+                    BrowserChildProcessKilled(data, exit_code));
+}
+
 }  // namespace
 
 BrowserChildProcessHost* BrowserChildProcessHost::Create(
@@ -314,6 +319,9 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
 #endif
       case base::TERMINATION_STATUS_PROCESS_WAS_KILLED: {
         delegate_->OnProcessCrashed(exit_code);
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::Bind(&NotifyProcessKilled, data_, exit_code));
         // Report that this child process was killed.
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2",
                                   data_.process_type,
