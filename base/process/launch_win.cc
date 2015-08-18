@@ -177,6 +177,8 @@ void RouteStdioToConsole(bool create_console_if_not_found) {
       // It should be ERROR_INVALID_HANDLE at this point, which means the
       // browser was likely not started from a console.
       AllocConsole();
+    } else {
+      return;
     }
   }
 
