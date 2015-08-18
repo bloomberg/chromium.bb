@@ -126,6 +126,12 @@ cr.define('extensions', function() {
     dragEnabled_: false,
 
     /**
+     * True if the page has finished the initial load.
+     * @private {boolean}
+     */
+    hasLoaded_: false,
+
+    /**
      * Perform initial setup.
      */
     initialize: function() {
@@ -241,7 +247,11 @@ cr.define('extensions', function() {
      * @private
      */
     update_: function(profileInfo) {
-      this.setLoading_(true);
+      // We only set the page to be loading if we haven't already finished an
+      // initial load, because otherwise the updates are all incremental and
+      // don't need to display the interstitial spinner.
+      if (!this.hasLoaded_)
+        this.setLoading_(true);
       webuiResponded = true;
 
       /** @const */
@@ -260,7 +270,10 @@ cr.define('extensions', function() {
       extensionList.updateExtensionsData(
           profileInfo.isIncognitoAvailable,
           profileInfo.appInfoDialogEnabled).then(function() {
-        this.setLoading_(false);
+        if (!this.hasLoaded_) {
+          this.hasLoaded_ = true;
+          this.setLoading_(false);
+        }
         this.onExtensionCountChanged();
       }.bind(this));
     },
