@@ -10,7 +10,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
         '../sync/sync.gyp:sync',
+        'history_core_browser',
         'os_crypt',
         'signin_core_browser',
       ],
@@ -50,6 +52,8 @@
         'sync_driver/generic_change_processor_factory.h',
         'sync_driver/glue/synced_session.cc',
         'sync_driver/glue/synced_session.h',
+        'sync_driver/glue/typed_url_model_associator.cc',
+        'sync_driver/glue/typed_url_model_associator.h',
         'sync_driver/local_device_info_provider.h',
         'sync_driver/model_association_manager.cc',
         'sync_driver/model_association_manager.h',

@@ -48,6 +48,7 @@
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_manager_factory.h"
+#include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/js/sync_js_controller.h"
@@ -296,6 +297,9 @@ class ProfileSyncService : public sync_driver::SyncService,
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override
       WARN_UNUSED_RESULT;
+  bool IsCryptographerReady(
+      const syncer::BaseTransaction* trans) const override;
+  syncer::UserShare* GetUserShare() const override;
   void AddObserver(sync_driver::SyncServiceObserver* observer) override;
   void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
   bool HasObserver(
@@ -506,12 +510,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   // The functions below (until ActivateDataType()) should only be
   // called if backend_initialized() is true.
 
-  // TODO(akalin): This is called mostly by ModelAssociators and
-  // tests.  Figure out how to pass the handle to the ModelAssociators
-  // directly, figure out how to expose this to tests, and remove this
-  // function.
-  virtual syncer::UserShare* GetUserShare() const;
-
   // TODO(akalin): These two functions are used only by
   // ProfileSyncServiceHarness.  Figure out a different way to expose
   // this info to that class, and remove these functions.
@@ -584,12 +582,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Gets the set of off-thread types which could be allowed.
   virtual syncer::ModelTypeSet GetRegisteredNonBlockingDataTypes() const;
-
-  // Checks whether the Cryptographer is ready to encrypt and decrypt updates
-  // for sensitive data types. Caller must be holding a
-  // syncapi::BaseTransaction to ensure thread safety.
-  virtual bool IsCryptographerReady(
-      const syncer::BaseTransaction* trans) const;
 
   // Returns the actual passphrase type being used for encryption.
   virtual syncer::PassphraseType GetPassphraseType() const;

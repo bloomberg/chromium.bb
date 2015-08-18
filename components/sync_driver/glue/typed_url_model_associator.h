@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "sync/protocol/typed_url_specifics.pb.h"
 
 class GURL;
-class ProfileSyncService;
 
 namespace base {
 class MessageLoop;
@@ -35,6 +34,10 @@ class WriteNode;
 class WriteTransaction;
 };
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace browser_sync {
 
 // Contains all model association related logic:
@@ -48,7 +51,7 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
       TypedUrlVisitVector;
 
   static syncer::ModelType model_type() { return syncer::TYPED_URLS; }
-  TypedUrlModelAssociator(ProfileSyncService* sync_service,
+  TypedUrlModelAssociator(sync_driver::SyncService* sync_service,
                           history::HistoryBackend* history_backend,
                           sync_driver::DataTypeErrorHandler* error_handler);
   ~TypedUrlModelAssociator() override;
@@ -182,7 +185,7 @@ class TypedUrlModelAssociator : public sync_driver::AssociatorInterface {
   // of sync, based on the visits the URL had.
   bool ShouldIgnoreVisits(const history::VisitVector& visits);
 
-  ProfileSyncService* sync_service_;
+  sync_driver::SyncService* sync_service_;
   history::HistoryBackend* history_backend_;
 
   base::MessageLoop* expected_loop_;

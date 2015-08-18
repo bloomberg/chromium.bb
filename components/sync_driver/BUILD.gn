@@ -37,6 +37,8 @@ static_library("sync_driver") {
     "generic_change_processor_factory.h",
     "glue/synced_session.cc",
     "glue/synced_session.h",
+    "glue/typed_url_model_associator.cc",
+    "glue/typed_url_model_associator.h",
     "local_device_info_provider.h",
     "model_association_manager.cc",
     "model_association_manager.h",
@@ -87,8 +89,10 @@ static_library("sync_driver") {
 
   deps = [
     "//base",
+    "//components/history/core/browser",
     "//components/os_crypt",
     "//components/signin/core/browser",
+    "//net",
     "//sync",
   ]
 

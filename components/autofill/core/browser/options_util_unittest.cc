@@ -52,6 +52,9 @@ class SyncServiceMock : public sync_driver::SyncService {
   MOCK_METHOD2(SetEncryptionPassphrase,
                void(const std::string& passphrase, PassphraseType type));
   MOCK_METHOD1(SetDecryptionPassphrase, bool(const std::string& passphrase));
+  MOCK_CONST_METHOD1(IsCryptographerReady,
+                     bool(const syncer::BaseTransaction* trans));
+  MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
 
   // DataTypeEncryptionHandler mocks.
   MOCK_CONST_METHOD0(IsPassphraseRequired, bool());

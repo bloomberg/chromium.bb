@@ -8,6 +8,11 @@
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+namespace syncer {
+class BaseTransaction;
+struct UserShare;
+}
+
 namespace sync_driver {
 
 // Fake implementation of sync_driver::SyncService, used for testing.
@@ -49,6 +54,9 @@ class FakeSyncService : public sync_driver::SyncService {
   void SetEncryptionPassphrase(const std::string& passphrase,
                                PassphraseType type) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override;
+  bool IsCryptographerReady(
+      const syncer::BaseTransaction* trans) const override;
+  syncer::UserShare* GetUserShare() const override;
 
   // DataTypeEncryptionHandler:
   bool IsPassphraseRequired() const override;

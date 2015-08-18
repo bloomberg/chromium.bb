@@ -4,6 +4,9 @@
 
 #include "components/sync_driver/fake_sync_service.h"
 
+#include "sync/internal_api/public/base_transaction.h"
+#include "sync/internal_api/public/user_share.h"
+
 namespace sync_driver {
 
 FakeSyncService::FakeSyncService() : error_(GoogleServiceAuthError::NONE) {
@@ -115,6 +118,15 @@ void FakeSyncService::SetEncryptionPassphrase(const std::string& passphrase,
 
 bool FakeSyncService::SetDecryptionPassphrase(const std::string& passphrase) {
   return false;
+}
+
+bool FakeSyncService::IsCryptographerReady(
+    const syncer::BaseTransaction* trans) const {
+  return false;
+}
+
+syncer::UserShare* FakeSyncService::GetUserShare() const {
+  return new syncer::UserShare();
 }
 
 bool FakeSyncService::IsPassphraseRequired() const {

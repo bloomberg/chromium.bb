@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/typed_url_model_associator.h"
+#include "components/sync_driver/glue/typed_url_model_associator.h"
 
 #include <algorithm>
 #include <set>
@@ -11,18 +11,16 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/history/core/browser/history_backend.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/sync_driver/sync_service.h"
 #include "net/base/net_util.h"
 #include "sync/api/sync_error.h"
+#include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -58,7 +56,7 @@ static bool CheckVisitOrdering(const history::VisitVector& visits) {
 }
 
 TypedUrlModelAssociator::TypedUrlModelAssociator(
-    ProfileSyncService* sync_service,
+    sync_driver::SyncService* sync_service,
     history::HistoryBackend* history_backend,
     sync_driver::DataTypeErrorHandler* error_handler)
     : sync_service_(sync_service),
@@ -70,7 +68,6 @@ TypedUrlModelAssociator::TypedUrlModelAssociator(
       num_db_errors_(0) {
   DCHECK(sync_service_);
   // history_backend_ may be null for unit tests (since it's not mockable).
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 TypedUrlModelAssociator::~TypedUrlModelAssociator() {}

@@ -15,6 +15,11 @@
 
 class GoogleServiceAuthError;
 
+namespace syncer {
+class BaseTransaction;
+struct UserShare;
+}
+
 namespace sync_driver {
 
 class OpenTabsUIDelegate;
@@ -181,6 +186,18 @@ class SyncService : public DataTypeEncryptionHandler {
   // copy of encrypted keys; returns true otherwise.
   virtual bool SetDecryptionPassphrase(const std::string& passphrase)
       WARN_UNUSED_RESULT = 0;
+
+  // Checks whether the Cryptographer is ready to encrypt and decrypt updates
+  // for sensitive data types. Caller must be holding a
+  // syncapi::BaseTransaction to ensure thread safety.
+  virtual bool IsCryptographerReady(
+      const syncer::BaseTransaction* trans) const = 0;
+
+  // TODO(akalin): This is called mostly by ModelAssociators and
+  // tests.  Figure out how to pass the handle to the ModelAssociators
+  // directly, figure out how to expose this to tests, and remove this
+  // function.
+  virtual syncer::UserShare* GetUserShare() const = 0;
 
  protected:
   SyncService() {}
