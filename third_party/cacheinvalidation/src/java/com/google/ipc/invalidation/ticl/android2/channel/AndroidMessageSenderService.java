@@ -88,7 +88,7 @@ public class AndroidMessageSenderService extends IntentService {
 
     // HTTP connection reuse was buggy pre-Froyo, so disable it on those platforms.
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
-        System.setProperty("http.keepAlive", "false");
+      System.setProperty("http.keepAlive", "false");
     }
   }
 
@@ -120,10 +120,9 @@ public class AndroidMessageSenderService extends IntentService {
     // Parse and validate the send request.
     final AndroidNetworkSendRequest sendRequest;
     try {
-       sendRequest = AndroidNetworkSendRequest.parseFrom(sendRequestBytes);
+      sendRequest = AndroidNetworkSendRequest.parseFrom(sendRequestBytes);
     } catch (ValidationException exception) {
-      logger.warning("Invalid AndroidNetworkSendRequest from %s: %s",
-          sendRequestBytes, exception);
+      logger.warning("Invalid AndroidNetworkSendRequest from %s: %s", sendRequestBytes, exception);
       return;
     }
 
@@ -188,11 +187,11 @@ public class AndroidMessageSenderService extends IntentService {
    */
   private void handleAuthTokenResponse(Intent intent) {
     if (!(intent.hasExtra(AuthTokenConstants.EXTRA_STORED_MESSAGE)
-        && intent.hasExtra(AuthTokenConstants.EXTRA_AUTH_TOKEN)
-        && intent.hasExtra(AuthTokenConstants.EXTRA_AUTH_TOKEN_TYPE)
-        && intent.hasExtra(AuthTokenConstants.EXTRA_IS_RETRY))) {
-      logger.warning("auth-token-response intent missing fields: %s, %s",
-          intent, intent.getExtras());
+            && intent.hasExtra(AuthTokenConstants.EXTRA_AUTH_TOKEN)
+            && intent.hasExtra(AuthTokenConstants.EXTRA_AUTH_TOKEN_TYPE)
+            && intent.hasExtra(AuthTokenConstants.EXTRA_IS_RETRY))) {
+      logger.warning(
+          "auth-token-response intent missing fields: %s, %s", intent, intent.getExtras());
       return;
     }
     boolean isRetryForInvalidAuthToken =
@@ -218,6 +217,7 @@ public class AndroidMessageSenderService extends IntentService {
    */
   private void deliverOutboundMessage(byte[] outgoingMessage, String authToken,
       String authTokenType, boolean isRetryForInvalidAuthToken) {
+    
     NetworkEndpointId networkEndpointId = getNetworkEndpointId(this, logger);
     if (networkEndpointId == null) {
       // No GCM registration; buffer the message to send when we become registered.
@@ -273,7 +273,13 @@ public class AndroidMessageSenderService extends IntentService {
     } catch (MalformedURLException exception) {
       logger.warning("Malformed URL: %s", exception);
     } catch (IOException exception) {
-      logger.warning("IOException sending to the data center (%s): %s", url, exception);
+      logger.warning("IOException sending message (%s): %s", url, exception);
+    } catch (RuntimeException exception) {
+      // URL#openConnection occasionally throws a NullPointerException due to an inability to get
+      // the class loader for the current thread. There may be other unknown bugs in the network
+      // libraries so we just eat runtime exception here.
+      logger.warning(
+          "RuntimeException creating HTTP connection or sending message (%s): %s", url, exception);
     } finally {
       if (urlConnection != null) {
         urlConnection.disconnect();
@@ -286,6 +292,7 @@ public class AndroidMessageSenderService extends IntentService {
    * to the data center.
    */
   private void handleGcmRegIdChange() {
+    
     byte[] bufferedMessage = AndroidChannelPreferences.takeBufferedMessage(this);
     if (bufferedMessage != null) {
       // Rejoin the start of the code path that handles sending outbound messages.
@@ -336,13 +343,13 @@ public class AndroidMessageSenderService extends IntentService {
    * @param isOAuth2Token whether the token is an OAuth2 token (vs. a GoogleLogin token)
    */
   
-  public static HttpURLConnection createUrlConnectionForPost(Context context, URL url,
-      String authToken, boolean isOAuth2Token) throws IOException {
+  public static HttpURLConnection createUrlConnectionForPost(
+      Context context, URL url, String authToken, boolean isOAuth2Token) throws IOException {
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
     try {
       connection.setRequestMethod("POST");
     } catch (ProtocolException exception) {
-      throw new RuntimeException("Cannot set request method to POST: " + exception);
+      throw new RuntimeException("Cannot set request method to POST", exception);
     }
     connection.setDoOutput(true);
     if (isOAuth2Token) {
@@ -351,8 +358,9 @@ public class AndroidMessageSenderService extends IntentService {
       connection.setRequestProperty("Authorization", "GoogleLogin auth=" + authToken);
     }
     connection.setRequestProperty("Content-Type", HttpConstants.PROTO_CONTENT_TYPE);
-    connection.setRequestProperty("User-Agent",
-        context.getApplicationInfo().className + "(" + Build.VERSION.RELEASE + ")");
+    connection.setRequestProperty(
+        "User-Agent", context.getApplicationInfo().className + "(" + Build.VERSION.RELEASE + ")");
+    
     String echoToken = AndroidChannelPreferences.getEchoToken(context);
     if (echoToken != null) {
       // If we have a token to echo to the server, echo it.
@@ -374,19 +382,27 @@ public class AndroidMessageSenderService extends IntentService {
 
   /** Returns a base-64 encoded version of {@code bytes}. */
   private static String base64Encode(byte[] bytes) {
-    return Base64.encodeToString(bytes, Base64.URL_SAFE | Base64.NO_WRAP  | Base64.NO_PADDING);
+    return Base64.encodeToString(bytes, Base64.URL_SAFE | Base64.NO_WRAP | Base64.NO_PADDING);
   }
 
   /** Returns the network id for this channel, or {@code null} if one cannot be determined. */
   
   
   public static NetworkEndpointId getNetworkEndpointId(Context context, Logger logger) {
-    String registrationId = GCMRegistrar.getRegistrationId(context);
+    String registrationId;
+    try {
+      registrationId = GCMRegistrar.getRegistrationId(context);
+    } catch (RuntimeException exception) {
+      // GCMRegistrar#getRegistrationId occasionally throws a runtime exception. Catching the
+      // exception rather than crashing.
+      logger.warning("Unable to get GCM registration id: %s", exception);
+      registrationId = null;
+    }
     if ((registrationId == null) || registrationId.isEmpty()) {
       // No registration with GCM; we cannot compute a network id. The GCM documentation says the
       // string is never null, but we'll be paranoid.
-      logger.warning("No GCM registration id; cannot determine our network endpoint id: %s",
-          registrationId);
+      logger.warning(
+          "No GCM registration id; cannot determine our network endpoint id: %s", registrationId);
       return null;
     }
     return CommonProtos.newAndroidEndpointId(registrationId, NO_CLIENT_KEY,
