@@ -36,7 +36,8 @@ namespace blink {
 class DocumentLoader;
 class KURL;
 
-class CORE_EXPORT DocumentLoadTiming {
+class CORE_EXPORT DocumentLoadTiming final {
+    DISALLOW_ALLOCATION();
 public:
     DocumentLoadTiming(WeakPtrWillBeRawPtr<DocumentLoader>);
 
@@ -72,6 +73,8 @@ public:
 
     double referenceMonotonicTime() const { return m_referenceMonotonicTime; }
 
+    DECLARE_TRACE();
+
 private:
     void setRedirectStart(double);
     void markRedirectEnd();
@@ -92,7 +95,7 @@ private:
     bool m_hasCrossOriginRedirect;
     bool m_hasSameOriginAsPreviousDocument;
 
-    WeakPtrWillBeRawPtr<DocumentLoader> m_documentLoader;
+    WeakPtrWillBeMember<DocumentLoader> m_documentLoader;
 };
 
 } // namespace blink

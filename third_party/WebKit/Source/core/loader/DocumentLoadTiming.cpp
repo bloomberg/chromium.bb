@@ -52,6 +52,11 @@ DocumentLoadTiming::DocumentLoadTiming(WeakPtrWillBeRawPtr<DocumentLoader> docum
 {
 }
 
+DEFINE_TRACE(DocumentLoadTiming)
+{
+    visitor->trace(m_documentLoader);
+}
+
 void DocumentLoadTiming::notifyDocumentTimingChanged()
 {
     if (m_documentLoader)

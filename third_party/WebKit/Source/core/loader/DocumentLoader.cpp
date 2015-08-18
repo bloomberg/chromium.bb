@@ -129,6 +129,7 @@ DEFINE_TRACE(DocumentLoader)
     // TODO(sof): start tracing ResourcePtr<>s (and m_mainResource.)
     visitor->trace(m_writer);
     visitor->trace(m_archive);
+    visitor->trace(m_documentLoadTiming);
     visitor->trace(m_applicationCacheHost);
     visitor->trace(m_contentSecurityPolicy);
 }

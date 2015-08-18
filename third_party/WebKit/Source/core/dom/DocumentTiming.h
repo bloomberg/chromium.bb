@@ -32,7 +32,8 @@ namespace blink {
 
 class Document;
 
-class DocumentTiming {
+class DocumentTiming final {
+    DISALLOW_ALLOCATION();
 public:
     DocumentTiming(WeakPtrWillBeRawPtr<Document>);
 
@@ -50,6 +51,8 @@ public:
     double domComplete() const { return m_domComplete; }
     double firstLayout() const { return m_firstLayout; }
 
+    DECLARE_TRACE();
+
 private:
     void notifyDocumentTimingChanged();
 
@@ -60,7 +63,7 @@ private:
     double m_domComplete;
     double m_firstLayout;
 
-    WeakPtrWillBeRawPtr<Document> m_document;
+    WeakPtrWillBeMember<Document> m_document;
 };
 
 }

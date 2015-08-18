@@ -22,6 +22,11 @@ DocumentTiming::DocumentTiming(WeakPtrWillBeRawPtr<Document> document)
 {
 }
 
+DEFINE_TRACE(DocumentTiming)
+{
+    visitor->trace(m_document);
+}
+
 void DocumentTiming::notifyDocumentTimingChanged()
 {
     if (m_document && m_document->loader())
