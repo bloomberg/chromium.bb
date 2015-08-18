@@ -817,10 +817,11 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
   ScopedPtrVector<SwapPromise>::iterator it = info->swap_promises.begin();
   for (; it != info->swap_promises.end(); ++it) {
     scoped_ptr<SwapPromise> swap_promise(info->swap_promises.take(it));
-    TRACE_EVENT_FLOW_STEP0("input",
+    TRACE_EVENT_WITH_FLOW1("input,benchmark",
                            "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
-                           "Main thread scroll update");
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "Main thread scroll update");
     QueueSwapPromise(swap_promise.Pass());
   }
 

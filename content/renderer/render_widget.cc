@@ -1127,11 +1127,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   TRACE_EVENT1("renderer,benchmark", "RenderWidget::OnHandleInputEvent",
                "event", WebInputEventTraits::GetName(input_event->type));
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
-  TRACE_EVENT_FLOW_STEP0(
-      "input,benchmark",
-      "LatencyInfo.Flow",
-      TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
-      "HanldeInputEventMain");
+  TRACE_EVENT_WITH_FLOW1("input,benchmark",
+                         "LatencyInfo.Flow",
+                         TRACE_ID_DONT_MANGLE(latency_info.trace_id()),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "HandleInputEventMain");
 
   // If we don't have a high res timer, these metrics won't be accurate enough
   // to be worth collecting. Note that this does introduce some sampling bias.
