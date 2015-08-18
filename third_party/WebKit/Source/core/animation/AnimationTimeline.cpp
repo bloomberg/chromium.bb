@@ -174,6 +174,8 @@ void AnimationTimeline::scheduleNextService()
 
 void AnimationTimeline::AnimationTimelineTiming::wakeAfter(double duration)
 {
+    if (m_timer.isActive() && m_timer.nextFireInterval() < duration)
+        return;
     m_timer.startOneShot(duration, FROM_HERE);
 }
 
