@@ -3,21 +3,43 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "platform/graphics/paint/DisplayItemTransformTreeBuilder.h"
+#include "platform/graphics/paint/DisplayItemPropertyTreeBuilder.h"
 
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DisplayItemClient.h"
+#include "platform/graphics/paint/DisplayItemClipTree.h"
 #include "platform/graphics/paint/DisplayItemTransformTree.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "platform/transforms/TransformTestHelper.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemTransformTree.h"
+#include "wtf/OwnPtr.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 namespace blink {
 namespace {
 
-using RangeRecord = WebDisplayItemTransformTree::RangeRecord;
+using ::testing::AllOf;
+using ::testing::ElementsAre;
+
+using RangeRecord = DisplayItemPropertyTreeBuilder::RangeRecord;
+
+MATCHER_P2(hasRange, begin, end, "")
+{
+    return arg.displayListBeginIndex == static_cast<size_t>(begin)
+        && arg.displayListEndIndex == static_cast<size_t>(end);
+}
+
+MATCHER_P(hasTransformNode, transformNode, "")
+{
+    return arg.transformNodeIndex == static_cast<size_t>(transformNode);
+}
+
+MATCHER_P(hasOffset, offset, "")
+{
+    return arg.offset == offset;
+}
 
 struct DummyClient {
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
@@ -29,9 +51,13 @@ public:
     DummyDisplayItem(const DummyClient& client) : DisplayItem(client, DisplayItem::DrawingFirst, sizeof(*this)) { }
 };
 
-class DisplayItemTransformTreeBuilderTest : public ::testing::Test {
+class DisplayItemPropertyTreeBuilderTest : public ::testing::Test {
 protected:
-    DisplayItemTransformTreeBuilder& builder() { return m_builder; }
+    DisplayItemPropertyTreeBuilder& builder() { return m_builder; }
+    const DisplayItemTransformTree& transformTree() { return *m_transformTree; }
+    const DisplayItemClipTree& clipTree() { return *m_clipTree; }
+    const Vector<RangeRecord>& rangeRecords() { return m_rangeRecords; }
+    std::vector<RangeRecord> rangeRecordsAsStdVector() { return std::vector<RangeRecord>(m_rangeRecords.begin(), m_rangeRecords.end()); }
 
     void processDisplayItem(const DisplayItem& displayItem) { m_builder.processDisplayItem(displayItem); }
     void processDisplayItem(PassOwnPtr<DisplayItem> displayItem) { processDisplayItem(*displayItem); }
@@ -47,6 +73,13 @@ protected:
         processDisplayItem(EndTransform3DDisplayItem(client, DisplayItem::transform3DTypeToEndTransform3DType(DisplayItem::Transform3DElementTransform)));
     }
 
+    void finishPropertyTrees()
+    {
+        m_transformTree = m_builder.releaseTransformTree();
+        m_clipTree = m_builder.releaseClipTree();
+        m_rangeRecords = m_builder.releaseRangeRecords();
+    }
+
 private:
     // This makes empty objects which can be used as display item clients.
     const DummyClient& newDummyClient()
@@ -55,43 +88,44 @@ private:
         return *m_dummyClients.last();
     }
 
-    DisplayItemTransformTreeBuilder m_builder;
+    DisplayItemPropertyTreeBuilder m_builder;
+    OwnPtr<DisplayItemTransformTree> m_transformTree;
+    OwnPtr<DisplayItemClipTree> m_clipTree;
+    Vector<RangeRecord> m_rangeRecords;
     Vector<OwnPtr<DummyClient>> m_dummyClients;
 };
 
-TEST_F(DisplayItemTransformTreeBuilderTest, NoDisplayItems)
+TEST_F(DisplayItemPropertyTreeBuilderTest, NoDisplayItems)
 {
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should be a root transform node.
-    ASSERT_EQ(1u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).isRoot());
-    EXPECT_EQ(WebDisplayItemTransformTree::kInvalidIndex, tree.nodeAt(0).parentNodeIndex);
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
 
     // There should be no range records, because there are no non-empty
     // transformed ranges.
-    ASSERT_EQ(0u, tree.rangeRecordCount());
+    ASSERT_EQ(0u, rangeRecords().size());
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, NoTransforms)
+TEST_F(DisplayItemPropertyTreeBuilderTest, NoTransforms)
 {
     // Three dummy display items.
     processDummyDisplayItem();
     processDummyDisplayItem();
     processDummyDisplayItem();
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should only be a root transform node.
-    ASSERT_EQ(1u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).isRoot());
-    EXPECT_EQ(WebDisplayItemTransformTree::kInvalidIndex, tree.nodeAt(0).parentNodeIndex);
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
 
     // There should be one range record, for the entire list.
-    ASSERT_EQ(1u, tree.rangeRecordCount());
-    EXPECT_EQ(RangeRecord(0, 3, 0), tree.rangeRecordAt(0));
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 3), hasTransformNode(0))));
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, IdentityTransform)
+TEST_F(DisplayItemPropertyTreeBuilderTest, IdentityTransform)
 {
     TransformationMatrix identity;
 
@@ -101,23 +135,22 @@ TEST_F(DisplayItemTransformTreeBuilderTest, IdentityTransform)
     processDummyDisplayItem();
     processEndTransform3D(transformClient);
     processDummyDisplayItem();
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should only be a root transform node.
-    ASSERT_EQ(1u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).isRoot());
-    EXPECT_EQ(WebDisplayItemTransformTree::kInvalidIndex, tree.nodeAt(0).parentNodeIndex);
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
 
     // There should be three range records.
     // Since the transform is the identity, these could be combined, but there
     // is not currently a special path for this case.
-    ASSERT_EQ(3u, tree.rangeRecordCount());
-    EXPECT_EQ(RangeRecord(0, 1, 0), tree.rangeRecordAt(0));
-    EXPECT_EQ(RangeRecord(2, 3, 0), tree.rangeRecordAt(1));
-    EXPECT_EQ(RangeRecord(4, 5, 0), tree.rangeRecordAt(2));
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0)),
+        AllOf(hasRange(2, 3), hasTransformNode(0)),
+        AllOf(hasRange(4, 5), hasTransformNode(0))));
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, Only2DTranslation)
+TEST_F(DisplayItemPropertyTreeBuilderTest, Only2DTranslation)
 {
     FloatSize offset(200.5, -100);
     TransformationMatrix translation;
@@ -129,22 +162,21 @@ TEST_F(DisplayItemTransformTreeBuilderTest, Only2DTranslation)
     processDummyDisplayItem();
     processEndTransform3D(transformClient);
     processDummyDisplayItem();
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should only be a root transform node.
-    ASSERT_EQ(1u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).isRoot());
-    EXPECT_EQ(WebDisplayItemTransformTree::kInvalidIndex, tree.nodeAt(0).parentNodeIndex);
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
 
     // There should be three ranges, even though there's only one node.
     // The middle one requires an offset.
-    ASSERT_EQ(3u, tree.rangeRecordCount());
-    EXPECT_EQ(RangeRecord(0, 1, 0, FloatSize()), tree.rangeRecordAt(0));
-    EXPECT_EQ(RangeRecord(2, 3, 0, offset), tree.rangeRecordAt(1));
-    EXPECT_EQ(RangeRecord(4, 5, 0, FloatSize()), tree.rangeRecordAt(2));
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0)),
+        AllOf(hasRange(2, 3), hasTransformNode(0)),
+        AllOf(hasRange(4, 5), hasTransformNode(0))));
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, Nested2DTranslation)
+TEST_F(DisplayItemPropertyTreeBuilderTest, Nested2DTranslation)
 {
     FloatSize offset1(10, -40);
     TransformationMatrix translation1;
@@ -162,21 +194,20 @@ TEST_F(DisplayItemTransformTreeBuilderTest, Nested2DTranslation)
     processDummyDisplayItem();
     processEndTransform3D(transform2);
     processEndTransform3D(transform1);
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should only be a root transform node.
-    ASSERT_EQ(1u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).isRoot());
-    EXPECT_EQ(WebDisplayItemTransformTree::kInvalidIndex, tree.nodeAt(0).parentNodeIndex);
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
 
     // Check that the range records have the right offsets.
-    ASSERT_EQ(3u, tree.rangeRecordCount());
-    EXPECT_EQ(RangeRecord(0, 1, 0, FloatSize()), tree.rangeRecordAt(0));
-    EXPECT_EQ(RangeRecord(2, 3, 0, offset1), tree.rangeRecordAt(1));
-    EXPECT_EQ(RangeRecord(4, 5, 0, offset1 + offset2), tree.rangeRecordAt(2));
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0), hasOffset(FloatSize())),
+        AllOf(hasRange(2, 3), hasTransformNode(0), hasOffset(offset1)),
+        AllOf(hasRange(4, 5), hasTransformNode(0), hasOffset(offset1 + offset2))));
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, ZTranslation)
+TEST_F(DisplayItemPropertyTreeBuilderTest, ZTranslation)
 {
     TransformationMatrix zTranslation;
     zTranslation.translate3d(0, 0, 1);
@@ -187,36 +218,35 @@ TEST_F(DisplayItemTransformTreeBuilderTest, ZTranslation)
     processDummyDisplayItem();
     processEndTransform3D(transformClient);
     processDummyDisplayItem();
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should be two nodes here.
-    ASSERT_EQ(2u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).isRoot());
-    EXPECT_EQ(0u, tree.nodeAt(1).parentNodeIndex);
+    ASSERT_EQ(2u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
+    EXPECT_EQ(0u, transformTree().nodeAt(1).parentNodeIndex);
 
     // There should be three range records.
     // The middle of these should be transformed, and the others should be
     // attached to the root node.
-    ASSERT_EQ(3u, tree.rangeRecordCount());
-    EXPECT_EQ(RangeRecord(0, 1, 0), tree.rangeRecordAt(0));
-    EXPECT_EQ(RangeRecord(2, 3, 1), tree.rangeRecordAt(1));
-    EXPECT_EQ(RangeRecord(4, 5, 0), tree.rangeRecordAt(2));
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0)),
+        AllOf(hasRange(2, 3), hasTransformNode(1)),
+        AllOf(hasRange(4, 5), hasTransformNode(0))));
 }
 
-size_t nodeDepth(
-    const WebDisplayItemTransformTree& tree,
-    const WebDisplayItemTransformTree::TransformNode& node)
+template <typename TreeType, typename NodeType>
+size_t nodeDepth(const TreeType& tree, const NodeType& node)
 {
     const auto* currentNode = &node;
     size_t depth = 0;
     while (!currentNode->isRoot()) {
-        currentNode = &tree.parentNode(*currentNode);
+        currentNode = &tree.nodeAt(currentNode->parentNodeIndex);
         depth++;
     }
     return depth;
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, SkipUnnecessaryRangeRecords)
+TEST_F(DisplayItemPropertyTreeBuilderTest, SkipUnnecessaryRangeRecords)
 {
     TransformationMatrix rotation;
     rotation.rotate(1 /* degrees */);
@@ -230,26 +260,27 @@ TEST_F(DisplayItemTransformTreeBuilderTest, SkipUnnecessaryRangeRecords)
     processDummyDisplayItem();
     processEndTransform3D(transform2);
     processEndTransform3D(transform1);
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
     // There should be only two ranges.
     // They must both belong to the same grandchild of the root node.
-    ASSERT_EQ(2u, tree.rangeRecordCount());
-    size_t transformNodeIndex = tree.rangeRecordAt(0).transformNodeIndex;
-    EXPECT_EQ(2u, nodeDepth(tree, tree.nodeAt(transformNodeIndex)));
-    EXPECT_EQ(RangeRecord(2, 3, transformNodeIndex), tree.rangeRecordAt(0));
-    EXPECT_EQ(RangeRecord(5, 6, transformNodeIndex), tree.rangeRecordAt(1));
+    ASSERT_EQ(2u, rangeRecords().size());
+    size_t transformNodeIndex = rangeRecords()[0].transformNodeIndex;
+    EXPECT_EQ(2u, nodeDepth(transformTree(), transformTree().nodeAt(transformNodeIndex)));
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(2, 3), hasTransformNode(transformNodeIndex)),
+        AllOf(hasRange(5, 6), hasTransformNode(transformNodeIndex))));
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, RootTransformNodeHasIdentityTransform)
+TEST_F(DisplayItemPropertyTreeBuilderTest, RootTransformNodeHasIdentityTransform)
 {
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
-    ASSERT_EQ(1u, tree.nodeCount());
-    EXPECT_TRUE(tree.nodeAt(0).matrix.isIdentity());
-    EXPECT_TRANSFORMS_ALMOST_EQ(TransformationMatrix(), tree.nodeAt(0).matrix);
+    finishPropertyTrees();
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).matrix.isIdentity());
+    EXPECT_TRANSFORMS_ALMOST_EQ(TransformationMatrix(), transformTree().nodeAt(0).matrix);
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, Transform3DMatrix)
+TEST_F(DisplayItemPropertyTreeBuilderTest, Transform3DMatrix)
 {
     TransformationMatrix matrix;
     matrix.rotate3d(45, 45, 45);
@@ -257,14 +288,13 @@ TEST_F(DisplayItemTransformTreeBuilderTest, Transform3DMatrix)
     auto transform1 = processBeginTransform3D(matrix);
     processDummyDisplayItem();
     processEndTransform3D(transform1);
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
-    const auto& rangeRecord = tree.rangeRecordAt(0);
-    const auto& transformNode = tree.nodeAt(rangeRecord.transformNodeIndex);
+    const auto& transformNode = transformTree().nodeAt(rangeRecords()[0].transformNodeIndex);
     EXPECT_TRANSFORMS_ALMOST_EQ(matrix, transformNode.matrix);
 }
 
-TEST_F(DisplayItemTransformTreeBuilderTest, NestedTransformsAreNotCombined)
+TEST_F(DisplayItemPropertyTreeBuilderTest, NestedTransformsAreNotCombined)
 {
     // It's up the consumer of the tree to multiply transformation matrices.
 
@@ -280,12 +310,13 @@ TEST_F(DisplayItemTransformTreeBuilderTest, NestedTransformsAreNotCombined)
     processEndTransform3D(transform2);
     processDummyDisplayItem();
     processEndTransform3D(transform1);
-    WebDisplayItemTransformTree tree(builder().releaseTransformTree());
+    finishPropertyTrees();
 
-    const auto& transformNode = tree.nodeAt(tree.rangeRecordAt(0).transformNodeIndex);
+    const auto& transformNode = transformTree().nodeAt(rangeRecords()[0].transformNodeIndex);
     ASSERT_FALSE(transformNode.isRoot());
     EXPECT_TRANSFORMS_ALMOST_EQ(matrix2, transformNode.matrix);
-    EXPECT_TRANSFORMS_ALMOST_EQ(matrix1, tree.parentNode(transformNode).matrix);
+    const auto& parentNode = transformTree().nodeAt(transformNode.parentNodeIndex);
+    EXPECT_TRANSFORMS_ALMOST_EQ(matrix1, parentNode.matrix);
 }
 
 } // namespace

@@ -10,7 +10,6 @@
 namespace blink {
 
 WebDisplayItemTransformTree::WebDisplayItemTransformTree()
-    : m_private(adoptPtr(new DisplayItemTransformTree))
 {
 }
 
@@ -33,21 +32,6 @@ size_t WebDisplayItemTransformTree::nodeCount() const
 const WebDisplayItemTransformTree::TransformNode& WebDisplayItemTransformTree::nodeAt(size_t index) const
 {
     return m_private->nodeAt(index);
-}
-
-const WebDisplayItemTransformTree::TransformNode& WebDisplayItemTransformTree::parentNode(const WebDisplayItemTransformTree::TransformNode& node) const
-{
-    return m_private->parentNode(node);
-}
-
-size_t WebDisplayItemTransformTree::rangeRecordCount() const
-{
-    return m_private->rangeRecordCount();
-}
-
-const WebDisplayItemTransformTree::RangeRecord& WebDisplayItemTransformTree::rangeRecordAt(size_t index) const
-{
-    return m_private->rangeRecordAt(index);
 }
 
 } // namespace blink

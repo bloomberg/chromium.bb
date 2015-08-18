@@ -276,6 +276,7 @@ source_set("blink_headers") {
     "platform/WebRTCDataChannelHandler.h",
     "platform/WebGestureCurveTarget.h",
     "platform/WebBlendMode.h",
+    "platform/WebDisplayItemClipTree.h",
     "platform/WebDisplayItemTransformTree.h",
     "platform/WebConvertableToTraceFormat.h",
     "platform/WebCryptoAlgorithm.h",
