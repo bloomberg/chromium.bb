@@ -1811,82 +1811,41 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForLayers) {
   //   the mask region.
   //   grand_child4 - outside parent's clip rect; the DrawableContentRect should
   //   be empty.
-  //
 
   const gfx::Transform identity_matrix;
-  scoped_refptr<Layer> parent = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child1 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child2 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child3 = Layer::Create(layer_settings());
-  scoped_refptr<Layer> grand_child4 = Layer::Create(layer_settings());
+  LayerImpl* parent = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child1 = AddChild<LayerImpl>(child);
+  LayerImpl* grand_child2 = AddChild<LayerImpl>(child);
+  LayerImpl* grand_child3 = AddChild<LayerImpl>(child);
+  LayerImpl* grand_child4 = AddChild<LayerImpl>(child);
 
-  parent->AddChild(child);
-  child->AddChild(grand_child1);
-  child->AddChild(grand_child2);
-  child->AddChild(grand_child3);
-  child->AddChild(grand_child4);
-
-  host()->SetRootLayer(parent);
-
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(500, 500),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child1.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(5.f, 5.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child2.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(15.f, 15.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child3.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(15.f, 15.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child4.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(45.f, 45.f),
-                               gfx::Size(10, 10),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(500, 500), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(5.f, 5.f), gfx::Size(10, 10), true,
+                               false, false);
+  SetLayerPropertiesForTesting(grand_child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(15.f, 15.f), gfx::Size(10, 10), true,
+                               false, false);
+  SetLayerPropertiesForTesting(grand_child3, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(15.f, 15.f), gfx::Size(10, 10), true,
+                               false, false);
+  SetLayerPropertiesForTesting(grand_child4, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(45.f, 45.f), gfx::Size(10, 10), true,
+                               false, false);
 
   child->SetMasksToBounds(true);
   grand_child3->SetMasksToBounds(true);
 
-  // Force everyone to be a render surface.
+  // Force child to be a render surface.
   child->SetOpacity(0.4f);
-  grand_child1->SetOpacity(0.5f);
-  grand_child2->SetOpacity(0.5f);
-  grand_child3->SetOpacity(0.5f);
-  grand_child4->SetOpacity(0.5f);
 
-  RenderSurfaceLayerList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      parent.get(), parent->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+  ExecuteCalculateDrawProperties(parent);
 
   EXPECT_EQ(gfx::Rect(5, 5, 10, 10), grand_child1->drawable_content_rect());
   EXPECT_EQ(gfx::Rect(15, 15, 5, 5), grand_child3->drawable_content_rect());
