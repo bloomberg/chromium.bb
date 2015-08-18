@@ -98,8 +98,7 @@ MemoryDumpManager::MemoryDumpManager()
       memory_tracing_enabled_(0),
       tracing_process_id_(kInvalidTracingProcessId),
       system_allocator_pool_name_(nullptr),
-      skip_core_dumpers_auto_registration_for_testing_(false),
-      disable_periodic_dumps_for_testing_(false) {
+      skip_core_dumpers_auto_registration_for_testing_(false) {
   g_next_guid.GetNext();  // Make sure that first guid is not zero.
 }
 
@@ -428,11 +427,9 @@ void MemoryDumpManager::OnTraceLogEnabled() {
   // TODO(primiano): This is a temporary hack to disable periodic memory dumps
   // when running memory benchmarks until they can be enabled/disabled in
   // base::trace_event::TraceConfig. See https://goo.gl/5Hj3o0.
-  // The same mechanism should be used to disable periodic dumps in tests.
   if (delegate_->IsCoordinatorProcess() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
-          "enable-memory-benchmarking") &&
-      !disable_periodic_dumps_for_testing_) {
+          "enable-memory-benchmarking")) {
     g_periodic_dumps_count = 0;
     periodic_dump_timer_.Start(FROM_HERE,
                                TimeDelta::FromMilliseconds(kDumpIntervalMs),

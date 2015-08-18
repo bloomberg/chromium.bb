@@ -97,11 +97,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     return system_allocator_pool_name_;
   };
 
-  // Tells the initialization phase to skip scheduling periodic memory dumps.
-  void DisablePeriodicDumpsForTesting() {
-    disable_periodic_dumps_for_testing_ = true;
-  }
-
  private:
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -223,11 +218,6 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   // Skips the auto-registration of the core dumpers during Initialize().
   bool skip_core_dumpers_auto_registration_for_testing_;
-
-  // When true, the initialization phase does not start the periodic memory
-  // dumps.
-  // TODO(primiano): This should go into TraceConfig. https://goo.gl/5Hj3o0.
-  bool disable_periodic_dumps_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpManager);
 };
