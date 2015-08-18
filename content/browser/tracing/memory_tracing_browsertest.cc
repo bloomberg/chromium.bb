@@ -136,10 +136,16 @@ class SingleProcessMemoryTracingTest : public MemoryTracingTest {
   }
 };
 
+// This test is flaky on Mac. See crbug.com/522009.
+#if defined(OS_MACOSX)
+#define MAYBE_BrowserInitiatedSingleDump DISABLED_BrowserInitiatedSingleDump
+#else
+#define MAYBE_BrowserInitiatedSingleDump BrowserInitiatedSingleDump
+#endif
 // Checks that a memory dump initiated from a the main browser thread ends up in
 // a single dump even in single process mode.
 IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
-                       BrowserInitiatedSingleDump) {
+                       MAYBE_BrowserInitiatedSingleDump) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_)).WillOnce(Return(true));
@@ -168,7 +174,14 @@ IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
   DisableTracing();
 }
 
-IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest, ManyInterleavedDumps) {
+// This test is flaky on Mac. See crbug.com/522009.
+#if defined(OS_MACOSX)
+#define MAYBE_ManyInterleavedDumps DISABLED_ManyInterleavedDumps
+#else
+#define MAYBE_ManyInterleavedDumps ManyInterleavedDumps
+#endif
+IN_PROC_BROWSER_TEST_F(SingleProcessMemoryTracingTest,
+                       MAYBE_ManyInterleavedDumps) {
   Navigate(shell());
 
   EXPECT_CALL(*mock_dump_provider_, OnMemoryDump(_,_))
