@@ -160,6 +160,10 @@ GpuChildThread::GpuChildThread(
 }
 
 GpuChildThread::~GpuChildThread() {
+  while (!deferred_messages_.empty()) {
+    delete deferred_messages_.front();
+    deferred_messages_.pop();
+  }
 }
 
 // static
