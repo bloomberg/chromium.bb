@@ -234,9 +234,7 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 
 // static
 bool ChannelMojo::ShouldBeUsed() {
-  // TODO(rockot): Investigate performance bottlenecks and hopefully reenable
-  // this at some point. http://crbug.com/500019
-  return false;
+  return true;
 }
 
 // static
