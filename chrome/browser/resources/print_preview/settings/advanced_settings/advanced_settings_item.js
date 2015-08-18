@@ -134,11 +134,6 @@ cr.define('print_preview', function() {
      */
     onSelectChange_: function() {
       this.selectedValue_ = this.select_.value;
-      this.capability_.select_cap.option.some(function(option) {
-        if (this.select_.value == option.value && option.is_default)
-          this.selectedValue_ = null;
-        return this.select_.value == option.value || option.is_default;
-      }.bind(this));
     },
 
     /**
@@ -189,7 +184,8 @@ cr.define('print_preview', function() {
           for (var i = 0; i < this.select_.length && !optionMatches; i++)
             optionMatches = this.select_.options[i].text.match(this.query_);
         } else {
-          optionMatches = (this.text_.value || '').match(this.query_);
+          optionMatches = (this.text_.value || this.text_.placeholder || '')
+              .match(this.query_);
         }
       }
       var matches = nameMatches || !!optionMatches;
@@ -288,6 +284,18 @@ cr.define('print_preview', function() {
     initializeTextValue_: function() {
       setIsVisible(
           this.getChildElement('.advanced-settings-item-value-text'), true);
+
+      var defaultValue = null;
+      if (this.capability_.type == 'TYPED_VALUE' &&
+          this.capability_.typed_value_cap) {
+        defaultValue = this.capability_.typed_value_cap.default || null;
+      } else if (this.capability_.type == 'RANGE' &&
+                 this.capability_.range_cap) {
+        defaultValue = this.capability_.range_cap.default || null;
+      }
+
+      this.text_.placeholder = defaultValue || '';
+
       this.text_.value = this.selectedValue;
     },
 
