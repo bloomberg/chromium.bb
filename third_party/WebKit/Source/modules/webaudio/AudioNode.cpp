@@ -412,11 +412,14 @@ void AudioHandler::disableOutputsIfNecessary()
         // But internally our outputs should be disabled from the inputs they're connected to.
         // disable() can recursively deref connections (and call disable()) down a whole chain of connected nodes.
 
-        // FIXME: we special case the convolver and delay since they have a significant tail-time and shouldn't be disconnected simply
-        // because they no longer have any input connections. This needs to be handled more generally where AudioNodes have
-        // a tailTime attribute. Then the AudioNode only needs to remain "active" for tailTime seconds after there are no
-        // longer any active connections.
-        if (nodeType() != NodeTypeConvolver && nodeType() != NodeTypeDelay) {
+        // TODO(rtoy,hongchan): we special case the convolver, delay, and biquad since they have a
+        // significant tail-time and shouldn't be disconnected simply because they no longer have
+        // any input connections. This needs to be handled more generally where AudioNodes have a
+        // tailTime attribute. Then the AudioNode only needs to remain "active" for tailTime seconds
+        // after there are no longer any active connections.
+        if (nodeType() != NodeTypeConvolver
+            && nodeType() != NodeTypeDelay
+            && nodeType() != NodeTypeBiquadFilter) {
             m_isDisabled = true;
             clearInternalStateWhenDisabled();
             for (auto& output : m_outputs)
