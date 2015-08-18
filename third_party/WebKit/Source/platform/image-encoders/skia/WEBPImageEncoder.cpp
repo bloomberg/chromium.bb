@@ -54,9 +54,12 @@ static bool rgbPictureImport(const unsigned char* pixels, bool premultiplied, We
     // Write the RGB pixels to an rgb data buffer, alpha premultiplied, then import the rgb data.
 
     size_t pixelCount = picture->height * picture->width;
-    Vector<unsigned char> rgb(pixelCount * 3);
 
-    for (unsigned char* data = rgb.data(); pixelCount-- > 0; pixels += 4) {
+    OwnPtr<unsigned char[]> rgb = adoptArrayPtr(new unsigned char[pixelCount * 3]);
+    if (!rgb.get())
+        return false;
+
+    for (unsigned char* data = rgb.get(); pixelCount-- > 0; pixels += 4) {
         unsigned char alpha = pixels[3];
         if (alpha != 255) {
             *data++ = SkMulDiv255Round(pixels[0], alpha);
@@ -69,7 +72,7 @@ static bool rgbPictureImport(const unsigned char* pixels, bool premultiplied, We
         }
     }
 
-    return importRGB(picture, rgb.data(), picture->width * 3);
+    return importRGB(picture, rgb.get(), picture->width * 3);
 }
 
 template <bool Premultiplied> inline bool importPictureBGRX(const unsigned char* pixels, WebPPicture* picture)
