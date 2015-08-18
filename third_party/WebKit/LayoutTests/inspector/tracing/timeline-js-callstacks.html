@@ -362,6 +362,56 @@ function test()
         "ts": 251100,
     },
     {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "w", "scriptId": 1 },
+                    { "functionName": "y", "callUID": "y", "scriptId": 1 },
+                    { "functionName": "x", "callUID": "x", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 251200,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "w", "scriptId": 1 },
+                    { "functionName": "y", "callUID": "y", "scriptId": 1 },
+                    { "functionName": "x", "callUID": "x", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 251300,
+    },
+    {
+        "args": {
+            "data": {
+                "stackTrace": [
+                    { "functionName": "y", "callUID": "y", "scriptId": 1 },
+                    { "functionName": "x", "callUID": "x", "scriptId": 1 }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "JSSample",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 251400,
+    },
+    {
         "args": {},
         "cat": "disabled-by-default-devtools.timeline",
         "name": "Program",
@@ -387,16 +437,10 @@ function test()
         WebInspector.TimelineUIUtils.hiddenEventsFilter(),
         new WebInspector.ExcludeTopLevelFilter()
     ];
-    var treeTopDown = WebInspector.TimelineModel.buildTopDownTree(events, 0, Infinity, filters, eventId);
+    var treeTopDown = WebInspector.TimelineModel.buildTopDownTree(events, 0, Infinity, filters, WebInspector.TimelineTreeView.eventId);
     printProfileTree(0, treeTopDown);
     var treeBottomUp = WebInspector.TimelineModel.buildBottomUpTree(treeTopDown);
     printProfileTree(0, treeBottomUp);
-
-    function eventId(event)
-    {
-        var data = event.args.data;
-        return data && (data.callUID || data.functionNode);
-    }
 
     function printProfileTree(padding, node)
     {
