@@ -38,14 +38,6 @@ class CONTENT_EXPORT IndexedDBTransaction
     FINISHED,    // Either aborted or committed.
   };
 
-  IndexedDBTransaction(
-      int64 id,
-      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
-      const std::set<int64>& object_store_ids,
-      blink::WebIDBTransactionMode,
-      IndexedDBDatabase* db,
-      IndexedDBBackingStore::Transaction* backing_store_transaction);
-
   virtual void Abort();
   leveldb::Status Commit();
   void Abort(const IndexedDBDatabaseError& error);
@@ -88,18 +80,34 @@ class CONTENT_EXPORT IndexedDBTransaction
 
   const Diagnostics& diagnostics() const { return diagnostics_; }
 
+ protected:
+  // Test classes may derive, but most creation should be done via
+  // IndexedDBClassFactory.
+  IndexedDBTransaction(
+      int64 id,
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+      const std::set<int64>& object_store_ids,
+      blink::WebIDBTransactionMode mode,
+      IndexedDBDatabase* db,
+      IndexedDBBackingStore::Transaction* backing_store_transaction);
+  virtual ~IndexedDBTransaction();
+
+  // May be overridden in tests.
+  virtual base::TimeDelta GetInactivityTimeout() const;
+
  private:
   friend class BlobWriteCallbackImpl;
+  friend class IndexedDBClassFactory;
+  friend class base::RefCounted<IndexedDBTransaction>;
 
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, AbortPreemptive);
-  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, Timeout);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, AbortTasks);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, NoTimeoutReadOnly);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest,
                            SchedulePreemptiveTask);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode,
                            ScheduleNormalTask);
-
-  friend class base::RefCounted<IndexedDBTransaction>;
-  virtual ~IndexedDBTransaction();
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, Timeout);
 
   void RunTasksIfStarted();
 

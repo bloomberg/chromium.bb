@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_blob_info.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
@@ -1664,13 +1665,10 @@ void IndexedDBDatabase::CreateTransaction(
 
   // The transaction will add itself to this database's coordinator, which
   // manages the lifetime of the object.
-  TransactionCreated(new IndexedDBTransaction(
-      transaction_id,
-      connection->callbacks(),
-      std::set<int64>(object_store_ids.begin(), object_store_ids.end()),
-      mode,
-      this,
-      new IndexedDBBackingStore::Transaction(backing_store_.get())));
+  TransactionCreated(IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
+      transaction_id, connection->callbacks(),
+      std::set<int64>(object_store_ids.begin(), object_store_ids.end()), mode,
+      this, new IndexedDBBackingStore::Transaction(backing_store_.get())));
 }
 
 void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {

@@ -14,6 +14,7 @@
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
@@ -250,12 +251,9 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
     EXPECT_EQ(IndexedDBDatabaseMetadata::NO_INT_VERSION,
               db_->metadata().int_version);
 
-    transaction_ = new IndexedDBTransaction(
-        transaction_id,
-        callbacks_,
-        std::set<int64>() /*scope*/,
-        blink::WebIDBTransactionModeVersionChange,
-        db_.get(),
+    transaction_ = IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
+        transaction_id, callbacks_, std::set<int64>() /*scope*/,
+        blink::WebIDBTransactionModeVersionChange, db_.get(),
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
     db_->TransactionCreated(transaction_.get());
 

@@ -393,11 +393,13 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   // never requests further activity. Read-only transactions don't
   // block other transactions, so don't time those out.
   if (mode_ != blink::WebIDBTransactionModeReadOnly) {
-    timeout_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kInactivityTimeoutPeriodSeconds),
-        base::Bind(&IndexedDBTransaction::Timeout, this));
+    timeout_timer_.Start(FROM_HERE, GetInactivityTimeout(),
+                         base::Bind(&IndexedDBTransaction::Timeout, this));
   }
+}
+
+base::TimeDelta IndexedDBTransaction::GetInactivityTimeout() const {
+  return base::TimeDelta::FromSeconds(kInactivityTimeoutPeriodSeconds);
 }
 
 void IndexedDBTransaction::Timeout() {

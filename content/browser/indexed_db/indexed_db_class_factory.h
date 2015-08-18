@@ -5,9 +5,13 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CLASS_FACTORY_H_
 #define CONTENT_BROWSER_INDEXED_DB_INDEXED_DB_CLASS_FACTORY_H_
 
+#include <set>
+
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace leveldb {
 class Iterator;
@@ -15,8 +19,11 @@ class Iterator;
 
 namespace content {
 
-class LevelDBIteratorImpl;
+class IndexedDBDatabase;
+class IndexedDBDatabaseCallbacks;
+class IndexedDBTransaction;
 class LevelDBDatabase;
+class LevelDBIteratorImpl;
 class LevelDBTransaction;
 
 // Use this factory to create some IndexedDB objects. Exists solely to
@@ -28,6 +35,14 @@ class CONTENT_EXPORT IndexedDBClassFactory {
   static IndexedDBClassFactory* Get();
 
   static void SetIndexedDBClassFactoryGetter(GetterCallback* cb);
+
+  virtual IndexedDBTransaction* CreateIndexedDBTransaction(
+      int64 id,
+      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+      const std::set<int64>& scope,
+      blink::WebIDBTransactionMode mode,
+      IndexedDBDatabase* db,
+      IndexedDBBackingStore::Transaction* backing_store_transaction);
 
   virtual LevelDBIteratorImpl* CreateIteratorImpl(
       scoped_ptr<leveldb::Iterator> iterator);
