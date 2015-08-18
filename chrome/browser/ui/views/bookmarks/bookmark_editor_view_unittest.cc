@@ -47,7 +47,9 @@ class BookmarkEditorViewTest : public testing::Test {
     AddTestData();
   }
 
-  void TearDown() override {}
+  void TearDown() override {
+    message_loop_.RunUntilIdle();
+  }
 
  protected:
   std::string base_path() const { return "file:///c:/tmp/"; }

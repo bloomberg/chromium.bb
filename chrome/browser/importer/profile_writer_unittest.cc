@@ -41,6 +41,10 @@ class ProfileWriterTest : public testing::Test {
   }
   ~ProfileWriterTest() override {}
 
+  void TearDown() override {
+    loop_.RunUntilIdle();
+  }
+
   // Create test bookmark entries to be added to ProfileWriter to
   // simulate bookmark importing.
   void CreateImportedBookmarksEntries() {

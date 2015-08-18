@@ -45,6 +45,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   void TearDown() override {
     if (model_)
       model_->RemoveObserver(&observer_);
+    loop_.RunUntilIdle();
   }
 
   void CreateModel(bool is_supervised) {

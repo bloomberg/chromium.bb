@@ -53,6 +53,7 @@ void BookmarkExpandedStateTrackerTest::SetUp() {
 
 void BookmarkExpandedStateTrackerTest::TearDown() {
   model_.reset();
+  message_loop_.RunUntilIdle();
 }
 
 // Various assertions for SetExpandedNodes.

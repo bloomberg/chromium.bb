@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_
 #define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_STORAGE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
@@ -164,15 +167,35 @@ class BookmarkStorage : public base::ImportantFileWriter::DataSerializer {
   bool SerializeData(std::string* output) override;
 
  private:
+  // The state of the bookmark file backup. We lazily backup this file in order
+  // to reduce disk writes until absolutely necessary. Will also leave the
+  // backup unchanged if the browser starts & quits w/o changing bookmarks.
+  enum BackupState {
+    // No attempt has yet been made to backup the bookmarks file.
+    BACKUP_NONE,
+    // A request to backup the bookmarks file has been posted, but not yet
+    // fulfilled.
+    BACKUP_DISPATCHED,
+    // The bookmarks file has been backed up (or at least attempted).
+    BACKUP_ATTEMPTED
+  };
+
   // Serializes the data and schedules save using ImportantFileWriter.
   // Returns true on successful serialization.
   bool SaveNow();
+
+  // Callback from backend after creation of backup file.
+  void OnBackupFinished();
 
   // The model. The model is NULL once BookmarkModelDeleted has been invoked.
   BookmarkModel* model_;
 
   // Helper to write bookmark data safely.
   base::ImportantFileWriter writer_;
+
+  // The state of the backup file creation which is created lazily just before
+  // the first scheduled save.
+  BackupState backup_state_ = BACKUP_NONE;
 
   // Sequenced task runner where file I/O operations will be performed at.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
