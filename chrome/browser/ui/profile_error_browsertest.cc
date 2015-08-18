@@ -9,12 +9,15 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/test/browser_test_utils.h"
 
 namespace {
 
@@ -83,6 +86,21 @@ IN_PROC_BROWSER_TEST_P(ProfileErrorBrowserTest, MAYBE_CorruptedProfile) {
 
   // Navigate to a URL so the first non-empty paint is registered.
   ui_test_utils::NavigateToURL(browser(), GURL("http://www.example.com/"));
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Wait for the page to produce a frame, the first visually non-empty paint
+  // metric is not valid until then.
+  bool loaded = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      "requestAnimationFrame(function() {"
+      "  window.domAutomationController.send(true);"
+      "});",
+      &loaded));
+  ASSERT_TRUE(loaded);
+
   if (do_corrupt_) {
     histogram_tester_.ExpectTotalCount(kPaintHistogram, 0);
     histogram_tester_.ExpectTotalCount(kLoadHistogram, 0);
