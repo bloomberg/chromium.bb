@@ -24,7 +24,9 @@
 namespace {
 
 // Whether the iOS specialization of the GaiaAuthFetcher should be used.
-bool g_should_use_gaia_auth_fetcher_ios = true;
+// TODO(bzanotti): Having this be false is a temporary solution to
+// crbug.com/521521.
+bool g_should_use_gaia_auth_fetcher_ios = false;
 
 // Creates an NSURLRequest to |url| that can be loaded by a WebView from |body|
 // and |headers|.
@@ -231,7 +233,9 @@ void GaiaAuthFetcherIOS::FetchComplete(const GURL& url,
 
 void GaiaAuthFetcherIOS::SetShouldUseGaiaAuthFetcherIOSForTesting(
     bool use_gaia_fetcher_ios) {
-  g_should_use_gaia_auth_fetcher_ios = use_gaia_fetcher_ios;
+  // TODO(bzanotti): Commenting the below line is a temporary solution to
+  // crbug.com/521521.
+  // g_should_use_gaia_auth_fetcher_ios = use_gaia_fetcher_ios;
 }
 
 bool GaiaAuthFetcherIOS::ShouldUseGaiaAuthFetcherIOS() {
