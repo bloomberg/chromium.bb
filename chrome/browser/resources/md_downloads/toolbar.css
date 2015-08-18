@@ -9,7 +9,7 @@
   color: white;
   content-sizing: padding-box;
   display: flex;
-  height: 48px;
+  height: 56px;
 }
 
 #title,
@@ -20,12 +20,13 @@
 #title h1 {
   -webkit-margin-end: 0;
   -webkit-margin-start: 24px;
-  font-size: 123.077%;
+  font-size: 107.7%;
   margin-bottom: 0;
   margin-top: 0;
 }
 
 #actions {
+  color: rgb(192, 199, 205);
   display: flex;
   flex: none;
   width: var(--downloads-item-width);
@@ -46,7 +47,7 @@
   --paper-input-container-focus-color: white;
   --paper-input-container-input: {
     font-family: inherit;
-    font-size: 14px;
+    font-size: inherit;
   };
   --paper-input-container-input-color: white;
   z-index: 0;
@@ -58,16 +59,23 @@
 }
 
 paper-icon-button {
-  --iron-icon-height: 16px;
-  --iron-icon-width: 16px;
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
   --paper-icon-button: {
-    height: 16px;
+    height: 20px;
     padding: 6px;
-    width: 16px;
+    width: 20px;
   };
 }
 
 #search-term paper-icon-button {
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
+  --paper-icon-button: {
+    height: 16px;
+    padding: 8px;
+    width: 16px;
+  };
   position: absolute;
   right: 0;
   top: -2px;
