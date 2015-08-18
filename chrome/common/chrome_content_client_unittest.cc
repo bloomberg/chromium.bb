@@ -4,18 +4,12 @@
 
 #include "chrome/common/chrome_content_client.h"
 
-#include <string.h>
-
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_split.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
-#include "url/origin.h"
-#include "url/url_util.h"
 
 namespace {
 
@@ -126,17 +120,5 @@ TEST(ChromeContentClientTest, FindMostRecent) {
   EXPECT_EQ(ChromeContentClient::FindMostRecentPlugin(vector2.get()), info6_13);
 }
 #endif  // defined(ENABLE_PLUGINS)
-
-TEST(ChromeContentClientTest, AdditionalSchemes) {
-  EXPECT_TRUE(url::IsStandard(
-      extensions::kExtensionScheme,
-      url::Component(0, strlen(extensions::kExtensionScheme))));
-
-  GURL extension_url(
-      "chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/foo.html");
-  url::Origin origin(extension_url);
-  EXPECT_EQ("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef",
-            origin.Serialize());
-}
 
 }  // namespace chrome_common

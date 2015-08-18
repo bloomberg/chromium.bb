@@ -508,33 +508,21 @@ void ChromeContentClient::AddPepperPlugins(
 #endif  // defined(ENABLE_PLUGINS)
 }
 
-#if defined(OS_CHROMEOS)
-static const int kNumChromeStandardURLSchemes = 6;
-#else
-static const int kNumChromeStandardURLSchemes = 5;
-#endif
-static const url::SchemeWithType kChromeStandardURLSchemes[
-    kNumChromeStandardURLSchemes] = {
-  {extensions::kExtensionScheme, url::SCHEME_WITHOUT_PORT},
-  {chrome::kChromeNativeScheme, url::SCHEME_WITHOUT_PORT},
-  {extensions::kExtensionResourceScheme, url::SCHEME_WITHOUT_PORT},
-  {chrome::kChromeSearchScheme, url::SCHEME_WITHOUT_PORT},
-  {dom_distiller::kDomDistillerScheme, url::SCHEME_WITHOUT_PORT},
-#if defined(OS_CHROMEOS)
-  {chrome::kCrosScheme, url::SCHEME_WITHOUT_PORT},
-#endif
-};
-
 void ChromeContentClient::AddAdditionalSchemes(
-    std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<std::string>* standard_schemes,
     std::vector<std::string>* savable_schemes) {
-  for (int i = 0; i < kNumChromeStandardURLSchemes; i++)
-    standard_schemes->push_back(kChromeStandardURLSchemes[i]);
-
+  standard_schemes->push_back(extensions::kExtensionScheme);
   savable_schemes->push_back(extensions::kExtensionScheme);
+  standard_schemes->push_back(chrome::kChromeNativeScheme);
+  standard_schemes->push_back(extensions::kExtensionResourceScheme);
   savable_schemes->push_back(extensions::kExtensionResourceScheme);
+  standard_schemes->push_back(chrome::kChromeSearchScheme);
   savable_schemes->push_back(chrome::kChromeSearchScheme);
+  standard_schemes->push_back(dom_distiller::kDomDistillerScheme);
   savable_schemes->push_back(dom_distiller::kDomDistillerScheme);
+#if defined(OS_CHROMEOS)
+  standard_schemes->push_back(chrome::kCrosScheme);
+#endif
 }
 
 std::string ChromeContentClient::GetProduct() const {

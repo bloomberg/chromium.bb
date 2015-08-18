@@ -62,7 +62,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
             url_generator_.GetFilesGetUrl("0ADK06pfg", true, GURL()).spec());
 
   // If |embed_origin| is not empty, it should be added as a query parameter.
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITHOUT_PORT);
+  url::AddStandardScheme("chrome-extension");
   EXPECT_EQ(
       "https://www.example.com/drive/v2/files/0ADK06pfg"
       "?embedOrigin=chrome-extension%3A%2F%2Ftest",

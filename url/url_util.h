@@ -37,25 +37,6 @@ URL_EXPORT void Shutdown();
 
 // Schemes --------------------------------------------------------------------
 
-// Types of a scheme representing the requirements on the data represented by
-// the authority component of a URL with the scheme.
-enum URL_EXPORT SchemeType {
-  // The authority component of a URL with the scheme, if any, has the port
-  // (the default values may be omitted in a serialization).
-  SCHEME_WITH_PORT,
-  // The authority component of a URL with the scheme, if any, doesn't have a
-  // port.
-  SCHEME_WITHOUT_PORT,
-  // A URL with the scheme doesn't have the authority component.
-  SCHEME_WITHOUT_AUTHORITY,
-};
-
-// A pair for representing a standard scheme name and the SchemeType for it.
-struct URL_EXPORT SchemeWithType {
-  const char* scheme;
-  SchemeType type;
-};
-
 // Adds an application-defined scheme to the internal list of "standard-format"
 // URL schemes. A standard-format scheme adheres to what RFC 3986 calls "generic
 // URI syntax" (https://tools.ietf.org/html/rfc3986#section-3).
@@ -63,8 +44,7 @@ struct URL_EXPORT SchemeWithType {
 // This function is not threadsafe and can not be called concurrently with any
 // other url_util function. It will assert if the list of standard schemes has
 // been locked (see LockStandardSchemes).
-URL_EXPORT void AddStandardScheme(const char* new_scheme,
-                                  SchemeType scheme_type);
+URL_EXPORT void AddStandardScheme(const char* new_scheme);
 
 // Sets a flag to prevent future calls to AddStandardScheme from succeeding.
 //
@@ -107,17 +87,10 @@ inline bool FindAndCompareScheme(const base::string16& str,
                               compare, found_scheme);
 }
 
-// Returns true if the given scheme identified by |scheme| within |spec| is in
-// the list of known standard-format schemes (see AddStandardScheme).
+// Returns true if the given string represents a URL whose scheme is in the list
+// of known standard-format schemes (see AddStandardScheme).
 URL_EXPORT bool IsStandard(const char* spec, const Component& scheme);
 URL_EXPORT bool IsStandard(const base::char16* spec, const Component& scheme);
-
-// Returns true and sets |type| to the SchemeType of the given scheme
-// identified by |scheme| within |spec| if the scheme is in the list of known
-// standard-format schemes (see AddStandardScheme).
-URL_EXPORT bool GetStandardSchemeType(const char* spec,
-                                      const Component& scheme,
-                                      SchemeType* type);
 
 // URL library wrappers -------------------------------------------------------
 

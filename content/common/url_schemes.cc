@@ -19,8 +19,8 @@
 
 namespace {
 
-void AddStandardSchemeHelper(const url::SchemeWithType& scheme) {
-  url::AddStandardScheme(scheme.scheme, scheme.type);
+void AddStandardSchemeHelper(const std::string& scheme) {
+  url::AddStandardScheme(scheme.c_str());
 }
 
 }  // namespace
@@ -28,15 +28,15 @@ void AddStandardSchemeHelper(const url::SchemeWithType& scheme) {
 namespace content {
 
 void RegisterContentSchemes(bool lock_standard_schemes) {
-  std::vector<url::SchemeWithType> additional_standard_schemes;
+  std::vector<std::string> additional_standard_schemes;
   std::vector<std::string> additional_savable_schemes;
   GetContentClient()->AddAdditionalSchemes(&additional_standard_schemes,
                                            &additional_savable_schemes);
 
-  url::AddStandardScheme(kChromeDevToolsScheme, url::SCHEME_WITHOUT_PORT);
-  url::AddStandardScheme(kChromeUIScheme, url::SCHEME_WITHOUT_PORT);
-  url::AddStandardScheme(kGuestScheme, url::SCHEME_WITHOUT_PORT);
-  url::AddStandardScheme(kMetadataScheme, url::SCHEME_WITHOUT_AUTHORITY);
+  url::AddStandardScheme(kChromeDevToolsScheme);
+  url::AddStandardScheme(kChromeUIScheme);
+  url::AddStandardScheme(kGuestScheme);
+  url::AddStandardScheme(kMetadataScheme);
   std::for_each(additional_standard_schemes.begin(),
                 additional_standard_schemes.end(),
                 AddStandardSchemeHelper);

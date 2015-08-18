@@ -16,16 +16,8 @@
 #include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/test/gl_surface_test_support.h"
-#include "url/url_util.h"
 
 namespace {
-
-const int kNumExtensionStandardURLSchemes = 2;
-const url::SchemeWithType kExtensionStandardURLSchemes[
-    kNumExtensionStandardURLSchemes] = {
-  {extensions::kExtensionScheme, url::SCHEME_WITHOUT_PORT},
-  {extensions::kExtensionResourceScheme, url::SCHEME_WITHOUT_PORT},
-};
 
 // Content client that exists only to register chrome-extension:// scheme with
 // the url module.
@@ -38,12 +30,11 @@ class ExtensionsContentClient : public content::ContentClient {
 
   // content::ContentClient overrides:
   void AddAdditionalSchemes(
-      std::vector<url::SchemeWithType>* standard_schemes,
+      std::vector<std::string>* standard_schemes,
       std::vector<std::string>* savable_schemes) override {
-    for (int i = 0; i < kNumExtensionStandardURLSchemes; i++)
-      standard_schemes->push_back(kExtensionStandardURLSchemes[i]);
-
+    standard_schemes->push_back(extensions::kExtensionScheme);
     savable_schemes->push_back(extensions::kExtensionScheme);
+    standard_schemes->push_back(extensions::kExtensionResourceScheme);
     savable_schemes->push_back(extensions::kExtensionResourceScheme);
   }
 

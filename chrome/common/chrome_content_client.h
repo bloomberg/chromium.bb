@@ -16,8 +16,6 @@
 #include "content/public/common/pepper_plugin_info.h"
 #endif
 
-#include "url/url_util.h"
-
 // Returns the user agent of Chrome.
 std::string GetUserAgent();
 
@@ -56,7 +54,7 @@ class ChromeContentClient : public content::ContentClient {
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
   void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) override;
-  void AddAdditionalSchemes(std::vector<url::SchemeWithType>* standard_schemes,
+  void AddAdditionalSchemes(std::vector<std::string>* standard_schemes,
                             std::vector<std::string>* saveable_shemes) override;
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;

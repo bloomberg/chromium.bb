@@ -74,20 +74,12 @@ void ShellContentClient::AddPepperPlugins(
 #endif  // !defined(DISABLE_NACL)
 }
 
-static const int kNumShellStandardURLSchemes = 2;
-static const url::SchemeWithType kShellStandardURLSchemes[
-    kNumShellStandardURLSchemes] = {
-  {extensions::kExtensionScheme, url::SCHEME_WITHOUT_PORT},
-  {extensions::kExtensionResourceScheme, url::SCHEME_WITHOUT_PORT},
-};
-
 void ShellContentClient::AddAdditionalSchemes(
-    std::vector<url::SchemeWithType>* standard_schemes,
+    std::vector<std::string>* standard_schemes,
     std::vector<std::string>* savable_schemes) {
-  for (int i = 0; i < kNumShellStandardURLSchemes; i++)
-    standard_schemes->push_back(kShellStandardURLSchemes[i]);
-
+  standard_schemes->push_back(kExtensionScheme);
   savable_schemes->push_back(kExtensionScheme);
+  standard_schemes->push_back(kExtensionResourceScheme);
   savable_schemes->push_back(kExtensionResourceScheme);
 }
 

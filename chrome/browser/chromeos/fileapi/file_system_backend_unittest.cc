@@ -101,7 +101,7 @@ TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
 }
 
 TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
-  url::AddStandardScheme("chrome-extension", url::SCHEME_WITHOUT_PORT);
+  url::AddStandardScheme("chrome-extension");
 
   scoped_refptr<storage::ExternalMountPoints> mount_points(
       storage::ExternalMountPoints::CreateRefCounted());

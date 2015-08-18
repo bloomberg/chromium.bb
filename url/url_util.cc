@@ -19,24 +19,21 @@ namespace url {
 namespace {
 
 const int kNumStandardURLSchemes = 8;
-const SchemeWithType kStandardURLSchemes[kNumStandardURLSchemes] = {
-  {kHttpScheme, SCHEME_WITH_PORT},
-  {kHttpsScheme, SCHEME_WITH_PORT},
-  // Yes, file URLs can have a hostname, so file URLs should be handled as
-  // "standard". File URLs never have a port as specified by the SchemeType
-  // field.
-  {kFileScheme, SCHEME_WITHOUT_PORT},
-  {kFtpScheme, SCHEME_WITH_PORT},
-  {kGopherScheme, SCHEME_WITH_PORT},
-  {kWsScheme, SCHEME_WITH_PORT},    // WebSocket.
-  {kWssScheme, SCHEME_WITH_PORT},   // WebSocket secure.
-  {kFileSystemScheme, SCHEME_WITHOUT_AUTHORITY},
+const char* kStandardURLSchemes[kNumStandardURLSchemes] = {
+  kHttpScheme,
+  kHttpsScheme,
+  kFileScheme,  // Yes, file URLs can have a hostname!
+  kFtpScheme,
+  kGopherScheme,
+  kWsScheme,    // WebSocket.
+  kWssScheme,   // WebSocket secure.
+  kFileSystemScheme,
 };
 
 // List of the currently installed standard schemes. This list is lazily
 // initialized by InitStandardSchemes and is leaked on shutdown to prevent
 // any destructors from being called that will slow us down or cause problems.
-std::vector<SchemeWithType>* standard_schemes = NULL;
+std::vector<const char*>* standard_schemes = NULL;
 
 // See the LockStandardSchemes declaration in the header.
 bool standard_schemes_locked = false;
@@ -57,7 +54,7 @@ template<> struct CharToStringPiece<base::char16> {
 void InitStandardSchemes() {
   if (standard_schemes)
     return;
-  standard_schemes = new std::vector<SchemeWithType>;
+  standard_schemes = new std::vector<const char*>;
   for (int i = 0; i < kNumStandardURLSchemes; i++)
     standard_schemes->push_back(kStandardURLSchemes[i]);
 }
@@ -76,13 +73,10 @@ inline bool DoCompareSchemeComponent(const CHAR* spec,
       compare_to);
 }
 
-// Returns true and sets |type| to the SchemeType of the given scheme
-// identified by |scheme| within |spec| if the scheme is one of the registered
-// "standard" schemes.
+// Returns true if the given scheme identified by |scheme| within |spec| is one
+// of the registered "standard" schemes.
 template<typename CHAR>
-bool DoIsStandard(const CHAR* spec,
-                  const Component& scheme,
-                  SchemeType* type) {
+bool DoIsStandard(const CHAR* spec, const Component& scheme) {
   if (!scheme.is_nonempty())
     return false;  // Empty or invalid schemes are non-standard.
 
@@ -91,10 +85,8 @@ bool DoIsStandard(const CHAR* spec,
     if (base::LowerCaseEqualsASCII(
             typename CharToStringPiece<CHAR>::Piece(
                 &spec[scheme.begin], scheme.len),
-            standard_schemes->at(i).scheme)) {
-      *type = standard_schemes->at(i).type;
+            standard_schemes->at(i)))
       return true;
-    }
   }
   return false;
 }
@@ -164,7 +156,6 @@ bool DoCanonicalize(const CHAR* in_spec,
   // This is the parsed version of the input URL, we have to canonicalize it
   // before storing it in our object.
   bool success;
-  SchemeType unused_scheme_type = SCHEME_WITH_PORT;
   if (DoCompareSchemeComponent(spec, scheme, url::kFileScheme)) {
     // File URLs are special.
     ParseFileURL(spec, spec_len, &parsed_input);
@@ -177,7 +168,7 @@ bool DoCanonicalize(const CHAR* in_spec,
                                         charset_converter, output,
                                         output_parsed);
 
-  } else if (DoIsStandard(spec, scheme, &unused_scheme_type)) {
+  } else if (DoIsStandard(spec, scheme)) {
     // All "normal" URLs.
     ParseStandardURL(spec, spec_len, &parsed_input);
     success = CanonicalizeStandardURL(spec, spec_len, parsed_input,
@@ -226,10 +217,9 @@ bool DoResolveRelative(const char* base_spec,
     base_is_hierarchical = num_slashes > 0;
   }
 
-  SchemeType unused_scheme_type = SCHEME_WITH_PORT;
   bool standard_base_scheme =
       base_parsed.scheme.is_nonempty() &&
-      DoIsStandard(base_spec, base_parsed.scheme, &unused_scheme_type);
+      DoIsStandard(base_spec, base_parsed.scheme);
 
   bool is_relative;
   Component relative_component;
@@ -350,8 +340,7 @@ bool DoReplaceComponents(const char* spec,
     return ReplaceFileSystemURL(spec, parsed, replacements, charset_converter,
                                 output, out_parsed);
   }
-  SchemeType unused_scheme_type = SCHEME_WITH_PORT;
-  if (DoIsStandard(spec, parsed.scheme, &unused_scheme_type)) {
+  if (DoIsStandard(spec, parsed.scheme)) {
     return ReplaceStandardURL(spec, parsed, replacements, charset_converter,
                               output, out_parsed);
   }
@@ -376,8 +365,7 @@ void Shutdown() {
   }
 }
 
-void AddStandardScheme(const char* new_scheme,
-                       SchemeType type) {
+void AddStandardScheme(const char* new_scheme) {
   // If this assert triggers, it means you've called AddStandardScheme after
   // LockStandardSchemes have been called (see the header file for
   // LockStandardSchemes for more).
@@ -400,10 +388,7 @@ void AddStandardScheme(const char* new_scheme,
   memcpy(dup_scheme, new_scheme, scheme_len + 1);
 
   InitStandardSchemes();
-  SchemeWithType scheme_with_type;
-  scheme_with_type.scheme = dup_scheme;
-  scheme_with_type.type = type;
-  standard_schemes->push_back(scheme_with_type);
+  standard_schemes->push_back(dup_scheme);
 }
 
 void LockStandardSchemes() {
@@ -411,19 +396,11 @@ void LockStandardSchemes() {
 }
 
 bool IsStandard(const char* spec, const Component& scheme) {
-  SchemeType unused_scheme_type;
-  return DoIsStandard(spec, scheme, &unused_scheme_type);
-}
-
-bool GetStandardSchemeType(const char* spec,
-                           const Component& scheme,
-                           SchemeType* type) {
-  return DoIsStandard(spec, scheme, type);
+  return DoIsStandard(spec, scheme);
 }
 
 bool IsStandard(const base::char16* spec, const Component& scheme) {
-  SchemeType unused_scheme_type;
-  return DoIsStandard(spec, scheme, &unused_scheme_type);
+  return DoIsStandard(spec, scheme);
 }
 
 bool FindAndCompareScheme(const char* str,
