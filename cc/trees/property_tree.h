@@ -137,6 +137,7 @@ struct CC_EXPORT ClipNodeData {
 
   gfx::RectF clip;
   gfx::RectF combined_clip;
+  gfx::RectF clip_in_target_space;
   int transform_id;
   int target_id;
   // This value is true for clip nodes created by layers that do not apply any

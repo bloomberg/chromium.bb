@@ -403,6 +403,8 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     return;
   for (int i = 0; i < static_cast<int>(clip_tree->size()); ++i) {
     ClipNode* clip_node = clip_tree->Node(i);
+    const TransformNode* transform_node =
+        transform_tree.Node(clip_node->data.transform_id);
 
     // Only descendants of a real clipping layer (i.e., not 0) may have their
     // clip adjusted due to intersecting with an ancestor clip.
@@ -410,14 +412,17 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     if (!is_clipped) {
       DCHECK(!clip_node->data.inherit_parent_target_space_clip);
       clip_node->data.combined_clip = clip_node->data.clip;
+      if (clip_node->id > 0) {
+        gfx::Transform to_target = transform_node->data.to_target;
+        clip_node->data.clip_in_target_space =
+            MathUtil::MapClippedRect(to_target, clip_node->data.combined_clip);
+      }
       continue;
     }
 
     ClipNode* parent_clip_node = clip_tree->parent(clip_node);
     const TransformNode* parent_transform_node =
         transform_tree.Node(parent_clip_node->data.transform_id);
-    const TransformNode* transform_node =
-        transform_tree.Node(clip_node->data.transform_id);
 
     // Clips must be combined in target space. We cannot, for example, combine
     // clips in the space of the child clip. The reason is non-affine
@@ -519,6 +524,7 @@ void ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree) {
     } else {
       intersected_in_target_space = inherited_clip_in_target_space;
     }
+    clip_node->data.clip_in_target_space = intersected_in_target_space;
 
     clip_node->data.combined_clip = MathUtil::ProjectClippedRect(
         target_to_clip, intersected_in_target_space);
@@ -678,6 +684,16 @@ bool RenderSurfaceIsClippedFromPropertyTrees(
   if (render_surface->OwningLayerId() != node->owner_id)
     return false;
   return node->data.render_surface_is_clipped;
+}
+
+gfx::Rect ClipRectOfRenderSurfaceFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const ClipTree& clip_tree) {
+  if (!RenderSurfaceIsClippedFromPropertyTrees(render_surface, clip_tree))
+    return gfx::Rect();
+  const ClipNode* clip_node = clip_tree.Node(render_surface->ClipTreeIndex());
+  const ClipNode* parent_clip_node = clip_tree.parent(clip_node);
+  return gfx::ToEnclosingRect(parent_clip_node->data.clip_in_target_space);
 }
 
 template <typename LayerType>

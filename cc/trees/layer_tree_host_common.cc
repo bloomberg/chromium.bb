@@ -2291,6 +2291,16 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
   CHECK_EQ(render_surface->is_clipped(),
            RenderSurfaceIsClippedFromPropertyTrees(render_surface,
                                                    property_trees->clip_tree));
+
+  const bool render_surface_clip_rects_match =
+      ApproximatelyEqual(render_surface->clip_rect(),
+                         ClipRectOfRenderSurfaceFromPropertyTrees(
+                             render_surface, property_trees->clip_tree));
+  CHECK(render_surface_clip_rects_match)
+      << "expected: " << render_surface->clip_rect().ToString() << " actual: "
+      << ClipRectOfRenderSurfaceFromPropertyTrees(render_surface,
+                                                  property_trees->clip_tree)
+             .ToString();
 }
 
 void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
