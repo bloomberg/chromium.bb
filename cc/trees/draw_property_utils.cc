@@ -543,12 +543,12 @@ void ComputeTransforms(TransformTree* transform_tree) {
   transform_tree->set_needs_update(false);
 }
 
-void ComputeOpacities(OpacityTree* opacity_tree) {
-  if (!opacity_tree->needs_update())
+void ComputeOpacities(EffectTree* effect_tree) {
+  if (!effect_tree->needs_update())
     return;
-  for (int i = 1; i < static_cast<int>(opacity_tree->size()); ++i)
-    opacity_tree->UpdateOpacities(i);
-  opacity_tree->set_needs_update(false);
+  for (int i = 1; i < static_cast<int>(effect_tree->size()); ++i)
+    effect_tree->UpdateOpacities(i);
+  effect_tree->set_needs_update(false);
 }
 
 template <typename LayerType>
@@ -560,7 +560,7 @@ void ComputeVisibleRectsUsingPropertyTreesInternal(
     property_trees->clip_tree.set_needs_update(true);
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree);
-  ComputeOpacities(&property_trees->opacity_tree);
+  ComputeOpacities(&property_trees->effect_tree);
 
   const bool subtree_is_visible_from_ancestor = true;
   std::vector<LayerType*> visible_layer_list;
@@ -745,13 +745,13 @@ bool ScreenSpaceTransformIsAnimatingFromPropertyTrees(
 
 template <typename LayerType>
 float DrawOpacityFromPropertyTreesInternal(LayerType layer,
-                                           const OpacityTree& tree) {
+                                           const EffectTree& tree) {
   if (!layer->render_target())
     return 0.f;
 
-  const OpacityNode* target_node =
-      tree.Node(layer->render_target()->opacity_tree_index());
-  const OpacityNode* node = tree.Node(layer->opacity_tree_index());
+  const EffectNode* target_node =
+      tree.Node(layer->render_target()->effect_tree_index());
+  const EffectNode* node = tree.Node(layer->effect_tree_index());
   if (node == target_node)
     return 1.f;
 
@@ -763,13 +763,12 @@ float DrawOpacityFromPropertyTreesInternal(LayerType layer,
   return draw_opacity;
 }
 
-float DrawOpacityFromPropertyTrees(const Layer* layer,
-                                   const OpacityTree& tree) {
+float DrawOpacityFromPropertyTrees(const Layer* layer, const EffectTree& tree) {
   return DrawOpacityFromPropertyTreesInternal(layer, tree);
 }
 
 float DrawOpacityFromPropertyTrees(const LayerImpl* layer,
-                                   const OpacityTree& tree) {
+                                   const EffectTree& tree) {
   return DrawOpacityFromPropertyTreesInternal(layer, tree);
 }
 
@@ -784,10 +783,10 @@ bool CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
   if (!layer->contents_opaque())
     return false;
   DCHECK(!property_trees->transform_tree.needs_update());
-  DCHECK(!property_trees->opacity_tree.needs_update());
+  DCHECK(!property_trees->effect_tree.needs_update());
 
-  const OpacityNode* opacity_node =
-      property_trees->opacity_tree.Node(layer->opacity_tree_index());
+  const EffectNode* opacity_node =
+      property_trees->effect_tree.Node(layer->effect_tree_index());
   if (opacity_node->data.screen_space_opacity != 1.f)
     return false;
   const TransformNode* transform_node =

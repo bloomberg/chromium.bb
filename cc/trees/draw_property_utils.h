@@ -19,7 +19,7 @@ class ClipTree;
 class Layer;
 class LayerImpl;
 class RenderSurfaceImpl;
-class OpacityTree;
+class EffectTree;
 class TransformTree;
 class PropertyTrees;
 
@@ -35,7 +35,7 @@ ComputeClips(ClipTree* clip_tree, const TransformTree& transform_tree);
 void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 
 // Computes screen space opacity for every node in the opacity tree.
-void CC_EXPORT ComputeOpacities(OpacityTree* opacity_tree);
+void CC_EXPORT ComputeOpacities(EffectTree* effect_tree);
 
 // Computes the visible content rect for every layer under |root_layer|. The
 // visible content rect is the clipped content space rect that will be used for
@@ -109,11 +109,11 @@ bool CC_EXPORT
 ScreenSpaceTransformIsAnimatingFromPropertyTrees(const LayerImpl* layer,
                                                  const TransformTree& tree);
 
-float CC_EXPORT
-DrawOpacityFromPropertyTrees(const Layer* layer, const OpacityTree& tree);
+float CC_EXPORT DrawOpacityFromPropertyTrees(const Layer* layer,
+                                             const EffectTree& tree);
 
-float CC_EXPORT
-DrawOpacityFromPropertyTrees(const LayerImpl* layer, const OpacityTree& tree);
+float CC_EXPORT DrawOpacityFromPropertyTrees(const LayerImpl* layer,
+                                             const EffectTree& tree);
 
 bool CC_EXPORT
 CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,

@@ -529,10 +529,10 @@ TEST(PropertyTreeTest, FlatteningWhenDestinationHasOnlyFlatAncestors) {
 TEST(PropertyTreeTest, ScreenSpaceOpacityUpdateTest) {
   // This tests that screen space opacity is updated for the subtree when
   // opacity of a node changes.
-  OpacityTree tree;
+  EffectTree tree;
 
-  int parent = tree.Insert(OpacityNode(), 0);
-  int child = tree.Insert(OpacityNode(), parent);
+  int parent = tree.Insert(EffectNode(), 0);
+  int child = tree.Insert(EffectNode(), parent);
 
   EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 1.f);
   tree.Node(parent)->data.opacity = 0.5f;

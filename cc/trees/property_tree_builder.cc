@@ -24,12 +24,12 @@ template <typename LayerType>
 struct DataForRecursion {
   TransformTree* transform_tree;
   ClipTree* clip_tree;
-  OpacityTree* opacity_tree;
+  EffectTree* effect_tree;
   LayerType* transform_tree_parent;
   LayerType* transform_fixed_parent;
   LayerType* render_target;
   int clip_tree_parent;
-  int opacity_tree_parent;
+  int effect_tree_parent;
   const LayerType* page_scale_layer;
   const LayerType* inner_viewport_scroll_layer;
   const LayerType* outer_viewport_scroll_layer;
@@ -357,7 +357,7 @@ bool IsAnimatingOpacity(LayerImpl* layer) {
 }
 
 template <typename LayerType>
-void AddOpacityNodeIfNeeded(
+void AddEffectNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
     DataForRecursion<LayerType>* data_for_children) {
@@ -366,25 +366,25 @@ void AddOpacityNodeIfNeeded(
   const bool has_animated_opacity = IsAnimatingOpacity(layer);
   bool requires_node = is_root || has_transparency || has_animated_opacity;
 
-  int parent_id = data_from_ancestor.opacity_tree_parent;
+  int parent_id = data_from_ancestor.effect_tree_parent;
 
   if (!requires_node) {
-    layer->SetOpacityTreeIndex(parent_id);
-    data_for_children->opacity_tree_parent = parent_id;
+    layer->SetEffectTreeIndex(parent_id);
+    data_for_children->effect_tree_parent = parent_id;
     return;
   }
 
-  OpacityNode node;
+  EffectNode node;
   node.owner_id = layer->id();
   node.data.opacity = layer->opacity();
   node.data.screen_space_opacity = layer->opacity();
   if (!is_root)
     node.data.screen_space_opacity *=
-        data_from_ancestor.opacity_tree->Node(parent_id)
+        data_from_ancestor.effect_tree->Node(parent_id)
             ->data.screen_space_opacity;
-  data_for_children->opacity_tree_parent =
-      data_for_children->opacity_tree->Insert(node, parent_id);
-  layer->SetOpacityTreeIndex(data_for_children->opacity_tree_parent);
+  data_for_children->effect_tree_parent =
+      data_for_children->effect_tree->Insert(node, parent_id);
+  layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);
 }
 
 template <typename LayerType>
@@ -405,8 +405,8 @@ void BuildPropertyTreesInternal(
   AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
                       &data_for_children);
 
-  if (data_from_parent.opacity_tree)
-    AddOpacityNodeIfNeeded(data_from_parent, layer, &data_for_children);
+  if (data_from_parent.effect_tree)
+    AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   if (layer == data_from_parent.page_scale_layer)
     data_for_children.in_subtree_of_page_scale_layer = true;
@@ -454,12 +454,12 @@ void BuildPropertyTreesTopLevelInternal(
   DataForRecursion<LayerType> data_for_recursion;
   data_for_recursion.transform_tree = &property_trees->transform_tree;
   data_for_recursion.clip_tree = &property_trees->clip_tree;
-  data_for_recursion.opacity_tree = &property_trees->opacity_tree;
+  data_for_recursion.effect_tree = &property_trees->effect_tree;
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = root_layer;
   data_for_recursion.clip_tree_parent = 0;
-  data_for_recursion.opacity_tree_parent = -1;
+  data_for_recursion.effect_tree_parent = -1;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
@@ -474,7 +474,7 @@ void BuildPropertyTreesTopLevelInternal(
 
   data_for_recursion.transform_tree->clear();
   data_for_recursion.clip_tree->clear();
-  data_for_recursion.opacity_tree->clear();
+  data_for_recursion.effect_tree->clear();
   data_for_recursion.sequence_number = property_trees->sequence_number;
 
   ClipNode root_clip;
@@ -490,7 +490,7 @@ void BuildPropertyTreesTopLevelInternal(
   // building.
   property_trees->transform_tree.set_needs_update(false);
   property_trees->clip_tree.set_needs_update(true);
-  property_trees->opacity_tree.set_needs_update(false);
+  property_trees->effect_tree.set_needs_update(false);
 }
 
 void PropertyTreeBuilder::BuildPropertyTrees(

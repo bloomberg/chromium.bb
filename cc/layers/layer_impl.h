@@ -57,7 +57,7 @@ class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
 class Occlusion;
-class OpacityTree;
+class EffectTree;
 class PrioritizedTile;
 class RenderPass;
 class RenderPassId;
@@ -162,8 +162,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void SetClipTreeIndex(int index);
   int clip_tree_index() const { return clip_tree_index_; }
 
-  void SetOpacityTreeIndex(int index);
-  int opacity_tree_index() const { return opacity_tree_index_; }
+  void SetEffectTreeIndex(int index);
+  int effect_tree_index() const { return effect_tree_index_; }
 
   void set_offset_to_transform_parent(const gfx::Vector2dF& offset) {
     offset_to_transform_parent_ = offset;
@@ -821,7 +821,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   gfx::Rect visible_rect_from_property_trees_;
   gfx::Rect clip_rect_in_target_space_from_property_trees_;
   int transform_tree_index_;
-  int opacity_tree_index_;
+  int effect_tree_index_;
   int clip_tree_index_;
 
   // The global depth value of the center of the layer. This value is used

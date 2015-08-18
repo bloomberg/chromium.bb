@@ -2327,11 +2327,11 @@ void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
 
   const bool draw_opacities_match =
       current_layer->draw_opacity() ==
-      DrawOpacityFromPropertyTrees(current_layer, property_trees->opacity_tree);
+      DrawOpacityFromPropertyTrees(current_layer, property_trees->effect_tree);
   CHECK(draw_opacities_match)
       << "expected: " << current_layer->draw_opacity()
       << " actual: " << DrawOpacityFromPropertyTrees(
-                            current_layer, property_trees->opacity_tree);
+                            current_layer, property_trees->effect_tree);
 
   const bool can_use_lcd_text_match =
       CanUseLcdTextFromPropertyTrees(

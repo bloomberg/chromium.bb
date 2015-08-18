@@ -460,8 +460,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetClipTreeIndex(int index);
   int clip_tree_index() const;
 
-  void SetOpacityTreeIndex(int index);
-  int opacity_tree_index() const;
+  void SetEffectTreeIndex(int index);
+  int effect_tree_index() const;
 
   void set_offset_to_transform_parent(gfx::Vector2dF offset) {
     if (offset_to_transform_parent_ == offset)
@@ -704,7 +704,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int scroll_clip_layer_id_;
   int num_descendants_that_draw_content_;
   int transform_tree_index_;
-  int opacity_tree_index_;
+  int effect_tree_index_;
   int clip_tree_index_;
   int property_tree_sequence_number_;
   int num_layer_or_descendants_with_copy_request_;

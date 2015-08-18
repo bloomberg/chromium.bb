@@ -51,7 +51,7 @@ Layer::Layer(const LayerSettings& settings)
       scroll_clip_layer_id_(INVALID_ID),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(-1),
-      opacity_tree_index_(-1),
+      effect_tree_index_(-1),
       clip_tree_index_(-1),
       property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
@@ -1061,28 +1061,28 @@ int Layer::clip_tree_index() const {
   return clip_tree_index_;
 }
 
-void Layer::SetOpacityTreeIndex(int index) {
+void Layer::SetEffectTreeIndex(int index) {
   DCHECK(IsPropertyChangeAllowed());
-  if (opacity_tree_index_ == index)
+  if (effect_tree_index_ == index)
     return;
-  opacity_tree_index_ = index;
+  effect_tree_index_ = index;
   SetNeedsPushProperties();
 }
 
-int Layer::opacity_tree_index() const {
+int Layer::effect_tree_index() const {
   if (!layer_tree_host_ ||
       layer_tree_host_->property_trees()->sequence_number !=
           property_tree_sequence_number_) {
     return -1;
   }
-  return opacity_tree_index_;
+  return effect_tree_index_;
 }
 
 void Layer::InvalidatePropertyTreesIndices() {
   int invalid_property_tree_index = -1;
   SetTransformTreeIndex(invalid_property_tree_index);
   SetClipTreeIndex(invalid_property_tree_index);
-  SetOpacityTreeIndex(invalid_property_tree_index);
+  SetEffectTreeIndex(invalid_property_tree_index);
 }
 
 void Layer::SetShouldFlattenTransform(bool should_flatten) {
@@ -1184,7 +1184,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->SetDebugInfo(TakeDebugInfo());
 
   layer->SetTransformTreeIndex(transform_tree_index());
-  layer->SetOpacityTreeIndex(opacity_tree_index());
+  layer->SetEffectTreeIndex(effect_tree_index());
   layer->SetClipTreeIndex(clip_tree_index());
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
   layer->SetDoubleSided(double_sided_);
@@ -1450,12 +1450,11 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
 void Layer::OnOpacityAnimated(float opacity) {
   opacity_ = opacity;
   if (layer_tree_host_) {
-    if (OpacityNode* node =
-            layer_tree_host_->property_trees()->opacity_tree.Node(
-                opacity_tree_index())) {
+    if (EffectNode* node = layer_tree_host_->property_trees()->effect_tree.Node(
+            effect_tree_index())) {
       if (node->owner_id == id()) {
         node->data.opacity = opacity;
-        layer_tree_host_->property_trees()->opacity_tree.set_needs_update(true);
+        layer_tree_host_->property_trees()->effect_tree.set_needs_update(true);
       }
     }
   }

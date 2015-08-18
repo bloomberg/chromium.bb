@@ -78,7 +78,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(-1),
-      opacity_tree_index_(-1),
+      effect_tree_index_(-1),
       clip_tree_index_(-1),
       draw_depth_(0.f),
       needs_push_properties_(false),
@@ -254,8 +254,8 @@ void LayerImpl::SetClipTreeIndex(int index) {
   SetNeedsPushProperties();
 }
 
-void LayerImpl::SetOpacityTreeIndex(int index) {
-  opacity_tree_index_ = index;
+void LayerImpl::SetEffectTreeIndex(int index) {
+  effect_tree_index_ = index;
   SetNeedsPushProperties();
 }
 
@@ -589,7 +589,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetTransformTreeIndex(transform_tree_index_);
   layer->SetClipTreeIndex(clip_tree_index_);
-  layer->SetOpacityTreeIndex(opacity_tree_index_);
+  layer->SetEffectTreeIndex(effect_tree_index_);
   layer->set_offset_to_transform_parent(offset_to_transform_parent_);
 
   LayerImpl* scroll_parent = nullptr;
@@ -850,10 +850,9 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
 }
 
 void LayerImpl::UpdatePropertyTreeOpacity() {
-  if (opacity_tree_index_ != -1) {
-    OpacityTree& opacity_tree =
-        layer_tree_impl()->property_trees()->opacity_tree;
-    OpacityNode* node = opacity_tree.Node(opacity_tree_index_);
+  if (effect_tree_index_ != -1) {
+    EffectTree& effect_tree = layer_tree_impl()->property_trees()->effect_tree;
+    EffectNode* node = effect_tree.Node(effect_tree_index_);
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns an OpacityNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, an
@@ -862,7 +861,7 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     if (node->owner_id != id())
       return;
     node->data.opacity = opacity_;
-    opacity_tree.set_needs_update(true);
+    effect_tree.set_needs_update(true);
   }
 }
 

@@ -49,7 +49,7 @@ void PropertyTree<T>::clear() {
 
 template class PropertyTree<TransformNode>;
 template class PropertyTree<ClipNode>;
-template class PropertyTree<OpacityNode>;
+template class PropertyTree<EffectNode>;
 
 TransformNodeData::TransformNodeData()
     : target_id(-1),
@@ -101,8 +101,7 @@ ClipNodeData::ClipNodeData()
       requires_tight_clip_rect(true),
       render_surface_is_clipped(false) {}
 
-OpacityNodeData::OpacityNodeData() : opacity(1.f), screen_space_opacity(1.f) {
-}
+EffectNodeData::EffectNodeData() : opacity(1.f), screen_space_opacity(1.f) {}
 
 void TransformTree::clear() {
   PropertyTree<TransformNode>::clear();
@@ -487,11 +486,11 @@ bool TransformTree::HasNodesAffectedByOuterViewportBoundsDelta() const {
   return !nodes_affected_by_outer_viewport_bounds_delta_.empty();
 }
 
-void OpacityTree::UpdateOpacities(int id) {
-  OpacityNode* node = Node(id);
+void EffectTree::UpdateOpacities(int id) {
+  EffectNode* node = Node(id);
   node->data.screen_space_opacity = node->data.opacity;
 
-  OpacityNode* parent_node = parent(node);
+  EffectNode* parent_node = parent(node);
   if (parent_node)
     node->data.screen_space_opacity *= parent_node->data.screen_space_opacity;
 }
