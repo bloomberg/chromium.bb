@@ -6,7 +6,6 @@
 
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,19 +89,17 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     frame->render_passes.clear();
     frame->render_passes_by_id.clear();
 
-    TestRenderPass* child_pass = AddRenderPass(&frame->render_passes,
-                                               RenderPassId(2, 1),
-                                               gfx::Rect(3, 3, 10, 10),
-                                               gfx::Transform());
-    child_pass->AppendOneOfEveryQuadType(host_impl->resource_provider(),
-                                         RenderPassId(0, 0));
+    RenderPass* child_pass =
+        AddRenderPass(&frame->render_passes, RenderPassId(2, 1),
+                      gfx::Rect(3, 3, 10, 10), gfx::Transform());
+    uint32_t mailbox_sync_point;
+    AddOneOfEveryQuadType(child_pass, host_impl->resource_provider(),
+                          RenderPassId(0, 0), &mailbox_sync_point);
 
-    TestRenderPass* pass = AddRenderPass(&frame->render_passes,
-                                         RenderPassId(1, 1),
-                                         gfx::Rect(3, 3, 10, 10),
-                                         gfx::Transform());
-    pass->AppendOneOfEveryQuadType(
-        host_impl->resource_provider(), child_pass->id);
+    RenderPass* pass = AddRenderPass(&frame->render_passes, RenderPassId(1, 1),
+                                     gfx::Rect(3, 3, 10, 10), gfx::Transform());
+    AddOneOfEveryQuadType(pass, host_impl->resource_provider(), child_pass->id,
+                          &mailbox_sync_point);
     return draw_result;
   }
 

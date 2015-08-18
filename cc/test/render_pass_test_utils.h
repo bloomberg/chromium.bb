@@ -19,42 +19,46 @@ class Transform;
 namespace cc {
 
 class SolidColorDrawQuad;
-class TestRenderPass;
+class RenderPass;
 
 // Adds a new render pass with the provided properties to the given
 // render pass list.
-TestRenderPass* AddRenderPass(RenderPassList* pass_list,
-                              RenderPassId id,
-                              const gfx::Rect& output_rect,
-                              const gfx::Transform& root_transform);
+RenderPass* AddRenderPass(RenderPassList* pass_list,
+                          RenderPassId id,
+                          const gfx::Rect& output_rect,
+                          const gfx::Transform& root_transform);
 
 // Adds a solid quad to a given render pass.
-SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
+SolidColorDrawQuad* AddQuad(RenderPass* pass,
                             const gfx::Rect& rect,
                             SkColor color);
 
 // Adds a solid quad to a given render pass and sets is_clipped=true.
-SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
+SolidColorDrawQuad* AddClippedQuad(RenderPass* pass,
                                    const gfx::Rect& rect,
                                    SkColor color);
 
 // Adds a solid quad with a transform to a given render pass.
-SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
+SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
                                        const gfx::Rect& rect,
                                        SkColor color,
                                        const gfx::Transform& transform);
 
 // Adds a render pass quad to an existing render pass.
-void AddRenderPassQuad(TestRenderPass* to_pass,
-                       TestRenderPass* contributing_pass);
+void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass);
 
 // Adds a render pass quad with the given mask resource, filter, and transform.
-void AddRenderPassQuad(TestRenderPass* toPass,
-                       TestRenderPass* contributing_pass,
+void AddRenderPassQuad(RenderPass* to_pass,
+                       RenderPass* contributing_pass,
                        ResourceId mask_resource_id,
                        const FilterOperations& filters,
                        gfx::Transform transform,
                        SkXfermode::Mode blend_mode);
+
+void AddOneOfEveryQuadType(RenderPass* to_pass,
+                           ResourceProvider* resource_provider,
+                           RenderPassId child_pass,
+                           uint32_t* sync_point_for_mailbox_texture_quad);
 
 }  // namespace cc
 

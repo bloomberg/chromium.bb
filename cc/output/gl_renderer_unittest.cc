@@ -24,7 +24,6 @@
 #include "cc/test/fake_renderer_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/pixel_test.h"
-#include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -545,10 +544,9 @@ TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
 
   output_surface_->set_has_external_stencil_test(true);
 
-  TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                            RenderPassId(1, 0),
-                                            viewport_rect,
-                                            gfx::Transform());
+  RenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
+                    viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = false;
 
   renderer_->DrawFrame(&render_passes_in_draw_order_,
@@ -742,10 +740,9 @@ TEST_F(GLRendererTest, OpaqueBackground) {
                           resource_provider.get());
 
   gfx::Rect viewport_rect(1, 1);
-  TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                            RenderPassId(1, 0),
-                                            viewport_rect,
-                                            gfx::Transform());
+  RenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
+                    viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = false;
 
   // On DEBUG builds, render passes with opaque background clear to blue to
@@ -788,10 +785,9 @@ TEST_F(GLRendererTest, TransparentBackground) {
                           resource_provider.get());
 
   gfx::Rect viewport_rect(1, 1);
-  TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                            RenderPassId(1, 0),
-                                            viewport_rect,
-                                            gfx::Transform());
+  RenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
+                    viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = true;
 
   EXPECT_CALL(*context, discardFramebufferEXT(GL_FRAMEBUFFER, 1, _)).Times(1);
@@ -973,11 +969,12 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   // During initialization we are allowed to set any texture parameters.
   EXPECT_CALL(*context, texParameteri(_, _, _)).Times(AnyNumber());
 
-  TestRenderPass* root_pass =
+  RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 1),
                     gfx::Rect(100, 100), gfx::Transform());
-  root_pass->AppendOneOfEveryQuadType(resource_provider.get(),
-                                      RenderPassId(0, 0));
+  uint32_t mailbox_sync_point;
+  AddOneOfEveryQuadType(root_pass, resource_provider.get(), RenderPassId(0, 0),
+                        &mailbox_sync_point);
 
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
 
@@ -989,9 +986,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // The sync points for all quads are waited on first. This sync point is
     // for a texture quad drawn later in the frame.
-    EXPECT_CALL(*context,
-                waitSyncPoint(TestRenderPass::kSyncPointForMailboxTextureQuad))
-        .Times(1);
+    EXPECT_CALL(*context, waitSyncPoint(mailbox_sync_point)).Times(1);
 
     // yuv_quad is drawn with the default linear filter.
     EXPECT_CALL(*context, drawElements(_, _, _, _));
@@ -1060,16 +1055,15 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
   gfx::Rect viewport_rect(10, 10);
 
   RenderPassId child_pass_id(2, 0);
-  TestRenderPass* child_pass =
+  RenderPass* child_pass =
       AddRenderPass(&render_passes_in_draw_order_, child_pass_id, viewport_rect,
                     gfx::Transform());
   AddQuad(child_pass, viewport_rect, SK_ColorBLUE);
 
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                            root_pass_id,
-                                            viewport_rect,
-                                            gfx::Transform());
+  RenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, root_pass_id, viewport_rect,
+                    gfx::Transform());
   AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
 
@@ -1152,26 +1146,22 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
 
   gfx::Rect grand_child_rect(25, 25);
   RenderPassId grand_child_pass_id(3, 0);
-  TestRenderPass* grand_child_pass =
-      AddRenderPass(&render_passes_in_draw_order_,
-                    grand_child_pass_id,
-                    grand_child_rect,
-                    gfx::Transform());
+  RenderPass* grand_child_pass =
+      AddRenderPass(&render_passes_in_draw_order_, grand_child_pass_id,
+                    grand_child_rect, gfx::Transform());
   AddClippedQuad(grand_child_pass, grand_child_rect, SK_ColorYELLOW);
 
   gfx::Rect child_rect(50, 50);
   RenderPassId child_pass_id(2, 0);
-  TestRenderPass* child_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                             child_pass_id,
-                                             child_rect,
-                                             gfx::Transform());
+  RenderPass* child_pass =
+      AddRenderPass(&render_passes_in_draw_order_, child_pass_id, child_rect,
+                    gfx::Transform());
   AddQuad(child_pass, child_rect, SK_ColorBLUE);
 
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                            root_pass_id,
-                                            viewport_rect,
-                                            gfx::Transform());
+  RenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, root_pass_id, viewport_rect,
+                    gfx::Transform());
   AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
 
   AddRenderPassQuad(root_pass, child_pass);
@@ -1247,10 +1237,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   {
     // Partial frame, should not discard.
     RenderPassId root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
+    RenderPass* root_pass =
+        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                      viewport_rect, gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
     root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
 
@@ -1266,10 +1255,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   {
     // Full frame, should discard.
     RenderPassId root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
+    RenderPass* root_pass =
+        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                      viewport_rect, gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
 
@@ -1286,10 +1274,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
     // Full frame, external scissor is set, should not discard.
     output_surface->set_has_external_stencil_test(true);
     RenderPassId root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
+    RenderPass* root_pass =
+        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                      viewport_rect, gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
     root_pass->has_transparent_background = false;
@@ -1308,10 +1295,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
     // Full frame, clipped, should not discard.
     clip_rect = gfx::Rect(10, 10, 10, 10);
     RenderPassId root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
+    RenderPass* root_pass =
+        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                      viewport_rect, gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
 
@@ -1328,10 +1314,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
     // Full frame, doesn't cover the surface, should not discard.
     viewport_rect = gfx::Rect(10, 10, 10, 10);
     RenderPassId root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
+    RenderPass* root_pass =
+        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                      viewport_rect, gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
 
@@ -1349,10 +1334,9 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
     clip_rect = gfx::Rect(100, 100);
     viewport_rect = gfx::Rect(50, 50);
     RenderPassId root_pass_id(1, 0);
-    TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                              root_pass_id,
-                                              viewport_rect,
-                                              gfx::Transform());
+    RenderPass* root_pass =
+        AddRenderPass(&render_passes_in_draw_order_, root_pass_id,
+                      viewport_rect, gfx::Transform());
     AddQuad(root_pass, viewport_rect, SK_ColorGREEN);
     root_pass->damage_rect = root_pass->output_rect;
 
@@ -1410,10 +1394,9 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
   gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
 
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                            root_pass_id,
-                                            viewport_rect,
-                                            gfx::Transform());
+  RenderPass* root_pass =
+      AddRenderPass(&render_passes_in_draw_order_, root_pass_id, viewport_rect,
+                    gfx::Transform());
   AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
 
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -1451,7 +1434,7 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
   gfx::Rect quad_rect = gfx::Rect(20, 20, 20, 20);
 
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass =
+  RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, root_pass_id, viewport_rect,
                     gfx::Transform());
   AddClippedQuad(root_pass, quad_rect, SK_ColorGREEN);
@@ -1476,10 +1459,10 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 
   gfx::Rect child_rect(50, 50);
   RenderPassId child_pass_id(2, 0);
-  TestRenderPass* child_pass;
+  RenderPass* child_pass;
 
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass;
+  RenderPass* root_pass;
 
   ResourceId mask = resource_provider_->CreateResource(
       gfx::Size(20, 12), GL_CLAMP_TO_EDGE,
@@ -1743,11 +1726,11 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
 TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
   gfx::Rect child_rect(50, 50);
   RenderPassId child_pass_id(2, 0);
-  TestRenderPass* child_pass;
+  RenderPass* child_pass;
 
   gfx::Rect viewport_rect(1, 1);
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass;
+  RenderPass* root_pass;
 
   gfx::Transform transform_preventing_aa;
   transform_preventing_aa.ApplyPerspectiveDepth(40.0);
@@ -1792,7 +1775,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
 TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
   gfx::Rect viewport_rect(1, 1);
   RenderPassId root_pass_id(1, 0);
-  TestRenderPass* root_pass;
+  RenderPass* root_pass;
 
   gfx::Transform pixel_aligned_transform_causing_aa;
   pixel_aligned_transform_causing_aa.Translate(25.5f, 25.5f);
@@ -1870,10 +1853,9 @@ class MockOutputSurfaceTest : public GLRendererTest {
   void DrawFrame(float device_scale_factor,
                  const gfx::Rect& device_viewport_rect) {
     RenderPassId render_pass_id(1, 0);
-    TestRenderPass* render_pass = AddRenderPass(&render_passes_in_draw_order_,
-                                                render_pass_id,
-                                                device_viewport_rect,
-                                                gfx::Transform());
+    RenderPass* render_pass =
+        AddRenderPass(&render_passes_in_draw_order_, render_pass_id,
+                      device_viewport_rect, gfx::Transform());
     AddQuad(render_pass, device_viewport_rect, SK_ColorGREEN);
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).WillRepeatedly(Return());
@@ -2072,7 +2054,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   renderer.SetOverlayProcessor(processor);
 
   gfx::Rect viewport_rect(1, 1);
-  TestRenderPass* root_pass =
+  RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
                     viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = false;
@@ -2198,12 +2180,12 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
   renderer.SetOverlayProcessor(processor);
 
   gfx::Rect viewport_rect(1, 1);
-  TestRenderPass* root_pass =
+  RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 0),
                     viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = false;
 
-  unsigned sync_point = TestRenderPass::kSyncPointForMailboxTextureQuad;
+  unsigned sync_point = 29;
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), GL_TEXTURE_2D, sync_point);
   scoped_ptr<SingleReleaseCallbackImpl> release_callback =
@@ -2230,9 +2212,7 @@ TEST_F(GLRendererTest, OverlaySyncPointsAreProcessed) {
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.
-  EXPECT_CALL(*context,
-              waitSyncPoint(TestRenderPass::kSyncPointForMailboxTextureQuad))
-      .Times(1);
+  EXPECT_CALL(*context, waitSyncPoint(sync_point)).Times(1);
   EXPECT_CALL(overlay_scheduler,
               Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _, viewport_rect,
                        BoundingRect(uv_top_left, uv_bottom_right))).Times(1);

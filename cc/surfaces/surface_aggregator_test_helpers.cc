@@ -14,7 +14,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface.h"
-#include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -22,10 +21,10 @@
 namespace cc {
 namespace test {
 
-void AddTestSurfaceQuad(TestRenderPass* pass,
-                        const gfx::Size& surface_size,
-                        float opacity,
-                        SurfaceId surface_id) {
+void AddSurfaceQuad(RenderPass* pass,
+                    const gfx::Size& surface_size,
+                    float opacity,
+                    SurfaceId surface_id) {
   gfx::Transform layer_to_target_transform;
   gfx::Size layer_bounds = surface_size;
   gfx::Rect visible_layer_rect = gfx::Rect(surface_size);
@@ -46,7 +45,7 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
                        gfx::Rect(surface_size),
                        surface_id);
 }
-void AddTestRenderPassQuad(TestRenderPass* pass, RenderPassId render_pass_id) {
+void AddRenderPassQuad(RenderPass* pass, RenderPassId render_pass_id) {
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
   SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(),
@@ -71,16 +70,16 @@ void AddTestRenderPassQuad(TestRenderPass* pass, RenderPassId render_pass_id) {
                FilterOperations());
 }
 
-void AddQuadInPass(TestRenderPass* pass, Quad desc) {
+void AddQuadInPass(RenderPass* pass, Quad desc) {
   switch (desc.material) {
     case DrawQuad::SOLID_COLOR:
       AddQuad(pass, gfx::Rect(0, 0, 5, 5), desc.color);
       break;
     case DrawQuad::SURFACE_CONTENT:
-      AddTestSurfaceQuad(pass, gfx::Size(5, 5), desc.opacity, desc.surface_id);
+      AddSurfaceQuad(pass, gfx::Size(5, 5), desc.opacity, desc.surface_id);
       break;
     case DrawQuad::RENDER_PASS:
-      AddTestRenderPassQuad(pass, desc.render_pass_id);
+      AddRenderPassQuad(pass, desc.render_pass_id);
       break;
     default:
       NOTREACHED();
@@ -94,7 +93,7 @@ void AddPasses(RenderPassList* pass_list,
   gfx::Transform root_transform;
   for (size_t i = 0; i < pass_count; ++i) {
     Pass pass = passes[i];
-    TestRenderPass* test_pass =
+    RenderPass* test_pass =
         AddRenderPass(pass_list, pass.id, output_rect, root_transform);
     for (size_t j = 0; j < pass.quad_count; ++j) {
       AddQuadInPass(test_pass, pass.quads[j]);

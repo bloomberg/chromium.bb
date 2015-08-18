@@ -10,12 +10,9 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/render_pass_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
 #include "ui/gfx/transform.h"
-
-using cc::TestRenderPass;
 
 namespace cc {
 namespace {
@@ -73,7 +70,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
 
-  scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
+  scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
@@ -125,7 +122,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
 
-  scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
+  scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,
@@ -186,7 +183,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
   gfx::Rect contrib_damage_rect(11, 16, 10, 15);
   bool contrib_has_transparent_background = true;
 
-  scoped_ptr<TestRenderPass> contrib = TestRenderPass::Create();
+  scoped_ptr<RenderPass> contrib = RenderPass::Create();
   contrib->SetAll(contrib_id,
                   contrib_output_rect,
                   contrib_damage_rect,
@@ -244,7 +241,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
   gfx::Rect damage_rect(56, 123, 19, 43);
   bool has_transparent_background = true;
 
-  scoped_ptr<TestRenderPass> pass = TestRenderPass::Create();
+  scoped_ptr<RenderPass> pass = RenderPass::Create();
   pass->SetAll(id,
                output_rect,
                damage_rect,

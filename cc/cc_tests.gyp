@@ -244,8 +244,6 @@
       'test/pixel_test_software_output_device.h',
       'test/pixel_test_utils.cc',
       'test/pixel_test_utils.h',
-      'test/render_pass_test_common.cc',
-      'test/render_pass_test_common.h',
       'test/render_pass_test_utils.cc',
       'test/render_pass_test_utils.h',
       'test/scheduler_test_common.cc',

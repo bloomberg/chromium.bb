@@ -18,7 +18,6 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -100,7 +99,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   RenderPassId root_render_pass_id = RenderPassId(1, 1);
-  scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
+  scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(
       root_render_pass_id, outer_rect, outer_rect, gfx::Transform());
   SharedQuadState* shared_quad_state =
@@ -173,7 +172,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Rect root_rect = outer_rect;
 
   RenderPassId root_render_pass_id = RenderPassId(1, 1);
-  scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
+  scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(
       root_render_pass_id, root_rect, root_rect, gfx::Transform());
   SharedQuadState* shared_quad_state =
@@ -252,7 +251,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   gfx::Rect root_rect(tile_size);
 
   RenderPassId root_render_pass_id = RenderPassId(1, 1);
-  scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
+  scoped_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(
       root_render_pass_id, root_rect, root_rect, gfx::Transform());
   SharedQuadState* shared_quad_state =
@@ -319,7 +318,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   // Draw a fullscreen green quad in a first frame.
   RenderPassId root_clear_pass_id(1, 0);
-  TestRenderPass* root_clear_pass = AddRenderPass(
+  RenderPass* root_clear_pass = AddRenderPass(
       &list, root_clear_pass_id, device_viewport_rect, gfx::Transform());
   AddQuad(root_clear_pass, device_viewport_rect, SK_ColorGREEN);
 
@@ -342,7 +341,7 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   gfx::Rect smaller_rect(20, 20, 60, 60);
 
   RenderPassId root_smaller_pass_id(2, 0);
-  TestRenderPass* root_smaller_pass = AddRenderPass(
+  RenderPass* root_smaller_pass = AddRenderPass(
       &list, root_smaller_pass_id, device_viewport_rect, gfx::Transform());
   AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
@@ -375,13 +374,13 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   // Pass drawn as inner quad is magenta.
   gfx::Rect smaller_rect(20, 20, 60, 60);
   RenderPassId smaller_pass_id(2, 1);
-  TestRenderPass* smaller_pass =
+  RenderPass* smaller_pass =
       AddRenderPass(&list, smaller_pass_id, smaller_rect, gfx::Transform());
   AddQuad(smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   // Root pass is green.
   RenderPassId root_clear_pass_id(1, 0);
-  TestRenderPass* root_clear_pass = AddRenderPass(
+  RenderPass* root_clear_pass = AddRenderPass(
       &list, root_clear_pass_id, device_viewport_rect, gfx::Transform());
   AddRenderPassQuad(root_clear_pass, smaller_pass);
   AddQuad(root_clear_pass, device_viewport_rect, SK_ColorGREEN);
