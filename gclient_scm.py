@@ -515,7 +515,7 @@ class GitWrapper(SCMWrapper):
       if verbose:
         self.Print(remote_output)
 
-      self._UpdateBranchHeads(options, fetch=True)
+    self._UpdateBranchHeads(options, fetch=True)
 
     # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
