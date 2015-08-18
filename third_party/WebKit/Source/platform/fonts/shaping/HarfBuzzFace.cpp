@@ -162,10 +162,9 @@ static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoin
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
 
     if (variationSelector) {
-#if OS(LINUX) && !defined(OFFICIAL_BUILD)
-        // TODO(kojii): Linux non-official builds cannot use hb_ot_font_set_funcs()
-        // until we find a way to bundle HB in non-official builds, or pangoft2
-        // updates its HB. See crbug.com/462689.
+#if OS(LINUX)
+        // TODO(kojii): Linux non-official builds cannot use new HB APIs
+        // until crbug.com/462689 resolved or pangoft2 updates its HB.
         return false;
 #else
         // Skia does not support variation selectors, but hb does.
