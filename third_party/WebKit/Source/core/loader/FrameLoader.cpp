@@ -573,13 +573,12 @@ void FrameLoader::checkCompleted()
         m_frame->view()->handleLoadCompleted();
 
     if (shouldSendCompleteNotifications(m_frame)) {
-        m_loadType = FrameLoadTypeStandard;
         m_progressTracker->progressCompleted();
         // Retry restoring scroll offset since finishing loading disables content
         // size clamping.
-        // TODO(majidvp): Remove this call as it appears to be a no-op because
-        // we set load type to |FrameLoadTypeStandard| just above.
         restoreScrollPositionAndViewState();
+
+        m_loadType = FrameLoadTypeStandard;
         m_frame->localDOMWindow()->finishedLoading();
 
         // Report mobile vs. desktop page statistics. This will only report on Android.
@@ -1134,7 +1133,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
     //      previous height
     bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), 1) == m_currentItem->scrollPoint();
     bool canRestoreWithoutAnnoyingUser = !documentLoader()->initialScrollState().wasScrolledByUser
-        && (canRestoreWithoutClamping || m_frame->isLoading() || !shouldRestoreScroll);
+        && (canRestoreWithoutClamping || !m_frame->isLoading() || !shouldRestoreScroll);
     if (!canRestoreWithoutAnnoyingUser)
         return;
 
