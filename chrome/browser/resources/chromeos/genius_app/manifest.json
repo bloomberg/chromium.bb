@@ -62,8 +62,7 @@
     },
     "hts": {
       "matches": [
-        "https://support.google.com/chromeos-gethelp/rts*",
-        "https://support.google.com/chromeos-gethelp/helpouts*"
+        "https://support.google.com/chromeos-gethelp/rts*"
       ],
       "title": "Contact Support"
     },
