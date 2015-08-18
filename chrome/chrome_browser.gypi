@@ -2722,6 +2722,8 @@
       'browser/spellchecker/word_trimmer.h',
     ],
     'chrome_browser_ssl_sources': [
+      'browser/ssl/bad_clock_blocking_page.cc',
+      'browser/ssl/bad_clock_blocking_page.h',
       'browser/ssl/cert_report_helper.cc',
       'browser/ssl/cert_report_helper.h',
       'browser/ssl/certificate_error_report.cc',
