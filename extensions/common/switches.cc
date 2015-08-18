@@ -20,9 +20,6 @@ const char kAllowLegacyExtensionManifests[] =
 // a new tab.
 const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
 
-// Enables the SurfaceWorker experiment.
-const char kSurfaceWorker[] = "surface-worker";
-
 // Show apps windows after the first paint. Windows will be shown significantly
 // later for heavy apps loading resources synchronously but it will be
 // insignificant for apps that load most of their resources asynchronously.
@@ -35,9 +32,6 @@ const char kEnableAppWindowControls[] = "enable-app-window-controls";
 // kEnableScriptsRequireAction.
 const char kEnableEmbeddedExtensionOptions[] =
     "enable-embedded-extension-options";
-
-// Enables the experimental feature SurfaceWorker.
-const char kEnableSurfaceWorker[] = "enable-surface-worker";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =

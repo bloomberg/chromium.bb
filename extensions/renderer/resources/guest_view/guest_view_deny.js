@@ -18,7 +18,6 @@ var VIEW_TYPES = [
   'AppView',
   'ExtensionOptions',
   'ExtensionView',
-  'SurfaceWorker',
   'WebView'
 ];
 

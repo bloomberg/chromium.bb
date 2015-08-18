@@ -42,8 +42,6 @@ class CommonSwitches {
                                FeatureSwitch::DEFAULT_DISABLED),
         embedded_extension_options(switches::kEmbeddedExtensionOptions,
                                    FeatureSwitch::DEFAULT_DISABLED),
-        surface_worker(switches::kSurfaceWorker,
-                       FeatureSwitch::DEFAULT_DISABLED),
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_ENABLED) {
   }
@@ -64,7 +62,6 @@ class CommonSwitches {
   FeatureSwitch extension_action_redesign_override;
   FeatureSwitch scripts_require_action;
   FeatureSwitch embedded_extension_options;
-  FeatureSwitch surface_worker;
   FeatureSwitch trace_app_source;
 };
 
@@ -106,9 +103,6 @@ FeatureSwitch* FeatureSwitch::scripts_require_action() {
 }
 FeatureSwitch* FeatureSwitch::embedded_extension_options() {
   return &g_common_switches.Get().embedded_extension_options;
-}
-FeatureSwitch* FeatureSwitch::surface_worker() {
-  return &g_common_switches.Get().surface_worker;
 }
 FeatureSwitch* FeatureSwitch::trace_app_source() {
   return &g_common_switches.Get().trace_app_source;

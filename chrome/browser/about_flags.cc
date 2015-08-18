@@ -1427,13 +1427,6 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION,
      kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kGoogleProfileInfo)},
-#if defined(ENABLE_EXTENSIONS)
-    {"enable-surface-worker",
-     IDS_FLAGS_ENABLE_SURFACE_WORKER_NAME,
-     IDS_FLAGS_ENABLE_SURFACE_WORKER_DESCRIPTION,
-     kOsDesktop,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableSurfaceWorker)},
-#endif
 #if defined(ENABLE_APP_LIST)
     {"reset-app-list-install-state",
      IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,

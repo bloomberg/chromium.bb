@@ -45,7 +45,6 @@
       'sockets_tcp_server.idl',
       'sockets_udp.idl',
       'storage.json',
-      'surface_worker_internal.json',
       'system_cpu.idl',
       'system_display.idl',
       'system_memory.idl',

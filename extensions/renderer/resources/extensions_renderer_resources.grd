@@ -53,7 +53,6 @@
       <include name="IDR_SET_ICON_JS" file="set_icon.js" type="BINDATA" />
       <include name="IDR_STASH_CLIENT_JS" file="stash_client.js" type="BINDATA" />
       <include name="IDR_STASH_MOJOM_JS" file="${mojom_root}\extensions\common\mojo\stash.mojom.js" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_SURFACE_VIEW_JS" file="guest_view/surface_view/surface_view.js" type="BINDATA" />
       <include name="IDR_TEST_CUSTOM_BINDINGS_JS" file="test_custom_bindings.js" type="BINDATA" />
       <include name="IDR_UNCAUGHT_EXCEPTION_HANDLER_JS" file="uncaught_exception_handler.js" type="BINDATA" />
       <include name="IDR_UNLOAD_EVENT_JS" file="unload_event.js" type="BINDATA" />

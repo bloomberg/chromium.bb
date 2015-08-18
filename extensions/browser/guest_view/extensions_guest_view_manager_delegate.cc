@@ -16,7 +16,6 @@
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 #include "extensions/browser/guest_view/guest_view_events.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
-#include "extensions/browser/guest_view/surface_worker/surface_worker_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -96,7 +95,6 @@ void ExtensionsGuestViewManagerDelegate::RegisterAdditionalGuestViewTypes() {
   manager->RegisterGuestViewType<ExtensionOptionsGuest>();
   manager->RegisterGuestViewType<ExtensionViewGuest>();
   manager->RegisterGuestViewType<MimeHandlerViewGuest>();
-  manager->RegisterGuestViewType<SurfaceWorkerGuest>();
   manager->RegisterGuestViewType<WebViewGuest>();
 }
 
