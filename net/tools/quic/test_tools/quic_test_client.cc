@@ -410,8 +410,7 @@ const string& QuicTestClient::cert_common_name() const {
 }
 
 QuicTagValueMap QuicTestClient::GetServerConfig() const {
-  QuicCryptoClientConfig* config =
-      QuicClientPeer::GetCryptoConfig(client_.get());
+  QuicCryptoClientConfig* config = client_->crypto_config();
   QuicCryptoClientConfig::CachedState* state =
       config->LookupOrCreate(client_->server_id());
   const CryptoHandshakeMessage* handshake_msg = state->GetServerConfig();

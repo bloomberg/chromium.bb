@@ -11,11 +11,6 @@ namespace tools {
 namespace test {
 
 // static
-QuicCryptoClientConfig* QuicClientPeer::GetCryptoConfig(QuicClient* client) {
-  return &client->crypto_config_;
-}
-
-// static
 bool QuicClientPeer::CreateUDPSocket(QuicClient* client) {
   return client->CreateUDPSocket();
 }
@@ -23,11 +18,6 @@ bool QuicClientPeer::CreateUDPSocket(QuicClient* client) {
 // static
 void QuicClientPeer::SetClientPort(QuicClient* client, int port) {
   client->client_address_ = IPEndPoint(client->client_address_.address(), port);
-}
-
-// static
-void QuicClientPeer::SetWriter(QuicClient* client, QuicPacketWriter* writer) {
-  client->writer_.reset(writer);
 }
 
 }  // namespace test

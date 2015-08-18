@@ -20,10 +20,8 @@ namespace test {
 
 class QuicClientPeer {
  public:
-  static QuicCryptoClientConfig* GetCryptoConfig(QuicClient* client);
   static bool CreateUDPSocket(QuicClient* client);
   static void SetClientPort(QuicClient* client, int port);
-  static void SetWriter(QuicClient* client, QuicPacketWriter* writer);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicClientPeer);

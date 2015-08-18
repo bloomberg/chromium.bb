@@ -821,6 +821,8 @@
         'net_quic_proto',
       ],
       'sources': [
+        'tools/quic/quic_client_base.cc',
+        'tools/quic/quic_client_base.h',
         'tools/quic/quic_client_session.cc',
         'tools/quic/quic_client_session.h',
         'tools/quic/quic_dispatcher.cc',
