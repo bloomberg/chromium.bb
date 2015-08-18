@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/user_prefs/tracked/device_id.h"
+
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -11,7 +12,7 @@ TEST(GetDeterministicMachineSpecificIdTest, IsDeterministic) {
   std::string second_machine_id;
 
   const MachineIdStatus kExpectedStatus =
-#if defined(OS_WIN)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
       MachineIdStatus::SUCCESS;
 #else
       MachineIdStatus::NOT_IMPLEMENTED;

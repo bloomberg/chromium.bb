@@ -33,6 +33,7 @@
       ],
       'sources': [
         'user_prefs/tracked/device_id.h',
+        'user_prefs/tracked/device_id_mac.cc',
         'user_prefs/tracked/device_id_stub.cc',
         'user_prefs/tracked/device_id_win.cc',
         'user_prefs/tracked/dictionary_hash_store_contents.cc',
@@ -66,9 +67,14 @@
         'user_prefs/tracked/tracked_split_preference.h',
       ],
       'conditions': [
-        ['OS=="win"', {
+        ['OS=="win" or (OS=="mac" and OS!="ios")', {
           'sources!': [
             'user_prefs/tracked/device_id_stub.cc',
+          ],
+        }],
+        ['OS=="ios"', {
+          'sources!': [
+            'user_prefs/tracked/device_id_mac.cc',
           ],
         }],
       ],

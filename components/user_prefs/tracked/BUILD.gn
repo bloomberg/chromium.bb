@@ -5,6 +5,7 @@
 static_library("user_prefs_tracked") {
   sources = [
     "device_id.h",
+    "device_id_mac.cc",
     "device_id_stub.cc",
     "device_id_win.cc",
     "dictionary_hash_store_contents.cc",
@@ -38,8 +39,12 @@ static_library("user_prefs_tracked") {
     "tracked_split_preference.h",
   ]
 
-  if (is_win) {
+  if (is_win || (is_mac && !is_ios)) {
     sources -= [ "device_id_stub.cc" ]
+  }
+
+  if (is_ios) {
+    sources -= [ "device_id_mac.cc" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
