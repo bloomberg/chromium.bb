@@ -8,10 +8,12 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class BackgroundImageGeometry {
+    STACK_ALLOCATED();
 public:
     BackgroundImageGeometry()
         : m_hasNonLocalGeometry(false)
