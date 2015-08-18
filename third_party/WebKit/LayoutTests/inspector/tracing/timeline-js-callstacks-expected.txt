@@ -23,7 +23,7 @@ JSFrame: 251.000 / 0.200 w
 JSFrame: 251.200 / 0.200 w
 
 Top-Down Chart: 0.000  40.000
-  FunctionCall: 22.305  40.000
+  Function Call: 22.305  40.000
     a: 0.000  8.380
       b: 7.125  8.380
         c: 0.351  0.351
@@ -35,47 +35,47 @@ Top-Down Chart: 0.000  40.000
           Layout: 0.100  0.100
     x: 0.000  8.482
       y: 0.482  8.482
-        FunctionCall: 7.600  8.000
+        Function Call: 7.600  8.000
           z: 0.000  0.200
             w: 0.200  0.200
           w: 0.200  0.200
 Bottom-Up Chart: 40.000  40.000
-  FunctionCall: 29.905  48.000
+  Function Call: 29.905  48.000
     y: 7.600  8.000
       x: 7.600  8.000
-        FunctionCall: 7.600  8.000
+        Function Call: 7.600  8.000
   b: 7.125  8.380
     a: 7.125  8.380
-      FunctionCall: 7.125  8.380
+      Function Call: 7.125  8.380
   c: 0.351  0.351
     b: 0.351  0.351
       a: 0.351  0.351
-        FunctionCall: 0.351  0.351
+        Function Call: 0.351  0.351
   g: 0.905  0.905
     e: 0.905  0.905
       b: 0.905  0.905
         a: 0.905  0.905
-          FunctionCall: 0.905  0.905
+          Function Call: 0.905  0.905
   a: 0.733  0.833
     l: 0.733  0.833
       f: 0.733  0.833
-        FunctionCall: 0.733  0.833
+        Function Call: 0.733  0.833
   Layout: 0.100  0.100
     a: 0.100  0.100
       l: 0.100  0.100
         f: 0.100  0.100
-          FunctionCall: 0.100  0.100
+          Function Call: 0.100  0.100
   y: 0.482  8.482
     x: 0.482  8.482
-      FunctionCall: 0.482  8.482
+      Function Call: 0.482  8.482
   w: 0.400  0.400
     z: 0.200  0.200
-      FunctionCall: 0.200  0.200
+      Function Call: 0.200  0.200
         y: 0.200  0.200
           x: 0.200  0.200
-            FunctionCall: 0.200  0.200
-    FunctionCall: 0.200  0.200
+            Function Call: 0.200  0.200
+    Function Call: 0.200  0.200
       y: 0.200  0.200
         x: 0.200  0.200
-          FunctionCall: 0.200  0.200
+          Function Call: 0.200  0.200
 
