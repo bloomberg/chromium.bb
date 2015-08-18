@@ -207,10 +207,9 @@ struct MEDIA_EXPORT VideoSampleEntry : Box {
   PixelAspectRatioBox pixel_aspect;
   ProtectionSchemeInfo sinf;
 
-  // Currently expected to be present regardless of format.
-  AVCDecoderConfigurationRecord avcc;
-
   bool IsFormatValid() const;
+
+  scoped_refptr<BitstreamConverter> frame_bitstream_converter;
 };
 
 struct MEDIA_EXPORT ElementaryStreamDescriptor : Box {

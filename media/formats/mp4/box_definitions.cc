@@ -518,8 +518,13 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     }
   }
 
-  if (IsFormatValid())
-    RCHECK(reader->ReadChild(&avcc));
+  if (IsFormatValid()) {
+    scoped_ptr<AVCDecoderConfigurationRecord> avcConfig(
+        new AVCDecoderConfigurationRecord());
+    RCHECK(reader->ReadChild(avcConfig.get()));
+    frame_bitstream_converter = make_scoped_refptr(
+        new AVCBitstreamConverter(avcConfig.Pass()));
+  }
 
   return true;
 }

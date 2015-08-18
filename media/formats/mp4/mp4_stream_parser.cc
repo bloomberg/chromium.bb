@@ -387,29 +387,6 @@ void MP4StreamParser::OnEncryptedMediaInitData(
   encrypted_media_init_data_cb_.Run(EmeInitDataType::CENC, init_data);
 }
 
-bool MP4StreamParser::PrepareAVCBuffer(
-    const AVCDecoderConfigurationRecord& avc_config,
-    std::vector<uint8>* frame_buf,
-    std::vector<SubsampleEntry>* subsamples) const {
-  // Convert the AVC NALU length fields to Annex B headers, as expected by
-  // decoding libraries. Since this may enlarge the size of the buffer, we also
-  // update the clear byte count for each subsample if encryption is used to
-  // account for the difference in size between the length prefix and Annex B
-  // start code.
-  RCHECK(AVC::ConvertFrameToAnnexB(avc_config.length_size, frame_buf,
-                                   subsamples));
-
-  if (runs_->is_keyframe()) {
-    // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of
-    // a frame. If subsample info is present, we also update the clear byte
-    // count for that first subsample.
-    RCHECK(AVC::InsertParamSetsAnnexB(avc_config, frame_buf, subsamples));
-  }
-
-  DCHECK(AVC::IsValidAnnexB(*frame_buf, *subsamples));
-  return true;
-}
-
 bool MP4StreamParser::PrepareAACBuffer(
     const AAC& aac_config, std::vector<uint8>* frame_buf,
     std::vector<SubsampleEntry>* subsamples) const {
@@ -500,8 +477,9 @@ bool MP4StreamParser::EnqueueSample(BufferQueue* audio_buffers,
 
   std::vector<uint8> frame_buf(buf, buf + runs_->sample_size());
   if (video) {
-    if (!PrepareAVCBuffer(runs_->video_description().avcc,
-                          &frame_buf, &subsamples)) {
+    DCHECK(runs_->video_description().frame_bitstream_converter);
+    if (!runs_->video_description().frame_bitstream_converter->ConvertFrame(
+        &frame_buf, runs_->is_keyframe(), &subsamples)) {
       MEDIA_LOG(ERROR, media_log_) << "Failed to prepare AVC sample for decode";
       *err = true;
       return false;

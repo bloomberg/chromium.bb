@@ -1070,6 +1070,8 @@
             'formats/mp4/aac.h',
             'formats/mp4/avc.cc',
             'formats/mp4/avc.h',
+            'formats/mp4/bitstream_converter.cc',
+            'formats/mp4/bitstream_converter.h',
             'formats/mp4/box_definitions.cc',
             'formats/mp4/box_definitions.h',
             'formats/mp4/box_reader.cc',

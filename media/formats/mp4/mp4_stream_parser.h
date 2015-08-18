@@ -68,9 +68,6 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   void ChangeState(State new_state);
 
   bool EmitConfigs();
-  bool PrepareAVCBuffer(const AVCDecoderConfigurationRecord& avc_config,
-                        std::vector<uint8>* frame_buf,
-                        std::vector<SubsampleEntry>* subsamples) const;
   bool PrepareAACBuffer(const AAC& aac_config,
                         std::vector<uint8>* frame_buf,
                         std::vector<SubsampleEntry>* subsamples) const;

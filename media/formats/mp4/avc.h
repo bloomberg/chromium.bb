@@ -8,7 +8,9 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
+#include "media/formats/mp4/bitstream_converter.h"
 
 namespace media {
 
@@ -55,6 +57,24 @@ class MEDIA_EXPORT AVC {
   static int FindSubsampleIndex(const std::vector<uint8>& buffer,
                                 const std::vector<SubsampleEntry>* subsamples,
                                 const uint8* ptr);
+};
+
+// AVCBitstreamConverter converts AVC/H.264 bitstream from MP4 container format
+// with embedded NALU lengths into AnnexB bitstream format (described in ISO/IEC
+// 14496-10) with 4-byte start codes. It also knows how to handle CENC-encrypted
+// streams and adjusts subsample data for those streams while converting.
+class AVCBitstreamConverter : public BitstreamConverter {
+ public:
+  explicit AVCBitstreamConverter(
+      scoped_ptr<AVCDecoderConfigurationRecord> avc_config);
+
+  // BitstreamConverter interface
+  bool ConvertFrame(std::vector<uint8>* frame_buf,
+                    bool is_keyframe,
+                    std::vector<SubsampleEntry>* subsamples) const override;
+ private:
+  ~AVCBitstreamConverter() override;
+  scoped_ptr<AVCDecoderConfigurationRecord> avc_config_;
 };
 
 }  // namespace mp4

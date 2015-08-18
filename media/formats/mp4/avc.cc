@@ -307,5 +307,38 @@ bool AVC::IsValidAnnexB(const uint8* buffer, size_t size,
 
   return order_state >= kAfterFirstVCL;
 }
+
+AVCBitstreamConverter::AVCBitstreamConverter(
+    scoped_ptr<AVCDecoderConfigurationRecord> avc_config)
+  : avc_config_(avc_config.Pass()) {
+    DCHECK(avc_config_);
+}
+
+AVCBitstreamConverter::~AVCBitstreamConverter() {
+}
+
+bool AVCBitstreamConverter::ConvertFrame(
+    std::vector<uint8>* frame_buf,
+    bool is_keyframe,
+    std::vector<SubsampleEntry>* subsamples) const {
+  // Convert the AVC NALU length fields to Annex B headers, as expected by
+  // decoding libraries. Since this may enlarge the size of the buffer, we also
+  // update the clear byte count for each subsample if encryption is used to
+  // account for the difference in size between the length prefix and Annex B
+  // start code.
+  RCHECK(AVC::ConvertFrameToAnnexB(avc_config_->length_size, frame_buf,
+                                   subsamples));
+
+  if (is_keyframe) {
+    // If this is a keyframe, we (re-)inject SPS and PPS headers at the start of
+    // a frame. If subsample info is present, we also update the clear byte
+    // count for that first subsample.
+    RCHECK(AVC::InsertParamSetsAnnexB(*avc_config_, frame_buf, subsamples));
+  }
+
+  DCHECK(AVC::IsValidAnnexB(*frame_buf, *subsamples));
+  return true;
+}
+
 }  // namespace mp4
 }  // namespace media
