@@ -23,11 +23,10 @@
 #include "crypto/secure_util.h"
 #include "crypto/sha2.h"
 
-namespace chrome {
-
 namespace component_flash_hint_file {
 
 namespace {
+
 // The current version of the hints file.
 const int kCurrentHintFileVersion = 0x10;
 // The earliest version of the hints file.
@@ -162,7 +161,7 @@ bool VerifyAndReturnFlashLocation(base::FilePath* path,
 
   if (!value) {
     LOG(ERROR)
-        << "Could not deserialize the component updated flash hint file. Error "
+        << "Could not deserialize the component updated Flash hint file. Error "
         << error_code << ": " << error_message;
     return false;
   }
@@ -221,5 +220,3 @@ bool VerifyAndReturnFlashLocation(base::FilePath* path,
 }
 
 }  // namespace component_flash_hint_file
-
-}  // namespace chrome

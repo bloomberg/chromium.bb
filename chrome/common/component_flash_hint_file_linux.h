@@ -7,15 +7,15 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if !defined(OS_LINUX)
+#error "This file only applies to the Linux component update of Flash."
+#endif  // !defined(OS_LINUX)
 
 #include <string>
 
 namespace base {
 class FilePath;
 }
-
-namespace chrome {
 
 // The APIs in this namespace wraps the component updated flash hint file, which
 // lives inside the PepperFlash folder of  the user-data-dir, so that the Linux
@@ -46,7 +46,4 @@ bool TestExecutableMapping(const base::FilePath& path);
 
 }  // namespace component_flash_hint_file
 
-}  // namespace chrome
-
-#endif  // defined(OS_LINUX)
 #endif  // CHROME_COMMON_COMPONENT_FLASH_HINT_FILE_LINUX_H_

@@ -574,8 +574,9 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_LINUX)
     case chrome::FILE_COMPONENT_FLASH_HINT:
       if (!PathService::Get(chrome::DIR_COMPONENT_UPDATED_PEPPER_FLASH_PLUGIN,
-                            &cur))
+                            &cur)) {
         return false;
+      }
       cur = cur.Append(kComponentUpdatedFlashHint);
       break;
 #endif  // defined(OS_LINUX)
