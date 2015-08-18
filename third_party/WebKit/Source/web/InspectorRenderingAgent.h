@@ -23,7 +23,6 @@ public:
     void setShowPaintRects(ErrorString*, bool show) override;
     void setShowDebugBorders(ErrorString*, bool show) override;
     void setShowFPSCounter(ErrorString*, bool show) override;
-    void setContinuousPaintingEnabled(ErrorString*, bool enabled) override;
     void setShowScrollBottleneckRects(ErrorString*, bool show) override;
 
     // InspectorBaseAgent overrides.

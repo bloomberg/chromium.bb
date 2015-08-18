@@ -15,7 +15,6 @@
 namespace blink {
 
 namespace RenderingAgentState {
-static const char continuousPaintingEnabled[] = "continuousPaintingEnabled";
 static const char showDebugBorders[] = "showDebugBorders";
 static const char showFPSCounter[] = "showFPSCounter";
 static const char showPaintRects[] = "showPaintRects";
@@ -36,7 +35,6 @@ InspectorRenderingAgent::InspectorRenderingAgent(WebViewImpl* webViewImpl)
 void InspectorRenderingAgent::restore()
 {
     ErrorString error;
-    setContinuousPaintingEnabled(&error, m_state->getBoolean(RenderingAgentState::continuousPaintingEnabled));
     setShowDebugBorders(&error, m_state->getBoolean(RenderingAgentState::showDebugBorders));
     setShowFPSCounter(&error, m_state->getBoolean(RenderingAgentState::showFPSCounter));
     setShowPaintRects(&error, m_state->getBoolean(RenderingAgentState::showPaintRects));
@@ -46,20 +44,10 @@ void InspectorRenderingAgent::restore()
 void InspectorRenderingAgent::disable(ErrorString*)
 {
     ErrorString error;
-    if (m_state->getBoolean(RenderingAgentState::continuousPaintingEnabled))
-        setContinuousPaintingEnabled(&error, false);
     setShowDebugBorders(&error, false);
     setShowFPSCounter(&error, false);
     setShowPaintRects(&error, false);
     setShowScrollBottleneckRects(&error, false);
-}
-
-void InspectorRenderingAgent::setContinuousPaintingEnabled(ErrorString* errorString, bool enabled)
-{
-    m_state->setBoolean(RenderingAgentState::continuousPaintingEnabled, enabled);
-    if (enabled && !compositingEnabled(errorString))
-        return;
-    m_webViewImpl->setContinuousPaintingEnabled(enabled);
 }
 
 void InspectorRenderingAgent::setShowDebugBorders(ErrorString* errorString, bool show)

@@ -251,8 +251,6 @@
       'linux/WebFontRendering.cpp',
       'mac/WebScrollbarTheme.mm',
       'mac/WebSubstringUtil.mm',
-      'painting/ContinuousPainter.cpp',
-      'painting/ContinuousPainter.h',
       'painting/PaintAggregator.cpp',
       'painting/PaintAggregator.h',
       'win/WebFontRendering.cpp',

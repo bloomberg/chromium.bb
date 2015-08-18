@@ -268,7 +268,6 @@ public:
     void setShowPaintRects(bool) override;
     void setShowDebugBorders(bool);
     void setShowFPSCounter(bool) override;
-    void setContinuousPaintingEnabled(bool) override;
     void setShowScrollBottleneckRects(bool) override;
     void acceptLanguagesChanged() override;
 
@@ -290,7 +289,7 @@ public:
     void setIgnoreInputEvents(bool newValue);
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
-    void updateShowFPSCounterAndContinuousPainting();
+    void updateShowFPSCounter();
     void setCompositorDeviceScaleFactorOverride(float);
     void setRootLayerTransform(const WebSize& offset, float scale);
 
@@ -752,7 +751,6 @@ private:
     OwnPtrWillBePersistent<FullscreenController> m_fullscreenController;
 
     bool m_showFPSCounter;
-    bool m_continuousPaintingEnabled;
     WebColor m_baseBackgroundColor;
     WebColor m_backgroundColorOverride;
     float m_zoomFactorOverride;

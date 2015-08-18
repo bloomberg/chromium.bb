@@ -172,7 +172,6 @@
 #include "web/WebRemoteFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WorkerGlobalScopeProxyProviderImpl.h"
-#include "web/painting/ContinuousPainter.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 #include "wtf/TemporaryChange.h"
@@ -451,7 +450,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_flingSourceDevice(false)
     , m_fullscreenController(FullscreenController::create(this))
     , m_showFPSCounter(false)
-    , m_continuousPaintingEnabled(false)
     , m_baseBackgroundColor(Color::white)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
@@ -964,7 +962,6 @@ void WebViewImpl::setShowFPSCounter(bool show)
 {
     if (m_layerTreeView) {
         TRACE_EVENT0("blink", "WebViewImpl::setShowFPSCounter");
-        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
         m_layerTreeView->setShowFPSCounter(show && !m_devToolsEmulator->deviceEmulationEnabled());
     }
     m_showFPSCounter = show;
@@ -985,25 +982,10 @@ void WebViewImpl::setShowDebugBorders(bool show)
         m_layerTreeView->setShowDebugBorders(show);
 }
 
-void WebViewImpl::setContinuousPaintingEnabled(bool enabled)
+void WebViewImpl::updateShowFPSCounter()
 {
-    if (m_layerTreeView) {
-        TRACE_EVENT0("blink", "WebViewImpl::setContinuousPaintingEnabled");
-        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
-        m_layerTreeView->setContinuousPaintingEnabled(enabled && !m_devToolsEmulator->deviceEmulationEnabled());
-    }
-    m_continuousPaintingEnabled = enabled;
-    if (m_client)
-        m_client->scheduleAnimation();
-}
-
-void WebViewImpl::updateShowFPSCounterAndContinuousPainting()
-{
-    if (m_layerTreeView) {
-        // FIXME: allow emulation, fps counter and continuous painting at the same time: crbug.com/299837.
-        m_layerTreeView->setContinuousPaintingEnabled(m_continuousPaintingEnabled && !m_devToolsEmulator->deviceEmulationEnabled());
+    if (m_layerTreeView)
         m_layerTreeView->setShowFPSCounter(m_showFPSCounter && !m_devToolsEmulator->deviceEmulationEnabled());
-    }
 }
 
 void WebViewImpl::setShowScrollBottleneckRects(bool show)
@@ -1901,17 +1883,6 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     // FIXME: This should probably be using the local root?
     if (m_page->mainFrame()->isLocalFrame())
         PageWidgetDelegate::animate(*m_page, validFrameTime.lastFrameTimeMonotonic, *m_page->deprecatedLocalMainFrame());
-
-    if (m_continuousPaintingEnabled) {
-        GraphicsLayer* inspectorOverlayLayer = nullptr;
-        if (m_inspectorOverlay) {
-            PageOverlay* inspectorPageOverlay = m_inspectorOverlay->pageOverlay();
-            if (inspectorPageOverlay)
-                inspectorOverlayLayer = inspectorPageOverlay->graphicsLayer();
-        }
-        ContinuousPainter::setNeedsDisplayRecursive(m_rootGraphicsLayer, inspectorOverlayLayer);
-        m_client->scheduleAnimation();
-    }
 }
 
 void WebViewImpl::layout()
