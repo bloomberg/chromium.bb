@@ -20,9 +20,6 @@ namespace content {
 #if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
-#elif DCHECK_IS_ON() && defined(OS_WIN)
-// Flaky under win debug configs: http://crbug.com/517977.
-#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
 #endif
