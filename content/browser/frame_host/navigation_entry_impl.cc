@@ -547,9 +547,10 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(FrameTreeNode* frame_tree_node,
       FindFrameEntry(frame_tree_node->parent());
   if (!parent_node) {
     // The renderer should not send a commit for a subframe before its parent.
-    // TODO(creis): Kill the renderer if we get here.
-    NOTREACHED() << "Shouldn't see a commit for a subframe before parent.";
-    return;
+    // TODO(creis): Kill the renderer if we get here.  For now, crash to
+    // diagnose https://crbug.com/522193, since we most likely fail here when
+    // creating the first subframe entry before the CloneAndReplace call fails.
+    CHECK(false) << "Shouldn't see a commit for a subframe before parent.";
   }
 
   // Now check whether we have a TreeNode for the node itself.
