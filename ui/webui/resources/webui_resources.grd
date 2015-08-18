@@ -187,8 +187,6 @@ without changes to the corresponding grd file. -->
                file="images/error.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_GEAR"
                file="images/gear.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_QUESTION_MARK"
-               file="images/question_mark.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_SELECT"
                file="images/select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_THROBBER"

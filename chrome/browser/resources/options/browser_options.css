@@ -281,24 +281,10 @@ list:not([disabled]) > .network-group[selected] {
   }
 }
 
-.network-add-connection,
-.network-control-active,
-.network-control-inactive {
-  background-position: center center !important;
-  background-repeat: no-repeat;
-}
-
 .network-add-connection {
   background-image: url(chrome://theme/IDR_NETWORK_ADD_CONNECTION);
-  background-size: 16px;
-}
-
-.network-control-inactive {
-  background-image: none;
-}
-
-.network-control-active {
-  background-image: url(chrome://theme/IDR_PROFILE_SELECTED);
+  background-position: center center !important;
+  background-repeat: no-repeat;
   background-size: 16px;
 }
 

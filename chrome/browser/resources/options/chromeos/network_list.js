@@ -1105,20 +1105,6 @@ cr.define('options.network', function() {
     },
 
     /**
-     * Updates the state of a toggle button.
-     * @param {string} key Unique identifier for the element.
-     * @param {boolean} active Whether the control is active.
-     */
-    updateToggleControl: function(key, active) {
-      var index = this.indexOf(key);
-      if (index != undefined) {
-        var entry = this.dataModel.item(index);
-        entry.iconType = active ? 'control-active' : 'control-inactive';
-        this.update(entry);
-      }
-    },
-
-    /**
      * Updates the state of network devices and services.
      * @param {!Array<{State: string, Type: string}>} deviceStates The result
      *     from networkingPrivate.getDeviceStates.
