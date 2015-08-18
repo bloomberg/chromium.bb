@@ -43,7 +43,9 @@
 
   if ([draggableButtonImpl_ mouseDownImpl:theEvent] ==
           kDraggableButtonMixinCallSuper) {
-    [super mouseDown:theEvent];
+    // Hack to suppress a crash. See http://crbug.com/509833 for details.
+    if ([self window] && ![self isHiddenOrHasHiddenAncestor])
+      [super mouseDown:theEvent];
   }
 }
 
