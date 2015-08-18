@@ -3143,9 +3143,6 @@
       ['chromium_code==0', {
         'variables': {
           'clang_warning_flags': [
-            # TODO(mgiuca): Move this suppression into individual third-party
-            # libraries as required. http://crbug.com/505301.
-            '-Wno-overloaded-virtual',
             # TODO(thakis): Move this suppression into individual third-party
             # libraries as required. http://crbug.com/505316.
             '-Wno-unused-function',
