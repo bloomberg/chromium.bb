@@ -33,11 +33,12 @@
 
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourcePtr.h"
+#include "platform/exported/WrappedResourceResponse.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLResponse.h"
@@ -75,12 +76,12 @@ class ResourceFetcherTest : public ::testing::Test {
 
 class TestResourceFactory : public ResourceFactory {
 public:
-    TestResourceFactory()
-        : ResourceFactory(Resource::Image) { }
+    TestResourceFactory(Resource::Type type = Resource::Raw)
+        : ResourceFactory(type) { }
 
     Resource* create(const ResourceRequest& request, const String& charset) const override
     {
-        return new Resource(request, Resource::Image);
+        return new Resource(request, type());
     }
 };
 
@@ -111,7 +112,7 @@ TEST_F(ResourceFetcherTest, UseExistingResource)
     resource->finish();
 
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-    ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
+    ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Image));
     EXPECT_EQ(resource, newResource);
     memoryCache()->remove(resource.get());
 }
@@ -122,7 +123,7 @@ TEST_F(ResourceFetcherTest, Vary)
     ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
 
     KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-    ResourcePtr<Resource> resource = new Resource(url, Resource::Image);
+    ResourcePtr<Resource> resource = new Resource(url, Resource::Raw);
     memoryCache()->add(resource.get());
     ResourceResponse response;
     response.setURL(url);
@@ -149,7 +150,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack)
     ResourceFetcher* fetcher = ResourceFetcher::create(context);
 
     KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
-    ResourcePtr<Resource> resource = new Resource(url, Resource::Image);
+    ResourcePtr<Resource> resource = new Resource(url, Resource::Raw);
     memoryCache()->add(resource.get());
     ResourceResponse response;
     response.setURL(url);
@@ -161,9 +162,33 @@ TEST_F(ResourceFetcherTest, VaryOnBack)
     ASSERT_TRUE(resource->hasVaryHeader());
 
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-    Platform::current()->unitTestSupport()->registerMockedURL(url, WebURLResponse(), "");
     ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory());
-    EXPECT_NE(resource, newResource);
+    EXPECT_EQ(resource, newResource);
+
+    memoryCache()->remove(newResource.get());
+}
+
+TEST_F(ResourceFetcherTest, VaryImage)
+{
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(200);
+    response.setHTTPHeaderField("Cache-Control", "max-age=3600");
+    response.setHTTPHeaderField("Vary", "*");
+    URLTestHelpers::registerMockedURLLoadWithCustomResponse(url, "white-1x1.png", WebString::fromUTF8(""), WrappedResourceResponse(response));
+
+    FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
+    ResourcePtr<Resource> resource = fetcher->requestResource(fetchRequestOriginal, TestResourceFactory(Resource::Image));
+    ASSERT_TRUE(resource.get());
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    ASSERT_TRUE(resource->hasVaryHeader());
+
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    ResourcePtr<Resource> newResource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Image));
+    EXPECT_EQ(resource, newResource);
 
     memoryCache()->remove(newResource.get());
     Platform::current()->unitTestSupport()->unregisterMockedURL(url);
@@ -178,7 +203,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
     ResourceRequest request1(url);
     request1.setHTTPHeaderField("Cache-control", "no-cache");
     FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
-    ResourcePtr<Resource> resource1 = fetcher1->requestResource(fetchRequest1, TestResourceFactory());
+    ResourcePtr<Resource> resource1 = fetcher1->requestResource(fetchRequest1, TestResourceFactory(Resource::Image));
     ResourceResponse response;
     response.setURL(url);
     response.setHTTPStatusCode(200);
@@ -191,7 +216,7 @@ TEST_F(ResourceFetcherTest, RevalidateWhileLoading)
     context->setCachePolicy(CachePolicyRevalidate);
     ResourceFetcher* fetcher2 = ResourceFetcher::create(context);
     FetchRequest fetchRequest2(url, FetchInitiatorInfo());
-    ResourcePtr<Resource> resource2 = fetcher2->requestResource(fetchRequest2, TestResourceFactory());
+    ResourcePtr<Resource> resource2 = fetcher2->requestResource(fetchRequest2, TestResourceFactory(Resource::Image));
     EXPECT_EQ(resource1, resource2);
 }
 

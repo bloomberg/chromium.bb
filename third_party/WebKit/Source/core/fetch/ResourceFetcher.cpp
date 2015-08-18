@@ -616,10 +616,6 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (existingResource->isPreloaded())
         return Use;
 
-    // Defer to the browser process cache for Vary header handling.
-    if (existingResource->hasVaryHeader())
-        return Reload;
-
     // CachePolicyHistoryBuffer uses the cache no matter what.
     CachePolicy cachePolicy = context().cachePolicy();
     if (cachePolicy == CachePolicyHistoryBuffer)
@@ -680,6 +676,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     // from memory cache which are the same as the version in the current document.
     if (type == Resource::Image && existingResource == cachedResource(request.url()))
         return Use;
+
+    // Defer to the browser process cache for Vary header handling.
+    if (existingResource->hasVaryHeader())
+        return Reload;
 
     // If any of the redirects in the chain to loading the resource were not cacheable, we cannot reuse our cached resource.
     if (!existingResource->canReuseRedirectChain()) {
