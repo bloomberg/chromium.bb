@@ -80,7 +80,7 @@ cr.define('downloads', function() {
 
       /** @const */ var showProgress =
           isFinite(data.percent) && !this.isDangerous_;
-      this.$.progress.hidden = !showProgress;
+      this.$.content.classList.toggle('show-progress', showProgress);
 
       if (showProgress) {
         this.$.progress.indeterminate = data.percent < 0;

@@ -70,6 +70,12 @@
   width: 32px;
 }
 
+#content.show-progress #file-icon-wrapper {
+  /* TODO(dbeam): animate from top-aligned to centered when items finish? */
+  align-self: flex-start;
+  padding-top: 16px;
+}
+
 #content:not(.is-active) .icon {
   -webkit-filter: grayscale(100%);
 }
@@ -144,9 +150,8 @@
   width: auto;
 }
 
-/* TODO(dbeam): open up a CSS mixin instead in Polymer. */
-#progress /deep/ #progressContainer {
-  border-radius: 2px;
+#content:not(.show-progress) #progress {
+  display: none;
 }
 
 #cancel,
