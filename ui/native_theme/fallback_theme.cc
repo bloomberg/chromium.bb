@@ -6,8 +6,13 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/common_theme.h"
+
+#define COLOR_FOR_MODE(ARRAY, MODE)  \
+  DCHECK_LT(MODE, arraysize(ARRAY)); \
+  return ARRAY[MODE];
 
 namespace ui {
 
@@ -19,6 +24,8 @@ FallbackTheme::~FallbackTheme() {
 
 SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   // This implementation returns hardcoded colors.
+
+  size_t mode = ui::MaterialDesignController::IsModeMaterial();
 
   static const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
   // Windows:
@@ -65,48 +72,79 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
   static const SkColor kTableGroupingIndicatorColor =
       SkColorSetRGB(0xCC, 0xCC, 0xCC);
   // Results Tables
-  static const SkColor kResultsTableHoveredBackground =
+  static const SkColor kResultsTableTextMD = SK_ColorBLACK;
+  static const SkColor kResultsTableDimmedTextMD =
+      SkColorSetRGB(0x64, 0x64, 0x64);
+  static const SkColor kResultsTableUrlMD = SkColorSetRGB(0x33, 0x67, 0xD6);
+  static const SkColor kResultsTableHoveredBackground[] = {
       color_utils::AlphaBlend(kTextfieldSelectionBackgroundFocused,
-                              kTextfieldDefaultBackground, 0x40);
-  static const SkColor kResultsTableNormalText = color_utils::AlphaBlend(
-      SK_ColorBLACK, kTextfieldDefaultBackground, 0xDD);
-  static const SkColor kResultsTableHoveredText = color_utils::AlphaBlend(
-      SK_ColorBLACK, kResultsTableHoveredBackground, 0xDD);
-  static const SkColor kResultsTableSelectedText = color_utils::AlphaBlend(
-      SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xDD);
-  static const SkColor kResultsTableNormalDimmedText = color_utils::AlphaBlend(
-      SK_ColorBLACK, kTextfieldDefaultBackground, 0xBB);
-  static const SkColor kResultsTableHoveredDimmedText = color_utils::AlphaBlend(
-      SK_ColorBLACK, kResultsTableHoveredBackground, 0xBB);
-  static const SkColor kResultsTableSelectedDimmedText =
+                              kTextfieldDefaultBackground, 0x40),
+      SkColorSetARGB(0x0D, 0x00, 0x00, 0x00)};
+  static const SkColor kResultsTableSelectedBackground[] = {
+      kTextfieldSelectionBackgroundFocused,
+      SkColorSetARGB(0x15, 0x00, 0x00, 0x00)};
+  static const SkColor kResultsTableNormalText[] = {
+      color_utils::AlphaBlend(SK_ColorBLACK, kTextfieldDefaultBackground, 0xDD),
+      kResultsTableTextMD};
+  static const SkColor kResultsTableHoveredText[] = {
       color_utils::AlphaBlend(
-          SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xBB);
-  static const SkColor kResultsTableSelectedOrHoveredUrl =
-      SkColorSetARGB(0xff, 0x0b, 0x80, 0x43);
+          SK_ColorBLACK, kResultsTableHoveredBackground[mode], 0xDD),
+      kResultsTableTextMD};
+  static const SkColor kResultsTableSelectedText[] = {
+      color_utils::AlphaBlend(
+          SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xDD),
+      kResultsTableTextMD};
+  static const SkColor kResultsTableNormalDimmedText[] = {
+      color_utils::AlphaBlend(SK_ColorBLACK, kTextfieldDefaultBackground, 0xBB),
+      kResultsTableDimmedTextMD};
+  static const SkColor kResultsTableHoveredDimmedText[] = {
+      color_utils::AlphaBlend(
+          SK_ColorBLACK, kResultsTableHoveredBackground[mode], 0xBB),
+      kResultsTableDimmedTextMD};
+  static const SkColor kResultsTableSelectedDimmedText[] = {
+      color_utils::AlphaBlend(
+          SK_ColorBLACK, kTextfieldSelectionBackgroundFocused, 0xBB),
+      kResultsTableDimmedTextMD};
+  static const SkColor kResultsTableNormalUrl[] = {
+      kTextfieldSelectionColor,
+      kResultsTableUrlMD};
+  static const SkColor kResultsTableSelectedOrHoveredUrl[] = {
+      SkColorSetARGB(0xff, 0x0b, 0x80, 0x43),
+      kResultsTableUrlMD};
   static const SkColor kResultsTableNormalDivider = color_utils::AlphaBlend(
-      kResultsTableNormalText, kTextfieldDefaultBackground, 0x34);
+      kResultsTableNormalText[mode], kTextfieldDefaultBackground, 0x34);
   static const SkColor kResultsTableHoveredDivider = color_utils::AlphaBlend(
-      kResultsTableHoveredText, kResultsTableHoveredBackground, 0x34);
+      kResultsTableHoveredText[mode],
+      kResultsTableHoveredBackground[mode], 0x34);
   static const SkColor kResultsTabSelectedDivider = color_utils::AlphaBlend(
-      kResultsTableSelectedText, kTextfieldSelectionBackgroundFocused, 0x34);
+      kResultsTableSelectedText[mode],
+      kTextfieldSelectionBackgroundFocused, 0x34);
   const SkColor kPositiveTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
   const SkColor kNegativeTextColor = SkColorSetRGB(0xc5, 0x39, 0x29);
-  static const SkColor kResultsTablePositiveText = color_utils::AlphaBlend(
-      kPositiveTextColor, kTextfieldDefaultBackground, 0xDD);
-  static const SkColor kResultsTablePositiveHoveredText =
-      color_utils::AlphaBlend(kPositiveTextColor,
-                              kResultsTableHoveredBackground, 0xDD);
-  static const SkColor kResultsTablePositiveSelectedText =
-      color_utils::AlphaBlend(kPositiveTextColor,
-                              kTextfieldSelectionBackgroundFocused, 0xDD);
-  static const SkColor kResultsTableNegativeText = color_utils::AlphaBlend(
-      kNegativeTextColor, kTextfieldDefaultBackground, 0xDD);
-  static const SkColor kResultsTableNegativeHoveredText =
-      color_utils::AlphaBlend(kNegativeTextColor,
-                              kResultsTableHoveredBackground, 0xDD);
-  static const SkColor kResultsTableNegativeSelectedText =
-      color_utils::AlphaBlend(kNegativeTextColor,
-                              kTextfieldSelectionBackgroundFocused, 0xDD);
+  static const SkColor kResultsTablePositiveText[] = {
+      color_utils::AlphaBlend(
+          kPositiveTextColor, kTextfieldDefaultBackground, 0xDD),
+      kPositiveTextColor};
+  static const SkColor kResultsTablePositiveHoveredText[] = {
+      color_utils::AlphaBlend(
+          kPositiveTextColor, kResultsTableHoveredBackground[mode], 0xDD),
+      kPositiveTextColor};
+  static const SkColor kResultsTablePositiveSelectedText[] = {
+      color_utils::AlphaBlend(
+          kPositiveTextColor, kTextfieldSelectionBackgroundFocused, 0xDD),
+      kPositiveTextColor};
+  static const SkColor kResultsTableNegativeText[] = {
+      color_utils::AlphaBlend(
+          kNegativeTextColor, kTextfieldDefaultBackground, 0xDD),
+      kNegativeTextColor};
+  static const SkColor kResultsTableNegativeHoveredText[] = {
+      color_utils::AlphaBlend(
+          kNegativeTextColor, kResultsTableHoveredBackground[mode], 0xDD),
+      kNegativeTextColor};
+  static const SkColor kResultsTableNegativeSelectedText[] = {
+      color_utils::AlphaBlend(
+          kNegativeTextColor, kTextfieldSelectionBackgroundFocused, 0xDD),
+      kNegativeTextColor};
 
   SkColor color;
   if (CommonThemeGetSystemColor(color_id, &color))
@@ -197,26 +235,26 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableNormalBackground:
       return kTextfieldDefaultBackground;
     case kColorId_ResultsTableHoveredBackground:
-      return kResultsTableHoveredBackground;
+      COLOR_FOR_MODE(kResultsTableHoveredBackground, mode);
     case kColorId_ResultsTableSelectedBackground:
-      return kTextfieldSelectionBackgroundFocused;
+      COLOR_FOR_MODE(kResultsTableSelectedBackground, mode);
     case kColorId_ResultsTableNormalText:
-      return kResultsTableNormalText;
+      COLOR_FOR_MODE(kResultsTableNormalText, mode);
     case kColorId_ResultsTableHoveredText:
-      return kResultsTableHoveredText;
+      COLOR_FOR_MODE(kResultsTableHoveredText, mode);
     case kColorId_ResultsTableSelectedText:
-      return kResultsTableSelectedText;
+      COLOR_FOR_MODE(kResultsTableSelectedText, mode);
     case kColorId_ResultsTableNormalDimmedText:
-      return kResultsTableNormalDimmedText;
+      COLOR_FOR_MODE(kResultsTableNormalDimmedText, mode);
     case kColorId_ResultsTableHoveredDimmedText:
-      return kResultsTableHoveredDimmedText;
+      COLOR_FOR_MODE(kResultsTableHoveredDimmedText, mode);
     case kColorId_ResultsTableSelectedDimmedText:
-      return kResultsTableSelectedDimmedText;
+      COLOR_FOR_MODE(kResultsTableSelectedDimmedText, mode);
     case kColorId_ResultsTableNormalUrl:
-      return kTextfieldSelectionColor;
+      COLOR_FOR_MODE(kResultsTableNormalUrl, mode);
     case kColorId_ResultsTableHoveredUrl:
     case kColorId_ResultsTableSelectedUrl:
-      return kResultsTableSelectedOrHoveredUrl;
+      COLOR_FOR_MODE(kResultsTableSelectedOrHoveredUrl, mode);
     case kColorId_ResultsTableNormalDivider:
       return kResultsTableNormalDivider;
     case kColorId_ResultsTableHoveredDivider:
@@ -224,17 +262,17 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedDivider:
       return kResultsTabSelectedDivider;
     case kColorId_ResultsTablePositiveText:
-      return kResultsTablePositiveText;
+      COLOR_FOR_MODE(kResultsTablePositiveText, mode);
     case kColorId_ResultsTablePositiveHoveredText:
-      return kResultsTablePositiveHoveredText;
+      COLOR_FOR_MODE(kResultsTablePositiveHoveredText, mode);
     case kColorId_ResultsTablePositiveSelectedText:
-      return kResultsTablePositiveSelectedText;
+      COLOR_FOR_MODE(kResultsTablePositiveSelectedText, mode);
     case kColorId_ResultsTableNegativeText:
-      return kResultsTableNegativeText;
+      COLOR_FOR_MODE(kResultsTableNegativeText, mode);
     case kColorId_ResultsTableNegativeHoveredText:
-      return kResultsTableNegativeHoveredText;
+      COLOR_FOR_MODE(kResultsTableNegativeHoveredText, mode);
     case kColorId_ResultsTableNegativeSelectedText:
-      return kResultsTableNegativeSelectedText;
+      COLOR_FOR_MODE(kResultsTableNegativeSelectedText, mode);
 
     default:
       NOTREACHED();
