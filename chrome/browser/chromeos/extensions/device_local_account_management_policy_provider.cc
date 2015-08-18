@@ -98,6 +98,7 @@ const char* const kPublicSessionWhitelist[] = {
 
     // Testing extensions:
     "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
+    "ilnpadgckeacioehlommkaafedibdeob",  // Enterprise DeviceAttributes
 };
 
 }  // namespace
