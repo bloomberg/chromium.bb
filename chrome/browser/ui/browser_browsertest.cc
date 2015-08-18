@@ -1516,7 +1516,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   // If the new bookmark app flow is enabled, the app should open as an tab.
   // Otherwise the app should open as an app window.
   EXPECT_EQ(!new_bookmark_apps_enabled,
-            launch.OpenApplicationWindow(browser()->profile(), NULL));
+            launch.OpenApplicationWindow(browser()->profile()));
   EXPECT_EQ(new_bookmark_apps_enabled,
             launch.OpenApplicationTab(browser()->profile()));
 

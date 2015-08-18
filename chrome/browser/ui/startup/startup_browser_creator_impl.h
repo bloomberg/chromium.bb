@@ -65,16 +65,6 @@ class StartupBrowserCreatorImpl {
                              const std::vector<GURL>& urls,
                              chrome::HostDesktopType desktop_type);
 
-  // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
-  // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
-  // browser is created and the tabs are added to it. The browser the tabs
-  // are added to is returned, which is either |browser| or the newly created
-  // browser.
-  Browser* OpenTabsInBrowser(Browser* browser,
-                             bool process_startup,
-                             const StartupTabs& tabs,
-                             chrome::HostDesktopType desktop_type);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, RestorePinnedTabs);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
@@ -85,6 +75,16 @@ class StartupBrowserCreatorImpl {
     FIRST_RUN_LAST_TAB,  // Inject the welcome page as the last first-run tab.
   };
 
+  // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
+  // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
+  // browser is created and the tabs are added to it. The browser the tabs
+  // are added to is returned, which is either |browser| or the newly created
+  // browser.
+  Browser* OpenTabsInBrowser(Browser* browser,
+                             bool process_startup,
+                             const StartupTabs& tabs,
+                             chrome::HostDesktopType desktop_type);
+
   // If the process was launched with the web application command line flags,
   // e.g. --app=http://www.google.com/ or --app_id=... return true.
   // In this case |app_url| or |app_id| are populated if they're non-null.
@@ -92,10 +92,8 @@ class StartupBrowserCreatorImpl {
 
   // If IsAppLaunch is true, tries to open an application window.
   // If the app is specified to start in a tab, or IsAppLaunch is false,
-  // returns false to specify default processing. |out_app_contents| is an
-  // optional argument to receive the created WebContents for the app.
-  bool OpenApplicationWindow(Profile* profile,
-                             content::WebContents** out_app_contents);
+  // returns false to specify default processing.
+  bool OpenApplicationWindow(Profile* profile);
 
   // If IsAppLaunch is true and the user set a pref indicating that the app
   // should open in a tab, do so.
