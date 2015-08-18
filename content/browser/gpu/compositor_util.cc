@@ -253,6 +253,14 @@ bool IsZeroCopyUploadEnabled() {
   return command_line.HasSwitch(switches::kEnableZeroCopy);
 }
 
+bool IsPersistentGpuMemoryBufferEnabled() {
+  // Zero copy currently doesn't take advantage of persistent buffers.
+  if (IsZeroCopyUploadEnabled())
+    return false;
+  const auto& command_line = *base::CommandLine::ForCurrentProcess();
+  return !command_line.HasSwitch(switches::kDisablePersistentGpuMemoryBuffer);
+}
+
 bool IsGpuRasterizationEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

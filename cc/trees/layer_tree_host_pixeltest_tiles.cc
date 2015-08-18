@@ -189,6 +189,13 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
 }
 
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
+       PartialRaster_MultiThread_OneCopy) {
+  RunRasterPixelTest(
+      true, PARTIAL_ONE_COPY, picture_layer_,
+      base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
+}
+
+TEST_F(LayerTreeHostTilesTestPartialInvalidation,
        FullRaster_MultiThread_OneCopy) {
   RunRasterPixelTest(
       true, FULL_ONE_COPY, picture_layer_,

@@ -122,6 +122,12 @@ Tile* PictureLayerTiling::CreateTile(int i, int j) {
 }
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
+  const PictureLayerTiling* active_twin =
+      tree_ == PENDING_TREE ? client_->GetPendingOrActiveTwinTiling(this)
+                            : nullptr;
+  const Region* invalidation =
+      active_twin ? client_->GetPendingInvalidation() : nullptr;
+
   bool include_borders = false;
   for (TilingData::Iterator iter(&tiling_data_, live_tiles_rect_,
                                  include_borders);
@@ -131,8 +137,28 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
     if (find != tiles_.end())
       continue;
 
-    if (ShouldCreateTileAt(key.index_x, key.index_y))
-      CreateTile(key.index_x, key.index_y);
+    if (ShouldCreateTileAt(key.index_x, key.index_y)) {
+      Tile* tile = CreateTile(key.index_x, key.index_y);
+
+      // If this is the pending tree, then the active twin tiling may contain
+      // the previous content ID of these tiles. In that case, we need only
+      // partially raster the tile content.
+      if (tile && invalidation && TilingMatchesTileIndices(active_twin)) {
+        if (const Tile* old_tile =
+                active_twin->TileAt(key.index_x, key.index_y)) {
+          gfx::Rect tile_rect = tile->content_rect();
+          gfx::Rect invalidated;
+          for (Region::Iterator iter(*invalidation); iter.has_rect();
+               iter.next()) {
+            gfx::Rect invalid_content_rect =
+                gfx::ScaleToEnclosingRect(iter.rect(), contents_scale_);
+            invalid_content_rect.Intersect(tile_rect);
+            invalidated.Union(invalid_content_rect);
+          }
+          tile->SetInvalidated(invalidated, old_tile->id());
+        }
+      }
+    }
   }
   VerifyLiveTilesRect(false);
 }

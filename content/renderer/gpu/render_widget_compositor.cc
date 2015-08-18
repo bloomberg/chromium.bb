@@ -303,6 +303,8 @@ void RenderWidgetCompositor::Initialize() {
       compositor_deps_->IsDistanceFieldTextEnabled();
   settings.use_zero_copy = compositor_deps_->IsZeroCopyEnabled();
   settings.use_one_copy = compositor_deps_->IsOneCopyEnabled();
+  settings.use_persistent_map_for_gpu_memory_buffers =
+      compositor_deps_->IsPersistentGpuMemoryBufferEnabled();
   settings.enable_elastic_overscroll =
       compositor_deps_->IsElasticOverscrollEnabled();
   settings.use_image_texture_targets =

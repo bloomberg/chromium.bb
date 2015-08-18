@@ -1149,20 +1149,22 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kEnableZeroCopy);
   if (!IsOneCopyUploadEnabled())
     command_line->AppendSwitch(switches::kDisableOneCopy);
+  if (IsPersistentGpuMemoryBufferEnabled())
+    command_line->AppendSwitch(switches::kEnablePersistentGpuMemoryBuffer);
 
   if (IsForceGpuRasterizationEnabled())
     command_line->AppendSwitch(switches::kForceGpuRasterization);
 
+  gfx::BufferUsage buffer_usage = IsPersistentGpuMemoryBufferEnabled()
+                                      ? gfx::BufferUsage::PERSISTENT_MAP
+                                      : gfx::BufferUsage::MAP;
   std::vector<unsigned> image_targets(
       static_cast<size_t>(gfx::BufferFormat::LAST) + 1, GL_TEXTURE_2D);
   for (size_t format = 0;
        format < static_cast<size_t>(gfx::BufferFormat::LAST) + 1; format++) {
     image_targets[format] =
         BrowserGpuMemoryBufferManager::GetImageTextureTarget(
-            static_cast<gfx::BufferFormat>(format),
-            // TODO(danakj): When one-copy supports partial update, change
-            // this usage to PERSISTENT_MAP for one-copy.
-            gfx::BufferUsage::MAP);
+            static_cast<gfx::BufferFormat>(format), buffer_usage);
   }
   command_line->AppendSwitchASCII(switches::kContentImageTextureTarget,
                                   UintVectorToString(image_targets));

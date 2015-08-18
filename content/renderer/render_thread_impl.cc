@@ -653,6 +653,8 @@ void RenderThreadImpl::Init() {
 
   is_zero_copy_enabled_ = command_line.HasSwitch(switches::kEnableZeroCopy);
   is_one_copy_enabled_ = !command_line.HasSwitch(switches::kDisableOneCopy);
+  is_persistent_gpu_memory_buffer_enabled_ =
+      command_line.HasSwitch(switches::kEnablePersistentGpuMemoryBuffer);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   is_elastic_overscroll_enabled_ = base::mac::IsOSLionOrLater();
@@ -1475,6 +1477,10 @@ bool RenderThreadImpl::IsZeroCopyEnabled() {
 
 bool RenderThreadImpl::IsOneCopyEnabled() {
   return is_one_copy_enabled_;
+}
+
+bool RenderThreadImpl::IsPersistentGpuMemoryBufferEnabled() {
+  return is_persistent_gpu_memory_buffer_enabled_;
 }
 
 bool RenderThreadImpl::IsElasticOverscrollEnabled() {
