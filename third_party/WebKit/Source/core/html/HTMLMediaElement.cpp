@@ -3472,19 +3472,14 @@ void* HTMLMediaElement::preDispatchEventHandler(Event* event)
     return nullptr;
 }
 
-// TODO(srirama.m): Refactor this and other relevant methods and have a
-// single method for clearing the mediaplayer and its stuff.
+// TODO(srirama.m): Refactor this and clearMediaPlayer to the extent possible.
 void HTMLMediaElement::resetMediaPlayerAndMediaSource()
 {
-    AudioSourceProviderClientLockScope scope(*this);
-
     closeMediaSource();
 
-    if (m_webMediaPlayer) {
-#if ENABLE(WEB_AUDIO)
-        m_audioSourceProvider.wrap(nullptr);
-#endif
-        m_webMediaPlayer.clear();
+    {
+        AudioSourceProviderClientLockScope scope(*this);
+        clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
     }
 
     // We haven't yet found out if any remote routes are available.
