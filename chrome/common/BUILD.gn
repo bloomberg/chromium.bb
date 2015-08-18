@@ -169,7 +169,7 @@ static_library("common") {
   # Printing.
   if (enable_basic_printing || enable_print_preview) {
     deps += [
-      "//components/printing/common:printing_common",
+      "//components/printing/common",
       "//printing",
     ]
     if (enable_print_preview) {

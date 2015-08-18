@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("printing_renderer") {
+source_set("renderer") {
   sources = [
     "print_web_view_helper.cc",
     "print_web_view_helper.h",
@@ -17,7 +17,7 @@ static_library("printing_renderer") {
 
   deps = [
     "//base",
-    "//components/printing/common:printing_common",
+    "//components/printing/common",
     "//components/resources",
     "//content/public/common",
     "//content/public/renderer",

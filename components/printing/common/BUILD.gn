@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("printing_common") {
+source_set("common") {
   sources = [
     "print_messages.cc",
     "print_messages.h",

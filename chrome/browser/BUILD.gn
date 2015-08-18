@@ -604,7 +604,7 @@ source_set("browser") {
                            "//chrome")
     deps += [
       "//printing",
-      "//components/printing/browser:printing_browser",
+      "//components/printing/browser",
     ]
 
     if (is_win) {

@@ -248,7 +248,7 @@ group("crypto_unittests_run") {
 
 test("crypto_unittests") {
   sources = [
-    # Tests.
+    "aead_openssl_unittest.cc",
     "aes_128_gcm_helpers_nss_unittest.cc",
     "curve25519_unittest.cc",
     "ec_private_key_unittest.cc",

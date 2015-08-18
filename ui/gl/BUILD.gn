@@ -328,6 +328,10 @@ test("gl_unittests") {
     ]
   }
 
+  if (use_x11) {
+    sources += [ "glx_api_unittest.cc" ]
+  }
+
   include_dirs = [ "//third_party/khronos" ]
 
   deps = [

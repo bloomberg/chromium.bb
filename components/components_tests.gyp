@@ -1445,6 +1445,7 @@
             'HAS_OUT_OF_PROC_TEST_RUNNER',
           ],
           'sources': [
+            # Note: test list duplicated in GN build.
             'autofill/content/browser/risk/fingerprint_browsertest.cc',
             'autofill/content/renderer/password_form_conversion_utils_browsertest.cc',
             'dom_distiller/content/browser/distillable_page_utils_browsertest.cc',
