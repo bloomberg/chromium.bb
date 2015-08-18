@@ -114,6 +114,7 @@ class ClientHello(HandshakeMsg):
         self.supports_npn = False
         self.server_name = bytearray(0)
         self.channel_id = False
+        self.extended_master_secret = False
         self.support_signed_cert_timestamps = False
         self.status_request = False
 
@@ -185,6 +186,8 @@ class ClientHello(HandshakeMsg):
                                 break
                     elif extType == ExtensionType.channel_id:
                         self.channel_id = True
+                    elif extType == ExtensionType.extended_master_secret:
+                        self.extended_master_secret = True
                     elif extType == ExtensionType.signed_cert_timestamps:
                         if extLength:
                             raise SyntaxError()
@@ -267,6 +270,7 @@ class ServerHello(HandshakeMsg):
         self.next_protos_advertised = None
         self.next_protos = None
         self.channel_id = False
+        self.extended_master_secret = False
         self.signed_cert_timestamps = None
         self.status_request = False
 
@@ -357,6 +361,9 @@ class ServerHello(HandshakeMsg):
             w2.addFixSeq(encoded_next_protos_advertised, 1)
         if self.channel_id:
             w2.add(ExtensionType.channel_id, 2)
+            w2.add(0, 2)
+        if self.extended_master_secret:
+            w2.add(ExtensionType.extended_master_secret, 2)
             w2.add(0, 2)
         if self.signed_cert_timestamps:
             w2.add(ExtensionType.signed_cert_timestamps, 2)
