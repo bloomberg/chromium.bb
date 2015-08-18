@@ -293,7 +293,7 @@ void NetworkingPrivateChromeOS::GetNetworks(
       chromeos::onc::NetworkTypePatternFromOncType(network_type);
   scoped_ptr<base::ListValue> network_properties_list =
       chromeos::network_util::TranslateNetworkListToONC(
-          pattern, configured_only, visible_only, limit, false /* debugging */);
+          pattern, configured_only, visible_only, limit);
   success_callback.Run(network_properties_list.Pass());
 }
 

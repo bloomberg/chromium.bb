@@ -17,7 +17,6 @@ cr.define('options.internet', function() {
   /** @const */ var IPAddressField = options.internet.IPAddressField;
 
   /** @const */ var GoogleNameServers = ['8.8.4.4', '8.8.8.8'];
-  /** @const */ var CarrierGenericUMTS = 'Generic UMTS';
   /** @const */ var CarrierSprint = 'Sprint';
   /** @const */ var CarrierVerizon = 'Verizon Wireless';
 
@@ -1089,33 +1088,6 @@ cr.define('options.internet', function() {
   };
 
   /**
-   * Shows a spinner while the carrier is changed.
-   */
-  DetailsInternetPage.showCarrierChangeSpinner = function(visible) {
-    if (!DetailsInternetPage.getInstance().visible)
-      return;
-    $('switch-carrier-spinner').hidden = !visible;
-    // Disable any buttons that allow us to operate on cellular networks.
-    DetailsInternetPage.changeCellularButtonsState(visible);
-  };
-
-  /**
-   * Changes the network carrier.
-   */
-  DetailsInternetPage.handleCarrierChanged = function() {
-    var carrierSelector = $('select-carrier');
-    var carrier = carrierSelector[carrierSelector.selectedIndex].textContent;
-    DetailsInternetPage.showCarrierChangeSpinner(true);
-    var guid = DetailsInternetPage.getInstance().onc_.guid();
-    var oncData = new OncData({});
-    oncData.setProperty('Cellular.Carrier', carrier);
-    chrome.networkingPrivate.setProperties(guid, oncData.getData(), function() {
-      // Start activation or show the activation UI after changing carriers.
-      DetailsInternetPage.activateCellular(guid);
-    });
-  };
-
-  /**
    * If the network is not already activated, starts the activation process or
    * shows the activation UI. Otherwise does nothing.
    */
@@ -1123,17 +1095,13 @@ cr.define('options.internet', function() {
     chrome.networkingPrivate.getProperties(guid, function(properties) {
       var oncData = new OncData(properties);
       if (oncData.getActiveValue('Cellular.ActivationState') == 'Activated') {
-        DetailsInternetPage.showCarrierChangeSpinner(false);
         return;
       }
       var carrier = oncData.getActiveValue('Cellular.Carrier');
       if (carrier == CarrierSprint) {
         // Sprint is directly ativated, call startActivate().
-        chrome.networkingPrivate.startActivate(guid, '', function() {
-          DetailsInternetPage.showCarrierChangeSpinner(false);
-        });
+        chrome.networkingPrivate.startActivate(guid, '');
       } else {
-        DetailsInternetPage.showCarrierChangeSpinner(false);
         chrome.send('showMorePlanInfo', [guid]);
       }
     });
@@ -1689,32 +1657,7 @@ cr.define('options.internet', function() {
 
       var isGsm = onc.getActiveValue('Cellular.Family') == 'GSM';
 
-      var currentCarrierIndex = -1;
-      if (loadTimeData.getValue('showCarrierSelect')) {
-        var currentCarrier =
-            isGsm ? CarrierGenericUMTS : onc.getActiveValue('Cellular.Carrier');
-        var supportedCarriers =
-            onc.getActiveValue('Cellular.SupportedCarriers');
-        for (var c1 = 0; c1 < supportedCarriers.length; ++c1) {
-          if (supportedCarriers[c1] == currentCarrier) {
-            currentCarrierIndex = c1;
-            break;
-          }
-        }
-        if (currentCarrierIndex != -1) {
-          var carrierSelector = $('select-carrier');
-          carrierSelector.onchange = DetailsInternetPage.handleCarrierChanged;
-          carrierSelector.options.length = 0;
-          for (var c2 = 0; c2 < supportedCarriers.length; ++c2) {
-            var option = document.createElement('option');
-            option.textContent = supportedCarriers[c2];
-            carrierSelector.add(option);
-          }
-          carrierSelector.selectedIndex = currentCarrierIndex;
-        }
-      }
-      if (currentCarrierIndex == -1)
-        $('service-name').textContent = networkName;
+      $('service-name').textContent = networkName;
 
       // TODO(stevenjb): Ideally many of these should be localized.
       $('network-technology').textContent =

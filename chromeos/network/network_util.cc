@@ -187,8 +187,7 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
     NetworkTypePattern pattern,
     bool configured_only,
     bool visible_only,
-    int limit,
-    bool debugging_properties) {
+    int limit) {
   NetworkStateHandler::NetworkStateList network_states;
   NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
       pattern, configured_only, visible_only, limit, &network_states);
@@ -197,14 +196,6 @@ scoped_ptr<base::ListValue> TranslateNetworkListToONC(
   for (const NetworkState* state : network_states) {
     scoped_ptr<base::DictionaryValue> onc_dictionary =
         TranslateNetworkStateToONC(state);
-
-    if (debugging_properties) {
-      onc_dictionary->SetBoolean("connectable", state->connectable());
-      onc_dictionary->SetBoolean("visible", state->visible());
-      onc_dictionary->SetString("profile_path", state->profile_path());
-      onc_dictionary->SetString("service_path", state->path());
-    }
-
     network_properties_list->Append(onc_dictionary.release());
   }
   return network_properties_list.Pass();

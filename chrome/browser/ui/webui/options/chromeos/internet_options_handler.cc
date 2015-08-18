@@ -54,7 +54,6 @@ namespace {
 
 // Keys for the initial "localized" dictionary values.
 const char kLoggedInAsOwnerKey[] = "loggedInAsOwner";
-const char kShowCarrierSelectKey[] = "showCarrierSelect";
 
 // Functions we call in JavaScript.
 const char kSetVPNProvidersFunction[] = "options.VPNProviders.setProviders";
@@ -140,9 +139,6 @@ void InternetOptionsHandler::GetLocalizedValues(
   bool logged_in_as_owner = LoginState::Get()->GetLoggedInUserType() ==
                             LoginState::LOGGED_IN_USER_OWNER;
   localized_strings->SetBoolean(kLoggedInAsOwnerKey, logged_in_as_owner);
-  // TODO(anujsharma): Remove kShowCarrierSelectKey, as it is not
-  // required anymore.
-  localized_strings->SetBoolean(kShowCarrierSelectKey, false);
 }
 
 void InternetOptionsHandler::InitializePage() {
