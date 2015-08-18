@@ -11,11 +11,9 @@ namespace skia {
 OpacityFilterCanvas::OpacityFilterCanvas(SkCanvas* canvas,
                                          float opacity,
                                          bool disable_image_filtering)
-    : INHERITED(canvas->imageInfo().width(), canvas->imageInfo().height()),
+    : INHERITED(canvas),
       alpha_(SkScalarRoundToInt(opacity * 255)),
-      disable_image_filtering_(disable_image_filtering) {
-  this->addCanvas(canvas);
-}
+      disable_image_filtering_(disable_image_filtering) { }
 
 void OpacityFilterCanvas::onFilterPaint(SkPaint* paint, Type) const {
   if (alpha_ < 255)
