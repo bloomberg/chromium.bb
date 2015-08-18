@@ -348,8 +348,7 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
                 assert item.mFilter == EnhancedBookmarkFilter.OFFLINE_PAGES;
                 title = listItemView.getContext().getResources().getString(
                         R.string.enhanced_bookmark_drawer_filter_offline_pages);
-                // TODO(fgorski): Need a proper icon for offline pages.
-                iconDrawableId = R.drawable.infobar_downloading;
+                iconDrawableId = R.drawable.eb_filter_offline_pages;
                 break;
             default:
                 title = "";
