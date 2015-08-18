@@ -30,7 +30,6 @@
 #import "platform/graphics/GraphicsContextStateSaver.h"
 #import "platform/mac/BlockExceptions.h"
 #import "platform/mac/LocalCurrentGraphicsContext.h"
-#import "platform/mac/VersionUtilMac.h"
 #import "platform/mac/WebCoreNSCellExtras.h"
 #import "platform/scroll/ScrollableArea.h"
 #include "wtf/StdLibExtras.h"
@@ -697,16 +696,23 @@ void ThemeMac::paint(ControlPart part, ControlStates states, GraphicsContext* co
     }
 }
 
+#ifndef NSAppKitVersionNumber10_7
+#define NSAppKitVersionNumber10_7 1138
+#endif
+#ifndef NSAppKitVersionNumber10_9
+#define NSAppKitVersionNumber10_9 1265
+#endif
+
 bool ThemeMac::drawWithFrameDrawsFocusRing()
 {
 #if defined(MAC_OS_X_VERSION_10_8) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_8
 // If compiling against an OSX 10.8+ SDK, only 10.7 and older OSes will draw a
 // focus ring with the frame.
-    return IsOSLionOrEarlier();
+    return floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_7;
 #else
 // If compiling an OSX 10.7 or older SDK, OSes up through 10.9 will draw a focus
 // ring with the frame.
-    return IsOSMavericksOrEarlier();
+    return floor(NSAppKitVersionNumber) <= NSAppKitVersionNumber10_9;
 #endif
 }
 

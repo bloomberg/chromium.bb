@@ -9,9 +9,6 @@
 
 namespace blink {
 
-// Mavericks is Mac OS X 10.7, Darwin 11.
-PLATFORM_EXPORT bool IsOSLionOrEarlier();
-
 // Mavericks is Mac OS X 10.9, Darwin 13.
 PLATFORM_EXPORT bool IsOSMavericksOrEarlier();
 PLATFORM_EXPORT bool IsOSMavericks();
