@@ -1939,12 +1939,6 @@ void TextureManager::ValidateAndDoTexImage(
     return;
   }
 
-  if (texture_state->force_cube_map_positive_x_allocation) {
-    DoTexImage2DCubeMapPositiveXIfNeeded(texture_state, state->GetErrorState(),
-                                         framebuffer_state, function_name,
-                                         texture_ref, args);
-  }
-
   DoTexImage(texture_state, state->GetErrorState(), framebuffer_state,
              function_name, texture_ref, args);
 }
@@ -1959,42 +1953,6 @@ GLenum TextureManager::AdjustTexFormat(GLenum format) const {
       return GL_RGBA;
   }
   return format;
-}
-
-// Nexus 5 crashes on allocating a cube map texture bound to FBO, if
-// the CUBE_MAP_POSITIVE_X texture is not allocated yet.
-void TextureManager::DoTexImage2DCubeMapPositiveXIfNeeded(
-    DecoderTextureState* texture_state,
-    ErrorState* error_state,
-    DecoderFramebufferState* framebuffer_state,
-    const char* function_name,
-    TextureRef* texture_ref,
-    const DoTexImageArguments& args) {
-  switch (args.target) {
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
-    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
-    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
-      break;
-    default:
-      return;
-  }
-
-  // ValidateTexImage is passed already.
-  Texture* texture = texture_ref->texture();
-  int width = 0;
-  int height = 0;
-  bool positive_x_level_defined = texture->GetLevelSize(
-      GL_TEXTURE_CUBE_MAP_POSITIVE_X, args.level, &width, &height, nullptr);
-  if (!positive_x_level_defined) {
-    DoTexImageArguments positive_x_args = args;
-    positive_x_args.target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-    positive_x_args.pixels = nullptr;
-    positive_x_args.pixels_size = 0;
-    DoTexImage(texture_state, error_state, framebuffer_state, function_name,
-               texture_ref, positive_x_args);
-  }
 }
 
 void TextureManager::DoTexImage(

@@ -2577,7 +2577,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
                            : false),
       viewport_max_width_(0),
       viewport_max_height_(0),
-      texture_state_(group_->feature_info()->workarounds()),
+      texture_state_(group_->feature_info()
+                         ->workarounds()
+                         .texsubimage_faster_than_teximage),
       cb_command_trace_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("cb_command"))),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(

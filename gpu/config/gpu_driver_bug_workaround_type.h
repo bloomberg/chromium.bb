@@ -52,8 +52,6 @@
          etc1_power_of_two_only)                             \
   GPU_OP(EXIT_ON_CONTEXT_LOST,                               \
          exit_on_context_lost)                               \
-  GPU_OP(FORCE_CUBE_MAP_POSITIVE_X_ALLOCATION,               \
-         force_cube_map_positive_x_allocation)               \
   GPU_OP(FORCE_DISCRETE_GPU,                                 \
          force_discrete_gpu)                                 \
   GPU_OP(FORCE_GL_FINISH_AFTER_COMPOSITING,                  \
