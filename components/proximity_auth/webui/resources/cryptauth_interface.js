@@ -98,3 +98,8 @@ CryptAuthInterface = {
     });
   },
 };
+
+// This message tells the native WebUI handler that the WebContents backing the
+// WebUI has been iniitalized. This signal allows the native handler to execute
+// JavaScript inside the page.
+chrome.send('onWebContentsInitialized');

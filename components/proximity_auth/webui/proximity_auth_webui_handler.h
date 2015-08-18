@@ -70,6 +70,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
       CryptAuthDeviceManager::DeviceChangeResult device_change_result) override;
 
   // Message handler callbacks.
+  void OnWebContentsInitialized(const base::ListValue* args);
   void GetLogMessages(const base::ListValue* args);
   void ClearLogBuffer(const base::ListValue* args);
   void ToggleUnlockKey(const base::ListValue* args);

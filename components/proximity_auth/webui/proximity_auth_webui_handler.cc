@@ -131,6 +131,11 @@ ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
 
 void ProximityAuthWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "onWebContentsInitialized",
+      base::Bind(&ProximityAuthWebUIHandler::OnWebContentsInitialized,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       "clearLogBuffer", base::Bind(&ProximityAuthWebUIHandler::ClearLogBuffer,
                                    base::Unretained(this)));
 
@@ -168,16 +173,6 @@ void ProximityAuthWebUIHandler::RegisterMessages() {
       "toggleConnection",
       base::Bind(&ProximityAuthWebUIHandler::ToggleConnection,
                  base::Unretained(this)));
-
-  InitGCMManager();
-  InitEnrollmentManager();
-  InitDeviceManager();
-
-  // Note: We add the observer for the logs after initializing the managers
-  // because when this function is called, the WebUI's underlying WebContents
-  // has not been initialized, so calling any JavaScript function will crash
-  // Chrome.
-  LogBuffer::GetInstance()->AddObserver(this);
 }
 
 void ProximityAuthWebUIHandler::OnLogMessageAdded(
@@ -230,6 +225,16 @@ void ProximityAuthWebUIHandler::OnSyncFinished(
                  << *unlock_keys;
     web_ui()->CallJavascriptFunction("LocalStateInterface.onUnlockKeysChanged",
                                      *unlock_keys);
+  }
+}
+
+void ProximityAuthWebUIHandler::OnWebContentsInitialized(
+    const base::ListValue* args) {
+  if (!gcm_manager_ || !enrollment_manager_ || !device_manager_) {
+    InitGCMManager();
+    InitEnrollmentManager();
+    InitDeviceManager();
+    LogBuffer::GetInstance()->AddObserver(this);
   }
 }
 
