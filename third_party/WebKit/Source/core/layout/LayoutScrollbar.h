@@ -45,6 +45,7 @@ public:
     ~LayoutScrollbar() override;
 
     LayoutBox* owningLayoutObject() const;
+    LayoutBox* owningLayoutObjectWithinFrame() const;
 
     IntRect buttonRect(ScrollbarPart);
     IntRect trackRect(int startLength, int endLength);

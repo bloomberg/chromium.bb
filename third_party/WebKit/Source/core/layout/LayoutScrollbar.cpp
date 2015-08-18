@@ -32,6 +32,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutScrollbarTheme.h"
+#include "core/layout/LayoutView.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -94,6 +95,13 @@ LayoutBox* LayoutScrollbar::owningLayoutObject() const
     if (m_owningFrame)
         return m_owningFrame->ownerLayoutObject();
     return m_owner && m_owner->layoutObject() ? m_owner->layoutObject()->enclosingBox() : 0;
+}
+
+LayoutBox* LayoutScrollbar::owningLayoutObjectWithinFrame() const
+{
+    if (m_owningFrame)
+        return m_owningFrame->contentLayoutObject();
+    return owningLayoutObject();
 }
 
 void LayoutScrollbar::setParent(Widget* parent)
@@ -188,7 +196,7 @@ void LayoutScrollbar::updateScrollbarParts(bool destroy)
 
     if (newThickness != oldThickness) {
         setFrameRect(IntRect(location(), IntSize(isHorizontal ? width() : newThickness, isHorizontal ? newThickness : height())));
-        if (LayoutBox* box = owningLayoutObject()) {
+        if (LayoutBox* box = owningLayoutObjectWithinFrame()) {
             if (box->isLayoutBlock())
                 toLayoutBlock(box)->notifyScrollbarThicknessChanged();
             box->setChildNeedsLayout();
