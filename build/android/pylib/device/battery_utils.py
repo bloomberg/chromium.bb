@@ -487,20 +487,21 @@ class BatteryUtils(object):
       logging.warning('Device charging already in expected state: %s', enabled)
       return
 
+    self._DiscoverDeviceProfile()
     if enabled:
-      try:
+      if self._cache['profile']['enable_command']:
         self.SetCharging(enabled)
-      except device_errors.CommandFailedError:
-        logging.info('Unable to enable charging via hardware.'
-                     ' Falling back to software enabling.')
+      else:
+        logging.info('Unable to enable charging via hardware. '
+                     'Falling back to software enabling.')
         self.EnableBatteryUpdates()
     else:
-      try:
+      if self._cache['profile']['enable_command']:
         self._ClearPowerData()
         self.SetCharging(enabled)
-      except device_errors.CommandFailedError:
-        logging.info('Unable to disable charging via hardware.'
-                     ' Falling back to software disabling.')
+      else:
+        logging.info('Unable to disable charging via hardware. '
+                     'Falling back to software disabling.')
         self.DisableBatteryUpdates()
 
   @contextlib.contextmanager

@@ -439,7 +439,6 @@ class BatteryUtilsTieredSetCharging(BatteryUtilsTest):
     with self.assertCalls(
         (self.call.battery.GetCharging(), True),
         (self.call.battery._ClearPowerData(), True),
-        (self.call.battery._ClearPowerData(), True),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
         (self.call.device.RunShellCommand(
@@ -491,7 +490,6 @@ class BatteryUtilsPowerMeasurement(BatteryUtilsTest):
     self.battery._cache['profile'] = self._NEXUS_6
     with self.assertCalls(
         (self.call.battery.GetCharging(), True),
-        (self.call.battery._ClearPowerData(), True),
         (self.call.battery._ClearPowerData(), True),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'set', 'ac', '0'], check_return=True), []),
