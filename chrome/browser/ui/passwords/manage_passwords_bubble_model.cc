@@ -96,6 +96,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
 
   origin_ = controller->origin();
   state_ = controller->state();
+  password_overridden_ = controller->PasswordOverridden();
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     pending_password_ = controller->PendingPassword();
@@ -336,7 +337,7 @@ bool ManagePasswordsBubbleModel::IsNewUIActive() const {
 
 bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
   return state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
-         local_credentials_.size() > 1;
+         local_credentials_.size() > 1 && !password_overridden_;
 }
 
 // static

@@ -171,6 +171,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // should point to an article. For the default title the range is empty.
   gfx::Range title_brand_link_range_;
   autofill::PasswordForm pending_password_;
+  bool password_overridden_;
   ScopedVector<const autofill::PasswordForm> local_credentials_;
   ScopedVector<const autofill::PasswordForm> federated_credentials_;
   base::string16 manage_link_;

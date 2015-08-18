@@ -180,6 +180,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
     has_generated_password_ = generated_password;
   }
 
+  bool password_overridden() const { return password_overridden_; }
+
   // Returns the pending credentials.
   const autofill::PasswordForm& pending_credentials() const {
     return pending_credentials_;
@@ -391,6 +393,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Whether this form has an auto generated password.
   bool has_generated_password_;
+
+  // Whether the saved password was overridden.
+  bool password_overridden_;
 
   // Set if the user has selected one of the other possible usernames in
   // |pending_credentials_|.

@@ -566,7 +566,9 @@ bool PasswordManager::ShouldPromptUserToSavePassword() const {
   return !client_->IsAutomaticPasswordSavingEnabled() &&
          (provisional_save_manager_->IsNewLogin() ||
           provisional_save_manager_->observed_form()
-              .IsPossibleChangePasswordFormWithoutUsername()) &&
+              .IsPossibleChangePasswordFormWithoutUsername() ||
+          (provisional_save_manager_->password_overridden() &&
+           client_->IsUpdatePasswordUIEnabled())) &&
          !provisional_save_manager_->has_generated_password() &&
          !provisional_save_manager_->IsPendingCredentialsPublicSuffixMatch();
 }
@@ -697,9 +699,11 @@ void PasswordManager::OnLoginSuccessful() {
                           empty_password);
     if (logger)
       logger->LogMessage(Logger::STRING_DECISION_ASK);
-    bool update_password = !provisional_save_manager_->best_matches().empty() &&
-                           provisional_save_manager_->observed_form()
-                               .IsPossibleChangePasswordFormWithoutUsername();
+    bool update_password =
+        (!provisional_save_manager_->best_matches().empty() &&
+         provisional_save_manager_->observed_form()
+             .IsPossibleChangePasswordFormWithoutUsername()) ||
+        provisional_save_manager_->password_overridden();
     if (client_->PromptUserToSaveOrUpdatePassword(
             provisional_save_manager_.Pass(),
             CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER,

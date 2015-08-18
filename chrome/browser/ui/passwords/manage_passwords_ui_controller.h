@@ -156,6 +156,10 @@ class ManagePasswordsUIController
     return passwords_data_.federated_credentials_forms();
   }
 
+  // True if the password for previously stored account was overridden, i.e. in
+  // newly submitted form the password is different from stored one.
+  bool PasswordOverridden() const;
+
  protected:
   explicit ManagePasswordsUIController(
       content::WebContents* web_contents);

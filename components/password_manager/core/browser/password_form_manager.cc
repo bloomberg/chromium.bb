@@ -84,6 +84,7 @@ PasswordFormManager::PasswordFormManager(
               : std::vector<std::string>()),
       is_new_login_(true),
       has_generated_password_(false),
+      password_overridden_(false),
       password_manager_(password_manager),
       preferred_match_(nullptr),
       is_ignorable_change_password_form_(false),
@@ -786,15 +787,15 @@ void PasswordFormManager::CreatePendingCredentials() {
   if (it != best_matches_.end()) {
     // The user signed in with a login we autofilled.
     pending_credentials_ = *it->second;
-    bool password_changed =
+    password_overridden_ =
         pending_credentials_.password_value != password_to_save;
     if (IsPendingCredentialsPublicSuffixMatch()) {
       // If the autofilled credentials were only a PSL match, store a copy with
       // the current origin and signon realm. This ensures that on the next
       // visit, a precise match is found.
       is_new_login_ = true;
-      user_action_ = password_changed ? kUserActionChoosePslMatch
-                                      : kUserActionOverridePassword;
+      user_action_ = password_overridden_ ? kUserActionChoosePslMatch
+                                          : kUserActionOverridePassword;
 
       // Since this credential will not overwrite a previously saved credential,
       // username_value can be updated now.
@@ -833,13 +834,13 @@ void PasswordFormManager::CreatePendingCredentials() {
       // This will likely happen infrequently, and the inconvenience put on the
       // user by asking them is not significant, so we are fine with asking
       // here again.
-      if (password_changed) {
+      if (password_overridden_) {
         pending_credentials_.original_signon_realm.clear();
         DCHECK(!IsPendingCredentialsPublicSuffixMatch());
       }
     } else {  // Not a PSL match.
       is_new_login_ = false;
-      if (password_changed)
+      if (password_overridden_)
         user_action_ = kUserActionOverridePassword;
     }
   } else if (other_possible_username_action_ ==

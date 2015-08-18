@@ -352,6 +352,12 @@ const autofill::PasswordForm& ManagePasswordsUIController::
   return form_manager->pending_credentials();
 }
 
+bool ManagePasswordsUIController::PasswordOverridden() const {
+  const password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  return form_manager ? form_manager->password_overridden() : false;
+}
+
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIcon* icon) {
   if (should_pop_up_bubble_) {
