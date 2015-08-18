@@ -22,7 +22,8 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
       : NetErrorTabHelper(web_contents),
         mock_probe_running_(false),
         last_status_sent_(chrome_common_net::DNS_PROBE_MAX),
-        mock_sent_count_(0) {}
+        mock_sent_count_(0),
+        times_diagnostics_dialog_invoked_(0) {}
 
   void FinishProbe(DnsProbeStatus status) {
     EXPECT_TRUE(mock_probe_running_);
@@ -34,8 +35,12 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   DnsProbeStatus last_status_sent() const { return last_status_sent_; }
   int mock_sent_count() const { return mock_sent_count_; }
 
-  const GURL& network_diagnostics_url() const {
+  const std::string& network_diagnostics_url() const {
     return network_diagnostics_url_;
+  }
+
+  int times_diagnostics_dialog_invoked() const {
+    return times_diagnostics_dialog_invoked_;
   }
 
  private:
@@ -51,14 +56,16 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
     mock_sent_count_++;
   }
 
-  void RunNetworkDiagnosticsHelper(const GURL& sanitized_url) override {
+  void RunNetworkDiagnosticsHelper(const std::string& sanitized_url) override {
     network_diagnostics_url_ = sanitized_url;
+    times_diagnostics_dialog_invoked_++;
   }
 
   bool mock_probe_running_;
   DnsProbeStatus last_status_sent_;
   int mock_sent_count_;
-  GURL network_diagnostics_url_;
+  std::string network_diagnostics_url_;
+  int times_diagnostics_dialog_invoked_;
 };
 
 class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
@@ -417,8 +424,9 @@ TEST_F(NetErrorTabHelperTest, SanitizeDiagnosticsUrl) {
   rfh->OnMessageReceived(ChromeViewHostMsg_RunNetworkDiagnostics(
       rfh->GetRoutingID(),
       GURL("http://foo:bar@somewhere:123/hats?for#goats")));
-  EXPECT_EQ(GURL("http://somewhere:123/"),
+  EXPECT_EQ("http://somewhere:123/",
             tab_helper()->network_diagnostics_url());
+  EXPECT_EQ(1, tab_helper()->times_diagnostics_dialog_invoked());
 }
 
 // Makes sure that diagnostics aren't run on invalid URLs or URLs with
@@ -437,6 +445,6 @@ TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
     rfh->OnMessageReceived(ChromeViewHostMsg_RunNetworkDiagnostics(
         rfh->GetRoutingID(), GURL(url)));
-    EXPECT_EQ(GURL(""), tab_helper()->network_diagnostics_url());
+    EXPECT_EQ(0, tab_helper()->times_diagnostics_dialog_invoked());
   }
 }

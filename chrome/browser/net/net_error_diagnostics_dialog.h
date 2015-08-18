@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_NET_NET_ERROR_DIAGNOSTICS_DIALOG_H_
 #define CHROME_BROWSER_NET_NET_ERROR_DIAGNOSTICS_DIALOG_H_
 
-class GURL;
+#include <string>
 
 namespace content {
 class WebContents;
@@ -17,9 +17,9 @@ bool CanShowNetworkDiagnosticsDialog();
 
 // Shows a dialog for investigating an error received when requesting
 // |failed_url|.  May only be called when CanShowNetworkDiagnosticsDialog()
-// returns true.
+// returns true.  The caller is responsible for sanitizing the url.
 void ShowNetworkDiagnosticsDialog(content::WebContents* web_contents,
-                                  const GURL& failed_url);
+                                  const std::string& failed_url);
 
 #endif  // CHROME_BROWSER_NET_NET_ERROR_DIAGNOSTICS_DIALOG_H_
 

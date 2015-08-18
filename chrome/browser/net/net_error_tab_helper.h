@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NET_NET_ERROR_TAB_HELPER_H_
 #define CHROME_BROWSER_NET_NET_ERROR_TAB_HELPER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -98,7 +100,7 @@ class NetErrorTabHelper
 
   // Shows the diagnostics dialog after its been sanitized, virtual for
   // testing.
-  virtual void RunNetworkDiagnosticsHelper(const GURL& sanitized_url);
+  virtual void RunNetworkDiagnosticsHelper(const std::string& sanitized_url);
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;

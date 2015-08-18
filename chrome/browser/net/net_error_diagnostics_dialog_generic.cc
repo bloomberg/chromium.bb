@@ -6,24 +6,11 @@
 
 #include "base/logging.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/net/net_error_diagnostics_dialog_mac.h"
-#endif
-
 bool CanShowNetworkDiagnosticsDialog() {
-#if defined(OS_MACOSX)
-  return true;
-#else
   return false;
-#endif
 }
 
 void ShowNetworkDiagnosticsDialog(content::WebContents* web_contents,
-                                  const GURL& failed_url) {
-  DCHECK(CanShowNetworkDiagnosticsDialog());
-#if defined(OS_MACOSX)
-  ShowNetworkDiagnosticsDialogMac(web_contents, failed_url);
-#else
+                                  const std::string& failed_url) {
   NOTREACHED();
-#endif
 }

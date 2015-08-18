@@ -10,12 +10,15 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
-#include "url/gurl.h"
 
-void ShowNetworkDiagnosticsDialogMac(content::WebContents* web_contents,
-                                     const GURL& failed_url) {
+bool CanShowNetworkDiagnosticsDialog() {
+  return false;
+}
+
+void ShowNetworkDiagnosticsDialog(content::WebContents* web_contents,
+                                  const std::string& failed_url) {
   base::ScopedCFTypeRef<CFStringRef> url_string_ref(
-      base::SysUTF8ToCFStringRef(failed_url.spec()));
+      base::SysUTF8ToCFStringRef(failed_url));
   base::ScopedCFTypeRef<CFURLRef> url_ref(
       CFURLCreateWithString(kCFAllocatorDefault, url_string_ref.get(),
                             nullptr));

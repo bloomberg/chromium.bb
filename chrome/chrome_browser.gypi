@@ -1910,10 +1910,9 @@
       'browser/net/file_downloader.h',
       'browser/net/http_server_properties_manager_factory.cc',
       'browser/net/http_server_properties_manager_factory.h',
-      'browser/net/net_error_diagnostics_dialog.cc',
       'browser/net/net_error_diagnostics_dialog.h',
       'browser/net/net_error_diagnostics_dialog_mac.cc',
-      'browser/net/net_error_diagnostics_dialog_mac.h',
+      'browser/net/net_error_diagnostics_dialog_win.cc',
       'browser/net/net_error_tab_helper.cc',
       'browser/net/net_error_tab_helper.h',
       'browser/net/net_log_temp_file.cc',
@@ -3356,6 +3355,11 @@
             '<@(chrome_browser_win_mac_sources)',
           ],
         }],
+        ['OS!="win" and OS!="mac" and OS!="ios"', {
+          'sources': [
+            'browser/net/net_error_diagnostics_dialog_generic.cc',
+          ],
+        }],
         ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
           'sources': [
             'browser/net/disk_cache_dir_policy_handler.cc',
@@ -3763,6 +3767,29 @@
               ],
             }],
           ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                # Used by browser/net/net_error_diagnostics_dialog_win.h
+                'ndfapi.dll',
+              ],
+              'AdditionalDependencies': [
+                'ndfapi.lib',
+              ],
+            },
+          },
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  'ndfapi.dll',
+                ],
+                'AdditionalDependencies': [
+                  'ndfapi.lib',
+                ],
+              },
+            },
+          },
         }, {  # 'OS!="win"
           'sources': [ '<@(chrome_browser_non_win_sources)' ],
           'conditions': [

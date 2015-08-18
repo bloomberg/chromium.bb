@@ -265,11 +265,11 @@ void NetErrorTabHelper::RunNetworkDiagnostics(const GURL& url) {
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return;
   // Sanitize URL prior to running diagnostics on it.
-  RunNetworkDiagnosticsHelper(url.GetOrigin());
+  RunNetworkDiagnosticsHelper(url.GetOrigin().spec());
 }
 
 void NetErrorTabHelper::RunNetworkDiagnosticsHelper(
-    const GURL& sanitized_url) {
+    const std::string& sanitized_url) {
   ShowNetworkDiagnosticsDialog(web_contents(), sanitized_url);
 }
 

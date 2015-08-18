@@ -35,6 +35,19 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "../chrome_browser.gypi" ])
 
+if (is_win) {
+  # This is in a separate config so the flags can be applied to dependents.
+  # ldflags in GN aren't automatically inherited.
+  config("browser_win_linker_flags") {
+    libs = [
+      "credui.lib",
+      "netapi32.lib",
+      "ndfapi.lib",  # Used by browser/net/net_error_diagnostics_dialog_win.h
+    ]
+    ldflags = [ "/DELAYLOAD:ndfapi.dll" ]
+  }
+}
+
 if (is_desktop_linux) {
   # Gnome-keyring is normally dynamically loaded. The gnome_keyring config
   # will set this up.
@@ -330,6 +343,9 @@ source_set("browser") {
   if (is_win || is_mac) {
     sources +=
         rebase_path(gypi_values.chrome_browser_win_mac_sources, ".", "//chrome")
+  }
+  if (!is_win && !is_mac && !is_ios) {
+    sources += [ "net/net_error_diagnostics_dialog_generic.cc" ]
   }
   if (!is_android && !is_ios && !is_chromeos && enable_configuration_policy) {
     sources += [
@@ -737,10 +753,9 @@ source_set("browser") {
       "//ui/metro_viewer",
       "//win8:metro_viewer",
     ]
-    libs += [
-      "credui.lib",
-      "netapi32.lib",
-    ]
+
+    all_dependent_configs = [ ":browser_win_linker_flags" ]
+
     if (!is_chrome_branded) {
       deps -= [ "//google_update" ]
       sources -= [
