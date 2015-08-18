@@ -941,6 +941,34 @@ TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
   ASSERT_EQ(0u, active_layer_->tilings()->num_tilings());
 }
 
+TEST_F(PictureLayerImplTest, LowResTilingStaysOnActiveTree) {
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(1300, 1900);
+
+  scoped_refptr<FakePicturePileImpl> valid_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> other_valid_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupPendingTree(valid_pile);
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
+
+  ActivateTree();
+  SetupPendingTree(other_valid_pile);
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
+  ASSERT_EQ(1u, pending_layer_->tilings()->num_tilings());
+  auto* low_res_tiling =
+      active_layer_->tilings()->FindTilingWithResolution(LOW_RESOLUTION);
+  EXPECT_TRUE(low_res_tiling);
+
+  ActivateTree();
+  ASSERT_EQ(2u, active_layer_->tilings()->num_tilings());
+  auto* other_low_res_tiling =
+      active_layer_->tilings()->FindTilingWithResolution(LOW_RESOLUTION);
+  EXPECT_TRUE(other_low_res_tiling);
+  EXPECT_EQ(low_res_tiling, other_low_res_tiling);
+}
+
 TEST_F(PictureLayerImplTest, ZoomOutCrash) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);

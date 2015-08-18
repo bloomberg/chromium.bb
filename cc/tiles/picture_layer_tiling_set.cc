@@ -119,8 +119,12 @@ void PictureLayerTilingSet::UpdateTilingsToCurrentRasterSourceForActivation(
     tiling->CreateMissingTilesInLiveTilesRect();
 
     // |this| is active set and |tiling| is not in the pending set, which means
-    // it is now NON_IDEAL_RESOLUTION.
-    tiling->set_resolution(NON_IDEAL_RESOLUTION);
+    // it is now NON_IDEAL_RESOLUTION. The exception is for LOW_RESOLUTION
+    // tilings, which are computed and created entirely on the active tree.
+    // Since the pending tree does not have them, we should just leave them as
+    // low resolution to not lose them.
+    if (tiling->resolution() != LOW_RESOLUTION)
+      tiling->set_resolution(NON_IDEAL_RESOLUTION);
   }
 
   VerifyTilings(pending_twin_set);
@@ -196,16 +200,7 @@ void PictureLayerTilingSet::CleanUpTilings(
     float min_acceptable_high_res_scale,
     float max_acceptable_high_res_scale,
     const std::vector<PictureLayerTiling*>& needed_tilings,
-    bool should_have_low_res,
     PictureLayerTilingSet* twin_set) {
-  float twin_low_res_scale = 0.f;
-  if (twin_set) {
-    PictureLayerTiling* tiling =
-        twin_set->FindTilingWithResolution(LOW_RESOLUTION);
-    if (tiling)
-      twin_low_res_scale = tiling->contents_scale();
-  }
-
   std::vector<PictureLayerTiling*> to_remove;
   for (auto* tiling : tilings_) {
     // Keep all tilings within the min/max scales.
@@ -214,12 +209,9 @@ void PictureLayerTilingSet::CleanUpTilings(
       continue;
     }
 
-    // Keep low resolution tilings, if the tiling set should have them.
-    if (should_have_low_res &&
-        (tiling->resolution() == LOW_RESOLUTION ||
-         tiling->contents_scale() == twin_low_res_scale)) {
+    // Keep low resolution tilings.
+    if (tiling->resolution() == LOW_RESOLUTION)
       continue;
-    }
 
     // Don't remove tilings that are required.
     if (std::find(needed_tilings.begin(), needed_tilings.end(), tiling) !=

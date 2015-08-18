@@ -1054,9 +1054,9 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
   }
 
   PictureLayerTilingSet* twin_set = twin ? twin->tilings_.get() : nullptr;
-  tilings_->CleanUpTilings(
-      min_acceptable_high_res_scale, max_acceptable_high_res_scale,
-      used_tilings, layer_tree_impl()->create_low_res_tiling(), twin_set);
+  tilings_->CleanUpTilings(min_acceptable_high_res_scale,
+                           max_acceptable_high_res_scale, used_tilings,
+                           twin_set);
   DCHECK_GT(tilings_->num_tilings(), 0u);
   SanityCheckTilingState();
 }

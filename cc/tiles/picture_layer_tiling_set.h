@@ -51,7 +51,6 @@ class CC_EXPORT PictureLayerTilingSet {
   void CleanUpTilings(float min_acceptable_high_res_scale,
                       float max_acceptable_high_res_scale,
                       const std::vector<PictureLayerTiling*>& needed_tilings,
-                      bool should_have_low_res,
                       PictureLayerTilingSet* twin_set);
   void RemoveNonIdealTilings();
 
