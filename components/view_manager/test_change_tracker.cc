@@ -119,9 +119,13 @@ std::vector<std::string> ChangesToDescription1(
 }
 
 std::string SingleChangeToDescription(const std::vector<Change>& changes) {
-  if (changes.size() != 1u)
-    return std::string();
-  return ChangeToDescription1(changes[0]);
+  std::string result;
+  for (auto& change : changes) {
+    if (!result.empty())
+      result += "\n";
+    result += ChangeToDescription1(change);
+  }
+  return result;
 }
 
 std::string SingleViewDescription(const std::vector<TestView>& views) {

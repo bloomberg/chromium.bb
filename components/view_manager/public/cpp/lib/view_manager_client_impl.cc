@@ -339,7 +339,14 @@ void ViewManagerClientImpl::OnViewHierarchyChanged(
   View* initial_parent = views.size() ?
       GetViewById(views[0]->parent_id) : NULL;
 
+  const bool was_view_known = GetViewById(view_id) != nullptr;
+
   BuildViewTree(this, views, initial_parent);
+
+  // If the view was not known, then BuildViewTree() will have created it and
+  // parented the view.
+  if (!was_view_known)
+    return;
 
   View* new_parent = GetViewById(new_parent_id);
   View* old_parent = GetViewById(old_parent_id);

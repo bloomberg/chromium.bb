@@ -780,8 +780,8 @@ bool ViewManagerServiceImpl::IsViewRootOfAnotherConnectionForAccessPolicy(
   return connection && connection != this;
 }
 
-bool ViewManagerServiceImpl::IsEmbedRootForAccessPolicy() {
-  return is_embed_root_;
+bool ViewManagerServiceImpl::IsDescendantOfEmbedRoot(const ServerView* view) {
+  return is_embed_root_ && root_ && GetView(*root_)->Contains(view);
 }
 
 }  // namespace view_manager

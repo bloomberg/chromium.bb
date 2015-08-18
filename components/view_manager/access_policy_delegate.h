@@ -27,8 +27,9 @@ class AccessPolicyDelegate {
   virtual bool IsViewRootOfAnotherConnectionForAccessPolicy(
       const ServerView* view) const = 0;
 
-  // Returns true if SetEmbedRoot() was invoked.
-  virtual bool IsEmbedRootForAccessPolicy() = 0;
+  // Returns true if SetEmbedRoot() was invoked and |view| is a descendant of
+  // the root of the connection.
+  virtual bool IsDescendantOfEmbedRoot(const ServerView* view) = 0;
 
  protected:
   virtual ~AccessPolicyDelegate() {}

@@ -48,7 +48,8 @@ bool DefaultAccessPolicy::CanDeleteView(const ServerView* view) const {
 
 bool DefaultAccessPolicy::CanGetViewTree(const ServerView* view) const {
   return WasCreatedByThisConnection(view) ||
-         delegate_->IsRootForAccessPolicy(view->id());
+         delegate_->IsRootForAccessPolicy(view->id()) ||
+         IsDescendantOfEmbedRoot(view);
 }
 
 bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
@@ -56,7 +57,7 @@ bool DefaultAccessPolicy::CanDescendIntoViewForViewTree(
   return (WasCreatedByThisConnection(view) &&
           !delegate_->IsViewRootOfAnotherConnectionForAccessPolicy(view)) ||
          delegate_->IsRootForAccessPolicy(view->id()) ||
-         delegate_->IsEmbedRootForAccessPolicy();
+         delegate_->IsDescendantOfEmbedRoot(view);
 }
 
 bool DefaultAccessPolicy::CanEmbed(const ServerView* view) const {
@@ -103,17 +104,22 @@ bool DefaultAccessPolicy::ShouldNotifyOnHierarchyChange(
     const ServerView* view,
     const ServerView** new_parent,
     const ServerView** old_parent) const {
-  if (!WasCreatedByThisConnection(view))
+  if (!WasCreatedByThisConnection(view) && !IsDescendantOfEmbedRoot(view) &&
+      (!*new_parent || !IsDescendantOfEmbedRoot(*new_parent)) &&
+      (!*old_parent || !IsDescendantOfEmbedRoot(*old_parent))) {
     return false;
+  }
 
   if (*new_parent && !WasCreatedByThisConnection(*new_parent) &&
-      !delegate_->IsRootForAccessPolicy((*new_parent)->id())) {
-    *new_parent = NULL;
+      !delegate_->IsRootForAccessPolicy((*new_parent)->id()) &&
+      !delegate_->IsDescendantOfEmbedRoot(*new_parent)) {
+    *new_parent = nullptr;
   }
 
   if (*old_parent && !WasCreatedByThisConnection(*old_parent) &&
-      !delegate_->IsRootForAccessPolicy((*old_parent)->id())) {
-    *old_parent = NULL;
+      !delegate_->IsRootForAccessPolicy((*old_parent)->id()) &&
+      !delegate_->IsDescendantOfEmbedRoot(*new_parent)) {
+    *old_parent = nullptr;
   }
   return true;
 }
@@ -129,6 +135,11 @@ const ServerView* DefaultAccessPolicy::GetViewForFocusChange(
 bool DefaultAccessPolicy::WasCreatedByThisConnection(
     const ServerView* view) const {
   return view->id().connection_id == connection_id_;
+}
+
+bool DefaultAccessPolicy::IsDescendantOfEmbedRoot(
+    const ServerView* view) const {
+  return delegate_->IsDescendantOfEmbedRoot(view);
 }
 
 }  // namespace view_manager

@@ -233,7 +233,7 @@ class ViewManagerServiceImpl : public mojo::ViewManagerService,
   bool IsViewKnownForAccessPolicy(const ServerView* view) const override;
   bool IsViewRootOfAnotherConnectionForAccessPolicy(
       const ServerView* view) const override;
-  bool IsEmbedRootForAccessPolicy() override;
+  bool IsDescendantOfEmbedRoot(const ServerView* view) override;
 
   ConnectionManager* connection_manager_;
 

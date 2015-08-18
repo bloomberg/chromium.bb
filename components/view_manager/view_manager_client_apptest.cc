@@ -92,7 +92,9 @@ class TreeSizeMatchesObserver : public ViewObserver {
   MOJO_DISALLOW_COPY_AND_ASSIGN(TreeSizeMatchesObserver);
 };
 
-// Wait until |view|'s tree size matches |tree_size|; returns false on timeout.
+// Wait until |view| has |tree_size| descendants; returns false on timeout. The
+// count includes |view|. For example, if you want to wait for |view| to have
+// a single child, use a |tree_size| of 2.
 bool WaitForTreeSizeToMatch(View* view, size_t tree_size) {
   TreeSizeMatchesObserver observer(view, tree_size);
   return observer.IsTreeCorrectSize() ||
@@ -836,6 +838,25 @@ TEST_F(ViewManagerTest, ViewManagerDestroyedAfterRootObserver) {
   embed_view->Destroy();
   EXPECT_TRUE(DoRunLoopWithTimeout());
   EXPECT_TRUE(got_destroy);
+}
+
+// Verifies an embed root sees views created beneath it from another
+// connection.
+TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
+  View* embed_view = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(embed_view);
+
+  ViewManager* vm2 = Embed(embed_view);
+  vm2->SetEmbedRoot();
+  View* vm2_v1 = vm2->CreateView();
+  vm2->GetRoot()->AddChild(vm2_v1);
+
+  ViewManager* vm3 = Embed(vm2_v1);
+  View* vm3_v1 = vm3->CreateView();
+  vm3->GetRoot()->AddChild(vm3_v1);
+
+  // As |vm2| is an embed root it should get notified about |vm3_v1|.
+  ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
 }
 
 }  // namespace mojo

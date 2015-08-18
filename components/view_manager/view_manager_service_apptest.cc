@@ -1692,6 +1692,20 @@ TEST_F(ViewManagerServiceAppTest, OnWillEmbed) {
   Id view_4_4 = connection4->CreateView(4);
   ASSERT_TRUE(view_4_4);
   ASSERT_TRUE(AddView(connection4->service(), view_3_3, view_4_4));
+
+  // vm3() and vm2() should see view_4_4 as they are embed roots.
+  ASSERT_TRUE(WaitForAllMessages(vm3()));
+  EXPECT_EQ("HierarchyChanged view=" + IdToString(view_4_4) + " new_parent=" +
+                IdToString(view_3_3) + " old_parent=null",
+            SingleChangeToDescription(*changes3()));
+  changes3()->clear();
+
+  ASSERT_TRUE(WaitForAllMessages(vm2()));
+  EXPECT_EQ("HierarchyChanged view=" + IdToString(view_4_4) + " new_parent=" +
+                IdToString(view_3_3) + " old_parent=null",
+            SingleChangeToDescription(*changes2()));
+  changes2()->clear();
+
   scoped_ptr<ViewManagerClientImpl> connection5(EstablishConnectionViaEmbed(
       connection4->service(), view_4_4, EmbedType::ALLOW_REEMBED, nullptr));
   ASSERT_TRUE(connection5.get());

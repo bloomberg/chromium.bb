@@ -44,6 +44,7 @@ class DefaultAccessPolicy : public AccessPolicy {
 
  private:
   bool WasCreatedByThisConnection(const ServerView* view) const;
+  bool IsDescendantOfEmbedRoot(const ServerView* view) const;
 
   const mojo::ConnectionSpecificId connection_id_;
   AccessPolicyDelegate* delegate_;
