@@ -41,11 +41,6 @@
 #endif
 
 namespace blink {
-class WebInbandTextTrack;
-class WebLayer;
-}
-
-namespace blink {
 
 #if ENABLE(WEB_AUDIO)
 class AudioSourceProviderClient;
@@ -68,6 +63,8 @@ class TextTrackList;
 class TimeRanges;
 class URLRegistry;
 class VideoTrackList;
+class WebInbandTextTrack;
+class WebLayer;
 
 class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public ActiveDOMObject, private WebMediaPlayerClient {
     DEFINE_WRAPPERTYPEINFO();

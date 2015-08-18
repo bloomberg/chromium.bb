@@ -89,11 +89,6 @@
 #include "public/platform/WebAudioSourceProvider.h"
 #endif
 
-using blink::WebInbandTextTrack;
-using blink::WebMediaPlayer;
-using blink::WebMimeRegistry;
-using blink::WebMediaPlayerClient;
-
 namespace blink {
 
 #if !LOG_DISABLED
@@ -2269,7 +2264,7 @@ void HTMLMediaElement::audioTracksTimerFired(Timer<HTMLMediaElement>*)
     webMediaPlayer()->enabledAudioTracksChanged(enabledTrackIds);
 }
 
-WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const WebString& id, blink::WebMediaPlayerClient::AudioTrackKind kind, const WebString& label, const WebString& language, bool enabled)
+WebMediaPlayer::TrackId HTMLMediaElement::addAudioTrack(const WebString& id, WebMediaPlayerClient::AudioTrackKind kind, const WebString& label, const WebString& language, bool enabled)
 {
     AtomicString kindString = AudioKindToString(kind);
     WTF_LOG(Media, "HTMLMediaElement::addAudioTrack(%p, '%s', '%s', '%s', '%s', %d)",
@@ -2313,7 +2308,7 @@ void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* select
     webMediaPlayer()->selectedVideoTrackChanged(selectedTrackId);
 }
 
-WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const WebString& id, blink::WebMediaPlayerClient::VideoTrackKind kind, const WebString& label, const WebString& language, bool selected)
+WebMediaPlayer::TrackId HTMLMediaElement::addVideoTrack(const WebString& id, WebMediaPlayerClient::VideoTrackKind kind, const WebString& label, const WebString& language, bool selected)
 {
     AtomicString kindString = VideoKindToString(kind);
     WTF_LOG(Media, "HTMLMediaElement::addVideoTrack(%p, '%s', '%s', '%s', '%s', %d)",
@@ -3628,7 +3623,7 @@ WebMediaPlayer::CORSMode HTMLMediaElement::corsMode() const
     return WebMediaPlayer::CORSModeAnonymous;
 }
 
-void HTMLMediaElement::setWebLayer(blink::WebLayer* webLayer)
+void HTMLMediaElement::setWebLayer(WebLayer* webLayer)
 {
     if (webLayer == m_webLayer)
         return;
