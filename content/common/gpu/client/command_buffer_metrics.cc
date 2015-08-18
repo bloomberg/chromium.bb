@@ -79,6 +79,10 @@ void RecordContextLost(CommandBufferContextType type,
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BrowserMainThread", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
       break;
+    case BROWSER_WORKER_CONTEXT:
+      UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.BrowserWorker", reason,
+                                CONTEXT_LOST_REASON_MAX_ENUM);
+      break;
     case RENDER_COMPOSITOR_CONTEXT:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.RenderCompositor", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
@@ -120,6 +124,8 @@ std::string CommandBufferContextTypeToString(CommandBufferContextType type) {
       return "Compositor";
     case BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT:
       return "Offscreen-MainThread";
+    case BROWSER_WORKER_CONTEXT:
+      return "CompositorWorker";
     case RENDER_COMPOSITOR_CONTEXT:
       return "RenderCompositor";
     case RENDER_WORKER_CONTEXT:

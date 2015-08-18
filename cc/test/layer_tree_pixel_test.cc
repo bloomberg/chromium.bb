@@ -381,4 +381,10 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
                  texture_id));
 }
 
+void LayerTreePixelTest::Finish() {
+  scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
+  GLES2Interface* gl = context->GetImplementation();
+  gl->Finish();
+}
+
 }  // namespace cc

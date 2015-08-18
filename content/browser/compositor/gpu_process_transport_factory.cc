@@ -241,6 +241,13 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface) {
+    // Try to reuse existing worker context provider.
+    if (shared_worker_context_provider_) {
+      base::AutoLock lock(*shared_worker_context_provider_->GetLock());
+      if (shared_worker_context_provider_->ContextGL()
+              ->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+        shared_worker_context_provider_ = nullptr;
+    }
     scoped_refptr<GpuChannelHost> gpu_channel_host =
         BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
     if (gpu_channel_host.get()) {
@@ -250,12 +257,24 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           BROWSER_COMPOSITOR_ONSCREEN_CONTEXT);
       if (context_provider && !context_provider->BindToCurrentThread())
         context_provider = nullptr;
+      if (!shared_worker_context_provider_) {
+        shared_worker_context_provider_ = ContextProviderCommandBuffer::Create(
+            GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
+                                                            0),
+            BROWSER_WORKER_CONTEXT);
+        if (shared_worker_context_provider_ &&
+            !shared_worker_context_provider_->BindToCurrentThread())
+          shared_worker_context_provider_ = nullptr;
+      }
     }
 
-    UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
-                          !!context_provider.get());
+    bool created_gpu_browser_compositor =
+        !!context_provider && !!shared_worker_context_provider_;
 
-    if (!context_provider) {
+    UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
+                          created_gpu_browser_compositor);
+
+    if (!created_gpu_browser_compositor) {
       // Try again.
       CauseForGpuLaunch cause =
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
@@ -278,7 +297,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         context_provider->ContextCapabilities();
     if (!data->surface_id) {
       surface = make_scoped_ptr(new OffscreenBrowserCompositorOutputSurface(
-          context_provider, compositor->vsync_manager(),
+          context_provider, shared_worker_context_provider_,
+          compositor->vsync_manager(),
           scoped_ptr<BrowserCompositorOverlayCandidateValidator>()));
     } else if (capabilities.gpu.surfaceless) {
       GLenum target = GL_TEXTURE_2D;
@@ -289,13 +309,15 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(
-              context_provider, data->surface_id, compositor->vsync_manager(),
+              context_provider, shared_worker_context_provider_,
+              data->surface_id, compositor->vsync_manager(),
               CreateOverlayCandidateValidator(compositor->widget()), target,
               format, BrowserGpuMemoryBufferManager::current()));
     } else {
       if (!surface) {
         surface = make_scoped_ptr(new GpuBrowserCompositorOutputSurface(
-            context_provider, compositor->vsync_manager(),
+            context_provider, shared_worker_context_provider_,
+            compositor->vsync_manager(),
             CreateOverlayCandidateValidator(compositor->widget())));
       }
     }
@@ -326,7 +348,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   scoped_ptr<cc::SurfaceDisplayOutputSurface> output_surface(
       new cc::SurfaceDisplayOutputSurface(
-          manager, compositor->surface_id_allocator(), context_provider));
+          manager, compositor->surface_id_allocator(), context_provider,
+          shared_worker_context_provider_));
   display_client->set_surface_output_surface(output_surface.get());
   output_surface->set_display_client(display_client.get());
   display_client->display()->Resize(compositor->size());

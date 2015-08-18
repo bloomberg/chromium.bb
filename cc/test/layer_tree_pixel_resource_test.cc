@@ -45,8 +45,7 @@ bool IsTestCaseSupported(PixelResourceTestCase test_case) {
 
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
     PixelResourceTestCase test_case)
-    : staging_texture_target_(GL_INVALID_VALUE),
-      draw_texture_target_(GL_INVALID_VALUE),
+    : draw_texture_target_(GL_INVALID_VALUE),
       resource_pool_option_(BITMAP_TILE_TASK_WORKER_POOL),
       initialized_(false),
       test_case_(test_case) {
@@ -54,12 +53,10 @@ LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest(
 }
 
 LayerTreeHostPixelResourceTest::LayerTreeHostPixelResourceTest()
-    : staging_texture_target_(GL_INVALID_VALUE),
-      draw_texture_target_(GL_INVALID_VALUE),
+    : draw_texture_target_(GL_INVALID_VALUE),
       resource_pool_option_(BITMAP_TILE_TASK_WORKER_POOL),
       initialized_(false),
-      test_case_(SOFTWARE) {
-}
+      test_case_(SOFTWARE) {}
 
 void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
     PixelResourceTestCase test_case) {
@@ -68,55 +65,46 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
   switch (test_case) {
     case SOFTWARE:
       test_type_ = PIXEL_TEST_SOFTWARE;
-      staging_texture_target_ = GL_INVALID_VALUE;
       draw_texture_target_ = GL_INVALID_VALUE;
       resource_pool_option_ = BITMAP_TILE_TASK_WORKER_POOL;
       return;
     case GL_GPU_RASTER_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_INVALID_VALUE;
       draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = GPU_TILE_TASK_WORKER_POOL;
       return;
     case GL_ONE_COPY_2D_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_TEXTURE_2D;
       draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = ONE_COPY_TILE_TASK_WORKER_POOL;
       return;
     case GL_ONE_COPY_RECT_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_TEXTURE_RECTANGLE_ARB;
       draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = ONE_COPY_TILE_TASK_WORKER_POOL;
       return;
     case GL_ONE_COPY_EXTERNAL_STAGING_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_TEXTURE_EXTERNAL_OES;
       draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = ONE_COPY_TILE_TASK_WORKER_POOL;
       return;
     case GL_ZERO_COPY_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_INVALID_VALUE;
       draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
       return;
     case GL_ZERO_COPY_RECT_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_INVALID_VALUE;
       draw_texture_target_ = GL_TEXTURE_RECTANGLE_ARB;
       resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
       return;
     case GL_ZERO_COPY_EXTERNAL_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_INVALID_VALUE;
       draw_texture_target_ = GL_TEXTURE_EXTERNAL_OES;
       resource_pool_option_ = ZERO_COPY_TILE_TASK_WORKER_POOL;
       return;
     case GL_ASYNC_UPLOAD_2D_DRAW:
       test_type_ = PIXEL_TEST_GL;
-      staging_texture_target_ = GL_INVALID_VALUE;
       draw_texture_target_ = GL_TEXTURE_2D;
       resource_pool_option_ = PIXEL_BUFFER_TILE_TASK_WORKER_POOL;
       return;
@@ -127,8 +115,7 @@ void LayerTreeHostPixelResourceTest::InitializeFromTestCase(
 void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
     LayerTreeHostImpl* host_impl,
     scoped_ptr<TileTaskWorkerPool>* tile_task_worker_pool,
-    scoped_ptr<ResourcePool>* resource_pool,
-    scoped_ptr<ResourcePool>* staging_resource_pool) {
+    scoped_ptr<ResourcePool>* resource_pool) {
   base::SingleThreadTaskRunner* task_runner =
       proxy()->HasImplThread() ? proxy()->ImplThreadTaskRunner()
                                : proxy()->MainThreadTaskRunner();
@@ -140,6 +127,7 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
   ResourceProvider* resource_provider = host_impl->resource_provider();
   size_t max_transfer_buffer_usage_bytes = 1024u * 1024u * 60u;
   int max_bytes_per_copy_operation = 1024 * 1024;
+  int max_staging_buffers = 32;
 
   switch (resource_pool_option_) {
     case BITMAP_TILE_TASK_WORKER_POOL:
@@ -177,15 +165,12 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndTileTaskWorkerPool(
       EXPECT_TRUE(context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
-      // We need to create a staging resource pool when using copy rasterizer.
-      *staging_resource_pool =
-          ResourcePool::Create(resource_provider, staging_texture_target_);
       *resource_pool =
           ResourcePool::Create(resource_provider, draw_texture_target_);
 
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
           task_runner, task_graph_runner(), context_provider, resource_provider,
-          staging_resource_pool->get(), max_bytes_per_copy_operation, false);
+          max_bytes_per_copy_operation, false, max_staging_buffers);
       break;
     case PIXEL_BUFFER_TILE_TASK_WORKER_POOL:
       EXPECT_TRUE(context_provider);

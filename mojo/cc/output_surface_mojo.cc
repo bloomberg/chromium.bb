@@ -15,8 +15,9 @@ namespace mojo {
 OutputSurfaceMojo::OutputSurfaceMojo(
     OutputSurfaceMojoClient* client,
     const scoped_refptr<cc::ContextProvider>& context_provider,
+    const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     ScopedMessagePipeHandle surface_handle)
-    : cc::OutputSurface(context_provider),
+    : cc::OutputSurface(context_provider, worker_context_provider),
       output_surface_mojo_client_(client),
       surface_handle_(surface_handle.Pass()),
       id_namespace_(0u),

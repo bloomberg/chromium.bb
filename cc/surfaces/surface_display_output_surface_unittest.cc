@@ -60,7 +60,8 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
         context_provider_(TestContextProvider::Create()),
         surface_display_output_surface_(&surface_manager_,
                                         &allocator_,
-                                        context_provider_) {
+                                        context_provider_,
+                                        nullptr) {
     output_surface_ = display_client_.output_surface();
     display_client_.set_surface_output_surface(
         &surface_display_output_surface_);

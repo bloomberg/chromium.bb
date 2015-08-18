@@ -91,6 +91,8 @@ class LayerTreePixelTest : public LayerTreeTest {
                              uint32 sync_point,
                              bool lost_resource);
 
+  void Finish();
+
   void set_enlarge_texture_amount(const gfx::Vector2d& enlarge_texture_amount) {
     enlarge_texture_amount_ = enlarge_texture_amount;
   }

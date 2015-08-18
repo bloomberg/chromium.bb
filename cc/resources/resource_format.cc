@@ -87,4 +87,23 @@ GLenum GLInternalFormat(ResourceFormat format) {
   return GLDataFormat(format);
 }
 
+gfx::BufferFormat BufferFormat(ResourceFormat format) {
+  switch (format) {
+    case RGBA_8888:
+      return gfx::BufferFormat::RGBA_8888;
+    case BGRA_8888:
+      return gfx::BufferFormat::BGRA_8888;
+    case RGBA_4444:
+      return gfx::BufferFormat::RGBA_4444;
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case ETC1:
+    case RED_8:
+      break;
+  }
+  NOTREACHED();
+  return gfx::BufferFormat::RGBA_8888;
+}
+
 }  // namespace cc

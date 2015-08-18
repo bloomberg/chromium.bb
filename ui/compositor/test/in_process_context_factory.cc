@@ -41,9 +41,11 @@ class FakeReflector : public Reflector {
 // GL surface.
 class DirectOutputSurface : public cc::OutputSurface {
  public:
-  explicit DirectOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider)
-      : cc::OutputSurface(context_provider), weak_ptr_factory_(this) {}
+  DirectOutputSurface(
+      const scoped_refptr<cc::ContextProvider>& context_provider,
+      const scoped_refptr<cc::ContextProvider>& worker_context_provider)
+      : cc::OutputSurface(context_provider, worker_context_provider),
+        weak_ptr_factory_(this) {}
 
   ~DirectOutputSurface() override {}
 
@@ -110,16 +112,19 @@ void InProcessContextFactory::CreateOutputSurface(
       InProcessContextProvider::Create(attribs, &gpu_memory_buffer_manager_,
                                        &image_factory_,
                                        compositor->widget(), "UICompositor");
+  scoped_refptr<InProcessContextProvider> worker_context_provider =
+      InProcessContextProvider::CreateOffscreen(&gpu_memory_buffer_manager_,
+                                                &image_factory_);
 
   scoped_ptr<cc::OutputSurface> real_output_surface;
 
   if (use_test_surface_) {
     bool flipped_output_surface = false;
     real_output_surface = make_scoped_ptr(new cc::PixelTestOutputSurface(
-        context_provider, flipped_output_surface));
+        context_provider, worker_context_provider, flipped_output_surface));
   } else {
-    real_output_surface =
-        make_scoped_ptr(new DirectOutputSurface(context_provider));
+    real_output_surface = make_scoped_ptr(
+        new DirectOutputSurface(context_provider, worker_context_provider));
   }
 
   if (surface_manager_) {
@@ -129,9 +134,9 @@ void InProcessContextFactory::CreateOutputSurface(
             GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
             compositor->GetRendererSettings(), compositor->task_runner()));
     scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
-        new cc::SurfaceDisplayOutputSurface(surface_manager_,
-                                            compositor->surface_id_allocator(),
-                                            context_provider));
+        new cc::SurfaceDisplayOutputSurface(
+            surface_manager_, compositor->surface_id_allocator(),
+            context_provider, worker_context_provider));
     display_client->set_surface_output_surface(surface_output_surface.get());
     surface_output_surface->set_display_client(display_client.get());
 

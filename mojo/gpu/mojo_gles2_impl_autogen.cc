@@ -825,7 +825,8 @@ void MojoGLES2Impl::ShallowFlushCHROMIUM() {
   glShallowFlushCHROMIUM();
 }
 void MojoGLES2Impl::OrderingBarrierCHROMIUM() {
-  NOTREACHED() << "Unimplemented OrderingBarrierCHROMIUM.";
+  MojoGLES2MakeCurrent(context_);
+  glOrderingBarrierCHROMIUM();
 }
 void MojoGLES2Impl::StencilFunc(GLenum func, GLint ref, GLuint mask) {
   MojoGLES2MakeCurrent(context_);

@@ -785,6 +785,7 @@ QueryManager::~QueryManager() {
 }
 
 void QueryManager::Destroy(bool have_context) {
+  active_queries_.clear();
   pending_queries_.clear();
   pending_transfer_queries_.clear();
   active_queries_.clear();
