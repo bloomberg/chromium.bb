@@ -63,7 +63,6 @@ RootInlineBox::RootInlineBox(LayoutBlockFlow& block)
     setIsHorizontal(block.isHorizontalWritingMode());
 }
 
-
 void RootInlineBox::destroy()
 {
     detachEllipsisBox();
@@ -228,7 +227,7 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     m_hasAnnotationsBefore = hasAnnotationsBefore;
     m_hasAnnotationsAfter = hasAnnotationsAfter;
 
-    maxHeight = std::max<LayoutUnit>(0, maxHeight); // FIXME: Is this really necessary?
+    maxHeight = std::max<LayoutUnit>(0, maxHeight);
 
     setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock, heightOfBlock + maxHeight, selectionBottom);
 
