@@ -39334,6 +39334,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorker.TimeBetweenEvents" units="milliseconds">
+  <owner>falken@chromium.org</owner>
+  <summary>
+    Called at the beginning of each ServiceWorkerVersion::Dispatch*Event
+    function: the time elapsed since idle. Generally this is the time between
+    one event ending and one event starting, if the worker remained running in
+    the interim.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.UnhandledEventRatio" units="percent">
   <owner>kinuko@chromium.org</owner>
   <obsolete>

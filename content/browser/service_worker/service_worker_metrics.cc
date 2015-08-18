@@ -37,12 +37,6 @@ ServiceWorkerMetrics::Site SiteFromURL(const GURL& gurl) {
   return ServiceWorkerMetrics::Site::OTHER;
 }
 
-bool ShouldExcludeForHistogram(const GURL& scope) {
-  // Exclude NTP scope from UMA for now as it tends to dominate the stats
-  // and makes the results largely skewed.
-  return SiteFromURL(scope) == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
-}
-
 enum EventHandledRatioType {
   EVENT_HANDLED_NONE,
   EVENT_HANDLED_SOME,
@@ -51,6 +45,14 @@ enum EventHandledRatioType {
 };
 
 }  // namespace
+
+bool ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(Site site) {
+  return site == ServiceWorkerMetrics::Site::NEW_TAB_PAGE;
+}
+
+bool ServiceWorkerMetrics::ShouldExcludeURLFromHistogram(const GURL& url) {
+  return ShouldExcludeSiteFromHistogram(SiteFromURL(url));
+}
 
 void ServiceWorkerMetrics::CountInitDiskCacheResult(bool result) {
   UMA_HISTOGRAM_BOOLEAN("ServiceWorker.DiskCache.InitResult", result);
@@ -114,8 +116,7 @@ void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", static_cast<int>(site),
                             static_cast<int>(Site::NUM_TYPES));
 
-  // Don't record NTP on RAPPOR since it would dominate the data.
-  if (site == Site::NEW_TAB_PAGE)
+  if (ShouldExcludeSiteFromHistogram(site))
     return;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&RecordURLMetricOnUI, url));
@@ -162,11 +163,10 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
                             SERVICE_WORKER_ERROR_MAX_VALUE);
 }
 
-void ServiceWorkerMetrics::RecordEventHandledRatio(const GURL& scope,
-                                                   EventType event,
+void ServiceWorkerMetrics::RecordEventHandledRatio(EventType event,
                                                    size_t handled_events,
                                                    size_t fired_events) {
-  if (!fired_events || ShouldExcludeForHistogram(scope))
+  if (!fired_events)
     return;
   EventHandledRatioType type = EVENT_HANDLED_SOME;
   if (fired_events == handled_events)
@@ -237,6 +237,11 @@ void ServiceWorkerMetrics::RecordStatusZeroResponseError(
 void ServiceWorkerMetrics::RecordFallbackedRequestMode(FetchRequestMode mode) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.URLRequestJob.FallbackedRequestMode",
                             mode, FETCH_REQUEST_MODE_LAST + 1);
+}
+
+void ServiceWorkerMetrics::RecordTimeBetweenEvents(
+    const base::TimeDelta& time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.TimeBetweenEvents", time);
 }
 
 }  // namespace content

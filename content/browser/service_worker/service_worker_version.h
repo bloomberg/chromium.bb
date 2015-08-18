@@ -552,6 +552,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnServicePortDispatcherConnectionError();
   void OnBackgroundSyncDispatcherConnectionError();
 
+  // Called at the beginning of each Dispatch*Event function: records
+  // the time elapsed since idle (generally the time since the previous
+  // event ended).
+  void OnBeginEvent();
+
   const int64 version_id_;
   const int64 registration_id_;
   const GURL script_url_;
@@ -624,6 +629,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   scoped_ptr<PingController> ping_controller_;
   scoped_ptr<Metrics> metrics_;
+  const bool should_exclude_from_uma_ = false;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
