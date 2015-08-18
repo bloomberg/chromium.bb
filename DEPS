@@ -783,6 +783,7 @@ hooks = [
         'src/tools/remove_stale_pyc_files.py',
         'src/android_webview/tools',
         'src/gpu/gles2_conform_support',
+        'src/infra',
         'src/ppapi',
         'src/printing',
         'src/third_party/closure_compiler/build',
