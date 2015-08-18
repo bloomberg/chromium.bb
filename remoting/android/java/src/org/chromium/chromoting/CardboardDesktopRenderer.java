@@ -106,11 +106,18 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             + "}";
 
     private static final String DESKTOP_FRAGMENT_SHADER =
-            "precision mediump float;"
+            "precision highp float;"
             + "uniform sampler2D u_Texture;"
             + "varying vec2 v_TexCoordinate;"
+            + "const float borderWidth = 0.002;"
             + "void main() {"
-            + "  gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "  if (v_TexCoordinate.x > (1.0 - borderWidth) || v_TexCoordinate.x < borderWidth"
+            + "      || v_TexCoordinate.y > (1.0 - borderWidth)"
+            + "      || v_TexCoordinate.y < borderWidth) {"
+            + "    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
+            + "  } else {"
+            + "    gl_FragColor = texture2D(u_Texture, v_TexCoordinate);"
+            + "  }"
             + "}";
 
     private static final String EYE_POINT_VERTEX_SHADER =
