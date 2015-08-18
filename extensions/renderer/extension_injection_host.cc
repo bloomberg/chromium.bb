@@ -57,10 +57,8 @@ PermissionsData::AccessType ExtensionInjectionHost::CanExecuteOnFrame(
 
   blink::WebSecurityOrigin top_frame_security_origin =
       render_frame->GetWebFrame()->top()->securityOrigin();
-  // Only whitelisted extensions may run scripts on another extension's page.
   if (top_frame_security_origin.protocol().utf8() == kExtensionScheme &&
-      top_frame_security_origin.host().utf8() != extension_->id() &&
-      !PermissionsData::CanExecuteScriptEverywhere(extension_))
+      top_frame_security_origin.host().utf8() != extension_->id())
     return PermissionsData::ACCESS_DENIED;
 
   // Declarative user scripts use "page access" (from "permissions" section in
