@@ -333,9 +333,7 @@ extern const char kContentSettingsPluginWhitelist[];
 #endif
 extern const char kClearSiteDataOnExit[];
 extern const char kPartitionDefaultZoomLevel[];
-extern const char kDefaultZoomLevelDeprecated[];
 extern const char kPartitionPerHostZoomLevels[];
-extern const char kPerHostZoomLevelsDeprecated[];
 extern const char kAutofillDialogAutofillDefault[];
 extern const char kAutofillDialogPayWithoutWallet[];
 extern const char kAutofillDialogWalletLocationAcceptance[];

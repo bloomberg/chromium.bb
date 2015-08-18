@@ -111,11 +111,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                                 false);
 #endif
   registry->RegisterStringPref(prefs::kSelectFileLastDirectory, std::string());
-  // TODO(wjmaclean): remove the following two prefs once migration to per-
-  // partition zoom is complete.
-  registry->RegisterDoublePref(prefs::kDefaultZoomLevelDeprecated, 0.0);
-  registry->RegisterDictionaryPref(prefs::kPerHostZoomLevelsDeprecated);
-
   registry->RegisterDictionaryPref(prefs::kPartitionDefaultZoomLevel);
   registry->RegisterDictionaryPref(prefs::kPartitionPerHostZoomLevels);
   registry->RegisterStringPref(prefs::kDefaultApps, "install");
