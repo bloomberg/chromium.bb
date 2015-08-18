@@ -37,7 +37,8 @@ class DownloadGroupNotification : public DownloadNotification {
 
  private:
   struct DownloadItemIdCompare {
-    bool operator()(content::DownloadItem* a, content::DownloadItem* b) {
+    bool operator()(const content::DownloadItem* a,
+                    const content::DownloadItem* b) const {
       return b->GetId() < a->GetId();  // descending order
     }
   };
