@@ -17099,6 +17099,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Video codec profile used in RTC video encoder.</summary>
 </histogram>
 
+<histogram name="Media.Session.Pause" enum="MediaSessionActionSource">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    The number of times the user paused playback of a media session using other
+    means than the pause button on the page.
+  </summary>
+</histogram>
+
+<histogram name="Media.Session.Play" enum="MediaSessionActionSource">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    The number of times the user started playback of a media session using other
+    means than the play button on the page.
+  </summary>
+</histogram>
+
 <histogram name="Media.TimeToPipelineStarted" units="ms">
   <obsolete>
     Removed from code 2014/6/18.
@@ -64110,6 +64128,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Queried"/>
   <int value="1" label="No external link"/>
   <int value="2" label="All external links protected"/>
+</enum>
+
+<enum name="MediaSessionActionSource" type="int">
+  <int value="0" label="MediaNotification"/>
 </enum>
 
 <enum name="MediaStreamRequestResult" type="int">
