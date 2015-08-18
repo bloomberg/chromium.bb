@@ -2317,18 +2317,17 @@ TEST_F(LayerTreeHostCommonTest, VisibleRectForPerspectiveUnprojection) {
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsForPositionedRootLayerClippedByViewport) {
-  scoped_refptr<Layer> root =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  host()->SetRootLayer(root);
+  LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
 
   gfx::Transform identity_matrix;
   // Root layer is positioned at (60, 70). The default device viewport size
   // is (0, 0, 100x100) in target space. So the root layer's visible rect
   // will be clipped by the viewport to be (0, 0, 40x30) in layer's space.
-  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(60, 70), gfx::Size(100, 100), true,
-                               false);
-  ExecuteCalculateDrawProperties(root.get());
+                               false, true);
+  ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
             root->render_surface()->DrawableContentRect());
@@ -2520,36 +2519,32 @@ TEST_F(LayerTreeHostCommonTest,
 
 TEST_F(LayerTreeHostCommonTest,
        VisibleContentRectsForClippedSurfaceWithEmptyClip) {
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> child1 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> child2 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  scoped_refptr<LayerWithForcedDrawsContent> child3 =
-      make_scoped_refptr(new LayerWithForcedDrawsContent(layer_settings()));
-  root->AddChild(child1);
-  root->AddChild(child2);
-  root->AddChild(child3);
-
-  host()->SetRootLayer(root);
+  LayerImpl* root = root_layer();
+  LayerImpl* child1 = AddChild<LayerImpl>(root);
+  LayerImpl* child2 = AddChild<LayerImpl>(root);
+  LayerImpl* child3 = AddChild<LayerImpl>(root);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+  child3->SetDrawsContent(true);
 
   gfx::Transform identity_matrix;
-  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(100, 100), true, false);
-  SetLayerPropertiesForTesting(child1.get(), identity_matrix, gfx::Point3F(),
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
                                gfx::PointF(5.f, 5.f), gfx::Size(50, 50), true,
-                               false);
-  SetLayerPropertiesForTesting(child2.get(), identity_matrix, gfx::Point3F(),
+                               false, false);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
                                gfx::PointF(75.f, 75.f), gfx::Size(50, 50), true,
-                               false);
-  SetLayerPropertiesForTesting(child3.get(), identity_matrix, gfx::Point3F(),
+                               false, false);
+  SetLayerPropertiesForTesting(child3, identity_matrix, gfx::Point3F(),
                                gfx::PointF(125.f, 125.f), gfx::Size(50, 50),
-                               true, false);
+                               true, false, false);
 
-  RenderSurfaceLayerList render_surface_layer_list;
+  LayerImplList render_surface_layer_list_impl;
   // Now set the root render surface an empty clip.
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), gfx::Size(), &render_surface_layer_list);
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, gfx::Size(), &render_surface_layer_list_impl);
 
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   ASSERT_TRUE(root->render_surface());
@@ -4727,7 +4722,7 @@ TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
   // The visible_layer_rect for the |surface_child| should not be clipped by
   // the viewport.
   EXPECT_EQ(gfx::Rect(50, 50).ToString(),
-            surface_child->visible_layer_rect().ToString());
+            surface_child->visible_rect_from_property_trees().ToString());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformedClipParent) {
