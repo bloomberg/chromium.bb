@@ -187,7 +187,7 @@ template("desktop_remoting_webapp") {
              extra_files + dr_generated_html_files
 
     outputs = [
-      "$target_gen_dir/$zip_path",
+      zip_path,
     ]
 
     deps = [
@@ -213,8 +213,8 @@ template("desktop_remoting_webapp") {
     args = [
       buildtype,
       chrome_version_full,
-      output_dir,
-      zip_path,
+      rebase_path(output_dir, root_build_dir),
+      rebase_path(zip_path, root_build_dir),
       rebase_path("crd/manifest.json.jinja2", root_build_dir),
       webapp_type,
     ]
@@ -270,8 +270,10 @@ template("app_remoting_webapp") {
     ar_app_manifest = "$ar_app_path/manifest.json.jinja2"
     ar_app_manifest_common = "$ar_base_path/manifest_common.json.jinja2"
 
-    output_dir = "remoting/app_remoting/$ar_service_environment/$target_name"
-    zip_path = "remoting/app_remoting/$ar_service_environment/$target_name.zip"
+    output_dir = "$root_build_dir/remoting/app_remoting/" +
+                 "$ar_service_environment/$target_name"
+    zip_path = "$root_build_dir/remoting/app_remoting/" +
+               "$ar_service_environment/$target_name.zip"
 
     # TODO(garykac) Move this list of files into files.gni.
     ar_app_specific_files = [
@@ -290,7 +292,7 @@ template("app_remoting_webapp") {
              ] + remoting_version_files + ar_webapp_files
 
     outputs = [
-      "$target_gen_dir/$zip_path",
+      zip_path,
     ]
 
     deps = [
@@ -309,8 +311,8 @@ template("app_remoting_webapp") {
     args = [
       buildtype,
       chrome_version_full,
-      output_dir,
-      zip_path,
+      rebase_path(output_dir, root_build_dir),
+      rebase_path(zip_path, root_build_dir),
       rebase_path(ar_app_manifest, root_build_dir),
       "app_remoting",  # Web app type
     ]
@@ -451,8 +453,8 @@ template("app_remoting_shared_module") {
     ar_path = "app_remoting/$app_name"
     ar_manifest = "$ar_path/manifest.json"
 
-    output_dir = "remoting/app_remoting/$target_name"
-    zip_path = "remoting/app_remoting/$target_name.zip"
+    output_dir = "$root_build_dir/remoting/app_remoting/$target_name"
+    zip_path = "$root_build_dir/remoting/app_remoting/$target_name.zip"
 
     ar_generated_html_files = [
       background_html_output,
@@ -471,7 +473,7 @@ template("app_remoting_shared_module") {
              remoting_version_files + ar_webapp_files
 
     outputs = [
-      "$target_gen_dir/$zip_path",
+      zip_path,
     ]
 
     deps = [
@@ -497,8 +499,8 @@ template("app_remoting_shared_module") {
     args = [
       buildtype,
       chrome_version_full,
-      output_dir,
-      zip_path,
+      rebase_path(output_dir, root_build_dir),
+      rebase_path(zip_path, root_build_dir),
       rebase_path(ar_manifest, root_build_dir),
       "shared_module",  # Web app type
     ]
