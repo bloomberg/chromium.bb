@@ -302,6 +302,10 @@ class GNRoller(object):
     # Fetch the revision we just committed so that RollDEPS will find it.
     self.Call('git fetch', cwd=self.buildtools_dir)
 
+    # Reset buildtools to the new commit so that we're not still on the
+    # merged branch.
+    self.Call('git checkout origin/master', cwd=self.buildtools_dir)
+
     return 0
 
   def RollDEPS(self):
@@ -322,7 +326,7 @@ class GNRoller(object):
         m = re.match(".*'buildtools_revision':.*'(.+)',", l)
         if m:
           old_buildtools_commitish = m.group(1)
-          new_deps_lines.append("  'buildtools_revision': '%s'," %
+          new_deps_lines.append("  'buildtools_revision': '%s',\n" %
                                 new_buildtools_commitish)
         else:
           new_deps_lines.append(l)
@@ -344,6 +348,10 @@ class GNRoller(object):
       self.Call('git-cl upload -f --send-mail --use-commit-queue')
     finally:
       os.remove(desc_file.name)
+
+    # Intentionally leave the src checkout on the new branch with the roll
+    # since we're not auto-committing it.
+
     return 0
 
   def GetBuildtoolsDesc(self):
