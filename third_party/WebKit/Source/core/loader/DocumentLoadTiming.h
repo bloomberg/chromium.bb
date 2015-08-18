@@ -29,7 +29,6 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -39,7 +38,7 @@ class KURL;
 class CORE_EXPORT DocumentLoadTiming final {
     DISALLOW_ALLOCATION();
 public:
-    DocumentLoadTiming(WeakPtrWillBeRawPtr<DocumentLoader>);
+    explicit DocumentLoadTiming(DocumentLoader&);
 
     double monotonicTimeToZeroBasedDocumentTime(double) const;
     double monotonicTimeToPseudoWallTime(double) const;
@@ -95,7 +94,7 @@ private:
     bool m_hasCrossOriginRedirect;
     bool m_hasSameOriginAsPreviousDocument;
 
-    WeakPtrWillBeMember<DocumentLoader> m_documentLoader;
+    RawPtrWillBeMember<DocumentLoader> m_documentLoader;
 };
 
 } // namespace blink

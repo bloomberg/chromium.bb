@@ -35,7 +35,7 @@ class Document;
 class DocumentTiming final {
     DISALLOW_ALLOCATION();
 public:
-    DocumentTiming(WeakPtrWillBeRawPtr<Document>);
+    explicit DocumentTiming(Document&);
 
     void markDomLoading();
     void markDomInteractive();
@@ -63,7 +63,7 @@ private:
     double m_domComplete;
     double m_firstLayout;
 
-    WeakPtrWillBeMember<Document> m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 }

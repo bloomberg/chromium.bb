@@ -1101,7 +1101,6 @@ private:
     void refExecutionContext() final { ref(); }
     void derefExecutionContext() final { deref(); }
 #endif
-    WeakPtrWillBeRawPtr<Document> weakReference();
 
     const KURL& virtualURL() const final; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
     KURL virtualCompleteURL(const String&) const final; // Same as completeURL() for the same reason as above.

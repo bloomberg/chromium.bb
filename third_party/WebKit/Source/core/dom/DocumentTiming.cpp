@@ -8,10 +8,11 @@
 #include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/TraceEvent.h"
+#include "wtf/RawPtr.h"
 
 namespace blink {
 
-DocumentTiming::DocumentTiming(WeakPtrWillBeRawPtr<Document> document)
+DocumentTiming::DocumentTiming(Document& document)
     : m_domLoading(0.0)
     , m_domInteractive(0.0)
     , m_domContentLoadedEventStart(0.0)

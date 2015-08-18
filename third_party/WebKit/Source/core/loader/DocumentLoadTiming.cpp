@@ -29,11 +29,12 @@
 #include "core/loader/DocumentLoader.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/RawPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
-DocumentLoadTiming::DocumentLoadTiming(WeakPtrWillBeRawPtr<DocumentLoader> documentLoader)
+DocumentLoadTiming::DocumentLoadTiming(DocumentLoader& documentLoader)
     : m_referenceMonotonicTime(0.0)
     , m_referenceWallTime(0.0)
     , m_navigationStart(0.0)
