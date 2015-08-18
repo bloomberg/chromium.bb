@@ -7561,9 +7561,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable with no field highlighting
       </message>
       <if expr="not is_android">
-        <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
-          Save password
-        </message>
+        <if expr="use_titlecase">
+          <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
+            Save Password
+          </message>
+        </if>
+        <if expr="not use_titlecase">
+          <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
+            Save password
+          </message>
+        </if>
         <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
           Update password
         </message>
