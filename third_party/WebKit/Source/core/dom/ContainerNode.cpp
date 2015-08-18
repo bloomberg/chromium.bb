@@ -314,6 +314,9 @@ void ContainerNode::parserInsertBefore(PassRefPtrWillBeRawPtr<Node> newChild, No
     while (RefPtrWillBeRawPtr<ContainerNode> parent = newChild->parentNode())
         parent->parserRemoveChild(*newChild);
 
+    if (nextChild.parentNode() != this)
+        return;
+
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
 
