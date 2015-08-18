@@ -37,11 +37,13 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
       browser_view_(browser_view),
-      avatar_button_(nullptr),
 #if defined(ENABLE_SUPERVISED_USERS)
       supervised_user_avatar_label_(nullptr),
 #endif
-      new_avatar_button_(nullptr) {
+#if defined(FRAME_AVATAR_BUTTON)
+      new_avatar_button_(nullptr),
+#endif
+      avatar_button_(nullptr) {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     ProfileInfoCache& cache =
@@ -86,12 +88,14 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(View* child) {
+#if defined(FRAME_AVATAR_BUTTON)
   // Only perform a re-layout if the avatar button has changed, since that
   // can affect the size of the tabs.
   if (child == new_avatar_button_) {
     InvalidateLayout();
     frame_->GetRootView()->Layout();
   }
+#endif
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -238,6 +242,7 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
     avatar_button_->SetAvatarIcon(avatar, is_rectangle);
 }
 
+#if defined(FRAME_AVATAR_BUTTON)
 void BrowserNonClientFrameView::UpdateNewAvatarButton(
     views::ButtonListener* listener,
     const NewAvatarButton::AvatarButtonStyle style) {
@@ -259,6 +264,7 @@ void BrowserNonClientFrameView::UpdateNewAvatarButton(
     frame_->GetRootView()->Layout();
   }
 }
+#endif
 
 void BrowserNonClientFrameView::OnProfileAdded(
     const base::FilePath& profile_path) {

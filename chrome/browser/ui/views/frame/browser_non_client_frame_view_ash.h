@@ -120,7 +120,9 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // Layout the avatar button.
   void LayoutAvatar();
+#if defined(FRAME_AVATAR_BUTTON)
   void LayoutNewStyleAvatar();
+#endif
 
   // Returns true if there is anything to paint. Some fullscreen windows do not
   // need their frames painted.

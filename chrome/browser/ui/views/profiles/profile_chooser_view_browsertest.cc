@@ -31,7 +31,7 @@
 #include "ui/views/controls/webview/webview.h"
 
 // ChromeOS and mobile platforms don't have a ProfileChooserView.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(FRAME_AVATAR_BUTTON)
 
 namespace {
 

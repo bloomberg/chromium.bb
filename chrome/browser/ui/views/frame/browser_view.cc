@@ -77,7 +77,6 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_reset_bubble_view.h"
@@ -2482,41 +2481,19 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 void BrowserView::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params) {
-  views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
-  views::BubbleBorder::BubbleAlignment alignment =
-      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR;
-  views::View* anchor_view = frame_->GetAvatarMenuButton();
-  if (!anchor_view)
-    anchor_view = toolbar_->app_menu();
-  else if (!frame_->GetAvatarMenuButton()->button_on_right())
-    arrow = views::BubbleBorder::TOP_LEFT;
-
-  if (switches::IsNewAvatarMenu()) {
-    NewAvatarButton* button = frame_->GetNewAvatarMenuButton();
-    if (button) {
-      anchor_view = button;
-      arrow = views::BubbleBorder::TOP_RIGHT;
-      alignment = views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE;
-    }
-
-    profiles::BubbleViewMode bubble_view_mode;
-    profiles::TutorialMode tutorial_mode;
-    profiles::BubbleViewModeFromAvatarBubbleMode(
-        mode, &bubble_view_mode, &tutorial_mode);
-    ProfileChooserView::ShowBubble(
-        bubble_view_mode, tutorial_mode,
-        manage_accounts_params, anchor_view, arrow, alignment, browser());
-  } else {
-    gfx::Point origin;
-    views::View::ConvertPointToScreen(anchor_view, &origin);
-    gfx::Rect bounds(origin, anchor_view->size());
-    views::BubbleBorder::ArrowPaintType arrow_paint_type =
-        ShouldHideUIForFullscreen() ? views::BubbleBorder::PAINT_TRANSPARENT :
-                                      views::BubbleBorder::PAINT_NORMAL;
-    AvatarMenuBubbleView::ShowBubble(anchor_view, arrow, arrow_paint_type,
-                                     alignment, bounds, browser());
-  }
+#if defined(FRAME_AVATAR_BUTTON)
+  profiles::BubbleViewMode bubble_view_mode;
+  profiles::TutorialMode tutorial_mode;
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
+                                               &tutorial_mode);
+  ProfileChooserView::ShowBubble(
+      bubble_view_mode, tutorial_mode, manage_accounts_params,
+      frame_->GetNewAvatarMenuButton(), views::BubbleBorder::TOP_RIGHT,
+      views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, browser());
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+#else
+  NOTREACHED();
+#endif
 }
 
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {

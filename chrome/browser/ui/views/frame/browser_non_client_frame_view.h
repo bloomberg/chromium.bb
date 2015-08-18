@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
-#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "ui/views/window/non_client_view.h"
+
+#if defined(FRAME_AVATAR_BUTTON)
+#include "chrome/browser/ui/views/profiles/new_avatar_button.h"
+#endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
 class SupervisedUserAvatarLabel;
@@ -14,7 +18,6 @@ class SupervisedUserAvatarLabel;
 class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
-class NewAvatarButton;
 
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
@@ -26,7 +29,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   AvatarMenuButton* avatar_button() const { return avatar_button_; }
 
+#if defined(FRAME_AVATAR_BUTTON)
   NewAvatarButton* new_avatar_button() const { return new_avatar_button_; }
+#endif
 
 #if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserAvatarLabel* supervised_user_avatar_label() const {
@@ -91,11 +96,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // and button |style|.
   virtual void UpdateNewAvatarButtonImpl() = 0;
 
+#if defined(FRAME_AVATAR_BUTTON)
   // Updates the title of the avatar button displayed in the caption area.
   // The button uses |style| to match the browser window style and notifies
   // |listener| when it is clicked.
   void UpdateNewAvatarButton(views::ButtonListener* listener,
                              const NewAvatarButton::AvatarButtonStyle style);
+#endif
 
  private:
   // Overriden from ProfileInfoCacheObserver.
@@ -113,17 +120,19 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
 
-  // Menu button that displays that either the incognito icon or the profile
-  // icon.  May be null for some frame styles.
-  AvatarMenuButton* avatar_button_;
-
 #if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserAvatarLabel* supervised_user_avatar_label_;
 #endif
 
+#if defined(FRAME_AVATAR_BUTTON)
   // Menu button that displays the name of the active or guest profile.
   // May be null and will not be displayed for off the record profiles.
   NewAvatarButton* new_avatar_button_;
+#endif
+
+  // Menu button that displays the incognito icon. May be null for some frame
+  // styles. TODO(anthonyvd): simplify/rename.
+  AvatarMenuButton* avatar_button_;
 };
 
 namespace chrome {

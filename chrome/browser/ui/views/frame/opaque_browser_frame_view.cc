@@ -206,10 +206,12 @@ bool OpaqueBrowserFrameView::IsWithinAvatarMenuButtons(
      avatar_button()->GetMirroredBounds().Contains(point)) {
     return true;
   }
+#if defined(FRAME_AVATAR_BUTTON)
   if (new_avatar_button() &&
      new_avatar_button()->GetMirroredBounds().Contains(point)) {
     return true;
   }
+#endif
 
   return false;
 }
@@ -321,6 +323,7 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Restore();
   } else if (sender == close_button_) {
     frame()->Close();
+#if defined(FRAME_AVATAR_BUTTON)
   } else if (sender == new_avatar_button()) {
     BrowserWindow::AvatarBubbleMode mode =
         BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
@@ -332,6 +335,7 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
     browser_view()->ShowAvatarBubbleFromAvatarButton(
         mode,
         signin::ManageAccountsParams());
+#endif
   }
 }
 
@@ -485,7 +489,9 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
 }
 
 void OpaqueBrowserFrameView::UpdateNewAvatarButtonImpl() {
+#if defined(FRAME_AVATAR_BUTTON)
   UpdateNewAvatarButton(this, NewAvatarButton::THEMED_BUTTON);
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

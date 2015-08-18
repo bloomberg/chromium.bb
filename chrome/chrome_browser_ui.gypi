@@ -1328,6 +1328,8 @@
       'browser/ui/sync/one_click_signin_sync_observer.h',
       'browser/ui/sync/one_click_signin_sync_starter.cc',
       'browser/ui/sync/one_click_signin_sync_starter.h',
+      'browser/ui/views/profiles/new_avatar_button.cc',
+      'browser/ui/views/profiles/new_avatar_button.h',
       'browser/ui/webui/app_launcher_page_ui.cc',
       'browser/ui/webui/app_launcher_page_ui.h',
       'browser/ui/webui/signin/inline_login_handler_impl.cc',
@@ -2313,12 +2315,8 @@
       'browser/ui/views/passwords/manage_passwords_icon_view.cc',
       'browser/ui/views/passwords/manage_passwords_icon_view.h',
       'browser/ui/views/process_singleton_dialog_linux.cc',
-      'browser/ui/views/profiles/avatar_menu_bubble_view.cc',
-      'browser/ui/views/profiles/avatar_menu_bubble_view.h',
       'browser/ui/views/profiles/avatar_menu_button.cc',
       'browser/ui/views/profiles/avatar_menu_button.h',
-      'browser/ui/views/profiles/new_avatar_button.cc',
-      'browser/ui/views/profiles/new_avatar_button.h',
       'browser/ui/views/profiles/profile_chooser_view.cc',
       'browser/ui/views/profiles/profile_chooser_view.h',
       'browser/ui/views/profiles/profile_reset_bubble_view.cc',
@@ -2960,6 +2958,9 @@
           ],
         }],
         ['OS=="win" or OS=="mac" or desktop_linux==1', {
+          # A temporary define to make it easier to remove CrOS dependencies on
+          # avatar button code. TODO(estade): remove.
+          'defines': [ 'FRAME_AVATAR_BUTTON=1', ],
           'sources': [ '<@(chrome_browser_ui_desktop_sources)' ],
         }],
         ['use_aura==1', {

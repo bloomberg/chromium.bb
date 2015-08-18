@@ -115,7 +115,9 @@ class BrowserFrame
 
   AvatarMenuButton* GetAvatarMenuButton();
 
+#if defined(FRAME_AVATAR_BUTTON)
   NewAvatarButton* GetNewAvatarMenuButton();
+#endif
 
   // Returns the menu model. BrowserFrame owns the returned model.
   // Note that in multi user mode this will upon each call create a new model.

@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_bubble_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -63,52 +62,4 @@ AvatarMenuButton* AvatarMenuButtonTest::GetAvatarMenuButton() {
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
   return browser_view->frame()->GetAvatarMenuButton();
-}
-
-void AvatarMenuButtonTest::StartAvatarMenu() {
-  AvatarMenuButton* button = GetAvatarMenuButton();
-  ASSERT_TRUE(button);
-
-  AvatarMenuBubbleView::clear_close_on_deactivate_for_testing();
-  static_cast<views::MenuButtonListener*>(button)->OnMenuButtonClicked(
-      NULL, gfx::Point());
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_TRUE(AvatarMenuBubbleView::IsShowing());
-}
-
-// See http://crbug.com/315732
-#if defined(OS_WIN)
-#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
-#elif defined(OS_CHROMEOS)
-// This test doesn't make sense for ChromeOS since it has a different
-// multi-profiles menu in the system tray instead.
-#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
-#else
-#define MAYBE_HideOnSecondClick HideOnSecondClick
-#endif
-
-IN_PROC_BROWSER_TEST_F(AvatarMenuButtonTest, MAYBE_HideOnSecondClick) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-  // If multiprofile mode is not enabled, you can't switch between profiles.
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
-  CreateTestingProfile();
-  ASSERT_NO_FATAL_FAILURE(StartAvatarMenu());
-
-  // Verify that clicking again doesn't reshow it.
-  AvatarMenuButton* button = GetAvatarMenuButton();
-  static_cast<views::MenuButtonListener*>(button)->OnMenuButtonClicked(
-      NULL, gfx::Point());
-  // Hide the bubble manually. In the browser this would normally happen during
-  // the event processing.
-  AvatarMenuBubbleView::Hide();
-  base::MessageLoop::current()->RunUntilIdle();
-  EXPECT_FALSE(AvatarMenuBubbleView::IsShowing());
 }

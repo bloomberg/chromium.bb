@@ -180,6 +180,7 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_chromeos_sources,
                            ".",
                            "//chrome")
+    defines += [ "FRAME_AVATAR_BUTTON=1" ]
   }
   if (use_cups) {
     configs += [ "//printing:cups" ]
