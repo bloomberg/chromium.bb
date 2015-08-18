@@ -5,7 +5,6 @@
 #ifndef NET_FTP_FTP_NETWORK_SESSION_H_
 #define NET_FTP_FTP_NETWORK_SESSION_H_
 
-#include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -13,18 +12,14 @@ namespace net {
 class HostResolver;
 
 // This class holds session objects used by FtpNetworkTransaction objects.
-class NET_EXPORT_PRIVATE FtpNetworkSession
-    : public base::RefCounted<FtpNetworkSession> {
+class NET_EXPORT_PRIVATE FtpNetworkSession {
  public:
   explicit FtpNetworkSession(HostResolver* host_resolver);
+  virtual ~FtpNetworkSession();
 
   HostResolver* host_resolver() { return host_resolver_; }
 
  private:
-  friend class base::RefCounted<FtpNetworkSession>;
-
-  virtual ~FtpNetworkSession();
-
   HostResolver* const host_resolver_;
 };
 

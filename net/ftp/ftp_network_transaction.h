@@ -24,12 +24,11 @@
 namespace net {
 
 class ClientSocketFactory;
-class FtpNetworkSession;
 class StreamSocket;
 
 class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
  public:
-  FtpNetworkTransaction(FtpNetworkSession* session,
+  FtpNetworkTransaction(HostResolver* resolver,
                         ClientSocketFactory* socket_factory);
   ~FtpNetworkTransaction() override;
 
@@ -200,8 +199,6 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
 
   CompletionCallback io_callback_;
   CompletionCallback user_callback_;
-
-  scoped_refptr<FtpNetworkSession> session_;
 
   BoundNetLog net_log_;
   const FtpRequestInfo* request_;

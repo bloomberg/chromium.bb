@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/ftp/ftp_transaction_factory.h"
 
@@ -28,7 +28,7 @@ class NET_EXPORT FtpNetworkLayer : public FtpTransactionFactory {
   void Suspend(bool suspend) override;
 
  private:
-  scoped_refptr<FtpNetworkSession> session_;
+  scoped_ptr<FtpNetworkSession> session_;
   bool suspended_;
   DISALLOW_COPY_AND_ASSIGN(FtpNetworkLayer);
 };

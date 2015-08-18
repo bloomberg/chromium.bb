@@ -16,7 +16,6 @@
 #include "net/base/net_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/ftp/ftp_network_session.h"
 #include "net/ftp/ftp_request_info.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -816,8 +815,7 @@ class FtpNetworkTransactionTest
  public:
   FtpNetworkTransactionTest()
       : host_resolver_(new MockHostResolver),
-        session_(new FtpNetworkSession(host_resolver_.get())),
-        transaction_(session_.get(), &mock_socket_factory_) {
+        transaction_(host_resolver_.get(), &mock_socket_factory_) {
     scoped_refptr<RuleBasedHostResolverProc> rules(
         new RuleBasedHostResolverProc(NULL));
     if (GetFamily() == AF_INET) {
@@ -904,7 +902,6 @@ class FtpNetworkTransactionTest
   }
 
   scoped_ptr<MockHostResolver> host_resolver_;
-  scoped_refptr<FtpNetworkSession> session_;
   MockClientSocketFactory mock_socket_factory_;
   FtpNetworkTransaction transaction_;
   TestCompletionCallback callback_;

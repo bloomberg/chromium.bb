@@ -28,7 +28,7 @@ FtpTransaction* FtpNetworkLayer::CreateTransaction() {
   if (suspended_)
     return NULL;
 
-  return new FtpNetworkTransaction(session_.get(),
+  return new FtpNetworkTransaction(session_->host_resolver(),
                                    ClientSocketFactory::GetDefaultFactory());
 }
 
