@@ -126,7 +126,7 @@ const int kLocationBarVerticalPadding[] = {2, 6, 6};
 
 // The number of pixels in the omnibox dropdown border image interior to
 // the actual border.
-const int kOmniboxDropdownBorderInterior[] = {6, 6, 6};
+const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
 
 // In an omnibox dropdown row, the minimum distance between the top and
 // bottom of the row's icon and the top or bottom of the row edge.

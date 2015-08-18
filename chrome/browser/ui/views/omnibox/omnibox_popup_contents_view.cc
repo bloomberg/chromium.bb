@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/compositor/paint_recorder.h"
@@ -67,7 +69,9 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   set_owned_by_client();
 
   ui::ThemeProvider* theme = location_bar_view_->GetThemeProvider();
-  bottom_shadow_ = theme->GetImageSkiaNamed(IDR_BUBBLE_B);
+  int bottom_shadow_asset = ui::MaterialDesignController::IsModeMaterial() ?
+      IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM : IDR_BUBBLE_B;
+  bottom_shadow_ = theme->GetImageSkiaNamed(bottom_shadow_asset);
 
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
