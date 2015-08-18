@@ -213,6 +213,10 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
     case CompositingForSlimmingPaintV2Clean:
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             return false;
+        if (nextState == InStyleRecalc)
+            return true;
+        if (nextState == InPreLayout)
+            return true;
         if (nextState == InCompositingUpdate)
             return true;
         if (nextState == CompositingForSlimmingPaintV2Clean)
