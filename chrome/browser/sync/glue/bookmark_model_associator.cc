@@ -579,10 +579,10 @@ syncer::SyncError BookmarkModelAssociator::AssociatePermanentFolders(
   context->AddBookmarkRoot(bookmark_model_->other_node());
   int64 mobile_bookmarks_sync_id =
       GetSyncIdFromChromeId(bookmark_model_->mobile_node()->id());
-  if (expect_mobile_bookmarks_folder_) {
+  if (expect_mobile_bookmarks_folder_)
     DCHECK_NE(syncer::kInvalidId, mobile_bookmarks_sync_id);
+  if (mobile_bookmarks_sync_id != syncer::kInvalidId)
     context->AddBookmarkRoot(bookmark_model_->mobile_node());
-  }
 
   // WARNING: The order in which we push these should match their order in the
   // bookmark model (see BookmarkModel::DoneLoading(..)).

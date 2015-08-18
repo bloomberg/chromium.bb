@@ -2082,13 +2082,11 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, OptimisticMergeWithMoves) {
 
   EXPECT_EQ(num_bookmarks, model_->root_node()->GetTotalNodeCount());
 
-  // Move one folder into another
+  // Move one folder into mobile bookmarks
   const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
   const BookmarkNode* f1 = bookmark_bar_node->GetChild(1);
   ASSERT_TRUE(f1->is_folder());
-  const BookmarkNode* f2 = bookmark_bar_node->GetChild(3);
-  ASSERT_TRUE(f2->is_folder());
-  model_->Move(f2, f1, 0);
+  model_->Move(f1, model_->mobile_node(), 0);
 
   StartSync();
   ExpectModelMatch();
