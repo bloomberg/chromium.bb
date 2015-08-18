@@ -829,6 +829,7 @@ public:
         PresentationSessionSend = 934,
         PresentationSessionStateChangeEventListener = 935,
         PresentationSessionMessageEventListener = 936,
+        CSSAnimationsStackedNeutralKeyframe = 937,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
