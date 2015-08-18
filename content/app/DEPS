@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/tracing/startup_tracing.h",
+  "+components/tracing",
   "+content",
   "+device/battery",
   "+device/bluetooth",

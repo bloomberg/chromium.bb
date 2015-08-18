@@ -154,6 +154,7 @@ source_set("browser") {
     "//components/strings",
     "//components/suggestions",
     "//components/sync_driver",
+    "//components/tracing:startup_tracing",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/ui/zoom:ui_zoom",

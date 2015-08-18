@@ -16,6 +16,7 @@
 #include "base/sha1.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/trace_event.h"
+#include "components/tracing/tracing_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"

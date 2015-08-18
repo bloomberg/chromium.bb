@@ -38,10 +38,6 @@ const char kHelp[] = "help";
 // Can be used multiple times.
 const char kMapOrigin[] = "map-origin";
 
-// Starts tracing when the shell starts up, saving a trace file on disk after 5
-// seconds or when the shell exits.
-const char kTraceStartup[] = "trace-startup";
-
 // Specifies a set of mappings to apply when resolving URLs. The value is a set
 // of comma-separated mappings, where each mapping consists of a pair of URLs
 // giving the to/from URLs to map. For example, 'a=b,c=d' contains two mappings,

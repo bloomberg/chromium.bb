@@ -88,6 +88,7 @@ include_rules = [
   "+components/storage_monitor",
   "+components/suggestions",
   "+components/sync_driver",
+  "+components/tracing",
   "+components/translate/content/browser",
   "+components/translate/content/common",
   "+components/translate/core/browser",

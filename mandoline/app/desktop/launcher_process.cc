@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/startup_tracing.h"
+#include "components/tracing/tracing_switches.h"
 #include "mandoline/app/core_services_initialization.h"
 #include "mandoline/app/desktop/launcher_process.h"
 #include "mojo/runner/context.h"

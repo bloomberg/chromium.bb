@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/startup_tracing.h"
+#include "components/tracing/tracing_switches.h"
 #include "mojo/runner/context.h"
 #include "mojo/runner/switches.h"
 

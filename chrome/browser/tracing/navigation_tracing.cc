@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/tracing/crash_service_uploader.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/tracing/tracing_switches.h"
 #include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/background_tracing_reactive_config.h"
 #include "content/public/browser/browser_thread.h"

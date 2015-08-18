@@ -4,7 +4,6 @@
 
 #include "content/browser/browser_shutdown_profile_dumper.h"
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,7 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
-#include "content/public/common/content_switches.h"
+#include "components/tracing/tracing_switches.h"
 
 namespace content {
 

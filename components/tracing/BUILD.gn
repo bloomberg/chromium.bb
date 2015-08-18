@@ -26,6 +26,8 @@ component("startup_tracing") {
     "startup_tracing.cc",
     "startup_tracing.h",
     "tracing_export.h",
+    "tracing_switches.cc",
+    "tracing_switches.h",
   ]
 
   defines = [ "TRACING_IMPLEMENTATION" ]
