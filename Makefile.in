@@ -285,7 +285,6 @@ src_client_linux_libbreakpad_client_a_LIBADD =
 am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/crash_generation/crash_generation_client.cc \
 	src/client/linux/crash_generation/crash_generation_server.cc \
-	src/client/linux/dump_writer_common/seccomp_unwinder.cc \
 	src/client/linux/dump_writer_common/thread_info.cc \
 	src/client/linux/dump_writer_common/ucontext_reader.cc \
 	src/client/linux/handler/exception_handler.cc \
@@ -307,7 +306,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ANDROID_HOST_TRUE@@LINUX_HOST_TRUE@am__objects_1 = src/common/android/breakpad_getcontext.$(OBJEXT)
 @LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_a_OBJECTS = src/client/linux/crash_generation/crash_generation_client.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_server.$(OBJEXT) \
-@LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/seccomp_unwinder.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/ucontext_reader.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.$(OBJEXT) \
@@ -1959,7 +1957,6 @@ noinst_LIBRARIES = $(am__append_7)
 lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @LINUX_HOST_TRUE@src_client_linux_libbreakpad_client_a_SOURCES = src/client/linux/crash_generation/crash_generation_client.cc \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_server.cc \
-@LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/seccomp_unwinder.cc \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.cc \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/ucontext_reader.cc \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.cc \
@@ -2189,7 +2186,6 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	$(am__append_20)
 @LINUX_HOST_TRUE@src_client_linux_linux_client_unittest_shlib_LDADD = \
 @LINUX_HOST_TRUE@	src/client/linux/crash_generation/crash_generation_client.o \
-@LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/seccomp_unwinder.o \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/thread_info.o \
 @LINUX_HOST_TRUE@	src/client/linux/dump_writer_common/ucontext_reader.o \
 @LINUX_HOST_TRUE@	src/client/linux/handler/exception_handler.o \
@@ -3232,9 +3228,6 @@ src/client/linux/dump_writer_common/$(am__dirstamp):
 src/client/linux/dump_writer_common/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/dump_writer_common/$(DEPDIR)
 	@: > src/client/linux/dump_writer_common/$(DEPDIR)/$(am__dirstamp)
-src/client/linux/dump_writer_common/seccomp_unwinder.$(OBJEXT):  \
-	src/client/linux/dump_writer_common/$(am__dirstamp) \
-	src/client/linux/dump_writer_common/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/dump_writer_common/thread_info.$(OBJEXT):  \
 	src/client/linux/dump_writer_common/$(am__dirstamp) \
 	src/client/linux/dump_writer_common/$(DEPDIR)/$(am__dirstamp)
@@ -4400,7 +4393,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/$(DEPDIR)/minidump_file_writer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/crash_generation/$(DEPDIR)/crash_generation_client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/crash_generation/$(DEPDIR)/crash_generation_server.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/dump_writer_common/$(DEPDIR)/seccomp_unwinder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/dump_writer_common/$(DEPDIR)/thread_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/dump_writer_common/$(DEPDIR)/ucontext_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/handler/$(DEPDIR)/exception_handler.Po@am__quote@

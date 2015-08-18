@@ -34,7 +34,6 @@
 
 #include <sys/utsname.h>
 
-#include "client/linux/dump_writer_common/seccomp_unwinder.h"
 #include "client/linux/dump_writer_common/thread_info.h"
 #include "client/linux/dump_writer_common/ucontext_reader.h"
 #include "client/linux/handler/exception_handler.h"
@@ -50,7 +49,6 @@ using google_breakpad::LinuxPtraceDumper;
 using google_breakpad::MappingInfo;
 using google_breakpad::MappingList;
 using google_breakpad::RawContextCPU;
-using google_breakpad::SeccompUnwinder;
 using google_breakpad::ThreadInfo;
 using google_breakpad::UContextReader;
 
@@ -287,8 +285,6 @@ class MicrodumpWriter {
 #else
       UContextReader::FillCPUContext(&cpu, ucontext_);
 #endif
-      if (stack_copy)
-        SeccompUnwinder::PopSeccompStackFrame(&cpu, thread, stack_copy);
       DumpCPUState(&cpu);
     }
     return true;

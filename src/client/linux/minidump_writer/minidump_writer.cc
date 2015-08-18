@@ -64,7 +64,6 @@
 
 #include <algorithm>
 
-#include "client/linux/dump_writer_common/seccomp_unwinder.h"
 #include "client/linux/dump_writer_common/thread_info.h"
 #include "client/linux/dump_writer_common/ucontext_reader.h"
 #include "client/linux/handler/exception_handler.h"
@@ -95,7 +94,6 @@ using google_breakpad::MinidumpFileWriter;
 using google_breakpad::PageAllocator;
 using google_breakpad::ProcCpuInfoReader;
 using google_breakpad::RawContextCPU;
-using google_breakpad::SeccompUnwinder;
 using google_breakpad::ThreadInfo;
 using google_breakpad::TypedMDRVA;
 using google_breakpad::UContextReader;
@@ -383,8 +381,6 @@ class MinidumpWriter {
 #else
         UContextReader::FillCPUContext(cpu.get(), ucontext_);
 #endif
-        if (stack_copy)
-          SeccompUnwinder::PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
         crashing_thread_context_ = cpu.location();
       } else {
@@ -405,8 +401,6 @@ class MinidumpWriter {
           return false;
         my_memset(cpu.get(), 0, sizeof(RawContextCPU));
         info.FillCPUContext(cpu.get());
-        if (stack_copy)
-          SeccompUnwinder::PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
         if (dumper_->threads()[i] == GetCrashThread()) {
           crashing_thread_context_ = cpu.location();
