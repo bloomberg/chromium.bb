@@ -155,14 +155,19 @@ void ChannelReader::DispatchMessage(Message* m) {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   std::string name;
   Logging::GetInstance()->GetMessageText(m->type(), &name, m, NULL);
-  TRACE_EVENT1("ipc,toplevel", "ChannelReader::DispatchInputData", "name",
-               name);
+  TRACE_EVENT_WITH_FLOW1("ipc,toplevel",
+                         "ChannelReader::DispatchInputData",
+                         m->flags(),
+                         TRACE_EVENT_FLAG_FLOW_IN,
+                         "name", name);
 #else
-  TRACE_EVENT2("ipc,toplevel", "ChannelReader::DispatchInputData", "class",
-               IPC_MESSAGE_ID_CLASS(m->type()), "line",
-               IPC_MESSAGE_ID_LINE(m->type()));
+  TRACE_EVENT_WITH_FLOW2("ipc,toplevel",
+                         "ChannelReader::DispatchInputData",
+                         m->flags(),
+                         TRACE_EVENT_FLAG_FLOW_IN,
+                         "class", IPC_MESSAGE_ID_CLASS(m->type()),
+                         "line", IPC_MESSAGE_ID_LINE(m->type()));
 #endif
-  m->TraceMessageEnd();
 
   bool handled = false;
   if (IsInternalMessage(*m)) {

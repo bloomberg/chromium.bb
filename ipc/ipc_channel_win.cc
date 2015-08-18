@@ -120,7 +120,10 @@ bool ChannelWin::ProcessMessageForDelivery(Message* message) {
   Logging::GetInstance()->OnSendMessage(message, "");
 #endif
 
-  message->TraceMessageBegin();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                         "ChannelWin::ProcessMessageForDelivery",
+                         message->flags(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
 
   // |output_queue_| takes ownership of |message|.
   output_queue_.push(message);

@@ -211,7 +211,10 @@ bool ChannelNacl::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message_ptr.get(), "");
 #endif  // IPC_MESSAGE_LOG_ENABLED
 
-  message->TraceMessageBegin();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                         "ChannelNacl::Send",
+                         message->header()->flags,
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   output_queue_.push_back(linked_ptr<Message>(message_ptr.release()));
   if (!waiting_connect_)
     return ProcessOutgoingMessages();

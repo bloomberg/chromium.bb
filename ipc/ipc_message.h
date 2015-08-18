@@ -207,17 +207,6 @@ class IPC_EXPORT Message : public base::Pickle {
   bool dont_log() const { return dont_log_; }
 #endif
 
-  // Called to trace when message is sent.
-  void TraceMessageBegin() {
-    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"), "IPC",
-        header()->flags);
-  }
-  // Called to trace when message is received.
-  void TraceMessageEnd() {
-    TRACE_EVENT_FLOW_END_BIND_TO_ENCLOSING0(
-        TRACE_DISABLED_BY_DEFAULT("ipc.flow"), "IPC", header()->flags);
-  }
-
  protected:
   friend class Channel;
   friend class ChannelMojo;

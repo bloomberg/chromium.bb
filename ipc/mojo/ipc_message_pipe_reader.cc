@@ -61,7 +61,10 @@ void MessagePipeReader::CloseWithErrorLater(MojoResult error) {
 bool MessagePipeReader::Send(scoped_ptr<Message> message) {
   DCHECK(IsValid());
 
-  message->TraceMessageBegin();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                         "MessagePipeReader::Send",
+                         message->flags(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   std::vector<MojoHandle> handles;
   MojoResult result = MOJO_RESULT_OK;
   result = ChannelMojo::ReadFromMessageAttachmentSet(message.get(), &handles);
@@ -100,7 +103,10 @@ void MessagePipeReader::OnMessageReceived() {
     return;
   }
 
-  message.TraceMessageEnd();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                         "MessagePipeReader::OnMessageReceived",
+                         message.flags(),
+                         TRACE_EVENT_FLAG_FLOW_IN);
   delegate_->OnMessageReceived(message);
 }
 

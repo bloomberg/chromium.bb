@@ -511,7 +511,10 @@ bool ChannelPosix::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message, "");
 #endif  // IPC_MESSAGE_LOG_ENABLED
 
-  message->TraceMessageBegin();
+  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("ipc.flow"),
+                         "ChannelPosix::Send",
+                         message->flags(),
+                         TRACE_EVENT_FLAG_FLOW_OUT);
   output_queue_.push(message);
   if (!is_blocked_on_write_ && !waiting_connect_) {
     return ProcessOutgoingMessages();
