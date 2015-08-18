@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H__
-#define CHROME_THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H__
+#ifndef THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H_
+#define THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H_
 
 #include "base/basictypes.h"
 #include "base/md5.h"
@@ -208,4 +208,4 @@ class BDict {
 
 }  // namespace hunspell
 
-#endif  // CHROME_THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H__
+#endif  // THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_H_

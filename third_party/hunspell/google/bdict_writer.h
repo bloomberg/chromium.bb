@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_WRITER_H__
-#define CHROME_THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_WRITER_H__
+#ifndef THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_WRITER_H_
+#define THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_WRITER_H_
 
 #include <string>
 #include <vector>
@@ -67,4 +67,4 @@ class BDictWriter {
 
 }  // namespace hunspell
 
-#endif  // CHROME_THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_WRITER_H__
+#endif  // THIRD_PARTY_HUNSPELL_GOOGLE_BDICT_WRITER_H_
