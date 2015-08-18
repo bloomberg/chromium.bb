@@ -43,7 +43,7 @@ public:
     RefPtr<ComputedStyle> computedStyle;
     RefPtr<ComputedStyle> parentComputedStyle;
 
-    void set(const ComputedStyle&, const ComputedStyle& parentStyle, const MatchedPropertiesVector&);
+    void set(const ComputedStyle&, const ComputedStyle& parentStyle, const MatchResult&);
     void clear();
     DEFINE_INLINE_TRACE()
     {
@@ -95,8 +95,8 @@ class MatchedPropertiesCache {
 public:
     MatchedPropertiesCache();
 
-    const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchedPropertiesVector&);
-    void add(const ComputedStyle&, const ComputedStyle& parentStyle, unsigned hash, const MatchedPropertiesVector&);
+    const CachedMatchedProperties* find(unsigned hash, const StyleResolverState&, const MatchResult&);
+    void add(const ComputedStyle&, const ComputedStyle& parentStyle, unsigned hash, const MatchResult&);
 
     void clear();
     void clearViewportDependent();

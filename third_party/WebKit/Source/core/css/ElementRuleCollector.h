@@ -127,8 +127,6 @@ public:
     void sortAndTransferMatchedRules();
     void clearMatchedRules();
     void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
-    void finishAddingUARules() { m_result.finishAddingUARules(); }
-    void finishAddingAuthorRulesForTreeScope() { m_result.finishAddingAuthorRulesForTreeScope(); }
 
 private:
     template<typename RuleDataListType>

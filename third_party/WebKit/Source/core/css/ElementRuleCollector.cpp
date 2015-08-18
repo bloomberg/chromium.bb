@@ -110,7 +110,7 @@ void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* pro
         return;
     m_result.addMatchedProperties(propertySet);
     if (!isCacheable)
-        m_result.setIsCacheable(false);
+        m_result.isCacheable = false;
 }
 
 static bool rulesApplicableInCurrentTreeScope(const Element* element, const ContainerNode* scopingNode, bool matchingTreeBoundaryRules)
@@ -293,6 +293,9 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
         const RuleData* ruleData = m_matchedRules[i].ruleData();
         m_result.addMatchedProperties(&ruleData->rule()->properties(), ruleData->linkMatchType(), ruleData->propertyWhitelistType(m_matchingUARules));
     }
+
+    if (m_matchingUARules)
+        m_result.uaEnd = m_result.matchedProperties.size();
 }
 
 void ElementRuleCollector::didMatchRule(const RuleData& ruleData, const SelectorChecker::MatchResult& result, CascadeOrder cascadeOrder, const MatchRequest& matchRequest)

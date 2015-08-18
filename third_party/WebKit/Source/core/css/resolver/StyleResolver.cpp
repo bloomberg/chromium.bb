@@ -413,7 +413,6 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
     if (document().isViewSource())
         matchRuleSet(collector, defaultStyleSheets.defaultViewSourceStyle());
 
-    collector.finishAddingUARules();
     collector.setMatchingUARules(false);
 }
 
@@ -460,8 +459,6 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         if (includeSMILProperties && state.element()->isSVGElement())
             collector.addElementStyleProperties(toSVGElement(state.element())->animatedSMILStyleProperties(), false /* isCacheable */);
     }
-
-    collector.finishAddingAuthorRulesForTreeScope();
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
@@ -759,9 +756,8 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
 
         matchUARules(collector);
         matchAuthorRules(state.element(), collector, false);
-        collector.finishAddingAuthorRulesForTreeScope();
 
-        if (!collector.matchedResult().hasMatchedProperties())
+        if (collector.matchedResult().matchedProperties.isEmpty())
             return false;
 
         applyMatchedProperties(state, collector.matchedResult());
@@ -834,12 +830,12 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForPage(int pageIndex)
     bool inheritedOnly = false;
 
     const MatchResult& result = collector.matchedResult();
-    applyMatchedProperties<HighPropertyPriority>(state, result.allRules(), false, inheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, result, false, result.begin(), result.end(), inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
 
-    applyMatchedProperties<LowPropertyPriority>(state, result.allRules(), false, inheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, result, false, result.begin(), result.end(), inheritedOnly);
 
     loadPendingResources(state);
 
@@ -1237,13 +1233,16 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
 }
 
 template <CSSPropertyPriority priority>
-void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchedPropertiesRange& range, bool isImportant, bool inheritedOnly)
+void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, bool isImportant, unsigned startIndex, unsigned endIndex, bool inheritedOnly)
 {
-    if (range.isEmpty())
+    if (startIndex == endIndex)
         return;
 
+    ASSERT_WITH_SECURITY_IMPLICATION(endIndex <= matchResult.matchedProperties.size());
+
     if (state.style()->insideLink() != NotInsideLink) {
-        for (const auto& matchedProperties : range) {
+        for (unsigned i = startIndex; i < endIndex; ++i) {
+            const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
             unsigned linkMatchType = matchedProperties.m_types.linkMatchType;
             // FIXME: It would be nicer to pass these as arguments but that requires changes in many places.
             state.setApplyPropertyToRegularStyle(linkMatchType & CSSSelector::MatchLink);
@@ -1255,8 +1254,10 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         state.setApplyPropertyToVisitedLinkStyle(false);
         return;
     }
-    for (const auto& matchedProperties : range)
+    for (unsigned i = startIndex; i < endIndex; ++i) {
+        const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
         applyProperties<priority>(state, matchedProperties.properties.get(), isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.m_types.whitelistType));
+    }
 }
 
 static unsigned computeMatchedPropertiesHash(const MatchedProperties* properties, unsigned size)
@@ -1282,9 +1283,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyApply, 1);
 
-    unsigned cacheHash = matchResult.isCacheable() ? computeMatchedPropertiesHash(matchResult.matchedProperties().data(), matchResult.matchedProperties().size()) : 0;
+    unsigned cacheHash = matchResult.isCacheable ? computeMatchedPropertiesHash(matchResult.matchedProperties.data(), matchResult.matchedProperties.size()) : 0;
     bool applyInheritedOnly = false;
-    const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult.matchedProperties()) : 0;
+    const CachedMatchedProperties* cachedMatchedProperties = cacheHash ? m_matchedPropertiesCache.find(cacheHash, state, matchResult) : 0;
 
     if (cachedMatchedProperties && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit, 1);
@@ -1315,10 +1316,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // high-priority properties first, i.e., those properties that other properties depend on.
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
     // and (4) normal important.
-    applyMatchedProperties<HighPropertyPriority>(state, matchResult.allRules(), false, applyInheritedOnly);
-    for (auto range : ImportantAuthorRanges(matchResult))
-        applyMatchedProperties<HighPropertyPriority>(state, range, true, applyInheritedOnly);
-    applyMatchedProperties<HighPropertyPriority>(state, matchResult.uaRules(), true, applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, false, matchResult.begin(), matchResult.end(), applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.beginAuthor(), matchResult.endAuthor(), applyInheritedOnly);
+    applyMatchedProperties<HighPropertyPriority>(state, matchResult, true, matchResult.beginUA(), matchResult.endUA(), applyInheritedOnly);
 
     if (UNLIKELY(isSVGForeignObjectElement(element))) {
         // LayoutSVGRoot handles zooming for the whole SVG subtree, so foreignObject content should not be scaled again.
@@ -1344,22 +1344,21 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         applyInheritedOnly = false;
 
     // Now do the normal priority UA properties.
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult.uaRules(), false, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.beginUA(), matchResult.endUA(), applyInheritedOnly);
 
     // Cache the UA properties to pass them to LayoutTheme in adjustComputedStyle.
     state.cacheUserAgentBorderAndBackground();
 
     // Now do the author and user normal priority properties and all the !important properties.
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult.authorRules(), false, applyInheritedOnly);
-    for (auto range : ImportantAuthorRanges(matchResult))
-        applyMatchedProperties<LowPropertyPriority>(state, range, true, applyInheritedOnly);
-    applyMatchedProperties<LowPropertyPriority>(state, matchResult.uaRules(), true, applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, false, matchResult.beginAuthor(), matchResult.endAuthor(), applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.beginAuthor(), matchResult.endAuthor(), applyInheritedOnly);
+    applyMatchedProperties<LowPropertyPriority>(state, matchResult, true, matchResult.beginUA(), matchResult.endUA(), applyInheritedOnly);
 
     loadPendingResources(state);
 
     if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, *state.style(), *state.parentStyle())) {
         INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded, 1);
-        m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult.matchedProperties());
+        m_matchedPropertiesCache.add(*state.style(), *state.parentStyle(), cacheHash, matchResult);
     }
 
     ASSERT(!state.fontBuilder().fontDirty());
