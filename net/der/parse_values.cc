@@ -111,6 +111,26 @@ bool ValidateGeneralizedTime(const GeneralizedTime& time) {
   return true;
 }
 
+// Returns the number of bytes of numeric precision in a DER encoded INTEGER
+// value. |in| must be a valid DER encoding of an INTEGER for this to work.
+//
+// Normally the precision of the number is exactly in.Length(). However when
+// encoding positive numbers using DER it is possible to have a leading zero
+// (to prevent number from being interpreted as negative).
+//
+// For instance a 160-bit positive number might take 21 bytes to encode. This
+// function will return 20 in such a case.
+size_t GetUnsignedIntegerLength(const Input& in) {
+  der::ByteReader reader(in);
+  uint8_t first_byte;
+  if (!reader.ReadByte(&first_byte))
+    return 0;  // Not valid DER  as |in| was empty.
+
+  if (first_byte == 0 && in.Length() > 1)
+    return in.Length() - 1;
+  return in.Length();
+}
+
 }  // namespace
 
 bool ParseBool(const Input& in, bool* out) {
@@ -125,39 +145,47 @@ bool ParseBoolRelaxed(const Input& in, bool* out) {
   return ParseBoolInternal(in, out, true /* relaxed */);
 }
 
+// ITU-T X.690 section 8.3.2 specifies that an integer value must be encoded
+// in the smallest number of octets. If the encoding consists of more than
+// one octet, then the bits of the first octet and the most significant bit
+// of the second octet must not be all zeroes or all ones.
+bool IsValidInteger(const Input& in, bool* negative) {
+  der::ByteReader reader(in);
+  uint8_t first_byte;
+
+  if (!reader.ReadByte(&first_byte))
+    return false;  // Empty inputs are not allowed.
+
+  uint8_t second_byte;
+  if (reader.ReadByte(&second_byte)) {
+    if ((first_byte == 0x00 || first_byte == 0xFF) &&
+        (first_byte & 0x80) == (second_byte & 0x80)) {
+      // Not a minimal encoding.
+      return false;
+    }
+  }
+
+  *negative = (first_byte & 0x80) == 0x80;
+  return true;
+}
+
 bool ParseUint64(const Input& in, uint64_t* out) {
+  // Reject non-minimally encoded numbers and negative numbers.
+  bool negative;
+  if (!IsValidInteger(in, &negative) || negative)
+    return false;
+
+  // Reject (non-negative) integers whose value would overflow the output type.
+  if (GetUnsignedIntegerLength(in) > sizeof(*out))
+    return false;
+
   ByteReader reader(in);
-  size_t bytes_read = 0;
   uint8_t data;
   uint64_t value = 0;
-  // Note that for simplicity, this check only admits integers up to 2^63-1.
-  if (in.Length() > sizeof(uint64_t) || in.Length() == 0)
-    return false;
+
   while (reader.ReadByte(&data)) {
-    if (bytes_read == 0 && (data & 0x80)) {
-      return false;
-    }
     value <<= 8;
     value |= data;
-    bytes_read++;
-  }
-  // ITU-T X.690 section 8.3.2 specifies that an integer value must be encoded
-  // in the smallest number of octets. If the encoding consists of more than
-  // one octet, then the bits of the first octet and the most significant bit
-  // of the second octet must not be all zeroes or all ones.
-  // Because this function only parses unsigned integers, there's no need to
-  // check for the all ones case.
-  if (bytes_read > 1) {
-    ByteReader first_bytes_reader(in);
-    uint8_t first_byte;
-    uint8_t second_byte;
-    if (!first_bytes_reader.ReadByte(&first_byte) ||
-        !first_bytes_reader.ReadByte(&second_byte)) {
-      return false;
-    }
-    if (first_byte == 0 && !(second_byte & 0x80)) {
-      return false;
-    }
   }
   *out = value;
   return true;

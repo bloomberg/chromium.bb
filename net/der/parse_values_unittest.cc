@@ -184,19 +184,26 @@ struct Uint64TestData {
 
 const Uint64TestData kUint64TestData[] = {
     {true, {0x00}, 1, 0},
+    // This number fails because it is not a minimal representation.
+    {false, {0x00, 0x00}, 2},
     {true, {0x01}, 1, 1},
-    {false, {0xFF}, 1, 0},
+    {false, {0xFF}, 1},
     {true, {0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, 8, INT64_MAX},
-    {false, {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 8, 0},
-    {false, {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, 9, 0},
-    {false, {0x00, 0x01}, 2, 1},
-    {false, {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09}, 9, 0},
-    {false, {0}, 0, 0},
+    {true,
+     {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+     9,
+     UINT64_MAX},
+    // This number fails because it is negative.
+    {false, {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}, 8},
+    {false, {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 8},
+    {false, {0x00, 0x01}, 2},
+    {false, {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09}, 9},
+    {false, {0}, 0},
 };
 
 TEST(ParseValuesTest, ParseUint64) {
   for (size_t i = 0; i < arraysize(kUint64TestData); i++) {
-    Uint64TestData test_case = kUint64TestData[i];
+    const Uint64TestData& test_case = kUint64TestData[i];
     SCOPED_TRACE(i);
 
     uint64_t result;
@@ -204,6 +211,52 @@ TEST(ParseValuesTest, ParseUint64) {
               ParseUint64(Input(test_case.input, test_case.length), &result));
     if (test_case.should_pass)
       EXPECT_EQ(test_case.expected_value, result);
+  }
+}
+
+struct IsValidIntegerTestData {
+  bool should_pass;
+  const uint8_t input[2];
+  size_t length;
+  bool negative;
+};
+
+const IsValidIntegerTestData kIsValidIntegerTestData[] = {
+    // Empty input (invalid DER).
+    {false, {0x00}, 0},
+
+    // The correct encoding for zero.
+    {true, {0x00}, 1, false},
+
+    // Invalid representation of zero (not minimal)
+    {false, {0x00, 0x00}, 2},
+
+    // Valid single byte negative numbers.
+    {true, {0x80}, 1, true},
+    {true, {0xFF}, 1, true},
+
+    // Non-minimal negative number.
+    {false, {0xFF, 0x80}, 2},
+
+    // Positive number with a legitimate leading zero.
+    {true, {0x00, 0x80}, 2, false},
+
+    // A legitimate negative number that starts with FF (MSB of second byte is
+    // 0 so OK).
+    {true, {0xFF, 0x7F}, 2, true},
+};
+
+TEST(ParseValuesTest, IsValidInteger) {
+  for (size_t i = 0; i < arraysize(kIsValidIntegerTestData); i++) {
+    const auto& test_case = kIsValidIntegerTestData[i];
+    SCOPED_TRACE(i);
+
+    bool negative;
+    EXPECT_EQ(
+        test_case.should_pass,
+        IsValidInteger(Input(test_case.input, test_case.length), &negative));
+    if (test_case.should_pass)
+      EXPECT_EQ(test_case.negative, negative);
   }
 }
 

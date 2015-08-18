@@ -22,12 +22,23 @@ NET_EXPORT bool ParseBool(const Input& in, bool* out) WARN_UNUSED_RESULT;
 // value that is a valid BER encoding will be parsed successfully.
 NET_EXPORT bool ParseBoolRelaxed(const Input& in, bool* out) WARN_UNUSED_RESULT;
 
+// Checks the validity of a DER-encoded ASN.1 INTEGER value from |in|, and
+// determines the sign of the number. Returns true on success and
+// fills |negative|. Otherwise returns false and does not modify the out
+// parameter.
+//
+//    in: The value portion of an INTEGER.
+//    negative: Out parameter that is set to true if the number is negative
+//        and false otherwise (zero is non-negative).
+NET_EXPORT bool IsValidInteger(const Input& in,
+                               bool* negative) WARN_UNUSED_RESULT;
+
 // Reads a DER-encoded ASN.1 INTEGER value from |in| and puts the resulting
 // value in |out|. ASN.1 INTEGERs are arbitrary precision; this function is
 // provided as a convenience when the caller knows that the value is unsigned
-// and is between 0 and 2^63-1. This function does not support the full range of
-// uint64_t. This function returns false if the value is too big to fit in a
-// uint64_t, is negative, or if there is an error reading the integer.
+// and is between 0 and 2^64-1. This function returns false if the value is too
+// big to fit in a uint64_t, is negative, or if there is an error reading the
+// integer.
 NET_EXPORT bool ParseUint64(const Input& in, uint64_t* out) WARN_UNUSED_RESULT;
 
 // The BitString class is a helper for representing a valid parsed BIT STRING.
