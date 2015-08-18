@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_DELEGATE_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_DELEGATE_H_
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_
 
 #import <UIKit/UIKit.h>
 #include <vector>
@@ -260,4 +260,4 @@ typedef void (^SSLErrorCallback)(BOOL);
 
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_DELEGATE_H_
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_DELEGATE_H_

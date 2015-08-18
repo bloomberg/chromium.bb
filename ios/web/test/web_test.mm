@@ -12,7 +12,7 @@
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
 #include "ios/web/public/active_state_manager.h"
 #include "ios/web/public/referrer.h"
-#import "ios/web/public/web_state/crw_web_delegate.h"
+#import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #import "ios/web/web_state/js/crw_js_invoke_parameter_queue.h"
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"

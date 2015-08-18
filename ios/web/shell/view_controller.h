@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "ios/web/public/web_state/crw_web_delegate.h"
+#include "ios/web/public/web_state/ui/crw_web_delegate.h"
 
 namespace web {
 class BrowserState;
