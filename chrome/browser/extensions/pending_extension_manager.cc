@@ -240,8 +240,10 @@ void PendingExtensionManager::GetPendingIdsForUpdateCheck(
     // not be fetched from an update URL, so don't include them in the
     // set of ids.
     if (install_source == Manifest::EXTERNAL_PREF ||
-        install_source == Manifest::EXTERNAL_REGISTRY)
+        install_source == Manifest::EXTERNAL_REGISTRY ||
+        install_source == Manifest::EXTERNAL_POLICY) {
       continue;
+    }
 
     out_ids_for_update_check->push_back(iter->id());
   }
