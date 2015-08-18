@@ -1002,37 +1002,26 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   // Transformations applied at the root of the tree should be forwarded
   // to child layers instead of applied to the root RenderSurface.
   const gfx::Transform identity_matrix;
-  scoped_refptr<LayerWithForcedDrawsContent> root =
-      new LayerWithForcedDrawsContent(layer_settings());
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      new LayerWithForcedDrawsContent(layer_settings());
-  child->SetScrollClipLayerId(root->id());
-  root->AddChild(child);
+  LayerImpl* root = root_layer();
+  root->SetDrawsContent(true);
+  LayerImpl* child = AddChild<LayerImpl>(root);
+  child->SetDrawsContent(true);
 
-  host()->SetRootLayer(root);
+  child->SetScrollClipLayer(root->id());
 
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(20, 20),
-                               true,
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false,
                                false);
 
   gfx::Transform translate;
   translate.Translate(50, 50);
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), translate, &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), translate, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(translate, root->draw_properties().target_space_transform);
@@ -1043,10 +1032,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   gfx::Transform scale;
   scale.Scale(2, 2);
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), scale, &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), scale, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(scale, root->draw_properties().target_space_transform);
@@ -1057,10 +1045,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   gfx::Transform rotate;
   rotate.Rotate(2);
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), rotate, &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), rotate, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(rotate, root->draw_properties().target_space_transform);
@@ -1073,10 +1060,9 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   composite.ConcatTransform(scale);
   composite.ConcatTransform(rotate);
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), composite, &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), composite, &render_surface_layer_list_impl);
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     EXPECT_EQ(composite, root->draw_properties().target_space_transform);
@@ -1088,11 +1074,10 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   float device_scale_factor = 1.5f;
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), translate, &render_surface_layer_list);
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), translate, &render_surface_layer_list_impl);
     inputs.device_scale_factor = device_scale_factor;
-    inputs.can_adjust_raster_scales = true;
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform device_scaled_translate = translate;
@@ -1108,12 +1093,11 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   float page_scale_factor = 2.f;
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), translate, &render_surface_layer_list);
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), translate, &render_surface_layer_list_impl);
     inputs.page_scale_factor = page_scale_factor;
-    inputs.page_scale_layer = root.get();
-    inputs.can_adjust_raster_scales = true;
+    inputs.page_scale_layer = root;
     inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform page_scaled_translate = translate;
@@ -1129,10 +1113,10 @@ TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   root->SetTransform(composite);
 
   {
-    RenderSurfaceLayerList render_surface_layer_list;
-    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-        root.get(), root->bounds(), composite, &render_surface_layer_list);
-    inputs.can_adjust_raster_scales = true;
+    LayerImplList render_surface_layer_list_impl;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root, root->bounds(), composite, &render_surface_layer_list_impl);
+    inputs.property_trees->needs_rebuild = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     gfx::Transform compositeSquared = composite;
     compositeSquared.ConcatTransform(composite);
