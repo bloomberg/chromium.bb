@@ -10,6 +10,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class GURL;
 class LoginHandler;
 class Profile;
 class SkBitmap;
@@ -17,11 +18,16 @@ class SkBitmap;
 namespace content {
 class BrowserContext;
 class ColorChooser;
+struct SSLStatus;
 class WebContents;
 }
 
 namespace extensions {
 class Extension;
+}
+
+namespace gfx {
+class Point;
 }
 
 namespace net {
@@ -80,6 +86,13 @@ content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
 // For Mac, returns true if Chrome should show an equivalent toolkit-views based
 // dialog using one of the functions below, rather than showing a Cocoa dialog.
 bool ToolkitViewsDialogsEnabled();
+
+// Shows a Views website settings bubble at the given anchor point.
+void ShowWebsiteSettingsBubbleViewsAtPoint(const gfx::Point& anchor_point,
+                                           Profile* profile,
+                                           content::WebContents* web_contents,
+                                           const GURL& url,
+                                           const content::SSLStatus& ssl);
 
 #endif  // OS_MACOSX
 

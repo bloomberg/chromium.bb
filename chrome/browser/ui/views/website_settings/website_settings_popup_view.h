@@ -43,7 +43,9 @@ class WebsiteSettingsPopupView
  public:
   ~WebsiteSettingsPopupView() override;
 
+  // If |anchor_view| is null, |anchor_rect| is used to anchor the bubble.
   static void ShowPopup(views::View* anchor_view,
+                        const gfx::Rect& anchor_rect,
                         Profile* profile,
                         content::WebContents* web_contents,
                         const GURL& url,
@@ -53,6 +55,7 @@ class WebsiteSettingsPopupView
 
  private:
   WebsiteSettingsPopupView(views::View* anchor_view,
+                           gfx::NativeView parent_window,
                            Profile* profile,
                            content::WebContents* web_contents,
                            const GURL& url,

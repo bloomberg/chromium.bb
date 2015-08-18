@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -35,6 +36,7 @@
 #import "ui/base/cocoa/flipped_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -113,6 +115,22 @@ NSColor* IdentityVerifiedTextColor() {
                                    green:0x95/255.0
                                     blue:0
                                    alpha:1.0];
+}
+
+// Takes in the parent window, which should be a BrowserWindow, and gets the
+// proper anchor point for the bubble. The returned point is in screen
+// coordinates.
+NSPoint AnchorPointForWindow(NSWindow* parent) {
+  BrowserWindowController* controller = [parent windowController];
+  NSPoint origin = NSZeroPoint;
+  if ([controller isKindOfClass:[BrowserWindowController class]]) {
+    LocationBarViewMac* location_bar = [controller locationBarBridge];
+    if (location_bar) {
+      NSPoint bubble_point = location_bar->GetPageInfoBubblePoint();
+      origin = [parent convertBaseToScreen:bubble_point];
+    }
+  }
+  return origin;
 }
 
 }  // namespace
@@ -764,27 +782,7 @@ NSColor* IdentityVerifiedTextColor() {
                   animate:[[self window] isVisible]];
 
   // Adjust the anchor for the bubble.
-  NSPoint anchorPoint =
-      [self anchorPointForWindowWithHeight:NSHeight(windowFrame)
-                              parentWindow:[self parentWindow]];
-  [self setAnchorPoint:anchorPoint];
-}
-
-// Takes in the bubble's height and the parent window, which should be a
-// BrowserWindow, and gets the proper anchor point for the bubble. The returned
-// point is in screen coordinates.
-- (NSPoint)anchorPointForWindowWithHeight:(CGFloat)bubbleHeight
-                             parentWindow:(NSWindow*)parent {
-  BrowserWindowController* controller = [parent windowController];
-  NSPoint origin = NSZeroPoint;
-  if ([controller isKindOfClass:[BrowserWindowController class]]) {
-    LocationBarViewMac* locationBar = [controller locationBarBridge];
-    if (locationBar) {
-      NSPoint bubblePoint = locationBar->GetPageInfoBubblePoint();
-      origin = [parent convertBaseToScreen:bubblePoint];
-    }
-  }
-  return origin;
+  [self setAnchorPoint:AnchorPointForWindow([self parentWindow])];
 }
 
 // Sets properties on the given |field| to act as the title or description
@@ -1206,6 +1204,13 @@ void WebsiteSettingsUIBridge::Show(gfx::NativeWindow parent,
                                    content::WebContents* web_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl) {
+  if (chrome::ToolkitViewsDialogsEnabled()) {
+    chrome::ShowWebsiteSettingsBubbleViewsAtPoint(
+        gfx::ScreenPointFromNSPoint(AnchorPointForWindow(parent)), profile,
+        web_contents, url, ssl);
+    return;
+  }
+
   bool is_internal_page = InternalChromePage(url);
 
   // Create the bridge. This will be owned by the bubble controller.

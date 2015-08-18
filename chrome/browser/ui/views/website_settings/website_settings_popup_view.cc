@@ -141,13 +141,18 @@ class PopupHeaderView : public views::View {
 // displayed.
 class InternalPageInfoPopupView : public views::BubbleDelegateView {
  public:
-  explicit InternalPageInfoPopupView(views::View* anchor_view);
+  // If |anchor_view| is nullptr, or has no Widget, |parent_window| may be
+  // provided to ensure this bubble is closed when the parent closes.
+  InternalPageInfoPopupView(views::View* anchor_view,
+                            gfx::NativeView parent_window);
   ~InternalPageInfoPopupView() override;
 
   // views::BubbleDelegateView:
   void OnWidgetDestroying(views::Widget* widget) override;
 
  private:
+  friend class WebsiteSettingsPopupView;
+
   DISALLOW_COPY_AND_ASSIGN(InternalPageInfoPopupView);
 };
 
@@ -229,8 +234,12 @@ void PopupHeaderView::SetIdentityStatus(const base::string16& status,
 // InternalPageInfoPopupView
 ////////////////////////////////////////////////////////////////////////////////
 
-InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
+InternalPageInfoPopupView::InternalPageInfoPopupView(
+    views::View* anchor_view,
+    gfx::NativeView parent_window)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT) {
+  set_parent_window(parent_window);
+
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
                                      kLocationIconVerticalMargin, 0));
@@ -250,8 +259,7 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(views::View* anchor_view)
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
 
-  views::BubbleDelegateView::CreateBubble(this)->Show();
-  SizeToContents();
+  views::BubbleDelegateView::CreateBubble(this);
 }
 
 InternalPageInfoPopupView::~InternalPageInfoPopupView() {
@@ -270,15 +278,27 @@ WebsiteSettingsPopupView::~WebsiteSettingsPopupView() {
 
 // static
 void WebsiteSettingsPopupView::ShowPopup(views::View* anchor_view,
+                                         const gfx::Rect& anchor_rect,
                                          Profile* profile,
                                          content::WebContents* web_contents,
                                          const GURL& url,
                                          const content::SSLStatus& ssl) {
   is_popup_showing = true;
+  gfx::NativeView parent_window =
+      anchor_view ? nullptr : web_contents->GetNativeView();
   if (InternalChromePage(url)) {
-    new InternalPageInfoPopupView(anchor_view);
+    // Use the concrete type so that SetAnchorRect() can be called as a friend.
+    InternalPageInfoPopupView* popup =
+        new InternalPageInfoPopupView(anchor_view, parent_window);
+    if (!anchor_view)
+      popup->SetAnchorRect(anchor_rect);
+    popup->GetWidget()->Show();
   } else {
-    new WebsiteSettingsPopupView(anchor_view, profile, web_contents, url, ssl);
+    WebsiteSettingsPopupView* popup = new WebsiteSettingsPopupView(
+        anchor_view, parent_window, profile, web_contents, url, ssl);
+    if (!anchor_view)
+      popup->SetAnchorRect(anchor_rect);
+    popup->GetWidget()->Show();
   }
 }
 
@@ -289,6 +309,7 @@ bool WebsiteSettingsPopupView::IsPopupShowing() {
 
 WebsiteSettingsPopupView::WebsiteSettingsPopupView(
     views::View* anchor_view,
+    gfx::NativeView parent_window,
     Profile* profile,
     content::WebContents* web_contents,
     const GURL& url,
@@ -310,6 +331,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       help_center_link_(nullptr),
       connection_info_content_(nullptr),
       weak_factory_(this) {
+  set_parent_window(parent_window);
+
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(kLocationIconVerticalMargin, 0,
                                      kLocationIconVerticalMargin, 0));
@@ -354,8 +377,7 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   set_margins(gfx::Insets(kPopupMarginTop, kPopupMarginLeft,
                           kPopupMarginBottom, kPopupMarginRight));
 
-  views::BubbleDelegateView::CreateBubble(this)->Show();
-  SizeToContents();
+  views::BubbleDelegateView::CreateBubble(this);
 
   presenter_.reset(new WebsiteSettings(
       this, profile,

@@ -1368,8 +1368,8 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
   if (!popup_anchor)
     popup_anchor = GetLocationBarView()->location_icon_view();
 
-  WebsiteSettingsPopupView::ShowPopup(popup_anchor, profile, web_contents, url,
-                                      ssl);
+  WebsiteSettingsPopupView::ShowPopup(popup_anchor, gfx::Rect(), profile,
+                                      web_contents, url, ssl);
 }
 
 void BrowserView::ShowAppMenu() {
