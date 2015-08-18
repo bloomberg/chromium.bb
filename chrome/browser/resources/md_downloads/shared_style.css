@@ -9,3 +9,8 @@
   /* (1024 total width - 606 item width) / 2 = 209 room to play. */
   --downloads-side-column-basis: 209px;
 }
+
+cr-button:not([lowercase]) {
+  /* TODO(dbeam): this is ugly, but it'll soon be Roboto Medium instead. */
+  font-weight: bold;
+}

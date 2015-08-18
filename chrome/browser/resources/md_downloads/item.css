@@ -42,7 +42,7 @@
   border-radius: 2px;  /* TODO(dbeam): why does this differ from Polymer? */
   display: flex;
   flex: none;
-  min-height: 96px;
+  min-height: 103px;
   width: var(--downloads-item-width);
 }
 
@@ -89,20 +89,21 @@
 
 #name,
 #file-link {
+  font-weight: bold;
   word-break: break-all;
 }
 
 #name {
   -webkit-margin-end: 12px;  /* Only really affects #tag. */
-  font-weight: bold;
-}
-
-.is-active #name {
-  color: #212121;
 }
 
 .dangerous #name {
   color: rgb(35, 114, 236);
+}
+
+/* TODO(dbeam): should .keep be a scarier/different color? */
+.is-active :-webkit-any(#file-link, #pause, #resume, #show, .keep) {
+  color: rgb(51, 103, 214);
 }
 
 #tag {
@@ -120,7 +121,7 @@
 }
 
 .is-active #url {
-  color: rgb(51, 103, 214);
+  color: #969696;
 }
 
 #progress,
@@ -148,18 +149,25 @@
   border-radius: 2px;
 }
 
+#cancel,
+#retry,
+.discard {
+  color: #5a5a5a;
+}
+
 #remove-wrapper {
   align-self: flex-start;
   margin: 0;
 }
 
 #remove {
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
   --paper-icon-button: {
-    height: 16px;
-    width: 16px;
+    height: 20px;
+    padding: 6px;
+    width: 20px;
   };
-  --iron-icon-height: 16px;
-  --iron-icon-width: 16px;
 }
 
 #incognito {

@@ -37,8 +37,9 @@
         <paper-progress id="progress"></paper-progress>
 
         <div id="safe" class="controls" hidden$="[[isDangerous_]]">
-          <cr-button id="show" focus-type="show" on-click="onShowClick_"
-              i18n-content="controlShowInFolder"></cr-button>
+          <cr-button id="show" focus-type="show"
+              on-click="onShowClick_" i18n-content="controlShowInFolder"
+              lowercase></cr-button>
           <cr-button id="retry" focus-type="retry" on-click="onRetryClick_"
               i18n-content="controlRetry"></cr-button>
           <cr-button id="pause" focus-type="pause" on-click="onPauseClick_"
@@ -56,19 +57,19 @@
         <div id="dangerous" class="controls" hidden$="[[!isDangerous_]]">
           <!-- Dangerous file types (e.g. .exe, .jar). -->
           <cr-button focus-type="save" i18n-content="dangerSave"
-              on-click="onSaveDangerous_"
+              on-click="onSaveDangerous_" class="keep"
               hidden$="[[isMalware_]]"></cr-button>
           <cr-button focus-type="discard" i18n-content="dangerDiscard"
-              on-click="onDiscardDangerous_"
+              on-click="onDiscardDangerous_" class="discard"
               hidden$="[[isMalware_]]"></cr-button>
 
           <!-- Things that safe browsing has determined to be dangerous. -->
           <cr-button focus-type="save" i18n-content="dangerRestore"
-              on-click="onSaveDangerous_"
+              on-click="onSaveDangerous_" class="keep"
               hidden$="[[!isMalware_]]"></cr-button>
           <cr-button focus-type="discard"
               i18n-content="controlRemoveFromList"
-              on-click="onDiscardDangerous_"
+              on-click="onDiscardDangerous_" class="discard"
               hidden$="[[!isMalware_]]"></cr-button>
         </div>
       </div>
