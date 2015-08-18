@@ -598,7 +598,10 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
     paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
     paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
 
-    SkPictureBuilder pictureBuilder(paintingRect);
+    // The content is shifted to origin, to fit within the image bounds - which are the same
+    // as the picture bounds.
+    SkRect pictureBounds = SkRect::MakeIWH(paintingRect.width(), paintingRect.height());
+    SkPictureBuilder pictureBuilder(pictureBounds);
     {
         GraphicsContext& paintContext = pictureBuilder.context();
 
