@@ -156,7 +156,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     pending_frame_set_.erase(frame_id);
     if (expecting_single_stop_event)
       pending_frame_set_.clear();
-    if (pending_frame_set_.empty() && (load_event_fired_ || timed_out_))
+    if (pending_frame_set_.empty() &&
+        (load_event_fired_ || timed_out_ || execution_context_set_.empty()))
       loading_state_ = kNotLoading;
   } else if (method == "Page.frameScheduledNavigation") {
     double delay;
