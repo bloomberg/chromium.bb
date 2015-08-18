@@ -548,7 +548,6 @@
       'test/base/menu_model_test.h',
       'test/base/v8_unit_test.cc',
       'test/base/v8_unit_test.h',
-      'test/data/unit/framework_unittest.gtestjs',
       'test/logging/win/mof_data_parser_unittest.cc',
       'utility/chrome_content_utility_client_unittest.cc',
       'utility/cloud_print/pwg_encoder_unittest.cc',
@@ -1118,6 +1117,7 @@
       'browser/resources/print_preview/data/measurement_system_unittest.gtestjs',
       'browser/resources/print_preview/print_preview_utils_unittest.gtestjs',
       'renderer/resources/extensions/notifications_custom_bindings.gtestjs',
+      'test/data/unit/framework_unittest.gtestjs',
     ],
     'chrome_unit_tests_chromeos_sources': [
       # TODO(lukasza): Move Drive tests outside of CrOS (crbug.com/498951).

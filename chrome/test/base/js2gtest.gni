@@ -11,6 +11,9 @@ template("js2gtest") {
   action_name = target_name + "_action"
   source_set_name = target_name
 
+  # The mapping from sources to the copied version.
+  copied_source_pattern = "$root_out_dir/test_data/{{source_root_relative_dir}}/{{source_file_part}}"
+
   action_foreach(action_name) {
     testonly = true
     visibility = [ ":$source_set_name" ]
@@ -33,10 +36,14 @@ template("js2gtest") {
       inputs += [ invoker.deps_js ]
     }
 
+    # Outputs. The script will copy the source files to the output directory,
+    # which then must be treated as runtime data. The generated .cc file isn't
+    # data, it will be compiled in a step below.
     outputs = [
       "$target_gen_dir/{{source_name_part}}-gen.cc",
-      "$root_out_dir/test_data/{{source_root_relative_dir}}/{{source_file_part}}",
+      copied_source_pattern,
     ]
+    data = process_file_template(sources, [ copied_source_pattern ])
 
     args = []
     if (defined(invoker.deps_js)) {
@@ -75,7 +82,7 @@ template("js2gtest") {
       visibility = [ ":$source_set_name" ]
       sources = invoker.extra_js_files
       outputs = [
-        "$root_out_dir/test_data/{{source_root_relative_dir}}/{{source_file_part}}",
+        copied_source_pattern,
       ]
     }
   }

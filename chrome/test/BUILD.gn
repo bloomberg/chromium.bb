@@ -577,6 +577,10 @@ if (!is_android) {
     if (!enable_print_preview) {
       sources -= [ "data/webui/print_preview.js" ]
     }
+    if (enable_media_router) {
+      sources +=
+          [ "data/webui/media_router/media_router_elements_browsertest.js" ]
+    }
     deps = [
       "//chrome/browser/ui",
       "//skia",
