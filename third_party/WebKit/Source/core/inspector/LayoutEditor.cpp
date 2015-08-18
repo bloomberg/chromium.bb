@@ -6,13 +6,14 @@
 #include "core/inspector/LayoutEditor.h"
 
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorHighlight.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/JSONValues.h"
 
 namespace blink {
@@ -110,6 +111,11 @@ FloatQuad translateAndProject(const FloatQuad& origin, const FloatQuad& orthogon
     return result;
 }
 
+bool isMutableUnitType(CSSPrimitiveValue::UnitType unitType)
+{
+    return unitType == CSSPrimitiveValue::UnitType::Pixels || unitType == CSSPrimitiveValue::UnitType::Ems || unitType == CSSPrimitiveValue::UnitType::Percentage || unitType == CSSPrimitiveValue::UnitType::Rems;
+}
+
 } // namespace
 
 LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
@@ -183,9 +189,10 @@ PassRefPtr<JSONObject> LayoutEditor::createValueDescription(const String& proper
 
     RefPtr<JSONObject> object = JSONObject::create();
     object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
-    object->setString("unit", CSSPrimitiveValue::unitTypeToString(cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels));
+    CSSPrimitiveValue::UnitType unitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
+    object->setString("unit", CSSPrimitiveValue::unitTypeToString(unitType));
     // TODO: Support an editing of other popular units like: em, rem
-    object->setBoolean("mutable", !cssValue || cssValue->isPx());
+    object->setBoolean("mutable", isMutableUnitType(unitType));
     return object.release();
 }
 
@@ -203,17 +210,36 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
         return;
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> cssValue = getPropertyCSSValue(m_changingProperty);
-    if (cssValue && !cssValue->isPx())
+    m_valueUnitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
+    if (!isMutableUnitType(m_valueUnitType))
         return;
 
+    switch (m_valueUnitType) {
+    case CSSPrimitiveValue::UnitType::Pixels:
+        m_factor = 1;
+        break;
+    case CSSPrimitiveValue::UnitType::Ems:
+        m_factor = m_element->computedStyle()->computedFontSize();
+        break;
+    case CSSPrimitiveValue::UnitType::Percentage:
+        // It is hard to correctly support percentages, so we decided hack it this way: 100% = 1000px
+        m_factor = 10;
+        break;
+    case CSSPrimitiveValue::UnitType::Rems:
+        m_factor = m_element->document().computedStyle()->computedFontSize();
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
+    }
     m_propertyInitialValue = cssValue ? cssValue->getFloatValue() : 0;
 }
 
 void LayoutEditor::overlayPropertyChanged(float cssDelta)
 {
-    if (m_changingProperty) {
+    if (m_changingProperty && m_factor) {
         String errorString;
-        m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_changingProperty, String::number(cssDelta + m_propertyInitialValue) + "px");
+        m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_changingProperty, String::format("%.2f", cssDelta / m_factor + m_propertyInitialValue) + CSSPrimitiveValue::unitTypeToString(m_valueUnitType));
     }
 }
 
@@ -221,6 +247,8 @@ void LayoutEditor::overlayEndedPropertyChange()
 {
     m_changingProperty = CSSPropertyInvalid;
     m_propertyInitialValue = 0;
+    m_factor = 0;
+    m_valueUnitType = CSSPrimitiveValue::UnitType::Unknown;
 }
 
 } // namespace blink

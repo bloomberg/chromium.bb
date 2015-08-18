@@ -7,6 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "platform/heap/Handle.h"
@@ -49,6 +50,8 @@ private:
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     CSSPropertyID m_changingProperty;
     float m_propertyInitialValue;
+    float m_factor;
+    CSSPrimitiveValue::UnitType m_valueUnitType;
 };
 
 } // namespace blink
