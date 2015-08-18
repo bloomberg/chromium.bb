@@ -317,6 +317,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected final void setContentView() {
         final long begin = SystemClock.elapsedRealtime();
         TraceEvent.begin("onCreate->setContentView()");
+
+        enableHardwareAcceleration();
+        setLowEndTheme();
+
         if (WarmupManager.getInstance().hasBuiltViewHierarchy()) {
             View placeHolderView = new View(this);
             setContentView(placeHolderView);
@@ -342,8 +346,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         mCompositorViewHolder = (CompositorViewHolder) findViewById(R.id.compositor_view_holder);
         mCompositorViewHolder.setRootView(getWindow().getDecorView().getRootView());
-
-        enableHardwareAcceleration();
     }
 
     /**
@@ -1493,6 +1495,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             // to know 'appToken' argument until window's view is attached to the window (!!),
             // we have to do the workaround in onAttachedToWindow()
             mSetWindowHWA = true;
+        }
+    }
+
+    private void setLowEndTheme() {
+        if (SysUtils.isLowEndDevice()
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setTheme(R.style.MainTheme_LowEnd);
         }
     }
 }

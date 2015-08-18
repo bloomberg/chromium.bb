@@ -65,4 +65,31 @@
         <item name="android:colorPrimary">@color/incognito_primary_color</item>
     </style>
 
+    <!-- Theme variation for low-end devices.
+
+        Since ChromeActivities are not HW accelerated, they don't get fancy
+        material shadows for popups. This theme sets drawable with pre-baked
+        shadows to those popups to make them look better.
+        'popup_background_shadow' is a copy of 'abc_popup_background_mtrl_mult'
+        drawable from Android support library, where it's used to simulate
+        material design on earlier Android versions.
+    -->
+    <style name="PopupWindow.LowEnd" parent="android:Widget.Material.Light.PopupWindow">
+        <item name="android:popupBackground">@drawable/popup_background_shadow</item>
+    </style>
+    <style name="ListPopupWindow.LowEnd" parent="android:Widget.Material.Light.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/popup_background_shadow</item>
+    </style>
+    <style name="Spinner.LowEnd" parent="android:Widget.Material.Light.Spinner">
+        <item name="android:popupBackground">@drawable/popup_background_shadow</item>
+    </style>
+    <style name="AutoCompleteTextView.LowEnd" parent="android:Widget.Material.Light.AutoCompleteTextView">
+        <item name="android:popupBackground">@drawable/popup_background_shadow</item>
+    </style>
+    <style name="MainTheme.LowEnd" parent="MainTheme">
+        <item name="android:popupWindowStyle">@style/ListPopupWindow.LowEnd</item>
+        <item name="android:listPopupWindowStyle">@style/ListPopupWindow.LowEnd</item>
+        <item name="android:spinnerStyle">@style/Spinner.LowEnd</item>
+        <item name="android:autoCompleteTextViewStyle">@style/AutoCompleteTextView.LowEnd</item>
+    </style>
 </resources>
