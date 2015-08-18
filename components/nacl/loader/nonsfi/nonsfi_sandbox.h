@@ -18,13 +18,16 @@ namespace nonsfi {
 // depends on seccomp sandbox.
 class NaClNonSfiBPFSandboxPolicy : public sandbox::bpf_dsl::Policy {
  public:
-  explicit NaClNonSfiBPFSandboxPolicy() {}
-  ~NaClNonSfiBPFSandboxPolicy() override {}
+  explicit NaClNonSfiBPFSandboxPolicy();
+  ~NaClNonSfiBPFSandboxPolicy() override;
 
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(int sysno) const override;
   sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
 
  private:
+  // The PID that the policy applies to (should be equal to the current pid).
+  const pid_t policy_pid_;
+
   DISALLOW_COPY_AND_ASSIGN(NaClNonSfiBPFSandboxPolicy);
 };
 

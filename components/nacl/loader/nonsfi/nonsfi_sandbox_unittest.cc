@@ -641,6 +641,73 @@ BPF_DEATH_TEST_C(NaClNonSfiSandboxTest,
   sandbox::Syscall::InvalidCall();
 }
 
+// The following tests check for several restrictions in tgkill(). A delegate is
+// needed to be able to call getpid() from inside the process that will be
+// sandboxed, but before the sandbox is installed.
+template<void(*callback)(int pid, int tid)>
+class TgkillDelegate : public sandbox::BPFTesterDelegate {
+ public:
+  TgkillDelegate() {}
+  ~TgkillDelegate() override {}
+
+  scoped_ptr<sandbox::bpf_dsl::Policy> GetSandboxBPFPolicy() override {
+    // These two values must be obtained when running in the sandboxed process.
+    // They cannot be set in the constructor and are also not available from
+    // within |RunTestFunction|.
+    pid_ = getpid();
+    tid_ = syscall(__NR_gettid);
+
+    return scoped_ptr<sandbox::bpf_dsl::Policy>(
+        new nacl::nonsfi::NaClNonSfiBPFSandboxPolicy());
+  }
+
+  void RunTestFunction() override {
+    callback(pid_, tid_);
+  }
+
+  int pid_;
+  int tid_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TgkillDelegate);
+};
+
+void BPF_TEST_D_tgkill_with_invalid_signal(int pid, int tid) {
+  syscall(__NR_tgkill, pid, tid, SIGKILL);
+}
+
+BPF_DEATH_TEST_D(NaClNonSfiSandboxTest,
+                 tgkill_with_invalid_signal,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 TgkillDelegate<BPF_TEST_D_tgkill_with_invalid_signal>);
+
+void BPF_TEST_D_tgkill_with_invalid_tgid(int pid, int tid) {
+  syscall(__NR_tgkill, 1, tid, LINUX_SIGUSR1);
+}
+
+BPF_DEATH_TEST_D(NaClNonSfiSandboxTest,
+                 tgkill_with_invalid_tgid,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 TgkillDelegate<BPF_TEST_D_tgkill_with_invalid_tgid>);
+
+void BPF_TEST_D_tgkill_with_negative_tgid(int pid, int tid) {
+  syscall(__NR_tgkill, pid, -1, LINUX_SIGUSR1);
+}
+
+BPF_DEATH_TEST_D(NaClNonSfiSandboxTest,
+                 tgkill_with_negative_tgid,
+                 DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
+                 TgkillDelegate<BPF_TEST_D_tgkill_with_negative_tgid>);
+
+void BPF_TEST_D_tgkill_with_invalid_tid(int pid, int tid) {
+  BPF_ASSERT_EQ(-1, syscall(__NR_tgkill, pid, 1, LINUX_SIGUSR1));
+  BPF_ASSERT_EQ(ESRCH, errno);
+}
+
+BPF_TEST_D(NaClNonSfiSandboxTest,
+           tgkill_with_invalid_tid,
+           TgkillDelegate<BPF_TEST_D_tgkill_with_invalid_tid>);
+
 // The following test cases check if syscalls return EPERM regardless
 // of arguments.
 #define RESTRICT_SYSCALL_EPERM_TEST(name)                      \
