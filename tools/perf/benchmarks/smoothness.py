@@ -372,6 +372,7 @@ class SmoothnessToughAnimatedImageCases(perf_benchmark.PerfBenchmark):
     return 'smoothness.tough_animated_image_cases'
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/499489
 class SmoothnessToughTextureUploadCases(perf_benchmark.PerfBenchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughTextureUploadCasesPageSet
