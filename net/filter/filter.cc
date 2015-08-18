@@ -379,8 +379,7 @@ Filter* Filter::PrependNewFilter(FilterType type_id,
       break;
     case FILTER_TYPE_SDCH:
     case FILTER_TYPE_SDCH_POSSIBLE:
-      if (filter_context.GetURLRequestContext()->sdch_manager() &&
-          SdchManager::sdch_enabled()) {
+      if (filter_context.GetURLRequestContext()->sdch_manager()) {
         first_filter.reset(
             InitSdchFilter(type_id, filter_context, buffer_size));
       }

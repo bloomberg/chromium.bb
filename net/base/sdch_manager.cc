@@ -38,9 +38,6 @@ void StripTrailingDot(GURL* gurl) {
 
 namespace net {
 
-// static
-bool SdchManager::g_sdch_enabled_ = true;
-
 SdchManager::DictionarySet::DictionarySet() {}
 
 SdchManager::DictionarySet::~DictionarySet() {}
@@ -103,11 +100,6 @@ void SdchManager::SdchErrorRecovery(SdchProblemCode problem) {
                             SDCH_MAX_PROBLEM_CODE);
 }
 
-// static
-void SdchManager::EnableSdchSupport(bool enabled) {
-  g_sdch_enabled_ = enabled;
-}
-
 void SdchManager::BlacklistDomain(const GURL& url,
                                   SdchProblemCode blacklist_reason) {
   SetAllowLatencyExperiment(url, false);
@@ -167,9 +159,6 @@ int SdchManager::BlacklistDomainExponential(const std::string& domain) {
 
 SdchProblemCode SdchManager::IsInSupportedDomain(const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!g_sdch_enabled_ )
-    return SDCH_DISABLED;
-
   if (blacklisted_domains_.empty())
     return SDCH_OK;
 
@@ -456,7 +445,7 @@ void SdchManager::UrlSafeBase64Encode(const std::string& input,
 scoped_ptr<base::Value> SdchManager::SdchInfoToValue() const {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
 
-  value->SetBoolean("sdch_enabled", sdch_enabled());
+  value->SetBoolean("sdch_enabled", true);
 
   scoped_ptr<base::ListValue> entry_list(new base::ListValue());
   for (const auto& entry: dictionaries_) {

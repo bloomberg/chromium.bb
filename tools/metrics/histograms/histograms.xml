@@ -69108,8 +69108,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="95" label="PRIOR_TO_DICTIONARY"/>
   <int value="96" label="DECODE_ERROR"/>
   <int value="100" label="LATENCY_TEST_DISALLOWED"/>
-  <int value="105" label="DISABLED"/>
-  <int value="106" label="SECURE_SCHEME_NOT_SUPPORTED"/>
+  <int value="105" label="defunct (DISABLED)">
+    No longer centrally tracked, since SDCH is enabled or disabled per
+    URLRequestContext.
+  </int>
+  <int value="106" label="defunct (SECURE_SCHEME_NOT_SUPPORTED)">
+    SDCH support is now always enabled for secure schemes.
+  </int>
   <int value="107" label="DICTIONARY_USED_AFTER_DELETION"/>
 </enum>
 

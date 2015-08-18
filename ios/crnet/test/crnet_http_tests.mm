@@ -6,7 +6,9 @@
 
 #import "CrNet.h"
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #import "ios/third_party/gcdwebserver/src/GCDWebServer/Core/GCDWebServer.h"
 #include "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -134,13 +136,21 @@ class HttpTest : public ::testing::Test {
   // Registers a fixed response |text| to be returned to requests for |path|,
   // which is relative to |server_root_|.
   void RegisterPathText(const std::string& path, const std::string& text) {
-    NSString* nspath =
-        [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
+    NSString* nspath = base::SysUTF8ToNSString(path);
     NSData* data = [NSData dataWithBytes:text.c_str() length:text.length()];
     [web_server_ addGETHandlerForPath:nspath
                           staticData:data
                          contentType:@"text/plain"
                             cacheAge:30];
+  }
+
+  void RegisterPathHandler(const std::string& path,
+                           GCDWebServerProcessBlock handler) {
+    NSString* nspath = base::SysUTF8ToNSString(path);
+    [web_server_ addHandlerForMethod:@"GET"
+                                path:nspath
+                        requestClass:NSClassFromString(@"GCDWebServerRequest")
+                        processBlock:handler];
   }
 
   // Launches the supplied |task| and blocks until it completes, with a timeout
@@ -157,6 +167,22 @@ class HttpTest : public ::testing::Test {
   GURL GetURL(const std::string& path) {
     std::string real_path = path[0] == '/' ? path.substr(1) : path;
     return server_root_.Resolve(real_path);
+  }
+
+  // Some convenience functions for working with GCDWebServerRequest and
+  // GCDWebServerResponse.
+
+  // Returns true if the value for the request header |header| is not nil and
+  // contains the string |target|.
+  bool HeaderValueContains(GCDWebServerRequest* request,
+                           const std::string& header,
+                           const std::string& target) {
+    NSString* key = base::SysUTF8ToNSString(header);
+    NSString* needle = base::SysUTF8ToNSString(target);
+    NSString* haystack = request.headers[key];
+    if (!haystack)
+      return false;
+    return [haystack rangeOfString:needle].location != NSNotFound;
   }
 
   base::scoped_nsobject<NSURLSession> session_;
@@ -176,21 +202,45 @@ TEST_F(HttpTest, NSURLConnectionReceivesData) {
   NSURL* url = net::NSURLWithGURL(GetURL(kPath));
   NSURLRequest* req = [NSURLRequest requestWithURL:url];
   NSURLResponse* resp = nil;
-  NSError* error = nil;
   NSData* received = [NSURLConnection sendSynchronousRequest:req
                                            returningResponse:&resp
-                                                       error:&error];
+                                                       error:nullptr];
   EXPECT_EQ(0, memcmp([received bytes], kData, sizeof(kData)));
 }
 
 TEST_F(HttpTest, NSURLSessionReceivesData) {
-  const char data[] = "foobar";
-  RegisterPathText("/foo", data);
+  const char kPath[] = "/foo";
+  const char kData[] = "foobar";
+  RegisterPathText(kPath, kData);
   StartWebServer();
 
-  NSURL* url = net::NSURLWithGURL(GetURL("foo"));
+  NSURL* url = net::NSURLWithGURL(GetURL(kPath));
   NSURLSessionDataTask* task = [session_ dataTaskWithURL:url];
   StartDataTaskAndWaitForCompletion(task);
   EXPECT_EQ(nil, [delegate_ error]);
-  EXPECT_EQ(strlen(data), [delegate_ receivedBytes]);
+  EXPECT_EQ(strlen(kData), [delegate_ receivedBytes]);
 }
+
+TEST_F(HttpTest, SdchDisabledByDefault) {
+  const char kPath[] = "/foo";
+  RegisterPathHandler(kPath,
+      ^GCDWebServerResponse* (GCDWebServerRequest* req) {
+        EXPECT_FALSE(HeaderValueContains(req, "Accept-Encoding", "sdch"));
+        return nil;
+      });
+  StartWebServer();
+  NSURL* url = net::NSURLWithGURL(GetURL(kPath));
+  NSURLRequest* req = [NSURLRequest requestWithURL:url];
+  NSURLResponse* resp = nil;
+  NSError* error = nil;
+  NSData* received = [NSURLConnection sendSynchronousRequest:req
+                                           returningResponse:&resp
+                                                       error:&error];
+  DCHECK(received);
+}
+
+// TODO(ellyjones): There needs to be a test that enabling SDCH works, but
+// because CrNet is static and 'uninstall' only disables it, there is no way to
+// have an individual test enable or disable SDCH.
+// Probably there is a way to get gtest tests to run in a separate process, but
+// I'm not sure what it is.

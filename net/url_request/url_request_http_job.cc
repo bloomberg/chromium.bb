@@ -344,13 +344,10 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
   if (sdch_manager) {
     SdchProblemCode rv = sdch_manager->IsInSupportedDomain(request()->url());
     if (rv != SDCH_OK) {
-      // If SDCH is just disabled, it is not a real error.
-      if (rv != SDCH_DISABLED) {
-        SdchManager::SdchErrorRecovery(rv);
-        request()->net_log().AddEvent(
-            NetLog::TYPE_SDCH_DECODING_ERROR,
-            base::Bind(&NetLogSdchResourceProblemCallback, rv));
-      }
+      SdchManager::SdchErrorRecovery(rv);
+      request()->net_log().AddEvent(
+          NetLog::TYPE_SDCH_DECODING_ERROR,
+          base::Bind(&NetLogSdchResourceProblemCallback, rv));
     } else {
       const std::string name = "Get-Dictionary";
       std::string url_text;
@@ -559,13 +556,10 @@ void URLRequestHttpJob::AddExtraHeaders() {
       SdchProblemCode rv = sdch_manager->IsInSupportedDomain(request()->url());
       if (rv != SDCH_OK) {
         advertise_sdch = false;
-        // If SDCH is just disabled, it is not a real error.
-        if (rv != SDCH_DISABLED) {
-          SdchManager::SdchErrorRecovery(rv);
-          request()->net_log().AddEvent(
-              NetLog::TYPE_SDCH_DECODING_ERROR,
-              base::Bind(&NetLogSdchResourceProblemCallback, rv));
-        }
+        SdchManager::SdchErrorRecovery(rv);
+        request()->net_log().AddEvent(
+            NetLog::TYPE_SDCH_DECODING_ERROR,
+            base::Bind(&NetLogSdchResourceProblemCallback, rv));
       }
     }
     if (advertise_sdch) {

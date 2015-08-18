@@ -123,9 +123,10 @@ SDCH_PROBLEM_CODE(DECODE_ERROR, 96)
 SDCH_PROBLEM_CODE(LATENCY_TEST_DISALLOWED, 100)
 
 // General SDCH problems.
-// SDCH is disabled.
-SDCH_PROBLEM_CODE(DISABLED, 105)
-// SDCH over https is disabled.
+// SDCH is enabled or disabled per URLRequestContext now so this value is never
+// used.
+// SDCH_PROBLEM_CODE(DISABLED, 105)
+
 // SDCH always supports secure schemes now, so this enum value is unused.
 // SDCH_PROBLEM_CODE(SECURE_SCHEME_NOT_SUPPORTED, 106)
 

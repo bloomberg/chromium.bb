@@ -328,15 +328,15 @@ void CrNetEnvironment::SetHTTPProtocolHandlerRegistered(bool registered) {
 
 void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
   DCHECK(base::MessageLoop::current() == network_io_thread_->message_loop());
+  net::URLRequestContext* context =
+      main_context_getter_->GetURLRequestContext();
 
   if (!sdch_enabled_) {
-    net::SdchManager::EnableSdchSupport(false);
+    DCHECK_EQ(static_cast<net::SdchManager*>(nullptr), context->sdch_manager());
     return;
   }
 
   sdch_manager_.reset(new net::SdchManager());
-  net::URLRequestContext* context =
-      main_context_getter_->GetURLRequestContext();
   sdch_owner_.reset(new net::SdchOwner(sdch_manager_.get(), context));
   if (!sdch_pref_store_filename_.empty()) {
     base::FilePath path(sdch_pref_store_filename_);
