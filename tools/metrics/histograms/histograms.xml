@@ -56022,6 +56022,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="303" label="Welcome page on OS upgrade enabled"/>
   <int value="304" label="Use hardware acceleration when available"/>
   <int value="305" label="Android Negotiate authenticator account type"/>
+  <int value="306" label="Send system logs to the management server"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

@@ -625,6 +625,12 @@ message LoginScreenDomainAutoCompleteProto {
   optional string login_screen_domain_auto_complete = 1;
 }
 
+// Settings that control whether a device would send system logs to the server.
+message DeviceLogUploadSettingsProto {
+  // Whether the device should send system logs. The default is false.
+  optional bool log_upload_enabled = 1 [default = false];
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -667,4 +673,5 @@ message ChromeDeviceSettingsProto {
   optional ExtensionCacheSizeProto extension_cache_size = 36;
   optional LoginScreenDomainAutoCompleteProto
       login_screen_domain_auto_complete = 37;
+  optional DeviceLogUploadSettingsProto device_log_upload_settings = 38;
 }

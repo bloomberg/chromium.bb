@@ -99,6 +99,18 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     Mock::VerifyAndClearExpectations(this);
   }
 
+  // Helper routine to enable/disable log upload settings in policy.
+  void SetLogUploadSettings(bool enable_log_upload) {
+    EXPECT_CALL(*this, SettingChanged(_)).Times(AtLeast(1));
+    em::DeviceLogUploadSettingsProto* proto =
+        device_policy_.payload().mutable_device_log_upload_settings();
+    proto->set_log_upload_enabled(enable_log_upload);
+    device_policy_.Build();
+    device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
+    ReloadDeviceSettings();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
   // Helper routine to ensure all heartbeat policies have been correctly
   // decoded.
   void VerifyHeartbeatSettings(bool expected_enable_state,
@@ -138,6 +150,14 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     const base::FundamentalValue expected_frequency_value(expected_frequency);
     EXPECT_TRUE(base::Value::Equals(provider_->Get(kReportUploadFrequency),
                                     &expected_frequency_value));
+  }
+
+  // Helper routine to ensure log upload policy has been correctly
+  // decoded.
+  void VerifyLogUploadSettings(bool expected_enable_state) {
+    const base::FundamentalValue expected_enabled_value(expected_enable_state);
+    EXPECT_TRUE(base::Value::Equals(provider_->Get(kLogUploadEnabled),
+                                    &expected_enabled_value));
   }
 
   // Helper routine to set LoginScreenDomainAutoComplete policy.
@@ -478,4 +498,11 @@ TEST_F(DeviceSettingsProviderTest, DecodeDomainAutoComplete) {
   VerifyDomainAutoComplete(&domain_value);
 }
 
+TEST_F(DeviceSettingsProviderTest, DecodeLogUploadSettings) {
+  SetLogUploadSettings(true);
+  VerifyLogUploadSettings(true);
+
+  SetLogUploadSettings(false);
+  VerifyLogUploadSettings(false);
+}
 } // namespace chromeos

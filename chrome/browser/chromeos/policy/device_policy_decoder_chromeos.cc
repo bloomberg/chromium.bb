@@ -410,6 +410,16 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     NULL);
     }
   }
+
+  if (policy.has_device_log_upload_settings()) {
+    const em::DeviceLogUploadSettingsProto& container(
+        policy.device_log_upload_settings());
+    if (container.has_log_upload_enabled()) {
+      policies->Set(
+          key::kLogUploadEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+          new base::FundamentalValue(container.log_upload_enabled()), NULL);
+    }
+  }
 }
 
 void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,

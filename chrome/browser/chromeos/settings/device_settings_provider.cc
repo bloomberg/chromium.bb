@@ -62,6 +62,7 @@ const char* const kKnownSettings[] = {
     kExtensionCacheSize,
     kHeartbeatEnabled,
     kHeartbeatFrequency,
+    kLogUploadEnabled,
     kPolicyMissingMitigationMode,
     kRebootOnShutdown,
     kReleaseChannel,
@@ -441,6 +442,19 @@ void DecodeGenericPolicies(
   }
 }
 
+void DecodeLogUploadPolicies(const em::ChromeDeviceSettingsProto& policy,
+                             PrefValueMap* new_values_cache) {
+  if (!policy.has_device_log_upload_settings())
+    return;
+
+  const em::DeviceLogUploadSettingsProto& log_upload_policy =
+      policy.device_log_upload_settings();
+  if (log_upload_policy.has_log_upload_enabled()) {
+    new_values_cache->SetBoolean(kLogUploadEnabled,
+                                 log_upload_policy.log_upload_enabled());
+  }
+}
+
 void DecodeDeviceState(const em::PolicyData& policy_data,
                        PrefValueMap* new_values_cache) {
   if (!policy_data.has_device_state())
@@ -634,6 +648,7 @@ void DeviceSettingsProvider::UpdateValuesCache(
   DecodeReportingPolicies(settings, &new_values_cache);
   DecodeHeartbeatPolicies(settings, &new_values_cache);
   DecodeGenericPolicies(settings, &new_values_cache);
+  DecodeLogUploadPolicies(settings, &new_values_cache);
   DecodeDeviceState(policy_data, &new_values_cache);
 
   // Collect all notifications but send them only after we have swapped the

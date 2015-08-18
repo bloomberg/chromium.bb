@@ -151,10 +151,21 @@ SystemLogUploader::SystemLogUploader(
       upload_frequency_(GetUploadFrequency()),
       task_runner_(task_runner),
       syslog_delegate_(syslog_delegate.Pass()),
+      upload_enabled_(false),
       weak_factory_(this) {
   if (!syslog_delegate_)
     syslog_delegate_.reset(new SystemLogDelegate());
   DCHECK(syslog_delegate_);
+
+  // Watch for policy changes.
+  upload_enabled_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kLogUploadEnabled,
+      base::Bind(&SystemLogUploader::RefreshUploadSettings,
+                 base::Unretained(this)));
+
+  // Fetch the current value of the policy.
+  RefreshUploadSettings();
+
   // Immediately schedule the next system log upload (last_upload_attempt_ is
   // set to the start of the epoch, so this will trigger an update upload in the
   // immediate future).
@@ -190,6 +201,24 @@ void SystemLogUploader::OnFailure(UploadJob::ErrorCode error_code) {
   }
 }
 
+void SystemLogUploader::RefreshUploadSettings() {
+  // Attempt to fetch the current value of the reporting settings.
+  // If trusted values are not available, register this function to be called
+  // back when they are available.
+  chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
+  if (chromeos::CrosSettingsProvider::TRUSTED !=
+      settings->PrepareTrustedValues(
+          base::Bind(&SystemLogUploader::RefreshUploadSettings,
+                     weak_factory_.GetWeakPtr()))) {
+    return;
+  }
+
+  // CrosSettings are trusted - we want to use the last trusted values, by
+  // default do not upload system logs.
+  if (!settings->GetBoolean(chromeos::kLogUploadEnabled, &upload_enabled_))
+    upload_enabled_ = false;
+}
+
 void SystemLogUploader::UploadSystemLogs(scoped_ptr<SystemLogs> system_logs) {
   // Must be called on the main thread.
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -220,8 +249,15 @@ void SystemLogUploader::StartLogUpload() {
   // Must be called on the main thread.
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  syslog_delegate_->LoadSystemLogs(base::Bind(
-      &SystemLogUploader::UploadSystemLogs, weak_factory_.GetWeakPtr()));
+  if (upload_enabled_) {
+    syslog_delegate_->LoadSystemLogs(base::Bind(
+        &SystemLogUploader::UploadSystemLogs, weak_factory_.GetWeakPtr()));
+  } else {
+    // If upload is disabled, schedule the next attempt after 12h.
+    retry_count_ = 0;
+    last_upload_attempt_ = base::Time::NowFromSystemTime();
+    ScheduleNextSystemLogUpload(upload_frequency_);
+  }
 }
 
 void SystemLogUploader::ScheduleNextSystemLogUpload(base::TimeDelta frequency) {

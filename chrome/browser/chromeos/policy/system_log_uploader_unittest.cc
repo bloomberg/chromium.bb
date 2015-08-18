@@ -6,6 +6,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -110,6 +113,7 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
   ~MockSystemLogDelegate() override {}
 
   void LoadSystemLogs(const LogUploadCallback& upload_callback) override {
+    EXPECT_TRUE(is_upload_allowed_);
     upload_callback.Run(
         make_scoped_ptr(new SystemLogUploader::SystemLogs(system_logs_)));
   }
@@ -121,7 +125,12 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
                                              system_logs_.size()));
   }
 
+  void set_upload_allowed(bool is_upload_allowed) {
+    is_upload_allowed_ = is_upload_allowed;
+  }
+
  private:
+  bool is_upload_allowed_;
   bool is_upload_error_;
   SystemLogUploader::SystemLogs system_logs_;
 };
@@ -131,6 +140,15 @@ class MockSystemLogDelegate : public SystemLogUploader::Delegate {
 class SystemLogUploaderTest : public testing::Test {
  public:
   SystemLogUploaderTest() : task_runner_(new base::TestSimpleTaskRunner()) {}
+
+  void SetUp() override {
+    settings_helper_.ReplaceProvider(chromeos::kLogUploadEnabled);
+  }
+
+  void TearDown() override {
+    settings_helper_.RestoreProvider();
+    content::RunAllBlockingPoolTasksUntilIdle();
+  }
 
   // Given a pending task to upload system logs.
   void RunPendingUploadTaskAndCheckNext(const SystemLogUploader& uploader,
@@ -156,16 +174,33 @@ class SystemLogUploaderTest : public testing::Test {
     EXPECT_GE(next_task, uploader.last_upload_attempt() + expected_delay);
   }
 
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 };
+
+// Check disabled system log uploads by default.
+TEST_F(SystemLogUploaderTest, Basic) {
+  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
+
+  scoped_ptr<MockSystemLogDelegate> syslog_delegate(
+      new MockSystemLogDelegate(false, SystemLogUploader::SystemLogs()));
+  syslog_delegate->set_upload_allowed(false);
+  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+
+  task_runner_->RunPendingTasks();
+}
 
 // One success task pending.
 TEST_F(SystemLogUploaderTest, SuccessTest) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 
-  SystemLogUploader uploader(make_scoped_ptr(new MockSystemLogDelegate(
-                                 false, SystemLogUploader::SystemLogs())),
-                             task_runner_);
+  scoped_ptr<MockSystemLogDelegate> syslog_delegate(
+      new MockSystemLogDelegate(false, SystemLogUploader::SystemLogs()));
+  syslog_delegate->set_upload_allowed(true);
+  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
 
@@ -178,9 +213,11 @@ TEST_F(SystemLogUploaderTest, SuccessTest) {
 TEST_F(SystemLogUploaderTest, ThreeFailureTest) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 
-  SystemLogUploader uploader(make_scoped_ptr(new MockSystemLogDelegate(
-                                 true, SystemLogUploader::SystemLogs())),
-                             task_runner_);
+  scoped_ptr<MockSystemLogDelegate> syslog_delegate(
+      new MockSystemLogDelegate(true, SystemLogUploader::SystemLogs()));
+  syslog_delegate->set_upload_allowed(true);
+  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
 
@@ -203,12 +240,44 @@ TEST_F(SystemLogUploaderTest, CheckHeaders) {
   EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
 
   SystemLogUploader::SystemLogs system_logs = GenerateTestSystemLogFiles();
-  SystemLogUploader uploader(
-      make_scoped_ptr(new MockSystemLogDelegate(false, system_logs)),
-      task_runner_);
+  scoped_ptr<MockSystemLogDelegate> syslog_delegate(
+      new MockSystemLogDelegate(false, system_logs));
+  syslog_delegate->set_upload_allowed(true);
+  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
 
   EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
 
+  RunPendingUploadTaskAndCheckNext(
+      uploader, base::TimeDelta::FromMilliseconds(
+                    SystemLogUploader::kDefaultUploadDelayMs));
+}
+
+// Disable system log uploads after one failed log upload.
+TEST_F(SystemLogUploaderTest, DisableLogUpload) {
+  EXPECT_TRUE(task_runner_->GetPendingTasks().empty());
+
+  scoped_ptr<MockSystemLogDelegate> syslog_delegate(
+      new MockSystemLogDelegate(true, SystemLogUploader::SystemLogs()));
+  MockSystemLogDelegate* mock_delegate = syslog_delegate.get();
+  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, true);
+  mock_delegate->set_upload_allowed(true);
+  SystemLogUploader uploader(syslog_delegate.Pass(), task_runner_);
+
+  EXPECT_EQ(1U, task_runner_->GetPendingTasks().size());
+  RunPendingUploadTaskAndCheckNext(uploader,
+                                   base::TimeDelta::FromMilliseconds(
+                                       SystemLogUploader::kErrorUploadDelayMs));
+
+  // Disable log upload and check that frequency is usual, because there is no
+  // errors, we should not upload logs.
+  settings_helper_.SetBoolean(chromeos::kLogUploadEnabled, false);
+  mock_delegate->set_upload_allowed(false);
+  task_runner_->RunPendingTasks();
+
+  RunPendingUploadTaskAndCheckNext(
+      uploader, base::TimeDelta::FromMilliseconds(
+                    SystemLogUploader::kDefaultUploadDelayMs));
   RunPendingUploadTaskAndCheckNext(
       uploader, base::TimeDelta::FromMilliseconds(
                     SystemLogUploader::kDefaultUploadDelayMs));

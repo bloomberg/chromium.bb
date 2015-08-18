@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -76,6 +77,9 @@ class SystemLogUploader : public UploadJob::Delegate {
   void OnFailure(UploadJob::ErrorCode error_code) override;
 
  private:
+  // Updates the system log upload enabled field from settings.
+  void RefreshUploadSettings();
+
   // Starts the system log loading process.
   void StartLogUpload();
 
@@ -104,6 +108,15 @@ class SystemLogUploader : public UploadJob::Delegate {
 
   // The Delegate is used to load system logs and create UploadJobs.
   scoped_ptr<Delegate> syslog_delegate_;
+
+  // True if system log upload is enabled. Kept cached in this object because
+  // CrosSettings can switch to an unstrusted state temporarily, and we want to
+  // use the last-known trusted values.
+  bool upload_enabled_;
+
+  // Observer to changes in system log upload settings.
+  scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
+      upload_enabled_observer_;
 
   base::ThreadChecker thread_checker_;
 

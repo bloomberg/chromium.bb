@@ -121,6 +121,9 @@ const char kHeartbeatEnabled[] = "cros.device_status.heartbeat_enabled";
 // How frequently heartbeats are sent up, in milliseconds.
 const char kHeartbeatFrequency[] = "cros.device_status.heartbeat_frequency";
 
+// Determines whether system logs should be sent to the management server.
+const char kLogUploadEnabled[] = "cros.device_status.log_upload_enabled";
+
 // This policy should not appear in the protobuf ever but is used internally to
 // signal that we are running in a "safe-mode" for policy recovery.
 const char kPolicyMissingMitigationMode[] =

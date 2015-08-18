@@ -2363,6 +2363,9 @@
   "HeartbeatFrequency": {
   },
 
+  "LogUploadEnabled": {
+  },
+
   "ReportDeviceVersionInfo": {
   },
 
