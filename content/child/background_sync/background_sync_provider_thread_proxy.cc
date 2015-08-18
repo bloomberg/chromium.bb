@@ -62,6 +62,7 @@ LazyInstance<ThreadLocalPointer<BackgroundSyncProviderThreadProxy>>::Leaky
 
 }  // anonymous namespace
 
+// static
 BackgroundSyncProviderThreadProxy*
 BackgroundSyncProviderThreadProxy::GetThreadInstance(
     base::SingleThreadTaskRunner* main_thread_task_runner,
@@ -69,10 +70,15 @@ BackgroundSyncProviderThreadProxy::GetThreadInstance(
   if (g_sync_provider_tls.Pointer()->Get())
     return g_sync_provider_tls.Pointer()->Get();
 
+  if (!WorkerTaskRunner::Instance()->CurrentWorkerId()) {
+    // This could happen if GetThreadInstance is called very late (say by a
+    // garbage collected SyncRegistration).
+    return nullptr;
+  }
+
   BackgroundSyncProviderThreadProxy* instance =
       new BackgroundSyncProviderThreadProxy(main_thread_task_runner,
                                             sync_provider);
-  DCHECK(WorkerTaskRunner::Instance()->CurrentWorkerId());
   WorkerTaskRunner::Instance()->AddStopObserver(instance);
   return instance;
 }
