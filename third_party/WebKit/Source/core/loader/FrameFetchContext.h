@@ -93,7 +93,6 @@ public:
     int64_t serviceWorkerID() const override;
 
     bool isMainFrame() const override;
-    bool hasSubstituteData() const override;
     bool defersLoading() const override;
     bool isLoadComplete() const override;
     bool pageDismissalEventBeingDispatched() const override;

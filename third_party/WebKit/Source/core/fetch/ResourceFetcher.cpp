@@ -254,12 +254,12 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
 // http://crbug.com/52411
 static const int kMaxValidatedURLsSize = 10000;
 
-void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type)
+void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type, bool isStaticData)
 {
     if (type == ResourceLoadingFromCache)
         notifyLoadedFromMemoryCache(resource);
 
-    if (request.resourceRequest().url().protocolIsData() || context().hasSubstituteData())
+    if (isStaticData)
         return;
 
     if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() && !m_validatedURLs.contains(request.resourceRequest().url())) {
@@ -284,13 +284,62 @@ static PassRefPtr<TraceEvent::ConvertableToTraceFormat> urlForTraceEvent(const K
     return value.release();
 }
 
-ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory)
+void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
+{
+    const KURL& url = request.resourceRequest().url();
+    ASSERT(url.protocolIsData() || substituteData.isValid());
+    if ((factory.type() == Resource::MainResource && !substituteData.isValid()) || factory.type() == Resource::Raw || factory.type() == Resource::Media)
+        return;
+
+    const String cacheIdentifier = getCacheIdentifier();
+    if (Resource* oldResource = memoryCache()->resourceForURL(url, cacheIdentifier)) {
+        if (!substituteData.isValid())
+            return;
+        memoryCache()->remove(oldResource);
+    }
+
+    WebString mimetype;
+    WebString charset;
+    RefPtr<SharedBuffer> data;
+    if (substituteData.isValid()) {
+        mimetype = substituteData.mimeType();
+        charset = substituteData.textEncoding();
+        data = substituteData.content();
+    } else {
+        data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(url, mimetype, charset));
+        if (!data)
+            return;
+    }
+    ResourceResponse response(url, mimetype, data->size(), charset, String());
+    response.setHTTPStatusCode(200);
+    response.setHTTPStatusText("OK");
+
+    ResourcePtr<Resource> resource = factory.create(request.resourceRequest(), request.charset());
+    resource->setNeedsSynchronousCacheHit(substituteData.forceSynchronousLoad());
+    resource->setOptions(request.options());
+    // FIXME: We should provide a body stream here.
+    resource->responseReceived(response, nullptr);
+    resource->setDataBufferingPolicy(BufferData);
+    if (data->size())
+        resource->setResourceBuffer(data);
+    resource->setIdentifier(createUniqueIdentifier());
+    resource->setCacheIdentifier(cacheIdentifier);
+    resource->finish();
+    memoryCache()->add(resource.get());
+    scheduleDocumentResourcesGC();
+}
+
+ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw);
 
     context().upgradeInsecureRequest(request);
     context().addClientHintsIfNecessary(request);
     context().addCSPHeaderIfNecessary(factory.type(), request);
+
+    bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid();
+    if (isStaticData)
+        preCacheData(request, factory, substituteData);
 
     KURL url = request.resourceRequest().url();
     TRACE_EVENT1("blink", "ResourceFetcher::requestResource", "url", urlForTraceEvent(url));
@@ -326,7 +375,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     // See if we can use an existing resource from the cache.
     ResourcePtr<Resource> resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
 
-    const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get());
+    const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
     switch (policy) {
     case Reload:
         memoryCache()->remove(resource.get());
@@ -397,12 +446,12 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     // use.
     // Remove main resource from cache to prevent reuse.
     if (factory.type() == Resource::MainResource) {
-        ASSERT(policy != Use || context().hasSubstituteData());
+        ASSERT(policy != Use || substituteData.isValid());
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
     }
 
-    requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork);
+    requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
 
     ASSERT(resource->url() == url.string());
     m_documentResources.set(resource->url(), resource);
@@ -509,7 +558,7 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
         m_resourceTimingInfoMap.add(resource, info.release());
 }
 
-ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, const FetchRequest& fetchRequest, Resource* existingResource) const
+ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, const FetchRequest& fetchRequest, Resource* existingResource, bool isStaticData) const
 {
     const ResourceRequest& request = fetchRequest.resourceRequest();
 
@@ -535,21 +584,16 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     if (FetchRequest::DeferredByClient == fetchRequest.defer())
         return Reload;
 
-    // Always use data uris.
-    // FIXME: Extend this to non-images.
-    if (type == Resource::Image && request.url().protocolIsData())
-        return Use;
-
-    // If a main resource was populated from a SubstituteData load, use it.
-    if (type == Resource::MainResource && context().hasSubstituteData())
-        return Use;
-
-    if (!existingResource->canReuse(request))
-        return Reload;
-
     // Never use cache entries for downloadToFile / useStreamOnResponse
     // requests. The data will be delivered through other paths.
     if (request.downloadToFile() || request.useStreamOnResponse())
+        return Reload;
+
+    // If resource was populated from a SubstituteData load or data: url, use it.
+    if (isStaticData)
+        return Use;
+
+    if (!existingResource->canReuse(request))
         return Reload;
 
     // Certain requests (e.g., XHRs) might have manually set headers that require revalidation.

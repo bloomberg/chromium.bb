@@ -34,6 +34,7 @@
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/ResourcePtr.h"
+#include "core/fetch/SubstituteData.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceLoadPriority.h"
@@ -52,7 +53,6 @@ class ImageResource;
 class MHTMLArchive;
 class RawResource;
 class ScriptResource;
-class SubstituteData;
 class XSLStyleSheetResource;
 class KURL;
 class ResourceTimingInfo;
@@ -74,7 +74,7 @@ public:
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
 
-    ResourcePtr<Resource> requestResource(FetchRequest&, const ResourceFactory&);
+    ResourcePtr<Resource> requestResource(FetchRequest&, const ResourceFactory&, const SubstituteData& = SubstituteData());
 
     Resource* cachedResource(const KURL&) const;
 
@@ -138,7 +138,7 @@ public:
         ResourceLoadingFromNetwork,
         ResourceLoadingFromCache
     };
-    void requestLoadStarted(Resource*, const FetchRequest&, ResourceLoadStartType);
+    void requestLoadStarted(Resource*, const FetchRequest&, ResourceLoadStartType, bool isStaticData = false);
     static const ResourceLoaderOptions& defaultResourceOptions();
 
     String getCacheIdentifier() const;
@@ -156,9 +156,10 @@ private:
     ResourcePtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
     bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
+    void preCacheData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
 
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
-    RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource) const;
+    RevalidationPolicy determineRevalidationPolicy(Resource::Type, const FetchRequest&, Resource* existingResource, bool isStaticData) const;
 
     void initializeResourceRequest(ResourceRequest&, Resource::Type);
 

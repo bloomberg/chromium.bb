@@ -95,7 +95,6 @@ public:
     virtual int64_t serviceWorkerID() const { return -1; }
 
     virtual bool isMainFrame() const { return true; }
-    virtual bool hasSubstituteData() const { return false; }
     virtual bool defersLoading() const { return false; }
     virtual bool isLoadComplete() const { return false; }
     virtual bool pageDismissalEventBeingDispatched() const { return false; }

@@ -540,11 +540,6 @@ bool FrameFetchContext::isMainFrame() const
     return frame()->isMainFrame();
 }
 
-bool FrameFetchContext::hasSubstituteData() const
-{
-    return m_documentLoader && m_documentLoader->substituteData().isValid();
-}
-
 bool FrameFetchContext::defersLoading() const
 {
     return frame()->page()->defersLoading();

@@ -67,7 +67,6 @@ private:
             return new RawResource(request, m_type);
         }
     };
-    static void preCacheSubstituteDataForMainResource(const FetchRequest&, ResourceFetcher*, const SubstituteData&);
 
     void didAddClient(ResourceClient*) override;
     void appendData(const char*, unsigned) override;

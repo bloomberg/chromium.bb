@@ -121,8 +121,6 @@ protected:
     void destroyDecodedDataIfPossible() override;
 
 private:
-    static void preCacheDataURIImage(const FetchRequest&, ResourceFetcher*);
-
     class ImageResourceFactory : public ResourceFactory {
     public:
         ImageResourceFactory()
