@@ -93,6 +93,10 @@ declare_args() {
   # (e.g. Android and ChromeCast) that use a browser side CDM.
   enable_browser_cdms = is_android
 
+  # Hangout services is an extension that adds extra features to Hangouts.
+  # For official GYP builds, this flag is set.
+  enable_hangout_services_extension = false
+
   # Enables the use of CDMs in pepper plugins. Chromecast requires that this
   # can be explicitly disabled in gn args.
   enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
@@ -199,11 +203,6 @@ use_brlapi = is_chromeos
 # system).
 # TODO(GYP) also require !embedded to enable.
 use_gconf = is_linux && !is_chromeos
-
-# Hangout services is an extension that adds extra features to Hangouts.
-# For official GYP builds, this flag is set, it will likely need to be
-# parameterized in the future for a similar use.
-enable_hangout_services_extension = false
 
 # Whether to back up data before sync.
 enable_pre_sync_backup = is_win || is_mac || (is_linux && !is_chromeos)
