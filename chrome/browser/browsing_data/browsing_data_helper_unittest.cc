@@ -161,17 +161,17 @@ TEST_F(BrowsingDataHelperTest, TestMatches) {
 
 // If extensions are disabled, there is no policy.
 TEST_F(BrowsingDataHelperTest, TestNoPolicyMatches) {
-  EXPECT_FALSE(Match(kOrigin1, kExtension, NULL));
-  EXPECT_TRUE(Match(kOrigin1, kUnprotected, NULL));
-  EXPECT_FALSE(Match(kOrigin1, kProtected, NULL));
+  EXPECT_FALSE(Match(kOrigin1, kExtension, nullptr));
+  EXPECT_TRUE(Match(kOrigin1, kUnprotected, nullptr));
+  EXPECT_FALSE(Match(kOrigin1, kProtected, nullptr));
 
-  EXPECT_TRUE(Match(kOriginExt, kExtension, NULL));
-  EXPECT_FALSE(Match(kOriginExt, kUnprotected, NULL));
-  EXPECT_FALSE(Match(kOriginExt, kProtected, NULL));
+  EXPECT_TRUE(Match(kOriginExt, kExtension, nullptr));
+  EXPECT_FALSE(Match(kOriginExt, kUnprotected, nullptr));
+  EXPECT_FALSE(Match(kOriginExt, kProtected, nullptr));
 
-  EXPECT_FALSE(Match(kOriginDevTools, kExtension, NULL));
-  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, NULL));
-  EXPECT_FALSE(Match(kOriginDevTools, kProtected, NULL));
+  EXPECT_FALSE(Match(kOriginDevTools, kExtension, nullptr));
+  EXPECT_FALSE(Match(kOriginDevTools, kUnprotected, nullptr));
+  EXPECT_FALSE(Match(kOriginDevTools, kProtected, nullptr));
 }
 
 }  // namespace

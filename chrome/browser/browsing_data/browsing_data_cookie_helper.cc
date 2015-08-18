@@ -112,11 +112,8 @@ void CannedBrowsingDataCookieHelper::AddReadCookies(
     const GURL& frame_url,
     const GURL& url,
     const net::CookieList& cookie_list) {
-  typedef net::CookieList::const_iterator cookie_iterator;
-  for (cookie_iterator add_cookie = cookie_list.begin();
-       add_cookie != cookie_list.end(); ++add_cookie) {
-    AddCookie(frame_url, *add_cookie);
-  }
+  for (const auto& add_cookie : cookie_list)
+    AddCookie(frame_url, add_cookie);
 }
 
 void CannedBrowsingDataCookieHelper::AddChangedCookie(
@@ -137,10 +134,8 @@ void CannedBrowsingDataCookieHelper::Reset() {
 }
 
 bool CannedBrowsingDataCookieHelper::empty() const {
-  for (OriginCookieSetMap::const_iterator it = origin_cookie_set_map_.begin();
-       it != origin_cookie_set_map_.end();
-       ++it) {
-    if (!it->second->empty())
+  for (const auto& pair : origin_cookie_set_map_) {
+    if (!pair.second->empty())
       return false;
   }
   return true;
@@ -149,11 +144,8 @@ bool CannedBrowsingDataCookieHelper::empty() const {
 
 size_t CannedBrowsingDataCookieHelper::GetCookieCount() const {
   size_t count = 0;
-  for (OriginCookieSetMap::const_iterator it = origin_cookie_set_map_.begin();
-       it != origin_cookie_set_map_.end();
-       ++it) {
-    count += it->second->size();
-  }
+  for (const auto& pair : origin_cookie_set_map_)
+    count += pair.second->size();
   return count;
 }
 
@@ -162,23 +154,17 @@ void CannedBrowsingDataCookieHelper::StartFetching(
     const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::CookieList cookie_list;
-  for (OriginCookieSetMap::iterator it = origin_cookie_set_map_.begin();
-       it != origin_cookie_set_map_.end();
-       ++it) {
-    cookie_list.insert(cookie_list.begin(),
-                       it->second->begin(),
-                       it->second->end());
+  for (const auto& pair : origin_cookie_set_map_) {
+    cookie_list.insert(cookie_list.begin(), pair.second->begin(),
+                       pair.second->end());
   }
   callback.Run(cookie_list);
 }
 
 void CannedBrowsingDataCookieHelper::DeleteCookie(
     const net::CanonicalCookie& cookie) {
-  for (OriginCookieSetMap::iterator it = origin_cookie_set_map_.begin();
-       it != origin_cookie_set_map_.end();
-       ++it) {
-    DeleteMatchingCookie(cookie, it->second);
-  }
+  for (const auto& pair : origin_cookie_set_map_)
+    DeleteMatchingCookie(cookie, pair.second);
   BrowsingDataCookieHelper::DeleteCookie(cookie);
 }
 

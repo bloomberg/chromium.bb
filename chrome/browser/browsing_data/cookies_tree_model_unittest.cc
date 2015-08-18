@@ -46,7 +46,7 @@ class CookiesTreeModelTest : public testing::Test {
   ~CookiesTreeModelTest() override {
     // Avoid memory leaks.
 #if defined(ENABLE_EXTENSIONS)
-    special_storage_policy_ = NULL;
+    special_storage_policy_ = nullptr;
 #endif
     profile_.reset();
     base::MessageLoop::current()->RunUntilIdle();
@@ -89,16 +89,16 @@ class CookiesTreeModelTest : public testing::Test {
   }
 
   void TearDown() override {
-    mock_browsing_data_service_worker_helper_ = NULL;
-    mock_browsing_data_channel_id_helper_ = NULL;
-    mock_browsing_data_quota_helper_ = NULL;
-    mock_browsing_data_file_system_helper_ = NULL;
-    mock_browsing_data_indexed_db_helper_ = NULL;
-    mock_browsing_data_appcache_helper_ = NULL;
-    mock_browsing_data_session_storage_helper_ = NULL;
-    mock_browsing_data_local_storage_helper_ = NULL;
-    mock_browsing_data_database_helper_ = NULL;
-    mock_browsing_data_flash_lso_helper_ = NULL;
+    mock_browsing_data_service_worker_helper_ = nullptr;
+    mock_browsing_data_channel_id_helper_ = nullptr;
+    mock_browsing_data_quota_helper_ = nullptr;
+    mock_browsing_data_file_system_helper_ = nullptr;
+    mock_browsing_data_indexed_db_helper_ = nullptr;
+    mock_browsing_data_appcache_helper_ = nullptr;
+    mock_browsing_data_session_storage_helper_ = nullptr;
+    mock_browsing_data_local_storage_helper_ = nullptr;
+    mock_browsing_data_database_helper_ = nullptr;
+    mock_browsing_data_flash_lso_helper_ = nullptr;
     base::MessageLoop::current()->RunUntilIdle();
   }
 
@@ -369,7 +369,7 @@ class CookiesTreeModelTest : public testing::Test {
 #if defined(ENABLE_EXTENSIONS)
     return special_storage_policy_.get();
 #else
-    return NULL;
+    return nullptr;
 #endif
   }
 

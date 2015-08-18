@@ -28,7 +28,7 @@ BrowsingDataRemoverCompletionInhibitor::BrowsingDataRemoverCompletionInhibitor()
 
 BrowsingDataRemoverCompletionInhibitor::
     ~BrowsingDataRemoverCompletionInhibitor() {
-  BrowsingDataRemover::set_completion_inhibitor_for_testing(NULL);
+  BrowsingDataRemover::set_completion_inhibitor_for_testing(nullptr);
 }
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {

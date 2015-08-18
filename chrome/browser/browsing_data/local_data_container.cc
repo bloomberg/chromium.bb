@@ -37,10 +37,9 @@ LocalDataContainer::LocalDataContainer(
       channel_id_helper_(channel_id_helper),
       service_worker_helper_(service_worker_helper),
       flash_lso_helper_(flash_lso_helper),
-      model_(NULL),
+      model_(nullptr),
       batches_started_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 LocalDataContainer::~LocalDataContainer() {}
 
@@ -133,7 +132,6 @@ void LocalDataContainer::OnAppCacheModelInfoLoaded() {
   using content::AppCacheInfo;
   using content::AppCacheInfoCollection;
   using content::AppCacheInfoVector;
-  typedef std::map<GURL, AppCacheInfoVector> InfoByOrigin;
 
   scoped_refptr<AppCacheInfoCollection> appcache_info =
       appcache_helper_->info_collection();
@@ -143,12 +141,10 @@ void LocalDataContainer::OnAppCacheModelInfoLoaded() {
     return;
   }
 
-  for (InfoByOrigin::const_iterator origin =
-           appcache_info->infos_by_origin.begin();
-       origin != appcache_info->infos_by_origin.end(); ++origin) {
-    std::list<AppCacheInfo>& info_list = appcache_info_[origin->first];
-    info_list.insert(
-        info_list.begin(), origin->second.begin(), origin->second.end());
+  for (const auto& origin : appcache_info->infos_by_origin) {
+    std::list<AppCacheInfo>& info_list = appcache_info_[origin.first];
+    info_list.insert(info_list.begin(), origin.second.begin(),
+                     origin.second.end());
   }
 
   model_->PopulateAppCacheInfo(this);

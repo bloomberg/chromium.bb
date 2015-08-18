@@ -155,20 +155,28 @@ class TestStoragePartition : public StoragePartition {
 
   // content::StoragePartition implementation.
   base::FilePath GetPath() override { return base::FilePath(); }
-  net::URLRequestContextGetter* GetURLRequestContext() override { return NULL; }
+  net::URLRequestContextGetter* GetURLRequestContext() override {
+    return nullptr;
+  }
   net::URLRequestContextGetter* GetMediaURLRequestContext() override {
-    return NULL;
+    return nullptr;
   }
-  storage::QuotaManager* GetQuotaManager() override { return NULL; }
-  content::AppCacheService* GetAppCacheService() override { return NULL; }
-  storage::FileSystemContext* GetFileSystemContext() override { return NULL; }
-  storage::DatabaseTracker* GetDatabaseTracker() override { return NULL; }
-  content::DOMStorageContext* GetDOMStorageContext() override { return NULL; }
-  content::IndexedDBContext* GetIndexedDBContext() override { return NULL; }
+  storage::QuotaManager* GetQuotaManager() override { return nullptr; }
+  content::AppCacheService* GetAppCacheService() override { return nullptr; }
+  storage::FileSystemContext* GetFileSystemContext() override {
+    return nullptr;
+  }
+  storage::DatabaseTracker* GetDatabaseTracker() override { return nullptr; }
+  content::DOMStorageContext* GetDOMStorageContext() override {
+    return nullptr;
+  }
+  content::IndexedDBContext* GetIndexedDBContext() override { return nullptr; }
   content::ServiceWorkerContext* GetServiceWorkerContext() override {
-    return NULL;
+    return nullptr;
   }
-  content::GeofencingManager* GetGeofencingManager() override { return NULL; }
+  content::GeofencingManager* GetGeofencingManager() override {
+    return nullptr;
+  }
   content::NavigatorConnectContext* GetNavigatorConnectContext() override {
     return nullptr;
   }
@@ -182,11 +190,13 @@ class TestStoragePartition : public StoragePartition {
     return nullptr;
   }
 
-  content::HostZoomMap* GetHostZoomMap() override { return NULL; }
+  content::HostZoomMap* GetHostZoomMap() override { return nullptr; }
   content::HostZoomLevelContext* GetHostZoomLevelContext() override {
-    return NULL;
+    return nullptr;
   }
-  content::ZoomLevelDelegate* GetZoomLevelDelegate() override { return NULL; }
+  content::ZoomLevelDelegate* GetZoomLevelDelegate() override {
+    return nullptr;
+  }
 
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
@@ -275,8 +285,7 @@ inline Matcher<const url::Origin&> SameOrigin(const url::Origin& reference) {
 
 class RemoveCookieTester {
  public:
-  RemoveCookieTester() : get_cookie_success_(false), cookie_store_(NULL) {
-  }
+  RemoveCookieTester() : get_cookie_success_(false), cookie_store_(nullptr) {}
 
   // Returns true, if the given cookie exists in the cookie store.
   bool ContainsCookie() {
@@ -354,7 +363,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
   virtual ~RemoveSafeBrowsingCookieTester() {
     browser_process_->safe_browsing_service()->ShutDown();
     base::MessageLoop::current()->RunUntilIdle();
-    browser_process_->SetSafeBrowsingService(NULL);
+    browser_process_->SetSafeBrowsingService(nullptr);
   }
 
  private:
@@ -430,7 +439,8 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
 
 class RemoveHistoryTester {
  public:
-  RemoveHistoryTester() : query_url_success_(false), history_service_(NULL) {}
+  RemoveHistoryTester()
+      : query_url_success_(false), history_service_(nullptr) {}
 
   bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
     if (!profile->CreateHistoryService(true, false))
@@ -456,9 +466,9 @@ class RemoveHistoryTester {
   }
 
   void AddHistory(const GURL& url, base::Time time) {
-    history_service_->AddPage(url, time, NULL, 0, GURL(),
-        history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-        history::SOURCE_BROWSED, false);
+    history_service_->AddPage(url, time, nullptr, 0, GURL(),
+                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                              history::SOURCE_BROWSED, false);
   }
 
  private:
@@ -593,19 +603,15 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
   bool HasOrigin(const std::string& origin) {
     const std::vector<autofill::AutofillProfile*>& profiles =
         personal_data_manager_->GetProfiles();
-    for (std::vector<autofill::AutofillProfile*>::const_iterator it =
-             profiles.begin();
-         it != profiles.end(); ++it) {
-      if ((*it)->origin() == origin)
+    for (const autofill::AutofillProfile* profile : profiles) {
+      if (profile->origin() == origin)
         return true;
     }
 
     const std::vector<autofill::CreditCard*>& credit_cards =
         personal_data_manager_->GetCreditCards();
-    for (std::vector<autofill::CreditCard*>::const_iterator it =
-             credit_cards.begin();
-         it != credit_cards.end(); ++it) {
-      if ((*it)->origin() == origin)
+    for (const autofill::CreditCard* credit_card : credit_cards) {
+      if (credit_card->origin() == origin)
         return true;
     }
 
@@ -662,7 +668,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
 class RemoveLocalStorageTester {
  public:
   explicit RemoveLocalStorageTester(TestingProfile* profile)
-      : profile_(profile), dom_storage_context_(NULL) {
+      : profile_(profile), dom_storage_context_(nullptr) {
     dom_storage_context_ =
         content::BrowserContext::GetDefaultStoragePartition(profile)->
             GetDOMStorageContext();
@@ -690,10 +696,10 @@ class RemoveLocalStorageTester {
     base::CreateDirectory(storage_path);
 
     // Write some files.
-    base::WriteFile(storage_path.Append(kDomStorageOrigin1), NULL, 0);
-    base::WriteFile(storage_path.Append(kDomStorageOrigin2), NULL, 0);
-    base::WriteFile(storage_path.Append(kDomStorageOrigin3), NULL, 0);
-    base::WriteFile(storage_path.Append(kDomStorageExt), NULL, 0);
+    base::WriteFile(storage_path.Append(kDomStorageOrigin1), nullptr, 0);
+    base::WriteFile(storage_path.Append(kDomStorageOrigin2), nullptr, 0);
+    base::WriteFile(storage_path.Append(kDomStorageOrigin3), nullptr, 0);
+    base::WriteFile(storage_path.Append(kDomStorageExt), nullptr, 0);
 
     // Tweak their dates.
     base::Time now = base::Time::Now();
@@ -887,7 +893,7 @@ class BrowsingDataRemoverTest : public testing::Test {
 
   void TearDown() override {
 #if defined(ENABLE_EXTENSIONS)
-    mock_policy_ = NULL;
+    mock_policy_ = nullptr;
 #endif
 
     // TestingProfile contains a DOMStorageContext.  BrowserContext's destructor
@@ -898,7 +904,7 @@ class BrowsingDataRemoverTest : public testing::Test {
     profile_.reset();
     base::MessageLoop::current()->RunUntilIdle();
 
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
   void BlockUntilBrowsingDataRemoved(BrowsingDataRemover::TimePeriod period,
@@ -984,7 +990,7 @@ class BrowsingDataRemoverTest : public testing::Test {
     return mock_policy_.get();
 #else
     NOTREACHED();
-    return NULL;
+    return nullptr;
 #endif
   }
 
@@ -992,7 +998,7 @@ class BrowsingDataRemoverTest : public testing::Test {
 #if defined(ENABLE_EXTENSIONS)
     return mock_policy_.get();
 #else
-    return NULL;
+    return nullptr;
 #endif
   }
 

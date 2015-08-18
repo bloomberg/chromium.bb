@@ -65,11 +65,7 @@ void BrowsingDataServiceWorkerHelper::FetchServiceWorkerUsageInfoOnIOThread() {
 void BrowsingDataServiceWorkerHelper::GetAllOriginsInfoCallback(
     const std::vector<ServiceWorkerUsageInfo>& origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (std::vector<ServiceWorkerUsageInfo>::const_iterator iter =
-           origins.begin();
-       iter != origins.end();
-       ++iter) {
-    const ServiceWorkerUsageInfo& origin = *iter;
+  for (const ServiceWorkerUsageInfo& origin : origins) {
     if (!BrowsingDataHelper::HasWebScheme(origin.origin))
       continue;  // Non-websafe state is not considered browsing data.
 
@@ -156,12 +152,9 @@ void CannedBrowsingDataServiceWorkerHelper::StartFetching(const base::Callback<
   DCHECK(!callback.is_null());
 
   std::list<ServiceWorkerUsageInfo> result;
-  for (std::set<PendingServiceWorkerUsageInfo>::const_iterator pending_info =
-           pending_service_worker_info_.begin();
-       pending_info != pending_service_worker_info_.end();
-       ++pending_info) {
-    ServiceWorkerUsageInfo info(
-        pending_info->origin, pending_info->scopes);
+  for (const PendingServiceWorkerUsageInfo& pending_info :
+       pending_service_worker_info_) {
+    ServiceWorkerUsageInfo info(pending_info.origin, pending_info.scopes);
     result.push_back(info);
   }
 

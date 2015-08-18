@@ -210,31 +210,29 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
 
   // Order is arbitrary, verify all three origins.
   bool test_hosts_found[3] = {false, false, false};
-  for (std::list<BrowsingDataFileSystemHelper::FileSystemInfo>::iterator info =
-       file_system_info_list_->begin(); info != file_system_info_list_->end();
-       ++info) {
-    if (info->origin == kOrigin1) {
+  for (const auto& info : *file_system_info_list_) {
+    if (info.origin == kOrigin1) {
       EXPECT_FALSE(test_hosts_found[0]);
       test_hosts_found[0] = true;
-      EXPECT_FALSE(ContainsKey(info->usage_map, kPersistent));
-      EXPECT_TRUE(ContainsKey(info->usage_map, kTemporary));
+      EXPECT_FALSE(ContainsKey(info.usage_map, kPersistent));
+      EXPECT_TRUE(ContainsKey(info.usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize,
-                info->usage_map[storage::kFileSystemTypeTemporary]);
-    } else if (info->origin == kOrigin2) {
+                info.usage_map.at(storage::kFileSystemTypeTemporary));
+    } else if (info.origin == kOrigin2) {
       EXPECT_FALSE(test_hosts_found[1]);
       test_hosts_found[1] = true;
-      EXPECT_TRUE(ContainsKey(info->usage_map, kPersistent));
-      EXPECT_FALSE(ContainsKey(info->usage_map, kTemporary));
-      EXPECT_EQ(kEmptyFileSystemSize, info->usage_map[kPersistent]);
-    } else if (info->origin == kOrigin3) {
+      EXPECT_TRUE(ContainsKey(info.usage_map, kPersistent));
+      EXPECT_FALSE(ContainsKey(info.usage_map, kTemporary));
+      EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kPersistent));
+    } else if (info.origin == kOrigin3) {
       EXPECT_FALSE(test_hosts_found[2]);
       test_hosts_found[2] = true;
-      EXPECT_TRUE(ContainsKey(info->usage_map, kPersistent));
-      EXPECT_TRUE(ContainsKey(info->usage_map, kTemporary));
-      EXPECT_EQ(kEmptyFileSystemSize, info->usage_map[kPersistent]);
-      EXPECT_EQ(kEmptyFileSystemSize, info->usage_map[kTemporary]);
+      EXPECT_TRUE(ContainsKey(info.usage_map, kPersistent));
+      EXPECT_TRUE(ContainsKey(info.usage_map, kTemporary));
+      EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kPersistent));
+      EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kTemporary));
     } else {
-      ADD_FAILURE() << info->origin.spec() << " isn't an origin we added.";
+      ADD_FAILURE() << info.origin.spec() << " isn't an origin we added.";
     }
   }
   for (size_t i = 0; i < arraysize(test_hosts_found); i++) {

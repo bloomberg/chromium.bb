@@ -694,8 +694,8 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
 #if defined(ENABLE_EXTENSIONS)
   // Returns the set of extensions which protect the data item represented by
   // this node from deletion.
-  // Returns NULL if the node doesn't represent a protected data item or the
-  // special storage policy is NULL.
+  // Returns nullptr if the node doesn't represent a protected data item or the
+  // special storage policy is nullptr.
   const extensions::ExtensionSet* ExtensionsProtectingNode(
       const CookieTreeNode& cookie_node);
 #endif

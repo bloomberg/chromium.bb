@@ -132,8 +132,7 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
   EXPECT_EQ(3u, helper->GetAppCacheCount());
   helper->DeleteAppCacheGroup(manifest2);
   EXPECT_EQ(2u, helper->GetAppCacheCount());
-  EXPECT_TRUE(helper->GetOriginAppCacheInfoMap().find(manifest2) ==
-              helper->GetOriginAppCacheInfoMap().end());
+  EXPECT_FALSE(ContainsKey(helper->GetOriginAppCacheInfoMap(), manifest2));
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {

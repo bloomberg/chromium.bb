@@ -35,11 +35,10 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   void SetUp() override {
     EXPECT_TRUE(dir_.CreateUniqueTempDir());
     quota_manager_ = new storage::QuotaManager(
-        false,
-        dir_.path(),
+        false, dir_.path(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
-        NULL);
+        nullptr);
     helper_ = new BrowsingDataQuotaHelperImpl(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get(),
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
@@ -47,8 +46,8 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   }
 
   void TearDown() override {
-    helper_ = NULL;
-    quota_manager_ = NULL;
+    helper_ = nullptr;
+    quota_manager_ = nullptr;
     quota_info_.clear();
     base::MessageLoop::current()->RunUntilIdle();
   }

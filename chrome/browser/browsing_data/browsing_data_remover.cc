@@ -132,7 +132,7 @@ enum CookieOrCacheDeletionChoice {
 bool BrowsingDataRemover::is_removing_ = false;
 
 BrowsingDataRemover::CompletionInhibitor*
-    BrowsingDataRemover::completion_inhibitor_ = NULL;
+    BrowsingDataRemover::completion_inhibitor_ = nullptr;
 
 // Helper to create callback for BrowsingDataRemover::DoesOriginMatchMask.
 // Static.
@@ -245,7 +245,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
 #endif
       remove_mask_(0),
       origin_type_mask_(0),
-      storage_partition_for_testing_(NULL) {
+      storage_partition_for_testing_(nullptr) {
   DCHECK(profile);
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max(). Work around
@@ -460,7 +460,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
 #if defined(OS_ANDROID)
     precache::PrecacheManager* precache_manager =
         precache::PrecacheManagerFactory::GetForBrowserContext(profile_);
-    // |precache_manager| could be NULL if the profile is off the record.
+    // |precache_manager| could be nullptr if the profile is off the record.
     if (!precache_manager) {
       waiting_for_clear_precache_history_ = true;
       precache_manager->ClearHistory();
@@ -687,8 +687,9 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         content::StoragePartition::REMOVE_DATA_MASK_WEBRTC_IDENTITY;
 
 #if defined(ENABLE_EXTENSIONS)
-    // Clear the ephemeral apps cache. This is NULL while testing. OTR Profile
-    // has neither apps nor an ExtensionService, so ClearCachedApps fails.
+    // Clear the ephemeral apps cache. This is nullptr while testing. OTR
+    // Profile has neither apps nor an ExtensionService, so ClearCachedApps
+    // fails.
     EphemeralAppService* ephemeral_app_service =
         EphemeralAppService::Get(profile_);
     if (ephemeral_app_service && !profile_->IsOffTheRecord())

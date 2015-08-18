@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
@@ -26,7 +27,7 @@ void MockBrowsingDataLocalStorageHelper::StartFetching(
 void MockBrowsingDataLocalStorageHelper::DeleteOrigin(
     const GURL& origin) {
   ASSERT_FALSE(callback_.is_null());
-  ASSERT_TRUE(origins_.find(origin) != origins_.end());
+  ASSERT_TRUE(ContainsKey(origins_, origin));
   last_deleted_origin_ = origin;
   origins_[origin] = false;
 }
@@ -49,15 +50,14 @@ void MockBrowsingDataLocalStorageHelper::Notify() {
 }
 
 void MockBrowsingDataLocalStorageHelper::Reset() {
-  for (std::map<const GURL, bool>::iterator i = origins_.begin();
-       i != origins_.end(); ++i)
-    i->second = true;
+  for (auto& pair : origins_)
+    pair.second = true;
 }
 
 bool MockBrowsingDataLocalStorageHelper::AllDeleted() {
-  for (std::map<const GURL, bool>::const_iterator i =
-       origins_.begin(); i != origins_.end(); ++i)
-    if (i->second)
+  for (const auto& pair : origins_) {
+    if (pair.second)
       return false;
+  }
   return true;
 }

@@ -202,9 +202,8 @@ void CannedBrowsingDataChannelIDHelper::StartFetching(
 void CannedBrowsingDataChannelIDHelper::FinishFetching() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::ChannelIDStore::ChannelIDList channel_id_list;
-  for (ChannelIDMap::iterator i = channel_id_map_.begin();
-       i != channel_id_map_.end(); ++i)
-    channel_id_list.push_back(i->second);
+  for (const auto& pair : channel_id_map_)
+    channel_id_list.push_back(pair.second);
   completion_callback_.Run(channel_id_list);
 }
 

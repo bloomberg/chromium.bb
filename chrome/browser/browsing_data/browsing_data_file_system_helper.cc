@@ -140,9 +140,7 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
     DCHECK(quota_util);
     std::set<GURL> origins;
     quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
-    for (std::set<GURL>::iterator iter = origins.begin();
-        iter != origins.end(); ++iter) {
-      const GURL& current = *iter;
+    for (const GURL& current : origins) {
       if (!BrowsingDataHelper::HasWebScheme(current))
         continue;  // Non-websafe state is not considered browsing data.
       int64 usage = quota_util->GetOriginUsageOnFileTaskRunner(
@@ -154,9 +152,8 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
     }
   }
 
-  for (OriginInfoMap::iterator iter = file_system_info_map.begin();
-       iter != file_system_info_map.end(); ++iter) {
-    file_system_info_.push_back(iter->second);
+  for (const auto& iter : file_system_info_map) {
+    file_system_info_.push_back(iter.second);
   }
 
   BrowserThread::PostTask(
@@ -207,12 +204,9 @@ void CannedBrowsingDataFileSystemHelper::AddFileSystem(
   // out that we want to start using this in a context with many, many origins,
   // we should think about reworking the implementation.
   bool duplicate_origin = false;
-  for (std::list<FileSystemInfo>::iterator
-           file_system = file_system_info_.begin();
-       file_system != file_system_info_.end();
-       ++file_system) {
-    if (file_system->origin == origin) {
-      file_system->usage_map[type] = size;
+  for (FileSystemInfo& file_system : file_system_info_) {
+    if (file_system.origin == origin) {
+      file_system.usage_map[type] = size;
       duplicate_origin = true;
       break;
     }

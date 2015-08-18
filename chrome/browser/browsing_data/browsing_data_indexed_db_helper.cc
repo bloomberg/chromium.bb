@@ -59,9 +59,7 @@ void BrowsingDataIndexedDBHelper::DeleteIndexedDB(
 void BrowsingDataIndexedDBHelper::FetchIndexedDBInfoInIndexedDBThread() {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<IndexedDBInfo> origins = indexed_db_context_->GetAllOriginsInfo();
-  for (std::vector<IndexedDBInfo>::const_iterator iter = origins.begin();
-       iter != origins.end(); ++iter) {
-    const IndexedDBInfo& origin = *iter;
+  for (const IndexedDBInfo& origin : origins) {
     if (!BrowsingDataHelper::HasWebScheme(origin.origin_))
       continue;  // Non-websafe state is not considered browsing data.
 
@@ -144,10 +142,8 @@ void CannedBrowsingDataIndexedDBHelper::StartFetching(
   DCHECK(!callback.is_null());
 
   std::list<IndexedDBInfo> result;
-  for (std::set<PendingIndexedDBInfo>::const_iterator
-       pending_info = pending_indexed_db_info_.begin();
-       pending_info != pending_indexed_db_info_.end(); ++pending_info) {
-    IndexedDBInfo info(pending_info->origin, 0, base::Time(), 0);
+  for (const PendingIndexedDBInfo& pending_info : pending_indexed_db_info_) {
+    IndexedDBInfo info(pending_info.origin, 0, base::Time(), 0);
     result.push_back(info);
   }
 

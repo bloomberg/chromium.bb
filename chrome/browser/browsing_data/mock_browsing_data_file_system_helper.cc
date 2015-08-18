@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataFileSystemHelper::MockBrowsingDataFileSystemHelper(
@@ -26,7 +27,7 @@ void MockBrowsingDataFileSystemHelper::DeleteFileSystemOrigin(
     const GURL& origin) {
   ASSERT_FALSE(callback_.is_null());
   std::string key = origin.spec();
-  ASSERT_TRUE(file_systems_.find(key) != file_systems_.end());
+  ASSERT_TRUE(ContainsKey(file_systems_, key));
   last_deleted_origin_ = origin;
   file_systems_[key] = false;
 }
@@ -56,16 +57,13 @@ void MockBrowsingDataFileSystemHelper::Notify() {
 }
 
 void MockBrowsingDataFileSystemHelper::Reset() {
-  for (std::map<const std::string, bool>::iterator i = file_systems_.begin();
-       i != file_systems_.end(); ++i)
-    i->second = true;
+  for (auto& pair : file_systems_)
+    pair.second = true;
 }
 
 bool MockBrowsingDataFileSystemHelper::AllDeleted() {
-  for (std::map<const std::string, bool>::const_iterator i =
-            file_systems_.begin();
-       i != file_systems_.end(); ++i) {
-    if (i->second)
+  for (const auto& pair : file_systems_) {
+    if (pair.second)
       return false;
   }
   return true;

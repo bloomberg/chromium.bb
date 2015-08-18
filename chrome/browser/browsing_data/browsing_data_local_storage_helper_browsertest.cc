@@ -61,7 +61,7 @@ class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
     };
     for (size_t i = 0; i < arraysize(kFilesToCreate); ++i) {
       base::FilePath file_path = storage_path.Append(kFilesToCreate[i]);
-      base::WriteFile(file_path, NULL, 0);
+      base::WriteFile(file_path, nullptr, 0);
     }
   }
 
@@ -88,14 +88,10 @@ class StopTestOnCallback {
     const char* const kTestHosts[] = {"www.chromium.org", "www.google.com"};
     bool test_hosts_found[arraysize(kTestHosts)] = {false, false};
     ASSERT_EQ(arraysize(kTestHosts), local_storage_info.size());
-    typedef std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>
-        LocalStorageInfoList;
     for (size_t i = 0; i < arraysize(kTestHosts); ++i) {
-      for (LocalStorageInfoList::const_iterator info =
-           local_storage_info.begin(); info != local_storage_info.end();
-           ++info) {
-        ASSERT_TRUE(info->origin_url.SchemeIs("http"));
-        if (info->origin_url.host() == kTestHosts[i]) {
+      for (const auto& info : local_storage_info) {
+        ASSERT_TRUE(info.origin_url.SchemeIs("http"));
+        if (info.origin_url.host() == kTestHosts[i]) {
           ASSERT_FALSE(test_hosts_found[i]);
           test_hosts_found[i] = true;
         }

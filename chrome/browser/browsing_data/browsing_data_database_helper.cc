@@ -74,30 +74,24 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::vector<storage::OriginInfo> origins_info;
   if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
-    for (std::vector<storage::OriginInfo>::const_iterator ori =
-             origins_info.begin();
-         ori != origins_info.end();
-         ++ori) {
+    for (const storage::OriginInfo& ori : origins_info) {
       DatabaseIdentifier identifier =
-          DatabaseIdentifier::Parse(ori->GetOriginIdentifier());
+          DatabaseIdentifier::Parse(ori.GetOriginIdentifier());
       if (!BrowsingDataHelper::HasWebScheme(identifier.ToOrigin())) {
         // Non-websafe state is not considered browsing data.
         continue;
       }
       std::vector<base::string16> databases;
-      ori->GetAllDatabaseNames(&databases);
-      for (std::vector<base::string16>::const_iterator db = databases.begin();
-           db != databases.end(); ++db) {
+      ori.GetAllDatabaseNames(&databases);
+      for (const base::string16& db : databases) {
         base::FilePath file_path =
-            tracker_->GetFullDBFilePath(ori->GetOriginIdentifier(), *db);
+            tracker_->GetFullDBFilePath(ori.GetOriginIdentifier(), db);
         base::File::Info file_info;
         if (base::GetFileInfo(file_path, &file_info)) {
-          database_info_.push_back(DatabaseInfo(
-                identifier,
-                base::UTF16ToUTF8(*db),
-                base::UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
-                file_info.size,
-                file_info.last_modified));
+          database_info_.push_back(
+              DatabaseInfo(identifier, base::UTF16ToUTF8(db),
+                           base::UTF16ToUTF8(ori.GetDatabaseDescription(db)),
+                           file_info.size, file_info.last_modified));
         }
       }
     }
@@ -187,18 +181,12 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
   DCHECK(!callback.is_null());
 
   std::list<DatabaseInfo> result;
-  for (std::set<PendingDatabaseInfo>::const_iterator
-       info = pending_database_info_.begin();
-       info != pending_database_info_.end(); ++info) {
+  for (const PendingDatabaseInfo& info : pending_database_info_) {
     DatabaseIdentifier identifier =
-        DatabaseIdentifier::CreateFromOrigin(info->origin);
+        DatabaseIdentifier::CreateFromOrigin(info.origin);
 
-    result.push_back(DatabaseInfo(
-        identifier,
-        info->name,
-        info->description,
-        0,
-        base::Time()));
+    result.push_back(
+        DatabaseInfo(identifier, info.name, info.description, 0, base::Time()));
   }
 
   BrowserThread::PostTask(

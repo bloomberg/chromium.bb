@@ -5,6 +5,7 @@
 #include "chrome/browser/browsing_data/mock_browsing_data_database_helper.h"
 
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 MockBrowsingDataDatabaseHelper::MockBrowsingDataDatabaseHelper(
@@ -27,7 +28,7 @@ void MockBrowsingDataDatabaseHelper::DeleteDatabase(
     const std::string& name) {
   ASSERT_FALSE(callback_.is_null());
   std::string key = origin + ":" + name;
-  ASSERT_TRUE(databases_.find(key) != databases_.end());
+  ASSERT_TRUE(ContainsKey(databases_, key));
   last_deleted_origin_ = origin;
   last_deleted_db_ = name;
   databases_[key] = false;
@@ -51,15 +52,14 @@ void MockBrowsingDataDatabaseHelper::Notify() {
 }
 
 void MockBrowsingDataDatabaseHelper::Reset() {
-  for (std::map<const std::string, bool>::iterator i = databases_.begin();
-       i != databases_.end(); ++i)
-    i->second = true;
+  for (auto& pair : databases_)
+    pair.second = true;
 }
 
 bool MockBrowsingDataDatabaseHelper::AllDeleted() {
-  for (std::map<const std::string, bool>::const_iterator i = databases_.begin();
-       i != databases_.end(); ++i)
-    if (i->second)
+  for (const auto& pair : databases_) {
+    if (pair.second)
       return false;
+  }
   return true;
 }

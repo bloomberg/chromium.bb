@@ -163,17 +163,16 @@ LocalDataContainer* GetLocalDataContainerForNode(CookieTreeNode* node) {
 
 CookieTreeNode::DetailedInfo::DetailedInfo()
     : node_type(TYPE_NONE),
-      cookie(NULL),
-      database_info(NULL),
-      local_storage_info(NULL),
-      session_storage_info(NULL),
-      appcache_info(NULL),
-      indexed_db_info(NULL),
-      file_system_info(NULL),
-      quota_info(NULL),
-      channel_id(NULL),
-      service_worker_info(NULL) {
-}
+      cookie(nullptr),
+      database_info(nullptr),
+      local_storage_info(nullptr),
+      session_storage_info(nullptr),
+      appcache_info(nullptr),
+      indexed_db_info(nullptr),
+      file_system_info(nullptr),
+      quota_info(nullptr),
+      channel_id(nullptr),
+      service_worker_info(nullptr) {}
 
 CookieTreeNode::DetailedInfo::~DetailedInfo() {}
 
@@ -289,7 +288,7 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
   if (parent())
     return parent()->GetModel();
   else
-    return NULL;
+    return nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -610,20 +609,19 @@ base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
 
 CookieTreeHostNode::CookieTreeHostNode(const GURL& url)
     : CookieTreeNode(TitleForUrl(url)),
-      cookies_child_(NULL),
-      databases_child_(NULL),
-      local_storages_child_(NULL),
-      session_storages_child_(NULL),
-      appcaches_child_(NULL),
-      indexed_dbs_child_(NULL),
-      file_systems_child_(NULL),
-      quota_child_(NULL),
-      channel_ids_child_(NULL),
-      service_workers_child_(NULL),
-      flash_lso_child_(NULL),
+      cookies_child_(nullptr),
+      databases_child_(nullptr),
+      local_storages_child_(nullptr),
+      session_storages_child_(nullptr),
+      appcaches_child_(nullptr),
+      indexed_dbs_child_(nullptr),
+      file_systems_child_(nullptr),
+      quota_child_(nullptr),
+      channel_ids_child_(nullptr),
+      service_workers_child_(nullptr),
+      flash_lso_child_(nullptr),
       url_(url),
-      canonicalized_host_(CanonicalizeHost(url)) {
-}
+      canonicalized_host_(CanonicalizeHost(url)) {}
 
 CookieTreeHostNode::~CookieTreeHostNode() {}
 
@@ -1062,12 +1060,12 @@ void CookiesTreeModel::UpdateSearchResults(const base::string16& filter) {
 const extensions::ExtensionSet* CookiesTreeModel::ExtensionsProtectingNode(
     const CookieTreeNode& cookie_node) {
   if (!special_storage_policy_.get())
-    return NULL;
+    return nullptr;
 
   CookieTreeNode::DetailedInfo info = cookie_node.GetDetailedInfo();
 
   if (!TypeIsProtected(info.node_type))
-    return NULL;
+    return nullptr;
 
   DCHECK(!info.origin.is_empty());
   return special_storage_policy_->ExtensionsProtectingOrigin(info.origin);
@@ -1151,26 +1149,24 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     ScopedBatchUpdateNotifier* notifier,
     const base::string16& filter) {
   using content::AppCacheInfo;
-  typedef std::map<GURL, std::list<AppCacheInfo> > InfoByOrigin;
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
 
   if (container->appcache_info_.empty())
     return;
 
   notifier->StartBatchUpdate();
-  for (InfoByOrigin::iterator origin = container->appcache_info_.begin();
-       origin != container->appcache_info_.end(); ++origin) {
-    base::string16 host_node_name = base::UTF8ToUTF16(origin->first.host());
+  for (auto& origin : container->appcache_info_) {
+    base::string16 host_node_name = base::UTF8ToUTF16(origin.first.host());
     if (filter.empty() ||
         (host_node_name.find(filter) != base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin->first);
+      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin.first);
       CookieTreeAppCachesNode* appcaches_node =
           host_node->GetOrCreateAppCachesNode();
 
-      for (std::list<AppCacheInfo>::iterator info = origin->second.begin();
-           info != origin->second.end(); ++info) {
+      for (std::list<AppCacheInfo>::iterator info = origin.second.begin();
+           info != origin.second.end(); ++info) {
         appcaches_node->AddAppCacheNode(
-            new CookieTreeAppCacheNode(origin->first, info));
+            new CookieTreeAppCacheNode(origin.first, info));
       }
     }
   }
