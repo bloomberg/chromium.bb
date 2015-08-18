@@ -18,3 +18,6 @@ tarball's src folder over to src, then checking for removed or added files
 and update our build recipes in BUILD.gn and harfbuzz.gyp accordingly, update
 the NEWS file from HarfBuzz' release notes, and bump the version numbers
 in README.chromium.
+
+Local changes:
+* merge https://github.com/behdad/harfbuzz/commit/2b646fa07f5f9d4d1
