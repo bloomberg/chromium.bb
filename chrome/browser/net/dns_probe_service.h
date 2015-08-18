@@ -29,7 +29,7 @@ namespace chrome_browser_net {
 // Uses a single DNS attempt per config, and doesn't randomize source ports.
 class DnsProbeService : public net::NetworkChangeNotifier::DNSObserver {
  public:
-  typedef base::Callback<void(chrome_common_net::DnsProbeStatus result)>
+  typedef base::Callback<void(error_page::DnsProbeStatus result)>
       ProbeCallback;
 
   DnsProbeService();
@@ -68,7 +68,7 @@ class DnsProbeService : public net::NetworkChangeNotifier::DNSObserver {
   State state_;
   std::vector<ProbeCallback> pending_callbacks_;
   base::Time probe_start_time_;
-  chrome_common_net::DnsProbeStatus cached_result_;
+  error_page::DnsProbeStatus cached_result_;
 
   // DnsProbeRunners for the system DNS configuration and a public DNS server.
   DnsProbeRunner system_runner_;

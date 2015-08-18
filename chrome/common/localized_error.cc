@@ -410,7 +410,7 @@ const LocalizedErrorMap http_error_options[] = {
 };
 
 const LocalizedErrorMap dns_probe_error_options[] = {
-  {chrome_common_net::DNS_PROBE_POSSIBLE,
+  {error_page::DNS_PROBE_POSSIBLE,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
@@ -421,7 +421,7 @@ const LocalizedErrorMap dns_probe_error_options[] = {
   // DNS_PROBE_NOT_RUN is not here; NetErrorHelper will restore the original
   // error, which might be one of several DNS-related errors.
 
-  {chrome_common_net::DNS_PROBE_STARTED,
+  {error_page::DNS_PROBE_STARTED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
@@ -433,21 +433,21 @@ const LocalizedErrorMap dns_probe_error_options[] = {
   // DNS_PROBE_FINISHED_UNKNOWN is not here; NetErrorHelper will restore the
   // original error, which might be one of several DNS-related errors.
 
-  {chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+  {error_page::DNS_PROBE_FINISHED_NO_INTERNET,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
    SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG,
   },
-  {chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG,
+  {error_page::DNS_PROBE_FINISHED_BAD_CONFIG,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
    SUGGEST_RELOAD | SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG,
   },
-  {chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+  {error_page::DNS_PROBE_FINISHED_NXDOMAIN,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
@@ -509,7 +509,7 @@ const char* GetIconClassForError(const std::string& error_domain,
                                  int error_code) {
   if ((error_code == net::ERR_INTERNET_DISCONNECTED &&
        error_domain == net::kErrorDomain) ||
-      (error_code == chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET &&
+      (error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET &&
        error_domain == error_page::kDnsProbeErrorDomain))
     return "icon-offline";
 
@@ -580,7 +580,7 @@ void LocalizedError::GetStrings(int error_code,
 
   // For offline show a summary message underneath the heading.
   if (error_code == net::ERR_INTERNET_DISCONNECTED ||
-      error_code == chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET) {
+      error_code == error_page::DNS_PROBE_FINISHED_NO_INTERNET) {
     error_strings->SetString("primaryParagraph",
         l10n_util::GetStringUTF16(options.summary_resource_id));
 

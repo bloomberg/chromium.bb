@@ -41,12 +41,12 @@
 #include "url/gurl.h"
 
 using base::JSONWriter;
-using chrome_common_net::DnsProbeStatus;
 using content::DocumentState;
-using content::kUnreachableWebDataURL;
 using content::RenderFrame;
 using content::RenderFrameObserver;
 using content::RenderThread;
+using content::kUnreachableWebDataURL;
+using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
 using error_page::NetErrorHelperCore;
@@ -55,7 +55,7 @@ namespace {
 
 // Number of seconds to wait for the navigation correction service to return
 // suggestions.  If it takes too long, just use the local error page.
-static const int kNavigationCorrectionFetchTimeoutSec = 3;
+const int kNavigationCorrectionFetchTimeoutSec = 3;
 
 NetErrorHelperCore::PageType GetLoadingPageType(const blink::WebFrame* frame) {
   GURL url = frame->provisionalDataSource()->request().url();
@@ -338,7 +338,7 @@ void NetErrorHelper::DiagnoseError(const GURL& page_url) {
 }
 
 void NetErrorHelper::OnNetErrorInfo(int status_num) {
-  DCHECK(status_num >= 0 && status_num < chrome_common_net::DNS_PROBE_MAX);
+  DCHECK(status_num >= 0 && status_num < error_page::DNS_PROBE_MAX);
 
   DVLOG(1) << "Received status " << DnsProbeStatusToString(status_num);
 

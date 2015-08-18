@@ -32,7 +32,7 @@ class NetErrorTabHelper
     TESTING_FORCE_ENABLED
   };
 
-  typedef base::Callback<void(chrome_common_net::DnsProbeStatus)>
+  typedef base::Callback<void(error_page::DnsProbeStatus)>
       DnsProbeStatusSnoopCallback;
 
   ~NetErrorTabHelper() override;
@@ -81,9 +81,9 @@ class NetErrorTabHelper
   explicit NetErrorTabHelper(content::WebContents* contents);
   virtual void StartDnsProbe();
   virtual void SendInfo();
-  void OnDnsProbeFinished(chrome_common_net::DnsProbeStatus result);
+  void OnDnsProbeFinished(error_page::DnsProbeStatus result);
 
-  chrome_common_net::DnsProbeStatus dns_probe_status() const {
+  error_page::DnsProbeStatus dns_probe_status() const {
     return dns_probe_status_;
   }
 
@@ -116,7 +116,7 @@ class NetErrorTabHelper
   // The status of a DNS probe that may or may not have started or finished.
   // Since the renderer can change out from under the helper (in cross-process
   // navigations), it re-sends the status whenever an error page commits.
-  chrome_common_net::DnsProbeStatus dns_probe_status_;
+  error_page::DnsProbeStatus dns_probe_status_;
 
   // Optional callback for browser test to snoop on outgoing NetErrorInfo IPCs.
   DnsProbeStatusSnoopCallback dns_probe_status_snoop_callback_;

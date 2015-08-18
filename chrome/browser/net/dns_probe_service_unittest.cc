@@ -18,8 +18,8 @@
 
 using base::MessageLoopForIO;
 using base::RunLoop;
-using chrome_common_net::DnsProbeStatus;
 using content::TestBrowserThreadBundle;
+using error_page::DnsProbeStatus;
 using net::MockDnsClientRule;
 
 namespace chrome_browser_net {
@@ -30,7 +30,7 @@ class DnsProbeServiceTest : public testing::Test {
  public:
   DnsProbeServiceTest()
       : callback_called_(false),
-        callback_result_(chrome_common_net::DNS_PROBE_MAX) {
+        callback_result_(error_page::DNS_PROBE_MAX) {
   }
 
   void Probe() {
@@ -82,50 +82,50 @@ class DnsProbeServiceTest : public testing::Test {
 
 TEST_F(DnsProbeServiceTest, Probe_OK_OK) {
   RunTest(MockDnsClientRule::OK, MockDnsClientRule::OK,
-          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+          error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_OK) {
   RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::OK,
-          chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
+          error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_TIMEOUT) {
   RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT,
-          chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+          error_page::DNS_PROBE_FINISHED_NO_INTERNET);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_OK_FAIL) {
   RunTest(MockDnsClientRule::OK, MockDnsClientRule::FAIL,
-          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+          error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_FAIL_OK) {
   RunTest(MockDnsClientRule::FAIL, MockDnsClientRule::OK,
-          chrome_common_net::DNS_PROBE_FINISHED_BAD_CONFIG);
+          error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_FAIL_FAIL) {
   RunTest(MockDnsClientRule::FAIL, MockDnsClientRule::FAIL,
-          chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE);
+          error_page::DNS_PROBE_FINISHED_INCONCLUSIVE);
 }
 
 TEST_F(DnsProbeServiceTest, Cache) {
   RunTest(MockDnsClientRule::OK, MockDnsClientRule::OK,
-          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+          error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   // Cached NXDOMAIN result should persist, not the result from the new rules.
   RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT,
-          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+          error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
 TEST_F(DnsProbeServiceTest, Expire) {
   RunTest(MockDnsClientRule::OK, MockDnsClientRule::OK,
-          chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN);
+          error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   // Pretend cache expires.
   ClearCachedResult();
   // New rules should apply, since a new probe should be run.
   RunTest(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT,
-          chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET);
+          error_page::DNS_PROBE_FINISHED_NO_INTERNET);
 }
 
 }  // namespace

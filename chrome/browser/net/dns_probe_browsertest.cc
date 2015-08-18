@@ -45,18 +45,18 @@ using base::ConstRef;
 using base::FilePath;
 using base::MessageLoop;
 using base::Unretained;
-using chrome_common_net::DnsProbeStatus;
 using content::BrowserThread;
-using net::URLRequestFailedJob;
-using net::URLRequestMockHTTPJob;
 using content::WebContents;
+using error_page::DnsProbeStatus;
 using google_util::LinkDoctorBaseURL;
 using net::MockDnsClientRule;
 using net::NetworkDelegate;
 using net::URLRequest;
+using net::URLRequestFailedJob;
 using net::URLRequestFilter;
 using net::URLRequestInterceptor;
 using net::URLRequestJob;
+using net::URLRequestMockHTTPJob;
 using ui_test_utils::NavigateToURL;
 using ui_test_utils::NavigateToURLBlockUntilNavigationsComplete;
 
@@ -697,14 +697,14 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   // One status for committing a blank page before the corrections, and one for
   // when the error page with corrections is committed.
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 
   StartDelayedProbes(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NXDOMAIN,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
@@ -724,12 +724,12 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   // A single probe should be triggered by the error page load, and it should
   // be ignored.
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   EXPECT_EQ("", Title());
 
   StartDelayedProbes(1);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NXDOMAIN,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   EXPECT_EQ("", Title());
@@ -744,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   // Committing the corections page should trigger sending the probe result
   // again.
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NXDOMAIN,
             WaitForSentStatus());
   ExpectDisplayingCorrections("ERR_NAME_NOT_RESOLVED");
 }
@@ -758,8 +758,8 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   NavigateToDnsError(2);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
@@ -768,7 +768,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   StartDelayedProbes(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NO_INTERNET,
             WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
@@ -791,12 +791,12 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
 
   // A single probe should be triggered by the error page load, and it should
   // be ignored.
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   EXPECT_EQ("", Title());
 
   StartDelayedProbes(1);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NO_INTERNET,
             WaitForSentStatus());
   EXPECT_EQ("", Title());
   EXPECT_EQ(0, pending_status_count());
@@ -808,7 +808,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
   // Wait for the DNS error page to load instead.
   observer.Wait();
   // The page committing should result in sending the probe results again.
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NO_INTERNET,
             WaitForSentStatus());
 
   EXPECT_EQ(0, pending_status_count());
@@ -822,8 +822,8 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenCorrections) {
 
   NavigateToDnsError(2);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
@@ -832,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenCorrections) {
 
   StartDelayedProbes(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE,
             WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
@@ -852,9 +852,9 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsLoadStopped) {
 
   NavigateToDnsError(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
   StartDelayedProbes(1);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NO_INTERNET,
             WaitForSentStatus());
 
   EXPECT_EQ("", Title());
@@ -876,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsLoadStoppedSlowProbe) {
 
   NavigateToDnsError(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
 
   EXPECT_EQ("", Title());
   EXPECT_EQ(0, pending_status_count());
@@ -888,7 +888,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsLoadStoppedSlowProbe) {
   EXPECT_EQ(0, pending_status_count());
 
   StartDelayedProbes(1);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_NO_INTERNET,
             WaitForSentStatus());
 
   EXPECT_EQ("", Title());
@@ -924,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, ProbesDisabled) {
 
   NavigateToDnsError(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_NOT_RUN, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_NOT_RUN, WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
@@ -949,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsDisabled) {
 
   // Just one commit and one sent status, since corrections are disabled.
   NavigateToDnsError(1);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
@@ -958,7 +958,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, CorrectionsDisabled) {
 
   StartDelayedProbes(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   ExpectDisplayingLocalErrorPage("ERR_NAME_NOT_RESOLVED");
@@ -978,7 +978,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, Incognito) {
 
   // Just one commit and one sent status, since the corrections are disabled.
   NavigateToDnsError(1);
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(error_page::DNS_PROBE_STARTED, WaitForSentStatus());
 
   // Checking the page runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
@@ -987,7 +987,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, Incognito) {
 
   StartDelayedProbes(1);
 
-  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_INCONCLUSIVE,
+  EXPECT_EQ(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE,
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   ExpectDisplayingLocalErrorPage("ERR_NAME_NOT_RESOLVED");

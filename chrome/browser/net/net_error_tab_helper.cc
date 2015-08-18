@@ -23,12 +23,12 @@
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
-using chrome_common_net::DnsProbeStatus;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebContentsObserver;
+using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using ui::PageTransition;
 
@@ -102,7 +102,7 @@ void NetErrorTabHelper::DidStartNavigationToPendingEntry(
   // Only record reloads.
   if (reload_type != content::NavigationController::NO_RELOAD) {
     error_page::RecordEvent(
-        chrome_common_net::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
+        error_page::NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD);
   }
 }
 
@@ -177,7 +177,7 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
-      dns_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
+      dns_probe_status_(error_page::DNS_PROBE_POSSIBLE),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -189,19 +189,19 @@ NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
 void NetErrorTabHelper::OnMainFrameDnsError() {
   if (ProbesAllowed()) {
     // Don't start more than one probe at a time.
-    if (dns_probe_status_ != chrome_common_net::DNS_PROBE_STARTED) {
+    if (dns_probe_status_ != error_page::DNS_PROBE_STARTED) {
       StartDnsProbe();
-      dns_probe_status_ = chrome_common_net::DNS_PROBE_STARTED;
+      dns_probe_status_ = error_page::DNS_PROBE_STARTED;
     }
   } else {
-    dns_probe_status_ = chrome_common_net::DNS_PROBE_NOT_RUN;
+    dns_probe_status_ = error_page::DNS_PROBE_NOT_RUN;
   }
 }
 
 void NetErrorTabHelper::StartDnsProbe() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(dns_error_active_);
-  DCHECK_NE(chrome_common_net::DNS_PROBE_STARTED, dns_probe_status_);
+  DCHECK_NE(error_page::DNS_PROBE_STARTED, dns_probe_status_);
 
   DVLOG(1) << "Starting DNS probe.";
 
@@ -216,7 +216,7 @@ void NetErrorTabHelper::StartDnsProbe() {
 
 void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(chrome_common_net::DNS_PROBE_STARTED, dns_probe_status_);
+  DCHECK_EQ(error_page::DNS_PROBE_STARTED, dns_probe_status_);
   DCHECK(error_page::DnsProbeStatusIsFinished(result));
 
   DVLOG(1) << "Finished DNS probe with result "
@@ -247,7 +247,7 @@ bool NetErrorTabHelper::ProbesAllowed() const {
 }
 
 void NetErrorTabHelper::SendInfo() {
-  DCHECK_NE(chrome_common_net::DNS_PROBE_POSSIBLE, dns_probe_status_);
+  DCHECK_NE(error_page::DNS_PROBE_POSSIBLE, dns_probe_status_);
   DCHECK(dns_error_page_committed_);
 
   DVLOG(1) << "Sending status " << DnsProbeStatusToString(dns_probe_status_);
