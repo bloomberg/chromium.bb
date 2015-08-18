@@ -1185,8 +1185,6 @@ static void PreCalculateMetaInformationInternal(
       (recursive_data->num_layer_or_descendants_with_input_handler != 0);
   layer->set_num_layer_or_descandant_with_copy_request(
       recursive_data->num_layer_or_descendants_with_copy_request);
-  layer->set_num_layer_or_descandant_with_input_handler(
-      recursive_data->num_layer_or_descendants_with_input_handler);
 
   if (IsRootLayer(layer))
     layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);

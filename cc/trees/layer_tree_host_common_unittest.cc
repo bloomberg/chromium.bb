@@ -7417,15 +7417,6 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  grandchild->SetTouchEventHandlerRegion(Region(gfx::Rect(0, 0, 10, 10)));
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10), grandchild->visible_rect_from_property_trees());
-  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
-  grandchild->SetTouchEventHandlerRegion(Region());
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0), grandchild->visible_rect_from_property_trees());
-  grandchild->set_visible_rect_from_property_trees(gfx::Rect());
-
   greatgrandchild->RequestCopyOfOutput(
       CopyOutputRequest::CreateBitmapRequest(base::Bind(&CopyOutputCallback)));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
@@ -7518,17 +7509,6 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  grandchild_ptr->SetTouchEventHandlerRegion(Region(gfx::Rect(0, 0, 10, 10)));
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(10, 10),
-            grandchild_ptr->visible_rect_from_property_trees());
-  grandchild_ptr->set_visible_rect_from_property_trees(gfx::Rect());
-  grandchild_ptr->SetTouchEventHandlerRegion(Region());
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
-  EXPECT_EQ(gfx::Rect(0, 0),
-            grandchild_ptr->visible_rect_from_property_trees());
-  grandchild_ptr->set_visible_rect_from_property_trees(gfx::Rect());
-
   ScopedPtrVector<CopyOutputRequest> requests;
   requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
@@ -7616,27 +7596,28 @@ TEST_F(LayerTreeHostCommonTest, LayerTreeRebuildTest) {
 TEST_F(LayerTreeHostCommonTest, InputHandlersRecursiveUpdateTest) {
   // Ensure that the treewalk in LayertreeHostCommon::
   // PreCalculateMetaInformation updates input handlers correctly.
-  scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  scoped_refptr<Layer> child = Layer::Create(layer_settings());
-
-  root->AddChild(child);
-
-  child->SetHaveWheelEventHandlers(true);
+  LayerImpl* root = root_layer();
+  LayerImpl* child = AddChild<LayerImpl>(root);
 
   gfx::Transform identity;
 
-  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(100, 100), true, false);
-  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(root, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false, true);
+  SetLayerPropertiesForTesting(child, identity, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false, false);
 
-  host()->SetRootLayer(root);
+  EXPECT_EQ(root->draw_properties().layer_or_descendant_has_input_handler,
+            false);
 
-  EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 0);
-  ExecuteCalculateDrawProperties(root.get());
-  EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 1);
+  child->SetHaveWheelEventHandlers(true);
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(root->draw_properties().layer_or_descendant_has_input_handler,
+            true);
+
   child->SetHaveWheelEventHandlers(false);
-  EXPECT_EQ(root->num_layer_or_descendants_with_input_handler(), 0);
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(root->draw_properties().layer_or_descendant_has_input_handler,
+            false);
 }
 
 TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {

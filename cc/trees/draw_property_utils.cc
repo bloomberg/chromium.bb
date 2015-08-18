@@ -255,11 +255,6 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
     return false;
 
-  // We cannot skip the the subtree if a descendant has a wheel or touch handler
-  // or the hit testing code will break (it requires fresh transforms, etc).
-  if (layer->draw_properties().layer_or_descendant_has_input_handler)
-    return false;
-
   // If the layer is not drawn, then skip it and its subtree.
   if (!layer_is_drawn)
     return true;
@@ -292,11 +287,6 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
   // When we need to do a readback/copy of a layer's output, we can not skip
   // it or any of its ancestors.
   if (layer->draw_properties().layer_or_descendant_has_copy_request)
-    return false;
-
-  // We cannot skip the the subtree if a descendant has a wheel or touch handler
-  // or the hit testing code will break (it requires fresh transforms, etc).
-  if (layer->draw_properties().layer_or_descendant_has_input_handler)
     return false;
 
   // If the layer is not drawn, then skip it and its subtree.

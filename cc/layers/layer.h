@@ -539,16 +539,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
         num_layer_or_descendants_with_copy_request;
   }
 
-  void set_num_layer_or_descandant_with_input_handler(
-      int num_layer_or_descendants_with_input_handler) {
-    num_layer_or_descendants_with_input_handler_ =
-        num_layer_or_descendants_with_input_handler;
-  }
-
-  int num_layer_or_descendants_with_input_handler() {
-    return num_layer_or_descendants_with_input_handler_;
-  }
-
   void set_num_children_with_scroll_parent(
       int num_children_with_scroll_parent) {
     num_children_with_scroll_parent_ = num_children_with_scroll_parent;
@@ -681,7 +671,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void InvalidatePropertyTreesIndices();
 
   void UpdateNumCopyRequestsForSubtree(bool add);
-  void UpdateNumInputHandlersForSubtree(bool add);
 
   LayerList children_;
   Layer* parent_;
@@ -708,7 +697,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int clip_tree_index_;
   int property_tree_sequence_number_;
   int num_layer_or_descendants_with_copy_request_;
-  int num_layer_or_descendants_with_input_handler_;
   int num_children_with_scroll_parent_;
   gfx::Vector2dF offset_to_transform_parent_;
   bool should_flatten_transform_from_property_tree_ : 1;

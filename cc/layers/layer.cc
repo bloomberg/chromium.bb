@@ -55,7 +55,6 @@ Layer::Layer(const LayerSettings& settings)
       clip_tree_index_(-1),
       property_tree_sequence_number_(-1),
       num_layer_or_descendants_with_copy_request_(0),
-      num_layer_or_descendants_with_input_handler_(0),
       num_children_with_scroll_parent_(0),
       should_flatten_transform_from_property_tree_(false),
       is_clipped_(false),
@@ -949,22 +948,9 @@ void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
   DCHECK(IsPropertyChangeAllowed());
   if (have_wheel_event_handlers_ == have_wheel_event_handlers)
     return;
-  if (touch_event_handler_region_.IsEmpty() && layer_tree_host_ &&
-      !layer_tree_host_->needs_meta_info_recomputation())
-    UpdateNumInputHandlersForSubtree(have_wheel_event_handlers);
 
   have_wheel_event_handlers_ = have_wheel_event_handlers;
   SetNeedsCommit();
-}
-
-void Layer::UpdateNumInputHandlersForSubtree(bool add) {
-  int change = add ? 1 : -1;
-  for (Layer* layer = this; layer; layer = layer->parent()) {
-    layer->num_layer_or_descendants_with_input_handler_ += change;
-    layer->draw_properties().layer_or_descendant_has_input_handler =
-        (layer->num_layer_or_descendants_with_input_handler_ != 0);
-    DCHECK_GE(layer->num_layer_or_descendants_with_input_handler_, 0);
-  }
 }
 
 void Layer::SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
@@ -987,9 +973,6 @@ void Layer::SetTouchEventHandlerRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
   if (touch_event_handler_region_ == region)
     return;
-  if (!have_wheel_event_handlers_ && layer_tree_host_ &&
-      !layer_tree_host_->needs_meta_info_recomputation())
-    UpdateNumInputHandlersForSubtree(!region.IsEmpty());
 
   touch_event_handler_region_ = region;
   SetNeedsCommit();
