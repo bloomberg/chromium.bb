@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/shell/browser/shell_browser_context.h"
-#include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views_content_client/views_content_client.h"
@@ -37,7 +36,6 @@ ViewsContentClientMainPartsDesktopAura::ViewsContentClientMainPartsDesktopAura(
 void ViewsContentClientMainPartsDesktopAura::PreMainMessageLoopRun() {
   ViewsContentClientMainPartsAura::PreMainMessageLoopRun();
 
-  aura::Env::CreateInstance(true);
   gfx::Screen::SetScreenInstance(
       gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
 

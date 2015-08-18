@@ -59,11 +59,11 @@ void AuraShellTestSuite::Initialize() {
       "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
-  aura::Env::CreateInstance(true);
+  env_ = aura::Env::CreateInstance();
 }
 
 void AuraShellTestSuite::Shutdown() {
-  aura::Env::DeleteInstance();
+  env_.reset();
   ui::ResourceBundle::CleanupSharedInstance();
 #if defined(OS_WIN)
   com_initializer_.reset();

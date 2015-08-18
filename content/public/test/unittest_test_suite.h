@@ -8,6 +8,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+#if defined(USE_AURA)
+namespace aura {
+class Env;
+}
+#endif
+
 namespace base {
 class TestSuite;
 }
@@ -33,6 +39,9 @@ class UnitTestTestSuite {
 
 #if !defined(OS_IOS)
   scoped_ptr<TestBlinkWebUnitTestSupport> blink_test_support_;
+#endif
+#if defined(USE_AURA)
+  scoped_ptr<aura::Env> env_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(UnitTestTestSuite);

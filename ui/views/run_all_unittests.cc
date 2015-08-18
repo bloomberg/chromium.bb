@@ -31,19 +31,22 @@ class ViewTestSuite : public base::TestSuite {
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 #if defined(USE_AURA)
-    aura::Env::CreateInstance(true);
+    env_ = aura::Env::CreateInstance();
 #endif
   }
 
   void Shutdown() override {
 #if defined(USE_AURA)
-    aura::Env::DeleteInstance();
+    env_.reset();
 #endif
     ui::ResourceBundle::CleanupSharedInstance();
     base::TestSuite::Shutdown();
   }
 
  private:
+#if defined(USE_AURA)
+  scoped_ptr<aura::Env> env_;
+#endif
   DISALLOW_COPY_AND_ASSIGN(ViewTestSuite);
 };
 

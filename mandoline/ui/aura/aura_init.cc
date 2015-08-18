@@ -39,7 +39,7 @@ std::set<std::string> GetResourcePaths() {
 // correctly.
 AuraInit::AuraInit(mojo::View* view, mojo::Shell* shell)
     : ui_init_(view->viewport_metrics().size_in_pixels.To<gfx::Size>(), 1.f) {
-  aura::Env::CreateInstance(false);
+  env_ = aura::Env::CreateInstance();
 
   InitializeResources(shell);
 

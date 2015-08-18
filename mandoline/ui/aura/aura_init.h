@@ -7,6 +7,10 @@
 
 #include "ui/mojo/init/ui_init.h"
 
+namespace aura {
+class Env;
+}
+
 namespace mojo {
 class Shell;
 class View;
@@ -23,6 +27,7 @@ class AuraInit {
  private:
   void InitializeResources(mojo::Shell* shell);
 
+  scoped_ptr<aura::Env> env_;
   ui::mojo::UIInit ui_init_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraInit);

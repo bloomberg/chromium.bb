@@ -33,6 +33,7 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
 
  private:
   wm::WMState wm_state_;
+  scoped_ptr<aura::Env> env_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewEventTestPlatformPartChromeOS);
 };
@@ -46,7 +47,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
 
-  aura::Env::CreateInstance(true);
+  env_ = aura::Env::CreateInstance();
   ash::test::TestShellDelegate* shell_delegate =
       new ash::test::TestShellDelegate();
   ash::ShellInitParams init_params;
@@ -60,7 +61,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
 
 ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   ash::Shell::DeleteInstance();
-  aura::Env::DeleteInstance();
+  env_.reset();
 
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();

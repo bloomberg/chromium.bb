@@ -60,7 +60,6 @@
 
 #if defined(USE_AURA)
 #include "chromecast/graphics/cast_screen.h"
-#include "ui/aura/env.h"
 #include "ui/gfx/screen.h"
 #endif
 
@@ -389,10 +388,6 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->metrics_service_client()->Finalize();
   cast_browser_process_.reset();
-
-#if defined(USE_AURA)
-  aura::Env::DeleteInstance();
-#endif
 
   DeregisterKillOnAlarm();
 #endif

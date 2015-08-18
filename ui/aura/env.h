@@ -31,14 +31,11 @@ class WindowTreeHost;
 // A singleton object that tracks general state within Aura.
 class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
  public:
-  // Creates the single Env instance (if it hasn't been created yet). If
-  // |create_event_source| is true a PlatformEventSource is created.
-  // TODO(sky): nuke |create_event_source|. Only necessary while mojo's
-  // nativeviewportservice lives in the same process as the viewmanager.
-  static void CreateInstance(bool create_event_source);
+  ~Env() override;
+
+  static scoped_ptr<Env> CreateInstance();
   static Env* GetInstance();
   static Env* GetInstanceDontCreate();
-  static void DeleteInstance();
 
   void AddObserver(EnvObserver* observer);
   void RemoveObserver(EnvObserver* observer);
@@ -73,10 +70,8 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   friend class WindowTreeHost;
 
   Env();
-  ~Env() override;
 
-  // See description of CreateInstance() for deatils of |create_event_source|.
-  void Init(bool create_event_source);
+  void Init();
 
   // Called by the Window when it is initialized. Notifies observers.
   void NotifyWindowInitialized(Window* window);

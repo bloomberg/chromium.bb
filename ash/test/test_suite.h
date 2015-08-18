@@ -14,6 +14,10 @@
 #include "base/win/scoped_com_initializer.h"
 #endif
 
+namespace aura {
+class Env;
+}
+
 namespace ash {
 namespace test {
 
@@ -31,6 +35,7 @@ class AuraShellTestSuite : public base::TestSuite {
 #if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
+  scoped_ptr<aura::Env> env_;
 
   base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 };

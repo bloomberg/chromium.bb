@@ -9,6 +9,10 @@
 
 #include "ash/test/ash_test_base.h"
 
+namespace aura {
+class Env;
+}
+
 namespace ash {
 namespace test {
 
@@ -23,6 +27,7 @@ class AshInteractiveUITestBase : public AshTestBase {
   void TearDown() override;
 
  private:
+  scoped_ptr<aura::Env> env_;
   DISALLOW_COPY_AND_ASSIGN(AshInteractiveUITestBase);
 };
 
