@@ -97,6 +97,7 @@ public:
     virtual double valueAsDouble() const;
     virtual void setValueAsDouble(double, TextFieldEventBehavior, ExceptionState&) const;
     virtual void setValueAsDecimal(const Decimal&, TextFieldEventBehavior, ExceptionState&) const;
+    virtual void readingChecked() const;
 
     // Validation functions
     virtual String validationMessage() const;

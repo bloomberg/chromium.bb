@@ -82,7 +82,7 @@ PassOwnPtrWillBeRawPtr<ClickHandlingState> CheckboxInputType::willDispatchClick(
         element().setIndeterminate(false);
 
     element().setChecked(!state->checked, DispatchChangeEvent);
-
+    m_isInClickHandler = true;
     return state.release();
 }
 
@@ -94,7 +94,7 @@ void CheckboxInputType::didDispatchClick(Event* event, const ClickHandlingState&
     } else {
         element().dispatchChangeEventIfNeeded();
     }
-
+    m_isInClickHandler = false;
     // The work we did in willDispatchClick was default handling.
     event->setDefaultHandled();
 }

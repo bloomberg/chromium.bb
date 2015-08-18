@@ -903,6 +903,12 @@ void HTMLInputElement::dispatchChangeEventIfNeeded()
         dispatchFormControlChangeEvent();
 }
 
+bool HTMLInputElement::checked() const
+{
+    m_inputType->readingChecked();
+    return m_isChecked;
+}
+
 void HTMLInputElement::setChecked(bool nowChecked, TextFieldEventBehavior eventBehavior)
 {
     if (checked() == nowChecked)

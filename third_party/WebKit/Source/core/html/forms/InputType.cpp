@@ -204,6 +204,10 @@ void InputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventBehavio
     element().setValue(serialize(newValue), eventBehavior);
 }
 
+void InputType::readingChecked() const
+{
+}
+
 bool InputType::supportsValidation() const
 {
     return true;

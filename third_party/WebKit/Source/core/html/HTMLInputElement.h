@@ -94,7 +94,7 @@ public:
 
     bool isImage() const;
 
-    bool checked() const { return m_isChecked; }
+    bool checked() const;
     void setChecked(bool, TextFieldEventBehavior = DispatchNoEvent);
     void dispatchChangeEventIfNeeded();
 

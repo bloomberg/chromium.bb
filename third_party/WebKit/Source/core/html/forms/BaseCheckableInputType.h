@@ -38,8 +38,14 @@ namespace blink {
 // Base of checkbox and radio types.
 class BaseCheckableInputType : public InputType {
 protected:
-    BaseCheckableInputType(HTMLInputElement& element) : InputType(element) { }
+    BaseCheckableInputType(HTMLInputElement& element)
+        : InputType(element)
+        , m_isInClickHandler(false)
+    {
+    }
     void handleKeydownEvent(KeyboardEvent*) override;
+
+    bool m_isInClickHandler;
 
 private:
     FormControlState saveFormControlState() const final;
@@ -51,6 +57,7 @@ private:
     String fallbackValue() const final;
     bool storesValueSeparateFromAttribute() final;
     void setValue(const String&, bool, TextFieldEventBehavior) final;
+    void readingChecked() const final;
     bool isCheckable() final;
     bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 };

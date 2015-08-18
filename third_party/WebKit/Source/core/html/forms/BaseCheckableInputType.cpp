@@ -106,6 +106,12 @@ void BaseCheckableInputType::setValue(const String& sanitizedValue, bool, TextFi
     element().setAttribute(valueAttr, AtomicString(sanitizedValue));
 }
 
+void BaseCheckableInputType::readingChecked() const
+{
+    if (m_isInClickHandler)
+        UseCounter::count(element().document(), UseCounter::ReadingCheckedInClickHandler);
+}
+
 bool BaseCheckableInputType::isCheckable()
 {
     return true;
