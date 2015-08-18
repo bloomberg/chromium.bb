@@ -112,7 +112,6 @@ private:
 
     bool m_defersLoading;
     bool m_loadingMultipartContent;
-    OwnPtr<ResourceRequest> m_fallbackRequestForServiceWorker;
     ResourceRequest m_deferredRequest;
     ResourceLoaderOptions m_options;
 

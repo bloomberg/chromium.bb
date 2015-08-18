@@ -122,11 +122,6 @@ void ResourceLoader::start()
     ASSERT(!m_request.isNull());
     ASSERT(m_deferredRequest.isNull());
 
-    if (responseNeedsAccessControlCheck() && m_fetcher->isControlledByServiceWorker()) {
-        m_fallbackRequestForServiceWorker = adoptPtr(new ResourceRequest(m_request));
-        m_fallbackRequestForServiceWorker->setSkipServiceWorker(true);
-    }
-
     m_fetcher->willStartLoadingResource(m_resource, m_request);
 
     if (m_options.synchronousPolicy == RequestSynchronously) {
@@ -336,13 +331,13 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
     if (responseNeedsAccessControlCheck()) {
         if (response.wasFetchedViaServiceWorker()) {
             if (response.wasFallbackRequiredByServiceWorker()) {
-                ASSERT(m_fallbackRequestForServiceWorker);
                 m_loader->cancel();
                 m_loader.clear();
                 m_connectionState = ConnectionStateStarted;
-                m_request = *m_fallbackRequestForServiceWorker;
                 m_loader = adoptPtr(Platform::current()->createURLLoader());
                 ASSERT(m_loader);
+                ASSERT(!m_request.skipServiceWorker());
+                m_request.setSkipServiceWorker(true);
                 WrappedResourceRequest wrappedRequest(m_request);
                 m_loader->loadAsynchronously(wrappedRequest, this);
                 return;
