@@ -37,12 +37,29 @@ using content::BrowserThread;
 using content::NavigationEntry;
 using content::WebContents;
 
-struct SafeBrowsingUIManager::WhiteListedEntry {
-  int render_process_host_id;
-  int render_view_id;
-  std::string domain;
-  SBThreatType threat_type;
+namespace {
+const void* kWhitelistKey = &kWhitelistKey;
+
+class WhitelistUrlSet : public base::SupportsUserData::Data {
+ public:
+  WhitelistUrlSet() {}
+
+  bool Contains(const GURL url) {
+    auto iter = set_.find(url.GetWithEmptyPath());
+    return iter != set_.end();
+  }
+
+  void Insert(const GURL url) { set_.insert(url.GetWithEmptyPath()); }
+
+ private:
+  std::set<GURL> set_;
+
+  DISALLOW_COPY_AND_ASSIGN(WhitelistUrlSet);
 };
+
+}  // namespace
+
+// SafeBrowsingUIManager::UnsafeResource ---------------------------------------
 
 SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
     : is_subresource(false),
@@ -54,12 +71,14 @@ SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
 
 SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
 
+// SafeBrowsingUIManager -------------------------------------------------------
+
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     const scoped_refptr<SafeBrowsingService>& service)
     : sb_service_(service) {
 }
 
-SafeBrowsingUIManager::~SafeBrowsingUIManager() { }
+SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
 
 void SafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -91,9 +110,8 @@ void SafeBrowsingUIManager::OnBlockingPageDone(
 
     if (proceed) {
       BrowserThread::PostTask(
-          BrowserThread::UI,
-          FROM_HERE,
-          base::Bind(&SafeBrowsingUIManager::UpdateWhitelist, this, resource));
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&SafeBrowsingUIManager::AddToWhitelist, this, resource));
     }
   }
 }
@@ -127,24 +145,12 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     FOR_EACH_OBSERVER(Observer, observer_list_, OnSafeBrowsingMatch(resource));
   }
 
-  // Check if the user has already ignored our warning for this render_view
-  // and domain.
-  if (IsWhitelisted(resource)) {
-    if (!resource.callback.is_null()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE, base::Bind(resource.callback, true));
-    }
-    return;
-  }
-
-  // The tab might have been closed.
+  // The tab might have been closed. If it was closed, just act as if "Don't
+  // Proceed" had been chosen.
   WebContents* web_contents =
       tab_util::GetWebContentsByID(resource.render_process_host_id,
                                    resource.render_view_id);
-
   if (!web_contents) {
-    // The tab is gone and we did not have a chance at showing the interstitial.
-    // Just act as if "Don't Proceed" were chosen.
     std::vector<UnsafeResource> resources;
     resources.push_back(resource);
     BrowserThread::PostTask(
@@ -154,12 +160,16 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
     return;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  bool is_extended_reporting =
-      profile &&
-      profile->GetPrefs()->GetBoolean(
-          prefs::kSafeBrowsingExtendedReportingEnabled);
+  // Check if the user has already ignored a SB warning for the same WebContents
+  // and top-level domain.
+  if (IsWhitelisted(resource)) {
+    if (!resource.callback.is_null()) {
+      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                              base::Bind(resource.callback, true));
+    }
+    return;
+  }
+
   if (resource.threat_type != SB_THREAT_TYPE_SAFE &&
       CanReportStats()) {
     GURL page_url = web_contents->GetURL();
@@ -180,6 +190,13 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
       referrer_url = page_url;
       page_url = resource.original_url;
     }
+
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    bool is_extended_reporting =
+        profile &&
+        profile->GetPrefs()->GetBoolean(
+            prefs::kSafeBrowsingExtendedReportingEnabled);
 
     ReportSafeBrowsingHit(resource.url, page_url, referrer_url,
                           resource.is_subresource, resource.threat_type,
@@ -286,32 +303,37 @@ void SafeBrowsingUIManager::SendSerializedMalwareDetails(
   }
 }
 
-void SafeBrowsingUIManager::UpdateWhitelist(const UnsafeResource& resource) {
+// Whitelist this domain in the current WebContents. Either add the
+// domain to an existing WhitelistUrlSet, or create a new WhitelistUrlSet.
+void SafeBrowsingUIManager::AddToWhitelist(const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Whitelist this domain and warning type for the given tab.
-  WhiteListedEntry entry;
-  entry.render_process_host_id = resource.render_process_host_id;
-  entry.render_view_id = resource.render_view_id;
-  entry.domain = net::registry_controlled_domains::GetDomainAndRegistry(
-      resource.url,
-      net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  entry.threat_type = resource.threat_type;
-  white_listed_entries_.push_back(entry);
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      resource.render_process_host_id, resource.render_view_id);
+
+  WhitelistUrlSet* site_list =
+      static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
+  if (!site_list) {
+    site_list = new WhitelistUrlSet;
+    web_contents->SetUserData(kWhitelistKey, site_list);
+  }
+
+  GURL whitelisted_url(resource.is_subresource ? web_contents->GetVisibleURL()
+                                               : resource.url);
+  site_list->Insert(whitelisted_url);
 }
 
+// Check if the user has already ignored a SB warning for this WebContents and
+// top-level domain.
 bool SafeBrowsingUIManager::IsWhitelisted(const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Check if the user has already ignored our warning for this render_view
-  // and domain.
-  for (size_t i = 0; i < white_listed_entries_.size(); ++i) {
-    const WhiteListedEntry& entry = white_listed_entries_[i];
-    if (entry.render_process_host_id == resource.render_process_host_id &&
-        entry.render_view_id == resource.render_view_id) {
-      return entry.domain ==
-          net::registry_controlled_domains::GetDomainAndRegistry(
-              resource.url,
-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-    }
-  }
-  return false;
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      resource.render_process_host_id, resource.render_view_id);
+
+  GURL maybe_whitelisted_url(
+      resource.is_subresource ? web_contents->GetVisibleURL() : resource.url);
+  WhitelistUrlSet* site_list =
+      static_cast<WhitelistUrlSet*>(web_contents->GetUserData(kWhitelistKey));
+  if (!site_list)
+    return false;
+  return site_list->Contains(maybe_whitelisted_url);
 }

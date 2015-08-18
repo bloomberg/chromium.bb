@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 class SafeBrowsingService;
@@ -108,8 +109,8 @@ class SafeBrowsingUIManager
   // chain). Otherwise, |original_url| = |url|.
   virtual void DisplayBlockingPage(const UnsafeResource& resource);
 
-  // Returns true if we already displayed an interstitial for that resource,
-  // or if we should hide a UwS interstitial. Called on the UI thread.
+  // Returns true if we already displayed an interstitial for that top-level
+  // site in a given WebContents. Called on the UI thread.
   bool IsWhitelisted(const UnsafeResource& resource);
 
   // The blocking page on the UI thread has completed.
@@ -153,9 +154,6 @@ class SafeBrowsingUIManager
   friend class base::RefCountedThreadSafe<SafeBrowsingUIManager>;
   friend class SafeBrowsingUIManagerTest;
 
-  // Used for whitelisting a render view when the user ignores our warning.
-  struct WhiteListedEntry;
-
   // Call protocol manager on IO thread to report hits of unsafe contents.
   void ReportSafeBrowsingHitOnIOThread(const GURL& malicious_url,
                                        const GURL& page_url,
@@ -169,14 +167,11 @@ class SafeBrowsingUIManager
   void ReportInvalidCertificateChainOnIOThread(
       const std::string& serialized_report);
 
-  // Adds the given entry to the whitelist.  Called on the UI thread.
-  void UpdateWhitelist(const UnsafeResource& resource);
+  // Updates the whitelist state.  Called on the UI thread.
+  void AddToWhitelist(const UnsafeResource& resource);
 
   // Safebrowsing service.
   scoped_refptr<SafeBrowsingService> sb_service_;
-
-  // Only access this whitelist from the UI thread.
-  std::vector<WhiteListedEntry> white_listed_entries_;
 
   base::ObserverList<Observer> observer_list_;
 

@@ -58,6 +58,7 @@ namespace {
 const char kEmptyPage[] = "empty.html";
 const char kMalwarePage[] = "safe_browsing/malware.html";
 const char kMalwareIframe[] = "safe_browsing/malware_iframe.html";
+const char kUnrelatedUrl[] = "https://www.google.com";
 
 // A SafeBrowsingDatabaseManager class that allows us to inject the malicious
 // URLs.
@@ -932,6 +933,55 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   histograms.ExpectBucketCount(
       interaction_histogram,
       security_interstitials::MetricsHelper::TOTAL_VISITS, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, WhitelistRevisit) {
+  GURL url = SetupWarningAndNavigate();
+
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+  EXPECT_EQ(url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Unrelated pages should not be whitelisted now.
+  ui_test_utils::NavigateToURL(browser(), GURL(kUnrelatedUrl));
+  AssertNoInterstitial(false);
+
+  // The whitelisted page should remain whitelisted.
+  ui_test_utils::NavigateToURL(browser(), url);
+  AssertNoInterstitial(false);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       WhitelistIframeRevisit) {
+  GURL url = SetupThreatIframeWarningAndNavigate();
+
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);  // Assert the interstitial is gone.
+  EXPECT_EQ(url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Unrelated pages should not be whitelisted now.
+  ui_test_utils::NavigateToURL(browser(), GURL(kUnrelatedUrl));
+  AssertNoInterstitial(false);
+
+  // The whitelisted page should remain whitelisted.
+  ui_test_utils::NavigateToURL(browser(), url);
+  AssertNoInterstitial(false);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, WhitelistUnsaved) {
+  GURL url = SetupWarningAndNavigate();
+
+  // Navigate without making a decision.
+  ui_test_utils::NavigateToURL(browser(), GURL(kUnrelatedUrl));
+  AssertNoInterstitial(false);
+
+  // The non-whitelisted page should now show an interstitial.
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(WaitForReady());
+  EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
+  AssertNoInterstitial(true);
 }
 
 INSTANTIATE_TEST_CASE_P(SafeBrowsingBlockingPageBrowserTestWithThreatType,
