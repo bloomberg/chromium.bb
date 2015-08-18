@@ -670,8 +670,10 @@ gfx::Transform DrawTransformOfRenderSurfaceFromPropertyTrees(
     target_node = tree.Node(0);
   tree.ComputeTransformWithDestinationSublayerScale(node->id, target_node->id,
                                                     &render_surface_transform);
-  render_surface_transform.Scale(1.0 / node->data.sublayer_scale.x(),
-                                 1.0 / node->data.sublayer_scale.y());
+  if (node->data.sublayer_scale.x() != 0.0 &&
+      node->data.sublayer_scale.y() != 0.0)
+    render_surface_transform.Scale(1.0 / node->data.sublayer_scale.x(),
+                                   1.0 / node->data.sublayer_scale.y());
   return render_surface_transform;
 }
 
@@ -694,6 +696,22 @@ gfx::Rect ClipRectOfRenderSurfaceFromPropertyTrees(
   const ClipNode* clip_node = clip_tree.Node(render_surface->ClipTreeIndex());
   const ClipNode* parent_clip_node = clip_tree.parent(clip_node);
   return gfx::ToEnclosingRect(parent_clip_node->data.clip_in_target_space);
+}
+
+gfx::Transform ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(
+    RenderSurfaceImpl* render_surface,
+    const TransformTree& tree) {
+  const TransformNode* node = tree.Node(render_surface->TransformTreeIndex());
+  gfx::Transform screen_space_transform;
+  // The screen space transform of root render surface is identity tranform.
+  if (node->id == 1)
+    return screen_space_transform;
+  screen_space_transform = node->data.to_screen;
+  if (node->data.sublayer_scale.x() != 0.0 &&
+      node->data.sublayer_scale.y() != 0.0)
+    screen_space_transform.Scale(1.0 / node->data.sublayer_scale.x(),
+                                 1.0 / node->data.sublayer_scale.y());
+  return screen_space_transform;
 }
 
 template <typename LayerType>

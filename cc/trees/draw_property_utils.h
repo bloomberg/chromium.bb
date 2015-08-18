@@ -89,6 +89,10 @@ gfx::Rect CC_EXPORT ClipRectOfRenderSurfaceFromPropertyTrees(
     const RenderSurfaceImpl* render_surface,
     const ClipTree& clip_tree);
 
+gfx::Transform CC_EXPORT ScreenSpaceTransformOfRenderSurfaceFromPropertyTrees(
+    RenderSurfaceImpl* render_surface,
+    const TransformTree& tree);
+
 gfx::Transform CC_EXPORT
 DrawTransformFromPropertyTrees(const LayerImpl* layer,
                                const TransformTree& tree);
