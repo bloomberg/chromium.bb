@@ -47,8 +47,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("openDownloadsFolder",
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
 
-  // No results/downloads messages that show instead of the downloads list.
-  source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
+  // No results message that shows instead of the downloads list.
   source->AddLocalizedString("noSearchResults",
                              IDS_DOWNLOAD_NO_SEARCH_RESULTS);
 
@@ -97,6 +96,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   if (switches::MdDownloadsEnabled()) {
     source->AddLocalizedString("search", IDS_MD_DOWNLOAD_SEARCH);
     source->AddLocalizedString("controlRetry", IDS_MD_DOWNLOAD_LINK_RETRY);
+    source->AddLocalizedString("noDownloads", IDS_MD_DOWNLOAD_NO_DOWNLOADS);
 
     source->AddResourcePath("action_service.html",
                             IDR_MD_DOWNLOADS_ACTION_SERVICE_HTML);
@@ -118,6 +118,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   } else {
     source->AddLocalizedString("searchButton", IDS_DOWNLOAD_SEARCH_BUTTON);
     source->AddLocalizedString("controlRetry", IDS_DOWNLOAD_LINK_RETRY);
+    source->AddLocalizedString("noDownloads", IDS_DOWNLOAD_NO_DOWNLOADS);
 
     source->AddResourcePath("item_view.js", IDR_DOWNLOADS_ITEM_VIEW_JS);
     source->AddResourcePath("focus_row.js", IDR_DOWNLOADS_FOCUS_ROW_JS);

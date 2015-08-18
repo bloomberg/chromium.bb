@@ -12,10 +12,15 @@
 
 <dom-module id="downloads-manager">
   <template>
-    <paper-header-panel id="panel">
+    <paper-header-panel id="panel" class="loading">
       <downloads-toolbar class="paper-header" id="toolbar"></downloads-toolbar>
       <div id="downloads-list" hidden$="[[!hasDownloads_]]"></div>
-      <div id="no-downloads" hidden$="[[hasDownloads_]]"></div>
+      <div id="no-downloads" hidden$="[[hasDownloads_]]">
+        <div>
+          <div class="illustration"></div>
+          <span i18n-content="noDownloads"></span>
+        </div>
+      </div>
     </paper-header-panel>
   </template>
   <link rel="import" type="css" href="chrome://downloads/shared_style.css">

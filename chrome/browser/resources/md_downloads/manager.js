@@ -160,6 +160,7 @@ cr.define('downloads', function() {
         this.$.toolbar.downloadsShowing = this.hasDownloads_;
 
       this.onResize_();
+      this.$.panel.classList.remove('loading');
     },
 
     /**

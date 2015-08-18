@@ -15,3 +15,32 @@
     flex-basis: 670px;
   }
 }
+
+#panel {
+  --paper-header-panel-standard-container: {
+    display: flex;
+  };
+}
+
+#no-downloads,
+#downloads-list {
+  flex: 1;
+}
+
+.loading :-webkit-any(#no-downloads, #downloads-list) {
+  display: none;
+}
+
+#no-downloads {
+  align-items: center;
+  color: #b4b4b4;
+  display: flex;
+  font-size: 107.69%;
+  justify-content: center;
+}
+
+#no-downloads .illustration {
+  content: -webkit-image-set(url(1x/no_downloads.png) 1x,
+                             url(2x/no_downloads.png) 2x);
+  margin-bottom: 32px;
+}
