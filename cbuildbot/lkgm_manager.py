@@ -450,6 +450,10 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       if review_match:
         review = review_match.group(1)
         _, _, change_number = review.rpartition('/')
+        if not current_author:
+          logging.notice('Failed to locate author before the line of review: '
+                         '%s. Author name is set to <Unknown>', line)
+          current_author = '<Unknown>'
         items = [
             os.path.basename(project),
             current_author,
