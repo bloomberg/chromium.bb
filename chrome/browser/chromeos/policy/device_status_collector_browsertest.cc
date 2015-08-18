@@ -65,6 +65,7 @@ const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
 const char kKioskAccountId[] = "kiosk_user@localhost";
 const char kKioskAppId[] = "kiosk_app_id";
 const char kExternalMountPoint[] = "/a/b/c";
+const char kPublicAccountId[] = "public_user@localhost";
 
 scoped_ptr<content::Geoposition> mock_position_to_return_next;
 
@@ -1196,6 +1197,67 @@ class DeviceStatusCollectorNetworkInterfacesTest
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
+
+  void VerifyNetworkReporting() {
+    int count = 0;
+    for (size_t i = 0; i < arraysize(kFakeDevices); ++i) {
+      const FakeDeviceData& dev = kFakeDevices[i];
+      if (dev.expected_type == -1)
+        continue;
+
+      // Find the corresponding entry in reporting data.
+      bool found_match = false;
+      google::protobuf::RepeatedPtrField<em::NetworkInterface>::const_iterator
+          iface;
+      for (iface = status_.network_interface().begin();
+           iface != status_.network_interface().end(); ++iface) {
+        // Check whether type, field presence and field values match.
+        if (dev.expected_type == iface->type() &&
+            iface->has_mac_address() == !!*dev.mac_address &&
+            iface->has_meid() == !!*dev.meid &&
+            iface->has_imei() == !!*dev.imei &&
+            iface->mac_address() == dev.mac_address &&
+            iface->meid() == dev.meid && iface->imei() == dev.imei &&
+            iface->device_path() == dev.device_path) {
+          found_match = true;
+          break;
+        }
+      }
+
+      EXPECT_TRUE(found_match) << "No matching interface for fake device " << i;
+      count++;
+    }
+
+    EXPECT_EQ(count, status_.network_interface_size());
+
+    // Now make sure network state list is correct.
+    EXPECT_EQ(arraysize(kFakeNetworks),
+              static_cast<size_t>(status_.network_state_size()));
+    for (const FakeNetworkState& state : kFakeNetworks) {
+      bool found_match = false;
+      for (const em::NetworkState& proto_state : status_.network_state()) {
+        // Make sure every item has a matching entry in the proto.
+        bool should_have_signal_strength = state.expected_signal_strength != 0;
+        if (proto_state.has_device_path() == (strlen(state.device_path) > 0) &&
+            proto_state.has_signal_strength() == should_have_signal_strength &&
+            proto_state.signal_strength() == state.expected_signal_strength &&
+            proto_state.connection_state() == state.expected_state) {
+          if (proto_state.has_ip_address())
+            EXPECT_EQ(proto_state.ip_address(), state.address);
+          else
+            EXPECT_EQ(0U, strlen(state.address));
+          if (proto_state.has_gateway())
+            EXPECT_EQ(proto_state.gateway(), state.gateway);
+          else
+            EXPECT_EQ(0U, strlen(state.gateway));
+          found_match = true;
+          break;
+        }
+      }
+      EXPECT_TRUE(found_match) << "No matching state for fake network "
+                               << " (" << state.name << ")";
+    }
+  }
 };
 
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NoNetworkStateIfNotKiosk) {
@@ -1226,66 +1288,18 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
   GetStatus();
 
-  int count = 0;
-  for (size_t i = 0; i < arraysize(kFakeDevices); ++i) {
-    const FakeDeviceData& dev = kFakeDevices[i];
-    if (dev.expected_type == -1)
-      continue;
+  VerifyNetworkReporting();
+}
 
-    // Find the corresponding entry in reporting data.
-    bool found_match = false;
-    google::protobuf::RepeatedPtrField<em::NetworkInterface>::const_iterator
-        iface;
-    for (iface = status_.network_interface().begin();
-         iface != status_.network_interface().end();
-         ++iface) {
-      // Check whether type, field presence and field values match.
-      if (dev.expected_type == iface->type() &&
-          iface->has_mac_address() == !!*dev.mac_address &&
-          iface->has_meid() == !!*dev.meid &&
-          iface->has_imei() == !!*dev.imei &&
-          iface->mac_address() == dev.mac_address &&
-          iface->meid() == dev.meid &&
-          iface->imei() == dev.imei &&
-          iface->device_path() == dev.device_path) {
-        found_match = true;
-        break;
-      }
-    }
+TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
+  // Report netowork state for public accounts.
+  user_manager_->CreatePublicAccountUser(kPublicAccountId);
+  EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
+      .WillRepeatedly(Return(true));
 
-    EXPECT_TRUE(found_match) << "No matching interface for fake device " << i;
-    count++;
-  }
-
-  EXPECT_EQ(count, status_.network_interface_size());
-
-  // Now make sure network state list is correct.
-  EXPECT_EQ(arraysize(kFakeNetworks),
-            static_cast<size_t>(status_.network_state_size()));
-  for (const FakeNetworkState& state : kFakeNetworks) {
-    bool found_match = false;
-    for (const em::NetworkState& proto_state : status_.network_state()) {
-      // Make sure every item has a matching entry in the proto.
-      bool should_have_signal_strength = state.expected_signal_strength != 0;
-      if (proto_state.has_device_path() == (strlen(state.device_path) > 0) &&
-          proto_state.has_signal_strength() == should_have_signal_strength &&
-          proto_state.signal_strength() == state.expected_signal_strength &&
-          proto_state.connection_state() == state.expected_state) {
-        if (proto_state.has_ip_address())
-          EXPECT_EQ(proto_state.ip_address(), state.address);
-        else
-          EXPECT_EQ(0U, strlen(state.address));
-        if (proto_state.has_gateway())
-          EXPECT_EQ(proto_state.gateway(), state.gateway);
-        else
-          EXPECT_EQ(0U, strlen(state.gateway));
-        found_match = true;
-        break;
-      }
-    }
-    EXPECT_TRUE(found_match) << "No matching state for fake network "
-                             << " (" << state.name << ")";
-  }
+  settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
+  GetStatus();
+  VerifyNetworkReporting();
 }
 
 }  // namespace policy

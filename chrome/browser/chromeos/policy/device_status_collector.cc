@@ -803,8 +803,9 @@ void DeviceStatusCollector::GetNetworkInterfaces(
       interface->set_device_path((*device)->path());
   }
 
-  // Don't write any network state if we aren't in a kiosk session.
-  if (!GetAutoLaunchedKioskSessionInfo())
+  // Don't write any network state if we aren't in a kiosk or public session.
+  if (!GetAutoLaunchedKioskSessionInfo() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsPublicAccount())
     return;
 
   // Walk the various networks and store their state in the status report.
