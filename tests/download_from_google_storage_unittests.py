@@ -11,9 +11,11 @@ import os
 import Queue
 import shutil
 import sys
+import tarfile
 import tempfile
 import threading
 import unittest
+
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -65,6 +67,21 @@ class GsutilMock(object):
         return (0, '', '')
 
 
+class ChangedWorkingDirectory(object):
+  def __init__(self, working_directory):
+    self._old_cwd = ''
+    self._working_directory = working_directory
+
+  def __enter__(self):
+    self._old_cwd = os.getcwd()
+    print "Enter directory = ", self._working_directory
+    os.chdir(self._working_directory)
+
+  def __exit__(self, *_):
+    print "Enter directory = ", self._old_cwd
+    os.chdir(self._old_cwd)
+
+
 class GstoolsUnitTests(unittest.TestCase):
   def setUp(self):
     self.temp_dir = tempfile.mkdtemp(prefix='gstools_test')
@@ -73,6 +90,49 @@ class GstoolsUnitTests(unittest.TestCase):
 
   def cleanUp(self):
     shutil.rmtree(self.temp_dir)
+
+  def test_validate_tar_file(self):
+    lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
+    with ChangedWorkingDirectory(self.base_path):
+      # Sanity ok check.
+      tar_dir = 'ok_dir'
+      os.makedirs(os.path.join(self.base_path, tar_dir))
+      tar = 'good.tar.gz'
+      lorem_ipsum_copy = os.path.join(tar_dir, 'lorem_ipsum.txt')
+      shutil.copyfile(lorem_ipsum, lorem_ipsum_copy)
+      with tarfile.open(tar, 'w:gz') as tar:
+        tar.add(lorem_ipsum_copy)
+        self.assertTrue(
+            download_from_google_storage._validate_tar_file(tar, tar_dir))
+
+      # Test no links.
+      tar_dir_link = 'for_tar_link'
+      os.makedirs(tar_dir_link)
+      link = os.path.join(tar_dir_link, 'link')
+      os.symlink(lorem_ipsum, link)
+      tar_with_links = 'with_links.tar.gz'
+      with tarfile.open(tar_with_links, 'w:gz') as tar:
+        tar.add(link)
+        self.assertFalse(
+            download_from_google_storage._validate_tar_file(tar, tar_dir_link))
+
+      # Test not outside.
+      tar_dir_outside = 'outside_tar'
+      os.makedirs(tar_dir_outside)
+      tar_with_outside = 'with_outside.tar.gz'
+      with tarfile.open(tar_with_outside, 'w:gz') as tar:
+        tar.add(lorem_ipsum)
+        self.assertFalse(
+            download_from_google_storage._validate_tar_file(tar,
+                                                            tar_dir_outside))
+      # Test no ..
+      tar_with_dotdot = 'with_dotdot.tar.gz'
+      dotdot_file = os.path.join(tar_dir, '..', tar_dir, 'lorem_ipsum.txt')
+      with tarfile.open(tar_with_dotdot, 'w:gz') as tar:
+        tar.add(dotdot_file)
+        self.assertFalse(
+            download_from_google_storage._validate_tar_file(tar,
+                                                            tar_dir))
 
   def test_gsutil(self):
     gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH, None)
@@ -170,7 +230,7 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True)
+        stdout_queue, self.ret_codes, True, False)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -196,12 +256,50 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True)
+        stdout_queue, self.ret_codes, True, False)
     expected_output = [
         '0> File %s exists and SHA1 matches. Skipping.' % output_filename
     ]
     self.assertEqual(list(stdout_queue.queue), expected_output)
     self.assertEqual(self.gsutil.history, [])
+
+  def test_download_extract_archive(self):
+    # Generate a gzipped tarfile
+    output_filename = os.path.join(self.base_path, 'subfolder.tar.gz')
+    output_dirname = os.path.join(self.base_path, 'subfolder')
+    extracted_filename = os.path.join(output_dirname, 'subfolder_text.txt')
+    with tarfile.open(output_filename, 'w:gz') as tar:
+      tar.add(output_dirname, arcname='subfolder')
+    shutil.rmtree(output_dirname)
+    sha1_hash = download_from_google_storage.get_sha1(output_filename)
+    input_filename = '%s/%s' % (self.base_url, sha1_hash)
+    self.queue.put((sha1_hash, output_filename))
+    self.queue.put((None, None))
+    stdout_queue = Queue.Queue()
+    download_from_google_storage._downloader_worker_thread(
+        0, self.queue, True, self.base_url, self.gsutil,
+        stdout_queue, self.ret_codes, True, True, delete=False)
+    expected_calls = [
+        ('check_call',
+            ('ls', input_filename)),
+        ('check_call',
+            ('cp', input_filename, output_filename))]
+    if sys.platform != 'win32':
+      expected_calls.append(
+          ('check_call',
+           ('stat',
+            'gs://sometesturl/%s' % sha1_hash)))
+    expected_output = [
+        '0> Downloading %s...' % output_filename]
+    expected_output.extend([
+        '0> Extracting 3 entries from %s to %s' % (output_filename,
+                                                   output_dirname)])
+    expected_ret_codes = []
+    self.assertEqual(list(stdout_queue.queue), expected_output)
+    self.assertEqual(self.gsutil.history, expected_calls)
+    self.assertEqual(list(self.ret_codes.queue), expected_ret_codes)
+    self.assertTrue(os.path.exists(output_dirname))
+    self.assertTrue(os.path.exists(extracted_filename))
 
   def test_download_worker_skips_not_found_file(self):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
@@ -213,7 +311,7 @@ class DownloadTests(unittest.TestCase):
     self.gsutil.add_expected(1, '', '')  # Return error when 'ls' is called.
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes, True)
+        stdout_queue, self.ret_codes, True, False)
     expected_output = [
         '0> Failed to fetch file %s for %s, skipping. [Err: ]' % (
             input_filename, output_filename),
@@ -248,7 +346,8 @@ class DownloadTests(unittest.TestCase):
         ignore_errors=False,
         sha1_file=False,
         verbose=True,
-        auto_platform=False)
+        auto_platform=False,
+        extract=False)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -278,7 +377,7 @@ class DownloadTests(unittest.TestCase):
     self.gsutil.add_expected(0, '', '')
     self.gsutil.add_expected(0, '', '', _write_bad_file)
     download_from_google_storage._downloader_worker_thread(
-        1, q, True, self.base_url, self.gsutil, out_q, ret_codes, True)
+        1, q, True, self.base_url, self.gsutil, out_q, ret_codes, True, False)
     self.assertTrue(q.empty())
     msg = ('1> ERROR remote sha1 (%s) does not match expected sha1 (%s).' %
            ('8843d7f92416211de9ebb963ff4ce28125932878', sha1_hash))
@@ -305,7 +404,8 @@ class DownloadTests(unittest.TestCase):
         ignore_errors=False,
         sha1_file=False,
         verbose=True,
-        auto_platform=False)
+        auto_platform=False,
+        extract=False)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),

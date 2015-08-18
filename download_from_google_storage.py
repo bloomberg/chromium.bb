@@ -11,8 +11,10 @@ import optparse
 import os
 import Queue
 import re
+import shutil
 import stat
 import sys
+import tarfile
 import threading
 import time
 
@@ -48,7 +50,6 @@ def GetNormalizedPlatform():
   if sys.platform == 'cygwin':
     return 'win32'
   return sys.platform
-
 
 # Common utilities
 class Gsutil(object):
@@ -186,8 +187,19 @@ def enumerate_work_queue(input_filename, work_queue, directory,
   return work_queue_size
 
 
+def _validate_tar_file(tar, prefix):
+  def _validate(tarinfo):
+    """Returns false if the tarinfo is something we explicitly forbid."""
+    if tarinfo.issym() or tarinfo.islnk():
+      return False
+    if '..' in tarinfo.name or not tarinfo.name.startswith(prefix):
+      return False
+    return True
+  return all(map(_validate, tar.getmembers()))
+
 def _downloader_worker_thread(thread_num, q, force, base_url,
-                              gsutil, out_q, ret_codes, verbose):
+                              gsutil, out_q, ret_codes, verbose, extract,
+                              delete=True):
   while True:
     input_sha1_sum, output_filename = q.get()
     if input_sha1_sum is None:
@@ -218,7 +230,8 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
     # Fetch the file.
     out_q.put('%d> Downloading %s...' % (thread_num, output_filename))
     try:
-      os.remove(output_filename)  # Delete the file if it exists already.
+      if delete:
+        os.remove(output_filename)  # Delete the file if it exists already.
     except OSError:
       if os.path.exists(output_filename):
         out_q.put('%d> Warning: deleting %s failed.' % (
@@ -237,6 +250,34 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
       ret_codes.put((20, msg))
       continue
 
+    if extract:
+      if (not tarfile.is_tarfile(output_filename)
+          or not output_filename.endswith('.tar.gz')):
+        out_q.put('%d> Error: %s is not a tar.gz archive.' % (
+                  thread_num, output_filename))
+        ret_codes.put((1, '%s is not a tar.gz archive.' % (output_filename)))
+        continue
+      with tarfile.open(output_filename, 'r:gz') as tar:
+        dirname = os.path.dirname(os.path.abspath(output_filename))
+        extract_dir = output_filename[0:len(output_filename)-7]
+        if not _validate_tar_file(tar, os.path.basename(extract_dir)):
+          out_q.put('%d> Error: %s contains files outside %s.' % (
+                    thread_num, output_filename, extract_dir))
+          ret_codes.put((1, '%s contains invalid entries.' % (output_filename)))
+          continue
+        if os.path.exists(extract_dir):
+          try:
+            shutil.rmtree(extract_dir)
+            out_q.put('%d> Removed %s...' % (thread_num, extract_dir))
+          except OSError:
+            out_q.put('%d> Warning: Can\'t delete: %s' % (
+                      thread_num, extract_dir))
+            ret_codes.put((1, 'Can\'t delete %s.' % (extract_dir)))
+            continue
+        out_q.put('%d> Extracting %d entries from %s to %s' %
+                  (thread_num, len(tar.getmembers()),output_filename,
+                   extract_dir))
+        tar.extractall(path=dirname)
     # Set executable bit.
     if sys.platform == 'cygwin':
       # Under cygwin, mark all files as executable. The executable flag in
@@ -267,7 +308,7 @@ def printer_worker(output_queue):
 
 def download_from_google_storage(
     input_filename, base_url, gsutil, num_threads, directory, recursive,
-    force, output, ignore_errors, sha1_file, verbose, auto_platform):
+    force, output, ignore_errors, sha1_file, verbose, auto_platform, extract):
   # Start up all the worker threads.
   all_threads = []
   download_start = time.time()
@@ -279,7 +320,7 @@ def download_from_google_storage(
     t = threading.Thread(
         target=_downloader_worker_thread,
         args=[thread_num, work_queue, force, base_url,
-              gsutil, stdout_queue, ret_codes, verbose])
+              gsutil, stdout_queue, ret_codes, verbose, extract])
     t.daemon = True
     t.start()
     all_threads.append(t)
@@ -367,6 +408,13 @@ def main(args):
                          '(linux|mac|win).  If so, the script will only '
                          'process files that are in the paths that '
                          'that matches the current platform.')
+  parser.add_option('-u', '--extract',
+                    action='store_true',
+                    help='Extract a downloaded tar.gz file. '
+                         'Leaves the tar.gz file around for sha1 verification'
+                         'If a directory with the same name as the tar.gz '
+                         'file already exists, is deleted (to get a '
+                         'clean state in case of update.)')
   parser.add_option('-v', '--verbose', action='store_true',
                     help='Output extra diagnostic and progress information.')
 
@@ -460,7 +508,8 @@ def main(args):
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
       options.recursive, options.force, options.output, options.ignore_errors,
-      options.sha1_file, options.verbose, options.auto_platform)
+      options.sha1_file, options.verbose, options.auto_platform,
+      options.extract)
 
 
 if __name__ == '__main__':

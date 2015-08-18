@@ -11,6 +11,7 @@ import Queue
 import shutil
 import StringIO
 import sys
+import tarfile
 import tempfile
 import threading
 import unittest
@@ -19,6 +20,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import upload_to_google_storage
 from download_from_google_storage_unittests import GsutilMock
+from download_from_google_storage_unittests import ChangedWorkingDirectory
 
 # ../third_party/gsutil/gsutil
 GSUTIL_DEFAULT_PATH = os.path.join(
@@ -62,6 +64,30 @@ class UploadTests(unittest.TestCase):
         '7871c8e24da15bad8b0be2c36edc9dc77e37727f')
     os.remove(output_filename)
     self.assertEqual(code, 0)
+
+  def test_create_archive(self):
+    work_dir = os.path.join(self.base_path, 'download_test_data')
+    with ChangedWorkingDirectory(work_dir):
+      dirname = 'subfolder'
+      dirs = [dirname]
+      tar_gz_file = '%s.tar.gz' % dirname
+      self.assertTrue(upload_to_google_storage.validate_archive_dirs(dirs))
+      upload_to_google_storage.create_archives(dirs)
+      self.assertTrue(os.path.exists(tar_gz_file))
+      with tarfile.open(tar_gz_file, 'r:gz') as tar:
+        content = map(lambda x: x.name, tar.getmembers())
+        self.assertTrue(dirname in content)
+        self.assertTrue(os.path.join(dirname, 'subfolder_text.txt') in content)
+        self.assertTrue(
+            os.path.join(dirname, 'subfolder_text.txt.sha1') in content)
+
+  def test_validate_archive_dirs_fails(self):
+    work_dir = os.path.join(self.base_path, 'download_test_data')
+    with ChangedWorkingDirectory(work_dir):
+      symlink = 'link'
+      os.symlink(os.path.join(self.base_path, 'subfolder'), symlink)
+    self.assertFalse(upload_to_google_storage.validate_archive_dirs([symlink]))
+    self.assertFalse(upload_to_google_storage.validate_archive_dirs(['foobar']))
 
   def test_upload_single_file_remote_exists(self):
     filenames = [self.lorem_ipsum]
