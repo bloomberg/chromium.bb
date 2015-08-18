@@ -1719,7 +1719,7 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_MENU_NEW_TAB" desc="Menu item for opening a new tab. [CHAR-LIMIT=27]">
         New tab
       </message>
-      <message name="IDS_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new incognito tab that facilitates pseudononymous browsing. [CHAR-LIMIT=27]">
+      <message name="IDS_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new incognito tab that facilitates pseudononymous browsing. [CHAR-LIMIT=27]" meaning="Android menu">
         New incognito tab
       </message>
       <message name="IDS_MENU_BOOKMARKS" desc="Menu item for opening the bookmarks page that contains all the user's bookmarks. [CHAR-LIMIT=27]">
