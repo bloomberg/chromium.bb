@@ -18,6 +18,7 @@
 #include "chrome/browser/metrics/variations/variations_seed_store.h"
 #include "components/variations/variations_request_scheduler.h"
 #include "components/variations/variations_seed_simulator.h"
+#include "components/variations/variations_service_client.h"
 #include "components/web_resource/resource_request_allowed_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -130,6 +131,7 @@ class VariationsService
   // |state_manager|. Caller should ensure that |state_manager| is valid for the
   // lifetime of this class.
   static scoped_ptr<VariationsService> Create(
+      scoped_ptr<VariationsServiceClient> client,
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager);
 
@@ -163,7 +165,8 @@ class VariationsService
   // Does not take ownership of |state_manager|. Caller should ensure that
   // |state_manager| is valid for the lifetime of this class. Use the |Create|
   // factory method to create a VariationsService.
-  VariationsService(web_resource::ResourceRequestAllowedNotifier* notifier,
+  VariationsService(scoped_ptr<VariationsServiceClient> client,
+                    web_resource::ResourceRequestAllowedNotifier* notifier,
                     PrefService* local_state,
                     metrics::MetricsStateManager* state_manager);
 
@@ -223,6 +226,8 @@ class VariationsService
   std::string LoadPermanentConsistencyCountry(
       const base::Version& version,
       const std::string& latest_country);
+
+  scoped_ptr<VariationsServiceClient> client_;
 
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;

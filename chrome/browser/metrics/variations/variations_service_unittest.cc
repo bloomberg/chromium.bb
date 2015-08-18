@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/version.h"
+#include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "components/variations/pref_names.h"
@@ -44,7 +45,10 @@ class TestVariationsService : public VariationsService {
  public:
   TestVariationsService(web_resource::TestRequestAllowedNotifier* test_notifier,
                         PrefService* local_state)
-      : VariationsService(test_notifier, local_state, NULL),
+      : VariationsService(make_scoped_ptr(new ChromeVariationsServiceClient()),
+                          test_notifier,
+                          local_state,
+                          NULL),
         intercepts_fetch_(true),
         fetch_attempted_(false),
         seed_stored_(false) {
@@ -360,6 +364,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   VariationsService service(
+      make_scoped_ptr(new ChromeVariationsServiceClient()),
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
   service.variations_server_url_ =
       VariationsService::GetVariationsServerURL(&prefs, std::string());
@@ -405,6 +410,7 @@ TEST_F(VariationsServiceTest, Observer) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
   VariationsService service(
+      make_scoped_ptr(new ChromeVariationsServiceClient()),
       new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
 
   struct {
@@ -503,6 +509,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     TestingPrefServiceSimple prefs;
     VariationsService::RegisterPrefs(prefs.registry());
     VariationsService service(
+        make_scoped_ptr(new ChromeVariationsServiceClient()),
         new web_resource::TestRequestAllowedNotifier(&prefs), &prefs, NULL);
 
     if (test.pref_value_before) {

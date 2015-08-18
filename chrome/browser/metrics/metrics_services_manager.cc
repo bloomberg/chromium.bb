@@ -13,6 +13,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/metrics/variations/chrome_variations_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -65,9 +66,9 @@ chrome_variations::VariationsService*
 MetricsServicesManager::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!variations_service_) {
-    variations_service_ =
-        chrome_variations::VariationsService::Create(local_state_,
-                                                     GetMetricsStateManager());
+    variations_service_ = chrome_variations::VariationsService::Create(
+        make_scoped_ptr(new ChromeVariationsServiceClient()), local_state_,
+        GetMetricsStateManager());
   }
   return variations_service_.get();
 }

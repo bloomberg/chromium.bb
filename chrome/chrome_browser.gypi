@@ -1861,6 +1861,8 @@
       'browser/metrics/thread_watcher_report_hang.h',
       'browser/metrics/time_ticks_experiment_win.cc',
       'browser/metrics/time_ticks_experiment_win.h',
+      'browser/metrics/variations/chrome_variations_service_client.cc',
+      'browser/metrics/variations/chrome_variations_service_client.h',
       'browser/metrics/variations/generated_resources_map.h',
       'browser/metrics/variations/generated_resources_map_lookup.cc',
       'browser/metrics/variations/variations_registry_syncer_win.cc',

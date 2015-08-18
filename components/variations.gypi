@@ -56,6 +56,7 @@
         'variations/variations_seed_processor.h',
         'variations/variations_seed_simulator.cc',
         'variations/variations_seed_simulator.h',
+        'variations/variations_service_client.h',
         'variations/variations_url_constants.cc',
         'variations/variations_url_constants.h',
       ],

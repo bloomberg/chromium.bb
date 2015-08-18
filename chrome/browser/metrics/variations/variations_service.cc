@@ -243,10 +243,12 @@ void OverrideUIString(uint32_t hash, const base::string16& string) {
 }  // namespace
 
 VariationsService::VariationsService(
+    scoped_ptr<VariationsServiceClient> client,
     web_resource::ResourceRequestAllowedNotifier* notifier,
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager)
-    : local_state_(local_state),
+    : client_(client.Pass()),
+      local_state_(local_state),
       state_manager_(state_manager),
       policy_pref_service_(local_state),
       seed_store_(local_state),
@@ -281,7 +283,7 @@ bool VariationsService::CreateTrialsFromSeed() {
   const std::string latest_country =
       local_state_->GetString(prefs::kVariationsCountry);
   variations::VariationsSeedProcessor().CreateTrialsFromSeed(
-      seed, g_browser_process->GetApplicationLocale(),
+      seed, client_->GetApplicationLocale(),
       GetReferenceDateForExpiryChecks(local_state_), current_version, channel,
       GetCurrentFormFactor(), GetHardwareClass(), latest_country,
       LoadPermanentConsistencyCountry(current_version, latest_country),
@@ -448,6 +450,7 @@ void VariationsService::RegisterProfilePrefs(
 
 // static
 scoped_ptr<VariationsService> VariationsService::Create(
+    scoped_ptr<VariationsServiceClient> client,
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager) {
   scoped_ptr<VariationsService> result;
@@ -462,8 +465,8 @@ scoped_ptr<VariationsService> VariationsService::Create(
   }
 #endif
   result.reset(new VariationsService(
-      new web_resource::ResourceRequestAllowedNotifier(
-          local_state, switches::kDisableBackgroundNetworking),
+      client.Pass(), new web_resource::ResourceRequestAllowedNotifier(
+                         local_state, switches::kDisableBackgroundNetworking),
       local_state, state_manager));
   return result.Pass();
 }
@@ -678,7 +681,7 @@ void VariationsService::PerformSimulationWithVersion(
       local_state_->GetString(prefs::kVariationsCountry);
   const variations::VariationsSeedSimulator::Result result =
       seed_simulator.SimulateSeedStudies(
-          *seed, g_browser_process->GetApplicationLocale(),
+          *seed, client_->GetApplicationLocale(),
           GetReferenceDateForExpiryChecks(local_state_), version,
           GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass(),
           latest_country,
