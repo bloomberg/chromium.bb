@@ -149,8 +149,8 @@ size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, con
     for (size_t index : indices) {
         // TODO(pdr): elementAt is not cheap so this should be refactored (See crbug.com/505965).
         const DisplayItem& existingItem = list[index];
-        ASSERT(existingItem.ignoreFromDisplayList() || existingItem.client() == id.client);
-        if (!existingItem.ignoreFromDisplayList() && id.matches(existingItem))
+        ASSERT(!existingItem.isValid() || existingItem.client() == id.client);
+        if (existingItem.isValid() && id.matches(existingItem))
             return index;
     }
 
@@ -168,30 +168,40 @@ void DisplayItemList::addItemToIndexIfNeeded(const DisplayItem& displayItem, siz
     indices.append(index);
 }
 
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id& id, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+struct DisplayItemList::OutOfOrderIndexContext {
+    OutOfOrderIndexContext(DisplayItems::iterator begin) : nextItemToIndex(begin) { }
+
+    DisplayItems::iterator nextItemToIndex;
+    DisplayItemIndicesByClientMap displayItemIndicesByClient;
+};
+
+DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
     ASSERT(clientCacheIsValid(id.client));
 
-    size_t foundIndex = findMatchingItemFromIndex(id, displayItemIndicesByClient, m_currentDisplayItems);
+    // Skip indexing of copied items.
+    if (currentIt - context.nextItemToIndex > 0)
+        context.nextItemToIndex = currentIt;
+
+    size_t foundIndex = findMatchingItemFromIndex(id, context.displayItemIndicesByClient, m_currentDisplayItems);
     if (foundIndex != kNotFound)
         return m_currentDisplayItems.begin() + foundIndex;
 
-    return findOutOfOrderCachedItemForward(currentIt, id, displayItemIndicesByClient);
+    return findOutOfOrderCachedItemForward(id, context);
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id& id, DisplayItemIndicesByClientMap& displayItemIndicesByClient)
+DisplayItems::iterator DisplayItemList::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
 {
     DisplayItems::iterator currentEnd = m_currentDisplayItems.end();
-    for (; currentIt != currentEnd; ++currentIt) {
-        const DisplayItem& item = *currentIt;
-        if (!item.ignoreFromDisplayList()
-            && item.isCacheable()
-            && m_validlyCachedClients.contains(item.client())) {
+    for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
+        const DisplayItem& item = *context.nextItemToIndex;
+        ASSERT(item.isValid());
+        if (item.isCacheable() && clientCacheIsValid(item.client())) {
             if (id.matches(item))
-                return currentIt;
+                return context.nextItemToIndex++;
 
-            addItemToIndexIfNeeded(item, currentIt - m_currentDisplayItems.begin(), displayItemIndicesByClient);
+            addItemToIndexIfNeeded(item, context.nextItemToIndex - m_currentDisplayItems.begin(), context.displayItemIndicesByClient);
         }
     }
     return currentEnd;
@@ -203,14 +213,12 @@ void DisplayItemList::copyCachedSubtree(DisplayItems::iterator& currentIt, Displ
     ASSERT(currentIt->isBeginSubtree());
     ASSERT(!currentIt->scope());
     DisplayItem::Id endSubtreeId(currentIt->client(), DisplayItem::beginSubtreeTypeToEndSubtreeType(currentIt->type()), 0);
-    while (true) {
-        updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
-        if (endSubtreeId.matches(updatedList.last()))
-            break;
-        ++currentIt;
+    do {
         // We should always find the EndSubtree display item.
         ASSERT(currentIt != m_currentDisplayItems.end());
-    }
+        updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
+        ++currentIt;
+    } while (!endSubtreeId.matches(updatedList.last()));
 }
 
 // Update the existing display items by removing invalidated entries, updating
@@ -257,14 +265,14 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
     // by later out-of-order CachedDisplayItems in m_newDisplayItems. This ensures that when
     // out-of-order CachedDisplayItems occur, we only traverse at most once over m_currentDisplayItems
     // looking for potential matches. Thus we can ensure that the algorithm runs in linear time.
-    DisplayItemIndicesByClientMap displayItemIndicesByClient;
+    OutOfOrderIndexContext outOfOrderIndexContext(m_currentDisplayItems.begin());
 
 #if ENABLE(ASSERT)
     if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
         // Under-invalidation checking requires a full index of m_currentDisplayItems.
         size_t i = 0;
         for (const auto& item : m_currentDisplayItems) {
-            addItemToIndexIfNeeded(item, i, displayItemIndicesByClient);
+            addItemToIndexIfNeeded(item, i, outOfOrderIndexContext.displayItemIndicesByClient);
             ++i;
         }
     }
@@ -281,17 +289,14 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
         const DisplayItem::Id newDisplayItemId = newDisplayItem.nonCachedId();
         bool newDisplayItemHasCachedType = newDisplayItem.type() != newDisplayItemId.type;
 
-        bool isSynchronized = currentIt != currentEnd
-            && !currentIt->ignoreFromDisplayList()
-            && newDisplayItemId.matches(*currentIt);
+        bool isSynchronized = currentIt != currentEnd && newDisplayItemId.matches(*currentIt);
 
         if (newDisplayItemHasCachedType) {
             ASSERT(!RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
             ASSERT(newDisplayItem.isCached());
             ASSERT(clientCacheIsValid(newDisplayItem.client()));
             if (!isSynchronized) {
-                DisplayItems::iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, displayItemIndicesByClient);
-                ASSERT(foundIt != currentIt);
+                DisplayItems::iterator foundIt = findOutOfOrderCachedItem(currentIt, newDisplayItemId, outOfOrderIndexContext);
 
                 if (foundIt == currentEnd) {
 #ifndef NDEBUG
@@ -305,11 +310,14 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
                     // attempt to recover rather than crashing or bailing on display of the rest of the display list.
                     continue;
                 }
+
+                ASSERT(foundIt != currentIt); // because we are in 'if (!isSynchronized)'
                 currentIt = foundIt;
             }
 
             if (newDisplayItem.isCachedDrawing()) {
                 updatedList.appendByMoving(*currentIt, currentIt->derivedSize());
+                ++currentIt;
             } else {
                 ASSERT(newDisplayItem.isCachedSubtree());
                 copyCachedSubtree(currentIt, updatedList);
@@ -318,15 +326,15 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
         } else {
 #if ENABLE(ASSERT)
             if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
-                checkCachedDisplayItemIsUnchanged(newDisplayItem, displayItemIndicesByClient);
+                checkCachedDisplayItemIsUnchanged(newDisplayItem, outOfOrderIndexContext.displayItemIndicesByClient);
             else
                 ASSERT(!newDisplayItem.isDrawing() || newDisplayItem.skippedCache() || !clientCacheIsValid(newDisplayItem.client()));
 #endif // ENABLE(ASSERT)
             updatedList.appendByMoving(*newIt, newIt->derivedSize());
-        }
 
-        if (isSynchronized)
-            ++currentIt;
+            if (isSynchronized)
+                ++currentIt;
+        }
     }
 
 #if ENABLE(ASSERT)
@@ -440,8 +448,8 @@ void DisplayItemList::checkCachedDisplayItemIsUnchanged(const DisplayItem& displ
     DisplayItems::iterator foundItem = m_currentDisplayItems.begin() + index;
     RefPtr<const SkPicture> newPicture = static_cast<const DrawingDisplayItem&>(displayItem).picture();
     RefPtr<const SkPicture> oldPicture = static_cast<const DrawingDisplayItem&>(*foundItem).picture();
-    // Mark the display item as ignored so that we can check if there are any remaining cached display items after merging.
-    foundItem->setIgnoredFromDisplayList();
+    // Invalidate the display item so that we can check if there are any remaining cached display items after merging.
+    foundItem->clearClientForUnderInvalidationChecking();
 
     if (!newPicture && !oldPicture)
         return;
@@ -497,7 +505,7 @@ void DisplayItemList::checkNoRemainingCachedDisplayItems()
     ASSERT(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
 
     for (const auto& displayItem : m_currentDisplayItems) {
-        if (displayItem.ignoreFromDisplayList() || !displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
+        if (!displayItem.isValid() || !displayItem.isDrawing() || !clientCacheIsValid(displayItem.client()))
             continue;
         showUnderInvalidationError("May be under-invalidation: no new display item", displayItem);
     }
@@ -515,7 +523,7 @@ WTF::String DisplayItemList::displayItemsAsDebugString(const DisplayItems& list)
         const DisplayItem& displayItem = *it;
         if (i)
             stringBuilder.append(",\n");
-        if (displayItem.ignoreFromDisplayList()) {
+        if (!displayItem.isValid()) {
             stringBuilder.append("null");
             continue;
         }

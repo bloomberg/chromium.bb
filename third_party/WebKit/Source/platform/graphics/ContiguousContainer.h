@@ -90,7 +90,7 @@ private:
         ValueType& operator*() const { return *static_cast<ValueType*>(*m_it); }
         ValueType* operator->() const { return &operator*(); }
         IteratorWrapper operator+(std::ptrdiff_t n) const { return IteratorWrapper(m_it + n); }
-        IteratorWrapper operator++(int) const { IteratorWrapper tmp = *this; operator++(); return tmp; }
+        IteratorWrapper operator++(int) { IteratorWrapper tmp = *this; ++m_it; return tmp; }
         std::ptrdiff_t operator-(const IteratorWrapper& other) const { return m_it - other.m_it; }
         IteratorWrapper& operator++() { ++m_it; return *this; }
     private:

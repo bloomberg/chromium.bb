@@ -141,8 +141,10 @@ private:
 
     static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItems&);
     static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
-    DisplayItems::iterator findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
-    DisplayItems::iterator findOutOfOrderCachedItemForward(DisplayItems::iterator currentIt, const DisplayItem::Id&, DisplayItemIndicesByClientMap&);
+
+    struct OutOfOrderIndexContext;
+    DisplayItems::iterator findOutOfOrderCachedItem(DisplayItems::iterator currentIt, const DisplayItem::Id&, OutOfOrderIndexContext&);
+    DisplayItems::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
     void copyCachedSubtree(DisplayItems::iterator& currentIt, DisplayItems& updatedList);
 
 #if ENABLE(ASSERT)

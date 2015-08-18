@@ -184,7 +184,6 @@ public:
         , m_type(type)
         , m_derivedSize(derivedSize)
         , m_skippedCache(false)
-        , m_ignoredFromList(false)
 #ifndef NDEBUG
         , m_clientDebugString(client.debugName())
 #endif
@@ -194,6 +193,8 @@ public:
         ASSERT_WITH_SECURITY_IMPLICATION(derivedSize < (1 << 8));
         ASSERT_WITH_SECURITY_IMPLICATION(derivedSize >= sizeof(*this));
     }
+
+    virtual ~DisplayItem() { }
 
     // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
@@ -232,8 +233,6 @@ public:
     {
         return Id(m_client, nonCachedType(), m_scope);
     }
-
-    virtual ~DisplayItem() { }
 
     virtual void replay(GraphicsContext&) { }
 
@@ -329,8 +328,8 @@ public:
 
     virtual bool drawsContent() const { return false; }
 
-    bool ignoreFromDisplayList() const { return m_ignoredFromList; }
-    void setIgnoredFromDisplayList() { m_ignoredFromList = true; }
+    bool isValid() const { return m_client; }
+    void clearClientForUnderInvalidationChecking() { m_client = nullptr; }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
@@ -351,19 +350,17 @@ private:
         , m_type(UninitializedType)
         , m_derivedSize(sizeof(*this))
         , m_skippedCache(false)
-        , m_ignoredFromList(true)
 #ifndef NDEBUG
         , m_clientDebugString("invalid")
 #endif
     { }
 
-    const DisplayItemClient m_client;
+    DisplayItemClient m_client;
     unsigned m_scope;
     static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
     const Type m_type : 16;
     unsigned m_derivedSize : 8; // size of the actual derived class
     unsigned m_skippedCache : 1;
-    unsigned m_ignoredFromList : 1;
 
 #ifndef NDEBUG
     WTF::String m_clientDebugString;
