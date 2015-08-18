@@ -47,6 +47,8 @@ class WebString;
 class WebDOMMessageEvent : public WebDOMEvent {
 public:
     WebDOMMessageEvent() { }
+    BLINK_EXPORT void initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebDocument& targetDocument, const WebString& lastEventId, const WebMessagePortChannelArray& channels = WebMessagePortChannelArray());
+    // DEPRECATED: Use the initMessageEvent method above. This method will be removed.
     BLINK_EXPORT void initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId, const WebMessagePortChannelArray& channels = WebMessagePortChannelArray());
 
     BLINK_EXPORT WebSerializedScriptValue data() const;
