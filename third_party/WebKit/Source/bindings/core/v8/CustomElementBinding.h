@@ -32,12 +32,14 @@
 #define CustomElementBinding_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {
 
 class CustomElementBinding {
+    WTF_MAKE_FAST_ALLOCATED(CustomElementBinding);
 public:
     static PassOwnPtr<CustomElementBinding> create(v8::Isolate*, v8::Local<v8::Object> prototype);
     ~CustomElementBinding();

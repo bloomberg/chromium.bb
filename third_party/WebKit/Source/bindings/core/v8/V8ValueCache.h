@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/V8GlobalValueMap.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -38,6 +39,7 @@
 namespace blink {
 
 class StringCacheMapTraits : public V8GlobalValueMapTraits<StringImpl*, v8::String, v8::kWeakWithParameter> {
+    STATIC_ONLY(StringCacheMapTraits);
 public:
     // Weak traits:
     typedef StringImpl WeakCallbackDataType;
@@ -64,6 +66,7 @@ public:
 
 
 class CORE_EXPORT StringCache {
+    WTF_MAKE_FAST_ALLOCATED(StringCache);
     WTF_MAKE_NONCOPYABLE(StringCache);
 public:
     explicit StringCache(v8::Isolate* isolate) : m_stringCache(isolate) { }

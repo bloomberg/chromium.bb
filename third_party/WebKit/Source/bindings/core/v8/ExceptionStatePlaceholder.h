@@ -44,6 +44,7 @@ class ExceptionState;
 typedef int ExceptionCode;
 
 class IgnorableExceptionState final : public ExceptionState {
+    WTF_MAKE_NONCOPYABLE(IgnorableExceptionState);
 public:
     IgnorableExceptionState(): ExceptionState(ExceptionState::UnknownContext, 0, 0, v8::Local<v8::Object>(), 0) { }
     ExceptionState& returnThis() { return *this; }
@@ -57,6 +58,7 @@ public:
 #if ENABLE(ASSERT)
 
 class CORE_EXPORT NoExceptionStateAssertionChecker final : public ExceptionState {
+    WTF_MAKE_NONCOPYABLE(NoExceptionStateAssertionChecker);
 public:
     NoExceptionStateAssertionChecker(const char* file, int line);
     ExceptionState& returnThis() { return *this; }

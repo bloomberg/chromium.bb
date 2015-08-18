@@ -17,6 +17,7 @@ class ScriptCallStack;
 class ScriptState;
 
 class RejectedPromises final : public NoBaseWillBeGarbageCollected<RejectedPromises> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(RejectedPromises);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
 public:
     static PassOwnPtrWillBeRawPtr<RejectedPromises> create()

@@ -34,6 +34,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include <v8.h>
 
 namespace blink {
@@ -45,6 +46,7 @@ enum ListenerLookupType {
 
 // This is a container for V8EventListener objects that uses hidden properties of v8::Object to speed up lookups.
 class V8EventListenerList {
+    STATIC_ONLY(V8EventListenerList);
 public:
     static PassRefPtrWillBeRawPtr<V8EventListener> findWrapper(v8::Local<v8::Value> value, ScriptState* scriptState)
     {

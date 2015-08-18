@@ -40,6 +40,7 @@ class ExecutionContext;
 
 class V8MutationCallback final : public MutationCallback, public ActiveDOMCallback {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8MutationCallback);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8MutationCallback);
 public:
     static PassOwnPtrWillBeRawPtr<V8MutationCallback> create(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
     {

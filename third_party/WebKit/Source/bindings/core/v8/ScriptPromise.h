@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include <v8.h>
@@ -49,6 +50,7 @@ class DOMException;
 // memory leaks since it has a reference from C++ to V8.
 //
 class CORE_EXPORT ScriptPromise final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     // Constructs an empty promise.
     ScriptPromise();
@@ -140,6 +142,7 @@ public:
     // This is a utility class intended to be used internally.
     // ScriptPromiseResolver is for general purpose.
     class CORE_EXPORT InternalResolver final {
+        DISALLOW_ALLOCATION();
     public:
         explicit InternalResolver(ScriptState*);
         v8::Local<v8::Promise> v8Promise() const;

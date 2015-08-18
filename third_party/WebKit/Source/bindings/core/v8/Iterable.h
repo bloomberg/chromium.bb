@@ -93,18 +93,21 @@ private:
     virtual IterationSource* startIteration(ScriptState*, ExceptionState&) = 0;
 
     struct KeySelector {
+        STATIC_ONLY(KeySelector);
         static const KeyType& select(ScriptState*, const KeyType& key, const ValueType& value)
         {
             return key;
         }
     };
     struct ValueSelector {
+        STATIC_ONLY(ValueSelector);
         static const ValueType& select(ScriptState*, const KeyType& key, const ValueType& value)
         {
             return value;
         }
     };
     struct EntrySelector {
+        STATIC_ONLY(EntrySelector);
         static Vector<ScriptValue, 2> select(ScriptState* scriptState, const KeyType& key, const ValueType& value)
         {
             v8::Local<v8::Object> creationContext = scriptState->context()->Global();

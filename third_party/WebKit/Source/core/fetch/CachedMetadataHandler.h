@@ -14,6 +14,7 @@ class CachedMetadata;
 
 // Handler class for caching operations.
 class CachedMetadataHandler : public NoBaseWillBeGarbageCollectedFinalized<CachedMetadataHandler> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CachedMetadataHandler);
 public:
     enum CacheType {
         SendToPlatform, // send cache data to blink::Platform::cacheMetadata

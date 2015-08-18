@@ -32,6 +32,7 @@
 #define SettingsDelegate_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -40,6 +41,7 @@ namespace blink {
 class Settings;
 
 class CORE_EXPORT SettingsDelegate {
+    DISALLOW_ALLOCATION();
 public:
     explicit SettingsDelegate(PassOwnPtr<Settings>);
     virtual ~SettingsDelegate();

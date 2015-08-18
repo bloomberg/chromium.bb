@@ -37,6 +37,8 @@
 namespace blink {
 
 class CORE_EXPORT V8DOMConfiguration final {
+    DISALLOW_ALLOCATION();
+    WTF_MAKE_NONCOPYABLE(V8DOMConfiguration);
 public:
     // The following Configuration structs and install methods are used for
     // setting multiple properties on ObjectTemplate / FunctionTemplate, used
@@ -64,6 +66,8 @@ public:
     // AttributeConfiguration translates into calls to SetAccessor() on either
     // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
+        WTF_MAKE_NONCOPYABLE(AttributeConfiguration);
+        DISALLOW_ALLOCATION();
         const char* const name;
         v8::AccessorNameGetterCallback getter;
         v8::AccessorNameSetterCallback setter;
@@ -84,6 +88,8 @@ public:
     // AccessorConfiguration translates into calls to SetAccessorProperty()
     // on prototype ObjectTemplate.
     struct AccessorConfiguration {
+        WTF_MAKE_NONCOPYABLE(AccessorConfiguration);
+        DISALLOW_ALLOCATION();
         const char* const name;
         v8::FunctionCallback getter;
         v8::FunctionCallback setter;
@@ -117,6 +123,8 @@ public:
     // object's constants. It sets the constant on both the FunctionTemplate and
     // the ObjectTemplate. PropertyAttributes is always ReadOnly.
     struct ConstantConfiguration {
+        WTF_MAKE_NONCOPYABLE(ConstantConfiguration);
+        DISALLOW_ALLOCATION();
         const char* const name;
         int ivalue;
         double dvalue;
@@ -142,6 +150,8 @@ public:
     // object's callbacks. It sets the method on both the FunctionTemplate or
     // the ObjectTemplate.
     struct MethodConfiguration {
+        WTF_MAKE_NONCOPYABLE(MethodConfiguration);
+        DISALLOW_ALLOCATION();
         v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return v8AtomicString(isolate, name); }
         v8::FunctionCallback callbackForWorld(const DOMWrapperWorld& world) const
         {
@@ -156,6 +166,8 @@ public:
     };
 
     struct SymbolKeyedMethodConfiguration {
+        WTF_MAKE_NONCOPYABLE(SymbolKeyedMethodConfiguration);
+        DISALLOW_ALLOCATION();
         v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return getSymbol(isolate); }
         v8::FunctionCallback callbackForWorld(const DOMWrapperWorld&) const
         {

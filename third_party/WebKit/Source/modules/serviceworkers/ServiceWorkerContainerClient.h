@@ -23,6 +23,7 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
     , public WillBeHeapSupplement<WorkerClients> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainerClient);
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ServiceWorkerContainerClient);
 public:
     static PassOwnPtrWillBeRawPtr<ServiceWorkerContainerClient> create(PassOwnPtr<WebServiceWorkerProvider>);
     virtual ~ServiceWorkerContainerClient();

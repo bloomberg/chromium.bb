@@ -41,6 +41,7 @@ namespace blink {
 
 template<class KeyType>
 class DOMWrapperMap {
+    WTF_MAKE_FAST_ALLOCATED(DOMWrapperMap);
 public:
     explicit DOMWrapperMap(v8::Isolate* isolate)
         : m_isolate(isolate)
@@ -93,6 +94,7 @@ public:
 
 private:
     class PersistentValueMapTraits {
+        DISALLOW_ALLOCATION();
     public:
         // Map traits:
         typedef HashMap<KeyType*, v8::PersistentContainerValue> Impl;

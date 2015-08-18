@@ -39,6 +39,7 @@ namespace blink {
 class ScriptValue;
 
 class ScriptCallArgumentHandler {
+    STACK_ALLOCATED();
 public:
     ScriptCallArgumentHandler(ScriptState* scriptState) : m_scriptState(scriptState) { }
 
@@ -55,6 +56,7 @@ protected:
 };
 
 class ScriptFunctionCall : public ScriptCallArgumentHandler {
+    STACK_ALLOCATED();
 public:
     ScriptFunctionCall(const ScriptValue& thisObject, const String& name);
     ScriptValue call(bool& hadException, bool reportExceptions = true);

@@ -32,6 +32,7 @@
 #define ExceptionMessages_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -41,6 +42,7 @@ namespace blink {
 class Decimal;
 
 class CORE_EXPORT ExceptionMessages {
+    STATIC_ONLY(ExceptionMessages);
 public:
     enum BoundType {
         InclusiveBound,

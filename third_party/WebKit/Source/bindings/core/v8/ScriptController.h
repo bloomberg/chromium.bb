@@ -68,6 +68,7 @@ enum ReasonForCallingCanExecuteScripts {
 
 class CORE_EXPORT ScriptController final : public NoBaseWillBeGarbageCollectedFinalized<ScriptController> {
     WTF_MAKE_NONCOPYABLE(ScriptController);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScriptController);
 public:
     enum ExecuteScriptPolicy {
         ExecuteScriptWhenScriptsDisabled,

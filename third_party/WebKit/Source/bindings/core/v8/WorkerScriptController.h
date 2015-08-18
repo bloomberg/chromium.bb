@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/TextPosition.h"
@@ -50,6 +51,8 @@ class ScriptSourceCode;
 class WorkerGlobalScope;
 
 class CORE_EXPORT WorkerScriptController : public NoBaseWillBeGarbageCollectedFinalized<WorkerScriptController> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerScriptController);
+    WTF_MAKE_NONCOPYABLE(WorkerScriptController);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerScriptController> create(WorkerGlobalScope*, v8::Isolate*);
     virtual ~WorkerScriptController();

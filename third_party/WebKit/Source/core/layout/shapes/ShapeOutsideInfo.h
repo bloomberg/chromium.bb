@@ -45,6 +45,7 @@ class LayoutBox;
 class FloatingObject;
 
 class ShapeOutsideDeltas final {
+    DISALLOW_ALLOCATION();
 public:
     ShapeOutsideDeltas()
         : m_lineOverlapsShape(false)

@@ -125,8 +125,6 @@ class ReadableStreamReaderTest : public ::testing::Test {
 public:
     ReadableStreamReaderTest()
         : m_page(DummyPageHolder::create(IntSize(1, 1)))
-        , m_scope(scriptState())
-        , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate())
         , m_stream(new StringStream(new NoopUnderlyingSource, new PermissiveStrategy))
     {
         m_stream->didSourceStart();
@@ -134,8 +132,6 @@ public:
 
     ~ReadableStreamReaderTest() override
     {
-        EXPECT_FALSE(m_exceptionState.hadException());
-
         // We need to call |error| in order to make
         // ActiveDOMObject::hasPendingActivity return false.
         m_stream->error(DOMException::create(AbortError, "done"));
@@ -156,27 +152,30 @@ public:
     }
 
     OwnPtr<DummyPageHolder> m_page;
-    ScriptState::Scope m_scope;
-    ExceptionState m_exceptionState;
     Persistent<StringStream> m_stream;
 };
 
 TEST_F(ReadableStreamReaderTest, Construct)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, Release)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     String onFulfilled, onRejected;
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
 
     reader->closed(scriptState()).then(createCaptor(&onFulfilled), createCaptor(&onRejected));
-    reader->releaseLock(m_exceptionState);
+    reader->releaseLock(exceptionState);
     EXPECT_FALSE(reader->isActive());
-    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_FALSE(exceptionState.hadException());
 
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_TRUE(onRejected.isNull());
@@ -188,18 +187,20 @@ TEST_F(ReadableStreamReaderTest, Release)
     ReadableStreamReader* another = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(another->isActive());
     EXPECT_FALSE(reader->isActive());
-    reader->releaseLock(m_exceptionState);
+    reader->releaseLock(exceptionState);
     EXPECT_TRUE(another->isActive());
     EXPECT_FALSE(reader->isActive());
-    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, ReadAfterRelease)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
-    reader->releaseLock(m_exceptionState);
-    EXPECT_FALSE(m_exceptionState.hadException());
+    reader->releaseLock(exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
     EXPECT_FALSE(reader->isActive());
 
     ReadResult result;
@@ -214,27 +215,32 @@ TEST_F(ReadableStreamReaderTest, ReadAfterRelease)
     EXPECT_TRUE(result.isDone);
     EXPECT_EQ("undefined", result.valueString);
     EXPECT_TRUE(onRejected.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, ReleaseShouldFailWhenCalledWhileReading)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_TRUE(reader->isActive());
     reader->read(scriptState());
 
-    reader->releaseLock(m_exceptionState);
+    reader->releaseLock(exceptionState);
     EXPECT_TRUE(reader->isActive());
-    EXPECT_TRUE(m_exceptionState.hadException());
-    m_exceptionState.clearException();
+    EXPECT_TRUE(exceptionState.hadException());
+    exceptionState.clearException();
 
     m_stream->enqueue("hello");
-    reader->releaseLock(m_exceptionState);
+    reader->releaseLock(exceptionState);
     EXPECT_FALSE(reader->isActive());
-    EXPECT_FALSE(m_exceptionState.hadException());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, EnqueueThenRead)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     m_stream->enqueue("hello");
     m_stream->enqueue("world");
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
@@ -267,10 +273,13 @@ TEST_F(ReadableStreamReaderTest, EnqueueThenRead)
     EXPECT_FALSE(result2.isDone);
     EXPECT_EQ("world", result2.valueString);
     EXPECT_TRUE(onRejected2.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -308,10 +317,13 @@ TEST_F(ReadableStreamReaderTest, ReadThenEnqueue)
     EXPECT_FALSE(result2.isDone);
     EXPECT_EQ("world", result2.valueString);
     EXPECT_TRUE(onRejected2.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, ClosedReader)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
 
     m_stream->close();
@@ -336,10 +348,13 @@ TEST_F(ReadableStreamReaderTest, ClosedReader)
     EXPECT_TRUE(result.isDone);
     EXPECT_EQ("undefined", result.valueString);
     EXPECT_TRUE(onReadRejected.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, ErroredReader)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
 
     m_stream->error(DOMException::create(SyntaxError, "some error"));
@@ -362,10 +377,13 @@ TEST_F(ReadableStreamReaderTest, ErroredReader)
     EXPECT_EQ("SyntaxError: some error", onClosedRejected);
     EXPECT_TRUE(onReadFulfilled.isNull());
     EXPECT_EQ("SyntaxError: some error", onReadRejected);
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenClosed)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -397,10 +415,13 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenClosed)
     EXPECT_TRUE(result2.isDone);
     EXPECT_EQ("undefined", result2.valueString);
     EXPECT_TRUE(onRejected2.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeRejectedWhenErrored)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -427,10 +448,13 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeRejectedWhenErrored)
     EXPECT_EQ(onRejected, "SyntaxError: some error");
     EXPECT_TRUE(onFulfilled2.isNull());
     EXPECT_EQ(onRejected2, "SyntaxError: some error");
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenCanceled)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -463,12 +487,15 @@ TEST_F(ReadableStreamReaderTest, PendingReadsShouldBeResolvedWhenCanceled)
     EXPECT_TRUE(result2.isDone);
     EXPECT_EQ("undefined", result2.valueString);
     EXPECT_TRUE(onRejected2.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, CancelShouldNotWorkWhenNotActive)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
-    reader->releaseLock(m_exceptionState);
+    reader->releaseLock(exceptionState);
     EXPECT_FALSE(reader->isActive());
 
     String onFulfilled, onRejected;
@@ -483,10 +510,13 @@ TEST_F(ReadableStreamReaderTest, CancelShouldNotWorkWhenNotActive)
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, Cancel)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -506,10 +536,13 @@ TEST_F(ReadableStreamReaderTest, Cancel)
     EXPECT_TRUE(onClosedRejected.isNull());
     EXPECT_EQ("undefined", onCancelFulfilled);
     EXPECT_TRUE(onCancelRejected.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, Close)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -525,10 +558,13 @@ TEST_F(ReadableStreamReaderTest, Close)
     isolate()->RunMicrotasks();
     EXPECT_EQ("undefined", onFulfilled);
     EXPECT_TRUE(onRejected.isNull());
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 TEST_F(ReadableStreamReaderTest, Error)
 {
+    ScriptState::Scope scope(scriptState());
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate());
     ReadableStreamReader* reader = new ReadableStreamReader(executionContext(), m_stream);
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 
@@ -544,6 +580,7 @@ TEST_F(ReadableStreamReaderTest, Error)
     isolate()->RunMicrotasks();
     EXPECT_TRUE(onFulfilled.isNull());
     EXPECT_EQ("SyntaxError: some error", onRejected);
+    EXPECT_FALSE(exceptionState.hadException());
 }
 
 } // namespace

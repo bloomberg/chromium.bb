@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "bindings/core/v8/V8RecursionScope.h"
+#include "wtf/Allocator.h"
 
 #include <v8.h>
 
@@ -41,6 +42,7 @@ namespace blink {
 class Document;
 
 class ConstructorMode {
+    STACK_ALLOCATED();
 public:
     enum Mode {
         WrapExistingObject,
@@ -74,6 +76,7 @@ private:
 };
 
 class V8ObjectConstructor {
+    STATIC_ONLY(V8ObjectConstructor);
 public:
     static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*, v8::Local<v8::Function>);
     static v8::MaybeLocal<v8::Object> newInstance(v8::Isolate*, v8::Local<v8::Function>, int, v8::Local<v8::Value> argv[]);

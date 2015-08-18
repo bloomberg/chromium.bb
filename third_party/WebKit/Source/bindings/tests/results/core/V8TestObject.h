@@ -19,8 +19,10 @@
 namespace blink {
 
 class V8TestObject {
+    STATIC_ONLY(V8TestObject);
 public:
     class PrivateScript {
+        STATIC_ONLY(PrivateScript);
     public:
         static bool voidMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl);
         static bool shortMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, int* result);

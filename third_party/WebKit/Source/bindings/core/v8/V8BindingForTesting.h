@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 #include <v8.h>
@@ -24,6 +25,7 @@ private:
 };
 
 class V8TestingScope {
+    DISALLOW_ALLOCATION();
 public:
     explicit V8TestingScope(v8::Isolate*);
     ScriptState* scriptState() const;

@@ -36,6 +36,7 @@ typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 //     map.set(obj, 42);
 template<typename GCObject, typename T>
 class V8ObjectMap {
+    STACK_ALLOCATED();
 public:
     bool contains(const v8::Local<GCObject>& handle)
     {
@@ -70,6 +71,7 @@ private:
     // need to rehash after every garbage collection because a key object may have been moved.
     template<typename G>
     struct V8HandlePtrHash {
+        STATIC_ONLY(V8HandlePtrHash);
         static v8::Local<G> unsafeHandleFromRawValue(const G* value)
         {
             const v8::Local<G>* handle = reinterpret_cast<const v8::Local<G>*>(&value);
@@ -209,6 +211,7 @@ public:
 
 protected:
     class StateBase {
+        WTF_MAKE_FAST_ALLOCATED(StateBase);
         WTF_MAKE_NONCOPYABLE(StateBase);
     public:
         virtual ~StateBase() { }

@@ -67,6 +67,7 @@ class XPathNSResolver;
 
 template <typename T>
 struct V8TypeOf {
+    STATIC_ONLY(V8TypeOf);
     // |Type| provides C++ -> V8 type conversion for DOM wrappers.
     // The Blink binding code generator will generate specialized version of
     // V8TypeOf for each wrapper class.
@@ -1027,6 +1028,7 @@ enum DeleteResult {
 };
 
 class V8IsolateInterruptor : public ThreadState::Interruptor {
+    WTF_MAKE_FAST_ALLOCATED(V8IsolateInterruptor);
 public:
     explicit V8IsolateInterruptor(v8::Isolate* isolate)
         : m_isolate(isolate)
@@ -1049,6 +1051,7 @@ private:
 };
 
 class DevToolsFunctionInfo final {
+    STACK_ALLOCATED();
 public:
     explicit DevToolsFunctionInfo(v8::Local<v8::Function>& function)
         : m_scriptId(0)

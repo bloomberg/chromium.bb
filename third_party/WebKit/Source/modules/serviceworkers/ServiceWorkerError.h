@@ -42,14 +42,11 @@ class DOMException;
 class ScriptPromiseResolver;
 
 class ServiceWorkerError {
+    STATIC_ONLY(ServiceWorkerError);
 public:
     // For CallbackPromiseAdapter
     using WebType = const WebServiceWorkerError&;
     static DOMException* take(ScriptPromiseResolver*, const WebServiceWorkerError& webError);
-
-private:
-    WTF_MAKE_NONCOPYABLE(ServiceWorkerError);
-    ServiceWorkerError() = delete;
 };
 
 } // namespace blink

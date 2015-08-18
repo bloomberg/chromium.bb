@@ -34,6 +34,7 @@
 // FIXME: The LocalFrame include should not be necessary, clients should be including it where they use it.
 #include "core/CoreExport.h"
 #include "core/frame/LocalFrame.h"
+#include "wtf/Allocator.h"
 #include <v8.h>
 
 namespace blink {
@@ -47,6 +48,7 @@ enum SecurityReportingOption {
 };
 
 class BindingSecurity {
+    STATIC_ONLY(BindingSecurity);
 public:
     static bool shouldAllowAccessToNode(v8::Isolate*, Node*, ExceptionState&);
     CORE_EXPORT static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);

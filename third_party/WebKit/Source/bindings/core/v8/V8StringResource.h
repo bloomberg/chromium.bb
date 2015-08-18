@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
@@ -37,6 +38,8 @@ namespace blink {
 // WebCoreStringResource is a helper class for v8ExternalString. It is used
 // to manage the life-cycle of the underlying buffer of the external string.
 class WebCoreStringResourceBase {
+    WTF_MAKE_FAST_ALLOCATED(WebCoreStringResourceBase);
+    WTF_MAKE_NONCOPYABLE(WebCoreStringResourceBase);
 public:
     explicit WebCoreStringResourceBase(const String& string)
         : m_plainString(string)
@@ -107,6 +110,7 @@ private:
 };
 
 class WebCoreStringResource16 final : public WebCoreStringResourceBase, public v8::String::ExternalStringResource {
+    WTF_MAKE_NONCOPYABLE(WebCoreStringResource16);
 public:
     explicit WebCoreStringResource16(const String& string)
         : WebCoreStringResourceBase(string)
@@ -128,6 +132,7 @@ public:
 };
 
 class WebCoreStringResource8 final : public WebCoreStringResourceBase, public v8::String::ExternalOneByteStringResource {
+    WTF_MAKE_NONCOPYABLE(WebCoreStringResource8);
 public:
     explicit WebCoreStringResource8(const String& string)
         : WebCoreStringResourceBase(string)
@@ -168,6 +173,7 @@ enum V8StringResourceMode {
 
 template <V8StringResourceMode Mode = DefaultMode>
 class V8StringResource {
+    STACK_ALLOCATED();
 public:
     V8StringResource()
         : m_mode(Externalize)

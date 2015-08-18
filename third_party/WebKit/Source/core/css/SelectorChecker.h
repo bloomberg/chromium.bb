@@ -42,6 +42,7 @@ class ComputedStyle;
 
 class SelectorChecker {
     WTF_MAKE_NONCOPYABLE(SelectorChecker);
+    STACK_ALLOCATED();
 public:
     enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
     enum Mode { ResolvingStyle = 0, CollectingStyleRules, CollectingCSSRules, QueryingRules, SharingRules };
@@ -91,6 +92,7 @@ public:
     };
 
     struct MatchResult {
+        STACK_ALLOCATED();
         MatchResult()
             : dynamicPseudo(NOPSEUDO)
             , specificity(0) { }

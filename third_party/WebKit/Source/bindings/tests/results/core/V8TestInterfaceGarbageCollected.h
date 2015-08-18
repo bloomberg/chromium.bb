@@ -20,6 +20,7 @@
 namespace blink {
 
 class V8TestInterfaceGarbageCollected {
+    STATIC_ONLY(V8TestInterfaceGarbageCollected);
 public:
     CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);

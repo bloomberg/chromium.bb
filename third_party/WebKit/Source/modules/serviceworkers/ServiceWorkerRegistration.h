@@ -84,6 +84,7 @@ private:
 };
 
 class ServiceWorkerRegistrationArray {
+    STATIC_ONLY(ServiceWorkerRegistrationArray);
 public:
     static HeapVector<Member<ServiceWorkerRegistration>> take(ScriptPromiseResolver* resolver, PassOwnPtr<WebVector<WebServiceWorkerRegistration*>> webServiceWorkerRegistrations)
     {
@@ -98,10 +99,6 @@ public:
         for (WebServiceWorkerRegistration* registration : *webServiceWorkerRegistrations)
             ServiceWorkerRegistration::dispose(registration);
     }
-
-private:
-    WTF_MAKE_NONCOPYABLE(ServiceWorkerRegistrationArray);
-    ServiceWorkerRegistrationArray() = delete;
 };
 
 } // namespace blink

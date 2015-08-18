@@ -5,6 +5,7 @@
 #ifndef V8GlobalValueMap_h
 #define V8GlobalValueMap_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 #include <v8-util.h>
@@ -22,6 +23,7 @@ namespace blink {
  */
 template <class KeyType, class ValueType, v8::PersistentContainerCallbackType type>
 class V8GlobalValueMapTraits {
+    STATIC_ONLY(V8GlobalValueMapTraits);
 public:
     // Map traits:
     typedef HashMap<KeyType, v8::PersistentContainerValue> Impl;
@@ -93,6 +95,7 @@ public:
  */
 template <class KeyType, class ValueType, v8::PersistentContainerCallbackType type>
 class V8GlobalValueMap : public v8::GlobalValueMap<KeyType, ValueType, V8GlobalValueMapTraits<KeyType, ValueType, type>> {
+    DISALLOW_ALLOCATION();
 public:
     typedef V8GlobalValueMapTraits<KeyType, ValueType, type> Traits;
     explicit V8GlobalValueMap(v8::Isolate* isolate)

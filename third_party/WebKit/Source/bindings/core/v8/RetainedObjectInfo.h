@@ -31,11 +31,13 @@
 #ifndef RetainedObjectInfo_h
 #define RetainedObjectInfo_h
 
+#include "wtf/FastAllocBase.h"
 #include <v8-profiler.h>
 
 namespace blink {
 
 class RetainedObjectInfo : public v8::RetainedObjectInfo {
+    WTF_MAKE_FAST_ALLOCATED(RetainedObjectInfo);
 public:
     virtual intptr_t GetEquivalenceClass() = 0;
 };

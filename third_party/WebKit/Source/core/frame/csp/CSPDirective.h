@@ -12,6 +12,7 @@ namespace blink {
 class ContentSecurityPolicy;
 
 class CSPDirective {
+    WTF_MAKE_FAST_ALLOCATED(CSPDirective);
     WTF_MAKE_NONCOPYABLE(CSPDirective);
 public:
     CSPDirective(const String& name, const String& value, ContentSecurityPolicy* policy)

@@ -43,6 +43,7 @@ class WebServiceWorkerResponse;
 class WebURL;
 
 class ServiceWorkerGlobalScopeClientImpl final : public NoBaseWillBeGarbageCollectedFinalized<ServiceWorkerGlobalScopeClientImpl>, public ServiceWorkerGlobalScopeClient {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ServiceWorkerGlobalScopeClientImpl);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClientImpl);
 public:
     static PassOwnPtrWillBeRawPtr<ServiceWorkerGlobalScopeClient> create(WebServiceWorkerContextClient&);

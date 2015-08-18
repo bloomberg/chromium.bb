@@ -9,6 +9,7 @@
 namespace blink {
 
 class {{v8_class_or_partial}} {
+    STATIC_ONLY({{v8_class_or_partial}});
 public:
     static void initialize();
     {% for method in methods if method.is_custom %}

@@ -39,6 +39,7 @@ class Image;
 class LayoutObject;
 
 struct SizeAndCount {
+    DISALLOW_ALLOCATION();
     SizeAndCount(IntSize newSize = IntSize(), int newCount = 0)
         : size(newSize)
         , count(newCount)

@@ -29,6 +29,7 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "core/fetch/AccessControlStatus.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
@@ -44,6 +45,7 @@ class ExecutionContext;
 class ScriptStreamer;
 
 class CORE_EXPORT V8ScriptRunner final {
+    STATIC_ONLY(V8ScriptRunner);
 public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.

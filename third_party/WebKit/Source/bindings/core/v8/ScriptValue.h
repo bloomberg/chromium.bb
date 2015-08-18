@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
@@ -42,6 +43,7 @@
 namespace blink {
 
 class CORE_EXPORT ScriptValue final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     template<typename T>
     static ScriptValue from(ScriptState* scriptState, T value)

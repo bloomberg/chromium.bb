@@ -21,6 +21,7 @@
 namespace blink {
 
 class V8TestInterface5 {
+    STATIC_ONLY(V8TestInterface5);
 public:
     MODULES_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);

@@ -16,6 +16,7 @@ class Document;
 class ScriptState;
 
 class CORE_EXPORT PrivateScriptRunner {
+    STATIC_ONLY(PrivateScriptRunner);
 public:
     static v8::Local<v8::Value> installClassIfNeeded(Document*, String className);
     static v8::Local<v8::Value> runDOMAttributeGetter(ScriptState*, ScriptState* scriptStateInUserScript, const char* className, const char* attributeName, v8::Local<v8::Value> holder);

@@ -14,6 +14,7 @@ class Dictionary;
 {% endif %}
 {% if named_constructor %}
 class {{v8_class}}Constructor {
+    STATIC_ONLY({{v8_class}}Constructor);
 public:
     static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static const WrapperTypeInfo wrapperTypeInfo;
@@ -21,9 +22,11 @@ public:
 
 {% endif %}
 class {{v8_class}} {
+    STATIC_ONLY({{v8_class}});
 public:
     {% if has_private_script %}
     class PrivateScript {
+        STATIC_ONLY(PrivateScript);
     public:
         {% for method in methods if method.is_implemented_in_private_script %}
         static bool {{method.name}}Method({{method.argument_declarations_for_private_script | join(', ')}});

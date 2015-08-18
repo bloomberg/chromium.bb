@@ -39,6 +39,7 @@
 namespace blink {
 
 class CORE_EXPORT SmartClipData {
+    STACK_ALLOCATED();
 public:
     SmartClipData()
         : m_isEmpty(true)

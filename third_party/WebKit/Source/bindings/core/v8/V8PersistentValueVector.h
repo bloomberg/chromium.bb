@@ -31,6 +31,7 @@
 #ifndef V8PersistentValueVector_h
 #define V8PersistentValueVector_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include <v8-util.h>
 #include <v8.h>
@@ -38,6 +39,7 @@
 namespace blink {
 
 class WTFVectorPersistentValueVectorTraits {
+    STATIC_ONLY(WTFVectorPersistentValueVectorTraits);
 public:
     typedef Vector<v8::PersistentContainerValue> Impl;
     static void Append(Impl* impl, v8::PersistentContainerValue value)
@@ -68,6 +70,7 @@ public:
 
 template<class ValueType>
 class V8PersistentValueVector : public v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits> {
+    DISALLOW_ALLOCATION();
 public:
     explicit V8PersistentValueVector(v8::Isolate* isolate) : v8::PersistentValueVector<ValueType, WTFVectorPersistentValueVectorTraits>(isolate) { }
 };

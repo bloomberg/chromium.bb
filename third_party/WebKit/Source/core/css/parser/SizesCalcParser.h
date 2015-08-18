@@ -14,6 +14,7 @@
 namespace blink {
 
 struct SizesCalcValue {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     double value;
     bool isLength;
     UChar operation;

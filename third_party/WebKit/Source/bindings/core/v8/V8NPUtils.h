@@ -31,6 +31,7 @@
 #define V8NPUtils_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include <bindings/npruntime.h>
 #include <v8.h>
 
@@ -55,6 +56,7 @@ CORE_EXPORT void popExceptionHandler();
 // Upon destruction, an ExceptionCatcher will pass a caught exception to the
 // current ExceptionHandler.
 class ExceptionCatcher {
+    STACK_ALLOCATED();
 public:
     ExceptionCatcher();
     ~ExceptionCatcher();

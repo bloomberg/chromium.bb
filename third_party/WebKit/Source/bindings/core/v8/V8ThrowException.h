@@ -26,12 +26,14 @@
 #define V8ThrowException_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
 
 class CORE_EXPORT V8ThrowException {
+    STATIC_ONLY(V8ThrowException);
 public:
 
     static v8::Local<v8::Value> createDOMException(v8::Isolate* isolate, int ec, const String& message, const v8::Local<v8::Object>& creationContext)

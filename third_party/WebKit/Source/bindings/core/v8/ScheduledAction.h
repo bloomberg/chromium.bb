@@ -47,6 +47,7 @@ class WorkerGlobalScope;
 
 class ScheduledAction final : public NoBaseWillBeGarbageCollectedFinalized<ScheduledAction> {
     WTF_MAKE_NONCOPYABLE(ScheduledAction);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScheduledAction);
 public:
     static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const ScriptValue& handler, const Vector<ScriptValue>& arguments);
     static PassOwnPtrWillBeRawPtr<ScheduledAction> create(ScriptState*, const String& handler);

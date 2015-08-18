@@ -21,8 +21,10 @@
 namespace blink {
 
 class V8TestInterface {
+    STATIC_ONLY(V8TestInterface);
 public:
     class PrivateScript {
+        STATIC_ONLY(PrivateScript);
     public:
         static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result);
         static bool stringAttributeAttributeGetter(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String* result);

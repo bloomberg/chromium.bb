@@ -16,6 +16,7 @@ class NotificationOptions;
 class ScriptState;
 
 class ServiceWorkerRegistrationNotifications {
+    STATIC_ONLY(ServiceWorkerRegistrationNotifications);
 public:
     static ScriptPromise showNotification(ScriptState*, ServiceWorkerRegistration&, const String& title, const NotificationOptions&, ExceptionState&);
     static ScriptPromise getNotifications(ScriptState*, ServiceWorkerRegistration&, const GetNotificationOptions&);

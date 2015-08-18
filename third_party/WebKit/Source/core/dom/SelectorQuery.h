@@ -44,6 +44,7 @@ template <typename NodeType> class StaticNodeTypeList;
 typedef StaticNodeTypeList<Element> StaticElementList;
 
 class SelectorDataList {
+    DISALLOW_ALLOCATION();
 public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;

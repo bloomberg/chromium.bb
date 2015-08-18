@@ -19,6 +19,7 @@ class SecurityOrigin;
 class WindowProxy;
 
 class WindowProxyManager final : public NoBaseWillBeGarbageCollectedFinalized<WindowProxyManager> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WindowProxyManager);
 public:
     static PassOwnPtrWillBeRawPtr<WindowProxyManager> create(Frame&);
 

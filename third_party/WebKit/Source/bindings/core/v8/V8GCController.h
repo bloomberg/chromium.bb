@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include <v8.h>
 
 namespace blink {
@@ -40,6 +41,7 @@ namespace blink {
 class Node;
 
 class CORE_EXPORT V8GCController {
+    STATIC_ONLY(V8GCController);
 public:
     static void gcPrologue(v8::GCType, v8::GCCallbackFlags);
     static void gcEpilogue(v8::GCType, v8::GCCallbackFlags);

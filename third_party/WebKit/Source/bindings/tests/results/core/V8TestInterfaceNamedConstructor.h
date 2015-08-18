@@ -19,12 +19,14 @@
 namespace blink {
 
 class V8TestInterfaceNamedConstructorConstructor {
+    STATIC_ONLY(V8TestInterfaceNamedConstructorConstructor);
 public:
     static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*);
     static const WrapperTypeInfo wrapperTypeInfo;
 };
 
 class V8TestInterfaceNamedConstructor {
+    STATIC_ONLY(V8TestInterfaceNamedConstructor);
 public:
     CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);

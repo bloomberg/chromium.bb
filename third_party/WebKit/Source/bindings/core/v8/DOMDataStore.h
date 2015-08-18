@@ -35,6 +35,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -46,6 +47,7 @@ class Node;
 
 class DOMDataStore {
     WTF_MAKE_NONCOPYABLE(DOMDataStore);
+    WTF_MAKE_FAST_ALLOCATED(DOMDataStore);
 public:
     DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
         : m_isMainWorld(isMainWorld)

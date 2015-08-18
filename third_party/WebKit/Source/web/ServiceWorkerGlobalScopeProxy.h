@@ -64,6 +64,7 @@ class ServiceWorkerGlobalScopeProxy final
     : public WebServiceWorkerContextProxy
     , public WorkerReportingProxy {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeProxy);
+    WTF_MAKE_FAST_ALLOCATED(ServiceWorkerGlobalScopeProxy);
 public:
     static PassOwnPtr<ServiceWorkerGlobalScopeProxy> create(WebEmbeddedWorkerImpl&, Document&, WebServiceWorkerContextClient&);
     ~ServiceWorkerGlobalScopeProxy() override;

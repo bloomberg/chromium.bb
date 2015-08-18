@@ -5,6 +5,8 @@
 #ifndef WTF_Allocator_h
 #define WTF_Allocator_h
 
+#include "wtf/StdLibExtras.h"
+
 namespace WTF {
 
 // Classes that contain references to garbage-collected objects but aren't
@@ -33,7 +35,8 @@ namespace WTF {
     private:                                                    \
         void* operator new(size_t) = delete;                    \
         void* operator new(size_t, NotNullTag, void*) = delete; \
-        void* operator new(size_t, void*) = delete;
+        void* operator new(size_t, void*) = delete;             \
+    public:
 
 #define ALLOW_ONLY_INLINE_ALLOCATION()                                              \
     public:                                                                         \
@@ -41,11 +44,18 @@ namespace WTF {
         void* operator new(size_t, NotNullTag, void* location) { return location; } \
         void* operator new(size_t, void* location) { return location; }             \
     private:                                                                        \
-        void* operator new(size_t) = delete;
+        void* operator new(size_t) = delete;                                        \
+    public:
 
 #define STATIC_ONLY(Type) \
     private:              \
-        Type() = delete;
+        Type() = delete;  \
+        Type(const Type&) = delete;                             \
+        Type& operator=(const Type&) = delete;                  \
+        void* operator new(size_t) = delete;                    \
+        void* operator new(size_t, NotNullTag, void*) = delete; \
+        void* operator new(size_t, void*) = delete;             \
+    public:
 
 #if COMPILER(CLANG)
 #define STACK_ALLOCATED()                                       \
@@ -53,7 +63,8 @@ namespace WTF {
         __attribute__((annotate("blink_stack_allocated")))      \
         void* operator new(size_t) = delete;                    \
         void* operator new(size_t, NotNullTag, void*) = delete; \
-        void* operator new(size_t, void*) = delete;
+        void* operator new(size_t, void*) = delete;             \
+    public:
 #else
 #define STACK_ALLOCATED() DISALLOW_ALLOCATION()
 #endif
