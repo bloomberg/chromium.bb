@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/bluetooth-helpers.js"></script>
 <script>
@@ -9,7 +8,7 @@
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => {
@@ -87,7 +86,7 @@ sequential_promise_test(() => {
     message: 'Unsupported device.'
   }
 }].forEach(testSpec => {
-  sequential_promise_test(() => {
+  promise_test(() => {
     testRunner.setBluetoothMockDataSet('FailingConnectionsAdapter');
     return requestDeviceWithKeyDown({filters: [{services: [testSpec.uuid]}]})
       .then(device => {
@@ -99,7 +98,7 @@ sequential_promise_test(() => {
   }, testSpec.testName);
 });
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())

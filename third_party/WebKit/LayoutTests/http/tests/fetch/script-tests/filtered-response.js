@@ -48,7 +48,7 @@ var headers_cookies = ['sEt-cOokie', 'sEt-cOokie2'];
 
 // basic filtered response
 ['same-origin', 'cors'].forEach(function(mode) {
-    sequential_promise_test(function(t) {
+    promise_test(function(t) {
         return fetch(base_url, {mode: mode})
           .then(function(response) {
               assert_equals(response.type, 'basic');
@@ -59,14 +59,14 @@ var headers_cookies = ['sEt-cOokie', 'sEt-cOokie2'];
   });
 
 // CORS filtered response
-sequential_promise_test(function() {
+promise_test(function() {
     return fetch(other_url, {mode: 'cors'})
       .then(function(response) {
           check_headers(response.headers, headers_common, [], false);
         });
   }, 'CORS filtered response');
 
-sequential_promise_test(function() {
+promise_test(function() {
     // Access-Control-Expose-Headers with a single header name
     return fetch(other_url + '?ACEHeaders=x-teSt', {mode: 'cors'})
       .then(function(response) {

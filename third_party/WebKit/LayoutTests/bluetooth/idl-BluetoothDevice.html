@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/bluetooth-helpers.js"></script>
 <script>
@@ -14,7 +13,7 @@ test(() => {
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(function(device) {

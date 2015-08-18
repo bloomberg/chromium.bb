@@ -9,7 +9,7 @@
 // Purge the existing registrations for the origin.
 // getRegistrations() is used in order to avoid adding additional complexity
 // e.g. adding an internal function.
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var resolve;
     var timer;
     var p = new Promise(function(r) { resolve = r; });
@@ -35,7 +35,7 @@ sequential_promise_test(function(t) {
     return p;
   }, 'Purge the existing registrations.');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var scope = 'resources/scope/getregistrations/normal';
     var script = 'resources/empty-worker.js';
     var registrations = [];
@@ -53,7 +53,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Register then getRegistrations');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var scope1 = 'resources/scope/getregistrations/scope1';
     var scope2 = 'resources/scope/getregistrations/scope2';
     var script = 'resources/empty-worker.js';
@@ -79,7 +79,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Register multiple times then getRegistrations');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var scope = 'resources/scope/getregistrations/register-unregister';
     var script = 'resources/empty-worker.js';
     return service_worker_unregister_and_register(t, script, scope)
@@ -97,7 +97,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Register then Unregister then getRegistrations');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     // Top-level window's origin: http://127.0.0.1:8000.
     // Frame's origin: http://localhost:8000.
     var host_info = get_host_info();

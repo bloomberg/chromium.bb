@@ -12,7 +12,7 @@ function readStream(reader, values) {
   return reader.closed;
 }
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           // Accessing the body property makes the stream start working.
@@ -24,7 +24,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchTextAfterAccessingStreamTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     var chunks = [];
     var actual = '';
     return fetch('/fetch/resources/doctype.html')
@@ -43,7 +43,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchStreamTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/progressive.php')
       .then(function(response) {
           var p1 = response.text();
@@ -62,7 +62,7 @@ sequential_promise_test(function(test) {
         })
     }, 'FetchTwiceTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.arrayBuffer();
@@ -72,7 +72,7 @@ sequential_promise_test(function(test) {
         })
     }, 'ArrayBufferTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.blob();
@@ -83,7 +83,7 @@ sequential_promise_test(function(test) {
         })
     }, 'BlobTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.json();
@@ -95,7 +95,7 @@ sequential_promise_test(function(test) {
         })
     }, 'JSONFailedTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/simple.json')
       .then(function(response) {
           return response.json();
@@ -106,7 +106,7 @@ sequential_promise_test(function(test) {
         })
     }, 'JSONTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           return response.text();
@@ -116,7 +116,7 @@ sequential_promise_test(function(test) {
         })
     }, 'TextTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     return fetch('/fetch/resources/non-ascii.txt')
       .then(function(response) {
           return response.text();
@@ -126,7 +126,7 @@ sequential_promise_test(function(test) {
         })
     }, 'NonAsciiTextTest');
 
-sequential_promise_test(function(test) {
+promise_test(function(test) {
     var expected = '';
     for (var i = 0; i < 100; ++i)
         expected += i;

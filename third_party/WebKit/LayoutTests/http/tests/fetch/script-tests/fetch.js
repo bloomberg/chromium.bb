@@ -2,7 +2,7 @@ if (self.importScripts) {
   importScripts('../resources/fetch-test-helpers.js');
 }
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('http://')
       .then(
         t.unreached_func('fetch of invalid URL must fail'),
@@ -13,7 +13,7 @@ sequential_promise_test(function(t) {
 // Step 4:
 // request's url's scheme is not one of "http" and "https"
 //   A network error.
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('ftp://localhost/')
       .then(
         t.unreached_func('fetch of non-HTTP(S) CORS must fail'),
@@ -24,14 +24,14 @@ sequential_promise_test(function(t) {
 // The last statement:
 // Otherwise
 //   Return a network error.
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('foobar://localhost/', {mode: 'no-cors'})
       .then(
         t.unreached_func('scheme not listed in basic fetch spec must fail'),
         function() {});
   }, 'fetch of scheme not listed in basic fetch spec');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/fetch-status.php?status=200')
       .then(function(response) {
           assert_equals(response.status, 200);
@@ -39,7 +39,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch result of 200 response');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/fetch-status.php?status=404')
       .then(function(response) {
           assert_equals(response.status, 404);
@@ -47,7 +47,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch result of 404 response');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var request = new Request(
       '/fetch/resources/fetch-status.php?status=200#fragment');
 
@@ -71,7 +71,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Request/response url attribute getter with fragment');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var redirect_target_url =
       BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
     var redirect_original_url =
@@ -103,7 +103,7 @@ function evalJsonp(text) {
     });
 }
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var request =
       new Request('/serviceworker/resources/fetch-access-control.php',
                   {
@@ -121,7 +121,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch with Blob body test');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var request = new Request(
       '/serviceworker/resources/fetch-access-control.php',
       {method: 'POST', body: 'Test String'});
@@ -134,7 +134,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch with string body test');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var text = 'Test ArrayBuffer';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
@@ -151,7 +151,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch with ArrayBuffer body test');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var text = 'Test ArrayBufferView';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
@@ -168,7 +168,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch with ArrayBufferView body test');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var formData = new FormData();
     formData.append('StringKey1', '1234567890');
     formData.append('StringKey2', 'ABCDEFGHIJ');
@@ -198,7 +198,7 @@ sequential_promise_test(function(t) {
         });
   }, 'Fetch with FormData body test');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('../resources/fetch-test-helpers.js')
       .then(function(res) { return res.text(); })
       .then(function(text) { assert_not_equals(text, ''); });

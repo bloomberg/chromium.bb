@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/bluetooth-helpers.js"></script>
 <script>
@@ -9,7 +8,7 @@
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -24,7 +23,7 @@ sequential_promise_test(() => {
     });
 }, 'Device goes out of range. Reject with NetworkError.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -40,7 +39,7 @@ sequential_promise_test(() => {
 }, 'Service is removed. Reject with InvalidStateError.');
 
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -57,7 +56,7 @@ sequential_promise_test(() => {
     });
 }, 'Request for wrong characteristic. Should return null.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -75,7 +74,7 @@ sequential_promise_test(() => {
     });
 }, 'Request for characteristic. Should return right characteristic');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -99,7 +98,7 @@ sequential_promise_test(() => {
     });
 }, 'Calls to get the same characteristic should return the same object.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())

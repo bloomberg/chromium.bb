@@ -20,11 +20,11 @@ self.addEventListener('install', function(event) {
 });
 
 self.addEventListener('activate', function(event) {
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       return wait_for_state(test, self.registration.active, 'activated');
     }, 'wait for worker to be activated');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(event.respondWith({accept: true}));
@@ -33,7 +33,7 @@ self.addEventListener('activate', function(event) {
           navigator.services.connect(self.registration.scope + '/service')]);
     }, 'respondWith can synchronously accept a connection without a promise.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(
@@ -43,7 +43,7 @@ self.addEventListener('activate', function(event) {
           navigator.services.connect(self.registration.scope + '/service')]);
     }, 'respondWith can synchronously accept a connection with a promise.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(
@@ -55,7 +55,7 @@ self.addEventListener('activate', function(event) {
           navigator.services.connect(self.registration.scope + '/service')]);
     }, 'respondWith can asynchronously accept a connection.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(
@@ -68,7 +68,7 @@ self.addEventListener('activate', function(event) {
           ]);
     }, 'respondWith can synchronously reject a connection without a promise.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(
@@ -81,7 +81,7 @@ self.addEventListener('activate', function(event) {
           ]);
     }, 'respondWith can synchronously reject a connection with a resolved promise.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(
@@ -94,14 +94,14 @@ self.addEventListener('activate', function(event) {
           ]);
     }, 'respondWith can synchronously reject a connection with a rejected promise.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       navigator.services.onconnect = test.step_func(function(event) {
         });
       return promise_rejects(test, 'AbortError',
           navigator.services.connect(self.registration.scope + '/service'));
     }, 'Not calling respondWith will reject the connection.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult1 = NewResolvablePromise();
       var respondResult2 = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
@@ -114,7 +114,7 @@ self.addEventListener('activate', function(event) {
           navigator.services.connect(self.registration.scope + '/service')]);
     }, 'Calling respondWith a second time will fail.');
 
-  sequential_promise_test(function(test) {
+  promise_test(function(test) {
       var respondResult = NewResolvablePromise();
       navigator.services.onconnect = test.step_func(function(event) {
           respondResult.resolve(

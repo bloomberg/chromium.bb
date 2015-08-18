@@ -17,7 +17,7 @@ function read_until_end(reader) {
   return consume();
 }
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/doctype.html').then(function(res) {
         var stream = res.body;
         var reader = stream.getReader();
@@ -28,7 +28,7 @@ sequential_promise_test(function(t) {
       });
   }, 'ReadableStreamReader acquisition / releasing');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/doctype.html').then(function(res) {
         var reader = res.body.getReader();
         return read_until_end(reader);
@@ -50,7 +50,7 @@ sequential_promise_test(function(t) {
       });
   }, 'read contents with ReadableStreamReader');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         assert_false(res.bodyUsed);
         var reader = res.body.getReader();
@@ -61,7 +61,7 @@ sequential_promise_test(function(t) {
       });
   }, 'acquiring a reader should set bodyUsed.');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var response;
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         response = res;
@@ -77,7 +77,7 @@ sequential_promise_test(function(t) {
       });
   }, 'Setting bodyUsed means the body is locked.');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/slow-failure.cgi').then(function(res) {
         return res.text().then(function() {
             assert_unreached('text() should fail');
@@ -89,7 +89,7 @@ sequential_promise_test(function(t) {
       });
    }, 'Error in text() should be propagated to the body stream.');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var reader;
     var read = 0;
     var original;
@@ -131,7 +131,7 @@ sequential_promise_test(function(t) {
       });
   }, 'Clone after reading partially');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         res.body.cancel();
         return res.text();
@@ -140,7 +140,7 @@ sequential_promise_test(function(t) {
       });
   }, 'Cancelling stream stops downloading.');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         var clone = res.clone();
         res.body.cancel();
@@ -151,7 +151,7 @@ sequential_promise_test(function(t) {
       });
   }, 'Cancelling stream should not affect cloned one.');
 
-sequential_promise_test(function(t) {
+promise_test(function(t) {
     var stream;
     return fetch('/fetch/resources/progressive.php').then(function(res) {
         var p = res.text();

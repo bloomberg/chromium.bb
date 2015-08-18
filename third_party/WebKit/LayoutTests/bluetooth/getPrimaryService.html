@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/bluetooth-helpers.js"></script>
 <script>
@@ -9,7 +8,7 @@
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -23,7 +22,7 @@ sequential_promise_test(() => {
     });
 }, 'Device goes out of range. Reject with NetworkError.');
 
-sequential_promise_test(function() {
+promise_test(function() {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -39,7 +38,7 @@ sequential_promise_test(function() {
     });
 }, 'Request for wrong service. Should return null.');
 
-sequential_promise_test(function() {
+promise_test(function() {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -57,7 +56,7 @@ sequential_promise_test(function() {
     });
 }, 'Request for service. Should return right service');
 
-sequential_promise_test(function() {
+promise_test(function() {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -79,7 +78,7 @@ sequential_promise_test(function() {
     });
 }, 'Calls to get the same service should return the same object.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())

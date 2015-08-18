@@ -397,7 +397,7 @@ function executeTest(test_target) {
 
 function executeTests(test_targets) {
   for (var i = 0; i < test_targets.length; ++i) {
-    sequential_promise_test(
+    promise_test(
       function(counter, t) {
         return executeTest(test_targets[counter]);
       }.bind(this, i),

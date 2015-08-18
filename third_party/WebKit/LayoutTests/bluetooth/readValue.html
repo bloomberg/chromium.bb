@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
-<script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/bluetooth-helpers.js"></script>
 <script>
@@ -9,7 +8,7 @@
 test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
      'window.testRunner is required for the following tests.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -25,7 +24,7 @@ sequential_promise_test(() => {
     });
 }, 'Device goes out of range. Reject with NetworkError.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -41,7 +40,7 @@ sequential_promise_test(() => {
     });
 }, 'Service gets removed. Reject with InvalidStateError.');
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())
@@ -126,7 +125,7 @@ sequential_promise_test(() => {
     message: 'GATT Error: Not supported.'
   }
 }].forEach(testSpec => {
-  sequential_promise_test(() => {
+  promise_test(() => {
     testRunner.setBluetoothMockDataSet('FailingGATTOperationsAdapter');
     return requestDeviceWithKeyDown({filters: [{services: [errorUUID(0xA0)]}]})
       .then(device => device.connectGATT())
@@ -141,7 +140,7 @@ sequential_promise_test(() => {
   }, testSpec.testName);
 });
 
-sequential_promise_test(() => {
+promise_test(() => {
   testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
     .then(device => device.connectGATT())

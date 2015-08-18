@@ -23,7 +23,7 @@ function run_postmessage_tests(source_origin, connect_method) {
   if (source_origin.charAt(source_origin.length - 1) != '/')
     source_origin += '/';
 
-  sequential_promise_test(function(t) {
+  promise_test(function(t) {
       var scope = sw_scope + '/echo';
       var sw_url = 'resources/echo-worker.js';
       var test_message = 'ping over navigator.connect';
@@ -44,7 +44,7 @@ function run_postmessage_tests(source_origin, connect_method) {
           });
     }, 'Messages can be sent and received.');
 
-  sequential_promise_test(function(t) {
+  promise_test(function(t) {
       var scope = sw_scope + '/echo-port';
       var sw_url = 'resources/echo-worker.js';
       var test_message = 'ping over navigator.connect';
@@ -72,7 +72,7 @@ function run_postmessage_tests(source_origin, connect_method) {
         });
   }, 'Ports can be sent and received.');
 
-  sequential_promise_test(function(t) {
+  promise_test(function(t) {
       var scope = sw_scope + '/reply-client-info';
       var sw_url = 'resources/reply-client-info-worker.js';
       var target_url = scope + '/service';
