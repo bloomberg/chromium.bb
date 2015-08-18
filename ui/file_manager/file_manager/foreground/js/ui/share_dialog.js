@@ -26,7 +26,7 @@ function ShareDialog(parentNode) {
  * @type {number}
  * @const
  */
-ShareDialog.FAILURE_TIMEOUT = 10000;
+ShareDialog.FAILURE_TIMEOUT = 20000;
 
 /**
  * The result of opening the dialog.
