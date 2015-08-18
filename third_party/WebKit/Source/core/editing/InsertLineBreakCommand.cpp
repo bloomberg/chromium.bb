@@ -129,9 +129,9 @@ void InsertLineBreakCommand::doApply()
             deleteInsignificantTextDownstream(endingPosition);
             ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
             // Deleting insignificant whitespace will remove textNode if it contains nothing but insignificant whitespace.
-            if (textNode->inDocument())
+            if (textNode->inDocument()) {
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
-            else {
+            } else {
                 RefPtrWillBeRawPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
                 insertNodeAt(nbspNode.get(), positionBeforeTextNode);
                 endingPosition = firstPositionInNode(nbspNode.get());

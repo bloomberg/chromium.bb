@@ -320,9 +320,9 @@ void CompositeEditCommand::insertNodeAfter(PassRefPtrWillBeRawPtr<Node> insertCh
     ContainerNode* parent = refChild->parentNode();
     ASSERT(parent);
     ASSERT(!parent->isShadowRoot());
-    if (parent->lastChild() == refChild)
+    if (parent->lastChild() == refChild) {
         appendNode(insertChild, parent);
-    else {
+    } else {
         ASSERT(refChild->nextSibling());
         insertNodeBefore(insertChild, refChild->nextSibling());
     }
@@ -345,17 +345,18 @@ void CompositeEditCommand::insertNodeAt(PassRefPtrWillBeRawPtr<Node> insertChild
             insertNodeBefore(insertChild, child);
         else
             appendNode(insertChild, toContainerNode(refChild));
-    } else if (caretMinOffset(refChild) >= offset)
+    } else if (caretMinOffset(refChild) >= offset) {
         insertNodeBefore(insertChild, refChild);
-    else if (refChild->isTextNode() && caretMaxOffset(refChild) > offset) {
+    } else if (refChild->isTextNode() && caretMaxOffset(refChild) > offset) {
         splitTextNode(toText(refChild), offset);
 
         // Mutation events (bug 22634) from the text node insertion may have removed the refChild
         if (!refChild->inDocument())
             return;
         insertNodeBefore(insertChild, refChild);
-    } else
+    } else {
         insertNodeAfter(insertChild, refChild);
+    }
 }
 
 void CompositeEditCommand::appendNode(PassRefPtrWillBeRawPtr<Node> node, PassRefPtrWillBeRawPtr<ContainerNode> parent)
@@ -674,10 +675,12 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(PassRefPtrWillBeRa
 
     String string = text.substring(upstream, length);
     String rebalancedString = stringWithRebalancedWhitespace(string,
-    // FIXME: Because of the problem mentioned at the top of this function, we must also use nbsps at the start/end of the string because
-    // this function doesn't get all surrounding whitespace, just the whitespace in the current text node.
-                                                             isStartOfParagraph(visibleUpstreamPos) || upstream == 0,
-                                                             isEndOfParagraph(visibleDownstreamPos) || (unsigned)downstream == text.length());
+    // FIXME: Because of the problem mentioned at the top of this function, we
+    // must also use nbsps at the start/end of the string because this function
+    // doesn't get all surrounding whitespace, just the whitespace in the
+    // current text node.
+        isStartOfParagraph(visibleUpstreamPos) || upstream == 0,
+        isEndOfParagraph(visibleDownstreamPos) || (unsigned)downstream == text.length());
 
     if (string != rebalancedString)
         replaceTextInNodePreservingMarkers(textNode.release(), upstream, length, rebalancedString);
@@ -769,9 +772,10 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
     // and also will look at the gap after the last box.
     while (prevBox || box) {
         unsigned gapStart = prevBox ? prevBox->start() + prevBox->len() : 0;
-        if (end < gapStart)
+        if (end < gapStart) {
             // No more chance for any intersections
             break;
+        }
 
         unsigned gapEnd = box ? box->start() : length;
         bool indicesIntersect = start <= gapEnd && end >= gapStart;
@@ -796,9 +800,9 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtrWillBeRawPtr<Text> 
 
     if (!str.isNull()) {
         // Replace the text between start and end with our pruned version.
-        if (!str.isEmpty())
+        if (!str.isEmpty()) {
             replaceTextInNode(textNode, start, end - start, str);
-        else {
+        } else {
             // Assert that we are not going to delete all of the text in the node.
             // If we were, that should have been done above with the call to
             // removeNode and return.
@@ -1103,8 +1107,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
                 return;
             }
             removeNodeAndPruneAncestors(node, destinationNode);
-        }
-        else if (lineBreakExistsAtPosition(position)) {
+        } else if (lineBreakExistsAtPosition(position)) {
             // There is a preserved '\n' at caretAfterDelete.
             // We can safely assume this is a text node.
             Text* textNode = toText(node);

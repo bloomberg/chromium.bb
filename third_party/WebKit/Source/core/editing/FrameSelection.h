@@ -68,8 +68,7 @@ public:
     virtual ~FrameSelection();
 
     enum EAlteration { AlterationMove, AlterationExtend };
-    enum CursorAlignOnScroll { AlignCursorOnScrollIfNeeded,
-                               AlignCursorOnScrollAlways };
+    enum CursorAlignOnScroll { AlignCursorOnScrollIfNeeded, AlignCursorOnScrollAlways };
     enum SetSelectionOption {
         // 1 << 0 is reserved for EUserTriggered
         CloseTyping = 1 << 1,
@@ -239,7 +238,8 @@ public:
 private:
     explicit FrameSelection(LocalFrame*);
 
-    enum EPositionType { START, END, BASE, EXTENT };
+    // TODO(yosin) We should use capitalized name for |EPositionType|.
+    enum EPositionType { START, END, BASE, EXTENT }; // NOLINT
 
     template <typename Strategy>
     bool containsAlgorithm(const LayoutPoint&);

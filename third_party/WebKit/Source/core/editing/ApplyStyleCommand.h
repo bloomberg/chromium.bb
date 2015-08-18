@@ -106,7 +106,7 @@ private:
     void splitTextElementAtStart(const Position& start, const Position& end);
     void splitTextElementAtEnd(const Position& start, const Position& end);
     bool shouldSplitTextElement(Element*, EditingStyle*);
-    bool isValidCaretPositionInTextNode(const Position& position);
+    bool isValidCaretPositionInTextNode(const Position&);
     bool mergeStartWithPreviousIfIdentical(const Position& start, const Position& end);
     bool mergeEndWithNextIfIdentical(const Position& start, const Position& end);
     void cleanupUnstyledAppleStyleSpans(ContainerNode* dummySpanAncestor);

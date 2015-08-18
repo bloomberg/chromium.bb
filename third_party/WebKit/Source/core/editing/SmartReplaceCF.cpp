@@ -36,8 +36,8 @@ namespace blink {
 
 static CFMutableCharacterSetRef getSmartSet(bool isPreviousCharacter)
 {
-    static CFMutableCharacterSetRef preSmartSet = NULL;
-    static CFMutableCharacterSetRef postSmartSet = NULL;
+    static CFMutableCharacterSetRef preSmartSet = nullptr;
+    static CFMutableCharacterSetRef postSmartSet = nullptr;
     CFMutableCharacterSetRef smartSet = isPreviousCharacter ? preSmartSet : postSmartSet;
     if (!smartSet) {
         smartSet = CFCharacterSetCreateMutable(kCFAllocatorDefault);

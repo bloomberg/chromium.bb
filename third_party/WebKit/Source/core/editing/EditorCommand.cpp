@@ -150,8 +150,9 @@ static bool executeToggleStyleInList(LocalFrame& frame, EditorCommandSource sour
         if (selectedCSSValueList->length())
             newStyle = selectedCSSValueList->cssText();
 
-    } else if (selectedCSSValue->cssText() == "none")
+    } else if (selectedCSSValue->cssText() == "none") {
         newStyle = value->cssText();
+    }
 
     // FIXME: We shouldn't be having to convert new style into text.  We should have setPropertyCSSValue.
     RefPtrWillBeRawPtr<MutableStylePropertySet> newMutableStyle = MutableStylePropertySet::create();

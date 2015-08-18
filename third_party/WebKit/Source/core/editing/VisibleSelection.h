@@ -38,7 +38,8 @@ namespace blink {
 
 class LayoutPoint;
 
-const EAffinity SEL_DEFAULT_AFFINITY = DOWNSTREAM;
+// TODO(yosin) We should use capitalized name instead of |SEL_DEFAULT_AFFINITY|.
+const EAffinity SEL_DEFAULT_AFFINITY = DOWNSTREAM; // NOLINT
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
 
 class CORE_EXPORT VisibleSelection {
@@ -222,13 +223,13 @@ private:
 
     // We need to store these as Positions because VisibleSelection is
     // used to store values in editing commands for use when
-    // undoing the command. We need to be able to create a selection that, while currently
-    // invalid, will be valid once the changes are undone.
+    // undoing the command. We need to be able to create a selection that, while
+    // currently invalid, will be valid once the changes are undone.
 
-    Position m_base;   // Where the first click happened
+    Position m_base; // Where the first click happened
     Position m_extent; // Where the end click happened
-    Position m_start;  // Leftmost position when expanded to respect granularity
-    Position m_end;    // Rightmost position when expanded to respect granularity
+    Position m_start; // Leftmost position when expanded to respect granularity
+    Position m_end; // Rightmost position when expanded to respect granularity
 
     // TODO(hajimehoshi, yosin): The members m_*InComposedTree are now always
     // computed from the respective positions at validate(). To have selections

@@ -218,11 +218,14 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             listElement = fixOrphanedListChild(listChildNode);
             listElement = mergeWithNeighboringLists(listElement);
         }
-        if (!listElement->hasTagName(listTag))
-            // listChildNode will be removed from the list and a list of type m_type will be created.
+        if (!listElement->hasTagName(listTag)) {
+            // |listChildNode| will be removed from the list and a list of type
+            // |m_type| will be created.
             switchListType = true;
+        }
 
-        // If the list is of the desired type, and we are not removing the list, then exit early.
+        // If the list is of the desired type, and we are not removing the list,
+        // then exit early.
         if (!switchListType && forceCreateList)
             return true;
 
@@ -362,11 +365,11 @@ PassRefPtrWillBeRawPtr<HTMLElement> InsertListCommand::listifyParagraph(const Vi
     HTMLElement* previousList = adjacentEnclosingList(start, start.previous(CannotCrossEditingBoundary), listTag);
     HTMLElement* nextList = adjacentEnclosingList(start, end.next(CannotCrossEditingBoundary), listTag);
     RefPtrWillBeRawPtr<HTMLElement> listElement = nullptr;
-    if (previousList)
+    if (previousList) {
         appendNode(listItemElement, previousList);
-    else if (nextList)
+    } else if (nextList) {
         insertNodeAt(listItemElement, positionBeforeNode(nextList));
-    else {
+    } else {
         // Create the list.
         listElement = createHTMLElement(document(), listTag);
         appendNode(listItemElement, listElement);

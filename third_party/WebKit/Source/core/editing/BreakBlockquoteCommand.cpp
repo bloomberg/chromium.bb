@@ -200,8 +200,8 @@ void BreakBlockquoteCommand::doApply()
         RefPtrWillBeRawPtr<Element> ancestor = nullptr;
         RefPtrWillBeRawPtr<Element> clonedParent = nullptr;
         for (ancestor = ancestors.first(), clonedParent = clonedAncestor->parentElement();
-             ancestor && ancestor != topBlockquote;
-             ancestor = ancestor->parentElement(), clonedParent = clonedParent->parentElement())
+            ancestor && ancestor != topBlockquote;
+            ancestor = ancestor->parentElement(), clonedParent = clonedParent->parentElement())
             moveRemainingSiblingsToNewParent(ancestor->nextSibling(), 0, clonedParent);
 
         // If the startNode's original parent is now empty, remove it

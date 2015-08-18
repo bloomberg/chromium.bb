@@ -253,9 +253,9 @@ Position InsertTextCommand::insertTab(const Position& pos)
         insertNodeAt(spanElement.get(), insertPos);
     } else {
         RefPtrWillBeRawPtr<Text> textNode = toText(node);
-        if (offset >= textNode->length())
+        if (offset >= textNode->length()) {
             insertNodeAfter(spanElement, textNode.release());
-        else {
+        } else {
             // split node to make room for the span
             // NOTE: splitTextNode uses textNode for the
             // second node in the split, so we need to

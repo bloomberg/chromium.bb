@@ -91,12 +91,13 @@ void InsertParagraphSeparatorCommand::applyStyleAfterInsertion(Element* original
 {
     // Not only do we break out of header tags, but we also do not preserve the typing style,
     // in order to match other browsers.
-    if (originalEnclosingBlock->hasTagName(h1Tag) ||
-        originalEnclosingBlock->hasTagName(h2Tag) ||
-        originalEnclosingBlock->hasTagName(h3Tag) ||
-        originalEnclosingBlock->hasTagName(h4Tag) ||
-        originalEnclosingBlock->hasTagName(h5Tag))
+    if (originalEnclosingBlock->hasTagName(h1Tag)
+        || originalEnclosingBlock->hasTagName(h2Tag)
+        || originalEnclosingBlock->hasTagName(h3Tag)
+        || originalEnclosingBlock->hasTagName(h4Tag)
+        || originalEnclosingBlock->hasTagName(h5Tag)) {
         return;
+    }
 
     if (!m_style)
         return;
@@ -115,11 +116,11 @@ bool InsertParagraphSeparatorCommand::shouldUseDefaultParagraphElement(Element* 
     if (!isEndOfBlock(endingSelection().visibleStart()))
         return false;
 
-    return enclosingBlock->hasTagName(h1Tag) ||
-           enclosingBlock->hasTagName(h2Tag) ||
-           enclosingBlock->hasTagName(h3Tag) ||
-           enclosingBlock->hasTagName(h4Tag) ||
-           enclosingBlock->hasTagName(h5Tag);
+    return enclosingBlock->hasTagName(h1Tag)
+        || enclosingBlock->hasTagName(h2Tag)
+        || enclosingBlock->hasTagName(h3Tag)
+        || enclosingBlock->hasTagName(h4Tag)
+        || enclosingBlock->hasTagName(h5Tag);
 }
 
 void InsertParagraphSeparatorCommand::getAncestorsInsideBlock(const Node* insertionNode, Element* outerBlock, WillBeHeapVector<RefPtrWillBeMember<Element>>& ancestors)
@@ -394,9 +395,9 @@ void InsertParagraphSeparatorCommand::doApply()
     // Move the start node and the siblings of the start node.
     if (VisiblePosition(insertionPosition).deepEquivalent() != VisiblePosition(positionBeforeNode(blockToInsert.get())).deepEquivalent()) {
         Node* n;
-        if (insertionPosition.computeContainerNode() == startBlock)
+        if (insertionPosition.computeContainerNode() == startBlock) {
             n = insertionPosition.computeNodeAfterPosition();
-        else {
+        } else {
             Node* splitTo = insertionPosition.computeContainerNode();
             if (splitTo->isTextNode() && insertionPosition.offsetInContainerNode() >= caretMaxOffset(splitTo))
                 splitTo = NodeTraversal::next(*splitTo, startBlock.get());

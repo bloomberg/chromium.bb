@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "core/dom/Text.h"
 #include "core/editing/CreateLinkCommand.h"
 
+#include "core/dom/Text.h"
 #include "core/html/HTMLAnchorElement.h"
 
 namespace blink {
@@ -45,9 +45,9 @@ void CreateLinkCommand::doApply()
     RefPtrWillBeRawPtr<HTMLAnchorElement> anchorElement = HTMLAnchorElement::create(document());
     anchorElement->setHref(AtomicString(m_url));
 
-    if (endingSelection().isRange())
+    if (endingSelection().isRange()) {
         applyStyledElement(anchorElement.get());
-    else {
+    } else {
         insertNodeAt(anchorElement.get(), endingSelection().start());
         RefPtrWillBeRawPtr<Text> textNode = Text::create(document(), m_url);
         appendNode(textNode.get(), anchorElement.get());

@@ -274,8 +274,9 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
             if (text->previousSibling()->isTextNode()
                 && static_cast<unsigned>(m_endOfLastParagraph.offsetInContainerNode()) <= toText(text->previousSibling())->length())
                 m_endOfLastParagraph = Position(toText(text->previousSibling()), m_endOfLastParagraph.offsetInContainerNode());
-        } else
+        } else {
             m_endOfLastParagraph = Position(text.get(), m_endOfLastParagraph.offsetInContainerNode() - 1);
+        }
     }
 
     return VisiblePosition(Position(text.get(), position.offsetInContainerNode() - 1));

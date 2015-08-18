@@ -936,9 +936,9 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* elemen
 {
     ASSERT(element);
     bool elementIsSpanOrElementEquivalent = false;
-    if (isHTMLSpanElement(*element))
+    if (isHTMLSpanElement(*element)) {
         elementIsSpanOrElementEquivalent = true;
-    else {
+    } else {
         const WillBeHeapVector<OwnPtrWillBeMember<HTMLElementEquivalent>>& HTMLElementEquivalents = htmlElementEquivalents();
         size_t i;
         for (i = 0; i < HTMLElementEquivalents.size(); ++i) {
@@ -1491,10 +1491,11 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
 
 static void setTextDecorationProperty(MutableStylePropertySet* style, const CSSValueList* newTextDecoration, CSSPropertyID propertyID)
 {
-    if (newTextDecoration->length())
+    if (newTextDecoration->length()) {
         style->setProperty(propertyID, newTextDecoration->cssText(), style->propertyIsImportant(propertyID));
-    else {
-        // text-decoration: none is redundant since it does not remove any text decorations.
+    } else {
+        // text-decoration: none is redundant since it does not remove any text
+        // decorations.
         style->removeProperty(propertyID);
     }
 }
@@ -1585,21 +1586,21 @@ static bool fontWeightIsBold(CSSValue* fontWeight)
     // Because b tag can only bold text, there are only two states in plain html: bold and not bold.
     // Collapse all other values to either one of these two states for editing purposes.
     switch (toCSSPrimitiveValue(fontWeight)->getValueID()) {
-        case CSSValue100:
-        case CSSValue200:
-        case CSSValue300:
-        case CSSValue400:
-        case CSSValue500:
-        case CSSValueNormal:
-            return false;
-        case CSSValueBold:
-        case CSSValue600:
-        case CSSValue700:
-        case CSSValue800:
-        case CSSValue900:
-            return true;
-        default:
-            break;
+    case CSSValue100:
+    case CSSValue200:
+    case CSSValue300:
+    case CSSValue400:
+    case CSSValue500:
+    case CSSValueNormal:
+        return false;
+    case CSSValueBold:
+    case CSSValue600:
+    case CSSValue700:
+    case CSSValue800:
+    case CSSValue900:
+        return true;
+    default:
+        break;
     }
 
     ASSERT_NOT_REACHED(); // For CSSValueBolder and CSSValueLighter

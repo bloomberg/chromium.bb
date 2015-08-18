@@ -379,8 +379,9 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
                 m_selection.setWithoutValidation(start, end);
             else
                 m_selection.setWithoutValidation(end, start);
-        } else
+        } else {
             clearDOMTreeSelection = true;
+        }
 
         clearLayoutTreeSelection = true;
     } else if (baseRemoved || extentRemoved) {
@@ -1020,9 +1021,10 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
     if (position.isNull())
         return false;
 
-    if (isSpatialNavigationEnabled(m_frame))
+    if (isSpatialNavigationEnabled(m_frame)) {
         if (!wasRange && alter == AlterationMove && position.deepEquivalent() == originalStartPosition.deepEquivalent())
             return false;
+    }
 
     // Some of the above operations set an xPosForVerticalArrowNavigation.
     // Setting a selection will clear it, so save it to possibly restore later.
@@ -1050,11 +1052,14 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
                 position = m_selection.visibleBase();
         }
 
-        // Standard Mac behavior when extending to a boundary is grow the selection rather than leaving the
-        // base in place and moving the extent. Matches NSTextView.
-        if (!m_frame || !m_frame->editor().behavior().shouldAlwaysGrowSelectionWhenExtendingToBoundary() || m_selection.isCaret() || !isBoundary(granularity))
+        // Standard Mac behavior when extending to a boundary is grow the
+        // selection rather than leaving the base in place and moving the
+        // extent. Matches NSTextView.
+        if (!m_frame || !m_frame->editor().behavior().shouldAlwaysGrowSelectionWhenExtendingToBoundary()
+            || m_selection.isCaret()
+            || !isBoundary(granularity)) {
             setExtent(position, userTriggered);
-        else {
+        } else {
             TextDirection textDirection = directionOfEnclosingBlock();
             if (direction == DirectionForward || (textDirection == LTR && direction == DirectionRight) || (textDirection == RTL && direction == DirectionLeft))
                 setEnd(position, userTriggered);
@@ -1196,8 +1201,9 @@ LayoutUnit FrameSelection::lineDirectionPointForBlockDirectionNavigation(EPositi
         // after the selection is created and before this function is called.
         x = visiblePosition.lineDirectionPointForBlockDirectionNavigation();
         m_xPosForVerticalArrowNavigation = x;
-    } else
+    } else {
         x = m_xPosForVerticalArrowNavigation;
+    }
 
     return x;
 }
@@ -1441,9 +1447,9 @@ void FrameSelection::selectAll()
             selectStartTarget = root.get();
     } else {
         root = m_selection.nonBoundaryShadowTreeRootNode();
-        if (root)
+        if (root) {
             selectStartTarget = root->shadowHost();
-        else {
+        } else {
             root = document->documentElement();
             selectStartTarget = document->body();
         }

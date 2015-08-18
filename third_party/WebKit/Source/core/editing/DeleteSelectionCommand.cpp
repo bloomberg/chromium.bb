@@ -58,10 +58,10 @@ static bool isTableRowEmpty(Node* row)
     if (!isHTMLTableRowElement(row))
         return false;
 
-    for (Node* child = row->firstChild(); child; child = child->nextSibling())
+    for (Node* child = row->firstChild(); child; child = child->nextSibling()) {
         if (isTableCell(child) && !isTableCellEmpty(child))
             return false;
-
+    }
     return true;
 }
 
@@ -140,15 +140,15 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
         if (endSpecialContainer && !startSpecialContainer && comparePositions(start, positionInParentBeforeNode(*endSpecialContainer)) > -1)
             break;
 
-        if (startSpecialContainer && startSpecialContainer->isDescendantOf(endSpecialContainer))
+        if (startSpecialContainer && startSpecialContainer->isDescendantOf(endSpecialContainer)) {
             // Don't adjust the end yet, it is the end of a special element that contains the start
             // special element (which may or may not be fully selected).
             start = s;
-        else if (endSpecialContainer && endSpecialContainer->isDescendantOf(startSpecialContainer))
+        } else if (endSpecialContainer && endSpecialContainer->isDescendantOf(startSpecialContainer)) {
             // Don't adjust the start yet, it is the start of a special element that contains the end
             // special element (which may or may not be fully selected).
             end = e;
-        else {
+        } else {
             start = s;
             end = e;
         }
@@ -208,8 +208,8 @@ void DeleteSelectionCommand::initializePositionData()
     // Only apply this rule if the endingSelection is a range selection.  If it is a caret, then other operations have created
     // the selection we're deleting (like the process of creating a selection to delete during a backspace), and the user isn't in the situation described above.
     if (numEnclosingMailBlockquotes(start) != numEnclosingMailBlockquotes(end)
-            && isStartOfParagraph(visibleEnd) && isStartOfParagraph(VisiblePosition(start))
-            && endingSelection().isRange()) {
+        && isStartOfParagraph(visibleEnd) && isStartOfParagraph(VisiblePosition(start))
+        && endingSelection().isRange()) {
         m_mergeBlocksAfterDelete = false;
         m_pruneStartBlockIfNecessary = true;
     }
@@ -491,8 +491,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
         // The selection to delete is all in one node.
         if (!startNode->layoutObject() || (!startOffset && m_downstreamEnd.atLastEditingPositionForNode()))
             removeNode(startNode);
-    }
-    else {
+    } else {
         bool startNodeWasDescendantOfEndNode = m_upstreamStart.anchorNode()->isDescendantOf(m_downstreamEnd.anchorNode());
         // The selection to delete spans more than one node.
         RefPtrWillBeRawPtr<Node> node(startNode);
@@ -604,7 +603,7 @@ void DeleteSelectionCommand::mergeParagraphs()
 
     // FIXME: Deletion should adjust selection endpoints as it removes nodes so that we never get into this state (4099839).
     if (!m_downstreamEnd.inDocument() || !m_upstreamStart.inDocument())
-         return;
+        return;
 
     // FIXME: The deletion algorithm shouldn't let this happen.
     if (comparePositions(m_upstreamStart, m_downstreamEnd) > 0)
@@ -684,10 +683,12 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
         Node* row = m_endTableRow->previousSibling();
         while (row && row != m_startTableRow) {
             RefPtrWillBeRawPtr<Node> previousRow = row->previousSibling();
-            if (isTableRowEmpty(row))
-                // Use a raw removeNode, instead of DeleteSelectionCommand's, because
-                // that won't remove rows, it only empties them in preparation for this function.
+            if (isTableRowEmpty(row)) {
+                // Use a raw removeNode, instead of DeleteSelectionCommand's,
+                // because that won't remove rows, it only empties them in
+                // preparation for this function.
                 CompositeEditCommand::removeNode(row);
+            }
             row = previousRow.get();
         }
     }
@@ -703,16 +704,19 @@ void DeleteSelectionCommand::removePreviouslySelectedEmptyTableRows()
         }
     }
 
-    if (m_endTableRow && m_endTableRow->inDocument() && m_endTableRow != m_startTableRow)
+    if (m_endTableRow && m_endTableRow->inDocument() && m_endTableRow != m_startTableRow) {
         if (isTableRowEmpty(m_endTableRow.get())) {
-            // Don't remove m_endTableRow if it's where we're putting the ending selection.
+            // Don't remove m_endTableRow if it's where we're putting the ending
+            // selection.
             if (!m_endingPosition.anchorNode()->isDescendantOf(m_endTableRow.get())) {
-                // FIXME: We probably shouldn't remove m_endTableRow unless it's fully selected, even if it is empty.
-                // We'll need to start adjusting the selection endpoints during deletion to know whether or not m_endTableRow
-                // was fully selected here.
+                // FIXME: We probably shouldn't remove m_endTableRow unless it's
+                // fully selected, even if it is empty. We'll need to start
+                // adjusting the selection endpoints during deletion to know
+                // whether or not m_endTableRow was fully selected here.
                 CompositeEditCommand::removeNode(m_endTableRow.get());
             }
         }
+    }
 }
 
 void DeleteSelectionCommand::calculateTypingStyleAfterDelete()
@@ -769,8 +773,9 @@ void DeleteSelectionCommand::removeRedundantBlocks()
 
             CompositeEditCommand::removeNodePreservingChildren(node);
             node = m_endingPosition.anchorNode();
-        } else
+        } else {
             node = node->parentNode();
+        }
     }
 }
 
@@ -796,12 +801,13 @@ void DeleteSelectionCommand::doApply()
         && isEndOfParagraph(m_selectionToDelete.visibleEnd(), CanCrossEditingBoundary)
         && !lineBreakAtEndOfSelectionToDelete;
     if (m_needPlaceholder) {
-        // Don't need a placeholder when deleting a selection that starts just before a table
-        // and ends inside it (we do need placeholders to hold open empty cells, but that's
-        // handled elsewhere).
-        if (Element* table = isLastPositionBeforeTable(m_selectionToDelete.visibleStart()))
+        // Don't need a placeholder when deleting a selection that starts just
+        // before a table and ends inside it (we do need placeholders to hold
+        // open empty cells, but that's handled elsewhere).
+        if (Element* table = isLastPositionBeforeTable(m_selectionToDelete.visibleStart())) {
             if (m_selectionToDelete.end().anchorNode()->isDescendantOf(table))
                 m_needPlaceholder = false;
+        }
     }
 
 

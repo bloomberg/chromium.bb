@@ -146,10 +146,10 @@ static Position positionAvoidingPrecedingNodes(Position pos)
 }
 
 ReplacementFragment::ReplacementFragment(Document* document, DocumentFragment* fragment, const VisibleSelection& selection)
-    : m_document(document),
-      m_fragment(fragment),
-      m_hasInterchangeNewlineAtStart(false),
-      m_hasInterchangeNewlineAtEnd(false)
+    : m_document(document)
+    , m_fragment(fragment)
+    , m_hasInterchangeNewlineAtStart(false)
+    , m_hasInterchangeNewlineAtEnd(false)
 {
     if (!m_document)
         return;
@@ -859,8 +859,9 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
     if (mergeForward) {
         if (m_startOfInsertedContent.isOrphan())
             m_startOfInsertedContent = endingSelection().visibleStart().deepEquivalent();
-         m_endOfInsertedContent = endingSelection().visibleEnd().deepEquivalent();
-        // If we merged text nodes, m_endOfInsertedContent could be null. If this is the case, we use m_startOfInsertedContent.
+        m_endOfInsertedContent = endingSelection().visibleEnd().deepEquivalent();
+        // If we merged text nodes, m_endOfInsertedContent could be null. If
+        // this is the case, we use m_startOfInsertedContent.
         if (m_endOfInsertedContent.isNull())
             m_endOfInsertedContent = m_startOfInsertedContent;
     }
@@ -954,9 +955,12 @@ void ReplaceSelectionCommand::doApply()
     bool selectionIsPlainText = !selection.isContentRichlyEditable();
     Element* currentRoot = selection.rootEditableElement();
 
-    if ((selectionStartWasStartOfParagraph && selectionEndWasEndOfParagraph && !startIsInsideMailBlockquote) ||
-        enclosingBlockOfVisibleStart == currentRoot || isListItem(enclosingBlockOfVisibleStart) || selectionIsPlainText)
+    if ((selectionStartWasStartOfParagraph && selectionEndWasEndOfParagraph && !startIsInsideMailBlockquote)
+        || enclosingBlockOfVisibleStart == currentRoot
+        || isListItem(enclosingBlockOfVisibleStart)
+        || selectionIsPlainText) {
         m_preventNesting = false;
+    }
 
     if (selection.isRange()) {
         // When the end of the selection being pasted into is at the end of a paragraph, and that selection
@@ -974,17 +978,18 @@ void ReplaceSelectionCommand::doApply()
             if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart)) {
                 if (!isEndOfEditableOrNonEditableContent(visibleStart))
                     setEndingSelection(visibleStart.next());
-            } else
+            } else {
                 insertParagraphSeparator();
+            }
         }
         insertionPos = endingSelection().start();
     } else {
         ASSERT(selection.isCaret());
         if (fragment.hasInterchangeNewlineAtStart()) {
             VisiblePosition next = visibleStart.next(CannotCrossEditingBoundary);
-            if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull())
+            if (isEndOfParagraph(visibleStart) && !isStartOfParagraph(visibleStart) && next.isNotNull()) {
                 setEndingSelection(next);
-            else  {
+            } else  {
                 insertParagraphSeparator();
                 visibleStart = endingSelection().visibleStart();
             }
@@ -1019,7 +1024,7 @@ void ReplaceSelectionCommand::doApply()
 
     // If the downstream node has been removed there's no point in continuing.
     if (!insertionPos.downstream().anchorNode())
-      return;
+        return;
 
     // NOTE: This would be an incorrect usage of downstream() if downstream() were changed to mean the last position after
     // p that maps to the same visible position as p (since in the case where a br is at the end of a block and collapsed
@@ -1111,9 +1116,9 @@ void ReplaceSelectionCommand::doApply()
 
     Element* blockStart = enclosingBlock(insertionPos.anchorNode());
     if ((isHTMLListElement(refNode.get()) || (isLegacyAppleHTMLSpanElement(refNode.get()) && isHTMLListElement(refNode->firstChild())))
-        && blockStart && blockStart->layoutObject()->isListItem())
+        && blockStart && blockStart->layoutObject()->isListItem()) {
         refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes);
-    else {
+    } else {
         insertNodeAt(refNode, insertionPos);
         insertedNodes.respondToNodeInsertion(*refNode);
     }
@@ -1376,10 +1381,11 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
             end = lastPositionToSelect;
 
         mergeTextNodesAroundPosition(start, end);
-    } else if (lastPositionToSelect.isNotNull())
+    } else if (lastPositionToSelect.isNotNull()) {
         start = end = lastPositionToSelect;
-    else
+    } else {
         return;
+    }
 
     if (m_selectReplacement)
         setEndingSelection(VisibleSelection(start, end, SEL_DEFAULT_AFFINITY, endingSelection().isDirectional()));
@@ -1392,13 +1398,13 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
     bool positionIsOffsetInAnchor = position.isOffsetInAnchor();
     bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.isOffsetInAnchor();
     RefPtrWillBeRawPtr<Text> text = nullptr;
-    if (positionIsOffsetInAnchor && position.computeContainerNode() && position.computeContainerNode()->isTextNode())
+    if (positionIsOffsetInAnchor && position.computeContainerNode() && position.computeContainerNode()->isTextNode()) {
         text = toText(position.computeContainerNode());
-    else {
+    } else {
         Node* before = position.computeNodeBeforePosition();
-        if (before && before->isTextNode())
+        if (before && before->isTextNode()) {
             text = toText(before);
-        else {
+        } else {
             Node* after = position.computeNodeAfterPosition();
             if (after && after->isTextNode())
                 text = toText(after);
@@ -1481,8 +1487,9 @@ Node* ReplaceSelectionCommand::insertAsListItems(PassRefPtrWillBeRawPtr<HTMLElem
             insertNodeAfter(listItem, lastNode);
             insertedNodes.respondToNodeInsertion(*listItem);
             lastNode = listItem.get();
-        } else
+        } else {
             ASSERT_NOT_REACHED();
+        }
     }
     if (isStart || isMiddle) {
         if (Node* node = lastNode->previousSibling())

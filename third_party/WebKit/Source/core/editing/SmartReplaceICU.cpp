@@ -47,8 +47,8 @@ static void addAllCodePoints(USet* smartSet, const String& string)
 // except we use icu in place of CoreFoundations character classes.
 static USet* getSmartSet(bool isPreviousCharacter)
 {
-    static USet* preSmartSet = NULL;
-    static USet* postSmartSet = NULL;
+    static USet* preSmartSet = nullptr;
+    static USet* postSmartSet = nullptr;
     USet* smartSet = isPreviousCharacter ? preSmartSet : postSmartSet;
     if (!smartSet) {
         // Whitespace and newline (kCFCharacterSetWhitespaceAndNewline)

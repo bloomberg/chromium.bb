@@ -36,7 +36,9 @@ namespace blink {
 // From NSTextView.h:
 // NSSelectionAffinityUpstream = 0
 // NSSelectionAffinityDownstream = 1
-enum EAffinity { UPSTREAM = 0, DOWNSTREAM = 1 };
+// TODO(yosin) We should rename |UPSTREAM| and |DOWNSTREAM| to use
+// capitalized name.
+enum EAffinity { UPSTREAM = 0, DOWNSTREAM = 1 }; // NOLINT
 
 } // namespace blink
 
