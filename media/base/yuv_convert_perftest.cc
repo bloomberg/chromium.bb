@@ -80,11 +80,11 @@ TEST_F(YUVConvertPerfTest, ConvertYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
+  media::EmptyRegisterState();
   double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ConvertYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
-  media::EmptyRegisterState();
 }
 
 // 64-bit release + component builds on Windows are too smart and optimizes
@@ -109,11 +109,11 @@ TEST_F(YUVConvertPerfTest, ScaleYUVToRGB32Row_SSE) {
           GetLookupTable(YV12));
     }
   }
+  media::EmptyRegisterState();
   double total_time_seconds = (base::TimeTicks::Now() - start).InSecondsF();
   perf_test::PrintResult(
       "yuv_convert_perftest", "", "ScaleYUVToRGB32Row_SSE",
       kPerfTestIterations / total_time_seconds, "runs/s", true);
-  media::EmptyRegisterState();
 }
 
 TEST_F(YUVConvertPerfTest, LinearScaleYUVToRGB32Row_SSE) {
