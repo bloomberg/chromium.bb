@@ -5,11 +5,21 @@
 :host {
   @apply(--downloads-shared-style);
   display: flex;
-  margin: 32px 0;
+  margin: 24px 0;
 }
 
 :host([hide-date]) {
-  margin-top: -16px;
+  margin-top: -12px;
+}
+
+:host(:not(:first-of-type):not([hide-date])) {
+  border-top: 1px solid rgba(0, 0, 0, .14);
+  padding-top: 30px;
+}
+
+:host(:first-of-type),
+:host(:not(:first-of-type):not([hide-date])) {
+  margin-top: 30px;
 }
 
 #date-container,
@@ -18,8 +28,8 @@
 }
 
 #date-container > * {
-  color: #616161;
-  font-size: 107.69%;
+  color: #5a5a5a;
+  font-size: 92.3%;
   font-weight: bold;
 }
 
@@ -161,13 +171,6 @@
 }
 
 @media not all and (max-width: 1024px) {
-  /* Only show date separators in wide mode. */
-  :host(:not(:first-of-type):not([hide-date])) :-webkit-any(#content-wrapper,
-                                                            #since) {
-    border-top: 1px solid rgba(0, 0, 0, .2);  /* TODO(dbeam): real color. */
-    padding-top: 32px;
-  }
-
   #date-container > * {
     -webkit-margin-start: 24px;
   }
@@ -190,7 +193,7 @@
 
   #date-container {
     flex: none !important;
-    margin: 0 auto 32px;
+    margin: 0 auto 30px;
     width: var(--downloads-item-width);
   }
 }
