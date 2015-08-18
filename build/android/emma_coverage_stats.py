@@ -7,7 +7,7 @@
 
 Usage:
 
-  build/android/coverage.py -v --out <output file path> --emma-dir
+  build/android/emma_coverage_stats.py -v --out <output file path> --emma-dir
     <EMMA file directory> --lines-for-coverage-file
     <path to file containing lines for coverage>
 
@@ -256,8 +256,12 @@ class _EmmaCoverageStats(object):
     """
     file_coverage = {}
     for file_path, line_numbers in lines_for_coverage.iteritems():
-      file_coverage[file_path] = self.GetCoverageDictForFile(
-          file_path, line_numbers)
+      file_coverage_dict = self.GetCoverageDictForFile(file_path, line_numbers)
+      if file_coverage_dict:
+        file_coverage[file_path] = file_coverage_dict
+      else:
+        logging.warning(
+            'No code coverage data for %s, skipping.', file_path)
 
     covered_statuses = [s['incremental'] for s in file_coverage.itervalues()]
     num_covered_lines = sum(s['covered'] for s in covered_statuses)
@@ -285,7 +289,10 @@ class _EmmaCoverageStats(object):
       A dict containing absolute, incremental, and line by line coverage for
         a file.
     """
-    total_line_coverage = self._GetLineCoverageForFile(file_path)
+    if file_path not in self._source_to_emma:
+      return None
+    emma_file = self._source_to_emma[file_path]
+    total_line_coverage = self._emma_parser.GetLineCoverage(emma_file)
     incremental_line_coverage = [line for line in total_line_coverage
                                  if line.lineno in line_numbers]
     line_by_line_coverage = [
@@ -338,24 +345,6 @@ class _EmmaCoverageStats(object):
     total_lines = sum(covered_status_totals.values())
     return total_covered, total_lines
 
-  def _GetLineCoverageForFile(self, file_path):
-    """Gets a list of LineCoverage objects corresponding to the given file path.
-
-    Args:
-      file_path: String representing the path to the Java source file.
-
-    Returns:
-      A list of LineCoverage objects, or None if there is no EMMA file
-        for the given Java source file.
-    """
-    if file_path in self._source_to_emma:
-      emma_file = self._source_to_emma[file_path]
-      return self._emma_parser.GetLineCoverage(emma_file)
-    else:
-      logging.warning(
-          'No code coverage data for %s, skipping.', file_path)
-      return None
-
   def _GetSourceFileToEmmaFileDict(self, files):
     """Gets a dict used to correlate Java source files with EMMA HTML files.
 
@@ -388,8 +377,9 @@ class _EmmaCoverageStats(object):
     package_to_emma = self._emma_parser.GetPackageNameToEmmaFileDict()
     # Finally, we have a dict mapping Java file paths to EMMA report files.
     # Example: /usr/code/file.java -> out/coverage/1a.html.
-    source_to_emma = {source: package_to_emma.get(package)
-                      for source, package in source_to_package.iteritems()}
+    source_to_emma = {source: package_to_emma[package]
+                      for source, package in source_to_package.iteritems()
+                      if package in package_to_emma}
     return source_to_emma
 
   @staticmethod
@@ -447,6 +437,7 @@ def GenerateCoverageReport(line_coverage_file, out_file_path, coverage_dir):
   """
   with open(line_coverage_file) as f:
     potential_files_for_coverage = json.load(f)
+
   files_for_coverage = {f: lines
                         for f, lines in potential_files_for_coverage.iteritems()
                         if _EmmaCoverageStats.NeedsCoverage(f)}
