@@ -40,7 +40,9 @@ inline static bool IsValidStateTransition(MediaClockDevice::State state1,
 }  // namespace
 
 MediaClockDeviceDefault::MediaClockDeviceDefault()
-    : state_(kStateUninitialized), media_time_(::media::kNoTimestamp()) {
+    : state_(kStateUninitialized),
+      media_time_(::media::kNoTimestamp()),
+      rate_(0.0f) {
   thread_checker_.DetachFromThread();
 }
 
