@@ -1634,11 +1634,9 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
     ASSERT_TRUE(child2->render_surface());
 
     EXPECT_FALSE(root->is_clipped());
-    EXPECT_TRUE(root->render_surface()->is_clipped());
     EXPECT_FALSE(parent->is_clipped());
     EXPECT_FALSE(child1->is_clipped());
     EXPECT_FALSE(child2->is_clipped());
-    EXPECT_FALSE(child2->render_surface()->is_clipped());
     EXPECT_FALSE(grand_child->is_clipped());
     EXPECT_FALSE(leaf_node1->is_clipped());
     EXPECT_FALSE(leaf_node2->is_clipped());
@@ -1660,11 +1658,9 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
     ASSERT_TRUE(child2->render_surface());
 
     EXPECT_FALSE(root->is_clipped());
-    EXPECT_TRUE(root->render_surface()->is_clipped());
     EXPECT_TRUE(parent->is_clipped());
     EXPECT_TRUE(child1->is_clipped());
     EXPECT_FALSE(child2->is_clipped());
-    EXPECT_TRUE(child2->render_surface()->is_clipped());
     EXPECT_TRUE(grand_child->is_clipped());
     EXPECT_TRUE(leaf_node1->is_clipped());
     EXPECT_FALSE(leaf_node2->is_clipped());
@@ -1680,6 +1676,112 @@ TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectly) {
         root.get(), parent->bounds(), &render_surface_layer_list);
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    ASSERT_TRUE(root->render_surface());
+    ASSERT_TRUE(child2->render_surface());
+
+    EXPECT_FALSE(root->is_clipped());
+    EXPECT_FALSE(parent->is_clipped());
+    EXPECT_FALSE(child1->is_clipped());
+    EXPECT_TRUE(child2->is_clipped());
+    EXPECT_FALSE(grand_child->is_clipped());
+    EXPECT_FALSE(leaf_node1->is_clipped());
+    EXPECT_TRUE(leaf_node2->is_clipped());
+  }
+}
+
+TEST_F(LayerTreeHostCommonTest, IsClippedIsSetCorrectlyLayerImpl) {
+  // This is identical to the IsClippedIsSetCorrectly test,
+  // but tests render surfaces instead of the layers.
+
+  const gfx::Transform identity_matrix;
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child1);
+  LayerImpl* leaf_node1 = AddChild<LayerImpl>(grand_child);
+  leaf_node1->SetDrawsContent(true);
+  LayerImpl* leaf_node2 = AddChild<LayerImpl>(child2);
+  leaf_node2->SetDrawsContent(true);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(leaf_node1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  SetLayerPropertiesForTesting(leaf_node2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+
+  // Case 1: nothing is clipped except the root render surface.
+  {
+    ExecuteCalculateDrawProperties(root);
+
+    ASSERT_TRUE(root->render_surface());
+    ASSERT_TRUE(child2->render_surface());
+
+    EXPECT_FALSE(root->is_clipped());
+    EXPECT_TRUE(root->render_surface()->is_clipped());
+    EXPECT_FALSE(parent->is_clipped());
+    EXPECT_FALSE(child1->is_clipped());
+    EXPECT_FALSE(child2->is_clipped());
+    EXPECT_FALSE(child2->render_surface()->is_clipped());
+    EXPECT_FALSE(grand_child->is_clipped());
+    EXPECT_FALSE(leaf_node1->is_clipped());
+    EXPECT_FALSE(leaf_node2->is_clipped());
+  }
+
+  // Case 2: parent masksToBounds, so the parent, child1, and child2's
+  // surface are clipped. But layers that contribute to child2's surface are
+  // not clipped explicitly because child2's surface already accounts for
+  // that clip.
+  {
+    parent->SetMasksToBounds(true);
+
+    parent->set_is_clipped(true);
+    child1->set_is_clipped(true);
+    grand_child->set_is_clipped(true);
+    leaf_node1->set_is_clipped(true);
+    host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+
+    ExecuteCalculateDrawProperties(root);
+
+    ASSERT_TRUE(root->render_surface());
+    ASSERT_TRUE(child2->render_surface());
+
+    EXPECT_TRUE(root->render_surface()->is_clipped());
+    EXPECT_TRUE(child2->render_surface()->is_clipped());
+
+    parent->SetMasksToBounds(false);
+    parent->set_is_clipped(false);
+    child1->set_is_clipped(false);
+    grand_child->set_is_clipped(false);
+    leaf_node1->set_is_clipped(false);
+  }
+
+  // Case 3: child2 masksToBounds. The layer and subtree are clipped, and
+  // child2's render surface is not clipped.
+  {
+    child2->SetMasksToBounds(true);
+    child2->set_is_clipped(true);
+    leaf_node2->set_is_clipped(true);
+    host_impl()->active_tree()->property_trees()->needs_rebuild = true;
+
+    ExecuteCalculateDrawProperties(root);
 
     ASSERT_TRUE(root->render_surface());
     ASSERT_TRUE(child2->render_surface());
