@@ -79,6 +79,7 @@ class TabStripSceneLayer : public SceneLayer {
                         jfloat content_offset_x,
                         jfloat close_button_alpha,
                         jboolean is_loading,
+                        jfloat spinner_rotation,
                         jfloat border_opacity,
                         jobject jlayer_title_cache,
                         jobject jresource_manager);

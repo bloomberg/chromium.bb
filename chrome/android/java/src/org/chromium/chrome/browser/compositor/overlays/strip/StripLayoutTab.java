@@ -84,6 +84,8 @@ public class StripLayoutTab
     // Content Animations
     private ChromeAnimation<Animatable<?>> mContentAnimations;
 
+    private float mLoadingSpinnerRotationDegrees;
+
     // Preallocated
     private final RectF mClosePlacement = new RectF();
 
@@ -201,6 +203,21 @@ public class StripLayoutTab
      */
     public boolean isLoading() {
         return mLoadTracker.isLoading();
+    }
+
+    /**
+     * @return The rotation of the loading spinner in degrees.
+     */
+    public float getLoadingSpinnerRotation() {
+        return mLoadingSpinnerRotationDegrees;
+    }
+
+    /**
+     * Additive spinner rotation update.
+     * @param rotation The amount to rotate the spinner by in degrees.
+     */
+    public void addLoadingSpinnerRotation(float rotation) {
+        mLoadingSpinnerRotationDegrees = (mLoadingSpinnerRotationDegrees + rotation) % 1080;
     }
 
     /**

@@ -73,8 +73,6 @@
       'browser/android/compositor/layer/tab_handle_layer.h',
       'browser/android/compositor/layer/tab_layer.cc',
       'browser/android/compositor/layer/tab_layer.h',
-      'browser/android/compositor/layer/throbber_layer.cc',
-      'browser/android/compositor/layer/throbber_layer.h',
       'browser/android/compositor/layer/thumbnail_layer.cc',
       'browser/android/compositor/layer/thumbnail_layer.h',
       'browser/android/compositor/layer/toolbar_layer.cc',

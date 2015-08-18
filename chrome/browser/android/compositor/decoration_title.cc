@@ -10,23 +10,13 @@
 #include "base/logging.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
-#include "chrome/browser/android/compositor/layer/throbber_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "content/public/browser/android/compositor.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/ui_resource_android.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-
-namespace {
-
-SkColor GetThrobberColor(bool is_incognito) {
-  // Blue-ish color for normal mode.
-  return is_incognito ? SK_ColorWHITE : SkColorSetRGB(0x42, 0x85, 0xf4);
-}
-}
 
 namespace chrome {
 namespace android {
@@ -49,12 +39,12 @@ DecorationTitle::DecorationTitle(LayerTitleCache* layer_title_cache,
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       layer_favicon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      throbber_layer_(ThrobberLayer::Create(GetThrobberColor(is_incognito))),
       title_resource_id_(title_resource_id),
       favicon_resource_id_(favicon_resource_id),
       spinner_resource_id_(spinner_resource_id),
       spinner_incognito_resource_id_(spinner_resource_id),
       fade_width_(fade_width),
+      spinner_rotation_(0),
       favicon_start_padding_(favicon_start_padding),
       favicon_end_padding_(favicon_end_padding),
       is_incognito_(is_incognito),
@@ -63,7 +53,6 @@ DecorationTitle::DecorationTitle(LayerTitleCache* layer_title_cache,
       transform_(new gfx::Transform()),
       resource_manager_(resource_manager),
       layer_title_cache_(layer_title_cache) {
-  layer_->AddChild(throbber_layer_->layer());
   layer_->AddChild(layer_favicon_);
   layer_->AddChild(layer_opaque_);
   layer_->AddChild(layer_fade_);
@@ -78,17 +67,16 @@ void DecorationTitle::SetResourceManager(
   resource_manager_ = resource_manager;
 }
 
-void DecorationTitle::PushPropertiesTo(int title_resource_id,
-                                       int favicon_resource_id,
-                                       int fade_width,
-                                       int favicon_start_padding,
-                                       int favicon_end_padding,
-                                       bool is_incognito,
-                                       bool is_rtl) {
+void DecorationTitle::Update(int title_resource_id,
+                             int favicon_resource_id,
+                             int fade_width,
+                             int favicon_start_padding,
+                             int favicon_end_padding,
+                             bool is_incognito,
+                             bool is_rtl) {
   title_resource_id_ = title_resource_id;
   favicon_resource_id_ = favicon_resource_id;
   is_incognito_ = is_incognito;
-  throbber_layer_->SetColor(GetThrobberColor(is_incognito));
   is_rtl_ = is_rtl;
   favicon_start_padding_ = favicon_start_padding;
   favicon_end_padding_ = favicon_end_padding;
@@ -116,11 +104,20 @@ void DecorationTitle::SetUIResourceIds() {
       layer_favicon_->SetUIResourceId(0);
     }
     layer_favicon_->SetTransform(gfx::Transform());
-    layer_favicon_->SetHideLayerAndSubtree(false);
-    throbber_layer_->Hide();
   } else {
-    layer_favicon_->SetHideLayerAndSubtree(true);
-    throbber_layer_->Show(base::Time::Now());
+    int resource_id =
+        is_incognito_ ? spinner_incognito_resource_id_ : spinner_resource_id_;
+
+    ui::ResourceManager::Resource* spinner_resource =
+        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
+                                       resource_id);
+
+    if (spinner_resource)
+      layer_favicon_->SetUIResourceId(spinner_resource->ui_resource->id());
+
+    // Rotate about the center of the layer.
+    layer_favicon_->SetTransformOrigin(
+        gfx::Point3F(favicon_size_.width() / 2, favicon_size_.height() / 2, 0));
   }
 
   size_ = gfx::Size(title_size_.width() + favicon_size_.width(),
@@ -134,17 +131,21 @@ void DecorationTitle::SetIsLoading(bool is_loading) {
   }
 }
 
-void DecorationTitle::UpdateThrobber() {
+void DecorationTitle::SetSpinnerRotation(float rotation) {
   if (!is_loading_)
     return;
-  throbber_layer_->UpdateThrobber(base::Time::Now());
+  float diff = rotation - spinner_rotation_;
+  spinner_rotation_ = rotation;
+  if (diff != 0) {
+    transform_->RotateAboutZAxis(diff);
+  }
+  layer_favicon_->SetTransform(*transform_.get());
 }
 
 void DecorationTitle::setOpacity(float opacity) {
   layer_opaque_->SetOpacity(opacity);
   layer_favicon_->SetOpacity(opacity);
   layer_fade_->SetOpacity(opacity);
-  throbber_layer_->layer()->SetOpacity(opacity);
 }
 
 void DecorationTitle::setBounds(const gfx::Size& bounds) {
@@ -187,10 +188,6 @@ void DecorationTitle::setBounds(const gfx::Size& bounds) {
   layer_favicon_->SetIsDrawable(true);
   layer_favicon_->SetBounds(favicon_size_);
   layer_favicon_->SetPosition(gfx::PointF(favicon_x, favicon_offset_y));
-  throbber_layer_->layer()->SetIsDrawable(true);
-  throbber_layer_->layer()->SetBounds(favicon_size_);
-  throbber_layer_->layer()->SetPosition(
-      gfx::PointF(favicon_x, favicon_offset_y));
 
   // Step 2. Place the opaque title component.
   if (title_space > 0.f) {

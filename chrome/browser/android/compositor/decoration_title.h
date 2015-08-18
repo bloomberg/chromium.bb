@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
 #include "cc/resources/ui_resource_client.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -28,7 +27,6 @@ namespace chrome {
 namespace android {
 
 class LayerTitleCache;
-class ThrobberLayer;
 
 class DecorationTitle {
  public:
@@ -47,16 +45,16 @@ class DecorationTitle {
 
   void SetResourceManager(ui::ResourceManager* resource_manager);
 
-  void PushPropertiesTo(int title_resource_id,
-                        int favicon_resource_id,
-                        int fade_width,
-                        int favicon_start_padding,
-                        int favicon_end_padding,
-                        bool is_incognito,
-                        bool is_rtl);
+  void Update(int title_resource_id,
+              int favicon_resource_id,
+              int fade_width,
+              int favicon_start_padding,
+              int favicon_end_padding,
+              bool is_incognito,
+              bool is_rtl);
   void SetUIResourceIds();
   void SetIsLoading(bool is_loading);
-  void UpdateThrobber();
+  void SetSpinnerRotation(float rotation);
   void setBounds(const gfx::Size& bounds);
   void setOpacity(float opacity);
 
@@ -68,7 +66,6 @@ class DecorationTitle {
   scoped_refptr<cc::UIResourceLayer> layer_opaque_;
   scoped_refptr<cc::UIResourceLayer> layer_fade_;
   scoped_refptr<cc::UIResourceLayer> layer_favicon_;
-  scoped_refptr<ThrobberLayer> throbber_layer_;
 
   int title_resource_id_;
   int favicon_resource_id_;
@@ -79,6 +76,7 @@ class DecorationTitle {
   gfx::Size favicon_size_;
   gfx::Size size_;
   int fade_width_;
+  float spinner_rotation_;
   int favicon_start_padding_;
   int favicon_end_padding_;
   bool is_incognito_;

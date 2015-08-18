@@ -1,6 +1,5 @@
 include_rules = [
   "+cc/layers",
   "+cc/output",
-  "+cc/playback",
   "+cc/resources",
 ]

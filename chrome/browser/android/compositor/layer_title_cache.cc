@@ -65,9 +65,9 @@ void LayerTitleCache::UpdateLayer(JNIEnv* env,
         tab_id);
   } else {
     if (title_resource_id != -1 && favicon_resource_id != -1) {
-      title_layer->PushPropertiesTo(title_resource_id, favicon_resource_id,
-                                    fade_width_, favicon_start_padding_,
-                                    favicon_end_padding_, is_incognito, is_rtl);
+      title_layer->Update(title_resource_id, favicon_resource_id, fade_width_,
+                          favicon_start_padding_, favicon_end_padding_,
+                          is_incognito, is_rtl);
     } else {
       layer_cache_.Remove(tab_id);
     }
