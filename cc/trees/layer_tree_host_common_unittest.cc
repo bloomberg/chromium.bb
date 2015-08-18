@@ -31,6 +31,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_host_common_test.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -5727,23 +5728,27 @@ TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
 
   ExecuteCalculateDrawProperties(root.get());
 
+  TransformTree& tree = host()->property_trees()->transform_tree;
+
   gfx::Transform expected_fixed_draw_transform;
   expected_fixed_draw_transform.Translate(10.f, 15.f);
-  EXPECT_EQ(expected_fixed_draw_transform, fixed->draw_transform());
+  EXPECT_EQ(expected_fixed_draw_transform,
+            DrawTransformFromPropertyTrees(fixed.get(), tree));
 
   gfx::Transform expected_fixed_screen_space_transform;
   expected_fixed_screen_space_transform.Translate(17.f, 24.f);
   EXPECT_EQ(expected_fixed_screen_space_transform,
-            fixed->screen_space_transform());
+            ScreenSpaceTransformFromPropertyTrees(fixed.get(), tree));
 
   gfx::Transform expected_child_draw_transform;
   expected_child_draw_transform.Translate(11.f, 17.f);
-  EXPECT_EQ(expected_child_draw_transform, child->draw_transform());
+  EXPECT_EQ(expected_child_draw_transform,
+            DrawTransformFromPropertyTrees(child.get(), tree));
 
   gfx::Transform expected_child_screen_space_transform;
   expected_child_screen_space_transform.Translate(18.f, 26.f);
   EXPECT_EQ(expected_child_screen_space_transform,
-            child->screen_space_transform());
+            ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
