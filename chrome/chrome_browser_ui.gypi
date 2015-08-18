@@ -2754,7 +2754,6 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        'common_net',
         'encrypted_cert_logger_proto',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:device_event_log_component',
@@ -2817,6 +2816,7 @@
           ],
           'dependencies': [
             'chrome_web_ui_mojo_bindings.gyp:web_ui_mojo_bindings',
+            'common_net',
             'debugger',
             'installer_util',
             '../components/components.gyp:app_modal',

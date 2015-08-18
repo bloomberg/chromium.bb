@@ -9,8 +9,6 @@ static_library("net") {
   sources = [
     "net_resource_provider.cc",
     "net_resource_provider.h",
-    "url_util.cc",
-    "url_util.h",
     "x509_certificate_model.cc",
     "x509_certificate_model.h",
     "x509_certificate_model_nss.cc",

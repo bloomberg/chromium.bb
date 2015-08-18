@@ -20,7 +20,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"

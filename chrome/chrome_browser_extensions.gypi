@@ -938,7 +938,6 @@
         'chrome_resources.gyp:theme_resources',
         'common',
         'common/extensions/api/api.gyp:chrome_api',
-        'common_net',
         'debugger',
         'installer_util',
         'safe_browsing_proto',

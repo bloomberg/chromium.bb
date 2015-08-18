@@ -42,7 +42,6 @@ source_set("extensions") {
     "//chrome/browser/devtools",
     "//chrome/common",
     "//chrome/common/extensions/api:api_registration",
-    "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util",
     "//components/copresence",

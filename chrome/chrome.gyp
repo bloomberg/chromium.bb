@@ -722,7 +722,6 @@
           'dependencies': [
             'chrome_resources.gyp:chrome_strings',
             'common',
-            'common_net',
             '../base/base.gyp:base',
             '../components/components.gyp:cloud_devices_common',
             '../google_apis/google_apis.gyp:google_apis',

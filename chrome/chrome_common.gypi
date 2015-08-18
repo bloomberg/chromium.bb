@@ -321,7 +321,6 @@
         # TODO(gregoryd): chrome_resources and chrome_strings could be
         #  shared with the 64-bit target, but it does not work due to a gyp
         # issue.
-        'common_net',
         'installer_util',
         'safe_browsing_proto',
         '<(DEPTH)/base/base.gyp:base',
@@ -502,7 +501,6 @@
             'common/extensions/manifest_handlers/minimum_chrome_version_checker.cc',
             'common/icon_with_badge_image_source.cc',
             'common/media_galleries/metadata_types.h',
-            'common/net/url_util.cc',
           ],
         }, {
           # Non-Android.
@@ -568,8 +566,6 @@
       'sources': [
         'common/net/net_resource_provider.cc',
         'common/net/net_resource_provider.h',
-        'common/net/url_util.cc',
-        'common/net/url_util.h',
         'common/net/x509_certificate_model.cc',
         'common/net/x509_certificate_model.h',
         'common/net/x509_certificate_model_nss.cc',

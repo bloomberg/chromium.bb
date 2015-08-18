@@ -48,7 +48,6 @@ static_library("common") {
 
   public_deps = [
     "//chrome/common:constants",
-    "//chrome/common/net",
     "//chrome/common/safe_browsing:proto",
   ]
   deps = [
@@ -109,7 +108,10 @@ static_library("common") {
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",
     ]
-    public_deps += [ "//third_party/mojo/src/mojo/public/cpp/bindings" ]
+    public_deps += [
+      "//chrome/common/net",
+      "//third_party/mojo/src/mojo/public/cpp/bindings",
+    ]
   }
 
   if (enable_extensions) {

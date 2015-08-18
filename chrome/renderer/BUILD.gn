@@ -33,7 +33,6 @@ static_library("renderer") {
     "//base/allocator",
     "//chrome/common",
     "//chrome/common:mojo_bindings",
-    "//chrome/common/net",
     "//chrome:resources",
     "//chrome:strings",
     "//components/autofill/content/renderer",
@@ -69,6 +68,10 @@ static_library("renderer") {
     "//ui/surface",
     "//v8:v8",
   ]
+
+  if (!is_ios) {
+    deps += [ "//chrome/common/net" ]
+  }
 
   if (enable_nacl) {
     deps += [

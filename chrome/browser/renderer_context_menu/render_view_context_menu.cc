@@ -56,7 +56,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
-#include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
@@ -73,6 +72,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
@@ -100,6 +100,7 @@
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/point.h"
@@ -318,6 +319,23 @@ content::WebContents* GetWebContentsToUse(content::WebContents* web_contents) {
   }
 #endif
   return web_contents;
+}
+
+void WriteURLToClipboard(const GURL& url, const std::string& languages) {
+  if (url.is_empty() || !url.is_valid())
+    return;
+
+  // Unescaping path and query is not a good idea because other applications
+  // may not encode non-ASCII characters in UTF-8.  See crbug.com/2820.
+  base::string16 text =
+      url.SchemeIs(url::kMailToScheme)
+          ? base::ASCIIToUTF16(url.path())
+          : url_formatter::FormatUrl(
+                url, languages, url_formatter::kFormatUrlOmitNothing,
+                net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
+
+  ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);
+  scw.WriteURL(text);
 }
 
 bool g_custom_id_ranges_initialized = false;
@@ -1919,7 +1937,7 @@ void RenderViewContextMenu::Inspect(int x, int y) {
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
-  chrome_common_net::WriteURLToClipboard(
+  ::WriteURLToClipboard(
       url, GetPrefs(browser_context_)->GetString(prefs::kAcceptLanguages));
 }
 

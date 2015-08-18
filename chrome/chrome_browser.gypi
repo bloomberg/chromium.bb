@@ -3110,7 +3110,6 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        'common_net',
         'encrypted_cert_logger_proto',
         'probe_message_proto',
         '../components/components.gyp:autofill_core_browser',
@@ -3230,6 +3229,7 @@
           'dependencies': [
             'apps',
             'common_mojo_bindings',
+            'common_net',
             'debugger',
             'installer_util',
             '../third_party/re2/re2.gyp:re2',

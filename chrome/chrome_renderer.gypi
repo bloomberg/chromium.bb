@@ -244,7 +244,6 @@
       'dependencies': [
         'common',
         'common_mojo_bindings',
-        'common_net',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         '../third_party/re2/re2.gyp:re2',
@@ -282,6 +281,11 @@
         '<@(chrome_renderer_sources)',
       ],
       'conditions': [
+        ['OS != "ios"', {
+          'dependencies': [
+            'common_net',
+          ],
+        }],
         ['disable_nacl!=1', {
           'dependencies': [
             '../components/nacl.gyp:nacl',
