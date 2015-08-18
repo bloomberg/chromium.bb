@@ -122,6 +122,13 @@ function Gallery(volumeManager) {
   this.modeSwitchButtonRipple_ = /** @type {!PaperRipple} */
       (queryRequiredElement(modeSwitchButton, 'paper-ripple'));
 
+  /**
+   * @private {!DimmableUIController}
+   * @const
+   */
+  this.dimmableUIController_ = new DimmableUIController(this.container_,
+      this.container_.querySelectorAll('.tool'));
+
   this.thumbnailMode_ = new ThumbnailMode(
       assertInstanceof(document.querySelector('.thumbnail-view'), HTMLElement),
       this.errorBanner_,
@@ -143,8 +150,8 @@ function Gallery(volumeManager) {
                                   this.context_,
                                   this.volumeManager_,
                                   this.toggleMode_.bind(this),
-                                  str);
-
+                                  str,
+                                  this.dimmableUIController_);
   this.slideMode_.addEventListener('image-displayed', function() {
     cr.dispatchSimpleEvent(this, 'image-displayed');
   }.bind(this));
@@ -171,9 +178,6 @@ function Gallery(volumeManager) {
 
   this.keyDownBound_ = this.onKeyDown_.bind(this);
   this.document_.body.addEventListener('keydown', this.keyDownBound_);
-
-  this.inactivityWatcher_ = new MouseInactivityWatcher(
-      this.container_, Gallery.FADE_TIMEOUT, this.hasActiveTool.bind(this));
 
   // TODO(hirono): Add observer to handle thumbnail update.
   this.volumeManager_.addEventListener(
@@ -353,7 +357,6 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
 
         // Do the initialization for each mode.
         if (shouldShowThumbnail) {
-          self.inactivityWatcher_.check();  // Show the toolbar.
           self.thumbnailMode_.show();
           cr.dispatchSimpleEvent(self, 'loaded');
         } else {
@@ -361,7 +364,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
               null,
               function() {
                 // Flash the toolbar briefly to show it is there.
-                self.inactivityWatcher_.kick(Gallery.FIRST_FADE_TIMEOUT);
+                self.dimmableUIController_.kick(Gallery.FIRST_FADE_TIMEOUT);
               },
               function() {
                 cr.dispatchSimpleEvent(self, 'loaded');
@@ -393,7 +396,7 @@ Gallery.prototype.hasActiveTool = function() {
 */
 Gallery.prototype.onUserAction_ = function() {
   // Show the toolbar and hide it after the default timeout.
-  this.inactivityWatcher_.kick();
+  this.dimmableUIController_.kick();
 };
 
 /**
@@ -410,6 +413,7 @@ Gallery.prototype.setCurrentMode_ = function(mode) {
 
   this.currentMode_ = mode;
   this.container_.setAttribute('mode', this.currentMode_.getName());
+  this.dimmableUIController_.setDisabled(this.currentMode_ !== this.slideMode_);
   this.updateSelectionAndState_();
 };
 
@@ -648,7 +652,7 @@ Gallery.prototype.onKeyDown_ = function(event) {
     return;
 
   // Show UIs when user types any key.
-  this.inactivityWatcher_.kick();
+  this.dimmableUIController_.kick();
 
   // Handle mode specific shortcut keys.
   if (this.currentMode_.onKeyDown(event)) {

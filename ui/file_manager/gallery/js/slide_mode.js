@@ -21,6 +21,7 @@
  * @param {function(function())} toggleMode Function to toggle the Gallery mode.
  * @param {function(string):string} displayStringFunction String formatting
  *     function.
+ * @param {!DimmableUIController} dimmableUIController Dimmable UI controller.
  * @constructor
  * @struct
  * @suppress {checkStructDictInheritance}
@@ -28,7 +29,8 @@
  */
 function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
     errorBanner, dataModel, selectionModel, metadataModel, thumbnailModel,
-    context, volumeManager, toggleMode, displayStringFunction) {
+    context, volumeManager, toggleMode, displayStringFunction,
+    dimmableUIController) {
   /**
    * @type {!HTMLElement}
    * @private
@@ -118,6 +120,12 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.displayStringFunction_ = displayStringFunction;
+
+  /**
+   * @private {!DimmableUIController}
+   * @const
+   */
+  this.dimmableUIController_ = dimmableUIController;
 
   /**
    * @type {function(this:SlideMode)}
@@ -1414,6 +1422,11 @@ SlideMode.prototype.startSlideshow = function(opt_interval, opt_event) {
         SlideMode.FULLSCREEN_TOGGLE_DELAY;
   }
 
+  // This is a workaround. Mouseout event is not dispatched when window becomes
+  // fullscreen and cursor gets out of the element
+  // TODO(yawano): Find better implementation.
+  this.dimmableUIController_.setCursorOutOfTools();
+
   this.resumeSlideshow_(opt_interval);
 };
 
@@ -1569,6 +1582,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     }
 
     this.touchHandlers_.enabled = false;
+    this.dimmableUIController_.setDisabled(true);
   } else {
     this.editor_.getPrompt().hide();
     this.editor_.leaveModeGently();
@@ -1578,6 +1592,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     this.imageView_.applyViewportChange();
 
     this.touchHandlers_.enabled = true;
+    this.dimmableUIController_.setDisabled(false);
   }
 };
 

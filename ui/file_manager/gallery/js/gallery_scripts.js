@@ -54,7 +54,6 @@
 //<include src="../../file_manager/foreground/js/metadata/metadata_model.js">
 //<include src="../../file_manager/foreground/js/metadata/multi_metadata_provider.js">
 //<include src="../../file_manager/foreground/js/metadata/thumbnail_model.js">
-//<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js">
 //<include src="../../file_manager/foreground/js/share_client.js">
 //<include src="../../file_manager/foreground/js/thumbnail_loader.js">
 //<include src="../../file_manager/foreground/js/ui/file_manager_dialog_base.js">
@@ -73,6 +72,7 @@
 //<include src="image_editor/image_encoder.js">
 //<include src="image_editor/exif_encoder.js">
 
+//<include src="dimmable_ui_controller.js">
 //<include src="entry_list_watcher.js">
 //<include src="error_banner.js">
 //<include src="gallery.js">
