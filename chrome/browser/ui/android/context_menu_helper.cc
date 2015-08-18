@@ -85,10 +85,8 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, params.link_text).obj(),
           ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()).obj(),
           ConvertUTF8ToJavaString(env, params.src_url.spec()).obj(),
-          ConvertUTF16ToJavaString(env, params.selection_text).obj(),
           ConvertUTF16ToJavaString(env, params.title_text).obj(),
           image_was_fetched_lo_fi,
-          params.is_editable,
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()).obj(),
           params.referrer_policy);
 

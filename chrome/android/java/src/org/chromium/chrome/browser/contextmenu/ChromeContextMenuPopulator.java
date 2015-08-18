@@ -78,8 +78,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
     @Override
     public boolean shouldShowContextMenu(ContextMenuParams params) {
-        return params != null && (params.isAnchor() || params.isEditable() || params.isImage()
-                || params.isSelectedText() || params.isVideo());
+        return params != null && (params.isAnchor() || params.isImage() || params.isVideo());
     }
 
     @Override

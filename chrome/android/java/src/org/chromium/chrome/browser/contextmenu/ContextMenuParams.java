@@ -34,11 +34,9 @@ public class ContextMenuParams {
     private final String mUnfilteredLinkUrl;
     private final String mSrcUrl;
     private final boolean mImageWasFetchedLoFi;
-    private final boolean mIsEditable;
     private final Referrer mReferrer;
 
     private final boolean mIsAnchor;
-    private final boolean mIsSelectedText;
     private final boolean mIsImage;
     private final boolean mIsVideo;
 
@@ -92,13 +90,6 @@ public class ContextMenuParams {
     }
 
     /**
-     * @return Whether or not the context menu is being shown for an editable piece of content.
-     */
-    public boolean isEditable() {
-        return mIsEditable;
-    }
-
-    /**
      * @return the referrer associated with the frame on which the menu is invoked
      */
     public Referrer getReferrer() {
@@ -110,13 +101,6 @@ public class ContextMenuParams {
      */
     public boolean isAnchor() {
         return mIsAnchor;
-    }
-
-    /**
-     * @return Whether or not the context menu is being shown for selected text.
-     */
-    public boolean isSelectedText() {
-        return mIsSelectedText;
     }
 
     /**
@@ -134,8 +118,8 @@ public class ContextMenuParams {
     }
 
     private ContextMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
-            String unfilteredLinkUrl, String srcUrl, String selectionText, String titleText,
-            boolean imageWasFetchedLoFi, boolean isEditable, Referrer referrer) {
+            String unfilteredLinkUrl, String srcUrl, String titleText, boolean imageWasFetchedLoFi,
+            Referrer referrer) {
         mPageUrl = pageUrl;
         mLinkUrl = linkUrl;
         mLinkText = linkText;
@@ -143,23 +127,20 @@ public class ContextMenuParams {
         mUnfilteredLinkUrl = unfilteredLinkUrl;
         mSrcUrl = srcUrl;
         mImageWasFetchedLoFi = imageWasFetchedLoFi;
-        mIsEditable = isEditable;
         mReferrer = referrer;
 
         mIsAnchor = !TextUtils.isEmpty(linkUrl);
-        mIsSelectedText = !TextUtils.isEmpty(selectionText);
         mIsImage = mediaType == MediaType.MEDIA_TYPE_IMAGE;
         mIsVideo = mediaType == MediaType.MEDIA_TYPE_VIDEO;
     }
 
     @CalledByNative
     private static ContextMenuParams create(int mediaType, String pageUrl, String linkUrl,
-            String linkText, String unfilteredLinkUrl, String srcUrl, String selectionText,
-            String titleText, boolean imageWasFetchedLoFi, boolean isEditable,
-            String sanitizedReferrer, int referrerPolicy) {
+            String linkText, String unfilteredLinkUrl, String srcUrl, String titleText,
+            boolean imageWasFetchedLoFi, String sanitizedReferrer, int referrerPolicy) {
         Referrer referrer = TextUtils.isEmpty(sanitizedReferrer)
                 ? null : new Referrer(sanitizedReferrer, referrerPolicy);
         return new ContextMenuParams(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl,
-                srcUrl, selectionText, titleText, imageWasFetchedLoFi, isEditable, referrer);
+                srcUrl, titleText, imageWasFetchedLoFi, referrer);
     }
 }

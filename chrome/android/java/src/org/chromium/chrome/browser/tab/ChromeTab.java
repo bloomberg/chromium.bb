@@ -701,8 +701,6 @@ public class ChromeTab extends Tab {
                 RecordUserAction.record("MobileContextMenuLink");
             } else if (params.isImage()) {
                 RecordUserAction.record("MobileContextMenuImage");
-            } else if (params.isSelectedText()) {
-                RecordUserAction.record("MobileContextMenuText");
             } else if (params.isVideo()) {
                 RecordUserAction.record("MobileContextMenuVideo");
             }
