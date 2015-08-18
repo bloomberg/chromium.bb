@@ -23,6 +23,7 @@ const long kWebKitErrorCannotShowUrl = 101;
 const long kWebKitErrorFrameLoadInterruptedByPolicyChange = 102;
 
 // Undocumented iOS-specific WebKit error.
+const long kWebKitErrorUnsafePort = 103;
 const long kWebKitErrorPlugInLoadFailed = 204;
 
 }  // namespace web
