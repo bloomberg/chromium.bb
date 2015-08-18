@@ -5,6 +5,7 @@
 // --site-per-process overrides for guest_view_container.js
 
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
+var IdGenerator = requireNative('id_generator');
 
 GuestViewContainer.prototype.createInternalElement$ = function() {
   var iframeElement = document.createElement('iframe');
@@ -12,4 +13,11 @@ GuestViewContainer.prototype.createInternalElement$ = function() {
   iframeElement.style.height = '100%';
   privates(iframeElement).internal = this;
   return iframeElement;
+};
+
+GuestViewContainer.prototype.attachWindow$ = function() {
+  var generatedId = IdGenerator.GetNextId();
+  // Generate an instance id for the container.
+  this.onInternalInstanceId(generatedId);
+  return true;
 };
