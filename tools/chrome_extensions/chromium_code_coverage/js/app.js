@@ -116,7 +116,8 @@ coverage.updateUi = function(patchStats, patchElement, reportUrl) {
     var sourceFileRow = fileRows[i];
     var fileName = sourceFileRow.children[2].textContent.trim();
 
-    var incrementalPercent, absolutePercent;
+    var incrementalPercent = null;
+    var absolutePercent = null;
     if (patchStats[fileName]) {
       incrementalPercent = patchStats[fileName][coverage.INCREMENTAL_COVERAGE];
       absolutePercent = patchStats[fileName][coverage.ABSOLUTE_COVERAGE];
@@ -140,7 +141,7 @@ coverage.updateUi = function(patchStats, patchElement, reportUrl) {
  * @return {string} Formatted string ready to be added to the the DOM.
  */
 coverage.formatPercent = function(coveragePercent) {
-  if (typeof coveragePercent === 'undefined') {
+  if (!coveragePercent) {
     return '-';
   } else {
     return coveragePercent + '%';
