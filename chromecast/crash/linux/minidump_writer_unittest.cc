@@ -21,6 +21,7 @@ namespace {
 
 const char kDumplogFile[] = "dumplog";
 const char kLockfileName[] = "lockfile";
+const char kMetadataName[] = "metadata";
 const char kMinidumpSubdir[] = "minidumps";
 
 class FakeMinidumpGenerator : public MinidumpGenerator {
@@ -51,23 +52,24 @@ class MinidumpWriterTest : public testing::Test {
     minidump_dir_ = fake_home_dir.Append(kMinidumpSubdir);
     dumplog_file_ = minidump_dir_.Append(kDumplogFile);
     lockfile_path_ = minidump_dir_.Append(kLockfileName);
+    metadata_path_ = minidump_dir_.Append(kMetadataName);
 
-    // Create the minidump directory and lockfile.
+    // Create the minidump directory
     ASSERT_TRUE(base::CreateDirectory(minidump_dir_));
-    base::File lockfile(
-        lockfile_path_,
-        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-    ASSERT_TRUE(lockfile.IsValid());
+
+    // Lockfile will be automatically created by AppendLockFile
   }
 
   bool AppendLockFile(const DumpInfo& dump) {
-    return chromecast::AppendLockFile(lockfile_path_.value(), dump);
+    return chromecast::AppendLockFile(
+        lockfile_path_.value(), metadata_path_.value(), dump);
   }
 
   FakeMinidumpGenerator fake_generator_;
   base::FilePath minidump_dir_;
   base::FilePath dumplog_file_;
   base::FilePath lockfile_path_;
+  base::FilePath metadata_path_;
 
  private:
   scoped_ptr<base::ScopedPathOverride> home_;
@@ -168,11 +170,11 @@ TEST_F(MinidumpWriterTest, Write_FailsWhenTooManyRecentDumpsPresent) {
     int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
 
     // Half period shouldn't trigger reset
-    SetRatelimitPeriodStart(lockfile_path_.value(), now - period / 2);
+    SetRatelimitPeriodStart(metadata_path_.value(), now - period / 2);
     ASSERT_EQ(-1, writer.Write());
 
     // Set period starting time to trigger a reset
-    SetRatelimitPeriodStart(lockfile_path_.value(), now - period);
+    SetRatelimitPeriodStart(metadata_path_.value(), now - period);
   }
 
   ASSERT_EQ(0, writer.Write());

@@ -5,31 +5,78 @@
 #include "chromecast/crash/linux/crash_testing_utils.h"
 
 #include "base/files/file_util.h"
+#include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chromecast/base/path_utils.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/crash/linux/dump_info.h"
+
+#define RCHECK(cond, retval, err) \
+  do {                            \
+    LOG(ERROR) << (err);          \
+    if (!(cond)) {                \
+      return (retval);            \
+    }                             \
+  } while (0)
 
 namespace chromecast {
 namespace {
 
-const char kDumpsKey[] = "dumps";
 const char kRatelimitKey[] = "ratelimit";
 const char kRatelimitPeriodStartKey[] = "period_start";
 const char kRatelimitPeriodDumpsKey[] = "period_dumps";
 
-// Gets the list of deserialized DumpInfo given a deserialized |lockfile|.
-base::ListValue* GetDumpList(base::Value* lockfile) {
-  base::DictionaryValue* dict;
-  base::ListValue* dump_list;
-  if (!lockfile || !lockfile->GetAsDictionary(&dict) ||
-      !dict->GetList(kDumpsKey, &dump_list)) {
-    return nullptr;
+scoped_ptr<base::ListValue> ParseLockFile(const std::string& path) {
+  std::string lockfile_string;
+  RCHECK(base::ReadFileToString(base::FilePath(path), &lockfile_string),
+         nullptr,
+         "Failed to read file");
+
+  std::vector<std::string> lines = base::SplitString(
+      lockfile_string, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  scoped_ptr<base::ListValue> dumps = make_scoped_ptr(new base::ListValue());
+
+  // Validate dumps
+  for (const std::string& line : lines) {
+    if (line.size() == 0)
+      continue;
+    scoped_ptr<base::Value> dump_info = DeserializeFromJson(line);
+    DumpInfo info(dump_info.get());
+    RCHECK(info.valid(), nullptr, "Invalid DumpInfo");
+    dumps->Append(dump_info.Pass());
   }
 
-  return dump_list;
+  return dumps;
 }
 
-}  // namespcae
+scoped_ptr<base::Value> ParseMetadataFile(const std::string& path) {
+  return DeserializeJsonFromFile(base::FilePath(path));
+}
+
+int WriteLockFile(const std::string& path, base::ListValue* contents) {
+  DCHECK(contents);
+  std::string lockfile;
+
+  for (const base::Value* elem : *contents) {
+    scoped_ptr<std::string> dump_info = SerializeToJson(*elem);
+    RCHECK(dump_info, -1, "Failed to serialize DumpInfo");
+    lockfile += *dump_info;
+    lockfile += "\n";  // Add line seperatators
+  }
+
+  return WriteFile(base::FilePath(path), lockfile.c_str(), lockfile.size()) >= 0
+             ? 0
+             : -1;
+}
+
+bool WriteMetadataFile(const std::string& path, const base::Value* metadata) {
+  DCHECK(metadata);
+  return SerializeJsonToFile(base::FilePath(path), *metadata);
+}
+
+}  // namespace
 
 scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
   scoped_ptr<base::Value> value(DeserializeFromJson(json_string));
@@ -38,23 +85,15 @@ scoped_ptr<DumpInfo> CreateDumpInfo(const std::string& json_string) {
 
 bool FetchDumps(const std::string& lockfile_path,
                 ScopedVector<DumpInfo>* dumps) {
-  if (!dumps) {
-    return false;
-  }
-  dumps->clear();
+  DCHECK(dumps);
+  scoped_ptr<base::ListValue> dump_list = ParseLockFile(lockfile_path);
+  RCHECK(dump_list, false, "Failed to parse lockfile");
 
-  base::FilePath path(lockfile_path);
-  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
-  base::ListValue* dump_list = GetDumpList(contents.get());
-  if (!dump_list) {
-    return false;
-  }
+  dumps->clear();
 
   for (base::Value* elem : *dump_list) {
     scoped_ptr<DumpInfo> dump = make_scoped_ptr(new DumpInfo(elem));
-    if (!dump->valid()) {
-      return false;
-    }
+    RCHECK(dump->valid(), false, "Invalid DumpInfo");
     dumps->push_back(dump.Pass());
   }
 
@@ -62,58 +101,45 @@ bool FetchDumps(const std::string& lockfile_path,
 }
 
 bool ClearDumps(const std::string& lockfile_path) {
-  base::FilePath path(lockfile_path);
-  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
-  base::ListValue* dump_list = GetDumpList(contents.get());
-  if (!dump_list) {
-    return false;
-  }
-
-  dump_list->Clear();
-
-  return SerializeJsonToFile(path, *contents);
+  scoped_ptr<base::ListValue> dump_list =
+      make_scoped_ptr(new base::ListValue());
+  return WriteLockFile(lockfile_path, dump_list.get()) == 0;
 }
 
-bool CreateLockFile(const std::string& lockfile_path) {
-  scoped_ptr<base::DictionaryValue> output(
-      make_scoped_ptr(new base::DictionaryValue()));
-  output->Set(kDumpsKey, make_scoped_ptr(new base::ListValue()));
+bool CreateFiles(const std::string& lockfile_path,
+                 const std::string& metadata_path) {
+  scoped_ptr<base::DictionaryValue> metadata =
+      make_scoped_ptr(new base::DictionaryValue());
 
   base::DictionaryValue* ratelimit_fields = new base::DictionaryValue();
-  output->Set(kRatelimitKey, make_scoped_ptr(ratelimit_fields));
+  metadata->Set(kRatelimitKey, make_scoped_ptr(ratelimit_fields));
   ratelimit_fields->SetString(kRatelimitPeriodStartKey, "0");
   ratelimit_fields->SetInteger(kRatelimitPeriodDumpsKey, 0);
 
-  base::FilePath path(lockfile_path);
-  const base::Value* val = output.get();
-  return SerializeJsonToFile(path, *val);
+  scoped_ptr<base::ListValue> dumps = make_scoped_ptr(new base::ListValue());
+
+  return WriteLockFile(lockfile_path, dumps.get()) == 0 &&
+         WriteMetadataFile(metadata_path, metadata.get());
 }
 
-bool AppendLockFile(const std::string& lockfile_path, const DumpInfo& dump) {
-  base::FilePath path(lockfile_path);
-
-  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
+bool AppendLockFile(const std::string& lockfile_path,
+                    const std::string& metadata_path,
+                    const DumpInfo& dump) {
+  scoped_ptr<base::ListValue> contents = ParseLockFile(lockfile_path);
   if (!contents) {
-    CreateLockFile(lockfile_path);
-    if (!(contents = DeserializeJsonFromFile(path))) {
+    CreateFiles(lockfile_path, metadata_path);
+    if (!(contents = ParseLockFile(lockfile_path))) {
       return false;
     }
   }
 
-  base::ListValue* dump_list = GetDumpList(contents.get());
-  if (!dump_list) {
-    return false;
-  }
+  contents->Append(dump.GetAsValue());
 
-  dump_list->Append(dump.GetAsValue());
-
-  return SerializeJsonToFile(path, *contents);
+  return WriteLockFile(lockfile_path, contents.get()) == 0;
 }
 
-bool SetRatelimitPeriodStart(const std::string& lockfile_path, time_t start) {
-  base::FilePath path(lockfile_path);
-
-  scoped_ptr<base::Value> contents(DeserializeJsonFromFile(path));
+bool SetRatelimitPeriodStart(const std::string& metadata_path, time_t start) {
+  scoped_ptr<base::Value> contents = ParseMetadataFile(metadata_path);
 
   base::DictionaryValue* dict;
   base::DictionaryValue* ratelimit_params;
@@ -122,12 +148,11 @@ bool SetRatelimitPeriodStart(const std::string& lockfile_path, time_t start) {
     return false;
   }
 
-  char buf[128];
-  snprintf(buf, sizeof(buf), "%lld", static_cast<long long>(start));
-  std::string period_start_str(buf);
+  std::string period_start_str =
+      base::StringPrintf("%lld", static_cast<long long>(start));
   ratelimit_params->SetString(kRatelimitPeriodStartKey, period_start_str);
 
-  return SerializeJsonToFile(path, *contents);
+  return WriteMetadataFile(metadata_path, contents.get()) == 0;
 }
 
 }  // namespace chromecast

@@ -31,6 +31,7 @@ namespace chromecast {
 namespace {
 
 const char kLockfileName[] = "lockfile";
+const char kMetadataName[] = "metadata";
 const char kMinidumpSubdir[] = "minidumps";
 
 // A trivial implementation of SynchronizedMinidumpManager, which does no work
@@ -109,6 +110,7 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
         new base::ScopedPathOverride(base::DIR_HOME, fake_home_dir_));
     minidump_dir_ = fake_home_dir_.Append(kMinidumpSubdir);
     lockfile_ = minidump_dir_.Append(kLockfileName);
+    metadata_ = minidump_dir_.Append(kMetadataName);
 
     // Create a minidump directory.
     ASSERT_TRUE(base::CreateDirectory(minidump_dir_));
@@ -130,6 +132,7 @@ class SynchronizedMinidumpManagerTest : public testing::Test {
   base::FilePath fake_home_dir_;  // Path to the test home directory.
   base::FilePath minidump_dir_;   // Path the the minidump directory.
   base::FilePath lockfile_;       // Path to the lockfile in |minidump_dir_|.
+  base::FilePath metadata_;       // Path to the metadata in |minidump_dir_|.
 
  private:
   scoped_ptr<base::ScopedPathOverride> path_override_;
@@ -233,7 +236,7 @@ TEST_F(SynchronizedMinidumpManagerTest,
 
 TEST_F(SynchronizedMinidumpManagerTest,
        AcquireLockFile_FailsWhenNonBlockingAndFileLocked) {
-  ASSERT_TRUE(CreateLockFile(lockfile_.value()));
+  ASSERT_TRUE(CreateFiles(lockfile_.value(), metadata_.value()));
   // Lock the lockfile here. Note that the Chromium base::File tools permit
   // multiple locks on the same process to succeed, so we must use POSIX system
   // calls to accomplish this.
@@ -437,12 +440,12 @@ TEST_F(SynchronizedMinidumpManagerTest,
     int64 period = SynchronizedMinidumpManager::kRatelimitPeriodSeconds;
 
     // Half period shouldn't trigger reset
-    SetRatelimitPeriodStart(lockfile_.value(), now - period / 2);
+    SetRatelimitPeriodStart(metadata_.value(), now - period / 2);
     ASSERT_EQ(0, manager.DoWorkLocked());
     ASSERT_GT(0, manager.add_entry_return_code());
 
     // Set period starting time to trigger a reset
-    SetRatelimitPeriodStart(lockfile_.value(), now - period);
+    SetRatelimitPeriodStart(metadata_.value(), now - period);
   }
 
   ASSERT_EQ(0, manager.DoWorkLocked());

@@ -24,9 +24,26 @@ namespace chromecast {
 // lockfile directly. Instead, use protected methods to query and modify the
 // metadata, but only within the implementation of DoWork().
 //
-// This class holds an in memory representation of the lockfile while it is
-// held. Modifier methods work on this in memory representation. When the
-// lockfile is released, the in memory representation is written to file.
+// This class holds an in memory representation of the lockfile and metadata
+// file when the lockfile is held. Modifier methods work on this in memory
+// representation. When the lockfile is released, the in memory representations
+// are written to file
+//
+// The lockfile file is of the following format:
+// { <dump_info1> }
+// { <dump_info2> }
+// ...
+// { <dump_infoN> }
+//
+// Note that this isn't a valid json object. It is formatted in this way so
+// that producers to this file do not need to understand json.
+//
+// Current external producers:
+// + watchdog
+//
+//
+// The metadata file is a separate file containing a json dictionary.
+//
 class SynchronizedMinidumpManager {
  public:
   // Max number of dumps allowed in lockfile.
@@ -87,7 +104,7 @@ class SynchronizedMinidumpManager {
   bool non_blocking_;
 
   // Cached path for the minidumps directory.
-  base::FilePath dump_path_;
+  const base::FilePath dump_path_;
 
  private:
   // Acquire the lock file. Blocks if another process holds it, or if called
@@ -95,16 +112,17 @@ class SynchronizedMinidumpManager {
   // successful, or -1 if failed.
   int AcquireLockFile();
 
-  // Parse the lockfile, populating |lockfile_contents_| for modifier functions
-  // to use. Return -1 if an error occurred. Otherwise, return 0. This must not
-  // be called unless |this| has acquired the lock.
-  int ParseLockFile();
+  // Parse the lockfile and metadata file, populating |dumps_| and |metadata_|
+  // for modifier functions to use. Return -1 if an error occurred. Otherwise,
+  // return 0. This must not be called unless |this| has acquired the lock.
+  int ParseFiles();
 
-  // Write deserialized lockfile to |lockfile_path_|.
-  int WriteLockFile(const base::Value& contents);
+  // Write deserialized |dumps| to |lockfile_path_| and the deserialized
+  // |metadata| to |metadata_path_|.
+  int WriteFiles(const base::ListValue* dumps, const base::Value* metadata);
 
-  // Creates an empty lock file.
-  int CreateEmptyLockFile();
+  // Creates an empty lock file and an initialized metadata file.
+  int InitializeFiles();
 
   // Release the lock file with the associated *fd*.
   void ReleaseLockFile();
@@ -116,9 +134,11 @@ class SynchronizedMinidumpManager {
   // to |kRatelimitPeriodMaxDumps|.
   bool CanWriteDumps(int num_dumps);
 
-  std::string lockfile_path_;
+  const std::string lockfile_path_;
+  const std::string metadata_path_;
   int lockfile_fd_;
-  scoped_ptr<base::Value> lockfile_contents_;
+  scoped_ptr<base::Value> metadata_;
+  scoped_ptr<base::ListValue> dumps_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronizedMinidumpManager);
 };

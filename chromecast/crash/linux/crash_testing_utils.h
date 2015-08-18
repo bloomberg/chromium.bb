@@ -26,17 +26,22 @@ bool FetchDumps(const std::string& lockfile_path,
 // Returns true on success, false on error.
 bool ClearDumps(const std::string& lockfile_path);
 
-// Creates an empty lockfile at |lockfile_path|. Returns true on success, false
-// on error.
-bool CreateLockFile(const std::string& lockfile_path);
+// Creates an empty lockfile at |lockfile_path|. Creates a default initialized
+// metadata file at |metadata_path|. Returns true on success, false on error.
+bool CreateFiles(const std::string& lockfile_path,
+                 const std::string& metadata_path);
 
 // Appends serialization of |dump| onto the lockfile at |lockfile_path|.
+// Creates default initialized lockfile in |lockfile_path| and metadata file in
+// |metadata_path| if they don't exist.
 // Returns true on success, false on error.
-bool AppendLockFile(const std::string& lockfile_path, const DumpInfo& dump);
+bool AppendLockFile(const std::string& lockfile_path,
+                    const std::string& metadata_path,
+                    const DumpInfo& dump);
 
-// Set the ratelimit period start in the lockfile at |lockfile_path| to |start|.
-// Returns true on success, false on error.
-bool SetRatelimitPeriodStart(const std::string& lockfile_path, time_t start);
+// Set the ratelimit period start in the metadata file at |metadata_path| to
+// |start|. Returns true on success, false on error.
+bool SetRatelimitPeriodStart(const std::string& metadata_path, time_t start);
 
 }  // namespace chromecast
 
