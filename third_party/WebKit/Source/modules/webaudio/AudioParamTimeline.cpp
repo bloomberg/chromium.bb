@@ -31,8 +31,13 @@
 #include "core/dom/ExceptionCode.h"
 #include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
+#include "wtf/CPU.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
+
+#if CPU(X86) || CPU(X86_64)
+#include <emmintrin.h>
+#endif
 
 namespace blink {
 
@@ -407,6 +412,38 @@ float AudioParamTimeline::valuesForTimeRangeImpl(
                     float timeConstant = event.timeConstant();
                     float discreteTimeConstant = static_cast<float>(AudioUtilities::discreteTimeConstantForSampleRate(timeConstant, controlRate));
 
+#if CPU(X86) || CPU(X86_64)
+                    // Resolve recursion by expanding constants to achieve a 4-step loop unrolling.
+                    // v1 = v0 + (t - v0) * c
+                    // v2 = v1 + (t - v1) * c
+                    // v2 = v0 + (t - v0) * c + (t - (v0 + (t - v0) * c)) * c
+                    // v2 = v0 + (t - v0) * c + (t - v0) * c - (t - v0) * c * c
+                    // v2 = v0 + (t - v0) * c * (2 - c)
+                    // Thus c0 = c, c1 = c*(2-c). The same logic applies to c2 and c3.
+                    const float c0 = discreteTimeConstant;
+                    const float c1 = c0 * (2 - c0);
+                    const float c2 = c0 * ((c0 - 3) * c0 + 3);
+                    const float c3 = c0 * (c0 * ((4 - c0) * c0 - 6) + 4);
+
+                    float delta;
+                    __m128 vC = _mm_set_ps(c2, c1, c0, 0);
+                    __m128 vDelta, vValue, vResult;
+
+                    // Process 4 loop steps.
+                    unsigned fillToFrameTrunc = writeIndex + ((fillToFrame - writeIndex) / 4) * 4;
+                    for (; writeIndex < fillToFrameTrunc; writeIndex += 4) {
+                        delta = target - value;
+                        vDelta = _mm_set_ps1(delta);
+                        vValue = _mm_set_ps1(value);
+
+                        vResult = _mm_add_ps(vValue, _mm_mul_ps(vDelta, vC));
+                        _mm_storeu_ps(values + writeIndex, vResult);
+
+                        // Update value for next iteration.
+                        value += delta * c3;
+                    }
+#endif
+                    // Serially process remaining values
                     for (; writeIndex < fillToFrame; ++writeIndex) {
                         values[writeIndex] = value;
                         value += (target - value) * discreteTimeConstant;
