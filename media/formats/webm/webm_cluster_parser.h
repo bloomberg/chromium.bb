@@ -113,7 +113,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
     // Counts the number of estimated durations used in this track. Used to
     // prevent log spam for MEDIA_LOG()s about estimated duration.
-    int num_duration_estimates_;
+    int num_duration_estimates_ = 0;
 
     int track_num_;
     bool is_video_;
@@ -269,7 +269,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
   // Tracks the number of MEDIA_LOGs made in process of reading encoded
   // duration. Useful to prevent log spam.
-  int num_duration_errors_;
+  int num_duration_errors_ = 0;
 
   double timecode_multiplier_;  // Multiplier used to convert timecodes into
                                 // microseconds.
@@ -280,23 +280,23 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
   WebMListParser parser_;
 
-  int64 last_block_timecode_;
+  int64 last_block_timecode_ = -1;
   scoped_ptr<uint8_t[]> block_data_;
-  int block_data_size_;
-  int64 block_duration_;
-  int64 block_add_id_;
+  int block_data_size_ = -1;
+  int64 block_duration_ = -1;
+  int64 block_add_id_ = -1;
 
   scoped_ptr<uint8_t[]> block_additional_data_;
   // Must be 0 if |block_additional_data_| is null. Must be > 0 if
   // |block_additional_data_| is NOT null.
-  int block_additional_data_size_;
+  int block_additional_data_size_ = 0;
 
-  int64 discard_padding_;
-  bool discard_padding_set_;
+  int64 discard_padding_ = -1;
+  bool discard_padding_set_ = false;
 
-  int64 cluster_timecode_;
+  int64 cluster_timecode_ = -1;
   base::TimeDelta cluster_start_time_;
-  bool cluster_ended_;
+  bool cluster_ended_ = false;
 
   Track audio_;
   Track video_;

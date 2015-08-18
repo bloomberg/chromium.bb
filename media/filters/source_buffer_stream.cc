@@ -129,28 +129,14 @@ SourceBufferStream::SourceBufferStream(const AudioDecoderConfig& audio_config,
                                        const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
     : media_log_(media_log),
-      current_config_index_(0),
-      append_config_index_(0),
-      seek_pending_(false),
-      end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
-      selected_range_(NULL),
-      just_exhausted_track_buffer_(false),
       media_segment_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
-      new_media_segment_(false),
       last_appended_buffer_timestamp_(kNoDecodeTimestamp()),
-      last_appended_buffer_is_keyframe_(false),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kSourceBufferAudioMemoryLimit),
-      config_change_pending_(false),
-      splice_buffers_index_(0),
-      pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled),
-      num_splice_generation_warning_logs_(0),
-      num_splice_generation_success_logs_(0),
-      num_track_buffer_gap_warning_logs_(0) {
+      splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(audio_config.IsValidConfig());
   audio_configs_.push_back(audio_config);
 }
@@ -159,28 +145,14 @@ SourceBufferStream::SourceBufferStream(const VideoDecoderConfig& video_config,
                                        const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
     : media_log_(media_log),
-      current_config_index_(0),
-      append_config_index_(0),
-      seek_pending_(false),
-      end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
-      selected_range_(NULL),
-      just_exhausted_track_buffer_(false),
       media_segment_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
-      new_media_segment_(false),
       last_appended_buffer_timestamp_(kNoDecodeTimestamp()),
-      last_appended_buffer_is_keyframe_(false),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kSourceBufferVideoMemoryLimit),
-      config_change_pending_(false),
-      splice_buffers_index_(0),
-      pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled),
-      num_splice_generation_warning_logs_(0),
-      num_splice_generation_success_logs_(0),
-      num_track_buffer_gap_warning_logs_(0) {
+      splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(video_config.IsValidConfig());
   video_configs_.push_back(video_config);
 }
@@ -189,29 +161,15 @@ SourceBufferStream::SourceBufferStream(const TextTrackConfig& text_config,
                                        const scoped_refptr<MediaLog>& media_log,
                                        bool splice_frames_enabled)
     : media_log_(media_log),
-      current_config_index_(0),
-      append_config_index_(0),
       text_track_config_(text_config),
-      seek_pending_(false),
-      end_of_stream_(false),
       seek_buffer_timestamp_(kNoTimestamp()),
-      selected_range_(NULL),
-      just_exhausted_track_buffer_(false),
       media_segment_start_time_(kNoDecodeTimestamp()),
       range_for_next_append_(ranges_.end()),
-      new_media_segment_(false),
       last_appended_buffer_timestamp_(kNoDecodeTimestamp()),
-      last_appended_buffer_is_keyframe_(false),
       last_output_buffer_timestamp_(kNoDecodeTimestamp()),
       max_interbuffer_distance_(kNoTimestamp()),
       memory_limit_(kSourceBufferAudioMemoryLimit),
-      config_change_pending_(false),
-      splice_buffers_index_(0),
-      pending_buffers_complete_(false),
-      splice_frames_enabled_(splice_frames_enabled),
-      num_splice_generation_warning_logs_(0),
-      num_splice_generation_success_logs_(0),
-      num_track_buffer_gap_warning_logs_(0) {}
+      splice_frames_enabled_(splice_frames_enabled) {}
 
 SourceBufferStream::~SourceBufferStream() {
   while (!ranges_.empty()) {

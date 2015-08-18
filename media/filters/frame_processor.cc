@@ -160,12 +160,9 @@ bool MseTrackBuffer::FlushProcessedFrames() {
 
 FrameProcessor::FrameProcessor(const UpdateDurationCB& update_duration_cb,
                                const scoped_refptr<MediaLog>& media_log)
-    : sequence_mode_(false),
-      group_start_timestamp_(kNoTimestamp()),
+    : group_start_timestamp_(kNoTimestamp()),
       update_duration_cb_(update_duration_cb),
-      media_log_(media_log),
-      num_dropped_preroll_warnings_(0),
-      num_dts_beyond_pts_warnings_(0) {
+      media_log_(media_log) {
   DVLOG(2) << __FUNCTION__ << "()";
   DCHECK(!update_duration_cb.is_null());
 }

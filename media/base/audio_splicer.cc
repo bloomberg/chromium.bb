@@ -99,7 +99,7 @@ class AudioStreamSanitizer {
   void AddOutputBuffer(const scoped_refptr<AudioBuffer>& buffer);
 
   AudioTimestampHelper output_timestamp_helper_;
-  bool received_end_of_stream_;
+  bool received_end_of_stream_ = false;
 
   typedef std::deque<scoped_refptr<AudioBuffer> > BufferQueue;
   BufferQueue output_buffers_;
@@ -108,7 +108,7 @@ class AudioStreamSanitizer {
 
   // To prevent log spam, counts the number of audio gap or overlaps warned in
   // logs.
-  int num_warning_logs_;
+  int num_warning_logs_ = 0;
 
   DISALLOW_ASSIGN(AudioStreamSanitizer);
 };
@@ -116,11 +116,7 @@ class AudioStreamSanitizer {
 AudioStreamSanitizer::AudioStreamSanitizer(
     int samples_per_second,
     const scoped_refptr<MediaLog>& media_log)
-    : output_timestamp_helper_(samples_per_second),
-      received_end_of_stream_(false),
-      media_log_(media_log),
-      num_warning_logs_(0) {
-}
+    : output_timestamp_helper_(samples_per_second), media_log_(media_log) {}
 
 AudioStreamSanitizer::~AudioStreamSanitizer() {}
 
