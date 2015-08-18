@@ -475,6 +475,12 @@ component("net") {
       "SystemConfiguration.framework",
       "resolv",
     ]
+
+    deps += [
+      "//third_party/nss:nspr",
+      "//third_party/nss",
+      "//net/third_party/nss/ssl:libssl",
+    ]
   }
 
   if (is_ios || is_mac) {
