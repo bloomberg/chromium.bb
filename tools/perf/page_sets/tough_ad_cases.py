@@ -119,6 +119,36 @@ class ToughAdCasesPageSet(story.StorySet):
       self.AddStory(SwiffyPage(url, self))
 
 
+class ToughWebglAdCasesPageSet(story.StorySet):
+  """Pages for measuring rendering performance with WebGL ad content."""
+
+  def __init__(self):
+    super(ToughWebglAdCasesPageSet, self).__init__(
+        archive_data_file='data/tough_ad_cases.json',
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
+
+    base_url = 'http://localhost:8000'
+
+    # See go/swiffy-chrome-samples for how to add new pages here or how to
+    # update the existing ones.
+    swiffy_pages = [
+        'CICAgICQ15a9NxDIARjIASgBMghBC1XuTk8ezw.swf.webglbeta.html',
+        'shapes-CK7ptO3F8bi2KxDQAhiYAigBMgij6QBQtD2gyA.swf.webglbeta.html',
+        'CNP2xe_LmqPEKBCsAhj6ASgBMggnyMqth81h8Q.swf.webglbeta.html',
+        'clip-paths-CICAgMDO7Ye9-gEQ2AUYWigBMgjZxDii6aoK9w.swf.webglbeta.html',
+        'filters-CNLa0t2T47qJ_wEQoAEY2AQoATIIFaIdc7VMBr4.swf.webglbeta.html',
+        'shapes-CICAgMDO7cfIzwEQ1AMYPCgBMghqY8tqyRCArQ.swf.webglbeta.html',
+        'CICAgIDQ2Pb-MxCsAhj6ASgBMgi5DLoSO0gPbQ.swf.webglbeta.html',
+        'CICAgKCN39CopQEQoAEY2AQoATIID59gK5hjjIg.swf.webglbeta.html',
+        'CICAgKCNj4HgyAEQeBjYBCgBMgjQpPkOjyWNdw.1.swf.webglbeta.html',
+        'clip-paths-CILZhLqO_-27bxB4GNgEKAEyCC46kMLBXnMT.swf.webglbeta.html',
+        'CICAgMDOrcnRGRB4GNgEKAEyCP_ZBSfwUFsj.swf.webglbeta.html',
+    ]
+    for page_name in swiffy_pages:
+      url = base_url + '/' + page_name
+      self.AddStory(SwiffyPage(url, self))
+
+
 class ScrollingToughAdCasesPageSet(story.StorySet):
   """Pages for measuring scrolling performance with advertising content."""
 
@@ -129,6 +159,9 @@ class ScrollingToughAdCasesPageSet(story.StorySet):
 
     self.AddStory(ScrollingPage('file://tough_ad_cases/'
         'swiffy_collection.html', self, make_javascript_deterministic=False))
+    self.AddStory(ScrollingPage('file://tough_ad_cases/'
+        'swiffy_webgl_collection.html',
+        self, make_javascript_deterministic=False))
     self.AddStory(ScrollingPage('http://www.latimes.com', self))
     self.AddStory(ScrollingForbesPage('http://www.forbes.com/sites/parmyolson/'
         '2015/07/29/jana-mobile-data-facebook-internet-org/', self))
