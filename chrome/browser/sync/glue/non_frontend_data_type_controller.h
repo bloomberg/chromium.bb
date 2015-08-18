@@ -13,9 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
+#include "components/sync_driver/profile_sync_components_factory.h"
 
 class Profile;
 class ProfileSyncService;

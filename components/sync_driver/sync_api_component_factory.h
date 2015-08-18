@@ -11,6 +11,10 @@
 #include "sync/internal_api/public/attachments/attachment_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 
+namespace syncer {
+struct UserShare;
+}  // namespace syncer
+
 namespace sync_driver {
 
 // This factory provides sync driver code with the model type specific sync/api

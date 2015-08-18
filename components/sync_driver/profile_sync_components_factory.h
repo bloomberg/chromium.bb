@@ -2,19 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__
+#ifndef COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_COMPONENTS_FACTORY_H__
+#define COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_COMPONENTS_FACTORY_H__
 
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/invalidation/public/invalidation_service.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/sync_api_component_factory.h"
-#include "sync/api/sync_merge_result.h"
-#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 
 class PasswordStore;
@@ -24,6 +21,10 @@ class ProfileSyncService;
 namespace browser_sync {
 class SyncBackendHost;
 }  // namespace browser_sync
+
+namespace invalidation {
+class InvalidationService;
+}  // namespace invalidation
 
 namespace sync_driver {
 class AssociatorInterface;
@@ -48,6 +49,8 @@ class HistoryBackend;
 }  // namespace history
 
 // Factory class for all profile sync related classes.
+// TODO(zea): crbug.com/512768 Delete this interface and move all methods into
+// SyncApiComponentFactory.
 class ProfileSyncComponentsFactory
     : public sync_driver::SyncApiComponentFactory {
  public:
@@ -111,4 +114,4 @@ class ProfileSyncComponentsFactory
       sync_driver::DataTypeErrorHandler* error_handler) = 0;
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__
+#endif  // COMPONENTS_SYNC_DRIVER_PROFILE_SYNC_COMPONENTS_FACTORY_H__

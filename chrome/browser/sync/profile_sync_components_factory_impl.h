@@ -10,8 +10,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "chrome/browser/sync/chrome_sync_client.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/sync_driver/profile_sync_components_factory.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 
@@ -63,6 +64,9 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   scoped_ptr<sync_driver::LocalDeviceInfoProvider>
   CreateLocalDeviceInfoProvider() override;
 
+  // TODO(zea): crbug.com/512768 Remove GetSyncableServiceForType from
+  // ProfileSyncComponentsFactory and have everything use the SyncClient
+  // instead.
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
   scoped_ptr<syncer::AttachmentService> CreateAttachmentService(
@@ -109,6 +113,9 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   const GURL sync_service_url_;
   OAuth2TokenService* const token_service_;
   net::URLRequestContextGetter* const url_request_context_getter_;
+
+  // Chrome specific implementation of SyncClient.
+  browser_sync::ChromeSyncClient chrome_sync_client_;
 
   base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
 

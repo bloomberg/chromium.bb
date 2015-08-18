@@ -13,11 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
-#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/sync_driver/profile_sync_components_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 
