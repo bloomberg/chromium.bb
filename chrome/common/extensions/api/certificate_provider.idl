@@ -1,0 +1,78 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use this API to expose certificates to the platform which can use these
+// certificates for TLS authentications.
+namespace certificateProvider {
+  enum Hash {
+    MD5_SHA1,
+    SHA1,
+    SHA256,
+    SHA384,
+    SHA512
+  };
+
+  dictionary CertificateInfo {
+    // Must be the DER encoding of a X.509 client certificate. Currently, only
+    // certificates of RSA keys are supported.
+    ArrayBuffer certificate;
+
+    // Must be set to all hashes supported for this certificate. This extension
+    // will only be asked for signatures of digests calculated with one of these
+    // hash algorithms.
+    Hash[] supportedHashes;
+  };
+
+  dictionary SignRequest {
+    // The digest that must be signed.
+    ArrayBuffer digest;
+
+    // Refers to the hash algorithm that was used to create |digest|.
+    Hash hash;
+
+    // The DER encoding of a X.509 client certificate. The extension must sign
+    // |digest| using the associated private key.
+    ArrayBuffer certificate;
+  };
+
+  // Either |error| or |signature| and not both must be set.
+  dictionary SignatureDetails {
+    // If the signature of the digest could not be calculated, this field must
+    // be set.
+    DOMString? error;
+
+    // If no error occurred, this field must be set to the signature of the
+    // digest using the private the of the requested client certificate.
+    // For an RSA key, the signature must be a PKCS#1 signature. The extension
+    // is responsible for prepending the DigestInfo prefix and adding PKCS#1
+    // padding. If an MD5_SHA1 hash must be signed, the extension must not
+    // prepend a DigestInfo prefix but only add PKCS#1 padding.
+    ArrayBuffer? signature;
+  };
+
+  callback DoneCallback = void ();
+  callback SignCallback = void(SignatureDetails reply, DoneCallback callback);
+
+  // Notifies Chrome that this extension is capable of responding to signing
+  // requests for the certificates listed in |certificates|. The list must
+  // only contain certificates for which the extension can sign data
+  // using the associated private key.
+  callback CertificatesCallback =
+      void(CertificateInfo[] certificates, DoneCallback callback);
+
+  interface Events {
+    // This event fires every time the browser requests the current list of
+    // certificates provided by this extension. The extension must call
+    // |callback| exactly once with the current list of certificates.
+    static void onClientCertificatesRequested(CertificatesCallback callback);
+
+    // This event fires every time the browser needs to sign a message using a
+    // certificate provided by this extension using |publishClientCertificates|.
+    // The extension must sign the data in |request| using the appropriate
+    // algorithm and private key and return it by calling |callback|. |callback|
+    // must be called exactly once.
+    static void onSignDigestRequested(SignRequest request,
+                                      SignCallback callback);
+  };
+};
