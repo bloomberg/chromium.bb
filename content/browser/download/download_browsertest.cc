@@ -1815,4 +1815,21 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadGZipWithNoContent) {
   // That's it. This should work without crashing.
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, Spam) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  NavigateToURLAndWaitForDownload(
+      shell(),
+      embedded_test_server()->GetURL(
+          "/download/double-content-disposition.txt"),
+      DownloadItem::COMPLETE);
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+
+  EXPECT_EQ(FILE_PATH_LITERAL("Jumboshrimp.txt"),
+            downloads[0]->GetTargetFilePath().BaseName().value());
+}
+
 }  // namespace content
