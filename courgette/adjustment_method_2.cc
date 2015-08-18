@@ -1073,19 +1073,19 @@ class AssignmentProblem {
             sums[program_info][model_info] += score;
           }
         }
+      }
 
-        for (ScoreSet::iterator assignee_iterator = sums.begin();
-             assignee_iterator != sums.end();
-             ++assignee_iterator) {
-          LabelInfo* program_info = assignee_iterator->first;
-          for (LabelToScore::iterator p = assignee_iterator->second.begin();
-               p != assignee_iterator->second.end();
-               ++p) {
-            LabelInfo* model_info = p->first;
-            int score = p->second;
-            int* slot = &maxima[program_info][model_info];
-            *slot = std::max(*slot, score);
-          }
+      for (ScoreSet::iterator assignee_iterator = sums.begin();
+           assignee_iterator != sums.end();
+           ++assignee_iterator) {
+        LabelInfo* program_info = assignee_iterator->first;
+        for (LabelToScore::iterator p = assignee_iterator->second.begin();
+             p != assignee_iterator->second.end();
+             ++p) {
+          LabelInfo* model_info = p->first;
+          int score = p->second;
+          int* slot = &maxima[program_info][model_info];
+          *slot = std::max(*slot, score);
         }
       }
     }
