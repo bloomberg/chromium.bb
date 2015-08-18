@@ -32,6 +32,7 @@ fd_pipe_del
 fd_pipe_get_param
 fd_pipe_new
 fd_pipe_wait
+fd_pipe_wait_timeout
 fd_ringbuffer_del
 fd_ringbuffer_emit_reloc_ring
 fd_ringbuffer_flush
