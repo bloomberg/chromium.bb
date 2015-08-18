@@ -9,7 +9,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PicturePattern : public Pattern {
+class PLATFORM_EXPORT PicturePattern final : public Pattern {
 public:
     static PassRefPtr<PicturePattern> create(PassRefPtr<const SkPicture>, RepeatMode);
 

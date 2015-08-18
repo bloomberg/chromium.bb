@@ -52,8 +52,7 @@ public:
         RepeatModeXY   = RepeatModeX | RepeatModeY
     };
 
-    static PassRefPtr<Pattern> createBitmapPattern(PassRefPtr<Image> tileImage,
-        RepeatMode = RepeatModeXY);
+    static PassRefPtr<Pattern> createImagePattern(PassRefPtr<Image>, RepeatMode = RepeatModeXY);
     static PassRefPtr<Pattern> createPicturePattern(PassRefPtr<const SkPicture>,
         RepeatMode = RepeatModeXY);
     virtual ~Pattern();

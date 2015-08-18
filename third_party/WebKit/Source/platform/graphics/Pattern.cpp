@@ -28,9 +28,8 @@
 #include "config.h"
 #include "platform/graphics/Pattern.h"
 
-#include "platform/graphics/BitmapPattern.h"
+#include "platform/graphics/ImagePattern.h"
 #include "platform/graphics/PicturePattern.h"
-#include "platform/graphics/StaticBitmapPattern.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -38,13 +37,9 @@
 
 namespace blink {
 
-PassRefPtr<Pattern> Pattern::createBitmapPattern(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
+PassRefPtr<Pattern> Pattern::createImagePattern(PassRefPtr<Image> tileImage, RepeatMode repeatMode)
 {
-    // TODO(fmalita): do we still need BitmapPattern at all?
-    if (tileImage->isBitmapImage())
-        return BitmapPattern::create(tileImage, repeatMode);
-
-    return StaticBitmapPattern::create(tileImage, repeatMode);
+    return ImagePattern::create(tileImage, repeatMode);
 }
 
 PassRefPtr<Pattern> Pattern::createPicturePattern(PassRefPtr<const SkPicture> picture,
