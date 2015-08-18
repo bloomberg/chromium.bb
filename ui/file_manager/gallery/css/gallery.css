@@ -489,21 +489,26 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   visibility: visible;
 }
 
-.gallery .edit-mode-toolbar .overwrite-original {
+.edit-mode-toolbar .overwrite-original {
   -webkit-margin-start: 16px;
 }
 
-.gallery .edit-mode-toolbar .overwrite-original::shadow #checkboxContainer {
+.edit-mode-toolbar .overwrite-original::shadow #checkboxContainer {
   transform: scale(0.78, 0.78); /* Make box size to 14px. */
 }
 
-.gallery .edit-mode-toolbar .overwrite-original::shadow #ink {
+.edit-mode-toolbar .overwrite-original::shadow #ink {
   left: -10px;
   top: -10px;
 }
 
-.gallery .edit-mode-toolbar .overwrite-original::shadow #checkboxLabel {
+.edit-mode-toolbar .overwrite-original::shadow #checkboxLabel {
   padding-left: 6px;
+}
+
+.edit-mode-toolbar .overwrite-original[disabled]::shadow #checkbox,
+.edit-mode-toolbar .overwrite-original[disabled]::shadow #checkboxLabel {
+  opacity: 0.2;
 }
 
 .gallery .edit-mode-toolbar .saved {
