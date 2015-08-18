@@ -101,60 +101,6 @@ static const size_t kMaxIndexChars = 65535;
 // Constants for UMA statistic collection.
 static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
-namespace {
-
-#if defined(OS_ANDROID)
-// Parses the DOM for a <meta> tag with a particular name.
-// |meta_tag_content| is set to the contents of the 'content' attribute.
-// |found_tag| is set to true if the tag was successfully found.
-// Returns true if the document was parsed without errors.
-bool RetrieveMetaTagContent(const WebFrame* main_frame,
-                            const GURL& expected_url,
-                            const std::string& meta_tag_name,
-                            bool* found_tag,
-                            std::string* meta_tag_content) {
-  WebDocument document =
-      main_frame ? main_frame->document() : WebDocument();
-  WebElement head = document.isNull() ? WebElement() : document.head();
-  GURL document_url = document.isNull() ? GURL() : GURL(document.url());
-
-  // Search the DOM for the <meta> tag with the given name.
-  *found_tag = false;
-  *meta_tag_content = "";
-  if (!head.isNull()) {
-    WebNodeList children = head.childNodes();
-    for (unsigned i = 0; i < children.length(); ++i) {
-      WebNode child = children.item(i);
-      if (!child.isElementNode())
-        continue;
-      WebElement elem = child.to<WebElement>();
-      if (elem.hasHTMLTagName("meta")) {
-        if (elem.hasAttribute("name") && elem.hasAttribute("content")) {
-          std::string name = elem.getAttribute("name").utf8();
-          if (name == meta_tag_name) {
-            *meta_tag_content = elem.getAttribute("content").utf8();
-            *found_tag = true;
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  // Make sure we're checking the right page and that the length of the content
-  // string is reasonable.
-  bool success = document_url == expected_url;
-  if (meta_tag_content->size() > chrome::kMaxMetaTagAttributeLength) {
-    *meta_tag_content = "";
-    success = false;
-  }
-
-  return success;
-}
-#endif
-
-}  // namespace
-
 ChromeRenderViewObserver::ChromeRenderViewObserver(
     content::RenderView* render_view,
     web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer)
@@ -190,8 +136,6 @@ bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_RetrieveMetaTagContent,
-                        OnRetrieveMetaTagContent)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_GetWebApplicationInfo,
                         OnGetWebApplicationInfo)
@@ -217,26 +161,6 @@ void ChromeRenderViewObserver::OnUpdateTopControlsState(
     content::TopControlsState current,
     bool animate) {
   render_view()->UpdateTopControlsState(constraints, current, animate);
-}
-
-void ChromeRenderViewObserver::OnRetrieveMetaTagContent(
-    const GURL& expected_url,
-    const std::string tag_name) {
-  bool found_tag;
-  std::string content_str;
-  bool parsed_successfully = RetrieveMetaTagContent(
-      render_view()->GetWebView()->mainFrame(),
-      expected_url,
-      tag_name,
-      &found_tag,
-      &content_str);
-
-  Send(new ChromeViewHostMsg_DidRetrieveMetaTagContent(
-      routing_id(),
-      parsed_successfully && found_tag,
-      tag_name,
-      content_str,
-      expected_url));
 }
 #endif
 

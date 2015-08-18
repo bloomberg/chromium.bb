@@ -294,13 +294,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
 // ChromeViewHostMsg_DidGetWebApplicationInfo.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetWebApplicationInfo)
 
-#if defined(OS_ANDROID)
-// Asks the renderer to return information about the given meta tag.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_RetrieveMetaTagContent,
-                    GURL /* expected_url */,
-                    std::string /* tag_name */ )
-#endif  // defined(OS_ANDROID)
-
 // chrome.principals messages ------------------------------------------------
 
 // Message sent from the renderer to the browser to get the list of browser
@@ -477,14 +470,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)
-
-#if defined(OS_ANDROID)
-IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DidRetrieveMetaTagContent,
-                    bool /* success */,
-                    std::string /* tag_name */,
-                    std::string /* tag_content */,
-                    GURL /* expected_url */)
-#endif  // defined(OS_ANDROID)
 
 // Logs events from InstantExtended New Tab Pages.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogEvent,
