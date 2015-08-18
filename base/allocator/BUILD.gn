@@ -4,6 +4,13 @@
 
 import("//build/config/allocator.gni")
 
+declare_args() {
+  # Provide a way to force disable debugallocation in Debug builds,
+  # e.g. for profiling (it's more rare to profile Debug builds,
+  # but people sometimes need to do that).
+  enable_debugallocation = is_debug
+}
+
 # Only executables and not libraries should depend on the allocator target;
 # only the application (the final executable) knows what allocator makes sense.
 # This "allocator" meta-target will forward to the default allocator according
@@ -29,6 +36,16 @@ group("allocator") {
 config("allocator_shim_define") {
   if (is_win && !is_component_build) {
     defines = [ "ALLOCATOR_SHIM" ]
+  }
+}
+
+config("tcmalloc_flags") {
+  if (enable_debugallocation) {
+    defines = [
+      # Use debugallocation for Debug builds to catch problems early
+      # and cleanly, http://crbug.com/30715 .
+      "TCMALLOC_FOR_DEBUGALLOCATION",
+    ]
   }
 }
 
@@ -195,7 +212,10 @@ if (use_allocator == "tcmalloc") {
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
+      ":tcmalloc_flags",
+    ]
 
     deps = []
 
