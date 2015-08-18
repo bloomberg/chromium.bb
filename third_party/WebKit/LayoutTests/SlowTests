@@ -217,7 +217,3 @@ crbug.com/459009 crypto/subtle/ [ Slow ]
 
 crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
-
-crbug.com/508984 http/tests/cachestorage/serviceworker/cache-match.html [ Slow ]
-crbug.com/508984 http/tests/cachestorage/worker/cache-match.html [ Slow ]
-crbug.com/508984 http/tests/cachestorage/window/cache-match.html [ Slow ]
