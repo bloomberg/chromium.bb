@@ -67,7 +67,7 @@ public abstract class CustomTabActivityTestBase extends
             }
         });
         try {
-            if (!tab.isLoadingAndRenderingDone()) pageLoadFinishedHelper.waitForCallback(0);
+            if (tab.isLoading()) pageLoadFinishedHelper.waitForCallback(0);
         } catch (TimeoutException e) {
             fail();
         }

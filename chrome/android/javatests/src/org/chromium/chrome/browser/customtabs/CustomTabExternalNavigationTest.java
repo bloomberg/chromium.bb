@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.Activity;
 import android.os.Bundle;
 import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
@@ -51,7 +52,8 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
         }
     }
 
-    private static final String TEST_URL = "about:blank";
+    private static final String TEST_URL = TestHttpServerClient.getUrl(
+            "chrome/test/data/android/google.html");
     private ExternalNavigationHandler mUrlHandler;
     private CustomTabNavigationDelegate mNavigationDelegate;
 
@@ -71,11 +73,8 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
      * For urls with special schemes and hosts, and there is exactly one activity having a matching
      * intent filter, the framework will make that activity the default handler of the special url.
      * This test tests whether chrome is able to start the default external handler.
-     *
-     * crbug.com/519613
-     * @SmallTest
      */
-    @FlakyTest
+    @SmallTest
     public void testExternalActivityStartedForDefaultUrl() {
         final String testUrl = "customtab://customtabtest/intent";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
