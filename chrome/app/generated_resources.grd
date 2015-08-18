@@ -6174,12 +6174,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_ALTERNATIVE_DESCRIPTION" desc="Description of the flag to enable using an alternative version of the data reduction proxy">
         Use an experimental version of the data reduction proxy. The proxy must be enabled in settings for this flag to take effect.
       </message>
-      <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
-        Enable performance monitoring
-      </message>
-      <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_DESCRIPTION" desc="Description for the flag to enable Performance Monitor.">
-        Enable passive gathering of performance-related metrics and events and provide the option to view this data in a graphical fashion. To view data, visit chrome://performance.
-      </message>
       <message name="IDS_FLAGS_ENABLE_ICON_NTP_NAME" desc="Name of the flag to enable large icons on the NTP.">
         Enable large icons on the New Tab page
       </message>
