@@ -220,7 +220,7 @@ public class EnhancedBookmarkAddEditFolderActivity extends EnhancedBookmarkActiv
 
     @Override
     protected void onStop() {
-        if (!mIsAddMode && !mFolderTitle.isEmpty()) {
+        if (mModel.doesBookmarkExist(mFolderId) && !mIsAddMode && !mFolderTitle.isEmpty()) {
             mModel.setBookmarkTitle(mFolderId, mFolderTitle.getTrimmedText());
         }
 
