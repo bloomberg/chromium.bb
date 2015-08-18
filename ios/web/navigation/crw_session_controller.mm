@@ -275,7 +275,8 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   copy->_currentNavigationIndex = _currentNavigationIndex;
   copy->_previousNavigationIndex = _previousNavigationIndex;
   copy->_lastVisitedTimestamp = _lastVisitedTimestamp;
-  copy->_entries = [_entries copy];
+  copy->_entries =
+      [[NSMutableArray alloc] initWithArray:_entries copyItems:YES];
   copy->_sessionCertificatePolicyManager =
       [_sessionCertificatePolicyManager copy];
   copy->_xCallbackParameters = [_xCallbackParameters copy];
