@@ -180,113 +180,96 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
   scoped_refptr<Layer> layer = Layer::Create(layer_settings());
 
   scoped_refptr<Layer> root = Layer::Create(layer_settings());
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(1, 2),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false);
   root->AddChild(layer);
 
   host()->SetRootLayer(root);
+
+  TransformTree& tree = host()->property_trees()->transform_tree;
 
   // Case 2: Setting the bounds of the layer should not affect either the draw
   // transform or the screenspace transform.
   gfx::Transform translation_to_center;
   translation_to_center.Translate(5.0, 6.0);
-  SetLayerPropertiesForTesting(layer.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(layer.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, layer->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
-                                  layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix, DrawTransformFromPropertyTrees(layer.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
 
   // Case 3: The anchor point by itself (without a layer transform) should have
   // no effect on the transforms.
-  SetLayerPropertiesForTesting(layer.get(),
-                               identity_matrix,
-                               gfx::Point3F(2.5f, 3.0f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(layer.get(), identity_matrix,
+                               gfx::Point3F(2.5f, 3.0f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, layer->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
-                                  layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix, DrawTransformFromPropertyTrees(layer.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
 
   // Case 4: A change in actual position affects both the draw transform and
   // screen space transform.
   gfx::Transform position_transform;
   position_transform.Translate(0.f, 1.2f);
-  SetLayerPropertiesForTesting(layer.get(),
-                               identity_matrix,
-                               gfx::Point3F(2.5f, 3.0f, 0.f),
-                               gfx::PointF(0.f, 1.2f),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(
+      layer.get(), identity_matrix, gfx::Point3F(2.5f, 3.0f, 0.f),
+      gfx::PointF(0.f, 1.2f), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(position_transform, layer->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(position_transform,
-                                  layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      position_transform, DrawTransformFromPropertyTrees(layer.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      position_transform,
+      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
 
   // Case 5: In the correct sequence of transforms, the layer transform should
   // pre-multiply the translation_to_center. This is easily tested by using a
   // scale transform, because scale and translation are not commutative.
   gfx::Transform layer_transform;
   layer_transform.Scale3d(2.0, 2.0, 1.0);
-  SetLayerPropertiesForTesting(layer.get(),
-                               layer_transform,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(layer.get(), layer_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(layer_transform, layer->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(layer_transform,
-                                  layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      layer_transform, DrawTransformFromPropertyTrees(layer.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      layer_transform,
+      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
 
   // Case 6: The layer transform should occur with respect to the anchor point.
   gfx::Transform translation_to_anchor;
   translation_to_anchor.Translate(5.0, 0.0);
   gfx::Transform expected_result =
       translation_to_anchor * layer_transform * Inverse(translation_to_anchor);
-  SetLayerPropertiesForTesting(layer.get(),
-                               layer_transform,
-                               gfx::Point3F(5.0f, 0.f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(layer.get(), layer_transform,
+                               gfx::Point3F(5.0f, 0.f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_result, layer->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_result,
-                                  layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_result, DrawTransformFromPropertyTrees(layer.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_result,
+      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
 
   // Case 7: Verify that position pre-multiplies the layer transform.  The
   // current implementation of CalculateDrawProperties does this implicitly, but
   // it is still worth testing to detect accidental regressions.
   expected_result = position_transform * translation_to_anchor *
                     layer_transform * Inverse(translation_to_anchor);
-  SetLayerPropertiesForTesting(layer.get(),
-                               layer_transform,
-                               gfx::Point3F(5.0f, 0.f, 0.f),
-                               gfx::PointF(0.f, 1.2f),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(
+      layer.get(), layer_transform, gfx::Point3F(5.0f, 0.f, 0.f),
+      gfx::PointF(0.f, 1.2f), gfx::Size(10, 12), true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_result, layer->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_result,
-                                  layer->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_result, DrawTransformFromPropertyTrees(layer.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_result,
+      ScreenSpaceTransformFromPropertyTrees(layer.get(), tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
@@ -392,78 +375,57 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   host()->SetRootLayer(root);
 
   // One-time setup of root layer
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(1, 2),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1, 2), true, false);
+
+  TransformTree& tree = host()->property_trees()->transform_tree;
 
   // Case 1: parent's anchor point should not affect child or grand_child.
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(2.5f, 3.0f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(16, 18),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(76, 78),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(parent.get(), identity_matrix,
+                               gfx::Point3F(2.5f, 3.0f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 12), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(16, 18), true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(76, 78),
+                               true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix, child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
-                                  child->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
-                                  grand_child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(identity_matrix,
-                                  grand_child->screen_space_transform());
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix, DrawTransformFromPropertyTrees(child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix, DrawTransformFromPropertyTrees(grand_child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      identity_matrix,
+      ScreenSpaceTransformFromPropertyTrees(grand_child.get(), tree));
 
   // Case 2: parent's position affects child and grand_child.
   gfx::Transform parent_position_transform;
   parent_position_transform.Translate(0.f, 1.2f);
-  SetLayerPropertiesForTesting(parent.get(),
-                               identity_matrix,
-                               gfx::Point3F(2.5f, 3.0f, 0.f),
-                               gfx::PointF(0.f, 1.2f),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(16, 18),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(76, 78),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(
+      parent.get(), identity_matrix, gfx::Point3F(2.5f, 3.0f, 0.f),
+      gfx::PointF(0.f, 1.2f), gfx::Size(10, 12), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(16, 18), true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(76, 78),
+                               true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_position_transform,
-                                  child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_position_transform,
-                                  child->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_position_transform,
-                                  grand_child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_position_transform,
-                                  grand_child->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_position_transform,
+      DrawTransformFromPropertyTrees(child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_position_transform,
+      ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_position_transform,
+      DrawTransformFromPropertyTrees(grand_child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_position_transform,
+      ScreenSpaceTransformFromPropertyTrees(grand_child.get(), tree));
 
   // Case 3: parent's local transform affects child and grandchild
   gfx::Transform parent_layer_transform;
@@ -473,36 +435,27 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSimpleHierarchy) {
   gfx::Transform parent_composite_transform =
       parent_translation_to_anchor * parent_layer_transform *
       Inverse(parent_translation_to_anchor);
-  SetLayerPropertiesForTesting(parent.get(),
-                               parent_layer_transform,
-                               gfx::Point3F(2.5f, 3.0f, 0.f),
-                               gfx::PointF(),
-                               gfx::Size(10, 12),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(16, 18),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(grand_child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(76, 78),
-                               true,
-                               false);
+  SetLayerPropertiesForTesting(parent.get(), parent_layer_transform,
+                               gfx::Point3F(2.5f, 3.0f, 0.f), gfx::PointF(),
+                               gfx::Size(10, 12), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(16, 18), true, false);
+  SetLayerPropertiesForTesting(grand_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(76, 78),
+                               true, false);
   ExecuteCalculateDrawProperties(root.get());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_composite_transform,
-                                  child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_composite_transform,
-                                  child->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_composite_transform,
-                                  grand_child->draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(parent_composite_transform,
-                                  grand_child->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_composite_transform,
+      DrawTransformFromPropertyTrees(child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_composite_transform,
+      ScreenSpaceTransformFromPropertyTrees(child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_composite_transform,
+      DrawTransformFromPropertyTrees(grand_child.get(), tree));
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      parent_composite_transform,
+      ScreenSpaceTransformFromPropertyTrees(grand_child.get(), tree));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
