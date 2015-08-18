@@ -283,13 +283,7 @@
       'filepath': 'Tools/GardeningServer'
     },
     'spellcheck' : {
-      'filepath':  'Source/core/editing/Editor' \
-                   '|Source/core/editing/Spell' \
-                   '|Source/core/editing/TextCheckingHelper' \
-                   '|Source/platform/text/TextCheck' \
-                   '|Source/web/EditorClientImpl' \
-                   '|LayoutTests/editing/spelling' \
-                   '|public/web/WebSpellCheckClient.h',
+      'filepath':  'Source/core/editing/spellcheck'
     },
     'style': {
       'filepath': 'style/|Style',
