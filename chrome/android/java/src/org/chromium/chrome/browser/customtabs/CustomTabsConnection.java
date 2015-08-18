@@ -67,6 +67,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class CustomTabsConnection extends ICustomTabsService.Stub {
     private static final String TAG = "cr.ChromeConnection";
+    private static final String NO_PRERENDERING_KEY =
+            "android.support.customtabs.maylaunchurl.NO_PRERENDERING";
 
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
     private static final int NO_PREDICTION = 0;
@@ -275,6 +277,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
 
         final IBinder session = callback.asBinder();
         final String urlString = url.toString();
+        final boolean noPrerendering =
+                extras != null ? extras.getBoolean(NO_PRERENDERING_KEY, false) : false;
         int uid = Binder.getCallingUid();
         synchronized (mLock) {
             SessionParams sessionParams = mSessionParams.get(session);
@@ -293,7 +297,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                             Profile.getLastUsedProfile(), urlString);
                 }
                 // Calling with a null or empty url cancels a current prerender.
-                prerenderUrl(session, urlString, extras);
+                if (!noPrerendering) prerenderUrl(session, urlString, extras);
             }
         });
         return true;
