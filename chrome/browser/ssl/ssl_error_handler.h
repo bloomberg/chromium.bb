@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -18,6 +20,9 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
+
+class Profile;
+class CommonNameMismatchHandler;
 
 namespace content {
 class RenderViewHost;
@@ -61,6 +66,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetInterstitialTimerStartedCallbackForTest(
       TimerStartedCallback* callback);
 
+  // Gets the result of whether the suggested URL is valid. Displays
+  // common name mismatch interstitial or ssl interstitial accordingly.
+  void CommonNameMismatchHandlerCallback(
+      const CommonNameMismatchHandler::SuggestedUrlCheckResult& result,
+      const GURL& suggested_url);
+
  protected:
   SSLErrorHandler(content::WebContents* web_contents,
                   int cert_error,
@@ -89,6 +100,10 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   virtual void CheckForCaptivePortal();
   virtual void ShowCaptivePortalInterstitial(const GURL& landing_url);
   virtual void ShowSSLInterstitial();
+  virtual bool GetSuggestedUrl(const std::vector<std::string>& dns_names,
+                               GURL* suggested_url) const;
+  virtual void CheckSuggestedUrl(const GURL& suggested_url);
+  virtual void NavigateToSuggestedURL(const GURL& suggested_url);
 
   // content::NotificationObserver:
   void Observe(
@@ -114,9 +129,12 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   const GURL request_url_;
   const int options_mask_;
   base::Callback<void(bool)> callback_;
+  Profile* const profile_;
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer<SSLErrorHandler> timer_;
+
+  scoped_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 
   scoped_ptr<SSLCertReporter> ssl_cert_reporter_;
 

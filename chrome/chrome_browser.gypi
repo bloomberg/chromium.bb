@@ -2735,6 +2735,8 @@
       'browser/ssl/chrome_ssl_host_state_delegate.h',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.cc',
       'browser/ssl/chrome_ssl_host_state_delegate_factory.h',
+      'browser/ssl/common_name_mismatch_handler.cc',
+      'browser/ssl/common_name_mismatch_handler.h',
       'browser/ssl/connection_security.cc',
       'browser/ssl/connection_security.h',
       'browser/ssl/connection_security_android.cc',

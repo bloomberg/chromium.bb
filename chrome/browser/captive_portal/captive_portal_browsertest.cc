@@ -54,7 +54,10 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_data_directory.h"
+#include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request.h"
@@ -144,7 +147,8 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
 
   // Fails all active URLRequestTimeoutOnDemandJobs with SSL cert errors.
   // |expected_num_jobs| behaves just as in FailJobs.
-  static void FailJobsWithCertError(int expected_num_jobs);
+  static void FailJobsWithCertError(int expected_num_jobs,
+                                    const net::SSLInfo& ssl_info);
 
   // Abandon all active URLRequestTimeoutOnDemandJobs.  |expected_num_jobs|
   // behaves just as in FailJobs.
@@ -169,9 +173,9 @@ class URLRequestTimeoutOnDemandJob : public net::URLRequestJob,
   bool RemoveFromList();
 
   static void WaitForJobsOnIOThread(int num_jobs);
-  static void FailOrAbandonJobsOnIOThread(
-      int expected_num_jobs,
-      EndJobOperation end_job_operation);
+  static void FailOrAbandonJobsOnIOThread(int expected_num_jobs,
+                                          EndJobOperation end_job_operation,
+                                          const net::SSLInfo& ssl_info);
 
   // Checks if there are at least |num_jobs_to_wait_for_| jobs in
   // |job_list_|.  If so, exits the message loop on the UI thread, which
@@ -239,18 +243,17 @@ void URLRequestTimeoutOnDemandJob::FailJobs(int expected_num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                 expected_num_jobs,
-                 FAIL_JOBS));
+                 expected_num_jobs, FAIL_JOBS, net::SSLInfo()));
 }
 
 // static
 void URLRequestTimeoutOnDemandJob::FailJobsWithCertError(
-    int expected_num_jobs) {
+    int expected_num_jobs,
+    const net::SSLInfo& ssl_info) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                 expected_num_jobs,
-                 FAIL_JOBS_WITH_CERT_ERROR));
+                 expected_num_jobs, FAIL_JOBS_WITH_CERT_ERROR, ssl_info));
 }
 
 // static
@@ -258,8 +261,7 @@ void URLRequestTimeoutOnDemandJob::AbandonJobs(int expected_num_jobs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread,
-                 expected_num_jobs,
-                 ABANDON_JOBS));
+                 expected_num_jobs, ABANDON_JOBS, net::SSLInfo()));
 }
 
 URLRequestTimeoutOnDemandJob::URLRequestTimeoutOnDemandJob(
@@ -324,7 +326,8 @@ void URLRequestTimeoutOnDemandJob::MaybeStopWaitingForJobsOnIOThread() {
 // static
 void URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread(
     int expected_num_jobs,
-    EndJobOperation end_job_operation) {
+    EndJobOperation end_job_operation,
+    const net::SSLInfo& ssl_info) {
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ASSERT_LT(0, expected_num_jobs);
   EXPECT_EQ(last_num_jobs_to_wait_for_, expected_num_jobs);
@@ -343,11 +346,7 @@ void URLRequestTimeoutOnDemandJob::FailOrAbandonJobsOnIOThread(
                                 net::ERR_CONNECTION_TIMED_OUT));
     } else if (end_job_operation == FAIL_JOBS_WITH_CERT_ERROR) {
       DCHECK(job->request()->url().SchemeIsCryptographic());
-      net::SSLInfo info;
-      info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
-      info.cert = new net::X509Certificate(
-          "bad.host", "CA", base::Time::Max(), base::Time::Max());
-      job->NotifySSLCertificateError(info, true);
+      job->NotifySSLCertificateError(ssl_info, true);
     }
   }
 
@@ -2863,7 +2862,11 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
 
   CaptivePortalObserver portal_observer(browser()->profile());
   MultiNavigationObserver navigation_observer;
-  URLRequestTimeoutOnDemandJob::FailJobsWithCertError(1);
+  net::SSLInfo info;
+  info.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+  info.cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  URLRequestTimeoutOnDemandJob::FailJobsWithCertError(1, info);
   navigation_observer.WaitForNavigations(1);
 
   EXPECT_EQ(CaptivePortalTabReloader::STATE_NEEDS_RELOAD,

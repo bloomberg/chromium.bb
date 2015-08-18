@@ -50,6 +50,19 @@ class SSLErrorClassification : public content::NotificationObserver {
   // 3.|hostname| is a dotless domain.
   static bool IsHostnameNonUniqueOrDotless(const std::string& hostname);
 
+  // Returns true if the site's hostname differs from one of the DNS
+  // names in the certificate (CN or SANs) only by the presence or
+  // absence of the single-label prefix "www". E.g.: (The first domain
+  // is hostname and the second domain is a DNS name in the certificate)
+  //
+  //     www.example.com ~ example.com -> true
+  //     example.com ~ www.example.com -> true
+  //     www.food.example.com ~ example.com -> false
+  //     mail.example.com ~ example.com -> false
+  static bool GetWWWSubDomainMatch(const std::string& host_name,
+                                   const std::vector<std::string>& dns_names,
+                                   std::string* www_match_host_name);
+
   // A function which calculates the severity score when the ssl error is
   // |CERT_DATE_INVALID|. The calculated score is between 0.0 and 1.0, higher
   // being more severe, indicating how severe the certificate's
@@ -83,14 +96,7 @@ class SSLErrorClassification : public content::NotificationObserver {
   // Returns true if the hostname has a known Top Level Domain.
   static bool IsHostNameKnownTLD(const std::string& host_name);
 
-  // Returns true if the site's hostname differs from one of the DNS
-  // names in the certificate (CN or SANs) only by the presence or
-  // absence of the single-label prefix "www". E.g.:
-  //
-  //     www.example.com ~ example.com -> true
-  //     example.com ~ www.example.com -> true
-  //     www.food.example.com ~ example.com -> false
-  //     mail.example.com ~ example.com -> false
+  // Returns true if GetWWWSubDomainMatch finds a www mismatch.
   bool IsWWWSubDomainMatch() const;
 
   // Returns true if |child| is a subdomain of any of the |potential_parents|.

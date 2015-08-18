@@ -28,7 +28,9 @@
 #include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
+#include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -57,6 +59,7 @@
 #include "content/public/common/ssl_status.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -64,8 +67,11 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_info.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/test_certificate_data.h"
 #include "net/url_request/url_request_context.h"
 
 #if defined(USE_NSS_CERTS)
@@ -198,6 +204,38 @@ void CheckSecurityState(WebContents* tab,
   SecurityStyle::Check(*entry, expected_security_style);
   AuthState::Check(*entry, expected_authentication_state);
 }
+
+// This observer waits for the SSLErrorHandler to start an interstitial timer
+// for the given web contents.
+class SSLInterstitialTimerObserver {
+ public:
+  explicit SSLInterstitialTimerObserver(content::WebContents* web_contents)
+      : web_contents_(web_contents), message_loop_runner_(new base::RunLoop) {
+    callback_ = base::Bind(&SSLInterstitialTimerObserver::OnTimerStarted,
+                           base::Unretained(this));
+    SSLErrorHandler::SetInterstitialTimerStartedCallbackForTest(&callback_);
+  }
+
+  ~SSLInterstitialTimerObserver() {
+    SSLErrorHandler::SetInterstitialTimerStartedCallbackForTest(nullptr);
+  }
+
+  // Waits until the interstitial delay timer in SSLErrorHandler is started.
+  void WaitForTimerStarted() { message_loop_runner_->Run(); }
+
+ private:
+  void OnTimerStarted(content::WebContents* web_contents) {
+    if (web_contents_ == web_contents)
+      message_loop_runner_->Quit();
+  }
+
+  const content::WebContents* web_contents_;
+  SSLErrorHandler::TimerStartedCallback callback_;
+
+  scoped_ptr<base::RunLoop> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLInterstitialTimerObserver);
+};
 
 }  // namespace
 
@@ -2265,6 +2303,330 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
                                https_server_.GetURL("files/ssl/google.html"));
   ASSERT_FALSE(tab->GetInterstitialPage());
   EXPECT_FALSE(state->HasAllowException(https_server_host));
+}
+
+using CommonNameMismatchBrowserTest = CertVerifierBrowserTest;
+
+// Visit the URL www.mail.example.com on a server that presents a valid
+// certificate for mail.example.com. Verify that the page navigates to
+// mail.example.com.
+IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
+                       ShouldShowWWWSubdomainMismatchInterstitial) {
+  net::SpawnedTestServer https_server_example_domain_(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server_example_domain_.Start());
+
+  host_resolver()->AddRule(
+      "mail.example.com", https_server_example_domain_.host_port_pair().host());
+  host_resolver()->AddRule(
+      "www.mail.example.com",
+      https_server_example_domain_.host_port_pair().host());
+
+  scoped_refptr<net::X509Certificate> cert =
+      https_server_example_domain_.GetCertificate();
+
+  // Use the "spdy_pooling.pem" cert which has "mail.example.com"
+  // as one of its SANs.
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+  // Request to "www.mail.example.com" should result in
+  // |net::ERR_CERT_COMMON_NAME_INVALID| error.
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "www.mail.example.com", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  net::CertVerifyResult verify_result_valid;
+  verify_result_valid.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  // Request to "www.mail.example.com" should not result in any error.
+  mock_cert_verifier()->AddResultForCertAndHost(cert.get(), "mail.example.com",
+                                                verify_result_valid, net::OK);
+
+  // Use a complex URL to ensure the path, etc., are preserved. The path itself
+  // does not matter.
+  GURL https_server_url =
+      https_server_example_domain_.GetURL("files/ssl/google.html?a=b#anchor");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("www.mail.example.com");
+  GURL https_server_mismatched_url =
+      https_server_url.ReplaceComponents(replacements);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(contents, 2);
+  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  observer.Wait();
+
+  CheckSecurityState(contents, CertError::NONE,
+                     content::SECURITY_STYLE_AUTHENTICATED, AuthState::NONE);
+  replacements.SetHostStr("mail.example.com");
+  GURL https_server_new_url = https_server_url.ReplaceComponents(replacements);
+  // Verify that the current URL is the suggested URL.
+  EXPECT_EQ(https_server_new_url.spec(),
+            contents->GetLastCommittedURL().spec());
+}
+
+// Visit the URL example.org on a server that presents a valid certificate
+// for www.example.org. Verify that the page redirects to www.example.org.
+IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
+                       CheckWWWSubdomainMismatchInverse) {
+  net::SpawnedTestServer https_server_example_domain_(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server_example_domain_.Start());
+
+  host_resolver()->AddRule(
+      "www.example.org", https_server_example_domain_.host_port_pair().host());
+  host_resolver()->AddRule(
+      "example.org", https_server_example_domain_.host_port_pair().host());
+
+  scoped_refptr<net::X509Certificate> cert =
+      https_server_example_domain_.GetCertificate();
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "example.org", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  net::CertVerifyResult verify_result_valid;
+  verify_result_valid.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  mock_cert_verifier()->AddResultForCertAndHost(cert.get(), "www.example.org",
+                                                verify_result_valid, net::OK);
+
+  GURL https_server_url =
+      https_server_example_domain_.GetURL("files/ssl/google.html?a=b");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("example.org");
+  GURL https_server_mismatched_url =
+      https_server_url.ReplaceComponents(replacements);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(contents, 2);
+  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  observer.Wait();
+
+  CheckSecurityState(contents, CertError::NONE,
+                     content::SECURITY_STYLE_AUTHENTICATED, AuthState::NONE);
+}
+
+// Tests this scenario:
+// - |CommonNameMismatchHandler| does not give a callback as it's set into the
+//   state |IGNORE_REQUESTS_FOR_TESTING|. So no suggested URL check result can
+//   arrive.
+// - A cert error triggers an interstitial timer with a very long timeout.
+// - No suggested URL check results arrive, causing the tab to appear as loading
+//   indefinitely (also because the timer has a long timeout).
+// - Stopping the page load shouldn't result in any interstitials.
+IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
+                       InterstitialStopNavigationWhileLoading) {
+  net::SpawnedTestServer https_server_example_domain_(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server_example_domain_.Start());
+
+  host_resolver()->AddRule(
+      "mail.example.com", https_server_example_domain_.host_port_pair().host());
+  host_resolver()->AddRule(
+      "www.mail.example.com",
+      https_server_example_domain_.host_port_pair().host());
+
+  scoped_refptr<net::X509Certificate> cert =
+      https_server_example_domain_.GetCertificate();
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "www.mail.example.com", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  net::CertVerifyResult verify_result_valid;
+  verify_result_valid.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  mock_cert_verifier()->AddResultForCertAndHost(cert.get(), "mail.example.com",
+                                                verify_result_valid, net::OK);
+
+  GURL https_server_url =
+      https_server_example_domain_.GetURL("files/ssl/google.html?a=b");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("www.mail.example.com");
+  GURL https_server_mismatched_url =
+      https_server_url.ReplaceComponents(replacements);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  CommonNameMismatchHandler::set_state_for_testing(
+      CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
+  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_mismatched_url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  interstitial_timer_observer.WaitForTimerStarted();
+
+  EXPECT_TRUE(contents->IsLoading());
+  content::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
+  contents->Stop();
+  observer.Wait();
+
+  SSLErrorHandler* ssl_error_handler =
+      SSLErrorHandler::FromWebContents(contents);
+  // Make sure that the |SSLErrorHandler| is deleted.
+  EXPECT_FALSE(ssl_error_handler);
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(contents->IsLoading());
+}
+
+// Same as above, but instead of stopping, the loading page is reloaded. The end
+// result is the same. (i.e. page load stops, no interstitials shown)
+IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
+                       InterstitialReloadNavigationWhileLoading) {
+  net::SpawnedTestServer https_server_example_domain_(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server_example_domain_.Start());
+
+  host_resolver()->AddRule(
+      "mail.example.com", https_server_example_domain_.host_port_pair().host());
+  host_resolver()->AddRule(
+      "www.mail.example.com",
+      https_server_example_domain_.host_port_pair().host());
+
+  scoped_refptr<net::X509Certificate> cert =
+      https_server_example_domain_.GetCertificate();
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "www.mail.example.com", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  net::CertVerifyResult verify_result_valid;
+  verify_result_valid.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  mock_cert_verifier()->AddResultForCertAndHost(cert.get(), "mail.example.com",
+                                                verify_result_valid, net::OK);
+
+  GURL https_server_url =
+      https_server_example_domain_.GetURL("files/ssl/google.html?a=b");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("www.mail.example.com");
+  GURL https_server_mismatched_url =
+      https_server_url.ReplaceComponents(replacements);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  CommonNameMismatchHandler::set_state_for_testing(
+      CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
+  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_mismatched_url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  interstitial_timer_observer.WaitForTimerStarted();
+
+  EXPECT_TRUE(contents->IsLoading());
+  content::TestNavigationObserver observer(contents, 1);
+  chrome::Reload(browser(), CURRENT_TAB);
+  observer.Wait();
+
+  SSLErrorHandler* ssl_error_handler =
+      SSLErrorHandler::FromWebContents(contents);
+  // Make sure that the |SSLErrorHandler| is deleted.
+  EXPECT_FALSE(ssl_error_handler);
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(contents->IsLoading());
+}
+
+// Same as above, but instead of reloading, the page is navigated away. The
+// new page should load, and no interstitials should be shown.
+IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
+                       InterstitialNavigateAwayWhileLoading) {
+  net::SpawnedTestServer https_server_example_domain_(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::SSLOptions(
+          net::SpawnedTestServer::SSLOptions::CERT_OK),
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server_example_domain_.Start());
+
+  host_resolver()->AddRule(
+      "mail.example.com", https_server_example_domain_.host_port_pair().host());
+  host_resolver()->AddRule(
+      "www.mail.example.com",
+      https_server_example_domain_.host_port_pair().host());
+
+  scoped_refptr<net::X509Certificate> cert =
+      https_server_example_domain_.GetCertificate();
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "www.mail.example.com", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  net::CertVerifyResult verify_result_valid;
+  verify_result_valid.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  mock_cert_verifier()->AddResultForCertAndHost(cert.get(), "mail.example.com",
+                                                verify_result_valid, net::OK);
+
+  GURL https_server_url =
+      https_server_example_domain_.GetURL("files/ssl/google.html?a=b");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("www.mail.example.com");
+  GURL https_server_mismatched_url =
+      https_server_url.ReplaceComponents(replacements);
+
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  CommonNameMismatchHandler::set_state_for_testing(
+      CommonNameMismatchHandler::IGNORE_REQUESTS_FOR_TESTING);
+  SSLErrorHandler::SetInterstitialDelayTypeForTest(SSLErrorHandler::LONG);
+  SSLInterstitialTimerObserver interstitial_timer_observer(contents);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), https_server_mismatched_url, CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  interstitial_timer_observer.WaitForTimerStarted();
+
+  EXPECT_TRUE(contents->IsLoading());
+  content::TestNavigationObserver observer(contents, 1);
+  browser()->OpenURL(content::OpenURLParams(GURL("https://google.com"),
+                                            content::Referrer(), CURRENT_TAB,
+                                            ui::PAGE_TRANSITION_TYPED, false));
+  observer.Wait();
+
+  SSLErrorHandler* ssl_error_handler =
+      SSLErrorHandler::FromWebContents(contents);
+  // Make sure that the |SSLErrorHandler| is deleted.
+  EXPECT_FALSE(ssl_error_handler);
+  EXPECT_FALSE(contents->ShowingInterstitialPage());
+  EXPECT_FALSE(contents->IsLoading());
 }
 
 class SSLBlockingPageIDNTest : public SecurityInterstitialIDNTest {

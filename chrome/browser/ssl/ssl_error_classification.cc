@@ -324,31 +324,42 @@ Tokenize(const std::string& name) {
 }
 
 // We accept the inverse case for www for historical reasons.
-bool SSLErrorClassification::IsWWWSubDomainMatch() const {
-  std::string host_name = request_url_.host();
+bool SSLErrorClassification::GetWWWSubDomainMatch(
+    const std::string& host_name,
+    const std::vector<std::string>& dns_names,
+    std::string* www_match_host_name) {
   if (IsHostNameKnownTLD(host_name)) {
-    std::vector<std::string> dns_names;
-    cert_.GetDNSNames(&dns_names);
-    bool result = false;
     // Need to account for all possible domains given in the SSL certificate.
     for (size_t i = 0; i < dns_names.size(); ++i) {
-      if (dns_names[i].empty() || dns_names[i].find('\0') != std::string::npos
-          || dns_names[i].length() == host_name.length()
-          || !(IsHostNameKnownTLD(dns_names[i]))) {
-        result = result || false;
+      if (dns_names[i].empty() ||
+          dns_names[i].find('\0') != std::string::npos ||
+          dns_names[i].length() == host_name.length() ||
+          !IsHostNameKnownTLD(dns_names[i])) {
+        continue;
       } else if (dns_names[i].length() > host_name.length()) {
-        result = result ||
-            net::StripWWW(base::ASCIIToUTF16(dns_names[i])) ==
-            base::ASCIIToUTF16(host_name);
+        if (net::StripWWW(base::ASCIIToUTF16(dns_names[i])) ==
+            base::ASCIIToUTF16(host_name)) {
+          *www_match_host_name = dns_names[i];
+          return true;
+        }
       } else {
-        result = result ||
-            net::StripWWW(base::ASCIIToUTF16(host_name)) ==
-            base::ASCIIToUTF16(dns_names[i]);
+        if (net::StripWWW(base::ASCIIToUTF16(host_name)) ==
+            base::ASCIIToUTF16(dns_names[i])) {
+          *www_match_host_name = dns_names[i];
+          return true;
+        }
       }
     }
-    return result;
   }
   return false;
+}
+
+bool SSLErrorClassification::IsWWWSubDomainMatch() const {
+  const std::string& host_name = request_url_.host();
+  std::vector<std::string> dns_names;
+  cert_.GetDNSNames(&dns_names);
+  std::string www_host;
+  return GetWWWSubDomainMatch(host_name, dns_names, &www_host);
 }
 
 bool SSLErrorClassification::NameUnderAnyNames(
