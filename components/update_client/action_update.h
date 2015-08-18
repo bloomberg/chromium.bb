@@ -119,7 +119,7 @@ class ActionUpdateDiff : public ActionUpdate {
   DISALLOW_COPY_AND_ASSIGN(ActionUpdateDiff);
 };
 
-class ActionUpdateFull : ActionUpdate {
+class ActionUpdateFull : public ActionUpdate {
  public:
   static scoped_ptr<Action> Create();
 
