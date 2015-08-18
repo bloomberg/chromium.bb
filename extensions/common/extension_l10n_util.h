@@ -74,13 +74,15 @@ void GetAllFallbackLocales(const std::string& application_locale,
                            const std::string& default_locale,
                            std::vector<std::string>* all_fallback_locales);
 
-// Fill |valid_locales| with all valid locales under |locale_path|.
-// |valid_locales| is the intersection of the set of locales supported by
-// Chrome and the set of locales specified by |locale_path|.
-// Returns true if vaild_locales contains at least one locale, false otherwise.
-// |error| contains an error message when a locale is corrupt or missing.
+// Adds valid locales to the extension.
+// 1. Do nothing if _locales directory is missing (not an error).
+// 2. Get list of Chrome locales.
+// 3. Enumerate all subdirectories of _locales directory.
+// 4. Intersect both lists, and add intersection to the extension.
+// Returns false if any of supplied locales don't match chrome list of locales.
+// Fills out error with offending locale name.
 bool GetValidLocales(const base::FilePath& locale_path,
-                     std::set<std::string>* valid_locales,
+                     std::set<std::string>* locales,
                      std::string* error);
 
 // Loads messages file for default locale, and application locales (application
@@ -92,6 +94,7 @@ extensions::MessageBundle* LoadMessageCatalogs(
     const base::FilePath& locale_path,
     const std::string& default_locale,
     const std::string& app_locale,
+    const std::set<std::string>& valid_locales,
     std::string* error);
 
 // Loads message catalogs for all locales to check for validity.

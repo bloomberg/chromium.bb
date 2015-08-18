@@ -493,13 +493,10 @@ MessageBundle* LoadMessageBundle(
     return NULL;
 
   std::set<std::string> locales;
-  std::set<std::string> chrome_locales;
-  extension_l10n_util::GetAllLocales(&chrome_locales);
+  if (!extension_l10n_util::GetValidLocales(locale_path, &locales, error))
+    return NULL;
 
-  base::FilePath default_locale_path = locale_path.AppendASCII(default_locale);
-  if (default_locale.empty() ||
-      chrome_locales.find(default_locale) == locales.end() ||
-      !base::PathExists(default_locale_path)) {
+  if (default_locale.empty() || locales.find(default_locale) == locales.end()) {
     *error = l10n_util::GetStringUTF8(
         IDS_EXTENSION_LOCALES_NO_DEFAULT_LOCALE_SPECIFIED);
     return NULL;
@@ -510,6 +507,7 @@ MessageBundle* LoadMessageBundle(
           locale_path,
           default_locale,
           extension_l10n_util::CurrentLocaleOrDefault(),
+          locales,
           error);
 
   return message_bundle;

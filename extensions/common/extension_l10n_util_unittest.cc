@@ -128,8 +128,12 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsValidFallback) {
       install_dir.AppendASCII("extension_with_locales").Append(kLocaleFolder);
 
   std::string error;
+  std::set<std::string> locales;
+  EXPECT_TRUE(
+      extension_l10n_util::GetValidLocales(install_dir, &locales, &error));
+
   scoped_ptr<MessageBundle> bundle(extension_l10n_util::LoadMessageCatalogs(
-      install_dir, "sr", "en_US", &error));
+      install_dir, "sr", "en_US", locales, &error));
   ASSERT_FALSE(NULL == bundle.get());
   EXPECT_TRUE(error.empty());
   EXPECT_EQ("Color", bundle->GetL10nMessage("color"));
@@ -142,12 +146,13 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsMissingFiles) {
 
   base::FilePath src_path = temp.path().Append(kLocaleFolder);
   ASSERT_TRUE(base::CreateDirectory(src_path));
-  ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("en")));
-  ASSERT_TRUE(base::CreateDirectory(src_path.AppendASCII("sr")));
 
+  std::set<std::string> valid_locales;
+  valid_locales.insert("sr");
+  valid_locales.insert("en");
   std::string error;
-  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(src_path, "en",
-                                                               "sr", &error));
+  EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
+                          src_path, "en", "sr", valid_locales, &error));
   EXPECT_FALSE(error.empty());
 }
 
@@ -165,9 +170,12 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   base::FilePath messages_file = locale.Append(kMessagesFilename);
   ASSERT_TRUE(base::WriteFile(messages_file, data.c_str(), data.length()));
 
+  std::set<std::string> valid_locales;
+  valid_locales.insert("sr");
+  valid_locales.insert("en_US");
   std::string error;
   EXPECT_TRUE(NULL == extension_l10n_util::LoadMessageCatalogs(
-                          src_path, "en_US", "sr", &error));
+                          src_path, "en_US", "sr", valid_locales, &error));
   EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                 errors::kLocalesInvalidLocale,
                 base::UTF16ToUTF8(messages_file.LossyDisplayName()),
@@ -197,11 +205,15 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {
   ASSERT_TRUE(base::WriteFile(
       locale_2.Append(kMessagesFilename), data.c_str(), data.length()));
 
+  std::set<std::string> valid_locales;
+  valid_locales.insert("sr");
+  valid_locales.insert("en");
   std::string error;
   // JSON parser hides duplicates. We are going to get only one key/value
   // pair at the end.
   scoped_ptr<MessageBundle> message_bundle(
-      extension_l10n_util::LoadMessageCatalogs(src_path, "en", "sr", &error));
+      extension_l10n_util::LoadMessageCatalogs(
+          src_path, "en", "sr", valid_locales, &error));
   EXPECT_TRUE(NULL != message_bundle.get());
   EXPECT_TRUE(error.empty());
 }
