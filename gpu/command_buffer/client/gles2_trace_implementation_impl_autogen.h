@@ -1700,6 +1700,12 @@ void GLES2TraceImplementation::GetQueryObjectui64vEXT(GLuint id,
   gl_->GetQueryObjectui64vEXT(id, pname, params);
 }
 
+void GLES2TraceImplementation::SetDisjointValueSyncCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::SetDisjointValueSyncCHROMIUM");
+  gl_->SetDisjointValueSyncCHROMIUM();
+}
+
 void GLES2TraceImplementation::InsertEventMarkerEXT(GLsizei length,
                                                     const GLchar* marker) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InsertEventMarkerEXT");

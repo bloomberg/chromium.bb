@@ -1170,6 +1170,9 @@ void GL_APIENTRY GLES2GetQueryObjectui64vEXT(GLuint id,
                                              GLuint64* params) {
   gles2::GetGLContext()->GetQueryObjectui64vEXT(id, pname, params);
 }
+void GL_APIENTRY GLES2SetDisjointValueSyncCHROMIUM() {
+  gles2::GetGLContext()->SetDisjointValueSyncCHROMIUM();
+}
 void GL_APIENTRY GLES2InsertEventMarkerEXT(GLsizei length,
                                            const GLchar* marker) {
   gles2::GetGLContext()->InsertEventMarkerEXT(length, marker);
@@ -2467,6 +2470,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetQueryObjectui64vEXT",
         reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectui64vEXT),
+    },
+    {
+        "glSetDisjointValueSyncCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSetDisjointValueSyncCHROMIUM),
     },
     {
         "glInsertEventMarkerEXT",

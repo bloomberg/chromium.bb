@@ -11319,6 +11319,48 @@ static_assert(sizeof(EndTransformFeedback) == 4,
 static_assert(offsetof(EndTransformFeedback, header) == 0,
               "offset of EndTransformFeedback header should be 0");
 
+struct SetDisjointValueSyncCHROMIUM {
+  typedef SetDisjointValueSyncCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetDisjointValueSyncCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(uint32_t _sync_data_shm_id, uint32_t _sync_data_shm_offset) {
+    SetHeader();
+    sync_data_shm_id = _sync_data_shm_id;
+    sync_data_shm_offset = _sync_data_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            uint32_t _sync_data_shm_id,
+            uint32_t _sync_data_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_sync_data_shm_id, _sync_data_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t sync_data_shm_id;
+  uint32_t sync_data_shm_offset;
+};
+
+static_assert(sizeof(SetDisjointValueSyncCHROMIUM) == 12,
+              "size of SetDisjointValueSyncCHROMIUM should be 12");
+static_assert(offsetof(SetDisjointValueSyncCHROMIUM, header) == 0,
+              "offset of SetDisjointValueSyncCHROMIUM header should be 0");
+static_assert(
+    offsetof(SetDisjointValueSyncCHROMIUM, sync_data_shm_id) == 4,
+    "offset of SetDisjointValueSyncCHROMIUM sync_data_shm_id should be 4");
+static_assert(
+    offsetof(SetDisjointValueSyncCHROMIUM, sync_data_shm_offset) == 8,
+    "offset of SetDisjointValueSyncCHROMIUM sync_data_shm_offset should be 8");
+
 struct InsertEventMarkerEXT {
   typedef InsertEventMarkerEXT ValueType;
   static const CommandId kCmdId = kInsertEventMarkerEXT;

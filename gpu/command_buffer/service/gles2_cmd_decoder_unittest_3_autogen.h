@@ -371,6 +371,8 @@ TEST_P(GLES2DecoderTest3, EndTransformFeedbackValidArgs) {
   decoder_->set_unsafe_es3_apis_enabled(false);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
+// TODO(gman): SetDisjointValueSyncCHROMIUM
+
 // TODO(gman): InsertEventMarkerEXT
 
 // TODO(gman): PushGroupMarkerEXT

@@ -724,6 +724,9 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
           (base::TraceTicks::Now() - base::TraceTicks()).InMicroseconds()
           * base::Time::kNanosecondsPerMicrosecond);
       return true;
+    case GL_GPU_DISJOINT_EXT:
+      *params = static_cast<GLint>(query_tracker_->CheckAndResetDisjoint());
+      return true;
 
     // Non-cached parameters.
     case GL_ALIASED_LINE_WIDTH_RANGE:
@@ -4917,6 +4920,20 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
     return;
   }
 
+  // Extra setups some targets might need.
+  switch (target) {
+    case GL_TIME_ELAPSED_EXT:
+      if (!query_tracker_->SetDisjointSync(this)) {
+        SetGLError(GL_OUT_OF_MEMORY,
+                   "glBeginQueryEXT",
+                   "buffer allocation failed");
+        return;
+      }
+      break;
+    default:
+      break;
+  }
+
   if (query_tracker_->BeginQuery(id, target, this))
     CheckGLError();
 }
@@ -4965,6 +4982,20 @@ void GLES2Implementation::QueryCounterEXT(GLuint id, GLenum target) {
     return;
   }
 
+  // Extra setups some targets might need.
+  switch (target) {
+    case GL_TIMESTAMP_EXT:
+      if (!query_tracker_->SetDisjointSync(this)) {
+        SetGLError(GL_OUT_OF_MEMORY,
+                   "glQueryCounterEXT",
+                   "buffer allocation failed");
+        return;
+      }
+      break;
+    default:
+      break;
+  }
+
   if (query_tracker_->QueryCounter(id, target, this))
     CheckGLError();
 }
@@ -5002,6 +5033,10 @@ void GLES2Implementation::GetQueryObjectui64vEXT(
   GLuint64 result = 0;
   if (GetQueryObjectValueHelper("glQueryObjectui64vEXT", id, pname, &result))
     *params = result;
+}
+
+void GLES2Implementation::SetDisjointValueSyncCHROMIUM() {
+  query_tracker_->SetDisjointSync(this);
 }
 
 void GLES2Implementation::DrawArraysInstancedANGLE(

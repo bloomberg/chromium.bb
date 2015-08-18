@@ -585,6 +585,7 @@ void EndTransformFeedback() override;
 void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) override;
 void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
 void GetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64* params) override;
+void SetDisjointValueSyncCHROMIUM() override;
 void InsertEventMarkerEXT(GLsizei length, const GLchar* marker) override;
 void PushGroupMarkerEXT(GLsizei length, const GLchar* marker) override;
 void PopGroupMarkerEXT() override;

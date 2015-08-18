@@ -241,6 +241,7 @@ GL_APICALL void         GL_APIENTRY glEndTransformFeedback (void);
 GL_APICALL void         GL_APIENTRY glGetQueryivEXT (GLenumQueryTarget target, GLenumQueryParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetQueryObjectuivEXT (GLidQuery id, GLenumQueryObjectParameter pname, GLuint* params);
 GL_APICALL void         GL_APIENTRY glGetQueryObjectui64vEXT (GLidQuery id, GLenumQueryObjectParameter pname, GLuint64* params);
+GL_APICALL void         GL_APIENTRY glSetDisjointValueSyncCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glInsertEventMarkerEXT (GLsizei length, const GLchar* marker);
 GL_APICALL void         GL_APIENTRY glPushGroupMarkerEXT (GLsizei length, const GLchar* marker);
 GL_APICALL void         GL_APIENTRY glPopGroupMarkerEXT (void);

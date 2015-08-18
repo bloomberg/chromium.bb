@@ -214,7 +214,12 @@ uint64 QueryTracker::Query::GetResult() const {
 }
 
 QueryTracker::QueryTracker(MappedMemoryManager* manager)
-    : query_sync_manager_(manager) {
+    : query_sync_manager_(manager),
+      mapped_memory_(manager),
+      disjoint_count_sync_shm_id_(-1),
+      disjoint_count_sync_shm_offset_(0),
+      disjoint_count_sync_(nullptr),
+      local_disjoint_count_(0) {
 }
 
 QueryTracker::~QueryTracker() {
@@ -225,6 +230,10 @@ QueryTracker::~QueryTracker() {
   while (!removed_queries_.empty()) {
     delete removed_queries_.front();
     removed_queries_.pop_front();
+  }
+  if (disjoint_count_sync_) {
+    mapped_memory_->Free(disjoint_count_sync_);
+    disjoint_count_sync_ = nullptr;
   }
 }
 
@@ -352,6 +361,36 @@ bool QueryTracker::QueryCounter(GLuint id, GLenum target,
 
   query->QueryCounter(gl);
   return true;
+}
+
+bool QueryTracker::SetDisjointSync(GLES2Implementation* gl) {
+  if (!disjoint_count_sync_) {
+    // Allocate memory for disjoint value sync.
+    int32_t shm_id = -1;
+    uint32_t shm_offset;
+    void* mem = mapped_memory_->Alloc(sizeof(*disjoint_count_sync_),
+                                      &shm_id,
+                                      &shm_offset);
+    if (mem) {
+      disjoint_count_sync_shm_id_ = shm_id;
+      disjoint_count_sync_shm_offset_ = shm_offset;
+      disjoint_count_sync_ = static_cast<DisjointValueSync*>(mem);
+      disjoint_count_sync_->Reset();
+      gl->helper()->SetDisjointValueSyncCHROMIUM(shm_id, shm_offset);
+    }
+  }
+  return disjoint_count_sync_ != nullptr;
+}
+
+bool QueryTracker::CheckAndResetDisjoint() {
+  if (disjoint_count_sync_) {
+    const uint32_t disjoint_count = disjoint_count_sync_->GetDisjointCount();
+    if (local_disjoint_count_ != disjoint_count) {
+      local_disjoint_count_ = disjoint_count;
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace gles2

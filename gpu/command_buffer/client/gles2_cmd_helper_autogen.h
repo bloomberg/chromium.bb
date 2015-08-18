@@ -2283,6 +2283,15 @@ void EndTransformFeedback() {
   }
 }
 
+void SetDisjointValueSyncCHROMIUM(uint32_t sync_data_shm_id,
+                                  uint32_t sync_data_shm_offset) {
+  gles2::cmds::SetDisjointValueSyncCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::SetDisjointValueSyncCHROMIUM>();
+  if (c) {
+    c->Init(sync_data_shm_id, sync_data_shm_offset);
+  }
+}
+
 void InsertEventMarkerEXT(GLuint bucket_id) {
   gles2::cmds::InsertEventMarkerEXT* c =
       GetCmdSpace<gles2::cmds::InsertEventMarkerEXT>();

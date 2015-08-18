@@ -793,6 +793,7 @@ void GLES2InterfaceStub::GetQueryObjectuivEXT(GLuint /* id */,
 void GLES2InterfaceStub::GetQueryObjectui64vEXT(GLuint /* id */,
                                                 GLenum /* pname */,
                                                 GLuint64* /* params */) {}
+void GLES2InterfaceStub::SetDisjointValueSyncCHROMIUM() {}
 void GLES2InterfaceStub::InsertEventMarkerEXT(GLsizei /* length */,
                                               const GLchar* /* marker */) {}
 void GLES2InterfaceStub::PushGroupMarkerEXT(GLsizei /* length */,

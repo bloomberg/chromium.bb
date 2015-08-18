@@ -169,6 +169,16 @@ class GLES2_IMPL_EXPORT QueryTracker {
   bool BeginQuery(GLuint id, GLenum target, GLES2Implementation* gl);
   bool EndQuery(GLenum target, GLES2Implementation* gl);
   bool QueryCounter(GLuint id, GLenum target, GLES2Implementation* gl);
+  bool SetDisjointSync(GLES2Implementation* gl);
+  bool CheckAndResetDisjoint();
+
+  int32_t DisjointCountSyncShmID() const {
+    return disjoint_count_sync_shm_id_;
+  }
+
+  uint32_t DisjointCountSyncShmOffset() const {
+    return disjoint_count_sync_shm_offset_;
+  }
 
  private:
   typedef base::hash_map<GLuint, Query*> QueryIdMap;
@@ -179,6 +189,13 @@ class GLES2_IMPL_EXPORT QueryTracker {
   QueryTargetMap current_queries_;
   QueryList removed_queries_;
   QuerySyncManager query_sync_manager_;
+
+  // The shared memory used for synchronizing timer disjoint values.
+  MappedMemoryManager* mapped_memory_;
+  int32_t disjoint_count_sync_shm_id_;
+  uint32_t disjoint_count_sync_shm_offset_;
+  DisjointValueSync* disjoint_count_sync_;
+  uint32_t local_disjoint_count_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryTracker);
 };

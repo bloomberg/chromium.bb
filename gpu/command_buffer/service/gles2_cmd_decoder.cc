@@ -11890,6 +11890,17 @@ error::Error GLES2DecoderImpl::HandleQueryCounterEXT(uint32 immediate_data_size,
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleSetDisjointValueSyncCHROMIUM(
+    uint32 immediate_data_size, const void* cmd_data) {
+  const gles2::cmds::SetDisjointValueSyncCHROMIUM& c =
+      *static_cast<const gles2::cmds::SetDisjointValueSyncCHROMIUM*>(cmd_data);
+  int32 sync_shm_id = static_cast<int32>(c.sync_data_shm_id);
+  uint32 sync_shm_offset = static_cast<uint32>(c.sync_data_shm_offset);
+
+  query_manager_->SetDisjointSync(sync_shm_id, sync_shm_offset);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::GenVertexArraysOESHelper(
     GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {

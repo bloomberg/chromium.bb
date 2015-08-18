@@ -609,6 +609,7 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
   void GetQueryObjectui64vEXT(GLuint id,
                               GLenum pname,
                               GLuint64* params) override;
+  void SetDisjointValueSyncCHROMIUM() override;
   void InsertEventMarkerEXT(GLsizei length, const GLchar* marker) override;
   void PushGroupMarkerEXT(GLsizei length, const GLchar* marker) override;
   void PopGroupMarkerEXT() override;
