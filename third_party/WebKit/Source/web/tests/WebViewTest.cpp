@@ -2622,6 +2622,25 @@ TEST_F(WebViewTest, PreferredSize)
     EXPECT_EQ(2, size.height);
 }
 
+TEST_F(WebViewTest, PreferredSizeDirtyLayout)
+{
+    std::string url = m_baseURL + "specify_size.html?100px:100px";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
+    WebElement documentElement = webView->mainFrame()->document().documentElement();
+
+    WebSize size = webView->contentsPreferredMinimumSize();
+    EXPECT_EQ(100, size.width);
+    EXPECT_EQ(100, size.height);
+
+    bool setStyle = documentElement.setAttribute("style", "display: none");
+    EXPECT_TRUE(setStyle);
+
+    size = webView->contentsPreferredMinimumSize();
+    EXPECT_EQ(0, size.width);
+    EXPECT_EQ(0, size.height);
+}
+
 class UnhandledTapWebViewClient : public FrameTestHelpers::TestWebViewClient {
 public:
     void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override
