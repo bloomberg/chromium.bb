@@ -111,7 +111,7 @@ def read_git_config(prop):
     proc = subprocess.Popen(
         [GIT_EXE, 'config', prop], stdout=subprocess.PIPE, cwd=REPO_ROOT)
     out, _ = proc.communicate()
-    return out.strip()
+    return out.strip().decode('utf-8')
   except OSError as exc:
     if exc.errno != errno.ENOENT:
       logging.exception('Unexpected error when calling git')
