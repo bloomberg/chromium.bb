@@ -196,6 +196,8 @@ IGNORED_PATHS = (
   'third_party/talloc/script/mksyms.sh',
   'third_party/tcmalloc/',
   'third_party/tlslite/setup.py',
+  # TODO(nednguyen): Remove this when telemetry is moved to catapult
+  'tools/telemetry/third_party/webpagereplay/',
 )
 
 #### USER EDITABLE SECTION ENDS HERE ####
