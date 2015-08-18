@@ -39,11 +39,13 @@ class V8Debugger;
 typedef String ErrorString;
 
 class CORE_EXPORT V8DebuggerAgent
-    : public V8DebuggerListener
+    : public NoBaseWillBeGarbageCollectedFinalized<V8DebuggerAgent>
+    , public V8DebuggerListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8DebuggerAgent);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8DebuggerAgent);
 public:
     enum BreakpointSource {
         UserBreakpointSource,
@@ -65,6 +67,7 @@ public:
 
     V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*, int contextGroupId);
     ~V8DebuggerAgent() override;
+    DECLARE_TRACE();
 
     void setInspectorState(InspectorState* state) { m_state = state; }
     void setFrontend(InspectorFrontend::Debugger* frontend) { m_frontend = frontend; }

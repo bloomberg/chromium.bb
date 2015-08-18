@@ -41,7 +41,6 @@ class WorkerThreadDebugger;
 class WorkerDebuggerAgent final : public InspectorDebuggerAgent {
     WTF_MAKE_NONCOPYABLE(WorkerDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(WorkerDebuggerAgent);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerDebuggerAgent);
 public:
     static PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> create(WorkerThreadDebugger*, WorkerGlobalScope*, InjectedScriptManager*);
     ~WorkerDebuggerAgent() override;

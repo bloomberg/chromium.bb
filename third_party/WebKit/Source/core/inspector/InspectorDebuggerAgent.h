@@ -42,6 +42,7 @@ class CORE_EXPORT InspectorDebuggerAgent
     , public V8DebuggerAgent::Client {
 public:
     ~InspectorDebuggerAgent() override;
+    DECLARE_VIRTUAL_TRACE();
 
     // InspectorBackendDispatcher::DebuggerCommandHandler implementation.
     void enable(ErrorString*) override;
@@ -108,7 +109,7 @@ public:
 protected:
     InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
 
-    OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
+    OwnPtrWillBeMember<V8DebuggerAgent> m_v8DebuggerAgent;
 };
 
 } // namespace blink

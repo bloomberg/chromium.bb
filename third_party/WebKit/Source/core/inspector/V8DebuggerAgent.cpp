@@ -162,6 +162,18 @@ V8DebuggerAgent::~V8DebuggerAgent()
 {
 }
 
+DEFINE_TRACE(V8DebuggerAgent)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_asyncCallTrackingListeners);
+    visitor->trace(m_v8AsyncCallTracker);
+    visitor->trace(m_promiseTracker);
+    visitor->trace(m_asyncOperations);
+    visitor->trace(m_currentAsyncCallChain);
+#endif
+}
+
 bool V8DebuggerAgent::checkEnabled(ErrorString* errorString)
 {
     if (enabled())

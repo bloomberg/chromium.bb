@@ -38,7 +38,7 @@ namespace blink {
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
     : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
-    , m_v8DebuggerAgent(adoptPtr(new V8DebuggerAgent(injectedScriptManager, debugger, this, contextGroupId)))
+    , m_v8DebuggerAgent(adoptPtrWillBeNoop(new V8DebuggerAgent(injectedScriptManager, debugger, this, contextGroupId)))
 {
 }
 
@@ -47,6 +47,12 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 #if !ENABLE(OILPAN)
     ASSERT(!m_instrumentingAgents->inspectorDebuggerAgent());
 #endif
+}
+
+DEFINE_TRACE(InspectorDebuggerAgent)
+{
+    visitor->trace(m_v8DebuggerAgent);
+    InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>::trace(visitor);
 }
 
 // Protocol implementation.
