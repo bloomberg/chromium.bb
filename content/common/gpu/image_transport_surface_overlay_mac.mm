@@ -7,7 +7,7 @@
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLRenderers.h>
 #include <OpenGL/CGLTypes.h>
-#include <OpenGL/GL.h>
+#include <OpenGL/gl.h>
 
 // This type consistently causes problem on Mac, and needs to be dealt with
 // in a systemic way.
