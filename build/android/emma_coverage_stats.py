@@ -300,6 +300,7 @@ class _EmmaCoverageStats(object):
         'line': line.source,
         'coverage': line.covered_status,
         'changed': line.lineno in line_numbers,
+        'fractional_coverage': line.fractional_line_coverage,
       }
       for line in total_line_coverage
     ]
@@ -395,8 +396,7 @@ class _EmmaCoverageStats(object):
     if os.path.splitext(file_path)[1] == '.java' and os.path.exists(file_path):
       return True
     else:
-      logging.debug(
-          'Skipping file %s, cannot compute code coverage.', file_path)
+      logging.info('Skipping file %s, cannot compute code coverage.', file_path)
       return False
 
   @staticmethod
@@ -445,8 +445,7 @@ def GenerateCoverageReport(line_coverage_file, out_file_path, coverage_dir):
   coverage_results = {}
   if files_for_coverage:
     code_coverage = _EmmaCoverageStats(coverage_dir, files_for_coverage.keys())
-    coverage_results = code_coverage.GetCoverageDict(
-        files_for_coverage)
+    coverage_results = code_coverage.GetCoverageDict(files_for_coverage)
   else:
     logging.info('No Java files requiring coverage were included in %s.',
                  line_coverage_file)

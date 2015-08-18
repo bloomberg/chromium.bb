@@ -401,32 +401,38 @@ class _EmmaCoverageStatsTest(unittest.TestCase):
         {
           'line': line_coverage[0].source,
           'coverage': line_coverage[0].covered_status,
-          'changed': True
+          'changed': True,
+          'fractional_coverage': line_coverage[0].fractional_line_coverage,
         },
         {
           'line': line_coverage[1].source,
           'coverage': line_coverage[1].covered_status,
-          'changed': False
+          'changed': False,
+          'fractional_coverage': line_coverage[1].fractional_line_coverage,
         },
         {
           'line': line_coverage[2].source,
           'coverage': line_coverage[2].covered_status,
-          'changed': True
+          'changed': True,
+          'fractional_coverage': line_coverage[2].fractional_line_coverage,
         },
         {
           'line': line_coverage[3].source,
           'coverage': line_coverage[3].covered_status,
-          'changed': False
+          'changed': False,
+          'fractional_coverage': line_coverage[3].fractional_line_coverage,
         },
         {
           'line': line_coverage[4].source,
           'coverage': line_coverage[4].covered_status,
-          'changed': True
+          'changed': True,
+          'fractional_coverage': line_coverage[4].fractional_line_coverage,
         },
         {
           'line': line_coverage[5].source,
           'coverage': line_coverage[5].covered_status,
-          'changed': True
+          'changed': True,
+          'fractional_coverage': line_coverage[5].fractional_line_coverage,
         }
       ]
     }
@@ -482,22 +488,27 @@ class _EmmaCoverageStatsTest(unittest.TestCase):
         '/path/2/File2.java': {
           'absolute': {'covered': 1, 'total': 2},
           'incremental': {'covered': 1, 'total': 2},
-          'source': [{'changed': True, 'coverage': 0, 'line': ''},
-                     {'changed': True, 'coverage': 1, 'line': ''}]
+          'source': [{'changed': True, 'coverage': 0,
+                      'line': '', 'fractional_coverage': 1.0},
+                     {'changed': True, 'coverage': 1,
+                      'line': '', 'fractional_coverage': 1.0}]
         },
         '/path/to/1/File1.java': {
           'absolute': {'covered': 2.5, 'total': 3},
           'incremental': {'covered': 2, 'total': 2},
-          'source': [{'changed': True, 'coverage': 1, 'line': ''},
-                     {'changed': False, 'coverage': 2, 'line': ''},
-                     {'changed': True, 'coverage': -1, 'line': ''},
-                     {'changed': True, 'coverage': 1, 'line': ''}]
+          'source': [{'changed': True, 'coverage': 1,
+                      'line': '', 'fractional_coverage': 1.0},
+                     {'changed': False, 'coverage': 2,
+                      'line': '', 'fractional_coverage': 0.5},
+                     {'changed': True, 'coverage': -1,
+                      'line': '', 'fractional_coverage': 1.0},
+                     {'changed': True, 'coverage': 1,
+                      'line': '', 'fractional_coverage': 1.0}]
         }
       },
       'patch': {'incremental': {'covered': 3, 'total': 4}}
     }
-    # Return the relevant coverage info for each file. We aren't testing
-    # _GetCoverageStatusForFile here.
+    # Return the relevant coverage info for each file.
     self.simple_coverage._emma_parser.GetLineCoverage = (
         lambda x: coverage_info[x])
     result_dict = self.simple_coverage.GetCoverageDict(files_for_coverage)
