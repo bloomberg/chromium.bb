@@ -386,7 +386,6 @@ source_set("ui") {
     sources += rebase_path(gypi_values.chrome_browser_ui_linux_sources,
                            ".",
                            "//chrome")
-    deps += [ "//device/udev_linux" ]
     if (use_aura) {
       configs += [ "//build/config/linux:fontconfig" ]
       deps += [ "//dbus" ]
@@ -401,6 +400,10 @@ source_set("ui") {
         sources -= [ "views/tabs/window_finder_x11.cc" ]
       }
     }
+  }
+
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
   }
 
   if (enable_app_list) {

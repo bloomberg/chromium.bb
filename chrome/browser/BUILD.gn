@@ -490,11 +490,13 @@ source_set("browser") {
   }
 
   if (is_linux) {
-    deps += [
-      "//device/media_transfer_protocol",
-      "//device/udev_linux",
-    ]
+    deps += [ "//device/media_transfer_protocol" ]
   }
+
+  if (use_udev) {
+    deps += [ "//device/udev_linux" ]
+  }
+
   if (is_linux && !is_chromeos) {
     deps += [ "//third_party/speech-dispatcher" ]
   }
