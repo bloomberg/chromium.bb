@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 
 # GYP version: device/serial/serial.gyp:device_serial
@@ -49,7 +50,7 @@ static_library("serial") {
     "//third_party/mojo/src/mojo/public/cpp/system",
   ]
 
-  if (is_linux) {
+  if (use_udev) {
     deps += [ "//device/udev_linux" ]
   }
   if (is_chromeos) {
