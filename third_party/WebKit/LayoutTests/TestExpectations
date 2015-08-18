@@ -2518,4 +2518,4 @@ crbug.com/521124 [ Win ] fast/text/orientation-sideways.html [ ImageOnlyFailure 
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
-crbug.com/521801 [ XP ] paint/selection/selection-drag-image-in-iframe.html [ ImageOnlyFailure ]
+crbug.com/521801 [ XP ] paint/selection/selection-drag-image-in-iframe.html [ NeedsRebaseline ]
