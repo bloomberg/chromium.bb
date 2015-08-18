@@ -79,6 +79,16 @@ int RenderSurfaceImpl::ClipTreeIndex() const {
   return owning_layer_->clip_tree_index();
 }
 
+int RenderSurfaceImpl::EffectTreeIndex() const {
+  return owning_layer_->effect_tree_index();
+}
+
+int RenderSurfaceImpl::TargetEffectTreeIndex() const {
+  if (!owning_layer_->parent() || !owning_layer_->parent()->render_target())
+    return -1;
+  return owning_layer_->parent()->render_target()->effect_tree_index();
+}
+
 void RenderSurfaceImpl::SetClipRect(const gfx::Rect& clip_rect) {
   if (clip_rect_ == clip_rect)
     return;

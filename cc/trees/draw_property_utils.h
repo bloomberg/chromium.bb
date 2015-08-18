@@ -119,6 +119,10 @@ float CC_EXPORT DrawOpacityFromPropertyTrees(const Layer* layer,
 float CC_EXPORT DrawOpacityFromPropertyTrees(const LayerImpl* layer,
                                              const EffectTree& tree);
 
+float CC_EXPORT
+DrawOpacityOfRenderSurfaceFromPropertyTrees(RenderSurfaceImpl* render_surface,
+                                            const EffectTree& tree);
+
 bool CC_EXPORT
 CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
                                bool layers_always_allowed_lcd_text,

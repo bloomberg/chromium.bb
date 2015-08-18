@@ -140,6 +140,8 @@ class CC_EXPORT RenderSurfaceImpl {
 
   int TransformTreeIndex() const;
   int ClipTreeIndex() const;
+  int EffectTreeIndex() const;
+  int TargetEffectTreeIndex() const;
 
  private:
   LayerImpl* owning_layer_;

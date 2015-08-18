@@ -780,6 +780,22 @@ float DrawOpacityFromPropertyTrees(const LayerImpl* layer,
   return DrawOpacityFromPropertyTreesInternal(layer, tree);
 }
 
+float DrawOpacityOfRenderSurfaceFromPropertyTrees(
+    RenderSurfaceImpl* render_surface,
+    const EffectTree& tree) {
+  const EffectNode* node = tree.Node(render_surface->EffectTreeIndex());
+  float target_opacity_tree_index = render_surface->TargetEffectTreeIndex();
+  if (target_opacity_tree_index < 0)
+    return node->data.screen_space_opacity;
+  const EffectNode* target_node = tree.Node(target_opacity_tree_index);
+  float draw_opacity = 1.f;
+  while (node != target_node) {
+    draw_opacity *= node->data.opacity;
+    node = tree.parent(node);
+  }
+  return draw_opacity;
+}
+
 bool CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
                                     bool layers_always_allowed_lcd_text,
                                     bool can_use_lcd_text,

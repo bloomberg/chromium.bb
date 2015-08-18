@@ -2310,6 +2310,10 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
       << ClipRectOfRenderSurfaceFromPropertyTrees(render_surface,
                                                   property_trees->clip_tree)
              .ToString();
+
+  CHECK_EQ(render_surface->draw_opacity(),
+           DrawOpacityOfRenderSurfaceFromPropertyTrees(
+               render_surface, property_trees->effect_tree));
 }
 
 void VerifyPropertyTreeValuesForLayer(LayerImpl* current_layer,
