@@ -25,25 +25,15 @@ static uint32_t irt_return_call(uintptr_t result) {
   return 0;
 }
 
-static int nacl_irt_thread_create_v0_2(void (*start_func)(void), void *stack,
-                                       void *thread_ptr,
-                                       nacl_irt_tid_t *child_tid) {
+static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
+                                  void *thread_ptr) {
   /*
    * We do not use CLONE_CHILD_CLEARTID as we do not want any
    * non-private futex signaling. Also, NaCl ABI does not require us
    * to signal the futex on stack_flag.
    */
   int flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-               CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-               CLONE_PARENT_SETTID);
-  /*
-   * In order to avoid allowing clone with and without CLONE_PARENT_SETTID, if
-   * |child_tid| is NULL, we provide a valid pointer whose value will be
-   * ignored.
-   */
-  nacl_irt_tid_t ignored;
-  void *ptid = (child_tid != NULL) ? child_tid : &ignored;
-
+               CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS);
   /*
    * linux_clone_wrapper expects start_func's type is "int (*)(void *)".
    * Although |start_func| has type "void (*)(void)", the type mismatching
@@ -52,13 +42,7 @@ static int nacl_irt_thread_create_v0_2(void (*start_func)(void), void *stack,
    */
   return irt_return_call(linux_clone_wrapper(
       (uintptr_t) start_func, /* arg */ 0, flags, stack,
-      ptid, thread_ptr, /* ctid */ NULL));
-}
-
-static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
-                                  void *thread_ptr) {
-  nacl_irt_tid_t child_tid;
-  return nacl_irt_thread_create_v0_2(start_func, stack, thread_ptr, &child_tid);
+      /* ptid */ NULL, thread_ptr, /* ctid */ NULL));
 }
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {
@@ -136,7 +120,7 @@ static void irt_start_thread() {
  * Based on code from src/untrusted/irt/irt_thread.c
  */
 int nacl_user_thread_create(void *(*start_func)(void *), void *stack,
-                            void *thread_ptr, nacl_irt_tid_t *child_tid) {
+                            void *thread_ptr) {
   struct nc_combined_tdb *tdb;
 
   /*
@@ -161,8 +145,7 @@ int nacl_user_thread_create(void *(*start_func)(void *), void *stack,
   tdb->tdb.start_func = start_func;
   tdb->tdb.state = thread_ptr;
 
-  return nacl_irt_thread_create_v0_2(irt_start_thread, stack, irt_tp,
-                                     child_tid);
+  return nacl_irt_thread_create(irt_start_thread, stack, irt_tp);
 }
 
 /*
