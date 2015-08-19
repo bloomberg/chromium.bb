@@ -278,6 +278,8 @@ per-file timers*=derat@chromium.org
 
 per-file tracing*=jbauman@chromium.org
 per-file tracing*=nduca@chromium.org
+per-file tracing*=dsinclair@chromium.org
+per-file tracing*=simonhatch@chromium.org
 
 per-file translate.gypi=andrewhayden@chromium.org
 per-file translate.gypi=droger@chromium.org
