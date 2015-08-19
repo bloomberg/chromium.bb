@@ -84,8 +84,6 @@ public:
         Scope(DocumentLifecycle&, State finalState);
         ~Scope();
 
-        void setFinalState(State finalState) { m_finalState = finalState; }
-
     private:
         DocumentLifecycle& m_lifecycle;
         State m_finalState;
