@@ -74,7 +74,7 @@ RenderedPosition::RenderedPosition(const VisiblePosition& position)
 {
     if (position.isNull())
         return;
-    InlineBoxPosition boxPosition = position.computeInlineBoxPosition();
+    InlineBoxPosition boxPosition = computeInlineBoxPosition(position);
     m_inlineBox = boxPosition.inlineBox;
     m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)

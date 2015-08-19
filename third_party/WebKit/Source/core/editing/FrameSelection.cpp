@@ -528,9 +528,9 @@ TextDirection FrameSelection::directionOfSelection()
     VisiblePosition startPosition = m_selection.visibleStart();
     VisiblePosition endPosition = m_selection.visibleEnd();
     if (startPosition.isNotNull())
-        startBox = startPosition.computeInlineBoxPosition().inlineBox;
+        startBox = computeInlineBoxPosition(startPosition).inlineBox;
     if (endPosition.isNotNull())
-        endBox = endPosition.computeInlineBoxPosition().inlineBox;
+        endBox = computeInlineBoxPosition(endPosition).inlineBox;
     if (startBox && endBox && startBox->direction() == endBox->direction())
         return startBox->direction();
 

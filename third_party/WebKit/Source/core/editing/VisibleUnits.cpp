@@ -973,7 +973,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
         return VisiblePosition();
 
     RootInlineBox* root = 0;
-    InlineBox* box = visiblePosition.computeInlineBoxPosition().inlineBox;
+    InlineBox* box = computeInlineBoxPosition(visiblePosition).inlineBox;
     if (box) {
         root = box->root().prevRootBox();
         // We want to skip zero height boxes.
@@ -1026,7 +1026,7 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutU
         return VisiblePosition();
 
     RootInlineBox* root = 0;
-    InlineBox* box = visiblePosition.computeInlineBoxPosition().inlineBox;
+    InlineBox* box = computeInlineBoxPosition(visiblePosition).inlineBox;
     if (box) {
         root = box->root().nextRootBox();
         // We want to skip zero height boxes.

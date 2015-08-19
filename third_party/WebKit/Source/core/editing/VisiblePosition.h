@@ -110,11 +110,6 @@ public:
     // FIXME: This does not handle [table, 0] correctly.
     Element* rootEditableElement() const { return m_deepPosition.isNotNull() ? m_deepPosition.anchorNode()->rootEditableElement() : 0; }
 
-    InlineBoxPosition computeInlineBoxPosition() const
-    {
-        return m_deepPosition.computeInlineBoxPosition(m_affinity);
-    }
-
     // Rect is local to the returned layoutObject
     LayoutRect localCaretRect(LayoutObject*&) const;
     // Bounds of (possibly transformed) caret in absolute coords
@@ -141,6 +136,13 @@ private:
     Position m_deepPosition;
     EAffinity m_affinity;
 };
+
+// TODO(yosin) We should move |computeInlineBoxPosition()| to "VisibleUnits.h"
+// with |Position| version.
+inline InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
+{
+    return position.deepEquivalent().computeInlineBoxPosition(position.affinity());
+}
 
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 
