@@ -8,7 +8,6 @@ PASS ws.bufferedAmount is 5
 PASS ws.bufferedAmount is 37
 PASS ws.bufferedAmount is 42
 PASS ws.bufferedAmount is 45
-PASS ws.bufferedAmount is 0
 onclose
 PASS ws.bufferedAmount is 0
 PASS successfullyParsed is true

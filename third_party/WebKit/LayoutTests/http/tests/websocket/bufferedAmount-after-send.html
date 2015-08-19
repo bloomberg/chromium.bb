@@ -22,10 +22,11 @@ ws.onopen = function()
     shouldBe('ws.bufferedAmount', '42');
     ws.send('bye');
     shouldBe('ws.bufferedAmount', '45');
-    // FIXME: This is a bit flaky but I don't know how to fix it.
-    setTimeout(function() {
-        shouldBe('ws.bufferedAmount', '0');
-        ws.close();
+    var id = setInterval(function() {
+        if (ws.bufferedAmount === 0) {
+            clearInterval(id);
+            ws.close();
+        }
     }, 50);
 };
 

@@ -91,7 +91,6 @@ crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-wor
 crbug.com/520612 [ Linux ] fullscreen/anonymous-block-merge-crash.html [ Pass Timeout ]
 crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_buffer_size_restriction.html [ Failure Pass ]
-crbug.com/520615 http/tests/websocket/bufferedAmount-after-send.html [ Failure Pass ]
 crbug.com/520617 [ Mac ] webaudio/audiochannelmerger-disconnect.html [ Failure Pass ]
 crbug.com/520619 webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
