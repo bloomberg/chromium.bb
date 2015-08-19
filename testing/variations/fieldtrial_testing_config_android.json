@@ -81,7 +81,8 @@
                 "tap_preload_limit_for_decided": "50",
                 "tap_resolve_limit_for_decided": "50",
                 "contextual_search_side_search_provider_icon_enabled": "true",
-                "contextual_search_arrow_icon_enabled": "true"
+                "contextual_search_arrow_icon_enabled": "true",
+                "contextual_search_narrow_panel_supported": "true"
             }
         }
     ],
