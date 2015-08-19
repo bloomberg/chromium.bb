@@ -1137,7 +1137,7 @@ bool isNodeRendered(const Node& node)
 }
 
 // return first preceding DOM position rendered at a different location, or "this"
-static Position previousCharacterPosition(const Position& position, EAffinity affinity)
+static Position previousCharacterPosition(const Position& position, TextAffinity affinity)
 {
     if (position.isNull())
         return Position();
@@ -1166,7 +1166,7 @@ static Position previousCharacterPosition(const Position& position, EAffinity af
 }
 
 // This assumes that it starts in editable content.
-Position leadingWhitespacePosition(const Position& position, EAffinity affinity, WhitespacePositionOption option)
+Position leadingWhitespacePosition(const Position& position, TextAffinity affinity, WhitespacePositionOption option)
 {
     ASSERT(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle));
     if (position.isNull())
@@ -1188,7 +1188,7 @@ Position leadingWhitespacePosition(const Position& position, EAffinity affinity,
 }
 
 // This assumes that it starts in editable content.
-Position trailingWhitespacePosition(const Position& position, EAffinity, WhitespacePositionOption option)
+Position trailingWhitespacePosition(const Position& position, TextAffinity, WhitespacePositionOption option)
 {
     ASSERT(isEditablePosition(position, ContentIsEditable, DoNotUpdateStyle));
     if (position.isNull())

@@ -1823,7 +1823,7 @@ static PositionWithAffinity positionForPointRespectingEditingBoundaries(LayoutBl
     LayoutUnit logicalLeft = parent->isHorizontalWritingMode() ? pointInChildCoordinates.x() : pointInChildCoordinates.y();
     if (logicalLeft < childMiddle)
         return ancestor->createPositionWithAffinity(childNode->nodeIndex());
-    return ancestor->createPositionWithAffinity(childNode->nodeIndex() + 1, UPSTREAM);
+    return ancestor->createPositionWithAffinity(childNode->nodeIndex() + 1, TextAffinity::Upstream);
 }
 
 PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const LayoutPoint& pointInLogicalContents)

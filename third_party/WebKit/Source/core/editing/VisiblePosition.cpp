@@ -33,6 +33,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutBlock.h"
@@ -48,12 +49,12 @@ namespace blink {
 
 using namespace HTMLNames;
 
-VisiblePosition::VisiblePosition(const Position &pos, EAffinity affinity)
+VisiblePosition::VisiblePosition(const Position &pos, TextAffinity affinity)
 {
     init(pos, affinity);
 }
 
-VisiblePosition::VisiblePosition(const PositionInComposedTree& pos, EAffinity affinity)
+VisiblePosition::VisiblePosition(const PositionInComposedTree& pos, TextAffinity affinity)
 {
     init(pos, affinity);
 }
@@ -91,10 +92,12 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     ASSERT(prev.deepEquivalent() != m_deepPosition);
 
 #if ENABLE(ASSERT)
-    // we should always be able to make the affinity DOWNSTREAM, because going previous from an
-    // UPSTREAM position can never yield another UPSTREAM position (unless line wrap length is 0!).
-    if (prev.isNotNull() && m_affinity == UPSTREAM) {
-        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent()), PositionWithAffinity(prev.deepEquivalent(), UPSTREAM)));
+    // we should always be able to make the affinity |TextAffinity::Downstream|,
+    // because going previous from an |TextAffinity::Upstream| position can
+    // never yield another |TextAffinity::Upstream position| (unless line wrap
+    // length is 0!).
+    if (prev.isNotNull() && m_affinity == TextAffinity::Upstream) {
+        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent()), PositionWithAffinity(prev.deepEquivalent(), TextAffinity::Upstream)));
     }
 #endif
 
@@ -636,25 +639,26 @@ PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& positio
 }
 
 template<typename Strategy>
-void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, EAffinity affinity)
+void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
 {
     m_affinity = affinity;
 
     PositionAlgorithm<Strategy> deepPosition = canonicalPosition(position);
     m_deepPosition = toPositionInDOMTree(deepPosition);
 
-    if (m_affinity != UPSTREAM)
+    if (m_affinity != TextAffinity::Upstream)
         return;
 
     if (isNull()) {
-        m_affinity = DOWNSTREAM;
+        m_affinity = TextAffinity::Downstream;
         return;
     }
 
-    // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
-    if (!inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition), PositionWithAffinityTemplate<Strategy>(deepPosition, UPSTREAM)))
+    // When not at a line wrap, make sure to end up with
+    // |TextAffinity::Downstream| affinity.
+    if (!inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition), PositionWithAffinityTemplate<Strategy>(deepPosition, TextAffinity::Upstream)))
         return;
-    m_affinity = DOWNSTREAM;
+    m_affinity = TextAffinity::Downstream;
 }
 
 UChar32 VisiblePosition::characterAfter() const

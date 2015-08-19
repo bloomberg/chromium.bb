@@ -28,6 +28,7 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/FontSize.h"
 #include "core/dom/StyleEngine.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -211,7 +212,7 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
         return createPositionWithAffinity(0);
 
     int offset = closestDistanceBox->offsetForPositionInFragment(*closestDistanceFragment, absolutePoint.x() - closestDistancePosition, true);
-    return createPositionWithAffinity(offset + closestDistanceBox->start(), offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM);
+    return createPositionWithAffinity(offset + closestDistanceBox->start(), offset > 0 ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::Downstream);
 }
 
 void LayoutSVGInlineText::updateScaledFont()

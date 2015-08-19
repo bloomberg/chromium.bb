@@ -1287,7 +1287,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     EphemeralRange endRange = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
     if (endRange.isNull())
         return;
-    setEndingSelection(VisibleSelection(startRange.startPosition(), endRange.startPosition(), DOWNSTREAM, originalIsDirectional));
+    setEndingSelection(VisibleSelection(startRange.startPosition(), endRange.startPosition(), TextAffinity::Downstream, originalIsDirectional));
 }
 
 // FIXME: Send an appropriate shouldDeleteRange call.
@@ -1348,7 +1348,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
     }
 
     appendBlockPlaceholder(newBlock);
-    setEndingSelection(VisibleSelection(firstPositionInNode(newBlock.get()), DOWNSTREAM, endingSelection().isDirectional()));
+    setEndingSelection(VisibleSelection(firstPositionInNode(newBlock.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     style->prepareToApplyAt(endingSelection().start());
     if (!style->isEmpty())

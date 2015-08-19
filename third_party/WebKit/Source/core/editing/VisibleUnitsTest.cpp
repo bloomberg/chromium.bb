@@ -12,12 +12,12 @@ namespace blink {
 
 namespace {
 
-PositionWithAffinity positionWithAffinityInDOMTree(Node& anchor, int offset, EAffinity affinity = DOWNSTREAM)
+PositionWithAffinity positionWithAffinityInDOMTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
 {
     return PositionWithAffinity(canonicalPositionOf(Position(&anchor, offset)), affinity);
 }
 
-PositionInComposedTreeWithAffinity positionWithAffinityInComposedTree(Node& anchor, int offset, EAffinity affinity = DOWNSTREAM)
+PositionInComposedTreeWithAffinity positionWithAffinityInComposedTree(Node& anchor, int offset, TextAffinity affinity = TextAffinity::Downstream)
 {
     return PositionInComposedTreeWithAffinity(canonicalPositionOf(PositionInComposedTree(&anchor, offset)), affinity);
 }

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/editing/RenderedPosition.h"
 
-#include "core/editing/Position.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/paint/DeprecatedPaintLayer.h"
@@ -83,7 +83,7 @@ RenderedPosition::RenderedPosition(const VisiblePosition& position)
         m_layoutObject = layoutObjectFromPosition(position.deepEquivalent());
 }
 
-RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
+RenderedPosition::RenderedPosition(const Position& position, TextAffinity affinity)
     : m_layoutObject(nullptr)
     , m_inlineBox(nullptr)
     , m_offset(0)
@@ -101,7 +101,7 @@ RenderedPosition::RenderedPosition(const Position& position, EAffinity affinity)
         m_layoutObject = layoutObjectFromPosition(position);
 }
 
-RenderedPosition::RenderedPosition(const PositionInComposedTree& position, EAffinity affinity)
+RenderedPosition::RenderedPosition(const PositionInComposedTree& position, TextAffinity affinity)
     : RenderedPosition(toPositionInDOMTree(position), affinity)
 {
 }

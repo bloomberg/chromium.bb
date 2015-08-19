@@ -37,6 +37,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
 #include "core/editing/iterators/CharacterIterator.h"
@@ -235,7 +236,7 @@ static const InlineTextBox* logicallyPreviousBox(const VisiblePosition& visibleP
         if (position.isNull())
             break;
 
-        RenderedPosition renderedPosition(position, DOWNSTREAM);
+        RenderedPosition renderedPosition(position, TextAffinity::Downstream);
         RootInlineBox* previousRoot = renderedPosition.rootBox();
         if (!previousRoot)
             break;
@@ -276,7 +277,7 @@ static const InlineTextBox* logicallyNextBox(const VisiblePosition& visiblePosit
         if (position.isNull())
             break;
 
-        RenderedPosition renderedPosition(position, DOWNSTREAM);
+        RenderedPosition renderedPosition(position, TextAffinity::Downstream);
         RootInlineBox* nextRoot = renderedPosition.rootBox();
         if (!nextRoot)
             break;
@@ -373,7 +374,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         if (adjacentCharacterPosition.deepEquivalent() == current.deepEquivalent() || adjacentCharacterPosition.isNull())
             return VisiblePosition();
 
-        InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().computeInlineBoxPosition(UPSTREAM);
+        InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().computeInlineBoxPosition(TextAffinity::Upstream);
         InlineBox* box = boxPosition.inlineBox;
         int offsetInBox = boxPosition.offsetInBox;
 
@@ -612,7 +613,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         }
     }
 
-    // generate VisiblePosition, use UPSTREAM affinity if possible
+    // generate VisiblePosition, use TextAffinity::Upstream affinity if possible
     return VisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
 }
 
@@ -1569,8 +1570,8 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
     if (layoutObject == posLayoutObject && renderedOffset1 == renderedOffset2)
         return false;
 
-    InlineBoxPosition boxPosition1 = position1.computeInlineBoxPosition(DOWNSTREAM);
-    InlineBoxPosition boxPosition2 = position2.computeInlineBoxPosition(DOWNSTREAM);
+    InlineBoxPosition boxPosition1 = position1.computeInlineBoxPosition(TextAffinity::Downstream);
+    InlineBoxPosition boxPosition2 = position2.computeInlineBoxPosition(TextAffinity::Downstream);
 
     WTF_LOG(Editing, "layoutObject1:   %p [%p]\n", layoutObject, boxPosition1.inlineBox);
     WTF_LOG(Editing, "renderedOffset1: %d\n", renderedOffset1);

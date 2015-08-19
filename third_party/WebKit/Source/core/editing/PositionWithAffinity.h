@@ -15,11 +15,13 @@ template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT PositionWithAffinityTemplate {
     DISALLOW_ALLOCATION();
 public:
-    PositionWithAffinityTemplate(const PositionAlgorithm<Strategy>&, EAffinity = DOWNSTREAM);
+    // TODO(yosin) We should have single parameter constructor not to use
+    // default parameter for avoiding include "TextAffinity.h"
+    PositionWithAffinityTemplate(const PositionAlgorithm<Strategy>&, TextAffinity = TextAffinity::Downstream);
     PositionWithAffinityTemplate();
     ~PositionWithAffinityTemplate();
 
-    EAffinity affinity() const { return m_affinity; }
+    TextAffinity affinity() const { return m_affinity; }
     const PositionAlgorithm<Strategy>& position() const { return m_position; }
 
     // Returns true if both |this| and |other| is null or both |m_position|
@@ -37,7 +39,7 @@ public:
 
 private:
     PositionAlgorithm<Strategy> m_position;
-    EAffinity m_affinity;
+    TextAffinity m_affinity;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingStrategy>;

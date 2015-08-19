@@ -212,7 +212,7 @@ TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
     VisibleSelection oldSelection = document().frame()->selection().selection();
 
     Position newPosition(input->innerEditorElement()->firstChild(), 3);
-    VisibleSelection newSelection(newPosition, DOWNSTREAM);
+    VisibleSelection newSelection(newPosition, TextAffinity::Downstream);
     document().frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotUpdateAppearance);
     ASSERT_EQ(3, input->selectionStart());
 

@@ -119,7 +119,7 @@ VisibleSelection Editor::selectionForCommand(Event* event)
     HTMLTextFormControlElement* textFromControlOfTarget = isHTMLTextFormControlElement(*event->target()->toNode()) ? toHTMLTextFormControlElement(event->target()->toNode()) : 0;
     if (textFromControlOfTarget && (selection.start().isNull() || textFromControlOfTarget != textFormControlOfSelectionStart)) {
         if (RefPtrWillBeRawPtr<Range> range = textFromControlOfTarget->selection())
-            return VisibleSelection(range.get(), DOWNSTREAM, selection.isDirectional());
+            return VisibleSelection(range.get(), TextAffinity::Downstream, selection.isDirectional());
     }
     return selection;
 }
@@ -1033,7 +1033,7 @@ void Editor::transpose()
     const EphemeralRange range = makeRange(previous, next);
     if (range.isNull())
         return;
-    VisibleSelection newSelection(range, DOWNSTREAM);
+    VisibleSelection newSelection(range);
 
     // Transpose the two characters.
     String text = plainText(range);
@@ -1085,11 +1085,11 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const
     LayoutUnit extraWidthToEndOfLine = 0;
     ASSERT(range.isNotNull());
 
-    IntRect startCaretRect = RenderedPosition(VisiblePosition(range.startPosition()).deepEquivalent(), DOWNSTREAM).absoluteRect(&extraWidthToEndOfLine);
+    IntRect startCaretRect = RenderedPosition(VisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
     if (startCaretRect == LayoutRect())
         return IntRect();
 
-    IntRect endCaretRect = RenderedPosition(VisiblePosition(range.endPosition()).deepEquivalent(), UPSTREAM).absoluteRect();
+    IntRect endCaretRect = RenderedPosition(VisiblePosition(range.endPosition()).deepEquivalent(), TextAffinity::Upstream).absoluteRect();
     if (endCaretRect == LayoutRect())
         return IntRect();
 
@@ -1154,7 +1154,7 @@ bool Editor::findString(const String& target, FindOptions options)
     if (!resultRange)
         return false;
 
-    frame().selection().setSelection(VisibleSelection(resultRange.get(), DOWNSTREAM));
+    frame().selection().setSelection(VisibleSelection(resultRange.get()));
     frame().selection().revealSelection();
     return true;
 }

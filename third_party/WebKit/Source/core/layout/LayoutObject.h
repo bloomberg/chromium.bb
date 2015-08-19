@@ -30,9 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
-#include "core/editing/Position.h"
 #include "core/editing/PositionWithAffinity.h"
-#include "core/editing/TextAffinity.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -716,7 +714,7 @@ public:
     virtual bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction);
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&);
-    PositionWithAffinity createPositionWithAffinity(int offset, EAffinity);
+    PositionWithAffinity createPositionWithAffinity(int offset, TextAffinity);
     PositionWithAffinity createPositionWithAffinity(int offset);
     PositionWithAffinity createPositionWithAffinity(const Position&);
 

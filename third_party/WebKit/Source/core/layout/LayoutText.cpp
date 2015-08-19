@@ -493,7 +493,7 @@ static bool lineDirectionPointFitsInBox(int pointLineDirection, InlineTextBox* b
     if (!box->nextLeafChildIgnoringLineBreak()) {
         // box is last on line
         // and the x coordinate is to the right of the last text box right edge
-        // generate VisiblePosition, use UPSTREAM affinity if possible
+        // generate VisiblePosition, use TextAffinity::Upstream affinity if possible
         shouldAffinityBeDownstream = UpstreamIfPositionIsNotAtStart;
         return true;
     }
@@ -503,16 +503,16 @@ static bool lineDirectionPointFitsInBox(int pointLineDirection, InlineTextBox* b
 
 static PositionWithAffinity createPositionWithAffinityForBox(const InlineBox* box, int offset, ShouldAffinityBeDownstream shouldAffinityBeDownstream)
 {
-    EAffinity affinity = VP_DEFAULT_AFFINITY;
+    TextAffinity affinity = VP_DEFAULT_AFFINITY;
     switch (shouldAffinityBeDownstream) {
     case AlwaysDownstream:
-        affinity = DOWNSTREAM;
+        affinity = TextAffinity::Downstream;
         break;
     case AlwaysUpstream:
         affinity = VP_UPSTREAM_IF_POSSIBLE;
         break;
     case UpstreamIfPositionIsNotAtStart:
-        affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : DOWNSTREAM;
+        affinity = offset > box->caretMinOffset() ? VP_UPSTREAM_IF_POSSIBLE : TextAffinity::Downstream;
         break;
     }
     int textStartOffset = box->layoutObject().isText() ? toLayoutText(box->layoutObject()).textStartOffset() : 0;

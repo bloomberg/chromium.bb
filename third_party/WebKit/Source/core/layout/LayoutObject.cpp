@@ -36,6 +36,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/TextAffinity.h"
 #include "core/fetch/ResourceLoadPriorityOptimizer.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
@@ -2984,7 +2985,7 @@ Element* LayoutObject::offsetParent() const
     return node && node->isElementNode() ? toElement(node) : nullptr;
 }
 
-PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffinity affinity)
+PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, TextAffinity affinity)
 {
     // If this is a non-anonymous layoutObject in an editable area, then it's simple.
     if (Node* node = nonPseudoNode()) {
@@ -3038,7 +3039,7 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
 
 PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset)
 {
-    return createPositionWithAffinity(offset, DOWNSTREAM);
+    return createPositionWithAffinity(offset, TextAffinity::Downstream);
 }
 
 PositionWithAffinity LayoutObject::createPositionWithAffinity(const Position& position)

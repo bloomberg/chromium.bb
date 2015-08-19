@@ -42,7 +42,7 @@
 namespace blink {
 
 VisibleSelection::VisibleSelection()
-    : m_affinity(DOWNSTREAM)
+    : m_affinity(TextAffinity::Downstream)
     , m_changeObserver(nullptr)
     , m_selectionType(NoSelection)
     , m_baseIsFirst(true)
@@ -50,12 +50,12 @@ VisibleSelection::VisibleSelection()
 {
 }
 
-VisibleSelection::VisibleSelection(const Position& pos, EAffinity affinity, bool isDirectional)
+VisibleSelection::VisibleSelection(const Position& pos, TextAffinity affinity, bool isDirectional)
     : VisibleSelection(pos, pos, affinity, isDirectional)
 {
 }
 
-VisibleSelection::VisibleSelection(const Position& base, const Position& extent, EAffinity affinity, bool isDirectional)
+VisibleSelection::VisibleSelection(const Position& base, const Position& extent, TextAffinity affinity, bool isDirectional)
     : m_base(base)
     , m_extent(extent)
     , m_affinity(affinity)
@@ -65,7 +65,7 @@ VisibleSelection::VisibleSelection(const Position& base, const Position& extent,
     validate();
 }
 
-VisibleSelection::VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, EAffinity affinity, bool isDirectional)
+VisibleSelection::VisibleSelection(const PositionInComposedTree& base, const PositionInComposedTree& extent, TextAffinity affinity, bool isDirectional)
     : VisibleSelection(toPositionInDOMTree(base), toPositionInDOMTree(extent), affinity, isDirectional)
 {
 }
@@ -80,12 +80,12 @@ VisibleSelection::VisibleSelection(const VisiblePosition& base, const VisiblePos
 {
 }
 
-VisibleSelection::VisibleSelection(const EphemeralRange& range, EAffinity affinity, bool isDirectional)
+VisibleSelection::VisibleSelection(const EphemeralRange& range, TextAffinity affinity, bool isDirectional)
     : VisibleSelection(range.startPosition(), range.endPosition(), affinity, isDirectional)
 {
 }
 
-VisibleSelection::VisibleSelection(const Range* range, EAffinity affinity, bool isDirectional)
+VisibleSelection::VisibleSelection(const Range* range, TextAffinity affinity, bool isDirectional)
     : VisibleSelection(range->startPosition(), range->endPosition(), affinity, isDirectional)
 {
 }
@@ -603,7 +603,7 @@ void VisibleSelection::updateSelectionType()
 
     // Affinity only makes sense for a caret
     if (m_selectionType != CaretSelection)
-        m_affinity = DOWNSTREAM;
+        m_affinity = TextAffinity::Downstream;
 }
 
 static Node* enclosingShadowHost(Node* node)
@@ -763,7 +763,7 @@ void VisibleSelection::setWithoutValidation(const Position& base, const Position
 
     // TODO(hajimehoshi): We doubt this assertion is needed. This was introduced
     // by http://trac.webkit.org/browser/trunk/WebCore/editing/Selection.cpp?annotate=blame&rev=21071
-    ASSERT(m_affinity == DOWNSTREAM);
+    ASSERT(m_affinity == TextAffinity::Downstream);
 
     m_base = base;
     m_extent = extent;
@@ -1205,7 +1205,7 @@ void VisibleSelection::debugPosition(const char* message) const
     }
 
     fprintf(stderr, "isDirectional=%s\n", isDirectional() ? "true" : "false");
-    fprintf(stderr, "affinity=%s\n", affinity() == DOWNSTREAM ? "DOWNSTREaM" : affinity() == UPSTREAM ? "UPSTREAM" : "UNKNOWN");
+    fprintf(stderr, "affinity=%s\n", affinity() == TextAffinity::Downstream ? "DOWNSTREaM" : affinity() == TextAffinity::Upstream ? "UPSTREAM" : "UNKNOWN");
     fprintf(stderr, "================================\n");
 }
 

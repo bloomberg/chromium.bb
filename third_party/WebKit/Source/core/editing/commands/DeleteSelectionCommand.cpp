@@ -792,7 +792,7 @@ void DeleteSelectionCommand::doApply()
         return;
 
     // save this to later make the selection with
-    EAffinity affinity = m_selectionToDelete.affinity();
+    TextAffinity affinity = m_selectionToDelete.affinity();
 
     Position downstreamEnd = m_selectionToDelete.end().downstream();
     bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.computeContainerNode() == downstreamEnd.computeContainerNode()->rootEditableElement()

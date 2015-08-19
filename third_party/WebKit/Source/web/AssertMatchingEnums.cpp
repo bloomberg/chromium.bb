@@ -509,8 +509,8 @@ STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorWin, EditingWindowsBehav
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorUnix, EditingUnixBehavior);
 STATIC_ASSERT_MATCHING_ENUM(WebSettings::EditingBehaviorAndroid, EditingAndroidBehavior);
 
-STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityUpstream, UPSTREAM);
-STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityDownstream, DOWNSTREAM);
+STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityUpstream, TextAffinity::Upstream);
+STATIC_ASSERT_MATCHING_ENUM(WebTextAffinityDownstream, TextAffinity::Downstream);
 
 STATIC_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionUnknownError, UnknownError);
 STATIC_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionConstraintError, ConstraintError);

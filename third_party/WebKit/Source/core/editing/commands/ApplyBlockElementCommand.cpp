@@ -116,7 +116,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         insertNodeAt(blockquote, start);
         RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBreakElement(document());
         appendNode(placeholder, blockquote);
-        setEndingSelection(VisibleSelection(positionBeforeNode(placeholder.get()), DOWNSTREAM, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(positionBeforeNode(placeholder.get()), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 

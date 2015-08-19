@@ -30,7 +30,6 @@
 #include "core/dom/ContainerNode.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingStrategy.h"
-#include "core/editing/TextAffinity.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/Assertions.h"
@@ -44,6 +43,7 @@ class InlineBox;
 class Node;
 class LayoutObject;
 class Text;
+enum class TextAffinity;
 class TreeScope;
 
 struct InlineBoxPosition {
@@ -194,8 +194,8 @@ public:
     bool isCandidate() const;
     bool inRenderedText() const;
 
-    InlineBoxPosition computeInlineBoxPosition(EAffinity) const;
-    InlineBoxPosition computeInlineBoxPosition(EAffinity, TextDirection primaryDirection) const;
+    InlineBoxPosition computeInlineBoxPosition(TextAffinity) const;
+    InlineBoxPosition computeInlineBoxPosition(TextAffinity, TextDirection primaryDirection) const;
 
     static bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
     static bool nodeIsUserSelectAll(const Node*);

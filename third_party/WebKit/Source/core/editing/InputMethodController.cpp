@@ -299,7 +299,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     unsigned start = std::min(baseOffset + selectionStart, extentOffset);
     unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
     RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
-    frame().selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, FrameSelection::NonDirectional, NotUserTriggered);
+    frame().selection().setSelectedRange(selectedRange.get(), TextAffinity::Downstream, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
 void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)

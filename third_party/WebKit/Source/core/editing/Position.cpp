@@ -32,6 +32,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/PositionIterator.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -943,7 +944,7 @@ bool isRenderedCharacter(const Position& position)
 }
 
 template <typename Strategy>
-InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinity affinity) const
+InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(TextAffinity affinity) const
 {
     return computeInlineBoxPosition(affinity, primaryDirectionOf(*anchorNode()));
 }
@@ -1007,7 +1008,7 @@ PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<
 }
 
 template <typename Strategy>
-InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinity affinity, TextDirection primaryDirection) const
+InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(TextAffinity affinity, TextDirection primaryDirection) const
 {
     InlineBox* inlineBox = nullptr;
     int caretOffset = computeEditingOffset();
@@ -1028,7 +1029,7 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
                     return InlineBoxPosition(inlineBox, caretOffset);
             }
 
-            return equivalent.computeInlineBoxPosition(UPSTREAM, primaryDirection);
+            return equivalent.computeInlineBoxPosition(TextAffinity::Upstream, primaryDirection);
         }
         if (layoutObject->isBox()) {
             inlineBox = toLayoutBox(layoutObject)->inlineBoxWrapper();
@@ -1051,14 +1052,14 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinit
             if (caretOffset > caretMinOffset && caretOffset < caretMaxOffset)
                 return InlineBoxPosition(box, caretOffset);
 
-            if (((caretOffset == caretMaxOffset) ^ (affinity == DOWNSTREAM))
-                || ((caretOffset == caretMinOffset) ^ (affinity == UPSTREAM))
+            if (((caretOffset == caretMaxOffset) ^ (affinity == TextAffinity::Downstream))
+                || ((caretOffset == caretMinOffset) ^ (affinity == TextAffinity::Upstream))
                 || (caretOffset == caretMaxOffset && box->nextLeafChild() && box->nextLeafChild()->isLineBreak()))
                 break;
 
             candidate = box;
         }
-        if (candidate && candidate == textLayoutObject->lastTextBox() && affinity == DOWNSTREAM) {
+        if (candidate && candidate == textLayoutObject->lastTextBox() && affinity == TextAffinity::Downstream) {
             box = searchAheadForBetterMatch(textLayoutObject);
             if (box)
                 caretOffset = box->caretMinOffset();

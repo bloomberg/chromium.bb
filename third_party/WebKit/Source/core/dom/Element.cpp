@@ -2329,7 +2329,7 @@ void Element::updateFocusAppearance(bool /*restorePreviousSelection*/)
             return;
 
         // FIXME: We should restore the previous selection if there is one.
-        VisibleSelection newSelection = VisibleSelection(firstPositionInOrBeforeNode(this), DOWNSTREAM);
+        VisibleSelection newSelection = VisibleSelection(firstPositionInOrBeforeNode(this), TextAffinity::Downstream);
         // Passing DoNotSetFocus as this function is called after FocusController::setFocusedElement()
         // and we don't want to change the focus to a new Element.
         frame->selection().setSelection(newSelection,  FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotSetFocus);

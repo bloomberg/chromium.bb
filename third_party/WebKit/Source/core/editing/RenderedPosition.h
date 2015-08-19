@@ -33,7 +33,6 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/Position.h"
-#include "core/editing/TextAffinity.h"
 #include "core/layout/line/InlineBox.h"
 
 namespace blink {
@@ -47,8 +46,8 @@ class RenderedPosition {
 public:
     RenderedPosition();
     explicit RenderedPosition(const VisiblePosition&);
-    RenderedPosition(const Position&, EAffinity);
-    RenderedPosition(const PositionInComposedTree&, EAffinity);
+    RenderedPosition(const Position&, TextAffinity);
+    RenderedPosition(const PositionInComposedTree&, TextAffinity);
     bool isEquivalent(const RenderedPosition&) const;
 
     bool isNull() const { return !m_layoutObject; }

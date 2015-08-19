@@ -218,7 +218,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
     range->setEnd(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
-    m_frame->selection().setSelectedRange(range.get(), DOWNSTREAM, m_frame->selection().isDirectional() ? FrameSelection::Directional : FrameSelection::NonDirectional);
+    m_frame->selection().setSelectedRange(range.get(), TextAffinity::Downstream, m_frame->selection().isDirectional() ? FrameSelection::Directional : FrameSelection::NonDirectional);
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
@@ -431,7 +431,7 @@ void DOMSelection::addRange(Range* newRange)
     Range* start = originalRange->compareBoundaryPoints(Range::START_TO_START, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange.get() : newRange;
     Range* end = originalRange->compareBoundaryPoints(Range::END_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange.get();
     RefPtrWillBeRawPtr<Range> merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
-    EAffinity affinity = selection.selection().affinity();
+    TextAffinity affinity = selection.selection().affinity();
     selection.setSelectedRange(merged.get(), affinity);
 }
 

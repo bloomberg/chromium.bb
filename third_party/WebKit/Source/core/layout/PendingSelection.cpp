@@ -82,7 +82,7 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
     PositionType start = Strategy::selectionStart(m_selection);
     PositionType end = Strategy::selectionEnd(m_selection);
     SelectionType selectionType = VisibleSelection::selectionType(start, end);
-    EAffinity affinity = m_selection.affinity();
+    TextAffinity affinity = m_selection.affinity();
 
     bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, affinity));
     VisibleSelection selection;
@@ -92,13 +92,13 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
         return selection;
     }
 
-    VisiblePosition visibleStart = VisiblePosition(start, selectionType == SelectionType::RangeSelection ? DOWNSTREAM : affinity);
+    VisiblePosition visibleStart = VisiblePosition(start, selectionType == SelectionType::RangeSelection ? TextAffinity::Downstream : affinity);
     if (paintBlockCursor) {
         VisiblePosition visibleExtent(end, affinity);
         visibleExtent = visibleExtent.next(CanSkipOverEditingBoundary);
         return VisibleSelection(visibleStart, visibleExtent);
     }
-    VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? UPSTREAM : affinity);
+    VisiblePosition visibleEnd(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
     return VisibleSelection(visibleStart, visibleEnd);
 }
 

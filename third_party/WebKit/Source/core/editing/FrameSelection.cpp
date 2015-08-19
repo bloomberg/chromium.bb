@@ -43,6 +43,7 @@
 #include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/SelectionController.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -151,7 +152,7 @@ void FrameSelection::moveTo(const VisiblePosition &base, const VisiblePosition &
     setSelection(VisibleSelection(base, extent, selectionHasDirection), options);
 }
 
-void FrameSelection::moveTo(const Position &pos, EAffinity affinity, EUserTriggered userTriggered)
+void FrameSelection::moveTo(const Position &pos, TextAffinity affinity, EUserTriggered userTriggered)
 {
     SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
     setSelection(VisibleSelection(pos, affinity, m_selection.isDirectional()), options);
@@ -1109,12 +1110,12 @@ bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, Vertic
     case AlterationMove:
         pos = VisiblePosition(direction == DirectionUp ? m_selection.start() : m_selection.end(), m_selection.affinity());
         xPos = lineDirectionPointForBlockDirectionNavigation(direction == DirectionUp ? START : END);
-        m_selection.setAffinity(direction == DirectionUp ? UPSTREAM : DOWNSTREAM);
+        m_selection.setAffinity(direction == DirectionUp ? TextAffinity::Upstream : TextAffinity::Downstream);
         break;
     case AlterationExtend:
         pos = VisiblePosition(m_selection.extent(), m_selection.affinity());
         xPos = lineDirectionPointForBlockDirectionNavigation(EXTENT);
-        m_selection.setAffinity(DOWNSTREAM);
+        m_selection.setAffinity(TextAffinity::Downstream);
         break;
     }
 
@@ -1466,7 +1467,7 @@ void FrameSelection::selectAll()
     notifyLayoutObjectOfSelectionChange(UserTriggered);
 }
 
-bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
 {
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
@@ -1474,7 +1475,7 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, Directio
     return setSelectedRange(EphemeralRange(range), affinity, directional, options);
 }
 
-bool FrameSelection::setSelectedRange(const EphemeralRange& range, EAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
+bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, DirectionalOption directional, SetSelectionOptions options)
 {
     if (range.isNull())
         return false;
@@ -1879,7 +1880,7 @@ void FrameSelection::setSelectionFromNone()
     if (!documentElement)
         return;
     if (HTMLBodyElement* body = Traversal<HTMLBodyElement>::firstChild(*documentElement))
-        setSelection(VisibleSelection(firstPositionInOrBeforeNode(body), DOWNSTREAM));
+        setSelection(VisibleSelection(firstPositionInOrBeforeNode(body), TextAffinity::Downstream));
 }
 
 bool FrameSelection::dispatchSelectStart()

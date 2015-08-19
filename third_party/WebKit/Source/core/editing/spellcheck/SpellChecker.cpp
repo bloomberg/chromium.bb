@@ -622,7 +622,7 @@ void SpellChecker::markAndReplaceFor(PassRefPtrWillBeRawPtr<SpellCheckRequest> r
         extendedParagraph.expandRangeToNextEnd();
         if (restoreSelectionAfterChange && selectionOffset >= 0 && selectionOffset <= extendedParagraph.rangeLength()) {
             RefPtrWillBeRawPtr<Range> selectionRange = extendedParagraph.subrange(0, selectionOffset);
-            frame().selection().moveTo(selectionRange->endPosition(), DOWNSTREAM);
+            frame().selection().moveTo(selectionRange->endPosition(), TextAffinity::Downstream);
             if (adjustSelectionForParagraphBoundaries)
                 frame().selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity);
         } else {

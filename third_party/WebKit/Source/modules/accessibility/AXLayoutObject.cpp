@@ -38,6 +38,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
+#include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -2185,7 +2186,7 @@ VisiblePosition AXLayoutObject::visiblePositionForIndex(int index) const
 
     CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(Position(it.currentContainer(), it.endOffset()), UPSTREAM);
+    return VisiblePosition(Position(it.currentContainer(), it.endOffset()), TextAffinity::Upstream);
 }
 
 void AXLayoutObject::addInlineTextBoxChildren(bool force)

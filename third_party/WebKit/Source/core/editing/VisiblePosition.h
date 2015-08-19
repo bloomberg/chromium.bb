@@ -30,6 +30,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/PositionWithAffinity.h"
+#include "core/editing/TextAffinity.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 
@@ -39,14 +40,14 @@ namespace blink {
 // the callers do not really care (they just want the
 // deep position without regard to line position), and this
 // is cheaper than UPSTREAM
-#define VP_DEFAULT_AFFINITY DOWNSTREAM
+#define VP_DEFAULT_AFFINITY TextAffinity::Downstream
 
 // Callers who do not know where on the line the position is,
 // but would like UPSTREAM if at a line break or DOWNSTREAM
 // otherwise, need a clear way to specify that.  The
 // constructors auto-correct UPSTREAM to DOWNSTREAM if the
 // position is not at a line break.
-#define VP_UPSTREAM_IF_POSSIBLE UPSTREAM
+#define VP_UPSTREAM_IF_POSSIBLE TextAffinity::Upstream
 
 class InlineBox;
 class Range;
@@ -73,8 +74,8 @@ class CORE_EXPORT VisiblePosition final {
     DISALLOW_ALLOCATION();
 public:
     VisiblePosition() : m_affinity(VP_DEFAULT_AFFINITY) { }
-    explicit VisiblePosition(const Position&, EAffinity = VP_DEFAULT_AFFINITY);
-    explicit VisiblePosition(const PositionInComposedTree&, EAffinity = VP_DEFAULT_AFFINITY);
+    explicit VisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
+    explicit VisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
     explicit VisiblePosition(const PositionWithAffinity&);
 
     // Intentionally delete |operator==()| and |operator!=()| for reducing
@@ -91,7 +92,7 @@ public:
     Position deepEquivalent() const { return m_deepPosition; }
     Position toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
     PositionWithAffinity toPositionWithAffinity() const { return PositionWithAffinity(m_deepPosition, m_affinity); }
-    EAffinity affinity() const { ASSERT(m_affinity == UPSTREAM || m_affinity == DOWNSTREAM); return m_affinity; }
+    TextAffinity affinity() const { return m_affinity; }
 
     // next() and previous() will increment/decrement by a character cluster.
     VisiblePosition next(EditingBoundaryCrossingRule = CanCrossEditingBoundary) const;
@@ -128,13 +129,13 @@ public:
 
 private:
     template<typename Strategy>
-    void init(const PositionAlgorithm<Strategy>&, EAffinity);
+    void init(const PositionAlgorithm<Strategy>&, TextAffinity);
 
     Position leftVisuallyDistinctCandidate() const;
     Position rightVisuallyDistinctCandidate() const;
 
     Position m_deepPosition;
-    EAffinity m_affinity;
+    TextAffinity m_affinity;
 };
 
 // TODO(yosin) We should move |computeInlineBoxPosition()| to "VisibleUnits.h"

@@ -51,7 +51,7 @@ void CreateLinkCommand::doApply()
         insertNodeAt(anchorElement.get(), endingSelection().start());
         RefPtrWillBeRawPtr<Text> textNode = Text::create(document(), m_url);
         appendNode(textNode.get(), anchorElement.get());
-        setEndingSelection(VisibleSelection(positionInParentBeforeNode(*anchorElement), positionInParentAfterNode(*anchorElement), DOWNSTREAM, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(positionInParentBeforeNode(*anchorElement), positionInParentAfterNode(*anchorElement), TextAffinity::Downstream, endingSelection().isDirectional()));
     }
 }
 

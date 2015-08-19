@@ -201,8 +201,8 @@ bool isAtUnsplittableElement(const Position&);
 // miscellaneous functions on Position
 
 enum WhitespacePositionOption { NotConsiderNonCollapsibleWhitespace, ConsiderNonCollapsibleWhitespace };
-Position leadingWhitespacePosition(const Position&, EAffinity, WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
-Position trailingWhitespacePosition(const Position&, EAffinity, WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
+Position leadingWhitespacePosition(const Position&, TextAffinity, WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
+Position trailingWhitespacePosition(const Position&, TextAffinity, WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
 unsigned numEnclosingMailBlockquotes(const Position&);
 void updatePositionForNodeRemoval(Position&, Node&);
 

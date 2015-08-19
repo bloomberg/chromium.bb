@@ -220,7 +220,7 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
         return false;
     if (newRange.isCollapsed())
         return false;
-    EAffinity affinity = frame.selection().affinity();
+    TextAffinity affinity = frame.selection().affinity();
     frame.selection().setSelectedRange(newRange, affinity, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
     return true;
 }
@@ -398,7 +398,7 @@ static bool executeDeleteToMark(LocalFrame& frame, Event*, EditorCommandSource, 
     // |VisibleSelection::toNormalizedRange()|.
     RefPtrWillBeRawPtr<Range> mark = frame.editor().mark().toNormalizedRange();
     if (mark) {
-        bool selected = frame.selection().setSelectedRange(unionEphemeralRanges(EphemeralRange(mark.get()), frame.editor().selectedRange()), DOWNSTREAM, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+        bool selected = frame.selection().setSelectedRange(unionEphemeralRanges(EphemeralRange(mark.get()), frame.editor().selectedRange()), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
         ASSERT(selected);
         if (!selected)
             return false;
@@ -1048,7 +1048,7 @@ static bool executeSelectToMark(LocalFrame& frame, Event*, EditorCommandSource, 
     EphemeralRange selection = frame.editor().selectedRange();
     if (!mark || selection.isNull())
         return false;
-    frame.selection().setSelectedRange(unionEphemeralRanges(EphemeralRange(mark.get()), selection), DOWNSTREAM, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
+    frame.selection().setSelectedRange(unionEphemeralRanges(EphemeralRange(mark.get()), selection), TextAffinity::Downstream, FrameSelection::NonDirectional, FrameSelection::CloseTyping);
     return true;
 }
 

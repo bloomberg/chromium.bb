@@ -36,22 +36,20 @@ namespace blink {
 // From NSTextView.h:
 // NSSelectionAffinityUpstream = 0
 // NSSelectionAffinityDownstream = 1
-// TODO(yosin) We should rename |UPSTREAM| and |DOWNSTREAM| to use
-// capitalized name.
-enum EAffinity { UPSTREAM = 0, DOWNSTREAM = 1 }; // NOLINT
+enum class TextAffinity { Upstream = 0, Downstream = 1 };
 
 } // namespace blink
 
 #ifdef __OBJC__
 
-inline NSSelectionAffinity kit(blink::EAffinity affinity)
+inline NSSelectionAffinity kit(blink::TextAffinity affinity)
 {
     return static_cast<NSSelectionAffinity>(affinity);
 }
 
-inline blink::EAffinity core(NSSelectionAffinity affinity)
+inline blink::TextAffinity core(NSSelectionAffinity affinity)
 {
-    return static_cast<blink::EAffinity>(affinity);
+    return static_cast<blink::TextAffinity>(affinity);
 }
 
 #endif

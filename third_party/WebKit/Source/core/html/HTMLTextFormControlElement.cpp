@@ -402,7 +402,7 @@ VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) c
         return VisiblePosition();
     CharacterIterator it(start, end);
     it.advance(index - 1);
-    return VisiblePosition(it.endPosition(), UPSTREAM);
+    return VisiblePosition(it.endPosition(), TextAffinity::Upstream);
 }
 
 int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& pos) const

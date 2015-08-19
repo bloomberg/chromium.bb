@@ -8,7 +8,7 @@
 namespace blink {
 
 template <typename Strategy>
-PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate(const PositionAlgorithm<Strategy>& position, EAffinity affinity)
+PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
     : m_position(position)
     , m_affinity(affinity)
 {
@@ -16,7 +16,7 @@ PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate(const Posit
 
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::PositionWithAffinityTemplate()
-    : m_affinity(DOWNSTREAM)
+    : m_affinity(TextAffinity::Downstream)
 {
 }
 
