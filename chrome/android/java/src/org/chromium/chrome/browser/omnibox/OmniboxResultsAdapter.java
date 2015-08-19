@@ -56,7 +56,7 @@ public class OmniboxResultsAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         SuggestionView suggestionView;
-        if (convertView != null && convertView instanceof SuggestionView) {
+        if (convertView instanceof SuggestionView) {
             suggestionView = (SuggestionView) convertView;
         } else {
             suggestionView = new SuggestionView(mContext, mLocationBar);

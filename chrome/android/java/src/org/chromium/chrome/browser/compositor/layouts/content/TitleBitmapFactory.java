@@ -101,7 +101,7 @@ public class TitleBitmapFactory {
             if (favicon == null) {
                 Drawable drawable = ApiCompatibilityUtils.getDrawable(
                         context.getResources(), mNullFaviconResourceId);
-                if (drawable != null && drawable instanceof BitmapDrawable) {
+                if (drawable instanceof BitmapDrawable) {
                     favicon = ((BitmapDrawable) drawable).getBitmap();
                 }
             }

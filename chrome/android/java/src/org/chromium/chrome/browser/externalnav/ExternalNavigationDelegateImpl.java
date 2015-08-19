@@ -331,7 +331,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     private static void logTransactionTooLargeOrRethrow(RuntimeException e, Intent intent) {
         // See http://crbug.com/369574.
-        if (e.getCause() != null && e.getCause() instanceof TransactionTooLargeException) {
+        if (e.getCause() instanceof TransactionTooLargeException) {
             Log.e(TAG, "Could not resolve Activity for intent " + intent.toString(), e);
         } else {
             throw e;

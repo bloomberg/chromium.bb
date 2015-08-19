@@ -141,8 +141,8 @@ public class AccountHolder {
 
     @Override
     public boolean equals(Object that) {
-        return that != null && that instanceof AccountHolder && mAccount
-                .equals(((AccountHolder) that).getAccount());
+        return that instanceof AccountHolder
+                && mAccount.equals(((AccountHolder) that).getAccount());
     }
 
     public static Builder create() {

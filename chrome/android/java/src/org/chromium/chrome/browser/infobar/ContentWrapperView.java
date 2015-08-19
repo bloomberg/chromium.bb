@@ -133,7 +133,6 @@ public class ContentWrapperView extends FrameLayout {
         if (mViewToShow != null) {
             // Move the View to this container.
             ViewParent parent = mViewToShow.getParent();
-            assert parent != null && parent instanceof ViewGroup;
             ((ViewGroup) parent).removeView(mViewToShow);
             addChildView(mViewToShow);
 

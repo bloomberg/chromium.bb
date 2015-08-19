@@ -797,7 +797,7 @@ public class CompositorViewHolder extends FrameLayout
         if (show) {
             if (mView.getParent() != this) {
                 // Make sure the view isn't a child of something else before we attempt to add it.
-                if (mView.getParent() != null && mView.getParent() instanceof ViewGroup) {
+                if (mView.getParent() instanceof ViewGroup) {
                     ((ViewGroup) mView.getParent()).removeView(mView);
                 }
 

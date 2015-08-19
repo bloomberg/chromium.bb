@@ -214,7 +214,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             TextView view;
-            if (convertView != null && convertView instanceof TextView) {
+            if (convertView instanceof TextView) {
                 view = (TextView) convertView;
             } else {
                 view = mListItemFactory.createListItem();

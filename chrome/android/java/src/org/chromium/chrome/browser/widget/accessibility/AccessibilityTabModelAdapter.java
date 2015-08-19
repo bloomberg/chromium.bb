@@ -132,7 +132,7 @@ public class AccessibilityTabModelAdapter extends BaseAdapter {
         assert tabId != Tab.INVALID_TAB_ID;
 
         AccessibilityTabModelListItem listItem;
-        if (convertView != null && convertView instanceof AccessibilityTabModelListItem) {
+        if (convertView instanceof AccessibilityTabModelListItem) {
             listItem = (AccessibilityTabModelListItem) convertView;
         } else {
             listItem = (AccessibilityTabModelListItem) LayoutInflater.from(mContext).inflate(

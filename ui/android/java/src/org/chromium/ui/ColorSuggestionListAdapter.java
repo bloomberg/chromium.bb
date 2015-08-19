@@ -95,7 +95,7 @@ public class ColorSuggestionListAdapter extends BaseAdapter implements View.OnCl
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         LinearLayout layout;
-        if (convertView != null && convertView instanceof LinearLayout) {
+        if (convertView instanceof LinearLayout) {
             layout = (LinearLayout) convertView;
         } else {
             layout = new LinearLayout(mContext);
