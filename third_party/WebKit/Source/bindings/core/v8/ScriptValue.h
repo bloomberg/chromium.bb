@@ -174,7 +174,7 @@ public:
     // Returns v8Value() if a given ScriptState is the same as the
     // ScriptState which is associated with this ScriptValue. Otherwise
     // this "clones" the v8 value and returns it.
-    v8::Local<v8::Value> v8ValueFor(ScriptState*);
+    v8::Local<v8::Value> v8ValueFor(ScriptState*) const;
 
     bool toString(String&) const;
 
