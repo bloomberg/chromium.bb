@@ -48,6 +48,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
       net::URLRequestContextGetter* request_context);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  void OnApplicationNotIdle();
   void Initialize(CastService* cast_service);
   void Finalize();
 

@@ -273,6 +273,10 @@ CastMetricsServiceClient::~CastMetricsServiceClient() {
 #endif  // defined(OS_LINUX)
 }
 
+void CastMetricsServiceClient::OnApplicationNotIdle() {
+  metrics_service_->OnApplicationNotIdle();
+}
+
 void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   DCHECK(cast_service);
   DCHECK(!cast_service_);
