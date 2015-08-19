@@ -45,6 +45,8 @@
         'gcm_driver/default_gcm_app_handler.h',
         'gcm_driver/gcm_account_mapper.cc',
         'gcm_driver/gcm_account_mapper.h',
+        'gcm_driver/gcm_account_tracker.cc',
+        'gcm_driver/gcm_account_tracker.h',
         'gcm_driver/gcm_activity.cc',
         'gcm_driver/gcm_activity.h',
         'gcm_driver/gcm_app_handler.cc',

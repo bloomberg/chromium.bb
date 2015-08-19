@@ -217,7 +217,6 @@
       'browser/services/gcm/fake_gcm_profile_service.h',
       'browser/services/gcm/fake_signin_manager.cc',
       'browser/services/gcm/fake_signin_manager.h',
-      'browser/services/gcm/gcm_account_tracker_unittest.cc',
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/chrome_signin_client_unittest.cc',

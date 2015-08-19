@@ -224,6 +224,7 @@
       'feedback/feedback_uploader_unittest.cc',
     ],
     'gcm_driver_unittest_sources': [
+      'gcm_driver/gcm_account_tracker_unittest.cc',
       'gcm_driver/gcm_account_mapper_unittest.cc',
       'gcm_driver/gcm_channel_status_request_unittest.cc',
       'gcm_driver/gcm_client_impl_unittest.cc',

@@ -2611,8 +2611,6 @@
       'browser/local_discovery/service_discovery_shared_client.h',
     ],
     'chrome_browser_services_sources': [
-      'browser/services/gcm/gcm_account_tracker.cc',
-      'browser/services/gcm/gcm_account_tracker.h',
       'browser/services/gcm/gcm_profile_service.cc',
       'browser/services/gcm/gcm_profile_service.h',
       'browser/services/gcm/gcm_profile_service_factory.cc',
