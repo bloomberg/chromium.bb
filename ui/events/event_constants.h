@@ -146,6 +146,14 @@ enum EventDeviceId {
   ED_UNKNOWN_DEVICE = -1
 };
 
+// Pointing device type.
+enum class EventPointerType : int {
+  POINTER_TYPE_UNKNOWN = 0,
+  POINTER_TYPE_MOUSE,
+  POINTER_TYPE_PEN,
+  POINTER_TYPE_TOUCH,
+};
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_EVENT_CONSTANTS_H_
