@@ -53,8 +53,9 @@ cr.define('downloads', function() {
       this.isIncognito_ = data.otr;
 
       // Danger-independent UI and controls.
-      this.ensureTextIs_(this.$.since, data.since_string);
-      this.ensureTextIs_(this.$.date, data.date_string);
+      var since = data.since_string;
+      this.ensureTextIs_(this.$.since, since);
+      this.ensureTextIs_(this.$.date, since ? '' : data.date_string);
 
       /** @const */ var isActive =
           data.state != downloads.States.CANCELLED &&
@@ -141,7 +142,8 @@ cr.define('downloads', function() {
     },
 
     /**
-     * Overwrite |el|'s textContent if it differs from |text|.
+     * Overwrite |el|'s textContent if it differs from |text|. This is done
+     * generally so quickly updating text can be copied via text selection.
      * @param {!Element} el
      * @param {string} text
      * @private
