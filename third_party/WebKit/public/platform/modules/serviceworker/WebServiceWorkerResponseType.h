@@ -13,7 +13,8 @@ enum WebServiceWorkerResponseType {
     WebServiceWorkerResponseTypeDefault,
     WebServiceWorkerResponseTypeError,
     WebServiceWorkerResponseTypeOpaque,
-    WebServiceWorkerResponseTypeLast = WebServiceWorkerResponseTypeOpaque
+    WebServiceWorkerResponseTypeOpaqueRedirect,
+    WebServiceWorkerResponseTypeLast = WebServiceWorkerResponseTypeOpaqueRedirect
 };
 
 } // namespace blink
