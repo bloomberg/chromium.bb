@@ -191,8 +191,9 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
   def testGetPowerData(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT)):
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT)):
       data = self.battery.GetPowerData()
       check = {
           'test_package1': {'uid': '1000', 'data': [1.0]},
@@ -203,9 +204,10 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
   def testGetPowerData_packageCollisionSame(self):
       self.battery._cache['uids'] = {'test_package1': '1000'}
       with self.assertCall(
-        self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT):
+          self.call.device.RunShellCommand(
+              ['dumpsys', 'batterystats', '-c'],
+              check_return=True, large_output=True),
+          _DUMPSYS_OUTPUT):
         data = self.battery.GetPowerData()
         check = {
             'test_package1': {'uid': '1000', 'data': [1.0]},
@@ -216,17 +218,19 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
   def testGetPowerData_packageCollisionDifferent(self):
       self.battery._cache['uids'] = {'test_package1': '1'}
       with self.assertCall(
-        self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT):
+          self.call.device.RunShellCommand(
+              ['dumpsys', 'batterystats', '-c'],
+              check_return=True, large_output=True),
+          _DUMPSYS_OUTPUT):
         with self.assertRaises(device_errors.CommandFailedError):
           self.battery.GetPowerData()
 
   def testGetPowerData_cacheCleared(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT)):
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT)):
       self.battery._cache.clear()
       data = self.battery.GetPowerData()
       check = {
@@ -238,16 +242,18 @@ class BatteryUtilsGetPowerData(BatteryUtilsTest):
   def testGetPackagePowerData(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT)):
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT)):
       data = self.battery.GetPackagePowerData('test_package2')
       self.assertEqual(data, {'uid': '1001', 'data': [2.0]})
 
   def testGetPackagePowerData_badPackage(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT)):
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT)):
       data = self.battery.GetPackagePowerData('not_a_package')
       self.assertEqual(data, None)
 
@@ -325,8 +331,9 @@ class BatteryUtilsGetNetworkDataTest(BatteryUtilsTest):
   def testGetNetworkData_noDataUsage(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT),
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT),
         (self.call.device.ReadFile('/proc/uid_stat/1000/tcp_snd'),
             self.ShellError()),
         (self.call.device.ReadFile('/proc/uid_stat/1000/tcp_rcv'),
@@ -336,15 +343,17 @@ class BatteryUtilsGetNetworkDataTest(BatteryUtilsTest):
   def testGetNetworkData_badPackage(self):
     with self.assertCall(
         self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT):
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+        _DUMPSYS_OUTPUT):
       self.assertEqual(self.battery.GetNetworkData('asdf'), None)
 
   def testGetNetworkData_packageNotCached(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT),
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT),
         (self.call.device.ReadFile('/proc/uid_stat/1000/tcp_snd'), 1),
         (self.call.device.ReadFile('/proc/uid_stat/1000/tcp_rcv'), 2)):
       self.assertEqual(self.battery.GetNetworkData('test_package1'), (1,2))
@@ -359,8 +368,9 @@ class BatteryUtilsGetNetworkDataTest(BatteryUtilsTest):
   def testGetNetworkData_clearedCache(self):
     with self.assertCalls(
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '-c'], check_return=True),
-            _DUMPSYS_OUTPUT),
+            ['dumpsys', 'batterystats', '-c'],
+            check_return=True, large_output=True),
+         _DUMPSYS_OUTPUT),
         (self.call.device.ReadFile('/proc/uid_stat/1000/tcp_snd'), 1),
         (self.call.device.ReadFile('/proc/uid_stat/1000/tcp_rcv'), 2)):
       self.battery._cache.clear()

@@ -237,7 +237,8 @@ class BatteryUtils(object):
     if 'uids' not in self._cache:
       self._cache['uids'] = {}
     dumpsys_output = self._device.RunShellCommand(
-        ['dumpsys', 'batterystats', '-c'], check_return=True)
+        ['dumpsys', 'batterystats', '-c'],
+        check_return=True, large_output=True)
     csvreader = csv.reader(dumpsys_output)
     pwi_entries = collections.defaultdict(list)
     for entry in csvreader:
