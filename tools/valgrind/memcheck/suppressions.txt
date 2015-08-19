@@ -2856,7 +2856,7 @@
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
    fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_b
    fun:_ZN3net16HostResolverImpl16LoopbackProbeJob*
-   fun:_ZN3net16HostResolverImplC*
+   fun:_ZN3net16HostResolverImpl*
 }
 {
    bug_387993
