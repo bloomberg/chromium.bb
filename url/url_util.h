@@ -39,7 +39,7 @@ URL_EXPORT void Shutdown();
 
 // Types of a scheme representing the requirements on the data represented by
 // the authority component of a URL with the scheme.
-enum URL_EXPORT SchemeType {
+enum SchemeType {
   // The authority component of a URL with the scheme, if any, has the port
   // (the default values may be omitted in a serialization).
   SCHEME_WITH_PORT,
