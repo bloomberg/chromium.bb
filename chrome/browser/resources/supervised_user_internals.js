@@ -39,12 +39,27 @@ cr.define('chrome.supervised_user_internals', function() {
   }
 
   function receiveBasicInfo(info) {
-    jstProcess(new JsEvalContext(info), $('info'));
+    jstProcess(new JsEvalContext(info), $('basic-info'));
 
     // Hack: Schedule another refresh after a while.
     // TODO(treib): Get rid of this once we're properly notified of all
     // relevant changes.
     setTimeout(function() { chrome.send('getBasicInfo'); }, 5000);
+  }
+
+  function receiveUserSettings(settings) {
+    // The user settings are returned as an object, flatten them into a
+    // list of key/value pairs for easier consumption by the HTML template.
+    // This is not done recursively, values are passed as their JSON
+    // representation.
+    var kvpairs = Object.keys(settings).map(function(key) {
+      return {
+        key: key,
+        value: JSON.stringify(settings[key], null, 2)
+      };
+    });
+
+    jstProcess(new JsEvalContext({settings: kvpairs}), $('user-settings'));
   }
 
   function receiveTryURLResult(result) {
@@ -95,6 +110,7 @@ cr.define('chrome.supervised_user_internals', function() {
     initialize: initialize,
     highlightIfChanged: highlightIfChanged,
     receiveBasicInfo: receiveBasicInfo,
+    receiveUserSettings: receiveUserSettings,
     receiveTryURLResult: receiveTryURLResult,
     receiveFilteringResult: receiveFilteringResult,
   };

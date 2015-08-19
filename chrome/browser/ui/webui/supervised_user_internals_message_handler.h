@@ -41,6 +41,7 @@ class SupervisedUserInternalsMessageHandler
   void HandleTryURL(const base::ListValue* args);
 
   void SendBasicInfo();
+  void SendSupervisedUserSettings(const base::DictionaryValue* settings);
 
   void OnTryURLResult(
       SupervisedUserURLFilter::FilteringBehavior behavior,

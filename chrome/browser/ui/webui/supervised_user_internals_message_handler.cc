@@ -8,8 +8,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
+#include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -242,10 +246,43 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
                   FilteringBehaviorToString(
                       filter->GetDefaultFilteringBehavior()));
 
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+
+  for (const auto& account: account_tracker->GetAccounts()) {
+    base::ListValue* section_user = AddSection(section_list.get(),
+        "User Information for " + account.full_name);
+    AddSectionEntry(section_user, "Account id", account.account_id);
+    AddSectionEntry(section_user, "Gaia", account.gaia);
+    AddSectionEntry(section_user, "Email", account.email);
+    AddSectionEntry(section_user, "Given name", account.given_name);
+    AddSectionEntry(section_user, "Hosted domain", account.hosted_domain);
+    AddSectionEntry(section_user, "Locale", account.locale);
+    AddSectionEntry(section_user, "Is child", account.is_child_account);
+    AddSectionEntry(section_user, "Is valid", account.IsValid());
+  }
+
   base::DictionaryValue result;
   result.Set("sections", section_list.Pass());
   web_ui()->CallJavascriptFunction(
       "chrome.supervised_user_internals.receiveBasicInfo", result);
+
+  // Trigger retrieval of the user settings
+  SupervisedUserSettingsService* settings_service =
+      SupervisedUserSettingsServiceFactory::GetForProfile(profile);
+  // TODO(bauerb): Change interface to SupervisedUserSettingsService to allow
+  // unsubscription, otherwise the subscription remains after this object is
+  // destroyed resulting in a small memory leak.
+  settings_service->Subscribe(base::Bind(
+        &SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings,
+        weak_factory_.GetWeakPtr()));
+}
+
+void SupervisedUserInternalsMessageHandler::SendSupervisedUserSettings(
+    const base::DictionaryValue* settings){
+  web_ui()->CallJavascriptFunction(
+      "chrome.supervised_user_internals.receiveUserSettings",
+      *settings);
 }
 
 void SupervisedUserInternalsMessageHandler::OnTryURLResult(

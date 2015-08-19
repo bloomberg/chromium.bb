@@ -18,7 +18,7 @@ found in the LICENSE file.
 
 <body>
 <div id='info'>
-  <div class="section" jsselect="sections">
+  <div id='basic-info' class="section" jsselect="sections">
     <h2 jscontent="title"></h2>
     <table class="section-details">
       <tr jsselect="data"
@@ -40,6 +40,16 @@ found in the LICENSE file.
       <tr>
         <td class="detail">Result</td>
         <td id="try-url-result" class="value"></td>
+      </tr>
+    </table>
+  </div>
+
+  <div id='user-settings' class="section">
+    <h2>Supervised User Settings</h2>
+    <table class="section-details">
+      <tr jsselect="settings">
+        <td jscontent="key"></td>
+        <td><pre jscontent="value"></pre></td>
       </tr>
     </table>
   </div>
