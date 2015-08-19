@@ -9,6 +9,7 @@
 
 #include "base/memory/linked_ptr.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/timer/timer.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "ui/gl/gl_surface.h"
@@ -37,6 +38,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   gfx::Size GetSize() override;
   void* GetHandle() override;
   bool OnMakeCurrent(gfx::GLContext* context) override;
+  bool SetBackbufferAllocation(bool allocated) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
                             gfx::GLImage* image,
@@ -70,7 +72,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   void DisplayFirstPendingSwapImmediately();
   // Force that all of |pending_swaps_| displayed immediately, and the list be
   // cleared.
-  void FinishAllPendingSwaps();
+  void DisplayAndClearAllPendingSwaps();
   // Callback issued during the next vsync period ofter a SwapBuffers call,
   // to check if the swap is completed, and display the frame. Note that if
   // another SwapBuffers happens before this callback, the pending swap will
@@ -113,14 +115,16 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // non-partial swap.
   gfx::Rect accumulated_partial_damage_pixel_rect_;
 
+  // The time of the last swap was issued. If this is more than two vsyncs, then
+  // use the simpler non-smooth animation path.
+  base::TimeTicks last_swap_time_;
+
   // The vsync information provided by the browser.
   bool vsync_parameters_valid_;
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
 
-  // True if there is a pending call to CheckPendingSwapsCallback posted.
-  bool has_pending_callback_;
-
+  base::Timer display_pending_swap_timer_;
   base::WeakPtrFactory<ImageTransportSurfaceOverlayMac> weak_factory_;
 };
 

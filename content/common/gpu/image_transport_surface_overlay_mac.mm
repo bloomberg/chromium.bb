@@ -44,9 +44,12 @@ const double kVSyncIntervalFractionForEarliestDisplay = 0.05;
 // the next frame.
 const double kVSyncIntervalFractionForDisplayCallback = 0.5;
 
-// If a frame takes more than 1/4th of a second for its fence to finish, just
-// pretend that the frame is ready to draw.
-const double kMaximumDelayWaitingForFenceInSeconds = 0.25;
+// If swaps arrive regularly and nearly at the vsync rate, then attempt to
+// make animation smooth (each frame is shown for one vsync interval) by sending
+// them to the window server only when their GL work completes. If frames are
+// not coming in with each vsync, then just throw them at the window server as
+// they come.
+const double kMaximumVSyncsBetweenSwapsForSmoothAnimation = 1.5;
 
 void CheckGLErrors(const char* msg) {
   GLenum gl_error;
@@ -89,10 +92,11 @@ class ImageTransportSurfaceOverlayMac::PendingSwap {
   // The earliest time that this frame may be drawn. A frame is not allowed
   // to draw until a fraction of the way through the vsync interval after its
   // This extra latency is to allow wiggle-room for smoothness.
-  base::TimeTicks earliest_allowed_draw_time;
-  // After this time, always draw the frame, no matter what its fence says. This
-  // is to prevent GL bugs from locking the compositor forever.
-  base::TimeTicks latest_allowed_draw_time;
+  base::TimeTicks earliest_display_time_allowed;
+
+  // The time that this will wake up and draw, if a following swap does not
+  // cause it to draw earlier.
+  base::TimeTicks target_display_time;
 };
 
 ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
@@ -100,7 +104,7 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
     : scale_factor_(1), gl_renderer_id_(0), pending_overlay_image_(nullptr),
-      vsync_parameters_valid_(false), has_pending_callback_(false),
+      vsync_parameters_valid_(false), display_pending_swap_timer_(true, false),
       weak_factory_(this) {
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
@@ -131,7 +135,7 @@ bool ImageTransportSurfaceOverlayMac::Initialize() {
 }
 
 void ImageTransportSurfaceOverlayMac::Destroy() {
-  FinishAllPendingSwaps();
+  DisplayAndClearAllPendingSwaps();
 }
 
 bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
@@ -146,6 +150,16 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   // this function only affect the result if this function lasts across a vsync
   // boundary, in which case smooth animation is out the window anyway.
   const base::TimeTicks now = base::TimeTicks::Now();
+
+  // Decide if the frame should be drawn immediately, or if we should wait until
+  // its work finishes before drawing immediately.
+  bool display_immediately = false;
+  if (vsync_parameters_valid_ &&
+      now - last_swap_time_ >
+          kMaximumVSyncsBetweenSwapsForSmoothAnimation * vsync_interval_) {
+    display_immediately = true;
+  }
+  last_swap_time_ = now;
 
   // If the previous swap is ready to display, do it before flushing the
   // new swap. It is desirable to always be hitting this path when trying to
@@ -180,25 +194,11 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     CheckGLErrors("before flushing frame");
     new_swap->cgl_context.reset(CGLGetCurrentContext(),
                                 base::scoped_policy::RETAIN);
-    if (gfx::GLFence::IsSupported())
+    if (gfx::GLFence::IsSupported() && !display_immediately)
       new_swap->gl_fence.reset(gfx::GLFence::Create());
     else
       glFlush();
     CheckGLErrors("while flushing frame");
-  }
-
-  // Compute the deadlines for drawing this frame.
-  if (vsync_parameters_valid_) {
-    new_swap->earliest_allowed_draw_time =
-        GetNextVSyncTimeAfter(now, kVSyncIntervalFractionForEarliestDisplay);
-    new_swap->latest_allowed_draw_time = now +
-        base::TimeDelta::FromSecondsD(kMaximumDelayWaitingForFenceInSeconds);
-  } else {
-    // If we have no display link (because vsync is disabled or because we have
-    // not received display parameters yet), immediately attempt to display the
-    // surface.
-    new_swap->earliest_allowed_draw_time = now;
-    new_swap->latest_allowed_draw_time = now;
   }
 
   // Determine if this will be a full or partial damage, and compute the rects
@@ -231,8 +231,22 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     }
   }
 
+  // Compute the deadlines for drawing this frame.
+  if (display_immediately) {
+    new_swap->earliest_display_time_allowed = now;
+    new_swap->target_display_time = now;
+  } else {
+    new_swap->earliest_display_time_allowed =
+        GetNextVSyncTimeAfter(now, kVSyncIntervalFractionForEarliestDisplay);
+    new_swap->target_display_time =
+        GetNextVSyncTimeAfter(now, kVSyncIntervalFractionForDisplayCallback);
+  }
+
   pending_swaps_.push_back(new_swap);
-  PostCheckPendingSwapsCallbackIfNeeded(now);
+  if (display_immediately)
+    DisplayFirstPendingSwapImmediately();
+  else
+    PostCheckPendingSwapsCallbackIfNeeded(now);
   return gfx::SwapResult::SWAP_ACK;
 }
 
@@ -241,37 +255,26 @@ bool ImageTransportSurfaceOverlayMac::IsFirstPendingSwapReadyToDisplay(
   DCHECK(!pending_swaps_.empty());
   linked_ptr<PendingSwap> swap = pending_swaps_.front();
 
-  // If more that a certain amount of time has passed since the swap,
-  // unconditionally continue.
-  if (now > swap->latest_allowed_draw_time)
-    return true;
-
   // Frames are disallowed from drawing until the vsync interval after their
   // swap is issued.
-  if (now < swap->earliest_allowed_draw_time)
+  if (now < swap->earliest_display_time_allowed)
     return false;
 
-  // If there is no fence then this is either for immediate display, or the
-  // fence was aready successfully checked and deleted.
-  if (!swap->gl_fence)
-    return true;
-
-  // Check if the pending work has finished (and early-out if it is not, and
-  // this is not forced).
-  bool has_completed = true;
+  // If we've passed that marker, then wait for the work behind the fence to
+  // complete.
   if (swap->gl_fence) {
     gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
     gfx::ScopedCGLSetCurrentContext scoped_set_current(swap->cgl_context);
 
-    CheckGLErrors("before testing fence");
-    has_completed = swap->gl_fence->HasCompleted();
-    CheckGLErrors("after testing fence");
-    if (has_completed) {
-      swap->gl_fence.reset();
-      CheckGLErrors("while deleting fence");
+    CheckGLErrors("before waiting on fence");
+    if (!swap->gl_fence->HasCompleted()) {
+      TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::ClientWait");
+      swap->gl_fence->ClientWait();
     }
+    swap->gl_fence.reset();
+    CheckGLErrors("after waiting on fence");
   }
-  return has_completed;
+  return true;
 }
 
 void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
@@ -349,8 +352,9 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   pending_swaps_.pop_front();
 }
 
-void ImageTransportSurfaceOverlayMac::FinishAllPendingSwaps() {
-  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::FinishAllPendingSwaps");
+void ImageTransportSurfaceOverlayMac::DisplayAndClearAllPendingSwaps() {
+  TRACE_EVENT0("gpu",
+      "ImageTransportSurfaceOverlayMac::DisplayAndClearAllPendingSwaps");
   while (!pending_swaps_.empty())
     DisplayFirstPendingSwapImmediately();
 }
@@ -358,9 +362,6 @@ void ImageTransportSurfaceOverlayMac::FinishAllPendingSwaps() {
 void ImageTransportSurfaceOverlayMac::CheckPendingSwapsCallback() {
   TRACE_EVENT0("gpu",
       "ImageTransportSurfaceOverlayMac::CheckPendingSwapsCallback");
-
-  DCHECK(has_pending_callback_);
-  has_pending_callback_ = false;
 
   if (pending_swaps_.empty())
     return;
@@ -376,20 +377,15 @@ void ImageTransportSurfaceOverlayMac::PostCheckPendingSwapsCallbackIfNeeded(
   TRACE_EVENT0("gpu",
       "ImageTransportSurfaceOverlayMac::PostCheckPendingSwapsCallbackIfNeeded");
 
-  if (has_pending_callback_)
-    return;
-  if (pending_swaps_.empty())
-    return;
-
-  base::TimeTicks target;
-  target = GetNextVSyncTimeAfter(now, kVSyncIntervalFractionForDisplayCallback);
-  base::TimeDelta delay = target - now;
-
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ImageTransportSurfaceOverlayMac::CheckPendingSwapsCallback,
-                     weak_factory_.GetWeakPtr()), delay);
-  has_pending_callback_ = true;
+  if (pending_swaps_.empty()) {
+    display_pending_swap_timer_.Stop();
+  } else {
+    display_pending_swap_timer_.Start(
+        FROM_HERE,
+        pending_swaps_.front()->target_display_time - now,
+        base::Bind(&ImageTransportSurfaceOverlayMac::CheckPendingSwapsCallback,
+                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers() {
@@ -420,6 +416,14 @@ bool ImageTransportSurfaceOverlayMac::OnMakeCurrent(gfx::GLContext* context) {
   // will generally only change when the GPU changes.
   if (gl_renderer_id_ && context)
     context->share_group()->SetRendererID(gl_renderer_id_);
+  return true;
+}
+
+bool ImageTransportSurfaceOverlayMac::SetBackbufferAllocation(bool allocated) {
+  if (!allocated) {
+    DisplayAndClearAllPendingSwaps();
+    last_swap_time_ = base::TimeTicks();
+  }
   return true;
 }
 
@@ -462,7 +466,7 @@ void ImageTransportSurfaceOverlayMac::OnBufferPresented(
 void ImageTransportSurfaceOverlayMac::OnResize(gfx::Size pixel_size,
                                                float scale_factor) {
   // Flush through any pending frames.
-  FinishAllPendingSwaps();
+  DisplayAndClearAllPendingSwaps();
   pixel_size_ = pixel_size;
   scale_factor_ = scale_factor;
 }
