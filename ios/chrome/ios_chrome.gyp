@@ -287,6 +287,8 @@
         'browser/passwords/password_generation_utils.mm',
         'browser/pref_names.cc',
         'browser/pref_names.h',
+        'browser/prefs/browser_prefs.cc',
+        'browser/prefs/browser_prefs.h',
         'browser/prefs/pref_observer_bridge.h',
         'browser/prefs/pref_observer_bridge.mm',
         'browser/procedural_block_types.h',
