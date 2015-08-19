@@ -14,6 +14,8 @@
 #include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/task_tracker.h"
 #include "components/dom_distiller/core/viewer.h"
+#include "grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {
 
@@ -28,6 +30,17 @@ DomDistillerRequestViewBase::~DomDistillerRequestViewBase() {
 }
 
 void DomDistillerRequestViewBase::FlagAsErrorPage() {
+  // Viewer handle is not passed to this in the case of error pages
+  // so send all JavaScript now.
+  SendJavaScript(viewer::GetJavaScript());
+  SendJavaScript(viewer::GetErrorPageJs());
+
+  std::string title(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT));
+  SendJavaScript(viewer::GetSetTitleJs(title));
+
+  SendJavaScript(viewer::GetSetTextDirectionJs(std::string("auto")));
+  SendJavaScript(viewer::GetShowFeedbackFormJs());
   is_error_page_ = true;
 }
 

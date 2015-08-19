@@ -148,30 +148,17 @@ void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
 void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  if (IsErrorPage()) {
-    waiting_for_page_ready_ = false;
-    SendJavaScript(viewer::GetJavaScript());
-    SendJavaScript(viewer::GetErrorPageJs());
-    std::string title(l10n_util::GetStringUTF8(
-        IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT));
-    SendJavaScript(viewer::GetSetTitleJs(title));
-    SendJavaScript(viewer::GetSetTextDirectionJs(std::string("auto")));
-    if (ShouldShowFeedbackForm()) {
-      SendJavaScript(viewer::GetShowFeedbackFormJs());
-    }
-    Cancel(); // This will cause the object to clean itself up.
-    return;
-  }
-
   if (render_frame_host->GetParent()) {
     return;
   }
   waiting_for_page_ready_ = false;
-  if (buffer_.empty()) {
-    return;
+  if (!buffer_.empty()) {
+    RunIsolatedJavaScript(web_contents()->GetMainFrame(), buffer_);
+    buffer_.clear();
   }
-  RunIsolatedJavaScript(web_contents()->GetMainFrame(), buffer_);
-  buffer_.clear();
+  if (IsErrorPage()) {
+    Cancel(); // This will cause the object to clean itself up.
+  }
 }
 
 DomDistillerViewerSource::DomDistillerViewerSource(
