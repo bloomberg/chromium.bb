@@ -281,6 +281,11 @@ void LocalFrame::detach(FrameDetachType type)
     m_loader.stopAllLoaders();
     m_loader.dispatchUnloadEvent();
     detachChildren();
+
+    // All done if detaching the subframes brought about a detach of this frame also.
+    if (!client())
+        return;
+
     // stopAllLoaders() needs to be called after detachChildren(), because detachChildren()
     // will trigger the unload event handlers of any child frames, and those event
     // handlers might start a new subresource load in this frame.
