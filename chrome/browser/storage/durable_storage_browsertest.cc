@@ -42,7 +42,7 @@ void DurableStorageBrowserTest::SetUpCommandLine(
 
 // TODO(dgrogan): Reenable after https://codereview.chromium.org/1302643002
 // lands.
-IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, DISABLED_FirstTabSeesResult) {
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
   EXPECT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndWaitUntilReady());
 
@@ -55,10 +55,10 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, DISABLED_FirstTabSeesResult) {
       current_browser->tab_strip_model()
           ->GetActiveWebContents()
           ->GetMainFrame();
-  std::string result;
+  std::string permission_string;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      render_frame_host, "checkPermission()", &result));
-  EXPECT_EQ("default", result);
+      render_frame_host, "checkPermission()", &permission_string));
+  EXPECT_EQ("default", permission_string);
 
   chrome::NewTab(current_browser);
   const GURL& url2 =
@@ -70,15 +70,16 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, DISABLED_FirstTabSeesResult) {
   PermissionBubbleManager::FromWebContents(
       current_browser->tab_strip_model()->GetActiveWebContents())
       ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      render_frame_host, "requestPermission()", &result));
-  EXPECT_EQ("granted", result);
+  bool default_box_is_persistent = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      render_frame_host, "requestPermission()", &default_box_is_persistent));
+  EXPECT_EQ(true, default_box_is_persistent);
 
   current_browser->tab_strip_model()->ActivateTabAt(0, false);
   render_frame_host = current_browser->tab_strip_model()
                           ->GetActiveWebContents()
                           ->GetMainFrame();
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      render_frame_host, "checkPermission()", &result));
-  EXPECT_EQ("granted", result);
+      render_frame_host, "checkPermission()", &permission_string));
+  EXPECT_EQ("granted", permission_string);
 }
