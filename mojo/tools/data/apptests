@@ -56,14 +56,16 @@ if config.target_os != config.OS_ANDROID:
       'test': 'mojo:html_viewer_apptests',
       'name': 'mojo:html_viewer_apptests',
       'type': 'gtest_isolated',
-      'args': ['--use-test-config', '--enable-html-viewer-test-interface']
+      'args': ['--enable-html-viewer-test-interface',
+               '--override-use-gl-with-osmesa-for-tests']
     },
     {
       'test': 'mojo:html_viewer_apptests',
       'name': 'mojo:html_viewer_apptests new frame',
       'type': 'gtest_isolated',
-      'args': ['--use-test-config', '--oopif-always-create-new-frame-tree',
-               '--enable-html-viewer-test-interface']
+      'args': ['--oopif-always-create-new-frame-tree',
+               '--enable-html-viewer-test-interface',
+               '--override-use-gl-with-osmesa-for-tests']
     },
     {
       'test': 'mojo:mandoline_browser_apptests',
