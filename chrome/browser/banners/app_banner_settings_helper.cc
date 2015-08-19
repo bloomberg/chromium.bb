@@ -57,7 +57,7 @@ const char kBannerEngagementKey[] = "engagement";
 // or ui::PAGE_TRANSITION_GENERATED. These are weighted twice the engagement of
 // all other navigations.
 double kDirectNavigationEngagement = 1;
-double kIndirectNavigationEnagagement = 0.5;
+double kIndirectNavigationEnagagement = 1;
 
 scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
