@@ -18,16 +18,13 @@ namespace remoting {
 
 // Interface for a decoder that takes a stream of bytes from the network and
 // outputs frames of data.
+// TODO(sergeyu): Simplify this interface.
 class VideoDecoder {
  public:
   static const int kBytesPerPixel = 4;
 
   VideoDecoder() {}
   virtual ~VideoDecoder() {}
-
-  // Initializes the decoder and sets the output dimensions.
-  // |screen size| must not be empty.
-  virtual void Initialize(const webrtc::DesktopSize& screen_size) = 0;
 
   // Feeds more data into the decoder. Returns true if |packet| was processed
   // and the frame can be displayed now.

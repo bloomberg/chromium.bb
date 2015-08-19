@@ -26,7 +26,6 @@ class VideoDecoderVpx : public VideoDecoder {
   ~VideoDecoderVpx() override;
 
   // VideoDecoder interface.
-  void Initialize(const webrtc::DesktopSize& source_size) override;
   bool DecodePacket(const VideoPacket& packet) override;
   void Invalidate(const webrtc::DesktopSize& view_size,
                   const webrtc::DesktopRegion& region) override;

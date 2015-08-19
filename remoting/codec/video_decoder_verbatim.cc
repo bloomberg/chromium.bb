@@ -13,20 +13,20 @@ VideoDecoderVerbatim::VideoDecoderVerbatim() {}
 
 VideoDecoderVerbatim::~VideoDecoderVerbatim() {}
 
-void VideoDecoderVerbatim::Initialize(const webrtc::DesktopSize& screen_size) {
-  updated_region_.Clear();
-  screen_buffer_.reset();
-
-  screen_size_ = screen_size;
-  // Allocate the screen buffer, if necessary.
-  if (!screen_size_.is_empty()) {
-    screen_buffer_.reset(
-        new uint8[screen_size_.width() * screen_size_.height() *
-                  kBytesPerPixel]);
-  }
-}
-
 bool VideoDecoderVerbatim::DecodePacket(const VideoPacket& packet) {
+  if (packet.format().has_screen_width() &&
+      packet.format().has_screen_height()) {
+    webrtc::DesktopSize screen_size(packet.format().screen_width(),
+                                    packet.format().screen_height());
+    // Allocate the screen buffer, if necessary.
+    if (!screen_size.equals(screen_size_)) {
+      screen_size_ = screen_size;
+      screen_buffer_.reset(new uint8[screen_size_.width() *
+                                     screen_size_.height() * kBytesPerPixel]);
+      updated_region_.Clear();
+    }
+  }
+
   webrtc::DesktopRegion region;
 
   const char* in = packet.data().data();

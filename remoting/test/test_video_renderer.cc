@@ -174,7 +174,6 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
                                     packet->format().screen_height());
     if (!screen_size_.equals(source_size)) {
       screen_size_ = source_size;
-      decoder_->Initialize(screen_size_);
       frame_.reset(new webrtc::BasicDesktopFrame(screen_size_));
     }
   }

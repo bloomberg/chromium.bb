@@ -65,8 +65,6 @@ class VideoDecoderTester {
     image_data_.reset(new uint8[
         view_size_.width() * view_size_.height() * kBytesPerPixel]);
     EXPECT_TRUE(image_data_.get());
-    decoder_->Initialize(
-        DesktopSize(screen_size_.width(), screen_size_.height()));
   }
 
   void Reset() {

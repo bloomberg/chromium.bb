@@ -23,7 +23,6 @@ class VideoDecoderVerbatim : public VideoDecoder {
   VideoDecoderVerbatim();
 
   // VideoDecoder implementation.
-  void Initialize(const webrtc::DesktopSize& screen_size) override;
   bool DecodePacket(const VideoPacket& packet) override;
   void Invalidate(const webrtc::DesktopSize& view_size,
                   const webrtc::DesktopRegion& region) override;

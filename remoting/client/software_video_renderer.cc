@@ -37,10 +37,6 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
       : parent_(parent.Pass()) {
   }
 
-  void Initialize(const webrtc::DesktopSize& screen_size) override {
-    parent_->Initialize(screen_size);
-  }
-
   bool DecodePacket(const VideoPacket& packet) override {
     return parent_->DecodePacket(packet);
   }
@@ -165,7 +161,6 @@ void SoftwareVideoRenderer::Core::DecodePacket(scoped_ptr<VideoPacket> packet,
                                                 const base::Closure& done) {
   DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
-  bool decoder_needs_reset = false;
   bool notify_size_or_dpi_change = false;
 
   // If the packet includes screen size or DPI information, store them.
@@ -175,7 +170,6 @@ void SoftwareVideoRenderer::Core::DecodePacket(scoped_ptr<VideoPacket> packet,
                                     packet->format().screen_height());
     if (!source_size_.equals(source_size)) {
       source_size_ = source_size;
-      decoder_needs_reset = true;
       notify_size_or_dpi_change = true;
     }
   }
@@ -194,8 +188,6 @@ void SoftwareVideoRenderer::Core::DecodePacket(scoped_ptr<VideoPacket> packet,
     return;
   }
 
-  if (decoder_needs_reset)
-    decoder_->Initialize(source_size_);
   if (notify_size_or_dpi_change)
     consumer_->SetSourceSize(source_size_, source_dpi_);
 

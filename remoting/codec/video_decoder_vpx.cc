@@ -34,11 +34,6 @@ scoped_ptr<VideoDecoderVpx> VideoDecoderVpx::CreateForVP9() {
 
 VideoDecoderVpx::~VideoDecoderVpx() {}
 
-void VideoDecoderVpx::Initialize(const webrtc::DesktopSize& source_size) {
-  // Nothing to do here; the codec handles resizing internally, and returns
-  // the source dimensions as part of the vpx_image_t.
-}
-
 bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet) {
   // Pass the packet to the codec to process.
   vpx_codec_err_t ret = vpx_codec_decode(
