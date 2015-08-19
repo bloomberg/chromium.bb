@@ -63,16 +63,6 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports);
 }
 
-void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId, const WebMessagePortChannelArray& webChannels)
-{
-    WebDocument document;
-    if (sourceFrame && sourceFrame->isWebLocalFrame()) {
-        DOMWindow* window = toCoreFrame(sourceFrame)->domWindow();
-        document = toLocalDOMWindow(window)->document();
-    }
-    initMessageEvent(type, canBubble, cancelable, messageData, origin, sourceFrame, document, lastEventId, webChannels);
-}
-
 WebSerializedScriptValue WebDOMMessageEvent::data() const
 {
     return WebSerializedScriptValue(constUnwrap<MessageEvent>()->dataAsSerializedScriptValue());

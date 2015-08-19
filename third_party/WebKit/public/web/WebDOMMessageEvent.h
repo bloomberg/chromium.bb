@@ -44,12 +44,13 @@ namespace blink {
 class WebFrame;
 class WebString;
 
+// An interface for posting message events to the target frame. The message
+// events are used for communication between documents and described here:
+// http://www.w3.org/TR/2012/WD-webmessaging-20120313/#terminology
 class WebDOMMessageEvent : public WebDOMEvent {
 public:
     WebDOMMessageEvent() { }
     BLINK_EXPORT void initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebDocument& targetDocument, const WebString& lastEventId, const WebMessagePortChannelArray& channels = WebMessagePortChannelArray());
-    // DEPRECATED: Use the initMessageEvent method above. This method will be removed.
-    BLINK_EXPORT void initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebString& lastEventId, const WebMessagePortChannelArray& channels = WebMessagePortChannelArray());
 
     BLINK_EXPORT WebSerializedScriptValue data() const;
     BLINK_EXPORT WebString origin() const;
