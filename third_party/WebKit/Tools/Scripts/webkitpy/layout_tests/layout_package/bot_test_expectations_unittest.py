@@ -135,6 +135,12 @@ class BotTestExpectationsTest(unittest.TestCase):
                     'maybeflaky.html': self._results_from_string('FP'),
                     'notflakypass.html': self._results_from_string('P'),
                     'notflakyfail.html': self._results_from_string('F'),
+                    # Even if there are no expected results, it's not very flaky if it didn't do mulitple retries.
+                    # This accounts for the latest expectations not necessarily matching the expectations
+                    # at the time of the given run.
+                    'notverflakynoexpected.html': self._results_from_string('FT'),
+                    # If the test is flaky, but marked as such, it shouldn't get printed out.
+                    'notflakyexpected.html': {'results': [[2, 'FFFP']], 'expected': 'PASS FAIL'},
                 }
             }
         }
@@ -144,6 +150,7 @@ class BotTestExpectationsTest(unittest.TestCase):
 
         self._assert_expectations(test_data, {
             'foo/veryflaky.html': sorted(["TEXT", "PASS"]),
+            'foo/notverflakynoexpected.html': ['TEXT', 'TIMEOUT'],
             'foo/maybeflaky.html': sorted(["TEXT", "PASS"]),
         }, only_ignore_very_flaky=False)
 

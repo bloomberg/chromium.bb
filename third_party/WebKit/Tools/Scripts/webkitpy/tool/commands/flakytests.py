@@ -26,6 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import logging
 import os
 import optparse
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
@@ -35,15 +36,30 @@ from webkitpy.layout_tests.port import builders
 from webkitpy.common.net import sheriff_calendar
 
 
+_log = logging.getLogger(__name__)
+
+
 class FlakyTests(AbstractDeclarativeCommand):
     name = "print-flaky-tests"
     help_text = "Print out flaky lines from the flakiness dashboard"
     show_in_main_help = True
 
-    FLAKY_TEST_CONTENTS = '''%s
+    FLAKINESS_DASHBOARD_URL = 'https://test-results.appspot.com/dashboards/flakiness_dashboard.html#tests=%s'
 
-Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.
-TODO(ojan): Write a script to file/assign the bugs then create a bot to do this automatically.
+    BUG_TEMPLATE = 'https://code.google.com/p/chromium/issues/entry?owner=FILL_ME_IN&status=Assigned&labels=Pri-1,Cr-Blink,FlakyLayoutTest&summary=XXXXXXX%20is%20flaky&comment=XXXXXXX%20is%20flaky.%0A%0AIt%20failed%20twice%20and%20then%20passed%20on%20the%203rd%20or%204th%20retry.%20This%20is%20too%20flaky.%20The%20test%20will%20be%20skipped%20until%20it%27s%20fixed.%20If%20not%20fixed%20in%203%20months,%20it%20will%20be%20deleted%20or%20perma-skipped.%0A%0AIn%20the%20flakiness%20dashboard,%20the%20turquoise%20boxes%20are%20runs%20where%20the%20test%20failed%20and%20then%20passed%20on%20retry.%0A%0Ahttp://test-results.appspot.com/dashboards/flakiness_dashboard.html%23tests=XXXXXXX'
+
+    HEADER = '''Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.
+Look up the test in the flakiness dashboard first to see if the the platform
+specifiers should be made more general.
+
+Bug template:
+%s
+''' % BUG_TEMPLATE
+
+    OUTPUT = '''%s
+%s
+
+Flakiness dashboard: %s
 '''
 
     def __init__(self):
@@ -67,6 +83,13 @@ TODO(ojan): Write a script to file/assign the bugs then create a bot to do this 
             models.append(model)
 
             expectations = factory.expectations_for_builder(builder_name)
+
+            # TODO(ojan): We should also skip bots that haven't uploaded recently,
+            # e.g. if they're >24h stale.
+            if not expectations:
+                _log.error("Can't load flakiness data for builder: %s" % builder_name)
+                continue
+
             for line in expectations.expectation_lines(only_ignore_very_flaky=True):
                 # TODO(ojan): Find a way to merge specifiers instead of removing build types.
                 # We can't just union because some specifiers will change the meaning of others.
@@ -93,5 +116,10 @@ TODO(ojan): Write a script to file/assign the bugs then create a bot to do this 
         fs = tool.filesystem
         lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)
 
-        print self.FLAKY_TEST_CONTENTS % TestExpectations.list_to_string(lines)  # pylint: disable=E1601
+        test_names = [line.name for line in lines]
+        flakiness_dashbord_url = self.FLAKINESS_DASHBOARD_URL % ','.join(test_names)
+        expectations_string = TestExpectations.list_to_string(lines)
+
+        # pylint: disable=E1601
+        print self.OUTPUT % (self.HEADER, expectations_string, flakiness_dashbord_url)
 

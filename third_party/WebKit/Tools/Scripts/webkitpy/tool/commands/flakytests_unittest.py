@@ -71,11 +71,9 @@ class FlakyTestsTest(CommandsTest):
         tool = MockTool()
         command.expectations_factory = FakeBotTestExpectationsFactory
         options = MockOptions(upload=True)
-        expected_stdout = '''
-
-Manually add bug numbers for these and then put the lines in LayoutTests/TestExpectations.
-TODO(ojan): Write a script to file/assign the bugs then create a bot to do this automatically.
-
-'''
+        expected_stdout = flakytests.FlakyTests.OUTPUT % (
+            flakytests.FlakyTests.HEADER,
+            '',
+            flakytests.FlakyTests.FLAKINESS_DASHBOARD_URL % '') + '\n'
 
         self.assert_execute_outputs(command, options=options, tool=tool, expected_stdout=expected_stdout)
