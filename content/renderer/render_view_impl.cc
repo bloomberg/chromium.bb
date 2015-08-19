@@ -361,7 +361,9 @@ static bool DeviceScaleEnsuresTextQuality(float device_scale_factor) {
   // On Android, we never have subpixel antialiasing.
   return true;
 #else
-  return device_scale_factor > 1.5f;
+  // 1.5 is a common touchscreen tablet device scale factor. For such
+  // devices main thread antialiasing is a heavy burden.
+  return device_scale_factor >= 1.5f;
 #endif
 
 }
