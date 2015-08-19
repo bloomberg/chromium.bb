@@ -141,6 +141,10 @@ error::Error GLES2DecoderImpl::HandleBindSampler(uint32_t immediate_data_size,
   (void)c;
   GLuint unit = static_cast<GLuint>(c.unit);
   GLuint sampler = c.sampler;
+  if (sampler == 0) {
+    glBindSampler(unit, sampler);
+    return error::kNoError;
+  }
   if (!group_->GetSamplerServiceId(sampler, &sampler)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindSampler",
                        "invalid sampler id");

@@ -4459,6 +4459,15 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         if id_type == 'Sync':
           service_var = "service_%s" % service_var
           f.write("  GLsync %s = 0;\n" % service_var)
+        if id_type == 'Sampler' and func.IsType('Bind'):
+          # No error generated when binding a reserved zero sampler.
+          args = [arg.name for arg in func.GetOriginalArgs()]
+          f.write("""  if(%(var)s == 0) {
+    %(func)s(%(args)s);
+    return error::kNoError;
+  }""" % { 'var': id_type.lower(),
+           'func': func.GetGLFunctionName(),
+           'args': ", ".join(args) })
         if gen_func and id_type in gen_func:
           f.write(code_gen % { 'type': id_type,
                                   'var': id_type.lower(),
