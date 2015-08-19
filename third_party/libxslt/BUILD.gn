@@ -59,8 +59,21 @@ static_library("libxslt") {
     "win32/config.h",
   ]
 
+  config("libxslt_warnings") {
+    if (is_clang) {
+      cflags = [
+        # libxslt stores a char[3] in a `const unsigned char*`.
+        "-Wno-pointer-sign",
+
+        # xsltDefaultRegion and xsltCalibrateTimestamps are only
+        # used with certain preprocessor defines set.
+        "-Wno-unused-function",
+      ]
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":libxslt_warnings" ]
   public_configs = [ ":libxslt_config" ]
 
   cflags = []
@@ -71,10 +84,6 @@ static_library("libxslt") {
     cflags += [ "/wd4267" ]  # size_t to int.
   } else if (is_mac) {
     include_dirs = [ "mac" ]
-  }
-
-  if (is_clang) {
-    cflags += [ "-Wno-pointer-sign" ]
   }
 
   deps = [

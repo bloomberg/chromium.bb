@@ -23,6 +23,12 @@
         'src/libusb/version.h',
         'src/libusb/version_nano.h',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # guid_eq in windows_usb.c is unused.
+          '-Wno-unused-function',
+        ],
+      },
       'include_dirs': [
         'src',
         'src/libusb',

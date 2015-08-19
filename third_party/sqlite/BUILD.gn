@@ -57,17 +57,31 @@ if (!use_system_sqlite) {
 
     include_dirs = [ "amalgamation" ]
 
+    config("sqlite_warnings") {
+      cflags = []
+      if (is_clang) {
+        # sqlite contains a few functions that are unused, at least on
+        # Windows with Chromium's sqlite patches applied
+        # (interiorCursorEOF fts3EvalDeferredPhrase
+        # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
+        # sqlite3Fts3InitTok).
+        cflags += [ "-Wno-unused-function" ]
+      }
+      if (is_linux) {
+        cflags += [
+          # SQLite doesn"t believe in compiler warnings,
+          # preferring testing.
+          #   http://www.sqlite.org/faq.html#q17
+          "-Wno-int-to-pointer-cast",
+          "-Wno-pointer-to-int-cast",
+        ]
+      }
+    }
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":sqlite_warnings" ]
 
     if (is_linux) {
-      cflags += [
-        # SQLite doesn"t believe in compiler warnings,
-        # preferring testing.
-        #   http://www.sqlite.org/faq.html#q17
-        "-Wno-int-to-pointer-cast",
-        "-Wno-pointer-to-int-cast",
-      ]
       libs = [ "dl" ]
     } else if (is_mac || is_ios) {
       libs = [ "CoreFoundation.framework" ]

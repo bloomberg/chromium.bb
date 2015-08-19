@@ -150,11 +150,17 @@ if (current_toolchain == host_toolchain) {
 
     config("re2c_warnings") {
       # re2c is missing CLOSEVOP from one switch.
-      if (is_posix || is_clang) {
-        cflags = [ "-Wno-switch" ]
+      if (is_clang) {
+        cflags = [
+          # re2c is missing CLOSEVOP from one switch.
+          "-Wno-switch",
+
+          # re2c contains many static functions in headers (because it's
+          # a C library predating C99.)
+          "-Wno-unused-function",
+        ]
       }
     }
-
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [
       ":yasm_config",

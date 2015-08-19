@@ -84,9 +84,16 @@ static_library("usrsctp") {
     # "SCTP_DEBUG", # Uncomment for SCTP debugging.
   ]
 
+  config("usrsctp_warnings") {
+    if (is_clang) {
+      # atomic_init in user_atomic.h is a static function in a header.
+      cflags = [ "-Wno-unused-function" ]
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ "//build/config/compiler:no_incompatible_pointer_warnings" ]
+  configs += [ ":usrsctp_warnings" ]
 
   public_configs = [ ":usrsctp_config" ]
 

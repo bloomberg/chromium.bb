@@ -114,6 +114,9 @@
             'clang_warning_flags': [
               # libxslt stores a char[3] in a `const unsigned char*`.
               '-Wno-pointer-sign',
+              # xsltDefaultRegion and xsltCalibrateTimestamps are only
+              # used with certain preprocessor defines set.
+              '-Wno-unused-function',
             ],
           },
           'conditions': [

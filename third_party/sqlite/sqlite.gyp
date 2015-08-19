@@ -117,6 +117,16 @@
             'amalgamation/sqlite3.h',
             'amalgamation/sqlite3.c',
           ],
+          'variables': {
+            'clang_warning_flags': [
+              # sqlite contains a few functions that are unused, at least on
+              # Windows with Chromium's sqlite patches applied
+              # (interiorCursorEOF fts3EvalDeferredPhrase
+              # fts3EvalSelectDeferred sqlite3Fts3InitHashTable
+              # sqlite3Fts3InitTok).
+              '-Wno-unused-function',
+            ],
+          },
           'include_dirs': [
             'amalgamation',
           ],

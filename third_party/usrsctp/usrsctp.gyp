@@ -120,6 +120,12 @@
         'usrsctplib/user_uma.h',
         'usrsctplib/usrsctp.h'
       ],  # sources
+      'variables': {
+        'clang_warning_flags': [
+          # atomic_init in user_atomic.h is a static function in a header.
+          '-Wno-unused-function',
+        ],
+      },
       'conditions': [
         ['OS=="linux" or OS=="android"', {
           'defines': [

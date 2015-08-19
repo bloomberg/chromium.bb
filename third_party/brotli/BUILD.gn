@@ -23,8 +23,17 @@ source_set("brotli") {
     "dec/types.h",
   ]
 
+  config("brotli_warnings") {
+    if (is_clang) {
+      # IncrementalCopyFastPath in decode.c can be unused.
+      # (The file looks very different upstream, this is probably no longer
+      # needed after rolling brotli the next time.)
+      cflags = [ "-Wno-unused-function" ]
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":brotli_warnings" ]
 
   # Since we are never debug brotli, freeze the optimizations to -O2.
   if (is_debug) {

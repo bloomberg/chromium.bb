@@ -46,8 +46,18 @@ static_library("libusb") {
   deps = []
   include_dirs = [ "src/libusb/os" ]
 
+  config("libusb_warnings") {
+    if (is_clang) {
+      # guid_eq in windows_usb.c is unused.
+      cflags = [ "-Wno-unused-function" ]
+      if (is_linux && !use_udev) {
+        cflags += [ "-Wno-pointer-sign" ]
+      }
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":libusb_warnings" ]
 
   public_configs = [ ":libusb_config" ]
 
@@ -95,9 +105,6 @@ static_library("libusb") {
   if (is_linux && !use_udev) {
     sources += [ "src/libusb/os/linux_netlink.c" ]
     defines += [ "HAVE_LINUX_NETLINK_H" ]
-    if (is_clang) {
-      cflags += [ "-Wno-pointer-sign" ]
-    }
   }
 
   if (is_win) {

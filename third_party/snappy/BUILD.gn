@@ -27,8 +27,16 @@ static_library("snappy") {
     "src/snappy.h",
   ]
 
+  config("snappy_warnings") {
+    if (is_clang) {
+      # ComputeTable is unused,
+      # https://code.google.com/p/snappy/issues/detail?id=96
+      cflags = [ "-Wno-unused-function" ]
+    }
+  }
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ ":snappy_warnings" ]
   public_configs = [ ":snappy_config" ]
 
   if (is_win) {

@@ -217,6 +217,9 @@
               # libxml passes a volatile LPCRITICAL_SECTION* to a function
               # expecting a void* volatile*.
               '-Wno-incompatible-pointer-types',
+              # trio_is_special_quantity and trio_is_negative are only
+              # used with certain preprocessor defines set.
+              '-Wno-unused-function',
             ],
           },
           'include_dirs': [

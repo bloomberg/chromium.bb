@@ -31,6 +31,11 @@
         ],
       },
       'variables': {
+        'clang_warning_flags': [
+           # ComputeTable is unused,
+           # https://code.google.com/p/snappy/issues/detail?id=96
+           '-Wno-unused-function',
+         ],
         'clang_warning_flags_unset': [
           # snappy-stubs-internal.h unapologetically has: using namespace std
           # https://code.google.com/p/snappy/issues/detail?id=70

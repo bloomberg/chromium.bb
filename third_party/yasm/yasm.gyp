@@ -558,8 +558,13 @@
         '-std=gnu99',
       ],
       'variables': {
+        'clang_warning_flags': [
           # re2c is missing CLOSEVOP from one switch.
-        'clang_warning_flags': [ '-Wno-switch' ],
+          '-Wno-switch',
+          # re2c contains many static functions in headers (because it's
+          # a C library predating C99.)
+          '-Wno-unused-function',
+        ],
       },
       'msvs_disabled_warnings': [ 4267 ],
     },
