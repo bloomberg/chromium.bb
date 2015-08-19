@@ -34,9 +34,18 @@ class GtestFilter extends Filter {
      */
     public GtestFilter(String filterString) {
         mFilterString = filterString;
-        mPositiveRegexes = new HashSet<Pattern>();
-        mNegativeRegexes = new HashSet<Pattern>();
 
+        String[] filterStrings = DASH.split(filterString, 2);
+        mPositiveRegexes = generatePatternSet(filterStrings[0]);
+        if (filterStrings.length == 2) {
+            mNegativeRegexes = generatePatternSet(filterStrings[1]);
+        } else {
+            mNegativeRegexes = new HashSet<Pattern>();
+        }
+    }
+
+    private Set<Pattern> generatePatternSet(String filterString) {
+        Set<Pattern> patterns = new HashSet<Pattern>();
         String[] filterStrings = COLON.split(filterString);
         for (String f : filterStrings) {
             if (f.isEmpty()) continue;
@@ -44,17 +53,9 @@ class GtestFilter extends Filter {
             String sanitized = PERIOD.matcher(f).replaceAll(Matcher.quoteReplacement("\\."));
             sanitized = DOLLAR.matcher(sanitized).replaceAll(Matcher.quoteReplacement("\\$"));
             sanitized = ASTERISK.matcher(sanitized).replaceAll(".*");
-            int negIndex = sanitized.indexOf('-');
-            if (negIndex == 0) {
-                mNegativeRegexes.add(Pattern.compile(sanitized.substring(1)));
-            } else if (negIndex != -1) {
-                String[] c = DASH.split(sanitized, 2);
-                mPositiveRegexes.add(Pattern.compile(c[0]));
-                mNegativeRegexes.add(Pattern.compile(c[1]));
-            } else {
-                mPositiveRegexes.add(Pattern.compile(sanitized));
-            }
+            patterns.add(Pattern.compile(sanitized));
         }
+        return patterns;
     }
 
     /**

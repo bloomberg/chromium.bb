@@ -22,7 +22,7 @@ public class GtestFilterTest {
 
     @Test
     public void testDescription() {
-        Filter filterUnderTest = new GtestFilter(TestClass.class.getName() + ".*");
+        Filter filterUnderTest = new GtestFilter(String.format("%s.*", TestClass.class.getName()));
         Assert.assertEquals("gtest-filter: " + TestClass.class.getName() + ".*",
                 filterUnderTest.describe());
     }
@@ -40,7 +40,8 @@ public class GtestFilterTest {
 
     @Test
     public void testPositiveFilterExplicit() {
-        Filter filterUnderTest = new GtestFilter(TestClass.class.getName() + ".testMethod");
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "%s.testMethod", TestClass.class.getName()));
         Assert.assertTrue(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertFalse(filterUnderTest.shouldRun(
@@ -51,7 +52,7 @@ public class GtestFilterTest {
 
     @Test
     public void testPositiveFilterClassRegex() {
-        Filter filterUnderTest = new GtestFilter(TestClass.class.getName() + ".*");
+        Filter filterUnderTest = new GtestFilter(String.format("%s.*", TestClass.class.getName()));
         Assert.assertTrue(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertTrue(filterUnderTest.shouldRun(
@@ -62,7 +63,8 @@ public class GtestFilterTest {
 
     @Test
     public void testNegativeFilterExplicit() {
-        Filter filterUnderTest = new GtestFilter("-" + TestClass.class.getName() + ".testMethod");
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "-%s.testMethod", TestClass.class.getName()));
         Assert.assertFalse(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertTrue(filterUnderTest.shouldRun(
@@ -73,7 +75,8 @@ public class GtestFilterTest {
 
     @Test
     public void testNegativeFilterClassRegex() {
-        Filter filterUnderTest = new GtestFilter("-" + TestClass.class.getName() + ".*");
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "-%s.*", TestClass.class.getName()));
         Assert.assertFalse(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertFalse(filterUnderTest.shouldRun(
@@ -84,8 +87,8 @@ public class GtestFilterTest {
 
     @Test
     public void testPositiveAndNegativeFilter() {
-        Filter filterUnderTest = new GtestFilter(TestClass.class.getName() + ".*"
-                + "-" + TestClass.class.getName() + ".testMethod");
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "%s.*-%s.testMethod", TestClass.class.getName(), TestClass.class.getName()));
         Assert.assertFalse(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertTrue(filterUnderTest.shouldRun(
@@ -96,9 +99,9 @@ public class GtestFilterTest {
 
     @Test
     public void testMultiplePositiveFilters() {
-        Filter filterUnderTest = new GtestFilter(
-                TestClass.class.getName() + ".otherTestMethod:"
-                + OtherTestClass.class.getName() + ".otherTestMethod");
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "%s.otherTestMethod:%s.otherTestMethod", TestClass.class.getName(),
+                OtherTestClass.class.getName()));
         Assert.assertFalse(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertTrue(filterUnderTest.shouldRun(
@@ -111,14 +114,29 @@ public class GtestFilterTest {
 
     @Test
     public void testMultipleFiltersPositiveAndNegative() {
-        Filter filterUnderTest = new GtestFilter(TestClass.class.getName() + ".*:"
-                + "-" + TestClass.class.getName() + ".testMethod");
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "%s.*-%s.testMethod", TestClass.class.getName(), TestClass.class.getName()));
         Assert.assertFalse(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "testMethod")));
         Assert.assertTrue(filterUnderTest.shouldRun(
                 Description.createTestDescription(TestClass.class, "otherTestMethod")));
         Assert.assertFalse(filterUnderTest.shouldRun(
                 Description.createTestDescription(OtherTestClass.class, "testMethod")));
+    }
+
+    @Test
+    public void testMultipleNegativeFilters() {
+        Filter filterUnderTest = new GtestFilter(String.format(
+                "*-%s.otherTestMethod:%s.otherTestMethod", TestClass.class.getName(),
+                OtherTestClass.class.getName()));
+        Assert.assertTrue(filterUnderTest.shouldRun(
+                Description.createTestDescription(TestClass.class, "testMethod")));
+        Assert.assertFalse(filterUnderTest.shouldRun(
+                Description.createTestDescription(TestClass.class, "otherTestMethod")));
+        Assert.assertTrue(filterUnderTest.shouldRun(
+                Description.createTestDescription(OtherTestClass.class, "testMethod")));
+        Assert.assertFalse(filterUnderTest.shouldRun(
+                Description.createTestDescription(OtherTestClass.class, "otherTestMethod")));
     }
 }
 
