@@ -798,7 +798,8 @@ base::string16 GoogleUpdateSettings::GetUninstallCommandLine(
   return cmd_line;
 }
 
-Version GoogleUpdateSettings::GetGoogleUpdateVersion(bool system_install) {
+base::Version GoogleUpdateSettings::GetGoogleUpdateVersion(
+    bool system_install) {
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   base::string16 version;
   RegKey key;
@@ -808,10 +809,10 @@ Version GoogleUpdateSettings::GetGoogleUpdateVersion(bool system_install) {
                KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS &&
       key.ReadValue(google_update::kRegGoogleUpdateVersion, &version) ==
           ERROR_SUCCESS) {
-    return Version(base::UTF16ToUTF8(version));
+    return base::Version(base::UTF16ToUTF8(version));
   }
 
-  return Version();
+  return base::Version();
 }
 
 base::Time GoogleUpdateSettings::GetGoogleUpdateLastStartedAU(

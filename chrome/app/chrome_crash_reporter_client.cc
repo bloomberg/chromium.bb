@@ -159,7 +159,7 @@ bool ChromeCrashReporterClient::AboutToRestart() {
 
 bool ChromeCrashReporterClient::GetDeferredUploadsSupported(
     bool is_per_user_install) {
-  Version update_version = GoogleUpdateSettings::GetGoogleUpdateVersion(
+  base::Version update_version = GoogleUpdateSettings::GetGoogleUpdateVersion(
       !is_per_user_install);
   if (!update_version.IsValid() ||
       update_version.IsOlderThan(std::string(kMinUpdateVersion)))

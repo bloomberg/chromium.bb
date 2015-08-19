@@ -12,7 +12,7 @@ PendingExtensionInfo::PendingExtensionInfo(
     const std::string& id,
     const std::string& install_parameter,
     const GURL& update_url,
-    const Version& version,
+    const base::Version& version,
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     Manifest::Location install_source,

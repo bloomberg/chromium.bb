@@ -188,7 +188,7 @@ struct CrxComponent {
 
   // The current version if the CRX is updated. Otherwise, "0" or "0.0" if
   // the CRX is installed.
-  Version version;
+  base::Version version;
 
   std::string fingerprint;  // Optional.
   std::string name;         // Optional.

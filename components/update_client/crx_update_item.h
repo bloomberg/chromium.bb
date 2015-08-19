@@ -85,8 +85,8 @@ struct CrxUpdateItem {
   std::vector<GURL> crx_diffurls;
 
   // The from/to version and fingerprint values.
-  Version previous_version;
-  Version next_version;
+  base::Version previous_version;
+  base::Version next_version;
   std::string previous_fp;
   std::string next_fp;
 

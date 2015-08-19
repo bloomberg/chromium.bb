@@ -202,7 +202,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdate) {
       CrxComponent crx;
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = Version("0.9");
+      crx.version = base::Version("0.9");
       crx.installer = new TestInstaller;
       components->push_back(crx);
     }
@@ -302,13 +302,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       CrxComponent crx1;
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = Version("0.9");
+      crx1.version = base::Version("0.9");
       crx1.installer = new TestInstaller;
 
       CrxComponent crx2;
       crx2.name = "test_abag";
       crx2.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-      crx2.version = Version("2.2");
+      crx2.version = base::Version("2.2");
       crx2.installer = new TestInstaller;
 
       components->push_back(crx1);
@@ -485,13 +485,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdate) {
       CrxComponent crx1;
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = Version("0.9");
+      crx1.version = base::Version("0.9");
       crx1.installer = new TestInstaller;
 
       CrxComponent crx2;
       crx2.name = "test_ihfo";
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx2.version = Version("0.8");
+      crx2.version = base::Version("0.8");
       crx2.installer = new TestInstaller;
 
       components->push_back(crx1);
@@ -726,13 +726,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
       CrxComponent crx1;
       crx1.name = "test_jebg";
       crx1.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx1.version = Version("0.9");
+      crx1.version = base::Version("0.9");
       crx1.installer = new TestInstaller;
 
       CrxComponent crx2;
       crx2.name = "test_ihfo";
       crx2.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
-      crx2.version = Version("0.8");
+      crx2.version = base::Version("0.8");
       crx2.installer = new TestInstaller;
 
       components->push_back(crx1);
@@ -973,9 +973,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
       crx.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
       crx.installer = installer;
       if (num_calls == 1) {
-        crx.version = Version("0.8");
+        crx.version = base::Version("0.8");
       } else if (num_calls == 2) {
-        crx.version = Version("1.0");
+        crx.version = base::Version("1.0");
       } else {
         NOTREACHED();
       }
@@ -1258,7 +1258,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       CrxComponent crx;
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = Version("0.9");
+      crx.version = base::Version("0.9");
       crx.installer = installer;
       components->push_back(crx);
     }
@@ -1435,9 +1435,9 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
       crx.pk_hash.assign(ihfo_hash, ihfo_hash + arraysize(ihfo_hash));
       crx.installer = installer;
       if (num_calls == 1) {
-        crx.version = Version("0.8");
+        crx.version = base::Version("0.8");
       } else if (num_calls == 2) {
-        crx.version = Version("1.0");
+        crx.version = base::Version("1.0");
       } else {
         NOTREACHED();
       }
@@ -1713,7 +1713,7 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
       CrxComponent crx;
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = Version("0.9");
+      crx.version = base::Version("0.9");
       crx.installer = new TestInstaller;
       components->push_back(crx);
     }
@@ -1818,7 +1818,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       CrxComponent crx;
       crx.name = "test_jebg";
       crx.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-      crx.version = Version("0.0");
+      crx.version = base::Version("0.0");
       crx.installer = new TestInstaller;
 
       components->push_back(crx);

@@ -119,7 +119,7 @@ class MockWorkItemList : public WorkItemList {
 class MockProductState : public ProductState {
  public:
   // Takes ownership of |version|.
-  void set_version(Version* version) { version_.reset(version); }
+  void set_version(base::Version* version) { version_.reset(version); }
   void set_multi_install(bool multi) { multi_install_ = multi; }
   void set_brand(const std::wstring& brand) { brand_ = brand; }
   void set_eula_accepted(DWORD eula_accepted) {
@@ -186,8 +186,8 @@ class MockInstallerState : public InstallerState {
 class InstallWorkerTest : public testing::Test {
  public:
   void SetUp() override {
-    current_version_.reset(new Version("1.0.0.0"));
-    new_version_.reset(new Version("42.0.0.0"));
+    current_version_.reset(new base::Version("1.0.0.0"));
+    new_version_.reset(new base::Version("42.0.0.0"));
 
     // Don't bother ensuring that these paths exist. Since we're just
     // building the work item lists and not running them, they shouldn't
@@ -213,7 +213,7 @@ class InstallWorkerTest : public testing::Test {
     if (installation_state->GetProductState(
             system_level, BrowserDistribution::CHROME_BINARIES) == NULL) {
       MockProductState product_state;
-      product_state.set_version(new Version(*current_version_));
+      product_state.set_version(new base::Version(*current_version_));
       product_state.set_brand(L"TEST");
       product_state.set_multi_install(true);
       BrowserDistribution* dist =
@@ -242,7 +242,7 @@ class InstallWorkerTest : public testing::Test {
     if (multi_install)
       MaybeAddBinariesToInstallationState(system_level, installation_state);
     MockProductState product_state;
-    product_state.set_version(new Version(*current_version_));
+    product_state.set_version(new base::Version(*current_version_));
     product_state.set_multi_install(multi_install);
     product_state.set_brand(L"TEST");
     product_state.set_eula_accepted(1);
@@ -275,7 +275,7 @@ class InstallWorkerTest : public testing::Test {
     if (multi_install)
       MaybeAddBinariesToInstallationState(system_level, installation_state);
     MockProductState product_state;
-    product_state.set_version(new Version(*current_version_));
+    product_state.set_version(new base::Version(*current_version_));
     product_state.set_multi_install(multi_install);
     BrowserDistribution* dist =
         BrowserDistribution::GetSpecificDistribution(
@@ -436,8 +436,8 @@ class InstallWorkerTest : public testing::Test {
   }
 
  protected:
-  scoped_ptr<Version> current_version_;
-  scoped_ptr<Version> new_version_;
+  scoped_ptr<base::Version> current_version_;
+  scoped_ptr<base::Version> new_version_;
   base::FilePath archive_path_;
   base::FilePath installation_path_;
   base::FilePath setup_path_;
@@ -569,7 +569,7 @@ TEST_F(InstallWorkerTest, GoogleUpdateWorkItemsTest) {
       BuildChromeInstallationState(system_level, false));
 
   MockProductState cf_state;
-  cf_state.set_version(new Version(*current_version_));
+  cf_state.set_version(new base::Version(*current_version_));
   cf_state.set_multi_install(false);
 
   // Per-machine single-install Chrome Frame is installed.
@@ -641,7 +641,7 @@ TEST_F(InstallWorkerTest, AddUsageStatsWorkItems) {
       BuildChromeInstallationState(system_level, multi_install));
 
   MockProductState chrome_state;
-  chrome_state.set_version(new Version(*current_version_));
+  chrome_state.set_version(new base::Version(*current_version_));
   chrome_state.set_multi_install(false);
   chrome_state.set_usagestats(1);
 

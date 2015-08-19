@@ -136,7 +136,7 @@ PluginMetadata* CreatePluginMetadata(
           PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
       success = PluginMetadata::ParseSecurityStatus(status_str, &status);
       DCHECK(success);
-      plugin->AddVersion(Version(version), status);
+      plugin->AddVersion(base::Version(version), status);
     }
   }
 

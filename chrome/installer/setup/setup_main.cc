@@ -894,7 +894,7 @@ installer::InstallStatus RegisterDevChrome(
     scoped_ptr<WorkItemList> delegate_execute_list(
         WorkItem::CreateWorkItemList());
     installer::AddDelegateExecuteWorkItems(
-        installer_state, chrome_exe.DirName(), Version(), chrome,
+        installer_state, chrome_exe.DirName(), base::Version(), chrome,
         delegate_execute_list.get());
     delegate_execute_list->Do();
     if (ShellUtil::CanMakeChromeDefaultUnattended()) {
@@ -1125,7 +1125,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       BrowserDistribution* browser_dist = product.distribution();
       // We started as system-level and have been re-launched as user level
       // to continue with the toast experiment.
-      Version installed_version;
+      base::Version installed_version;
       InstallUtil::GetChromeVersion(browser_dist, true, &installed_version);
       if (!installed_version.IsValid()) {
         LOG(ERROR) << "No installation of "
@@ -1389,9 +1389,8 @@ InstallStatus InstallProductsHelper(const InstallationState& original_state,
   }
 
   VLOG(1) << "unpacked to " << unpack_path.value();
-  base::FilePath src_path(
-      unpack_path.Append(kInstallSourceChromeDir));
-  scoped_ptr<Version>
+  base::FilePath src_path(unpack_path.Append(kInstallSourceChromeDir));
+  scoped_ptr<base::Version>
       installer_version(GetMaxVersionFromArchiveDir(src_path));
   if (!installer_version.get()) {
     LOG(ERROR) << "Did not find any valid version in installer.";

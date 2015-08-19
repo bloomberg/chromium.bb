@@ -247,10 +247,10 @@ void SessionStartupPref::MigrateMacDefaultPrefIfNecessary(PrefService* prefs) {
   // the setting for existing profiles (even if the user has never changed it),
   // but make new profiles default to DEFAULT.
   bool old_profile_version =
-      !prefs->FindPreference(
-          prefs::kProfileCreatedByVersion)->IsDefaultValue() &&
-      Version(prefs->GetString(prefs::kProfileCreatedByVersion)).IsOlderThan(
-          "21.0.1180.0");
+      !prefs->FindPreference(prefs::kProfileCreatedByVersion)
+           ->IsDefaultValue() &&
+      base::Version(prefs->GetString(prefs::kProfileCreatedByVersion))
+          .IsOlderThan("21.0.1180.0");
   if (old_profile_version && TypeIsDefault(prefs))
     prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueLast);
 #endif

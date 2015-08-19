@@ -271,7 +271,7 @@ class GoogleUpdateSettings {
   static base::string16 GetUninstallCommandLine(bool system_install);
 
   // Returns the version of Google Update that is installed.
-  static Version GetGoogleUpdateVersion(bool system_install);
+  static base::Version GetGoogleUpdateVersion(bool system_install);
 
   // Returns the time at which Google Update last started an automatic update
   // check, or the null time if this information isn't available.

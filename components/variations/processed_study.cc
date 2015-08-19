@@ -26,13 +26,13 @@ bool ValidateStudyAndComputeTotalProbability(
     return false;
   }
   if (study.filter().has_min_version() &&
-      !Version::IsValidWildcardString(study.filter().min_version())) {
+      !base::Version::IsValidWildcardString(study.filter().min_version())) {
     DVLOG(1) << study.name() << " has invalid min version: "
              << study.filter().min_version();
     return false;
   }
   if (study.filter().has_max_version() &&
-      !Version::IsValidWildcardString(study.filter().max_version())) {
+      !base::Version::IsValidWildcardString(study.filter().max_version())) {
     DVLOG(1) << study.name() << " has invalid max version: "
              << study.filter().max_version();
     return false;

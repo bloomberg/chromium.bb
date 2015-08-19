@@ -1563,7 +1563,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
 void ExtensionService::AddComponentExtension(const Extension* extension) {
   const std::string old_version_string(
       extension_prefs_->GetVersionString(extension->id()));
-  const Version old_version(old_version_string);
+  const base::Version old_version(old_version_string);
 
   VLOG(1) << "AddComponentExtension " << extension->name();
   if (!old_version.IsValid() || !old_version.Equals(*extension->version())) {
@@ -2134,13 +2134,13 @@ const Extension* ExtensionService::GetInstalledExtension(
 }
 
 bool ExtensionService::OnExternalExtensionFileFound(
-         const std::string& id,
-         const Version* version,
-         const base::FilePath& path,
-         Manifest::Location location,
-         int creation_flags,
-         bool mark_acknowledged,
-         bool install_immediately) {
+    const std::string& id,
+    const base::Version* version,
+    const base::FilePath& path,
+    Manifest::Location location,
+    int creation_flags,
+    bool mark_acknowledged,
+    bool install_immediately) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(crx_file::id_util::IdIsValid(id));
   if (extension_prefs_->IsExternalExtensionUninstalled(id))

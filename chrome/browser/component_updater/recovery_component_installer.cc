@@ -92,7 +92,7 @@ base::CommandLine GetRecoveryInstallCommandLine(
     const base::FilePath& command,
     const base::DictionaryValue& manifest,
     bool is_deferred_run,
-    const Version& version) {
+    const base::Version& version) {
   base::CommandLine command_line(command);
 
   // Add a flag to for re-attempted install with elevated privilege so that the
@@ -154,7 +154,7 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
     return;
   std::string proposed_version;
   manifest->GetStringASCII("version", &proposed_version);
-  const Version version(proposed_version.c_str());
+  const base::Version version(proposed_version.c_str());
   if (!version.IsValid())
     return;
 
@@ -195,7 +195,7 @@ void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
 // See chrome/browser/recovery/recovery_install_global_error.cc for details.
 class RecoveryComponentInstaller : public update_client::CrxInstaller {
  public:
-  RecoveryComponentInstaller(const Version& version, PrefService* prefs);
+  RecoveryComponentInstaller(const base::Version& version, PrefService* prefs);
 
   // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
@@ -214,7 +214,7 @@ class RecoveryComponentInstaller : public update_client::CrxInstaller {
   bool RunInstallCommand(const base::CommandLine& cmdline,
                          const base::FilePath& installer_folder) const;
 
-  Version current_version_;
+  base::Version current_version_;
   PrefService* prefs_;
 };
 
@@ -224,7 +224,7 @@ void SimulateElevatedRecoveryHelper(PrefService* prefs) {
 
 void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
+  base::Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
   if (!version.IsValid()) {
     NOTREACHED();
     return;
@@ -240,7 +240,8 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus, PrefService* prefs) {
   }
 }
 
-void RecoveryUpdateVersionHelper(const Version& version, PrefService* prefs) {
+void RecoveryUpdateVersionHelper(const base::Version& version,
+                                 PrefService* prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   prefs->SetString(prefs::kRecoveryComponentVersion, version.GetString());
 }
@@ -252,8 +253,9 @@ void SetPrefsForElevatedRecoveryInstall(const base::FilePath& unpack_path,
   prefs->SetBoolean(prefs::kRecoveryComponentNeedsElevation, true);
 }
 
-RecoveryComponentInstaller::RecoveryComponentInstaller(const Version& version,
-                                                       PrefService* prefs)
+RecoveryComponentInstaller::RecoveryComponentInstaller(
+    const base::Version& version,
+    PrefService* prefs)
     : current_version_(version), prefs_(prefs) {
   DCHECK(version.IsValid());
 }
@@ -328,7 +330,7 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  Version version(proposed_version.c_str());
+  base::Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
   if (current_version_.CompareTo(version) >= 0)

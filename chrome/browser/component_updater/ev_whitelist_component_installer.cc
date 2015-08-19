@@ -79,7 +79,7 @@ void DoInitialLoadFromDisk(const base::FilePath& stored_whitelist_path) {
   // which will have a valid version.
   scoped_refptr<net::ct::EVCertsWhitelist> new_whitelist(
       new packed_ct_ev_whitelist::PackedEVCertsWhitelist(compressed_list,
-                                                         Version()));
+                                                         base::Version()));
   if (!new_whitelist->IsValid()) {
     VLOG(1) << "Failed uncompressing EV certs whitelist.";
     return;

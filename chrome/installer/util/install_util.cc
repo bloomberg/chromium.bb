@@ -230,7 +230,7 @@ base::CommandLine InstallUtil::GetChromeUninstallCmd(
 
 void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
                                    bool system_install,
-                                   Version* version) {
+                                   base::Version* version) {
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -242,11 +242,11 @@ void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   if (result == ERROR_SUCCESS)
     result = key.ReadValue(google_update::kRegVersionField, &version_str);
 
-  *version = Version();
+  *version = base::Version();
   if (result == ERROR_SUCCESS && !version_str.empty()) {
     VLOG(1) << "Existing " << dist->GetDisplayName() << " version found "
             << version_str;
-    *version = Version(base::UTF16ToASCII(version_str));
+    *version = base::Version(base::UTF16ToASCII(version_str));
   } else {
     DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetDisplayName()
@@ -256,7 +256,7 @@ void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
 
 void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
                                            bool system_install,
-                                           Version* version) {
+                                           base::Version* version) {
   DCHECK(dist);
   RegKey key;
   HKEY reg_root = (system_install) ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -269,11 +269,11 @@ void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
     result = key.ReadValue(google_update::kRegCriticalVersionField,
                            &version_str);
 
-  *version = Version();
+  *version = base::Version();
   if (result == ERROR_SUCCESS && !version_str.empty()) {
     VLOG(1) << "Critical Update version for " << dist->GetDisplayName()
             << " found " << version_str;
-    *version = Version(base::UTF16ToASCII(version_str));
+    *version = base::Version(base::UTF16ToASCII(version_str));
   } else {
     DCHECK_EQ(ERROR_FILE_NOT_FOUND, result);
     VLOG(1) << "No existing " << dist->GetDisplayName()

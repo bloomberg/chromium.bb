@@ -33,13 +33,13 @@ bool MinimumChromeVersionChecker::Parse(Extension* extension,
     return false;
   }
 
-  Version minimum_version(minimum_version_string);
+  base::Version minimum_version(minimum_version_string);
   if (!minimum_version.IsValid()) {
     *error = base::ASCIIToUTF16(errors::kInvalidMinimumChromeVersion);
     return false;
   }
 
-  Version current_version(version_info::GetVersionNumber());
+  base::Version current_version(version_info::GetVersionNumber());
   if (!current_version.IsValid()) {
     NOTREACHED();
     return false;

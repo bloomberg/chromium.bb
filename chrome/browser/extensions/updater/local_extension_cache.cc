@@ -133,8 +133,8 @@ bool LocalExtensionCache::NewerOrSame(const CacheMap::iterator& entry,
                                       const std::string& version,
                                       const std::string& expected_hash,
                                       int* compare) {
-  Version new_version(version);
-  Version prev_version(entry->second.version);
+  base::Version new_version(version);
+  base::Version prev_version(entry->second.version);
   int cmp = new_version.CompareTo(prev_version);
 
   if (compare)
@@ -157,7 +157,7 @@ void LocalExtensionCache::PutExtension(const std::string& id,
     return;
   }
 
-  Version version_validator(version);
+  base::Version version_validator(version);
   if (!version_validator.IsValid()) {
     LOG(ERROR) << "Extension " << id << " has bad version " << version;
     callback.Run(file_path, true);
@@ -443,7 +443,7 @@ void LocalExtensionCache::BackendCheckCacheContentsInternal(
       id.clear();
     }
 
-    if (!Version(version).IsValid()) {
+    if (!base::Version(version).IsValid()) {
       LOG(ERROR) << "Bad extension version in cache: " << version;
       version.clear();
     }

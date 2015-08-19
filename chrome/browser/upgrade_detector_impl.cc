@@ -151,10 +151,10 @@ void DetectUpdatability(const base::Closure& callback_task,
 
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
-base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
+base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  Version installed_version;
+  base::Version installed_version;
 #if defined(OS_WIN)
   // Get the version of the currently *installed* instance of Chrome,
   // which might be newer than the *running* instance if we have been
@@ -170,8 +170,8 @@ base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
                                           critical_update);
   }
 #elif defined(OS_MACOSX)
-  installed_version =
-      Version(base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
+  installed_version = base::Version(
+      base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
 #elif defined(OS_POSIX)
   // POSIX but not Mac OS X: Linux, etc.
   base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
@@ -183,7 +183,7 @@ base::Version GetCurrentlyInstalledVersionImpl(Version* critical_update) {
   }
   base::TrimWhitespaceASCII(reply, base::TRIM_ALL, &reply);
 
-  installed_version = Version(reply);
+  installed_version = base::Version(reply);
 #endif
   return installed_version;
 }
@@ -313,12 +313,12 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
     base::WeakPtr<UpgradeDetectorImpl> upgrade_detector) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  Version critical_update;
-  Version installed_version =
+  base::Version critical_update;
+  base::Version installed_version =
       GetCurrentlyInstalledVersionImpl(&critical_update);
 
   // Get the version of the currently *running* instance of Chrome.
-  Version running_version(version_info::GetVersionNumber());
+  base::Version running_version(version_info::GetVersionNumber());
   if (!running_version.IsValid()) {
     NOTREACHED();
     return;

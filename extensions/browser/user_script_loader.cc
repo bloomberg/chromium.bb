@@ -99,7 +99,7 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
       } else if (GetDeclarationValue(line, kNameDeclaration, &value)) {
         script->set_name(value);
       } else if (GetDeclarationValue(line, kVersionDeclaration, &value)) {
-        Version version(value);
+        base::Version version(value);
         if (version.IsValid())
           script->set_version(version.GetString());
       } else if (GetDeclarationValue(line, kDescriptionDeclaration, &value)) {

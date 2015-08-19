@@ -236,7 +236,7 @@ bool ExtensionSyncData::PopulateFromExtensionSpecifics(
     return false;
   }
 
-  Version specifics_version(specifics.version());
+  base::Version specifics_version(specifics.version());
   if (!specifics_version.IsValid()) {
     LOG(ERROR) << "Attempt to sync bad ExtensionSpecifics (bad version):\n"
                << GetExtensionSpecificsLogMessage(specifics);

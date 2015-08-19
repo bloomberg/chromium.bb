@@ -146,9 +146,9 @@ bool IncrementAuthUserIndex(GURL* url) {
 
 }  // namespace
 
-UpdateDetails::UpdateDetails(const std::string& id, const Version& version)
-    : id(id), version(version) {
-}
+UpdateDetails::UpdateDetails(const std::string& id,
+                             const base::Version& version)
+    : id(id), version(version) {}
 
 UpdateDetails::~UpdateDetails() {
 }
@@ -232,7 +232,7 @@ bool ExtensionDownloader::AddPendingExtension(const std::string& id,
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
-  Version version("0.0.0.0");
+  base::Version version("0.0.0.0");
   DCHECK(version.IsValid());
 
   return AddExtensionData(id,
@@ -296,7 +296,7 @@ void ExtensionDownloader::SetWebstoreIdentityProvider(
 
 bool ExtensionDownloader::AddExtensionData(
     const std::string& id,
-    const Version& version,
+    const base::Version& version,
     Manifest::Type extension_type,
     const GURL& extension_update_url,
     const std::string& update_url_data,
@@ -661,8 +661,8 @@ void ExtensionDownloader::DetermineUpdates(
 
       // We should skip the version check if update was forced.
       if (!fetch_data.DidForceUpdate(id)) {
-        Version existing_version(version);
-        Version update_version(update->version);
+        base::Version existing_version(version);
+        base::Version update_version(update->version);
         if (!update_version.IsValid() ||
             update_version.CompareTo(existing_version) <= 0) {
           continue;
@@ -878,7 +878,7 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
 
 void ExtensionDownloader::NotifyUpdateFound(const std::string& id,
                                             const std::string& version) {
-  UpdateDetails updateInfo(id, Version(version));
+  UpdateDetails updateInfo(id, base::Version(version));
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllBrowserContextsAndSources(),

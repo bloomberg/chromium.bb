@@ -55,7 +55,7 @@ class MockInstallerState : public InstallerState {
   static bool IsFileInUse(const base::FilePath& file) {
     return InstallerState::IsFileInUse(file);
   }
-  const Version& critical_update_version() const {
+  const base::Version& critical_update_version() const {
     return critical_update_version_;
   }
   void GetExistingExeVersions(std::set<std::string>* existing_version_strings) {
@@ -140,7 +140,7 @@ TEST_F(InstallerStateTest, Delete) {
 
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
-  Version latest_version("1.0.4.0");
+  base::Version latest_version("1.0.4.0");
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -220,8 +220,8 @@ TEST_F(InstallerStateTest, DeleteInUsed) {
 
   MockInstallerState installer_state;
   BuildSingleChromeState(chrome_dir, &installer_state);
-  Version latest_version("1.0.4.0");
-  Version existing_version("1.0.1.0");
+  base::Version latest_version("1.0.4.0");
+  base::Version existing_version("1.0.1.0");
   {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -264,8 +264,8 @@ TEST_F(InstallerStateTest, Basic) {
   const char kOldVersion[] = "1.2.3.4";
   const char kNewVersion[] = "2.3.4.5";
 
-  Version new_version(kNewVersion);
-  Version old_version(kOldVersion);
+  base::Version new_version(kNewVersion);
+  base::Version old_version(kOldVersion);
   ASSERT_TRUE(new_version.IsValid());
   ASSERT_TRUE(old_version.IsValid());
 
@@ -345,7 +345,7 @@ TEST_F(InstallerStateTest, WithProduct) {
   EXPECT_EQ(system_level, installer_state.system_install());
 
   const char kCurrentVersion[] = "1.2.3.4";
-  Version current_version(kCurrentVersion);
+  base::Version current_version(kCurrentVersion);
 
   HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   EXPECT_EQ(root, installer_state.root_key());
@@ -363,7 +363,8 @@ TEST_F(InstallerStateTest, WithProduct) {
                                 current_version.GetString()).c_str());
       machine_state.Initialize();
       // TODO(tommi): Also test for when there exists a new_chrome.exe.
-      Version found_version(*installer_state.GetCurrentVersion(machine_state));
+      base::Version found_version(
+          *installer_state.GetCurrentVersion(machine_state));
       EXPECT_TRUE(found_version.IsValid());
       if (found_version.IsValid())
         EXPECT_TRUE(current_version.Equals(found_version));
@@ -454,7 +455,7 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
 
   // Pretend that this version of single-install Chrome is already installed.
   machine_state.AddChrome(system_install, false,
-                          new Version(chrome::kChromeVersion));
+                          new base::Version(chrome::kChromeVersion));
 
   // Now we're invoked to install multi Chrome.
   base::CommandLine cmd_line(
@@ -464,7 +465,8 @@ TEST_F(InstallerStateTest, GetCurrentVersionMigrateChrome) {
   installer_state.Initialize(cmd_line, prefs, machine_state);
 
   // Is the Chrome version picked up?
-  scoped_ptr<Version> version(installer_state.GetCurrentVersion(machine_state));
+  scoped_ptr<base::Version> version(
+      installer_state.GetCurrentVersion(machine_state));
   EXPECT_TRUE(version.get() != NULL);
 }
 
@@ -506,11 +508,11 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   const char kChromeExeVersion[] = "2.1.1.1";
   const char kNewChromeExeVersion[] = "3.0.0.0";
 
-  Version new_version(kNewVersion);
-  Version old_version(kOldVersion);
-  Version old_chrome_exe_version(kOldChromeExeVersion);
-  Version chrome_exe_version(kChromeExeVersion);
-  Version new_chrome_exe_version(kNewChromeExeVersion);
+  base::Version new_version(kNewVersion);
+  base::Version old_version(kOldVersion);
+  base::Version old_chrome_exe_version(kOldChromeExeVersion);
+  base::Version chrome_exe_version(kChromeExeVersion);
+  base::Version new_chrome_exe_version(kNewChromeExeVersion);
 
   ASSERT_TRUE(new_version.IsValid());
   ASSERT_TRUE(old_version.IsValid());
@@ -544,7 +546,7 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
 
   struct target_info {
     base::FilePath target_file;
-    const Version& target_version;
+    const base::Version& target_version;
   } targets[] = {
     { installer_state.target_path().Append(installer::kChromeOldExe),
       old_chrome_exe_version },
@@ -588,7 +590,7 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());
-    Version version(base::UTF16ToASCII(dir_name.value()));
+    base::Version version(base::UTF16ToASCII(dir_name.value()));
     if (version.IsValid()) {
       EXPECT_TRUE(expected_remaining_dirs.erase(version.GetString()))
           << "Unexpected version dir found: " << version.GetString();
@@ -680,11 +682,11 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
 
   // Creates a set of versions for use by all test runs.
   static void SetUpTestCase() {
-    low_version_    = new Version("15.0.874.106");
-    opv_version_    = new Version("15.0.874.255");
-    middle_version_ = new Version("16.0.912.32");
-    pv_version_     = new Version("16.0.912.255");
-    high_version_   = new Version("17.0.932.0");
+    low_version_    = new base::Version("15.0.874.106");
+    opv_version_    = new base::Version("15.0.874.255");
+    middle_version_ = new base::Version("16.0.912.32");
+    pv_version_     = new base::Version("16.0.912.255");
+    high_version_   = new base::Version("17.0.932.0");
   }
 
   // Cleans up versions used by all test runs.
@@ -699,7 +701,7 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
   // Initializes the InstallerState to use for a test run.  The returned
   // instance's critical update version is set to |version|.  |version| may be
   // NULL, in which case the critical update version is unset.
-  MockInstallerState& Initialize(const Version* version) {
+  MockInstallerState& Initialize(const base::Version* version) {
     cmd_line_ = version == NULL ? base::CommandLine::FromString(L"setup.exe")
                                 : base::CommandLine::FromString(
                                       L"setup.exe --critical-update-version=" +
@@ -710,11 +712,11 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
     return installer_state_;
   }
 
-  static Version* low_version_;
-  static Version* opv_version_;
-  static Version* middle_version_;
-  static Version* pv_version_;
-  static Version* high_version_;
+  static base::Version* low_version_;
+  static base::Version* opv_version_;
+  static base::Version* middle_version_;
+  static base::Version* pv_version_;
+  static base::Version* high_version_;
 
   base::CommandLine cmd_line_;
   scoped_ptr<MasterPreferences> prefs_;
@@ -722,11 +724,11 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
   MockInstallerState installer_state_;
 };
 
-Version* InstallerStateCriticalVersionTest::low_version_ = NULL;
-Version* InstallerStateCriticalVersionTest::opv_version_ = NULL;
-Version* InstallerStateCriticalVersionTest::middle_version_ = NULL;
-Version* InstallerStateCriticalVersionTest::pv_version_ = NULL;
-Version* InstallerStateCriticalVersionTest::high_version_ = NULL;
+base::Version* InstallerStateCriticalVersionTest::low_version_ = NULL;
+base::Version* InstallerStateCriticalVersionTest::opv_version_ = NULL;
+base::Version* InstallerStateCriticalVersionTest::middle_version_ = NULL;
+base::Version* InstallerStateCriticalVersionTest::pv_version_ = NULL;
+base::Version* InstallerStateCriticalVersionTest::high_version_ = NULL;
 
 // Test the case where the critical version is less than the currently-running
 // Chrome.  The critical version is ignored since it doesn't apply.

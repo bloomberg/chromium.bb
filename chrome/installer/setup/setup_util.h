@@ -49,7 +49,7 @@ int BsdiffPatchFiles(const base::FilePath& src,
 // Find the version of Chrome from an install source directory.
 // Chrome_path should contain at least one version folder.
 // Returns the maximum version found or NULL if no version is found.
-Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path);
+base::Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path);
 
 // Returns the uncompressed archive of the installed version that serves as the
 // source for patching.  If |desired_version| is valid, only the path to that

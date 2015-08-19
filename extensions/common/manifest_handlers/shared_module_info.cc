@@ -183,7 +183,7 @@ bool SharedModuleInfo::Parse(const Extension* extension,
           return false;
         }
         imports_.back().minimum_version = min_version;
-        Version v(min_version);
+        base::Version v(min_version);
         if (!v.IsValid()) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
               errors::kInvalidImportVersion, base::IntToString(i));

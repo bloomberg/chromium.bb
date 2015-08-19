@@ -156,8 +156,8 @@ void ProcessOnOsUpgradeWorkItems(const InstallerState& installer_state,
                                  const Product& product) {
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
-  AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
-                        work_item_list.get());
+  AddOsUpgradeWorkItems(installer_state, base::FilePath(), base::Version(),
+                        product, work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to remove on-os-upgrade command.";
 }
@@ -698,8 +698,8 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
 bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
                                      const Product& product) {
   scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
-  AddDelegateExecuteWorkItems(installer_state, base::FilePath(), Version(),
-                              product, item_list.get());
+  AddDelegateExecuteWorkItems(installer_state, base::FilePath(),
+                              base::Version(), product, item_list.get());
   return item_list->Do();
 }
 

@@ -105,8 +105,8 @@ class ProductState {
                                  AppCommands* commands);
 
   ChannelInfo channel_;
-  scoped_ptr<Version> version_;
-  scoped_ptr<Version> old_version_;
+  scoped_ptr<base::Version> version_;
+  scoped_ptr<base::Version> old_version_;
   std::wstring brand_;
   std::wstring rename_cmd_;
   std::wstring oem_install_;

@@ -88,7 +88,7 @@ bool CheckPepperFlashInterfaces(const base::DictionaryValue& manifest) {
 }  // namespace
 
 bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
-                              Version* version_out) {
+                              base::Version* version_out) {
   std::string name;
   manifest.GetStringASCII("name", &name);
   // TODO(viettrungluu): Support WinFlapper for now, while we change the format
@@ -99,7 +99,7 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  Version version(proposed_version.c_str());
+  base::Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
 

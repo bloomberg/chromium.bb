@@ -187,7 +187,7 @@ std::wstring GetKeyPath(HKEY key) {
 }
 
 uint32_t GetPluginMajorVersion(const WebPluginInfo& plugin_info) {
-  Version plugin_version;
+  base::Version plugin_version;
   WebPluginInfo::CreateVersionFromString(plugin_info.version, &plugin_version);
 
   uint32_t major_version = 0;

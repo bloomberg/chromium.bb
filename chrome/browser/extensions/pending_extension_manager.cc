@@ -25,7 +25,7 @@ bool AlwaysInstall(const extensions::Extension* extension) {
   return true;
 }
 
-std::string GetVersionString(const Version& version) {
+std::string GetVersionString(const base::Version& version) {
   return version.IsValid() ? version.GetString() : "invalid";
 }
 
@@ -121,7 +121,7 @@ bool PendingExtensionManager::AddFromSync(
   return AddExtensionImpl(id,
                           std::string(),
                           update_url,
-                          Version(),
+                          base::Version(),
                           should_allow_install,
                           kIsFromSync,
                           kSyncLocation,
@@ -151,7 +151,7 @@ bool PendingExtensionManager::AddFromExtensionImport(
   return AddExtensionImpl(id,
                           std::string(),
                           update_url,
-                          Version(),
+                          base::Version(),
                           should_allow_install,
                           kIsFromSync,
                           kManifestLocation,
@@ -192,7 +192,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
   return AddExtensionImpl(id,
                           install_parameter,
                           update_url,
-                          Version(),
+                          base::Version(),
                           &AlwaysInstall,
                           kIsFromSync,
                           location,
@@ -201,11 +201,10 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
                           kRemoteInstall);
 }
 
-
 bool PendingExtensionManager::AddFromExternalFile(
     const std::string& id,
     Manifest::Location install_source,
-    const Version& version,
+    const base::Version& version,
     int creation_flags,
     bool mark_acknowledged) {
   // TODO(skerner): AddFromSync() checks to see if the extension is
@@ -253,7 +252,7 @@ bool PendingExtensionManager::AddExtensionImpl(
     const std::string& id,
     const std::string& install_parameter,
     const GURL& update_url,
-    const Version& version,
+    const base::Version& version,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     Manifest::Location install_source,

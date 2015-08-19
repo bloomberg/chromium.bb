@@ -142,9 +142,9 @@ base::string16 BrowserDistribution::GetVersionKey() const {
 }
 
 void BrowserDistribution::DoPostUninstallOperations(
-    const Version& version, const base::FilePath& local_data_path,
-    const base::string16& distribution_data) {
-}
+    const base::Version& version,
+    const base::FilePath& local_data_path,
+    const base::string16& distribution_data) {}
 
 base::string16 BrowserDistribution::GetActiveSetupGuid() {
   return kChromiumActiveSetupGuid;
