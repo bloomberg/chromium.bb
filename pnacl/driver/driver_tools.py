@@ -622,13 +622,8 @@ def ConvertArgsToFile(args):
 
 # Note:
 # The redirect_stdout and redirect_stderr is only used a handful of times
-#
-# The stdin_contents feature is currently only used by:
-#  sel_universal invocations in the translator
-#
 def Run(args,
         errexit=True,
-        stdin_contents=None,
         redirect_stdout=None,
         redirect_stderr=None):
   """ Run: Run a command.
@@ -645,7 +640,6 @@ def Run(args,
 
       redirect_stdout and redirect_stderr are passed straight
       to subprocess.Popen
-      stdin_contents is an optional string used as stdin
   """
 
   result_stdout = None
@@ -656,10 +650,6 @@ def Run(args,
   args = [pathtools.tosys(args[0])] + args[1:]
 
   Log.Info('Running: ' + StringifyCommand(args))
-  if stdin_contents:
-    Log.Info('--------------stdin: begin')
-    Log.Info(stdin_contents)
-    Log.Info('--------------stdin: end')
 
   if env.getbool('DRY_RUN'):
     if redirect_stderr or redirect_stdout:
@@ -679,18 +669,12 @@ def Run(args,
     else:
       actual_args = args
 
-    redirect_stdin = None
-    if stdin_contents:
-      redirect_stdin = subprocess.PIPE
-
     p = subprocess.Popen(actual_args,
-                         stdin=redirect_stdin,
                          stdout=redirect_stdout,
                          stderr=redirect_stderr)
-    result_stdout, result_stderr = p.communicate(input=stdin_contents)
+    result_stdout, result_stderr = p.communicate()
   except Exception, e:
-    msg =  '%s\nCommand was: %s' % (str(e),
-                                    StringifyCommand(args, stdin_contents))
+    msg =  '%s\nCommand was: %s' % (str(e), StringifyCommand(args))
     print msg
     DriverExit(1)
 
