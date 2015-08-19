@@ -12,7 +12,11 @@ import org.chromium.base.metrics.RecordHistogram;
 public class MediaSessionUMA {
     // MediaSessionAction defined in tools/metrics/histograms/histograms.xml.
     public static final int MEDIA_SESSION_ACTION_SOURCE_MEDIA_NOTIFICATION = 0;
-    public static final int MEDIA_SESSION_ACTION_SOURCE_MAX = 1;
+    // TODO(mlamouri): UMA do not handle well enumerations with only one value.
+    // Other values will be addede later (like RemoteContro/MediaSession/etc.)
+    // interactions but we have to fax the max value for now in order to prevent
+    // crashes.
+    public static final int MEDIA_SESSION_ACTION_SOURCE_MAX = 2;
 
     public static void recordPlay(int action) {
         assert action >= 0 && action < MEDIA_SESSION_ACTION_SOURCE_MAX;
