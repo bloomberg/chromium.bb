@@ -20,13 +20,12 @@ body {
 
 h1,
 h2 {
- font-size: 120%;
- letter-spacing: -.5px;
- margin: 0;
+  margin: 0;
 }
 
 h1 {
   color: rgb(74, 142, 230);
+  font-size: 110%;
   font-weight: bold;
   padding: 0;
 }
@@ -36,8 +35,8 @@ h2 {
   -webkit-padding-start: 0;
   color: rgb(58, 117, 189);
   display: inline-block;
+  font-size: 110%;
   font-weight: normal;
-  margin-top: 0;
 }
 
 #header {
@@ -48,7 +47,7 @@ h2 {
   color: white;
   margin-bottom: 0.75em;
   overflow: hidden;
-  padding: 0.6em 1em 0.75em 0;
+  padding: 0.5em 0;
   position: relative;
   text-shadow: 0 0 2px black;
 }
@@ -58,16 +57,23 @@ html[dir='rtl'] #header {
 }
 
 #header h1 {
-  -webkit-padding-start: 3em;
-  background: url(../../../../ui/webui/resources/images/gear.png) no-repeat;
-  background-position: 12px 60%;
   color: white;
   display: inline;
-  margin: 0;
 }
 
-html[dir='rtl'] #header h1 {
-  background-position: right 12px top 60%;
+div#header h1::before {
+  /* grit doesn't flatten -webkit-mask, so define the properties separately
+  * for now. */
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/settings.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 24px;
+  background-color: white;
+  content: '';
+  display: inline-block;
+  height: 20px;
+  vertical-align: middle;
+  width: 37px;
 }
 
 #header p {

@@ -88,8 +88,6 @@ without changes to the corresponding grd file. -->
                file="images/apps/topbar_button_maximize.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_MINIMIZE"
                file="images/apps/topbar_button_minimize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_SETTINGS"
-               file="images/apps/topbar_button_settings.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE"
                file="images/apps/button_butter_bar_close.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_HOVER"
@@ -165,8 +163,6 @@ without changes to the corresponding grd file. -->
                file="images/2x/apps/topbar_button_maximize.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_MINIMIZE"
                file="images/2x/apps/topbar_button_minimize.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_APPS_TOPBAR_BUTTON_2X_SETTINGS"
-               file="images/2x/apps/topbar_button_settings.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_2X"
                file="images/2x/apps/button_butter_bar_close.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_APPS_BUTTON_BUTTER_BAR_CLOSE_HOVER_2X"
@@ -185,16 +181,12 @@ without changes to the corresponding grd file. -->
                file="images/disabled_select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_ERROR"
                file="images/error.svg" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_GEAR"
-               file="images/gear.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_SELECT"
                file="images/select.png" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_THROBBER"
                file="images/throbber.svg" type="BINDATA" />
       <include name="IDR_WEBUI_IMAGES_TRASH"
                file="images/trash.png" type="BINDATA" />
-      <include name="IDR_WEBUI_IMAGES_CLOUDS"
-               file="images/clouds.png" type="BINDATA" />
 
       <part file="cr_elements_images.grdp" />
     </includes>

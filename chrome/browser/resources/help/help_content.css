@@ -72,7 +72,7 @@
 }
 
 #update-status-icon.up-to-date {
-  background-image: url(check_circle.svg);
+  background-image: url(../../../../ui/webui/resources/images/check_circle.svg);
   background-size: 18px;
 }
 

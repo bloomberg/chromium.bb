@@ -25,6 +25,12 @@
 }
 
 #import-success-image {
-  margin: 20px;
-  text-align: center;
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/check_circle.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 96px;
+  background-color: rgb(15, 157, 88);
+  height: 96px;
+  margin: 20px 0;
+  width: 100%;
 }
