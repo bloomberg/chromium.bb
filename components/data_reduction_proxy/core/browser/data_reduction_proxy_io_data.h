@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_IO_DATA_H_
 
+#include <string>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -89,10 +91,11 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
   void SetLoFiModeOff();
 
   // Bridge methods to safely call to the UI thread objects.
-  void UpdateContentLengths(int64 received_content_length,
-                            int64 original_content_length,
+  void UpdateContentLengths(int64 data_used,
+                            int64 original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
+                            const std::string& data_usage_host,
                             const std::string& mime_type);
   void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
 

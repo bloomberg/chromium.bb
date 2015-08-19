@@ -10,7 +10,12 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
+
+namespace base {
+
+class Time;
+
+}  // namespace base
 
 namespace data_reduction_proxy {
 class DataStore;
@@ -35,6 +40,10 @@ class DataUsageStore {
   // Intervals might be missed because Chrome was not running, or there was no
   // network activity during an interval.
   void StoreCurrentDataUsageBucket(const DataUsageBucket& current_bucket);
+
+  // Returns whether |time| is within the current interval. Each hour is
+  // divided into |kDataUsageBucketLengthMins| minute long intervals.
+  static bool IsInCurrentInterval(const base::Time& time);
 
  private:
   friend class DataUsageStoreTest;

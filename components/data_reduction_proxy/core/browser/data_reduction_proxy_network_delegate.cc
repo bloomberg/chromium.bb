@@ -227,12 +227,30 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         GetAdjustedOriginalContentLength(request_type,
                                          original_content_length,
                                          received_content_length);
+    int64 data_used = request->GetTotalReceivedBytes();
+    // TODO(kundaji): Investigate why |compressed_size| can sometimes be
+    // less than |received_content_length|.
+    if (data_used < received_content_length)
+      data_used = received_content_length;
+
+    int64 original_size = data_used;
+    if (request_type == VIA_DATA_REDUCTION_PROXY) {
+      original_size = request->response_info().headers->raw_headers().size() +
+                      adjusted_original_content_length;
+    }
+
     std::string mime_type;
     if (request->status().status() == net::URLRequestStatus::SUCCESS)
       request->GetMimeType(&mime_type);
-    AccumulateContentLength(received_content_length,
-                            adjusted_original_content_length, request_type,
-                            mime_type);
+
+    std::string data_usage_host =
+        request->first_party_for_cookies().HostNoBrackets();
+    if (data_usage_host.empty()) {
+      data_usage_host = request->url().HostNoBrackets();
+    }
+
+    AccumulateDataUsage(data_used, original_size, request_type, data_usage_host,
+                        mime_type);
 
     DCHECK(data_reduction_proxy_config_);
 
@@ -260,20 +278,21 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   }
 }
 
-void DataReductionProxyNetworkDelegate::AccumulateContentLength(
-    int64 received_content_length,
-    int64 original_content_length,
+void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
+    int64 data_used,
+    int64 original_size,
     DataReductionProxyRequestType request_type,
+    const std::string& data_usage_host,
     const std::string& mime_type) {
-  DCHECK_GE(received_content_length, 0);
-  DCHECK_GE(original_content_length, 0);
+  DCHECK_GE(data_used, 0);
+  DCHECK_GE(original_size, 0);
   if (data_reduction_proxy_io_data_) {
     data_reduction_proxy_io_data_->UpdateContentLengths(
-        received_content_length, original_content_length,
-        data_reduction_proxy_io_data_->IsEnabled(), request_type, mime_type);
+        data_used, original_size, data_reduction_proxy_io_data_->IsEnabled(),
+        request_type, data_usage_host, mime_type);
   }
-  received_content_length_ += received_content_length;
-  original_content_length_ += original_content_length;
+  received_content_length_ += data_used;
+  original_content_length_ += original_size;
 }
 
 void OnResolveProxyHandler(const GURL& url,

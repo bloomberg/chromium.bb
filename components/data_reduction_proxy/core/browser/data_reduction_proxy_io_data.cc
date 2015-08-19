@@ -267,17 +267,18 @@ void DataReductionProxyIOData::SetLoFiModeOff() {
 }
 
 void DataReductionProxyIOData::UpdateContentLengths(
-    int64 received_content_length,
-    int64 original_content_length,
+    int64 data_used,
+    int64 original_size,
     bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
+    const std::string& data_usage_host,
     const std::string& mime_type) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&DataReductionProxyService::UpdateContentLengths, service_,
-                 received_content_length, original_content_length,
-                 data_reduction_proxy_enabled, request_type, mime_type));
+                 data_used, original_size, data_reduction_proxy_enabled,
+                 request_type, data_usage_host, mime_type));
 }
 
 void DataReductionProxyIOData::SetLoFiModeActiveOnMainFrame(

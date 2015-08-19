@@ -109,13 +109,13 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   // Posts to the UI thread to UpdateContentLengthPrefs in the data reduction
   // proxy metrics and updates |received_content_length_| and
   // |original_content_length_|.
-  void AccumulateContentLength(int64 received_content_length,
-                               int64 original_content_length,
-                               DataReductionProxyRequestType request_type,
-                               const std::string& mime_type);
+  void AccumulateDataUsage(int64 data_used,
+                           int64 original_size,
+                           DataReductionProxyRequestType request_type,
+                           const std::string& data_usage_host,
+                           const std::string& mime_type);
 
-  // Total size of all content (excluding headers) that has been received
-  // over the network.
+  // Total size of all content that has been received over the network.
   int64 received_content_length_;
 
   // Total original size of all content before it was transferred.

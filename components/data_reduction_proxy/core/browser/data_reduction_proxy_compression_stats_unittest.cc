@@ -276,12 +276,16 @@ class DataReductionProxyCompressionStatsTest : public testing::Test {
     compression_stats_->SetInt64(pref_path, pref_value);
   }
 
+  std::string NormalizeHostname(const std::string& hostname) {
+    return DataReductionProxyCompressionStats::NormalizeHostname(hostname);
+  }
+
   void RecordContentLengthPrefs(int64 received_content_length,
                                 int64 original_content_length,
                                 bool with_data_reduction_proxy_enabled,
                                 DataReductionProxyRequestType request_type,
                                 base::Time now) {
-    compression_stats_->RecordContentLengthPrefs(
+    compression_stats_->RecordRequestSizePrefs(
         received_content_length, original_content_length,
         with_data_reduction_proxy_enabled, request_type, std::string(), now);
   }
@@ -434,7 +438,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
       kReceivedLength, kOriginalLength,
       pref_service()->GetBoolean(
           data_reduction_proxy::prefs::kDataReductionProxyEnabled),
-      UNKNOWN_TYPE, std::string());
+      UNKNOWN_TYPE, std::string(), std::string());
 
   EXPECT_EQ(kReceivedLength,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -448,7 +452,7 @@ TEST_F(DataReductionProxyCompressionStatsTest, TotalLengths) {
       kReceivedLength, kOriginalLength,
       pref_service()->GetBoolean(
           data_reduction_proxy::prefs::kDataReductionProxyEnabled),
-      UNKNOWN_TYPE, std::string());
+      UNKNOWN_TYPE, std::string(), std::string());
 
   EXPECT_EQ(kReceivedLength * 2,
             GetInt64(data_reduction_proxy::prefs::kHttpReceivedContentLength));
@@ -846,6 +850,13 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
       original, 1, received, 1,
       original, 1, received, 1,
       original, 1, received, 1);
+}
+
+TEST_F(DataReductionProxyCompressionStatsTest, NormalizeHostname) {
+  EXPECT_EQ("www.google.com", NormalizeHostname("http://www.google.com"));
+  EXPECT_EQ("google.com", NormalizeHostname("https://google.com"));
+  EXPECT_EQ("bbc.co.uk", NormalizeHostname("http://bbc.co.uk"));
+  EXPECT_EQ("http.www.co.in", NormalizeHostname("http://http.www.co.in"));
 }
 
 }  // namespace data_reduction_proxy

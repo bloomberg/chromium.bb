@@ -207,6 +207,9 @@
         'data_reduction_proxy_proto',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
       ],
+      'export_dependent_settings': [
+        'data_reduction_proxy_proto',
+      ],
       'include_dirs': [
         '..',
       ],
@@ -245,6 +248,7 @@
         'data_reduction_proxy_content',
         'data_reduction_proxy_core_browser',
         'data_reduction_proxy_core_common',
+        'data_reduction_proxy_proto',
       ],
       'include_dirs': [
         '..',

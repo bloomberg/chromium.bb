@@ -20,6 +20,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 
@@ -150,6 +151,14 @@ void DataUsageStore::StoreCurrentDataUsageBucket(
     current_bucket_last_updated_ = prev_current_bucket_last_updated_;
     LOG(WARNING) << "Failed to write data usage buckets to LevelDB" << status;
   }
+}
+
+// static
+bool DataUsageStore::IsInCurrentInterval(const base::Time& time) {
+  if (time.is_null())
+    return true;
+
+  return BucketLowerBoundary(base::Time::Now()) == BucketLowerBoundary(time);
 }
 
 void DataUsageStore::AddBucketToMap(const DataUsageBucket& bucket,

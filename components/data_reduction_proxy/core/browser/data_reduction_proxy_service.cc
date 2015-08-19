@@ -41,14 +41,14 @@ DataReductionProxyService::DataReductionProxyService(
       initialized_(false),
       weak_factory_(this) {
   DCHECK(settings);
+  db_task_runner_->PostTask(FROM_HERE,
+                            base::Bind(&DBDataOwner::InitializeOnDBThread,
+                                       db_data_owner_->GetWeakPtr()));
   if (prefs_) {
     compression_stats_.reset(new DataReductionProxyCompressionStats(
         this, prefs_, ui_task_runner, commit_delay));
   }
   event_store_.reset(new DataReductionProxyEventStore());
-  db_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&DBDataOwner::InitializeOnDBThread,
-                                       db_data_owner_->GetWeakPtr()));
 }
 
 DataReductionProxyService::~DataReductionProxyService() {
@@ -98,16 +98,17 @@ void DataReductionProxyService::EnableCompressionStatisticsLogging(
 }
 
 void DataReductionProxyService::UpdateContentLengths(
-    int64 received_content_length,
-    int64 original_content_length,
+    int64 data_used,
+    int64 original_size,
     bool data_reduction_proxy_enabled,
     DataReductionProxyRequestType request_type,
+    const std::string& data_usage_host,
     const std::string& mime_type) {
   DCHECK(CalledOnValidThread());
   if (compression_stats_) {
     compression_stats_->UpdateContentLengths(
-        received_content_length, original_content_length,
-        data_reduction_proxy_enabled, request_type, mime_type);
+        data_used, original_size, data_reduction_proxy_enabled, request_type,
+        data_usage_host, mime_type);
   }
 }
 

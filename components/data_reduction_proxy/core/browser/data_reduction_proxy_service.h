@@ -83,10 +83,11 @@ class DataReductionProxyService
       const base::TimeDelta& commit_delay);
 
   // Records daily data savings statistics in |compression_stats_|.
-  void UpdateContentLengths(int64 received_content_length,
-                            int64 original_content_length,
+  void UpdateContentLengths(int64 data_used,
+                            int64 original_size,
                             bool data_reduction_proxy_enabled,
                             DataReductionProxyRequestType request_type,
+                            const std::string& data_usage_host,
                             const std::string& mime_type);
 
   // Overrides of DataReductionProxyEventStorageDelegate.
