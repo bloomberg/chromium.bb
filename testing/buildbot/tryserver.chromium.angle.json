@@ -1,0 +1,9 @@
+{
+  "Win7 Tests (ANGLE)": {
+    "gtest_tests": [
+      {
+        "test": "angle_unittests"
+      }
+    ]
+  }
+}
