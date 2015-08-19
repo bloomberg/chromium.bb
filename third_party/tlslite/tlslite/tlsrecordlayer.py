@@ -1256,9 +1256,3 @@ class TLSRecordLayer(object):
 
         return md5Bytes + shaBytes
 
-    def _getHandshakeHash(self):
-        if self.version in ((3,1), (3,2)):
-            return self._handshake_md5.digest() + \
-                self._handshake_sha.digest()
-        elif self.version == (3,3):
-            return self._handshake_sha256.digest()

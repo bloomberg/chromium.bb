@@ -39,5 +39,3 @@ Local Modifications:
 - patches/alert_after_handshake.patch: Add an option to send a fatal alert
   immediately after the handshake completes.
 - patches/ecdhe_rsa.patch: Implement ECDHE_RSA-based ciper suites on the server.
-- patches/extended_master_secret.patch: Add server support for extended
-  master secret.

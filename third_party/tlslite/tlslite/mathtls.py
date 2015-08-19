@@ -67,20 +67,16 @@ def PRF_SSL(secret, seed, length):
             index += 1
     return bytes
 
-def calcMasterSecret(version, premasterSecret, clientRandom, serverRandom,
-                     handshakeHash, useExtendedMasterSecret):
-    label = b"master secret"
-    seed = clientRandom + serverRandom
-    if useExtendedMasterSecret:
-        label = b"extended master secret"
-        seed = handshakeHash
-
+def calcMasterSecret(version, premasterSecret, clientRandom, serverRandom):
     if version == (3,0):
-        masterSecret = PRF_SSL(premasterSecret, seed, 48)
+        masterSecret = PRF_SSL(premasterSecret,
+                            clientRandom + serverRandom, 48)
     elif version in ((3,1), (3,2)):
-        masterSecret = PRF(premasterSecret, label, seed, 48)
+        masterSecret = PRF(premasterSecret, b"master secret",
+                            clientRandom + serverRandom, 48)
     elif version == (3,3):
-        masterSecret = PRF_1_2(premasterSecret, label, seed, 48)
+        masterSecret = PRF_1_2(premasterSecret, b"master secret",
+                            clientRandom + serverRandom, 48)
     else:
         raise AssertionError()
     return masterSecret

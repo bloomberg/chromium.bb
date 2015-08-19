@@ -981,8 +981,7 @@ class TLSConnection(TLSRecordLayer):
                 masterSecret = calcMasterSecret(self.version,
                                          premasterSecret,
                                          clientRandom,
-                                         serverRandom,
-                                         b"", False)
+                                         serverRandom)
                 verifyBytes = self._calcSSLHandshakeHash(masterSecret, b"")
             elif self.version in ((3,1), (3,2)):
                 verifyBytes = self._handshake_md5.digest() + \
@@ -1037,7 +1036,7 @@ class TLSConnection(TLSRecordLayer):
                         cipherSuite, cipherImplementations, nextProto):
 
         masterSecret = calcMasterSecret(self.version, premasterSecret,
-                            clientRandom, serverRandom, b"", False)
+                            clientRandom, serverRandom)
         self._calcPendingStates(cipherSuite, masterSecret, 
                                 clientRandom, serverRandom, 
                                 cipherImplementations)
@@ -1327,9 +1326,6 @@ class TLSConnection(TLSRecordLayer):
                             cipherSuite, CertificateType.x509, tackExt,
                             nextProtos)
         serverHello.channel_id = clientHello.channel_id
-        serverHello.extended_master_secret = \
-            clientHello.extended_master_secret and \
-            settings.enableExtendedMasterSecret
         if clientHello.support_signed_cert_timestamps:
             serverHello.signed_cert_timestamps = signedCertTimestamps
         if clientHello.status_request:
@@ -1387,8 +1383,7 @@ class TLSConnection(TLSRecordLayer):
         for result in self._serverFinished(premasterSecret, 
                                 clientHello.random, serverHello.random,
                                 cipherSuite, settings.cipherImplementations,
-                                nextProtos, clientHello.channel_id,
-                                serverHello.extended_master_secret):
+                                nextProtos, clientHello.channel_id):
                 if result in (0,1): yield result
                 else: break
         masterSecret = result
@@ -1528,9 +1523,6 @@ class TLSConnection(TLSRecordLayer):
                 serverHello.create(self.version, getRandomBytes(32),
                                    session.sessionID, session.cipherSuite,
                                    CertificateType.x509, None, None)
-                serverHello.extended_master_secret = \
-                    clientHello.extended_master_secret and \
-                    settings.enableExtendedMasterSecret
                 for result in self._sendMsg(serverHello):
                     yield result
 
@@ -1751,8 +1743,7 @@ class TLSConnection(TLSRecordLayer):
         if clientCertChain:
             if self.version == (3,0):
                 masterSecret = calcMasterSecret(self.version, premasterSecret,
-                                         clientHello.random, serverHello.random,
-                                         b"", False)
+                                         clientHello.random, serverHello.random)
                 verifyBytes = self._calcSSLHandshakeHash(masterSecret, b"")
             elif self.version in ((3,1), (3,2)):
                 verifyBytes = self._handshake_md5.digest() + \
@@ -1836,11 +1827,9 @@ class TLSConnection(TLSRecordLayer):
 
     def _serverFinished(self,  premasterSecret, clientRandom, serverRandom,
                         cipherSuite, cipherImplementations, nextProtos,
-                        doingChannelID, useExtendedMasterSecret):
+                        doingChannelID):
         masterSecret = calcMasterSecret(self.version, premasterSecret,
-                                      clientRandom, serverRandom,
-                                      self._getHandshakeHash(),
-                                      useExtendedMasterSecret)
+                                      clientRandom, serverRandom)
         
         #Calculate pending connection states
         self._calcPendingStates(cipherSuite, masterSecret, 
