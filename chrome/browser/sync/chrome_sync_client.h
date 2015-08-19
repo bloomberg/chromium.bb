@@ -67,6 +67,11 @@ class ChromeSyncClient : public sync_driver::SyncClient {
  private:
   Profile* const profile_;
   ProfileSyncComponentsFactoryImpl* const component_factory_;
+
+  // Members that must be fetched on the UI thread but accessed on their
+  // respective backend threads.
+  scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
+  scoped_refptr<password_manager::PasswordStore> password_store_;
 };
 
 }  // namespace browser_sync
