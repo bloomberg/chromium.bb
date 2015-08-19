@@ -320,6 +320,7 @@
       'browser/media/chrome_webrtc_simulcast_browsertest.cc',
       'browser/media/chrome_webrtc_video_quality_browsertest.cc',
       'browser/media/chrome_webrtc_webcam_browsertest.cc',
+      'browser/media/defer_background_media_browsertest.cc',
       'browser/media/encrypted_media_browsertest.cc',
       'browser/media/encrypted_media_istypesupported_browsertest.cc',
       'browser/media/media_browsertest.cc',

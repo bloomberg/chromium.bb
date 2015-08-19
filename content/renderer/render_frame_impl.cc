@@ -676,6 +676,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
 #if defined(VIDEO_HOLE)
       contains_media_player_(false),
 #endif
+      has_played_media_(false),
       devtools_agent_(nullptr),
       geolocation_dispatcher_(NULL),
       push_messaging_dispatcher_(NULL),
@@ -2041,7 +2042,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
-                 static_cast<RenderFrame*>(this)),
+                 static_cast<RenderFrame*>(this), has_played_media_),
       render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_),
       media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->compositor_task_runner(),
@@ -3827,6 +3828,7 @@ blink::WebVRClient* RenderFrameImpl::webVRClient() {
 #endif
 
 void RenderFrameImpl::DidPlay(WebMediaPlayer* player) {
+  has_played_media_ = true;
   Send(new FrameHostMsg_MediaPlayingNotification(
       routing_id_, reinterpret_cast<int64>(player), player->hasVideo(),
       player->hasAudio(), player->isRemote()));

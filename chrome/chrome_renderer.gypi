@@ -156,10 +156,6 @@
       'renderer/resources/extensions/tts_custom_bindings.js',
       'renderer/resources/extensions/tts_engine_custom_bindings.js',
     ],
-    'chrome_renderer_non_android_sources': [
-      'renderer/prerender/prerender_media_load_deferrer.cc',
-      'renderer/prerender/prerender_media_load_deferrer.h',
-    ],
     'chrome_renderer_plugin_sources': [
       'renderer/pepper/chrome_renderer_pepper_host_factory.cc',
       'renderer/pepper/chrome_renderer_pepper_host_factory.h',
@@ -385,11 +381,6 @@
         ['enable_print_preview==1', {
           'sources': [
             '<@(chrome_renderer_full_printing_sources)',
-          ],
-        }],
-        ['OS!="android"', {
-          'sources': [
-            '<@(chrome_renderer_non_android_sources)',
           ],
         }],
         ['OS=="win"', {

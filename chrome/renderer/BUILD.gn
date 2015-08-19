@@ -177,10 +177,6 @@ static_library("renderer") {
       "spellchecker/hunspell_engine.h",
     ]
   }
-  if (!is_android) {
-    sources +=
-        rebase_path(gypi_values.chrome_renderer_non_android_sources, ".", "..")
-  }
 }
 
 # In GYP this is part of test_support_common.

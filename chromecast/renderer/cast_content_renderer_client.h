@@ -51,6 +51,7 @@ class CastContentRendererClient : public content::ContentRendererClient {
 #endif
   blink::WebPrescientNetworking* GetPrescientNetworking() override;
   void DeferMediaLoad(content::RenderFrame* render_frame,
+                      bool render_frame_has_played_media_before,
                       const base::Closure& closure) override;
 
  protected:

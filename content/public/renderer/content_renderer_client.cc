@@ -51,8 +51,10 @@ bool ContentRendererClient::ShouldSuppressErrorPage(RenderFrame* render_frame,
   return false;
 }
 
-void ContentRendererClient::DeferMediaLoad(RenderFrame* render_frame,
-                                           const base::Closure& closure) {
+void ContentRendererClient::DeferMediaLoad(
+    RenderFrame* render_frame,
+    bool has_played_media_before,
+    const base::Closure& closure) {
   closure.Run();
 }
 

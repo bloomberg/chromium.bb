@@ -966,6 +966,9 @@ class CONTENT_EXPORT RenderFrameImpl
   bool contains_media_player_;
 #endif
 
+  // True if this RenderFrame has ever played media.
+  bool has_played_media_;
+
   // The devtools agent for this frame; only created for main frame and
   // local roots.
   DevToolsAgent* devtools_agent_;

@@ -151,8 +151,10 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows the embedder to control when media resources are loaded. Embedders
   // can run |closure| immediately if they don't wish to defer media resource
-  // loading.
+  // loading.  If |has_played_media_before| is true, the render frame has
+  // previously started media playback (i.e. played audio and video).
   virtual void DeferMediaLoad(RenderFrame* render_frame,
+                              bool has_played_media_before,
                               const base::Closure& closure);
 
   // Allows the embedder to override creating a WebMediaStreamCenter. If it

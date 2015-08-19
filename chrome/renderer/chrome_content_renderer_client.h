@@ -106,6 +106,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                  std::string* error_html,
                                  base::string16* error_description) override;
   void DeferMediaLoad(content::RenderFrame* render_frame,
+                      bool has_played_media_before,
                       const base::Closure& closure) override;
   bool RunIdleHandlerWhenWidgetsHidden() override;
   bool AllowPopup() override;

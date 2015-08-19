@@ -46,7 +46,6 @@
 #include "chrome/renderer/plugins/shadow_dom_plugin_placeholder.h"
 #include "chrome/renderer/prerender/prerender_dispatcher.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
-#include "chrome/renderer/prerender/prerender_media_load_deferrer.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
@@ -341,6 +340,29 @@ bool IsStandaloneExtensionProcess() {
       extensions::switches::kExtensionProcess);
 }
 #endif
+
+// Defers media player loading in background pages until they're visible.
+// TODO(dalecurtis): Include an idle listener too.  http://crbug.com/509135
+class MediaLoadDeferrer : public content::RenderFrameObserver {
+ public:
+  MediaLoadDeferrer(content::RenderFrame* render_frame,
+                    const base::Closure& continue_loading_cb)
+      : content::RenderFrameObserver(render_frame),
+        continue_loading_cb_(continue_loading_cb) {}
+  ~MediaLoadDeferrer() override {}
+
+ private:
+  // content::RenderFrameObserver implementation:
+  void WasShown() override {
+    continue_loading_cb_.Run();
+    delete this;
+  }
+
+  const base::Closure continue_loading_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
+};
+
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
@@ -683,20 +705,22 @@ WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
 
 void ChromeContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
+    bool has_played_media_before,
     const base::Closure& closure) {
-#if defined(OS_ANDROID)
-  // Chromium for Android doesn't support prerender yet.
-  closure.Run();
-  return;
-#else
-  if (!prerender::PrerenderHelper::IsPrerendering(render_frame)) {
-    closure.Run();
+  // Don't allow autoplay/autoload of media resources in a RenderFrame that is
+  // hidden and has never played any media before.  We want to allow future
+  // loads even when hidden to allow playlist-like functionality.
+  //
+  // NOTE: This is also used to defer media loading for prerender.
+  //
+  // TODO(dalecurtis): Include an idle check too.  http://crbug.com/509135
+  if (render_frame->IsHidden() && !has_played_media_before) {
+    // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+    new MediaLoadDeferrer(render_frame, closure);
     return;
   }
 
-  // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
-  new prerender::PrerenderMediaLoadDeferrer(render_frame, closure);
-#endif
+  closure.Run();
 }
 
 #if defined(ENABLE_PLUGINS)

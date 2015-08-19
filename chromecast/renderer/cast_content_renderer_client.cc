@@ -210,6 +210,7 @@ CastContentRendererClient::GetPrescientNetworking() {
 
 void CastContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
+    bool render_frame_has_played_media_before,
     const base::Closure& closure) {
   if (!render_frame->IsHidden()) {
     closure.Run();
