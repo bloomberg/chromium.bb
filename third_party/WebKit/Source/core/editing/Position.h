@@ -160,11 +160,6 @@ public:
 
     Document* document() const { return m_anchorNode ? &m_anchorNode->document() : 0; }
     bool inDocument() const { return m_anchorNode && m_anchorNode->inDocument(); }
-    Element* rootEditableElement() const
-    {
-        Node* container = computeContainerNode();
-        return container ? container->rootEditableElement() : 0;
-    }
 
     bool isNull() const { return !m_anchorNode; }
     bool isNotNull() const { return m_anchorNode; }
