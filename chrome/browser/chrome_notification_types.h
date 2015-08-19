@@ -267,10 +267,6 @@ enum NotificationType {
   // AutocompleteController, the details not used.
   NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY,
 
-  // This is sent when an item of the Omnibox popup is selected. The source
-  // is the profile.
-  NOTIFICATION_OMNIBOX_OPENED_URL,
-
   // This is sent from Instant when the omnibox focus state changes.
   NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
 

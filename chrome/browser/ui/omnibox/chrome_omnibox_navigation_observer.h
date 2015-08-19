@@ -38,9 +38,6 @@ class URLRequestStatus;
 //
 // Please see the class comment on the base class for important information
 // about the memory management of this object.
-//
-// TODO(pkasting): Probably NOTIFICATION_OMNIBOX_OPENED_URL should disappear and
-// everyone who listened to it should be triggered from this class instead.
 class ChromeOmniboxNavigationObserver : public OmniboxNavigationObserver,
                                         public content::NotificationObserver,
                                         public content::WebContentsObserver,

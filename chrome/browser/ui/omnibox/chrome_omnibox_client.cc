@@ -15,7 +15,6 @@
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher_service_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/net/predictor.h"
@@ -43,7 +42,6 @@
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
@@ -402,10 +400,8 @@ void ChromeOmniboxClient::OnRevert() {
 }
 
 void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-      content::Source<Profile>(profile_),
-      content::Details<OmniboxLog>(log));
+  predictors::AutocompleteActionPredictorFactory::GetForProfile(profile_)
+      ->OnOmniboxOpenedUrl(*log);
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {

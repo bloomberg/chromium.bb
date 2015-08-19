@@ -218,94 +218,12 @@ bool AutocompleteActionPredictor::IsPrerenderAbandonedForTesting() {
   return prerender_handle_ && prerender_handle_->IsAbandoned();
 }
 
-void AutocompleteActionPredictor::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      CreateLocalCachesFromDatabase();
-      notification_registrar_.Remove(
-          this,
-          content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-          content::NotificationService::AllSources());
-      break;
-    case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
-      DCHECK(initialized_);
-
-      // TODO(dominich): This doesn't need to be synchronous. Investigate
-      // posting it as a task to be run later.
-      OnOmniboxOpenedUrl(*content::Details<OmniboxLog>(details).ptr());
-      break;
-    }
-
-    default:
-      NOTREACHED() << "Unexpected notification observed.";
-      break;
-  }
-}
-
-void AutocompleteActionPredictor::CreateLocalCachesFromDatabase() {
-  // Create local caches using the database as loaded. We will garbage collect
-  // rows from the caches and the database once the history service is
-  // available.
-  std::vector<AutocompleteActionPredictorTable::Row>* rows =
-      new std::vector<AutocompleteActionPredictorTable::Row>();
-  content::BrowserThread::PostTaskAndReply(content::BrowserThread::DB,
-      FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorTable::GetAllRows, table_, rows),
-      base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
-                 base::Owned(rows)));
-}
-
-void AutocompleteActionPredictor::DeleteAllRows() {
-  if (!initialized_)
-    return;
-
-  db_cache_.clear();
-  db_id_cache_.clear();
-
-  if (table_.get()) {
-    content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-        base::Bind(&AutocompleteActionPredictorTable::DeleteAllRows,
-                   table_));
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                            DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
-}
-
-void AutocompleteActionPredictor::DeleteRowsWithURLs(
-    const history::URLRows& rows) {
-  if (!initialized_)
-    return;
-
-  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
-
-  for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
-    if (std::find_if(rows.begin(), rows.end(),
-        history::URLRow::URLRowHasURL(it->first.url)) != rows.end()) {
-      const DBIdCacheMap::iterator id_it = db_id_cache_.find(it->first);
-      DCHECK(id_it != db_id_cache_.end());
-      id_list.push_back(id_it->second);
-      db_id_cache_.erase(id_it);
-      db_cache_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-
-  if (table_.get()) {
-    content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-        base::Bind(&AutocompleteActionPredictorTable::DeleteRows, table_,
-                   id_list));
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                            DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
-}
-
 void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
+  DCHECK(initialized_);
+
+  // TODO(dominich): The body of this method doesn't need to be run
+  // synchronously. Investigate posting it as a task to be run later.
+
   if (log.text.length() < kMinimumUserTextLength)
     return;
 
@@ -392,6 +310,79 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
     }
   }
   tracked_urls_.clear();
+}
+
+void AutocompleteActionPredictor::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME, type);
+  CreateLocalCachesFromDatabase();
+  notification_registrar_.Remove(
+      this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+}
+
+void AutocompleteActionPredictor::CreateLocalCachesFromDatabase() {
+  // Create local caches using the database as loaded. We will garbage collect
+  // rows from the caches and the database once the history service is
+  // available.
+  std::vector<AutocompleteActionPredictorTable::Row>* rows =
+      new std::vector<AutocompleteActionPredictorTable::Row>();
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::DB, FROM_HERE,
+      base::Bind(&AutocompleteActionPredictorTable::GetAllRows, table_, rows),
+      base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
+                 base::Owned(rows)));
+}
+
+void AutocompleteActionPredictor::DeleteAllRows() {
+  if (!initialized_)
+    return;
+
+  db_cache_.clear();
+  db_id_cache_.clear();
+
+  if (table_.get()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::DB, FROM_HERE,
+        base::Bind(&AutocompleteActionPredictorTable::DeleteAllRows, table_));
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
+}
+
+void AutocompleteActionPredictor::DeleteRowsWithURLs(
+    const history::URLRows& rows) {
+  if (!initialized_)
+    return;
+
+  std::vector<AutocompleteActionPredictorTable::Row::Id> id_list;
+
+  for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
+    if (std::find_if(rows.begin(), rows.end(),
+                     history::URLRow::URLRowHasURL(it->first.url)) !=
+        rows.end()) {
+      const DBIdCacheMap::iterator id_it = db_id_cache_.find(it->first);
+      DCHECK(id_it != db_id_cache_.end());
+      id_list.push_back(id_it->second);
+      db_id_cache_.erase(id_it);
+      db_cache_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+
+  if (table_.get()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::DB, FROM_HERE,
+        base::Bind(&AutocompleteActionPredictorTable::DeleteRows, table_,
+                   id_list));
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
+                            DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
 }
 
 void AutocompleteActionPredictor::AddAndUpdateRows(
@@ -539,13 +530,6 @@ void AutocompleteActionPredictor::CopyFromMainProfile() {
 void AutocompleteActionPredictor::FinishInitialization() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!initialized_);
-
-  // Incognito and normal profiles should listen only to omnibox notifications
-  // from their own profile, but both should listen to history deletions from
-  // the main profile, since opening the history page in either case actually
-  // opens the non-incognito history (and lets users delete from there).
-  notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                              content::Source<Profile>(profile_));
   initialized_ = true;
 }
 
