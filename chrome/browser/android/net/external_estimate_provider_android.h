@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NET_NETWORK_QUALITY_PROVIDER_H_
-#define CHROME_BROWSER_ANDROID_NET_NETWORK_QUALITY_PROVIDER_H_
+#ifndef CHROME_BROWSER_ANDROID_NET_EXTERNAL_ESTIMATE_PROVIDER_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_NET_EXTERNAL_ESTIMATE_PROVIDER_ANDROID_H_
 
 #include <jni.h>
 #include <stdint.h>
@@ -21,17 +21,17 @@ namespace chrome {
 namespace android {
 
 // Native class that calls Java code exposed by
-// NetworkQualityProviderHelper.java. Provides network quality estimates as
-// provided by Android. Estimates are automatically updated on a network change
-// event.
-class NetworkQualityProvider
+// ExternalEstimateProviderAndroidHelper.java. Provides network quality
+// estimates as provided by Android. Estimates are automatically updated on a
+// network change event.
+class ExternalEstimateProviderAndroid
     : public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public net::ExternalEstimateProvider {
  public:
   // Constructs and initializes the underlying provider.
-  NetworkQualityProvider();
+  ExternalEstimateProviderAndroid();
 
-  ~NetworkQualityProvider() override;
+  ~ExternalEstimateProviderAndroid() override;
 
   // net::ExternalEstimateProvider implementation.
   bool GetRTT(base::TimeDelta* rtt) const override;
@@ -65,7 +65,7 @@ class NetworkQualityProvider
   // Value returned if valid value is unavailable.
   int32_t no_value_ = -1;
 
-  base::android::ScopedJavaGlobalRef<jobject> j_network_quality_provider_;
+  base::android::ScopedJavaGlobalRef<jobject> j_external_estimate_provider_;
 
   // Notified every time there is an update available from the network quality
   // provider.
@@ -75,12 +75,12 @@ class NetworkQualityProvider
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(NetworkQualityProvider);
+  DISALLOW_COPY_AND_ASSIGN(ExternalEstimateProviderAndroid);
 };
 
-bool RegisterNetworkQualityProvider(JNIEnv* env);
+bool RegisterExternalEstimateProviderAndroid(JNIEnv* env);
 
 }  // namespace android
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_ANDROID_NET_NETWORK_QUALITY_PROVIDER_H_
+#endif  // CHROME_BROWSER_ANDROID_NET_EXTERNAL_ESTIMATE_PROVIDER_ANDROID_H_

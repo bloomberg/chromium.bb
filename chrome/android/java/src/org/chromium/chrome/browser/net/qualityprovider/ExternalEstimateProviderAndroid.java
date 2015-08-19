@@ -16,38 +16,38 @@ import org.chromium.chrome.browser.util.NonThreadSafe;
  * provide more useful APIs. This class is not thread safe.
  */
 @JNINamespace("chrome::android")
-public class NetworkQualityProvider {
+public class ExternalEstimateProviderAndroid {
     /**
      * Value to return if a valid value is unavailable.
      */
     protected static final int NO_VALUE = -1;
     private static final Object LOCK = new Object();
     private static NonThreadSafe sThreadCheck = null;
-    private static NetworkQualityProvider sNetworkQualityProvider;
+    private static ExternalEstimateProviderAndroid sExternalEstimateProviderAndroid;
 
     @CalledByNative
-    private static NetworkQualityProvider create(Context context) {
+    private static ExternalEstimateProviderAndroid create(Context context) {
         synchronized (LOCK) {
-            if (sNetworkQualityProvider == null) {
+            if (sExternalEstimateProviderAndroid == null) {
                 assert sThreadCheck == null;
-                assert sNetworkQualityProvider == null;
+                assert sExternalEstimateProviderAndroid == null;
                 sThreadCheck = new NonThreadSafe();
-                sNetworkQualityProvider =
-                        ((ChromeApplication) context).createNetworkQualityProvider();
+                sExternalEstimateProviderAndroid =
+                        ((ChromeApplication) context).createExternalEstimateProviderAndroid();
             }
         }
-        return sNetworkQualityProvider;
+        return sExternalEstimateProviderAndroid;
     }
 
     /**
-     * Creates an instance of |@link #NetworkQualityProvider}.
+     * Creates an instance of |@link #ExternalEstimateProviderAndroid}.
      */
-    public NetworkQualityProvider() {
+    public ExternalEstimateProviderAndroid() {
         assert sThreadCheck.calledOnValidThread();
     }
 
     /**
-     * Requests the provider to update the network quality.
+     * Requests the provider to update the network quality estimate.
      */
     @CalledByNative
     protected void requestUpdate() {
@@ -85,7 +85,7 @@ public class NetworkQualityProvider {
     }
 
     /**
-     * @return Time (in seconds) since the network quality was last updated.
+     * @return Time (in seconds) since the network quality estimate was last updated.
      */
     @CalledByNative
     protected long getTimeSinceLastUpdateSeconds() {

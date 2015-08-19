@@ -56,7 +56,7 @@ import org.chromium.chrome.browser.invalidation.UniqueIdInvalidationClientNameGe
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.net.qualityprovider.NetworkQualityProvider;
+import org.chromium.chrome.browser.net.qualityprovider.ExternalEstimateProviderAndroid;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.omaha.RequestGenerator;
 import org.chromium.chrome.browser.omaha.UpdateInfoBarHelper;
@@ -599,8 +599,8 @@ public class ChromeApplication extends ContentApplication {
     /**
      * @return A provider of network quality.
      */
-    public NetworkQualityProvider createNetworkQualityProvider() {
-        return new NetworkQualityProvider();
+    public ExternalEstimateProviderAndroid createExternalEstimateProviderAndroid() {
+        return new ExternalEstimateProviderAndroid();
     }
 
     /**

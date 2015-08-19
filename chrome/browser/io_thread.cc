@@ -106,7 +106,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
-#include "chrome/browser/android/net/network_quality_provider.h"
+#include "chrome/browser/android/net/external_estimate_provider_android.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -658,7 +658,7 @@ void IOThread::Init() {
   scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider;
 #if defined(OS_ANDROID)
   external_estimate_provider.reset(
-      new chrome::android::NetworkQualityProvider());
+      new chrome::android::ExternalEstimateProviderAndroid());
 #endif
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
