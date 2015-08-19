@@ -121,6 +121,9 @@ public final class AndroidChannelConstants {
    */
   static final String MESSAGE_SENDER_SVC_GCM_REGID_CHANGE =
       "com.google.ipc.invalidation.channel.sender.gcm_regid_change";
+  
+  /** Tag used by the GcmRegistrationTaskService. */
+  static final String GCM_REGISTRATION_TASK_SERVICE_TAG = "gcm_registration_task_service";
 
   private AndroidChannelConstants() {
     // Disallow instantiation.

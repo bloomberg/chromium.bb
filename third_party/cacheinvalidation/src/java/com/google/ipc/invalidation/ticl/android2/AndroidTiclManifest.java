@@ -70,6 +70,11 @@ public class AndroidTiclManifest {
     return metadata.backgroundInvalidationListenerServiceClass;
   }
 
+  
+  public String getGcmUpstreamServiceClass() {
+    return metadata.gcmUpstreamServiceClass;
+  }
+
   /**
    * If it has not already been cached for the given {@code context}, creates and caches application
    * metadata from the manifest.
@@ -115,6 +120,13 @@ public class AndroidTiclManifest {
     private static final String BACKGROUND_INVALIDATION_LISTENER_SERVICE_NAME_KEY =
         "ipc.invalidation.ticl.background_invalidation_listener_service_class";
 
+    /**
+     * Name of the {@code <application>} metadata element whose value gives the Java class that
+     * implements the application's gcm upstream sender intent service.
+     */
+    private static final String GCM_UPSTREAM_SERVICE_NAME_KEY =
+        "ipc.invalidation.ticl.gcm_upstream_service_class";
+
     /** Default values returned if not overriden by the manifest file. */
     private static final Map<String, String> DEFAULTS = new HashMap<String, String>();
     static {
@@ -124,12 +136,14 @@ public class AndroidTiclManifest {
         DEFAULTS.put(LISTENER_SERVICE_NAME_KEY,
             "com.google.ipc.invalidation.ticl.android2.AndroidInvalidationListenerStub");
         DEFAULTS.put(BACKGROUND_INVALIDATION_LISTENER_SERVICE_NAME_KEY, null);
+        DEFAULTS.put(GCM_UPSTREAM_SERVICE_NAME_KEY, null);
     }
 
     private final String ticlServiceClass;
     private final String listenerClass;
     private final String listenerServiceClass;
     private final String backgroundInvalidationListenerServiceClass;
+    private final String gcmUpstreamServiceClass;
 
     ApplicationMetadata(Context context) {
       ApplicationInfo appInfo;
@@ -145,6 +159,7 @@ public class AndroidTiclManifest {
       listenerServiceClass = readApplicationMetadata(appInfo, LISTENER_SERVICE_NAME_KEY);
       backgroundInvalidationListenerServiceClass =
           readApplicationMetadata(appInfo, BACKGROUND_INVALIDATION_LISTENER_SERVICE_NAME_KEY);
+      gcmUpstreamServiceClass = readApplicationMetadata(appInfo, GCM_UPSTREAM_SERVICE_NAME_KEY);
     }
 
     /**

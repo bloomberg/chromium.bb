@@ -148,6 +148,7 @@ if (is_android) {
       ":cacheinvalidation_proto_java",
       "//third_party/android_protobuf:protobuf_nano_javalib",
       "//third_party/android_tools:android_gcm_java",
+      google_play_services_library,
     ]
 
     DEPRECATED_java_in_dir = "src/java"

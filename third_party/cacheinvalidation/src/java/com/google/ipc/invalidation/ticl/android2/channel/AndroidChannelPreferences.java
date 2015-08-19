@@ -25,7 +25,28 @@ import android.util.Base64;
 
 
 /** Accessor class for shared preference entries used by the channel. */
- public class AndroidChannelPreferences {
+public class AndroidChannelPreferences {
+  /** GCM Channel Configurations */
+  public class GcmChannelType {
+    /**
+     * Uses {@link GcmRegistrar} for registration, {@link AndroidMessageReceiverService} for
+     * receiving downstream messages and {@link AndroidMessageSenderService} for upstream messages.
+     */
+    public static final int DEFAULT = 0;
+
+    /**
+     * Uses InstanceID for registration, AndroidGcmController#onMessageReceived for receiving
+     * downstream messages and AndroidMessageSenderService for upstream messages.
+     */
+    public static final int UPDATED = 1;
+
+    /**
+     * Uses InstanceID for registration and AndroidGcmController#onMessageReceived for receiving
+     * downstream messages and GcmUpstreamSenderService for upstream messages.
+     */
+    public static final int GCM_UPSTREAM = 2;
+  }
+
   /** Name of the preferences in which channel preferences are stored. */
   private static final String PREFERENCES_NAME = "com.google.ipc.invalidation.gcmchannel";
 
@@ -34,6 +55,23 @@ import android.util.Base64;
    * registration id is not currently available.
    */
   private static final String BUFFERED_MSG_PREF = "buffered-msg";
+
+  /**
+   * Preferences entry used to store the sender id for registering with GCM.
+   */
+  private static final String GCM_CHANNEL_TYPE_PREF = "gcm_channel_type";
+
+  /**
+   * Preferences entry used to store the registration token returned for the sender id stored
+   * against {@code GCM_SENDER_ID}.
+   */
+  private static final String GCM_REGISTRATION_TOKEN_PREF = "gcm_registration_token";
+
+  /**
+   * Preferences entry used to store the client app version for the {@code GCM_REGISTRATION_TOKEN}
+   * since the current token is not guarenteed to work with an updated version.
+   */
+  private static final String GCM_APP_VERSION_PREF = "gcm_app_version";
 
   private static final Logger logger = AndroidLogger.forTag("ChannelPrefs");
 
@@ -92,6 +130,71 @@ import android.util.Base64;
 
     // Return the decoded message.
     return Base64.decode(message, Base64.URL_SAFE);
+  }
+
+  /**
+   * Sets the registration token returned from GCM for the sender id stored against
+   * {@code GCM_SENDER_ID}.
+   */
+  static void setRegistrationToken(Context context, String token) {
+    if (token == null) {
+      return;
+    }
+    SharedPreferences.Editor editor = getPreferences(context).edit();
+    editor.putString(GCM_REGISTRATION_TOKEN_PREF, token);
+    if (!editor.commit()) {
+      logger.warning("Failed writing shared preferences for: setRegistrationToken");
+    }
+  }
+
+  /**
+   * Returns the registration token stored or an empty string if no token is found.
+   */
+  static String getRegistrationToken(Context context) {
+    return getPreferences(context).getString(GCM_REGISTRATION_TOKEN_PREF, "");
+  }
+
+  /**
+   * Stores the sender id used for registering with GCM.
+   * If the sender id has changed from the current sender id stored then the registration token
+   * is cleared.
+   */
+  public static void setGcmChannelType(Context context, int type) {
+    if (getGcmChannelType(context) == type) {
+      return;
+    }
+    SharedPreferences.Editor editor = getPreferences(context).edit();
+    editor.putInt(GCM_CHANNEL_TYPE_PREF, type);
+    editor.putString(GCM_REGISTRATION_TOKEN_PREF, "");
+    if (!editor.commit()) {
+      logger.warning("Failed writing shared preferences for: setGcmChannelType");
+    }
+  }
+
+  /**
+   * Returns the sender id stored or an empty string if no token is found.
+   */
+  static int getGcmChannelType(Context context) {
+    return getPreferences(context).getInt(GCM_CHANNEL_TYPE_PREF, -1);
+  }
+
+  /**
+   * Stores the client app version for the registration token stored against {@code GCM_APP_VERSION}
+   */
+  static void setAppVersion(Context context, int version) {
+    SharedPreferences.Editor editor = getPreferences(context).edit();
+
+    editor.putInt(GCM_APP_VERSION_PREF, version);
+    if (!editor.commit()) {
+      logger.warning("Failed writing shared preferences for: setAppVersion");
+    }
+  }
+
+  /**
+   * Returns the client app version or -1 if no version is found.
+   */
+  static int getAppVersion(Context context) {
+    return getPreferences(context).getInt(GCM_APP_VERSION_PREF, -1);
   }
 
   /** Returns whether a message has been buffered, for tests. */

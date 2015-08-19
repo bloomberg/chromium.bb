@@ -69,10 +69,6 @@
   <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
   <!-- GCM connects to Google Services. -->
   <uses-permission android:name="android.permission.INTERNET"/>
-  <!-- GCM requires a Google account. -->
-  <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
-  <!-- Merged from file: java/com/google/ipc/invalidation/external/client/android2/AndroidManifest.xml -->
-  <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
   <!-- Keeps the processor from sleeping when a message is received. -->
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
 </manifest>

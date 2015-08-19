@@ -33,5 +33,5 @@ package com.google.ipc.invalidation.common;
 
 /** Build constant definitions. */
 class BuildConstants {
-  static final int BUILD_DATESTAMP = 20150720;
+  static final int BUILD_DATESTAMP = 20150819;
 }

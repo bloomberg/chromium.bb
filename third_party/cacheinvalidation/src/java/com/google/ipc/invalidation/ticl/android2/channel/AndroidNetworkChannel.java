@@ -16,9 +16,13 @@
 package com.google.ipc.invalidation.ticl.android2.channel;
 
 import com.google.ipc.invalidation.external.client.SystemResources;
+import com.google.ipc.invalidation.external.client.SystemResources.Logger;
+import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 import com.google.ipc.invalidation.ticl.TestableNetworkChannel;
+import com.google.ipc.invalidation.ticl.android2.AndroidTiclManifest;
 import com.google.ipc.invalidation.ticl.android2.ProtocolIntents;
 import com.google.ipc.invalidation.ticl.android2.ResourcesFactory.AndroidResources;
+import com.google.ipc.invalidation.ticl.android2.channel.AndroidChannelPreferences.GcmChannelType;
 import com.google.ipc.invalidation.ticl.proto.ChannelCommon.NetworkEndpointId;
 import com.google.ipc.invalidation.util.Preconditions;
 
@@ -31,6 +35,7 @@ import android.content.Intent;
  *
  */
 public class AndroidNetworkChannel implements TestableNetworkChannel {
+  private static final Logger logger = AndroidLogger.forTag("AndroidNetworkChannel");
   private final Context context;
   private AndroidResources resources;
 
@@ -41,7 +46,18 @@ public class AndroidNetworkChannel implements TestableNetworkChannel {
   @Override
   public void sendMessage(byte[] outgoingMessage) {
     Intent intent = ProtocolIntents.newOutboundMessageIntent(outgoingMessage);
-    intent.setClassName(context, AndroidMessageSenderService.class.getName());
+
+    // Select the sender service to use for upstream message.
+    if (AndroidChannelPreferences.getGcmChannelType(context) == GcmChannelType.GCM_UPSTREAM){
+      String upstreamServiceClass = new AndroidTiclManifest(context).getGcmUpstreamServiceClass();
+      if (upstreamServiceClass == null || upstreamServiceClass.isEmpty()) {
+        logger.warning("GcmUpstreamSenderService class not found.");
+        return;
+      }
+      intent.setClassName(context, upstreamServiceClass);
+    } else {
+      intent.setClassName(context, AndroidMessageSenderService.class.getName());
+    }
     context.startService(intent);
   }
 

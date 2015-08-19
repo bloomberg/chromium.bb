@@ -16,12 +16,14 @@
 package com.google.ipc.invalidation.ticl.android2.channel;
 
 import com.google.android.gcm.GCMRegistrar;
+import com.google.ipc.invalidation.common.GcmSharedConstants;
 import com.google.ipc.invalidation.external.client.SystemResources.Logger;
 import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 import com.google.ipc.invalidation.ticl.android2.AndroidTiclManifest;
 import com.google.ipc.invalidation.ticl.android2.ProtocolIntents;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidChannelConstants.AuthTokenConstants;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidChannelConstants.HttpConstants;
+import com.google.ipc.invalidation.ticl.android2.channel.AndroidChannelPreferences.GcmChannelType;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidNetworkSendRequest;
 import com.google.ipc.invalidation.ticl.proto.ChannelCommon.NetworkEndpointId;
 import com.google.ipc.invalidation.ticl.proto.CommonProtos;
@@ -62,12 +64,6 @@ public class AndroidMessageSenderService extends IntentService {
    * A prefix on the "auth token type" that indicates we're using an OAuth2 token to authenticate.
    */
   private static final String OAUTH2_TOKEN_TYPE_PREFIX = "oauth2:";
-
-  /**
-   * Client key used in network endpoint ids. We only have one client at present, so there is no
-   * need for a key.
-   */
-  private static final String NO_CLIENT_KEY = "";
 
   /** An override of the URL, for testing. */
   private static String channelUrlForTest = null;
@@ -390,13 +386,23 @@ public class AndroidMessageSenderService extends IntentService {
   
   public static NetworkEndpointId getNetworkEndpointId(Context context, Logger logger) {
     String registrationId;
-    try {
-      registrationId = GCMRegistrar.getRegistrationId(context);
-    } catch (RuntimeException exception) {
-      // GCMRegistrar#getRegistrationId occasionally throws a runtime exception. Catching the
-      // exception rather than crashing.
-      logger.warning("Unable to get GCM registration id: %s", exception);
-      registrationId = null;
+    String clientKey;
+
+    // Select the registration token to use.
+    if (AndroidChannelPreferences.getGcmChannelType(context) == GcmChannelType.UPDATED) {
+      registrationId = AndroidChannelPreferences.getRegistrationToken(context);
+      clientKey = GcmSharedConstants.ANDROID_ENDPOINT_ID_CLIENT_KEY;
+    } else {
+      // No client key when using old style registration id.
+      clientKey = "";
+      try {
+        registrationId = GCMRegistrar.getRegistrationId(context);
+      } catch (RuntimeException exception) {
+        // GCMRegistrar#getRegistrationId occasionally throws a runtime exception. Catching the
+        // exception rather than crashing.
+        logger.warning("Unable to get GCM registration id: %s", exception);
+        registrationId = null;
+      }
     }
     if ((registrationId == null) || registrationId.isEmpty()) {
       // No registration with GCM; we cannot compute a network id. The GCM documentation says the
@@ -405,7 +411,7 @@ public class AndroidMessageSenderService extends IntentService {
           "No GCM registration id; cannot determine our network endpoint id: %s", registrationId);
       return null;
     }
-    return CommonProtos.newAndroidEndpointId(registrationId, NO_CLIENT_KEY,
+    return CommonProtos.newAndroidEndpointId(registrationId, clientKey,
         context.getPackageName(), AndroidChannelConstants.CHANNEL_VERSION);
   }
 
