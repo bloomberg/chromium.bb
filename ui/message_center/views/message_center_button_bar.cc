@@ -30,10 +30,10 @@ namespace message_center {
 
 namespace {
 const int kButtonSize = 40;
-const int kChevronWidth = 8;
+const int kLeftPaddingWidthForNonArrows = 16;
 const int kFooterTopMargin = 6;
 const int kFooterBottomMargin = 3;
-const int kFooterLeftMargin = 20;
+const int kFooterLeftMargin = 4;
 const int kFooterRightMargin = 14;
 }  // namespace
 
@@ -114,7 +114,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
                                               IDR_NOTIFICATION_ARROW_HOVER,
                                               IDR_NOTIFICATION_ARROW_PRESSED,
                                               0);
-  title_arrow_->set_size(gfx::Size(kChevronWidth, kButtonSize));
+  title_arrow_->set_size(gfx::Size(kButtonSize, kButtonSize));
 
   // Keyboardists can use the gear button to switch modes.
   title_arrow_->SetFocusable(false);
@@ -205,11 +205,11 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
     column->AddColumn(views::GridLayout::LEADING,
                       views::GridLayout::CENTER,
                       0.0f,
-                      views::GridLayout::USE_PREF,
-                      0,
+                      views::GridLayout::FIXED,
+                      kButtonSize,
                       0);
-
-    column->AddPaddingColumn(0.0f, 10);
+  } else {
+    column->AddPaddingColumn(0.0f, kLeftPaddingWidthForNonArrows);
   }
 
   // Column for the label "Notifications".
