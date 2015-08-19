@@ -4,7 +4,8 @@
 
 #include "device/usb/usb_service.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/at_exit.h"
+#include "base/bind.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service_impl.h"
@@ -31,9 +32,12 @@ void UsbService::Observer::OnDeviceRemovedCleanup(
 UsbService* UsbService::GetInstance(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   if (!g_service) {
-    // The UsbService constructor saves this object and UsbServiceImpl will
-    // destroy itself when the current message loop exits.
+    // |g_service| is set by the UsbService constructor.
     new UsbServiceImpl(blocking_task_runner);
+    if (!g_service) {
+      base::AtExitManager::RegisterTask(base::Bind(
+          &base::DeletePointer<UsbService>, base::Unretained(g_service)));
+    }
   }
   return g_service;
 }

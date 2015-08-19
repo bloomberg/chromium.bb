@@ -531,7 +531,6 @@ UsbServiceImpl::UsbServiceImpl(
       device_observer_(this),
 #endif
       weak_factory_(this) {
-  base::MessageLoop::current()->AddDestructionObserver(this);
 
   PlatformUsbContext platform_context = nullptr;
   int rv = libusb_init(&platform_context);
@@ -563,7 +562,6 @@ UsbServiceImpl::UsbServiceImpl(
 }
 
 UsbServiceImpl::~UsbServiceImpl() {
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
 
   if (hotplug_enabled_) {
     libusb_hotplug_deregister_callback(context_->context(), hotplug_handle_);
@@ -629,11 +627,6 @@ void UsbServiceImpl::OnDeviceRemoved(const GUID& class_guid,
 }
 
 #endif  // OS_WIN
-
-void UsbServiceImpl::WillDestroyCurrentMessageLoop() {
-  DCHECK(CalledOnValidThread());
-  delete this;
-}
 
 void UsbServiceImpl::RefreshDevices() {
   DCHECK(CalledOnValidThread());

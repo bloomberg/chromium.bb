@@ -5,10 +5,10 @@
 #include "device/usb/usb_service.h"
 
 #include <map>
+#include <queue>
 #include <set>
 
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_device_impl.h"
 #include "third_party/libusb/src/libusb/libusb.h"
@@ -31,11 +31,11 @@ namespace device {
 typedef struct libusb_device* PlatformUsbDevice;
 typedef struct libusb_context* PlatformUsbContext;
 
-class UsbServiceImpl : public UsbService,
+class UsbServiceImpl :
 #if defined(OS_WIN)
-                       public DeviceMonitorWin::Observer,
+    public DeviceMonitorWin::Observer,
 #endif  // OS_WIN
-                       public base::MessageLoop::DestructionObserver {
+    public UsbService {
  public:
   explicit UsbServiceImpl(
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
@@ -54,9 +54,6 @@ class UsbServiceImpl : public UsbService,
   void OnDeviceRemoved(const GUID& class_guid,
                        const std::string& device_path) override;
 #endif  // OS_WIN
-
-  // base::MessageLoop::DestructionObserver implementation
-  void WillDestroyCurrentMessageLoop() override;
 
   // Enumerate USB devices from OS and update devices_ map.
   void RefreshDevices();
