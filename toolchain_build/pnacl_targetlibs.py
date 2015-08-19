@@ -783,6 +783,7 @@ def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   return libs
 
 def UnsandboxedRuntime(arch, is_canonical):
+  arch_flag = '-m32' if arch.startswith('x86-32') else '-mx32'
   libs = {
       GSDJoin('unsandboxed_runtime', arch): {
           'type': TargetLibBuildType(is_canonical),
@@ -802,18 +803,16 @@ def UnsandboxedRuntime(arch, is_canonical):
               # TODO(dschuff): this include path breaks the input encapsulation
               # for build rules.
               command.Command([
-                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..', '-DNACL_LINUX=1', '-DDEFINE_MAIN',
+                  'gcc', arch_flag, '-Wall', '-Werror', '-I%(top_srcdir)s/..',
+                  '-DNACL_LINUX=1', '-DDEFINE_MAIN',
                   '-c', command.path.join('%(support)s', 'irt_interfaces.c'),
                   '-o', command.path.join('%(output)s', 'unsandboxed_irt.o')]),
               command.Command([
-                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..',
+                  'gcc', arch_flag, '-Wall', '-Werror', '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(support)s', 'irt_random.c'),
                   '-o', command.path.join('%(output)s', 'irt_random.o')]),
               command.Command([
-                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
-                  '-I%(top_srcdir)s/..',
+                  'gcc', arch_flag, '-Wall', '-Werror', '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(untrusted)s', 'irt_query_list.c'),
                   '-o', command.path.join('%(output)s', 'irt_query_list.o')]),
           ] + SubzeroRuntimeCommands(arch, '%(output)s'),
