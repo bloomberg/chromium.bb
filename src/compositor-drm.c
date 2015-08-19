@@ -1745,34 +1745,38 @@ drm_set_dpms(struct weston_output *output_base, enum dpms_enum level)
 }
 
 static const char * const connector_type_names[] = {
-	"None",
-	"VGA",
-	"DVI",
-	"DVI",
-	"DVI",
-	"Composite",
-	"TV",
-	"LVDS",
-	"CTV",
-	"DIN",
-	"DP",
-	"HDMI",
-	"HDMI",
-	"TV",
-	"eDP",
+	[DRM_MODE_CONNECTOR_Unknown]     = "Unknown",
+	[DRM_MODE_CONNECTOR_VGA]         = "VGA",
+	[DRM_MODE_CONNECTOR_DVII]        = "DVI-I",
+	[DRM_MODE_CONNECTOR_DVID]        = "DVI-D",
+	[DRM_MODE_CONNECTOR_DVIA]        = "DVI-A",
+	[DRM_MODE_CONNECTOR_Composite]   = "Composite",
+	[DRM_MODE_CONNECTOR_SVIDEO]      = "SVIDEO",
+	[DRM_MODE_CONNECTOR_LVDS]        = "LVDS",
+	[DRM_MODE_CONNECTOR_Component]   = "Component",
+	[DRM_MODE_CONNECTOR_9PinDIN]     = "DIN",
+	[DRM_MODE_CONNECTOR_DisplayPort] = "DP",
+	[DRM_MODE_CONNECTOR_HDMIA]       = "HDMI-A",
+	[DRM_MODE_CONNECTOR_HDMIB]       = "HDMI-B",
+	[DRM_MODE_CONNECTOR_TV]          = "TV",
+	[DRM_MODE_CONNECTOR_eDP]         = "eDP",
+	[DRM_MODE_CONNECTOR_VIRTUAL]     = "Virtual",
+	[DRM_MODE_CONNECTOR_DSI]         = "DSI",
 };
 
 static char *
 make_connector_name(const drmModeConnector *con)
 {
 	char name[32];
-	const char *type_name;
+	const char *type_name = NULL;
 
 	if (con->connector_type < ARRAY_LENGTH(connector_type_names))
 		type_name = connector_type_names[con->connector_type];
-	else
-		type_name = "UNKNOWN";
-	snprintf(name, sizeof name, "%s%d", type_name, con->connector_type_id);
+
+	if (!type_name)
+		type_name = "UNNAMED";
+
+	snprintf(name, sizeof name, "%s-%d", type_name, con->connector_type_id);
 
 	return strdup(name);
 }
