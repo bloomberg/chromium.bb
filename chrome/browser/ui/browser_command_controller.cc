@@ -229,11 +229,6 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       base::Bind(&BrowserCommandController::UpdateCommandsForFullscreenMode,
                  base::Unretained(this)));
 #endif
-  pref_signin_allowed_.Init(
-      prefs::kSigninAllowed,
-      profile()->GetOriginalProfile()->GetPrefs(),
-      base::Bind(&BrowserCommandController::OnSigninAllowedPrefChange,
-                 base::Unretained(this)));
 
   InitCommandState();
 
@@ -764,9 +759,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_HELP_PAGE_VIA_MENU:
       ShowHelp(browser_, HELP_SOURCE_MENU);
       break;
-    case IDC_SHOW_SIGNIN:
-      ShowBrowserSigninOrSettings(browser_, signin_metrics::SOURCE_MENU);
-      break;
     case IDC_TOGGLE_SPEECH_INPUT:
       ToggleSpeechInput(browser_);
       break;
@@ -783,16 +775,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, SigninPrefObserver implementation:
-
-void BrowserCommandController::OnSigninAllowedPrefChange() {
-  // For unit tests, we don't have a window.
-  if (!window())
-    return;
-  UpdateShowSyncState(IsShowingMainUI());
 }
 
 // BrowserCommandController, TabStripModelObserver implementation:
@@ -984,8 +966,6 @@ void BrowserCommandController::InitCommandState() {
   }
 #endif
 
-  UpdateShowSyncState(true);
-
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
       IDC_HOME,
@@ -1070,7 +1050,6 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
   command_updater->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, !forced_incognito);
   command_updater->UpdateCommandEnabled(IDC_OPTIONS,
                                         !forced_incognito || guest_session);
-  command_updater->UpdateCommandEnabled(IDC_SHOW_SIGNIN, !forced_incognito);
 }
 
 void BrowserCommandController::UpdateCommandsForIncognitoAvailability() {
@@ -1249,7 +1228,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 #if defined(GOOGLE_CHROME_BUILD)
   command_updater_.UpdateCommandEnabled(IDC_FEEDBACK, show_main_ui);
 #endif
-  UpdateShowSyncState(show_main_ui);
 
   // Settings page/subpages are forced to open in normal mode. We disable these
   // commands for guest sessions and when incognito is forced.
@@ -1297,11 +1275,6 @@ void BrowserCommandController::UpdatePrintingState() {
 
 void BrowserCommandController::UpdateSaveAsState() {
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
-}
-
-void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
-  command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_SYNC_SETUP, show_main_ui && pref_signin_allowed_.GetValue());
 }
 
 // static

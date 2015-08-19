@@ -366,8 +366,7 @@ bool WrenchMenuModel::IsItemForCommandIdDynamic(int command_id) const {
 #elif defined(OS_WIN)
          command_id == IDC_PIN_TO_START_SCREEN ||
 #endif
-         command_id == IDC_UPGRADE_DIALOG ||
-         (!switches::IsNewAvatarMenu() && command_id == IDC_SHOW_SIGNIN);
+         command_id == IDC_UPGRADE_DIALOG;
 }
 
 base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
@@ -397,10 +396,6 @@ base::string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
 #endif
     case IDC_UPGRADE_DIALOG:
       return GetUpgradeDialogMenuItemName();
-    case IDC_SHOW_SIGNIN:
-      DCHECK(!switches::IsNewAvatarMenu());
-      return signin_ui_util::GetSigninMenuLabel(
-          browser_->profile()->GetOriginalProfile());
     default:
       NOTREACHED();
       return base::string16();
@@ -419,19 +414,6 @@ bool WrenchMenuModel::GetIconForCommandId(int command_id,
       }
       return false;
     }
-    case IDC_SHOW_SIGNIN: {
-      DCHECK(!switches::IsNewAvatarMenu());
-      GlobalError* error = signin_ui_util::GetSignedInServiceError(
-          browser_->profile()->GetOriginalProfile());
-      if (error) {
-        int icon_id = error->MenuItemIconResourceID();
-        if (icon_id) {
-          *icon = rb.GetNativeImageNamed(icon_id);
-          return true;
-        }
-      }
-      return false;
-    }
     default:
       break;
   }
@@ -444,16 +426,6 @@ void WrenchMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (error) {
     error->ExecuteMenuItem(browser_);
     return;
-  }
-
-  if (!switches::IsNewAvatarMenu() && command_id == IDC_SHOW_SIGNIN) {
-    // If a custom error message is being shown, handle it.
-    GlobalError* error = signin_ui_util::GetSignedInServiceError(
-        browser_->profile()->GetOriginalProfile());
-    if (error) {
-      error->ExecuteMenuItem(browser_);
-      return;
-    }
   }
 
   LogMenuMetrics(command_id);
@@ -700,13 +672,6 @@ void WrenchMenuModel::LogMenuMetrics(int command_id) {
       }
       LogMenuAction(MENU_ACTION_SHOW_DOWNLOADS);
       break;
-    case IDC_SHOW_SYNC_SETUP:
-      if (!uma_action_recorded_) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ShowSyncSetup",
-                                   delta);
-      }
-      LogMenuAction(MENU_ACTION_SHOW_SYNC_SETUP);
-      break;
     case IDC_OPTIONS:
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Settings", delta);
@@ -930,21 +895,7 @@ void WrenchMenuModel::Build() {
   CreateCutCopyPasteMenu();
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);
-#if !defined(OS_CHROMEOS)
-  if (!switches::IsNewAvatarMenu()) {
-    // No "Sign in to Chromium..." menu item on ChromeOS.
-    SigninManager* signin = SigninManagerFactory::GetForProfile(
-        browser_->profile()->GetOriginalProfile());
-    if (signin && signin->IsSigninAllowed() &&
-        signin_ui_util::GetSignedInServiceErrors(
-            browser_->profile()->GetOriginalProfile()).empty()) {
-      AddItem(IDC_SHOW_SYNC_SETUP,
-              l10n_util::GetStringFUTF16(
-                  IDS_SYNC_MENU_PRE_SYNCED_LABEL,
-                  l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
-    }
-  }
-#endif
+
 // The help submenu is only displayed on official Chrome builds. As the
 // 'About' item has been moved to this submenu, it's reinstated here for
 // Chromium builds.
@@ -990,11 +941,6 @@ bool WrenchMenuModel::AddGlobalErrorMenuItems() {
   // it won't show in the existing wrench menu. To fix this we need to some
   // how update the menu if new errors are added.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  // GetSignedInServiceErrors() can modify the global error list, so call it
-  // before iterating through that list below.
-  std::vector<GlobalError*> signin_errors;
-  signin_errors = signin_ui_util::GetSignedInServiceErrors(
-      browser_->profile()->GetOriginalProfile());
   const GlobalErrorService::GlobalErrorList& errors =
       GlobalErrorServiceFactory::GetForProfile(browser_->profile())->errors();
   bool menu_items_added = false;
@@ -1003,19 +949,6 @@ bool WrenchMenuModel::AddGlobalErrorMenuItems() {
     GlobalError* error = *it;
     DCHECK(error);
     if (error->HasMenuItem()) {
-#if !defined(OS_CHROMEOS)
-      // Don't add a signin error if it's already being displayed elsewhere.
-      if (std::find(signin_errors.begin(), signin_errors.end(), error) !=
-          signin_errors.end()) {
-        MenuModel* model = this;
-        int index = 0;
-        if (MenuModel::GetModelAndIndexForCommandId(
-                IDC_SHOW_SIGNIN, &model, &index)) {
-          continue;
-        }
-      }
-#endif
-
       AddItem(error->MenuItemCommandID(), error->MenuItemLabel());
       int icon_id = error->MenuItemIconResourceID();
       if (icon_id) {

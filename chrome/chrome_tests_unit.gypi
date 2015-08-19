@@ -222,7 +222,6 @@
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/chrome_signin_client_unittest.cc',
       'browser/signin/local_auth_unittest.cc',
-      'browser/signin/signin_global_error_unittest.cc',
       'browser/signin/signin_manager_unittest.cc',
       'browser/signin/signin_tracker_unittest.cc',
       'browser/signin/test_signin_client_builder.cc',
@@ -2451,7 +2450,6 @@
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
           'sources!': [
-            'browser/signin/signin_global_error_unittest.cc',
             'browser/signin/signin_manager_unittest.cc',
             'browser/signin/signin_names_io_thread_unittest.cc',
           ],
