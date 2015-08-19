@@ -351,6 +351,7 @@ bool GetValidLocales(const base::FilePath& locale_path,
     }
     if (!AddLocale(
             chrome_locales, locale_folder, locale_name, valid_locales, error)) {
+      valid_locales->clear();
       return false;
     }
   }
@@ -367,7 +368,6 @@ extensions::MessageBundle* LoadMessageCatalogs(
     const base::FilePath& locale_path,
     const std::string& default_locale,
     const std::string& application_locale,
-    const std::set<std::string>& valid_locales,
     std::string* error) {
   std::vector<std::string> all_fallback_locales;
   GetAllFallbackLocales(
@@ -376,7 +376,9 @@ extensions::MessageBundle* LoadMessageCatalogs(
   std::vector<linked_ptr<base::DictionaryValue> > catalogs;
   for (size_t i = 0; i < all_fallback_locales.size(); ++i) {
     // Skip all parent locales that are not supplied.
-    if (valid_locales.find(all_fallback_locales[i]) == valid_locales.end())
+    base::FilePath this_locale_path =
+        locale_path.AppendASCII(all_fallback_locales[i]);
+    if (!base::PathExists(this_locale_path))
       continue;
     linked_ptr<base::DictionaryValue> catalog(
         LoadMessageFile(locale_path, all_fallback_locales[i], error));
