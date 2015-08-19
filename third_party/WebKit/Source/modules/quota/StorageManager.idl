@@ -12,7 +12,7 @@ enum PersistentStoragePermission { "default", "denied", "granted" };
     GarbageCollected,
     RuntimeEnabled=DurableStorage,
 ] interface StorageManager {
-    [CallWith=ScriptState] Promise<PersistentStoragePermission> requestPersistent();
+    [CallWith=ScriptState] Promise<boolean> requestPersistent();
     [CallWith=ScriptState] Promise<PersistentStoragePermission> persistentPermission();
 
     // TODO(dgrogan): Implement estimate() and persistentEstimate().
