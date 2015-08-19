@@ -40,9 +40,16 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 };
 
-// Flaky http://crbug.com/443542.
+// Flaky on ChromeOS (?), Windows: http://crbug.com/443542.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
+    DISABLED_RunsAudioVideoWebRTCCallInTwoTabs
+#else
+#define MAYBE_RunsAudioVideoWebRTCCallInTwoTabs \
+    RunsAudioVideoWebRTCCallInTwoTabs
+#endif
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       DISABLED_RunsAudioVideoWebRTCCallInTwoTabs) {
+                       MAYBE_RunsAudioVideoWebRTCCallInTwoTabs) {
   if (OnWinXp()) return;
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
