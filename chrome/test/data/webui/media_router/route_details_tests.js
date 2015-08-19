@@ -76,7 +76,7 @@ cr.define('route_details', function() {
 
         // Initialize routes and sinks.
         fakeRouteOne = new media_router.Route('route id 1', 'sink id 1',
-            'Video 1', 1, true);
+            'Video 1', 1, true, 'chrome-extension://123/custom_view.html');
         fakeRouteTwo = new media_router.Route('route id 2', 'sink id 2',
             'Video 2', 2, false);
         fakeSinkOne = new media_router.Sink('sink id 1', 'Living Room',
@@ -188,8 +188,6 @@ cr.define('route_details', function() {
       // Tests when |route| and |sink| both exist and |route| has custom
       // controller and it loads.
       test('route has custom controller and loading succeeds', function(done) {
-        details.routeProviderExtensionId = '123';
-        fakeRouteOne.customControllerPath = 'custom_view.html';
         var loadInvoked = false;
         details.$['custom-controller'].load = function(url) {
           loadInvoked = true;
@@ -209,8 +207,6 @@ cr.define('route_details', function() {
       // Tests when |route| and |sink| both exist and |route| has custom
       // controller but it fails to load.
       test('route has custom controller but loading fails', function(done) {
-        details.routeProviderExtensionId = '123';
-        fakeRouteOne.customControllerPath = 'custom_view.html';
         var loadInvoked = false;
         details.$['custom-controller'].load = function(url) {
           loadInvoked = true;

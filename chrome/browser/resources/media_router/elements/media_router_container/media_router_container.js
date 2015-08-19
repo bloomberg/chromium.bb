@@ -131,16 +131,6 @@ Polymer({
     },
 
     /**
-     * The ID of the media route provider extension.
-     * @type {string}
-     */
-    routeProviderExtensionId: {
-      type: String,
-      value: '',
-      observer: 'propogateExtensionId_',
-    },
-
-    /**
      * The header text when the cast mode list is shown.
      * @private {string}
      */
@@ -452,10 +442,9 @@ Polymer({
    */
   onCreateRouteResponseReceived: function(sinkId, route) {
     this.setLaunchState_(sinkId, false);
-    if (!route) {
-      // TODO(apacible) Show launch failure.
+    // TODO(apacible) Show launch failure.
+    if (!route)
       return;
-    }
 
     // Check if |route| already exists or if its associated sink
     // does not exist.
@@ -477,16 +466,6 @@ Polymer({
    */
   onSinkClick_: function(event) {
     this.showOrCreateRoute_(this.$.sinkList.itemForElement(event.target));
-  },
-
-  /**
-   * Propagates extension ID to the child elements that need it.
-   *
-   * @private
-   */
-  propogateExtensionId_: function() {
-    this.$['route-details'].routeProviderExtensionId =
-        this.routeProviderExtensionId;
   },
 
   /**
@@ -584,7 +563,6 @@ Polymer({
       });
     }
   },
-
 
   /**
    * Shows the route details.

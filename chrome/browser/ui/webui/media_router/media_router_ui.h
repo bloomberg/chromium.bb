@@ -125,7 +125,8 @@ class MediaRouterUI
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
   const content::WebContents* initiator() const { return initiator_; }
 
-  const std::string& GetRouteProviderExtensionId() const;
+  // Marked virtual for tests.
+  virtual const std::string& GetRouteProviderExtensionId() const;
 
  private:
   class UIIssuesObserver;

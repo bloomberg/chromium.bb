@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/test/test_web_ui.h"
 
 namespace content {
 
-TestWebUI::TestWebUI() {
+TestWebUI::TestWebUI() : web_contents_(nullptr) {
 }
 
 TestWebUI::~TestWebUI() {
@@ -19,7 +20,7 @@ void TestWebUI::ClearTrackedCalls() {
 }
 
 WebContents* TestWebUI::GetWebContents() const {
-  return nullptr;
+  return web_contents_;
 }
 
 WebUIController* TestWebUI::GetController() const {
@@ -40,6 +41,10 @@ ui::PageTransition TestWebUI::GetLinkTransitionType() const {
 
 int TestWebUI::GetBindings() const {
   return 0;
+}
+
+void TestWebUI::AddMessageHandler(WebUIMessageHandler* handler) {
+  handlers_.push_back(handler);
 }
 
 void TestWebUI::CallJavascriptFunction(const std::string& function_name) {

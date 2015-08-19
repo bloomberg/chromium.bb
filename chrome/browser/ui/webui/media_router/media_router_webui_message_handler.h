@@ -27,7 +27,7 @@ class MediaRouterUI;
 // The handler for Javascript messages related to the media router dialog.
 class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
  public:
-  MediaRouterWebUIMessageHandler();
+  explicit MediaRouterWebUIMessageHandler(MediaRouterUI* media_router_ui);
   ~MediaRouterWebUIMessageHandler() override;
 
   // Methods to update the status displayed by the dialog.
@@ -62,11 +62,10 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   bool ActOnIssueType(const IssueAction::Type& type,
                       const base::DictionaryValue* args);
 
-  // Helper function for getting a pointer to the corresponding MediaRouterUI.
-  MediaRouterUI* GetMediaRouterUI();
-
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;
+
+  MediaRouterUI* media_router_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterWebUIMessageHandler);
 };

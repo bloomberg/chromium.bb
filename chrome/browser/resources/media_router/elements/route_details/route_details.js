@@ -37,15 +37,6 @@ Polymer({
     },
 
     /**
-     * The ID of the media route provider extension.
-     * @type {string}
-     */
-    routeProviderExtensionId: {
-      type: String,
-      value: '',
-    },
-
-    /**
      * The text for the stop casting button.
      * @private {string}
      */
@@ -97,25 +88,26 @@ Polymer({
         loadTimeData.getStringF('castingActivityStatus', this.route.title) :
         '';
 
-    if (!this.route || !this.route.customControllerPath ||
-        !this.routeProviderExtensionId) {
+    if (!this.route || !this.route.customControllerPath) {
       this.isCustomControllerHidden_ = true;
       return;
     }
 
     // Show custom controller
-    var fullUrl = 'chrome-extension://' + this.routeProviderExtensionId + '/' +
-        this.route.customControllerPath;
     var extensionview = this.$['custom-controller'];
-    if (fullUrl == extensionview.src && !this.isCustomControllerHidden_) {
-      // Do nothing if the url is the same and the view is not hidden.
-      return;
-    }
 
-    this.isCustomControllerHidden_ = false;
+    // Do nothing if the url is the same and the view is not hidden.
+    if (this.route.customControllerPath == extensionview.src &&
+        !this.isCustomControllerHidden_)
+      return;
+
     var that = this;
-    extensionview.load(fullUrl).catch(function() {
-      // Fall back to default view.
+    extensionview.load(this.route.customControllerPath)
+    .then(function() {
+      // Load was successful; show the custom controller.
+      that.isCustomControllerHidden_ = false;
+    }, function() {
+      // Load was unsuccessful; fall back to default view.
       that.isCustomControllerHidden_ = true;
     });
   },

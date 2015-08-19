@@ -2,16 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/media_router/media_router_test.h"
+#include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/test/test_web_ui.h"
+#include "extensions/common/constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ReturnRef;
+
 namespace media_router {
+
+const char kProviderExtensionIdForTesting[] = "test_id";
+const char kControllerPathForTesting[] = "test_path";
+
+class MockMediaRouterUI : public MediaRouterUI {
+ public:
+  explicit MockMediaRouterUI(content::WebUI* web_ui)
+      : MediaRouterUI(web_ui) {}
+  ~MockMediaRouterUI() {}
+
+  MOCK_CONST_METHOD0(GetRouteProviderExtensionId, const std::string&());
+};
 
 class TestingMediaRouterWebUIMessageHandler
     : public MediaRouterWebUIMessageHandler {
  public:
-  explicit TestingMediaRouterWebUIMessageHandler(content::WebUI* web_ui) {
+  TestingMediaRouterWebUIMessageHandler(content::WebUI* web_ui,
+      MediaRouterUI* media_router_ui)
+          : MediaRouterWebUIMessageHandler(media_router_ui) {
     set_web_ui(web_ui);
   }
 
@@ -21,14 +45,40 @@ class TestingMediaRouterWebUIMessageHandler
   DISALLOW_COPY_AND_ASSIGN(TestingMediaRouterWebUIMessageHandler);
 };
 
-class MediaRouterWebUIMessageHandlerTest : public testing::Test {
+class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
  public:
-  MediaRouterWebUIMessageHandlerTest() : web_ui_(), handler_(&web_ui_) {}
+  MediaRouterWebUIMessageHandlerTest()
+    : web_ui_(new content::TestWebUI()),
+      provider_extension_id_(kProviderExtensionIdForTesting) {}
   ~MediaRouterWebUIMessageHandlerTest() override {}
 
+  // BrowserWithTestWindowTest:
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+    chrome::NewTab(browser());
+    web_ui_->set_web_contents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    mock_media_router_ui_.reset(new MockMediaRouterUI(web_ui_.get()));
+    handler_.reset(new TestingMediaRouterWebUIMessageHandler(
+        web_ui_.get(), mock_media_router_ui_.get()));
+  }
+
+  void TearDown() override {
+    handler_.reset();
+    mock_media_router_ui_.reset();
+    web_ui_.reset();
+    BrowserWithTestWindowTest::TearDown();
+  }
+
+  const std::string& provider_extension_id() const {
+    return provider_extension_id_;
+  }
+
  protected:
-  content::TestWebUI web_ui_;
-  TestingMediaRouterWebUIMessageHandler handler_;
+  scoped_ptr<content::TestWebUI> web_ui_;
+  scoped_ptr<MockMediaRouterUI> mock_media_router_ui_;
+  scoped_ptr<MediaRouterWebUIMessageHandler> handler_;
+  const std::string provider_extension_id_;
 };
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinks) {
@@ -40,9 +90,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateSinks) {
   media_sink_with_cast_modes.cast_modes.insert(MediaCastMode::TAB_MIRROR);
   media_sink_with_cast_modes_list.push_back(media_sink_with_cast_modes);
 
-  handler_.UpdateSinks(media_sink_with_cast_modes_list);
-  EXPECT_EQ(1u, web_ui_.call_data().size());
-  const content::TestWebUI::CallData& call_data = *web_ui_.call_data()[0];
+  handler_->UpdateSinks(media_sink_with_cast_modes_list);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setSinkList", call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
   const base::ListValue* sinks_list_value = nullptr;
@@ -73,11 +123,13 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   std::vector<MediaRoute> routes;
   routes.push_back(MediaRoute(route_id, MediaSource("mediaSource"),
                               MediaSink(sink_id, "The sink"), description,
-                              is_local, ""));
+                              is_local, kControllerPathForTesting));
 
-  handler_.UpdateRoutes(routes);
-  EXPECT_EQ(1u, web_ui_.call_data().size());
-  const content::TestWebUI::CallData& call_data = *web_ui_.call_data()[0];
+  EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
+      ReturnRef(provider_extension_id()));
+  handler_->UpdateRoutes(routes);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setRouteList", call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
   const base::ListValue* routes_list_value = nullptr;
@@ -96,6 +148,15 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateRoutes) {
   bool actual_is_local = false;
   EXPECT_TRUE(route_value->GetBoolean("isLocal", &actual_is_local));
   EXPECT_EQ(is_local, actual_is_local);
+
+  std::string custom_controller_path;
+  EXPECT_TRUE(route_value->GetString("customControllerPath",
+                                     &custom_controller_path));
+  std::string expected_path = base::StringPrintf("%s://%s/%s",
+                                  extensions::kExtensionScheme,
+                                  kProviderExtensionIdForTesting,
+                                  kControllerPathForTesting);
+  EXPECT_EQ(expected_path, custom_controller_path);
 }
 
 TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
@@ -107,9 +168,11 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, OnCreateRouteResponseReceived) {
   MediaRoute route(route_id, MediaSource("mediaSource"),
                    MediaSink(sink_id, "The sink"), description, is_local, "");
 
-  handler_.OnCreateRouteResponseReceived(sink_id, &route);
-  EXPECT_EQ(1u, web_ui_.call_data().size());
-  const content::TestWebUI::CallData& call_data = *web_ui_.call_data()[0];
+  EXPECT_CALL(*mock_media_router_ui_, GetRouteProviderExtensionId()).WillOnce(
+      ReturnRef(provider_extension_id()));
+  handler_->OnCreateRouteResponseReceived(sink_id, &route);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.onCreateRouteResponseReceived",
             call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
@@ -146,9 +209,9 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
               route_id, Issue::FATAL, is_blocking, "helpUrl");
   const Issue::Id& issue_id = issue.id();
 
-  handler_.UpdateIssue(&issue);
-  EXPECT_EQ(1u, web_ui_.call_data().size());
-  const content::TestWebUI::CallData& call_data = *web_ui_.call_data()[0];
+  handler_->UpdateIssue(&issue);
+  EXPECT_EQ(1u, web_ui_->call_data().size());
+  const content::TestWebUI::CallData& call_data = *web_ui_->call_data()[0];
   EXPECT_EQ("media_router.ui.setIssue", call_data.function_name());
   const base::Value* arg1 = call_data.arg1();
   const base::DictionaryValue* issue_value = nullptr;

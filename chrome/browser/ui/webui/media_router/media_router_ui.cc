@@ -102,7 +102,7 @@ class MediaRouterUI::UIMediaRoutesObserver : public MediaRoutesObserver {
 
 MediaRouterUI::MediaRouterUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
-      handler_(new MediaRouterWebUIMessageHandler()),
+      handler_(new MediaRouterWebUIMessageHandler(this)),
       ui_initialized_(false),
       has_pending_route_request_(false),
       requesting_route_for_default_source_(false),
