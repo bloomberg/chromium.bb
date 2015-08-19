@@ -69,6 +69,11 @@ std::string GetLocalizedFileName(const std::string& base_name,
     std::string language = mappedLocale.substr(0, 2);
     resource_file = FindFileInResource(base_name, language, ext);
   }
+  if (resource_file.empty() && mappedLocale.length() > 3 &&
+      mappedLocale[3] == '-') {
+    std::string language = mappedLocale.substr(0, 3);
+    resource_file = FindFileInResource(base_name, language, ext);
+  }
   if (resource_file.empty()) {
     // Default to English if resource is still not found.
     resource_file = FindFileInResource(base_name, kEnglishLocale, ext);
