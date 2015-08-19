@@ -15,10 +15,10 @@
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerClientType.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponseError.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponseType.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 #include "url/gurl.h"
 
 // This file is to have common definitions that are to be shared by

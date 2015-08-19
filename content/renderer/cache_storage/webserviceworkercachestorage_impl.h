@@ -6,10 +6,10 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_WEB_SERVICE_WORKER_CACHE_STORAGE_IMPL_H_
 
 #include "content/child/thread_safe_sender.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheStorage.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 
 namespace content {
 

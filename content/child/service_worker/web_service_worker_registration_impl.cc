@@ -9,7 +9,7 @@
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerRegistrationProxy.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
 
 namespace content {
 

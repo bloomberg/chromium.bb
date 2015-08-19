@@ -44,16 +44,16 @@
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerClientQueryOptions.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
-#include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
-#include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
-#include "third_party/WebKit/public/web/WebServiceWorkerNetworkProvider.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 
 namespace content {
 

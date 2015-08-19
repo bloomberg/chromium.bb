@@ -21,8 +21,8 @@
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
-#include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "v8/include/v8.h"
 
 namespace base {

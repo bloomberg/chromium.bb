@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
-#include "third_party/WebKit/public/platform/WebServiceWorker.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorker.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace blink {

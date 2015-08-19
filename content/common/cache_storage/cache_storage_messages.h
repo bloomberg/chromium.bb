@@ -12,7 +12,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT

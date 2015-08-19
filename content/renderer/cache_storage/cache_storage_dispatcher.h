@@ -14,9 +14,9 @@
 #include "base/time/time.h"
 #include "content/child/worker_task_runner.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheStorage.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 
 namespace content {
 

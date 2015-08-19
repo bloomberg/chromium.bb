@@ -18,9 +18,9 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
 using base::TimeTicks;
 

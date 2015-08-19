@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 
 namespace content {
 

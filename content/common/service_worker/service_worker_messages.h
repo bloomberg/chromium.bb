@@ -18,8 +18,8 @@
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT

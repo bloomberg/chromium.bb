@@ -17,7 +17,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/origin_util.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 
 namespace content {
 

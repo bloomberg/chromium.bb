@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponseError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h"
 
 class GURL;
 

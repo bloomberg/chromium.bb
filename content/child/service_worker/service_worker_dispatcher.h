@@ -12,10 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/child/worker_task_runner.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 
 class GURL;
 

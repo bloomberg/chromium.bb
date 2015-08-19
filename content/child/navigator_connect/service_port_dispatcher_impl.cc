@@ -7,7 +7,7 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
-#include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
 namespace content {
 

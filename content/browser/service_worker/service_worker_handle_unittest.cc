@@ -19,7 +19,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerState.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerState.h"
 
 namespace content {
 

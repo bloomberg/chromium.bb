@@ -7,7 +7,7 @@
 
 #include "content/public/common/request_context_frame_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerClientType.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
 #include "url/gurl.h"
 
 namespace content {

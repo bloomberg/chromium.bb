@@ -9,8 +9,8 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerProxy.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
 
 using blink::WebMessagePortChannel;
 using blink::WebMessagePortChannelArray;

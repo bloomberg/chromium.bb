@@ -26,7 +26,7 @@
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_util.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "url/gurl.h"
 
 using blink::WebServiceWorkerError;

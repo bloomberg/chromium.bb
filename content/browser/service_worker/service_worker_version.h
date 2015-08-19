@@ -28,7 +28,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/service_registry.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 
 // Windows headers will redefine SendMessage.
 #ifdef SendMessage

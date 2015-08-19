@@ -7,9 +7,9 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 
 using base::TimeTicks;
 
