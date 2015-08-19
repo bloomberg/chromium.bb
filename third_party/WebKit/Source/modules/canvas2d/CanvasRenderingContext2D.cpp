@@ -1353,6 +1353,20 @@ void CanvasRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource*
     c->restoreToCount(initialSaveCount);
 }
 
+bool shouldDisableDeferral(CanvasImageSource* imageSource)
+{
+    if (imageSource->isVideoElement())
+        return true;
+    if (imageSource->isCanvasElement()) {
+        HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(imageSource);
+        if (canvas->is3D())
+            return true;
+        if (canvas->isAnimated2D())
+            return true;
+    }
+    return false;
+}
+
 void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     float sx, float sy, float sw, float sh,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
@@ -1388,12 +1402,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    // FIXME: crbug.com/521001
-    // We make the destination canvas fall out of display list mode by forcing
-    // immediate rendering. This is to prevent run-away memory consumption caused by SkSurface
-    // copyOnWrite when the source canvas is animated and consumed at a rate higher than the
-    // presentation frame rate of the destination canvas.
-    if (imageSource->isVideoElement() || imageSource->isCanvasElement())
+    if (shouldDisableDeferral(imageSource))
         canvas()->disableDeferral();
 
     validateStateStack();

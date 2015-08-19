@@ -76,7 +76,8 @@ PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opa
 }
 
 ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
-    : m_surface(surface)
+    : m_snapshotState(InitialSnapshotState)
+    , m_surface(surface)
     , m_client(0)
 {
     m_surface->setImageBuffer(this);
@@ -149,6 +150,9 @@ void ImageBuffer::resetCanvas(SkCanvas* canvas) const
 
 PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const
 {
+    if (m_snapshotState == InitialSnapshotState)
+        m_snapshotState = DidAcquireSnapshot;
+
     if (!isSurfaceValid())
         return nullptr;
     return m_surface->newImageSnapshot();
@@ -156,12 +160,17 @@ PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const
 
 PassRefPtr<Image> ImageBuffer::newImageSnapshot() const
 {
-    if (!isSurfaceValid())
-        return nullptr;
-    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot();
+    RefPtr<SkImage> snapshot = newSkImageSnapshot();
     if (!snapshot)
         return nullptr;
     return StaticBitmapImage::create(snapshot);
+}
+
+void ImageBuffer::didDraw(const FloatRect& rect) const
+{
+    if (m_snapshotState == DidAcquireSnapshot)
+        m_snapshotState = DrawnToAfterSnapshot;
+    m_surface->didDraw(rect);
 }
 
 WebLayer* ImageBuffer::platformLayer() const
