@@ -71,11 +71,13 @@ int syscall(int number, ...);
 # define __NR_fstat64            197
 # define __NR_getdents64         220
 # define __NR_fcntl64            221
+# define __NR_gettid             224
 # define __NR_futex              240
 # define __NR_set_thread_area    243
 # define __NR_exit_group         252
 # define __NR_clock_gettime      265
 # define __NR_clock_getres       266
+# define __NR_tgkill             270
 # define __NR_utimes             271
 # define __NR_openat             295
 # define __NR_fstatat64          300
@@ -131,10 +133,12 @@ int syscall(int number, ...);
 # define __NR_fstat64            197
 # define __NR_getdents64         217
 # define __NR_fcntl64            221
+# define __NR_gettid             224
 # define __NR_futex              240
 # define __NR_exit_group         248
 # define __NR_clock_gettime      263
 # define __NR_clock_getres       264
+# define __NR_tgkill             268
 # define __NR_utimes             271
 # define __NR_socketpair         288
 # define __NR_shutdown           293

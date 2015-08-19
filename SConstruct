@@ -715,6 +715,7 @@ nonsfi_test_whitelist = set([
     'run_stack_alignment_test',
     'run_syscall_test',
     'run_thread_test',
+    'run_user_async_signal_test',
     ])
 
 

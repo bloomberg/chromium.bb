@@ -15,8 +15,9 @@
 #define LINUX_SIG_UNBLOCK 1
 
 #define LINUX_SA_SIGINFO 0x00000004
-#define LINUX_SA_RESTART 0x10000000
 #define LINUX_SA_ONSTACK 0x08000000
+#define LINUX_SA_NODEFER 0x40000000
+#define LINUX_SA_RESTART 0x10000000
 
 /* From linux/arch/{arch}/include/uapi/asm/signal.h */
 #if defined(__mips__)
