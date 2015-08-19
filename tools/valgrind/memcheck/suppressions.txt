@@ -3606,8 +3606,7 @@
    bug_522468
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN10extensions14ExtensionPrefs6CreateEPN7content14BrowserContextEP11PrefServiceRKN4base8FilePathEP21ExtensionPrefValueMapbRKSt6vectorIPNS_22ExtensionPrefsObserverESaISE_EE10scoped_ptrINS0_12TimeProviderENS6_14DefaultDeleterISK_EEE
-   fun:_ZN10extensions14ExtensionPrefs6CreateEPN7content14BrowserContextEP11PrefServiceRKN4base8FilePathEP21ExtensionPrefValueMapbRKSt6vectorIPNS_22ExtensionPrefsObserverESaISE_EE
+   ...
    fun:_ZN14TestingProfile4InitEv
    fun:_ZN14TestingProfileC1Ev
    fun:_ZN12_GLOBAL__N_131PermissionManagerTestingProfileC2Ev
