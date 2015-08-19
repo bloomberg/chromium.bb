@@ -225,7 +225,6 @@ gfx::Size BubbleFrameView::GetMinimumSize() const {
 }
 
 gfx::Size BubbleFrameView::GetMaximumSize() const {
-  // A bubble should be non-resizable, so its max size is its preferred size.
 #if defined(OS_WIN)
   // On Windows, this causes problems, so do not set a maximum size (it doesn't
   // take the drop shadow area into account, resulting in a too-small window;
@@ -233,6 +232,17 @@ gfx::Size BubbleFrameView::GetMaximumSize() const {
   // the OS doesn't give the user controls to resize a bubble.
   return gfx::Size();
 #else
+#if defined(OS_MACOSX)
+  // Allow BubbleFrameView dialogs to be resizable on Mac.
+  if (GetWidget()->widget_delegate()->CanResize()) {
+    gfx::Size client_size = GetWidget()->client_view()->GetMaximumSize();
+    if (client_size.IsEmpty())
+      return client_size;
+    return GetWindowBoundsForClientBounds(gfx::Rect(client_size)).size();
+  }
+#endif  // OS_MACOSX
+  // Non-dialog bubbles should be non-resizable, so its max size is its
+  // preferred size.
   return GetPreferredSize();
 #endif
 }
