@@ -10343,9 +10343,6 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_EASY_UNLOCK_NOTIFICATION_OPTION_LABEL" desc="The label of the preference in the Smart Lock settings page to control whether notifications should be shown when unlocking the Chromebook.">
           Get notified on your phone every time Smart Lock unlocks your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
         </message>
-        <message name="IDS_OPTIONS_EASY_UNLOCK_MANAGE_BLUETOOTH" desc="The label of the link in the Smart Lock settings page to open the Bluetooth settings.">
-          Manage Bluetooth settings
-        </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
           Turn off Smart Lock for Chromebook?
         </message>
@@ -10447,15 +10444,6 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_AUTOFILL_FIELD_LABEL_PHONE" desc="The label of the Phone entry.">
           Phone
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_NAME" desc="The placeholder text of the recipient or contact name field.">
-          Add name
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_PHONE" desc="The placeholder text of the phone field.">
-          Add phone number
-        </message>
-        <message name="IDS_AUTOFILL_FIELD_LABEL_ADD_EMAIL" desc="The placeholder text of the email field.">
-          Add email address
         </message>
         <message name="IDS_AUTOFILL_FIELD_LABEL_NAME_ON_CARD" desc="The label of the Name on card entry.">
           Name on card

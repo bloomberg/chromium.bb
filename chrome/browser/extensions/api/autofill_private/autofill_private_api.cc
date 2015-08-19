@@ -108,8 +108,6 @@ void PopulateAddressComponents(
       case i18n::addressinput::RECIPIENT:
         component->field =
             autofill_private::AddressField::ADDRESS_FIELD_FULL_NAME;
-        component->placeholder.reset(new std::string(
-            l10n_util::GetStringUTF8(IDS_AUTOFILL_FIELD_LABEL_ADD_NAME)));
         break;
     }
 
