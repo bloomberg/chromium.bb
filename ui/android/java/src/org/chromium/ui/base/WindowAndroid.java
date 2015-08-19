@@ -88,7 +88,7 @@ public class WindowAndroid {
 
     private ViewGroup mKeyboardAccessoryView;
 
-    private boolean mIsKeyboardShowing = false;
+    protected boolean mIsKeyboardShowing = false;
 
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;

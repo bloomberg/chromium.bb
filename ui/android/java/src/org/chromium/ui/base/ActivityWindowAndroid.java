@@ -80,7 +80,9 @@ public class ActivityWindowAndroid
     protected void registerKeyboardVisibilityCallbacks() {
         Activity activity = mActivityRef.get();
         if (activity == null) return;
-        activity.findViewById(android.R.id.content).addOnLayoutChangeListener(this);
+        View content = activity.findViewById(android.R.id.content);
+        mIsKeyboardShowing = UiUtils.isKeyboardShowing(mActivityRef.get(), content);
+        content.addOnLayoutChangeListener(this);
     }
 
     @Override
