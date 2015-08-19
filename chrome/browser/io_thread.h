@@ -177,7 +177,7 @@ class IOThread : public content::BrowserThreadDelegate {
     net::NextProtoVector next_protos;
     Optional<std::string> trusted_spdy_proxy;
     std::set<net::HostPortPair> forced_spdy_exclusions;
-    Optional<bool> use_alternate_protocols;
+    Optional<bool> use_alternative_services;
     Optional<double> alternative_service_probability_threshold;
 
     Optional<bool> enable_quic;

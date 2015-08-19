@@ -90,7 +90,7 @@ HttpNetworkSession::Params::Params()
       spdy_stream_max_recv_window_size(kSpdyStreamMaxRecvWindowSize),
       spdy_initial_max_concurrent_streams(0),
       time_func(&base::TimeTicks::Now),
-      use_alternate_protocols(false),
+      use_alternative_services(false),
       alternative_service_probability_threshold(1),
       enable_quic(false),
       enable_insecure_quic(false),

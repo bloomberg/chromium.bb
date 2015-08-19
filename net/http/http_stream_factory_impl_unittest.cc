@@ -1350,7 +1350,7 @@ TEST_P(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
 TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
-  session_deps.use_alternate_protocols = true;
+  session_deps.use_alternative_services = true;
 
   MockRead mock_read(ASYNC, OK);
   SequencedSocketData socket_data(&mock_read, 1, nullptr, 0);

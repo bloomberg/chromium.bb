@@ -80,7 +80,7 @@ class NET_EXPORT URLRequestContextBuilder {
     uint16 testing_fixed_https_port;
     NextProtoVector next_protos;
     std::string trusted_spdy_proxy;
-    bool use_alternate_protocols;
+    bool use_alternative_services;
     bool enable_quic;
     bool enable_insecure_quic;
     QuicTagVector quic_connection_options;

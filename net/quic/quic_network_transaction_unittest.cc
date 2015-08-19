@@ -255,7 +255,7 @@ class QuicNetworkTransactionTest
     params_.quic_supported_versions = SupportedVersions(GetParam());
 
     if (use_next_protos) {
-      params_.use_alternate_protocols = true;
+      params_.use_alternative_services = true;
       params_.next_protos = NextProtosWithSpdyAndQuic(true, true);
     }
 

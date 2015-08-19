@@ -86,8 +86,8 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
     session_params.trusted_spdy_proxy = reference_params->trusted_spdy_proxy;
     session_params.forced_spdy_exclusions =
         reference_params->forced_spdy_exclusions;
-    session_params.use_alternate_protocols =
-        reference_params->use_alternate_protocols;
+    session_params.use_alternative_services =
+        reference_params->use_alternative_services;
   }
 
   network_session_ = new net::HttpNetworkSession(session_params);

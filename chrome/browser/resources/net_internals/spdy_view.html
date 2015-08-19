@@ -1,7 +1,11 @@
 <div id=spdy-view-tab-content class=content-box>
   <ul id=spdy-view-status style='margin-top:0'>
     <li>HTTP/2 Enabled: <span jscontent="spdy_enabled"></span></li>
-    <li>Use Alternative Service: <span jscontent="use_alternate_protocols"></span></li>
+    <!-- "use_alternative_service" is used here since release 46, see
+         https://crrev.com/1268313004.  "use_alternate_protocols" is here to
+         support importing netlog json files from earlier browsers.
+         TODO(bnc): Deprecate around 2016 February. -->
+    <li>Use Alternative Service: <span jscontent="$this.use_alternative_services || $this.use_alternate_protocols"></span></li>
     <li>Next Protocols: <span jscontent="next_protos"></span></li>
   </ul>
 

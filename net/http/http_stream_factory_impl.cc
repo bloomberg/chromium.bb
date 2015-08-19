@@ -152,7 +152,7 @@ const HostMappingRules* HttpStreamFactoryImpl::GetHostMappingRules() const {
 
 AlternativeServiceVector HttpStreamFactoryImpl::GetAlternativeServicesFor(
     const GURL& original_url) {
-  if (!session_->params().use_alternate_protocols)
+  if (!session_->params().use_alternative_services)
     return AlternativeServiceVector();
 
   if (original_url.SchemeIs("ftp"))

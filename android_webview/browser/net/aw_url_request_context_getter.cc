@@ -103,7 +103,7 @@ void PopulateNetworkSessionParams(
   params->net_log = context->net_log();
   // TODO(sgurun) remove once crbug.com/329681 is fixed.
   params->next_protos = net::NextProtosSpdy31();
-  params->use_alternate_protocols = true;
+  params->use_alternative_services = true;
 
   ApplyCmdlineOverridesToNetworkSessionParams(params);
 }

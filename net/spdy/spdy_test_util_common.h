@@ -220,7 +220,7 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   NextProtoVector next_protos;
   std::string trusted_spdy_proxy;
-  bool use_alternate_protocols;
+  bool use_alternative_services;
   NetLog* net_log;
 };
 

@@ -346,7 +346,7 @@ void ConfigureSpdyGlobalsFromUseSpdyArgument(const std::string& mode,
       continue;
     }
     if (option == kDisableAltProtocols) {
-      globals->use_alternate_protocols.set(false);
+      globals->use_alternative_services.set(false);
       continue;
     }
     if (option == kInitialMaxConcurrentStreams) {
@@ -1005,14 +1005,14 @@ void IOThread::ConfigureSpdyGlobals(
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy31GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
-    globals->use_alternate_protocols.set(true);
+    globals->use_alternative_services.set(true);
     return;
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
     globals->next_protos.push_back(net::kProtoSPDY31);
     globals->next_protos.push_back(net::kProtoHTTP2_14);
     globals->next_protos.push_back(net::kProtoHTTP2);
-    globals->use_alternate_protocols.set(true);
+    globals->use_alternative_services.set(true);
     return;
   }
   if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
@@ -1035,7 +1035,7 @@ void IOThread::ConfigureSpdyGlobals(
     // TODO(bnc): HttpStreamFactory::spdy_enabled_ is redundant with
     // globals->next_protos, can it be eliminated?
     net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
-    globals->use_alternate_protocols.set(true);
+    globals->use_alternative_services.set(true);
     return;
   }
 
@@ -1043,7 +1043,7 @@ void IOThread::ConfigureSpdyGlobals(
   globals->next_protos.push_back(net::kProtoSPDY31);
   globals->next_protos.push_back(net::kProtoHTTP2_14);
   globals->next_protos.push_back(net::kProtoHTTP2);
-  globals->use_alternate_protocols.set(true);
+  globals->use_alternative_services.set(true);
 }
 
 // static
@@ -1137,8 +1137,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   params->next_protos = globals.next_protos;
   globals.trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
-  globals.use_alternate_protocols.CopyToIfSet(
-      &params->use_alternate_protocols);
+  globals.use_alternative_services.CopyToIfSet(
+      &params->use_alternative_services);
   globals.alternative_service_probability_threshold.CopyToIfSet(
       &params->alternative_service_probability_threshold);
 
