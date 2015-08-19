@@ -30,7 +30,7 @@
 #date-container > * {
   color: #5a5a5a;
   font-size: 92.3%;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 :host([hide-date]) #date-container {
@@ -95,7 +95,7 @@
 
 #name,
 #file-link {
-  font-weight: bold;
+  font-weight: 500;
   word-break: break-all;
 }
 
@@ -114,7 +114,7 @@
 
 #tag {
   color: #5a5a5a;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 #url {

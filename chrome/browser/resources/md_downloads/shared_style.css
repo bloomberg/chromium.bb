@@ -11,6 +11,5 @@
 }
 
 cr-button:not([lowercase]) {
-  /* TODO(dbeam): this is ugly, but it'll soon be Roboto Medium instead. */
-  font-weight: bold;
+  font-weight: 500;
 }
