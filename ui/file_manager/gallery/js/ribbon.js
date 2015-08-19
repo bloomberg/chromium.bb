@@ -109,10 +109,16 @@ Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
 Ribbon.MARGIN = 2; // px
 
 /**
- * Width of thumbnail.
+ * Width of thumbnail on the ribbon.
  * @const {number}
  */
 Ribbon.THUMBNAIL_WIDTH = 71; // px
+
+/**
+ * Height of thumbnail on the ribbon.
+ * @const {number}
+ */
+Ribbon.THUMBNAIL_HEIGHT = 40; // px
 
 /**
  * Returns number of items in the viewport.
@@ -462,7 +468,9 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
         undefined /* opt_onSuccess */,
         undefined /* opt_onError */,
         undefined /* opt_onGeneric */,
-        0.35 /* opt_autoFillThreshold */);
+        0.35 /* opt_autoFillThreshold */,
+        Ribbon.THUMBNAIL_WIDTH /* opt_boxWidth */,
+        Ribbon.THUMBNAIL_HEIGHT /* opt_boxHeight */);
   });
 };
 
