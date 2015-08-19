@@ -798,8 +798,8 @@ TEST_F(PasswordManagerTest, InPageNavigation) {
 }
 
 TEST_F(PasswordManagerTest, InPageNavigationBlacklistedSite) {
-  // Test that observing a newly submitted form on blacklisted site does not
-  // show the save password bubble on call in page navigation.
+  // Test that observing a newly submitted form on blacklisted site does notify
+  // the embedder on call in page navigation.
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeSimpleForm());
   observed.push_back(form);
@@ -817,9 +817,14 @@ TEST_F(PasswordManagerTest, InPageNavigationBlacklistedSite) {
   // Prefs are needed for failure logging about blacklisting.
   EXPECT_CALL(client_, GetPrefs()).WillRepeatedly(Return(nullptr));
 
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
+  scoped_ptr<PasswordFormManager> form_manager_to_save;
+  EXPECT_CALL(client_,
+              PromptUserToSaveOrUpdatePasswordPtr(
+                  _, CredentialSourceType::CREDENTIAL_SOURCE_PASSWORD_MANAGER))
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
   manager()->OnInPageNavigation(&driver_, form);
+  EXPECT_TRUE(form_manager_to_save->IsBlacklisted());
 }
 
 TEST_F(PasswordManagerTest, SavingSignupForms_NoHTMLMatch) {

@@ -128,7 +128,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // A user opted to 'never remember' passwords for this form.
   // Blacklist it so that from now on when it is seen we ignore it.
-  // TODO: Make this private once we switch to the new UI.
+  // TODO(vasilii): remove the 'virtual' specifier.
   virtual void PermanentlyBlacklist();
 
   // If the user has submitted observed_form_, provisionally hold on to
@@ -194,6 +194,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   const autofill::PasswordForm* preferred_match() const {
     return preferred_match_;
+  }
+
+  const ScopedVector<autofill::PasswordForm>& blacklisted_matches() const {
+    return blacklisted_matches_;
   }
 
 #if defined(UNIT_TEST)
@@ -283,9 +287,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
-  // has opted to 'Save Password'. If |reset_preferred_login| is set,
-  // the previously preferred login from |best_matches_| will be reset.
-  void SaveAsNewLogin(bool reset_preferred_login);
+  // has opted to 'Save Password'. The previously preferred login from
+  // |best_matches_| will be reset.
+  void SaveAsNewLogin();
 
   // Helper for OnGetPasswordStoreResults to score an individual result
   // against the observed_form_.
@@ -365,10 +369,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
   autofill::PasswordForm* FindBestMatchForUpdatePassword(
       const base::string16& password) const;
 
-  // Set of PasswordForms from the DB that best match the form
+  // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
   autofill::PasswordFormMap best_matches_;
+
+  // Set of blacklisted forms from the DB that best match the current form.
+  ScopedVector<autofill::PasswordForm> blacklisted_matches_;
 
   // The PasswordForm from the page or dialog managed by |this|.
   const autofill::PasswordForm observed_form_;

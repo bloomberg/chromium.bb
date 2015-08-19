@@ -13,34 +13,10 @@
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
-#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
-@interface ManagePasswordsBubblePendingViewTestDelegate
-    : ContentViewDelegateMock<ManagePasswordsBubblePendingViewDelegate> {
-  BOOL neverSave_;
-}
-@property(readonly) BOOL neverSave;
-@end
-
-@implementation ManagePasswordsBubblePendingViewTestDelegate
-
-@synthesize neverSave = neverSave_;
-
-- (void)passwordShouldNeverBeSavedOnSiteWithExistingPasswords {
-  neverSave_ = YES;
-}
-
-@end
-
 namespace {
-
-void ClickMenuItem(BubbleCombobox* button, int index) {
-  // Skip the title if applicable.
-  [[button menu]
-      performActionForItemAtIndex:(button.pullsDown ? index + 1 : index)];
-}
 
 class ManagePasswordsBubblePendingViewControllerTest
     : public ManagePasswordsControllerTest {
@@ -49,13 +25,10 @@ class ManagePasswordsBubblePendingViewControllerTest
 
   void SetUp() override {
     ManagePasswordsControllerTest::SetUp();
-    delegate_.reset(
-        [[ManagePasswordsBubblePendingViewTestDelegate alloc] init]);
+    delegate_.reset([[ContentViewDelegateMock alloc] init]);
   }
 
-  ManagePasswordsBubblePendingViewTestDelegate* delegate() {
-    return delegate_.get();
-  }
+  ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
   ManagePasswordsBubblePendingViewController* controller() {
     if (!controller_) {
@@ -69,7 +42,7 @@ class ManagePasswordsBubblePendingViewControllerTest
 
  private:
   base::scoped_nsobject<ManagePasswordsBubblePendingViewController> controller_;
-  base::scoped_nsobject<ManagePasswordsBubblePendingViewTestDelegate> delegate_;
+  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
 };
 
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
@@ -82,44 +55,12 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
 }
 
 TEST_F(ManagePasswordsBubblePendingViewControllerTest,
-       ShouldNopeAndDismissWhenNopeClicked) {
-  BubbleCombobox* nopeButton = [controller() nopeButton];
-  ClickMenuItem(nopeButton, SavePasswordRefusalComboboxModel::INDEX_NOPE);
-
-  EXPECT_TRUE([delegate() dismissed]);
-  EXPECT_FALSE(ui_controller()->saved_password());
-  EXPECT_FALSE(ui_controller()->never_saved_password());
-}
-
-TEST_F(ManagePasswordsBubblePendingViewControllerTest,
-       ShouldNeverSaveAndDismissWhenNeverSaveClickedWithoutAnyBestMatches) {
-  BubbleCombobox* nopeButton = [controller() nopeButton];
-  ClickMenuItem(nopeButton,
-                SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE);
+       ShouldNeverAndDismissWhenNeverClicked) {
+  [controller().neverButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
   EXPECT_FALSE(ui_controller()->saved_password());
   EXPECT_TRUE(ui_controller()->never_saved_password());
-}
-
-TEST_F(ManagePasswordsBubblePendingViewControllerTest,
-       ShouldConfirmNeverSaveWhenNeverSaveClickedOnSiteWithPasswordsSaved) {
-  // Add some matches.
-  autofill::PasswordForm form;
-  form.username_value = base::ASCIIToUTF16("username");
-  form.password_value = base::ASCIIToUTF16("password");
-  ScopedVector<autofill::PasswordForm> forms;
-  forms.push_back(new autofill::PasswordForm(form));
-  ui_controller()->PretendSubmittedPassword(forms.Pass());
-  EXPECT_FALSE(model()->local_credentials().empty());
-
-  BubbleCombobox* nopeButton = [controller() nopeButton];
-  ClickMenuItem(nopeButton,
-                SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE);
-
-  EXPECT_TRUE([delegate() neverSave]);
-  EXPECT_FALSE(ui_controller()->saved_password());
-  EXPECT_FALSE(ui_controller()->never_saved_password());
 }
 
 }  // namespace

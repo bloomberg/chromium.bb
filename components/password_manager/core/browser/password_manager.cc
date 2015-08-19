@@ -549,16 +549,6 @@ bool PasswordManager::CanProvisionalManagerSave() {
     provisional_save_manager_.reset();
     return false;
   }
-
-  // Also get out of here if the user told us to 'never remember' passwords for
-  // this form.
-  if (provisional_save_manager_->IsBlacklisted()) {
-    RecordFailure(FORM_BLACKLISTED,
-                  provisional_save_manager_->observed_form().origin,
-                  logger.get());
-    provisional_save_manager_.reset();
-    return false;
-  }
   return true;
 }
 

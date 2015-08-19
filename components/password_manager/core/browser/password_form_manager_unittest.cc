@@ -411,6 +411,51 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
 }
 
+TEST_F(PasswordFormManagerTest, TestBlacklist) {
+  PasswordFormManager form_manager(nullptr, client(), kNoDriver,
+                                   *observed_form(), false);
+  saved_match()->origin = observed_form()->origin;
+  saved_match()->action = observed_form()->action;
+  SimulateMatchingPhase(&form_manager, RESULT_MATCH_FOUND);
+  // Set up the new login.
+  PasswordForm credentials = *observed_form();
+  credentials.username_value = ASCIIToUTF16("newuser");
+  credentials.password_value = ASCIIToUTF16("newpass");
+  form_manager.ProvisionallySave(
+      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  EXPECT_TRUE(form_manager.IsNewLogin());
+  EXPECT_EQ(observed_form()->origin.spec(),
+            form_manager.pending_credentials().origin.spec());
+  EXPECT_EQ(observed_form()->signon_realm,
+            form_manager.pending_credentials().signon_realm);
+
+  const PasswordForm pending_form = form_manager.pending_credentials();
+  EXPECT_CALL(*mock_store(), RemoveLogin(_)).Times(0);
+  form_manager.PermanentlyBlacklist();
+  EXPECT_EQ(pending_form, form_manager.pending_credentials());
+}
+
+TEST_F(PasswordFormManagerTest, AutofillBlacklisted) {
+  TestPasswordManager password_manager(client());
+  PasswordFormManager form_manager(&password_manager, client(),
+                                   client()->driver(), *observed_form(), false);
+  PasswordForm saved_form = *observed_form();
+  saved_form.username_value = ASCIIToUTF16("user");
+  saved_form.password_value = ASCIIToUTF16("pass");
+  PasswordForm blacklisted = *observed_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value = base::string16();
+  ScopedVector<PasswordForm> result;
+  result.push_back(new PasswordForm(saved_form));
+  result.push_back(new PasswordForm(blacklisted));
+  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
+  form_manager.OnGetPasswordStoreResults(result.Pass());
+  EXPECT_EQ(1u, password_manager.GetLatestBestMatches().size());
+  EXPECT_EQ(1u, form_manager.blacklisted_matches().size());
+  EXPECT_TRUE(form_manager.IsBlacklisted());
+}
+
 // If PSL-matched credentials had been suggested, but the user has overwritten
 // the password, the provisionally saved credentials should no longer be
 // considered as PSL-matched, so that the exception for not prompting before

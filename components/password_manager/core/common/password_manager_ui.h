@@ -27,10 +27,6 @@ enum State {
   // to be visible, in the management state.
   MANAGE_STATE,
 
-  // The user has blacklisted the site rendered in the current WebContents.
-  // The icon needs to be visible, in the blacklisted state.
-  BLACKLIST_STATE,
-
   // The site has asked user to choose a credential.
   CREDENTIAL_REQUEST_STATE,
 

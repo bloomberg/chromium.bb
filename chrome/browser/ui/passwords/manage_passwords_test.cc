@@ -57,6 +57,9 @@ void ManagePasswordsTest::SetupPendingPassword() {
   scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           NULL, &client, driver.AsWeakPtr(), *test_form(), false));
+  test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
+  ScopedVector<autofill::PasswordForm> best_matches;
+  test_form_manager->OnGetPasswordStoreResults(best_matches.Pass());
   GetController()->OnPasswordSubmitted(test_form_manager.Pass());
 }
 

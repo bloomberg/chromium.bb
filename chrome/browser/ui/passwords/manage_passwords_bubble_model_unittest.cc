@@ -65,11 +65,6 @@ class ManagePasswordsBubbleModelTest : public testing::Test {
     model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
   }
 
-  void PretendBlacklisted() {
-    model_->set_state(password_manager::ui::BLACKLIST_STATE);
-    model_->OnBubbleShown(ManagePasswordsBubble::USER_ACTION);
-  }
-
   ManagePasswordsUIControllerMock* controller() {
     return static_cast<ManagePasswordsUIControllerMock*>(
         ManagePasswordsUIController::FromWebContents(
@@ -140,23 +135,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
       1);
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, ClickNope) {
-  base::HistogramTester histogram_tester;
-  PretendPasswordWaiting();
-  model_->OnNopeClicked();
-  model_->OnBubbleHidden();
-  EXPECT_EQ(model_->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_NOPE);
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model_->state());
-  EXPECT_FALSE(controller()->saved_password());
-  EXPECT_FALSE(controller()->never_saved_password());
-
-  histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_NOPE,
-      1);
-}
-
 TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
@@ -164,7 +142,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_NEVER);
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, model_->state());
+  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model_->state());
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_TRUE(controller()->never_saved_password());
 
@@ -208,24 +186,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
       1);
 }
 
-TEST_F(ManagePasswordsBubbleModelTest, ClickUnblacklist) {
-  base::HistogramTester histogram_tester;
-  PretendBlacklisted();
-  model_->OnUnblacklistClicked();
-  model_->OnBubbleHidden();
-  EXPECT_EQ(model_->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_UNBLACKLIST);
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
-  EXPECT_FALSE(controller()->saved_password());
-  EXPECT_FALSE(controller()->never_saved_password());
-  EXPECT_TRUE(controller()->unblacklist_site());
-
-  histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_UNBLACKLIST,
-      1);
-}
-
 TEST_F(ManagePasswordsBubbleModelTest, ClickCredential) {
   base::HistogramTester histogram_tester;
   PretendCredentialsWaiting();
@@ -250,17 +210,16 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickCancelCredential) {
   base::HistogramTester histogram_tester;
   PretendCredentialsWaiting();
   EXPECT_FALSE(controller()->choose_credential());
-  model_->OnNopeClicked();
+  model_->OnCancelClicked();
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_NOPE);
+            password_manager::metrics_util::CLICKED_CANCEL);
   EXPECT_FALSE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
   EXPECT_FALSE(controller()->choose_credential());
 
   histogram_tester.ExpectUniqueSample(
-      kUIDismissalReasonMetric,
-      password_manager::metrics_util::CLICKED_NOPE,
+      kUIDismissalReasonMetric, password_manager::metrics_util::CLICKED_CANCEL,
       1);
 }
 

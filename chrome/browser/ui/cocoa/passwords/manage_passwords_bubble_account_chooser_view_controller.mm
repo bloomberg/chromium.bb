@@ -201,7 +201,7 @@
 }
 
 - (void)onCancelClicked:(id)sender {
-  model_->OnNopeClicked();
+  model_->OnCancelClicked();
   [delegate_ viewShouldDismiss];
 }
 

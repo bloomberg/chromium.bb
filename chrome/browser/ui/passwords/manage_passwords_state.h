@@ -67,7 +67,6 @@ class ManagePasswordsState {
   void OnInactive();
 
   // Moves the object to |state| without resetting the internal data. Allowed:
-  // * -> BLACKLIST_STATE
   // * -> MANAGE_STATE
   void TransitionToState(password_manager::ui::State state);
 

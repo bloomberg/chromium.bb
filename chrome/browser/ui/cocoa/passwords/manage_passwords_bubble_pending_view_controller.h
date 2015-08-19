@@ -12,23 +12,8 @@
 
 @class HyperlinkTextView;
 
-namespace ui {
-class ComboboxModel;
-}  // namespace ui
-
-@class BubbleCombobox;
 class ManagePasswordsBubbleModel;
 @class ManagePasswordItemViewController;
-
-// Handles user interaction with the password save bubble.
-@protocol ManagePasswordsBubblePendingViewDelegate<
-    ManagePasswordsBubbleContentViewDelegate>
-
-// The user chose to never save the password on a site that has other passwords
-// already saved.
-- (void)passwordShouldNeverBeSavedOnSiteWithExistingPasswords;
-
-@end
 
 // Manages the view that offers to save the user's password.
 @interface ManagePasswordsBubblePendingViewController
@@ -36,17 +21,17 @@ class ManagePasswordsBubbleModel;
  @private
   ManagePasswordsBubbleModel* model_;  // weak
   base::scoped_nsobject<NSButton> saveButton_;
-  base::scoped_nsobject<BubbleCombobox> nopeButton_;
+  base::scoped_nsobject<NSButton> neverButton_;
   base::scoped_nsobject<HyperlinkTextView> titleView_;
   base::scoped_nsobject<ManagePasswordItemViewController> passwordItem_;
 }
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubblePendingViewDelegate>)delegate;
+           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
 @end
 
 @interface ManagePasswordsBubblePendingViewController (Testing)
 @property(readonly) NSButton* saveButton;
-@property(readonly) BubbleCombobox* nopeButton;
+@property(readonly) NSButton* neverButton;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_PENDING_VIEW_CONTROLLER_H_

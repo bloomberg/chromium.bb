@@ -182,49 +182,25 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
 
 bool PasswordFormManager::IsBlacklisted() const {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
-  if (preferred_match_ && preferred_match_->blacklisted_by_user)
-    return true;
-  return false;
+  return !blacklisted_matches_.empty();
 }
 
 void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
+  DCHECK(!client_->IsOffTheRecord());
 
   // Configure the form about to be saved for blacklist status.
-  pending_credentials_.preferred = true;
-  pending_credentials_.blacklisted_by_user = true;
-  pending_credentials_.username_value.clear();
-  pending_credentials_.password_value.clear();
+  autofill::PasswordForm blacklisted = pending_credentials_;
+  blacklisted.preferred = false;
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value.clear();
+  blacklisted.password_value.clear();
+  blacklisted.other_possible_usernames.clear();
+  blacklisted.date_created = Time::Now();
 
-  // Retroactively forget existing matches for this form, so we NEVER prompt or
-  // autofill it again.
-  int num_passwords_deleted = 0;
-  if (!best_matches_.empty()) {
-    PasswordFormMap::const_iterator iter;
-    PasswordStore* password_store = client_->GetPasswordStore();
-    if (!password_store) {
-      NOTREACHED();
-      return;
-    }
-    for (iter = best_matches_.begin(); iter != best_matches_.end(); ++iter) {
-      // We want to remove existing matches for this form so that the exact
-      // origin match with |blackisted_by_user == true| is the only result that
-      // shows up in the future for this origin URL. However, we don't want to
-      // delete logins that were actually saved on a different page (hence with
-      // different origin URL) and just happened to match this form because of
-      // the scoring algorithm. See bug 1204493.
-      if (iter->second->origin == observed_form_.origin) {
-        password_store->RemoveLogin(*iter->second);
-        ++num_passwords_deleted;
-      }
-    }
-  }
-
-  UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsDeletedWhenBlacklisting",
-                       num_passwords_deleted);
-
-  // Save the pending_credentials_ entry marked as blacklisted.
-  SaveAsNewLogin(false);
+  PasswordStore* password_store = client_->GetPasswordStore();
+  DCHECK(password_store);
+  password_store->AddLogin(blacklisted);
 }
 
 bool PasswordFormManager::IsNewLogin() const {
@@ -263,7 +239,7 @@ void PasswordFormManager::Save() {
   DCHECK(!client_->IsOffTheRecord());
 
   if (IsNewLogin()) {
-    SaveAsNewLogin(true);
+    SaveAsNewLogin();
     DeleteEmptyUsernameCredentials();
   } else {
     UpdateLogin();
@@ -349,6 +325,7 @@ void PasswordFormManager::OnRequestDone(
     ScopedVector<PasswordForm> logins_result) {
   preferred_match_ = nullptr;
   best_matches_.clear();
+  blacklisted_matches_.clear();
   const size_t logins_result_size = logins_result.size();
 
   scoped_ptr<BrowserSavePasswordProgressLogger> logger;
@@ -420,6 +397,11 @@ void PasswordFormManager::OnRequestDone(
       continue;
     }
 
+    if (login->blacklisted_by_user) {
+      blacklisted_matches_.push_back(login.Pass());
+      continue;
+    }
+
     // If there is another best-score match for the same username, replace it.
     // TODO(vabr): Spare the replacing and keep the first instead of the last
     // candidate.
@@ -454,18 +436,18 @@ void PasswordFormManager::OnRequestDone(
   UMA_HISTOGRAM_COUNTS("PasswordManager.NumPasswordsNotShown",
                        logins_result_size - best_matches_.size());
 
-  // It is possible we have at least one match but have no preferred_match_,
-  // because a user may have chosen to 'Forget' the preferred match. So we
-  // just pick the first one and whichever the user selects for submit will
-  // be saved as preferred.
-  DCHECK(!best_matches_.empty());
-  if (!preferred_match_)
-    preferred_match_ = best_matches_.begin()->second;
-
   // Check to see if the user told us to ignore this site in the past.
-  if (preferred_match_->blacklisted_by_user) {
+  if (best_matches_.empty()) {
+    DCHECK(!preferred_match_);
     client_->PasswordAutofillWasBlocked(best_matches_);
     manager_action_ = kManagerActionBlacklisted;
+  } else {
+    // It is possible we have at least one match but have no preferred_match_,
+    // because a user may have chosen to 'Forget' the preferred match. So we
+    // just pick the first one and whichever the user selects for submit will
+    // be saved as preferred.
+    if (!preferred_match_)
+      preferred_match_ = best_matches_.begin()->second;
   }
 }
 
@@ -535,11 +517,12 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   drivers_.clear();
 }
 
-void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
+void PasswordFormManager::SaveAsNewLogin() {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK(IsNewLogin());
   // The new_form is being used to sign in, so it is preferred.
   DCHECK(pending_credentials_.preferred);
+  DCHECK(!pending_credentials_.blacklisted_by_user);
   // new_form contains the same basic data as observed_form_ (because its the
   // same form), but with the newly added credentials.
 
@@ -553,25 +536,20 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
 
   // Upload credentials the first time they are saved. This data is used
   // by password generation to help determine account creation sites.
-  // Blacklisted credentials will never be used, so don't upload a vote for
-  // them. Credentials that have been previously used (e.g. PSL matches) are
-  // checked to see if they are valid account creation forms.
-  if (!pending_credentials_.blacklisted_by_user) {
+  // Credentials that have been previously used (e.g. PSL matches) are checked
+  // to see if they are valid account creation forms.
     if (pending_credentials_.times_used == 0) {
       UploadPasswordForm(pending_credentials_.form_data, base::string16(),
                          autofill::PASSWORD, std::string());
     } else {
       SendAutofillVotes(observed_form_, &pending_credentials_);
     }
-  }
 
   pending_credentials_.date_created = Time::Now();
   SanitizePossibleUsernames(&pending_credentials_);
   password_store->AddLogin(pending_credentials_);
 
-  if (reset_preferred_login) {
-    UpdatePreferredLoginState(password_store);
-  }
+  UpdatePreferredLoginState(password_store);
 }
 
 void PasswordFormManager::SanitizePossibleUsernames(PasswordForm* form) {

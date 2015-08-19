@@ -799,8 +799,6 @@
       <structure type="chrome_scaled_image" name="IDR_SAD_TAB" file="common/sadtab.png" />
       <structure type="chrome_scaled_image" name="IDR_SAFEBROWSING_WARNING" file="common/safebrowsing_warning.png" />
       <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_ACTIVE" file="common/save_password_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_DISABLED_ACTIVE" file="common/save_password_disabled_active.png" />
-      <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_DISABLED_INACTIVE" file="common/save_password_disabled_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_SAVE_PASSWORD_INACTIVE" file="common/save_password_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP" file="screen_capture_notification_grip.png" />
       <structure type="chrome_scaled_image" name="IDR_SCREENSHOT_NOTIFICATION_ICON" file="common/notification_screenshot_icon.png" />

@@ -56,7 +56,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   class AccountChooserView;
   class AutoSigninView;
   class BlacklistedView;
-  class ConfirmNeverView;
   class ManageView;
   class ManageAccountsView;
   class PendingView;
@@ -80,18 +79,6 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   // Refreshes the bubble's state: called to display a confirmation screen after
   // a user selects "Never for this site", for instance.
   void Refresh();
-
-  // Called from PendingView if the user clicks on "Never for this site" in
-  // order to display a confirmation screen.
-  void NotifyNeverForThisSiteClicked();
-
-  // Called from ConfirmNeverView if the user confirms her intention to never
-  // save passwords, and remove existing passwords, for a site.
-  void NotifyConfirmedNeverForThisSite();
-
-  // Called from ConfirmNeverView if the user clicks on "Undo" in order to
-  // undo the action and refresh to PendingView.
-  void NotifyUndoNeverForThisSite();
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);

@@ -58,10 +58,7 @@ Profile* GetProfileFromWebContents(content::WebContents* web_contents) {
 
 void RecordExperimentStatistics(content::WebContents* web_contents,
                                 metrics_util::UIDismissalReason reason) {
-  Profile* profile = GetProfileFromWebContents(web_contents);
-  if (!profile)
-    return;
-  password_bubble_experiment::RecordBubbleClosed(profile->GetPrefs(), reason);
+  // TODO(vasilii): revive the function while implementing the smart bubble.
 }
 
 ScopedVector<const autofill::PasswordForm> DeepCopyForms(
@@ -88,7 +85,6 @@ bool IsSmartLockBrandingEnabled(Profile* profile) {
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      never_save_passwords_(false),
       display_disposition_(metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
       dismissal_reason_(metrics_util::NOT_DISPLAYED) {
   ManagePasswordsUIController* controller =
@@ -115,8 +111,6 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE ||
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     UpdatePendingStateTitle();
-  } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
-    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TITLE);
@@ -162,8 +156,6 @@ void ManagePasswordsBubbleModel::OnBubbleShown(
   if (reason == ManagePasswordsBubble::USER_ACTION) {
     if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
       display_disposition_ = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
-    } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
-      display_disposition_ = metrics_util::MANUAL_BLACKLISTED;
     } else {
       display_disposition_ = metrics_util::MANUAL_MANAGE_PASSWORDS;
     }
@@ -208,21 +200,9 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
     RecordExperimentStatistics(web_contents(), dismissal_reason_);
 }
 
-void ManagePasswordsBubbleModel::OnNopeClicked() {
-  dismissal_reason_ = metrics_util::CLICKED_NOPE;
-  RecordExperimentStatistics(web_contents(), dismissal_reason_);
-  if (state_ != password_manager::ui::CREDENTIAL_REQUEST_STATE)
-    state_ = password_manager::ui::PENDING_PASSWORD_STATE;
-}
-
-void ManagePasswordsBubbleModel::OnConfirmationForNeverForThisSite() {
-  never_save_passwords_ = true;
-  UpdatePendingStateTitle();
-}
-
-void ManagePasswordsBubbleModel::OnUndoNeverForThisSite() {
-  never_save_passwords_ = false;
-  UpdatePendingStateTitle();
+void ManagePasswordsBubbleModel::OnCancelClicked() {
+  DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state_);
+  dismissal_reason_ = metrics_util::CLICKED_CANCEL;
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
@@ -231,15 +211,6 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->NeverSavePassword();
-  state_ = password_manager::ui::BLACKLIST_STATE;
-}
-
-void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
-  dismissal_reason_ = metrics_util::CLICKED_UNBLACKLIST;
-  ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents());
-  manage_passwords_ui_controller->UnblacklistSite();
-  state_ = password_manager::ui::MANAGE_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnSaveClicked() {
@@ -352,14 +323,9 @@ int ManagePasswordsBubbleModel::PasswordFieldWidth() {
 
 void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   title_brand_link_range_ = gfx::Range();
-  if (never_save_passwords_) {
-    title_ = l10n_util::GetStringUTF16(
-        IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE);
-  } else {
-    GetSavePasswordDialogTitleTextAndLinkRange(
-        web_contents()->GetVisibleURL(), origin(),
-        IsSmartLockBrandingEnabled(GetProfile()),
-        state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, &title_,
-        &title_brand_link_range_);
-  }
+  GetSavePasswordDialogTitleTextAndLinkRange(
+      web_contents()->GetVisibleURL(), origin(),
+      IsSmartLockBrandingEnabled(GetProfile()),
+      state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, &title_,
+      &title_brand_link_range_);
 }

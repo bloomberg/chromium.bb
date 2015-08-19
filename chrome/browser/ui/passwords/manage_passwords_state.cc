@@ -83,17 +83,6 @@ void RemoveFormFromVector(const autofill::PasswordForm& form_to_delete,
     forms->erase(it);
 }
 
-// Inserts |form| to the beginning of |forms| if it's blacklisted or to the end
-// otherwise. UnblacklistSite() expects the first saved password to be the
-// blacklisted credential.
-template <class Vector>
-void InsertFormToVector(const autofill::PasswordForm* form,
-                        Vector* forms) {
-  typename Vector::iterator it = form->blacklisted_by_user ? forms->begin()
-                                                           : forms->end();
-  forms->insert(it, form);
-}
-
 }  // namespace
 
 ManagePasswordsState::ManagePasswordsState()
@@ -181,8 +170,7 @@ void ManagePasswordsState::OnInactive() {
 void ManagePasswordsState::TransitionToState(
     password_manager::ui::State state) {
   DCHECK_NE(password_manager::ui::INACTIVE_STATE, state_);
-  DCHECK(state == password_manager::ui::BLACKLIST_STATE ||
-         state == password_manager::ui::MANAGE_STATE);
+  DCHECK_EQ(password_manager::ui::MANAGE_STATE, state);
   if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     if (!credentials_callback_.is_null()) {
       credentials_callback_.Run(password_manager::CredentialInfo());
@@ -202,20 +190,11 @@ void ManagePasswordsState::ProcessLoginsChanged(
     const autofill::PasswordForm& changed_form = change.form();
     if (change.type() == password_manager::PasswordStoreChange::REMOVE) {
       DeleteForm(changed_form);
-      if (changed_form.blacklisted_by_user &&
-          state() == password_manager::ui::BLACKLIST_STATE &&
-          changed_form.origin == origin_) {
-        TransitionToState(password_manager::ui::MANAGE_STATE);
-      }
     } else {
       if (change.type() == password_manager::PasswordStoreChange::UPDATE)
         UpdateForm(changed_form);
       else
         AddForm(changed_form);
-      if (changed_form.blacklisted_by_user &&
-          changed_form.origin == origin_) {
-        TransitionToState(password_manager::ui::BLACKLIST_STATE);
-      }
     }
   }
 }
@@ -235,10 +214,9 @@ void ManagePasswordsState::AddForm(const autofill::PasswordForm& form) {
     return;
   if (form_manager_) {
     local_credentials_forms_.push_back(new autofill::PasswordForm(form));
-    InsertFormToVector(local_credentials_forms_.back(), &current_forms_weak_);
+    current_forms_weak_.push_back(local_credentials_forms_.back());
   } else {
-    InsertFormToVector(new autofill::PasswordForm(form),
-                       &local_credentials_forms_);
+    local_credentials_forms_.push_back(new autofill::PasswordForm(form));
   }
 }
 

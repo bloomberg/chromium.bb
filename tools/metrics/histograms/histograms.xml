@@ -29203,6 +29203,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PasswordManager.NumPasswordsDeletedWhenBlacklisting">
+  <obsolete>
+    Deprecated as of 08/2015.
+  </obsolete>
   <owner>vabr@chromium.org</owner>
   <summary>
     When the user chooses to never remember passwords for a form, we remove all

@@ -45,23 +45,12 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the bubble is hidden.
   void OnBubbleHidden();
 
-  // Called by the view code when the "Never for this site." button in clicked
-  // by the user and user gets confirmation bubble.
-  void OnConfirmationForNeverForThisSite();
-
-  // Called by the view code when the "Nope" button in clicked by the user.
-  void OnNopeClicked();
+  // Called by the view code when the "Cancel" button in clicked by the user.
+  void OnCancelClicked();
 
   // Called by the view code when the "Never for this site." button in clicked
   // by the user.
   void OnNeverForThisSiteClicked();
-
-  // Called by the view code when the "Undo" button is clicked in
-  // "Never for this site." confirmation bubble by the user.
-  void OnUndoNeverForThisSite();
-
-  // Called by the view code when the site is unblacklisted.
-  void OnUnblacklistClicked();
 
   // Called by the view code when the save button is clicked by the user.
   void OnSaveClicked();
@@ -117,7 +106,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
     return federated_credentials_;
   }
   const base::string16& manage_link() const { return manage_link_; }
-  bool never_save_passwords() const { return never_save_passwords_; }
   const base::string16& save_confirmation_text() const {
     return save_confirmation_text_;
   }
@@ -177,9 +165,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;
-  // If true upon destruction, the user has confirmed that she never wants to
-  // save passwords for a particular site.
-  bool never_save_passwords_;
   password_manager::metrics_util::UIDisplayDisposition display_disposition_;
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
 

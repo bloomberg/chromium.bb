@@ -72,9 +72,7 @@ class ManagePasswordsUIController
   // the manage password icon.
   void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
 
-  // Called when a form is _not_ autofilled due to user blacklisting. This
-  // stores a copy of |password_form_map| so that we can offer the user the
-  // ability to reenable the manager for this form.
+  // TODO(vasilii): remove this method. It's obsolete.
   void OnBlacklistBlockedAutofill(
       const autofill::PasswordFormMap& password_form_map);
 
@@ -99,15 +97,9 @@ class ManagePasswordsUIController
       password_manager::CredentialType credential_type);
 
   // Called from the model when the user chooses to never save passwords; passes
-  // the action off to the FormManager. The controller MUST be in a pending
-  // state, and WILL be in BLACKLIST_STATE after this method executes.
+  // the action off to the FormManager. The controller must be in a pending
+  // state, and will state in this state.
   virtual void NeverSavePassword();
-
-  // Called from the model when the user chooses to unblacklist the site. The
-  // controller MUST be in BLACKLIST_STATE, and WILL be in MANAGE_STATE after
-  // this method executes. The method removes the first form of
-  // GetCurrentForms() which should be the blacklisted one.
-  virtual void UnblacklistSite();
 
   // Called from the model. The controller should switch to MANAGE_STATE and pop
   // up a bubble.

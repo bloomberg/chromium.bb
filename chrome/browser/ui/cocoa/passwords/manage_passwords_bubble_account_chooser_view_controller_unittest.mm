@@ -171,6 +171,12 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
        SelectingNopeDismissesDialog) {
+  ScopedVector<autofill::PasswordForm> local_forms;
+  local_forms.push_back(Credential("pizza"));
+  EXPECT_TRUE(ui_controller()->OnChooseCredentials(
+      local_forms.Pass(), ScopedVector<autofill::PasswordForm>(),
+      GURL("http://example.com"),
+      base::Callback<void(const password_manager::CredentialInfo&)>()));
   [controller().cancelButton performClick:nil];
   EXPECT_TRUE(delegate().dismissed);
 }

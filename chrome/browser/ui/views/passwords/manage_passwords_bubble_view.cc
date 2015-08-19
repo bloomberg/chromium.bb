@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_selection_view.h"
@@ -24,8 +23,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/combobox/combobox.h"
-#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/separator.h"
@@ -263,7 +260,7 @@ void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
     parent_->model()->OnChooseCredentials(*view->form(),
                                           view->credential_type());
   } else {
-    parent_->model()->OnNopeClicked();
+    parent_->model()->OnCancelClicked();
   }
   parent_->Close();
 }
@@ -350,11 +347,10 @@ void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
 
 // A view offering the user the ability to save credentials. Contains a
 // single ManagePasswordItemsView, along with a "Save Passwords" button
-// and a rejection combobox.
+// and a "Never" button.
 class ManagePasswordsBubbleView::PendingView
     : public views::View,
       public views::ButtonListener,
-      public views::ComboboxListener,
       public views::StyledLabelListener {
  public:
   explicit PendingView(ManagePasswordsBubbleView* parent);
@@ -368,19 +364,10 @@ class ManagePasswordsBubbleView::PendingView
   void StyledLabelLinkClicked(const gfx::Range& range,
                               int event_flags) override;
 
-  // Handles the event when the user changes an index of a combobox.
-  void OnPerformAction(views::Combobox* source) override;
-
   ManagePasswordsBubbleView* parent_;
 
   views::BlueButton* save_button_;
-
-  // The combobox doesn't take ownership of its model. If we created a
-  // combobox we need to ensure that we delete the model here, and because the
-  // combobox uses the model in it's destructor, we need to make sure we
-  // delete the model _after_ the combobox itself is deleted.
-  scoped_ptr<SavePasswordRefusalComboboxModel> combobox_model_;
-  scoped_ptr<views::Combobox> refuse_combobox_;
+  views::LabelButton* never_button_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingView);
 };
@@ -404,12 +391,12 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
   save_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
-
-  combobox_model_.reset(new SavePasswordRefusalComboboxModel);
-  refuse_combobox_.reset(new views::Combobox(combobox_model_.get()));
-  refuse_combobox_->set_listener(this);
-  refuse_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
-  // TODO(mkwst): Need a mechanism to pipe a font list down into a combobox.
+  never_button_ = new views::LabelButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON));
+  never_button_->SetStyle(views::Button::STYLE_BUTTON);
+  never_button_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::SmallFont));
 
   // Title row.
   views::StyledLabel* title_label =
@@ -438,7 +425,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   layout->StartRowWithPadding(
       0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
   layout->AddView(save_button_);
-  layout->AddView(refuse_combobox_.get());
+  layout->AddView(never_button_);
 
   // Extra padding for visual awesomeness.
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -452,8 +439,13 @@ ManagePasswordsBubbleView::PendingView::~PendingView() {
 void ManagePasswordsBubbleView::PendingView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  DCHECK(sender == save_button_);
-  parent_->model()->OnSaveClicked();
+  if (sender == save_button_)
+    parent_->model()->OnSaveClicked();
+  else if (sender == never_button_)
+    parent_->model()->OnNeverForThisSiteClicked();
+  else
+    NOTREACHED();
+
   parent_->Close();
 }
 
@@ -462,106 +454,6 @@ void ManagePasswordsBubbleView::PendingView::StyledLabelLinkClicked(
     int event_flags) {
   DCHECK_EQ(range, parent_->model()->title_brand_link_range());
   parent_->model()->OnBrandLinkClicked();
-}
-
-void ManagePasswordsBubbleView::PendingView::OnPerformAction(
-    views::Combobox* source) {
-  DCHECK_EQ(source, refuse_combobox_);
-  switch (refuse_combobox_->selected_index()) {
-    case SavePasswordRefusalComboboxModel::INDEX_NOPE:
-      parent_->model()->OnNopeClicked();
-      parent_->Close();
-      break;
-    case SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE:
-      parent_->NotifyNeverForThisSiteClicked();
-      break;
-  }
-}
-
-// ManagePasswordsBubbleView::ConfirmNeverView --------------------------------
-
-// A view offering the user the ability to undo her decision to never save
-// passwords for a particular site.
-class ManagePasswordsBubbleView::ConfirmNeverView
-    : public views::View,
-      public views::ButtonListener {
- public:
-  explicit ConfirmNeverView(ManagePasswordsBubbleView* parent);
-  ~ConfirmNeverView() override;
-
- private:
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  ManagePasswordsBubbleView* parent_;
-
-  views::LabelButton* confirm_button_;
-  views::LabelButton* undo_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmNeverView);
-};
-
-ManagePasswordsBubbleView::ConfirmNeverView::ConfirmNeverView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
-
-  // Title row.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
-  // Confirmation text.
-  views::Label* confirmation = new views::Label(l10n_util::GetStringUTF16(
-      IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TEXT));
-  confirmation->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  confirmation->SetMultiLine(true);
-  confirmation->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(confirmation);
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-
-  // Confirm and undo buttons.
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
-
-  confirm_button_ = new views::LabelButton(
-      this,
-      l10n_util::GetStringUTF16(
-          IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_BUTTON));
-  confirm_button_->SetStyle(views::Button::STYLE_BUTTON);
-  confirm_button_->SetFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::SmallFont));
-  layout->AddView(confirm_button_);
-
-  undo_button_ =
-      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_CANCEL));
-  undo_button_->SetStyle(views::Button::STYLE_BUTTON);
-  undo_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
-  layout->AddView(undo_button_);
-
-  // Extra padding for visual awesomeness.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  parent_->set_initially_focused_view(confirm_button_);
-}
-
-ManagePasswordsBubbleView::ConfirmNeverView::~ConfirmNeverView() {
-}
-
-void ManagePasswordsBubbleView::ConfirmNeverView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  DCHECK(sender == confirm_button_ || sender == undo_button_);
-  if (sender == confirm_button_)
-    parent_->NotifyConfirmedNeverForThisSite();
-  else
-    parent_->NotifyUndoNeverForThisSite();
 }
 
 // ManagePasswordsBubbleView::ManageView --------------------------------------
@@ -761,90 +653,6 @@ void ManagePasswordsBubbleView::ManageAccountsView::LinkClicked(
     views::Link* source, int event_flags) {
   DCHECK_EQ(source, manage_link_);
   parent_->model()->OnManageLinkClicked();
-  parent_->Close();
-}
-
-// ManagePasswordsBubbleView::BlacklistedView ---------------------------------
-
-// A view offering the user the ability to re-enable the password manager for
-// a specific site after she's decided to "never save passwords".
-class ManagePasswordsBubbleView::BlacklistedView
-    : public views::View,
-      public views::ButtonListener {
- public:
-  explicit BlacklistedView(ManagePasswordsBubbleView* parent);
-  ~BlacklistedView() override;
-
- private:
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  ManagePasswordsBubbleView* parent_;
-
-  views::BlueButton* unblacklist_button_;
-  views::LabelButton* done_button_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlacklistedView);
-};
-
-ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
-    ManagePasswordsBubbleView* parent)
-    : parent_(parent) {
-  views::GridLayout* layout = new views::GridLayout(this);
-  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
-  SetLayoutManager(layout);
-
-  // Add the title.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
-  // Add the "Hey! You blacklisted this site!" text.
-  views::Label* blacklisted = new views::Label(
-      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED));
-  blacklisted->SetMultiLine(true);
-  blacklisted->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  blacklisted->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(blacklisted);
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
-
-  // Then add the "enable password manager" and "Done" buttons.
-  unblacklist_button_ = new views::BlueButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON));
-  unblacklist_button_->SetFontList(
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::SmallFont));
-  done_button_ =
-      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
-  done_button_->SetStyle(views::Button::STYLE_BUTTON);
-  done_button_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::SmallFont));
-
-  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(
-      0, DOUBLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
-  layout->AddView(unblacklist_button_);
-  layout->AddView(done_button_);
-
-  // Extra padding for visual awesomeness.
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  parent_->set_initially_focused_view(unblacklist_button_);
-}
-
-ManagePasswordsBubbleView::BlacklistedView::~BlacklistedView() {
-}
-
-void ManagePasswordsBubbleView::BlacklistedView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  if (sender == done_button_)
-    parent_->model()->OnDoneClicked();
-  else if (sender == unblacklist_button_)
-    parent_->model()->OnUnblacklistClicked();
-  else
-    NOTREACHED();
   parent_->Close();
 }
 
@@ -1207,15 +1015,10 @@ void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
   if (model()->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
-    if (model()->never_save_passwords())
-      AddChildView(new ConfirmNeverView(this));
-    else
-      AddChildView(new PendingView(this));
+    AddChildView(new PendingView(this));
   } else if (model()->state() ==
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     AddChildView(new UpdatePendingView(this));
-  } else if (model()->state() == password_manager::ui::BLACKLIST_STATE) {
-    AddChildView(new BlacklistedView(this));
   } else if (model()->state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
   } else if (model()->state() ==
@@ -1230,26 +1033,4 @@ void ManagePasswordsBubbleView::Refresh() {
       AddChildView(new ManageView(this));
   }
   GetLayoutManager()->Layout(this);
-}
-
-void ManagePasswordsBubbleView::NotifyConfirmedNeverForThisSite() {
-  model()->OnNeverForThisSiteClicked();
-  Close();
-}
-
-void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
-  model()->OnUndoNeverForThisSite();
-  Refresh();
-  SizeToContents();
-}
-
-void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
-  if (model()->local_credentials().empty()) {
-    // Skip confirmation if there are no existing passwords for this site.
-    NotifyConfirmedNeverForThisSite();
-  } else {
-    model()->OnConfirmationForNeverForThisSite();
-    Refresh();
-    SizeToContents();
-  }
 }

@@ -10,7 +10,6 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_content_view_controller.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_never_save_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
@@ -18,9 +17,7 @@
 // views according to user interaction and updates the password management state
 // accordingly.
 @interface ManagePasswordsBubbleController
-    : BaseBubbleController<ManagePasswordsBubbleContentViewDelegate,
-                           ManagePasswordsBubbleNeverSaveViewDelegate,
-                           ManagePasswordsBubblePendingViewDelegate> {
+    : BaseBubbleController<ManagePasswordsBubbleContentViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;
   base::scoped_nsobject<ManagePasswordsBubbleContentViewController>

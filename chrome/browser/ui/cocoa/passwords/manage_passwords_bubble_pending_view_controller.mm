@@ -8,40 +8,29 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/bubble_combobox.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_password_item_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/combobox_model.h"
 
 using namespace password_manager::mac::ui;
 
 @interface ManagePasswordsBubblePendingViewController ()
 - (void)onSaveClicked:(id)sender;
-- (void)onNopeClicked:(id)sender;
 - (void)onNeverForThisSiteClicked:(id)sender;
 @end
 
 @implementation ManagePasswordsBubblePendingViewController
 
 - (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubblePendingViewDelegate>)delegate {
+           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate {
   if (([super initWithDelegate:delegate])) {
     model_ = model;
   }
   return self;
-}
-
-- (void)bubbleWillDisappear {
-  // The "nope" drop-down won't be dismissed until the user chooses an option,
-  // but if the bubble is dismissed (by cross-platform code) before the user
-  // makes a choice, then the choice won't actually take any effect.
-  [[nopeButton_ menu] cancelTrackingWithoutAnimation];
 }
 
 - (NSButton*)defaultButton {
@@ -53,22 +42,9 @@ using namespace password_manager::mac::ui;
   [delegate_ viewShouldDismiss];
 }
 
-- (void)onNopeClicked:(id)sender {
-  model_->OnNopeClicked();
-  [delegate_ viewShouldDismiss];
-}
-
 - (void)onNeverForThisSiteClicked:(id)sender {
-  if (model_->local_credentials().empty()) {
-    // Skip confirmation if there are no existing passwords for this site.
-    model_->OnNeverForThisSiteClicked();
-    [delegate_ viewShouldDismiss];
-  } else {
-    SEL selector =
-        @selector(passwordShouldNeverBeSavedOnSiteWithExistingPasswords);
-    if ([delegate_ respondsToSelector:selector])
-      [delegate_ performSelector:selector];
-  }
+  model_->OnNeverForThisSiteClicked();
+  [delegate_ viewShouldDismiss];
 }
 
 - (BOOL)textView:(NSTextView*)textView
@@ -85,7 +61,7 @@ using namespace password_manager::mac::ui;
   // -----------------------------------
   // |  Title                          |
   // |  username   password            |
-  // |                [Save] [Nope v]  |
+  // |                [Never]  [Save]  |
   // -----------------------------------
 
   // The title text depends on whether the user is signed in and therefore syncs
@@ -154,26 +130,14 @@ using namespace password_manager::mac::ui;
                 target:self
                 action:@selector(onSaveClicked:)] retain]);
 
-  // Nope combobox.
-  SavePasswordRefusalComboboxModel comboboxModel;
-  nopeButton_.reset([[BubbleCombobox alloc] initWithFrame:NSZeroRect
-                                                pullsDown:YES
-                                                    model:&comboboxModel]);
-  NSMenuItem* nopeItem =
-      [nopeButton_ itemAtIndex:SavePasswordRefusalComboboxModel::INDEX_NOPE];
-  [nopeItem setTarget:self];
-  [nopeItem setAction:@selector(onNopeClicked:)];
-  NSMenuItem* neverItem = [nopeButton_
-      itemAtIndex:SavePasswordRefusalComboboxModel::INDEX_NEVER_FOR_THIS_SITE];
-  [neverItem setTarget:self];
-  [neverItem setAction:@selector(onNeverForThisSiteClicked:)];
-
-  // Insert a dummy row at the top and select the right item.
-  [nopeButton_ insertItemWithTitle:@"" atIndex:0];
-  [nopeButton_ setTitle:base::SysUTF16ToNSString(comboboxModel.GetItemAt(0))];
-
-  [nopeButton_ sizeToFit];
-  [view addSubview:nopeButton_.get()];
+  // Never button.
+  NSString* neverButtonText =
+      l10n_util::GetNSString(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+  neverButton_.reset(
+      [[self addButton:neverButtonText
+                toView:view
+                target:self
+                action:@selector(onNeverForThisSiteClicked:)] retain]);
 
   // Compute the bubble width using the password item.
   const CGFloat contentWidth =
@@ -188,11 +152,9 @@ using namespace password_manager::mac::ui;
   CGFloat curY = kFramePadding;
   [saveButton_ setFrameOrigin:NSMakePoint(curX, curY)];
 
-  // [Save] goes to the left of [Nope].
-  curX -= kRelatedControlHorizontalPadding + NSWidth([nopeButton_ frame]);
-  curY = kFramePadding +
-         (NSHeight([saveButton_ frame]) - NSHeight([nopeButton_ frame])) / 2.0;
-  [nopeButton_ setFrameOrigin:NSMakePoint(curX, curY)];
+  // [Never] goes to the left of [Save].
+  curX -= kRelatedControlHorizontalPadding + NSWidth([neverButton_ frame]);
+  [neverButton_ setFrameOrigin:NSMakePoint(curX, curY)];
 
   // Password item goes on the next row and is shifted right.
   curX = kFramePadding;
@@ -218,8 +180,8 @@ using namespace password_manager::mac::ui;
   return saveButton_.get();
 }
 
-- (BubbleCombobox*)nopeButton {
-  return nopeButton_.get();
+- (NSButton*)neverButton {
+  return neverButton_.get();
 }
 
 @end

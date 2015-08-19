@@ -7562,11 +7562,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="Update button text for password manager">
           Update password
         </message>
-        <message name="IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON" desc="Buton text to re-enable the password manager after blacklisting.">
-          Undo
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option">
-          Never for this site
+        <message name="IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' bubble's 'Never remember for this site' option">
+          Never
         </message>
         <message name="IDS_PASSWORD_MANAGER_CANCEL_BUTTON" desc="Text for the 'Manage Passwords' bubble's 'Not now' option">
           Nope
@@ -13432,21 +13429,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_MANAGE_PASSWORDS_TITLE" desc="The title text that is used in the manage passwords bubble when a password is autofilled or after a user has stored a password.">
         Saved passwords for this site:
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_BLACKLISTED" desc="The text that is used in the manage passwords bubble when the current site is blacklisted.">
-        You chose not to allow passwords to be saved on this site.
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE" desc="The title text that is used in the manage passwords bubble when the current site is blacklisted.">
-        Passwords won't be saved
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE" desc="The title text that is used in the manage passwords bubble when confirming blacklisting a site.">
-        Delete existing saved passwords
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TEXT" desc="The confirmation text that is used in the manage passwords bubble when confirming blacklisting a site.">
-        Choosing to never save passwords will delete all passwords currently saved for this site.
-      </message>
-      <message name="IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_BUTTON" desc="The confirmation button that is used in the manage passwords bubble when confirming blacklisting a site.">
-        Delete saved passwords
       </message>
       <message name="IDS_MANAGE_PASSWORDS_REMOTE_TEXT" desc="The text used to tell inform users of how to manage their passwords from a website.">
         Access your passwords from any device at <ph name="LINK_TEXT">$1<ex>passwords.google.com</ex></ph>

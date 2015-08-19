@@ -48,9 +48,6 @@ class ManagePasswordsUIControllerMock
   void NeverSavePassword() override;
   bool never_saved_password() const { return never_saved_password_; }
 
-  void UnblacklistSite() override;
-  bool unblacklist_site() const { return unblacklist_site_; }
-
   void ChooseCredential(const autofill::PasswordForm& form,
                         password_manager::CredentialType form_type) override;
   bool choose_credential() const { return choose_credential_; }
@@ -80,7 +77,6 @@ class ManagePasswordsUIControllerMock
   bool saved_password_;
   bool updated_password_;
   bool never_saved_password_;
-  bool unblacklist_site_;
   bool choose_credential_;
   bool manage_accounts_;
   base::TimeDelta elapsed_;

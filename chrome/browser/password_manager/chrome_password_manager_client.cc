@@ -208,6 +208,8 @@ bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
       manage_passwords_ui_controller->OnPasswordSubmitted(form_to_save.Pass());
     }
   } else {
+    if (form_to_save->IsBlacklisted())
+      return false;
     std::string uma_histogram_suffix(
         password_manager::metrics_util::GroupIdToString(
             password_manager::metrics_util::MonitoredDomainGroupId(

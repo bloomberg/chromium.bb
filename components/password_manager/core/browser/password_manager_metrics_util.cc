@@ -127,7 +127,7 @@ void LogUIDismissalReason(ResponseType type) {
       reason = CLICKED_NEVER;
       break;
     case INFOBAR_DISMISSED:
-      reason = CLICKED_NOPE;
+      reason = CLICKED_CANCEL;
       break;
     case NUM_RESPONSE_TYPES:
       NOTREACHED();

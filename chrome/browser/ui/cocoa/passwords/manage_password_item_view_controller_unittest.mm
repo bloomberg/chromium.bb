@@ -130,6 +130,7 @@ TEST_F(ManagePasswordItemViewControllerTest,
 
 TEST_F(ManagePasswordItemViewControllerTest,
        PendingStateShouldHavePendingView) {
+  model()->set_state(password_manager::ui::PENDING_PASSWORD_STATE);
   EXPECT_EQ(MANAGE_PASSWORD_ITEM_STATE_PENDING, [controller() state]);
   EXPECT_NSEQ([ManagePasswordItemPendingView class],
               [[controller() contentView] class]);

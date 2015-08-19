@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_blacklist_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_manage_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_pending_view_controller.h"
 #include "chrome/browser/ui/cocoa/passwords/manage_passwords_controller_test.h"
@@ -66,32 +65,6 @@ TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
 TEST_F(ManagePasswordsBubbleControllerTest, ManageStateShouldHaveManageView) {
   model()->set_state(password_manager::ui::MANAGE_STATE);
   EXPECT_EQ([ManagePasswordsBubbleManageViewController class],
-            [[controller() currentController] class]);
-}
-
-TEST_F(ManagePasswordsBubbleControllerTest,
-       ChoosingNeverSaveShouldHaveNeverSaveView) {
-  EXPECT_NE([ManagePasswordsBubbleNeverSaveViewController class],
-            [[controller() currentController] class]);
-  [controller() passwordShouldNeverBeSavedOnSiteWithExistingPasswords];
-  EXPECT_EQ([ManagePasswordsBubbleNeverSaveViewController class],
-            [[controller() currentController] class]);
-}
-
-TEST_F(ManagePasswordsBubbleControllerTest,
-       CancellingNeverSaveShouldHavePendingView) {
-  [controller() passwordShouldNeverBeSavedOnSiteWithExistingPasswords];
-  EXPECT_NE([ManagePasswordsBubblePendingViewController class],
-            [[controller() currentController] class]);
-  [controller() neverSavePasswordCancelled];
-  EXPECT_EQ([ManagePasswordsBubblePendingViewController class],
-            [[controller() currentController] class]);
-}
-
-TEST_F(ManagePasswordsBubbleControllerTest,
-       BlacklistStateShouldHaveBlacklistView) {
-  model()->set_state(password_manager::ui::BLACKLIST_STATE);
-  EXPECT_EQ([ManagePasswordsBubbleBlacklistViewController class],
             [[controller() currentController] class]);
 }
 
