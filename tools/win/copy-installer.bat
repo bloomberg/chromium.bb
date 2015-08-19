@@ -37,7 +37,7 @@ IF "%%a"=="out" SET OUTPUT=out
 IF "%%a"=="build" SET OUTPUT=build
 IF "%%a"=="Debug" SET BUILDTYPE=Debug
 IF "%%a"=="Release" SET BUILDTYPE=Release
-IF "%%s"=="x64" SET ARCH=_x64
+IF "%%a"=="x64" SET ARCH=_x64
 )
 
 CALL :_find_build
