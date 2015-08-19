@@ -89,7 +89,9 @@ void OutputSurfaceImpl::SwapBuffers(cc::CompositorFrame* frame) {
     surface_size_ = frame_size;
   }
 
-  surface_->SubmitFrame(local_id_, mojo::Frame::From(*frame), mojo::Closure());
+  surface_->SubmitFrame(local_id_,
+                        mojo::CompositorFrame::From(*frame),
+                        mojo::Closure());
 
   client_->DidSwapBuffers();
   client_->DidSwapBuffersComplete();

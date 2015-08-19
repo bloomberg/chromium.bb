@@ -42,7 +42,7 @@ class SurfacesImpl : public mojo::Surface, public cc::SurfaceFactoryClient {
   void SetResourceReturner(mojo::ResourceReturnerPtr returner) override;
   void CreateSurface(uint32_t local_id) override;
   void SubmitFrame(uint32_t local_id,
-                   mojo::FramePtr frame,
+                   mojo::CompositorFramePtr frame,
                    const mojo::Closure& callback) override;
   void DestroySurface(uint32_t local_id) override;
 

@@ -4,50 +4,13 @@
 
 module mojo;
 
-import "components/view_manager/public/interfaces/quads.mojom";
-import "components/view_manager/public/interfaces/surface_id.mojom";
-import "ui/mojo/geometry/geometry.mojom";
-
-enum ResourceFormat {
-  RGBA_8888,
-  RGBA_4444,
-  BGRA_8888,
-  ALPHA_8,
-  LUMINANCE_8,
-  RGB_565,
-  ETC1,
-};
-
-struct Mailbox {
-  array<int8, 64> name;
-};
-
-struct MailboxHolder {
-  Mailbox mailbox;
-  uint32 texture_target;
-  uint32 sync_point;
-};
-
-struct TransferableResource {
-  uint32 id;
-  ResourceFormat format;
-  uint32 filter;
-  Size size;
-  MailboxHolder mailbox_holder;
-  bool is_repeated;
-  bool is_software;
-};
+import "components/view_manager/public/interfaces/compositor_frame.mojom";
 
 struct ReturnedResource {
   uint32 id;
   uint32 sync_point;
   int32 count;
   bool lost;
-};
-
-struct Frame {
-  array<TransferableResource> resources;
-  array<Pass> passes;
 };
 
 interface ResourceReturner {
@@ -72,6 +35,6 @@ interface Surface {
   // After the submitted frame is drawn for the first time, the surface will
   // respond to the SubmitFrame message. Clients should use this acknowledgement
   // to ratelimit frame submissions.
-  SubmitFrame(uint32 id_local, Frame frame) => ();
+  SubmitFrame(uint32 id_local, CompositorFrame frame) => ();
   DestroySurface(uint32 id_local);
 };

@@ -142,14 +142,16 @@ TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray> {
 };
 
 template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<FramePtr, cc::CompositorFrame> {
-  static FramePtr Convert(const cc::CompositorFrame& input);
+struct MOJO_SURFACES_EXPORT
+TypeConverter<CompositorFramePtr, cc::CompositorFrame> {
+  static CompositorFramePtr Convert(const cc::CompositorFrame& input);
 };
 
 template <>
 struct MOJO_SURFACES_EXPORT
-TypeConverter<scoped_ptr<cc::CompositorFrame>, FramePtr> {
-  static scoped_ptr<cc::CompositorFrame> Convert(const FramePtr& input);
+TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr> {
+  static scoped_ptr<cc::CompositorFrame> Convert(
+      const CompositorFramePtr& input);
 };
 
 }  // namespace mojo

@@ -13,6 +13,13 @@
 
 namespace gpu {
 
+// A MailboxHolder is a mechanism by which texture image data produced by one
+// context can be consumed by another. The |sync_point| is used to allow one
+// context to wait until another has finished using the texture before it begins
+// using the texture. When the mailbox is backed by a GPU texture, the
+// |texture_target| is that texture's type.
+// See here for OpenGL texture types:
+// https://www.opengl.org/wiki/Texture#Texture_Objects
 struct GPU_EXPORT MailboxHolder {
   MailboxHolder();
   MailboxHolder(const gpu::Mailbox& mailbox,

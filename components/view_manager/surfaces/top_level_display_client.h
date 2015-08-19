@@ -44,7 +44,8 @@ class TopLevelDisplayClient
                         const scoped_refptr<SurfacesState>& surfaces_state);
   ~TopLevelDisplayClient() override;
 
-  void SubmitFrame(mojo::FramePtr frame, const base::Closure& callback);
+  void SubmitFrame(scoped_ptr<cc::CompositorFrame> frame,
+                   const base::Closure& callback);
 
  private:
   // DisplayClient implementation.
@@ -69,7 +70,7 @@ class TopLevelDisplayClient
   cc::SurfaceId cc_id_;
 
   gfx::Size last_submitted_frame_size_;
-  mojo::FramePtr pending_frame_;
+  scoped_ptr<cc::CompositorFrame> pending_frame_;
   base::Closure pending_callback_;
 
   scoped_ptr<cc::Display> display_;

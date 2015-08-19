@@ -11,12 +11,10 @@
 #include "components/view_manager/surfaces/surfaces_output_surface.h"
 #include "components/view_manager/surfaces/surfaces_scheduler.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace surfaces {
 namespace {
-void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
+void CallCallback(const base::Closure& callback, cc::SurfaceDrawStatus status) {
   callback.Run();
 }
 }
@@ -61,7 +59,7 @@ TopLevelDisplayClient::~TopLevelDisplayClient() {
   }
 }
 
-void TopLevelDisplayClient::SubmitFrame(mojo::FramePtr frame,
+void TopLevelDisplayClient::SubmitFrame(scoped_ptr<cc::CompositorFrame> frame,
                                         const base::Closure& callback) {
   DCHECK(pending_callback_.is_null());
   pending_frame_ = frame.Pass();
@@ -72,13 +70,13 @@ void TopLevelDisplayClient::SubmitFrame(mojo::FramePtr frame,
 
 void TopLevelDisplayClient::Draw() {
   gfx::Size frame_size =
-      pending_frame_->passes[0]->output_rect.To<gfx::Rect>().size();
+      pending_frame_->delegated_frame_data->render_pass_list.back()->
+          output_rect.size();
   last_submitted_frame_size_ = frame_size;
   display_->Resize(frame_size);
   factory_.SubmitFrame(cc_id_,
-                       pending_frame_.To<scoped_ptr<cc::CompositorFrame>>(),
+                       pending_frame_.Pass(),
                        base::Bind(&CallCallback, pending_callback_));
-  pending_frame_.reset();
   surfaces_state_->scheduler()->SetNeedsDraw();
   pending_callback_.Reset();
 }

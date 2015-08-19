@@ -13,6 +13,9 @@
 
 namespace cc {
 
+// A CompositorFrame struct contains the complete output of a compositor meant
+// for display.
+// TODO(fsamuel): Write more here.
 class CC_EXPORT CompositorFrame {
  public:
   CompositorFrame();

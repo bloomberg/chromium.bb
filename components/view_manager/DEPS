@@ -8,5 +8,6 @@ include_rules = [
   "+mojo/shell",
   "+third_party/mojo/src/mojo/public",
   "+third_party/mojo_services",
+  "+third_party/skia/include",
   "+ui",
 ]

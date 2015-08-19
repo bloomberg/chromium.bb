@@ -156,7 +156,7 @@ class BitmapUploader : public mojo::ResourceReturner {
 
     gfx::Rect bounds(size.width, size.height);
     mojo::PassPtr pass = mojo::CreateDefaultPass(1, bounds);
-    mojo::FramePtr frame = mojo::Frame::New();
+    mojo::CompositorFramePtr frame = mojo::CompositorFrame::New();
     frame->resources.resize(0u);
 
     pass->quads.resize(0u);

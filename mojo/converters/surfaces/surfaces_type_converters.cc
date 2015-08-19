@@ -573,9 +573,10 @@ TypeConverter<Array<ReturnedResourcePtr>, cc::ReturnedResourceArray>::Convert(
 }
 
 // static
-FramePtr TypeConverter<FramePtr, cc::CompositorFrame>::Convert(
+CompositorFramePtr
+TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
     const cc::CompositorFrame& input) {
-  FramePtr frame = Frame::New();
+  CompositorFramePtr frame = CompositorFrame::New();
   DCHECK(input.delegated_frame_data);
   cc::DelegatedFrameData* frame_data = input.delegated_frame_data.get();
   frame->resources =
@@ -590,8 +591,8 @@ FramePtr TypeConverter<FramePtr, cc::CompositorFrame>::Convert(
 
 // static
 scoped_ptr<cc::CompositorFrame>
-TypeConverter<scoped_ptr<cc::CompositorFrame>, FramePtr>::Convert(
-    const FramePtr& input) {
+TypeConverter<scoped_ptr<cc::CompositorFrame>, CompositorFramePtr>::Convert(
+    const CompositorFramePtr& input) {
   scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
   frame_data->device_scale_factor = 1.f;
   frame_data->resource_list =

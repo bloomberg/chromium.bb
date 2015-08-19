@@ -58,7 +58,7 @@ void SurfacesImpl::CreateSurface(uint32_t local_id) {
 }
 
 void SurfacesImpl::SubmitFrame(uint32_t local_id,
-                               mojo::FramePtr frame,
+                               mojo::CompositorFramePtr frame,
                                const mojo::Closure& callback) {
   TRACE_EVENT0("mojo", "SurfacesImpl::SubmitFrame");
   factory_.SubmitFrame(QualifyIdentifier(local_id),

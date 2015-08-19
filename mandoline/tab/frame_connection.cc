@@ -52,7 +52,6 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   clipboard_interfaces.push_back(mojo::Clipboard::Name_);
   filter->filter.insert("mojo:clipboard", clipboard_interfaces.Pass());
 
-
   mojo::Array<mojo::String> tracing_interfaces;
   tracing_interfaces.push_back(tracing::StartupPerformanceDataCollector::Name_);
   filter->filter.insert("mojo:tracing", tracing_interfaces.Pass());

@@ -1,0 +1,52 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "ui/mojo/geometry/geometry.mojom";
+import "components/view_manager/public/interfaces/quads.mojom";
+
+enum ResourceFormat {
+  RGBA_8888,
+  RGBA_4444,
+  BGRA_8888,
+  ALPHA_8,
+  LUMINANCE_8,
+  RGB_565,
+  ETC1,
+};
+
+// See src/gpu/command_buffer/common/mailbox.h.
+struct Mailbox {
+  array<int8, 64> name;
+};
+
+// See src/gpu/command_buffer/common/mailbox_holder.h.
+struct MailboxHolder {
+  Mailbox mailbox;
+  uint32 texture_target;
+  uint32 sync_point;
+};
+
+// A TransferableResource is a graphics resource such as a texture or a bitmap
+// in shared memory (software mode) that is shared between the View Manager and
+// a client. This data structure is used to manage reuse of
+// the memory once it is no longer needed by the View Manager and GPU service.
+struct TransferableResource {
+  // |id| is an integer that uniquely identifies this resource  in the client so
+  // that the View Manager can return this resource back to the client.
+  uint32 id;
+  ResourceFormat format;
+  uint32 filter;
+  Size size;
+  MailboxHolder mailbox_holder;
+  bool is_repeated;
+  bool is_software;
+};
+
+// See src/cc/output/compositor_frame.h.
+struct CompositorFrame {
+  array<TransferableResource> resources;
+  array<Pass> passes;
+};

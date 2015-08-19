@@ -5,6 +5,11 @@
 #include "components/view_manager/display_manager.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/delegated_frame_data.h"
+#include "cc/quads/render_pass.h"
+#include "cc/quads/shared_quad_state.h"
+#include "cc/quads/surface_draw_quad.h"
 #include "components/view_manager/display_manager_factory.h"
 #include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
@@ -21,6 +26,7 @@
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/converters/transform/transform_type_converters.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/platform_window/platform_ime_controller.h"
@@ -41,7 +47,7 @@ using mojo::Size;
 namespace view_manager {
 namespace {
 
-void DrawViewTree(mojo::Pass* pass,
+void DrawViewTree(cc::RenderPass* pass,
                   const ServerView* view,
                   const gfx::Vector2d& parent_to_root_origin_offset,
                   float opacity) {
@@ -59,32 +65,27 @@ void DrawViewTree(mojo::Pass* pass,
                  combined_opacity);
   }
 
-  cc::SurfaceId node_id = view->surface_id();
-
-  auto surface_quad_state = mojo::SurfaceQuadState::New();
-  surface_quad_state->surface = mojo::SurfaceId::From(node_id);
-
-  gfx::Transform node_transform;
-  node_transform.Translate(absolute_bounds.x(), absolute_bounds.y());
-
+  gfx::Transform quad_to_target_transform;
+  quad_to_target_transform.Translate(absolute_bounds.x(), absolute_bounds.y());
   const gfx::Rect bounds_at_origin(view->bounds().size());
-  auto surface_quad = mojo::Quad::New();
-  surface_quad->material = mojo::Material::MATERIAL_SURFACE_CONTENT;
-  surface_quad->rect = Rect::From(bounds_at_origin);
-  surface_quad->opaque_rect = Rect::From(bounds_at_origin);
-  surface_quad->visible_rect = Rect::From(bounds_at_origin);
-  surface_quad->needs_blending = true;
-  surface_quad->shared_quad_state_index =
-      base::saturated_cast<int32_t>(pass->shared_quad_states.size());
-  surface_quad->surface_quad_state = surface_quad_state.Pass();
+  cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+  // TODO(fsamuel): These clipping and visible rects are incorrect. They need
+  // to be populated from CompositorFrame structs.
+  sqs->SetAll(quad_to_target_transform,
+              bounds_at_origin.size() /* layer_bounds */,
+              bounds_at_origin /* visible_layer_bounds */,
+              bounds_at_origin /* clip_rect */,
+              false /* is_clipped */,
+              view->opacity(),
+              SkXfermode::kSrc_Mode,
+              0 /* sorting-context_id */);
 
-  auto sqs = mojo::CreateDefaultSQS(view->bounds().size());
-  sqs->blend_mode = mojo::SK_XFERMODE_kSrcOver_Mode;
-  sqs->opacity = combined_opacity;
-  sqs->quad_to_target_transform = mojo::Transform::From(node_transform);
-
-  pass->quads.push_back(surface_quad.Pass());
-  pass->shared_quad_states.push_back(sqs.Pass());
+  auto surface_quad =
+      pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+  surface_quad->SetNew(sqs,
+                       bounds_at_origin /* rect */,
+                       bounds_at_origin /* visible_rect */,
+                       view->surface_id());
 }
 
 float ConvertUIWheelValueToMojoValue(int offset) {
@@ -196,15 +197,21 @@ void DefaultDisplayManager::SetImeVisibility(bool visible) {
 void DefaultDisplayManager::Draw() {
   if (!delegate_->GetRootView()->visible())
     return;
-  gfx::Rect rect(metrics_.size_in_pixels.To<gfx::Size>());
-  auto pass = mojo::CreateDefaultPass(1, rect);
-  pass->damage_rect = Rect::From(dirty_rect_);
 
-  DrawViewTree(pass.get(), delegate_->GetRootView(), gfx::Vector2d(), 1.0f);
+  scoped_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+  render_pass->damage_rect = dirty_rect_;
+  render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
 
-  auto frame = mojo::Frame::New();
-  frame->passes.push_back(pass.Pass());
-  frame->resources.resize(0u);
+  DrawViewTree(render_pass.get(),
+               delegate_->GetRootView(),
+               gfx::Vector2d(), 1.0f);
+
+  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
+  frame_data->device_scale_factor = 1.f;
+  frame_data->render_pass_list.push_back(render_pass.Pass());
+
+  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  frame->delegated_frame_data = frame_data.Pass();
   frame_pending_ = true;
   if (top_level_display_client_) {
     top_level_display_client_->SubmitFrame(

@@ -8,6 +8,7 @@ mojom("interfaces") {
   sources = [
     "animations.mojom",
     "command_buffer.mojom",
+    "compositor_frame.mojom",
     "gpu.mojom",
     "gpu_capabilities.mojom",
     "quads.mojom",
