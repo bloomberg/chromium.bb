@@ -83,7 +83,7 @@ der::Input InputFromString(const std::string* s) {
 
   // Ensure that all specified blocks were found.
   for (const auto& mapping : mappings_copy) {
-    if (mapping.value) {
+    if (mapping.value && !mapping.optional) {
       return ::testing::AssertionFailure() << "PEM block missing: "
                                            << mapping.block_name;
     }

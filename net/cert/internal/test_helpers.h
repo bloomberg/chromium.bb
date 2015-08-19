@@ -36,8 +36,15 @@ der::Input InputFromString(const std::string* s);
 // Helper structure that maps a PEM block header (for instance "CERTIFICATE") to
 // the destination where the value for that block should be written.
 struct PemBlockMapping {
+  // The name of the PEM header. Example "CERTIFICATE".
   const char* block_name;
+
+  // The destination where the read value should be written to.
   std::string* value;
+
+  // True to indicate that the block is not required to be present. If the
+  // block is optional and is not present, then |value| will not be modified.
+  bool optional;
 };
 
 // ReadTestDataFromPemFile() is a helper function that reads a PEM test file
@@ -52,8 +59,8 @@ struct PemBlockMapping {
 //       headers to the destination to write its data.
 //
 // The function ensures that each of the chosen mappings is satisfied exactly
-// once. In other words, the header must be present, have valid data, and
-// appear no more than once.
+// once. In other words, the header must be present (unless marked as
+// optional=true), have valid data, and appear no more than once.
 ::testing::AssertionResult ReadTestDataFromPemFile(
     const std::string& file_path_ascii,
     const PemBlockMapping* mappings,
