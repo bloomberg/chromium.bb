@@ -204,14 +204,6 @@ int PositionAlgorithm<Strategy>::computeEditingOffset() const
     return m_offset;
 }
 
-// TODO(yosin) We should replace all usage of |deprecatedEditingOffset()| by
-// |computeEditingOffset()|.
-template <typename Strategy>
-int PositionAlgorithm<Strategy>::deprecatedEditingOffset() const
-{
-    return computeEditingOffset();
-}
-
 template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::computeNodeBeforePosition() const
 {
@@ -328,7 +320,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveTy
     if (!node)
         return PositionAlgorithm<Strategy>(*this);
 
-    int offset = deprecatedEditingOffset();
+    int offset = computeEditingOffset();
 
     if (offset > 0) {
         if (editingIgnoresContent(node))
@@ -370,7 +362,7 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
     if (!node)
         return PositionAlgorithm<Strategy>(*this);
 
-    int offset = deprecatedEditingOffset();
+    int offset = computeEditingOffset();
 
     if (Node* child = Strategy::childAt(*node, offset))
         return firstPositionInOrBeforeNode(child);
@@ -1023,7 +1015,7 @@ template <typename Strategy>
 InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(EAffinity affinity, TextDirection primaryDirection) const
 {
     InlineBox* inlineBox = nullptr;
-    int caretOffset = deprecatedEditingOffset();
+    int caretOffset = computeEditingOffset();
     LayoutObject* layoutObject = m_anchorNode->isShadowRoot() ? toShadowRoot(m_anchorNode)->host()->layoutObject() : m_anchorNode->layoutObject();
 
     if (!layoutObject->isText()) {

@@ -86,8 +86,8 @@ SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextItera
     if (!startNode)
         return;
     Node* endNode = end.anchorNode();
-    int startOffset = start.deprecatedEditingOffset();
-    int endOffset = end.deprecatedEditingOffset();
+    int startOffset = start.computeEditingOffset();
+    int endOffset = end.computeEditingOffset();
 
     init(startNode, endNode, startOffset, endOffset);
 }

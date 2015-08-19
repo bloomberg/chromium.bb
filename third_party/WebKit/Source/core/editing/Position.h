@@ -137,9 +137,6 @@ public:
     // anchor node.
     int computeEditingOffset() const;
 
-    // New code should not use this function.
-    int deprecatedEditingOffset() const;
-
     // These are convenience methods which are smart about whether the position is neighbor anchored or parent anchored
     Node* computeNodeBeforePosition() const;
     Node* computeNodeAfterPosition() const;

@@ -1541,7 +1541,7 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
         if (isHTMLBRElement(*position1.anchorNode()))
             return false;
 
-        if (position1.deprecatedEditingOffset() == position2.deprecatedEditingOffset())
+        if (position1.computeEditingOffset() == position2.computeEditingOffset())
             return false;
 
         if (!position1.anchorNode()->isTextNode() && !position2.anchorNode()->isTextNode())

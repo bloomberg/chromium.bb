@@ -37,7 +37,7 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(Node* anchorNode,
 }
 template <typename Strategy>
 PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(const PositionAlgorithm<Strategy>& pos)
-    : PositionIteratorAlgorithm(pos.anchorNode(), pos.deprecatedEditingOffset())
+    : PositionIteratorAlgorithm(pos.anchorNode(), pos.computeEditingOffset())
 {
 }
 
