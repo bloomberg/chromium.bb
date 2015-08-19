@@ -3578,3 +3578,39 @@
    fun:_ZN5blink4Heap25popAndInvokeTraceCallbackEPNS_7VisitorE
    fun:_ZN5blink4Heap19processMarkingStackEPNS_7VisitorE
 }
+{
+   bug_522049
+   Memcheck:Unaddressable
+   ...
+   fun:_ZNKSt8_Rb_treeISsSt4pairIKSsN2ui13TextInputModeEESt10_Select1stIS4_ESt4lessISsESaIS4_EE4findERS1_
+   fun:_ZNKSt3mapISsN2ui13TextInputModeESt4lessISsESaISt4pairIKSsS1_EEE4findERS5_
+   fun:_ZN12_GLOBAL__N_116ConvertInputModeERKN5blink9WebStringE
+   fun:_ZN7content12RenderWidget20UpdateTextInputStateENS0_7ShowImeENS0_12ChangeSourceE
+   fun:_ZN7content12RenderWidget24WillBeginCompositorFrameEv
+   fun:_ZN7content22RenderWidgetCompositor18WillBeginMainFrameEv
+   fun:_ZThn8_N7content22RenderWidgetCompositor18WillBeginMainFrameEv
+   fun:_ZN2cc13LayerTreeHost18WillBeginMainFrameEv
+   fun:_ZN2cc17SingleThreadProxy16DoBeginMainFrameERKNS_14BeginFrameArgsE
+   fun:_ZN2cc17SingleThreadProxy20CompositeImmediatelyEN4base9TimeTicksE
+   fun:_ZN2cc13LayerTreeHost9CompositeEN4base9TimeTicksE
+   fun:_ZN7content12_GLOBAL__N_135RenderWidgetCompositorOutputSurface20SynchronousCompositeEv
+}
+{
+   bug_522463
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN19KeyedServiceFactory20GetServiceForContextEPN4base16SupportsUserDataEb
+}
+{
+   bug_522468
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN10extensions14ExtensionPrefs6CreateEPN7content14BrowserContextEP11PrefServiceRKN4base8FilePathEP21ExtensionPrefValueMapbRKSt6vectorIPNS_22ExtensionPrefsObserverESaISE_EE10scoped_ptrINS0_12TimeProviderENS6_14DefaultDeleterISK_EEE
+   fun:_ZN10extensions14ExtensionPrefs6CreateEPN7content14BrowserContextEP11PrefServiceRKN4base8FilePathEP21ExtensionPrefValueMapbRKSt6vectorIPNS_22ExtensionPrefsObserverESaISE_EE
+   fun:_ZN14TestingProfile4InitEv
+   fun:_ZN14TestingProfileC1Ev
+   fun:_ZN12_GLOBAL__N_131PermissionManagerTestingProfileC2Ev
+   fun:_ZN21PermissionManagerTestC2Ev
+   fun:_ZN*PermissionManagerTest_*
+}
