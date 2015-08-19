@@ -70,7 +70,7 @@
   width: 32px;
 }
 
-#content.show-progress #file-icon-wrapper {
+#content:-webkit-any(.show-progress, .dangerous) #file-icon-wrapper {
   /* TODO(dbeam): animate from top-aligned to centered when items finish? */
   align-self: flex-start;
   padding-top: 16px;
@@ -84,7 +84,7 @@
   -webkit-mask-image: url(../../../../ui/webui/resources/images/warning.svg);
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-size: 100%;
-  background: rgb(217, 84, 61);
+  background: rgb(255, 193, 7);
 }
 
 #name,
@@ -103,12 +103,7 @@
   -webkit-margin-end: 12px;  /* Only really affects #tag. */
 }
 
-.dangerous #name {
-  color: rgb(35, 114, 236);
-}
-
-/* TODO(dbeam): should .keep be a scarier/different color? */
-.is-active :-webkit-any(#file-link, #pause, #resume, #show, .keep) {
+.is-active :-webkit-any(#name, #file-link, #pause, #resume, #show) {
   color: rgb(51, 103, 214);
 }
 
@@ -141,7 +136,7 @@
 }
 
 .dangerous #description {
-  color: rgb(217, 84, 61);
+  color: rgb(239, 108, 0);
 }
 
 #progress {
@@ -156,6 +151,7 @@
 
 #cancel,
 #retry,
+.keep,
 .discard {
   color: #5a5a5a;
 }
