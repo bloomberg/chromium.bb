@@ -3265,7 +3265,6 @@ nacl_env.Append(
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator/nacl.scons',
     'src/trusted/weak_ref/nacl.scons',
-    'src/untrusted/crash_dump/nacl.scons',
     'src/untrusted/irt/nacl_headers.scons',
     'src/untrusted/minidump_generator/nacl.scons',
     'src/untrusted/nacl/nacl.scons',
@@ -3385,7 +3384,6 @@ irt_variant_tests = [
     # works in nacl_env but not in nacl_irt_test_env) while also
     # adding tests to nacl_irt_test_env.
     'tests/inbrowser_test_runner/nacl.scons',
-    'tests/untrusted_crash_dump/nacl.scons',
     'tests/untrusted_minidump/nacl.scons',
 ]
 

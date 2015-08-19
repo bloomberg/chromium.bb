@@ -74,9 +74,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
         # For CHECK(...)
         'platform',
         ],
-    'untrusted_crash_dump': [
-        'nacl_exception',
-        ],
     'irt_support_private': [
         'srpc',
         'platform',
