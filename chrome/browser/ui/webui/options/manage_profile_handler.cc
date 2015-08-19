@@ -91,7 +91,7 @@ void ManageProfileHandler::GetLocalizedValues(
     { "manageProfilesNameLabel", IDS_PROFILES_MANAGE_NAME_LABEL },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
     { "manageProfilesExistingSupervisedUser",
-        IDS_PROFILES_CREATE_EXISTING_SUPERVISED_USER_ERROR },
+        IDS_PROFILES_CREATE_EXISTING_LEGACY_SUPERVISED_USER_ERROR },
     { "manageProfilesSupervisedSignedInLabel",
         IDS_PROFILES_CREATE_SUPERVISED_SIGNED_IN_LABEL },
     { "manageProfilesSupervisedNotSignedIn",
@@ -104,8 +104,6 @@ void ManageProfileHandler::GetLocalizedValues(
     { "deleteProfileTitle", IDS_PROFILES_DELETE_TITLE },
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
-    { "deleteSupervisedProfileAddendum",
-        IDS_PROFILES_DELETE_SUPERVISED_ADDENDUM },
     { "disconnectManagedProfileTitle",
         IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE },
     { "disconnectManagedProfileOK",
@@ -117,12 +115,21 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileShortcutButton", IDS_PROFILES_CREATE_SHORTCUT_BUTTON },
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },
     { "importExistingSupervisedUserLink",
-        IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE },
+        IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TITLE },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "manageProfile", IDS_PROFILES_MANAGE_TITLE);
   RegisterTitle(localized_strings, "createProfile", IDS_PROFILES_CREATE_TITLE);
+
+  base::string16 supervised_user_dashboard_url =
+      base::ASCIIToUTF16(chrome::kLegacySupervisedUserManagementURL);
+  base::string16 supervised_user_dashboard_display =
+      base::ASCIIToUTF16(chrome::kLegacySupervisedUserManagementDisplayURL);
+  localized_strings->SetString("deleteSupervisedProfileAddendum",
+    l10n_util::GetStringFUTF16(IDS_PROFILES_DELETE_LEGACY_SUPERVISED_ADDENDUM,
+                               supervised_user_dashboard_url,
+                               supervised_user_dashboard_display));
 
   localized_strings->SetBoolean("newAvatarMenuEnabled",
                                 switches::IsNewAvatarMenu());

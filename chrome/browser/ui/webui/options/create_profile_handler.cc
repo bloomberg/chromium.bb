@@ -250,7 +250,7 @@ base::string16 CreateProfileHandler::GetProfileCreationErrorMessageLocal()
 #if defined(ENABLE_SUPERVISED_USERS)
   // Local errors can occur during supervised profile import.
   if (profile_creation_type_ == SUPERVISED_PROFILE_IMPORT)
-    message_id = IDS_SUPERVISED_USER_IMPORT_LOCAL_ERROR;
+    message_id = IDS_LEGACY_SUPERVISED_USER_IMPORT_LOCAL_ERROR;
 #endif
   return l10n_util::GetStringUTF16(message_id);
 }
@@ -260,7 +260,7 @@ base::string16 CreateProfileHandler::GetProfileCreationErrorMessageRemote()
     const {
   return l10n_util::GetStringUTF16(
       profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-          IDS_SUPERVISED_USER_IMPORT_REMOTE_ERROR :
+          IDS_LEGACY_SUPERVISED_USER_IMPORT_REMOTE_ERROR :
           IDS_PROFILES_CREATE_REMOTE_ERROR);
 }
 
@@ -268,7 +268,7 @@ base::string16 CreateProfileHandler::GetProfileCreationErrorMessageSignin()
     const {
   return l10n_util::GetStringUTF16(
       profile_creation_type_ == SUPERVISED_PROFILE_IMPORT ?
-          IDS_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR :
+          IDS_LEGACY_SUPERVISED_USER_IMPORT_SIGN_IN_ERROR :
           IDS_PROFILES_CREATE_SIGN_IN_ERROR);
 }
 #endif

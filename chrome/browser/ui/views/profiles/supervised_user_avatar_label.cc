@@ -96,7 +96,7 @@ gfx::Size SupervisedUserAvatarLabelBorder::GetMinimumSize() const {
 
 SupervisedUserAvatarLabel::SupervisedUserAvatarLabel(BrowserView* browser_view)
     : LabelButton(NULL,
-                  l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_AVATAR_LABEL)),
+          l10n_util::GetStringUTF16(IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL)),
       browser_view_(browser_view) {
   SetLabelOnRight(false);
   UpdateLabelStyle();

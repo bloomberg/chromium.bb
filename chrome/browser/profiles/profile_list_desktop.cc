@@ -57,7 +57,7 @@ void ProfileListDesktop::RebuildMenu() {
     item->signed_in = profile_info_->ProfileIsAuthenticatedAtIndex(i);
     if (!item->signed_in) {
       item->username = l10n_util::GetStringUTF16(
-          item->legacy_supervised ? IDS_SUPERVISED_USER_AVATAR_LABEL :
+          item->legacy_supervised ? IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL :
                                     IDS_PROFILES_LOCAL_PROFILE_STATE);
     }
     item->active = profile_info_->GetPathOfProfileAtIndex(i) ==

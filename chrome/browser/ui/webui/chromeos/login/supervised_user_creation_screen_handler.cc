@@ -76,13 +76,15 @@ void SupervisedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_SUPERVISED_INTRO_TEXT_2);
   builder->AddF("createSupervisedUserIntroText3",
                IDS_CREATE_SUPERVISED_INTRO_TEXT_3,
-               base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
+               base::UTF8ToUTF16(
+                   chrome::kLegacySupervisedUserManagementDisplayURL));
 
   builder->Add("createSupervisedUserPickManagerTitle",
                IDS_CREATE_SUPERVISED_USER_CREATE_PICK_MANAGER_TITLE);
   builder->AddF("createSupervisedUserPickManagerTitleExplanation",
                IDS_CREATE_SUPERVISED_USER_CREATE_PICK_MANAGER_EXPLANATION,
-               base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
+               base::UTF8ToUTF16(
+                   chrome::kLegacySupervisedUserManagementDisplayURL));
   builder->Add("createSupervisedUserManagerPasswordHint",
                IDS_CREATE_SUPERVISED_USER_CREATE_MANAGER_PASSWORD_HINT);
   builder->Add("createSupervisedUserWrongManagerPasswordText",
@@ -125,21 +127,24 @@ void SupervisedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_SUPERVISED_USER_CREATED_1_TEXT_3);
 
   builder->Add("importExistingSupervisedUserTitle",
-               IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE);
+               IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TITLE);
   builder->Add("importSupervisedUserLink",
-               IDS_IMPORT_EXISTING_SUPERVISED_USER_TITLE);
+               IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TITLE);
   builder->Add("importExistingSupervisedUserText",
-               IDS_IMPORT_EXISTING_SUPERVISED_USER_TEXT);
+               IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_TEXT);
   builder->Add("supervisedUserCreationFlowImportButtonTitle",
-               IDS_IMPORT_EXISTING_SUPERVISED_USER_OK);
+               IDS_IMPORT_EXISTING_LEGACY_SUPERVISED_USER_OK);
   builder->Add("createSupervisedUserLink",
-               IDS_CREATE_NEW_USER_LINK);
-  builder->Add("importBubbleText", IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT);
-  builder->Add("importUserExists", IDS_SUPERVISED_USER_IMPORT_USER_EXIST);
+               IDS_CREATE_NEW_LEGACY_SUPERVISED_USER_LINK);
+  builder->Add("importBubbleText",
+               IDS_SUPERVISED_USER_IMPORT_BUBBLE_TEXT);
+  builder->Add("importUserExists",
+               IDS_SUPERVISED_USER_IMPORT_USER_EXIST);
   builder->Add("importUsernameExists",
                IDS_SUPERVISED_USER_IMPORT_USERNAME_EXIST);
 
-  builder->Add("managementURL", chrome::kSupervisedUserManagementDisplayURL);
+  builder->Add("managementURL",
+               chrome::kLegacySupervisedUserManagementDisplayURL);
 
   // TODO(antrim) : this is an explicit code duplications with UserImageScreen.
   // It should be removed by issue 251179.

@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/webui/options/supervised_user_learn_more_handler.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace options {
 
@@ -20,11 +23,17 @@ void SupervisedUserLearnMoreHandler::GetLocalizedValues(
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
-    { "supervisedUserLearnMoreTitle", IDS_SUPERVISED_USER_LEARN_MORE_TITLE },
-    { "supervisedUserLearnMoreText", IDS_SUPERVISED_USER_LEARN_MORE_TEXT },
+    { "supervisedUserLearnMoreTitle",
+        IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TITLE },
     { "supervisedUserLearnMoreDone",
-        IDS_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON },
+        IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_DONE_BUTTON },
   };
+
+  base::string16 supervised_user_dashboard_display =
+      base::ASCIIToUTF16(chrome::kLegacySupervisedUserManagementDisplayURL);
+  localized_strings->SetString("supervisedUserLearnMoreText",
+      l10n_util::GetStringFUTF16(IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TEXT,
+                                 supervised_user_dashboard_display));
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 }

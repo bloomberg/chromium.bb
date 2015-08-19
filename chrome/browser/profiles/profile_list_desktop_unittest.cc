@@ -350,7 +350,7 @@ TEST_F(ProfileListDesktopTest, SyncState) {
   // Now check that the username of a supervised user shows the supervised
   // user avatar label instead.
   base::string16 supervised_user_label =
-      l10n_util::GetStringUTF16(IDS_SUPERVISED_USER_AVATAR_LABEL);
+      l10n_util::GetStringUTF16(IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL);
   const AvatarMenu::Item& item1 = model->GetItemAt(0);
   EXPECT_NE(item1.username, supervised_user_label);
 

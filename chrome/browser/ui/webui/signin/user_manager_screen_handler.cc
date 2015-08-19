@@ -630,7 +630,7 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("signOutUser",
       l10n_util::GetStringUTF16(IDS_SCREEN_LOCK_SIGN_OUT));
   localized_strings->SetString("addSupervisedUser",
-      l10n_util::GetStringUTF16(IDS_CREATE_SUPERVISED_USER_MENU_LABEL));
+      l10n_util::GetStringUTF16(IDS_CREATE_LEGACY_SUPERVISED_USER_MENU_LABEL));
 
   // For AccountPickerScreen.
   localized_strings->SetString("screenType", "login-add-user");
@@ -660,7 +660,8 @@ void UserManagerScreenHandler::GetLocalizedValues(
   localized_strings->SetString("removeLegacySupervisedUserWarningText",
       l10n_util::GetStringFUTF16(
           IDS_LOGIN_POD_LEGACY_SUPERVISED_USER_REMOVE_WARNING,
-          base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL)));
+          base::UTF8ToUTF16(
+              chrome::kLegacySupervisedUserManagementDisplayURL)));
 
   // Strings needed for the User Manager tutorial slides.
   localized_strings->SetString("tutorialNext",

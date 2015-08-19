@@ -381,12 +381,12 @@ extern const char kResetProfileSettingsLearnMoreURL[];
 // "Learn more" URL for when profile settings are automatically reset.
 extern const char kAutomaticSettingsResetLearnMoreURL[];
 
-// Management URL for the supervised users.
-extern const char kSupervisedUserManagementURL[];
+// Management URL for Chrome Supervised Users.
+extern const char kLegacySupervisedUserManagementURL[];
 
-// Management URL for the supervised users - version without scheme, used
+// Management URL for Chrome Supervised Users - version without scheme, used
 // for display.
-extern const char kSupervisedUserManagementDisplayURL[];
+extern const char kLegacySupervisedUserManagementDisplayURL[];
 
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];

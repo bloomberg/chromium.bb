@@ -97,16 +97,16 @@ base::string16 GetAvatarButtonTextForProfile(Profile* profile) {
                              kMaxCharactersToDisplay,
                              gfx::CHARACTER_BREAK);
   if (profile->IsLegacySupervised()) {
-    name = l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
-                                      name);
+    name = l10n_util::GetStringFUTF16(
+        IDS_LEGACY_SUPERVISED_USER_NEW_AVATAR_LABEL, name);
   }
   return name;
 }
 
 base::string16 GetProfileSwitcherTextForItem(const AvatarMenu::Item& item) {
   if (item.legacy_supervised) {
-    return l10n_util::GetStringFUTF16(IDS_SUPERVISED_USER_NEW_AVATAR_LABEL,
-                                      item.name);
+    return l10n_util::GetStringFUTF16(
+        IDS_LEGACY_SUPERVISED_USER_NEW_AVATAR_LABEL, item.name);
   }
   if (item.child_account)
     return l10n_util::GetStringFUTF16(IDS_CHILD_AVATAR_LABEL, item.name);

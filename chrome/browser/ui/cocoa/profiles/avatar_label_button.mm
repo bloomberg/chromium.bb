@@ -36,7 +36,8 @@ const CGFloat kLabelTextBottomSpacing = 4;
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     [self setBezelStyle:NSSmallSquareBezelStyle];
-    [self setTitle:l10n_util::GetNSString(IDS_SUPERVISED_USER_AVATAR_LABEL)];
+    [self setTitle:l10n_util::GetNSString(
+        IDS_LEGACY_SUPERVISED_USER_AVATAR_LABEL)];
     [self setFont:[NSFont labelFontOfSize:12.0]];
     // Increase the frame by the size of the label to be displayed.
     NSSize textSize = [[self cell] labelTextSize];
