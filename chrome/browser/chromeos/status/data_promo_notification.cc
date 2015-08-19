@@ -107,14 +107,11 @@ void SetDataSaverPromptsShown(int times_shown) {
       prefs::kDataSaverPromptsShown, times_shown);
 }
 
-// Is command line switch set for Data Saver prompt?
+// kDisableDataSaverPrompt takes precedence over any kEnableDataSaverPrompt
+// value. If neither flag is set, the Data Saver prompt is enabled by default.
 bool DataSaverSwitchEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableDataSaverPrompt))
-    return false;
-
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableDataSaverPrompt);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableDataSaverPrompt);
 }
 
 // Is command line switch set for Data Saver demo mode, where we show the prompt
