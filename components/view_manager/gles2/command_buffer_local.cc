@@ -130,9 +130,9 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
   gles2::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
       gles2::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
 
-  scoped_refptr<gfx::GLImageMemory> image(
-      new gfx::GLImageMemory(gfx::Size(width, height),
-                                       internalformat));
+  scoped_refptr<gfx::GLImageMemory> image(new gfx::GLImageMemory(
+      gfx::Size(static_cast<int>(width), static_cast<int>(height)),
+      internalformat));
   if (!image->Initialize(
           static_cast<const unsigned char*>(gpu_memory_buffer->GetMemory()),
           gpu_memory_buffer->GetFormat())) {
@@ -162,7 +162,7 @@ int32_t CommandBufferLocal::CreateGpuMemoryBufferImage(
   DCHECK_EQ(usage, static_cast<unsigned>(GL_MAP_CHROMIUM));
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       gles2::MojoGpuMemoryBufferImpl::Create(
-          gfx::Size(width, height),
+          gfx::Size(static_cast<int>(width), static_cast<int>(height)),
           gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(internalformat),
           gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
   if (!buffer)
