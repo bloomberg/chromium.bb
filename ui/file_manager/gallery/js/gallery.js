@@ -628,7 +628,7 @@ Gallery.prototype.onContentChange_ = function(event) {
 /**
  * Keydown handler.
  *
- * @param {!Event} event Event.
+ * @param {!Event} event
  * @private
  */
 Gallery.prototype.onKeyDown_ = function(event) {

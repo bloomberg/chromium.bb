@@ -111,6 +111,7 @@
           './image_editor/image_util.js',
           './image_editor/image_view.js',
           './image_editor/viewport.js',
+          './chromevox_state_watcher.js',
           './dimmable_ui_controller.js',
           './entry_list_watcher.js',
           './error_banner.js',

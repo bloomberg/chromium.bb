@@ -453,6 +453,16 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.touchHandlers_ = new TouchHandler(this.imageContainer_, this);
+
+  /**
+   * @private {!ChromeVoxStateWatcher}
+   * @const
+   */
+  this.chromeVoxStateWatcher_ = new ChromeVoxStateWatcher();
+  this.chromeVoxStateWatcher_.addEventListener('chromevox-navigation-begin',
+      this.onChromeVoxNavigationBegin_.bind(this));
+  this.chromeVoxStateWatcher_.addEventListener('chromevox-navigation-end',
+      this.onChromeVoxNavigationEnd_.bind(this));
 }
 
 /**
@@ -486,6 +496,23 @@ SlideMode.KEY_OFFSET_MAP = {
  * SlideMode extends cr.EventTarget.
  */
 SlideMode.prototype.__proto__ = cr.EventTarget.prototype;
+
+/**
+ * Handles chromevox-navigation-begin event. While user is navigating with
+ * ChromeVox, we should not hide the tools.
+ * @private
+ */
+SlideMode.prototype.onChromeVoxNavigationBegin_ = function() {
+  this.dimmableUIController_.setDisabled(true);
+};
+
+/**
+ * Handles chromevox-navigation-end event.
+ * @private
+ */
+SlideMode.prototype.onChromeVoxNavigationEnd_ = function() {
+  this.dimmableUIController_.setDisabled(false);
+};
 
 /**
  * Handles exit-clicked event.
