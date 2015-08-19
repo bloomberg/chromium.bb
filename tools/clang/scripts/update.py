@@ -28,7 +28,7 @@ import zipfile
 # Note: this revision is only used for Windows. Other platforms use update.sh.
 # TODO(thakis): Use the same revision on Windows and non-Windows.
 # TODO(thakis): Remove update.sh, use update.py everywhere.
-LLVM_WIN_REVISION = '245342'
+LLVM_WIN_REVISION = '243039'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -241,7 +241,58 @@ def ApplyLocalPatches():
   # remove patches over time.
   assert sys.platform != 'win32'
 
-  # No patches.
+  # Apply patch for tests failing with --disable-pthreads (llvm.org/PR11974)
+  clang_patches = [ r"""\
+--- test/Index/crash-recovery-modules.m	(revision 202554)
++++ test/Index/crash-recovery-modules.m	(working copy)
+@@ -12,6 +12,8 @@
+ 
+ // REQUIRES: crash-recovery
+ // REQUIRES: shell
++// XFAIL: *
++//    (PR11974)
+ 
+ @import Crash;
+""", r"""\
+--- unittests/libclang/LibclangTest.cpp (revision 215949)
++++ unittests/libclang/LibclangTest.cpp (working copy)
+@@ -431,7 +431,7 @@
+   EXPECT_EQ(0U, clang_getNumDiagnostics(ClangTU));
+ }
+
+-TEST_F(LibclangReparseTest, ReparseWithModule) {
++TEST_F(LibclangReparseTest, DISABLED_ReparseWithModule) {
+   const char *HeaderTop = "#ifndef H\n#define H\nstruct Foo { int bar;";
+   const char *HeaderBottom = "\n};\n#endif\n";
+   const char *MFile = "#include \"HeaderFile.h\"\nint main() {"
+"""
+      ]
+
+  # The UBSan run-time, which is now bundled with the ASan run-time, doesn't
+  # work on Mac OS X 10.8 (PR23539).
+  compiler_rt_patches = [ r"""\
+--- CMakeLists.txt	(revision 241602)
++++ CMakeLists.txt	(working copy)
+@@ -305,6 +305,7 @@
+       list(APPEND SANITIZER_COMMON_SUPPORTED_OS iossim)
+     endif()
+   endif()
++  set(SANITIZER_MIN_OSX_VERSION "10.7")
+   if(SANITIZER_MIN_OSX_VERSION VERSION_LESS "10.7")
+     message(FATAL_ERROR "Too old OS X version: ${SANITIZER_MIN_OSX_VERSION}")
+   endif()
+"""
+      ]
+
+  for path, patches in [(CLANG_DIR, clang_patches),
+                        (COMPILER_RT_DIR, compiler_rt_patches)]:
+    print 'Applying patches in', path
+    for patch in patches:
+      print patch
+      p = subprocess.Popen( ['patch', '-p0', '-d', path], stdin=subprocess.PIPE)
+      (stdout, stderr) = p.communicate(input=patch)
+      if p.returncode != 0:
+        raise RuntimeError('stdout %s, stderr %s' % (stdout, stderr))
 
 
 def DeleteChromeToolsShim():
@@ -585,8 +636,7 @@ def UpdateClang(args):
       '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags)]
   if sys.platform != 'win32':
     compiler_rt_args += ['-DLLVM_CONFIG_PATH=' +
-                         os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-config'),
-                        '-DSANITIZER_MIN_OSX_VERSION="10.7"']
+                         os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-config')]
   RunCommand(['cmake'] + compiler_rt_args + [LLVM_DIR],
               msvc_arch='x86', env=deployment_env)
   RunCommand(['ninja', 'compiler-rt'], msvc_arch='x86')

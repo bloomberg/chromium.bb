@@ -123,7 +123,6 @@ def main():
           ]
   if sys.platform == 'win32':
     want.append('bin/clang-cl.exe')
-    want.append('bin/lld-link.exe')
   else:
     so_ext = 'dylib' if sys.platform == 'darwin' else 'so'
     want.extend(['bin/clang',
