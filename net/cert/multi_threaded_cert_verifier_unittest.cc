@@ -252,9 +252,12 @@ TEST_F(MultiThreadedCertVerifierTest, CancelRequestThenQuit) {
   scoped_ptr<CertVerifier::Request> request;
 
   {
-    // Because shutdown intentionally doesn't join worker threads, a
-    // CertVerifyWorker may be leaked if the main thread shuts down before the
-    // worker thread.
+    // Because shutdown intentionally doesn't join worker threads, memory may
+    // be leaked if the main thread shuts down before the worker thread
+    // completes. In particular MultiThreadedCertVerifier calls
+    // base::WorkerPool::PostTaskAndReply(), which leaks its "relay" when it
+    // can't post the reply back to the origin thread. See
+    // https://crbug.com/522514
     ANNOTATE_SCOPED_MEMORY_LEAK;
     error = verifier_.Verify(test_cert.get(), "www.example.com", std::string(),
                              0, NULL, &verify_result, callback.callback(),

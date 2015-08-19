@@ -455,7 +455,7 @@ int MultiThreadedCertVerifier::Verify(X509Certificate* cert,
     if (!new_job->Start(verify_proc_, cert, hostname, ocsp_response, flags,
                         crl_set, additional_trust_anchors)) {
       // TODO(wtc): log to the NetLog.
-      LOG(ERROR) << "CertVerifierWorker couldn't be started.";
+      LOG(ERROR) << "CertVerifierJob couldn't be started.";
       return ERR_INSUFFICIENT_RESOURCES;  // Just a guess.
     }
 
