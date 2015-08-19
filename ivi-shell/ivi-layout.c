@@ -2082,17 +2082,7 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 		return IVI_FAILED;
 	}
 
-	if (pSurface == NULL) {
-		wl_list_for_each_safe(ivisurf, next, &ivilayer->pending.surface_list, pending.link) {
-			if (!wl_list_empty(&ivisurf->pending.link)) {
-				wl_list_remove(&ivisurf->pending.link);
-			}
-
-			wl_list_init(&ivisurf->pending.link);
-		}
-		ivilayer->event_mask |= IVI_NOTIFICATION_REMOVE;
-		return IVI_SUCCEEDED;
-	}
+	clear_surface_pending_list(ivilayer);
 
 	for (i = 0; i < number; i++) {
 		id_surface = &pSurface[i]->id_surface;
