@@ -73,7 +73,11 @@ WebFrameWidget* WebFrameWidget::create(WebView* webView)
 WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client, WebLocalFrame* localRoot)
 {
     // Pass the WebFrameWidgetImpl's self-reference to the caller.
+#if ENABLE(OILPAN)
+    return new WebFrameWidgetImpl(client, localRoot); // SelfKeepAlive is set in constructor.
+#else
     return adoptRef(new WebFrameWidgetImpl(client, localRoot)).leakRef();
+#endif
 }
 
 // static
@@ -93,6 +97,9 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     , m_layerTreeViewClosed(false)
     , m_suppressNextKeypressEvent(false)
     , m_ignoreInputEvents(false)
+#if ENABLE(OILPAN)
+    , m_selfKeepAlive(this)
+#endif
 {
     ASSERT(m_localRoot->frame()->isLocalRoot());
     initializeLayerTreeView();
@@ -102,6 +109,12 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl()
 {
+}
+
+DEFINE_TRACE(WebFrameWidgetImpl)
+{
+    visitor->trace(m_localRoot);
+    visitor->trace(m_mouseCaptureNode);
 }
 
 // WebWidget ------------------------------------------------------------------
@@ -118,7 +131,15 @@ void WebFrameWidgetImpl::close()
     // deleted.
     m_client = nullptr;
 
+    m_layerTreeView = nullptr;
+    m_rootLayer = nullptr;
+    m_rootGraphicsLayer = nullptr;
+
+#if ENABLE(OILPAN)
+    m_selfKeepAlive.clear();
+#else
     deref(); // Balances ref() acquired in WebFrameWidget::create
+#endif
 }
 
 WebSize WebFrameWidgetImpl::size()
