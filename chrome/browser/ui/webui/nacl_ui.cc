@@ -54,8 +54,6 @@ content::WebUIDataSource* CreateNaClUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINaClHost);
 
-  source->AddLocalizedString("loadingMessage", IDS_NACL_LOADING_MESSAGE);
-  source->AddLocalizedString("naclLongTitle", IDS_NACL_TITLE_MESSAGE);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("about_nacl.css", IDR_ABOUT_NACL_CSS);
   source->AddResourcePath("about_nacl.js", IDR_ABOUT_NACL_JS);

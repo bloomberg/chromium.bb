@@ -7173,14 +7173,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       About Flash
       </message>
 
-      <!-- chrome://nacl strings -->
-      <message name="IDS_NACL_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-        Loading...
-      </message>
-      <message name="IDS_NACL_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-        About NaCl
-      </message>
-
       <!-- NaCl plugin strings -->
       <message name="IDS_NACL_APP_MISSING_ARCH_MESSAGE" desc="Shown if a Native Client app does not support the current architecture">
         This page uses a Native Client app that doesn't work on your computer.
