@@ -30,6 +30,7 @@ import android.os.Handler;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -48,7 +49,10 @@ import java.io.IOException;
         shadows = HttpNegotiateAuthenticatorTest.ExtendedShadowAccountManager.class,
         application = BaseChromiumApplication.class)
 public class HttpNegotiateAuthenticatorTest {
-    static int sCallCount = 0;
+    // Since the account manager is an SDK singleton (it is fetched using AccountManager.get()) we
+    // can't validate its method calls with Mockito, so do so using our shadow method. Since the
+    // shadow class has to be static the variables it uses also have to be static.
+    static int sCallCount;
     static String sAccountTypeReceived;
     static String sAuthTokenTypeReceived;
     static String sFeaturesReceived[];
@@ -59,8 +63,10 @@ public class HttpNegotiateAuthenticatorTest {
 
     /**
      * Robolectic's ShadowAccountManager doesn't implement getAccountsByTypeAndFeature so extend it.
-     * We simply check the call is correct, and don't try to emulate it Note: Shadow classes need to
-     * be public and static.
+     * We simply check the call is correct, and don't try to emulate it. This also allows us to do
+     * more checking than we could using a vanilla shadow.
+     *
+     * Note: Shadow classes need to be public and static.
      */
     @Implements(AccountManager.class)
     public static class ExtendedShadowAccountManager extends ShadowAccountManager {
@@ -80,6 +86,11 @@ public class HttpNegotiateAuthenticatorTest {
 
             return null;
         }
+    }
+
+    @Before
+    public void setUp() {
+        sCallCount = 0;
     }
 
     /**
