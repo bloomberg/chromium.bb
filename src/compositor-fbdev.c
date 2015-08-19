@@ -756,8 +756,8 @@ fbdev_backend_destroy(struct weston_compositor *base)
 static void
 session_notify(struct wl_listener *listener, void *data)
 {
-	struct fbdev_backend *backend = data;
-	struct weston_compositor *compositor = backend->compositor;
+	struct weston_compositor *compositor = data;
+	struct fbdev_backend *backend = to_fbdev_backend(compositor);
 	struct weston_output *output;
 
 	if (compositor->session_active) {
