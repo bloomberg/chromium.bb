@@ -959,10 +959,14 @@ if (is_clang) {
     # which we no longer use. Check if it makes sense to remove
     # this as well. http://crbug.com/316352
     "-Wno-unneeded-internal-declaration",
-
-    # TODO(thakis): Remove, http://crbug.com/263960
-    "-Wno-reserved-user-defined-literal",
   ]
+
+  if (is_posix && !is_mac && !is_ios) {
+    default_warning_flags += [
+      # TODO(thakis): Remove, http://crbug.com/263960
+      "-Wno-reserved-user-defined-literal",
+    ]
+  }
 
   # NaCl's Clang compiler and Chrome's hermetic Clang compiler will almost
   # always have different versions. Certain flags may not be recognized by
