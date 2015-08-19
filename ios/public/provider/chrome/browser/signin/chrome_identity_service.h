@@ -104,14 +104,14 @@ class ChromeIdentityService {
   virtual void ForgetIdentity(ChromeIdentity* identity,
                               ForgetIdentityCallback callback);
 
-  // Asynchronously retrieves access tokens for the given user email and scopes.
+  // Asynchronously retrieves access tokens for the given identity and scopes.
   // Uses the default client id and client secret.
-  virtual void GetAccessToken(const std::string& email,
+  virtual void GetAccessToken(ChromeIdentity* identity,
                               const std::set<std::string>& scopes,
                               const AccessTokenCallback& callback);
 
-  // Asynchronously retrieves access tokens for the given user email and scopes.
-  virtual void GetAccessToken(const std::string& email,
+  // Asynchronously retrieves access tokens for the given identity and scopes.
+  virtual void GetAccessToken(ChromeIdentity* identity,
                               const std::string& client_id,
                               const std::string& client_secret,
                               const std::set<std::string>& scopes,

@@ -42,7 +42,8 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_service_delegate_.reset(new ProfileOAuth2TokenServiceIOSDelegate(
-        &client_, &fake_provider_, &signin_error_controller_));
+        &client_, &fake_provider_, &account_tracker_service_,
+        &signin_error_controller_));
     oauth2_service_delegate_->AddObserver(this);
     signin_error_controller_.AddObserver(this);
   }
@@ -89,6 +90,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   net::FakeURLFetcherFactory factory_;
   TestingPrefServiceSimple prefs_;
   TestSigninClient client_;
+  AccountTrackerService account_tracker_service_;
   SigninErrorController signin_error_controller_;
   FakeProfileOAuth2TokenServiceIOSProvider fake_provider_;
   scoped_ptr<ProfileOAuth2TokenServiceIOSDelegate> oauth2_service_delegate_;

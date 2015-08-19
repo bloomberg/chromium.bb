@@ -11,6 +11,7 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 
+class AccountTrackerService;
 class ProfileOAuth2TokenServiceIOSProvider;
 
 class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
@@ -18,6 +19,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   ProfileOAuth2TokenServiceIOSDelegate(
       SigninClient* client,
       ProfileOAuth2TokenServiceIOSProvider* provider,
+      AccountTrackerService* account_tracker_service,
       SigninErrorController* signin_error_controller);
   ~ProfileOAuth2TokenServiceIOSDelegate() override;
 
@@ -129,6 +131,7 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // The client with which this instance was initialied, or NULL.
   SigninClient* client_;
   ProfileOAuth2TokenServiceIOSProvider* provider_;
+  AccountTrackerService* account_tracker_service_;
 
   // The error controller with which this instance was initialized, or NULL.
   SigninErrorController* signin_error_controller_;

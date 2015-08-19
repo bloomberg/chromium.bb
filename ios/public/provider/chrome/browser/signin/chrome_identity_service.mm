@@ -45,12 +45,12 @@ void ChromeIdentityService::ForgetIdentity(ChromeIdentity* identity,
                                            ForgetIdentityCallback callback) {}
 
 void ChromeIdentityService::GetAccessToken(
-    const std::string& email,
+    ChromeIdentity* identity,
     const std::set<std::string>& scopes,
     const AccessTokenCallback& callback) {}
 
 void ChromeIdentityService::GetAccessToken(
-    const std::string& email,
+    ChromeIdentity* identity,
     const std::string& client_id,
     const std::string& client_secret,
     const std::set<std::string>& scopes,

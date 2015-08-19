@@ -58,9 +58,9 @@ class ProfileOAuth2TokenServiceIOSProvider {
   // Returns the ids of all accounts.
   virtual std::vector<std::string> GetAllAccountIds() = 0;
 
-  // Starts fetching an access token for the account with id |account_id| with
+  // Starts fetching an access token for the account with id |gaia_id| with
   // the given |scopes|. Once the token is obtained, |callback| is called.
-  virtual void GetAccessToken(const std::string& account_id,
+  virtual void GetAccessToken(const std::string& gaia_id,
                               const std::string& client_id,
                               const std::string& client_secret,
                               const std::set<std::string>& scopes,

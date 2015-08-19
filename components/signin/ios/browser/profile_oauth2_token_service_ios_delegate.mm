@@ -17,6 +17,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h"
@@ -65,7 +66,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
  public:
   SSOAccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
                         ProfileOAuth2TokenServiceIOSProvider* provider,
-                        const std::string account_id);
+                        const AccountTrackerService::AccountInfo& account);
   ~SSOAccessTokenFetcher() override;
 
   void Start(const std::string& client_id,
@@ -81,7 +82,7 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 
  private:
   ProfileOAuth2TokenServiceIOSProvider* provider_;  // weak
-  std::string account_id_;
+  AccountTrackerService::AccountInfo account_;
   bool request_was_cancelled_;
   base::WeakPtrFactory<SSOAccessTokenFetcher> weak_factory_;
 
@@ -91,10 +92,10 @@ class SSOAccessTokenFetcher : public OAuth2AccessTokenFetcher {
 SSOAccessTokenFetcher::SSOAccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
     ProfileOAuth2TokenServiceIOSProvider* provider,
-    const std::string account_id)
+    const AccountTrackerService::AccountInfo& account)
     : OAuth2AccessTokenFetcher(consumer),
       provider_(provider),
-      account_id_(account_id),
+      account_(account),
       request_was_cancelled_(false),
       weak_factory_(this) {
   DCHECK(provider_);
@@ -108,7 +109,7 @@ void SSOAccessTokenFetcher::Start(const std::string& client_id,
                                   const std::vector<std::string>& scopes) {
   std::set<std::string> scopes_set(scopes.begin(), scopes.end());
   provider_->GetAccessToken(
-      account_id_, client_id, client_secret, scopes_set,
+      account_.gaia, client_id, client_secret, scopes_set,
       base::Bind(&SSOAccessTokenFetcher::OnAccessTokenResponse,
                  weak_factory_.GetWeakPtr()));
 }
@@ -173,12 +174,15 @@ ProfileOAuth2TokenServiceIOSDelegate::AccountInfo::GetAuthStatus() const {
 ProfileOAuth2TokenServiceIOSDelegate::ProfileOAuth2TokenServiceIOSDelegate(
     SigninClient* client,
     ProfileOAuth2TokenServiceIOSProvider* provider,
+    AccountTrackerService* account_tracker_service,
     SigninErrorController* signin_error_controller)
     : client_(client),
       provider_(provider),
+      account_tracker_service_(account_tracker_service),
       signin_error_controller_(signin_error_controller) {
   DCHECK(client_);
   DCHECK(provider_);
+  DCHECK(account_tracker_service_);
   DCHECK(signin_error_controller_);
 }
 
@@ -292,7 +296,9 @@ ProfileOAuth2TokenServiceIOSDelegate::CreateAccessTokenFetcher(
     const std::string& account_id,
     net::URLRequestContextGetter* getter,
     OAuth2AccessTokenConsumer* consumer) {
-  return new SSOAccessTokenFetcher(consumer, provider_, account_id);
+  AccountTrackerService::AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  return new SSOAccessTokenFetcher(consumer, provider_, account_info);
 }
 
 std::vector<std::string> ProfileOAuth2TokenServiceIOSDelegate::GetAccounts() {
