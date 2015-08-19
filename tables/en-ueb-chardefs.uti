@@ -71,7 +71,7 @@ digit 9 24
 display ! 2346
 punctuation ! 235
 #TODO:  why?
-display " 236
+display " 5
 punctuation " 5
 punctuation " 236
 punctuation " 356
