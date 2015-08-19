@@ -5,12 +5,18 @@
 #ifndef BackgroundImageGeometry_h
 #define BackgroundImageGeometry_h
 
+#include "core/paint/PaintPhase.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
+
+class FillLayer;
+class LayoutBoxModelObject;
+class LayoutObject;
+class LayoutRect;
 
 class BackgroundImageGeometry {
     STACK_ALLOCATED();
@@ -19,51 +25,38 @@ public:
         : m_hasNonLocalGeometry(false)
     { }
 
+    void calculate(const LayoutBoxModelObject&, const LayoutBoxModelObject* paintContainer,
+        const GlobalPaintFlags, const FillLayer&, const LayoutRect& paintRect,
+        LayoutObject* backgroundObject = nullptr);
+
     IntRect destRect() const { return m_destRect; }
-    void setDestRect(const IntRect& destRect)
-    {
-        m_destRect = destRect;
-    }
-
-    IntPoint phase() const { return m_phase; }
-    void setPhase(const IntPoint& phase)
-    {
-        m_phase = phase;
-    }
-
     IntSize tileSize() const { return m_tileSize; }
-    void setTileSize(const IntSize& tileSize)
-    {
-        m_tileSize = tileSize;
-    }
-
+    IntPoint phase() const { return m_phase; }
     // Space-size represents extra width and height that may be added to
-    // the image if used as a pattern with repeat: space
+    // the image if used as a pattern with background-repeat: space.
     IntSize spaceSize() const { return m_repeatSpacing; }
-    void setSpaceSize(const IntSize& repeatSpacing)
-    {
-        m_repeatSpacing = repeatSpacing;
-    }
+    // Has background-attachment: fixed. Implies that we can't always cheaply compute destRect.
+    bool hasNonLocalGeometry() const { return m_hasNonLocalGeometry; }
 
+private:
+    void setDestRect(const IntRect& destRect) { m_destRect = destRect; }
+    void setPhase(const IntPoint& phase) { m_phase = phase; }
+    void setTileSize(const IntSize& tileSize) { m_tileSize = tileSize; }
+    void setSpaceSize(const IntSize& repeatSpacing) { m_repeatSpacing = repeatSpacing; }
     void setPhaseX(int x) { m_phase.setX(x); }
     void setPhaseY(int y) { m_phase.setY(y); }
-
     void setNoRepeatX(int xOffset);
     void setNoRepeatY(int yOffset);
 
     void useFixedAttachment(const IntPoint& attachmentPoint);
-
     void clip(const IntRect&);
-
     void setHasNonLocalGeometry() { m_hasNonLocalGeometry = true; }
-    bool hasNonLocalGeometry() const { return m_hasNonLocalGeometry; }
 
-private:
     IntRect m_destRect;
     IntPoint m_phase;
     IntSize m_tileSize;
     IntSize m_repeatSpacing;
-    bool m_hasNonLocalGeometry; // Has background-attachment: fixed. Implies that we can't always cheaply compute destRect.
+    bool m_hasNonLocalGeometry;
 };
 
 } // namespace blink
