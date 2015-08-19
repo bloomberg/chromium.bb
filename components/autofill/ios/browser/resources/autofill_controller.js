@@ -34,7 +34,6 @@ var AutofillFormFieldData;
   *   method: string,
   *   origin: string,
   *   action: string,
-  *   userSubmitted: boolean,
   *   fields: Array<AutofillFormFieldData>
   * }}
   */
@@ -411,8 +410,6 @@ __gCrWeb.autofill['extractForms'] = function(requiredFields) {
   // Protect against custom implementation of Array.toJSON in host pages.
   /** @suppress {checkTypes} */(function() { forms.toJSON = null; })();
 
-  // TODO(chenyu): check if any preparation is needed for information such as
-  // user_submitted or the one added in core.js is sufficient.
   __gCrWeb.autofill.extractNewForms(
       window,
       requiredFields,
@@ -743,7 +740,6 @@ __gCrWeb.autofill.webFormElementToFormData = function(
   form['action'] = __gCrWeb.common.absoluteURL(
       frame.document,
       formElement.getAttribute('action'));
-  // form['userSubmitted'] is filled by native code. See http://crbug.com/231264
 
   // Note different from form_autofill_util.cc version of this method, which
   // computes |form.action| using document.completeURL(form_element.action())

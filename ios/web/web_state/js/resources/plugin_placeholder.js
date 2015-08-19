@@ -102,7 +102,7 @@ __gCrWeb['plugin'] = {};
    * "significant" is a heuristic that attempts to determine if it's a critical
    * visual element for the page (i.e., not invisible, or an incidental ad).
    * @param {HTMLElement} plugin The <object> node to check.
-   * @return {Boolean} Whether the node is significant.
+   * @return {boolean} Whether the node is significant.
    * @private
    */
   __gCrWeb['plugin'].isSignificantPlugin_ = function(plugin) {
