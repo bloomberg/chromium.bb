@@ -23,6 +23,7 @@
 <translation id="2148716181193084225">Сегодня</translation>
 <translation id="2226276347425096477">Длина текста не должна превышать <ph name="MAX_CHARACTERS"/> симв. (сейчас <ph name="CURRENT_LENGTH"/> симв.).</translation>
 <translation id="2247351761944213033">Неделя <ph name="WEEKNUMBER"/>, <ph name="YEAR"/></translation>
+<translation id="2291999235780842123">флажок</translation>
 <translation id="248395913932153421">День</translation>
 <translation id="2507943997699731163">Заполните это поле.</translation>
 <translation id="2548326553472216322">Нет недавних поисков</translation>
@@ -36,6 +37,7 @@
 <translation id="2846343701378493991">1024 (Средний размер)</translation>
 <translation id="2901282870647571346">текущий статус ролика</translation>
 <translation id="2908441821576996758">Введите адреса электронной почты через запятую.</translation>
+<translation id="2942448076852699108">выделенный контент</translation>
 <translation id="3040011195152428237">ссылка</translation>
 <translation id="3075154866155599887">Введите верное значение. Поле не заполнено или введена недействительная дата.</translation>
 <translation id="310520048233152454">Введите URL.</translation>
