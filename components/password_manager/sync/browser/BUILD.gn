@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "password_model_worker.cc",
     "password_model_worker.h",
@@ -16,5 +16,17 @@ static_library("browser") {
     "//components/autofill/core/common",
     "//components/password_manager/core/browser",
     "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "sync_store_result_filter_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

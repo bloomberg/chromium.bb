@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("common") {
+source_set("common") {
   sources = [
     "credential_manager_types.cc",
     "credential_manager_types.h",
@@ -13,5 +13,16 @@ static_library("common") {
     "password_manager_switches.cc",
     "password_manager_switches.h",
     "password_manager_ui.h",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "credential_manager_types_unittest.cc",
+  ]
+  deps = [
+    ":common",
+    "//testing/gtest",
   ]
 }

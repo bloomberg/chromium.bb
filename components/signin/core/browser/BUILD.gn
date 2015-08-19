@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "about_signin_internals.cc",
     "about_signin_internals.h",
@@ -89,7 +89,7 @@ static_library("browser") {
   }
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "fake_account_fetcher_service.cc",
@@ -104,8 +104,24 @@ static_library("test_support") {
     "test_signin_client.h",
   ]
 
-  deps = [
+  public_deps = [
     ":browser",
     "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "account_tracker_service_unittest.cc",
+    "gaia_cookie_manager_service_unittest.cc",
+    "refresh_token_annotation_request_unittest.cc",
+    "signin_error_controller_unittest.cc",
+    "webdata/token_service_table_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//testing/gmock",
   ]
 }

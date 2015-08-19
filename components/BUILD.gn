@@ -140,6 +140,7 @@ group("all_components") {
 
   if (!is_android && !is_ios) {
     deps += [
+      "//components/audio_modem",
       "//components/proximity_auth",
       "//components/proximity_auth/cryptauth",
     ]
@@ -326,6 +327,11 @@ test("components_unittests") {
     "//components/omnibox/browser:unit_tests",
     "//components/open_from_clipboard:unit_tests",
     "//components/packed_ct_ev_whitelist:unit_tests",
+    "//components/password_manager/content/browser:unit_tests",
+    "//components/password_manager/core/browser:unit_tests",
+    "//components/password_manager/core/common:unit_tests",
+    "//components/password_manager/sync/browser:unit_tests",
+    "//components/signin/core/browser:unit_tests",
     "//components/sync_driver:unit_tests",
     "//components/undo:unit_tests",
     "//components/url_formatter:unit_tests",
@@ -364,11 +370,18 @@ test("components_unittests") {
     deps -= [
       "//components/gcm_driver:unit_tests",
       "//components/gcm_driver/instance_id:unit_tests",
+      "//components/password_manager/content/browser:unit_tests",
+      "//components/password_manager/core/browser:unit_tests",
+      "//components/password_manager/core/common:unit_tests",
+      "//components/password_manager/sync/browser:unit_tests",
     ]
   }
 
   if (!is_android && !is_ios) {
-    deps += [ "//components/proximity_auth:unit_tests" ]
+    deps += [
+      "//components/copresence:unit_tests",
+      "//components/proximity_auth:unit_tests",
+    ]
   }
 
   if (is_chromeos) {
@@ -381,6 +394,13 @@ test("components_unittests") {
   # Precache tests need these defines.
   #configs += [ "//components/precache/core:precache_config" ]
 
+  if (enable_configuration_policy) {
+    deps += [
+      "//components/policy/core/browser:unit_tests",
+      "//components/policy/core/common:unit_tests",
+    ]
+  }
+
   if (toolkit_views) {
     # TODO(GYP) enable this as above.
     #deps += [ "//components/constrained_window:unit_tests" ]
@@ -389,9 +409,9 @@ test("components_unittests") {
     deps += [ "//components/browser_watcher:unit_tests" ]
   }
   if (is_ios) {
+    deps += [ "//components/signin/core/browser:unit_tests" ]
     deps -= [ "//components/devtools_http_handler:unit_tests" ]
   }
-
   if (!is_ios) {
     deps += [
       "//components/safe_json:unit_tests",

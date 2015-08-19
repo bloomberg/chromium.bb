@@ -14,7 +14,7 @@ config("wallet_service") {
 }
 
 # GYP version: components/autofill.gyp:autofill_core_browser
-static_library("browser") {
+source_set("browser") {
   sources = [
     "address.cc",
     "address.h",
@@ -181,7 +181,7 @@ static_library("browser") {
   }
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
   sources = [
     "autofill_test_utils.cc",
@@ -224,6 +224,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "address_field_unittest.cc",
+    "address_i18n_unittest.cc",
     "address_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
     "autofill_country_unittest.cc",
@@ -284,6 +285,7 @@ source_set("unit_tests") {
     "//sync:test_support_sync_api",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/libaddressinput:util",
     "//third_party/libphonenumber",
     "//third_party/libjingle",
     "//ui/base",

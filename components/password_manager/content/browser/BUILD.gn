@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("browser") {
+source_set("browser") {
   sources = [
     "bad_message.cc",
     "bad_message.h",
@@ -16,16 +16,29 @@ static_library("browser") {
     "password_manager_internals_service_factory.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//components/autofill/content/browser",
     "//components/autofill/content/common",
     "//components/autofill/core/common",
     "//components/keyed_service/content",
+    "//components/password_manager/content/common",
     "//components/password_manager/core/browser",
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
     "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "credential_manager_dispatcher_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

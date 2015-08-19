@@ -24,6 +24,7 @@ static_library("audio_modem") {
     "//base",
     "//content",
     "//media",
+    "//media:shared_memory_support",
     "//third_party/webrtc/common_audio",
   ]
 }

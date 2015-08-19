@@ -11,7 +11,7 @@ import("//tools/grit/grit_rule.gni")
 # About the policy component:
 #
 # There should really be two components. One called "policy" that includes all
-# generated code, and one "policy/proto" liek we have now. The proto needs to
+# generated code, and one "policy/proto" like we have now. The proto needs to
 # be separate for cases like SesssionManagerClient which uses the protos to
 # communicate with the Chrome OS system layer, but doesn't need the rest of the
 # policy stuff).
@@ -218,13 +218,13 @@ if (enable_configuration_policy) {
   }
 
   group("test_support") {
-    deps = [
+    public_deps = [
       ":chrome_settings_proto_generated_compile",
       ":policy_component",
     ]
   }
 
-  static_library("policy_component_test_support") {
+  source_set("policy_component_test_support") {
     testonly = true
     sources = [
       "core/browser/configuration_policy_pref_store_test.cc",
@@ -266,7 +266,7 @@ if (enable_configuration_policy) {
       ]
     }
 
-    deps = [
+    public_deps = [
       ":policy_component",
       ":test_support",
       "//components/policy/proto",
