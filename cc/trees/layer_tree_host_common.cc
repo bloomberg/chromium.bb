@@ -409,10 +409,6 @@ static gfx::Rect CalculateVisibleLayerRect(
 
 static inline bool TransformToParentIsKnown(LayerImpl* layer) { return true; }
 
-static inline bool TransformToParentIsKnown(Layer* layer) {
-  return !layer->HasPotentiallyRunningTransformAnimation();
-}
-
 static bool LayerShouldBeSkipped(LayerImpl* layer, bool layer_is_drawn) {
   // Layers can be skipped if any of these conditions are met.
   //   - is not drawn due to it or one of its ancestors being hidden (or having
@@ -495,46 +491,7 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
   return !layer->opacity();
 }
 
-static inline bool SubtreeShouldBeSkipped(Layer* layer, bool layer_is_drawn) {
-  // If the layer transform is not invertible, it should not be drawn.
-  if (!layer->transform_is_invertible() &&
-      !layer->HasPotentiallyRunningTransformAnimation())
-    return true;
-
-  // When we need to do a readback/copy of a layer's output, we can not skip
-  // it or any of its ancestors.
-  if (layer->draw_properties().layer_or_descendant_has_copy_request)
-    return false;
-
-  // We cannot skip the the subtree if a descendant has a wheel or touch handler
-  // or the hit testing code will break (it requires fresh transforms, etc).
-  if (layer->draw_properties().layer_or_descendant_has_input_handler)
-    return false;
-
-  // If the layer is not drawn, then skip it and its subtree.
-  if (!layer_is_drawn)
-    return true;
-
-  // If the opacity is being animated then the opacity on the main thread is
-  // unreliable (since the impl thread may be using a different opacity), so it
-  // should not be trusted.
-  // In particular, it should not cause the subtree to be skipped.
-  // Similarly, for layers that might animate opacity using an impl-only
-  // animation, their subtree should also not be skipped.
-  return !layer->opacity() && !layer->HasPotentiallyRunningOpacityAnimation() &&
-         !layer->OpacityCanAnimateOnImplThread();
-}
-
 static inline void SavePaintPropertiesLayer(LayerImpl* layer) {}
-
-static inline void SavePaintPropertiesLayer(Layer* layer) {
-  layer->SavePaintProperties();
-
-  if (layer->mask_layer())
-    layer->mask_layer()->SavePaintProperties();
-  if (layer->replica_layer() && layer->replica_layer()->mask_layer())
-    layer->replica_layer()->mask_layer()->SavePaintProperties();
-}
 
 static bool SubtreeShouldRenderToSeparateSurface(
     Layer* layer,
@@ -907,20 +864,6 @@ static inline void UpdateLayerScaleDrawProperties(
       maximum_animation_contents_scale;
   layer->draw_properties().starting_animation_contents_scale =
       starting_animation_contents_scale;
-}
-
-static inline void CalculateAnimationContentsScale(
-    Layer* layer,
-    bool ancestor_is_animating_scale,
-    float ancestor_maximum_animation_contents_scale,
-    const gfx::Transform& parent_transform,
-    const gfx::Transform& combined_transform,
-    bool* combined_is_animating_scale,
-    float* combined_maximum_animation_contents_scale,
-    float* combined_starting_animation_contents_scale) {
-  *combined_is_animating_scale = false;
-  *combined_maximum_animation_contents_scale = 0.f;
-  *combined_starting_animation_contents_scale = 0.f;
 }
 
 static inline void CalculateAnimationContentsScale(
@@ -2674,10 +2617,16 @@ void CalculateDrawPropertiesAndVerify(LayerTreeHostCommon::CalcDrawPropsInputs<
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsMainInputs* inputs) {
+  LayerList update_layer_list;
   UpdateRenderSurfaces(inputs->root_layer,
                        inputs->can_render_to_separate_surface, gfx::Transform(),
                        false);
-  CalculateDrawPropertiesAndVerify(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
+  BuildPropertyTreesAndComputeVisibleRects(
+      inputs->root_layer, inputs->page_scale_layer,
+      inputs->inner_viewport_scroll_layer, inputs->outer_viewport_scroll_layer,
+      inputs->page_scale_factor, inputs->device_scale_factor,
+      gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
+      inputs->property_trees, &update_layer_list);
 }
 
 void LayerTreeHostCommon::CalculateDrawProperties(
