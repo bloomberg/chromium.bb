@@ -48,8 +48,8 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
   void Load(const LoadCallback& callback) override;
   void AddOfflinePage(const OfflinePageItem& offline_page,
                       const UpdateCallback& callback) override;
-  void RemoveOfflinePage(const GURL& page_url,
-                         const UpdateCallback& callback) override;
+  void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
+                          const UpdateCallback& callback) override;
   const OfflinePageItem& last_saved_page() const { return last_saved_page_; }
 
   void set_test_scenario(TestScenario scenario) { scenario_ = scenario; };
@@ -97,13 +97,15 @@ void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
   task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
-void OfflinePageTestStore::RemoveOfflinePage(const GURL& page_url,
-                                             const UpdateCallback& callback) {
+void OfflinePageTestStore::RemoveOfflinePages(
+    const std::vector<int64>& bookmark_ids,
+    const UpdateCallback& callback) {
+  ASSERT_FALSE(bookmark_ids.empty());
   bool result = false;
   if (scenario_ != TestScenario::REMOVE_FAILED) {
     for (auto iter = offline_pages_.begin();
          iter != offline_pages_.end(); ++iter) {
-      if (iter->url == page_url) {
+      if (iter->bookmark_id == bookmark_ids[0]) {
         offline_pages_.erase(iter);
         result = true;
         break;
@@ -469,13 +471,13 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
 
   EXPECT_EQ(2UL, offline_pages.size());
-  EXPECT_EQ(kTestUrl2, offline_pages[0].url);
-  EXPECT_EQ(kTestPageBookmarkId2, offline_pages[0].bookmark_id);
-  EXPECT_EQ(archiver_path2, offline_pages[0].file_path);
+  EXPECT_EQ(kTestUrl, offline_pages[0].url);
+  EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].bookmark_id);
+  EXPECT_EQ(archiver_path, offline_pages[0].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
-  EXPECT_EQ(kTestUrl, offline_pages[1].url);
-  EXPECT_EQ(kTestPageBookmarkId1, offline_pages[1].bookmark_id);
-  EXPECT_EQ(archiver_path, offline_pages[1].file_path);
+  EXPECT_EQ(kTestUrl2, offline_pages[1].url);
+  EXPECT_EQ(kTestPageBookmarkId2, offline_pages[1].bookmark_id);
+  EXPECT_EQ(archiver_path2, offline_pages[1].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[1].file_size);
 }
 

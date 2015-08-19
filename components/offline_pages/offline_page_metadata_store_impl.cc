@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -163,20 +164,22 @@ void OfflinePageMetadataStoreImpl::AddOfflinePage(
   OfflinePageEntry offline_page_proto;
   OfflinePageItemToEntry(offline_page_item, &offline_page_proto);
   entries_to_save->push_back(
-      std::make_pair(offline_page_proto.url(), offline_page_proto));
+      std::make_pair(base::Int64ToString(offline_page_item.bookmark_id),
+                     offline_page_proto));
 
   UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(), callback);
 }
 
-void OfflinePageMetadataStoreImpl::RemoveOfflinePage(
-    const GURL& page_url,
+void OfflinePageMetadataStoreImpl::RemoveOfflinePages(
+    const std::vector<int64>& bookmark_ids,
     const UpdateCallback& callback) {
   scoped_ptr<ProtoDatabase<OfflinePageEntry>::KeyEntryVector> entries_to_save(
       new ProtoDatabase<OfflinePageEntry>::KeyEntryVector());
   scoped_ptr<std::vector<std::string>> keys_to_remove(
       new std::vector<std::string>());
 
-  keys_to_remove->push_back(page_url.spec());
+  for (int64 id : bookmark_ids)
+    keys_to_remove->push_back(base::Int64ToString(id));
 
   UpdateEntries(entries_to_save.Pass(), keys_to_remove.Pass(), callback);
 }

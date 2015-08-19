@@ -195,8 +195,10 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
                  base::Unretained(this), ADD));
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
                          base::Unretained(this)));
-  store->RemoveOfflinePage(
-      offline_page.url,
+  std::vector<int64> ids_to_remove;
+  ids_to_remove.push_back(offline_page.bookmark_id);
+  store->RemoveOfflinePages(
+      ids_to_remove,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), REMOVE));
   store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
@@ -276,8 +278,10 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
   EXPECT_EQ(2U, offline_pages_.size());
 
-  store->RemoveOfflinePage(
-      offline_page_1.url,
+  std::vector<int64> ids_to_remove;
+  ids_to_remove.push_back(offline_page_1.bookmark_id);
+  store->RemoveOfflinePages(
+      ids_to_remove,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), REMOVE));
   PumpLoop();

@@ -32,15 +32,15 @@ class OfflinePageMetadataStore {
   // Get all of the offline pages from the store.
   virtual void Load(const LoadCallback& callback) = 0;
 
-  // Asynchronously adds offline page metadata to the store for a given URL.
+  // Asynchronously adds offline page metadata to the store.
   // Result of the update is passed in callback.
   virtual void AddOfflinePage(const OfflinePageItem& offline_page,
                               const UpdateCallback& callback) = 0;
 
   // Asynchronously removes offline page metadata from the store.
   // Result of the update is passed in callback.
-  virtual void RemoveOfflinePage(const GURL& page_url,
-                                 const UpdateCallback& callback) = 0;
+  virtual void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
+                                  const UpdateCallback& callback) = 0;
 };
 
 }  // namespace offline_pages

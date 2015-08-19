@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 #define COMPONENTS_OFFLINE_PAGES_OFFLINE_PAGE_MODEL_H_
 
+#include <map>
 #include <vector>
 
 #include "base/callback.h"
@@ -116,8 +117,13 @@ class OfflinePageModel : public KeyedService {
   void DeletePageByBookmarkId(int64 bookmark_id,
                               const DeletePageCallback& callback);
 
+  // Deletes offline pages related to the passed |bookmark_ids|. Requires that
+  // the model is loaded.
+  void DeletePagesByBookmarkId(const std::vector<int64>& bookmark_ids,
+                               const DeletePageCallback& callback);
+
   // Gets all available offline pages. Requires that the model is loaded.
-  const std::vector<OfflinePageItem>& GetAllPages() const;
+  const std::vector<OfflinePageItem> GetAllPages() const;
 
   // Gets an offline page associated with a specified |bookmark_id|. Returns
   // true if a matching offline page exists, and |offline_page| will be updated
@@ -132,9 +138,6 @@ class OfflinePageModel : public KeyedService {
 
  private:
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
-
-  void DeletePage(const OfflinePageItem& offline_page,
-                  const  DeletePageCallback& callback);
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(bool success,
@@ -158,13 +161,13 @@ class OfflinePageModel : public KeyedService {
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 
   // Steps for deleting files and data for an offline page.
-  void OnDeleteArchiverFileDone(
-      const GURL& url,
+  void OnDeleteArchiveFilesDone(
+      const std::vector<int64>& bookmark_ids,
       const DeletePageCallback& callback,
       const bool* success);
-  void OnRemoveOfflinePageDone(const GURL& url,
-                               const DeletePageCallback& callback,
-                               bool success);
+  void OnRemoveOfflinePagesDone(const std::vector<int64>& bookmark_ids,
+                                const DeletePageCallback& callback,
+                                bool success);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;
@@ -174,8 +177,8 @@ class OfflinePageModel : public KeyedService {
 
   bool is_loaded_;
 
-  // In memory copy of the offline page metadata.
-  std::vector<OfflinePageItem> offline_pages_;
+  // In memory copy of the offline page metadata, keyed by bookmark IDs.
+  std::map<int64, OfflinePageItem> offline_pages_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
