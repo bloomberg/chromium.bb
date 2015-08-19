@@ -68,6 +68,9 @@
       'utility/profile_import_handler.h',
     ],
     'chrome_utility_safe_browsing_sources': [
+      'utility/safe_browsing/mac/convert_big_endian.h',
+      'utility/safe_browsing/mac/hfs.cc',
+      'utility/safe_browsing/mac/hfs.h',
       'utility/safe_browsing/mac/read_stream.cc',
       'utility/safe_browsing/mac/read_stream.h',
     ],

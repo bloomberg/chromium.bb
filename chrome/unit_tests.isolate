@@ -103,6 +103,7 @@
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
           '<(PRODUCT_DIR)/exif.so',
           '<(PRODUCT_DIR)/osmesa.so',
+          '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/',
         ],
       },
     }],

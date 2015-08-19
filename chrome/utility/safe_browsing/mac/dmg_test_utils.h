@@ -7,11 +7,16 @@
 
 #include <vector>
 
+#include "base/files/file.h"
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
 
 namespace safe_browsing {
 namespace dmg {
 namespace test {
+
+// Opens a generated test data file. Uses gtest assertions to verify success,
+// so this should be called with ASSERT_NO_FATAL_FAILURE().
+void GetTestFile(const char* file_name, base::File* file);
 
 // Reads the given |stream| until end-of-stream is reached, storying the read
 // bytes into |data|. Returns true on success and false on error.

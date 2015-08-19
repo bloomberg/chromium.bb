@@ -1029,6 +1029,7 @@
       'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
       'renderer/safe_browsing/scorer_unittest.cc',
       'utility/safe_browsing/mac/dmg_test_utils.cc',
+      'utility/safe_browsing/mac/hfs_unittest.cc',
       'utility/safe_browsing/mac/read_stream_unittest.cc',
     ],
     # These are the enable_autofill_dialog = 1 sources. Some autofill tests
@@ -2717,6 +2718,25 @@
         ['enable_plugin_installation==0', {
           'sources!': [
             'browser/plugins/plugin_installer_unittest.cc',
+          ],
+        }],
+        ['safe_browsing==1 and OS=="mac"', {
+          'actions': [
+            {
+              'action_name': 'Generate safe_browsing DMG test data',
+              'variables': {
+                'generate_test_data': 'test/data/safe_browsing/dmg/generate_test_data.sh',
+              },
+              'inputs': [
+                '<(generate_test_data)',
+                'test/data/safe_browsing/dmg/make_hfs.sh',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/hfs_plus.img',
+                '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/hfsx_case_sensitive.img',
+              ],
+              'action': [ '<(generate_test_data)', '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg' ],
+            },
           ],
         }],
         # Adding more conditions? Don't forget to update the GN build.
