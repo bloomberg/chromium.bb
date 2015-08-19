@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
+
 #include "google_breakpad/processor/proc_maps_linux.h"
 
 #include <fcntl.h>
-#define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
 #include <stdio.h>
 
