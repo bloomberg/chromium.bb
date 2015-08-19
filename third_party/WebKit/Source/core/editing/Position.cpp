@@ -817,8 +817,9 @@ static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
     return o->style()->isHorizontalWritingMode() ? rect.height() : rect.width();
 }
 
-template <typename Strategy>
-bool PositionAlgorithm<Strategy>::hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
+// TODO(yosin) We should move |hasRenderedNonAnonymousDescendantsWithHeight|
+// to "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp"
+bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
 {
     LayoutObject* stop = layoutObject->nextInPreOrderAfterChildren();
     for (LayoutObject *o = layoutObject->slowFirstChild(); o && o != stop; o = o->nextInPreOrder()) {

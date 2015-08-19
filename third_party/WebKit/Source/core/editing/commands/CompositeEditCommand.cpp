@@ -941,7 +941,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
         if (upstreamStart.anchorNode() == editableRootForPosition(upstreamStart)) {
             // If the block is the root editable element and it contains no visible content, create a new
             // block but don't try and move content into it, since there's nothing for moveParagraphs to move.
-            if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.anchorNode()->layoutObject()))
+            if (!hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.anchorNode()->layoutObject()))
                 return insertNewDefaultParagraphElementAt(upstreamStart);
         } else if (isBlock(upstreamEnd.anchorNode())) {
             if (!upstreamEnd.anchorNode()->isDescendantOf(upstreamStart.anchorNode())) {

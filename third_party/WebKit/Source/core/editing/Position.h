@@ -195,7 +195,6 @@ public:
     InlineBoxPosition computeInlineBoxPosition(TextAffinity) const;
     InlineBoxPosition computeInlineBoxPosition(TextAffinity, TextDirection primaryDirection) const;
 
-    static bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
     static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);
     static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);
@@ -444,6 +443,10 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 {
     return toPositionInComposedTree(position);
 }
+
+// TODO(yosin) We should move |hasRenderedNonAnonymousDescendantsWithHeight|
+// to "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp"
+bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
 
 } // namespace blink
 
