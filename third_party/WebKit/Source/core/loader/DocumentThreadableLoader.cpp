@@ -49,13 +49,57 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/SharedBuffer.h"
+#include "platform/Task.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
+
+namespace {
+
+class EmptyDataHandle final : public WebDataConsumerHandle {
+private:
+    class EmptyDataReader final : public WebDataConsumerHandle::Reader {
+    public:
+        explicit EmptyDataReader(WebDataConsumerHandle::Client* client) : m_factory(this)
+        {
+            Platform::current()->currentThread()->postTask(FROM_HERE, new Task(bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client)));
+        }
+    private:
+        Result read(void*, size_t, WebDataConsumerHandle::Flags, size_t *readSize) override
+        {
+            *readSize = 0;
+            return Done;
+        }
+        Result beginRead(const void** buffer, WebDataConsumerHandle::Flags, size_t *available) override
+        {
+            *available = 0;
+            *buffer = nullptr;
+            return Done;
+        }
+        Result endRead(size_t) override
+        {
+            return WebDataConsumerHandle::UnexpectedError;
+        }
+        void notify(WebDataConsumerHandle::Client* client)
+        {
+            client->didGetReadable();
+        }
+        WeakPtrFactory<EmptyDataReader> m_factory;
+    };
+
+    Reader* obtainReaderInternal(Client* client) override
+    {
+        return new EmptyDataReader(client);
+    }
+    const char* debugName() const override { return "EmptyDataHandle"; }
+};
+
+} // namespace
 
 // Max number of CORS redirects handled in DocumentThreadableLoader.
 // Same number as net/url_request/url_request.cc, and
@@ -94,6 +138,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_timeoutTimer(this, &DocumentThreadableLoader::didTimeout)
     , m_requestStartedSeconds(0.0)
     , m_corsRedirectLimit(kMaxCORSRedirects)
+    , m_redirectMode(request.fetchRedirectMode())
 {
     ASSERT(client);
     // Setting an outgoing referer is only supported in the async code path.
@@ -269,7 +314,25 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 
     RefPtr<DocumentThreadableLoader> protect(this);
 
-    if (!isAllowedByContentSecurityPolicy(request.url(), ContentSecurityPolicy::DidRedirect)) {
+    if (m_redirectMode == WebURLRequest::FetchRedirectModeManual) {
+        // We use |m_redirectMode| to check the original redirect mode.
+        // |request| is a new request for redirect. So we don't set the redirect
+        // mode of it in WebURLLoaderImpl::Context::OnReceivedRedirect().
+        ASSERT(request.useStreamOnResponse());
+        // There is no need to read the body of redirect response because there
+        // is no way to read the body of opaque-redirect filtered response's
+        // internal response.
+        // TODO(horo): If we support any API which expose the internal body, we
+        // will have to read the body. And also HTTPCache changes will be needed
+        // because it doesn't store the body of redirect responses.
+        responseReceived(resource, redirectResponse, adoptPtr(new EmptyDataHandle()));
+        notifyFinished(resource);
+        clearResource();
+        request = ResourceRequest();
+        return;
+    }
+
+    if (m_redirectMode == WebURLRequest::FetchRedirectModeError || !isAllowedByContentSecurityPolicy(request.url(), ContentSecurityPolicy::DidRedirect)) {
         m_client->didFailRedirectCheck();
 
         clearResource();

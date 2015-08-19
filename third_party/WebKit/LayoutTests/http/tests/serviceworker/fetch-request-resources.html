@@ -16,6 +16,7 @@ function image_test(frame, url, cross_origin, expected_context,
       context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
+      redirect: 'follow',
       message: 'Image load (url:' +
                actual_url + ' cross_origin:' + cross_origin + ')'
     };
@@ -30,6 +31,7 @@ function script_test(frame, url, cross_origin, expected_context,
       context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
+      redirect: 'follow',
       message: 'Script load (url:' +
                actual_url + ' cross_origin:' + cross_origin + ')'
     };
@@ -44,6 +46,7 @@ function css_test(frame, url, cross_origin, expected_context,
       context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
+      redirect: 'follow',
       message: 'CSS load (url:' +
                actual_url + ' cross_origin:' + cross_origin + ')'
     };
@@ -58,6 +61,7 @@ function font_face_test(frame, url, expected_context, expexted_mode,
       context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
+      redirect: 'follow',
       message: 'FontFace load (url:' + actual_url + ')'
     };
   return frame.contentWindow.load_font(actual_url);
@@ -71,6 +75,7 @@ function css_image_test(frame, url, type, expected_context,
       context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
+      redirect: 'follow',
       message: 'CSSImage load (url:' + actual_url + ' type:' + type + ')'
     };
   return frame.contentWindow.load_css_image(actual_url, type);
@@ -84,6 +89,7 @@ function css_image_set_test(frame, url, type, expected_context,
       context: expected_context,
       mode: expexted_mode,
       credentials: expected_credentials,
+      redirect: 'follow',
       message: 'CSSImageSet load (url:' + actual_url + ' type:' + type + ')'
     };
   return frame.contentWindow.load_css_image_set(actual_url, type);
@@ -136,6 +142,10 @@ async_test(function(t) {
                     result.credentials, expected.credentials,
                     'credentials of ' + expected.message +  ' must be ' +
                     expected.credentials + '.');
+                assert_equals(
+                    result.redirect, expected.redirect,
+                    'redirect mode of ' + expected.message +  ' must be ' +
+                    expected.redirect + '.');
                 --url_count;
                 delete expected_results[result.url];
                 if (url_count == 0) {

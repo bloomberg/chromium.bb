@@ -3369,6 +3369,7 @@ interface Request
     getter headers
     getter method
     getter mode
+    getter redirect
     getter referrer
     getter url
     method arrayBuffer

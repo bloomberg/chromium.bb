@@ -170,6 +170,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // But this value is not the max number of total redirects allowed,
         // because same-origin redirects are not counted here.
         int m_corsRedirectLimit;
+
+        const WebURLRequest::FetchRedirectMode m_redirectMode;
     };
 
 } // namespace blink

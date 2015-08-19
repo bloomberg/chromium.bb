@@ -222,6 +222,33 @@ test(function() {
   }, 'Request credentials test');
 
 test(function() {
+    var request1 = {};
+    var request2 = {};
+    var REDIRECTS = ['follow', 'error', 'manual', '', undefined];
+    REDIRECTS.forEach(function(redirect1) {
+        var init1 = {};
+        if (redirect1 != undefined) { init1['redirect'] = redirect1; }
+        request1 = new Request(URL, init1);
+        assert_equals(request1.redirect, redirect1 || 'follow',
+                      'Request.redirect should match');
+        request1 = new Request(request1);
+        assert_equals(request1.redirect, redirect1 || 'follow',
+                      'Request.redirect should match');
+        REDIRECTS.forEach(function(redirect2) {
+            request1 = new Request(URL, init1);
+            var init2 = {};
+            if (redirect2 != undefined) {
+              init2['redirect'] = redirect2;
+            }
+            request2 = new Request(request1, init2);
+            assert_equals(request2.redirect,
+                          redirect2 ? redirect2 : request1.redirect,
+                          'Request.redirect should be overridden');
+          });
+      });
+  }, 'Request redirect test');
+
+test(function() {
     ['same-origin', 'cors', 'no-cors'].forEach(function(mode) {
         FORBIDDEN_METHODS.forEach(function(method) {
             assert_throws(

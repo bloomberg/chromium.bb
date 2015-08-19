@@ -20,6 +20,7 @@ self.addEventListener('fetch', function(event) {
         context_clone: event.request.clone().context,
         context_new: (new Request(event.request)).context,
         mode: event.request.mode,
+        redirect: event.request.redirect,
         credentials: event.request.credentials
       });
     event.respondWith(Promise.reject());

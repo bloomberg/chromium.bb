@@ -23,6 +23,9 @@ function get_request_init(params) {
   if (params['credentials']) {
     init['credentials'] = params['credentials'];
   }
+  if (params['redirect-mode']) {
+    init['redirect'] = params['redirect-mode'];
+  }
   return init;
 }
 

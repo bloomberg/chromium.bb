@@ -82,6 +82,7 @@ promise_test(function(t) {
     assert_equals(request.url, redirect_original_url,
       'Request\'s url is the original URL');
     assert_equals(request.context, '');
+    assert_equals(request.redirect, 'follow');
 
     return fetch(request)
       .then(function(response) {
@@ -94,6 +95,71 @@ promise_test(function(t) {
           assert_equals(request.context, '');
         });
   }, 'Request/response url attribute getter with redirect');
+
+promise_test(function(t) {
+    var redirect_target_url =
+      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
+    var redirect_original_url =
+      BASE_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=' +
+      redirect_target_url;
+
+    var request = new Request(redirect_original_url, {redirect: 'manual'});
+    assert_equals(request.url, redirect_original_url,
+      'Request\'s url is the original URL');
+    assert_equals(request.context, '');
+    assert_equals(request.redirect, 'manual');
+
+    return fetch(request)
+      .then(function(response) {
+          assert_equals(response.status, 0);
+          assert_equals(response.type, 'opaqueredirect');
+          assert_equals(response.url, '');
+        });
+  }, 'Manual redirect fetch returns opaque redirect response');
+
+promise_test(function(t) {
+    var redirect_target_url =
+      BASE_ORIGIN + '/fetch/resources/fetch-status.php?status=200';
+    var redirect_original_url =
+      BASE_ORIGIN + '/serviceworker/resources/redirect.php?Redirect=' +
+      redirect_target_url;
+
+    var request = new Request(redirect_original_url, {redirect: 'error'});
+    assert_equals(request.url, redirect_original_url,
+      'Request\'s url is the original URL');
+    assert_equals(request.context, '');
+    assert_equals(request.redirect, 'error');
+
+    return fetch(request)
+      .then(
+        t.unreached_func('Redirect response must cause an error when redirct' +
+                         ' mode is error.'),
+        function() {});
+  }, 'Redirect response must cause an error when redirct mode is error.');
+
+promise_test(function(test) {
+    var url = BASE_ORIGIN + '/fetch/resources/doctype.html';
+    return fetch(new Request(url, {redirect: 'manual'}))
+      .then(function(response) {
+          assert_equals(response.status, 200);
+          assert_equals(response.statusText, 'OK');
+          assert_equals(response.url, url);
+          return response.text();
+        })
+      .then(function(text) { assert_equals(text, '<!DOCTYPE html>\n'); })
+    }, 'No-redirect fetch completes normally even if redirect mode is manual');
+
+promise_test(function(test) {
+    var url = BASE_ORIGIN + '/fetch/resources/doctype.html';
+    return fetch(new Request(url, {redirect: 'error'}))
+      .then(function(response) {
+          assert_equals(response.status, 200);
+          assert_equals(response.statusText, 'OK');
+          assert_equals(response.url, url);
+          return response.text();
+        })
+      .then(function(text) { assert_equals(text, '<!DOCTYPE html>\n'); })
+    }, 'No-redirect fetch completes normally even if redirect mode is error');
 
 function evalJsonp(text) {
   return new Promise(function(resolve) {

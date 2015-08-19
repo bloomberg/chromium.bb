@@ -156,8 +156,15 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     // TODO(yhirano): "21. If |init|'s cache member is present, set |request|'s
     // cache mode to it."
 
-    // TODO(horo): "22. If |init|'s redirect member is present, set |request|'s
-    // redirect mode to it."
+    // "22. If |init|'s redirect member is present, set |request|'s redirect
+    // mode to it."
+    if (init.redirect == "follow") {
+        request->setRedirect(WebURLRequest::FetchRedirectModeFollow);
+    } else if (init.redirect == "error") {
+        request->setRedirect(WebURLRequest::FetchRedirectModeError);
+    } else if (init.redirect == "manual") {
+        request->setRedirect(WebURLRequest::FetchRedirectModeManual);
+    }
 
     // TODO(jww): "23. If |init|'s integrity member is present, set |request|'s
     // integrity metadata to it."
