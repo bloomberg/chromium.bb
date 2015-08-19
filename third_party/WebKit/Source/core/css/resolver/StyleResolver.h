@@ -211,7 +211,7 @@ private:
     void applyCallbackSelectors(StyleResolverState&);
 
     template <CSSPropertyPriority priority>
-    void applyMatchedProperties(StyleResolverState&, const MatchResult&, bool important, unsigned startIndex, unsigned endIndex, bool inheritedOnly);
+    void applyMatchedProperties(StyleResolverState&, const MatchedPropertiesRange&, bool important, bool inheritedOnly);
     template <CSSPropertyPriority priority>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <CSSPropertyPriority priority>
