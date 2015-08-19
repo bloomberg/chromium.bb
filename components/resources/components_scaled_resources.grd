@@ -7,6 +7,8 @@
     <output filename="components_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="components_resources_200_percent.pak" type="data_package" context="default_200_percent" />
     <output filename="components_resources_300_percent.pak" type="data_package" context="default_300_percent" />
+    <output filename="components_resources_material_100_percent.pak" type="data_package" context="material_100_percent" fallback_to_default_layout="false" />
+    <output filename="components_resources_material_200_percent.pak" type="data_package" context="material_200_percent" fallback_to_default_layout="false" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">

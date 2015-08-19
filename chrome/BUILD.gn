@@ -741,10 +741,12 @@ template("chrome_repack_material_percent") {
     # All sources should also have deps for completeness.
     sources = [
       "$root_gen_dir/chrome/theme_resources_material_${percent}_percent.pak",
+      "$root_gen_dir/components/components_resources_material_${percent}_percent.pak",
     ]
 
     deps = [
       "//chrome/app/theme:theme_resources",
+      "//components/resources",
     ]
 
     output = repack_output_file

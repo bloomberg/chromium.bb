@@ -38,6 +38,8 @@ grit("components_scaled_resources") {
     "components_resources_100_percent.pak",
     "components_resources_200_percent.pak",
     "components_resources_300_percent.pak",
+    "components_resources_material_100_percent.pak",
+    "components_resources_material_200_percent.pak",
   ]
   output_dir = "$root_gen_dir/components"
 }
