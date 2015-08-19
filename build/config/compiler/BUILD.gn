@@ -16,6 +16,13 @@ declare_args() {
   # keep binary size down. Setting this flag to true disables such optimization
   android_full_debug = false
   use_gold = true
+
+  if (use_gold && current_cpu == "amd64" && current_os == "linux") {
+    gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                            root_build_dir)
+  } else {
+    gold_path = ""
+  }
 }
 
 # compiler ---------------------------------------------------------------------
@@ -180,14 +187,14 @@ config("compiler") {
   if (is_linux) {
     cflags += [ "-pthread" ]
 
-    if (current_cpu == "x64" && use_gold) {
-      # Use gold for linking on 64-bit Linux only (on 32-bit it runs out of
-      # address space, and it doesn't support cross-compiling).
-      gold_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
-                              root_build_dir)
+    if (use_gold && gold_path != "") {
       ldflags += [
         "-B$gold_path",
+      ]
+    }
 
+    if (use_gold) {
+      ldflags += [
         # There seems to be a conflict of --icf and -pie in gold which can
         # generate crashy binaries. As a security measure, -pie takes
         # precedence for now.
@@ -195,6 +202,10 @@ config("compiler") {
         #"-Wl,--icf=safe",
         # TODO(noelallen) Add use_gold_linker flag to enable/disable this.
         #"-Wl,--icf=none",
+
+        # Newer gccs and clangs support -fuse-ld, use the flag to force gold
+        # selection.
+        #"-fuse-ld=gold",
 
         # Experimentation found that using four linking threads
         # saved ~20% of link time.
