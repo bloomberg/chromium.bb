@@ -97,6 +97,9 @@ public:
     // The memory registration is revoked automatically in destructor.
     void registerMemoryAllocatedWithCurrentScriptContext();
 
+    // Returns true if the value contains a transferable ArrayBuffer.
+    bool containsTransferableArrayBuffer() const;
+
 private:
     // The followings are private, but used by SerializedScriptValueFactory.
     enum StringDataMode {

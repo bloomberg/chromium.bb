@@ -36,6 +36,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
 #include "wtf/Functional.h"
@@ -86,6 +87,9 @@ void MessagePort::postMessage(ExecutionContext* context, PassRefPtr<SerializedSc
         if (exceptionState.hadException())
             return;
     }
+
+    if (message->containsTransferableArrayBuffer())
+        executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "MessagePort cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/334408"));
 
     WebString messageString = message->toWireString();
     OwnPtr<WebMessagePortChannelArray> webChannels = toWebMessagePortChannelArray(channels.release());

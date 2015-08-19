@@ -238,6 +238,11 @@ void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext()
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(m_externallyAllocatedMemory);
 }
 
+bool SerializedScriptValue::containsTransferableArrayBuffer() const
+{
+    return m_arrayBufferContentsArray && !m_arrayBufferContentsArray->isEmpty();
+}
+
 SerializedScriptValue::~SerializedScriptValue()
 {
     // If the allocated memory was not registered before, then this class is likely
