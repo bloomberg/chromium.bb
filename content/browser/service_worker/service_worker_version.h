@@ -496,8 +496,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void GetNonWindowClients(int request_id,
                            const ServiceWorkerClientQueryOptions& options,
                            ServiceWorkerClients* clients);
-  void OnGetClientsFinished(int request_id,
-                            const ServiceWorkerClients& clients);
+  void OnGetClientsFinished(int request_id, ServiceWorkerClients* clients);
 
   // The timeout timer periodically calls OnTimeoutTimer, which stops the worker
   // if it is excessively idle or unresponsive to ping.

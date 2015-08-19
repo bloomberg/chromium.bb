@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -443,11 +444,11 @@ ServiceWorkerClientInfo ServiceWorkerProviderHost::GetWindowClientInfoOnUI(
   // for a frame that is actually being navigated and isn't exactly what we are
   // expecting.
   return ServiceWorkerClientInfo(
-      render_frame_host->GetVisibilityState(),
-      render_frame_host->IsFocused(),
+      render_frame_host->GetVisibilityState(), render_frame_host->IsFocused(),
       render_frame_host->GetLastCommittedURL(),
       render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
                                      : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+      render_frame_host->frame_tree_node()->last_focus_time(),
       blink::WebServiceWorkerClientTypeWindow);
 }
 

@@ -203,6 +203,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // FrameTree::ForEach to stop all loads in the entire FrameTree.
   bool StopLoading();
 
+  // Returns the time this frame was last focused.
+  base::TimeTicks last_focus_time() const { return last_focus_time_; }
+  void set_last_focus_time(const base::TimeTicks& last_focus_time) {
+    last_focus_time_ = last_focus_time;
+  }
+
  private:
   class OpenerDestroyedObserver;
 
@@ -280,6 +286,8 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // List of objects observing this FrameTreeNode.
   base::ObserverList<Observer> observers_;
+
+  base::TimeTicks last_focus_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };

@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_CLIENT_INFO_H_
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_CLIENT_INFO_H_
 
+#include "base/time/time.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerClientType.h"
@@ -23,6 +24,7 @@ struct ServiceWorkerClientInfo {
                           bool is_focused,
                           const GURL& url,
                           RequestContextFrameType frame_type,
+                          base::TimeTicks last_focus_time,
                           blink::WebServiceWorkerClientType client_type);
 
   // Returns whether the instance is empty.
@@ -38,6 +40,7 @@ struct ServiceWorkerClientInfo {
   GURL url;
   RequestContextFrameType frame_type;
   blink::WebServiceWorkerClientType client_type;
+  base::TimeTicks last_focus_time;
 };
 
 }  // namespace content

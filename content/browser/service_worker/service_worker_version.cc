@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_version.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 
@@ -377,10 +378,11 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
       options.client_type != host_client_type)
     return;
 
-  ServiceWorkerClientInfo client_info(
-      blink::WebPageVisibilityStateHidden,
-      false,  // is_focused
-      host->document_url(), REQUEST_CONTEXT_FRAME_TYPE_NONE, host_client_type);
+  ServiceWorkerClientInfo client_info(blink::WebPageVisibilityStateHidden,
+                                      false,  // is_focused
+                                      host->document_url(),
+                                      REQUEST_CONTEXT_FRAME_TYPE_NONE,
+                                      base::TimeTicks(), host_client_type);
   client_info.client_uuid = host->client_uuid();
   clients->push_back(client_info);
 }
@@ -399,6 +401,13 @@ bool IsInstalled(ServiceWorkerVersion::Status status) {
   NOTREACHED() << "Unexpected status: " << status;
   return false;
 }
+
+struct ServiceWorkerClientInfoSortMRU {
+  bool operator()(const ServiceWorkerClientInfo& a,
+                  const ServiceWorkerClientInfo& b) const {
+    return a.last_focus_time > b.last_focus_time;
+  }
+};
 
 }  // namespace
 
@@ -1286,8 +1295,9 @@ void ServiceWorkerVersion::OnGetClients(
       "client_type", options.client_type, "include_uncontrolled",
       options.include_uncontrolled);
 
+  ServiceWorkerClients clients;
   if (controllee_map_.empty() && !options.include_uncontrolled) {
-    OnGetClientsFinished(request_id, std::vector<ServiceWorkerClientInfo>());
+    OnGetClientsFinished(request_id, &clients);
     return;
   }
 
@@ -1298,22 +1308,22 @@ void ServiceWorkerVersion::OnGetClients(
     return;
   }
 
-  ServiceWorkerClients clients;
   GetNonWindowClients(request_id, options, &clients);
-  OnGetClientsFinished(request_id, clients);
+  OnGetClientsFinished(request_id, &clients);
 }
 
-void ServiceWorkerVersion::OnGetClientsFinished(
-    int request_id,
-    const ServiceWorkerClients& clients) {
+void ServiceWorkerVersion::OnGetClientsFinished(int request_id,
+                                                ServiceWorkerClients* clients) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::OnGetClients",
-                         request_id, "The number of clients", clients.size());
+                         request_id, "The number of clients", clients->size());
 
   if (running_status() != RUNNING)
     return;
+  // Sort clients so that the most recently active tab is in the front.
+  std::sort(clients->begin(), clients->end(), ServiceWorkerClientInfoSortMRU());
   embedded_worker_->SendMessage(
-      ServiceWorkerMsg_DidGetClients(request_id, clients));
+      ServiceWorkerMsg_DidGetClients(request_id, *clients));
 }
 
 void ServiceWorkerVersion::OnActivateEventFinished(
@@ -1932,7 +1942,7 @@ void ServiceWorkerVersion::DidGetWindowClients(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (options.client_type == blink::WebServiceWorkerClientTypeAll)
     GetNonWindowClients(request_id, options, clients.get());
-  OnGetClientsFinished(request_id, *clients);
+  OnGetClientsFinished(request_id, clients.get());
 }
 
 void ServiceWorkerVersion::GetNonWindowClients(
