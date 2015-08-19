@@ -49,9 +49,8 @@ public interface ContextualSearchManagementDelegate {
 
     /**
      * Promotes the current Content View Core in the Contextual Search Panel to its own Tab.
-     * @param shouldFocusOmnibox Whether the Omnibox should be focused after promoting.
      */
-    void promoteToTab(boolean shouldFocusOmnibox);
+    void promoteToTab();
 
     /**
      * Resets the Search Content View scroll position.

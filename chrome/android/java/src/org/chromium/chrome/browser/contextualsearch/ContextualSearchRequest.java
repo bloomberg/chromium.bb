@@ -8,6 +8,9 @@ import android.net.Uri;
 
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import javax.annotation.Nullable;
 
 
@@ -23,6 +26,9 @@ class ContextualSearchRequest {
 
     private boolean mIsLowPriority;
     private boolean mHasFailedLowPriorityLoad;
+
+    private static final String CTXS_PARAM_PATTERN = "(ctxs=[^&]+)";
+    private static final String CTXR_PARAM = "ctxr";
 
     /**
      * Creates a search request for the given search term without any alternate term and
@@ -103,6 +109,34 @@ class ContextualSearchRequest {
         } else {
             return mNormalPriorityUri.toString();
         }
+    }
+
+    /**
+     * Returns whether the given URL is the current Contextual Search URL.
+     * @param url The given URL.
+     * @return Whether it is the current Contextual Search URL.
+     */
+    boolean isContextualSearchUrl(String url) {
+        return url.equals(getSearchUrl());
+    }
+
+    /**
+     * Returns the formatted Search URL, replacing the ctxs param with the ctxr param, so that
+     * the SearchBox will becomes visible, while preserving the Answers Mode.
+     *
+     * @return The formatted Search URL.
+     */
+    String getSearchUrlForPromotion() {
+        String searchUrl = getSearchUrl();
+
+        URL url;
+        try {
+            url = new URL(searchUrl.replaceAll(CTXS_PARAM_PATTERN, CTXR_PARAM));
+        } catch (MalformedURLException e) {
+            url = null;
+        }
+
+        return url != null ? url.toString() : null;
     }
 
     /**

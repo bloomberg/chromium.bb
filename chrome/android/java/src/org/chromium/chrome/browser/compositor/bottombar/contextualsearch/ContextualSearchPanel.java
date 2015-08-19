@@ -226,7 +226,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                 peekPanel(StateChangeReason.SEARCH_BAR_TAP);
             } else if (isMaximized()) {
                 if (mSearchPanelFeatures.isSearchTermRefiningAvailable()) {
-                    getManagementDelegate().promoteToTab(true);
+                    getManagementDelegate().promoteToTab();
                 }
                 if (mSearchPanelFeatures.isCloseButtonAvailable()
                         && isCoordinateInsideCloseButton(x, y)) {
@@ -335,7 +335,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
         if (mShouldPromoteToTabAfterMaximizing && getPanelState() == PanelState.MAXIMIZED) {
             mShouldPromoteToTabAfterMaximizing = false;
-            getManagementDelegate().promoteToTab(false);
+            getManagementDelegate().promoteToTab();
         }
     }
 

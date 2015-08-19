@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -51,6 +50,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContextualSearchClient;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.common.ConsoleMessageLevel;
@@ -162,13 +162,9 @@ public class ContextualSearchManager extends ContextualSearchObservable
     public interface ContextualSearchTabPromotionDelegate {
         /**
          * Called when {@code searchContentViewCore} should be promoted to a {@link Tab}.
-         * @param searchContentViewCore The {@link ContentViewCore} to promote.
-         * @return                      Whether or not {@code searchContentViewCore}'s ownership
-         *                              was transferred to the new {@link Tab} or not.  If
-         *                              {@code false}, this {@link ContentViewCore} might be
-         *                              destroyed after this call.
+         * @param searchUrl The Search URL to be promoted.
          */
-        boolean createContextualSearchTab(ContentViewCore searchContentViewCore);
+        void createContextualSearchTab(String searchUrl);
     }
 
     /**
@@ -1017,6 +1013,7 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (mSearchContentViewCore != null && mSearchContentViewDelegate != null) {
             nativeDestroyWebContents(mNativeContextualSearchManagerPtr);
             mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
+            mSearchContentViewCore.getWebContents().destroy();
             mSearchContentViewCore.destroy();
             mSearchContentViewCore = null;
             if (mSearchWebContentsObserver != null) {
@@ -1060,8 +1057,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void promoteToTab(boolean shouldFocusOmnibox) {
+    public void promoteToTab() {
+        // TODO(pedrosimonetti): Consider removing this member.
         mIsPromotingToTab = true;
+
         // If the request object is null that means that a Contextual Search has just started
         // and the Search Term Resolution response hasn't arrived yet. In this case, promoting
         // the Panel to a Tab will result in creating a new tab with URL about:blank. To prevent
@@ -1070,41 +1069,35 @@ public class ContextualSearchManager extends ContextualSearchObservable
         if (mSearchRequest != null
                 && mSearchContentViewCore != null
                 && mSearchContentViewCore.getWebContents() != null) {
-            nativeReleaseWebContents(mNativeContextualSearchManagerPtr);
-            mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
-            if (!mTabPromotionDelegate.createContextualSearchTab(mSearchContentViewCore)) {
-                nativeDestroyWebContentsFromContentViewCore(mNativeContextualSearchManagerPtr,
-                        mSearchContentViewCore);
-                mSearchContentViewCore.destroy();
-            }
-            if (mSearchWebContentsObserver != null) {
-                mSearchWebContentsObserver.destroy();
-                mSearchWebContentsObserver = null;
-            }
-            mSearchContentViewCore = null;
-            mIsSearchContentViewShowing = false;
-            mSearchRequest = null;
+            String url = getContentViewUrl(mSearchContentViewCore);
 
-            // NOTE(pedrosimonetti): The Panel should be closed after being promoted to a Tab
-            // to prevent Chrome-Android from animating the creation of the new Tab.
-            if (mSearchPanelDelegate.shouldAnimatePanelCloseOnPromoteToTab()) {
-                mSearchPanelDelegate.closePanel(StateChangeReason.TAB_PROMOTION, true);
-            } else {
+            // If it's a search URL, formats it so the SearchBox becomes visible.
+            if (mSearchRequest.isContextualSearchUrl(url)) {
+                url = mSearchRequest.getSearchUrlForPromotion();
+            }
+
+            if (url != null) {
+                mTabPromotionDelegate.createContextualSearchTab(url);
                 mSearchPanelDelegate.closePanel(StateChangeReason.TAB_PROMOTION, false);
-            }
-
-            // Focus the Omnibox.
-            if (shouldFocusOmnibox) {
-                new Handler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        View urlBarView = mActivity.findViewById(R.id.url_bar);
-                        urlBarView.requestFocus();
-                    }
-                });
             }
         }
         mIsPromotingToTab = false;
+    }
+
+    /**
+     * Gets the current loaded URL in a ContentViewCore.
+     *
+     * @param searchContentViewCore The given ContentViewCore.
+     * @return The current loaded URL.
+     */
+    private String getContentViewUrl(ContentViewCore searchContentViewCore) {
+        // First, check the pending navigation entry, because there might be an navigation
+        // not yet committed being processed. Otherwise, get the URL from the WebContents.
+        NavigationEntry entry =
+                searchContentViewCore.getWebContents().getNavigationController().getPendingEntry();
+        String url = entry != null
+                ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
+        return url;
     }
 
     @Override

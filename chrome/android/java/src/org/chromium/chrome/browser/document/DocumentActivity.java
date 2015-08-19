@@ -63,7 +63,6 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
 import org.chromium.content.browser.ContentVideoView;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.base.PageTransition;
@@ -694,18 +693,12 @@ public class DocumentActivity extends ChromeActivity {
     }
 
     @Override
-    public boolean createContextualSearchTab(ContentViewCore searchContentViewCore) {
-        NavigationEntry entry =
-                searchContentViewCore.getWebContents().getNavigationController().getPendingEntry();
-        String url = entry != null
-                ? entry.getUrl() : searchContentViewCore.getWebContents().getUrl();
-
+    public void createContextualSearchTab(String searchUrl) {
         AsyncTabCreationParams asyncParams =
-                new AsyncTabCreationParams(new LoadUrlParams(url, PageTransition.LINK));
+                new AsyncTabCreationParams(new LoadUrlParams(searchUrl, PageTransition.LINK));
         asyncParams.setDocumentStartedBy(DocumentMetricIds.STARTED_BY_CONTEXTUAL_SEARCH);
         getTabCreator(false).createNewTab(
                 asyncParams, TabLaunchType.FROM_MENU_OR_OVERVIEW, getActivityTab().getId());
-        return false;
     }
 
     @Override

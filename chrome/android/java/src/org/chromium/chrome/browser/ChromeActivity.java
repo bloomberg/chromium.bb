@@ -105,7 +105,6 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -1241,16 +1240,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     @Override
-    public boolean createContextualSearchTab(ContentViewCore searchContentViewCore) {
+    public void createContextualSearchTab(String searchUrl) {
         Tab currentTab = getActivityTab();
-        if (currentTab == null) return false;
+        if (currentTab == null) return;
 
         TabCreator tabCreator = getTabCreator(currentTab.isIncognito());
-        if (tabCreator == null) return false;
+        if (tabCreator == null) return;
 
-        tabCreator.createTabWithWebContents(searchContentViewCore.getWebContents(),
-                currentTab.getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND);
-        return true;
+        tabCreator.createNewTab(
+                new LoadUrlParams(searchUrl, PageTransition.LINK),
+                TabModel.TabLaunchType.FROM_LINK, getActivityTab());
     }
 
     /**
