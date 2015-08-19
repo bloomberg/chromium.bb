@@ -13,6 +13,9 @@ const char kEnableRemoteDebugging[] = "enable_remote_debugging";
 // due to bug b/9487011.
 const char kMetricsIsNewClientID[] = "user_experience_metrics.is_new_client_id";
 
+// Whether or not to report metrics and crashes.
+const char kOptInStats[] = "opt-in.stats";
+
 // Total number of child process crashes (other than renderer / extension
 // renderer ones, and plugin children, which are counted separately) since the
 // last report.

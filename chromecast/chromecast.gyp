@@ -90,6 +90,9 @@
         'base/metrics/grouped_histogram.h',
         'base/path_utils.cc',
         'base/path_utils.h',
+        # TODO(gunsch): move pref_names to base/ directory
+        'common/pref_names.cc',
+        'common/pref_names.h',
         'base/process_utils.cc',
         'base/process_utils.h',
         'base/serializers.cc',
@@ -358,8 +361,6 @@
         'common/media/cast_message_generator.cc',
         'common/media/cast_message_generator.h',
         'common/platform_client_auth.h',
-        'common/pref_names.cc',
-        'common/pref_names.h',
         'renderer/cast_content_renderer_client.cc',
         'renderer/cast_content_renderer_client.h',
         'renderer/cast_media_load_deferrer.cc',

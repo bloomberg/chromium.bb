@@ -25,22 +25,9 @@ void RegisterPlatformMetricsProviders(
 // Returns UMA client ID persisted in the platform.
 const std::string GetPlatformClientID(CastService* cast_servce);
 
-// Returns the current release channel.
-::metrics::SystemProfileProto::Channel GetPlatformReleaseChannel(
-     CastService* cast_servce);
-
-// Returns a string representing this build's version.
-std::string GetPlatformVersionString(CastService* cast_servce);
-
-// Returns whether or not metrics reporting should be on.
-bool PlatformIsReportingEnabled(CastService* cast_servce);
-
 // Called when the UMA client ID has been set.
 void PlatformSetClientID(CastService* cast_servce,
                          const std::string& client_id);
-
-// Called when an upload has completed.
-void PlatformOnLogUploadComplete(CastService* cast_servce);
 
 }  // namespace metrics
 }  // namespace chromecast

@@ -7,14 +7,19 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/path_utils.h"
+#include "chromecast/base/version.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
 #include "chromecast/browser/metrics/platform_metrics_providers.h"
 #include "chromecast/common/pref_names.h"
+#include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
 #include "components/metrics/metrics_provider.h"
@@ -39,10 +44,37 @@ const int kStandardUploadIntervalMinutes = 5;
 
 const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 
-#if defined(OS_LINUX)
+#if !defined(OS_ANDROID)
 const char kExternalUmaEventsRelativePath[] = "metrics/uma-events";
 const char kPlatformUmaEventsPath[] = "/data/share/chrome/metrics/uma-events";
-#endif  // defined(OS_LINUX)
+
+const struct ChannelMap {
+  const char* chromecast_channel;
+  const ::metrics::SystemProfileProto::Channel chrome_channel;
+} kMetricsChannelMap[] = {
+  { "canary-channel", ::metrics::SystemProfileProto::CHANNEL_CANARY },
+  { "dev-channel", ::metrics::SystemProfileProto::CHANNEL_DEV },
+  { "developer-channel", ::metrics::SystemProfileProto::CHANNEL_DEV },
+  { "beta-channel", ::metrics::SystemProfileProto::CHANNEL_BETA },
+  { "dogfood-channel", ::metrics::SystemProfileProto::CHANNEL_BETA },
+  { "stable-channel", ::metrics::SystemProfileProto::CHANNEL_STABLE },
+};
+
+::metrics::SystemProfileProto::Channel
+GetReleaseChannelFromUpdateChannelName(const std::string& channel_name) {
+  if (channel_name.empty())
+    return ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+
+  for (const auto& channel_map : kMetricsChannelMap) {
+    if (channel_name.compare(channel_map.chromecast_channel) == 0)
+      return channel_map.chrome_channel;
+  }
+
+  // Any non-empty channel name is considered beta channel
+  return ::metrics::SystemProfileProto::CHANNEL_BETA;
+}
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace
 
 // static
@@ -128,15 +160,49 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 ::metrics::SystemProfileProto::Channel CastMetricsServiceClient::GetChannel() {
-  return GetPlatformReleaseChannel(cast_service_);
+  scoped_ptr<CastSysInfo> sys_info = CreateSysInfo();
+
+#if defined(OS_ANDROID)
+  switch (sys_info->GetBuildType()) {
+    case CastSysInfo::BUILD_ENG:
+      return ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+    case CastSysInfo::BUILD_BETA:
+      return ::metrics::SystemProfileProto::CHANNEL_BETA;
+    case CastSysInfo::BUILD_PRODUCTION:
+      return ::metrics::SystemProfileProto::CHANNEL_STABLE;
+  }
+  NOTREACHED();
+  return ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+#else
+  // Use the system (or signed) release channel here to avoid the noise in the
+  // metrics caused by the virtual channel which could be temporary or
+  // arbitrary.
+  return GetReleaseChannelFromUpdateChannelName(
+      sys_info->GetSystemReleaseChannel());
+#endif  // defined(OS_ANDROID)
 }
 
 std::string CastMetricsServiceClient::GetVersionString() {
-  return GetPlatformVersionString(cast_service_);
+  int build_number;
+  if (!base::StringToInt(CAST_BUILD_INCREMENTAL, &build_number))
+    build_number = 0;
+
+  // Sample result: 31.0.1650.0-K15386-devel
+  std::string version_string(PRODUCT_VERSION);
+
+  version_string.append("-K");
+  version_string.append(base::IntToString(build_number));
+
+  int is_official_build =
+      build_number > 0 &&
+      GetChannel() != ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+  if (!is_official_build)
+    version_string.append("-devel");
+
+  return version_string;
 }
 
 void CastMetricsServiceClient::OnLogUploadComplete() {
-  PlatformOnLogUploadComplete(cast_service_);
 }
 
 void CastMetricsServiceClient::StartGatheringMetrics(
@@ -291,7 +357,7 @@ void CastMetricsServiceClient::Finalize() {
 }
 
 bool CastMetricsServiceClient::IsReportingEnabled() {
-  return PlatformIsReportingEnabled(cast_service_);
+  return pref_service_->GetBoolean(prefs::kOptInStats);
 }
 
 }  // namespace metrics

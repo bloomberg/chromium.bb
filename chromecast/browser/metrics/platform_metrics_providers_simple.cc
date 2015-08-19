@@ -21,19 +21,8 @@ const std::string GetPlatformClientID(CastService* cast_servce) {
   return ::metrics::SystemProfileProto::CHANNEL_STABLE;
 }
 
-std::string GetPlatformVersionString(CastService* cast_servce) {
-  return "";
-}
-
-bool PlatformIsReportingEnabled(CastService* cast_service) {
-  return false;
-}
-
 void PlatformSetClientID(CastService* cast_servce,
                          const std::string& client_id) {
-}
-
-void PlatformOnLogUploadComplete(CastService* cast_servce) {
 }
 
 }  // namespace metrics
