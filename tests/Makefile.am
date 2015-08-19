@@ -204,6 +204,10 @@ dist_yaml_TESTS =				\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\
 	chr-us-g1_harness.yaml			\
+	da-dk-g16-dictionary_harness.yaml	\
+	da-dk-g18-dictionary_harness.yaml	\
+	da-dk-g26-dictionary_harness.yaml	\
+	da-dk-g28-dictionary_harness.yaml	\
 	en-gb-g1_harness.yaml			\
 	en-GB-g2_backward.yaml			\
 	en-GB-g2_harness.yaml			\
