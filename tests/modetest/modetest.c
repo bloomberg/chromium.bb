@@ -1281,7 +1281,7 @@ static void test_page_flip(struct device *dev, struct pipe_arg *pipes, unsigned 
 	evctx.version = DRM_EVENT_CONTEXT_VERSION;
 	evctx.vblank_handler = NULL;
 	evctx.page_flip_handler = page_flip_handler;
-	
+
 	while (1) {
 #if 0
 		struct pollfd pfd[2];
@@ -1627,7 +1627,7 @@ int main(int argc, char **argv)
 			if (parse_connector(&pipe_args[count], optarg) < 0)
 				usage(argv[0]);
 
-			count++;				      
+			count++;
 			break;
 		case 'C':
 			test_cursor = 1;
