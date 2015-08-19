@@ -157,7 +157,6 @@
         <structure type="chrome_scaled_image" name="IDR_BUILDINGS_ILLUSTRATION" file="cros/buildings_illustration.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_CHEVRON_LEFT" file="common/chevron_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_CHILD_USER_ICON" file="common/child_user_invert.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BUTTON_MASK" file="common/close_button_mask.png" />
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
@@ -424,8 +423,8 @@
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_KIOSK_APP_USER_POD_ICON" file="cros/kiosk_app_user_pod_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_LEGACY_SUPERVISED_USER_ICON" file="cros/limited_user.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_LEGACY_SUPERVISED_USER_ICON" file="common/limited_user.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM" file="common/supervised_user_theme/label_bg_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_LEFT" file="common/supervised_user_theme/label_bg_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_SUPERVISED_USER_LABEL_BOTTOM_RIGHT" file="common/supervised_user_theme/label_bg_bottom_right.png" />

@@ -137,10 +137,6 @@ class AvatarMenu :
   // string will be returned.
   base::string16 GetSupervisedUserInformation() const;
 
-  // Returns the icon for the supervised user which will be displayed in the
-  // avatar menu.
-  const gfx::Image& GetSupervisedUserIcon() const;
-
   // This menu is also used for the always-present Mac system menubar. If the
   // last active browser changes, the menu will need to reference that browser.
   void ActiveBrowserChanged(Browser* browser);
