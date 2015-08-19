@@ -50,7 +50,7 @@ public class TestTabModelDirectory {
     public static final TabStateInfo M18_NTP = new TabStateInfo(
             0,
             0,
-            "chrome://newtab/#most_visited",
+            "chrome-native://newtab/",
             "New tab",
             "AAABPK1gIpkAAAQYFAQAAAAAAAACAAAAAAAAAB0AAABjaHJvbWU6Ly9uZXd0YWIvI21vc3RfdmlzaXRlZAAAAA"
             + "AAAAAHAAAATgBlAHcAIAB0AGEAYgAAADQBAAAwAQAACwAAADoAAABjAGgAcgBvAG0AZQA6AC8ALwBuAGUAdw"
