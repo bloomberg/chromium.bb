@@ -175,6 +175,28 @@ def CompilersForHost(host):
     })
   return compiler[host]
 
+def AflFuzzCompilers(afl_fuzz_dir):
+  """Returns the AFL (clang) compiler executables, assuming afl_fuzz_dir
+     is the directory containing the afl-fuzz compiler wrappers.
+  """
+  return ('%s/afl-%s' % (afl_fuzz_dir, 'clang'),
+          '%s/afl-%s' % (afl_fuzz_dir, 'clang++'))
+
+def AflFuzzEnvMap(host, options):
+  """Returns map of environment bindings for injecting afl-fuzz
+     compiler wrappers into the build for the given host.
+  """
+  if not options.afl_fuzz_dir:
+    return {}
+  cc, cxx, _, _ = CompilersForHost(host)
+  return {'AFL_CC': cc, 'AFL_CXX': cxx}
+
+def AflFuzzEnvList(host, options):
+  """Returns the list of variable bindings for injectiong afl-fuzz
+     compiler wrappers into the build for the given host.
+  """
+  arg_map = AflFuzzEnvMap(host, options)
+  return sorted([key + '=' + arg_map[key] for key in arg_map])
 
 def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
@@ -221,7 +243,8 @@ def HostArchToolFlags(host, extra_cflags, opts):
   return result
 
 
-def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
+def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
+                           use_afl_fuzz=False):
   """ Return flags passed to LLVM and binutils configure for compilers and
   compile flags. """
   configure_args = []
@@ -253,15 +276,8 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None):
     cc, cxx, ar, ranlib = CompilersForHost(host)
 
     # Introduce afl-fuzz compiler wrappers if needed.
-    if options.afl_fuzz_dir:
-      configure_args.append('AFL_CC=' + cc)
-      configure_args.append('AFL_CXX=' + cxx)
-      if options.gcc:
-        compiler_names = ('gcc', 'g++')
-      else:
-        compiler_names = ('clang', 'clang++')
-      cc = '%s/afl-%s' % (options.afl_fuzz_dir, compiler_names[0])
-      cxx = '%s/afl-%s' % (options.afl_fuzz_dir, compiler_names[1])
+    if use_afl_fuzz:
+      cc, cxx = AflFuzzCompilers(options.afl_fuzz_dir)
 
     if ProgramPath('ccache'):
       # Set CCACHE_CPP2 envvar, to avoid an error due to a strange
@@ -311,7 +327,10 @@ def LibCxxHostArchFlags(host):
 def CmakeHostArchFlags(host, options):
   """ Set flags passed to LLVM cmake for compilers and compile flags. """
   cmake_flags = []
-  cc, cxx, _, _ = CompilersForHost(host)
+  if options.afl_fuzz_dir:
+    cc, cxx = AflFuzzCompilers(options.afl_fuzz_dir)
+  else:
+    cc, cxx, _, _ = CompilersForHost(host)
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if ProgramPath('ccache'):
@@ -684,6 +703,13 @@ def HostTools(host, options):
   #           The same applies for the default GCC on current Ubuntu.
   llvm_do_werror = not (TripleIsWindows(host) or options.gcc)
 
+  # Older CMake ignore CMAKE_*_LINKER_FLAGS during config step.
+  # https://public.kitware.com/Bug/view.php?id=14066
+  # The workaround is to set LDFLAGS in the environment.
+  llvm_cmake_config_env = {'LDFLAGS': ' '.join(
+      HostArchToolFlags(host, [], options)['LDFLAGS'])}
+  llvm_cmake_config_env.update(AflFuzzEnvMap(host, options))
+
   llvm_cmake = {
       H('llvm'): {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src',
@@ -713,16 +739,10 @@ def HostTools(host, options):
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips;JSBackend',
                   '-DSUBZERO_TARGETS_TO_BUILD=ARM32;MIPS32;X8632;X8664',
                   '%(llvm_src)s'],
-                  # Older CMake ignore CMAKE_*_LINKER_FLAGS during config step.
-                  # https://public.kitware.com/Bug/view.php?id=14066
-                  # The workaround is to set LDFLAGS in the environment.
-                  # TODO(jvoung): remove the ability to override env vars
-                  # from "command" once the CMake fix propagates and we can
-                  # stop using this env var hack.
-                  env={'LDFLAGS' : ' '.join(
-                        HostArchToolFlags(host, [], options)['LDFLAGS'])})] +
+                  env=llvm_cmake_config_env)] +
               CopyHostLibcxxForLLVMBuild(host, 'lib', options) +
-              [command.Command(['ninja', '-v']),
+              [command.Command(['ninja', '-v'],
+                               env=AflFuzzEnvMap(host, options)),
                command.Command(['ninja', 'install'])] +
               CreateSymLinksToDirectToNaClTools(host)
       },
@@ -745,7 +765,9 @@ def HostTools(host, options):
               command.SkipForIncrementalCommand([
                   'sh',
                   '%(llvm_src)s/configure'] +
-                  ConfigureHostArchFlags(host, [], options) +
+                  AflFuzzEnvList(host, options) +
+                  ConfigureHostArchFlags(host, [], options,
+                                         use_afl_fuzz=options.afl_fuzz_dir) +
                   LLVMConfigureAssertionsFlags(options) +
                   [
                    '--disable-bindings', # ocaml is currently the only binding.
@@ -773,7 +795,8 @@ def HostTools(host, options):
                   os.path.join(('Debug+Asserts' if HostIsDebug(options)
                                 else 'Release+Asserts'), 'lib'),
                   options) +
-              [command.Command(MakeCommand(host) + [
+              [command.Command(MakeCommand(host) +
+                  AflFuzzEnvList(host, options) + [
                   'VERBOSE=1',
                   'PNACL_BROWSER_TRANSLATOR=0',
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
@@ -1150,6 +1173,10 @@ def main():
 
   if args.gcc and args.cmake:
     print 'gcc build is not supported with cmake'
+    sys.exit(1)
+
+  if args.afl_fuzz_dir and args.gcc:
+    print '--afl-fuzz-dir not allowed when using gcc'
     sys.exit(1)
 
   packages = {}
