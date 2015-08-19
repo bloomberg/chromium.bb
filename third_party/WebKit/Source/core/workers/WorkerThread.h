@@ -106,7 +106,8 @@ public:
     void willEnterNestedLoop();
     void didLeaveNestedLoop();
 
-    WorkerGlobalScope* workerGlobalScope() const { return m_workerGlobalScope.get(); }
+    // Can be called only on the worker thread, WorkerGlobalScope is not thread safe.
+    WorkerGlobalScope* workerGlobalScope();
 
     // Returns true once one of the terminate* methods is called.
     bool terminated();

@@ -321,6 +321,12 @@ void WorkerThread::terminateAndWait()
     m_terminationEvent->wait();
 }
 
+WorkerGlobalScope* WorkerThread::workerGlobalScope()
+{
+    ASSERT(isCurrentThread());
+    return m_workerGlobalScope.get();
+}
+
 bool WorkerThread::terminated()
 {
     MutexLocker lock(m_threadStateMutex);
