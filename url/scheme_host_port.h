@@ -36,20 +36,19 @@ namespace url {
 //   schemes such as "blob", "filesystem", "data", and "javascript" can only be
 //   represented as invalid SchemeHostPort objects.
 //
-// * The "file" scheme follows the standard syntax, but it is important to note
-//   that the authority portion (host, port) is optional. URLs without an
-//   authority portion will be represented with an empty string for the host,
-//   and a port of 0 (e.g. "file:///etc/hosts" => ("file", "", 0)), and URLs
-//   with a host-only authority portion will be represented with a port of 0
-//   (e.g. "file://example.com/etc/hosts" => ("file", "example.com", 0)). See
-//   Section 3 of RFC 3986 to better understand these constructs.
+// * For example, the "file" scheme follows the standard syntax, but it is
+//   important to note that the authority portion (host, port) is optional.
+//   URLs without an authority portion will be represented with an empty string
+//   for the host, and a port of 0 (e.g. "file:///etc/hosts" =>
+//   ("file", "", 0)), and URLs with a host-only authority portion will be
+//   represented with a port of 0 (e.g. "file://example.com/etc/hosts" =>
+//   ("file", "example.com", 0)). See Section 3 of RFC 3986 to better understand
+//   these constructs.
 //
 // * SchemeHostPort has no notion of the Origin concept (RFC 6454), and in
 //   particular, it has no notion of a "unique" Origin. If you need to take
 //   uniqueness into account (and, if you're making security-relevant decisions
-//   then you absolutely do), please use 'url::Origin' instead[1].
-//
-// [1]: // TODO(mkwst): Land 'url::Origin'. :)
+//   then you absolutely do), please use 'url::Origin' instead.
 //
 // Usage:
 //

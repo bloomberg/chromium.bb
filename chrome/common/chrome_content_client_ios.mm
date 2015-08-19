@@ -12,6 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 // TODO(ios): Investigate merging with chrome_content_client.cc; this would
 // requiring either a lot of ifdefing, or spliting the file into parts.
@@ -30,7 +31,7 @@ void ChromeContentClient::AddPepperPlugins(
 }
 
 void ChromeContentClient::AddAdditionalSchemes(
-    std::vector<std::string>* standard_schemes,
+    std::vector<url::SchemeWithType>* standard_schemes,
     std::vector<std::string>* saveable_shemes) {
   // No additional schemes for iOS.
 }

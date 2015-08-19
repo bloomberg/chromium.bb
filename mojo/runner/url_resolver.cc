@@ -17,7 +17,7 @@ namespace runner {
 
 URLResolver::URLResolver() {
   // Needed to treat first component of mojo URLs as host, not path.
-  url::AddStandardScheme("mojo");
+  url::AddStandardScheme("mojo", url::SCHEME_WITHOUT_AUTHORITY);
 }
 
 URLResolver::~URLResolver() {

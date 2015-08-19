@@ -78,10 +78,10 @@ class ComponentsTestSuite : public base::TestSuite {
 
     // These schemes need to be added globally to pass tests of
     // autocomplete_input_unittest.cc and content_settings_pattern*
-    url::AddStandardScheme("chrome");
-    url::AddStandardScheme("chrome-extension");
-    url::AddStandardScheme("chrome-devtools");
-    url::AddStandardScheme("chrome-search");
+    url::AddStandardScheme("chrome", url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme("chrome-extension", url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme("chrome-devtools", url::SCHEME_WITHOUT_PORT);
+    url::AddStandardScheme("chrome-search", url::SCHEME_WITHOUT_PORT);
 
     // Not using kExtensionScheme to avoid the dependency to extensions.
     ContentSettingsPattern::SetNonWildcardDomainNonPortScheme(

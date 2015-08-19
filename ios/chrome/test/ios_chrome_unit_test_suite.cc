@@ -75,7 +75,8 @@ void IOSChromeUnitTestSuite::Initialize() {
 
   {
     ios::TestChromeBrowserProvider provider;
-    url::AddStandardScheme(provider.GetChromeUIScheme());
+    url::AddStandardScheme(provider.GetChromeUIScheme(),
+                           url::SCHEME_WITHOUT_PORT);
   }
 
   base::TestSuite::Initialize();

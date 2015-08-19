@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/public/common/content_client.h"
+#include "url/url_util.h"
 
 namespace extensions {
 
@@ -18,7 +19,7 @@ class ShellContentClient : public content::ContentClient {
 
   void AddPepperPlugins(
       std::vector<content::PepperPluginInfo>* plugins) override;
-  void AddAdditionalSchemes(std::vector<std::string>* standard_schemes,
+  void AddAdditionalSchemes(std::vector<url::SchemeWithType>* standard_schemes,
                             std::vector<std::string>* saveable_shemes) override;
   std::string GetUserAgent() const override;
   base::string16 GetLocalizedString(int message_id) const override;
