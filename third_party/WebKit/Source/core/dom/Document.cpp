@@ -367,6 +367,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , TreeScope(*this)
     , m_hasNodesWithPlaceholderStyle(false)
     , m_evaluateMediaQueriesOnStyleRecalc(false)
+    , m_shouldProcessFrameLifecycle(false)
     , m_pendingSheetLayout(NoLayoutWithPendingSheets)
     , m_frame(initializer.frame())
     , m_domWindow(m_frame ? m_frame->localDOMWindow() : 0)
@@ -5084,6 +5085,19 @@ void Document::loadPluginsSoon()
 void Document::pluginLoadingTimerFired(Timer<Document>*)
 {
     updateLayout();
+}
+
+bool Document::shouldProcessFrameLifecycle()
+{
+    if (m_shouldProcessFrameLifecycle)
+        return true;
+    if (!isRenderingReady())
+        return false;
+    if ((isHTMLDocument() || isXHTMLDocument()) && !body() && parsing())
+        return false;
+    // Once the page starts processing the pipeline we should never stop.
+    m_shouldProcessFrameLifecycle = true;
+    return true;
 }
 
 ScriptedAnimationController& Document::ensureScriptedAnimationController()
