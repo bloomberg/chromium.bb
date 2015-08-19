@@ -470,22 +470,32 @@ static ContainerNode* nonShadowBoundaryParentNode(Node* node)
 }
 
 template <typename Strategy>
-Node* PositionAlgorithm<Strategy>::parentEditingBoundary() const
+static Node* parentEditingBoundaryAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    if (!m_anchorNode)
-        return 0;
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode)
+        return nullptr;
 
-    Node* documentElement = m_anchorNode->document().documentElement();
+    Node* documentElement = anchorNode->document().documentElement();
     if (!documentElement)
-        return 0;
+        return nullptr;
 
-    Node* boundary = computeContainerNode();
-    while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && m_anchorNode->hasEditableStyle() == Strategy::parent(*boundary)->hasEditableStyle())
+    Node* boundary = position.computeContainerNode();
+    while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && anchorNode->hasEditableStyle() == Strategy::parent(*boundary)->hasEditableStyle())
         boundary = nonShadowBoundaryParentNode<Strategy>(boundary);
 
     return boundary;
 }
 
+Node* parentEditingBoundary(const Position& position)
+{
+    return parentEditingBoundaryAlgorithm<EditingStrategy>(position);
+}
+
+Node* parentEditingBoundary(const PositionInComposedTree& position)
+{
+    return parentEditingBoundaryAlgorithm<EditingInComposedTreeStrategy>(position);
+}
 
 template <typename Strategy>
 bool PositionAlgorithm<Strategy>::atStartOfTree() const

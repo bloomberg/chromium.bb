@@ -460,7 +460,7 @@ typedef unsigned (*BoundarySearchFunction)(const UChar*, unsigned length, unsign
 static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
 {
     Position pos = c.deepEquivalent();
-    Node* boundary = pos.parentEditingBoundary();
+    Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
         return VisiblePosition();
 
@@ -538,7 +538,7 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
 static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
 {
     Position pos = c.deepEquivalent();
-    Node* boundary = pos.parentEditingBoundary();
+    Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
         return VisiblePosition();
 

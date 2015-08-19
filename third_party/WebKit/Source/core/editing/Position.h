@@ -182,8 +182,6 @@ public:
     bool atFirstEditingPositionForNode() const;
     bool atLastEditingPositionForNode() const;
 
-    Node* parentEditingBoundary() const;
-
     bool atStartOfTree() const;
     bool atEndOfTree() const;
 
@@ -251,6 +249,11 @@ using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 // TODO(yosin) We should move |isRenderedCharacter()| to "VisibleUnits.cpp",
 // since it is used only in "editing/commands/"
 CORE_EXPORT bool isRenderedCharacter(const Position&);
+
+// TODO(yosin) We should make |parentEditingBoundary()| as static function
+// in "VisibleUnits.cpp", since it is used only there.
+CORE_EXPORT Node* parentEditingBoundary(const Position&);
+CORE_EXPORT Node* parentEditingBoundary(const PositionInComposedTree&);
 
 template <typename Strategy>
 bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
