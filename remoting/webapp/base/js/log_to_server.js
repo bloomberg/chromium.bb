@@ -56,9 +56,10 @@ remoting.LogToServer.SESSION_ID_LEN_ = 20;
  *
  * @param {remoting.ClientSession.State} state
  * @param {!remoting.Error} connectionError
+ * @param {?remoting.ChromotingEvent.XmppError} xmppError
  */
 remoting.LogToServer.prototype.logClientSessionStateChange =
-    function(state, connectionError) {
+    function(state, connectionError, xmppError) {
   this.maybeExpireSessionId_();
   // Log the session state change.
   var entry = remoting.ServerLogEntry.makeClientSessionStateChange(
@@ -67,6 +68,8 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
   entry.addChromeVersionField();
   entry.addWebappVersionField();
   entry.addSessionIdField(this.sessionId_);
+  entry.addXmppError(xmppError);
+
   this.log_(entry);
   // Don't accumulate connection statistics across state changes.
   this.logAccumulatedStatistics_();

@@ -52,9 +52,12 @@ remoting.Logger.prototype.logSignalStrategyProgress =
  *
  * @param {remoting.ClientSession.State} state
  * @param {!remoting.Error} connectionError
+ * @param {?remoting.ChromotingEvent.XmppError} xmppError The XMPP error
+ *     as described in http://xmpp.org/rfcs/rfc6120.html#stanzas-error.
+ *     Set if the connecton error originates from the an XMPP stanza error.
  */
 remoting.Logger.prototype.logClientSessionStateChange =
-    function(state, connectionError) {};
+    function(state, connectionError, xmppError) {};
 
 /**
  * Logs connection statistics.

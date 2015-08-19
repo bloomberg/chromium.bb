@@ -72,6 +72,9 @@ remoting.ClientSession = function(
   /** @private {remoting.FormatIq} */
   this.iqFormatter_ = null;
 
+  /** @private {remoting.XmppErrorCache} */
+  this.xmppErrorCache_ = new remoting.XmppErrorCache();
+
   /**
    * Allow host-offline error reporting to be suppressed in situations where it
    * would not be useful, for example, when using a cached host JID.
@@ -449,6 +452,7 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
   var formatted = new XMLSerializer().serializeToString(message);
   console.log(base.timestamp() +
               this.iqFormatter_.prettifyReceiveIq(formatted));
+  this.xmppErrorCache_.processStanza(message);
   this.plugin_.onIncomingIq(formatted);
 };
 
@@ -562,7 +566,8 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
   }
 
   this.notifyStateChanges_(oldState, this.state_);
-  this.logger_.logClientSessionStateChange(this.state_, this.error_);
+  this.logger_.logClientSessionStateChange(
+      this.state_, this.error_, this.xmppErrorCache_.getFirstError());
 };
 
 /**

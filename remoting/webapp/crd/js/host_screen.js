@@ -42,8 +42,7 @@ remoting.tryShare = function() {
 function tryShareWithLogger_() {
   it2meLogger.setSessionId();
   it2meLogger.logClientSessionStateChange(
-      remoting.ClientSession.State.INITIALIZING,
-      remoting.Error.none());
+      remoting.ClientSession.State.INITIALIZING, remoting.Error.none(), null);
 
   /** @type {remoting.It2MeHostFacade} */
   var hostFacade = new remoting.It2MeHostFacade();
@@ -97,8 +96,7 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
   onNatTraversalPolicyChanged_(true);  // Hide warning by default.
   remoting.setMode(remoting.AppMode.HOST_WAITING_FOR_CODE);
   it2meLogger.logClientSessionStateChange(
-      remoting.ClientSession.State.CONNECTING,
-      remoting.Error.none());
+      remoting.ClientSession.State.CONNECTING, remoting.Error.none(), null);
   document.getElementById('cancel-share-button').disabled = false;
   disableTimeoutCountdown_();
 
@@ -213,15 +211,15 @@ function showShareError_(error) {
     remoting.setMode(remoting.AppMode.HOME);
     it2meLogger.logClientSessionStateChange(
         remoting.ClientSession.State.CONNECTION_CANCELED,
-        remoting.Error.none());
+        remoting.Error.none(),
+        null);
   } else {
     var errorDiv = document.getElementById('host-plugin-error');
     l10n.localizeElementFromTag(errorDiv, error.getTag());
     console.error('Sharing error: ' + error.toString());
     remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
     it2meLogger.logClientSessionStateChange(
-        remoting.ClientSession.State.FAILED,
-        error);
+        remoting.ClientSession.State.FAILED, error, null);
   }
 
   cleanUp();
@@ -254,7 +252,8 @@ remoting.cancelShare = function() {
     hostSession_.disconnect();
     it2meLogger.logClientSessionStateChange(
         remoting.ClientSession.State.CONNECTION_CANCELED,
-        remoting.Error.none());
+        remoting.Error.none(),
+        null);
   } catch (/** @type {*} */ error) {
     console.error('Error disconnecting: ' + error +
                   '. The host probably crashed.');

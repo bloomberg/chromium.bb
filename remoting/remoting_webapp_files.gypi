@@ -107,6 +107,7 @@
       'webapp/base/js/xhr_event_writer_unittest.js',
       'webapp/base/js/xhr_unittest.js',
       'webapp/base/js/xmpp_connection_unittest.js',
+      'webapp/base/js/xmpp_error_cache_unittest.js',
       'webapp/base/js/xmpp_login_handler_unittest.js',
       'webapp/base/js/xmpp_stream_parser_unittest.js',
       'webapp/crd/js/apps_v2_migration_unittest.js',
@@ -179,6 +180,7 @@
       'webapp/base/js/host_desktop.js',
       'webapp/base/js/smart_reconnector.js',
       'webapp/base/js/telemetry_event_writer.js',
+      'webapp/base/js/xmpp_error_cache.js',
     ],
     # Remoting core JavaScript files.
     'remoting_webapp_shared_js_core_files': [

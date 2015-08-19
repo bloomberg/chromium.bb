@@ -79,6 +79,8 @@ remoting.ChromotingEvent = function(type) {
   this.signal_strategy_type;
   /** @type {remoting.ChromotingEvent.SignalStrategyProgress} */
   this.signal_strategy_progress;
+  /** @type {?remoting.ChromotingEvent.XmppError} */
+  this.xmpp_error;
 
   this.init_();
 };
@@ -120,6 +122,20 @@ remoting.ChromotingEvent.isEndOfSession = function(event) {
     remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED
   ];
   return endStates.indexOf(event.session_state) !== -1;
+};
+
+/**
+ * This is declared as a separate structure to match the proto format
+ * on the cloud. The cloud will parse the raw stanza for more detailed
+ * fields, e.g. error condition, error type, jingle action, etc.
+ *
+ * @param {string} stanza
+ * @struct
+ * @constructor
+ */
+remoting.ChromotingEvent.XmppError = function(stanza) {
+  /** @type {string} */
+  this.raw_stanza = stanza;
 };
 
 })();
@@ -220,4 +236,3 @@ remoting.ChromotingEvent.SignalStrategyProgress = {
   SUCCEEDED_LATE: 4,
   FAILED_LATE: 5
 };
-

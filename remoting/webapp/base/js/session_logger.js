@@ -85,10 +85,11 @@ remoting.SessionLogger.prototype.logSignalStrategyProgress =
 
 /** @override {remoting.Logger} */
 remoting.SessionLogger.prototype.logClientSessionStateChange =
-    function(state, connectionError) {
+    function(state, connectionError, xmppError) {
   this.maybeExpireSessionId_();
   // Log the session state change.
-  var entry = this.makeSessionStateChange_(state, connectionError);
+  var entry =
+      this.makeSessionStateChange_(state, connectionError, xmppError);
   this.log_(entry);
   // Don't accumulate connection statistics across state changes.
   this.logAccumulatedStatistics_();
@@ -111,15 +112,21 @@ remoting.SessionLogger.prototype.logStatistics = function(stats) {
 /**
  * @param {remoting.ClientSession.State} state
  * @param {remoting.Error} error
+ * @param {?remoting.ChromotingEvent.XmppError} xmppError
  * @return {remoting.ChromotingEvent}
  * @private
  */
 remoting.SessionLogger.prototype.makeSessionStateChange_ =
-    function(state, error) {
+    function(state, error, xmppError) {
   var entry = new remoting.ChromotingEvent(
       remoting.ChromotingEvent.Type.SESSION_STATE);
   entry.connection_error = toConnectionError(error);
   entry.session_state = toSessionState(state);
+
+  if (Boolean(xmppError)) {
+    entry.xmpp_error = xmppError;
+  }
+
   this.fillEvent_(entry);
   return entry;
 };

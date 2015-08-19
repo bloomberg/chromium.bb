@@ -49,6 +49,8 @@ remoting.ServerLogEntry.KEY_SIGNAL_STRATEGY_PROGRESS_ =
 /** @private */
 remoting.ServerLogEntry.KEY_SESSION_DURATION_SECONDS_ = 'session-duration';
 
+/** @private */
+remoting.ServerLogEntry.KEY_XMPP_ERROR_RAW_STANZA = 'xmpp-error-raw-stanza';
 
 /**
  * @private
@@ -439,4 +441,17 @@ remoting.ServerLogEntry.prototype.addModeField = function(mode) {
  */
 remoting.ServerLogEntry.prototype.addApplicationId = function() {
   this.set_(remoting.ServerLogEntry.KEY_APP_ID_, chrome.runtime.id);
+};
+
+/**
+ * Adds a field specifying the XMPP error to this log entry.
+ * @param {?remoting.ChromotingEvent.XmppError} xmppError
+ * @return {void} Nothing.
+ */
+remoting.ServerLogEntry.prototype.addXmppError = function(xmppError) {
+  if (!Boolean(xmppError)) {
+    return;
+  }
+  this.set_(remoting.ServerLogEntry.KEY_XMPP_ERROR_RAW_STANZA,
+            xmppError.raw_stanza);
 };

@@ -104,6 +104,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/xhr_event_writer_unittest.js",
   "base/js/xhr_unittest.js",
   "base/js/xmpp_connection_unittest.js",
+  "base/js/xmpp_error_cache_unittest.js",
   "base/js/xmpp_login_handler_unittest.js",
   "base/js/xmpp_stream_parser_unittest.js",
   "crd/js/apps_v2_migration_unittest.js",
@@ -174,6 +175,7 @@ remoting_webapp_shared_js_client_files = [
   "base/js/host_desktop.js",
   "base/js/smart_reconnector.js",
   "base/js/telemetry_event_writer.js",
+  "base/js/xmpp_error_cache.js",
 ]
 
 # Remoting core JavaScript files.
