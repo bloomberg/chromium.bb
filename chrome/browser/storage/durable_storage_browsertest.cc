@@ -40,7 +40,9 @@ void DurableStorageBrowserTest::SetUpCommandLine(
               switches::kEnableExperimentalWebPlatformFeatures);
 }
 
-IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
+// TODO(dgrogan): Reenable after https://codereview.chromium.org/1302643002
+// lands.
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, DISABLED_FirstTabSeesResult) {
   EXPECT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndWaitUntilReady());
 
