@@ -90,9 +90,8 @@
         'base/metrics/grouped_histogram.h',
         'base/path_utils.cc',
         'base/path_utils.h',
-        # TODO(gunsch): move pref_names to base/ directory
-        'common/pref_names.cc',
-        'common/pref_names.h',
+        'base/pref_names.cc',
+        'base/pref_names.h',
         'base/process_utils.cc',
         'base/process_utils.h',
         'base/serializers.cc',

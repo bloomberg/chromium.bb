@@ -15,7 +15,7 @@
 #include "base/prefs/pref_service_factory.h"
 #include "base/prefs/pref_store.h"
 #include "chromecast/base/cast_paths.h"
-#include "chromecast/common/pref_names.h"
+#include "chromecast/base/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromecast {

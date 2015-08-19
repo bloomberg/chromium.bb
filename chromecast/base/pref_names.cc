@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/common/pref_names.h"
+#include "chromecast/base/pref_names.h"
 
 namespace prefs {
 

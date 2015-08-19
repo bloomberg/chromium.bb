@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_COMMON_PREF_NAMES_H_
-#define CHROMECAST_COMMON_PREF_NAMES_H_
+#ifndef CHROMECAST_BASE_PREF_NAMES_H_
+#define CHROMECAST_BASE_PREF_NAMES_H_
 
 namespace prefs {
 
@@ -19,4 +19,4 @@ extern const char kStabilitySystemUncleanShutdownCount[];
 
 }  // namespace prefs
 
-#endif  // CHROMECAST_COMMON_PREF_NAMES_H_
+#endif  // CHROMECAST_BASE_PREF_NAMES_H_
