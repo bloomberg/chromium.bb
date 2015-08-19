@@ -79,6 +79,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/sync/sync_global_error_factory.h"
 #endif
 
@@ -219,15 +220,18 @@ void ToolbarView::Init() {
   LoadImages();
 
   // Start global error services now so we badge the menu correctly.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
   if (!HasAshShell()) {
+    SigninGlobalErrorFactory::GetForProfile(browser_->profile());
+#if !defined(OS_ANDROID)
     SyncGlobalErrorFactory::GetForProfile(browser_->profile());
-  }
 #endif
+  }
 
 #if defined(OS_WIN)
   RecoveryInstallGlobalErrorFactory::GetForProfile(browser_->profile());
 #endif
+#endif  // OS_CHROMEOS
 
   // Add any necessary badges to the menu item based on the system state.
   // Do this after |app_menu_| has been added as a bubble may be shown that
