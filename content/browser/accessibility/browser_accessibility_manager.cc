@@ -134,7 +134,8 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       focus_(NULL),
       user_is_navigating_away_(false),
       osk_state_(OSK_ALLOWED),
-      ax_tree_id_(AXTreeIDRegistry::kNoAXTreeID) {
+      ax_tree_id_(AXTreeIDRegistry::kNoAXTreeID),
+      parent_node_id_from_parent_tree_(0) {
   tree_->SetDelegate(this);
   Initialize(initial_tree);
 }
