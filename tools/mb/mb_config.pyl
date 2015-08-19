@@ -319,6 +319,14 @@
       'Mac GN': 'gn_release_bot',
       'Mac GN (dbg)': 'gn_debug_static_bot',
     },
+    'chromium.mojo': {
+      'Chromium Mojo Android': 'android_gn_release_bot',
+      'Chromium Mojo Linux Perf': 'gn_release_bot',
+      'Chromium Mojo Android Nexus5 Perf': 'android_gn_release_bot',
+      'Chromium Mojo Windows': 'gn_release_bot_minimal_symbols_x86',
+      'Chromium Mojo Linux': 'gn_release_bot',
+      'Chromium Mojo Windows 7 Perf': 'gn_release_bot_minimal_symbols_x86',
+    },
     'chromium.win': {
       # Windows bots take too long to link w/ full symbols and time out.
       'Win x64 GN': 'gn_release_bot_minimal_symbols',
