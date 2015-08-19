@@ -173,7 +173,10 @@ bool MediaControlsPainter::paintMediaOverlayPlayButton(LayoutObject* object, con
     if (RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
         // Overlay play button covers the entire player, so center and draw a
         // smaller button.  Center in the entire element.
-        int mediaHeight = mediaElement->clientHeight();
+        const LayoutBox* box = mediaElement->layoutObject()->enclosingBox();
+        if (!box)
+            return false;
+        int mediaHeight = box->pixelSnappedHeight();
         buttonRect.setX(rect.center().x() - mediaOverlayPlayButtonWidthNew / 2);
         buttonRect.setY(rect.center().y() - mediaOverlayPlayButtonHeightNew / 2
             + (mediaHeight - rect.height()) / 2);
