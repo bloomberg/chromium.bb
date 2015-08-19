@@ -49,6 +49,8 @@ source_set("memory") {
   if (is_ios) {
     sources -= [
       "discardable_shared_memory.cc",
+      "discardable_shared_memory.h",
+      "shared_memory.h",
       "shared_memory_posix.cc",
     ]
   }
