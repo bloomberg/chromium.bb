@@ -980,6 +980,7 @@
       'graphics/paint/DisplayItemTest.cpp',
       'image-decoders/FastSharedBufferReaderTest.cpp',
       'image-decoders/ImageDecoderTest.cpp',
+      'mac/VersionUtilMacTest.mm',
       'network/FormDataTest.cpp',
       'network/HTTPParsersTest.cpp',
       'network/ResourceRequestTest.cpp',
