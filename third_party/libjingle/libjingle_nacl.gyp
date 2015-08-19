@@ -87,8 +87,6 @@
         '<(webrtc_base)/checks.h',
         '<(webrtc_base)/common.cc',
         '<(webrtc_base)/common.h',
-        '<(webrtc_base)/cpumonitor.cc',
-        '<(webrtc_base)/cpumonitor.h',
         '<(webrtc_base)/crc32.cc',
         '<(webrtc_base)/crc32.h',
         '<(webrtc_base)/criticalsection.cc',
