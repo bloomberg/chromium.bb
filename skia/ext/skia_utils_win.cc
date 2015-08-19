@@ -13,15 +13,15 @@
 
 namespace {
 
-SK_COMPILE_ASSERT(offsetof(RECT, left) == offsetof(SkIRect, fLeft), o1);
-SK_COMPILE_ASSERT(offsetof(RECT, top) == offsetof(SkIRect, fTop), o2);
-SK_COMPILE_ASSERT(offsetof(RECT, right) == offsetof(SkIRect, fRight), o3);
-SK_COMPILE_ASSERT(offsetof(RECT, bottom) == offsetof(SkIRect, fBottom), o4);
-SK_COMPILE_ASSERT(sizeof(RECT().left) == sizeof(SkIRect().fLeft), o5);
-SK_COMPILE_ASSERT(sizeof(RECT().top) == sizeof(SkIRect().fTop), o6);
-SK_COMPILE_ASSERT(sizeof(RECT().right) == sizeof(SkIRect().fRight), o7);
-SK_COMPILE_ASSERT(sizeof(RECT().bottom) == sizeof(SkIRect().fBottom), o8);
-SK_COMPILE_ASSERT(sizeof(RECT) == sizeof(SkIRect), o9);
+static_assert(offsetof(RECT, left) == offsetof(SkIRect, fLeft), "o1");
+static_assert(offsetof(RECT, top) == offsetof(SkIRect, fTop), "o2");
+static_assert(offsetof(RECT, right) == offsetof(SkIRect, fRight), "o3");
+static_assert(offsetof(RECT, bottom) == offsetof(SkIRect, fBottom), "o4");
+static_assert(sizeof(RECT().left) == sizeof(SkIRect().fLeft), "o5");
+static_assert(sizeof(RECT().top) == sizeof(SkIRect().fTop), "o6");
+static_assert(sizeof(RECT().right) == sizeof(SkIRect().fRight), "o7");
+static_assert(sizeof(RECT().bottom) == sizeof(SkIRect().fBottom), "o8");
+static_assert(sizeof(RECT) == sizeof(SkIRect), "o9");
 
 }  // namespace
 

@@ -355,15 +355,15 @@ scoped_ptr<base::Value> AsValue(const SkPath& path) {
       { "move", "line", "quad", "conic", "cubic", "close", "done" };
   static const int gPtsPerVerb[] = { 1, 1, 2, 2, 3, 0, 0 };
   static const int gPtOffsetPerVerb[] = { 0, 1, 1, 1, 1, 0, 0 };
-  SK_COMPILE_ASSERT(
+  static_assert(
       SK_ARRAY_COUNT(gVerbStrings) == static_cast<size_t>(SkPath::kDone_Verb + 1),
-      gVerbStrings_size_mismatch);
-  SK_COMPILE_ASSERT(
+      "gVerbStrings size mismatch");
+  static_assert(
       SK_ARRAY_COUNT(gVerbStrings) == SK_ARRAY_COUNT(gPtsPerVerb),
-      gPtsPerVerb_size_mismatch);
-  SK_COMPILE_ASSERT(
+      "gPtsPerVerb size mismatch");
+  static_assert(
       SK_ARRAY_COUNT(gVerbStrings) == SK_ARRAY_COUNT(gPtOffsetPerVerb),
-      gPtOffsetPerVerb_size_mismatch);
+      "gPtOffsetPerVerb size mismatch");
 
   scoped_ptr<base::ListValue> verbs_val(new base::ListValue());
   SkPath::Iter iter(const_cast<SkPath&>(path), false);

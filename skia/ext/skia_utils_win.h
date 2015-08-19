@@ -24,14 +24,14 @@ POINT SkPointToPOINT(const SkPoint& point);
 SkRect RECTToSkRect(const RECT& rect);
 
 // Converts a Windows RECT to a Skia rect.
-// Both use same in-memory format. Verified by SK_COMPILE_ASSERT() in
+// Both use same in-memory format. Verified by static_assert in
 // skia_utils_win.cc.
 inline const SkIRect& RECTToSkIRect(const RECT& rect) {
   return reinterpret_cast<const SkIRect&>(rect);
 }
 
 // Converts a Skia rect to a Windows RECT.
-// Both use same in-memory format. Verified by SK_COMPILE_ASSERT() in
+// Both use same in-memory format. Verified by static_assert in
 // skia_utils_win.cc.
 inline const RECT& SkIRectToRECT(const SkIRect& rect) {
   return reinterpret_cast<const RECT&>(rect);
