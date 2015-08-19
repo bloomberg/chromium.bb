@@ -157,7 +157,7 @@
       "layouts": [
         "us"
       ],
-      "input_view": "inputview.html#id=zhuyin&language=zh-TW&passwordLayout=zhuyin&name=inputmethod_zhuyin",
+      "input_view": "inputview.html#id=zhuyin.compact.qwerty&language=zh-TW&passwordLayout=zhuyin.en.compact.qwerty&name=inputmethod_zhuyin",
       "options_page": "hmm_options.html?code=zh-hant-t-i0-und"
     },
     {
