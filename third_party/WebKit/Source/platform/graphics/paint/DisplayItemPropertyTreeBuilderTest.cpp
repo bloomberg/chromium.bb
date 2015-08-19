@@ -9,7 +9,9 @@
 #include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/DisplayItemClipTree.h"
 #include "platform/graphics/paint/DisplayItemTransformTree.h"
+#include "platform/graphics/paint/ScrollDisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/transforms/TransformTestHelper.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebDisplayItemTransformTree.h"
@@ -71,6 +73,26 @@ protected:
     void processEndTransform3D(const DummyClient& client)
     {
         processDisplayItem(EndTransform3DDisplayItem(client, DisplayItem::transform3DTypeToEndTransform3DType(DisplayItem::Transform3DElementTransform)));
+    }
+    const DummyClient& processBeginTransform(const AffineTransform& transform)
+    {
+        const DummyClient& client = newDummyClient();
+        processDisplayItem(BeginTransformDisplayItem(client, transform));
+        return client;
+    }
+    void processEndTransform(const DummyClient& client)
+    {
+        processDisplayItem(EndTransformDisplayItem(client));
+    }
+    const DummyClient& processBeginScroll(int offsetX, int offsetY)
+    {
+        const DummyClient& client = newDummyClient();
+        processDisplayItem(BeginScrollDisplayItem(client, DisplayItem::ScrollFirst, IntSize(offsetX, offsetY)));
+        return client;
+    }
+    void processEndScroll(const DummyClient& client)
+    {
+        processDisplayItem(EndScrollDisplayItem(client, DisplayItem::EndScrollFirst));
     }
 
     void finishPropertyTrees()
@@ -317,6 +339,80 @@ TEST_F(DisplayItemPropertyTreeBuilderTest, NestedTransformsAreNotCombined)
     EXPECT_TRANSFORMS_ALMOST_EQ(matrix2, transformNode.matrix);
     const auto& parentNode = transformTree().nodeAt(transformNode.parentNodeIndex);
     EXPECT_TRANSFORMS_ALMOST_EQ(matrix1, parentNode.matrix);
+}
+
+TEST_F(DisplayItemPropertyTreeBuilderTest, TransformDisplayItemCreatesTransformNode)
+{
+    // 2D transform display items should create a transform node as well,
+    // unless the transform is a 2D translation only.
+    AffineTransform rotation;
+    rotation.rotate(45);
+
+    processDummyDisplayItem();
+    auto transformClient = processBeginTransform(rotation);
+    processDummyDisplayItem();
+    processEndTransform(transformClient);
+    processDummyDisplayItem();
+    finishPropertyTrees();
+
+    // There should be two transform nodes.
+    ASSERT_EQ(2u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
+    EXPECT_EQ(0u, transformTree().nodeAt(1).parentNodeIndex);
+    EXPECT_TRANSFORMS_ALMOST_EQ(TransformationMatrix(rotation), transformTree().nodeAt(1).matrix);
+
+    // There should be three range records, the middle one affected by the
+    // rotation.
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0)),
+        AllOf(hasRange(2, 3), hasTransformNode(1)),
+        AllOf(hasRange(4, 5), hasTransformNode(0))));
+}
+
+TEST_F(DisplayItemPropertyTreeBuilderTest, TransformDisplayItemOnly2DTranslation)
+{
+    // In this case no transform node should be created for the 2D translation.
+    AffineTransform translation = AffineTransform::translation(10, -40);
+
+    processDummyDisplayItem();
+    auto transformClient = processBeginTransform(translation);
+    processDummyDisplayItem();
+    processEndTransform(transformClient);
+    processDummyDisplayItem();
+    finishPropertyTrees();
+
+    // There should be only one transform node.
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
+
+    // There should be three range records, the middle one affected by the
+    // translation.
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0), hasOffset(FloatSize(0, 0))),
+        AllOf(hasRange(2, 3), hasTransformNode(0), hasOffset(FloatSize(10, -40))),
+        AllOf(hasRange(4, 5), hasTransformNode(0), hasOffset(FloatSize(0, 0)))));
+}
+
+TEST_F(DisplayItemPropertyTreeBuilderTest, ScrollDisplayItemIs2DTranslation)
+{
+    processDummyDisplayItem();
+    auto scrollClient = processBeginScroll(-90, 400);
+    processDummyDisplayItem();
+    processEndScroll(scrollClient);
+    processDummyDisplayItem();
+    finishPropertyTrees();
+
+    // There should be only one transform node.
+    ASSERT_EQ(1u, transformTree().nodeCount());
+    EXPECT_TRUE(transformTree().nodeAt(0).isRoot());
+
+    // There should be three range records, the middle one affected by the
+    // scroll. Note that the translation due to scroll is the negative of the
+    // scroll offset.
+    EXPECT_THAT(rangeRecordsAsStdVector(), ElementsAre(
+        AllOf(hasRange(0, 1), hasTransformNode(0), hasOffset(FloatSize(0, 0))),
+        AllOf(hasRange(2, 3), hasTransformNode(0), hasOffset(FloatSize(90, -400))),
+        AllOf(hasRange(4, 5), hasTransformNode(0), hasOffset(FloatSize(0, 0)))));
 }
 
 } // namespace

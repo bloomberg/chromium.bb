@@ -8,7 +8,9 @@
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DisplayItemClipTree.h"
 #include "platform/graphics/paint/DisplayItemTransformTree.h"
+#include "platform/graphics/paint/ScrollDisplayItem.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
+#include "platform/graphics/paint/TransformDisplayItem.h"
 
 namespace blink {
 
@@ -80,6 +82,15 @@ static BeginDisplayItemClassification classifyBeginItem(const DisplayItem& begin
         const auto& begin3D = static_cast<const BeginTransform3DDisplayItem&>(beginDisplayItem);
         result.matrix = begin3D.transform();
         result.transformKind = result.matrix.isIdentityOr2DTranslation() ? Only2DTranslation : RequiresTransformNode;
+    } else if (type == DisplayItem::BeginTransform) {
+        const auto& begin2D = static_cast<const BeginTransformDisplayItem&>(beginDisplayItem);
+        result.matrix = begin2D.transform();
+        result.transformKind = begin2D.transform().isIdentityOrTranslation() ? Only2DTranslation : RequiresTransformNode;
+    } else if (DisplayItem::isScrollType(type)) {
+        const auto& beginScroll = static_cast<const BeginScrollDisplayItem&>(beginDisplayItem);
+        const IntSize& offset = beginScroll.currentOffset();
+        result.matrix.translate(-offset.width(), -offset.height());
+        result.transformKind = Only2DTranslation;
     }
     return result;
 }

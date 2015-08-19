@@ -24,11 +24,14 @@ public:
     void replay(GraphicsContext&) override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
+    const IntSize& currentOffset() const { return m_currentOffset; }
+
 private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
 
+private:
     const IntSize m_currentOffset;
 };
 

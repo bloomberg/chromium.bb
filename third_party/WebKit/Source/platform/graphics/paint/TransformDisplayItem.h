@@ -20,11 +20,14 @@ public:
     void replay(GraphicsContext&) override;
     void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
+    const AffineTransform& transform() const { return m_transform; }
+
 private:
 #ifndef NDEBUG
     void dumpPropertiesAsDebugString(WTF::StringBuilder&) const final;
 #endif
 
+private:
     const AffineTransform m_transform;
 };
 
