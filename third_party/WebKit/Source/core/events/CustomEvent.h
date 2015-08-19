@@ -49,6 +49,7 @@ public:
         return adoptRefWillBeNoop(new CustomEvent(type, initializer));
     }
 
+    void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, const ScriptValue& detail);
     void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue>);
 
     const AtomicString& interfaceName() const override;
@@ -56,7 +57,6 @@ public:
     SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
 
     ScriptValue detail() const { return m_detail; }
-    void setDetail(ScriptValue detail) { m_detail = detail; }
 
     DECLARE_VIRTUAL_TRACE();
 

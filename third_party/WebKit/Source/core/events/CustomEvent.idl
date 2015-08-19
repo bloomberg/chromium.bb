@@ -31,9 +31,5 @@
 ] interface CustomEvent : Event {
     [Custom=Getter] readonly attribute any detail;
 
-    // FIXME: initCustomEvent()'s arguments should not be optional.
-    [Custom, Measure] void initCustomEvent([Default=Undefined] optional DOMString type,
-                                           [Default=Undefined] optional boolean bubbles,
-                                           [Default=Undefined] optional boolean cancelable,
-                                           [Default=Undefined] optional any detail);
+    [Measure] void initCustomEvent(DOMString type, boolean bubbles, boolean cancelable, any detail);
 };

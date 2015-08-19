@@ -73,20 +73,4 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
     v8SetReturnValue(info, cacheState(info.GetIsolate(), info.Holder(), detail));
 }
 
-void V8CustomEvent::initCustomEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    CustomEvent* event = V8CustomEvent::toImpl(info.Holder());
-
-    TOSTRING_VOID(V8StringResource<>, typeArg, info[0]);
-    bool canBubbleArg;
-    bool cancelableArg;
-    if (!v8Call(info[1]->BooleanValue(info.GetIsolate()->GetCurrentContext()), canBubbleArg)
-        || !v8Call(info[2]->BooleanValue(info.GetIsolate()->GetCurrentContext()), cancelableArg))
-        return;
-    v8::Local<v8::Value> detailsArg = info[3];
-
-    event->initEvent(typeArg, canBubbleArg, cancelableArg);
-    event->setDetail(ScriptValue(ScriptState::current(info.GetIsolate()), detailsArg));
-}
-
 } // namespace blink

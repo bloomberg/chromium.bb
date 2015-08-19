@@ -44,13 +44,13 @@ Tests that custom events with unprefixed animations names are correctly dispatch
 </body>
 <script>
   var custom = document.createEvent('CustomEvent');
-  custom.initCustomEvent('animationstart', true, true);
+  custom.initCustomEvent('animationstart', true, true, null);
   document.dispatchEvent(custom);
   custom = document.createEvent('CustomEvent');
-  custom.initCustomEvent('animationiteration', true, true);
+  custom.initCustomEvent('animationiteration', true, true, null);
   document.dispatchEvent(custom);
   custom = document.createEvent('CustomEvent');
-  custom.initCustomEvent('animationend', true, true);
+  custom.initCustomEvent('animationend', true, true, null);
   document.dispatchEvent(custom);
 </script>
 </html>
