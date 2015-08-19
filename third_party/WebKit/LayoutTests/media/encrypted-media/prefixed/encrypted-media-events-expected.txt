@@ -1,5 +1,5 @@
-CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
-CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
 Test all the key-related events.
 
 EXPECTED (keyNeededEvent != 'null') OK

@@ -1,7 +1,7 @@
-CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
-CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
-CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
-CONSOLE WARNING: canPlayType()'s 'keySystem' parameter is deprecated and will be ignored in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: canPlayType()'s 'keySystem' parameter is deprecated and will be ignored in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
 Test that the methods throw INVALID_STATE_ERR when the media element has not loaded. canPlayType() never throws.
 
 EXPECTED (video.networkState == '0') OK

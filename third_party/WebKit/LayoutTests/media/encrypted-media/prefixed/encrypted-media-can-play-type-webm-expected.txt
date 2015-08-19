@@ -1,4 +1,4 @@
-CONSOLE WARNING: canPlayType()'s 'keySystem' parameter is deprecated and will be ignored in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
+CONSOLE WARNING: canPlayType()'s 'keySystem' parameter is deprecated and will be ignored in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.
 Test Encrypted Media extension of HTMLMediaElement canPlayType() method for WebM types.
 
 WebM video container without a codec results in "maybe".

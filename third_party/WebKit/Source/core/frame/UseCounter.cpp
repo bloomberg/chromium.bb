@@ -859,10 +859,10 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedMediaAddKey:
     case PrefixedMediaGenerateKeyRequest:
     case PrefixedMediaCancelKeyRequest:
-        return "The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.";
+        return "The prefixed Encrypted Media Extensions APIs are deprecated and will be removed in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.";
 
     case CanPlayTypeKeySystem:
-        return "canPlayType()'s 'keySystem' parameter is deprecated and will be ignored in M46 (beta around September 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.";
+        return "canPlayType()'s 'keySystem' parameter is deprecated and will be ignored in M47 (beta around October 2015). Please use 'navigator.requestMediaKeySystemAccess()' instead.";
 
     case SVGSVGElementForceRedraw:
         return "'SVGSVGElement.forceRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__forceRedraw).";
