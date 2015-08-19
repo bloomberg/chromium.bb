@@ -67,10 +67,12 @@ import glob
 import itertools
 import json
 import os
+import re
 import shutil
 import stat
 import sys
 
+from datetime import datetime
 from pylib import cmd_helper
 from pylib import constants
 
@@ -80,7 +82,10 @@ from util import build_utils
 
 
 M2_PKG_PATH = os.path.join('com', 'google', 'android', 'gms')
-
+OUTPUT_FORMAT_VERSION = 1
+VERSION_FILE_NAME = 'version_info.json'
+VERSION_NUMBER_PATTERN = re.compile(
+    '<integer name="google_play_services_version">(\d+)<\/integer>')
 
 def main():
   parser = argparse.ArgumentParser(description=("Prepares the Google Play "
@@ -101,11 +106,6 @@ def main():
                       help='Config file path',
                       required=True,
                       metavar='FILE')
-  parser.add_argument('-g',
-                      '--git-friendly',
-                      action='store_true',
-                      default=False,
-                      help='Add a .gitkeep file to the empty directories')
   parser.add_argument('-x',
                       '--is-extracted-repo',
                       action='store_true',
@@ -117,12 +117,10 @@ def main():
   ProcessGooglePlayServices(args.repository,
                             args.out_dir,
                             args.config_file,
-                            args.git_friendly,
                             args.is_extracted_repo)
 
 
-def ProcessGooglePlayServices(repo, out_dir, config_path, git_friendly,
-                              is_extracted_repo):
+def ProcessGooglePlayServices(repo, out_dir, config_path, is_extracted_repo):
   with open(config_path, 'r') as json_file:
     config = json.load(json_file)
 
@@ -136,7 +134,12 @@ def ProcessGooglePlayServices(repo, out_dir, config_path, git_friendly,
 
     _GenerateCombinedJar(tmp_paths)
     _ProcessResources(config, tmp_paths)
-    _BuildOutput(config, tmp_paths, out_dir, git_friendly)
+
+    if is_extracted_repo:
+      printable_repo = repo
+    else:
+      printable_repo = 'm2repository - ' + config['lib_version']
+    _BuildOutput(config, tmp_paths, out_dir, printable_repo)
 
 
 def _SetupTempDir(tmp_root):
@@ -225,7 +228,41 @@ def _ProcessResources(config, tmp_paths):
         shutil.rmtree(res_dir)
 
 
-def _BuildOutput(config, tmp_paths, out_dir, git_friendly):
+def _GetVersionNumber(config, tmp_paths):
+  version_file_path = os.path.join(tmp_paths['imported_clients'],
+                                   config['base_client'],
+                                   'res',
+                                   'values',
+                                   'version.xml')
+
+  with open(version_file_path, 'r') as version_file:
+    version_file_content = version_file.read()
+
+  match = VERSION_NUMBER_PATTERN.search(version_file_content)
+  if not match:
+    raise AttributeError('A value for google_play_services_version was not '
+                         'found in ' + version_file_path)
+
+  return match.group(1)
+
+
+def _BuildOutput(config, tmp_paths, out_dir, printable_repo):
+  generation_date = datetime.utcnow()
+  play_services_full_version = _GetVersionNumber(config, tmp_paths)
+
+  # Create a version text file to allow quickly checking the version
+  gen_info = {
+    '@Description@': 'Preprocessed Google Play services clients for chrome',
+    'Generator script': os.path.basename(__file__),
+    'Repository source': printable_repo,
+    'Library version': play_services_full_version,
+    'Directory format version': OUTPUT_FORMAT_VERSION,
+    'Generation Date (UTC)': str(generation_date)
+  }
+  tmp_version_file_path = os.path.join(tmp_paths['root'], VERSION_FILE_NAME)
+  with open(tmp_version_file_path, 'w') as version_file:
+    json.dump(gen_info, version_file, indent=2, sort_keys=True)
+
   out_paths = _SetupOutputDir(out_dir)
 
   # Copy the resources to the output dir
@@ -247,11 +284,15 @@ def _BuildOutput(config, tmp_paths, out_dir, git_friendly):
                '    private UnusedStub() {}'
                '}')
 
-  # Create the main res directory. Will be empty but is needed by gyp
+  # Create the main res directory. It is needed by gyp
   stub_res_location = os.path.join(out_paths['stub'], 'res')
   os.makedirs(stub_res_location)
-  if git_friendly:
-    build_utils.Touch(os.path.join(stub_res_location, '.git-keep-directory'))
+  with open(os.path.join(stub_res_location, '.res-stamp'), 'w') as stamp:
+    content_str = 'google_play_services_version: %s\nutc_date: %s\n'
+    stamp.write(content_str % (play_services_full_version, generation_date))
+
+  shutil.copyfile(tmp_version_file_path,
+                  os.path.join(out_paths['root'], VERSION_FILE_NAME))
 
 
 if __name__ == '__main__':

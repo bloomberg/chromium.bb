@@ -5,6 +5,7 @@
     "play-services-cast",
     "play-services-identity"
   ],
+  "base_client": "play-services-base",
   "_comment": [
     "For the list of locales to keep, generate an android build and list ",
     "out/Debug/gen/chrome/java/res, or look at the android section in ",
