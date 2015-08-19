@@ -3875,12 +3875,24 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glQueryCounter',
     'extension': "disjoint_timer_query_EXT",
   },
+  'GetQueryObjectivEXT': {
+    'gen_cmd': False,
+    'client_test': False,
+    'gl_test_func': 'glGetQueryObjectiv',
+    'extension': "disjoint_timer_query_EXT",
+  },
   'GetQueryObjectuivEXT': {
     'gen_cmd': False,
     'client_test': False,
     'gl_test_func': 'glGetQueryObjectuiv',
     'pepper_interface': 'Query',
     'extension': "occlusion_query_EXT",
+  },
+  'GetQueryObjecti64vEXT': {
+    'gen_cmd': False,
+    'client_test': False,
+    'gl_test_func': 'glGetQueryObjecti64v',
+    'extension': "disjoint_timer_query_EXT",
   },
   'GetQueryObjectui64vEXT': {
     'gen_cmd': False,

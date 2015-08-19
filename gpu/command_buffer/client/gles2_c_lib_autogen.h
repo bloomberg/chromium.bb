@@ -1160,10 +1160,20 @@ void GL_APIENTRY GLES2GetQueryivEXT(GLenum target,
                                     GLint* params) {
   gles2::GetGLContext()->GetQueryivEXT(target, pname, params);
 }
+void GL_APIENTRY GLES2GetQueryObjectivEXT(GLuint id,
+                                          GLenum pname,
+                                          GLint* params) {
+  gles2::GetGLContext()->GetQueryObjectivEXT(id, pname, params);
+}
 void GL_APIENTRY GLES2GetQueryObjectuivEXT(GLuint id,
                                            GLenum pname,
                                            GLuint* params) {
   gles2::GetGLContext()->GetQueryObjectuivEXT(id, pname, params);
+}
+void GL_APIENTRY GLES2GetQueryObjecti64vEXT(GLuint id,
+                                            GLenum pname,
+                                            GLint64* params) {
+  gles2::GetGLContext()->GetQueryObjecti64vEXT(id, pname, params);
 }
 void GL_APIENTRY GLES2GetQueryObjectui64vEXT(GLuint id,
                                              GLenum pname,
@@ -2464,8 +2474,16 @@ extern const NameToFunc g_gles2_function_table[] = {
         reinterpret_cast<GLES2FunctionPointer>(glGetQueryivEXT),
     },
     {
+        "glGetQueryObjectivEXT",
+        reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectivEXT),
+    },
+    {
         "glGetQueryObjectuivEXT",
         reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjectuivEXT),
+    },
+    {
+        "glGetQueryObjecti64vEXT",
+        reinterpret_cast<GLES2FunctionPointer>(glGetQueryObjecti64vEXT),
     },
     {
         "glGetQueryObjectui64vEXT",

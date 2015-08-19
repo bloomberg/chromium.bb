@@ -807,7 +807,11 @@ void EndTransformFeedback() override;
 
 void GetQueryivEXT(GLenum target, GLenum pname, GLint* params) override;
 
+void GetQueryObjectivEXT(GLuint id, GLenum pname, GLint* params) override;
+
 void GetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint* params) override;
+
+void GetQueryObjecti64vEXT(GLuint id, GLenum pname, GLint64* params) override;
 
 void GetQueryObjectui64vEXT(GLuint id, GLenum pname, GLuint64* params) override;
 

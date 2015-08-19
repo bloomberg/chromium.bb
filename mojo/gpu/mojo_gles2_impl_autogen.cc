@@ -1285,11 +1285,21 @@ void MojoGLES2Impl::GetQueryivEXT(GLenum target, GLenum pname, GLint* params) {
   MojoGLES2MakeCurrent(context_);
   glGetQueryivEXT(target, pname, params);
 }
+void MojoGLES2Impl::GetQueryObjectivEXT(GLuint id,
+                                        GLenum pname,
+                                        GLint* params) {
+  NOTREACHED() << "Unimplemented GetQueryObjectivEXT.";
+}
 void MojoGLES2Impl::GetQueryObjectuivEXT(GLuint id,
                                          GLenum pname,
                                          GLuint* params) {
   MojoGLES2MakeCurrent(context_);
   glGetQueryObjectuivEXT(id, pname, params);
+}
+void MojoGLES2Impl::GetQueryObjecti64vEXT(GLuint id,
+                                          GLenum pname,
+                                          GLint64* params) {
+  NOTREACHED() << "Unimplemented GetQueryObjecti64vEXT.";
 }
 void MojoGLES2Impl::GetQueryObjectui64vEXT(GLuint id,
                                            GLenum pname,

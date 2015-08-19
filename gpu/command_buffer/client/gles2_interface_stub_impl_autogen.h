@@ -787,9 +787,15 @@ void GLES2InterfaceStub::EndTransformFeedback() {}
 void GLES2InterfaceStub::GetQueryivEXT(GLenum /* target */,
                                        GLenum /* pname */,
                                        GLint* /* params */) {}
+void GLES2InterfaceStub::GetQueryObjectivEXT(GLuint /* id */,
+                                             GLenum /* pname */,
+                                             GLint* /* params */) {}
 void GLES2InterfaceStub::GetQueryObjectuivEXT(GLuint /* id */,
                                               GLenum /* pname */,
                                               GLuint* /* params */) {}
+void GLES2InterfaceStub::GetQueryObjecti64vEXT(GLuint /* id */,
+                                               GLenum /* pname */,
+                                               GLint64* /* params */) {}
 void GLES2InterfaceStub::GetQueryObjectui64vEXT(GLuint /* id */,
                                                 GLenum /* pname */,
                                                 GLuint64* /* params */) {}

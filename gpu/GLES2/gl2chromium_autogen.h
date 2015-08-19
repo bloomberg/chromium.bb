@@ -252,7 +252,9 @@
 #define glEndQueryEXT GLES2_GET_FUN(EndQueryEXT)
 #define glEndTransformFeedback GLES2_GET_FUN(EndTransformFeedback)
 #define glGetQueryivEXT GLES2_GET_FUN(GetQueryivEXT)
+#define glGetQueryObjectivEXT GLES2_GET_FUN(GetQueryObjectivEXT)
 #define glGetQueryObjectuivEXT GLES2_GET_FUN(GetQueryObjectuivEXT)
+#define glGetQueryObjecti64vEXT GLES2_GET_FUN(GetQueryObjecti64vEXT)
 #define glGetQueryObjectui64vEXT GLES2_GET_FUN(GetQueryObjectui64vEXT)
 #define glSetDisjointValueSyncCHROMIUM \
   GLES2_GET_FUN(SetDisjointValueSyncCHROMIUM)

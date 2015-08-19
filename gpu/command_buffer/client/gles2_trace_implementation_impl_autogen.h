@@ -1686,11 +1686,25 @@ void GLES2TraceImplementation::GetQueryivEXT(GLenum target,
   gl_->GetQueryivEXT(target, pname, params);
 }
 
+void GLES2TraceImplementation::GetQueryObjectivEXT(GLuint id,
+                                                   GLenum pname,
+                                                   GLint* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetQueryObjectivEXT");
+  gl_->GetQueryObjectivEXT(id, pname, params);
+}
+
 void GLES2TraceImplementation::GetQueryObjectuivEXT(GLuint id,
                                                     GLenum pname,
                                                     GLuint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetQueryObjectuivEXT");
   gl_->GetQueryObjectuivEXT(id, pname, params);
+}
+
+void GLES2TraceImplementation::GetQueryObjecti64vEXT(GLuint id,
+                                                     GLenum pname,
+                                                     GLint64* params) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetQueryObjecti64vEXT");
+  gl_->GetQueryObjecti64vEXT(id, pname, params);
 }
 
 void GLES2TraceImplementation::GetQueryObjectui64vEXT(GLuint id,
