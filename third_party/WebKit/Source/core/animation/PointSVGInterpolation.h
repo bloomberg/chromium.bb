@@ -7,10 +7,12 @@
 
 #include "core/animation/SVGInterpolation.h"
 #include "core/svg/SVGPointList.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class PointSVGInterpolation {
+    STATIC_ONLY(PointSVGInterpolation);
 public:
     typedef SVGPointList ListType;
     typedef void NonInterpolableType;

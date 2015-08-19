@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/Timing.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -14,6 +15,7 @@ class Dictionary;
 class KeyframeEffectOptions;
 
 class CORE_EXPORT TimingInput {
+    STATIC_ONLY(TimingInput);
 public:
     static Timing convert(const KeyframeEffectOptions& timingInput);
     static Timing convert(double duration);

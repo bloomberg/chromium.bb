@@ -45,6 +45,7 @@ class CSSAnimations;
 using AnimationCountedSet = WillBeHeapHashCountedSet<RawPtrWillBeWeakMember<Animation>>;
 
 class ElementAnimations : public NoBaseWillBeGarbageCollectedFinalized<ElementAnimations> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ElementAnimations);
     WTF_MAKE_NONCOPYABLE(ElementAnimations);
 public:
     ElementAnimations();

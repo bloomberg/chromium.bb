@@ -74,6 +74,7 @@ public:
     };
 
     class EventDelegate : public NoBaseWillBeGarbageCollectedFinalized<EventDelegate> {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(EventDelegate);
     public:
         virtual ~EventDelegate() { }
         virtual bool requiresIterationEvents(const AnimationEffect&) = 0;
@@ -150,6 +151,7 @@ protected:
     OwnPtrWillBeMember<EventDelegate> m_eventDelegate;
 
     mutable struct CalculatedTiming {
+        DISALLOW_ALLOCATION();
         Phase phase;
         double currentIteration;
         double timeFraction;

@@ -34,10 +34,12 @@
 #include "core/CoreExport.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class CORE_EXPORT AnimatableColorImpl {
+    DISALLOW_ALLOCATION();
 public:
     AnimatableColorImpl(float red, float green, float blue, float alpha);
     AnimatableColorImpl(Color);

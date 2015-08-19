@@ -18,6 +18,8 @@ class StyleResolverState;
 // Represents a conversion from a pair of keyframes to something compatible with interpolation.
 // This is agnostic to whether the keyframes are compatible with each other or not.
 class PrimitiveInterpolation : public NoBaseWillBeGarbageCollectedFinalized<PrimitiveInterpolation> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PrimitiveInterpolation);
+    WTF_MAKE_NONCOPYABLE(PrimitiveInterpolation);
 public:
     virtual ~PrimitiveInterpolation() { }
 
@@ -26,6 +28,9 @@ public:
     virtual bool isFlip() const { return false; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
+
+protected:
+    PrimitiveInterpolation() { }
 };
 
 // Represents a pair of keyframes that are compatible for "smooth" interpolation eg. "0px" and "100px".

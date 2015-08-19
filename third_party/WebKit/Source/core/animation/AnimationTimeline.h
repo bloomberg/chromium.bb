@@ -53,7 +53,7 @@ class CORE_EXPORT AnimationTimeline : public RefCountedWillBeGarbageCollectedFin
     DEFINE_WRAPPERTYPEINFO();
 public:
     class PlatformTiming : public NoBaseWillBeGarbageCollectedFinalized<PlatformTiming> {
-
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PlatformTiming);
     public:
         // Calls AnimationTimeline's wake() method after duration seconds.
         virtual void wakeAfter(double duration) = 0;

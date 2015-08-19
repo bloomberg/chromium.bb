@@ -10,6 +10,7 @@
 #include "core/animation/PrimitiveInterpolation.h"
 #include "core/animation/StringKeyframe.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -19,15 +20,21 @@ class StyleResolverState;
 // - Converts from animation keyframe(s) to interpolation compatible representations: maybeConvertPairwise() and maybeConvertSingle()
 // - Applies interpolation compatible representations of values to a StyleResolverState: apply()
 class InterpolationType {
+    WTF_MAKE_FAST_ALLOCATED(InterpolationType);
+    WTF_MAKE_NONCOPYABLE(InterpolationType);
 public:
     CSSPropertyID property() const { return m_property; }
 
     // Represents logic for determining whether a conversion decision is no longer valid given the current environment.
     class ConversionChecker : public NoBaseWillBeGarbageCollectedFinalized<ConversionChecker> {
+        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ConversionChecker);
+        WTF_MAKE_NONCOPYABLE(ConversionChecker);
     public:
         virtual ~ConversionChecker() { }
         virtual bool isValid(const StyleResolverState&) const = 0;
         DEFINE_INLINE_VIRTUAL_TRACE() { }
+    protected:
+        ConversionChecker() { }
     };
     using ConversionCheckers = WillBeHeapVector<OwnPtrWillBeMember<ConversionChecker>>;
 

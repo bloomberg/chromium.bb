@@ -33,6 +33,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/animation/animatable/AnimatableValue.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -40,6 +41,7 @@ namespace blink {
 class ComputedStyle;
 
 class CSSAnimatableValueFactory {
+    STATIC_ONLY(CSSAnimatableValueFactory);
 public:
     static PassRefPtrWillBeRawPtr<AnimatableValue> create(CSSPropertyID, const ComputedStyle&);
 private:

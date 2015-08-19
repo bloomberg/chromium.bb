@@ -32,6 +32,7 @@
 #define AnimationClock_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
@@ -40,6 +41,7 @@
 namespace blink {
 
 class CORE_EXPORT AnimationClock {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(AnimationClock);
 public:
     explicit AnimationClock(WTF::TimeFunction monotonicallyIncreasingTime = WTF::monotonicallyIncreasingTime)

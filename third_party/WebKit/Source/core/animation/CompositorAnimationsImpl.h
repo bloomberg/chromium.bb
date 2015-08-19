@@ -37,14 +37,17 @@
 #include "core/animation/Timing.h"
 #include "platform/animation/TimingFunction.h"
 #include "public/platform/WebCompositorAnimation.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class WebCompositorAnimationCurve;
 
 class CORE_EXPORT CompositorAnimationsImpl {
+    STATIC_ONLY(CompositorAnimationsImpl);
 private:
     struct CompositorTiming {
+        DISALLOW_ALLOCATION();
         void assertValid() const
         {
             ASSERT(scaledDuration > 0);

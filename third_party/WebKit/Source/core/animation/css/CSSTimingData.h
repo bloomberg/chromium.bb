@@ -7,6 +7,7 @@
 
 #include "platform/animation/TimingFunction.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -14,6 +15,7 @@ namespace blink {
 struct Timing;
 
 class CSSTimingData {
+    WTF_MAKE_FAST_ALLOCATED(CSSTimingData);
 public:
     ~CSSTimingData() { }
 

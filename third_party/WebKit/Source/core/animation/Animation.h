@@ -60,6 +60,7 @@ class CORE_EXPORT Animation final
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(Animation);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Animation);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Animation);
 public:
     enum AnimationPlayState {
         Idle,
@@ -259,6 +260,8 @@ private:
     };
 
     class CompositorState {
+        WTF_MAKE_FAST_ALLOCATED(CompositorState);
+        WTF_MAKE_NONCOPYABLE(CompositorState);
     public:
         CompositorState(Animation& animation)
             : startTime(animation.m_startTime)

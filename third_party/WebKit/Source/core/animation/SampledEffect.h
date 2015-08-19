@@ -8,6 +8,7 @@
 #include "core/animation/Animation.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffect.h"
+#include "wtf/Allocator.h"
 #include "wtf/BitArray.h"
 #include "wtf/Vector.h"
 
@@ -16,6 +17,8 @@ namespace blink {
 class SVGElement;
 
 class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SampledEffect);
+    WTF_MAKE_NONCOPYABLE(SampledEffect);
 public:
     static PassOwnPtrWillBeRawPtr<SampledEffect> create(KeyframeEffect* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation>>> interpolations)
     {

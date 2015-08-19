@@ -12,6 +12,7 @@
 #include "core/animation/css/CSSPropertyEquality.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/layout/LayoutObject.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
@@ -24,7 +25,11 @@ class InertEffect;
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate final : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSAnimationUpdate);
+    WTF_MAKE_NONCOPYABLE(CSSAnimationUpdate);
 public:
+    CSSAnimationUpdate() { }
+
     class NewAnimation {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:

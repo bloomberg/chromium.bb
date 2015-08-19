@@ -35,6 +35,7 @@
 #include "core/animation/EffectModel.h"
 #include "core/animation/Timing.h"
 #include "platform/animation/TimingFunction.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -44,6 +45,8 @@ class Element;
 class FloatBox;
 
 class CORE_EXPORT CompositorAnimations {
+    WTF_MAKE_FAST_ALLOCATED(CompositorAnimations);
+    WTF_MAKE_NONCOPYABLE(CompositorAnimations);
 public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }

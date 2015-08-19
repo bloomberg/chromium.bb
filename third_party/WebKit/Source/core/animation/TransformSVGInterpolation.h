@@ -7,10 +7,12 @@
 
 #include "core/animation/SVGInterpolation.h"
 #include "core/svg/SVGTransformList.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class TransformSVGInterpolation {
+    STATIC_ONLY(TransformSVGInterpolation);
 public:
     typedef SVGTransformList ListType;
     typedef SVGTransformType NonInterpolableType;

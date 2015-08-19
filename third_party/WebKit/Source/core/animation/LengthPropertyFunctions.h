@@ -8,12 +8,14 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CSSValueKeywords.h"
 #include "platform/Length.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class ComputedStyle;
 
 class LengthPropertyFunctions {
+    STATIC_ONLY(LengthPropertyFunctions);
 public:
     typedef void (ComputedStyle::*LengthSetter)(const Length&);
 

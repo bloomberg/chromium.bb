@@ -22,6 +22,7 @@ public:
 
     // FIXME: We shouldn't allow 'none' to be used alongside other properties.
     struct TransitionProperty {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         TransitionProperty(CSSPropertyID id)
             : propertyType(TransitionSingleProperty)
             , unresolvedProperty(id)

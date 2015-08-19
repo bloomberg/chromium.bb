@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/animation/EffectModel.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -18,6 +19,7 @@ class Element;
 class ExceptionState;
 
 class CORE_EXPORT EffectInput {
+    STATIC_ONLY(EffectInput);
 public:
     static PassRefPtrWillBeRawPtr<EffectModel> convert(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
     static PassRefPtrWillBeRawPtr<EffectModel> convert(Element*, const EffectModelOrDictionarySequence&, ExceptionState&);

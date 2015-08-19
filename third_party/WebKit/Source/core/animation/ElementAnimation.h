@@ -40,6 +40,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "wtf/Allocator.h"
 
 
 namespace blink {
@@ -47,6 +48,7 @@ namespace blink {
 class Dictionary;
 
 class ElementAnimation {
+    STATIC_ONLY(ElementAnimation);
 public:
     static Animation* animate(Element& element, const EffectModelOrDictionarySequence& effectInput, double duration, ExceptionState& exceptionState)
     {

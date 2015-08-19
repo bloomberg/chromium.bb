@@ -14,6 +14,7 @@ namespace blink {
 class TimingFunction;
 
 class CORE_EXPORT AnimationInputHelpers {
+    STATIC_ONLY(AnimationInputHelpers);
 public:
     static CSSPropertyID keyframeAttributeToCSSPropertyID(const String&);
     static PassRefPtr<TimingFunction> parseTimingFunction(const String&);

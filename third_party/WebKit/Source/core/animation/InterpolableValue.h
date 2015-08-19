@@ -16,6 +16,7 @@ namespace blink {
 
 class CORE_EXPORT InterpolableValue : public NoBaseWillBeGarbageCollected<InterpolableValue> {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InterpolableValue);
 public:
     virtual bool isNumber() const { return false; }
     virtual bool isBool() const { return false; }

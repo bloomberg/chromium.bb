@@ -14,6 +14,7 @@ namespace blink {
 class PropertyHandle;
 
 class CORE_EXPORT Interpolation : public RefCountedWillBeGarbageCollectedFinalized<Interpolation> {
+    WTF_MAKE_NONCOPYABLE(Interpolation);
 public:
     virtual ~Interpolation();
 
