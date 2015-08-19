@@ -112,9 +112,13 @@ void MessagePopupCollection::MarkAllPopupsShown() {
 }
 
 void MessagePopupCollection::UpdateWidgets() {
+  if (message_center_->IsMessageCenterVisible()) {
+    DCHECK_EQ(0u, message_center_->GetPopupNotifications().size());
+    return;
+  }
+
   NotificationList::PopupNotifications popups =
       message_center_->GetPopupNotifications();
-
   if (popups.empty()) {
     CloseAllWidgets();
     return;
