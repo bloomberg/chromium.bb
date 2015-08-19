@@ -393,7 +393,9 @@ class SmoothnessToughAdCases(perf_benchmark.PerfBenchmark):
     return 'smoothness.tough_ad_cases'
 
 
-@benchmark.Disabled('reference')  # http://crbug.com/496684
+# http://crbug.com/496684 (reference)
+# http://crbug.com/522619 (mac/win)
+@benchmark.Disabled('reference', 'win', 'mac')
 class SmoothnessScrollingToughAdCases(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics while scrolling advertisements."""
   test = smoothness.Smoothness
