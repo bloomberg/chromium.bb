@@ -279,9 +279,11 @@ PDFViewer.prototype = {
 
     switch (e.keyCode) {
       case 27:  // Escape key.
-        if (this.isMaterial_)
+        if (this.isMaterial_ && !this.isPrintPreview) {
           this.toolbarManager_.hideSingleToolbarLayer();
-        return;
+          return;
+        }
+        break;  // Ensure escape falls through to the print-preview handler.
       case 32:  // Space key.
         if (e.shiftKey)
           pageUpHandler();
