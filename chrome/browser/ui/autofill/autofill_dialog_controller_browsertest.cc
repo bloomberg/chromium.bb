@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/browser/ui/autofill/mock_address_validator.h"
-#include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -289,11 +288,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     cc.autocomplete_attribute = "cc-number";
     form.fields.push_back(cc);
 
-    test_generated_bubble_controller_ =
-        new testing::NiceMock<TestGeneratedCreditCardBubbleController>(
-            GetActiveWebContents());
-    ASSERT_TRUE(test_generated_bubble_controller_->IsInstalled());
-
     message_loop_runner_ = new content::MessageLoopRunner;
     controller_ = new TestAutofillDialogController(
         GetActiveWebContents(),
@@ -508,10 +502,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     WaitForWebDB();
   }
 
-  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller() {
-    return test_generated_bubble_controller_;
-  }
-
  private:
   void WaitForWebDB() {
     content::RunAllPendingInMessageLoop(content::BrowserThread::DB);
@@ -520,9 +510,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   scoped_ptr<content::DOMMessageQueue> dom_message_queue_;
-
-  // Weak; owned by the active web contents.
-  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };

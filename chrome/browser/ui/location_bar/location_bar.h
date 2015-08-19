@@ -74,11 +74,6 @@ class LocationBar {
   // Updates the state of the button to open a PDF in Adobe Reader.
   virtual void UpdateOpenPDFInReaderPrompt() = 0;
 
-  // Updates the generated credit card view. This view serves as an anchor for
-  // the generated credit card bubble, which can show on successful generation
-  // of a new credit card number.
-  virtual void UpdateGeneratedCreditCardView() = 0;
-
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
   virtual void SaveStateToContents(content::WebContents* contents) = 0;

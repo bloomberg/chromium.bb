@@ -174,7 +174,6 @@ class TestBrowserWindow : public BrowserWindow {
     bool ShowPageActionPopup(const extensions::Extension* extension,
                              bool grant_active_tab) override;
     void UpdateOpenPDFInReaderPrompt() override {}
-    void UpdateGeneratedCreditCardView() override {}
     void SaveStateToContents(content::WebContents* contents) override {}
     void Revert() override {}
     const OmniboxView* GetOmniboxView() const override;

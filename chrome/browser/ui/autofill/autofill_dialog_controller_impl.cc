@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
-#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"

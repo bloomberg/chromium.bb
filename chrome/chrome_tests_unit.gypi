@@ -1512,13 +1512,8 @@
       'browser/translate/translate_manager_render_view_host_unittest.cc',
       # The autofill popup is implemented in mostly native code on Android.
       'browser/ui/autofill/autofill_popup_controller_unittest.cc',
-      'browser/ui/autofill/generated_credit_card_bubble_controller_unittest.cc',
       'browser/ui/autofill/mock_new_credit_card_bubble_controller.cc',
       'browser/ui/autofill/mock_new_credit_card_bubble_controller.h',
-      'browser/ui/autofill/test_generated_credit_card_bubble_controller.cc',
-      'browser/ui/autofill/test_generated_credit_card_bubble_controller.h',
-      'browser/ui/autofill/test_generated_credit_card_bubble_view.cc',
-      'browser/ui/autofill/test_generated_credit_card_bubble_view.h',
       'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',
       'browser/ui/bookmarks/bookmark_unittest.cc',
       'browser/ui/browser_close_unittest.cc',

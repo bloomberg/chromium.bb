@@ -147,7 +147,6 @@
 #include "chrome/browser/android/new_tab_page_prefs.h"
 #else
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
-#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #endif
 
@@ -467,7 +466,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
 #else
   AppShortcutManager::RegisterProfilePrefs(registry);
-  autofill::GeneratedCreditCardBubbleController::RegisterUserPrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   DriveAppMapping::RegisterProfilePrefs(registry);

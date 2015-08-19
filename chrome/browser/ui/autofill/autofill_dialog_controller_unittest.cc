@@ -22,10 +22,8 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
-#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/mock_address_validator.h"
 #include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
-#include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -325,11 +323,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     if (controller_)
       controller_->ViewClosed();
 
-    test_generated_bubble_controller_ =
-        new testing::NiceMock<TestGeneratedCreditCardBubbleController>(
-            web_contents());
-    ASSERT_TRUE(test_generated_bubble_controller_->IsInstalled());
-
     mock_new_card_bubble_controller_.reset(
         new MockNewCreditCardBubbleController);
 
@@ -500,10 +493,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   const FormStructure* form_structure() { return form_structure_; }
 
-  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller() {
-    return test_generated_bubble_controller_;
-  }
-
   const MockNewCreditCardBubbleController* mock_new_card_bubble_controller() {
     return mock_new_card_bubble_controller_.get();
   }
@@ -525,10 +514,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   // Returned when the dialog closes successfully.
   const FormStructure* form_structure_;
-
-  // Used to monitor if the Autofill credit card bubble is shown. Owned by
-  // |web_contents()|.
-  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller_;
 
   // Used to record when new card bubbles would show. Created in |Reset()|.
   scoped_ptr<MockNewCreditCardBubbleController>
@@ -1389,7 +1374,6 @@ TEST_F(AutofillDialogControllerTest, NewCardBubbleShown) {
   controller()->ViewClosed();
 
   EXPECT_EQ(1, mock_new_card_bubble_controller()->bubbles_shown());
-  EXPECT_EQ(0, test_generated_bubble_controller()->bubbles_shown());
 }
 
 TEST_F(AutofillDialogControllerTest, SaveInChromeByDefault) {

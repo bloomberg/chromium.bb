@@ -25,7 +25,6 @@
 class CommandUpdater;
 class ContentSettingDecoration;
 class EVBubbleDecoration;
-class GeneratedCreditCardDecoration;
 class KeywordHintDecoration;
 class LocationBarDecoration;
 class LocationIconDecoration;
@@ -71,7 +70,6 @@ class LocationBarViewMac : public LocationBar,
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
   void UpdateOpenPDFInReaderPrompt() override;
-  void UpdateGeneratedCreditCardView() override;
   void SaveStateToContents(content::WebContents* contents) override;
   void Revert() override;
   const OmniboxView* GetOmniboxView() const override;
@@ -121,10 +119,6 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates in the security icon at which the page
   // info bubble aims.
   NSPoint GetPageInfoBubblePoint() const;
-
-  // Get the point in window coordinates in the "generated cc" icon at which the
-  // corresponding info bubble aims.
-  NSPoint GetGeneratedCreditCardBubblePoint() const;
 
   // When any image decorations change, call this to ensure everything is
   // redrawn and laid out if necessary.
@@ -263,9 +257,6 @@ class LocationBarViewMac : public LocationBar,
 
   // The voice search icon.
   scoped_ptr<MicSearchDecoration> mic_search_decoration_;
-
-  // Generated CC hint decoration.
-  scoped_ptr<GeneratedCreditCardDecoration> generated_credit_card_decoration_;
 
   // The right-hand-side button to manage passwords associated with a page.
   scoped_ptr<ManagePasswordsDecoration> manage_passwords_decoration_;

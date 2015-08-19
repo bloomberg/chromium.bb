@@ -39,7 +39,6 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
-#include "chrome/browser/ui/views/location_bar/generated_credit_card_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -142,7 +141,6 @@ LocationBarView::LocationBarView(Browser* browser,
       keyword_hint_view_(NULL),
       mic_search_view_(NULL),
       zoom_view_(NULL),
-      generated_credit_card_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
       translate_icon_view_(NULL),
@@ -294,9 +292,6 @@ void LocationBarView::Init() {
     content_blocked_view->SetVisible(false);
     AddChildView(content_blocked_view);
   }
-
-  generated_credit_card_view_ = new GeneratedCreditCardView(delegate_);
-  AddChildView(generated_credit_card_view_);
 
   zoom_view_ = new ZoomView(delegate_);
   AddChildView(zoom_view_);
@@ -483,10 +478,6 @@ gfx::Point LocationBarView::GetLocationBarAnchorPoint() const {
   return point;
 }
 
-views::View* LocationBarView::generated_credit_card_view() {
-  return generated_credit_card_view_;
-}
-
 int LocationBarView::GetInternalHeight(bool use_preferred_size) {
   int total_height =
       use_preferred_size ? GetPreferredSize().height() : height();
@@ -587,7 +578,6 @@ gfx::Size LocationBarView::GetPreferredSize() const {
       IncrementalMinimumWidth(open_pdf_in_reader_view_) +
       IncrementalMinimumWidth(manage_passwords_icon_view_) +
       IncrementalMinimumWidth(zoom_view_) +
-      IncrementalMinimumWidth(generated_credit_card_view_) +
       IncrementalMinimumWidth(mic_search_view_);
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i)
@@ -714,10 +704,6 @@ void LocationBarView::Layout() {
                                          horizontal_item_padding, (*i));
     }
   }
-  if (generated_credit_card_view_->visible()) {
-    trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                       generated_credit_card_view_);
-  }
   if (mic_search_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height,
                                        mic_search_view_);
@@ -836,7 +822,6 @@ void LocationBarView::Update(const WebContents* contents) {
       !GetToolbarModel()->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
   RefreshContentSettingViews();
-  generated_credit_card_view_->Update();
   RefreshZoomView();
   RefreshPageActionViews();
   RefreshTranslateIcon();
@@ -1178,12 +1163,6 @@ bool LocationBarView::ShowPageActionPopup(
 void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   open_pdf_in_reader_view_->Update(
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents());
-  Layout();
-  SchedulePaint();
-}
-
-void LocationBarView::UpdateGeneratedCreditCardView() {
-  generated_credit_card_view_->Update();
   Layout();
   SchedulePaint();
 }

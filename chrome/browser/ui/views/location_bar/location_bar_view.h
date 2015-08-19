@@ -35,7 +35,6 @@ class ContentSettingImageView;
 class EVBubbleView;
 class ExtensionAction;
 class GURL;
-class GeneratedCreditCardView;
 class InstantController;
 class KeywordHintView;
 class LocationIconView;
@@ -216,8 +215,6 @@ class LocationBarView : public LocationBar,
   OmniboxViewViews* omnibox_view() { return omnibox_view_; }
   const OmniboxViewViews* omnibox_view() const { return omnibox_view_; }
 
-  views::View* generated_credit_card_view();
-
   // Returns the height of the control without the top and bottom
   // edges(i.e.  the height of the edit control inside).  If
   // |use_preferred_size| is true this will be the preferred height,
@@ -343,7 +340,6 @@ class LocationBarView : public LocationBar,
   bool ShowPageActionPopup(const extensions::Extension* extension,
                            bool grant_active_tab) override;
   void UpdateOpenPDFInReaderPrompt() override;
-  void UpdateGeneratedCreditCardView() override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
@@ -444,9 +440,6 @@ class LocationBarView : public LocationBar,
 
   // The zoom icon.
   ZoomView* zoom_view_;
-
-  // A bubble that shows after successfully generating a new credit card number.
-  GeneratedCreditCardView* generated_credit_card_view_;
 
   // The icon to open a PDF in Reader.
   OpenPDFInReaderView* open_pdf_in_reader_view_;
