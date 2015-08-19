@@ -10,6 +10,7 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 #include "ui/app_list/app_list_menu.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_box_model_observer.h"
 #import "ui/base/cocoa/controls/hover_image_menu_button.h"
@@ -17,7 +18,6 @@
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/resources/grit/ui_resources.h"
 
 namespace {
 

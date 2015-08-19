@@ -71,6 +71,11 @@
                   '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
                 ],
               }],
+              ['enable_app_list==1', {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/app_list/resources/app_list_resources_100_percent.pak',
+                ],
+              }],
             ],
           },
           'includes': [ '../../build/repack_action.gypi' ],

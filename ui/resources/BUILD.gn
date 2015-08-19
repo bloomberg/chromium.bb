@@ -133,6 +133,11 @@ repack("repack_ui_test_pak") {
       "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak",
     ]
   }
+
+  if (enable_app_list) {
+    deps += [ "//ui/app_list/resources" ]
+    sources += [ "$root_gen_dir/ui/app_list/resources/app_list_resources_100_percent.pak" ]
+  }
 }
 
 # Repack just the strings for the framework locales on Mac and iOS. This

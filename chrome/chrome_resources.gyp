@@ -490,6 +490,11 @@
             '<(DEPTH)/extensions/extensions_strings.gyp:extensions_strings',
           ],
         }],
+        ['enable_app_list==1', {
+          'dependencies': [
+             '<(DEPTH)/ui/app_list/resources/app_list_resources.gyp:app_list_resources',
+          ],
+        }],
         ['OS != "mac" and OS != "ios"', {
           # Copy pak files to the product directory. These files will be picked
           # up by the following installer scripts:

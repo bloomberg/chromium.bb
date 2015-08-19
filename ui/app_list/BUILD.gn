@@ -78,6 +78,7 @@ component("app_list") {
     "//sync",
     "//third_party/icu",
     "//ui/accessibility",
+    "//ui/app_list/resources",
     "//ui/base",
     "//ui/base/ime",
     "//ui/compositor",
@@ -223,7 +224,6 @@ static_library("test_support") {
     "//base",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/resources",
   ]
 }
 

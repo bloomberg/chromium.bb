@@ -51,6 +51,9 @@
   "ui/resources/ui_resources.grd": {
     "structures": [5500],
   },
+  "ui/app_list/resources/app_list_resources.grd": {
+    "structures": [5760],
+  },
   "ui/views/resources/views_resources.grd": {
     "structures": [5800],
   },

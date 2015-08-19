@@ -695,6 +695,10 @@ template("chrome_repack_percent") {
       sources += [ "$root_gen_dir/extensions/extensions_browser_resources_${percent}_percent.pak" ]
       deps += [ "//extensions:extensions_browser_resources" ]
     }
+    if (enable_app_list) {
+      sources += [ "$root_gen_dir/ui/app_list/resources/app_list_resources_${percent}_percent.pak" ]
+      deps += [ "//ui/app_list/resources" ]
+    }
 
     output = repack_output_file
   }

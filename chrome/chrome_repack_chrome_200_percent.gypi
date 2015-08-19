@@ -39,6 +39,11 @@
           '<(SHARED_INTERMEDIATE_DIR)/extensions/extensions_browser_resources_200_percent.pak',
         ],
       }],
+      ['enable_app_list==1', {
+        'pak_inputs': [
+          '<(SHARED_INTERMEDIATE_DIR)/ui/app_list/resources/app_list_resources_200_percent.pak',
+        ],
+      }],
     ],
   },
   'includes': [ '../build/repack_action.gypi' ],
