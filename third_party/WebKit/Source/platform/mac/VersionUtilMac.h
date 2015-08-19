@@ -16,6 +16,12 @@ PLATFORM_EXPORT bool IsOSLionOrEarlier();
 PLATFORM_EXPORT bool IsOSMavericksOrEarlier();
 PLATFORM_EXPORT bool IsOSMavericks();
 
+// Yosemite is Mac OS X 10.10, Darwin 14.
+PLATFORM_EXPORT bool IsOSYosemite();
+
+// El Capitan is Mac OS X 10.11, Darwin 15.
+PLATFORM_EXPORT bool IsOSElCapitan();
+
 } // namespace blink
 
 #endif // VersionUtilMac_h

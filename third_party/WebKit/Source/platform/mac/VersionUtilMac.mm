@@ -60,6 +60,8 @@ int MacOSXMinorVersion()
 enum {
     LION_MINOR_VERSION = 7,
     MAVERICKS_MINOR_VERSION = 9,
+    YOSEMITE_MINOR_VERSION = 10,
+    EL_CAPITAN_MINOR_VERSION = 11,
 };
 
 } // namespace
@@ -79,6 +81,16 @@ bool IsOSMavericksOrEarlier()
 bool IsOSMavericks()
 {
     return MacOSXMinorVersion() == MAVERICKS_MINOR_VERSION;
+}
+
+bool IsOSYosemite()
+{
+    return MacOSXMinorVersion() == YOSEMITE_MINOR_VERSION;
+}
+
+bool IsOSElCapitan()
+{
+    return MacOSXMinorVersion() == EL_CAPITAN_MINOR_VERSION;
 }
 
 } // namespace blink
