@@ -5,30 +5,30 @@
 package org.chromium.chrome.browser.sync;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.support.v7.app.AlertDialog;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.view.View;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
-import org.chromium.chrome.shell.R;
+import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -88,12 +88,12 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 SyncCustomizationFragment.PREFERENCE_SYNC_SETTINGS);
     }
 
-    private Activity mActivity;
+    private Preferences mPreferences;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mActivity = getActivity();
+        mPreferences = null;
     }
 
     @SmallTest
@@ -236,7 +236,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     public void testDefaultEncryptionOptions() throws Exception {
         setupTestAccountAndSignInToSync(CLIENT_ID);
         SyncTestUtil.waitForSyncActive(mContext);
-        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         Preference encryption = getEncryption(fragment);
         clickPreference(encryption);
 
@@ -250,12 +250,14 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         assertEquals(PassphraseType.CUSTOM_PASSPHRASE, adapter.getType(0));
         assertEquals(PassphraseType.KEYSTORE_PASSPHRASE, adapter.getType(1));
         assertEquals(2, listView.getCount());
-        // Make sure they are both enabled and the correct on is selected.
-        View customView = listView.getChildAt(0);
-        View keystoreView = listView.getChildAt(1);
-        assertTrue(customView.isEnabled());
-        assertTrue(keystoreView.isEnabled());
-        assertEquals(keystoreView, listView.getSelectedView());
+
+        // Make sure they are both enabled and the correct one is selected.
+        CheckedTextView customView = (CheckedTextView) listView.getChildAt(0);
+        CheckedTextView keystoreView = (CheckedTextView) listView.getChildAt(1);
+        assertTrue("The custom passphrase view should be enabled.", customView.isEnabled());
+        assertFalse("The custom passphrase option should be checked.", customView.isChecked());
+        assertTrue("The keystore passphrase view should be enabled.", keystoreView.isEnabled());
+        assertTrue("The keystore passphrase option should be checked.", keystoreView.isChecked());
     }
 
     /**
@@ -332,8 +334,9 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             public void run() {
                 pss.syncStateChanged();
                 fragment.getFragmentManager().executePendingTransactions();
-                PassphraseDialogFragment passphraseFragment = getPassphraseDialogFragment();
-                assertNull(passphraseFragment);
+                assertNull("PassphraseDialogFragment should be dismissed.",
+                        mPreferences.getFragmentManager().findFragmentByTag(
+                                SyncCustomizationFragment.FRAGMENT_ENTER_PASSPHRASE));
             }
         });
     }
@@ -409,20 +412,13 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     }
 
     private SyncCustomizationFragment startSyncCustomizationFragment() {
-        SyncCustomizationFragment fragment = new SyncCustomizationFragment();
-        Bundle args = new Bundle();
-        args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT,
-                SyncTestUtil.DEFAULT_TEST_ACCOUNT);
-        fragment.setArguments(args);
-        FragmentTransaction transaction = mActivity.getFragmentManager().beginTransaction();
-        transaction.add(R.id.content_container, fragment, TAG);
-        transaction.commit();
+        mPreferences = startPreferences(SyncCustomizationFragment.class.getName());
         getInstrumentation().waitForIdleSync();
-        return fragment;
+        return (SyncCustomizationFragment) mPreferences.getFragmentForTest();
     }
 
     private void closeFragment(SyncCustomizationFragment fragment) {
-        FragmentTransaction transaction = mActivity.getFragmentManager().beginTransaction();
+        FragmentTransaction transaction = mPreferences.getFragmentManager().beginTransaction();
         transaction.remove(fragment);
         transaction.commit();
         getInstrumentation().waitForIdleSync();
@@ -459,19 +455,22 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 SyncCustomizationFragment.PREFERENCE_SYNC_MANAGE_DATA);
     }
 
-    private PassphraseDialogFragment getPassphraseDialogFragment() {
-        return (PassphraseDialogFragment) mActivity.getFragmentManager().findFragmentByTag(
+    private PassphraseDialogFragment getPassphraseDialogFragment()
+            throws InterruptedException {
+        return ActivityUtils.<PassphraseDialogFragment>waitForFragment(mPreferences,
                 SyncCustomizationFragment.FRAGMENT_ENTER_PASSPHRASE);
     }
 
-    private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
-        return (PassphraseTypeDialogFragment) mActivity.getFragmentManager()
-                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_PASSPHRASE_TYPE);
+    private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment()
+            throws InterruptedException {
+        return ActivityUtils.<PassphraseTypeDialogFragment>waitForFragment(mPreferences,
+                SyncCustomizationFragment.FRAGMENT_PASSPHRASE_TYPE);
     }
 
-    private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment() {
-        return (PassphraseCreationDialogFragment) mActivity.getFragmentManager()
-                .findFragmentByTag(SyncCustomizationFragment.FRAGMENT_CUSTOM_PASSPHRASE);
+    private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment()
+            throws InterruptedException {
+        return ActivityUtils.<PassphraseCreationDialogFragment>waitForFragment(mPreferences,
+                SyncCustomizationFragment.FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
     private void assertDefaultSyncOnState(SyncCustomizationFragment fragment) {

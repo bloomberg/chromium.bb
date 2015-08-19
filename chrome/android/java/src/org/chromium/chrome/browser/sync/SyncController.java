@@ -15,6 +15,7 @@ import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -112,6 +113,7 @@ public class SyncController implements ApplicationStateListener,
      * @param activity the current activity.
      * @param accountName the full account name.
      */
+    @VisibleForTesting
     public void signIn(Activity activity, String accountName) {
         final Account account = AccountManagerHelper.createAccountFromName(accountName);
 

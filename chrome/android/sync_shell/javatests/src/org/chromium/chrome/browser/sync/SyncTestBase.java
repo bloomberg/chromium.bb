@@ -8,12 +8,13 @@ import android.accounts.Account;
 import android.content.Context;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.shell.ChromeShellTestBase;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -26,7 +27,7 @@ import java.util.Set;
 /**
  * Base class for common functionality between sync tests.
  */
-public class SyncTestBase extends ChromeShellTestBase {
+public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "SyncTestBase";
 
     protected static final String CLIENT_ID = "Client_ID";
@@ -38,21 +39,33 @@ public class SyncTestBase extends ChromeShellTestBase {
     protected ProfileSyncService mProfileSyncService;
     protected MockSyncContentResolverDelegate mSyncContentResolver;
 
+    public SyncTestBase() {
+      super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        // Start the activity by opening about:blank. This URL is ideal because it is not synced as
+        // a typed URL. If another URL is used, it could interfere with test data.
+        startMainActivityOnBlankPage();
+    }
+
     @Override
     protected void setUp() throws Exception {
+        // This must be called before super.setUp() in order for test authentication to work
+        // properly.
+        mapAccountNamesToIds();
+
         super.setUp();
-        assertTrue("Clearing app data failed.", clearAppData());
         Context targetContext = getInstrumentation().getTargetContext();
         mContext = new SyncTestUtil.SyncTestContext(targetContext);
 
-        mapAccountNamesToIds();
         setUpMockAndroidSyncSettings();
         setUpMockAccountManager();
 
         // Initializes ChromeSigninController to use our test context.
         ChromeSigninController.get(mContext);
 
-        startChromeBrowserProcessSync(targetContext);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -69,13 +82,6 @@ public class SyncTestBase extends ChromeShellTestBase {
                 mProfileSyncService = ProfileSyncService.get(mContext);
             }
         });
-
-        // Start the activity by opening about:blank. This URL is ideal because it is not synced as
-        // a typed URL. If another URL is used, it could interfere with test data. This call is in
-        // this location so that it takes place before any other calls to getActivity(). If
-        // getActivity() is called without any prior configuration, an undesired URL
-        // (e.g., google.com) will be opened.
-        launchChromeShellWithBlankPage();
     }
 
     @Override

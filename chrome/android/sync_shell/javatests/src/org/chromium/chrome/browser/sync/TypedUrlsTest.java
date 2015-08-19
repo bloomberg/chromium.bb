@@ -104,7 +104,7 @@ public class TypedUrlsTest extends SyncTestBase {
             @Override
             public void run() {
                 LoadUrlParams params = new LoadUrlParams(url, PageTransition.TYPED);
-                getActivity().getActiveTab().loadUrl(params);
+                getActivity().getActivityTab().loadUrl(params);
             }
         });
     }
