@@ -246,7 +246,7 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
         securityState = TypeBuilder::Security::SecurityState::Unknown;
         break;
     case ResourceResponse::SecurityStyleUnauthenticated:
-        securityState = TypeBuilder::Security::SecurityState::Http;
+        securityState = TypeBuilder::Security::SecurityState::Neutral;
         break;
     case ResourceResponse::SecurityStyleAuthenticationBroken:
         securityState = TypeBuilder::Security::SecurityState::Insecure;
