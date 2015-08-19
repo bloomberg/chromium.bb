@@ -35,21 +35,6 @@ namespace media_router {
 
 namespace {
 
-void HandleRouteResponseForPresentationApi(
-    scoped_ptr<CreatePresentationSessionRequest> presentation_request,
-    const MediaRoute* route,
-    const std::string& presentation_id,
-    const std::string& error) {
-  DCHECK(presentation_request);
-  if (!route) {
-    presentation_request->MaybeInvokeErrorCallback(
-        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
-  } else {
-    presentation_request->MaybeInvokeSuccessCallback(presentation_id,
-                                                     route->media_route_id());
-  }
-}
-
 std::string GetHostFromURL(const GURL& gurl) {
   if (gurl.is_empty())
     return std::string();
@@ -350,7 +335,7 @@ bool MediaRouterUI::DoCreateRoute(const MediaSink::Id& sink_id,
       // |presentation_request_| will be nullptr after this call, as the
       // object will be transferred to the callback.
       route_response_callbacks.push_back(
-          base::Bind(&HandleRouteResponseForPresentationApi,
+          base::Bind(&CreatePresentationSessionRequest::HandleRouteResponse,
                      base::Passed(&presentation_request_)));
     } else if (presentation_service_delegate_) {
       route_response_callbacks.push_back(

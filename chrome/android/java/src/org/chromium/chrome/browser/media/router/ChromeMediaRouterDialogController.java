@@ -20,6 +20,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.media.remote.ChromeMediaRouteDialogFactory;
+import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
 
 /**
@@ -112,16 +113,18 @@ public class ChromeMediaRouterDialogController extends MediaRouter.Callback
     @Override
     public void onRouteSelected(MediaRouter router, MediaRouter.RouteInfo route) {
         closeDialog();
+        nativeOnSinkSelected(mNativeDialogController, MediaSink.fromRoute(route).getId());
     }
 
     /**
-     * {@link OnDialogDismissListener} implementation.
+     * {@link OnDismissListener} implementation.
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
         mAndroidMediaRouter.removeCallback(this);
         mChooserDialogFragment.dismiss();
         mChooserDialogFragment = null;
+        nativeOnDialogDismissed(mNativeDialogController);
     }
 
     private ChromeMediaRouterDialogController(long nativeDialogController, Context context) {
@@ -136,4 +139,8 @@ public class ChromeMediaRouterDialogController extends MediaRouter.Callback
         }
         mAndroidMediaRouter = androidMediaRouter;
     }
+
+    native void nativeOnDialogDismissed(long nativeMediaRouterDialogControllerAndroid);
+    native void nativeOnSinkSelected(
+            long nativeMediaRouterDialogControllerAndroid, String sinkId);
 }

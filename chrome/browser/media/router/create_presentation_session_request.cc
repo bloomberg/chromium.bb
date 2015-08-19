@@ -55,4 +55,19 @@ void CreatePresentationSessionRequest::MaybeInvokeErrorCallback(
   }
 }
 
+// static
+void CreatePresentationSessionRequest::HandleRouteResponse(
+    scoped_ptr<CreatePresentationSessionRequest> presentation_request,
+    const MediaRoute* route,
+    const std::string& presentation_id,
+    const std::string& error) {
+  if (!route) {
+    presentation_request->MaybeInvokeErrorCallback(
+        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
+  } else {
+    presentation_request->MaybeInvokeSuccessCallback(
+        presentation_id, route->media_route_id());
+  }
+}
+
 }  // namespace media_router

@@ -26,6 +26,14 @@ class MediaRouterDialogControllerAndroid
   static MediaRouterDialogControllerAndroid* GetOrCreateForWebContents(
       content::WebContents* web_contents);
 
+  // The methods called by the Java counterpart.
+
+  // Notifies the controller that user has selected a sink with |jsink_id|.
+  void OnSinkSelected(JNIEnv* env, jobject obj, jstring jsink_id);
+  // Notifies the controller that the dialog has been dismissed and no device
+  // has been picked.
+  void OnDialogDismissed(JNIEnv* env, jobject obj);
+
  private:
   friend class content::WebContentsUserData<MediaRouterDialogControllerAndroid>;
 

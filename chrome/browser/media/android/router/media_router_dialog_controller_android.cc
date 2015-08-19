@@ -6,7 +6,11 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/media/android/router/media_router_android.h"
+#include "chrome/browser/media/router/media_router.h"
+#include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -15,6 +19,7 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     media_router::MediaRouterDialogControllerAndroid);
 
+using base::android::ConvertJavaStringToUTF8;
 using content::WebContents;
 
 namespace media_router {
@@ -29,6 +34,40 @@ MediaRouterDialogControllerAndroid::GetOrCreateForWebContents(
   return MediaRouterDialogControllerAndroid::FromWebContents(web_contents);
 }
 
+void MediaRouterDialogControllerAndroid::OnSinkSelected(
+    JNIEnv* env, jobject obj, jstring jsink_id) {
+  scoped_ptr<CreatePresentationSessionRequest>
+      request(TakePresentationRequest());
+
+  const std::string& source_id = request->media_source().id();
+  const GURL& origin = request->frame_url().GetOrigin();
+
+  std::vector<MediaRouteResponseCallback> route_response_callbacks;
+  route_response_callbacks.push_back(
+      base::Bind(&CreatePresentationSessionRequest::HandleRouteResponse,
+                 base::Passed(&request)));
+
+  MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
+      initiator()->GetBrowserContext());
+  router->CreateRoute(source_id, ConvertJavaStringToUTF8(env, jsink_id), origin,
+                      SessionTabHelper::IdForTab(initiator()),
+                      route_response_callbacks);
+}
+
+void MediaRouterDialogControllerAndroid::OnDialogDismissed(
+    JNIEnv* env, jobject obj) {
+  scoped_ptr<CreatePresentationSessionRequest> request(
+      TakePresentationRequest());
+
+  // If OnDialogDismissed is called after OnSinkSelected, do nothing.
+  if (!request)
+    return;
+
+  request->MaybeInvokeErrorCallback(content::PresentationError(
+      content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+      "The device picker dialog has been dismissed"));
+}
+
 MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
     WebContents* web_contents)
     : MediaRouterDialogController(web_contents) {
@@ -41,10 +80,7 @@ MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
 
 // static
 bool MediaRouterDialogControllerAndroid::Register(JNIEnv* env) {
-  bool ret = RegisterNativesImpl(env);
-  // No native calls to register yet.
-  // DCHECK(g_ChromeMediaRouterDialogController_clazz);
-  return ret;
+  return RegisterNativesImpl(env);
 }
 
 MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
@@ -53,12 +89,9 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  scoped_ptr<CreatePresentationSessionRequest> presentation_request(
-      PassPresentationRequest());
-
   ScopedJavaLocalRef<jstring> jsource_urn =
       base::android::ConvertUTF8ToJavaString(
-          env, presentation_request->media_source().id());
+          env, presentation_request()->media_source().id());
 
   Java_ChromeMediaRouterDialogController_createDialog(
       env, java_dialog_controller_.obj(), jsource_urn.obj());

@@ -261,7 +261,7 @@ void MediaRouterDialogControllerImpl::PopulateDialog(
   }
 
   scoped_ptr<CreatePresentationSessionRequest> presentation_request(
-      PassPresentationRequest());
+      TakePresentationRequest());
   // TODO(imcheng): Don't create PresentationServiceDelegateImpl if it doesn't
   // exist (crbug.com/508695).
   base::WeakPtr<PresentationServiceDelegateImpl> delegate =

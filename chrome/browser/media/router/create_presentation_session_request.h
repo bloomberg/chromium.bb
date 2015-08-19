@@ -55,6 +55,13 @@ class CreatePresentationSessionRequest {
                                   const MediaRoute::Id& route_id);
   void MaybeInvokeErrorCallback(const content::PresentationError& error);
 
+  // Handle route creation/joining response by invoking the right callback.
+  static void HandleRouteResponse(
+      scoped_ptr<CreatePresentationSessionRequest> presentation_request,
+      const MediaRoute* route,
+      const std::string& presentation_id,
+      const std::string& error);
+
  private:
   const MediaSource media_source_;
   const GURL frame_url_;

@@ -111,7 +111,7 @@ void MediaRouterDialogController::ActivateInitiatorWebContents() {
 }
 
 scoped_ptr<CreatePresentationSessionRequest>
-MediaRouterDialogController::PassPresentationRequest() {
+MediaRouterDialogController::TakePresentationRequest() {
   return presentation_request_.Pass();
 }
 

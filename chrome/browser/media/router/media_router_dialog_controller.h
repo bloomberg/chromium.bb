@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -54,10 +56,19 @@ class MediaRouterDialogController {
   // instance.
   explicit MediaRouterDialogController(content::WebContents* initiator);
 
+  // Activates the WebContents that initiated the dialog, e.g. focuses the tab.
   void ActivateInitiatorWebContents();
 
-  scoped_ptr<CreatePresentationSessionRequest> PassPresentationRequest();
+  // Passes the ownership of the CreatePresentationSessionRequest to the caller.
+  scoped_ptr<CreatePresentationSessionRequest> TakePresentationRequest();
 
+  // Returns the CreatePresentationSessionRequest to the caller but keeps the
+  // ownership with the MediaRouterDialogController.
+  const CreatePresentationSessionRequest* presentation_request() const {
+    return presentation_request_.get();
+  }
+
+  // Returns the WebContents that initiated showing the dialog.
   content::WebContents* initiator() const { return initiator_; }
 
   // Resets the state of the controller. Must be called from the overrides.
