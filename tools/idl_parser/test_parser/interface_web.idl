@@ -369,3 +369,15 @@ interface MyIfaceSerializer {
   serializer = [getter];
   serializer = [name1, name2];
 };
+
+/* TREE
+ *Interface(MyIfaceFrozenArray)
+ *  Attribute(foo)
+ *    Type()
+ *      FrozenArray()
+ *        Type()
+ *          PrimitiveType(DOMString)
+ */
+interface MyIfaceFrozenArray {
+  readonly attribute FrozenArray<DOMString> foo;
+};

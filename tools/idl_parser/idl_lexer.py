@@ -80,6 +80,7 @@ class IDLLexer(object):
     'exception' : 'EXCEPTION',
     'false' : 'FALSE',
     'float' : 'FLOAT',
+    'FrozenArray' : 'FROZENARRAY',
     'getter': 'GETTER',
     'implements' : 'IMPLEMENTS',
     'Infinity' : 'INFINITY',

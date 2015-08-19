@@ -886,7 +886,8 @@ class IDLParser(object):
     """NonAnyType : PrimitiveType TypeSuffix
                   | PromiseType Null
                   | identifier TypeSuffix
-                  | SEQUENCE '<' Type '>' Null"""
+                  | SEQUENCE '<' Type '>' Null
+                  | FROZENARRAY '<' Type '>' Null"""
     if len(p) == 3:
       if type(p[1]) == str:
         typeref = self.BuildNamed('Typeref', p, 1)
@@ -895,7 +896,8 @@ class IDLParser(object):
       p[0] = ListFromConcat(typeref, p[2])
 
     if len(p) == 6:
-      p[0] = self.BuildProduction('Sequence', p, 1, ListFromConcat(p[3], p[5]))
+      cls = 'Sequence' if p[1] == 'sequence' else 'FrozenArray'
+      p[0] = self.BuildProduction(cls, p, 1, ListFromConcat(p[3], p[5]))
 
   # [79] NOT IMPLEMENTED (BufferRelatedType)
 
