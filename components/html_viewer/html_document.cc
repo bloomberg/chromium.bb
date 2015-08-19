@@ -304,7 +304,7 @@ void HTMLDocument::initializeLayerTreeView() {
   }
 
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:surfaces_service");
+  request->url = mojo::String::From("mojo:view_manager");
   mojo::SurfacePtr surface;
   html_document_app_->ConnectToService(request.Pass(), &surface);
 

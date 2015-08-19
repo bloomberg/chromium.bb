@@ -9,7 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/view_manager/public/interfaces/command_buffer.mojom.h"
-#include "components/view_manager/public/interfaces/viewport_parameter_listener.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
 namespace gles2 {
@@ -24,7 +23,6 @@ class GpuState;
 class CommandBufferImpl : public mojo::CommandBuffer {
  public:
   CommandBufferImpl(mojo::InterfaceRequest<CommandBuffer> request,
-                    mojo::ViewportParameterListenerPtr listener,
                     scoped_refptr<GpuState> gpu_state,
                     scoped_ptr<CommandBufferDriver> driver);
 
@@ -66,16 +64,12 @@ class CommandBufferImpl : public mojo::CommandBuffer {
 
   void BindToRequest(mojo::InterfaceRequest<CommandBuffer> request);
 
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
-
   void OnConnectionError();
 
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
   scoped_ptr<CommandBufferDriver> driver_;
   mojo::CommandBufferSyncPointClientPtr sync_point_client_;
-  mojo::ViewportParameterListenerPtr viewport_parameter_listener_;
   mojo::Binding<CommandBuffer> binding_;
   CommandBufferImplObserver* observer_;
   base::WeakPtrFactory<CommandBufferImpl> weak_ptr_factory_;

@@ -2,30 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/mojo_application.gni")
-
-mojo_native_application("surfaces") {
-  output_name = "surfaces_service"
+source_set("surfaces") {
   sources = [
-    "main.cc",
-  ]
-
-  deps = [
-    ":lib",
-    "//mojo/environment:chromium",
-    "//third_party/mojo/src/mojo/public/cpp/system",
-  ]
-}
-
-source_set("lib") {
-  sources = [
-    "display_delegate.h",
-    "display_factory_impl.cc",
-    "display_factory_impl.h",
-    "display_impl.cc",
-    "display_impl.h",
     "surfaces_context_provider.cc",
     "surfaces_context_provider.h",
+    "surfaces_context_provider_delegate.h",
     "surfaces_delegate.h",
     "surfaces_impl.cc",
     "surfaces_impl.h",
@@ -33,10 +14,10 @@ source_set("lib") {
     "surfaces_output_surface.h",
     "surfaces_scheduler.cc",
     "surfaces_scheduler.h",
-    "surfaces_service_application.cc",
-    "surfaces_service_application.h",
     "surfaces_state.cc",
     "surfaces_state.h",
+    "top_level_display_client.cc",
+    "top_level_display_client.h",
   ]
 
   deps = [
@@ -44,14 +25,16 @@ source_set("lib") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/view_manager/gles2",
     "//components/view_manager/public/interfaces",
+    "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
     "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
-    "//third_party/mojo/src/mojo/public/c/gles2",
-    "//ui/gfx/geometry",
+    "//ui/gfx",
+    "//ui/gl",
     "//ui/mojo/geometry:interfaces",
   ]
 }

@@ -16,6 +16,7 @@
 #include "components/view_manager/public/cpp/util.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/server_view.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/test_change_tracker.h"
 #include "components/view_manager/view_manager_root_connection.h"
 #include "components/view_manager/view_manager_service_impl.h"
@@ -237,7 +238,8 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   DisplayManager* CreateDisplayManager(
       bool is_headless,
       mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state) override {
+      const scoped_refptr<gles2::GpuState>& gpu_state,
+      const scoped_refptr<surfaces::SurfacesState>& surfaces_state) override {
     return new TestDisplayManager();
   }
 
@@ -301,7 +303,8 @@ class ViewManagerServiceTest : public testing::Test {
     connection_manager_.reset(new ConnectionManager(&delegate_));
     ViewManagerRootImpl* root = new ViewManagerRootImpl(
         connection_manager_.get(), true /* is_headless */, nullptr,
-        scoped_refptr<gles2::GpuState>());
+        scoped_refptr<gles2::GpuState>(),
+        scoped_refptr<surfaces::SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
     root_connection_ = new TestViewManagerRootConnection(

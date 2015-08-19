@@ -19,8 +19,7 @@ GpuImpl::~GpuImpl() {
 
 void GpuImpl::CreateOffscreenGLES2Context(
     mojo::InterfaceRequest<mojo::CommandBuffer> request) {
-  new CommandBufferImpl(request.Pass(), mojo::ViewportParameterListenerPtr(),
-                        state_,
+  new CommandBufferImpl(request.Pass(), state_,
                         make_scoped_ptr(new CommandBufferDriver(state_)));
 }
 

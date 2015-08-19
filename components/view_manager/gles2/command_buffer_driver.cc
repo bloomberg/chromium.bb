@@ -37,25 +37,13 @@ CommandBufferDriver::Client::~Client() {
 }
 
 CommandBufferDriver::CommandBufferDriver(scoped_refptr<GpuState> gpu_state)
-    : CommandBufferDriver(gfx::kNullAcceleratedWidget,
-                          gpu_state,
-                          base::Callback<void(CommandBufferDriver*)>()) {}
-
-CommandBufferDriver::CommandBufferDriver(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<GpuState> gpu_state,
-    const base::Callback<void(CommandBufferDriver*)>& destruct_callback)
     : client_(nullptr),
-      widget_(widget),
       gpu_state_(gpu_state),
-      destruct_callback_(destruct_callback),
       weak_factory_(this) {
 }
 
 CommandBufferDriver::~CommandBufferDriver() {
   DestroyDecoder();
-  if (!destruct_callback_.is_null())
-    destruct_callback_.Run(this);
 }
 
 void CommandBufferDriver::Initialize(
@@ -88,16 +76,7 @@ bool CommandBufferDriver::MakeCurrent() {
 
 bool CommandBufferDriver::DoInitialize(
     mojo::ScopedSharedBufferHandle shared_state) {
-  if (widget_ == gfx::kNullAcceleratedWidget)
-    surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
-  else {
-    surface_ = gfx::GLSurface::CreateViewGLSurface(widget_);
-    if (auto vsync_provider = surface_->GetVSyncProvider()) {
-      vsync_provider->GetVSyncParameters(
-          base::Bind(&CommandBufferDriver::OnUpdateVSyncParameters,
-                     weak_factory_.GetWeakPtr()));
-    }
-  }
+  surface_ = gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size(1, 1));
 
   if (!surface_.get())
     return false;
@@ -175,13 +154,6 @@ void CommandBufferDriver::Flush(int32_t put_offset) {
     return;
   }
   command_buffer_->Flush(put_offset);
-}
-
-void CommandBufferDriver::DestroyWindow() {
-  DestroyDecoder();
-  surface_ = nullptr;
-  context_ = nullptr;
-  destruct_callback_.Reset();
 }
 
 void CommandBufferDriver::MakeProgress(int32_t last_get_offset) {
@@ -323,12 +295,6 @@ void CommandBufferDriver::OnSyncPointRetired() {
 void CommandBufferDriver::OnContextLost(uint32_t reason) {
   loss_observer_->DidLoseContext(reason);
   client_->DidLoseContext();
-}
-
-void CommandBufferDriver::OnUpdateVSyncParameters(
-    const base::TimeTicks timebase,
-    const base::TimeDelta interval) {
-  client_->UpdateVSyncParameters(timebase, interval);
 }
 
 void CommandBufferDriver::DestroyDecoder() {

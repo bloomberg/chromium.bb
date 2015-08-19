@@ -16,11 +16,15 @@ ViewManagerRootImpl::ViewManagerRootImpl(
     ConnectionManager* connection_manager,
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state)
+    const scoped_refptr<gles2::GpuState>& gpu_state,
+    const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
     : delegate_(nullptr),
       connection_manager_(connection_manager),
       display_manager_(
-          DisplayManager::Create(is_headless, app_impl, gpu_state)) {
+          DisplayManager::Create(is_headless,
+                                 app_impl,
+                                 gpu_state,
+                                 surfaces_state)) {
   display_manager_->Init(this);
 }
 

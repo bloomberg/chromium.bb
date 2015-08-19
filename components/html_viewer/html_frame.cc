@@ -600,7 +600,7 @@ void HTMLFrame::didChangeContents() {
 
 void HTMLFrame::initializeLayerTreeView() {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:surfaces_service");
+  request->url = mojo::String::From("mojo:view_manager");
   mojo::SurfacePtr surface;
   GetLocalRootApp()->ConnectToService(request.Pass(), &surface);
 

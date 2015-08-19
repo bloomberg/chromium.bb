@@ -9,43 +9,44 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
-#include "components/view_manager/public/interfaces/display.mojom.h"
+#include "components/view_manager/public/interfaces/surfaces.mojom.h"
+#include "components/view_manager/surfaces/surfaces_context_provider.h"
+#include "components/view_manager/surfaces/surfaces_context_provider_delegate.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace cc {
 class Display;
 class SurfaceFactory;
 }
 
+namespace gles2 {
+class GpuState;
+}
+
 namespace surfaces {
 
 class DisplayDelegate;
+class SurfacesScheduler;
+class SurfacesState;
 
-class DisplayImpl : public mojo::Display,
-                    public mojo::ViewportParameterListener,
-                    public cc::DisplayClient,
-                    public cc::SurfaceFactoryClient {
+// A TopLevelDisplayClient manages the top level surface that is rendered into a
+// provided AcceleratedWidget. Frames are submitted here. New frames are
+// scheduled to be generated here based on VSync.
+class TopLevelDisplayClient
+    : public cc::DisplayClient,
+      public cc::SurfaceFactoryClient,
+      public surfaces::SurfacesContextProviderDelegate {
  public:
-  DisplayImpl(DisplayDelegate* display_delegate,
-              const scoped_refptr<SurfacesState>& surfaces_state,
-              cc::SurfaceId cc_id,
-              mojo::ContextProviderPtr context_provider,
-              mojo::ResourceReturnerPtr returner,
-              mojo::InterfaceRequest<mojo::Display> display_request);
+  TopLevelDisplayClient(gfx::AcceleratedWidget widget,
+                        const scoped_refptr<gles2::GpuState>& gpu_state,
+                        const scoped_refptr<SurfacesState>& surfaces_state);
+  ~TopLevelDisplayClient() override;
 
-  // Closes the connection and destroys |this| object.
-  void CloseConnection();
+  void SubmitFrame(mojo::FramePtr frame, const base::Closure& callback);
 
  private:
-  ~DisplayImpl() override;
-
-  void OnContextCreated(mojo::CommandBufferPtr gles2_client);
-
-  // mojo::Display implementation:
-  void SubmitFrame(mojo::FramePtr frame,
-                   const SubmitFrameCallback& callback) override;
-
   // DisplayClient implementation.
   // TODO(rjkroege, fsamuel): This won't work correctly with multiple displays.
   void CommitVSyncParameters(base::TimeTicks timebase,
@@ -53,7 +54,8 @@ class DisplayImpl : public mojo::Display,
   void OutputSurfaceLost() override;
   void SetMemoryPolicy(const cc::ManagedMemoryPolicy& policy) override;
 
-  // ViewportParameterListener
+  // SurfacesContextProviderDelegate:
+  void OnContextCreated();
   void OnVSyncParametersUpdated(int64_t timebase, int64_t interval) override;
 
   // SurfaceFactoryClient implementation.
@@ -61,24 +63,18 @@ class DisplayImpl : public mojo::Display,
 
   void Draw();
 
-  DisplayDelegate* delegate_;
+  scoped_refptr<gles2::GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
   cc::SurfaceFactory factory_;
   cc::SurfaceId cc_id_;
-  mojo::ContextProviderPtr context_provider_;
-  mojo::ResourceReturnerPtr returner_;
 
   gfx::Size last_submitted_frame_size_;
   mojo::FramePtr pending_frame_;
-  SubmitFrameCallback pending_callback_;
+  base::Closure pending_callback_;
 
   scoped_ptr<cc::Display> display_;
 
-  mojo::Binding<mojo::ViewportParameterListener> viewport_param_binding_;
-  mojo::Binding<mojo::Display> display_binding_;
-  bool connection_closed_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayImpl);
+  DISALLOW_COPY_AND_ASSIGN(TopLevelDisplayClient);
 };
 
 }  // namespace surfaces

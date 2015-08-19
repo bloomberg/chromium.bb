@@ -176,7 +176,6 @@ source_set("lib") {
       ":jni_headers",
       ":run_android_application_function",
       "//components/view_manager/gles2",
-      "//components/view_manager/native_viewport",
       "//mojo/application/public/cpp:content_handler",
     ]
   }

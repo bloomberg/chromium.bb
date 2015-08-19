@@ -46,7 +46,6 @@ source_set("sources") {
     "//base",
     "//components/clipboard:lib",
     "//components/filesystem:lib",
-    "//components/view_manager/surfaces:lib",
     "//mandoline/tab:lib",
     "//mandoline/ui/browser:lib",
     "//mojo/application/public/cpp",

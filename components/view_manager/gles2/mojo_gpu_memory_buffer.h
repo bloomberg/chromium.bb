@@ -24,6 +24,8 @@ class MojoGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
   static MojoGpuMemoryBufferImpl* FromClientBuffer(ClientBuffer buffer);
 
+  const unsigned char* GetMemory() const;
+
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map(void** data) override;
   void Unmap() override;

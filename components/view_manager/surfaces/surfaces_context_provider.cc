@@ -4,38 +4,77 @@
 
 #include "components/view_manager/surfaces/surfaces_context_provider.h"
 
-#include "base/logging.h"
-#include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/synchronization/waitable_event.h"
+#include "components/view_manager/gles2/command_buffer_driver.h"
+#include "components/view_manager/gles2/command_buffer_impl.h"
+#include "components/view_manager/gles2/gpu_state.h"
+#include "components/view_manager/surfaces/surfaces_context_provider_delegate.h"
 
 namespace surfaces {
 
-SurfacesContextProvider::SurfacesContextProvider(
-    mojo::ScopedMessagePipeHandle command_buffer_handle)
-    : command_buffer_handle_(command_buffer_handle.Pass()), context_(nullptr) {
-  capabilities_.gpu.image = true;
+namespace {
+const size_t kDefaultCommandBufferSize = 1024 * 1024;
+const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
+const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
+const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
+
 }
 
+SurfacesContextProvider::SurfacesContextProvider(
+    SurfacesContextProviderDelegate* delegate,
+    gfx::AcceleratedWidget widget,
+    const scoped_refptr<gles2::GpuState>& state)
+    : delegate_(delegate),
+      state_(state),
+      widget_(widget) {
+  capabilities_.gpu.image = true;
+  command_buffer_local_.reset(
+      new gles2::CommandBufferLocal(this, widget_, state_));
+}
+
+// This is called when we have an accelerated widget.
 bool SurfacesContextProvider::BindToCurrentThread() {
-  DCHECK(command_buffer_handle_.is_valid());
-  context_ = MojoGLES2CreateContext(command_buffer_handle_.release().value(),
-                                    &ContextLostThunk, this,
-                                    mojo::Environment::GetDefaultAsyncWaiter());
-  DCHECK(context_);
-  return !!context_;
+  // SurfacesContextProvider should always live on the same thread as the
+  // View Manager.
+  DCHECK(CalledOnValidThread());
+  if (!command_buffer_local_->Initialize())
+    return false;
+  gles2_helper_.reset(
+      new gpu::gles2::GLES2CmdHelper(
+          command_buffer_local_->GetCommandBuffer()));
+  if (!gles2_helper_->Initialize(kDefaultCommandBufferSize))
+    return false;
+  gles2_helper_->SetAutomaticFlushes(false);
+  transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
+  gpu::Capabilities capabilities = command_buffer_local_->GetCapabilities();
+  bool bind_generates_resource =
+      !!capabilities.bind_generates_resource_chromium;
+  // TODO(piman): Some contexts (such as compositor) want this to be true, so
+  // this needs to be a public parameter.
+  bool lose_context_when_out_of_memory = false;
+  bool support_client_side_arrays = false;
+  implementation_.reset(
+      new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
+                                          NULL,
+                                          transfer_buffer_.get(),
+                                          bind_generates_resource,
+                                          lose_context_when_out_of_memory,
+                                          support_client_side_arrays,
+                                          command_buffer_local_.get()));
+  return implementation_->Initialize(kDefaultStartTransferBufferSize,
+                                     kDefaultMinTransferBufferSize,
+                                     kDefaultMaxTransferBufferSize,
+                                     gpu::gles2::GLES2Implementation::kNoLimit);
 }
 
 gpu::gles2::GLES2Interface* SurfacesContextProvider::ContextGL() {
-  if (!context_)
-    return nullptr;
-  return static_cast<gpu::gles2::GLES2Interface*>(
-      MojoGLES2GetGLES2Interface(context_));
+  return implementation_.get();
 }
 
 gpu::ContextSupport* SurfacesContextProvider::ContextSupport() {
-  if (!context_)
-    return nullptr;
-  return static_cast<gpu::ContextSupport*>(
-      MojoGLES2GetContextSupport(context_));
+  return implementation_.get();
 }
 
 class GrContext* SurfacesContextProvider::GrContext() {
@@ -58,7 +97,7 @@ base::Lock* SurfacesContextProvider::GetLock() {
 }
 
 bool SurfacesContextProvider::DestroyedOnMainThread() {
-  return !context_;
+  return !command_buffer_local_;
 }
 
 void SurfacesContextProvider::SetLostContextCallback(
@@ -67,13 +106,21 @@ void SurfacesContextProvider::SetLostContextCallback(
 }
 
 SurfacesContextProvider::~SurfacesContextProvider() {
-  if (context_)
-    MojoGLES2DestroyContext(context_);
+  implementation_->Flush();
+  implementation_.reset();
+  transfer_buffer_.reset();
+  gles2_helper_.reset();
+  command_buffer_local_.reset();
 }
 
-void SurfacesContextProvider::ContextLost() {
-  if (!lost_context_callback_.is_null())
-    lost_context_callback_.Run();
+void SurfacesContextProvider::UpdateVSyncParameters(int64_t timebase,
+                                                    int64_t interval) {
+  if (delegate_)
+    delegate_->OnVSyncParametersUpdated(timebase, interval);
+}
+
+void SurfacesContextProvider::DidLoseContext() {
+  lost_context_callback_.Run();
 }
 
 }  // namespace surfaces

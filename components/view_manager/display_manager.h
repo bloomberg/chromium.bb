@@ -12,32 +12,34 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/view_manager/display_manager_delegate.h"
-#include "components/view_manager/public/interfaces/display.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
+#include "components/view_manager/surfaces/top_level_display_client.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace cc {
 class SurfaceIdAllocator;
+class SurfaceManager;
 }  // namespace cc
 
 namespace gles2 {
 class GpuState;
 }  // namespace gles2
 
-namespace native_viewport {
-class OnscreenContextProvider;
-}  // namespace native_viewport
-
 namespace mojo {
 class ApplicationImpl;
 }  // namespace mojo
 
+namespace surfaces {
+class SurfacesScheduler;
+class SurfacesState;
+}  // namespace surfaces
+
 namespace ui {
 class PlatformWindow;
 struct TextInputState;
-}
+}  // namespace ui
 
 namespace view_manager {
 
@@ -53,7 +55,8 @@ class DisplayManager {
   static DisplayManager* Create(
       bool is_headless,
       mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state);
+      const scoped_refptr<gles2::GpuState>& gpu_state,
+      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
 
   virtual void Init(DisplayManagerDelegate* delegate) = 0;
 
@@ -85,9 +88,11 @@ class DefaultDisplayManager :
     public DisplayManager,
     public ui::PlatformWindowDelegate {
  public:
-  DefaultDisplayManager(bool is_headless,
-                        mojo::ApplicationImpl* app_impl,
-                        const scoped_refptr<gles2::GpuState>& gpu_state);
+  DefaultDisplayManager(
+      bool is_headless,
+      mojo::ApplicationImpl* app_impl,
+      const scoped_refptr<gles2::GpuState>& gpu_state,
+      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
   ~DefaultDisplayManager() override;
 
   // DisplayManager:
@@ -119,6 +124,7 @@ class DefaultDisplayManager :
   bool is_headless_;
   mojo::ApplicationImpl* app_impl_;
   scoped_refptr<gles2::GpuState> gpu_state_;
+  scoped_refptr<surfaces::SurfacesState> surfaces_state_;
   DisplayManagerDelegate* delegate_;
 
   mojo::ViewportMetrics metrics_;
@@ -126,11 +132,8 @@ class DefaultDisplayManager :
   base::Timer draw_timer_;
   bool frame_pending_;
 
-  mojo::DisplayPtr display_;
-  scoped_ptr<native_viewport::OnscreenContextProvider> context_provider_;
+  scoped_ptr<surfaces::TopLevelDisplayClient> top_level_display_client_;
   scoped_ptr<ui::PlatformWindow> platform_window_;
-
-  base::WeakPtrFactory<DefaultDisplayManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultDisplayManager);
 };

@@ -25,11 +25,6 @@ class CommandBufferImpl::CommandBufferDriverClientImpl
       : command_buffer_(command_buffer) {}
 
  private:
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override {
-    command_buffer_->UpdateVSyncParameters(timebase, interval);
-  }
-
   void DidLoseContext() override { command_buffer_->DidLoseContext(); }
 
   CommandBufferImpl* command_buffer_;
@@ -39,13 +34,11 @@ class CommandBufferImpl::CommandBufferDriverClientImpl
 
 CommandBufferImpl::CommandBufferImpl(
     mojo::InterfaceRequest<mojo::CommandBuffer> request,
-    mojo::ViewportParameterListenerPtr listener,
     scoped_refptr<GpuState> gpu_state,
     scoped_ptr<CommandBufferDriver> driver)
     : gpu_state_(gpu_state),
       driver_task_runner_(base::MessageLoop::current()->task_runner()),
       driver_(driver.Pass()),
-      viewport_parameter_listener_(listener.Pass()),
       binding_(this),
       observer_(nullptr),
       weak_ptr_factory_(this) {
@@ -173,14 +166,6 @@ void CommandBufferImpl::OnConnectionError() {
 
 void CommandBufferImpl::DidLoseContext() {
   OnConnectionError();
-}
-
-void CommandBufferImpl::UpdateVSyncParameters(base::TimeTicks timebase,
-                                              base::TimeDelta interval) {
-  if (!viewport_parameter_listener_)
-    return;
-  viewport_parameter_listener_->OnVSyncParametersUpdated(
-      timebase.ToInternalValue(), interval.ToInternalValue());
 }
 
 }  // namespace gles2

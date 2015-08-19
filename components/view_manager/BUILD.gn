@@ -14,7 +14,6 @@ if (is_android) {
     deps = [
       ":lib",
       ":loader",
-      "native_viewport",
     ]
   }
 
@@ -39,7 +38,7 @@ if (is_android) {
       ":lib",
       "//base",
       "//components/view_manager/public/interfaces",
-      "//components/view_manager/native_viewport",
+      "//components/view_manager/surfaces",
       "//mojo/application/public/cpp",
       "//mojo/converters/geometry",
       "//mojo/environment:chromium",
@@ -49,8 +48,6 @@ if (is_android) {
       "//ui/events/platform",
       "//ui/gl",
     ]
-
-    data_deps = [ "//components/view_manager/surfaces" ]
   }
 }
 
@@ -116,7 +113,7 @@ source_set("lib") {
     "//cc/surfaces:surface_id",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
-    "//components/view_manager/native_viewport",
+    "//components/view_manager/surfaces",
     "//mojo/application/public/cpp",
     "//mojo/common:tracing_impl",
     "//mojo/converters/geometry",

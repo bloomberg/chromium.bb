@@ -23,7 +23,8 @@ class DisplayManagerFactory {
   virtual DisplayManager* CreateDisplayManager(
       bool is_headless,
       mojo::ApplicationImpl* app_impl,
-      const scoped_refptr<gles2::GpuState>& gpu_state) = 0;
+      const scoped_refptr<gles2::GpuState>& gpu_state,
+      const scoped_refptr<surfaces::SurfacesState>& surfaces_state) = 0;
 };
 
 }  // namespace view_manager

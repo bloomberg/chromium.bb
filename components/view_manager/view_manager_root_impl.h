@@ -11,6 +11,14 @@
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/server_view.h"
 
+namespace cc {
+class SurfaceManager;
+}
+
+namespace surfaces {
+class SurfacesScheduler;
+}
+
 namespace view_manager {
 
 class ConnectionManager;
@@ -28,10 +36,12 @@ class ViewManagerRootImpl : public DisplayManagerDelegate,
   // TODO(fsamuel): All these parameters are just plumbing for creating
   // DisplayManagers. We should probably just store these common parameters
   // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
-  ViewManagerRootImpl(ConnectionManager* connection_manager,
-                      bool is_headless,
-                      mojo::ApplicationImpl* app_impl,
-                      const scoped_refptr<gles2::GpuState>& gpu_state);
+  ViewManagerRootImpl(
+      ConnectionManager* connection_manager,
+      bool is_headless,
+      mojo::ApplicationImpl* app_impl,
+      const scoped_refptr<gles2::GpuState>& gpu_state,
+      const scoped_refptr<surfaces::SurfacesState>& surfaces_state);
   ~ViewManagerRootImpl() override;
 
   // Initializes state that depends on the existence of a ViewManagerRootImpl.

@@ -7,10 +7,8 @@ import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "command_buffer.mojom",
-    "context_provider.mojom",
     "gpu.mojom",
     "gpu_capabilities.mojom",
-    "viewport_parameter_listener.mojom",
   ]
 
   deps = [

@@ -7,7 +7,6 @@
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
-#include "components/view_manager/public/interfaces/display.mojom.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
@@ -53,10 +52,6 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   clipboard_interfaces.push_back(mojo::Clipboard::Name_);
   filter->filter.insert("mojo:clipboard", clipboard_interfaces.Pass());
 
-  mojo::Array<mojo::String> surfaces_interfaces;
-  surfaces_interfaces.push_back(mojo::DisplayFactory::Name_);
-  surfaces_interfaces.push_back(mojo::Surface::Name_);
-  filter->filter.insert("mojo:surfaces_service", surfaces_interfaces.Pass());
 
   mojo::Array<mojo::String> tracing_interfaces;
   tracing_interfaces.push_back(tracing::StartupPerformanceDataCollector::Name_);
@@ -65,6 +60,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
   mojo::Array<mojo::String> view_manager_interfaces;
   view_manager_interfaces.push_back(mojo::Gpu::Name_);
   view_manager_interfaces.push_back(mojo::ViewManagerRoot::Name_);
+  view_manager_interfaces.push_back(mojo::Surface::Name_);
   filter->filter.insert("mojo:view_manager", view_manager_interfaces.Pass());
 
   mojo::Array<mojo::String> devtools_interfaces;

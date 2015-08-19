@@ -7,11 +7,11 @@
 #include "base/numerics/safe_conversions.h"
 #include "components/view_manager/display_manager_factory.h"
 #include "components/view_manager/gles2/gpu_state.h"
-#include "components/view_manager/native_viewport/onscreen_context_provider.h"
 #include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/quads.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/server_view.h"
+#include "components/view_manager/surfaces/surfaces_state.h"
 #include "components/view_manager/view_coordinate_conversions.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -105,25 +105,28 @@ DisplayManagerFactory* DisplayManager::factory_ = nullptr;
 DisplayManager* DisplayManager::Create(
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state) {
-  if (factory_)
-    return factory_->CreateDisplayManager(is_headless, app_impl, gpu_state);
-  return new DefaultDisplayManager(is_headless, app_impl, gpu_state);
+    const scoped_refptr<gles2::GpuState>& gpu_state,
+    const scoped_refptr<surfaces::SurfacesState>& surfaces_state) {
+  if (factory_) {
+    return factory_->CreateDisplayManager(is_headless, app_impl, gpu_state,
+                                          surfaces_state);
+  }
+  return new DefaultDisplayManager(is_headless, app_impl, gpu_state,
+                                   surfaces_state);
 }
 
 DefaultDisplayManager::DefaultDisplayManager(
     bool is_headless,
     mojo::ApplicationImpl* app_impl,
-    const scoped_refptr<gles2::GpuState>& gpu_state)
+    const scoped_refptr<gles2::GpuState>& gpu_state,
+    const scoped_refptr<surfaces::SurfacesState>& surfaces_state)
     : is_headless_(is_headless),
       app_impl_(app_impl),
       gpu_state_(gpu_state),
+      surfaces_state_(surfaces_state),
       delegate_(nullptr),
       draw_timer_(false, false),
-      frame_pending_(false),
-      context_provider_(
-          new native_viewport::OnscreenContextProvider(gpu_state)),
-      weak_factory_(this) {
+      frame_pending_(false) {
   metrics_.size_in_pixels = mojo::Size::New();
   metrics_.size_in_pixels->width = 800;
   metrics_.size_in_pixels->height = 600;
@@ -148,28 +151,9 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
   }
   platform_window_->SetBounds(bounds);
   platform_window_->Show();
-
-  mojo::ContextProviderPtr context_provider;
-  context_provider_->Bind(GetProxy(&context_provider).Pass());
-  mojo::DisplayFactoryPtr display_factory;
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:surfaces_service");
-  app_impl_->ConnectToService(request.Pass(), &display_factory);
-  // TODO(fsamuel): We should indicate to the delegate that this object failed
-  // to initialize.
-  if (!display_factory)
-    return;
-  display_factory->Create(context_provider.Pass(),
-                          nullptr,  // returner - we never submit resources.
-                          GetProxy(&display_));
 }
 
 DefaultDisplayManager::~DefaultDisplayManager() {
-  // Destroy before |platform_window_| because this will destroy
-  // CommandBufferDriver objects that contain child windows. Otherwise if this
-  // class destroys its window first, X errors will occur.
-  context_provider_.reset();
-
   // Destroy the PlatformWindow early on as it may call us back during
   // destruction and we want to be in a known state.
   platform_window_.reset();
@@ -222,10 +206,10 @@ void DefaultDisplayManager::Draw() {
   frame->passes.push_back(pass.Pass());
   frame->resources.resize(0u);
   frame_pending_ = true;
-  if (display_) {
-    display_->SubmitFrame(frame.Pass(),
-                          base::Bind(&DefaultDisplayManager::DidDraw,
-                                     weak_factory_.GetWeakPtr()));
+  if (top_level_display_client_) {
+    top_level_display_client_->SubmitFrame(
+        frame.Pass(),
+        base::Bind(&DefaultDisplayManager::DidDraw, base::Unretained(this)));
   }
   dirty_rect_ = gfx::Rect();
 }
@@ -347,7 +331,10 @@ void DefaultDisplayManager::OnLostCapture() {
 void DefaultDisplayManager::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_pixel_ratio) {
-  context_provider_->SetAcceleratedWidget(widget);
+  if (widget != gfx::kNullAcceleratedWidget) {
+    top_level_display_client_.reset(new surfaces::TopLevelDisplayClient(
+        widget, gpu_state_, surfaces_state_));
+  }
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }
 

@@ -4,7 +4,7 @@
 
 source_set("gles2") {
   visibility = [
-    "//components/view_manager/native_viewport:*",
+    "//components/view_manager/surfaces:*",
     "//mojo/runner:lib",  # For android
   ]
 
@@ -14,6 +14,9 @@ source_set("gles2") {
     "command_buffer_impl.cc",
     "command_buffer_impl.h",
     "command_buffer_impl_observer.h",
+    "command_buffer_local.cc",
+    "command_buffer_local.h",
+    "command_buffer_local_client.h",
     "gpu_impl.cc",
     "gpu_impl.h",
     "gpu_memory_tracker.cc",

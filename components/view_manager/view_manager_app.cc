@@ -5,9 +5,12 @@
 #include "components/view_manager/view_manager_app.h"
 
 #include "base/command_line.h"
+#include "base/stl_util.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager.h"
 #include "components/view_manager/public/cpp/args.h"
+#include "components/view_manager/surfaces/surfaces_impl.h"
+#include "components/view_manager/surfaces/surfaces_scheduler.h"
 #include "components/view_manager/view_manager_root_connection.h"
 #include "components/view_manager/view_manager_root_impl.h"
 #include "components/view_manager/view_manager_service_impl.h"
@@ -30,17 +33,24 @@ using mojo::ViewManagerService;
 
 namespace view_manager {
 
-ViewManagerApp::ViewManagerApp() : app_impl_(nullptr), is_headless_(false) {
+ViewManagerApp::ViewManagerApp()
+    : app_impl_(nullptr),
+      is_headless_(false) {
 }
 
 ViewManagerApp::~ViewManagerApp() {
   if (gpu_state_)
     gpu_state_->StopControlThread();
+
+  auto surfaces = surfaces_;
+  for (auto& surface : surfaces)
+    surface->CloseConnection();
 }
 
 void ViewManagerApp::Initialize(ApplicationImpl* app) {
   app_impl_ = app;
   tracing_.Initialize(app);
+  surfaces_state_ = new surfaces::SurfacesState;
 
 #if !defined(OS_ANDROID)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -61,9 +71,13 @@ void ViewManagerApp::Initialize(ApplicationImpl* app) {
 
 bool ViewManagerApp::ConfigureIncomingConnection(
     ApplicationConnection* connection) {
+  // ViewManager
   connection->AddService<ViewManagerRoot>(this);
+  // Surfaces
+  // TODO(fsamuel): This should go away soon.
+  connection->AddService<mojo::Surface>(this);
+  // GPU
   connection->AddService<Gpu>(this);
-
   return true;
 }
 
@@ -105,7 +119,8 @@ void ViewManagerApp::Create(ApplicationConnection* connection,
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
   ViewManagerRootImpl* view_manager_root = new ViewManagerRootImpl(
-      connection_manager_.get(), is_headless_, app_impl_, gpu_state_);
+      connection_manager_.get(), is_headless_, app_impl_, gpu_state_,
+      surfaces_state_);
 
   mojo::ViewManagerClientPtr client;
   connection->ConnectToService(&client);
@@ -122,6 +137,18 @@ void ViewManagerApp::Create(
   if (!gpu_state_.get())
     gpu_state_ = new gles2::GpuState;
   new gles2::GpuImpl(request.Pass(), gpu_state_);
+}
+
+void ViewManagerApp::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mojo::Surface> request) {
+  surfaces_.insert(
+      new surfaces::SurfacesImpl(this, surfaces_state_, request.Pass()));
+}
+
+void ViewManagerApp::OnSurfaceConnectionClosed(
+    surfaces::SurfacesImpl* surface) {
+  surfaces_.erase(surface);
 }
 
 }  // namespace view_manager

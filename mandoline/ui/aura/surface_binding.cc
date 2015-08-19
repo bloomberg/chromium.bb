@@ -205,7 +205,7 @@ void SurfaceBinding::PerViewManagerState::Init() {
 
   mojo::ServiceProviderPtr surfaces_service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:surfaces_service");
+  request->url = mojo::String::From("mojo:view_manager");
   shell_->ConnectToApplication(request.Pass(),
                                GetProxy(&surfaces_service_provider),
                                nullptr,

@@ -74,7 +74,7 @@ class BitmapUploader : public mojo::ResourceReturner {
   void Init(mojo::Shell* shell) {
     mojo::ServiceProviderPtr surfaces_service_provider;
     mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:surfaces_service");
+    request->url = mojo::String::From("mojo:view_manager");
     shell->ConnectToApplication(request.Pass(),
                                 mojo::GetProxy(&surfaces_service_provider),
                                 nullptr, nullptr);

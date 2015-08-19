@@ -113,6 +113,10 @@ MojoGpuMemoryBufferImpl* MojoGpuMemoryBufferImpl::FromClientBuffer(
   return reinterpret_cast<MojoGpuMemoryBufferImpl*>(buffer);
 }
 
+const unsigned char* MojoGpuMemoryBufferImpl::GetMemory() const {
+  return static_cast<const unsigned char*>(shared_memory_->memory());
+}
+
 bool MojoGpuMemoryBufferImpl::Map(void** data) {
   DCHECK(!mapped_);
   if (!shared_memory_->Map(BufferSizeInBytes(size_, format_)))
