@@ -40,6 +40,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private static final float DESKTOP_POSITION_Y = 0.0f;
     private static final float DESKTOP_POSITION_Z = -2.0f;
     private static final float HALF_SKYBOX_SIZE = 100.0f;
+    private static final float VIEW_POSITION_MIN = -1.0f;
+    private static final float VIEW_POSITION_MAX = 3.0f;
 
     // Allows user to click even when looking outside the desktop
     // but within edge margin.
@@ -47,6 +49,9 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     // Fix the desktop height and adjust width accordingly.
     private static final float HALF_DESKTOP_HEIGHT = 1.0f;
+
+    // Distance to move camera each time.
+    private static final float CAMERA_MOTION_STEP = 0.5f;
 
     private static final FloatBuffer DESKTOP_TEXTURE_COORDINATES = makeFloatBuffer(new float[] {
             // Texture coordinate data.
@@ -175,6 +180,10 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private final Activity mActivity;
 
     private float mHalfDesktopWidth;
+    private float mCameraPosition;
+
+    // Lock to allow multithreaded access to mCameraPosition.
+    private Object mCameraPositionLock = new Object();
 
     private float[] mCameraMatrix;
     private float[] mViewMatrix;
@@ -242,6 +251,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     public CardboardDesktopRenderer(Activity activity) {
         mActivity = activity;
         mReloadTexture = false;
+        mCameraPosition = 0.0f;
 
         mCameraMatrix = new float[16];
         mViewMatrix = new float[16];
@@ -335,25 +345,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mSkyboxTextureUnitHandle =
                 GLES20.glGetUniformLocation(mSkyboxProgramHandle, "u_TextureUnit");
         mSkyboxTextureDataHandle = TextureHelper.createTextureHandle();
-
-        // Position the eye at the origin.
-        float eyeX = 0.0f;
-        float eyeY = 0.0f;
-        float eyeZ = 0.0f;
-
-        // We are looking toward the negative Z direction.
-        float lookX = 0.0f;
-        float lookY = 0.0f;
-        float lookZ = -1.0f;
-
-        // Set our up vector. This is where our head would be pointing were we holding the camera.
-        float upX = 0.0f;
-        float upY = 1.0f;
-        float upZ = 0.0f;
-
-        Matrix.setLookAtM(mCameraMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
-
-        JniInterface.redrawGraphics();
     }
 
     @Override
@@ -362,6 +353,26 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
 
     @Override
     public void onNewFrame(HeadTransform headTransform) {
+        // Position the eye at the origin.
+        float eyeX = 0.0f;
+        float eyeY = 0.0f;
+        float eyeZ;
+        synchronized (mCameraPositionLock) {
+            eyeZ = mCameraPosition;
+        }
+
+        // We are looking toward the negative Z direction.
+        float lookX = DESKTOP_POSITION_X;
+        float lookY = DESKTOP_POSITION_Y;
+        float lookZ = DESKTOP_POSITION_Z;
+
+        // Set our up vector. This is where our head would be pointing were we holding the camera.
+        float upX = 0.0f;
+        float upY = 1.0f;
+        float upZ = 0.0f;
+
+        Matrix.setLookAtM(mCameraMatrix, 0, eyeX, eyeY, eyeZ, lookX, lookY, lookZ, upX, upY, upZ);
+
         headTransform.getForwardVector(mForwardVector, 0);
         getLookingPosition();
         maybeLoadTexture(mTextureDataHandle);
@@ -540,6 +551,31 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         return value;
     }
 
+    /**
+     * Move the camera towards desktop.
+     * This method can be called on any thread.
+     */
+    public void moveTowardsDesktop() {
+        synchronized (mCameraPositionLock) {
+            float newPosition = mCameraPosition - CAMERA_MOTION_STEP;
+            if (newPosition >= VIEW_POSITION_MIN) {
+                mCameraPosition = newPosition;
+            }
+        }
+    }
+
+    /**
+     * Move the camera away from desktop.
+     * This method can be called on any thread.
+     */
+    public void moveAwayFromDesktop() {
+        synchronized (mCameraPositionLock) {
+            float newPosition = mCameraPosition + CAMERA_MOTION_STEP;
+            if (newPosition <= VIEW_POSITION_MAX) {
+                mCameraPosition = newPosition;
+            }
+        }
+    }
 
     /**
      * Return true if user is looking at the desktop.
@@ -553,7 +589,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     }
 
     /**
-     * Return true if user is looking at the space to the left of the dekstop.
+     * Return true if user is looking at the space to the left of the desktop.
      * This method can be called on any thread.
      */
     public boolean isLookingLeftOfDesktop() {
@@ -563,12 +599,32 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     }
 
     /**
-     * Return true if user is looking at the space to the right of the dekstop.
+     * Return true if user is looking at the space to the right of the desktop.
      * This method can be called on any thread.
      */
     public boolean isLookingRightOfDesktop() {
         synchronized (mEyePositionLock) {
             return mEyePositionVector[0] <= -(mHalfDesktopWidth + EDGE_MARGIN);
+        }
+    }
+
+    /**
+     * Return true if user is looking at the space above the desktop.
+     * This method can be called on any thread.
+     */
+    public boolean isLookingAboveDesktop() {
+        synchronized (mEyePositionLock) {
+            return mEyePositionVector[1] <= -(HALF_DESKTOP_HEIGHT + EDGE_MARGIN);
+        }
+    }
+
+    /**
+     * Return true if user is looking at the space below the desktop.
+     * This method can be called on any thread.
+     */
+    public boolean isLookingBelowDesktop() {
+        synchronized (mEyePositionLock) {
+            return mEyePositionVector[1] >= (HALF_DESKTOP_HEIGHT + EDGE_MARGIN);
         }
     }
 

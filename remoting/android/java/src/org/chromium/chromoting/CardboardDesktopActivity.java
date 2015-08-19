@@ -63,6 +63,10 @@ public class CardboardDesktopActivity extends CardboardActivity {
             finish();
         } else if (mRenderer.isLookingRightOfDesktop()) {
             listenForVoiceInput();
+        } else if (mRenderer.isLookingAboveDesktop()) {
+            mRenderer.moveTowardsDesktop();
+        } else if (mRenderer.isLookingBelowDesktop()) {
+            mRenderer.moveAwayFromDesktop();
         }
     }
 
