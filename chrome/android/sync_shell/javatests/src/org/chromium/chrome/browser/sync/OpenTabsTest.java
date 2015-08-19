@@ -9,7 +9,6 @@ import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -90,8 +89,8 @@ public class OpenTabsTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testUploadMultipleOpenTabs() throws Exception {
         loadUrl(URL);
-        loadUrlInNewTab(URL2);
-        loadUrlInNewTab(URL3);
+        openNewTab(URL2);
+        openNewTab(URL3);
         waitForLocalTabsForClient(mClientName, URL, URL2, URL3);
         waitForServerTabs(URL, URL2, URL3);
     }
@@ -102,17 +101,10 @@ public class OpenTabsTest extends SyncTestBase {
     public void testUploadAndCloseOpenTab() throws Exception {
         loadUrl(URL);
         // Can't have zero tabs, so we have to open two to test closing one.
-        loadUrlInNewTab(URL2);
+        openNewTab(URL2);
         waitForLocalTabsForClient(mClientName, URL, URL2);
         waitForServerTabs(URL, URL2);
-
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                assertTrue(TabModelUtils.closeCurrentTab(getActivity().getCurrentTabModel()));
-            }
-        });
-
+        closeActiveTab();
         waitForLocalTabsForClient(mClientName, URL);
         waitForServerTabs(URL);
     }
@@ -175,6 +167,24 @@ public class OpenTabsTest extends SyncTestBase {
         deleteServerTabsForClient(FAKE_CLIENT);
         SyncTestUtil.triggerSyncAndWaitForCompletion(mContext);
         waitForLocalTabsForClient(FAKE_CLIENT);
+    }
+
+    private void openNewTab(final String url) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().createTab(url);
+            }
+        });
+    }
+
+    private void closeActiveTab() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().closeTab();
+            }
+        });
     }
 
     private String makeSessionTag() {

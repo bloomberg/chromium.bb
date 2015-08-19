@@ -251,6 +251,20 @@ shared_library("chrome_shell") {
   ]
 }
 
+# GYP: //chrome/chrome_shell.gypi:libchromesyncshell
+shared_library("chrome_sync_shell") {
+  testonly = true
+  sources = [
+    #"shell/chrome_shell_entry_point.cc",
+    #"sync_shell/chrome_main_delegate_chrome_sync_shell_android.cc",
+    #"sync_shell/chrome_main_delegate_chrome_sync_shell_android.h",
+  ]
+  deps = [
+    "//sync:test_support_sync_fake_server_android",
+  ]
+  data_deps = [ ":chrome_shell_base" ]
+}
+
 # GYP: N/A
 android_resources("chrome_shell_resources") {
   deps = [
@@ -398,6 +412,33 @@ android_apk("chrome_shell_apk") {
   #},
 }
 
+chrome_sync_shell_manifest =
+    "$target_gen_dir/chrome_sync_shell_manifest/AndroidManifest.xml"
+
+# GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_manifest
+jinja_template("chrome_sync_shell_manifest") {
+  testonly = true
+  input = "sync_shell/java/AndroidManifest.xml.jinja2"
+  output = chrome_sync_shell_manifest
+}
+
+# GYP: //chrome/chrome_shell.gypi:chrome_sync_shell_apk
+android_apk("chrome_sync_shell_apk") {
+  testonly = true
+  deps = [
+    ":chrome_shell_resources",
+    ":chrome_shell_java",
+    ":chrome_shell_assets",
+    ":chrome_sync_shell",
+    ":chrome_sync_shell_manifest",
+    "//base:base_java",
+  ]
+  apk_name = "ChromeSyncShell"
+  android_manifest = chrome_sync_shell_manifest
+  native_libs = [ "libchrome_sync_shell.so" ]
+  asset_location = chrome_shell_assets_dir
+}
+
 # GYP: part of //chrome/chrome_tests.gypi:chrome_shell_test_apk
 android_library("chrome_javatests") {
   testonly = true
@@ -479,6 +520,34 @@ junit_binary("chrome_junit_tests") {
     "//third_party/junit:hamcrest",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
   ]
+}
+
+# GYP: //chrome/chrome_tests.gypi:chrome_sync_shell_test_apk
+if (false) {
+  # TODO(GYP): We need sync/sync_tests.gypi:test_support_sync_proto_java to be ported.
+  # crbug.com/475612
+  instrumentation_test_apk("chrome_sync_shell_test_apk") {
+    apk_under_test = ":chrome_sync_shell_apk"
+    deps = [
+      ":chrome_java",
+      ":chrome_shell_java",
+      ":chrome_shell_test_java",
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//chrome/test/android:chrome_java_test_support",
+      "//components/invalidation/impl:java",
+      "//content/public/android:content_java",
+      "//content/public/test/android:content_java_test_support",
+      "//sync/android:sync_java",
+      "//sync:sync_java_test_support",
+      "//third_party/android_tools:android_support_v13_java",
+      "//third_party/android_tools:android_support_v7_appcompat_java",
+      "//ui/android:ui_java",
+    ]
+    apk_name = "ChromeSyncShellTest"
+    DEPRECATED_java_in_dir = "sync_shell/javatests/src"
+    android_manifest = "sync_shell/javatests/AndroidManifest.xml"
+  }
 }
 
 # GYP: //chrome/chrome_tests.gypi:chrome_shell_uiautomator_tests_java

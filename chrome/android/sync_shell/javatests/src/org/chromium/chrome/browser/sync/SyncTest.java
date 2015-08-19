@@ -12,7 +12,7 @@ import android.util.Log;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.shell.ChromeShellActivity;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
@@ -80,7 +80,7 @@ public class SyncTest extends SyncTestBase {
     public void testAboutSyncPageDisplaysCurrentSyncStatus() throws InterruptedException {
         setupTestAccountAndSignInToSync(CLIENT_ID);
 
-        loadUrl("chrome://sync");
+        loadUrlWithSanitization("chrome://sync");
         SyncTestUtil.AboutSyncInfoGetter aboutInfoGetter =
                 new SyncTestUtil.AboutSyncInfoGetter(getActivity());
         try {
@@ -169,7 +169,7 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
-    private static ContentViewCore getContentViewCore(ChromeActivity activity) {
-        return activity.getActivityTab().getContentViewCore();
+    private static ContentViewCore getContentViewCore(ChromeShellActivity activity) {
+        return activity.getActiveContentViewCore();
     }
 }

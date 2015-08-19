@@ -14,7 +14,6 @@ import android.os.Bundle;
 import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.SyncContentResolverDelegate;
 
 import java.util.HashMap;
@@ -71,7 +70,6 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
     }
 
     @Override
-    @VisibleForTesting
     public void setMasterSyncAutomatically(boolean sync) {
         if (mMasterSyncAutomatically == sync) return;
 
@@ -172,7 +170,6 @@ public class MockSyncContentResolverDelegate implements SyncContentResolverDeleg
      *
      * @throws InterruptedException
      */
-    @VisibleForTesting
     public void waitForLastNotificationCompleted() throws InterruptedException {
         Assert.assertTrue("Timed out waiting for notifications to complete.",
                 mPendingObserverCount.tryAcquire(5, TimeUnit.SECONDS));

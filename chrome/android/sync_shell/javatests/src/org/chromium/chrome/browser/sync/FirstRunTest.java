@@ -9,9 +9,7 @@ import android.os.Bundle;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -20,7 +18,6 @@ import org.chromium.sync.AndroidSyncSettings;
 /**
  * Tests for the first run experience.
  */
-@CommandLineFlags.Remove(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class FirstRunTest extends SyncTestBase {
     private static final String TAG = "FirstRunTest";
 

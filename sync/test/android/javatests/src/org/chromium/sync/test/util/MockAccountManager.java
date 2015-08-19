@@ -27,7 +27,6 @@ import android.os.Handler;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.signin.AccountManagerDelegate;
 import org.chromium.sync.signin.AccountManagerHelper;
 
@@ -89,7 +88,6 @@ public class MockAccountManager implements AccountManagerDelegate {
 
     private final SingleThreadedExecutor mExecutor;
 
-    @VisibleForTesting
     public MockAccountManager(Context context, Context testContext, Account... accounts) {
         mContext = context;
         // The manifest that is backing testContext needs to provide the
@@ -136,7 +134,6 @@ public class MockAccountManager implements AccountManagerDelegate {
         }
     }
 
-    @VisibleForTesting
     public boolean addAccountHolderExplicitly(AccountHolder accountHolder) {
         return addAccountHolderExplicitly(accountHolder, false);
     }
@@ -157,7 +154,6 @@ public class MockAccountManager implements AccountManagerDelegate {
         return result;
     }
 
-    @VisibleForTesting
     public boolean removeAccountHolderExplicitly(AccountHolder accountHolder) {
         return removeAccountHolderExplicitly(accountHolder, false);
     }
