@@ -2045,8 +2045,7 @@ void AXLayoutObject::setSelection(const AXRange& selection)
 
     frame->selection().setSelection(VisibleSelection(
         Position(anchorNode, selection.anchorOffset),
-        Position(focusNode, selection.focusOffset),
-        DOWNSTREAM));
+        Position(focusNode, selection.focusOffset)));
 }
 
 bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const

@@ -1142,7 +1142,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
 
     cloneParagraphUnderNewElement(start, end, outerNode, blockElement);
 
-    setEndingSelection(VisibleSelection(start, end, DOWNSTREAM));
+    setEndingSelection(VisibleSelection(start, end));
     deleteSelection(false, false, false);
 
     // There are bugs in deletion when it removes a fully selected table/list.
@@ -1231,7 +1231,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     // FIXME (5098931): We should add a new insert action "WebViewInsertActionMoved" and call shouldInsertFragment here.
 
-    setEndingSelection(VisibleSelection(start, end, DOWNSTREAM));
+    setEndingSelection(VisibleSelection(start, end));
     document().frame()->spellChecker().clearMisspellingsAndBadGrammar(endingSelection());
     deleteSelection(false, false, false);
 

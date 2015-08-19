@@ -137,7 +137,7 @@ VisibleSelection::~VisibleSelection()
 VisibleSelection VisibleSelection::selectionFromContentsOfNode(Node* node)
 {
     ASSERT(!editingIgnoresContent(node));
-    return VisibleSelection(firstPositionInNode(node), lastPositionInNode(node), DOWNSTREAM);
+    return VisibleSelection(firstPositionInNode(node), lastPositionInNode(node));
 }
 
 SelectionType VisibleSelection::selectionTypeInComposedTree() const

@@ -746,7 +746,7 @@ bool FocusController::advanceFocusInDocumentOrder(WebFocusType type, bool initia
 
     if (caretBrowsing) {
         Position position = firstPositionInOrBeforeNode(element.get());
-        VisibleSelection newSelection(position, position, DOWNSTREAM);
+        VisibleSelection newSelection(position, position);
         frame->selection().setSelection(newSelection);
     }
 

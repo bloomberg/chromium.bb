@@ -716,7 +716,7 @@ static void prepareDataTransferForImageDrag(LocalFrame* source, DataTransfer* da
     if (node->isContentRichlyEditable()) {
         RefPtrWillBeRawPtr<Range> range = source->document()->createRange();
         range->selectNode(node, ASSERT_NO_EXCEPTION);
-        source->selection().setSelection(VisibleSelection(range.get(), DOWNSTREAM));
+        source->selection().setSelection(VisibleSelection(range.get()));
     }
     dataTransfer->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label);
 }
