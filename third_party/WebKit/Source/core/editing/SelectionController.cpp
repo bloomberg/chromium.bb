@@ -157,7 +157,7 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
     VisiblePosition visiblePos(Strategy::toPositionType(eventPos.position()), eventPos.affinity());
     if (visiblePos.isNull())
-        visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode), DOWNSTREAM);
+        visiblePos = VisiblePosition(firstPositionInOrBeforeNode(innerNode));
     PositionType pos = Strategy::toPositionType(visiblePos.deepEquivalent());
 
     VisibleSelection newSelection = selection().selection();

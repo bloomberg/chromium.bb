@@ -637,8 +637,8 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
     for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
         if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
-            VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
-            VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(specialElement), DOWNSTREAM);
+            VisiblePosition vPos = VisiblePosition(pos);
+            VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(specialElement));
             if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == firstInElement.next().deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == firstInElement.deepEquivalent())
@@ -654,8 +654,8 @@ static HTMLElement* lastInSpecialElement(const Position& pos)
     for (Node* n = pos.anchorNode(); n && n->rootEditableElement() == rootEditableElement; n = n->parentNode()) {
         if (isSpecialHTMLElement(*n)) {
             HTMLElement* specialElement = toHTMLElement(n);
-            VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
-            VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(specialElement), DOWNSTREAM);
+            VisiblePosition vPos = VisiblePosition(pos);
+            VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(specialElement));
             if (isRenderedTableElement(specialElement) && vPos.deepEquivalent() == lastInElement.previous().deepEquivalent())
                 return specialElement;
             if (vPos.deepEquivalent() == lastInElement.deepEquivalent())
@@ -760,7 +760,7 @@ Node* nextAtomicLeafNode(const Node& start)
 VisiblePosition visiblePositionBeforeNode(Node& node)
 {
     if (node.hasChildren())
-        return VisiblePosition(firstPositionInOrBeforeNode(&node), DOWNSTREAM);
+        return VisiblePosition(firstPositionInOrBeforeNode(&node));
     ASSERT(node.parentNode());
     ASSERT(!node.parentNode()->isShadowRoot());
     return VisiblePosition(positionInParentBeforeNode(node));
@@ -770,7 +770,7 @@ VisiblePosition visiblePositionBeforeNode(Node& node)
 VisiblePosition visiblePositionAfterNode(Node& node)
 {
     if (node.hasChildren())
-        return VisiblePosition(lastPositionInOrAfterNode(&node), DOWNSTREAM);
+        return VisiblePosition(lastPositionInOrAfterNode(&node));
     ASSERT(node.parentNode());
     ASSERT(!node.parentNode()->isShadowRoot());
     return VisiblePosition(positionInParentAfterNode(node));

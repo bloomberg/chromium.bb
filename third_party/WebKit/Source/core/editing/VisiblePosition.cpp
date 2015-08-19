@@ -87,7 +87,7 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     if (pos.atStartOfTree())
         return VisiblePosition();
 
-    VisiblePosition prev = VisiblePosition(pos, DOWNSTREAM);
+    VisiblePosition prev = VisiblePosition(pos);
     ASSERT(prev.deepEquivalent() != m_deepPosition);
 
 #if ENABLE(ASSERT)
@@ -264,7 +264,7 @@ VisiblePosition VisiblePosition::left() const
     if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePosition();
 
-    VisiblePosition left = VisiblePosition(pos, DOWNSTREAM);
+    VisiblePosition left = VisiblePosition(pos);
     ASSERT(left.deepEquivalent() != m_deepPosition);
 
     return directionOfEnclosingBlock(left.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrBefore(left) : honorEditingBoundaryAtOrAfter(left);
@@ -426,7 +426,7 @@ VisiblePosition VisiblePosition::right() const
     if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePosition();
 
-    VisiblePosition right = VisiblePosition(pos, DOWNSTREAM);
+    VisiblePosition right = VisiblePosition(pos);
     ASSERT(right.deepEquivalent() != m_deepPosition);
 
     return directionOfEnclosingBlock(right.deepEquivalent()) == LTR ? honorEditingBoundaryAtOrAfter(right) : honorEditingBoundaryAtOrBefore(right);

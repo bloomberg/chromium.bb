@@ -211,7 +211,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
     // If spellingSearchRange starts in the middle of a word, advance to the next word so we start checking
     // at a word boundary. Going back by one char and then forward by a word does the trick.
     if (startedWithSelection) {
-    VisiblePosition oneBeforeStart = VisiblePosition(spellingSearchStart, DOWNSTREAM).previous();
+    VisiblePosition oneBeforeStart = VisiblePosition(spellingSearchStart).previous();
         if (oneBeforeStart.isNotNull())
             spellingSearchStart = endOfWord(oneBeforeStart).toParentAnchoredPosition();
         // else we were already at the start of the editable node
@@ -316,7 +316,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         // a marker so we draw the red squiggle later.
 
         const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(spellingSearchStart, spellingSearchEnd), misspellingOffset, misspelledWord.length());
-        frame().selection().setSelection(VisibleSelection(misspellingRange, DOWNSTREAM));
+        frame().selection().setSelection(VisibleSelection(misspellingRange));
         frame().selection().revealSelection();
 
         spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);

@@ -255,7 +255,7 @@ bool Editor::canDeleteRange(const EphemeralRange& range) const
         return false;
 
     if (range.isCollapsed()) {
-        VisiblePosition start(range.startPosition(), DOWNSTREAM);
+        VisiblePosition start(range.startPosition());
         VisiblePosition previous = start.previous();
         // FIXME: We sometimes allow deletions at the start of editable roots, like when the caret is in an empty list item.
         if (previous.isNull() || previous.deepEquivalent().anchorNode()->rootEditableElement() != startContainer->rootEditableElement())

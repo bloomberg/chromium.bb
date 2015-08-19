@@ -519,19 +519,19 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     }
 
     if (!next)
-        return VisiblePosition(it.atEnd() ? it.startPosition() : pos, DOWNSTREAM);
+        return VisiblePosition(it.atEnd() ? it.startPosition() : pos);
 
     Node* node = it.startContainer();
     if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
-        return VisiblePosition(Position(node, next), DOWNSTREAM);
+        return VisiblePosition(Position(node, next));
     }
 
     // Use the character iterator to translate the next value into a DOM position.
     BackwardsCharacterIterator charIt(start, end);
     charIt.advance(string.size() - suffixLength - next);
     // FIXME: charIt can get out of shadow host.
-    return VisiblePosition(charIt.endPosition(), DOWNSTREAM);
+    return VisiblePosition(charIt.endPosition());
 }
 
 static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunction searchFunction)
@@ -1008,7 +1008,7 @@ VisiblePosition previousLinePosition(const VisiblePosition &visiblePosition, Lay
     Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
-    return VisiblePosition(firstPositionInNode(rootElement), DOWNSTREAM);
+    return VisiblePosition(firstPositionInNode(rootElement));
 }
 
 VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
@@ -1064,7 +1064,7 @@ VisiblePosition nextLinePosition(const VisiblePosition &visiblePosition, LayoutU
     Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
-    return VisiblePosition(lastPositionInNode(rootElement), DOWNSTREAM);
+    return VisiblePosition(lastPositionInNode(rootElement));
 }
 
 // ---------
@@ -1175,7 +1175,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
                     i = max(0, o);
                 while (--i >= 0) {
                     if ((*text)[i] == '\n')
-                        return VisiblePosition(Position(toText(n), i + 1), DOWNSTREAM);
+                        return VisiblePosition(Position(toText(n), i + 1));
                 }
             }
             node = n;
@@ -1191,9 +1191,9 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return VisiblePosition(Position(node, offset), DOWNSTREAM);
+        return VisiblePosition(Position(node, offset));
 
-    return VisiblePosition(Position(node, type), DOWNSTREAM);
+    return VisiblePosition(Position(node, type));
 }
 
 VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossingRule boundaryCrossingRule)
@@ -1251,7 +1251,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {
                     if ((*text)[i] == '\n')
-                        return VisiblePosition(Position(toText(n), i), DOWNSTREAM);
+                        return VisiblePosition(Position(toText(n), i));
                 }
             }
             node = n;
@@ -1267,9 +1267,9 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return VisiblePosition(Position(node, offset), DOWNSTREAM);
+        return VisiblePosition(Position(node, offset));
 
-    return VisiblePosition(Position(node, type), DOWNSTREAM);
+    return VisiblePosition(Position(node, type));
 }
 
 // FIXME: isStartOfParagraph(startOfNextParagraph(pos)) is not always true
@@ -1361,7 +1361,7 @@ VisiblePosition startOfDocument(const Node* node)
     if (!node || !node->document().documentElement())
         return VisiblePosition();
 
-    return VisiblePosition(firstPositionInNode(node->document().documentElement()), DOWNSTREAM);
+    return VisiblePosition(firstPositionInNode(node->document().documentElement()));
 }
 
 VisiblePosition startOfDocument(const VisiblePosition &c)
@@ -1375,7 +1375,7 @@ VisiblePosition endOfDocument(const Node* node)
         return VisiblePosition();
 
     Element* doc = node->document().documentElement();
-    return VisiblePosition(lastPositionInNode(doc), DOWNSTREAM);
+    return VisiblePosition(lastPositionInNode(doc));
 }
 
 VisiblePosition endOfDocument(const VisiblePosition &c)

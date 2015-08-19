@@ -1032,7 +1032,7 @@ void ReplaceSelectionCommand::doApply()
     HTMLBRElement* endBR = isHTMLBRElement(*insertionPos.downstream().anchorNode()) ? toHTMLBRElement(insertionPos.downstream().anchorNode()) : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
-        originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR), DOWNSTREAM).previous();
+        originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR)).previous();
 
     RefPtrWillBeRawPtr<Element> enclosingBlockOfInsertionPos = enclosingBlock(insertionPos.anchorNode());
 

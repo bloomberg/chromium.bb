@@ -395,7 +395,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
 VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) const
 {
     if (index <= 0)
-        return VisiblePosition(firstPositionInNode(innerEditorElement()), DOWNSTREAM);
+        return VisiblePosition(firstPositionInNode(innerEditorElement()));
     Position start, end;
     bool selected = Range::selectNodeContents(innerEditorElement(), start, end);
     if (!selected)
