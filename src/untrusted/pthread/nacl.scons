@@ -15,6 +15,10 @@ if env.Bit('bitcode'):
   #                from src/untrusted/nacl/tls_params.h
   env.Append(CCFLAGS=['-allow-asm'])
 
+if env.Bit('nacl_clang'):
+  # Use the integrated assembler; this code can end up in the Chrome IRT, so we
+  # want it to avoid revealing the sandbox base address.
+  env.Append(CCFLAGS=['-integrated-as'])
 if env.Bit('nonsfi_nacl'):
   # Specifying the target arch is necessary for using inline assembly
   # in non-SFI code.

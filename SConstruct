@@ -3119,9 +3119,10 @@ nacl_env.Append(
 
 def FixWindowsAssembler(env):
   if env.Bit('host_windows'):
-    # NOTE: This is needed because Windows builds are case-insensitive.
-    # Without this we use nacl-as, which doesn't handle include directives, etc.
-    env.Replace(ASCOM='${CCCOM}')
+    # ASCOM is the rule used by .s files and ASPPCOM is the rule used by .S
+    # files; the latter uses the C preprocessor.  This is needed because Windows
+    # builds are case-insensitive, so they all appear as .s files.
+    env.Replace(ASCOM='${ASPPCOM}')
 
 FixWindowsAssembler(nacl_env)
 

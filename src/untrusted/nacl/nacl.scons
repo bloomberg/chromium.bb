@@ -15,6 +15,10 @@ if env.Bit('bitcode'):
   #                In this case:  asm("llvm.nacl.tp.tdb.offset")
   #                from src/untrusted/nacl/tls_params.h
   env.Append(CCFLAGS=['-Wno-self-assign', '-allow-asm'])
+if env.Bit('nacl_clang'):
+  # Use the integrated assembler; this code can end up in the Chrome IRT, so we
+  # want it to avoid revealing the sandbox base address.
+  env.Append(CCFLAGS=['-integrated-as'])
 # Sources are split into essentially one function per file to be in
 # alignment with the linker, which resolves symbols by including entire
 # object files.  Placing multiple definitions in one file may result in
