@@ -108,7 +108,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Dictionary& r
 {
     WebPermissionClient* client = getClient(scriptState->executionContext());
     if (!client)
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
     TrackExceptionState exceptionState;
     PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
@@ -131,7 +131,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Vector<Dictio
 {
     WebPermissionClient* client = getClient(scriptState->executionContext());
     if (!client)
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
     TrackExceptionState exceptionState;
     OwnPtr<WebVector<WebPermissionType>> permissions = adoptPtr(new WebVector<WebPermissionType>(rawPermissions.size()));
@@ -163,7 +163,7 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState, const Dictionary& ra
 {
     WebPermissionClient* client = getClient(scriptState->executionContext());
     if (!client)
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't revoke permissions."));
 
     TrackExceptionState exceptionState;
     PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
