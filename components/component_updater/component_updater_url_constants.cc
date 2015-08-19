@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/component_updater_url_constants.h"
+#include "components/component_updater/component_updater_url_constants.h"
 
 namespace component_updater {
 

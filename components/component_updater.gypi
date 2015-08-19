@@ -13,6 +13,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../url/url.gyp:url_lib',
         'update_client',
+        'version_info',
       ],
       'include_dirs': [
         '..',
@@ -25,6 +26,10 @@
         'component_updater/component_updater_service_internal.h',
         'component_updater/component_updater_switches.cc',
         'component_updater/component_updater_switches.h',
+        'component_updater/component_updater_url_constants.cc',
+        'component_updater/component_updater_url_constants.h',
+        'component_updater/configurator_impl.cc',
+        'component_updater/configurator_impl.h',
         'component_updater/default_component_installer.cc',
         'component_updater/default_component_installer.h',
         'component_updater/pref_names.cc',

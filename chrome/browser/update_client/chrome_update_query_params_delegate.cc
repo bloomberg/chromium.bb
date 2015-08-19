@@ -12,12 +12,6 @@
 
 namespace {
 
-const char kUnknown[] = "unknown";
-const char kStable[] = "stable";
-const char kBeta[] = "beta";
-const char kDev[] = "dev";
-const char kCanary[] = "canary";
-
 base::LazyInstance<ChromeUpdateQueryParamsDelegate> g_delegate =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -36,31 +30,10 @@ ChromeUpdateQueryParamsDelegate::GetInstance() {
 }
 
 std::string ChromeUpdateQueryParamsDelegate::GetExtraParams() {
-  return base::StringPrintf(
-      "&prodchannel=%s&prodversion=%s&lang=%s", GetChannelString(),
-      version_info::GetVersionNumber().c_str(), GetLang());
-}
-
-// static
-const char* ChromeUpdateQueryParamsDelegate::GetChannelString() {
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::STABLE:
-      return kStable;
-      break;
-    case version_info::Channel::BETA:
-      return kBeta;
-      break;
-    case version_info::Channel::DEV:
-      return kDev;
-      break;
-    case version_info::Channel::CANARY:
-      return kCanary;
-      break;
-    case version_info::Channel::UNKNOWN:
-      return kUnknown;
-      break;
-  }
-  return kUnknown;
+  return base::StringPrintf("&prodchannel=%s&prodversion=%s&lang=%s",
+                            chrome::GetChannelString().c_str(),
+                            version_info::GetVersionNumber().c_str(),
+                            GetLang());
 }
 
 // static

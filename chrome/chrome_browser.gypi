@@ -373,8 +373,6 @@
       'browser/component_updater/component_patcher_operation_out_of_process.h',
       'browser/component_updater/component_updater_resource_throttle.cc',
       'browser/component_updater/component_updater_resource_throttle.h',
-      'browser/component_updater/component_updater_url_constants.cc',
-      'browser/component_updater/component_updater_url_constants.h',
       'browser/component_updater/ev_whitelist_component_installer.cc',
       'browser/component_updater/ev_whitelist_component_installer.h',
       'browser/component_updater/pnacl_component_installer.cc',

@@ -1,27 +1,27 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
+#include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
 
 #include <string>
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
-#include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
-#include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
-#include "chrome/common/channel_info.h"
 #include "components/component_updater/configurator_impl.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/update_client/component_patcher_operation.h"
+#include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/common/channel_info.h"
+#include "ios/web/public/web_thread.h"
 
 namespace component_updater {
 
 namespace {
 
-class ChromeConfigurator : public update_client::Configurator {
+class IOSConfigurator : public update_client::Configurator {
  public:
-  ChromeConfigurator(const base::CommandLine* cmdline,
-                     net::URLRequestContextGetter* url_request_getter);
+  IOSConfigurator(const base::CommandLine* cmdline,
+                  net::URLRequestContextGetter* url_request_getter);
 
   // update_client::Configurator overrides.
   int InitialDelay() const override;
@@ -47,104 +47,102 @@ class ChromeConfigurator : public update_client::Configurator {
       const override;
 
  private:
-  friend class base::RefCountedThreadSafe<ChromeConfigurator>;
+  friend class base::RefCountedThreadSafe<IOSConfigurator>;
 
   ConfiguratorImpl configurator_impl_;
 
-  ~ChromeConfigurator() override {}
+  ~IOSConfigurator() override {}
 };
 
-ChromeConfigurator::ChromeConfigurator(
+IOSConfigurator::IOSConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* url_request_getter)
     : configurator_impl_(cmdline, url_request_getter) {}
 
-int ChromeConfigurator::InitialDelay() const {
+int IOSConfigurator::InitialDelay() const {
   return configurator_impl_.InitialDelay();
 }
 
-int ChromeConfigurator::NextCheckDelay() const {
+int IOSConfigurator::NextCheckDelay() const {
   return configurator_impl_.NextCheckDelay();
 }
 
-int ChromeConfigurator::StepDelay() const {
+int IOSConfigurator::StepDelay() const {
   return configurator_impl_.StepDelay();
 }
 
-int ChromeConfigurator::OnDemandDelay() const {
+int IOSConfigurator::OnDemandDelay() const {
   return configurator_impl_.OnDemandDelay();
 }
 
-int ChromeConfigurator::UpdateDelay() const {
+int IOSConfigurator::UpdateDelay() const {
   return configurator_impl_.UpdateDelay();
 }
 
-std::vector<GURL> ChromeConfigurator::UpdateUrl() const {
+std::vector<GURL> IOSConfigurator::UpdateUrl() const {
   return configurator_impl_.UpdateUrl();
 }
 
-std::vector<GURL> ChromeConfigurator::PingUrl() const {
+std::vector<GURL> IOSConfigurator::PingUrl() const {
   return configurator_impl_.PingUrl();
 }
 
-base::Version ChromeConfigurator::GetBrowserVersion() const {
+base::Version IOSConfigurator::GetBrowserVersion() const {
   return configurator_impl_.GetBrowserVersion();
 }
 
-std::string ChromeConfigurator::GetChannel() const {
-  return chrome::GetChannelString();
+std::string IOSConfigurator::GetChannel() const {
+  return GetChannelString();
 }
 
-std::string ChromeConfigurator::GetLang() const {
-  return ChromeUpdateQueryParamsDelegate::GetLang();
+std::string IOSConfigurator::GetLang() const {
+  return GetApplicationContext()->GetApplicationLocale();
 }
 
-std::string ChromeConfigurator::GetOSLongName() const {
+std::string IOSConfigurator::GetOSLongName() const {
   return configurator_impl_.GetOSLongName();
 }
 
-std::string ChromeConfigurator::ExtraRequestParams() const {
+std::string IOSConfigurator::ExtraRequestParams() const {
   return configurator_impl_.ExtraRequestParams();
 }
 
-net::URLRequestContextGetter* ChromeConfigurator::RequestContext() const {
+net::URLRequestContextGetter* IOSConfigurator::RequestContext() const {
   return configurator_impl_.RequestContext();
 }
 
 scoped_refptr<update_client::OutOfProcessPatcher>
-ChromeConfigurator::CreateOutOfProcessPatcher() const {
-  return make_scoped_refptr(new ChromeOutOfProcessPatcher);
+IOSConfigurator::CreateOutOfProcessPatcher() const {
+  return nullptr;
 }
 
-bool ChromeConfigurator::DeltasEnabled() const {
+bool IOSConfigurator::DeltasEnabled() const {
   return configurator_impl_.DeltasEnabled();
 }
 
-bool ChromeConfigurator::UseBackgroundDownloader() const {
+bool IOSConfigurator::UseBackgroundDownloader() const {
   return configurator_impl_.UseBackgroundDownloader();
 }
 
 scoped_refptr<base::SequencedTaskRunner>
-ChromeConfigurator::GetSequencedTaskRunner() const {
-  return content::BrowserThread::GetBlockingPool()
+IOSConfigurator::GetSequencedTaskRunner() const {
+  return web::WebThread::GetBlockingPool()
       ->GetSequencedTaskRunnerWithShutdownBehavior(
-          content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
+          web::WebThread::GetBlockingPool()->GetSequenceToken(),
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-ChromeConfigurator::GetSingleThreadTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::FILE);
+IOSConfigurator::GetSingleThreadTaskRunner() const {
+  return web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE);
 }
 
 }  // namespace
 
-scoped_refptr<update_client::Configurator>
-MakeChromeComponentUpdaterConfigurator(
+scoped_refptr<update_client::Configurator> MakeIOSComponentUpdaterConfigurator(
     const base::CommandLine* cmdline,
     net::URLRequestContextGetter* context_getter) {
-  return new ChromeConfigurator(cmdline, context_getter);
+  return new IOSConfigurator(cmdline, context_getter);
 }
 
 }  // namespace component_updater

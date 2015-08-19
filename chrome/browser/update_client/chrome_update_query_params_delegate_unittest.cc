@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
+#include "chrome/common/channel_info.h"
 #include "components/update_client/update_query_params.h"
 #include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,8 +36,7 @@ void TestParams(update_client::UpdateQueryParams::ProdId prod_id) {
                   update_client::UpdateQueryParams::GetProdIdString(prod_id))));
   EXPECT_TRUE(Contains(
       params,
-      StringPrintf("prodchannel=%s",
-                   ChromeUpdateQueryParamsDelegate::GetChannelString())));
+      StringPrintf("prodchannel=%s", chrome::GetChannelString().c_str())));
   EXPECT_TRUE(
       Contains(params, StringPrintf("prodversion=%s",
                                     version_info::GetVersionNumber().c_str())));
