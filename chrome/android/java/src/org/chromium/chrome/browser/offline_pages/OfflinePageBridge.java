@@ -9,6 +9,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.content_public.browser.WebContents;
@@ -85,7 +86,9 @@ public final class OfflinePageBridge {
     public static boolean isEnabled() {
         ThreadUtils.assertOnUiThread();
         if (sIsEnabled == null) {
-            sIsEnabled = nativeIsOfflinePagesEnabled();
+            // Enhanced bookmarks feature should also be enabled.
+            sIsEnabled = nativeIsOfflinePagesEnabled()
+                    && BookmarksBridge.isEnhancedBookmarksEnabled();
         }
         return sIsEnabled;
     }

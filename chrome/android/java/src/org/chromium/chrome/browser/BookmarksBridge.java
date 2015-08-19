@@ -562,8 +562,8 @@ public class BookmarksBridge {
         return nativeIsEditBookmarksEnabled(mNativeBookmarksBridge);
     }
 
-    public static boolean isEnhancedBookmarksEnabled(Profile profile) {
-        return nativeIsEnhancedBookmarksFeatureEnabled(profile);
+    public static boolean isEnhancedBookmarksEnabled() {
+        return nativeIsEnhancedBookmarksFeatureEnabled();
     }
 
     /**
@@ -756,7 +756,7 @@ public class BookmarksBridge {
     private native void nativeUndo(long nativeBookmarksBridge);
     private native void nativeStartGroupingUndos(long nativeBookmarksBridge);
     private native void nativeEndGroupingUndos(long nativeBookmarksBridge);
-    private static native boolean nativeIsEnhancedBookmarksFeatureEnabled(Profile profile);
+    private static native boolean nativeIsEnhancedBookmarksFeatureEnabled();
     private native void nativeLoadEmptyPartnerBookmarkShimForTesting(long nativeBookmarksBridge);
     private native void nativeSearchBookmarks(long nativeBookmarksBridge,
             List<BookmarkMatch> bookmarkMatches, String query, int maxNumber);

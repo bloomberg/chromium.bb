@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -52,10 +51,10 @@ public class EnhancedBookmarkUtils {
     };
 
     /**
-     * @return True if enhanced bookmark feature is enabled for given profile. False otherwise.
+     * @return True if enhanced bookmark feature is enabled.
      */
-    public static boolean isEnhancedBookmarkEnabled(Profile profile) {
-        return BookmarksBridge.isEnhancedBookmarksEnabled(profile);
+    public static boolean isEnhancedBookmarkEnabled() {
+        return BookmarksBridge.isEnhancedBookmarksEnabled();
     }
 
     /**
@@ -117,7 +116,7 @@ public class EnhancedBookmarkUtils {
      * @return True if enhanced bookmark is on, false otherwise.
      */
     public static boolean showEnhancedBookmarkIfEnabled(Activity activity) {
-        if (!isEnhancedBookmarkEnabled(Profile.getLastUsedProfile().getOriginalProfile())) {
+        if (!isEnhancedBookmarkEnabled()) {
             return false;
         }
         if (DeviceFormFactor.isTablet(activity)) {

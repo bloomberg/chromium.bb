@@ -952,7 +952,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // TODO(bauerb): This does not take partner bookmarks into account.
         final long bookmarkId = tabToBookmark.getUserBookmarkId();
 
-        if (EnhancedBookmarkUtils.isEnhancedBookmarkEnabled(tabToBookmark.getProfile())) {
+        if (EnhancedBookmarkUtils.isEnhancedBookmarkEnabled()) {
             final EnhancedBookmarksModel bookmarkModel = new EnhancedBookmarksModel();
             if (bookmarkModel.isBookmarkModelLoaded()) {
                 EnhancedBookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,

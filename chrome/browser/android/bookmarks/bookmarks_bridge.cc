@@ -140,8 +140,7 @@ static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
 }
 
 static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
-                                                  jclass clazz,
-                                                  jobject j_profile) {
+                                                  jclass clazz) {
   return enhanced_bookmarks::IsEnhancedBookmarksEnabled();
 }
 
