@@ -153,7 +153,7 @@ if options.libdir:
 
 try:
   flag_string = subprocess.check_output(
-      [ options.pkg_config, "--cflags", "--libs-only-l", "--libs-only-L" ] +
+      [ options.pkg_config, "--cflags", "--libs" ] +
       args, env=os.environ)
   # For now just split on spaces to get the args out. This will break if
   # pkgconfig returns quoted things with spaces in them, but that doesn't seem
