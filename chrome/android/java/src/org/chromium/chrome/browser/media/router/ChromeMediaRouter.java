@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.media.router;
 import android.content.Context;
 import android.support.v7.media.MediaRouter;
 
+import com.google.android.gms.cast.Cast;
+
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.media.router.cast.CreateRouteRequest;
 import org.chromium.chrome.browser.media.router.cast.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
@@ -29,9 +32,12 @@ public class ChromeMediaRouter {
 
     private final long mNativeMediaRouterAndroid;
     private final MediaRouter mAndroidMediaRouter;
-    private Map<String, List<MediaSink>> mSinks = new HashMap<String, List<MediaSink>>();
+    private final Context mApplicationContext;
+    private final Map<String, List<MediaSink>> mSinks = new HashMap<String, List<MediaSink>>();
     private final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
+    private final Map<String, String> mSessionIds =
+            new HashMap<String, String>();
 
     /**
      * Called when the sinks found by the media route provider for
@@ -42,6 +48,26 @@ public class ChromeMediaRouter {
     public void onSinksReceived(String sourceUrn, List<MediaSink> sinks) {
         mSinks.put(sourceUrn, sinks);
         nativeOnSinksReceived(mNativeMediaRouterAndroid, sourceUrn, sinks.size());
+    }
+
+    /**
+     * Called when the route was created successfully.
+     * @param mediaRouteId the id of the created route.
+     * @param requestId the id of the route creation request.
+     */
+    public void onRouteCreated(
+            String mediaRouteId, int requestId, String sessionId, boolean wasLaunched) {
+        mSessionIds.put(mediaRouteId, sessionId);
+        nativeOnRouteCreated(mNativeMediaRouterAndroid, mediaRouteId, requestId, wasLaunched);
+    }
+
+    /**
+     * Called when the route was failed to create.
+     * @param errorText the error message to return to the page.
+     * @param requestId the id of the route creation request.
+     */
+    public void onRouteCreationError(String errorText, int requestId) {
+        nativeOnRouteCreationError(mNativeMediaRouterAndroid, errorText, requestId);
     }
 
     /**
@@ -134,12 +160,36 @@ public class ChromeMediaRouter {
         return getSink(sourceUrn, index).getName();
     }
 
+    /**
+     * Initiates route creation with the given parameters. Notifies the native client of success
+     * and failure.
+     * @param sourceId the id of the {@link MediaSource} to route to the sink.
+     * @param sinkId the id of the {@link MediaSink} to route the source to.
+     * @param presentationId the id of the presentation to be used by the page.
+     * @param requestId the id of the route creation request tracked by the native side.
+     */
+    @CalledByNative
+    public void createRoute(String sourceId, String sinkId, String presentationId, int requestId) {
+        if (mAndroidMediaRouter == null) {
+            nativeOnRouteCreationError(mNativeMediaRouterAndroid, "Not supported", requestId);
+            return;
+        }
+
+        new CreateRouteRequest(sourceId, sinkId, presentationId, requestId, this).start(
+                mAndroidMediaRouter,
+                mApplicationContext,
+                // TODO(avayvod): handle application disconnect and report back to the native side.
+                // Part of https://crbug.com/517100.
+                new Cast.Listener() {});
+    }
+
     @VisibleForTesting
     ChromeMediaRouter(long nativeMediaRouter, Context applicationContext) {
         assert applicationContext != null;
 
         mNativeMediaRouterAndroid = nativeMediaRouter;
         mAndroidMediaRouter = getAndroidMediaRouter(applicationContext);
+        mApplicationContext = applicationContext;
     }
 
     @Nullable
@@ -160,4 +210,11 @@ public class ChromeMediaRouter {
 
     native void nativeOnSinksReceived(
             long nativeMediaRouterAndroid, String sourceUrn, int count);
+    native void nativeOnRouteCreated(
+            long nativeMediaRouterAndroid,
+            String mediaRouteId,
+            int createRouteRequestId,
+            boolean wasLaunched);
+    native void nativeOnRouteCreationError(
+            long nativeMediaRouterAndroid, String errorText, int createRouteRequestId);
 }

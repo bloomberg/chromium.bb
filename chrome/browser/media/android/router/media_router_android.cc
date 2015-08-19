@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "jni/ChromeMediaRouter_jni.h"
@@ -16,6 +17,17 @@ using base::android::ScopedJavaLocalRef;
 using base::android::AttachCurrentThread;
 
 namespace media_router {
+
+MediaRouterAndroid::CreateMediaRouteRequest::CreateMediaRouteRequest(
+    const MediaSource& source,
+    const MediaSink& sink,
+    const std::string& presentation_id,
+    const std::vector<MediaRouteResponseCallback>& callbacks)
+    : media_source(source),
+      media_sink(sink),
+      presentation_id(presentation_id),
+      callbacks(callbacks) {}
+MediaRouterAndroid::CreateMediaRouteRequest::~CreateMediaRouteRequest() {}
 
 MediaRouterAndroid::MediaRouterAndroid(content::BrowserContext*) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -41,7 +53,39 @@ void MediaRouterAndroid::CreateRoute(
     const GURL& origin,
     int tab_id,
     const std::vector<MediaRouteResponseCallback>& callbacks) {
-  NOTIMPLEMENTED();
+  if (!origin.is_valid()) {
+    for (const MediaRouteResponseCallback& callback : callbacks)
+      callback.Run(nullptr, "", "Invalid origin");
+    return;
+  }
+
+  // TODO(avayvod): unify presentation id generation code between platforms.
+  // https://crbug.com/522239
+  std::string presentation_id("mr_");
+  presentation_id += base::GenerateGUID();
+
+  CreateMediaRouteRequest* request = new CreateMediaRouteRequest(
+      MediaSource(source_id),
+      MediaSink(sink_id, std::string()),
+      presentation_id,
+      callbacks);
+  int create_route_request_id = create_route_requests_.Add(request);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jsource_id =
+          base::android::ConvertUTF8ToJavaString(env, source_id);
+  ScopedJavaLocalRef<jstring> jsink_id =
+          base::android::ConvertUTF8ToJavaString(env, sink_id);
+  ScopedJavaLocalRef<jstring> jpresentation_id =
+          base::android::ConvertUTF8ToJavaString(env, presentation_id);
+
+  Java_ChromeMediaRouter_createRoute(
+      env,
+      java_media_router_.obj(),
+      jsource_id.obj(),
+      jsink_id.obj(),
+      jpresentation_id.obj(),
+      create_route_request_id);
 }
 
 void MediaRouterAndroid::JoinRoute(
@@ -172,5 +216,47 @@ void MediaRouterAndroid::OnSinksReceived(
   }
 }
 
+void MediaRouterAndroid::OnRouteCreated(
+    JNIEnv* env,
+    jobject obj,
+    jstring jmedia_route_id,
+    jint jcreate_route_request_id,
+    jboolean jis_local) {
+  CreateMediaRouteRequest* request =
+      create_route_requests_.Lookup(jcreate_route_request_id);
+  if (!request)
+    return;
+
+  scoped_ptr<MediaRoute> route(new MediaRoute(
+      ConvertJavaStringToUTF8(env, jmedia_route_id),
+      request->media_source,
+      request->media_sink,
+      std::string(),
+      jis_local,
+      std::string()));
+
+  for (const MediaRouteResponseCallback& callback : request->callbacks)
+    callback.Run(route.get(), request->presentation_id, std::string());
+
+  create_route_requests_.Remove(jcreate_route_request_id);
+}
+
+void MediaRouterAndroid::OnRouteCreationError(
+    JNIEnv* env,
+    jobject obj,
+    jstring jerror_text,
+    jint jcreate_route_request_id) {
+  CreateMediaRouteRequest* request =
+      create_route_requests_.Lookup(jcreate_route_request_id);
+  if (!request)
+    return;
+
+  std::string error_text = ConvertJavaStringToUTF8(env, jerror_text);
+
+  for (const MediaRouteResponseCallback& callback : request->callbacks)
+    callback.Run(nullptr, std::string(), error_text);
+
+  create_route_requests_.Remove(jcreate_route_request_id);
+}
 
 }  // namespace media_router
