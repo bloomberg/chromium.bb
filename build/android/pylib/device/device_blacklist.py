@@ -7,55 +7,76 @@ import os
 import threading
 
 from pylib import constants
-_BLACKLIST_JSON = os.path.join(
+
+# TODO(jbudorick): Remove this once the blacklist is optional.
+BLACKLIST_JSON = os.path.join(
     constants.DIR_SOURCE_ROOT,
     os.environ.get('CHROMIUM_OUT_DIR', 'out'),
     'bad_devices.json')
 
-# Note that this only protects against concurrent accesses to the blacklist
-# within a process.
-_blacklist_lock = threading.RLock()
+class Blacklist(object):
+
+  def __init__(self, path):
+    self._blacklist_lock = threading.RLock()
+    self._path = path
+
+  def Read(self):
+    """Reads the blacklist from the blacklist file.
+
+    Returns:
+      A list containing bad devices.
+    """
+    with self._blacklist_lock:
+      if not os.path.exists(self._path):
+        return []
+
+      with open(self._path, 'r') as f:
+        return json.load(f)
+
+  def Write(self, blacklist):
+    """Writes the provided blacklist to the blacklist file.
+
+    Args:
+      blacklist: list of bad devices to write to the blacklist file.
+    """
+    with self._blacklist_lock:
+      with open(self._path, 'w') as f:
+        json.dump(list(set(blacklist)), f)
+
+  def Extend(self, devices):
+    """Adds devices to blacklist file.
+
+    Args:
+      devices: list of bad devices to be added to the blacklist file.
+    """
+    with self._blacklist_lock:
+      blacklist = ReadBlacklist()
+      blacklist.extend(devices)
+      WriteBlacklist(blacklist)
+
+  def Reset(self):
+    """Erases the blacklist file if it exists."""
+    with self._blacklist_lock:
+      if os.path.exists(self._path):
+        os.remove(self._path)
+
 
 def ReadBlacklist():
-  """Reads the blacklist from the _BLACKLIST_JSON file.
-
-  Returns:
-    A list containing bad devices.
-  """
-  with _blacklist_lock:
-    if not os.path.exists(_BLACKLIST_JSON):
-      return []
-
-    with open(_BLACKLIST_JSON, 'r') as f:
-      return json.load(f)
+  # TODO(jbudorick): Phase out once all clients have migrated.
+  return Blacklist(BLACKLIST_JSON).Read()
 
 
 def WriteBlacklist(blacklist):
-  """Writes the provided blacklist to the _BLACKLIST_JSON file.
-
-  Args:
-    blacklist: list of bad devices to write to the _BLACKLIST_JSON file.
-  """
-  with _blacklist_lock:
-    with open(_BLACKLIST_JSON, 'w') as f:
-      json.dump(list(set(blacklist)), f)
+  # TODO(jbudorick): Phase out once all clients have migrated.
+  Blacklist(BLACKLIST_JSON).Write(blacklist)
 
 
 def ExtendBlacklist(devices):
-  """Adds devices to _BLACKLIST_JSON file.
-
-  Args:
-    devices: list of bad devices to be added to the _BLACKLIST_JSON file.
-  """
-  with _blacklist_lock:
-    blacklist = ReadBlacklist()
-    blacklist.extend(devices)
-    WriteBlacklist(blacklist)
+  # TODO(jbudorick): Phase out once all clients have migrated.
+  Blacklist(BLACKLIST_JSON).Extend(devices)
 
 
 def ResetBlacklist():
-  """Erases the _BLACKLIST_JSON file if it exists."""
-  with _blacklist_lock:
-    if os.path.exists(_BLACKLIST_JSON):
-      os.remove(_BLACKLIST_JSON)
+  # TODO(jbudorick): Phase out once all clients have migrated.
+  Blacklist(BLACKLIST_JSON).Reset()
 

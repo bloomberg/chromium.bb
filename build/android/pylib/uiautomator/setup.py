@@ -10,11 +10,12 @@ from pylib.uiautomator import test_package
 from pylib.uiautomator import test_runner
 
 
-def Setup(test_options):
+def Setup(test_options, devices):
   """Runs uiautomator tests on connected device(s).
 
   Args:
     test_options: A UIAutomatorOptions object.
+    devices: The list of that tests will run on.
 
   Returns:
     A tuple of (TestRunnerFactory, tests).
@@ -23,7 +24,8 @@ def Setup(test_options):
                                       test_options.uiautomator_info_jar)
   tests = test_pkg.GetAllMatchingTests(test_options.annotations,
                                        test_options.exclude_annotations,
-                                       test_options.test_filter)
+                                       test_options.test_filter,
+                                       devices)
 
   if not tests:
     logging.error('No uiautomator tests to run with current args.')

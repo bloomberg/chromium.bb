@@ -12,6 +12,7 @@ import os
 import sys
 
 from pylib import screenshot
+from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
 
@@ -47,6 +48,7 @@ def main():
                                  usage='screenshot.py [options] [filename]')
   parser.add_option('-d', '--device', metavar='ANDROID_DEVICE', help='Serial '
                     'number of Android device to use.', default=None)
+  parser.add_option('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_option('-f', '--file', help='Save result to file instead of '
                     'generating a timestamped file name.', metavar='FILE')
   parser.add_option('-v', '--verbose', help='Verbose logging.',
@@ -73,7 +75,12 @@ def main():
   if options.verbose:
     logging.getLogger().setLevel(logging.DEBUG)
 
-  devices = device_utils.DeviceUtils.HealthyDevices()
+  if options.blacklist_file:
+    blacklist = device_blacklist.Blacklist(options.blacklist_file)
+  else:
+    blacklist = None
+
+  devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
   if options.device:
     device = next((d for d in devices if d == options.device), None)
     if not device:

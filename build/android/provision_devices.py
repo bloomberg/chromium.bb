@@ -48,27 +48,33 @@ class _PHASES(object):
   ALL = [WIPE, PROPERTIES, FINISH]
 
 
-def ProvisionDevices(options):
-  devices = device_utils.DeviceUtils.HealthyDevices()
-  if options.device:
-    devices = [d for d in devices if d == options.device]
+def ProvisionDevices(args):
+  if args.blacklist_file:
+    blacklist = device_blacklist.Blacklist(args.blacklist_file)
+  else:
+    # TODO(jbudorick): Remove once the bots have switched over.
+    blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
+
+  devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+  if args.device:
+    devices = [d for d in devices if d == args.device]
     if not devices:
-      raise device_errors.DeviceUnreachableError(options.device)
+      raise device_errors.DeviceUnreachableError(args.device)
 
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
-  parallel_devices.pMap(ProvisionDevice, options)
-  if options.auto_reconnect:
+  parallel_devices.pMap(ProvisionDevice, blacklist, args)
+  if args.auto_reconnect:
     _LaunchHostHeartbeat()
-  blacklist = device_blacklist.ReadBlacklist()
-  if options.output_device_blacklist:
-    with open(options.output_device_blacklist, 'w') as f:
-      json.dump(blacklist, f)
-  if all(d in blacklist for d in devices):
+  blacklisted_devices = blacklist.Read()
+  if args.output_device_blacklist:
+    with open(args.output_device_blacklist, 'w') as f:
+      json.dump(blacklisted_devices, f)
+  if all(d in blacklisted_devices for d in devices):
     raise device_errors.NoDevicesError
   return 0
 
 
-def ProvisionDevice(device, options):
+def ProvisionDevice(device, blacklist, options):
   if options.reboot_timeout:
     reboot_timeout = options.reboot_timeout
   elif (device.build_version_sdk >=
@@ -104,12 +110,12 @@ def ProvisionDevice(device, options):
   except device_errors.CommandTimeoutError:
     logging.exception('Timed out waiting for device %s. Adding to blacklist.',
                       str(device))
-    device_blacklist.ExtendBlacklist([str(device)])
+    blacklist.Extend([str(device)])
 
   except device_errors.CommandFailedError:
     logging.exception('Failed to provision device %s. Adding to blacklist.',
                       str(device))
-    device_blacklist.ExtendBlacklist([str(device)])
+    blacklist.Extend([str(device)])
 
 
 def WipeDevice(device, options):
@@ -311,6 +317,7 @@ def main():
   parser.add_argument('-d', '--device', metavar='SERIAL',
                       help='the serial number of the device to be provisioned'
                       ' (the default is to provision all devices attached)')
+  parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_argument('--phase', action='append', choices=_PHASES.ALL,
                       dest='phases',
                       help='Phases of provisioning to run. '

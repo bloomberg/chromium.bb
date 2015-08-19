@@ -82,7 +82,8 @@ def Setup(test_options, devices):
   tests = test_pkg.GetAllMatchingTests(
       test_options.annotations,
       test_options.exclude_annotations,
-      test_options.test_filter)
+      test_options.test_filter,
+      devices)
   if not tests:
     logging.error('No instrumentation tests to run with current args.')
 

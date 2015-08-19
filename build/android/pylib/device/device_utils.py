@@ -1843,7 +1843,7 @@ class DeviceUtils(object):
     }
 
   @classmethod
-  def parallel(cls, devices=None, async=False):
+  def parallel(cls, devices, async=False):
     """Creates a Parallelizer to operate over the provided list of devices.
 
     If |devices| is either |None| or an empty list, the Parallelizer will
@@ -1860,9 +1860,7 @@ class DeviceUtils(object):
       A Parallelizer operating over |devices|.
     """
     if not devices:
-      devices = cls.HealthyDevices()
-      if not devices:
-        raise device_errors.NoDevicesError()
+      raise device_errors.NoDevicesError()
 
     devices = [d if isinstance(d, cls) else cls(d) for d in devices]
     if async:
@@ -1871,10 +1869,14 @@ class DeviceUtils(object):
       return parallelizer.SyncParallelizer(devices)
 
   @classmethod
-  def HealthyDevices(cls):
-    blacklist = device_blacklist.ReadBlacklist()
+  def HealthyDevices(cls, blacklist=None):
+    if not blacklist:
+      # TODO(jbudorick): Remove once clients pass in the blacklist.
+      blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
+
+    blacklisted_devices = blacklist.Read()
     def blacklisted(adb):
-      if adb.GetDeviceSerial() in blacklist:
+      if adb.GetDeviceSerial() in blacklisted_devices:
         logging.warning('Device %s is blacklisted.', adb.GetDeviceSerial())
         return True
       return False
