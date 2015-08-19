@@ -134,8 +134,8 @@ Polymer({
         CELLULAR: CrOnc.Type.CELLULAR,
         ETHERNET: CrOnc.Type.ETHERNET,
         VPN: CrOnc.Type.VPN,
-        WIFI: CrOnc.Type.WIFI,
-        WIMAX: CrOnc.Type.WIMAX,
+        WIFI: CrOnc.Type.WI_FI,
+        WIMAX: CrOnc.Type.WI_MAX,
       },
       readOnly: true
     },
@@ -574,9 +574,9 @@ Polymer({
         fields.push('VPN.L2TP.Username');
       // TODO(stevenjb): ThirdPartyVPN
     }
-    if (state.Type == CrOnc.Type.WIFI)
+    if (state.Type == CrOnc.Type.WI_FI)
       fields.push('RestrictedConnectivity');
-    if (state.Type == CrOnc.Type.WIMAX) {
+    if (state.Type == CrOnc.Type.WI_MAX) {
       fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     return fields;
@@ -598,14 +598,14 @@ Polymer({
                   'Cellular.NetworkTechnology',
                   'Cellular.ServingOperator.Code');
     }
-    if (state.Type == CrOnc.Type.WIFI) {
+    if (state.Type == CrOnc.Type.WI_FI) {
       fields.push('WiFi.SSID',
                   'WiFi.BSSID',
                   'WiFi.Security',
                   'WiFi.SignalStrength',
                   'WiFi.Frequency');
     }
-    if (state.Type == CrOnc.Type.WIMAX)
+    if (state.Type == CrOnc.Type.WI_MAX)
       fields.push('WiFi.SignalStrength');
     return fields;
   },

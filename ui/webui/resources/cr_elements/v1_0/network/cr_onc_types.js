@@ -40,70 +40,6 @@ CrOnc.ManagedProperty;
 /** @typedef {CrOnc.NetworkStateProperty|!CrOnc.ManagedProperty} */
 CrOnc.ManagedNetworkStateProperty;
 
-// TODO(stevenjb): Update chrome_extensions.js to include the following
-// in chrome.networkingPrivate and use those instead.
-
-/**
- * @typedef {{
- *    AccessPointName: string,
- *    Language: (string|undefined),
- *    LocalizedName: (string|undefined),
- *    Name: (string|undefined),
- *    Password: (string|undefined),
- *    Username: (string|undefined)
- * }}
- */
-CrOnc.APNProperties;
-
-/**
- * @typedef {{
- *    requirePin: boolean,
- *    currentPin: string,
- *    newPin: (string|undefined)
- * }}
- */
-CrOnc.CellularSimState;
-
-/**
- * @typedef {{
- *    Gateway: (string|undefined),
- *    IPAddress: (string|undefined),
- *    NameServers: ?Array<string>,
- *    RoutingPrefix: (number|undefined),
- *    Type: (string|undefined),
- *    WebProxyAutoDiscoveryUrl: (string|undefined)
- * }}
- */
-CrOnc.IPConfigProperties;
-
-/**
- * @typedef {{
- *    HTTPProxy: ?CrOnc.ProxyLocation,
- *    SecureHTTPProxy: ?CrOnc.ProxyLocation,
- *    FTPProxy: ?CrOnc.ProxyLocation,
- *    SOCKS: ?CrOnc.ProxyLocation
- * }}
- */
-CrOnc.ManualProxySettings;
-
-/**
- * @typedef {{
- *    Host: string,
- *    Port: number
- * }}
- */
-CrOnc.ProxyLocation;
-
-/**
- * @typedef {{
- *    Type: !CrOnc.ProxySettingsType,
- *    Manual: ?CrOnc.ManualProxySettings,
- *    ExcludeDomains: ?Array<string>,
- *    PAC: (string|undefined)
- * }}
- */
-CrOnc.ProxySettings;
-
 /**
  * @typedef {{
  *    LockType: !CrOnc.LockType,
@@ -112,6 +48,24 @@ CrOnc.ProxySettings;
  * }}
  */
 CrOnc.SIMLockStatus;
+
+/** @typedef {chrome.networkingPrivate.APNProperties} */
+CrOnc.APNProperties;
+
+/** @typedef {chrome.networkingPrivate.CellularSimState} */
+CrOnc.CellularSimState;
+
+/** @typedef {chrome.networkingPrivate.IPConfigProperties} */
+CrOnc.IPConfigProperties;
+
+/** @typedef {chrome.networkingPrivate.ManualProxySettings} */
+CrOnc.ManualProxySettings;
+
+/** @typedef {chrome.networkingPrivate.ProxyLocation} */
+CrOnc.ProxyLocation;
+
+/** @typedef {chrome.networkingPrivate.ProxySettings} */
+CrOnc.ProxySettings;
 
 // Modified version of IPConfigProperties to store RoutingPrefix as a
 // human-readable string instead of as a number.
@@ -127,26 +81,11 @@ CrOnc.SIMLockStatus;
  */
 CrOnc.IPConfigUIProperties;
 
-/** @enum {string} */
-CrOnc.ActivationState = {
-  ACTIVATED: 'Activated',
-  ACTIVATING: 'Activating',
-  NOT_ACTIVATED: 'NotActivated',
-  PARTIALLY_ACTIVATED: 'PartiallyActivated',
-};
-
-/** @enum {string} */
-CrOnc.ConnectionState = {
-  CONNECTED: 'Connected',
-  CONNECTING: 'Connecting',
-  NOT_CONNECTED: 'NotConnected',
-};
-
-/** @enum {string} */
-CrOnc.IPConfigType = {
-  DHCP: 'DHCP',
-  STATIC: 'Static',
-};
+CrOnc.ActivationState = chrome.networkingPrivate.ActivationStateType;
+CrOnc.ConnectionState = chrome.networkingPrivate.ConnectionStateType;
+CrOnc.IPConfigType = chrome.networkingPrivate.IPConfigType;
+CrOnc.ProxySettingsType = chrome.networkingPrivate.ProxySettingsType;
+CrOnc.Type = chrome.networkingPrivate.NetworkType;
 
 /** @enum {string} */
 CrOnc.IPType = {
@@ -177,14 +116,6 @@ CrOnc.NetworkTechnology = {
 };
 
 /** @enum {string} */
-CrOnc.ProxySettingsType = {
-  DIRECT: 'Direct',
-  MANUAL: 'Manual',
-  PAC: 'PAC',
-  WPAD: 'WPAD',
-};
-
-/** @enum {string} */
 CrOnc.RoamingState = {
   HOME: 'Home',
   REQUIRED: 'Required',
@@ -199,15 +130,6 @@ CrOnc.Security = {
   WEP_PSK: 'WEP-PSK',
   WPA_EAP: 'WPA-EAP',
   WPA_PSK: 'WPA-PSK',
-};
-
-/** @enum {string} */
-CrOnc.Type = {
-  CELLULAR: 'Cellular',
-  ETHERNET: 'Ethernet',
-  VPN: 'VPN',
-  WIFI: 'WiFi',
-  WIMAX: 'WiMAX',
 };
 
 /**

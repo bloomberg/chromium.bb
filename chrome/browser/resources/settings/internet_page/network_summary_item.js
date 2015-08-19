@@ -156,7 +156,7 @@ Polymer({
   expandIsVisible_: function(deviceState, networkList) {
     if (!this.deviceIsEnabled_(deviceState))
       return false;
-    var minLength = (this.type == CrOnc.Type.WIFI) ? 1 : 2;
+    var minLength = (this.type == CrOnc.Type.WI_FI) ? 1 : 2;
     return networkList.length >= minLength;
   },
 

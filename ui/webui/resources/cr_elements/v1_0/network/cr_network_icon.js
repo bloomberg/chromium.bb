@@ -25,17 +25,17 @@ var IconParams;
 /**
  * Gets the icon type from the network type. This allows multiple types
  * (i.e. Cellular, WiMAX) to map to the same icon type (i.e. mobile).
- * @param {CrOnc.Type} networkType The ONC network type.
+ * @param {chrome.networkingPrivate.NetworkType} networkType
  * @return {string} The icon type: ethernet, wifi, mobile, or vpn.
  */
 function getIconTypeFromNetworkType(networkType) {
   if (!networkType || networkType == CrOnc.Type.ETHERNET)
     return 'ethernet';
-  else if (networkType == CrOnc.Type.WIFI)
+  else if (networkType == CrOnc.Type.WI_FI)
     return 'wifi';
   else if (networkType == CrOnc.Type.CELLULAR)
     return 'mobile';
-  else if (networkType == CrOnc.Type.WIMAX)
+  else if (networkType == CrOnc.Type.WI_MAX)
     return 'mobile';
   else if (networkType == CrOnc.Type.VPN)
     return 'vpn';
@@ -254,12 +254,12 @@ Polymer({
 
     var type =
         (params.showBadges && networkState) ? networkState.Type : '';
-    if (type == CrOnc.Type.WIFI) {
+    if (type == CrOnc.Type.WI_FI) {
       this.roaming_ = false;
       var security = CrOnc.getTypeProperty(networkState, 'Security');
       this.secure_ = security && security != 'None';
       this.technology_ = '';
-    } else if (type == CrOnc.Type.WIMAX) {
+    } else if (type == CrOnc.Type.WI_MAX) {
       this.roaming_ = false;
       this.secure_ = false;
       this.technology_ = '4g';

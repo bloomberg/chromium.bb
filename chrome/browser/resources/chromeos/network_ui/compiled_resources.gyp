@@ -14,7 +14,7 @@
         ],
         'externs': [
           '../../../../../ui/webui/resources/cr_elements/v1_0/network/cr_network_icon_externs.js',
-          '../../../../../third_party/closure_compiler/externs/chrome_extensions.js'
+          '../../../../../third_party/closure_compiler/externs/networking_private.js'
         ],
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],

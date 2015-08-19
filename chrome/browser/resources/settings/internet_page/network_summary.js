@@ -47,9 +47,9 @@ var NetworkStateListObject;
 /** @const {!Array<string>} */
 var NETWORK_TYPES = [
   CrOnc.Type.ETHERNET,
-  CrOnc.Type.WIFI,
+  CrOnc.Type.WI_FI,
   CrOnc.Type.CELLULAR,
-  CrOnc.Type.WIMAX,
+  CrOnc.Type.WI_MAX,
   CrOnc.Type.VPN
 ];
 

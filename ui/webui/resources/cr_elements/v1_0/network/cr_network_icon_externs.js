@@ -16,7 +16,7 @@ var CrNetworkIconElement = function() {};
 /** @type {CrOnc.NetworkStateProperties} */
 CrNetworkIconElement.prototype.networkState;
 
-/** @type {CrOnc.Type} */
+/** @type {chrome.networkingPrivate.NetworkType} */
 CrNetworkIconElement.prototype.networkType;
 
 /** @type {boolean} */

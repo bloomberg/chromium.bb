@@ -304,9 +304,13 @@ var NetworkUI = (function() {
    */
   var requestNetworks = function() {
     chrome.networkingPrivate.getNetworks(
-        {'networkType': 'All', 'visible': true}, onVisibleNetworksReceived);
+        {'networkType': chrome.networkingPrivate.NetworkType.ALL,
+         'visible': true},
+        onVisibleNetworksReceived);
     chrome.networkingPrivate.getNetworks(
-        {'networkType': 'All', 'configured': true}, onFavoriteNetworksReceived);
+        {'networkType': chrome.networkingPrivate.NetworkType.ALL,
+         'configured': true},
+        onFavoriteNetworksReceived);
   };
 
   /**
