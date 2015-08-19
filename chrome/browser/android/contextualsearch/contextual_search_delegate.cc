@@ -286,10 +286,13 @@ void ContextualSearchDelegate::StartSearchTermRequestFromSelection(
   // TODO(donnd): figure out how to gather text surrounding the selection
   // for other purposes too: e.g. to determine if we should select the
   // word where the user tapped.
-  DCHECK(context_.get());
-  SaveSurroundingText(surrounding_text, start_offset, end_offset);
-  SendSurroundingText(kSurroundingSizeForUI);
-  ContinueSearchTermResolutionRequest();
+  if (context_.get()) {
+    SaveSurroundingText(surrounding_text, start_offset, end_offset);
+    SendSurroundingText(kSurroundingSizeForUI);
+    ContinueSearchTermResolutionRequest();
+  } else {
+    DVLOG(1) << "ctxs: Null context, ignored!";
+  }
 }
 
 void ContextualSearchDelegate::SaveSurroundingText(
@@ -309,7 +312,14 @@ void ContextualSearchDelegate::SaveSurroundingText(
     context_->end_offset = end_offset;
   }
 
-  // Call the Icing callback, unless it has been disabled.
+  // Pin the start and end offsets to ensure they point within the string.
+  int surrounding_length = context_->surrounding_text.length();
+  context_->start_offset =
+      std::min(surrounding_length, std::max(0, context_->start_offset));
+  context_->end_offset =
+      std::min(surrounding_length, std::max(0, context_->end_offset));
+
+  // Call the Icing callback with a shortened copy of the surroundings.
   int icing_surrounding_size = GetIcingSurroundingSize();
   size_t selection_start = context_->start_offset;
   size_t selection_end = context_->end_offset;
@@ -325,20 +335,19 @@ void ContextualSearchDelegate::SaveSurroundingText(
 }
 
 void ContextualSearchDelegate::SendSurroundingText(int max_surrounding_chars) {
-  const base::string16 surrounding = context_->surrounding_text;
+  const base::string16& surrounding = context_->surrounding_text;
 
   // Determine the text before the selection.
-  int start_position = std::max(
-      0, context_->start_offset - max_surrounding_chars);
   int num_before_characters =
       std::min(context_->start_offset, max_surrounding_chars);
+  int start_position = context_->start_offset - num_before_characters;
   base::string16 before_text =
       surrounding.substr(start_position, num_before_characters);
 
   // Determine the text after the selection.
-  int surrounding_size = surrounding.size();  // Cast to int.
+  int surrounding_length = surrounding.length();  // Cast to int.
   int num_after_characters = std::min(
-      surrounding_size - context_->end_offset, max_surrounding_chars);
+      surrounding_length - context_->end_offset, max_surrounding_chars);
   base::string16 after_text = surrounding.substr(
       context_->end_offset, num_after_characters);
 
