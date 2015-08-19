@@ -98,7 +98,11 @@ void MediaRouterAndroid::JoinRoute(
 }
 
 void MediaRouterAndroid::CloseRoute(const MediaRoute::Id& route_id) {
-  NOTIMPLEMENTED();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jroute_id =
+          base::android::ConvertUTF8ToJavaString(env, route_id);
+  Java_ChromeMediaRouter_closeRoute(
+      env, java_media_router_.obj(), jroute_id.obj());
 }
 
 void MediaRouterAndroid::SendRouteMessage(

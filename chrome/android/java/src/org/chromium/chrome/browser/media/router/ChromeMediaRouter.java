@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.media.router.cast.CreateRouteRequest;
 import org.chromium.chrome.browser.media.router.cast.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
+import org.chromium.chrome.browser.media.router.cast.SessionWrapper;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +37,8 @@ public class ChromeMediaRouter {
     private final Map<String, List<MediaSink>> mSinks = new HashMap<String, List<MediaSink>>();
     private final Map<String, DiscoveryCallback> mDiscoveryCallbacks =
             new HashMap<String, DiscoveryCallback>();
-    private final Map<String, String> mSessionIds =
-            new HashMap<String, String>();
+    private final Map<String, SessionWrapper> mSessions =
+            new HashMap<String, SessionWrapper>();
 
     /**
      * Called when the sinks found by the media route provider for
@@ -56,8 +57,8 @@ public class ChromeMediaRouter {
      * @param requestId the id of the route creation request.
      */
     public void onRouteCreated(
-            String mediaRouteId, int requestId, String sessionId, boolean wasLaunched) {
-        mSessionIds.put(mediaRouteId, sessionId);
+            String mediaRouteId, int requestId, SessionWrapper session, boolean wasLaunched) {
+        mSessions.put(mediaRouteId, session);
         nativeOnRouteCreated(mNativeMediaRouterAndroid, mediaRouteId, requestId, wasLaunched);
     }
 
@@ -181,6 +182,19 @@ public class ChromeMediaRouter {
                 // TODO(avayvod): handle application disconnect and report back to the native side.
                 // Part of https://crbug.com/517100.
                 new Cast.Listener() {});
+    }
+
+    /**
+     * Closes the route specified by the id.
+     * @param routeId the id of the route to close.
+     */
+    @CalledByNative
+    public void closeRoute(String routeId) {
+        SessionWrapper session = mSessions.remove(routeId);
+        if (session != null) session.stop();
+        if (mAndroidMediaRouter != null) {
+            mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
+        }
     }
 
     @VisibleForTesting

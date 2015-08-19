@@ -208,7 +208,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
         String mediaRouteId = String.format(
                 "route:%s/%s/%s", mPresentationId, mSinkId, mSourceUrn);
-        mMediaRouter.onRouteCreated(mediaRouteId, mRequestId, sessionId, wasLaunched);
+        mMediaRouter.onRouteCreated(
+                mediaRouteId, mRequestId, new SessionWrapper(mApiClient, sessionId), wasLaunched);
 
         terminate();
     }
