@@ -273,76 +273,6 @@ chrome.automation.TreeChange;
  */
 chrome.automation.AutomationNode = function() {};
 
-/**
- * @typedef {{
- *   activedescendant: chrome.automation.AutomationNode
- * }}
- */
-chrome.automation.ActiveDescendantMixin;
-
-/**
- * @typedef {{
- *   url: string
- * }}
- */
-chrome.automation.LinkMixins;
-
-/**
- * @typedef {{
- *   docUrl: string,
- *   docTitle: string,
- *   docLoaded: boolean,
- *   docLoadingProgress: number
- * }}
- */
-chrome.automation.DocumentMixins;
-
-/**
- * @typedef {{
- *   scrollX: number,
- *   scrollXMin: number,
- *   scrollXMax: number,
- *   scrollY: number,
- *   scrollYMin: number,
- *   scrollYMax: number
- * }}
- */
-chrome.automation.ScrollableMixins;
-
-/**
- * @typedef {{
- *   textSelStart: number,
- *   textSelEnd: number
- * }}
- */
-chrome.automation.EditableTextMixins;
-
-/**
- * @typedef {{
- *   valueForRange: number,
- *   minValueForRange: number,
- *   maxValueForRange: number
- * }}
- */
-chrome.automation.RangeMixins;
-
-/**
- * @typedef {{
- *   tableRowCount: number,
- *   tableColumnCount: number
- * }}
- */
-chrome.automation.TableMixins;
-
-/**
- * @typedef {{
- *   tableCellColumnIndex: number,
- *   tableCellColumnSpan: number,
- *   tableCellRowIndex: number,
- *   tableCellRowSpan: number
- * }}
- */
-chrome.automation.TableCellMixins;
 
 /**
  * Get the automation tree for the tab with the given tabId, or the current tab
@@ -418,6 +348,12 @@ chrome.automation.AutomationNode.prototype.description;
  * @type {string}
  */
 chrome.automation.AutomationNode.prototype.url;
+
+
+/**
+ * @type {string}
+ */
+chrome.automation.AutomationNode.prototype.docUrl;
 
 
 /**

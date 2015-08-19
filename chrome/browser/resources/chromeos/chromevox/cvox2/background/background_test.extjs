@@ -206,17 +206,10 @@ TEST_F('BackgroundTest', 'LiveRegionRemoveElement', function() {
     });
 });
 
-// Test fails because no speech is generated when the rootWebArea is
-// focused.
-// http://crbug.com/520940
-TEST_F('BackgroundTest', 'DISABLED_InitialFocus', function() {
-  this.runWithLoadedTree('<a href="a">a</a>',
-    function(rootNode) {
-      cvox.ChromeVox.tts.expectSpeech('a');
-      cvox.ChromeVox.tts.expectSpeech('Link', this.newCallback());
-
-      rootNode.focus();
-    });
+TEST_F('BackgroundTest', 'InitialFocus', function() {
+  cvox.ChromeVox.tts.expectSpeech('a');
+  cvox.ChromeVox.tts.expectSpeech('Link', this.newCallback());
+  this.runWithLoadedTree('<a href="a">a</a>', function() {});
 });
 
 TEST_F('BackgroundTest', 'AriaLabel', function() {

@@ -436,6 +436,9 @@ Output.RULES = {
     radioGroup: {
       enter: '$name $role'
     },
+    rootWebArea: {
+      enter: '$name'
+    },
     row: {
       enter: '@row_granularity $tableRowIndex'
     },
@@ -1175,7 +1178,11 @@ Output.prototype = {
           });
       var alreadyAnnotated = buff.some(function(s) {
         return annotationSansNodes.some(function(annotation) {
-          return s.getSpanStart(annotation) != undefined;
+          var start = s.getSpanStart(annotation);
+          var end = s.getSpanEnd(annotation);
+          if (start === undefined)
+            return false;
+          return s.substring(start, end).toString() == value.toString();
         });
       });
       if (alreadyAnnotated)
