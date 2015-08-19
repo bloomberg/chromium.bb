@@ -735,6 +735,9 @@ SlideMode.prototype.loadSelectedItem_ = function() {
     return;  // Do not reselect.
 
   var index = this.getSelectedIndex();
+  if (index < 0)
+    return;
+
   var displayedIndex = this.dataModel_.indexOf(this.displayedItem_);
   var step =
       slideHint || (displayedIndex > 0 ? index - displayedIndex : 1);
@@ -817,23 +820,7 @@ SlideMode.prototype.onSplice_ = function(event) {
 
   // Delay the selection to let the ribbon splice handler work first.
   setTimeout(function() {
-    var displayedItemNotRemvoed = event.removed.every(function(item) {
-      return item !== this.displayedItem_;
-    }.bind(this));
-    if (displayedItemNotRemvoed)
-      return;
-    var nextIndex;
-    if (event.index < this.dataModel_.length) {
-      // There is the next item, select it.
-      // The next item is now at the same index as the removed one, so we need
-      // to correct displayIndex_ so that loadSelectedItem_ does not think
-      // we are re-selecting the same item (and does right-to-left slide-in
-      // animation).
-      nextIndex = event.index;
-    } else if (this.dataModel_.length) {
-      // Removed item is the rightmost, but there are more items.
-      nextIndex = event.index - 1;  // Select the new last index.
-    } else {
+    if (this.dataModel_.length === 0) {
       // No items left. Unload the image, disable edit and print button, and
       // show the banner.
       this.commitItem_(function() {
@@ -844,9 +831,17 @@ SlideMode.prototype.onSplice_ = function(event) {
       }.bind(this));
       return;
     }
-    // To force to dispatch a selection change event, clear selection before.
-    this.selectionModel_.clear();
-    this.select(nextIndex);
+
+    var displayedItemNotRemvoed = event.removed.every(function(item) {
+      return item !== this.displayedItem_;
+    }.bind(this));
+    if (!displayedItemNotRemvoed) {
+      // There is the next item, select it. Otherwise, select the last item.
+      var nextIndex = Math.min(event.index, this.dataModel_.length - 1);
+      // To force to dispatch a selection change event, clear selection before.
+      this.selectionModel_.clear();
+      this.select(nextIndex);
+    }
   }.bind(this), 0);
 };
 
