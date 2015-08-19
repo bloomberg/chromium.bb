@@ -412,9 +412,9 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
           location_hash == blacklisted.location)) {
     // We have a name match against the blacklist (and possibly location match
     // also), so check version.
-    base::Version module_version(base::UTF16ToASCII(module.version));
-    base::Version version_min(blacklisted.version_from);
-    base::Version version_max(blacklisted.version_to);
+    Version module_version(base::UTF16ToASCII(module.version));
+    Version version_min(blacklisted.version_from);
+    Version version_max(blacklisted.version_to);
     bool version_ok = !version_min.IsValid() && !version_max.IsValid();
     if (!version_ok) {
       bool too_low = version_min.IsValid() &&

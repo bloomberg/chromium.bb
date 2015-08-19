@@ -156,7 +156,7 @@ bool ParseManifestTag(xmlNode* manifest,
     *error = "Missing version for manifest.";
     return false;
   }
-  base::Version version(result->manifest.version);
+  Version version(result->manifest.version);
   if (!version.IsValid()) {
     *error = "Invalid version: '";
     *error += result->manifest.version;
@@ -168,7 +168,7 @@ bool ParseManifestTag(xmlNode* manifest,
   result->manifest.browser_min_version =
       GetAttribute(manifest, "prodversionmin");
   if (result->manifest.browser_min_version.length()) {
-    base::Version browser_min_version(result->manifest.browser_min_version);
+    Version browser_min_version(result->manifest.browser_min_version);
     if (!browser_min_version.IsValid()) {
       *error = "Invalid prodversionmin: '";
       *error += result->manifest.browser_min_version;

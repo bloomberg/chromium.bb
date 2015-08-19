@@ -554,7 +554,7 @@ class KioskTest : public OobeBaseTest {
         extension_service()->GetInstalledExtension(test_app_id_);
   }
 
-  const base::Version& GetInstalledAppVersion() {
+  const Version& GetInstalledAppVersion() {
     return *GetInstalledApp()->version();
   }
 

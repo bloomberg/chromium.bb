@@ -214,7 +214,7 @@ void UnpackedInstaller::StartInstallChecks() {
           SharedModuleInfo::GetImports(extension());
       std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
       for (i = imports.begin(); i != imports.end(); ++i) {
-        base::Version version_required(i->minimum_version);
+        Version version_required(i->minimum_version);
         const Extension* imported_module =
             service->GetExtensionById(i->extension_id, true);
         if (!imported_module) {

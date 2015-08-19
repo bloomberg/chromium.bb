@@ -871,8 +871,8 @@ void ProfileImpl::OnPrefsLoaded(CreateMode create_mode, bool success) {
 }
 
 bool ProfileImpl::WasCreatedByVersionOrLater(const std::string& version) {
-  base::Version profile_version(ChromeVersionService::GetVersion(prefs_.get()));
-  base::Version arg_version(version);
+  Version profile_version(ChromeVersionService::GetVersion(prefs_.get()));
+  Version arg_version(version);
   return (profile_version.CompareTo(arg_version) >= 0);
 }
 

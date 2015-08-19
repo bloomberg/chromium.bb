@@ -30,7 +30,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   //   concatenated to the survey url if the file in local_data_path indicates
   //   the user has opted in to providing anonymous usage data.
   void DoPostUninstallOperations(
-      const base::Version& version,
+      const Version& version,
       const base::FilePath& local_data_path,
       const base::string16& distribution_data) override;
 

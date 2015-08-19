@@ -31,7 +31,7 @@ GoogleChromeDistribution::GoogleChromeDistribution(
 }
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
-    const base::Version& version,
+    const Version& version,
     const base::FilePath& local_data_path,
     const base::string16& distribution_data) {
 }

@@ -70,7 +70,7 @@ class MockExternalPolicyProviderVisitor
   }
 
   bool OnExternalExtensionFileFound(const std::string& id,
-                                    const base::Version* version,
+                                    const Version* version,
                                     const base::FilePath& path,
                                     Manifest::Location unused,
                                     int unused2,
@@ -91,7 +91,7 @@ class MockExternalPolicyProviderVisitor
 
     // Provider returns the correct location when asked.
     Manifest::Location location1;
-    scoped_ptr<base::Version> version1;
+    scoped_ptr<Version> version1;
     provider_->GetExtensionDetails(id, &location1, &version1);
     EXPECT_EQ(Manifest::EXTERNAL_POLICY_DOWNLOAD, location1);
     EXPECT_FALSE(version1.get());

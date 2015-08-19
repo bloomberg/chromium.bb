@@ -267,11 +267,10 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
     const std::string disable_version_string =
         g_browser_process->local_state()->GetString(
             prefs::kBrowserSuppressDefaultBrowserPrompt);
-    const base::Version disable_version(disable_version_string);
+    const Version disable_version(disable_version_string);
     DCHECK(disable_version_string.empty() || disable_version.IsValid());
     if (disable_version.IsValid()) {
-      if (disable_version.Equals(
-              base::Version(version_info::GetVersionNumber())))
+      if (disable_version.Equals(Version(version_info::GetVersionNumber())))
         show_prompt = false;
     }
   }

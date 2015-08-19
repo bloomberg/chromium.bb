@@ -26,8 +26,8 @@ namespace update_client {
 namespace {
 
 // Returns true if the |proposed| version is newer than |current| version.
-bool IsVersionNewer(const base::Version& current, const std::string& proposed) {
-  base::Version proposed_ver(proposed);
+bool IsVersionNewer(const Version& current, const std::string& proposed) {
+  Version proposed_ver(proposed);
   return proposed_ver.IsValid() && current.CompareTo(proposed_ver) < 0;
 }
 
@@ -68,7 +68,7 @@ void ActionUpdateCheck::Run(UpdateContext* update_context, Callback callback) {
     item->crx_urls.clear();
     item->crx_diffurls.clear();
     item->previous_version = crx_component.version;
-    item->next_version = base::Version();
+    item->next_version = Version();
     item->previous_fp = crx_component.fingerprint;
     item->next_fp.clear();
     item->on_demand = update_context->is_foreground;
@@ -154,7 +154,7 @@ void ActionUpdateCheck::OnUpdateCheckSucceeded(
     }
 
     // Parse the members of the result and queue an upgrade for this CRX.
-    crx->next_version = base::Version(it->manifest.version);
+    crx->next_version = Version(it->manifest.version);
 
     VLOG(1) << "Update found for CRX: " << crx->id;
 

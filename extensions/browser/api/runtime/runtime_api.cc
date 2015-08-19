@@ -191,7 +191,7 @@ void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
       base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
                  browser_context_,
                  extension->id(),
-                 base::Version(),
+                 Version(),
                  true));
 }
 
@@ -206,7 +206,7 @@ void RuntimeAPI::OnExtensionWillBeInstalled(
   if (util::IsEphemeralApp(extension->id(), browser_context_))
     return;
 
-  base::Version old_version = delegate_->GetPreviousExtensionVersion(extension);
+  Version old_version = delegate_->GetPreviousExtensionVersion(extension);
 
   // Dispatch the onInstalled event.
   base::MessageLoop::current()->PostTask(
@@ -287,7 +287,7 @@ void RuntimeEventRouter::DispatchOnStartupEvent(
 void RuntimeEventRouter::DispatchOnInstalledEvent(
     content::BrowserContext* context,
     const std::string& extension_id,
-    const base::Version& old_version,
+    const Version& old_version,
     bool chrome_updated) {
   if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;

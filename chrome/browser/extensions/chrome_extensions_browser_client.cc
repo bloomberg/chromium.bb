@@ -307,7 +307,7 @@ bool ChromeExtensionsBrowserClient::IsMinBrowserVersionSupported(
     const std::string& min_version) {
   base::Version browser_version =
       base::Version(version_info::GetVersionNumber());
-  base::Version browser_min_version(min_version);
+  Version browser_min_version(min_version);
   if (browser_version.IsValid() && browser_min_version.IsValid() &&
       browser_min_version.CompareTo(browser_version) > 0) {
     return false;

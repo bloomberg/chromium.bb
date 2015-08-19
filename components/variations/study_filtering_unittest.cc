@@ -275,8 +275,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
 
   for (size_t i = 0; i < arraysize(min_test_cases); ++i) {
     filter.set_min_version(min_test_cases[i].min_version);
-    const bool result = internal::CheckStudyVersion(
-        filter, base::Version(min_test_cases[i].version));
+    const bool result =
+        internal::CheckStudyVersion(filter, Version(min_test_cases[i].version));
     EXPECT_EQ(min_test_cases[i].expected_result, result) <<
         "Min. version case " << i << " failed!";
   }
@@ -284,8 +284,8 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
 
   for (size_t i = 0; i < arraysize(max_test_cases); ++i) {
     filter.set_max_version(max_test_cases[i].max_version);
-    const bool result = internal::CheckStudyVersion(
-        filter, base::Version(max_test_cases[i].version));
+    const bool result =
+        internal::CheckStudyVersion(filter, Version(max_test_cases[i].version));
     EXPECT_EQ(max_test_cases[i].expected_result, result) <<
         "Max version case " << i << " failed!";
   }
@@ -297,14 +297,16 @@ TEST(VariationsStudyFilteringTest, CheckStudyVersion) {
       filter.set_max_version(max_test_cases[j].max_version);
 
       if (!min_test_cases[i].expected_result) {
-        const bool result = internal::CheckStudyVersion(
-            filter, base::Version(min_test_cases[i].version));
+        const bool result =
+            internal::CheckStudyVersion(
+                filter, Version(min_test_cases[i].version));
         EXPECT_FALSE(result) << "Case " << i << "," << j << " failed!";
       }
 
       if (!max_test_cases[j].expected_result) {
-        const bool result = internal::CheckStudyVersion(
-            filter, base::Version(max_test_cases[j].version));
+        const bool result =
+            internal::CheckStudyVersion(
+                filter, Version(max_test_cases[j].version));
         EXPECT_FALSE(result) << "Case " << i << "," << j << " failed!";
       }
     }

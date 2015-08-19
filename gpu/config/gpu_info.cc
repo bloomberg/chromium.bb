@@ -82,7 +82,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool optimus;
     bool amd_switchable;
     bool lenovo_dcute;
-    base::Version display_link_version;
+    Version display_link_version;
     GPUDevice gpu;
     std::vector<GPUDevice> secondary_gpus;
     uint64 adapter_luid;

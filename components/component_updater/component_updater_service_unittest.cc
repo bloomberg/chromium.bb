@@ -236,12 +236,12 @@ TEST_F(ComponentUpdaterTest, RegisterComponent) {
 
   CrxComponent crx_component1;
   crx_component1.pk_hash.assign(abag_hash, abag_hash + arraysize(abag_hash));
-  crx_component1.version = base::Version("1.0");
+  crx_component1.version = Version("1.0");
   crx_component1.installer = installer;
 
   CrxComponent crx_component2;
   crx_component2.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-  crx_component2.version = base::Version("0.9");
+  crx_component2.version = Version("0.9");
   crx_component2.installer = installer;
 
   // Quit after two update checks have fired.
@@ -294,7 +294,7 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
   using update_client::jebg_hash;
   CrxComponent crx_component;
   crx_component.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-  crx_component.version = base::Version("0.9");
+  crx_component.version = Version("0.9");
   crx_component.installer = installer;
 
   LoopHandler loop_handler(1, quit_closure());
@@ -338,7 +338,7 @@ TEST_F(ComponentUpdaterTest, MaybeThrottle) {
   using update_client::jebg_hash;
   CrxComponent crx_component;
   crx_component.pk_hash.assign(jebg_hash, jebg_hash + arraysize(jebg_hash));
-  crx_component.version = base::Version("0.9");
+  crx_component.version = Version("0.9");
   crx_component.installer = installer;
 
   LoopHandler loop_handler(1, quit_closure());

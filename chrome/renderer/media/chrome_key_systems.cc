@@ -148,7 +148,7 @@ void GetSupportedCodecsForPepperCdm(
 static void AddPepperBasedWidevine(
     std::vector<KeySystemInfo>* concrete_key_systems) {
 #if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
-  base::Version glibc_version(gnu_get_libc_version());
+  Version glibc_version(gnu_get_libc_version());
   DCHECK(glibc_version.IsValid());
   if (glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION))
     return;

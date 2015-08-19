@@ -102,7 +102,7 @@ base::string16 GetCurrentModuleVersion() {
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
   if (file_version_info.get()) {
     base::string16 version_string(file_version_info->file_version());
-    if (base::Version(base::UTF16ToASCII(version_string)).IsValid())
+    if (Version(base::UTF16ToASCII(version_string)).IsValid())
       return version_string;
   }
   return base::string16();

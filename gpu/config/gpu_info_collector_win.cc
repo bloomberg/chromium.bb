@@ -53,23 +53,23 @@ enum DisplayLinkInstallationStatus {
 
 // Returns the display link driver version or an invalid version if it is
 // not installed.
-base::Version DisplayLinkVersion() {
+Version DisplayLinkVersion() {
   base::win::RegKey key;
 
   if (key.Open(HKEY_LOCAL_MACHINE, L"SOFTWARE", KEY_READ | KEY_WOW64_64KEY))
-    return base::Version();
+    return Version();
 
   if (key.OpenKey(L"DisplayLink", KEY_READ | KEY_WOW64_64KEY))
-    return base::Version();
+    return Version();
 
   if (key.OpenKey(L"Core", KEY_READ | KEY_WOW64_64KEY))
-    return base::Version();
+    return Version();
 
   base::string16 version;
   if (key.ReadValue(L"Version", &version))
-    return base::Version();
+    return Version();
 
-  return base::Version(base::UTF16ToASCII(version));
+  return Version(base::UTF16ToASCII(version));
 }
 
 // Returns whether Lenovo dCute is installed.

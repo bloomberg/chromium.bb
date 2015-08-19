@@ -167,7 +167,7 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
     *error_detail = "Missing version for updatecheck.";
     return false;
   }
-  base::Version version(result->version);
+  Version version(result->version);
   if (!version.IsValid()) {
     *error_detail = "Invalid version: '";
     *error_detail += result->version;
@@ -178,7 +178,7 @@ static bool ParseSingleAppTag(xmlNode* app_node, xmlNs* xml_namespace,
   // Get the minimum browser version (not required).
   result->browser_min_version = GetAttribute(updatecheck, "prodversionmin");
   if (result->browser_min_version.length()) {
-    base::Version browser_min_version(result->browser_min_version);
+    Version browser_min_version(result->browser_min_version);
     if (!browser_min_version.IsValid()) {
       *error_detail = "Invalid prodversionmin: '";
       *error_detail += result->browser_min_version;

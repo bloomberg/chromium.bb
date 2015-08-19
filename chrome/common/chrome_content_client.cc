@@ -368,7 +368,7 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   if (!manifest_value->GetAsDictionary(&manifest))
     return false;
 
-  base::Version version;
+  Version version;
   if (!chrome::CheckPepperFlashManifest(*manifest, &version))
     return false;
 
@@ -455,7 +455,7 @@ content::PepperPluginInfo* ChromeContentClient::FindMostRecentPlugin(
   auto it = std::max_element(
       plugins.begin(), plugins.end(),
       [](content::PepperPluginInfo* x, content::PepperPluginInfo* y) {
-        base::Version version_x(x->version);
+        Version version_x(x->version);
         DCHECK(version_x.IsValid());
         return version_x.IsOlderThan(y->version);
       });

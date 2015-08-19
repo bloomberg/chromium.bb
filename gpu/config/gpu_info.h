@@ -119,7 +119,7 @@ struct GPU_EXPORT GPUInfo {
 
   // Version of DisplayLink driver installed. Zero if not installed.
   // http://crbug.com/177611.
-  base::Version display_link_version;
+  Version display_link_version;
 
   // Primary GPU, for exmaple, the discrete GPU in a dual GPU machine.
   GPUDevice gpu;

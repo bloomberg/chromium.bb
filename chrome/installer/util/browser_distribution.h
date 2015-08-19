@@ -64,7 +64,7 @@ class BrowserDistribution {
   base::string16 GetVersionKey() const;
 
   virtual void DoPostUninstallOperations(
-      const base::Version& version,
+      const Version& version,
       const base::FilePath& local_data_path,
       const base::string16& distribution_data);
 

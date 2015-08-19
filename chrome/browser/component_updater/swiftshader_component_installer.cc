@@ -64,7 +64,7 @@ base::FilePath GetSwiftShaderBaseDirectory() {
 // On success it returns something like:
 // <profile>\AppData\Local\Google\Chrome\User Data\SwiftShader\10.3.44.555\.
 bool GetLatestSwiftShaderDirectory(base::FilePath* result,
-                                   base::Version* latest,
+                                   Version* latest,
                                    std::vector<base::FilePath>* older_dirs) {
   base::FilePath base_dir = GetSwiftShaderBaseDirectory();
   bool found = false;
@@ -72,7 +72,7 @@ bool GetLatestSwiftShaderDirectory(base::FilePath* result,
       base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    base::Version version(path.BaseName().MaybeAsASCII());
+    Version version(path.BaseName().MaybeAsASCII());
     if (!version.IsValid())
       continue;
     if (version.CompareTo(*latest) > 0 &&
@@ -98,7 +98,7 @@ void RegisterSwiftShaderWithChrome(const base::FilePath& path) {
 
 class SwiftShaderComponentInstaller : public update_client::CrxInstaller {
  public:
-  explicit SwiftShaderComponentInstaller(const base::Version& version);
+  explicit SwiftShaderComponentInstaller(const Version& version);
 
   // ComponentInstaller implementation:
   void OnUpdateError(int error) override;
@@ -114,11 +114,11 @@ class SwiftShaderComponentInstaller : public update_client::CrxInstaller {
  private:
   ~SwiftShaderComponentInstaller() override {}
 
-  base::Version current_version_;
+  Version current_version_;
 };
 
 SwiftShaderComponentInstaller::SwiftShaderComponentInstaller(
-    const base::Version& version)
+    const Version& version)
     : current_version_(version) {
   DCHECK(version.IsValid());
 }
@@ -136,7 +136,7 @@ bool SwiftShaderComponentInstaller::Install(
     return false;
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  base::Version version(proposed_version.c_str());
+  Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
   if (current_version_.CompareTo(version) >= 0)
@@ -170,7 +170,7 @@ bool SwiftShaderComponentInstaller::Uninstall() {
 }
 
 void FinishSwiftShaderUpdateRegistration(ComponentUpdateService* cus,
-                                         const base::Version& version) {
+                                         const Version& version) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   update_client::CrxComponent swiftshader;
@@ -206,7 +206,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     base::FilePath path = GetSwiftShaderBaseDirectory();
 
-    base::Version version(kNullVersion);
+    Version version(kNullVersion);
     GetLatestSwiftShaderDirectory(&path, &version, NULL);
 
     BrowserThread::PostTask(
@@ -230,7 +230,7 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
     }
   }
 
-  base::Version version(kNullVersion);
+  Version version(kNullVersion);
   std::vector<base::FilePath> older_dirs;
   if (GetLatestSwiftShaderDirectory(&path, &version, &older_dirs))
     BrowserThread::PostTask(BrowserThread::UI,

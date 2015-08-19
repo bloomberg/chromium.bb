@@ -142,22 +142,22 @@ int BsdiffPatchFiles(const base::FilePath& src,
   return exit_code;
 }
 
-base::Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
+Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
   VLOG(1) << "Looking for Chrome version folder under " << chrome_path.value();
   base::FileEnumerator version_enum(chrome_path, false,
       base::FileEnumerator::DIRECTORIES);
   // TODO(tommi): The version directory really should match the version of
   // setup.exe.  To begin with, we should at least DCHECK that that's true.
 
-  scoped_ptr<base::Version> max_version(new base::Version("0.0.0.0"));
+  scoped_ptr<Version> max_version(new Version("0.0.0.0"));
   bool version_found = false;
 
   while (!version_enum.Next().empty()) {
     base::FileEnumerator::FileInfo find_data = version_enum.GetInfo();
     VLOG(1) << "directory found: " << find_data.GetName().value();
 
-    scoped_ptr<base::Version> found_version(
-        new base::Version(base::UTF16ToASCII(find_data.GetName().value())));
+    scoped_ptr<Version> found_version(
+        new Version(base::UTF16ToASCII(find_data.GetName().value())));
     if (found_version->IsValid() &&
         found_version->CompareTo(*max_version.get()) > 0) {
       max_version.reset(found_version.release());
@@ -190,7 +190,7 @@ base::FilePath FindArchiveToPatch(const InstallationState& original_state,
     if (base::PathExists(patch_source))
       return patch_source;
   }
-  scoped_ptr<base::Version> version(
+  scoped_ptr<Version> version(
       installer::GetMaxVersionFromArchiveDir(installer_state.target_path()));
   if (version) {
     patch_source = installer_state.GetInstallerDirectory(*version)
@@ -263,7 +263,7 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
 bool GetExistingHigherInstaller(
     const InstallationState& original_state,
     bool system_install,
-    const base::Version& installer_version,
+    const Version& installer_version,
     base::FilePath* setup_exe) {
   DCHECK(setup_exe);
   bool trying_single_browser = false;

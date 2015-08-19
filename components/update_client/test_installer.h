@@ -76,7 +76,7 @@ class VersionedTestInstaller : public TestInstaller {
   ~VersionedTestInstaller() override;
 
   base::FilePath install_directory_;
-  base::Version current_version_;
+  Version current_version_;
 };
 
 }  // namespace update_client

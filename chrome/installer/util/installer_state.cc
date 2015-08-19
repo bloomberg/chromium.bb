@@ -159,7 +159,7 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
   // Parse --critical-update-version=W.X.Y.Z
   std::string critical_version_value(
       command_line.GetSwitchValueASCII(switches::kCriticalUpdateVersion));
-  critical_update_version_ = base::Version(critical_version_value);
+  critical_update_version_ = Version(critical_version_value);
 }
 
 void InstallerState::set_level(Level level) {
@@ -367,10 +367,10 @@ const Product* InstallerState::FindProduct(
   return NULL;
 }
 
-base::Version* InstallerState::GetCurrentVersion(
+Version* InstallerState::GetCurrentVersion(
     const InstallationState& machine_state) const {
   DCHECK(!products_.empty());
-  scoped_ptr<base::Version> current_version;
+  scoped_ptr<Version> current_version;
   // If we're doing a multi-install, the current version may be either an
   // existing multi or an existing single product that is being migrated
   // in place (i.e., Chrome).  In the latter case, there is no existing
@@ -402,7 +402,7 @@ base::Version* InstallerState::GetCurrentVersion(
       machine_state.GetProductState(level_ == SYSTEM_LEVEL, prod_type);
 
   if (product_state != NULL) {
-    const base::Version* version = NULL;
+    const Version* version = NULL;
 
     // Be aware that there might be a pending "new_chrome.exe" already in the
     // installation path.  If so, we use old_version, which holds the version of
@@ -413,15 +413,15 @@ base::Version* InstallerState::GetCurrentVersion(
     if (version == NULL)
       version = &product_state->version();
 
-    current_version.reset(new base::Version(*version));
+    current_version.reset(new Version(*version));
   }
 
   return current_version.release();
 }
 
-base::Version InstallerState::DetermineCriticalVersion(
-    const base::Version* current_version,
-    const base::Version& new_version) const {
+Version InstallerState::DetermineCriticalVersion(
+    const Version* current_version,
+    const Version& new_version) const {
   DCHECK(current_version == NULL || current_version->IsValid());
   DCHECK(new_version.IsValid());
   if (critical_update_version_.IsValid() &&
@@ -430,7 +430,7 @@ base::Version InstallerState::DetermineCriticalVersion(
       new_version.CompareTo(critical_update_version_) >= 0) {
     return critical_update_version_;
   }
-  return base::Version();
+  return Version();
 }
 
 bool InstallerState::IsChromeFrameRunning(
@@ -447,7 +447,7 @@ bool InstallerState::AreBinariesInUse(
 }
 
 base::FilePath InstallerState::GetInstallerDirectory(
-    const base::Version& version) const {
+    const Version& version) const {
   return target_path().AppendASCII(version.GetString()).Append(kInstallerDir);
 }
 
@@ -494,7 +494,7 @@ bool InstallerState::AnyExistsAndIsInUse(
   // Check only for the current version (i.e., the version we are upgrading
   // _from_). Later versions from pending in-use updates need not be checked
   // since the current version is guaranteed to be in use if any such are.
-  scoped_ptr<base::Version> current_version(GetCurrentVersion(machine_state));
+  scoped_ptr<Version> current_version(GetCurrentVersion(machine_state));
   if (!current_version)
     return false;
   base::FilePath directory(
@@ -531,10 +531,10 @@ void InstallerState::GetExistingExeVersions(
 }
 
 void InstallerState::RemoveOldVersionDirectories(
-    const base::Version& new_version,
-    base::Version* existing_version,
+    const Version& new_version,
+    Version* existing_version,
     const base::FilePath& temp_path) const {
-  base::Version version;
+  Version version;
   scoped_ptr<WorkItem> item;
 
   std::set<std::string> existing_version_strings;
@@ -552,7 +552,7 @@ void InstallerState::RemoveOldVersionDirectories(
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());
-    version = base::Version(base::UTF16ToASCII(dir_name.value()));
+    version = Version(base::UTF16ToASCII(dir_name.value()));
     // Delete the version folder if it is less than the new version and not
     // equal to the old version (if we have an old version).
     if (version.IsValid() &&

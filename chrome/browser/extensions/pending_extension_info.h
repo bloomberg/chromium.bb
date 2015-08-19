@@ -30,7 +30,7 @@ class PendingExtensionInfo {
   PendingExtensionInfo(const std::string& id,
                        const std::string& install_parameter,
                        const GURL& update_url,
-                       const base::Version& version,
+                       const Version& version,
                        ShouldAllowInstallPredicate should_allow_install,
                        bool is_from_sync,
                        Manifest::Location install_source,
@@ -48,7 +48,7 @@ class PendingExtensionInfo {
 
   const std::string& id() const { return id_; }
   const GURL& update_url() const { return update_url_; }
-  const base::Version& version() const { return version_; }
+  const Version& version() const { return version_; }
   const std::string& install_parameter() const { return install_parameter_; }
 
   // ShouldAllowInstall() returns the result of running constructor argument
@@ -77,7 +77,7 @@ class PendingExtensionInfo {
   std::string id_;
 
   GURL update_url_;
-  base::Version version_;
+  Version version_;
   std::string install_parameter_;
 
   // When the extension is about to be installed, this function is

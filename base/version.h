@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/basictypes.h"
 
 namespace base {
 
@@ -64,5 +65,9 @@ class BASE_EXPORT Version {
 };
 
 }  // namespace base
+
+// TODO(xhwang) remove this when all users are updated to explicitly use the
+// namespace
+using base::Version;
 
 #endif  // BASE_VERSION_H_

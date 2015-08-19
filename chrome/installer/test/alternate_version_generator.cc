@@ -108,7 +108,7 @@ class ChromeVersion {
                          static_cast<ULONGLONG>(low));
   }
   static ChromeVersion FromString(const std::string& version_string) {
-    base::Version version(version_string);
+    Version version(version_string);
     DCHECK(version.IsValid());
     const std::vector<uint32_t>& c(version.components());
     return ChromeVersion(static_cast<ULONGLONG>(c[0]) << 48 |
@@ -669,7 +669,7 @@ bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,
     return false;
   }
 
-  base::Version new_version(base::UTF16ToASCII(ctx.new_version_str));
+  Version new_version(base::UTF16ToASCII(ctx.new_version_str));
   GenerateSpecificPEFileVersion(original_file, target_file, new_version);
 
   return true;
@@ -677,7 +677,7 @@ bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,
 
 bool GenerateSpecificPEFileVersion(const base::FilePath& original_file,
                                    const base::FilePath& target_file,
-                                   const base::Version& version) {
+                                   const Version& version) {
   // First copy original_file to target_file.
   if (!base::CopyFile(original_file, target_file)) {
     LOG(DFATAL) << "Failed copying \"" << original_file.value()

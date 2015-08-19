@@ -167,7 +167,7 @@ void FakeProductState::SetChannel(const wchar_t* base, int channel_modifiers) {
 }
 
 void FakeProductState::SetVersion(const char* version) {
-  version_.reset(version == NULL ? NULL : new base::Version(version));
+  version_.reset(version == NULL ? NULL : new Version(version));
 }
 
 // Sets the uninstall command for this object.

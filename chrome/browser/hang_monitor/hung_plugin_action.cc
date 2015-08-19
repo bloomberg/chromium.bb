@@ -40,7 +40,7 @@ enum GTalkPluginLogVersion {
 // 10 * major + minor - kGTalkPluginLogMinVersion.
 GTalkPluginLogVersion GetGTalkPluginVersion(const base::string16& version) {
   int gtalk_plugin_version = GTALK_PLUGIN_VERSION_MIN;
-  base::Version plugin_version;
+  Version plugin_version;
   content::WebPluginInfo::CreateVersionFromString(version, &plugin_version);
   if (plugin_version.IsValid() && plugin_version.components().size() >= 2) {
     gtalk_plugin_version = 10 * plugin_version.components()[0] +

@@ -65,7 +65,7 @@ bool ProductState::Initialize(bool system_install,
     base::string16 version_str;
     if (key.ReadValue(google_update::kRegVersionField,
                       &version_str) == ERROR_SUCCESS) {
-      version_.reset(new base::Version(base::UTF16ToASCII(version_str)));
+      version_.reset(new Version(base::UTF16ToASCII(version_str)));
       if (!version_->IsValid())
         version_.reset();
     }
@@ -75,7 +75,7 @@ bool ProductState::Initialize(bool system_install,
     // only be accessible via InstallationState::GetNonVersionedProductState.
     if (key.ReadValue(google_update::kRegOldVersionField,
                       &version_str) == ERROR_SUCCESS) {
-      old_version_.reset(new base::Version(base::UTF16ToASCII(version_str)));
+      old_version_.reset(new Version(base::UTF16ToASCII(version_str)));
       if (!old_version_->IsValid())
         old_version_.reset();
     }
@@ -151,17 +151,16 @@ base::FilePath ProductState::GetSetupPath() const {
   return uninstall_command_.GetProgram();
 }
 
-const base::Version& ProductState::version() const {
+const Version& ProductState::version() const {
   DCHECK(version_.get() != NULL);
   return *version_;
 }
 
 ProductState& ProductState::CopyFrom(const ProductState& other) {
   channel_.set_value(other.channel_.value());
-  version_.reset(other.version_.get() ? new base::Version(*other.version_)
-                                      : NULL);
+  version_.reset(other.version_.get() ? new Version(*other.version_) : NULL);
   old_version_.reset(
-      other.old_version_.get() ? new base::Version(*other.old_version_) : NULL);
+      other.old_version_.get() ? new Version(*other.old_version_) : NULL);
   brand_ = other.brand_;
   rename_cmd_ = other.rename_cmd_;
   uninstall_command_ = other.uninstall_command_;
