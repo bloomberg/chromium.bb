@@ -25,7 +25,7 @@ std::string SecurityStyleToProtocolSecurityState(
     case SECURITY_STYLE_UNKNOWN:
       return kSecurityStateUnknown;
     case SECURITY_STYLE_UNAUTHENTICATED:
-      return kSecurityStateHttp;
+      return kSecurityStateNeutral;
     case SECURITY_STYLE_AUTHENTICATION_BROKEN:
       return kSecurityStateInsecure;
     case SECURITY_STYLE_WARNING:
