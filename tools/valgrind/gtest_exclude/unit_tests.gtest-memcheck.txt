@@ -28,3 +28,6 @@ NetErrorTabHelperTest.*
 
 # Test fail: https://crbug.com/515031
 ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsNotRecordedAfterPostBrowserStart
+
+# Test fail: https://crbug.com/349778
+TranslateManagerRenderViewHostTest.FetchLanguagesFromTranslateServer
