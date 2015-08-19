@@ -7,6 +7,7 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/WebServiceWorkerCache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebString.h"
@@ -21,10 +22,51 @@ class WebServiceWorkerCache;
 // after operations complete.
 class WebServiceWorkerCacheStorage {
 public:
-    typedef WebCallbacks<void, WebServiceWorkerCacheError*> CacheStorageCallbacks;
-    typedef WebCallbacks<WebServiceWorkerCache*, WebServiceWorkerCacheError*> CacheStorageWithCacheCallbacks;
-    typedef WebCallbacks<WebVector<WebString>*, WebServiceWorkerCacheError*> CacheStorageKeysCallbacks;
-    typedef WebCallbacks<WebServiceWorkerResponse*, WebServiceWorkerCacheError*> CacheStorageMatchCallbacks;
+    class CacheStorageCallbacks : public WebCallbacks<void, WebServiceWorkerCacheError> {
+    public:
+        void onError(WebServiceWorkerCacheError* e)
+        {
+            onError(*e);
+            delete e;
+        }
+        void onError(WebServiceWorkerCacheError) override {}
+    };
+    class CacheStorageWithCacheCallbacks : public WebCallbacks<WebPassOwnPtr<WebServiceWorkerCache>, WebServiceWorkerCacheError> {
+    public:
+        void onSuccess(WebServiceWorkerCache* r)
+        {
+            onSuccess(adoptWebPtr(r));
+        }
+        void onError(WebServiceWorkerCacheError* e)
+        {
+            onError(*e);
+            delete e;
+        }
+        void onSuccess(WebPassOwnPtr<WebServiceWorkerCache>) override {}
+        void onError(WebServiceWorkerCacheError) override {}
+    };
+    class CacheStorageKeysCallbacks : public WebCallbacks<const WebVector<WebString>&, WebServiceWorkerCacheError> {
+    public:
+        void onSuccess(WebVector<WebString>* r) { onSuccess(*r); }
+        void onError(WebServiceWorkerCacheError* e)
+        {
+            onError(*e);
+            delete e;
+        }
+        void onSuccess(const WebVector<WebString>&) override {}
+        void onError(WebServiceWorkerCacheError) override {}
+    };
+    class CacheStorageMatchCallbacks : public WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError> {
+    public:
+        void onSuccess(WebServiceWorkerResponse* r) { onSuccess(*r); }
+        void onError(WebServiceWorkerCacheError* e)
+        {
+            onError(*e);
+            delete e;
+        }
+        void onSuccess(const WebServiceWorkerResponse&) override {}
+        void onError(WebServiceWorkerCacheError) override {}
+    };
 
     virtual ~WebServiceWorkerCacheStorage() { }
 

@@ -112,7 +112,7 @@ public:
         checkQueryParamsIfProvided(queryParams);
 
         OwnPtr<CacheMatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
+        return callbacks->onError(m_error);
     }
 
     void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
@@ -122,7 +122,7 @@ public:
         checkQueryParamsIfProvided(queryParams);
 
         OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
+        return callbacks->onError(m_error);
     }
 
     void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
@@ -134,7 +134,7 @@ public:
         }
 
         OwnPtr<CacheWithRequestsCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onError(new WebServiceWorkerCacheError(m_error));
+        return callbacks->onError(m_error);
     }
 
     void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override
@@ -474,7 +474,7 @@ public:
     void dispatchMatch(CacheMatchCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         OwnPtr<CacheMatchCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onSuccess(&m_response);
+        return callbacks->onSuccess(m_response);
     }
 
 private:
@@ -510,7 +510,7 @@ public:
     void dispatchKeys(CacheWithRequestsCallbacks* callbacks, const WebServiceWorkerRequest* webRequest, const QueryParams& queryParams) override
     {
         OwnPtr<CacheWithRequestsCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onSuccess(&m_requests);
+        return callbacks->onSuccess(m_requests);
     }
 
 private:
@@ -555,7 +555,7 @@ public:
     void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks, const WebServiceWorkerRequest& webRequest, const QueryParams& queryParams) override
     {
         OwnPtr<CacheWithResponsesCallbacks> ownedCallbacks(adoptPtr(callbacks));
-        return callbacks->onSuccess(&m_responses);
+        return callbacks->onSuccess(m_responses);
     }
 
     void dispatchBatch(CacheBatchCallbacks* callbacks, const WebVector<BatchOperation>& batchOperations) override

@@ -34,24 +34,22 @@ public:
     explicit CacheMatchCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
-    void onSuccess(WebServiceWorkerResponse* webResponse) override
+    void onSuccess(const WebServiceWorkerResponse& webResponse) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), *webResponse));
+        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), webResponse));
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (*reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->reject(CacheStorageError::createException(*reason));
+            m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
@@ -66,24 +64,22 @@ public:
     explicit CacheWithResponsesCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
-    void onSuccess(WebVector<WebServiceWorkerResponse>* webResponses) override
+    void onSuccess(const WebVector<WebServiceWorkerResponse>& webResponses) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         HeapVector<Member<Response>> responses;
-        for (size_t i = 0; i < webResponses->size(); ++i)
-            responses.append(Response::create(m_resolver->scriptState()->executionContext(), (*webResponses)[i]));
+        for (size_t i = 0; i < webResponses.size(); ++i)
+            responses.append(Response::create(m_resolver->scriptState()->executionContext(), webResponses[i]));
         m_resolver->resolve(responses);
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(CacheStorageError::createException(*reason));
+        m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
@@ -128,24 +124,22 @@ public:
     explicit CacheWithRequestsCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
-    void onSuccess(WebVector<WebServiceWorkerRequest>* webRequests) override
+    void onSuccess(const WebVector<WebServiceWorkerRequest>& webRequests) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         HeapVector<Member<Request>> requests;
-        for (size_t i = 0; i < webRequests->size(); ++i)
-            requests.append(Request::create(m_resolver->scriptState()->executionContext(), (*webRequests)[i]));
+        for (size_t i = 0; i < webRequests.size(); ++i)
+            requests.append(Request::create(m_resolver->scriptState()->executionContext(), webRequests[i]));
         m_resolver->resolve(requests);
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(CacheStorageError::createException(*reason));
+        m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 

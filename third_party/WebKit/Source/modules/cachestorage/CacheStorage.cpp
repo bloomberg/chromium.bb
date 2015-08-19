@@ -57,16 +57,14 @@ public:
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (*reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->reject(CacheStorageError::createException(*reason));
+            m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
@@ -82,33 +80,24 @@ public:
         : m_cacheName(cacheName), m_cacheStorage(cacheStorage), m_resolver(resolver) { }
     ~WithCacheCallbacks() override { }
 
-    // Ownership of |rawWebCache| must be passed.
-    void onSuccess(WebServiceWorkerCache* rawWebCache) override
+    void onSuccess(WebPassOwnPtr<WebServiceWorkerCache> webCache) override
     {
-        OwnPtr<WebServiceWorkerCache> webCache = adoptPtr(rawWebCache);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        // FIXME: Remove this once content's WebServiceWorkerCache implementation has landed.
-        if (!webCache) {
-            m_resolver->reject("not implemented");
-            return;
-        }
         Cache* cache = Cache::create(m_cacheStorage->m_scopedFetcher, webCache.release());
         m_cacheStorage->m_nameToCacheMap.set(m_cacheName, cache);
         m_resolver->resolve(cache);
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (*reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->reject(CacheStorageError::createException(*reason));
+            m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
@@ -125,24 +114,22 @@ public:
     explicit MatchCallbacks(ScriptPromiseResolver* resolver)
         : m_resolver(resolver) { }
 
-    void onSuccess(WebServiceWorkerResponse* webResponse) override
+    void onSuccess(const WebServiceWorkerResponse& webResponse) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), *webResponse));
+        m_resolver->resolve(Response::create(m_resolver->scriptState()->executionContext(), webResponse));
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (*reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve();
         else
-            m_resolver->reject(CacheStorageError::createException(*reason));
+            m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
@@ -168,16 +155,14 @@ public:
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        if (*reason == WebServiceWorkerCacheErrorNotFound)
+        if (reason == WebServiceWorkerCacheErrorNotFound)
             m_resolver->resolve(false);
         else
-            m_resolver->reject(CacheStorageError::createException(*reason));
+            m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
@@ -195,24 +180,22 @@ public:
         : m_resolver(resolver) { }
     ~KeysCallbacks() override { }
 
-    void onSuccess(WebVector<WebString>* keys) override
+    void onSuccess(const WebVector<WebString>& keys) override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
         Vector<String> wtfKeys;
-        for (size_t i = 0; i < keys->size(); ++i)
-            wtfKeys.append((*keys)[i]);
+        for (size_t i = 0; i < keys.size(); ++i)
+            wtfKeys.append(keys[i]);
         m_resolver->resolve(wtfKeys);
         m_resolver.clear();
     }
 
-    // Ownership of |rawReason| must be passed.
-    void onError(WebServiceWorkerCacheError* rawReason) override
+    void onError(WebServiceWorkerCacheError reason) override
     {
-        OwnPtr<WebServiceWorkerCacheError> reason = adoptPtr(rawReason);
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(CacheStorageError::createException(*reason));
+        m_resolver->reject(CacheStorageError::createException(reason));
         m_resolver.clear();
     }
 
