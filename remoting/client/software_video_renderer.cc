@@ -353,7 +353,7 @@ void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
   if (!packet->has_data() || packet->data().size() == 0) {
-    decode_task_runner_->PostTask(FROM_HERE, done);
+    done.Run();
     return;
   }
 
@@ -406,7 +406,7 @@ void SoftwareVideoRenderer::OnPacketDone(base::Time decode_start,
   base::TimeDelta decode_time = base::Time::Now() - decode_start;
   stats_.RecordDecodeTime(decode_time.InMilliseconds());
 
-  decode_task_runner_->PostTask(FROM_HERE, done);
+  done.Run();
 }
 
 }  // namespace remoting
