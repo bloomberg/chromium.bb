@@ -65,8 +65,13 @@ component("libgtk2ui") {
 
   configs += [
     "//build/config/linux:gconf",
-    "//printing:cups",
   ]
+
+  if (use_cups) {
+    configs += [
+      "//printing:cups",
+    ]
+  }
 
   # GTK2 pulls pangoft2 as dependency, and pangoft2 depends on harfbuzz.
   # To avoid missing indirectly referenced harfbuzz symbols from pango,
