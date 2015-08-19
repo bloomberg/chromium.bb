@@ -369,7 +369,9 @@ static bool isGeneratedImageValue(CSSParserValue* val)
 bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless)
 {
     int id = value->id;
-    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent) {
+    if (id == CSSValueIntrinsic || id == CSSValueMinIntrinsic
+        || id == CSSValueWebkitMinContent || id == CSSValueWebkitMaxContent || id == CSSValueWebkitFillAvailable || id == CSSValueWebkitFitContent
+        || id == CSSValueMinContent || id == CSSValueMaxContent || id == CSSValueFitContent) {
         if (m_context.useCounter()) {
             switch (value->id) {
             case CSSValueIntrinsic:
@@ -391,7 +393,7 @@ bool CSSPropertyParser::validWidthOrHeight(CSSParserValue* value, Units unitless
                 m_context.useCounter()->count(UseCounter::CSSValuePrefixedFitContent);
                 break;
             default:
-                ASSERT_NOT_REACHED();
+                break;
             }
         }
         return true;

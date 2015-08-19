@@ -288,7 +288,7 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
         break;
     case FitContent:
         init(UnitType::ValueID);
-        m_value.valueID = CSSValueWebkitFitContent;
+        m_value.valueID = CSSValueFitContent;
         break;
     case ExtendToZoom:
         init(UnitType::ValueID);

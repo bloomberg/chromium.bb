@@ -561,6 +561,7 @@ Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSS
     case CSSValueWebkitFillAvailable:
         return Length(FillAvailable);
     case CSSValueWebkitFitContent:
+    case CSSValueFitContent:
         return Length(FitContent);
     case CSSValueAuto:
         return Length(Auto);

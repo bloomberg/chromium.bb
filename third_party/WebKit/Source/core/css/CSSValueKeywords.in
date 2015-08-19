@@ -542,9 +542,9 @@ min-intrinsic
 -webkit-max-content
 -webkit-fill-available
 -webkit-fit-content
-// Unprefixed for CSS Grid Layout.
 min-content
 max-content
+fit-content
 
 //
 // text-overflow
