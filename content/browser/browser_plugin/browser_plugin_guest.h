@@ -270,8 +270,6 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void InitInternal(const BrowserPluginHostMsg_Attach_Params& params,
                     WebContentsImpl* owner_web_contents);
 
-  bool InAutoSizeBounds(const gfx::Size& size) const;
-
   void OnSatisfySequence(int instance_id, const cc::SurfaceSequence& sequence);
   void OnRequireSequence(int instance_id,
                          const cc::SurfaceId& id,
