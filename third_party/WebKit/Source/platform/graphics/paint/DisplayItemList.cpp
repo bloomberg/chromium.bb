@@ -147,7 +147,6 @@ size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, con
 
     const Vector<size_t>& indices = it->value;
     for (size_t index : indices) {
-        // TODO(pdr): elementAt is not cheap so this should be refactored (See crbug.com/505965).
         const DisplayItem& existingItem = list[index];
         ASSERT(!existingItem.isValid() || existingItem.client() == id.client);
         if (existingItem.isValid() && id.matches(existingItem))
