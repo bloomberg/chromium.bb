@@ -50425,6 +50425,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.AverageExcessBufferDelayMs" units="milliseconds">
+  <owner>hlundin@chromium.org</owner>
+  <summary>
+    Measures the average waiting time in the buffer for each packet. The waiting
+    time is the time elapsed from the packet arrives until it is decoded. The
+    metric is calculated as the average over one minute, and is logged at the
+    end of each such interval. A well tuned target buffer level should lead to a
+    low value.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.DelayedPacketOutageEventMs" units="milliseconds">
+  <owner>hlundin@chromium.org</owner>
+  <summary>
+    Measures the duration of each packet loss concealment (a.k.a. expand) event
+    that is not followed by a merge operation. The outage is measured in
+    milliseconds, with a range between 0 and 2000 ms. This gives an indication
+    of how well the jitter buffer's level adaptation is working. If the chosen
+    target level is too low, this value will increase.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.DelayedPacketOutageEventsPerMinute"
+    units="events/minute">
+  <owner>hlundin@chromium.org</owner>
+  <summary>
+    Counts the number of delayed packet outage events per minute. The range is
+    between 0 and 100 (corresponds to more 1.6 events per second). See
+    WebRTC.Audio.DelayedPacketOutageEventMs for the definition of a delayed
+    packet outage event, and the interpretation of such events.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Audio.NumOfAecSystemDelayJumps" units="jumps">
   <owner>bjornv@chromium.org</owner>
   <summary>
