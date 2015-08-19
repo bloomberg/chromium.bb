@@ -3760,6 +3760,12 @@ _FUNCTION_INFO = {
     'extension': True,
     'chromium': True,
   },
+  'CompressedCopySubTextureCHROMIUM': {
+    'decoder_func': 'DoCompressedCopySubTextureCHROMIUM',
+    'unit_test': False,
+    'extension': True,
+    'chromium': True,
+  },
   'TexStorage2DEXT': {
     'unit_test': False,
     'extension': True,

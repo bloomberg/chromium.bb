@@ -2893,6 +2893,17 @@ TEST_F(GLES2ImplementationTest, CompressedCopyTextureCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, CompressedCopySubTextureCHROMIUM) {
+  struct Cmds {
+    cmds::CompressedCopySubTextureCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8, 9);
+
+  gl_->CompressedCopySubTextureCHROMIUM(1, 2, 3, 4, 5, 6, 7, 8, 9);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, DrawArraysInstancedANGLE) {
   struct Cmds {
     cmds::DrawArraysInstancedANGLE cmd;

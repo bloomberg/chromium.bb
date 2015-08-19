@@ -12523,6 +12523,93 @@ static_assert(offsetof(CompressedCopyTextureCHROMIUM, source_id) == 8,
 static_assert(offsetof(CompressedCopyTextureCHROMIUM, dest_id) == 12,
               "offset of CompressedCopyTextureCHROMIUM dest_id should be 12");
 
+struct CompressedCopySubTextureCHROMIUM {
+  typedef CompressedCopySubTextureCHROMIUM ValueType;
+  static const CommandId kCmdId = kCompressedCopySubTextureCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLenum _source_id,
+            GLenum _dest_id,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    SetHeader();
+    target = _target;
+    source_id = _source_id;
+    dest_id = _dest_id;
+    xoffset = _xoffset;
+    yoffset = _yoffset;
+    x = _x;
+    y = _y;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLenum _source_id,
+            GLenum _dest_id,
+            GLint _xoffset,
+            GLint _yoffset,
+            GLint _x,
+            GLint _y,
+            GLsizei _width,
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id, _xoffset,
+                                       _yoffset, _x, _y, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t source_id;
+  uint32_t dest_id;
+  int32_t xoffset;
+  int32_t yoffset;
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+};
+
+static_assert(sizeof(CompressedCopySubTextureCHROMIUM) == 40,
+              "size of CompressedCopySubTextureCHROMIUM should be 40");
+static_assert(offsetof(CompressedCopySubTextureCHROMIUM, header) == 0,
+              "offset of CompressedCopySubTextureCHROMIUM header should be 0");
+static_assert(offsetof(CompressedCopySubTextureCHROMIUM, target) == 4,
+              "offset of CompressedCopySubTextureCHROMIUM target should be 4");
+static_assert(
+    offsetof(CompressedCopySubTextureCHROMIUM, source_id) == 8,
+    "offset of CompressedCopySubTextureCHROMIUM source_id should be 8");
+static_assert(
+    offsetof(CompressedCopySubTextureCHROMIUM, dest_id) == 12,
+    "offset of CompressedCopySubTextureCHROMIUM dest_id should be 12");
+static_assert(
+    offsetof(CompressedCopySubTextureCHROMIUM, xoffset) == 16,
+    "offset of CompressedCopySubTextureCHROMIUM xoffset should be 16");
+static_assert(
+    offsetof(CompressedCopySubTextureCHROMIUM, yoffset) == 20,
+    "offset of CompressedCopySubTextureCHROMIUM yoffset should be 20");
+static_assert(offsetof(CompressedCopySubTextureCHROMIUM, x) == 24,
+              "offset of CompressedCopySubTextureCHROMIUM x should be 24");
+static_assert(offsetof(CompressedCopySubTextureCHROMIUM, y) == 28,
+              "offset of CompressedCopySubTextureCHROMIUM y should be 28");
+static_assert(offsetof(CompressedCopySubTextureCHROMIUM, width) == 32,
+              "offset of CompressedCopySubTextureCHROMIUM width should be 32");
+static_assert(offsetof(CompressedCopySubTextureCHROMIUM, height) == 36,
+              "offset of CompressedCopySubTextureCHROMIUM height should be 36");
+
 struct DrawArraysInstancedANGLE {
   typedef DrawArraysInstancedANGLE ValueType;
   static const CommandId kCmdId = kDrawArraysInstancedANGLE;

@@ -136,8 +136,8 @@ New Procedures and Functions
 
     INVALID_VALUE is generated if <xoffset> < 0 , or <yoffset> < 0.
 
-    INVALID_VALUE is generated if (<xoffset> + source_width) > dest_width,
-    or (<yoffset> + source_height) > dest_height.
+    INVALID_VALUE is generated if (<xoffset> + <width>) > dest_width,
+    or (<yoffset> + <height>) > dest_height.
 
 Dependencies on ARB_texture_rg
 

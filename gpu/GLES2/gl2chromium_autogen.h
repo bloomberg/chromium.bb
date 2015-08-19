@@ -300,6 +300,8 @@
 #define glCopySubTextureCHROMIUM GLES2_GET_FUN(CopySubTextureCHROMIUM)
 #define glCompressedCopyTextureCHROMIUM \
   GLES2_GET_FUN(CompressedCopyTextureCHROMIUM)
+#define glCompressedCopySubTextureCHROMIUM \
+  GLES2_GET_FUN(CompressedCopySubTextureCHROMIUM)
 #define glDrawArraysInstancedANGLE GLES2_GET_FUN(DrawArraysInstancedANGLE)
 #define glDrawElementsInstancedANGLE GLES2_GET_FUN(DrawElementsInstancedANGLE)
 #define glVertexAttribDivisorANGLE GLES2_GET_FUN(VertexAttribDivisorANGLE)
