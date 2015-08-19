@@ -200,9 +200,6 @@ XFAIL_TESTS =					\
 	en_gb_g1_italics			\
 	squash_space
 
-# The hash_collision currently fails. The first translation works but subsequent ones fail. 
-XFAIL_TESTS += hash_collision
-
 dist_yaml_TESTS =				\
 	ar-ar-g1_harness.yaml			\
 	ar-fa_harness.yaml			\

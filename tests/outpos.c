@@ -10,6 +10,7 @@ without any warranty. */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "liblouis.h"
 #include "brl_checks.h"
 
 int
@@ -35,6 +36,8 @@ main(int argc, char **argv)
   const char* str4 = "1 2 3";
   const int expected_outpos4[] = {1, 2, 4, 5, 7};
   result |= check_outpos(table, str4, expected_outpos4);
+
+  lou_free();
 
   return result;
 }

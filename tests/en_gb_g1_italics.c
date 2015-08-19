@@ -11,6 +11,7 @@ without any warranty. */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "liblouis.h"
 #include "brl_checks.h"
 
 #undef TRANSLATION_TABLE
@@ -48,5 +49,7 @@ main(int argc, char **argv)
   expected = ".\"t .& ._s";
 
   result |= check_translation(TRANSLATION_TABLE, str, convert_typeform(typeform), expected);
+
+  lou_free();
   return result;
 }

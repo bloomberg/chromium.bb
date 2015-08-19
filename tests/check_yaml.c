@@ -472,6 +472,8 @@ main(int argc, char *argv[]) {
 
   yaml_parser_delete(&parser);
 
+  lou_free();
+
   assert(!fclose(file));
 
   printf("%s (%d tests, %d failure%s)\n", (errors ? "FAILURE" : "SUCCESS"),

@@ -10,6 +10,7 @@ without any warranty. */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "liblouis.h"
 #include "brl_checks.h"
 
 int
@@ -31,6 +32,8 @@ main(int argc, char **argv)
   expected = "_ER SAGTE ES __FUNKTION0RE NI4T', IMMER W0 ERWARTET.";
 
   result |= check_translation("de-ch-g1.ctb", str, typeform, expected);
+
+  lou_free();
 
   return result;
 }

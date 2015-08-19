@@ -288,7 +288,6 @@ int check_with_mode(
   free(outbuf);
   free(expectedbuf);
   free(typeformbuf);
-  lou_free();
   return rv;
 }
 
@@ -326,7 +325,6 @@ check_inpos(const char *tableList, const char *str, const int *expected_poslist)
   free(inbuf);
   free(outbuf);
   free(inpos);
-  lou_free();
   return rv;
 
 }
@@ -374,7 +372,6 @@ check_outpos(const char *tableList, const char *str, const int *expected_poslist
   free(outbuf);
   free(inpos);
   free(outpos);
-  lou_free();
   return rv;
 
 }
@@ -416,7 +413,6 @@ recieved=%d ('%c')\n", str, i, str[i], expected_pos[i], cursor_pos, (char) outbu
   free(outbuf);
   free(inpos);
   free(outpos);
-  lou_free();
 
   return rv;
 }

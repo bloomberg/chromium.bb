@@ -683,5 +683,8 @@ main (int argc, char **argv)
         free(outbuf);
         free(typeform);
     }
+
+    lou_free();
+
     return 0;
 }

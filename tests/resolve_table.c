@@ -128,7 +128,9 @@ main(int argc, char **argv)
   // Full path, include table in subdirectory of LOUIS_TABLEPATH
   setenv ("LOUIS_TABLEPATH", "tables/resolve_table/dir_1", 1);
   ASSERT (lou_getTable ("tables/resolve_table/table_6"));
-  
+
+  lou_free();
+
   return result;
   
 }
