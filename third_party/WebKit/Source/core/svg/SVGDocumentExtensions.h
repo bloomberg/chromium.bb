@@ -21,6 +21,7 @@
 #ifndef SVGDocumentExtensions_h
 #define SVGDocumentExtensions_h
 
+#include "core/layout/svg/SVGResourcesCache.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -33,7 +34,6 @@ namespace blink {
 class Document;
 class LayoutSVGResourceContainer;
 class SubtreeLayoutScope;
-class SVGResourcesCache;
 class SVGSVGElement;
 class Element;
 
@@ -60,7 +60,7 @@ public:
     void reportWarning(const String&);
     void reportError(const String&);
 
-    SVGResourcesCache& resourcesCache() const { return *m_resourcesCache; }
+    SVGResourcesCache& resourcesCache() { return m_resourcesCache; }
 
     void addSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
     void removeSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
@@ -83,7 +83,7 @@ private:
     HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
     WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResources; // Resources that are pending.
     WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<SVGPendingElements>> m_pendingResourcesForRemoval; // Resources that are pending and scheduled for removal.
-    OwnPtr<SVGResourcesCache> m_resourcesCache;
+    SVGResourcesCache m_resourcesCache;
     WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement>> m_relativeLengthSVGRoots; // Root SVG elements with relative length descendants.
     FloatPoint m_translate;
 #if ENABLE(ASSERT)

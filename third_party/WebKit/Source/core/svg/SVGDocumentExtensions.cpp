@@ -34,7 +34,6 @@ namespace blink {
 
 SVGDocumentExtensions::SVGDocumentExtensions(Document* document)
     : m_document(document)
-    , m_resourcesCache(adoptPtr(new SVGResourcesCache))
 #if ENABLE(ASSERT)
     , m_inRelativeLengthSVGRootsInvalidation(false)
 #endif
