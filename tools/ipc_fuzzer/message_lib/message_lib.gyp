@@ -8,6 +8,7 @@
     'message_lib_deps': [
       '../../../base/base.gyp:base',
       '../../../chrome/chrome.gyp:common',
+      '../../../chrome/chrome.gyp:common_net',
       '../../../chrome/chrome.gyp:safe_browsing_proto',
       '../../../components/components.gyp:content_settings_content_common',
       '../../../components/components.gyp:pdf_common',
