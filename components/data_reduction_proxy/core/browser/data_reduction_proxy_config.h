@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
@@ -23,10 +24,6 @@
 #include "net/proxy/proxy_retry_info.h"
 
 class GURL;
-
-namespace base {
-class TimeDelta;
-}
 
 namespace net {
 class HostPortPair;
@@ -269,6 +266,15 @@ class DataReductionProxyConfig
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiParams);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AutoLoFiParamsSlowConnectionsFlag);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiAccuracy);
+
+  // Values of the estimated network quality at the beginning of the most
+  // recent main frame request.
+  enum NetworkQualityAtLastMainFrameRequest {
+    NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_UNKNOWN,
+    NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_SLOW,
+    NETWORK_QUALITY_AT_LAST_MAIN_FRAME_REQUEST_NOT_SLOW
+  };
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
@@ -325,13 +331,17 @@ class DataReductionProxyConfig
   // Auto Lo-Fi field trial parameters OR if the expected round trip time is
   // higher than the one specified in the Auto Lo-Fi field trial parameters.
   // |network_quality_estimator| may be NULL.
-  // Virtualized for unit testing.
+  // Virtualized for unit testing. Should be called only on main frame loads.
   virtual bool IsNetworkQualityProhibitivelySlow(
       const net::NetworkQualityEstimator* network_quality_estimator);
 
   // Returns true only if Lo-Fi "q=low" header should be added to the Chrome
   // Proxy header based on the value of |lofi_status|.
   static bool ShouldUseLoFiHeaderForRequests(LoFiStatus lofi_status);
+
+  // Records Lo-Fi accuracy metric. Should be called only on main frame loads.
+  void RecordAutoLoFiAccuracyRate(
+      const net::NetworkQualityEstimator* network_quality_estimator) const;
 
   scoped_ptr<SecureProxyChecker> secure_proxy_checker_;
 
@@ -379,7 +389,9 @@ class DataReductionProxyConfig
   base::TimeTicks network_quality_last_updated_;
 
   // True iff the network was determined to be prohibitively slow when the
-  // network quality was last updated (most recent main frame request).
+  // network quality was last updated. This happens on main frame request, and
+  // not more than once in any window of duration shorter than
+  // |auto_lofi_hysteresis_|.
   bool network_prohibitively_slow_;
 
   // Set to the connection type reported by NetworkChangeNotifier when the
@@ -389,6 +401,15 @@ class DataReductionProxyConfig
   // Current Lo-Fi status.
   // The value changes only on main frame load.
   LoFiStatus lofi_status_;
+
+  // Timestamp when the most recent main frame request started.
+  base::TimeTicks last_main_frame_request_;
+
+  // Holds the estimated network quality at the beginning of the most recent
+  // main frame request. This should be used only for the purpose of recording
+  // Lo-Fi accuracy UMA.
+  NetworkQualityAtLastMainFrameRequest
+      network_quality_at_last_main_frame_request_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyConfig);
 };

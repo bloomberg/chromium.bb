@@ -4997,6 +4997,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.AutoLoFiAccuracy"
+    enum="DataReductionProxyAutoLoFiAccuracy">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Counts the accuracy of estimated network quality when using Lo-Fi. Counters
+    are incremented when a main frame URL request is handled by Data Reduction
+    Proxy and session was in Auto Lo-Fi enabled field trial.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"
     enum="DataReductionProxyAutoLoFiRequestHeaderState">
   <owner>tbansal@chromium.org</owner>
@@ -54344,6 +54355,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="Channel is negotiated."/>
 </enum>
 
+<enum name="DataReductionProxyAutoLoFiAccuracy" type="int">
+  <int value="0"
+      label="Estimated network quality as slow and was actually slow"/>
+  <int value="1"
+      label="Estimated network quality as slow and was actually not slow"/>
+  <int value="2"
+      label="Estimated network quality as not slow and was actually slow"/>
+  <int value="3"
+      label="Estimated network quality as not slow and was actually not slow"/>
+</enum>
+
 <enum name="DataReductionProxyAutoLoFiRequestHeaderState" type="int">
   <int value="0" label="Empty to Empty"/>
   <int value="1" label="Empty to Low"/>
@@ -73421,6 +73443,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="4G" label="On 4G network"/>
   <suffix name="None" label="With no detected network"/>
   <suffix name="Bluetooth" label="On Bluetooth network"/>
+  <affected-histogram name="DataReductionProxy.AutoLoFiAccuracy"/>
   <affected-histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"/>
   <affected-histogram name="DataReductionProxy.LoFi.ImplicitOptOutAction"/>
 </histogram_suffixes>

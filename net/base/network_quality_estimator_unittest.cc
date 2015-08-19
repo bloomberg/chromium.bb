@@ -4,6 +4,8 @@
 
 #include "net/base/network_quality_estimator.h"
 
+#include <stdint.h>
+
 #include <limits>
 #include <map>
 
@@ -637,10 +639,17 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
       NetworkQualityEstimator::Observation(100, now));
 
   base::TimeDelta rtt;
-  EXPECT_FALSE(estimator.GetMedianRTTSince(
+  EXPECT_FALSE(estimator.GetRecentMedianRTT(
       now + base::TimeDelta::FromSeconds(10), &rtt));
-  EXPECT_TRUE(estimator.GetMedianRTTSince(now, &rtt));
+  EXPECT_TRUE(estimator.GetRecentMedianRTT(now, &rtt));
   EXPECT_EQ(100, rtt.InMilliseconds());
+
+  int32_t downstream_throughput_kbps;
+  EXPECT_FALSE(estimator.GetRecentMedianDownlinkThroughputKbps(
+      now + base::TimeDelta::FromSeconds(10), &downstream_throughput_kbps));
+  EXPECT_TRUE(estimator.GetRecentMedianDownlinkThroughputKbps(
+      now, &downstream_throughput_kbps));
+  EXPECT_EQ(100, downstream_throughput_kbps);
 }
 
 }  // namespace net

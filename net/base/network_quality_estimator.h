@@ -47,12 +47,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   ~NetworkQualityEstimator() override;
 
   // Returns true if RTT is available and sets |rtt| to estimated RTT.
-  // Virtualized for testing.
+  // Virtualized for testing. |rtt| should not be null.
   virtual bool GetRTTEstimate(base::TimeDelta* rtt) const;
 
   // Returns true if downlink throughput is available and sets |kbps| to
   // estimated downlink throughput (in Kilobits per second).
-  // Virtualized for testing.
+  // Virtualized for testing. |kbps| should not be null.
   virtual bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
 
   // Notifies NetworkQualityEstimator that the response header of |request| has
@@ -65,8 +65,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Returns true if median RTT is available and sets |rtt| to the median of
   // RTT observations since |begin_timestamp|.
-  bool GetMedianRTTSince(const base::TimeTicks& begin_timestamp,
-                         base::TimeDelta* rtt) const;
+  // Virtualized for testing. |rtt| should not be null.
+  virtual bool GetRecentMedianRTT(const base::TimeTicks& begin_timestamp,
+                                  base::TimeDelta* rtt) const;
+
+  // Returns true if median downstream throughput is available and sets |kbps|
+  // to the median of downstream Kbps observations since |begin_timestamp|.
+  // Virtualized for testing. |kbps| should not be null.
+  virtual bool GetRecentMedianDownlinkThroughputKbps(
+      const base::TimeTicks& begin_timestamp,
+      int32_t* kbps) const;
 
  protected:
   // NetworkID is used to uniquely identify a network.

@@ -508,6 +508,8 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
 }
 
 bool NetworkQualityEstimator::GetRTTEstimate(base::TimeDelta* rtt) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(rtt);
   if (rtt_msec_observations_.Size() == 0) {
     *rtt = InvalidRTT();
     return false;
@@ -518,6 +520,8 @@ bool NetworkQualityEstimator::GetRTTEstimate(base::TimeDelta* rtt) const {
 
 bool NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(
     int32_t* kbps) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(kbps);
   if (downstream_throughput_kbps_observations_.Size() == 0) {
     *kbps = kInvalidThroughput;
     return false;
@@ -526,12 +530,22 @@ bool NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(
   return (*kbps != kInvalidThroughput);
 }
 
-bool NetworkQualityEstimator::GetMedianRTTSince(
+bool NetworkQualityEstimator::GetRecentMedianRTT(
     const base::TimeTicks& begin_timestamp,
     base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(rtt);
   *rtt = GetRTTEstimateInternal(begin_timestamp, 50);
   return (*rtt != InvalidRTT());
+}
+
+bool NetworkQualityEstimator::GetRecentMedianDownlinkThroughputKbps(
+    const base::TimeTicks& begin_timestamp,
+    int32_t* kbps) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(kbps);
+  *kbps = GetDownlinkThroughputKbpsEstimateInternal(begin_timestamp, 50);
+  return (*kbps != kInvalidThroughput);
 }
 
 NetworkQualityEstimator::Observation::Observation(int32_t value,

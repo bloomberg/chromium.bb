@@ -4,12 +4,15 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/safe_sprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
@@ -989,7 +992,8 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
       : NetworkQualityEstimator(scoped_ptr<net::ExternalEstimateProvider>(),
                                 variation_params),
         rtt_estimate_(base::TimeDelta()),
-        downstream_throughput_kbps_estimate_(INT32_MAX) {}
+        downstream_throughput_kbps_estimate_(INT32_MAX),
+        rtt_since_(base::TimeDelta()) {}
 
   ~TestNetworkQualityEstimator() override {}
 
@@ -1007,10 +1011,31 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
 
   void SetRTT(base::TimeDelta rtt) { rtt_estimate_ = rtt; }
 
+  bool GetRecentMedianRTT(const base::TimeTicks& begin_timestamp,
+                          base::TimeDelta* rtt) const override {
+    DCHECK(rtt);
+    *rtt = rtt_since_;
+    return true;
+  }
+
+  bool GetRecentMedianDownlinkThroughputKbps(
+      const base::TimeTicks& begin_timestamp,
+      int32_t* kbps) const override {
+    DCHECK(kbps);
+    *kbps = INT32_MAX;
+    return true;
+  }
+
+  void SetMedianRTTSince(const base::TimeDelta& rtt_since) {
+    rtt_since_ = rtt_since;
+  }
+
  private:
   // Estimate of the quality of the network.
   base::TimeDelta rtt_estimate_;
   int32_t downstream_throughput_kbps_estimate_;
+
+  base::TimeDelta rtt_since_;
 };
 
 TEST_F(DataReductionProxyConfigTest, AutoLoFiParams) {
@@ -1172,6 +1197,86 @@ TEST_F(DataReductionProxyConfigTest, AutoLoFiParamsSlowConnectionsFlag) {
   config.connection_type_ = net::NetworkChangeNotifier::CONNECTION_WIFI;
   EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
       &test_network_quality_estimator));
+}
+
+// Tests if metrics for LoFi accuracy are recorded properly.
+TEST_F(DataReductionProxyConfigTest, AutoLoFiAccuracy) {
+  base::HistogramTester histogram_tester;
+
+  DataReductionProxyConfig config(nullptr, nullptr, configurator(),
+                                  event_creator());
+  variations::testing::ClearAllVariationParams();
+  std::map<std::string, std::string> variation_params;
+
+  int expected_rtt_msec = 120;
+  int expected_hysteresis_sec = 360;
+
+  variation_params["rtt_msec"] = base::IntToString(expected_rtt_msec);
+  variation_params["hysteresis_period_seconds"] =
+      base::IntToString(expected_hysteresis_sec);
+
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      params::GetLoFiFieldTrialName(), "Enabled", variation_params));
+
+  base::FieldTrialList field_trial_list(nullptr);
+  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
+                                         "Enabled");
+  config.PopulateAutoLoFiParams();
+
+  std::map<std::string, std::string> network_quality_estimator_params;
+  TestNetworkQualityEstimator test_network_quality_estimator(
+      network_quality_estimator_params);
+
+  // RTT is higher than threshold. Network is slow.
+  // Network was predicted to be slow and actually was slow.
+  test_network_quality_estimator.SetRTT(
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
+  test_network_quality_estimator.SetMedianRTTSince(
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
+  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+  config.RecordAutoLoFiAccuracyRate(&test_network_quality_estimator);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.AutoLoFiAccuracy.Unknown", 0, 1);
+
+  // Network was predicted to be slow but actually was not slow.
+  test_network_quality_estimator.SetMedianRTTSince(
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1));
+  EXPECT_TRUE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+  config.RecordAutoLoFiAccuracyRate(&test_network_quality_estimator);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.AutoLoFiAccuracy.Unknown", 1, 1);
+
+  config.network_quality_last_updated_ =
+      base::TimeTicks::Now() -
+      base::TimeDelta::FromSeconds(expected_hysteresis_sec + 1);
+
+  // Network was predicted to be not slow but actually was slow.
+  test_network_quality_estimator.SetRTT(
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1));
+  test_network_quality_estimator.SetMedianRTTSince(
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec + 1));
+  EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+  config.RecordAutoLoFiAccuracyRate(&test_network_quality_estimator);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.AutoLoFiAccuracy.Unknown", 2, 1);
+
+  // Network was predicted to be not slow but actually was not slow.
+  test_network_quality_estimator.SetMedianRTTSince(
+      base::TimeDelta::FromMilliseconds(expected_rtt_msec - 1));
+  EXPECT_FALSE(config.IsNetworkQualityProhibitivelySlow(
+      &test_network_quality_estimator));
+  config.RecordAutoLoFiAccuracyRate(&test_network_quality_estimator);
+  histogram_tester.ExpectBucketCount(
+      "DataReductionProxy.AutoLoFiAccuracy.Unknown", 3, 1);
+
+  // Make sure that all buckets contain exactly one value.
+  for (size_t bucket = 0; bucket < 4; ++bucket) {
+    histogram_tester.ExpectBucketCount(
+        "DataReductionProxy.AutoLoFiAccuracy.Unknown", bucket, 1);
+  }
 }
 
 }  // namespace data_reduction_proxy
