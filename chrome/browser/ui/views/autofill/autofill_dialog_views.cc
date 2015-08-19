@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/autofill/expanding_textfield.h"
 #include "chrome/browser/ui/views/autofill/info_bubble.h"
 #include "chrome/browser/ui/views/autofill/tooltip_icon.h"
-#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -1105,16 +1104,19 @@ views::View* AutofillDialogViews::CreateExtraView() {
 }
 
 bool AutofillDialogViews::Cancel() {
-  return delegate_->OnCancel();
+  delegate_->OnCancel();
+  return true;
 }
 
 bool AutofillDialogViews::Accept() {
-  if (ValidateForm())
-    return delegate_->OnAccept();
-
-  // |ValidateForm()| failed; there should be invalid views in |validity_map_|.
-  DCHECK(!validity_map_.empty());
-  FocusInitialView();
+  if (ValidateForm()) {
+    delegate_->OnAccept();
+  } else {
+    // |ValidateForm()| failed; there should be invalid views in
+    // |validity_map_|.
+    DCHECK(!validity_map_.empty());
+    FocusInitialView();
+  }
 
   return false;
 }

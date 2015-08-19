@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/core/browser/detail_input.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -32,11 +31,6 @@ class AutofillProfile;
 class AutofillType;
 class CreditCard;
 class FormStructure;
-
-namespace wallet {
-class Address;
-class FullWallet;
-}
 
 // A glue class that allows uniform interactions with autocomplete data sources,
 // regardless of their type. Implementations are intended to be lightweight and
@@ -134,76 +128,6 @@ class AutofillCreditCardWrapper : public DataModelWrapper {
   const CreditCard* card_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillCreditCardWrapper);
-};
-
-// A DataModelWrapper for Wallet addresses.
-class WalletAddressWrapper : public DataModelWrapper {
- public:
-  explicit WalletAddressWrapper(const wallet::Address* address);
-  ~WalletAddressWrapper() override;
-
-  base::string16 GetInfo(const AutofillType& type) const override;
-  base::string16 GetInfoForDisplay(const AutofillType& type) const override;
-  bool GetDisplayText(base::string16* vertically_compact,
-                      base::string16* horizontally_compact) override;
-  const std::string& GetLanguageCode() const override;
-
- private:
-  const wallet::Address* address_;
-
-  DISALLOW_COPY_AND_ASSIGN(WalletAddressWrapper);
-};
-
-// A DataModelWrapper for Wallet instruments.
-class WalletInstrumentWrapper : public DataModelWrapper {
- public:
-  explicit WalletInstrumentWrapper(
-      const wallet::WalletItems::MaskedInstrument* instrument);
-  ~WalletInstrumentWrapper() override;
-
-  base::string16 GetInfo(const AutofillType& type) const override;
-  base::string16 GetInfoForDisplay(const AutofillType& type) const override;
-  gfx::Image GetIcon() override;
-  bool GetDisplayText(base::string16* vertically_compact,
-                      base::string16* horizontally_compact) override;
-  const std::string& GetLanguageCode() const override;
-
- private:
-  const wallet::WalletItems::MaskedInstrument* instrument_;
-
-  DISALLOW_COPY_AND_ASSIGN(WalletInstrumentWrapper);
-};
-
-// A DataModelWrapper for FullWallet billing data.
-class FullWalletBillingWrapper : public DataModelWrapper {
- public:
-  explicit FullWalletBillingWrapper(wallet::FullWallet* full_wallet);
-  ~FullWalletBillingWrapper() override;
-
-  base::string16 GetInfo(const AutofillType& type) const override;
-  bool GetDisplayText(base::string16* vertically_compact,
-                      base::string16* horizontally_compact) override;
-  const std::string& GetLanguageCode() const override;
-
- private:
-  wallet::FullWallet* full_wallet_;
-
-  DISALLOW_COPY_AND_ASSIGN(FullWalletBillingWrapper);
-};
-
-// A DataModelWrapper for FullWallet shipping data.
-class FullWalletShippingWrapper : public DataModelWrapper {
- public:
-  explicit FullWalletShippingWrapper(wallet::FullWallet* full_wallet);
-  ~FullWalletShippingWrapper() override;
-
-  base::string16 GetInfo(const AutofillType& type) const override;
-  const std::string& GetLanguageCode() const override;
-
- private:
-  wallet::FullWallet* full_wallet_;
-
-  DISALLOW_COPY_AND_ASSIGN(FullWalletShippingWrapper);
 };
 
 // A DataModelWrapper for ::i18n::addressinput::AddressData objects.

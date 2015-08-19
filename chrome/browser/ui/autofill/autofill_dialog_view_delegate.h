@@ -9,7 +9,6 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
-#include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/core/browser/detail_input.h"
 #include "components/autofill/core/browser/dialog_section.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -150,14 +149,11 @@ class AutofillDialogViewDelegate {
   // out-of-line.
   virtual void LinkClicked(const GURL& url) = 0;
 
-  // Called when the view has been cancelled. Returns true if the dialog should
-  // now close, or false to keep it open.
-  virtual bool OnCancel() = 0;
+  // Called when the view has been cancelled.
+  virtual void OnCancel() = 0;
 
-  // Called when the view has been accepted. This could be to submit the payment
-  // info or to handle a required action. Returns true if the dialog should now
-  // close, or false to keep it open.
-  virtual bool OnAccept() = 0;
+  // Called when the view has been accepted.
+  virtual void OnAccept() = 0;
 
   // Returns the profile for this dialog.
   virtual Profile* profile() = 0;

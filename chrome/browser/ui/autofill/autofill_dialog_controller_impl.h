@@ -19,10 +19,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
-#include "components/autofill/content/browser/wallet/wallet_client.h"
-#include "components/autofill/content/browser/wallet/wallet_client_delegate.h"
-#include "components/autofill/content/browser/wallet/wallet_items.h"
-#include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
@@ -133,8 +129,8 @@ class AutofillDialogControllerImpl
   void ViewClosed() override;
   std::vector<DialogNotification> CurrentNotifications() override;
   void LinkClicked(const GURL& url) override;
-  bool OnCancel() override;
-  bool OnAccept() override;
+  void OnCancel() override;
+  void OnAccept() override;
   Profile* profile() override;
   content::WebContents* GetWebContents() override;
 

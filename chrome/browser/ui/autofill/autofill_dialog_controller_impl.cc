@@ -44,14 +44,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/content/browser/wallet/form_field_error.h"
-#include "components/autofill/content/browser/wallet/full_wallet.h"
-#include "components/autofill/content/browser/wallet/gaia_account.h"
-#include "components/autofill/content/browser/wallet/instrument.h"
-#include "components/autofill/content/browser/wallet/wallet_address.h"
-#include "components/autofill/content/browser/wallet/wallet_items.h"
-#include "components/autofill/content/browser/wallet/wallet_service_url.h"
-#include "components/autofill/content/browser/wallet/wallet_signin_helper.h"
 #include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
@@ -1267,20 +1259,18 @@ void AutofillDialogControllerImpl::LinkClicked(const GURL& url) {
   OpenTabWithUrl(url);
 }
 
-bool AutofillDialogControllerImpl::OnCancel() {
+void AutofillDialogControllerImpl::OnCancel() {
   HidePopup();
   if (!data_was_passed_back_)
     LogOnCancelMetrics();
   callback_.Run(
       AutofillClient::AutocompleteResultErrorCancel, base::string16(), NULL);
-  return true;
 }
 
-bool AutofillDialogControllerImpl::OnAccept() {
+void AutofillDialogControllerImpl::OnAccept() {
   ScopedViewUpdates updates(view_.get());
   HidePopup();
   FinishSubmit();
-  return false;
 }
 
 Profile* AutofillDialogControllerImpl::profile() {

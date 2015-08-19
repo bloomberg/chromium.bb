@@ -76,8 +76,8 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
                void(DialogNotification::Type, bool));
   MOCK_METHOD1(LegalDocumentLinkClicked, void(const gfx::Range&));
   MOCK_METHOD0(OverlayButtonPressed, void());
-  MOCK_METHOD0(OnCancel, bool());
-  MOCK_METHOD0(OnAccept, bool());
+  MOCK_METHOD0(OnCancel, void());
+  MOCK_METHOD0(OnAccept, void());
   MOCK_METHOD0(profile, Profile*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
 
