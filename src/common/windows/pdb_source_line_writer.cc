@@ -277,9 +277,10 @@ bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function,
   AddressRangeVector ranges;
   MapAddressRange(image_map_, AddressRange(rva, static_cast<DWORD>(length)),
                   &ranges);
+  wstring wname(name);
   for (size_t i = 0; i < ranges.size(); ++i) {
     fprintf(output_, "FUNC %x %x %x %ws\n",
-            ranges[i].rva, ranges[i].length, stack_param_size, name);
+            ranges[i].rva, ranges[i].length, stack_param_size, wname.c_str());
   }
 
   CComPtr<IDiaEnumLineNumbers> lines;
@@ -330,7 +331,7 @@ bool PDBSourceLineWriter::PrintSourceFiles() {
       if (!FileIDIsCached(file_name_string)) {
         // this is a new file name, cache it and output a FILE line.
         CacheFileID(file_name_string, file_id);
-        fwprintf(output_, L"FILE %d %s\n", file_id, file_name);
+        fwprintf(output_, L"FILE %d %ws\n", file_id, file_name_string.c_str());
       } else {
         // this file name has already been seen, just save this
         // ID for later lookup.
@@ -628,6 +629,7 @@ bool PDBSourceLineWriter::PrintFrameDataUsingPDB() {
         }
       }
 
+      wstring wprogram_string(program_string);
       for (size_t i = 0; i < frame_infos.size(); ++i) {
         const FrameInfo& fi(frame_infos[i]);
         fprintf(output_, "STACK WIN %x %x %x %x %x %x %x %x %x %d ",
@@ -635,7 +637,7 @@ bool PDBSourceLineWriter::PrintFrameDataUsingPDB() {
                 0 /* epilog_size */, parameter_size, saved_register_size,
                 local_size, max_stack_size, program_string_result == S_OK);
         if (program_string_result == S_OK) {
-          fprintf(output_, "%ws\n", program_string);
+          fprintf(output_, "%ws\n", wprogram_string.c_str());
         } else {
           fprintf(output_, "%d\n", allocates_base_pointer);
         }
@@ -819,8 +821,9 @@ bool PDBSourceLineWriter::PrintCodePublicSymbol(IDiaSymbol *symbol) {
   AddressRangeVector ranges;
   MapAddressRange(image_map_, AddressRange(rva, 1), &ranges);
   for (size_t i = 0; i < ranges.size(); ++i) {
+    wstring wname(name);
     fprintf(output_, "PUBLIC %x %x %ws\n", ranges[i].rva,
-            stack_param_size > 0 ? stack_param_size : 0, name);
+            stack_param_size > 0 ? stack_param_size : 0, wname.c_str());
   }
   return true;
 }
