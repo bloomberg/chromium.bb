@@ -284,10 +284,10 @@ void SharedRendererState::DrawGL(AwDrawGLInfo* draw_info) {
     hardware_renderer_->CommitFrame();
   }
 
-  DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
   hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
                              state_restore.framebuffer_binding_ext(),
                              draw_info);
+  DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 
 void SharedRendererState::ReleaseHardwareDrawIfNeededOnUI() {
