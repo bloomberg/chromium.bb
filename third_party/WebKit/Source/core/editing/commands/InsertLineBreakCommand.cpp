@@ -123,7 +123,9 @@ void InsertLineBreakCommand::doApply()
 
         // Handle whitespace that occurs after the split
         document().updateLayoutIgnorePendingStylesheets();
-        if (!endingPosition.isRenderedCharacter()) {
+        // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
+        // use |VisiblePosition::characterAfter()|.
+        if (!isRenderedCharacter(endingPosition)) {
             Position positionBeforeTextNode(positionInParentBeforeNode(*textNode));
             // Clear out all whitespace and insert one non-breaking space
             deleteInsignificantTextDownstream(endingPosition);

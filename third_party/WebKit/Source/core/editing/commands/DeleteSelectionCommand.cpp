@@ -570,13 +570,15 @@ void DeleteSelectionCommand::handleGeneralDelete()
 void DeleteSelectionCommand::fixupWhitespace()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    // FIXME: isRenderedCharacter should be removed, and we should use VisiblePosition::characterAfter and VisiblePosition::characterBefore
-    if (m_leadingWhitespace.isNotNull() && !m_leadingWhitespace.isRenderedCharacter() && m_leadingWhitespace.anchorNode()->isTextNode()) {
+    // TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
+    // |VisiblePosition::characterAfter()| and
+    // |VisiblePosition::characterBefore()|
+    if (m_leadingWhitespace.isNotNull() && !isRenderedCharacter(m_leadingWhitespace) && m_leadingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(m_leadingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
         replaceTextInNodePreservingMarkers(textNode, m_leadingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());
     }
-    if (m_trailingWhitespace.isNotNull() && !m_trailingWhitespace.isRenderedCharacter() && m_trailingWhitespace.anchorNode()->isTextNode()) {
+    if (m_trailingWhitespace.isNotNull() && !isRenderedCharacter(m_trailingWhitespace) && m_trailingWhitespace.anchorNode()->isTextNode()) {
         Text* textNode = toText(m_trailingWhitespace.anchorNode());
         ASSERT(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
         replaceTextInNodePreservingMarkers(textNode, m_trailingWhitespace.computeOffsetInContainerNode(), 1, nonBreakingSpaceString());

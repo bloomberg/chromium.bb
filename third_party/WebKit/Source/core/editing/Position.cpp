@@ -931,20 +931,19 @@ bool PositionAlgorithm<Strategy>::inRenderedText() const
     return false;
 }
 
-template <typename Strategy>
-bool PositionAlgorithm<Strategy>::isRenderedCharacter() const
+bool isRenderedCharacter(const Position& position)
 {
-    if (isNull())
+    if (position.isNull())
         return false;
-    ASSERT(isOffsetInAnchor());
-    if (!anchorNode()->isTextNode())
+    ASSERT(position.isOffsetInAnchor());
+    if (!position.anchorNode()->isTextNode())
         return false;
 
-    LayoutObject* layoutObject = anchorNode()->layoutObject();
+    LayoutObject* layoutObject = position.anchorNode()->layoutObject();
     if (!layoutObject)
         return false;
 
-    return toLayoutText(layoutObject)->isRenderedCharacter(offsetInContainerNode());
+    return toLayoutText(layoutObject)->isRenderedCharacter(position.offsetInContainerNode());
 }
 
 template <typename Strategy>

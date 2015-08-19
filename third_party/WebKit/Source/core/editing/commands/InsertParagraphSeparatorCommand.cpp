@@ -417,7 +417,9 @@ void InsertParagraphSeparatorCommand::doApply()
     // Handle whitespace that occurs after the split
     if (positionAfterSplit.isNotNull()) {
         document().updateLayoutIgnorePendingStylesheets();
-        if (!positionAfterSplit.isRenderedCharacter()) {
+        // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
+        // use |VisiblePosition::characterAfter()|.
+        if (!isRenderedCharacter(positionAfterSplit)) {
             // Clear out all whitespace and insert one non-breaking space
             ASSERT(!positionAfterSplit.computeContainerNode()->layoutObject() || positionAfterSplit.computeContainerNode()->layoutObject()->style()->collapseWhiteSpace());
             deleteInsignificantTextDownstream(positionAfterSplit);

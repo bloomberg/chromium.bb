@@ -200,7 +200,6 @@ public:
 
     bool isCandidate() const;
     bool inRenderedText() const;
-    bool isRenderedCharacter() const;
 
     InlineBoxPosition computeInlineBoxPosition(EAffinity) const;
     InlineBoxPosition computeInlineBoxPosition(EAffinity, TextDirection primaryDirection) const;
@@ -254,6 +253,12 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
+
+// TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
+// |VisiblePosition::characterAfter()| and |VisiblePosition::characterBefore()|.
+// TODO(yosin) We should move |isRenderedCharacter()| to "VisibleUnits.cpp",
+// since it is used only in "editing/commands/"
+CORE_EXPORT bool isRenderedCharacter(const Position&);
 
 template <typename Strategy>
 bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
