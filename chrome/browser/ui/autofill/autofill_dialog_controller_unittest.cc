@@ -76,7 +76,6 @@ using testing::_;
 
 const char kSourceUrl[] = "http://localbike.shop";
 const char kFakeEmail[] = "user@chromium.org";
-const char kEditedBillingAddress[] = "123 edited billing address";
 const char* kFieldsFromPage[] =
     { "email",
       "cc-name",
@@ -1260,10 +1259,6 @@ TEST_F(AutofillDialogControllerTest, NamePieces) {
   EXPECT_EQ(NAME_MIDDLE, form_structure()->field(4)->Type().GetStorableType());
   EXPECT_EQ(ASCIIToUTF16("Jackson"),
             form_structure()->field(4)->value);
-}
-
-MATCHER(UsesLocalBillingAddress, "uses the local billing address") {
-  return arg->street_address()[0] == ASCIIToUTF16(kEditedBillingAddress);
 }
 
 // Tests that adding an autofill profile and then submitting works.
