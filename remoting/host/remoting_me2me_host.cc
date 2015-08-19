@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringize_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
@@ -1068,7 +1069,7 @@ void HostProcess::ReportPolicyErrorAndRestartHost() {
   DCHECK_EQ(policy_state_, POLICY_ERROR_REPORT_PENDING);
   policy_state_ = POLICY_ERROR_REPORTED;
 
-  LOG(INFO) << "Restarting the host due to policy errors.";
+  HOST_LOG << "Restarting the host due to policy errors.";
   RestartHost(kHostOfflineReasonPolicyReadError);
 }
 
@@ -1609,6 +1610,8 @@ void HostProcess::OnCrash(const std::string& function_name,
 }
 
 int HostProcessMain() {
+  HOST_LOG << "Starting host process: version " << STRINGIZE(VERSION);
+
 #if defined(OS_LINUX)
   // Required in order for us to run multiple X11 threads.
   XInitThreads();
