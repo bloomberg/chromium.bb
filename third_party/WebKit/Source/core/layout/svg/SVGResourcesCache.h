@@ -56,9 +56,6 @@ public:
     // Called from all SVG layoutObjects styleDidChange() methods.
     static void clientStyleChanged(LayoutObject*, StyleDifference, const ComputedStyle& newStyle);
 
-    // Called from LayoutSVGResourceContainer::willBeDestroyed().
-    static void resourceDestroyed(LayoutSVGResourceContainer*);
-
 private:
     void addResourcesFromLayoutObject(LayoutObject*, const ComputedStyle&);
     void removeResourcesFromLayoutObject(LayoutObject*);

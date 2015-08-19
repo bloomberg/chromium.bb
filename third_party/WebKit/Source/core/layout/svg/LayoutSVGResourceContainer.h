@@ -92,6 +92,7 @@ private:
     friend class SVGResourcesCache;
     void addClient(LayoutObject*);
     void removeClient(LayoutObject*);
+    void detachAllClients();
 
     void registerResource();
 

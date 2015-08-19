@@ -31,7 +31,7 @@
 
 namespace blink {
 
-static inline SVGDocumentExtensions& svgExtensionsFromElement(SVGElement* element)
+static inline SVGDocumentExtensions& svgExtensionsFromElement(Element* element)
 {
     ASSERT(element);
     return element->document().accessSVGExtensions();
@@ -68,7 +68,11 @@ void LayoutSVGResourceContainer::layout()
 
 void LayoutSVGResourceContainer::willBeDestroyed()
 {
-    SVGResourcesCache::resourceDestroyed(this);
+    // Detach all clients referring to this resource. If the resource itself is
+    // a client, it will be detached from any such resources by the call to
+    // LayoutSVGHiddenContainer::willBeDestroyed() below.
+    detachAllClients();
+
     LayoutSVGHiddenContainer::willBeDestroyed();
     if (m_registered)
         svgExtensionsFromElement(element()).removeResource(m_id);
@@ -82,6 +86,23 @@ void LayoutSVGResourceContainer::styleDidChange(StyleDifference diff, const Comp
         m_registered = true;
         registerResource();
     }
+}
+
+void LayoutSVGResourceContainer::detachAllClients()
+{
+    for (auto* client : m_clients) {
+        // Unlink the resource from the client's SVGResources. (The actual
+        // removal will be signaled after processing all the clients.)
+        SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(client);
+        ASSERT(resources); // Or else the client wouldn't be in the list in the first place.
+        resources->resourceDestroyed(this);
+
+        // Add a pending resolution based on the id of the old resource.
+        Element* clientElement = toElement(client->node());
+        svgExtensionsFromElement(clientElement).addPendingResource(m_id, clientElement);
+    }
+
+    removeAllClientsFromCache();
 }
 
 void LayoutSVGResourceContainer::idChanged()

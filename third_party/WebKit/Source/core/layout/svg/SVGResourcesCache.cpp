@@ -169,24 +169,4 @@ void SVGResourcesCache::clientDestroyed(LayoutObject* layoutObject)
     cache.removeResourcesFromLayoutObject(layoutObject);
 }
 
-void SVGResourcesCache::resourceDestroyed(LayoutSVGResourceContainer* resource)
-{
-    ASSERT(resource);
-    SVGResourcesCache& cache = resourcesCache(resource->document());
-
-    // The resource itself may have clients, that need to be notified.
-    cache.removeResourcesFromLayoutObject(resource);
-
-    for (auto& objectResources : cache.m_cache) {
-        objectResources.value->resourceDestroyed(resource);
-
-        // Mark users of destroyed resources as pending resolution based on the id of the old resource.
-        Element* resourceElement = resource->element();
-        Element* clientElement = toElement(objectResources.key->node());
-        SVGDocumentExtensions& extensions = clientElement->document().accessSVGExtensions();
-
-        extensions.addPendingResource(resourceElement->fastGetAttribute(HTMLNames::idAttr), clientElement);
-    }
-}
-
 }
