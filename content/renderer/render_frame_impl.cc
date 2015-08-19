@@ -1705,7 +1705,8 @@ void RenderFrameImpl::OnPostMessageEvent(
                              // |canBubble| and |cancellable| are always false
                              false, false,
                              serialized_script_value,
-                             params.source_origin, source_frame, "", channels);
+                             params.source_origin, source_frame,
+                             frame_->document(), "", channels);
 
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.

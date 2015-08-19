@@ -554,7 +554,8 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
     return;
   }
 
-  blink::WebFrame* target_web_frame = target->web_frame_;
+  blink::WebLocalFrame* target_web_frame =
+      target->web_frame_->toWebLocalFrame();
 
   blink::WebSerializedScriptValue serialized_script_value;
   serialized_script_value = blink::WebSerializedScriptValue::fromString(
@@ -572,7 +573,7 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
       // |canBubble| and |cancellable| are always false
       false, false, serialized_script_value,
       serialized_event->source_origin.To<blink::WebString>(),
-      source->web_frame_, "", channels);
+      source->web_frame_, target_web_frame->document(), "", channels);
 
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.

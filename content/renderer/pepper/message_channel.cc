@@ -373,6 +373,7 @@ void MessageChannel::PostMessageToJavaScriptImpl(
                              message_data,  // data
                              "",            // origin [*]
                              NULL,          // source [*]
+                             container->element().document(), // target document
                              "");           // lastEventId
   // [*] Note that the |origin| is only specified for cross-document and server-
   //     sent messages, while |source| is only specified for cross-document

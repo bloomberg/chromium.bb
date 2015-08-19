@@ -286,13 +286,14 @@ void LoadablePluginPlaceholder::DidFinishLoadingCallback() {
 
     blink::WebDOMEvent event = element.document().createEvent("MessageEvent");
     blink::WebDOMMessageEvent msg_event = event.to<blink::WebDOMMessageEvent>();
-    msg_event.initMessageEvent("message",     // type
-                               false,         // canBubble
-                               false,         // cancelable
-                               message_data,  // data
-                               "",            // origin [*]
-                               NULL,          // source [*]
-                               "");           // lastEventId
+    msg_event.initMessageEvent("message",           // type
+                               false,               // canBubble
+                               false,               // cancelable
+                               message_data,        // data
+                               "",                  // origin [*]
+                               NULL,                // source [*]
+                               element.document(),  // target document
+                               "");                 // lastEventId
     element.dispatchEvent(msg_event);
   }
 }
