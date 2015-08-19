@@ -1822,7 +1822,7 @@ static PositionWithAffinity positionForPointRespectingEditingBoundaries(LayoutBl
     LayoutUnit childMiddle = parent->logicalWidthForChild(*child) / 2;
     LayoutUnit logicalLeft = parent->isHorizontalWritingMode() ? pointInChildCoordinates.x() : pointInChildCoordinates.y();
     if (logicalLeft < childMiddle)
-        return ancestor->createPositionWithAffinity(childNode->nodeIndex(), DOWNSTREAM);
+        return ancestor->createPositionWithAffinity(childNode->nodeIndex());
     return ancestor->createPositionWithAffinity(childNode->nodeIndex() + 1, UPSTREAM);
 }
 
@@ -1831,7 +1831,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
     ASSERT(childrenInline());
 
     if (!firstRootBox())
-        return createPositionWithAffinity(0, DOWNSTREAM);
+        return createPositionWithAffinity(0);
 
     bool linesAreFlipped = style()->isFlippedLinesWritingMode();
     bool blocksAreFlipped = style()->isFlippedBlocksWritingMode();
@@ -1911,7 +1911,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
     // Can't reach this. We have a root line box, but it has no kids.
     // FIXME: This should ASSERT_NOT_REACHED(), but clicking on placeholder text
     // seems to hit this code path.
-    return createPositionWithAffinity(0, DOWNSTREAM);
+    return createPositionWithAffinity(0);
 }
 
 static inline bool isChildHitTestCandidate(LayoutBox* box)
@@ -1930,13 +1930,13 @@ PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point)
         LayoutUnit pointLogicalTop = isHorizontalWritingMode() ? point.y() : point.x();
 
         if (pointLogicalLeft < 0)
-            return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
+            return createPositionWithAffinity(caretMinOffset());
         if (pointLogicalLeft >= logicalWidth())
-            return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM);
+            return createPositionWithAffinity(caretMaxOffset());
         if (pointLogicalTop < 0)
-            return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
+            return createPositionWithAffinity(caretMinOffset());
         if (pointLogicalTop >= logicalHeight())
-            return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM);
+            return createPositionWithAffinity(caretMaxOffset());
     }
 
     LayoutPoint pointInContents = point;

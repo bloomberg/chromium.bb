@@ -67,7 +67,7 @@ int LayoutBR::caretMaxOffset() const
 
 PositionWithAffinity LayoutBR::positionForPoint(const LayoutPoint&)
 {
-    return createPositionWithAffinity(0, DOWNSTREAM);
+    return createPositionWithAffinity(0);
 }
 
 } // namespace blink

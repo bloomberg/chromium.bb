@@ -446,14 +446,14 @@ PositionWithAffinity LayoutSVGText::positionForPoint(const LayoutPoint& pointInC
 {
     RootInlineBox* rootBox = firstRootBox();
     if (!rootBox)
-        return createPositionWithAffinity(0, DOWNSTREAM);
+        return createPositionWithAffinity(0);
 
     ASSERT(!rootBox->nextRootBox());
     ASSERT(childrenInline());
 
     InlineBox* closestBox = toSVGRootInlineBox(rootBox)->closestLeafChildForPosition(pointInContents);
     if (!closestBox)
-        return createPositionWithAffinity(0, DOWNSTREAM);
+        return createPositionWithAffinity(0);
 
     return closestBox->layoutObject().positionForPoint(LayoutPoint(pointInContents.x(), closestBox->y()));
 }

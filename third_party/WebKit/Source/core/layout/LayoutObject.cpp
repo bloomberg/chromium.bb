@@ -2594,7 +2594,7 @@ void LayoutObject::removeShapeImageClient(ShapeValue* shapeValue)
 
 PositionWithAffinity LayoutObject::positionForPoint(const LayoutPoint&)
 {
-    return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM);
+    return createPositionWithAffinity(caretMinOffset());
 }
 
 void LayoutObject::updateDragState(bool dragOn)
@@ -3036,13 +3036,18 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
     return PositionWithAffinity();
 }
 
+PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset)
+{
+    return createPositionWithAffinity(offset, DOWNSTREAM);
+}
+
 PositionWithAffinity LayoutObject::createPositionWithAffinity(const Position& position)
 {
     if (position.isNotNull())
         return PositionWithAffinity(position);
 
     ASSERT(!node());
-    return createPositionWithAffinity(0, DOWNSTREAM);
+    return createPositionWithAffinity(0);
 }
 
 CursorDirective LayoutObject::getCursor(const LayoutPoint&, Cursor&) const

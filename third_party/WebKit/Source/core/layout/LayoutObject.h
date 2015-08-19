@@ -717,6 +717,7 @@ public:
 
     virtual PositionWithAffinity positionForPoint(const LayoutPoint&);
     PositionWithAffinity createPositionWithAffinity(int offset, EAffinity);
+    PositionWithAffinity createPositionWithAffinity(int offset);
     PositionWithAffinity createPositionWithAffinity(const Position&);
 
     virtual void dirtyLinesFromChangedChild(LayoutObject*);

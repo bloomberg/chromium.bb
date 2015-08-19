@@ -420,15 +420,15 @@ PositionWithAffinity LayoutReplaced::positionForPoint(const LayoutPoint& point)
     LayoutUnit lineDirectionPosition = isHorizontalWritingMode() ? point.x() + location().x() : point.y() + location().y();
 
     if (blockDirectionPosition < top)
-        return createPositionWithAffinity(caretMinOffset(), DOWNSTREAM); // coordinates are above
+        return createPositionWithAffinity(caretMinOffset()); // coordinates are above
 
     if (blockDirectionPosition >= bottom)
-        return createPositionWithAffinity(caretMaxOffset(), DOWNSTREAM); // coordinates are below
+        return createPositionWithAffinity(caretMaxOffset()); // coordinates are below
 
     if (node()) {
         if (lineDirectionPosition <= logicalLeft() + (logicalWidth() / 2))
-            return createPositionWithAffinity(0, DOWNSTREAM);
-        return createPositionWithAffinity(1, DOWNSTREAM);
+            return createPositionWithAffinity(0);
+        return createPositionWithAffinity(1);
     }
 
     return LayoutBox::positionForPoint(point);
