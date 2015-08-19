@@ -49,8 +49,7 @@ void OAuth2TokenFetcher::StartExchangeFromCookies(
   // portal.
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  if (!default_network ||
-      default_network->connection_state() == shill::kStatePortal) {
+  if (!default_network || default_network->is_captive_portal()) {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
     BrowserThread::PostDelayedTask(
