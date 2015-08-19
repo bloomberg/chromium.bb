@@ -40,6 +40,11 @@ public:
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
+    bool needsLayout() const
+    {
+        return m_layoutObject->needsLayout();
+    }
+
     Node* node() const
     {
         return m_layoutObject->node();
