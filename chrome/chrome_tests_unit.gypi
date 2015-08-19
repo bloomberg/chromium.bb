@@ -2734,6 +2734,7 @@
         # 1) everything that the chrome binaries depend on:
         '<@(chromium_browser_dependencies)',
         '<@(chromium_child_dependencies)',
+        '../components/components.gyp:crash_keys',
         '../content/content.gyp:content_app_both',
         # 2) test-specific support libraries:
         '../base/base.gyp:run_all_unittests',

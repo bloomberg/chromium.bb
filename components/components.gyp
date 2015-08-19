@@ -19,6 +19,7 @@
     'component_updater.gypi',
     'content_settings.gypi',
     'crash.gypi',
+    'crash_keys.gypi',
     'cronet.gypi',
     'crx_file.gypi',
     'data_reduction_proxy.gypi',

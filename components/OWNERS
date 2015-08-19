@@ -51,6 +51,8 @@ per-file crash.gypi=rsesek@chromium.org
 per-file crash.gypi=scottmg@chromium.org
 per-file crash.gypi=thestig@chromium.org
 
+per-file crash_keys.gypi=rsesek@chromium.org
+
 per-file cronet*=mef@chromium.org
 per-file cronet*=mmenke@chromium.org
 per-file cronet*=pauljensen@chromium.org

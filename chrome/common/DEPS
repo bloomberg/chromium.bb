@@ -7,6 +7,7 @@ include_rules = [
   "+components/bookmarks/common",
   "+components/cloud_devices/common",
   "+components/content_settings/core/common",
+  "+components/crash_keys",
   "+components/crx_file",
   "+components/data_reduction_proxy/core/common",
   "+components/dom_distiller/core",

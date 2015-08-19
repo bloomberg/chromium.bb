@@ -335,6 +335,7 @@
         '<(DEPTH)/components/components.gyp:cloud_devices_common',
         '<(DEPTH)/components/components.gyp:component_updater',
         '<(DEPTH)/components/components.gyp:content_settings_core_common',
+        '<(DEPTH)/components/components.gyp:crash_keys',
         '<(DEPTH)/components/components.gyp:favicon_base',
         '<(DEPTH)/components/components.gyp:gcm_driver_common',
         '<(DEPTH)/components/components.gyp:json_schema',

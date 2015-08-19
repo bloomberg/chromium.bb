@@ -176,6 +176,8 @@
         'browser/crash_loop_detection_util.mm',
         'browser/crash_report/breakpad_helper.h',
         'browser/crash_report/breakpad_helper.mm',
+        'browser/crash_report/crash_keys.cc',
+        'browser/crash_report/crash_keys.h',
         'browser/crash_report/crash_report_background_uploader.h',
         'browser/crash_report/crash_report_background_uploader.mm',
         'browser/crash_report/crash_report_multi_parameter.h',

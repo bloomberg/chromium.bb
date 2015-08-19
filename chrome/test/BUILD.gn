@@ -1882,6 +1882,7 @@ if (!is_android) {
         "//breakpad:client",
         "//chrome/browser",
         "//chrome/child",
+        "//components/crash_keys",
         "//base/test:run_all_unittests",
         "//base/test:test_support",
       ]
