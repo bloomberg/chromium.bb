@@ -43,7 +43,7 @@ protected:
 
     virtual void formatSelection(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection);
     PassRefPtrWillBeRawPtr<HTMLElement> createBlockElement() const;
-    const QualifiedName tagName() const { return m_tagName; }
+    const QualifiedName& tagName() const { return m_tagName; }
 
     DECLARE_VIRTUAL_TRACE();
 
