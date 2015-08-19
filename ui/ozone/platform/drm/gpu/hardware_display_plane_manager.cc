@@ -31,14 +31,6 @@ HardwareDisplayPlaneList::HardwareDisplayPlaneList() {
 }
 
 HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
-  for (auto* plane : plane_list) {
-    plane->set_in_use(false);
-    plane->set_owning_crtc(0);
-  }
-  for (auto* plane : old_plane_list) {
-    plane->set_in_use(false);
-    plane->set_owning_crtc(0);
-  }
 }
 
 HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(uint32_t crtc_id,

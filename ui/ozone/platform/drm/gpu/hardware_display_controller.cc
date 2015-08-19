@@ -139,9 +139,21 @@ bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
 }
 
 void HardwareDisplayController::AddCrtc(scoped_ptr<CrtcController> controller) {
-  owned_hardware_planes_.add(
-      controller->drm().get(),
-      scoped_ptr<HardwareDisplayPlaneList>(new HardwareDisplayPlaneList()));
+  scoped_refptr<DrmDevice> drm = controller->drm();
+  owned_hardware_planes_.add(drm.get(), scoped_ptr<HardwareDisplayPlaneList>(
+                                            new HardwareDisplayPlaneList()));
+
+  // Check if this controller owns any planes and ensure we keep track of them.
+  const ScopedVector<HardwareDisplayPlane>& all_planes =
+      drm->plane_manager()->planes();
+  HardwareDisplayPlaneList* crtc_plane_list =
+      owned_hardware_planes_.get(drm.get());
+  uint32_t crtc = controller->crtc();
+  for (auto* plane : all_planes) {
+    if (plane->in_use() && (plane->owning_crtc() == crtc))
+      crtc_plane_list->old_plane_list.push_back(plane);
+  }
+
   crtc_controllers_.push_back(controller.Pass());
 }
 
@@ -163,8 +175,18 @@ scoped_ptr<CrtcController> HardwareDisplayController::RemoveCrtc(
           break;
         }
       }
-      if (!found)
+      if (found) {
+        std::vector<HardwareDisplayPlane*> all_planes;
+        HardwareDisplayPlaneList* plane_list =
+            owned_hardware_planes_.get(drm.get());
+        all_planes.swap(plane_list->old_plane_list);
+        for (auto* plane : all_planes) {
+          if (plane->owning_crtc() != crtc)
+            plane_list->old_plane_list.push_back(plane);
+        }
+      } else {
         owned_hardware_planes_.erase(controller->drm().get());
+      }
 
       return controller.Pass();
     }
