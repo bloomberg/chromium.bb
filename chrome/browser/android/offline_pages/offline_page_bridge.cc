@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/OfflinePageBridge_jni.h"
+#include "net/base/filename_util.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
@@ -129,7 +131,8 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
   GURL url(web_contents->GetLastCommittedURL());
 
   scoped_ptr<OfflinePageArchiver> archiver(
-      new OfflinePageMHTMLArchiver(web_contents, GetDownloadsPath()));
+      new OfflinePageMHTMLArchiver(
+          web_contents, GetDownloadsPath(browser_context_)));
 
   offline_page_model_->SavePage(
       url, bookmark_id, archiver.Pass(),
@@ -160,9 +163,21 @@ void OfflinePageBridge::NotifyIfDoneLoading() const {
   Java_OfflinePageBridge_offlinePageModelLoaded(env, obj.obj());
 }
 
-base::FilePath OfflinePageBridge::GetDownloadsPath() const {
+// static
+bool OfflinePageBridge::MightBeOfflineURL(const GURL& url) {
+  // It has to be a file URL ending with .mhtml extension.
+  return url.is_valid() &&
+         url.SchemeIsFile() &&
+         base::EndsWith(url.spec(),
+                        OfflinePageMHTMLArchiver::GetFileNameExtension(),
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
+
+// static
+base::FilePath OfflinePageBridge::GetDownloadsPath(
+    content::BrowserContext* browser_context) {
   content::DownloadManager* manager =
-      content::BrowserContext::GetDownloadManager(browser_context_);
+      content::BrowserContext::GetDownloadManager(browser_context);
   if (!manager) {
     DVLOG(1) << "No download manager available in offline page bridge";
     return base::FilePath();

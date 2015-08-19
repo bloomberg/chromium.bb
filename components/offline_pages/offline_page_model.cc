@@ -155,6 +155,17 @@ bool OfflinePageModel::GetPageByBookmarkId(
   return false;
 }
 
+const OfflinePageItem* OfflinePageModel::GetPageByOfflineURL(
+    const GURL& offline_url) const {
+  for (auto iter = offline_pages_.begin();
+       iter != offline_pages_.end();
+       ++iter) {
+    if (iter->second.GetOfflineURL() == offline_url)
+      return &(iter->second);
+  }
+  return nullptr;
+}
+
 OfflinePageMetadataStore* OfflinePageModel::GetStoreForTesting() {
   return store_.get();
 }

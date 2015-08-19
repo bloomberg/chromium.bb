@@ -52,9 +52,13 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
                   jobject j_callback_obj,
                   jlong bookmark_id);
 
+  // Returns true if |url| might points to an offline page.
+  static bool MightBeOfflineURL(const GURL& url);
+
  private:
   void NotifyIfDoneLoading() const;
-  base::FilePath GetDownloadsPath() const;
+  static base::FilePath GetDownloadsPath(
+      content::BrowserContext* browser_context);
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   // Not owned.

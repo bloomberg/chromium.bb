@@ -131,6 +131,10 @@ class OfflinePageModel : public KeyedService {
   bool GetPageByBookmarkId(int64 bookmark_id,
                            OfflinePageItem* offline_page) const;
 
+  // Returns an offline page that is stored as |offline_url|. nullptr is
+  // returned if not found.
+  const OfflinePageItem* GetPageByOfflineURL(const GURL& offline_url) const;
+
   // Methods for testing only:
   OfflinePageMetadataStore* GetStoreForTesting();
 

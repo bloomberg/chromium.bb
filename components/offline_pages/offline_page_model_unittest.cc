@@ -615,4 +615,42 @@ TEST_F(OfflinePageModelTest, GetPageByBookmarkId) {
   EXPECT_FALSE(model()->GetPageByBookmarkId(-42, &page));
 }
 
+TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  OfflinePageTestStore* store = GetStore();
+  GURL offline_url = store->last_saved_page().GetOfflineURL();
+
+  scoped_ptr<OfflinePageTestArchiver> archiver2(
+      BuildArchiver(kTestUrl2,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl2, kTestPageBookmarkId2, archiver2.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  GURL offline_url2 = store->last_saved_page().GetOfflineURL();
+
+  const OfflinePageItem* page = model()->GetPageByOfflineURL(offline_url2);
+  EXPECT_TRUE(page);
+  EXPECT_EQ(kTestUrl2, page->url);
+  EXPECT_EQ(kTestPageBookmarkId2, page->bookmark_id);
+
+  page = model()->GetPageByOfflineURL(offline_url);
+  EXPECT_TRUE(page);
+  EXPECT_EQ(kTestUrl, page->url);
+  EXPECT_EQ(kTestPageBookmarkId1, page->bookmark_id);
+
+  page = model()->GetPageByOfflineURL(GURL("http://foo"));
+  EXPECT_FALSE(page);
+}
+
 }  // namespace offline_pages

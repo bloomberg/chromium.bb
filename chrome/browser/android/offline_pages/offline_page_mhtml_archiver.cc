@@ -19,6 +19,7 @@ namespace {
 const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
 const base::FilePath::CharType kDefaultFileName[] =
     FILE_PATH_LITERAL("offline_page");
+const char kMHTMLFileNameExtension[] = ".mhtml";
 
 base::FilePath GenerateFileName(GURL url, base::string16 title) {
   return net::GenerateFileName(url,
@@ -31,6 +32,11 @@ base::FilePath GenerateFileName(GURL url, base::string16 title) {
 }
 
 }  // namespace
+
+// static
+std::string OfflinePageMHTMLArchiver::GetFileNameExtension() {
+    return kMHTMLFileNameExtension;
+}
 
 OfflinePageMHTMLArchiver::OfflinePageMHTMLArchiver(
     content::WebContents* web_contents,

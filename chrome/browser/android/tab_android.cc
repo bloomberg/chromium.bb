@@ -13,6 +13,8 @@
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
+#include "chrome/browser/android/offline_pages/offline_page_bridge.h"
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -56,6 +58,9 @@
 #include "components/infobars/core/infobar_container.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/navigation_interception/navigation_params.h"
+#include "components/offline_pages/offline_page_feature.h"
+#include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -766,9 +771,23 @@ void TabAndroid::SearchByImageInNewTabAsync(JNIEnv* env, jobject obj) {
 jlong TabAndroid::GetBookmarkId(JNIEnv* env,
                                jobject obj,
                                jboolean only_editable) {
-  const GURL& url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents()->GetURL());
   Profile* profile = GetProfile();
+
+  // If the url points to an offline page, replace it with the original url.
+  // Note that we first check if the url likely points to an offline page
+  // before calling GetPageByOfflineURL in order to avoid unnecessary lookup
+  // cost.
+  if (offline_pages::IsOfflinePagesEnabled() &&
+      offline_pages::android::OfflinePageBridge::MightBeOfflineURL(url)) {
+    offline_pages::OfflinePageModel* offline_page_model =
+        offline_pages::OfflinePageModelFactory::GetForBrowserContext(profile);
+    const offline_pages::OfflinePageItem* offline_page =
+        offline_page_model->GetPageByOfflineURL(url);
+    if (offline_page)
+      url = offline_page->url;
+  }
 
   // Get all the nodes for |url| and sort them by date added.
   std::vector<const bookmarks::BookmarkNode*> nodes;

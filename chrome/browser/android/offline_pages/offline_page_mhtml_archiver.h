@@ -39,6 +39,9 @@ namespace offline_pages {
 //   }
 class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
  public:
+  // Returns the extension name of the offline page file.
+  static std::string GetFileNameExtension();
+
   OfflinePageMHTMLArchiver(content::WebContents* web_contents,
                            const base::FilePath& archive_dir);
   ~OfflinePageMHTMLArchiver() override;
