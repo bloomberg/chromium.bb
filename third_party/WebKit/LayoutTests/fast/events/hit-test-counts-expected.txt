@@ -55,9 +55,9 @@ Wheel: 0+1 0+1 0+0
 TouchStart: 1+0 1+0 0+0
 TouchMove: 0+0 0+0 0+0
 TouchEnd: 0+0 0+0 0+0
-GestureTapDown: 1+0 4+0 16+0
-GestureShowPress: 1+0 4+0 16+0
-GestureTap: 1+0 4+0 16+0
+GestureTapDown: 1+0 1+0 1+0
+GestureShowPress: 1+0 1+0 1+0
+GestureTap: 1+0 1+0 1+0
 GestureScrollBegin: 0+1 0+1 0+0
 GestureTapCancel: 1+0 0+1 0+0
 GestureScrollUpdate: 0+0 0+0 0+0

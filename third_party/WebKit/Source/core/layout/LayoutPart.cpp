@@ -160,31 +160,33 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
     if (!widget() || !widget()->isFrameView() || !result.hitTestRequest().allowsChildFrameContent())
         return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset, action);
 
-    FrameView* childFrameView = toFrameView(widget());
-    LayoutView* childRoot = childFrameView->layoutView();
+    if (action == HitTestForeground) {
+        FrameView* childFrameView = toFrameView(widget());
+        LayoutView* childRoot = childFrameView->layoutView();
 
-    if (visibleToHitTestRequest(result.hitTestRequest()) && childRoot) {
-        LayoutPoint adjustedLocation = accumulatedOffset + location();
-        LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(), borderTop() + paddingTop()) - LayoutSize(childFrameView->scrollOffset());
-        HitTestLocation newHitTestLocation(locationInContainer, -adjustedLocation - contentOffset);
-        HitTestRequest newHitTestRequest(result.hitTestRequest().type() | HitTestRequest::ChildFrameHitTest);
-        HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
+        if (visibleToHitTestRequest(result.hitTestRequest()) && childRoot) {
+            LayoutPoint adjustedLocation = accumulatedOffset + location();
+            LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(), borderTop() + paddingTop()) - LayoutSize(childFrameView->scrollOffset());
+            HitTestLocation newHitTestLocation(locationInContainer, -adjustedLocation - contentOffset);
+            HitTestRequest newHitTestRequest(result.hitTestRequest().type() | HitTestRequest::ChildFrameHitTest);
+            HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
 
-        // The frame's layout and style must be up-to-date if we reach here.
-        bool isInsideChildFrame = childRoot->hitTestNoLifecycleUpdate(childFrameResult);
+            // The frame's layout and style must be up-to-date if we reach here.
+            bool isInsideChildFrame = childRoot->hitTestNoLifecycleUpdate(childFrameResult);
 
-        if (result.hitTestRequest().listBased()) {
-            result.append(childFrameResult);
-        } else if (isInsideChildFrame) {
-            // Force the result not to be cacheable because the parent
-            // frame should not cache this result; as it won't be notified of
-            // changes in the child.
-            childFrameResult.setCacheable(false);
-            result = childFrameResult;
+            if (result.hitTestRequest().listBased()) {
+                result.append(childFrameResult);
+            } else if (isInsideChildFrame) {
+                // Force the result not to be cacheable because the parent
+                // frame should not cache this result; as it won't be notified of
+                // changes in the child.
+                childFrameResult.setCacheable(false);
+                result = childFrameResult;
+            }
+
+            if (isInsideChildFrame)
+                return true;
         }
-
-        if (isInsideChildFrame)
-            return true;
     }
 
     return nodeAtPointOverWidget(result, locationInContainer, accumulatedOffset, action);
