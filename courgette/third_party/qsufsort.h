@@ -15,6 +15,8 @@
                  --Stephen Adams <sra@chromium.org>
   2015-08-03 - Extrat qsufsort to a separate file as template.
                  --Samuel Huang <huangs@chromium.org>
+  2015-08-19 - Optimize split() and search(), add comments.
+                 --Samuel Huang <huangs@chromium.org>
 */
 
 #include <algorithm>
@@ -31,72 +33,88 @@ namespace qsuf {
 // (2) indentation,
 // (3) using 'const',
 // (4) changing the V and I parameters from int* to template <typename T>.
+// (5) optimizing split() and search(); fix styles.
 //
 // The code appears to be a rewritten version of the suffix array algorithm
 // presented in "Faster Suffix Sorting" by N. Jesper Larsson and Kunihiko
 // Sadakane, special cased for bytes.
 
-template <typename T>
-static void
-split(T I,T V,int start,int len,int h)
-{
-  int i,j,k,x,tmp,jj,kk;
-
-  if(len<16) {
-    for(k=start;k<start+len;k+=j) {
-      j=1;x=V[I[k]+h];
-      for(i=1;k+i<start+len;i++) {
-        if(V[I[k+i]+h]<x) {
-          x=V[I[k+i]+h];
-          j=0;
-        };
-        if(V[I[k+i]+h]==x) {
-          tmp=I[k+j];I[k+j]=I[k+i];I[k+i]=tmp;
-          j++;
-        };
-      };
-      for(i=0;i<j;i++) V[I[k+i]]=k+j-1;
-      if(j==1) I[k]=-1;
-    };
+template <typename T> static void split(T I, T V, int start, int end, int h) {
+  // For small interval, apply selection sort.
+  if (end - start < 6) {
+    for (int i = start; i < end; ) {
+      int skip = 1;
+      int best = V[I[i] + h];
+      for (int j = i + 1; j < end; j++) {
+        int cur = V[I[j] + h];
+        if (best > cur) {
+          best = cur;
+          int tmp = I[i];
+          I[i] = I[j];
+          I[j] = tmp;
+          skip = 1;
+        } else if (best == cur) {
+          int tmp = I[i + skip];
+          I[i + skip] = I[j];
+          I[j] = tmp;
+          ++skip;
+        }
+      }
+      if (skip == 1) {
+        V[I[i]] = i;
+        I[i] = -1;
+      } else {
+        for (int j = i, jend = i + skip; j < jend; j++)
+          V[I[j]] = jend - 1;
+      }
+      i += skip;
+    }
     return;
-  };
+  }
 
-  x=V[I[start+len/2]+h];
-  jj=0;kk=0;
-  for(i=start;i<start+len;i++) {
-    if(V[I[i]+h]<x) jj++;
-    if(V[I[i]+h]==x) kk++;
-  };
-  jj+=start;kk+=jj;
-
-  i=start;j=0;k=0;
-  while(i<jj) {
-    if(V[I[i]+h]<x) {
-      i++;
-    } else if(V[I[i]+h]==x) {
-      tmp=I[i];I[i]=I[jj+j];I[jj+j]=tmp;
-      j++;
+  // Split [start, end) into 3 intervals:
+  //   [start, j) with secondary keys < pivot,
+  //   [j, k) with secondary keys == pivot,
+  //   [k, end) with secondary keys > pivot.
+  int pivot = V[I[(start + end) / 2] + h];
+  int j = start;
+  int k = end;
+  for (int i = start; i < k; ) {
+    int cur = V[I[i] + h];
+    if (cur < pivot) {
+      if (i != j) {
+        int tmp = I[i];
+        I[i] = I[j];
+        I[j] = tmp;
+      }
+      ++i;
+      ++j;
+    } else if (cur > pivot) {
+      --k;
+      int tmp = I[i];
+      I[i] = I[k];
+      I[k] = tmp;
     } else {
-      tmp=I[i];I[i]=I[kk+k];I[kk+k]=tmp;
-      k++;
-    };
-  };
+      ++i;
+    }
+  }
 
-  while(jj+j<kk) {
-    if(V[I[jj+j]+h]==x) {
-      j++;
-    } else {
-      tmp=I[jj+j];I[jj+j]=I[kk+k];I[kk+k]=tmp;
-      k++;
-    };
-  };
+  // Recurse on the "< pivot" piece.
+  if (start < j)
+    split<T>(I, V, start, j, h);
 
-  if(jj>start) split<T>(I,V,start,jj-start,h);
+  // Update the "== pivot" piece.
+  if (j == k - 1) {
+    V[I[j]] = j;
+    I[j] = -1;
+  } else {
+    for (int i = j; i < k; ++i)
+      V[I[i]] = k - 1;
+  }
 
-  for(i=0;i<kk-jj;i++) V[I[jj+i]]=kk-1;
-  if(jj==kk-1) I[jj]=-1;
-
-  if(start+len>kk) split<T>(I,V,kk,start+len-kk,h);
+  // Recurse on the "> pivot" piece.
+  if (k < end)
+    split<T>(I, V, k, end, h);
 }
 
 template <class T>
@@ -128,7 +146,7 @@ qsufsort(T I, T V,const unsigned char *old,int oldsize)
       } else {
         if(len) I[i-len]=-len;
         len=V[I[i]]+1-i;
-        split<T>(I,V,i,len,h);
+        split<T>(I,V,i,i+len,h);
         i+=len;
         len=0;
       };
@@ -151,31 +169,27 @@ matchlen(const unsigned char *old,int oldsize,const unsigned char *newbuf,int ne
 }
 
 template <class T>
-static int
-search(T I,const unsigned char *old,int oldsize,
-       const unsigned char *newbuf,int newsize,int st,int en,int *pos)
-{
-  int x,y;
-
-  if(en-st<2) {
-    x=matchlen(old+I[st],oldsize-I[st],newbuf,newsize);
-    y=matchlen(old+I[en],oldsize-I[en],newbuf,newsize);
-
-    if(x>y) {
-      *pos=I[st];
-      return x;
+static int search(T I, const unsigned char *old, int oldsize,
+                  const unsigned char *newbuf, int newsize, int *pos) {
+  int lo = 0;
+  int hi = oldsize;
+  while (hi - lo >= 2) {
+    int mid = (lo + hi) / 2;
+    if(memcmp(old+I[mid],newbuf,std::min(oldsize-I[mid],newsize))<0) {
+      lo = mid;
     } else {
-      *pos=I[en];
-      return y;
+      hi = mid;
     }
   }
 
-  x=st+(en-st)/2;
-  if(memcmp(old+I[x],newbuf,std::min(oldsize-I[x],newsize))<0) {
-    return search<T>(I,old,oldsize,newbuf,newsize,x,en,pos);
-  } else {
-    return search<T>(I,old,oldsize,newbuf,newsize,st,x,pos);
+  int x = matchlen(old + I[lo], oldsize - I[lo], newbuf, newsize);
+  int y = matchlen(old + I[hi], oldsize - I[hi], newbuf, newsize);
+  if(x > y) {
+    *pos = I[lo];
+    return x;
   }
+  *pos = I[hi];
+  return y;
 }
 
 //  End of 'verbatim' code.

@@ -22,6 +22,8 @@
                  --Stephen Adams <sra@chromium.org>
   2015-08-03 - Extract qsufsort portion to a separate file.
                  --Samuel Huang <huangs@chromium.org>
+  2015-08-12 - Interface change to qsufsort search().
+                 --Samuel Huang <huangs@chromium.org>
 */
 
 #include "courgette/third_party/bsdiff.h"
@@ -151,7 +153,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
     scan += match_length;
     for (int scsc = scan;  scan < newsize;  ++scan) {
       match_length = qsuf::search<PagedArray<int>&>(
-          I, old, oldsize, newbuf + scan, newsize - scan, 0, oldsize, &pos);
+          I, old, oldsize, newbuf + scan, newsize - scan, &pos);
 
       for ( ; scsc < scan + match_length ; scsc++)
         if ((scsc + lastoffset < oldsize) &&

@@ -116,7 +116,7 @@ TEST(QSufSortTest, Search) {
     // Perform the search.
     int pos = 0;
     int match_len = courgette::qsuf::search(
-        &I[0], old_buf, old_size, new_buf, new_size, 0, old_size, &pos);
+        &I[0], old_buf, old_size, new_buf, new_size, &pos);
 
     // Check basic properties and match with expected values.
     EXPECT_GE(match_len, 0) << "test_case[" << idx << "]";
