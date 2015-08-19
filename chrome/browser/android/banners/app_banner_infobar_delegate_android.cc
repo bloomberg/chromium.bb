@@ -27,6 +27,7 @@
 #include "content/public/common/manifest.h"
 #include "jni/AppBannerInfoBarDelegateAndroid_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
@@ -231,7 +232,7 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
         web_contents, web_app_data_.start_url.spec(),
         AppBannerSettingsHelper::WEB);
 
-    ShortcutInfo info;
+    ShortcutInfo info(GURL::EmptyGURL());
     info.UpdateFromManifest(web_app_data_);
     info.UpdateSource(ShortcutInfo::SOURCE_APP_BANNER);
     content::BrowserThread::PostTask(

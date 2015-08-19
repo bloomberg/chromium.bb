@@ -26,7 +26,8 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
 
         WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, WEBAPP_URL, null, null, null,
                 ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
         getActivity().getWebappInfo().copy(mockInfo);
         mUrlBar = getActivity().getUrlBarForTests();
     }

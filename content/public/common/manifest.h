@@ -107,10 +107,17 @@ struct CONTENT_EXPORT Manifest {
 
   // This is a 64 bit integer because we need to represent an error state. The
   // color itself should only be 32 bits long if the value is not
-  // kInvalidOrMissingThemeColor and can be safely cast to SkColor if is valid.
-  // Set to kInvalidOrMissingThemeColor if parsing failed or field is not
+  // kInvalidOrMissingColor and can be safely cast to SkColor if is valid.
+  // Set to kInvalidOrMissingColor if parsing failed or field is not
   // present.
   int64_t theme_color;
+
+  // This is a 64 bit integer because we need to represent an error state. The
+  // color itself should only be 32 bits long if the value is not
+  // kInvalidOrMissingColor and can be safely cast to SkColor if is valid.
+  // Set to kInvalidOrMissingColor if parsing failed or field is not
+  // present.
+  int64_t background_color;
 
   // This is a proprietary extension of the web Manifest, double-check that it
   // is okay to use this entry.
@@ -122,8 +129,9 @@ struct CONTENT_EXPORT Manifest {
   // Manifest and the browser process must do the same when receiving it.
   static const size_t kMaxIPCStringLength;
 
-  // Constant representing an invalid theme color. Set to -1.
-  static const int64_t kInvalidOrMissingThemeColor;
+  // Constant representing an invalid color. Set to a value outside the
+  // range of a 32-bit integer.
+  static const int64_t kInvalidOrMissingColor;
 };
 
 } // namespace content

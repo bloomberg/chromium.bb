@@ -169,7 +169,8 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       info.display == blink::WebDisplayModeStandalone,
       info.orientation,
       info.source,
-      info.theme_color);
+      info.theme_color,
+      info.background_color);
 }
 
 void ShortcutHelper::RecordAddToHomescreen() {

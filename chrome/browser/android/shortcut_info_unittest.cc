@@ -8,10 +8,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 class ShortcutInfoTest : public testing::Test {
  public:
-  ShortcutInfoTest() = default;
+  ShortcutInfoTest() : info_(GURL()) {}
 
  protected:
   ShortcutInfo info_;

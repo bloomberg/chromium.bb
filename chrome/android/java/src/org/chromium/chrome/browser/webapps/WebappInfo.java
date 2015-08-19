@@ -32,6 +32,7 @@ public class WebappInfo {
     private int mOrientation;
     private int mSource;
     private long mThemeColor;
+    private long mBackgroundColor;
 
     public static WebappInfo createEmpty() {
         return new WebappInfo();
@@ -68,12 +69,15 @@ public class WebappInfo {
         int source = intent.getIntExtra(
                 ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         long themeColor = intent.getLongExtra(ShortcutHelper.EXTRA_THEME_COLOR,
-                ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        long backgroundColor = intent.getLongExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
 
         String name = nameFromIntent(intent);
         String shortName = shortNameFromIntent(intent);
 
-        return create(id, url, icon, name, shortName, orientation, source, themeColor);
+        return create(id, url, icon, name, shortName, orientation, source,
+                themeColor, backgroundColor);
     }
 
     /**
@@ -88,7 +92,8 @@ public class WebappInfo {
      * @param themeColor The theme color of the webapp.
      */
     public static WebappInfo create(String id, String url, String icon, String name,
-            String shortName, int orientation, int source, long themeColor) {
+            String shortName, int orientation, int source, long themeColor,
+            long backgroundColor) {
         if (id == null || url == null) {
             Log.e("WebappInfo", "Data passed in was incomplete: " + id + ", " + url);
             return null;
@@ -101,11 +106,13 @@ public class WebappInfo {
         }
 
         Uri uri = Uri.parse(url);
-        return new WebappInfo(id, uri, favicon, name, shortName, orientation, source, themeColor);
+        return new WebappInfo(id, uri, favicon, name, shortName, orientation, source,
+                themeColor, backgroundColor);
     }
 
     private WebappInfo(String id, Uri uri, Bitmap icon, String name,
-            String shortName, int orientation, int source, long themeColor) {
+            String shortName, int orientation, int source, long themeColor,
+            long backgroundColor) {
         mIcon = icon;
         mId = id;
         mName = name;
@@ -114,6 +121,7 @@ public class WebappInfo {
         mOrientation = orientation;
         mSource = source;
         mThemeColor = themeColor;
+        mBackgroundColor = backgroundColor;
         mIsInitialized = mUri != null;
     }
 
@@ -135,6 +143,7 @@ public class WebappInfo {
         outState.putInt(ShortcutHelper.EXTRA_ORIENTATION, mOrientation);
         outState.putInt(ShortcutHelper.EXTRA_SOURCE, mSource);
         outState.putLong(ShortcutHelper.EXTRA_THEME_COLOR, mThemeColor);
+        outState.putLong(ShortcutHelper.EXTRA_BACKGROUND_COLOR, mBackgroundColor);
     }
 
     /**
@@ -151,6 +160,7 @@ public class WebappInfo {
         mOrientation = newInfo.mOrientation;
         mSource = newInfo.mSource;
         mThemeColor = newInfo.mThemeColor;
+        mBackgroundColor = newInfo.mBackgroundColor;
     }
 
     public boolean isInitialized() {
@@ -188,11 +198,19 @@ public class WebappInfo {
     /**
      * Theme color is actually a 32 bit unsigned integer which encodes a color
      * in ARGB format. mThemeColor is a long because we also need to encode the
-     * error state of ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING which is a
-     * negative number.
+     * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
      */
     public long themeColor() {
         return mThemeColor;
+    }
+
+    /**
+     * Background color is actually a 32 bit unsigned integer which encodes a color
+     * in ARGB format. mBackgroundColor is a long because we also need to encode the
+     * error state of ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING.
+     */
+    public long backgroundColor() {
+        return mBackgroundColor;
     }
 
     // This is needed for clients that want to send the icon trough an intent.

@@ -269,7 +269,7 @@ public class WebappActivity extends FullScreenActivity {
                 ? getActivityTab().getFavicon() : mWebappInfo.icon();
 
         if (mBrandColor == null
-                && mWebappInfo.themeColor() != ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING
+                && mWebappInfo.themeColor() != ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING
                 && (mWebappInfo.themeColor() & 0xFF000000L) != 0) {
             mBrandColor = (int) mWebappInfo.themeColor();
         }

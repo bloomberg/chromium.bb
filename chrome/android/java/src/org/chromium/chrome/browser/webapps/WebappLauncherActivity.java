@@ -49,7 +49,11 @@ public class WebappLauncherActivity extends Activity {
         int webappSource = IntentUtils.safeGetIntExtra(intent,
                 ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         long webappThemeColor = IntentUtils.safeGetLongExtra(intent,
-                ShortcutHelper.EXTRA_THEME_COLOR, ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.EXTRA_THEME_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
+        long webappBackgroundColor = IntentUtils.safeGetLongExtra(intent,
+                ShortcutHelper.EXTRA_BACKGROUND_COLOR,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
 
         String webappName = WebappInfo.nameFromIntent(intent);
         String webappShortName = WebappInfo.shortNameFromIntent(intent);
@@ -64,7 +68,8 @@ public class WebappLauncherActivity extends Activity {
             if (webappMac != null && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac)) {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
                 launchIntent = createWebappIntent(webappId, webappUrl, webappIcon, webappName,
-                        webappShortName, webappOrientation, webappSource, webappThemeColor);
+                        webappShortName, webappOrientation, webappSource, webappThemeColor,
+                        webappBackgroundColor);
             } else {
                 Log.e(TAG, "Shortcut (" + webappUrl + ") opened in Chrome.");
 
@@ -86,17 +91,19 @@ public class WebappLauncherActivity extends Activity {
 
     /**
      * Creates an Intent that launches a WebappActivity for the given data.
-     * @param id          ID of the webapp.
-     * @param url         URL for the webapp.
-     * @param icon        Base64 encoded Bitmap representing the webapp.
-     * @param name        String to show on the splash screen.
-     * @param shortName   String to show on the recents menu
-     * @param orientation Default orientation for the activity.
-     * @param themeColor  Theme color to use for the activity.
+     * @param id               ID of the webapp.
+     * @param url              URL for the webapp.
+     * @param icon             Base64 encoded Bitmap representing the webapp.
+     * @param name             String to show on the splash screen.
+     * @param shortName        String to show on the recents menu
+     * @param orientation      Default orientation for the activity.
+     * @param themeColor       Theme color to use for the activity.
+     * @param backgroundColor  Background color to use for the activity.
      * @return Intent that can be used to launch the releveant WebappActivity.
      */
     private Intent createWebappIntent(String id, String url, String icon, String name,
-            String shortName, int orientation, int source, long themeColor) {
+            String shortName, int orientation, int source, long themeColor,
+            long backgroundColor) {
         String activityName = WebappActivity.class.getName();
         if (!FeatureUtilities.isDocumentModeEligible(this)) {
             // Specifically assign the app to a particular WebappActivity instance.
@@ -115,6 +122,7 @@ public class WebappLauncherActivity extends Activity {
         webappIntent.putExtra(ShortcutHelper.EXTRA_ORIENTATION, orientation);
         webappIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, source);
         webappIntent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor);
+        webappIntent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor);
 
         // On L, firing intents with the exact same data should relaunch a particular Activity.
         webappIntent.setAction(Intent.ACTION_VIEW);

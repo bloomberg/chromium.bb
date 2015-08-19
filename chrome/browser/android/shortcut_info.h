@@ -27,7 +27,6 @@ struct ShortcutInfo {
     SOURCE_COUNT = 5
   };
 
-  ShortcutInfo();
   explicit ShortcutInfo(const GURL& shortcut_url);
   ~ShortcutInfo();
 
@@ -45,6 +44,7 @@ struct ShortcutInfo {
   blink::WebScreenOrientationLockType orientation;
   Source source;
   int64_t theme_color;
+  int64_t background_color;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

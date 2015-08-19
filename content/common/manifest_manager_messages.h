@@ -37,6 +37,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::Manifest)
   IPC_STRUCT_TRAITS_MEMBER(related_applications)
   IPC_STRUCT_TRAITS_MEMBER(prefer_related_applications)
   IPC_STRUCT_TRAITS_MEMBER(theme_color)
+  IPC_STRUCT_TRAITS_MEMBER(background_color)
   IPC_STRUCT_TRAITS_MEMBER(gcm_sender_id)
 IPC_STRUCT_TRAITS_END()
 

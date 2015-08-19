@@ -134,6 +134,7 @@ void ManifestParser::Parse() {
   manifest_.prefer_related_applications =
       ParsePreferRelatedApplications(*dictionary);
   manifest_.theme_color = ParseThemeColor(*dictionary);
+  manifest_.background_color = ParseBackgroundColor(*dictionary);
   manifest_.gcm_sender_id = ParseGCMSenderID(*dictionary);
 
   ManifestUmaUtil::ParseSucceeded(manifest_);
@@ -184,6 +185,29 @@ base::NullableString16 ManifestParser::ParseString(
   if (trim == Trim)
     base::TrimWhitespace(value, base::TRIM_ALL, &value);
   return base::NullableString16(value, false);
+}
+
+int64_t ManifestParser::ParseColor(
+    const base::DictionaryValue& dictionary,
+    const std::string& key) {
+  base::NullableString16 parsed_color = ParseString(dictionary, key, Trim);
+  if (parsed_color.is_null())
+    return Manifest::kInvalidOrMissingColor;
+
+  blink::WebColor color;
+  if (!blink::WebCSSParser::parseColor(&color, parsed_color.string())) {
+      errors_.push_back(GetErrorPrefix() +
+                        "property '" + key + "' ignored, '" +
+                        base::UTF16ToUTF8(parsed_color.string()) +
+                        "' is not a valid color.");
+      return Manifest::kInvalidOrMissingColor;
+  }
+
+  // We do this here because Java does not have an unsigned int32 type so colors
+  // with high alpha values will be negative. Instead of doing the conversion
+  // after we pass over to Java, we do it here as it is easier and clearer.
+  int32_t signed_color = reinterpret_cast<int32_t&>(color);
+  return static_cast<int64_t>(signed_color);
 }
 
 GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
@@ -414,25 +438,12 @@ bool ManifestParser::ParsePreferRelatedApplications(
 
 int64_t ManifestParser::ParseThemeColor(
     const base::DictionaryValue& dictionary) {
-  base::NullableString16 theme_color = ParseString(
-      dictionary, "theme_color", Trim);
-  if (theme_color.is_null())
-    return Manifest::kInvalidOrMissingThemeColor;
+  return ParseColor(dictionary, "theme_color");
+}
 
-  blink::WebColor color;
-  if (!blink::WebCSSParser::parseColor(&color, theme_color.string())) {
-      errors_.push_back(GetErrorPrefix() +
-                        "property 'theme_color' ignored, '" +
-                        base::UTF16ToUTF8(theme_color.string()) +
-                        "' is not a valid color.");
-      return Manifest::kInvalidOrMissingThemeColor;
-  }
-
-  // We do this here because Java does not have an unsigned int32 type so colors
-  // with high alpha values will be negative. Instead of doing the conversion
-  // after we pass over to Java, we do it here as it is easier and clearer.
-  int32_t signed_color = reinterpret_cast<int32_t&>(color);
-  return static_cast<int64_t>(signed_color);
+int64_t ManifestParser::ParseBackgroundColor(
+    const base::DictionaryValue& dictionary) {
+  return ParseColor(dictionary, "background_color");
 }
 
 base::NullableString16 ManifestParser::ParseGCMSenderID(

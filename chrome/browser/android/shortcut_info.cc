@@ -4,19 +4,13 @@
 
 #include "chrome/browser/android/shortcut_info.h"
 
-ShortcutInfo::ShortcutInfo()
-    : display(blink::WebDisplayModeBrowser),
-      orientation(blink::WebScreenOrientationLockDefault),
-      source(SOURCE_ADD_TO_HOMESCREEN),
-      theme_color(content::Manifest::kInvalidOrMissingThemeColor) {
-}
-
 ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
     : url(shortcut_url),
       display(blink::WebDisplayModeBrowser),
       orientation(blink::WebScreenOrientationLockDefault),
       source(SOURCE_ADD_TO_HOMESCREEN),
-      theme_color(content::Manifest::kInvalidOrMissingThemeColor) {
+      theme_color(content::Manifest::kInvalidOrMissingColor),
+      background_color(content::Manifest::kInvalidOrMissingColor) {
 }
 
 ShortcutInfo::~ShortcutInfo() {
@@ -60,8 +54,12 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   }
 
   // Set the theme color based on the manifest value, if any.
-  if (manifest.theme_color != content::Manifest::kInvalidOrMissingThemeColor)
+  if (manifest.theme_color != content::Manifest::kInvalidOrMissingColor)
     theme_color = manifest.theme_color;
+
+  // Set the background color based on the manifest value, if any.
+  if (manifest.background_color != content::Manifest::kInvalidOrMissingColor)
+    background_color = manifest.background_color;
 }
 
 void ShortcutInfo::UpdateSource(const Source new_source) {

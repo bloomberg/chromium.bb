@@ -11,7 +11,7 @@ const double Manifest::Icon::kDefaultDensity = 1;
 // since otherwise we would not be able to check whether a theme color was valid
 // or not. The simplest way to do this is to simply add one to the maximum
 // possible 32-bit integer.
-const int64_t Manifest::kInvalidOrMissingThemeColor =
+const int64_t Manifest::kInvalidOrMissingColor =
     static_cast<int64_t>(std::numeric_limits<int32_t>::max()) + 1;
 const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
 
@@ -32,7 +32,8 @@ Manifest::Manifest()
     : display(blink::WebDisplayModeUndefined),
       orientation(blink::WebScreenOrientationLockDefault),
       prefer_related_applications(false),
-      theme_color(Manifest::kInvalidOrMissingThemeColor) {
+      theme_color(Manifest::kInvalidOrMissingColor),
+      background_color(Manifest::kInvalidOrMissingColor) {
 }
 
 Manifest::~Manifest() {
@@ -47,7 +48,8 @@ bool Manifest::IsEmpty() const {
          icons.empty() &&
          related_applications.empty() &&
          !prefer_related_applications &&
-         theme_color == Manifest::kInvalidOrMissingThemeColor &&
+         theme_color == Manifest::kInvalidOrMissingColor &&
+         background_color == Manifest::kInvalidOrMissingColor &&
          gcm_sender_id.is_null();
 }
 

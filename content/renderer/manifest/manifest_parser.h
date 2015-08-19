@@ -59,6 +59,13 @@ class CONTENT_EXPORT ManifestParser {
                                      const std::string& key,
                                      TrimType trim);
 
+  // Helper function to parse colors present on a given |dictionary| in a given
+  // field identified by its |key|.
+  // Returns the parsed color as an int64_t if any,
+  // Manifest::kInvalidOrMissingColor if the parsing failed.
+  int64_t ParseColor(const base::DictionaryValue& dictionary,
+                     const std::string& key);
+
   // Helper function to parse URLs present on a given |dictionary| in a given
   // field identified by its |key|. The URL is first parsed as a string then
   // resolved using |base_url|.
@@ -160,8 +167,14 @@ class CONTENT_EXPORT ManifestParser {
   // Parses the 'theme_color' field of the manifest, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-theme_color-member
   // Returns the parsed theme color if any,
-  // Manifest::kInvalidOrMissingThemeColor if the parsing failed.
+  // Manifest::kInvalidOrMissingColor if the parsing failed.
   int64_t ParseThemeColor(const base::DictionaryValue& dictionary);
+
+  // Parses the 'background_color' field of the manifest, as defined in:
+  // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-background_color-member
+  // Returns the parsed background color if any,
+  // Manifest::kInvalidOrMissingColor if the parsing failed.
+  int64_t ParseBackgroundColor(const base::DictionaryValue& dictionary);
 
   // Parses the 'gcm_sender_id' field of the manifest.
   // This is a proprietary extension of the Web Manifest specification.

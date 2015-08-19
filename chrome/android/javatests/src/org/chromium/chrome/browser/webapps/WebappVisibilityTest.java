@@ -22,7 +22,8 @@ public class WebappVisibilityTest extends WebappActivityTestBase {
         final String webappUrl = "http://originalwebsite.com";
         WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, webappUrl, null,
                 null, null, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.THEME_COLOR_INVALID_OR_MISSING);
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
+                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);
         getActivity().getWebappInfo().copy(mockInfo);
 
         // Show top controls for out-of-domain URLs.
