@@ -557,7 +557,7 @@ class BatteryUtils(object):
     self._device.RunShellCommand(
         ['dumpsys', 'batterystats', '--reset'], check_return=True)
     battery_data = self._device.RunShellCommand(
-        ['dumpsys', 'batterystats', '--charged', '--checkin'],
+        ['dumpsys', 'batterystats', '--charged', '-c'],
         check_return=True, large_output=True)
     for line in battery_data:
       l = line.split(',')

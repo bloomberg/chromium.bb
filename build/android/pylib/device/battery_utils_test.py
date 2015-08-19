@@ -551,7 +551,7 @@ class BatteryUtilsClearPowerData(BatteryUtilsTest):
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--charged', '--checkin'],
+            ['dumpsys', 'batterystats', '--charged', '-c'],
             check_return=True, large_output=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), [])):
@@ -568,7 +568,7 @@ class BatteryUtilsClearPowerData(BatteryUtilsTest):
         (self.call.device.RunShellCommand(
             ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'batterystats', '--charged', '--checkin'],
+            ['dumpsys', 'batterystats', '--charged', '-c'],
             check_return=True, large_output=True),
             ['9,1000,l,pwi,uid,0.0327']),
         (self.call.device.RunShellCommand(
