@@ -52,9 +52,7 @@ bool WindowManagerAccessPolicy::CanDescendIntoViewForViewTree(
 }
 
 bool WindowManagerAccessPolicy::CanEmbed(const ServerView* view) const {
-  return view->id().connection_id == connection_id_ ||
-         (view->allows_reembed() &&
-          delegate_->IsViewKnownForAccessPolicy(view));
+  return true;
 }
 
 bool WindowManagerAccessPolicy::CanChangeViewVisibility(

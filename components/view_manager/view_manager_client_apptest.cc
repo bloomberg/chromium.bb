@@ -859,4 +859,26 @@ TEST_F(ViewManagerTest, EmbedRootSeesHierarchyChanged) {
   ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
 }
 
+TEST_F(ViewManagerTest, EmbedFromEmbedRoot) {
+  View* embed_view = window_manager()->CreateView();
+  window_manager()->GetRoot()->AddChild(embed_view);
+
+  ViewManager* vm2 = Embed(embed_view);
+  vm2->SetEmbedRoot();
+  View* vm2_v1 = vm2->CreateView();
+  vm2->GetRoot()->AddChild(vm2_v1);
+
+  ViewManager* vm3 = Embed(vm2_v1);
+  View* vm3_v1 = vm3->CreateView();
+  vm3->GetRoot()->AddChild(vm3_v1);
+
+  // As |vm2| is an embed root it should get notified about |vm3_v1|.
+  ASSERT_TRUE(WaitForTreeSizeToMatch(vm2_v1, 2));
+
+  // Embed() from vm2 in vm3_v1. This is allowed as vm2 is an embed root.
+  ASSERT_EQ(1u, vm2_v1->children().size());
+  View* vm3_v1_in_vm2 = vm2_v1->children()[0];
+  ASSERT_TRUE(Embed(vm3_v1_in_vm2));
+}
+
 }  // namespace mojo

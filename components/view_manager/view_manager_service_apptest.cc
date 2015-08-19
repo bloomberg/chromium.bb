@@ -1714,6 +1714,25 @@ TEST_F(ViewManagerServiceAppTest, OnWillEmbed) {
   ASSERT_TRUE(changes2()->empty());
 }
 
+TEST_F(ViewManagerServiceAppTest, EmbedFailsFromOtherConnection) {
+  ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
+
+  Id view_1_1 = BuildViewId(connection_id_1(), 1);
+  Id view_2_2 = vm_client2()->CreateView(2);
+  ASSERT_TRUE(view_2_2);
+  ASSERT_TRUE(AddView(vm2(), view_1_1, view_2_2));
+  ASSERT_NO_FATAL_FAILURE(EstablishThirdConnection(vm2(), view_2_2));
+
+  Id view_3_3 = vm_client3()->CreateView(3);
+  ASSERT_TRUE(view_3_3);
+  ASSERT_TRUE(AddView(vm3(), view_2_2, view_3_3));
+
+  // 2 should not be able to embed in view_3_3 as view_3_3 was not created by
+  // 2.
+  EXPECT_FALSE(EmbedUrl(application_impl(), vm2(), application_impl()->url(),
+                        view_3_3));
+}
+
 // TODO(sky): need to better track changes to initial connection. For example,
 // that SetBounsdViews/AddView and the like don't result in messages to the
 // originating connection.

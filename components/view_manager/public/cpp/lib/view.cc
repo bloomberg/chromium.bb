@@ -607,7 +607,6 @@ void View::NotifyViewVisibilityChangedUp(View* target) {
 }
 
 bool View::PrepareForEmbed() {
-  // TODO(sky): this check isn't quite enough. See what service does.
   if (!OwnsView(manager_, this) &&
       !static_cast<ViewManagerClientImpl*>(manager_)->is_embed_root()) {
     return false;
