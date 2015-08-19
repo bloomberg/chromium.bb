@@ -157,14 +157,16 @@ static void SkiaGetGlyphWidthAndExtents(SkPaint* paint, hb_codepoint_t codepoint
     }
 }
 
+#if !defined(HB_VERSION_ATLEAST)
+#define HB_VERSION_ATLEAST(major, minor, micro) 0
+#endif
+
 static hb_bool_t harfBuzzGetGlyph(hb_font_t* hbFont, void* fontData, hb_codepoint_t unicode, hb_codepoint_t variationSelector, hb_codepoint_t* glyph, void* userData)
 {
     HarfBuzzFontData* hbFontData = reinterpret_cast<HarfBuzzFontData*>(fontData);
 
     if (variationSelector) {
-#if OS(LINUX)
-        // TODO(kojii): Linux non-official builds cannot use new HB APIs
-        // until crbug.com/462689 resolved or pangoft2 updates its HB.
+#if !HB_VERSION_ATLEAST(0, 9, 28)
         return false;
 #else
         // Skia does not support variation selectors, but hb does.
