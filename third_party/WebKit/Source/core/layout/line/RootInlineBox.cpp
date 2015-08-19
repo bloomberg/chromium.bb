@@ -182,10 +182,10 @@ void RootInlineBox::move(const LayoutSize& delta)
 
 void RootInlineBox::childRemoved(InlineBox* box)
 {
-    if (&box->layoutObject() == m_lineBreakObj)
+    if (box->lineLayoutItem() == m_lineBreakObj)
         setLineBreakInfo(0, 0, BidiStatus());
 
-    for (RootInlineBox* prev = prevRootBox(); prev && prev->lineBreakObj() == &box->layoutObject(); prev = prev->prevRootBox()) {
+    for (RootInlineBox* prev = prevRootBox(); prev && prev->lineBreakObj() == box->lineLayoutItem(); prev = prev->prevRootBox()) {
         prev->setLineBreakInfo(0, 0, BidiStatus());
         prev->markDirty();
     }
