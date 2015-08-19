@@ -438,12 +438,18 @@ void ContainerNode::willRemoveChild(Node& child)
     child.notifyMutationObserversNodeWillDetach();
     dispatchChildRemovalEvents(child);
     ChildFrameDisconnector(child).disconnect();
+    if (document() != child.document()) {
+        // |child| was moved another document by DOM mutation event handler.
+        return;
+    }
 
-    // nodeWillBeRemoved must be run after ChildFrameDisconnector, because ChildFrameDisconnector can run script
-    // which may cause state that is to be invalidated by removing the node.
+    // |nodeWillBeRemoved()| must be run after |ChildFrameDisconnector|, because
+    // |ChildFrameDisconnector| can run script which may cause state that is to
+    // be invalidated by removing the node.
     ScriptForbiddenScope scriptForbiddenScope;
     EventDispatchForbiddenScope assertNoEventDispatch;
-    document().nodeWillBeRemoved(child); // e.g. mutation event listener can create a new range.
+    // e.g. mutation event listener can create a new range.
+    document().nodeWillBeRemoved(child);
 }
 
 void ContainerNode::willRemoveChildren()
