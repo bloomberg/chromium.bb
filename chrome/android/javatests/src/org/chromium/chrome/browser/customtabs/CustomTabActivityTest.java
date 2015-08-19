@@ -30,6 +30,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.BrandColorUtils;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -43,6 +44,7 @@ import org.chromium.content.browser.BrowserStartupController.StartupCallback;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -436,6 +438,46 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                         return mActivity.getActivityTab().getUrl().equals(TEST_PAGE_2);
                     }
         }));
+    }
+
+    @SmallTest
+    public void testReferrerAddedAutomatically() throws InterruptedException {
+        final IBinder session = warmUpAndLaunchUrlWithSession();
+        assertEquals(mActivity.getIntentDataProvider().getSession(), session);
+        final Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        CustomTabsConnection connection = CustomTabsConnection.getInstance((Application) context);
+        String packageName = context.getPackageName();
+        final String referrer =
+                IntentHandler.constructValidReferrerForAuthority(packageName).getUrl();
+        assertEquals(referrer, connection.getReferrerForSession(session).getUrl());
+
+        final Tab tab = mActivity.getActivityTab();
+        final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                assertEquals(referrer, params.getReferrer().getUrl());
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab) {
+                pageLoadFinishedHelper.notifyCalled();
+            }
+        });
+        assertTrue("CustomTabContentHandler can't handle intent with same session",
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return CustomTabActivity.handleInActiveContentIfNeeded(
+                            CustomTabsTestUtils.createMinimalCustomTabIntent(context,
+                                    TEST_PAGE_2, session));
+                    }
+                }));
+        try {
+            pageLoadFinishedHelper.waitForCallback(0);
+        } catch (TimeoutException e) {
+            fail();
+        }
     }
 
     private IBinder warmUpAndLaunchUrlWithSession() throws InterruptedException {

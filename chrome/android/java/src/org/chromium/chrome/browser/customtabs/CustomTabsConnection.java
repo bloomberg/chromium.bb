@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.Referrer;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -139,17 +140,26 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     /** Per-session values. */
     private static class SessionParams {
         public final int mUid;
+        public final Referrer mReferrer;
         public final ICustomTabsCallback mCallback;
         private ServiceConnection mServiceConnection;
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
 
-        public SessionParams(int uid, ICustomTabsCallback callback) {
+        public SessionParams(Context context, int uid, ICustomTabsCallback callback) {
             mUid = uid;
             mCallback = callback;
             mServiceConnection = null;
             mPredictedUrl = null;
             mLastMayLaunchUrlTimestamp = 0;
+            mReferrer = constructReferrer(context);
+        }
+
+        private Referrer constructReferrer(Context context) {
+            PackageManager packageManager = context.getPackageManager();
+            String[] packageList = packageManager.getPackagesForUid(mUid);
+            if (packageList.length != 1 || TextUtils.isEmpty(packageList[0])) return null;
+            return IntentHandler.constructValidReferrerForAuthority(packageList[0]);
         }
 
         public ServiceConnection getServiceConnection() {
@@ -206,7 +216,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     public boolean newSession(ICustomTabsCallback callback) {
         if (callback == null) return false;
         final int uid = Binder.getCallingUid();
-        SessionParams sessionParams = new SessionParams(uid, callback);
+        SessionParams sessionParams = new SessionParams(mApplication, uid, callback);
         final IBinder session = callback.asBinder();
         synchronized (mLock) {
             if (mSessionParams.containsKey(session)) return false;
@@ -387,6 +397,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         mExternalPrerenderHandler.cancelCurrentPrerender();
         webContents.destroy();
         return null;
+    }
+
+    public Referrer getReferrerForSession(IBinder session) {
+        if (!mSessionParams.containsKey(session)) return null;
+        return mSessionParams.get(session).mReferrer;
     }
 
     private ICustomTabsCallback getCallbackForSession(IBinder session) {
@@ -601,6 +616,9 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         Point contentSize = estimateContentSize();
         Context context = mApplication.getApplicationContext();
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent, context);
+        if (referrer == null && getReferrerForSession(session) != null) {
+            referrer = getReferrerForSession(session).getUrl();
+        }
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
                 Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);

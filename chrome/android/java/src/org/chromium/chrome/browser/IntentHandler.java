@@ -285,9 +285,8 @@ public class IntentHandler {
      * Intent.
      *
      * @return Whether the Intent was successfully handled.
-     * TODO(mariakhomenko): make package protected after ChromeTabbedActivity is upstreamed.
      */
-    public boolean onNewIntent(Context context, Intent intent) {
+    boolean onNewIntent(Context context, Intent intent) {
         assert intentHasValidUrl(intent);
         String url = getUrlFromIntent(intent);
         boolean hasUserGesture =
@@ -396,6 +395,16 @@ public class IntentHandler {
     private static boolean isValidReferrerHeader(String referrer) {
         return referrer != null && referrer.toLowerCase(Locale.US).startsWith(
                 ANDROID_APP_REFERRER_SCHEME);
+    }
+
+    /**
+     * Constructs a valid referrer using the given authority.
+     * @param authority The authority to use.
+     * @return Referrer with default policy that uses the valid android app scheme.
+     */
+    public static Referrer constructValidReferrerForAuthority(String authority) {
+        return new Referrer(new Uri.Builder().scheme(ANDROID_APP_REFERRER_SCHEME)
+                .authority(authority).build().toString(), Referrer.REFERRER_POLICY_DEFAULT);
     }
 
     /**

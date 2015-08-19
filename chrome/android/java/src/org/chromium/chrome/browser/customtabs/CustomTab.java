@@ -154,8 +154,9 @@ public class CustomTab extends ChromeTab {
     private final boolean mEnableUrlBarHiding;
 
     /**
-     * Construct an CustomTab. It might load a prerendered {@link WebContents} for the URL, if
-     * {@link CustomTabsConnectionService} has successfully warmed up for the url.
+     * Construct an CustomTab. Note that url and referrer given here is only used to retrieve a
+     * prerendered web contents if it exists. It might load a prerendered {@link WebContents} for
+     * the URL, if {@link CustomTabsConnectionService} has successfully warmed up for the url.
      */
     public CustomTab(ChromeActivity activity, WindowAndroid windowAndroid, IBinder session,
             String url, String referrer, int parentTabId, boolean enableUrlBarHiding) {
