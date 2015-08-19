@@ -521,11 +521,11 @@ public class ContentViewCore implements
     private boolean mHasInsertion;
     private String mLastSelectedText;
     private boolean mFocusedNodeEditable;
-    private SelectActionMode mActionMode;
+    private WebActionMode mActionMode;
     private boolean mFloatingActionModeCreationFailed;
     private boolean mUnselectAllOnActionModeDismiss;
     private boolean mPreserveSelectionOnNextLossOfFocus;
-    private SelectActionModeCallback.ActionHandler mActionHandler;
+    private WebActionModeCallback.ActionHandler mActionHandler;
     private final Rect mSelectionRect = new Rect();
 
     // Delegate that will handle GET downloads, and be notified of completion of POST downloads.
@@ -2012,7 +2012,7 @@ public class ContentViewCore implements
     }
 
     @VisibleForTesting
-    public SelectActionModeCallback.ActionHandler getSelectActionHandler() {
+    public WebActionModeCallback.ActionHandler getSelectActionHandler() {
         return mActionHandler;
     }
 
@@ -2022,9 +2022,9 @@ public class ContentViewCore implements
             return;
         }
 
-        // Start a new action mode with a SelectActionModeCallback.
+        // Start a new action mode with a WebActionModeCallback.
         if (mActionHandler == null) {
-            mActionHandler = new SelectActionModeCallback.ActionHandler() {
+            mActionHandler = new WebActionModeCallback.ActionHandler() {
                 @Override
                 public void selectAll() {
                     mWebContents.selectAll();

@@ -43,9 +43,9 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.content.app.ContentApplication;
-import org.chromium.content.browser.SelectActionMode;
-import org.chromium.content.browser.SelectActionModeCallback;
-import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+import org.chromium.content.browser.WebActionMode;
+import org.chromium.content.browser.WebActionModeCallback;
+import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -167,13 +167,13 @@ public class AwShellActivity extends Activity {
             }
 
             @Override
-            public SelectActionMode startActionMode(
+            public WebActionMode startActionMode(
                     View view, ActionHandler actionHandler, boolean floating) {
                 if (floating) return null;
                 ActionMode.Callback callback =
-                        new SelectActionModeCallback(view.getContext(), actionHandler);
+                        new WebActionModeCallback(view.getContext(), actionHandler);
                 ActionMode actionMode = view.startActionMode(callback);
-                return actionMode != null ? new SelectActionMode(actionMode) : null;
+                return actionMode != null ? new WebActionMode(actionMode) : null;
             }
         };
 

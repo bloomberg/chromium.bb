@@ -17,10 +17,10 @@ import android.view.View;
 import org.chromium.content.R;
 
 /**
- * An ActionMode.Callback for in-page selection. This class handles both the editable and
- * non-editable cases.
+ * An ActionMode.Callback for in-page web content selection. This class handles both the editable
+ * and non-editable cases.
  */
-public class SelectActionModeCallback implements ActionMode.Callback {
+public class WebActionModeCallback implements ActionMode.Callback {
     /**
      * An interface to retrieve information about the current selection, and also to perform
      * actions based on the selection or when the action bar is dismissed.
@@ -105,7 +105,7 @@ public class SelectActionModeCallback implements ActionMode.Callback {
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
 
-    public SelectActionModeCallback(Context context, ActionHandler actionHandler) {
+    public WebActionModeCallback(Context context, ActionHandler actionHandler) {
         mContext = context;
         mActionHandler = actionHandler;
     }

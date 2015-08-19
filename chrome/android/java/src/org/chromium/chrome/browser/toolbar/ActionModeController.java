@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.toolbar;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -16,16 +16,16 @@ import android.util.Property;
 import org.chromium.chrome.R;
 
 /**
- * This class handles the animation for the contextual menu bar and adds a custom
- * ActionMode.Callback to the menu bar.
+ * This class controls the how toolbar animates while the action mode bar is being shown. It also
+ * manages a {@link ToolbarActionModeCallback}.
  */
-public class ContextualMenuBar {
+public class ActionModeController {
 
     private static final int SLIDE_DURATION_MS = 200;
 
-    private CustomSelectionActionModeCallback mCustomSelectionActionModeCallback;
+    private ToolbarActionModeCallback mToolbarActionModeCallback;
     private ObjectAnimator mCurrentAnimation = null;
-    private boolean mShowingContextualActionBar = false;
+    private boolean mShowingActionMode = false;
     private float mTabStripHeight;
     private final Context mContext;
     private final ActionBarDelegate mActionBarDelegate;
@@ -44,8 +44,8 @@ public class ContextualMenuBar {
             };
 
     /**
-     * This is an interface for objects that the contextualMenuBar can use for animating the action
-     * bar.
+     * This is an interface for to let the controller animate the position of {@link Toolbar}, while
+     * action mode is showing.
      */
     public interface ActionBarDelegate {
 
@@ -73,14 +73,11 @@ public class ContextualMenuBar {
     }
 
     /**
-     * Creates the contextual menu bar and ties it to an action bar using the given action bar
-     * delegate.
-     * @param context The context which the contextual action menu bar should be using for accessing
-     *                resources.
-     * @param actionBarDelegate The delegate for communicating with the action bar while animating
-     *                          it.
+     * Creates the {@link ActionModeController} and ties it to an action bar using the given action
+     * bar delegate.
+     * @param actionBarDelegate The delegate for communicating with toolbar for animation.
      */
-    public ContextualMenuBar(Context context, ActionBarDelegate actionBarDelegate) {
+    public ActionModeController(Context context, ActionBarDelegate actionBarDelegate) {
         mActionBarDelegate = actionBarDelegate;
         mContext = context;
         mTabStripHeight = mContext.getResources().getDimension(R.dimen.tab_strip_height);
@@ -94,7 +91,7 @@ public class ContextualMenuBar {
     }
 
     /**
-     * @return The delegate handling action bar positioning for the contextual menu bar.
+     * @return The delegate handling action bar positioning for the custom action bar.
      */
     public ActionBarDelegate getActionBarDelegate() {
         return mActionBarDelegate;
@@ -102,20 +99,19 @@ public class ContextualMenuBar {
 
     /**
      * Sets the custom ActionMode.Callback
-     * @param customSelectionActionModeCallback
      */
     public void setCustomSelectionActionModeCallback(
-            CustomSelectionActionModeCallback customSelectionActionModeCallback) {
-        if (customSelectionActionModeCallback.equals(mCustomSelectionActionModeCallback)) return;
-        mCustomSelectionActionModeCallback = customSelectionActionModeCallback;
-        mCustomSelectionActionModeCallback.setContextualMenuBar(this);
+            ToolbarActionModeCallback toolbarActionModeCallback) {
+        if (toolbarActionModeCallback.equals(mToolbarActionModeCallback)) return;
+        mToolbarActionModeCallback = toolbarActionModeCallback;
+        mToolbarActionModeCallback.setActionModeController(this);
     }
 
     /**
      * @return The custom ActionMode.Callback.
      */
-    public CustomSelectionActionModeCallback getCustomSelectionActionModeCallback() {
-        return mCustomSelectionActionModeCallback;
+    public ToolbarActionModeCallback getActionModeCallback() {
+        return mToolbarActionModeCallback;
     }
 
     /**
@@ -136,15 +132,15 @@ public class ContextualMenuBar {
      * Show controls after orientation change if previously visible.
      */
     public void showControlsOnOrientationChange() {
-        if (mShowingContextualActionBar && mCurrentAnimation == null) {
-            showControls();
+        if (mShowingActionMode && mCurrentAnimation == null) {
+            startShowAnimation();
         }
     }
 
     /**
      * Animation for the textview if the action bar is visible.
      */
-    public void showControls() {
+    public void startShowAnimation() {
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
 
         mCurrentAnimation = ObjectAnimator.ofInt(mActionBarDelegate, TOP_MARGIN_ANIM_PROPERTY,
@@ -171,13 +167,13 @@ public class ContextualMenuBar {
 
         mActionBarDelegate.setActionBarBackgroundVisibility(true);
         mCurrentAnimation.start();
-        mShowingContextualActionBar = true;
+        mShowingActionMode = true;
     }
 
     /**
      * Hide animation for the textview if the action bar is not visible.
      */
-    public void hideControls() {
+    public void startHideAnimation() {
         if (mCurrentAnimation != null) mCurrentAnimation.cancel();
 
         mCurrentAnimation = ObjectAnimator.ofInt(mActionBarDelegate, TOP_MARGIN_ANIM_PROPERTY,
@@ -192,6 +188,6 @@ public class ContextualMenuBar {
         });
 
         mCurrentAnimation.start();
-        mShowingContextualActionBar = false;
+        mShowingActionMode = false;
     }
 }

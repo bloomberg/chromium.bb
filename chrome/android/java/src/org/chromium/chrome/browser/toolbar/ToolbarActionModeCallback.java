@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.toolbar;
 
 import android.view.ActionMode;
 import android.view.Menu;
@@ -13,21 +13,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * A class that represents a custom ActionMode.Callback.
+ * A custom ActionMode.Callback that handles copy, paste selection in omnibox and toolbar.
  */
-public class CustomSelectionActionModeCallback implements ActionMode.Callback {
+public class ToolbarActionModeCallback implements ActionMode.Callback {
 
     private static boolean sInitializedTypeMethods;
     private static Method sGetTypeMethod;
     private static int sTypeFloating;
 
-    private ContextualMenuBar mContextualMenuBar;
+    private ActionModeController mActionModeController;
 
     /**
-     * Sets the @param contextualMenuBar.
+     * Sets the {@link #mActionModeController}.
      */
-    public void setContextualMenuBar(ContextualMenuBar contextualMenuBar) {
-        mContextualMenuBar = contextualMenuBar;
+    public void setActionModeController(ActionModeController actionModeController) {
+        mActionModeController = actionModeController;
     }
 
     @Override
@@ -38,13 +38,13 @@ public class CustomSelectionActionModeCallback implements ActionMode.Callback {
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         if (isFloatingActionMode(mode)) return;
-        mContextualMenuBar.hideControls();
+        mActionModeController.startHideAnimation();
     }
 
     @Override
     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
         if (isFloatingActionMode(mode)) return true;
-        mContextualMenuBar.showControls();
+        mActionModeController.startShowAnimation();
         return true;
     }
 

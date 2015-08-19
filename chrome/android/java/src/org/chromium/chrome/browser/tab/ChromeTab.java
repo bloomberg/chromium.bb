@@ -71,8 +71,8 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.SelectActionMode;
-import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+import org.chromium.content.browser.WebActionMode;
+import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 import org.chromium.content.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.InvalidateTypes;
@@ -760,13 +760,13 @@ public class ChromeTab extends Tab {
             }
 
             @Override
-            public SelectActionMode startActionMode(
+            public WebActionMode startActionMode(
                     View view, ActionHandler actionHandler, boolean floating) {
                 if (floating) return null;
-                ChromeSelectActionModeCallback callback =
-                        new ChromeSelectActionModeCallback(view.getContext(), actionHandler);
+                ChromeWebActionModeCallback callback =
+                        new ChromeWebActionModeCallback(view.getContext(), actionHandler);
                 ActionMode actionMode = view.startActionMode(callback);
-                return actionMode != null ? new SelectActionMode(actionMode) : null;
+                return actionMode != null ? new WebActionMode(actionMode) : null;
             }
 
             @Override

@@ -9,16 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import org.chromium.chrome.browser.ContextualMenuBar;
-import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
-import org.chromium.chrome.browser.CustomSelectionActionModeCallback;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.ActionModeController;
+import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.Toolbar;
+import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -95,7 +95,7 @@ public interface LocationBar extends UrlBarDelegate {
      * Initialize controls that will act as hooks to various functions.
      * @param windowDelegate {@link WindowDelegate} that will provide {@link Window} related info.
      * @param delegate {@link ActionBarDelegate} to be used while creating a
-     *                 {@link ContextualMenuBar}.
+     *                 {@link ActionModeController}.
      * @param windowAndroid {@link WindowAndroid} that is used by the owning {@link Activity}.
      */
     void initializeControls(WindowDelegate windowDelegate,
@@ -143,6 +143,6 @@ public interface LocationBar extends UrlBarDelegate {
      * Sets the callback to be used by default for text editing action bar.
      * @param callback The callback to use.
      */
-    void setDefaultTextEditActionModeCallback(CustomSelectionActionModeCallback callback);
+    void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback);
 
 }

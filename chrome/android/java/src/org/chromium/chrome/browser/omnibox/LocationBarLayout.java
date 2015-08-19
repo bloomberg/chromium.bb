@@ -64,9 +64,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ContextualMenuBar;
-import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
-import org.chromium.chrome.browser.CustomSelectionActionModeCallback;
 import org.chromium.chrome.browser.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
@@ -90,6 +87,9 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.ActionModeController;
+import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
+import org.chromium.chrome.browser.toolbar.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -157,7 +157,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
     protected UrlContainer mUrlContainer;
-    private ContextualMenuBar mContextualMenuBar = null;
+    private ActionModeController mActionModeController = null;
 
     private AutocompleteController mAutocomplete;
 
@@ -244,7 +244,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     // code paths in a not necessarily obvious or even deterministic order.
     private boolean mSuggestionSelectionInProgress;
 
-    private CustomSelectionActionModeCallback mDefaultActionModeCallbackForTextEdit;
+    private ToolbarActionModeCallback mDefaultActionModeCallbackForTextEdit;
 
     private Runnable mShowSuggestions;
 
@@ -791,9 +791,9 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             ActionBarDelegate actionBarDelegate, WindowAndroid windowAndroid) {
         mWindowDelegate = windowDelegate;
 
-        mContextualMenuBar = new ContextualMenuBar(getContext(), actionBarDelegate);
-        mContextualMenuBar.setCustomSelectionActionModeCallback(
-                new CustomSelectionActionModeCallback() {
+        mActionModeController = new ActionModeController(getContext(), actionBarDelegate);
+        mActionModeController.setCustomSelectionActionModeCallback(
+                new ToolbarActionModeCallback() {
                     @Override
                     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
                         boolean retVal = super.onCreateActionMode(mode, menu);
@@ -1050,7 +1050,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     @Override
-    public void setDefaultTextEditActionModeCallback(CustomSelectionActionModeCallback callback) {
+    public void setDefaultTextEditActionModeCallback(ToolbarActionModeCallback callback) {
         mDefaultActionModeCallbackForTextEdit = callback;
     }
 
@@ -1061,7 +1061,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private void updateCustomSelectionActionModeCallback() {
         if (mQueryInTheOmnibox) {
             mUrlBar.setCustomSelectionActionModeCallback(
-                    mContextualMenuBar.getCustomSelectionActionModeCallback());
+                    mActionModeController.getActionModeCallback());
         } else {
             mUrlBar.setCustomSelectionActionModeCallback(mDefaultActionModeCallbackForTextEdit);
         }

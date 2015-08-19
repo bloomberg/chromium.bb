@@ -9,7 +9,7 @@ import android.view.ActionMode;
 import android.view.Menu;
 
 import org.chromium.chrome.R;
-import org.chromium.content.browser.SelectActionModeCallback;
+import org.chromium.content.browser.WebActionModeCallback;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -17,8 +17,8 @@ import org.chromium.ui.base.DeviceFormFactor;
  * changes:
  * - sets the title for the action bar description based on tablet/phone UI.
  */
-public class ChromeSelectActionModeCallback extends SelectActionModeCallback {
-    ChromeSelectActionModeCallback(Context context, ActionHandler actionHandler) {
+public class ChromeWebActionModeCallback extends WebActionModeCallback {
+    ChromeWebActionModeCallback(Context context, ActionHandler actionHandler) {
         super(context, actionHandler);
     }
 

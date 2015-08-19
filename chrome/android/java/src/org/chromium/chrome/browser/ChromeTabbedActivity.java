@@ -31,7 +31,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ContextualMenuBar.ActionBarDelegate;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -98,8 +97,7 @@ import org.chromium.ui.widget.Toast;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDelegate,
-        OverviewModeObserver {
+public class ChromeTabbedActivity extends ChromeActivity implements OverviewModeObserver {
 
     private static final int FIRST_RUN_EXPERIENCE_RESULT = 101;
 
@@ -430,7 +428,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
 
             mFindToolbarManager = new FindToolbarManager(this, getTabModelSelector(),
                     getToolbarManager()
-                            .getContextualMenuBar().getCustomSelectionActionModeCallback());
+                            .getActionModeController().getActionModeCallback());
 
             OnClickListener tabSwitcherClickHandler = new OnClickListener() {
                 @Override
@@ -1191,35 +1189,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ActionBarDel
             mConnectionChangeReceiver = new ConnectionChangeReceiver();
         }
         return mConnectionChangeReceiver;
-    }
-
-    /**
-     * Sets the top margin of the control container.
-     *
-     * @param margin The new top margin of the control container.
-     */
-    @Override
-    public void setControlTopMargin(int margin) {
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)
-                mControlContainer.getLayoutParams();
-        lp.topMargin = margin;
-        mControlContainer.setLayoutParams(lp);
-    }
-
-    /**
-     * @return The top margin of the control container.
-     */
-    @Override
-    public int getControlTopMargin() {
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)
-                mControlContainer.getLayoutParams();
-        return lp.topMargin;
-    }
-
-    @Override
-    public void setActionBarBackgroundVisibility(boolean visible) {
-        int visibility = visible ? View.VISIBLE : View.GONE;
-        findViewById(R.id.action_bar_black_background).setVisibility(visibility);
     }
 
     @VisibleForTesting

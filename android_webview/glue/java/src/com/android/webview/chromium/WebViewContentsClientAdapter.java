@@ -51,9 +51,9 @@ import org.chromium.base.TraceEvent;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.SelectActionMode;
-import org.chromium.content.browser.SelectActionModeCallback;
-import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+import org.chromium.content.browser.WebActionMode;
+import org.chromium.content.browser.WebActionModeCallback;
+import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 
 import java.lang.ref.WeakReference;
 import java.security.Principal;
@@ -387,15 +387,15 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      * @See AwContentsClient#startActionMode(View,ActionHandler,boolean)
      */
     @Override
-    public SelectActionMode startActionMode(
+    public WebActionMode startActionMode(
             View view, ActionHandler actionHandler, boolean floating) {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.startActionMode");
             if (TRACE) Log.d(TAG, "startActionMode");
             if (floating) return null;
-            ActionMode.Callback callback = new SelectActionModeCallback(mContext, actionHandler);
+            ActionMode.Callback callback = new WebActionModeCallback(mContext, actionHandler);
             ActionMode actionMode = view.startActionMode(callback);
-            return actionMode != null ? new SelectActionMode(actionMode) : null;
+            return actionMode != null ? new WebActionMode(actionMode) : null;
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.startActionMode");
         }

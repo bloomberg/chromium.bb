@@ -28,8 +28,8 @@ import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.SelectActionMode;
-import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+import org.chromium.content.browser.WebActionMode;
+import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 
 import java.security.Principal;
 import java.util.HashMap;
@@ -373,7 +373,7 @@ public abstract class AwContentsClient {
      */
     public abstract void onNewPicture(Picture picture);
 
-    public abstract SelectActionMode startActionMode(
+    public abstract WebActionMode startActionMode(
             View view, ActionHandler actionHandler, boolean floating);
 
     public abstract boolean supportsFloatingActionMode();

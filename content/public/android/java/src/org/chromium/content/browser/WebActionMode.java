@@ -9,10 +9,10 @@ import android.view.ActionMode;
 import org.chromium.base.Log;
 
 /**
- * An ActionMode for in-page selection. This class wraps an ActionMode created
+ * An ActionMode for in-page web content selection. This class wraps an ActionMode created
  * by the associated View, providing modified interaction with that ActionMode.
  */
-public class SelectActionMode {
+public class WebActionMode {
     private static final String TAG = "cr.SelectActionMode";
 
     protected final ActionMode mActionMode;
@@ -21,7 +21,7 @@ public class SelectActionMode {
      * Constructs a SelectActionMode instance wrapping a concrete ActionMode.
      * @param actionMode the wrapped ActionMode.
      */
-    public SelectActionMode(ActionMode actionMode) {
+    public WebActionMode(ActionMode actionMode) {
         assert actionMode != null;
         mActionMode = actionMode;
     }

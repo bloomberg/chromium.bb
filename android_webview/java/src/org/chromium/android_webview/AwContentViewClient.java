@@ -13,8 +13,8 @@ import android.widget.FrameLayout;
 
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
-import org.chromium.content.browser.SelectActionMode;
-import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+import org.chromium.content.browser.WebActionMode;
+import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 
 /**
  * ContentViewClient implementation for WebView
@@ -70,7 +70,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     }
 
     @Override
-    public SelectActionMode startActionMode(
+    public WebActionMode startActionMode(
             View view, ActionHandler actionHandler, boolean floating) {
         return mAwContentsClient.startActionMode(view, actionHandler, floating);
     }

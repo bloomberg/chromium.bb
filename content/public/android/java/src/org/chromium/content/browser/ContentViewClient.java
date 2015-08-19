@@ -13,7 +13,7 @@ import android.view.View;
 import android.view.View.MeasureSpec;
 
 import org.chromium.base.Log;
-import org.chromium.content.browser.SelectActionModeCallback.ActionHandler;
+import org.chromium.content.browser.WebActionModeCallback.ActionHandler;
 
 /**
  *  Main callback class used by ContentView.
@@ -93,13 +93,13 @@ public class ContentViewClient {
      *                 feature is unsupported, the return value will be null.
      * @return the SelectActionMode if creation is successful, otherwise null.
      */
-    public SelectActionMode startActionMode(
+    public WebActionMode startActionMode(
             View view, ActionHandler actionHandler, boolean floating) {
         if (floating) return null;
         ActionMode.Callback callback =
-                new SelectActionModeCallback(view.getContext(), actionHandler);
+                new WebActionModeCallback(view.getContext(), actionHandler);
         ActionMode actionMode = view.startActionMode(callback);
-        return actionMode != null ? new SelectActionMode(actionMode) : null;
+        return actionMode != null ? new WebActionMode(actionMode) : null;
     }
 
     /**
