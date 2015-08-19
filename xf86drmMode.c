@@ -873,7 +873,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 	int len, i;
 	struct drm_event *e;
 	struct drm_event_vblank *vblank;
-	
+
 	/* The DRM read semantics guarantees that we always get only
 	 * complete events. */
 
@@ -893,7 +893,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 				break;
 			vblank = (struct drm_event_vblank *) e;
 			evctx->vblank_handler(fd,
-					      vblank->sequence, 
+					      vblank->sequence,
 					      vblank->tv_sec,
 					      vblank->tv_usec,
 					      U642VOID (vblank->user_data));
