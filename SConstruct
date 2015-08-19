@@ -2307,7 +2307,6 @@ Common tasks:
 
 * cleaning:           scons -c
 * building:           scons
-* build mandel:       scons --mode=nacl mandel.nexe
 * smoke test:         scons --mode=nacl,opt-linux -k pp=1 smoke_tests
 
 * sel_ldr:            scons --mode=opt-linux sel_ldr
@@ -3312,7 +3311,6 @@ irt_variant_tests = [
     'tests/environment_variables/nacl.scons',
     'tests/exception_test/nacl.scons',
     'tests/fdopen_test/nacl.scons',
-    'tests/fib/nacl.scons',
     'tests/file/nacl.scons',
     'tests/fixedfeaturecpu/nacl.scons',
     'tests/futexes/nacl.scons',
@@ -3331,7 +3329,6 @@ irt_variant_tests = [
     'tests/list_mappings/nacl.scons',
     'tests/longjmp/nacl.scons',
     'tests/loop/nacl.scons',
-    'tests/mandel/nacl.scons',
     'tests/math/nacl.scons',
     'tests/memcheck_test/nacl.scons',
     'tests/minsfi/nacl.scons',
@@ -3363,7 +3360,6 @@ irt_variant_tests = [
     'tests/simd/nacl.scons',
     'tests/sleep/nacl.scons',
     'tests/srpc/nacl.scons',
-    'tests/srpc_hw/nacl.scons',
     'tests/srpc_message/nacl.scons',
     'tests/stack_alignment/nacl.scons',
     'tests/stubout_mode/nacl.scons',

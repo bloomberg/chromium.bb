@@ -1,8 +1,0 @@
-rpc call initiated fortytwo::i
-rpc call complete fortytwo::i
-output 0:  i(42)
-
-rpc call initiated helloworld::s
-rpc call complete helloworld::s
-output 0:  s("hello, world.")
-
