@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/installer/util/product_unittest.h"
+#include "chrome/installer/util/product.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,40 +15,14 @@
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/installer_state.h"
 #include "chrome/installer/util/master_preferences.h"
-#include "chrome/installer/util/product.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using base::win::RegKey;
 using installer::Product;
 using installer::MasterPreferences;
 using registry_util::RegistryOverrideManager;
 
-void TestWithTempDir::SetUp() {
-  // Name a subdirectory of the user temp directory.
-  ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-}
-
-void TestWithTempDir::TearDown() {
-  logging::CloseLogFile();
-  ASSERT_TRUE(test_dir_.Delete());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void TestWithTempDirAndDeleteTempOverrideKeys::SetUp() {
-  TestWithTempDir::SetUp();
-}
-
-void TestWithTempDirAndDeleteTempOverrideKeys::TearDown() {
-  TestWithTempDir::TearDown();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-class ProductTest : public TestWithTempDirAndDeleteTempOverrideKeys {
- protected:
-};
-
-TEST_F(ProductTest, ProductInstallBasic) {
+TEST(ProductTest, ProductInstallBasic) {
   // TODO(tommi): We should mock this and use our mocked distribution.
   const bool multi_install = false;
   const bool system_level = true;
@@ -124,8 +99,8 @@ TEST_F(ProductTest, ProductInstallBasic) {
   }
 }
 
-TEST_F(ProductTest, LaunchChrome) {
+TEST(ProductTest, LaunchChrome) {
   // TODO(tommi): Test Product::LaunchChrome and
   // Product::LaunchChromeAndWait.
-  LOG(ERROR) << "Test not implemented.";
+  NOTIMPLEMENTED();
 }

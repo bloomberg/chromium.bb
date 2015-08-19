@@ -133,7 +133,6 @@
             'installer/util/move_tree_work_item_unittest.cc',
             'installer/util/product_state_unittest.cc',
             'installer/util/product_unittest.cc',
-            'installer/util/product_unittest.h',
             'installer/util/registry_key_backup_unittest.cc',
             'installer/util/registry_test_data.cc',
             'installer/util/registry_test_data.h',

@@ -246,7 +246,6 @@ if (is_win) {
       "move_tree_work_item_unittest.cc",
       "product_state_unittest.cc",
       "product_unittest.cc",
-      "product_unittest.h",
       "registry_key_backup_unittest.cc",
       "registry_test_data.cc",
       "registry_test_data.h",
