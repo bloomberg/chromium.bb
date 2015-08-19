@@ -30,4 +30,5 @@ NetErrorTabHelperTest.*
 ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsNotRecordedAfterPostBrowserStart
 
 # Test fail: https://crbug.com/349778
-TranslateManagerRenderViewHostTest.FetchLanguagesFromTranslateServer
+# Valgrind bot purple: https://crbug.com/522692
+TranslateManagerRenderViewHostTest.FetchLanguagesFromTranslateServer*
