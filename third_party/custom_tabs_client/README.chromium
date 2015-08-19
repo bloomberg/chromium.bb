@@ -10,6 +10,7 @@ Description:
 This presents an example application using Chrome Custom Tabs, and a possible
 usage of both the intent and the background service APIs. It covers UI
 customization, callback setup, pre-warming and pre-fetching, and lifecycle
-management.
+management. Also inside demos there is another application that launches
+custom tabs in different modes.
 
 Local Modifications: none

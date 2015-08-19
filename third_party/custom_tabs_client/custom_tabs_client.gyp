@@ -16,8 +16,21 @@
       },
       'dependencies': [
         'custom_tabs_support_lib',
+        'custom_tabs_client_shared_lib',
       ],
       'includes': [ '../../build/java_apk.gypi' ],
+    },
+    {
+      'target_name': 'custom_tabs_client_shared_lib',
+      'type': 'none',
+      'variables': {
+        'java_in_dir': 'src/shared/src/main/java/org/chromium/customtabsclient/shared/',
+        'java_in_dir_suffix': '',
+      },
+      'dependencies': [
+        'custom_tabs_support_lib',
+      ],
+      'includes': [ '../../build/java.gypi' ],
     },
     {
       'target_name': 'custom_tabs_support_lib',
