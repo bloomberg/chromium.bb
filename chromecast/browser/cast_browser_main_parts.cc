@@ -396,11 +396,6 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 
   DeregisterKillOnAlarm();
 #endif
-
-  // Finalize CastMediaShlib on media thread to ensure it's not accessed
-  // after Finalize.
-  media::MediaMessageLoop::GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&media::CastMediaShlib::Finalize));
 }
 
 }  // namespace shell

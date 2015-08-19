@@ -23,6 +23,7 @@
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/app/breakpad_linux.h"
@@ -86,6 +87,13 @@ CastContentBrowserClient::CreateMediaPipelineBackend(
       media::CastMediaShlib::CreateMediaPipelineBackend(params));
 }
 #endif
+
+void CastContentBrowserClient::ProcessExiting() {
+  // Finalize CastMediaShlib on media thread to ensure it's not accessed
+  // after Finalize.
+  media::MediaMessageLoop::GetTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&media::CastMediaShlib::Finalize));
+}
 
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {

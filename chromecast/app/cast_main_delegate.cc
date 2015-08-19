@@ -164,6 +164,11 @@ int CastMainDelegate::RunProcess(
 #endif  // defined(OS_ANDROID)
 }
 
+void CastMainDelegate::ProcessExiting(const std::string& process_type) {
+  if (process_type.empty())
+    browser_client_->ProcessExiting();
+}
+
 #if !defined(OS_ANDROID)
 void CastMainDelegate::ZygoteForked() {
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());

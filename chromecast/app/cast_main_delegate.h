@@ -34,6 +34,7 @@ class CastMainDelegate : public content::ContentMainDelegate {
   int RunProcess(
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
+  void ProcessExiting(const std::string& process_type) override;
 #if !defined(OS_ANDROID)
   void ZygoteForked() override;
 #endif  // !defined(OS_ANDROID)

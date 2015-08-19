@@ -66,6 +66,9 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
       const media::MediaPipelineDeviceParams& params);
 #endif
 
+  // Performs cleanup for process exit (but before AtExitManager cleanup).
+  void ProcessExiting();
+
   // content::ContentBrowserClient implementation:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
