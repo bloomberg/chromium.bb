@@ -52,18 +52,19 @@ class MediaRouterAndroid : public MediaRouter {
 
   // JNI functions.
   void OnSinksReceived(
-      JNIEnv* env, jobject obj, jstring source_urn, jint count);
+      JNIEnv* env, jobject obj, jstring jsource_urn, jint jcount);
   void OnRouteCreated(
       JNIEnv* env,
       jobject obj,
-      jstring media_route_id,
+      jstring jmedia_route_id,
       jint jcreate_route_request_id,
       jboolean jis_local);
   void OnRouteCreationError(
       JNIEnv* env,
       jobject obj,
-      jstring error_text,
+      jstring jerror_text,
       jint jcreate_route_request_id);
+  void OnRouteClosed(JNIEnv* env, jobject obj, jstring jmedia_route_id);
 
  private:
   friend class MediaRouterFactory;
@@ -89,6 +90,8 @@ class MediaRouterAndroid : public MediaRouter {
       scoped_ptr<base::ObserverList<MediaSinksObserver>>>;
   MediaSinkObservers sinks_observers_;
 
+  base::ObserverList<MediaRoutesObserver> routes_observers_;
+
   struct CreateMediaRouteRequest {
     CreateMediaRouteRequest(
         const MediaSource& source,
@@ -106,6 +109,9 @@ class MediaRouterAndroid : public MediaRouter {
   using CreateMediaRouteRequests =
       IDMap<CreateMediaRouteRequest, IDMapOwnPointer>;
   CreateMediaRouteRequests create_route_requests_;
+
+  using MediaRoutes = std::vector<MediaRoute>;
+  MediaRoutes active_routes_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterAndroid);
 };

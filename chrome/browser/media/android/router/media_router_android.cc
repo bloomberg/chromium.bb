@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "jni/ChromeMediaRouter_jni.h"
 
@@ -167,12 +168,15 @@ void MediaRouterAndroid::UnregisterMediaSinksObserver(
 
 void MediaRouterAndroid::RegisterMediaRoutesObserver(
     MediaRoutesObserver* observer) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "Added MediaRoutesObserver: " << observer;
+  routes_observers_.AddObserver(observer);
 }
 
 void MediaRouterAndroid::UnregisterMediaRoutesObserver(
     MediaRoutesObserver* observer) {
-  NOTIMPLEMENTED();
+  if (!routes_observers_.HasObserver(observer))
+    return;
+  routes_observers_.RemoveObserver(observer);
 }
 
 void MediaRouterAndroid::RegisterIssuesObserver(IssuesObserver* observer) {
@@ -197,10 +201,10 @@ void MediaRouterAndroid::OnSinksReceived(
     JNIEnv* env,
     jobject obj,
     jstring jsource_urn,
-    jint count) {
+    jint jcount) {
   std::vector<MediaSink> sinks_converted;
-  sinks_converted.reserve(count);
-  for (int i = 0; i < count; ++i) {
+  sinks_converted.reserve(jcount);
+  for (int i = 0; i < jcount; ++i) {
     ScopedJavaLocalRef<jstring> jsink_urn =
         Java_ChromeMediaRouter_getSinkUrn(
             env, java_media_router_.obj(), jsource_urn, i);
@@ -231,18 +235,22 @@ void MediaRouterAndroid::OnRouteCreated(
   if (!request)
     return;
 
-  scoped_ptr<MediaRoute> route(new MediaRoute(
+  MediaRoute route(
       ConvertJavaStringToUTF8(env, jmedia_route_id),
       request->media_source,
       request->media_sink,
       std::string(),
       jis_local,
-      std::string()));
+      std::string());
 
   for (const MediaRouteResponseCallback& callback : request->callbacks)
-    callback.Run(route.get(), request->presentation_id, std::string());
+    callback.Run(&route, request->presentation_id, std::string());
 
   create_route_requests_.Remove(jcreate_route_request_id);
+
+  active_routes_.push_back(route);
+  FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
+                    OnRoutesUpdated(active_routes_));
 }
 
 void MediaRouterAndroid::OnRouteCreationError(
@@ -261,6 +269,20 @@ void MediaRouterAndroid::OnRouteCreationError(
     callback.Run(nullptr, std::string(), error_text);
 
   create_route_requests_.Remove(jcreate_route_request_id);
+}
+
+void MediaRouterAndroid::OnRouteClosed(JNIEnv* env,
+                                       jobject obj,
+                                       jstring jmedia_route_id) {
+  MediaRoute::Id route_id = ConvertJavaStringToUTF8(env, jmedia_route_id);
+  for (auto it = active_routes_.begin(); it != active_routes_.end(); ++it)
+    if (it->media_route_id() == route_id) {
+      active_routes_.erase(it);
+      break;
+    }
+
+  FOR_EACH_OBSERVER(MediaRoutesObserver, routes_observers_,
+                    OnRoutesUpdated(active_routes_));
 }
 
 }  // namespace media_router

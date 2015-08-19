@@ -206,8 +206,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private void reportSuccess(String sessionId, boolean wasLaunched) {
         if (mState != STATE_LAUNCH_SUCCEEDED) throwInvalidState();
 
-        String mediaRouteId = String.format(
-                "route:%s/%s/%s", mPresentationId, mSinkId, mSourceUrn);
+        String mediaRouteId = ChromeMediaRouter.createMediaRouteId(
+                mPresentationId, mSinkId, mSourceUrn);
         mMediaRouter.onRouteCreated(
                 mediaRouteId, mRequestId, new SessionWrapper(mApiClient, sessionId), wasLaunched);
 

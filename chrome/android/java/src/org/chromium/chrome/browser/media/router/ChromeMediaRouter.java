@@ -8,7 +8,9 @@ import android.content.Context;
 import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.Cast;
+import com.google.android.gms.cast.CastStatusCodes;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -39,6 +41,17 @@ public class ChromeMediaRouter {
             new HashMap<String, DiscoveryCallback>();
     private final Map<String, SessionWrapper> mSessions =
             new HashMap<String, SessionWrapper>();
+
+    /**
+     * @param presentationId the presentation id associated with the route
+     * @param mSinkId the id of the {@link MediaSink} associated with the route
+     * @param mSourceUrn the presentation URL associated with the route
+     * @return the media route id corresponding to the given parameters.
+     */
+    public static String createMediaRouteId(
+            String presentationId, String sinkId, String sourceUrn) {
+        return String.format("route:%s/%s/%s", presentationId, sinkId, sourceUrn);
+    }
 
     /**
      * Called when the sinks found by the media route provider for
@@ -170,7 +183,11 @@ public class ChromeMediaRouter {
      * @param requestId the id of the route creation request tracked by the native side.
      */
     @CalledByNative
-    public void createRoute(String sourceId, String sinkId, String presentationId, int requestId) {
+    public void createRoute(
+            final String sourceId,
+            final String sinkId,
+            final String presentationId,
+            int requestId) {
         if (mAndroidMediaRouter == null) {
             nativeOnRouteCreationError(mNativeMediaRouterAndroid, "Not supported", requestId);
             return;
@@ -181,7 +198,16 @@ public class ChromeMediaRouter {
                 mApplicationContext,
                 // TODO(avayvod): handle application disconnect and report back to the native side.
                 // Part of https://crbug.com/517100.
-                new Cast.Listener() {});
+                new Cast.Listener() {
+                    @Override
+                    public void onApplicationDisconnected(int errorCode) {
+                        if (errorCode != CastStatusCodes.SUCCESS) {
+                            Log.e(TAG, String.format(
+                                    "Application disconnected with: %d", errorCode));
+                        }
+                        closeRoute(createMediaRouteId(presentationId, sinkId, sourceId));
+                    }
+                });
     }
 
     /**
@@ -191,10 +217,13 @@ public class ChromeMediaRouter {
     @CalledByNative
     public void closeRoute(String routeId) {
         SessionWrapper session = mSessions.remove(routeId);
-        if (session != null) session.stop();
+        if (session == null) return;
+
+        session.stop();
         if (mAndroidMediaRouter != null) {
             mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
         }
+        nativeOnRouteClosed(mNativeMediaRouterAndroid, routeId);
     }
 
     @VisibleForTesting
@@ -231,4 +260,5 @@ public class ChromeMediaRouter {
             boolean wasLaunched);
     native void nativeOnRouteCreationError(
             long nativeMediaRouterAndroid, String errorText, int createRouteRequestId);
+    native void nativeOnRouteClosed(long nativeMediaRouterAndroid, String mediaRouteId);
 }
