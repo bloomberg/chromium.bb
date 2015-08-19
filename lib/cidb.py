@@ -69,7 +69,8 @@ def _IsRetryableException(e):
       e_orig = e_orig.orig
     error_code = e_orig.args[0] if len(e_orig.args) > 0 else -1
     if error_code in _RETRYABLE_OPERATIONAL_ERROR_CODES:
-      logging.info('RETRYING cidb query due to %s.', e)
+      if error_code != 2006:
+        logging.info('RETRYING cidb query due to %s.', e)
       return True
 
   return False
