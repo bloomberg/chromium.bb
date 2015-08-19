@@ -6,7 +6,6 @@
 #define IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -291,7 +290,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // All the WebStatePolicyDeciders asked for navigation decision. Weak
   // references.
-  std::set<WebStatePolicyDecider*> policy_deciders_;
+  // WebStatePolicyDeciders are semantically different from observers (they
+  // modify the behavior of the WebState) but are used like observers in the
+  // code, hence the ObserverList.
+  base::ObserverList<WebStatePolicyDecider, true> policy_deciders_;
 
   // Map of all the HTTP response headers received, for each URL.
   // This map is cleared after each page load, and only the headers of the main

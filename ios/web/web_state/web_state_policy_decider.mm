@@ -30,9 +30,8 @@ bool WebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response) {
 }
 
 void WebStatePolicyDecider::ResetWebState() {
-  // The policy decider is not removed from |web_state_| here as removing while
-  // iterating is not supported. |web_state_| will take care of removing its
-  // policy deciders when being destroyed.
+  web_state_->RemovePolicyDecider(this);
   web_state_ = nullptr;
 }
-}
+
+}  // namespace web
