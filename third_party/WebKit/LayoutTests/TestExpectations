@@ -177,7 +177,6 @@ crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ P
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
-crbug.com/469683 virtual/threaded/animations/responsive-neutral-keyframes.html [ Pass Failure ]
 crbug.com/503874 http/tests/inspector/sources/debugger/worker-debugging-script-mapping.html [ Pass Failure ]
 crbug.com/493895 inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Timeout ]
 crbug.com/503875 inspector/sources/debugger-step/debugger-step-into-document-write.html [ Pass Failure Timeout ]
@@ -896,8 +895,6 @@ crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html
 crbug.com/463358 [ Mac Debug ] svg/transforms/animated-path-inside-transformed-html.xhtml [ ImageOnlyFailure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
-
-crbug.com/469683 animations/responsive-neutral-keyframes.html [ Slow ]
 
 crbug.com/471824 imported/web-platform-tests/pointerevents/ [ Skip ]
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-illegal.html [ Skip ]
