@@ -2007,16 +2007,16 @@ MSVCR120.dll!vsnwprintf_s
 UNADDRESSABLE ACCESS
 name=bug_522049
 ...
-content.dll!`anonymous namespace'::ConvertInputMode
-content.dll!content::RenderWidget::UpdateTextInputState
-content.dll!content::RenderWidget::WillBeginCompositorFrame
+*!`anonymous namespace'::ConvertInputMode
+*!content::RenderWidget::UpdateTextInputState
+*!content::RenderWidget::WillBeginCompositorFrame
 *!content::`anonymous namespace'::RenderWidgetCompositorOutputSurface::SynchronousComposite
 *!base::internal::Invoker<>::Run
-base.dll!base::debug::TaskAnnotator::RunTask
-base.dll!base::MessageLoop::RunTask
-base.dll!base::MessageLoop::DeferOrRunPendingTask
-base.dll!base::MessageLoop::DoWork
-base.dll!base::MessagePumpDefault::Run
-base.dll!base::MessageLoop::RunHandler
-base.dll!base::MessageLoop::Run
-*!content::`anonymous namespace'::RenderWidgetCompositorOutputSurfaceTest::RunTest
+*!base::debug::TaskAnnotator::RunTask
+*!base::MessageLoop::RunTask
+*!base::MessageLoop::DeferOrRunPendingTask
+*!base::MessageLoop::DoWork
+*!base::MessagePumpDefault::Run
+*!base::MessageLoop::RunHandler
+*!base::MessageLoop::Run
+*!content::*::RunTest
