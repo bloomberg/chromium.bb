@@ -314,7 +314,10 @@ unsigned MultiColumnFragmentainerGroup::actualColumnCount() const
     if (!flowThreadPortionHeight)
         return 1;
 
-    unsigned count = ceil(flowThreadPortionHeight.toFloat() / m_columnHeight.toFloat());
+    unsigned count = (flowThreadPortionHeight / m_columnHeight).floor();
+    // flowThreadPortionHeight may be saturated, so detect the remainder manually.
+    if (count * m_columnHeight < flowThreadPortionHeight)
+        count++;
     ASSERT(count >= 1);
     return count;
 }
