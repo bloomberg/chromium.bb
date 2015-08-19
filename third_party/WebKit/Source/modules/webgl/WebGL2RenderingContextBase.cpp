@@ -1294,6 +1294,9 @@ WebGLSampler* WebGL2RenderingContextBase::createSampler()
 
 void WebGL2RenderingContextBase::deleteSampler(WebGLSampler* sampler)
 {
+    if (isContextLost())
+        return;
+
     for (size_t i = 0; i < m_samplerUnits.size(); ++i) {
         if (sampler == m_samplerUnits[i]) {
             m_samplerUnits[i] = nullptr;
@@ -1314,6 +1317,9 @@ GLboolean WebGL2RenderingContextBase::isSampler(WebGLSampler* sampler)
 
 void WebGL2RenderingContextBase::bindSampler(GLuint unit, WebGLSampler* sampler)
 {
+    if (isContextLost())
+        return;
+
     bool deleted;
     if (!checkObjectToBeBound("bindSampler", sampler, deleted))
         return;
@@ -1332,20 +1338,42 @@ void WebGL2RenderingContextBase::bindSampler(GLuint unit, WebGLSampler* sampler)
     webContext()->bindSampler(unit, objectOrZero(sampler));
 }
 
-void WebGL2RenderingContextBase::samplerParameteri(WebGLSampler* sampler, GLenum pname, GLint param)
+void WebGL2RenderingContextBase::samplerParameter(WebGLSampler* sampler, GLenum pname, GLfloat paramf, GLint parami, bool isFloat)
 {
-    if (isContextLost() || !validateWebGLObject("samplerParameteri", sampler))
+    if (isContextLost() || !validateWebGLObject("samplerParameter", sampler))
         return;
 
-    webContext()->samplerParameteri(objectOrZero(sampler), pname, param);
+    switch (pname) {
+    case GL_TEXTURE_COMPARE_FUNC:
+    case GL_TEXTURE_COMPARE_MODE:
+    case GL_TEXTURE_MAG_FILTER:
+    case GL_TEXTURE_MIN_FILTER:
+    case GL_TEXTURE_WRAP_R:
+    case GL_TEXTURE_WRAP_S:
+    case GL_TEXTURE_WRAP_T:
+    case GL_TEXTURE_MAX_LOD:
+    case GL_TEXTURE_MIN_LOD:
+        break;
+    default:
+        synthesizeGLError(GL_INVALID_ENUM, "samplerParameter", "invalid parameter name");
+        return;
+    }
+
+    if (isFloat) {
+        webContext()->samplerParameterf(objectOrZero(sampler), pname, paramf);
+    } else {
+        webContext()->samplerParameteri(objectOrZero(sampler), pname, parami);
+    }
+}
+
+void WebGL2RenderingContextBase::samplerParameteri(WebGLSampler* sampler, GLenum pname, GLint param)
+{
+    samplerParameter(sampler, pname, 0, param, false);
 }
 
 void WebGL2RenderingContextBase::samplerParameterf(WebGLSampler* sampler, GLenum pname, GLfloat param)
 {
-    if (isContextLost() || !validateWebGLObject("samplerParameterf", sampler))
-        return;
-
-    webContext()->samplerParameterf(objectOrZero(sampler), pname, param);
+    samplerParameter(sampler, pname, param, 0, true);
 }
 
 ScriptValue WebGL2RenderingContextBase::getSamplerParameter(ScriptState* scriptState, WebGLSampler* sampler, GLenum pname)

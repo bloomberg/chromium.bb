@@ -189,6 +189,7 @@ protected:
     ScriptValue getInt64Parameter(ScriptState*, GLenum);
 
     void texSubImage3DImpl(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, Image*, WebGLImageConversion::ImageHtmlDomSource, bool, bool);
+    void samplerParameter(WebGLSampler*, GLenum, GLfloat, GLint, bool);
 
     /* WebGLRenderingContextBase overrides */
     unsigned getMaxWebGLLocationLength() const override { return 1024; };
