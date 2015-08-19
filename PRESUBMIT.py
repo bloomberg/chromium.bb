@@ -67,31 +67,10 @@ def CheckGitBranch():
 def _CommonChecks(input_api, output_api):
   """Checks for both upload and commit."""
   results = []
+
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api, project_name='Native Client',
       excluded_paths=tuple(EXCLUDE_PROJECT_CHECKS)))
-  branch_warning = CheckGitBranch()
-  if branch_warning:
-    results.append(output_api.PresubmitPromptWarning(branch_warning))
-  return results
-
-
-def IsFileInDirectories(f, dirs):
-  """ Returns true if f is in list of directories"""
-  for d in dirs:
-    if d is os.path.commonprefix([f, d]):
-      return True
-  return False
-
-
-def CheckChangeOnUpload(input_api, output_api):
-  """Verifies all changes in all files.
-  Args:
-    input_api: the limited set of input modules allowed in presubmit.
-    output_api: the limited set of output modules allowed in presubmit.
-  """
-  report = []
-  report.extend(_CommonChecks(input_api, output_api))
 
   # The commit queue assumes PRESUBMIT.py is standalone.
   # TODO(bradnelson): Migrate code_hygiene to a common location so that
@@ -114,9 +93,33 @@ def CheckChangeOnUpload(input_api, output_api):
     if not IsFileInDirectories(filename, exclude_dirs):
       errors, warnings = code_hygiene.CheckFile(filename, False)
       for e in errors:
-        report.append(output_api.PresubmitError(e, items=errors[e]))
+        results.append(output_api.PresubmitError(e, items=errors[e]))
       for w in warnings:
-        report.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
+        results.append(output_api.PresubmitPromptWarning(w, items=warnings[w]))
+
+  return results
+
+
+def IsFileInDirectories(f, dirs):
+  """ Returns true if f is in list of directories"""
+  for d in dirs:
+    if d is os.path.commonprefix([f, d]):
+      return True
+  return False
+
+
+def CheckChangeOnUpload(input_api, output_api):
+  """Verifies all changes in all files.
+  Args:
+    input_api: the limited set of input modules allowed in presubmit.
+    output_api: the limited set of output modules allowed in presubmit.
+  """
+  report = []
+  report.extend(_CommonChecks(input_api, output_api))
+
+  branch_warning = CheckGitBranch()
+  if branch_warning:
+    results.append(output_api.PresubmitPromptWarning(branch_warning))
 
   return report
 
@@ -129,7 +132,7 @@ def CheckChangeOnCommit(input_api, output_api):
     output_api: the limited set of output modules allowed in presubmit.
   """
   report = []
-  report.extend(CheckChangeOnUpload(input_api, output_api))
+  report.extend(_CommonChecks(input_api, output_api))
   report.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api, output_api,
       json_url='http://nativeclient-status.appspot.com/current?format=json'))
