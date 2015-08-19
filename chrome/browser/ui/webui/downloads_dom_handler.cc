@@ -50,6 +50,7 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/filename_util.h"
+#include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/image/image.h"
 
@@ -111,6 +112,16 @@ const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
   }
 }
 
+// TODO(dbeam): if useful elsewhere, move to base/i18n/time_formatting.h?
+base::string16 TimeFormatLongDate(const base::Time& time) {
+  scoped_ptr<icu::DateFormat> formatter(
+      icu::DateFormat::createDateInstance(icu::DateFormat::kLong));
+  icu::UnicodeString date_string;
+  formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
+  return base::string16(date_string.getBuffer(),
+                        static_cast<size_t>(date_string.length()));
+}
+
 // Returns a JSON dictionary containing some of the attributes of |download|.
 // The JSON dictionary will also have a field "id" set to |id|, and a field
 // "otr" set to |incognito|.
@@ -133,8 +144,12 @@ base::DictionaryValue* CreateDownloadItemValue(
   file_value->SetString(
       "since_string", ui::TimeFormat::RelativeDate(
           download_item->GetStartTime(), NULL));
-  file_value->SetString(
-      "date_string", base::TimeFormatShortDate(download_item->GetStartTime()));
+
+  base::Time start_time = download_item->GetStartTime();
+  base::string16 date_string = switches::MdDownloadsEnabled() ?
+      TimeFormatLongDate(start_time) : base::TimeFormatShortDate(start_time);
+  file_value->SetString("date_string", date_string);
+
   file_value->SetString("id", base::Uint64ToString(download_item->GetId()));
 
   base::FilePath download_path(download_item->GetTargetFilePath());
