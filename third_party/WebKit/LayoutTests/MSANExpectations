@@ -33,8 +33,9 @@ crbug.com/487880 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-beha
 crbug.com/450639 [ Linux ] inspector/tracing/animations.html [ Timeout ]
 crbug.com/450639 [ Linux ] virtual/deferred/inspector/tracing/animations.html [ Timeout ]
 
-crbug.com/454329 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
-crbug.com/454329 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
+crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
+crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
+crbug.com/522315 [ Linux ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Crash ]
 
 # Flaky under MSAN (hang forever)
 crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
