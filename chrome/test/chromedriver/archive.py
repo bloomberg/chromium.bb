@@ -85,13 +85,5 @@ def GetLatestSnapshotVersion():
   return GetLatestRevision(GetSnapshotDownloadSite())
 
 def GetSnapshotDownloadSite():
-  """Returns the site to download snapshot build according to the platform.
-
-  For Linux 32-bit, it is chromium snapshot build.
-  For other platform, it is blink snapshot build.
-  Because there is no linux32 blink snapshot build.
-  """
-  if _GetDownloadPlatform() in ('Linux', 'Linux_x64', 'Mac'):
-    return Site.CHROMIUM_SNAPSHOT
-  else:
-    return Site.BLINK_SNAPSHOT
+  """Returns the site to download snapshot build according to the platform."""
+  return Site.CHROMIUM_SNAPSHOT
