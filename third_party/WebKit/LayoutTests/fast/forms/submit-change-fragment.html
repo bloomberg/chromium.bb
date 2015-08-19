@@ -5,10 +5,11 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-if (document.location.href.indexOf("n=v") == -1)
-    document.location.search = "?n=v";
-
 function runTest() {
+    if (document.location.href.indexOf("n=v") == -1) {
+        document.location.search = "?n=v";
+        return;
+    }
     document.forms.f.action="#firstaction";
     document.forms.f.submit();
     document.forms.f.action="#secondaction";
