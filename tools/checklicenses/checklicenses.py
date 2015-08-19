@@ -221,6 +221,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # https://github.com/html5lib/html5lib-python/issues/125
+    # MIT license.
+    'third_party/catapult/third_party/html5lib-python': [
+        'UNKNOWN',
+    ],
+
     # https://github.com/jcgregorio/httplib2/issues/307
     # MIT license.
     'third_party/catapult/third_party/httplib2': [
