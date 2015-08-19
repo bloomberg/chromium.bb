@@ -68,17 +68,17 @@ ThumbnailMode.prototype.hasActiveTool = function() { return true; };
  * @param {!Event} event An event.
  * @return {boolean} True when an event is handled.
  *
- * TODO(yawano): Support up and down key.
  * TODO(yawano): Move not-mode-specific logics to ThumbnailView.
  */
 ThumbnailMode.prototype.onKeyDown = function(event) {
   switch (event.keyIdentifier) {
     case 'Right':
-      this.thumbnailView_.moveSelection(isRTL() ? -1 : 1);
-      return true;
     case 'Left':
-      this.thumbnailView_.moveSelection(isRTL() ? 1 : -1);
+    case 'Up':
+    case 'Down':
+      this.thumbnailView_.moveSelection(event.keyIdentifier);
       return true;
+
     case 'Enter':
       this.changeToSlideModeCallback_();
       return true;
@@ -325,24 +325,69 @@ ThumbnailView.prototype.onScroll_ = function(event) {
 
 /**
  * Moves selection to specified direction.
- * @param {number} direction Direction.
- * @param {number=} opt_index Base index.
+ * @param {string} direction Direction. Should be 'Left', 'Right', 'Up', or
+ *     'Down'.
  */
-ThumbnailView.prototype.moveSelection = function(direction, opt_index) {
-  var index = opt_index || this.selectionModel_.selectedIndex;
-  if (index + direction < 0 || index + direction >= this.dataModel_.length)
-    return;
-
-  // Skip error thumbnail.
-  var thumbnail = this.getThumbnailAt_(index + direction);
-  if (thumbnail.isError()) {
-    this.moveSelection(direction, index + direction);
-    return;
+ThumbnailView.prototype.moveSelection = function(direction) {
+  var step;
+  if ((direction === 'Left' && !isRTL()) ||
+      (direction === 'Right' && isRTL()) ||
+      (direction === 'Up')) {
+    step = -1;
+  } else if ((direction === 'Right' && !isRTL()) ||
+             (direction === 'Left' && isRTL()) ||
+             (direction === 'Down')) {
+    step = 1;
+  } else {
+    assertNotReached();
   }
 
-  // Move selection.
-  this.selectionModel_.selectedIndex = index + direction;
-  this.scrollTo_(index + direction);
+  var vertical = direction === 'Up' || direction === 'Down';
+  var baseIndex = this.selectionModel_.selectedIndex;
+  var baseRect = this.getThumbnailRect(baseIndex);
+  var baseCenter = baseRect.left + baseRect.width / 2;
+  var minHorizontalGap = Number.MAX_VALUE;
+  var index = null;
+
+  for (var i = baseIndex + step;
+       0 <= i && i < this.dataModel_.length;
+       i += step) {
+    // Skip error thumbnail.
+    var thumbnail = this.getThumbnailAt_(i);
+    if (thumbnail.isError())
+      continue;
+
+    // Look for the horizontally nearest item if it is vertical move. Otherwise
+    // it just use the current i.
+    if (vertical) {
+      var rect = this.getThumbnailRect(i);
+      var verticalGap = Math.abs(baseRect.top - rect.top);
+      if (verticalGap === 0)
+        continue;
+      else if (verticalGap >= ThumbnailView.ROW_HEIGHT * 2)
+        break;
+      // If centerGap - rect.width / 2 < 0, the image is located just
+      // above the center point of base image since baseCenter is in the range
+      // (rect.left, rect.right). In this case we use 0 as distance. Otherwise
+      // centerGap - rect.width / 2 equals to the distance between baseCenter
+      // and either of rect.left or rect.right that is closer to centerGap.
+      var centerGap = Math.abs(baseCenter - (rect.left + rect.width / 2));
+      var horizontalGap = Math.max(centerGap - rect.width / 2, 0);
+      if (horizontalGap < minHorizontalGap) {
+        minHorizontalGap = horizontalGap;
+        index = i;
+      }
+    } else {
+      index = i;
+      break;
+    }
+  }
+
+  if (index !== null) {
+    // Move selection.
+    this.selectionModel_.selectedIndex = index;
+    this.scrollTo_(index);
+  }
 };
 
 /**
