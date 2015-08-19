@@ -125,20 +125,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             + "  }"
             + "}";
 
-    private static final String EYE_POINT_VERTEX_SHADER =
-            "uniform mat4 u_CombinedMatrix;"
-            + "attribute vec4 a_EyePosition;"
-            + "void main() {"
-            + "  gl_Position = u_CombinedMatrix * a_EyePosition;"
-            + "  gl_PointSize = 3.0;"
-            + "}";
-
-    private static final String EYE_POINT_FRAGMENT_SHADER =
-            "precision mediump float;"
-            + "void main() {"
-            + "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
-            + "}";
-
     private static final String SKYBOX_VERTEX_SHADER =
             "uniform mat4 u_CombinedMatrix;"
             + "attribute vec3 a_Position;"
@@ -211,11 +197,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private int mProgramHandle;
     private int mDesktopVertexShaderHandle;
     private int mDesktopFragmentShaderHandle;
-    private int mEyePointVertexShaderHandle;
-    private int mEyePointFragmentShaderHandle;
-    private int mEyePointProgramHandle;
-    private int mEyePointPositionHandle;
-    private int mEyePointCombinedMatrixHandle;
     private int mSkyboxVertexShaderHandle;
     private int mSkyboxFragmentShaderHandle;
     private int mSkyboxProgramHandle;
@@ -223,6 +204,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     private int mSkyboxCombinedMatrixHandle;
     private int mSkyboxTextureUnitHandle;
     private int mSkyboxTextureDataHandle;
+    private CardboardActivityEyePoint mEyePoint;
 
     // Flag to indicate whether reload the desktop texture or not.
     private boolean mReloadTexture;
@@ -317,18 +299,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mTextureCoordinateHandle = GLES20.glGetAttribLocation(mProgramHandle, "a_TexCoordinate");
         mTextureDataHandle = TextureHelper.createTextureHandle();
 
-        // Set handlers for eye point drawing.
-        mEyePointVertexShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_VERTEX_SHADER, EYE_POINT_VERTEX_SHADER);
-        mEyePointFragmentShaderHandle =
-                ShaderHelper.compileShader(GLES20.GL_FRAGMENT_SHADER, EYE_POINT_FRAGMENT_SHADER);
-        mEyePointProgramHandle = ShaderHelper.createAndLinkProgram(mEyePointVertexShaderHandle,
-                mEyePointFragmentShaderHandle, new String[] {"a_EyePosition", "u_CombinedMatrix"});
-        mEyePointPositionHandle =
-                GLES20.glGetAttribLocation(mEyePointProgramHandle, "a_EyePosition");
-        mEyePointCombinedMatrixHandle =
-                GLES20.glGetUniformLocation(mEyePointProgramHandle, "u_CombinedMatrix");
-
         // Set handlers for skybox drawing.
         GLES20.glEnable(GLES20.GL_TEXTURE_CUBE_MAP);
         mSkyboxVertexShaderHandle =
@@ -345,6 +315,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         mSkyboxTextureUnitHandle =
                 GLES20.glGetUniformLocation(mSkyboxProgramHandle, "u_TextureUnit");
         mSkyboxTextureDataHandle = TextureHelper.createTextureHandle();
+
+        mEyePoint = new CardboardActivityEyePoint();
     }
 
     @Override
@@ -397,8 +369,7 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
     public void onRendererShutdown() {
         GLES20.glDeleteShader(mDesktopVertexShaderHandle);
         GLES20.glDeleteShader(mDesktopFragmentShaderHandle);
-        GLES20.glDeleteShader(mEyePointVertexShaderHandle);
-        GLES20.glDeleteShader(mEyePointFragmentShaderHandle);
+        mEyePoint.cleanup();
         GLES20.glDeleteShader(mSkyboxVertexShaderHandle);
         GLES20.glDeleteShader(mSkyboxFragmentShaderHandle);
         GLES20.glDeleteTextures(1, new int[] {mTextureDataHandle}, 0);
@@ -461,11 +432,6 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
             return;
         }
 
-        GLES20.glUseProgram(mEyePointProgramHandle);
-
-        // Set the eye point in front of desktop.
-        GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT);
-
         float eyePointX = clamp(mEyePositionVector[0], -mHalfDesktopWidth,
                 mHalfDesktopWidth);
         float eyePointY = clamp(mEyePositionVector[1], -HALF_DESKTOP_HEIGHT,
@@ -477,17 +443,8 @@ public class CardboardDesktopRenderer implements CardboardView.StereoRenderer {
         Matrix.multiplyMM(mEyePointCombinedMatrix, 0, mProjectionMatrix,
                 0, mEyePointCombinedMatrix, 0);
 
-        GLES20.glUniformMatrix4fv(mEyePointCombinedMatrixHandle, 1, false,
-                mEyePointCombinedMatrix, 0);
-
-        GLES20.glVertexAttrib4f(mEyePointPositionHandle, 0.0f,
-                0.0f, 0.0f, 1.0f);
-
-        // Since we are not using a buffer object, disable vertex arrays for this attribute.
-        GLES20.glDisableVertexAttribArray(mEyePointPositionHandle);
-
-        int totalPointNumber = 1;
-        GLES20.glDrawArrays(GLES20.GL_POINTS, 0, totalPointNumber);
+        mEyePoint.setCombinedMatrix(mEyePointCombinedMatrix);
+        mEyePoint.draw();
     }
 
     private void drawSkybox() {
