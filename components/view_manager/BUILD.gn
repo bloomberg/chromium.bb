@@ -10,22 +10,17 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 
-  group("view_manager") {
-    deps = [
-      ":lib",
-      ":loader",
-    ]
-  }
-
-  source_set("loader") {
+  source_set("view_manager") {
     sources = [
       "android_loader.cc",
       "android_loader.h",
     ]
 
     deps = [
-      "public/interfaces",
-      "//third_party/mojo/src/mojo/public/cpp/bindings",
+      ":lib",
+      "//components/view_manager/public/interfaces",
+      "//mojo/application/public/cpp:sources",
+      "//mojo/shell",
     ]
   }
 } else {
