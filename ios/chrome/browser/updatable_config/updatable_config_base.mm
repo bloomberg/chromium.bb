@@ -200,6 +200,8 @@ class ConfigFetcher : public net::URLFetcherDelegate {
 
 #if !defined(NDEBUG)
 - (void)scheduleConsistencyCheck {
+  if (!g_consistency_check_enabled)
+    return;
   // Sets a delayed call that will cause a DCHECK if -startUpdate:
   // was not called.
   [self performSelector:@selector(startUpdateNotCalled:)
@@ -208,6 +210,8 @@ class ConfigFetcher : public net::URLFetcherDelegate {
 }
 
 - (void)cancelConsistencyCheck {
+  if (!g_consistency_check_enabled)
+    return;
   // Cancels the delayed error check since -startUpdate: has been called.
   // Added for completeness since singletons should never be deallocated.
   [NSObject
@@ -218,8 +222,7 @@ class ConfigFetcher : public net::URLFetcherDelegate {
 
 - (void)startUpdateNotCalled:(id)config {
   DCHECK(self == config);
-  if (!g_consistency_check_enabled)
-    return;
+  DCHECK(g_consistency_check_enabled);
   // Make sure that |startUpdate:| was called for this config.
   NOTREACHED() << "startUpdate: was not called for "
                << [[self description] UTF8String];
