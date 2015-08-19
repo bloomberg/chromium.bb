@@ -93,6 +93,11 @@ class ScreenPositionControllerTest : public test::AshTestBase {
 }  // namespace
 
 TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
+  // Make sure that the point is in host coordinates. (crbug.com/521919)
+  UpdateDisplay("100+100-200x200,100+300-200x200");
+  // The point 150,210 should be in host coords, and detected as outside.
+  EXPECT_EQ("350,10", ConvertHostPointToScreen(150, 210));
+
   UpdateDisplay("100+100-200x200,100+500-200x200");
 
   aura::Window::Windows root_windows =
@@ -181,22 +186,14 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
 }
 
 TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenHiDPI) {
-  UpdateDisplay("100+100-200x200*2,100+500-200x200");
+  UpdateDisplay("50+50-200x200*2,50+300-300x300");
 
   aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  EXPECT_EQ("100,100",
-            root_windows[0]->GetHost()->
-                GetBounds().origin().ToString());
-  EXPECT_EQ("200x200",
-            root_windows[0]->GetHost()->
-                GetBounds().size().ToString());
-  EXPECT_EQ("100,500",
-            root_windows[1]->GetHost()->
-                GetBounds().origin().ToString());
-  EXPECT_EQ("200x200",
-            root_windows[1]->GetHost()->
-                GetBounds().size().ToString());
+  EXPECT_EQ("50,50 200x200",
+            root_windows[0]->GetHost()->GetBounds().ToString());
+  EXPECT_EQ("50,300 300x300",
+            root_windows[1]->GetHost()->GetBounds().ToString());
 
   // Put |window_| to the primary 2x display.
   window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
@@ -209,9 +206,9 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenHiDPI) {
   // Similar to above but the point is on the secondary display.
   EXPECT_EQ("100,15", ConvertHostPointToScreen(200, 30));
 
-  // On secondary display. The position on the 2nd host window is (150,50)
-  // so the screen position is (100,0) + (150,50).
-  EXPECT_EQ("250,50", ConvertHostPointToScreen(150, 450));
+  // On secondary display. The position on the 2nd host window is (150,200)
+  // so the screen position is (100,0) + (150,200).
+  EXPECT_EQ("250,200", ConvertHostPointToScreen(150, 450));
 
   // At the edge but still in the primary display.  Remaining of the primary
   // display is (50, 50) but adding ~100 since it's 2x-display.

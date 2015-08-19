@@ -75,11 +75,9 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
   gfx::Point point_in_root(*point);
   root_window->GetHost()->ConvertPointFromHost(&point_in_root);
 
-  *target_root = root_window;
-  *point = point_in_root;
-
 #if defined(USE_X11) || defined(USE_OZONE)
-  if (!root_window->GetHost()->GetBounds().Contains(*point)) {
+  gfx::Rect host_bounds(root_window->GetHost()->GetBounds().size());
+  if (!host_bounds.Contains(*point)) {
     // This conversion is necessary to deal with X's passive input
     // grab while dragging window. For example, if we have two
     // displays, say 1000x1000 (primary) and 500x500 (extended one
@@ -111,13 +109,13 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
         *target_root = root_windows[i];
         *point = location_in_native;
         host->ConvertPointFromNativeScreen(point);
-        break;
+        return;
       }
     }
   }
-#else
-  NOTIMPLEMENTED();
 #endif
+  *target_root = root_window;
+  *point = point_in_root;
 }
 
 void ScreenPositionController::ConvertPointToScreen(
