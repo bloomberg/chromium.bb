@@ -1650,15 +1650,7 @@ void RenderFrameImpl::OnPostMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   // Find the source frame if it exists.
   WebFrame* source_frame = NULL;
-  if (params.source_view_routing_id != MSG_ROUTING_NONE) {
-    // Support a legacy postMessage path for specifying a source RenderView;
-    // this is currently used when sending messages to Android WebView.
-    // TODO(alexmos): This path can be removed once crbug.com/473258 is fixed.
-    RenderViewImpl* source_view =
-        RenderViewImpl::FromRoutingID(params.source_view_routing_id);
-    if (source_view)
-      source_frame = source_view->webview()->mainFrame();
-  } else if (params.source_routing_id != MSG_ROUTING_NONE) {
+  if (params.source_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxy* source_proxy =
         RenderFrameProxy::FromRoutingID(params.source_routing_id);
     if (source_proxy) {

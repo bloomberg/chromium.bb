@@ -239,12 +239,6 @@ IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
   // equivalent frame proxy in the destination process.
   IPC_STRUCT_MEMBER(int, source_routing_id)
 
-  // When sent from the browser, this is the routing ID of the source view in
-  // the destination process.  This currently exists only to support legacy
-  // postMessage to Android WebView and will be removed once crbug.com/473258
-  // is fixed.
-  IPC_STRUCT_MEMBER(int, source_view_routing_id)
-
   // The origin of the source frame.
   IPC_STRUCT_MEMBER(base::string16, source_origin)
 

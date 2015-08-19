@@ -1038,7 +1038,6 @@ public class PostMessageTest extends AwTestBase {
     private static final String TEST_PAGE_FOR_UNSUPPORTED_MESSAGES = "<!DOCTYPE html><html><body>"
             + "    <script>"
             + "        onmessage = function (e) {"
-            + "            e.source.postMessage('" + HELLO + "', '*');"
             + "            e.ports[0].postMessage(null);"
             + "            e.ports[0].postMessage(undefined);"
             + "            e.ports[0].postMessage(NaN);"

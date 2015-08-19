@@ -383,7 +383,6 @@ void RenderFrameProxy::postMessageEvent(
     if (source_render_frame)
       params.source_routing_id = source_render_frame->GetRoutingID();
   }
-  params.source_view_routing_id = MSG_ROUTING_NONE;
 
   Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
