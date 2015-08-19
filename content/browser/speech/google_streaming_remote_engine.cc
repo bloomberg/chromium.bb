@@ -344,7 +344,7 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
     upstream_args.push_back("maxAlternatives=" +
                             base::UintToString(max_alternatives));
   }
-  upstream_args.push_back("client=chromium");
+  upstream_args.push_back("app=chromium");
   if (!config_.hardware_info.empty()) {
     upstream_args.push_back(
         "xhw=" + net::EscapeQueryParamValue(config_.hardware_info, true));
