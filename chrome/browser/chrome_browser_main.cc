@@ -23,7 +23,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/pref_value_store.h"
 #include "base/prefs/scoped_user_pref_update.h"
-#include "base/process/process_info.h"
 #include "base/profiler/scoped_profile.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/run_loop.h"
@@ -719,30 +718,17 @@ void ChromeBrowserMainParts::RecordBrowserStartupTime() {
   if (startup_metric_utils::WasNonBrowserUIDisplayed())
     return;
 
-#if defined(OS_ANDROID)
-  // On Android the first run is handled in Java code, and the C++ side of
-  // Chrome doesn't know if this is the first run. This will cause some
-  // inaccuracy in the UMA statistics, but this should be minor (first runs are
-  // rare).
   bool is_first_run = false;
-#else
-  bool is_first_run = first_run::IsChromeFirstRun();
+#if !defined(OS_ANDROID)
+  // On Android, first run is handled in Java code, and the C++ side of Chrome
+  // doesn't know if this is the first run. This will cause some inaccuracy in
+  // the UMA statistics, but this should be minor (first runs are rare).
+  is_first_run = first_run::IsChromeFirstRun();
 #endif  // defined(OS_ANDROID)
 
-// CurrentProcessInfo::CreationTime() is currently only implemented on some
-// platforms.
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-  const base::Time process_creation_time =
-      base::CurrentProcessInfo::CreationTime();
-
-  if (!is_first_run && !process_creation_time.is_null()) {
-    base::TimeDelta delay = base::Time::Now() - process_creation_time;
-    UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserMessageLoopStartTime", delay);
-  }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
-
   // Record collected startup metrics.
-  startup_metric_utils::OnBrowserStartupComplete(is_first_run);
+  startup_metric_utils::RecordBrowserMainMessageLoopStart(base::Time::Now(),
+                                                          is_first_run);
 }
 
 // -----------------------------------------------------------------------------

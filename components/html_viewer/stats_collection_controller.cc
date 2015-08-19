@@ -29,11 +29,13 @@ void GetStartupPerformanceTimesCallbackImpl(
 
   const base::Time shell_process_creation_time =
       base::Time::FromInternalValue(times->shell_process_creation_time);
-  startup_metric_utils::RecordSavedMainEntryPointTime(
-      shell_process_creation_time);
-  // TODO(msw): Use |browser_message_loop_start_time|, instead of letting
-  //            OnBrowserStartupComplete incorrectly call base::Time::Now()...
-  startup_metric_utils::OnBrowserStartupComplete(false);
+  startup_metric_utils::RecordMainEntryPointTime(shell_process_creation_time);
+
+  const base::Time browser_message_loop_start_time =
+      base::Time::FromInternalValue(times->browser_message_loop_start_time);
+  // TODO(msw): Determine if this is the first run.
+  startup_metric_utils::RecordBrowserMainMessageLoopStart(
+      browser_message_loop_start_time, false);
 
   // TODO(msw): Consolidate with chrome's Browser::OnWindowDidShow()...
   const base::Time browser_window_display_time =

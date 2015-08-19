@@ -27,24 +27,20 @@ bool WasNonBrowserUIDisplayed();
 // been displayed or not.
 void SetNonBrowserUIDisplayed();
 
-// Call this as early as possible in the startup process to record a timestamp.
-void RecordMainEntryPointTime();
-
-// Call this when the executable is loaded and main() is entered. Can be
-// different from |RecordMainEntryPointTime| when the startup process is
-// contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
-void RecordExeMainEntryTime();
-
-// Call this with a previously recorded timestamp if unable to call
-// RecordMainEntryPointTime() directly on startup.
+// Call this with a time recorded as early as possible in the startup process.
 // On Android, the entry point time is the time at which the Java code starts.
 // In Mojo, the entry point time is the time at which the shell starts.
-void RecordSavedMainEntryPointTime(const base::Time& entry_point_time);
+void RecordMainEntryPointTime(const base::Time& time);
 
-// Called just before the message loop is about to start. Entry point to record
-// startup stats.
+// Call this with the time when the executable is loaded and main() is entered.
+// Can be different from |RecordMainEntryPointTime| when the startup process is
+// contained in a separate dll, such as with chrome.exe / chrome.dll on Windows.
+void RecordExeMainEntryPointTime(const base::Time& time);
+
+// Call this with the time recorded just before the message loop is started.
 // |is_first_run| - is the current launch part of a first run.
-void OnBrowserStartupComplete(bool is_first_run);
+void RecordBrowserMainMessageLoopStart(const base::Time& time,
+                                       bool is_first_run);
 
 // Returns the time of main entry recorded from RecordMainEntryPointTime.
 // Returns NULL if that method has not yet been called.

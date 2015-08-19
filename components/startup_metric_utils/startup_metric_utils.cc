@@ -174,8 +174,7 @@ void RecordHardFaultHistogram(bool is_first_run) {
 #endif  // defined(OS_WIN)
 }
 
-// Record time of main entry so it can be read from Telemetry performance
-// tests.
+// Record time of main entry so it can be read from Telemetry performance tests.
 // TODO(jeremy): Remove once crbug.com/317481 is fixed.
 void RecordMainEntryTimeHistogram() {
   const int kLowWordMask = 0xFFFFFFFF;
@@ -207,6 +206,18 @@ bool g_main_entry_time_was_recorded = false;
 // function was entered.
 const char kChromeMainTimeEnvVar[] = "CHROME_MAIN_TIME";
 
+// Returns the time of main entry recorded from RecordExeMainEntryTime.
+base::Time ExeMainEntryPointTime() {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string time_string;
+  int64 time_int = 0;
+  if (env->GetVar(kChromeMainTimeEnvVar, &time_string) &&
+      base::StringToInt64(time_string, &time_int)) {
+    return base::Time::FromInternalValue(time_int);
+  }
+  return base::Time();
+}
+
 }  // namespace
 
 namespace startup_metric_utils {
@@ -219,34 +230,33 @@ void SetNonBrowserUIDisplayed() {
   g_non_browser_ui_displayed = true;
 }
 
-void RecordMainEntryPointTime() {
+void RecordMainEntryPointTime(const base::Time& time) {
   DCHECK(!g_main_entry_time_was_recorded);
   g_main_entry_time_was_recorded = true;
-  MainEntryPointTimeInternal();
+  *MainEntryPointTimeInternal() = time;
 }
 
-void RecordExeMainEntryTime() {
-  std::string exe_load_time =
-      base::Int64ToString(base::Time::Now().ToInternalValue());
+void RecordExeMainEntryPointTime(const base::Time& time) {
+  std::string exe_load_time = base::Int64ToString(time.ToInternalValue());
   scoped_ptr<base::Environment> env(base::Environment::Create());
   env->SetVar(kChromeMainTimeEnvVar, exe_load_time);
 }
 
-void RecordSavedMainEntryPointTime(const base::Time& entry_point_time) {
-  DCHECK(!g_main_entry_time_was_recorded);
-  g_main_entry_time_was_recorded = true;
-  *MainEntryPointTimeInternal() = entry_point_time;
-}
-
-// Return the time recorded by RecordMainEntryPointTime().
-const base::Time MainEntryStartTime() {
-  DCHECK(g_main_entry_time_was_recorded);
-  return *MainEntryPointTimeInternal();
-}
-
-void OnBrowserStartupComplete(bool is_first_run) {
+void RecordBrowserMainMessageLoopStart(const base::Time& time,
+                                       bool is_first_run) {
   RecordHardFaultHistogram(is_first_run);
   RecordMainEntryTimeHistogram();
+
+  base::Time process_creation_time;
+// CurrentProcessInfo::CreationTime() is only implemented on some platforms.
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
+  process_creation_time = base::CurrentProcessInfo::CreationTime();
+#endif
+
+  if (!is_first_run && !process_creation_time.is_null()) {
+    UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserMessageLoopStartTime",
+                                 time - process_creation_time);
+  }
 
   // Bail if uptime < 7 minutes, to filter out cases where Chrome may have been
   // autostarted and the machine is under io pressure.
@@ -263,8 +273,8 @@ void OnBrowserStartupComplete(bool is_first_run) {
   //   time.
   // * Only measure launches that occur 7 minutes after boot to try to avoid
   //   cases where Chrome is auto-started and IO is heavily loaded.
-  base::TimeDelta startup_time_from_main_entry =
-      base::Time::Now() - MainEntryStartTime();
+  const base::Time dll_main_time = *MainEntryPointTime();
+  base::TimeDelta startup_time_from_main_entry = time - dll_main_time;
   if (is_first_run) {
     UMA_HISTOGRAM_LONG_TIMES(
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
@@ -275,27 +285,14 @@ void OnBrowserStartupComplete(bool is_first_run) {
         startup_time_from_main_entry);
   }
 
-// CurrentProcessInfo::CreationTime() is currently only implemented on some
-// platforms.
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN) || \
-    defined(OS_LINUX)
   // Record timings between process creation, the main() in the executable being
   // reached and the main() in the shared library being reached.
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string chrome_main_entry_time_string;
-  if (env->GetVar(kChromeMainTimeEnvVar, &chrome_main_entry_time_string)) {
-    // The time that the Chrome executable's main() function was entered.
-    int64 chrome_main_entry_time_int = 0;
-    if (base::StringToInt64(chrome_main_entry_time_string,
-                            &chrome_main_entry_time_int)) {
-      base::Time process_create_time = base::CurrentProcessInfo::CreationTime();
-      base::Time exe_main_time =
-          base::Time::FromInternalValue(chrome_main_entry_time_int);
-      base::Time dll_main_time = MainEntryStartTime();
-
+  if (!process_creation_time.is_null()) {
+    const base::Time exe_main_time = ExeMainEntryPointTime();
+    if (!exe_main_time.is_null()) {
       // Process create to chrome.exe:main().
       UMA_HISTOGRAM_LONG_TIMES("Startup.LoadTime.ProcessCreateToExeMain",
-                               exe_main_time - process_create_time);
+                               exe_main_time - process_creation_time);
 
       // chrome.exe:main() to chrome.dll:main().
       UMA_HISTOGRAM_LONG_TIMES("Startup.LoadTime.ExeMainToDllMain",
@@ -303,15 +300,14 @@ void OnBrowserStartupComplete(bool is_first_run) {
 
       // Process create to chrome.dll:main().
       UMA_HISTOGRAM_LONG_TIMES("Startup.LoadTime.ProcessCreateToDllMain",
-                               dll_main_time - process_create_time);
+                               dll_main_time - process_creation_time);
     }
   }
-#endif
 }
 
 const base::Time* MainEntryPointTime() {
   if (!g_main_entry_time_was_recorded)
-    return NULL;
+    return nullptr;
   return MainEntryPointTimeInternal();
 }
 

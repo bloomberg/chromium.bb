@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/client_util.h"
 #include "chrome/browser/chrome_process_finder_win.h"
@@ -132,7 +133,7 @@ int main() {
 #endif
   SwitchToLFHeap();
 
-  startup_metric_utils::RecordExeMainEntryTime();
+  startup_metric_utils::RecordExeMainEntryPointTime(base::Time::Now());
 
   // Signal Chrome Elf that Chrome has begun to start.
   SignalChromeElf();

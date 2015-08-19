@@ -16,6 +16,7 @@
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -389,14 +390,13 @@ void InitializeUserDataDir() {
 }  // namespace
 
 ChromeMainDelegate::ChromeMainDelegate() {
-#if defined(OS_ANDROID)
 // On Android the main entry point time is the time when the Java code starts.
 // This happens before the shared library containing this code is even loaded.
 // The Java startup code has recorded that time, but the C++ code can't fetch it
 // from the Java side until it has initialized the JNI. See
 // ChromeMainDelegateAndroid.
-#else
-  startup_metric_utils::RecordMainEntryPointTime();
+#if !defined(OS_ANDROID)
+  startup_metric_utils::RecordMainEntryPointTime(base::Time::Now());
 #endif
 }
 
