@@ -43,7 +43,7 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
 
     const SVGComputedStyle& svgStyle = style.svgStyle();
 
-    // Build a list of all resources associated with the passed LayoutObject
+    // Build a list of all resources associated with the passed LayoutObject.
     OwnPtr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);
     if (!newResources)
         return;
@@ -55,7 +55,7 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
     SVGResourcesCycleSolver solver(object, resources);
     solver.resolveCycles();
 
-    // Walk resources and register the layout object at each resources.
+    // Walk resources and register the layout object as a client of each resource.
     HashSet<LayoutSVGResourceContainer*> resourceSet;
     resources->buildSetOfResources(resourceSet);
 
@@ -69,7 +69,7 @@ void SVGResourcesCache::removeResourcesFromLayoutObject(LayoutObject* object)
     if (!resources)
         return;
 
-    // Walk resources and register the layout object at each resources.
+    // Walk resources and unregister the layout object as a client of each resource.
     HashSet<LayoutSVGResourceContainer*> resourceSet;
     resources->buildSetOfResources(resourceSet);
 
@@ -77,26 +77,20 @@ void SVGResourcesCache::removeResourcesFromLayoutObject(LayoutObject* object)
         resourceContainer->removeClient(object);
 }
 
-static inline SVGResourcesCache* resourcesCacheFromLayoutObject(const LayoutObject* layoutObject)
+static inline SVGResourcesCache& resourcesCache(Document& document)
 {
-    Document& document = layoutObject->document();
-
-    SVGDocumentExtensions& extensions = document.accessSVGExtensions();
-    SVGResourcesCache* cache = extensions.resourcesCache();
-    ASSERT(cache);
-
-    return cache;
+    return document.accessSVGExtensions().resourcesCache();
 }
 
 SVGResources* SVGResourcesCache::cachedResourcesForLayoutObject(const LayoutObject* layoutObject)
 {
     ASSERT(layoutObject);
-    return resourcesCacheFromLayoutObject(layoutObject)->m_cache.get(layoutObject);
+    return resourcesCache(layoutObject->document()).m_cache.get(layoutObject);
 }
 
 void SVGResourcesCache::clientLayoutChanged(LayoutObject* object)
 {
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(object);
+    SVGResources* resources = cachedResourcesForLayoutObject(object);
     if (!resources)
         return;
 
@@ -121,17 +115,20 @@ void SVGResourcesCache::clientStyleChanged(LayoutObject* layoutObject, StyleDiff
     if (!diff.hasDifference() || !layoutObject->parent())
         return;
 
-    // In this case the proper SVGFE*Element will decide whether the modified CSS properties require a relayout or paintInvalidation.
+    // In this case the proper SVGFE*Element will decide whether the modified CSS properties require
+    // a relayout or paintInvalidation.
     if (layoutObject->isSVGResourceFilterPrimitive() && !diff.needsLayout())
         return;
 
-    // Dynamic changes of CSS properties like 'clip-path' may require us to recompute the associated resources for a layoutObject.
-    // FIXME: Avoid passing in a useless StyleDifference, but instead compare oldStyle/newStyle to see which resources changed
-    // to be able to selectively rebuild individual resources, instead of all of them.
+    // Dynamic changes of CSS properties like 'clip-path' may require us to recompute the associated
+    // resources for a LayoutObject.
+    // TODO(fs): Avoid passing in a useless StyleDifference, but instead compare oldStyle/newStyle
+    // to see which resources changed to be able to selectively rebuild individual resources,
+    // instead of all of them.
     if (layoutObjectCanHaveResources(layoutObject)) {
-        SVGResourcesCache* cache = resourcesCacheFromLayoutObject(layoutObject);
-        cache->removeResourcesFromLayoutObject(layoutObject);
-        cache->addResourcesFromLayoutObject(layoutObject, newStyle);
+        SVGResourcesCache& cache = resourcesCache(layoutObject->document());
+        cache.removeResourcesFromLayoutObject(layoutObject);
+        cache.addResourcesFromLayoutObject(layoutObject, newStyle);
     }
 
     LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(layoutObject, false);
@@ -145,8 +142,8 @@ void SVGResourcesCache::clientWasAddedToTree(LayoutObject* layoutObject, const C
 
     if (!layoutObjectCanHaveResources(layoutObject))
         return;
-    SVGResourcesCache* cache = resourcesCacheFromLayoutObject(layoutObject);
-    cache->addResourcesFromLayoutObject(layoutObject, newStyle);
+    SVGResourcesCache& cache = resourcesCache(layoutObject->document());
+    cache.addResourcesFromLayoutObject(layoutObject, newStyle);
 }
 
 void SVGResourcesCache::clientWillBeRemovedFromTree(LayoutObject* layoutObject)
@@ -157,31 +154,30 @@ void SVGResourcesCache::clientWillBeRemovedFromTree(LayoutObject* layoutObject)
 
     if (!layoutObjectCanHaveResources(layoutObject))
         return;
-    SVGResourcesCache* cache = resourcesCacheFromLayoutObject(layoutObject);
-    cache->removeResourcesFromLayoutObject(layoutObject);
+    SVGResourcesCache& cache = resourcesCache(layoutObject->document());
+    cache.removeResourcesFromLayoutObject(layoutObject);
 }
 
 void SVGResourcesCache::clientDestroyed(LayoutObject* layoutObject)
 {
     ASSERT(layoutObject);
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(layoutObject);
+    SVGResources* resources = cachedResourcesForLayoutObject(layoutObject);
     if (resources)
         resources->removeClientFromCache(layoutObject);
-
-    SVGResourcesCache* cache = resourcesCacheFromLayoutObject(layoutObject);
-    cache->removeResourcesFromLayoutObject(layoutObject);
+    SVGResourcesCache& cache = resourcesCache(layoutObject->document());
+    cache.removeResourcesFromLayoutObject(layoutObject);
 }
 
 void SVGResourcesCache::resourceDestroyed(LayoutSVGResourceContainer* resource)
 {
     ASSERT(resource);
-    SVGResourcesCache* cache = resourcesCacheFromLayoutObject(resource);
+    SVGResourcesCache& cache = resourcesCache(resource->document());
 
     // The resource itself may have clients, that need to be notified.
-    cache->removeResourcesFromLayoutObject(resource);
+    cache.removeResourcesFromLayoutObject(resource);
 
-    for (auto& objectResources : cache->m_cache) {
+    for (auto& objectResources : cache.m_cache) {
         objectResources.value->resourceDestroyed(resource);
 
         // Mark users of destroyed resources as pending resolution based on the id of the old resource.

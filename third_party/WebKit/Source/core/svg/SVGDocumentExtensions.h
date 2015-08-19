@@ -60,7 +60,7 @@ public:
     void reportWarning(const String&);
     void reportError(const String&);
 
-    SVGResourcesCache* resourcesCache() const { return m_resourcesCache.get(); }
+    SVGResourcesCache& resourcesCache() const { return *m_resourcesCache; }
 
     void addSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
     void removeSVGRootWithRelativeLengthDescendents(SVGSVGElement*);
