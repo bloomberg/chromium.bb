@@ -1,6 +1,5 @@
 
 1) setting length to a negative length
-PASS mySelect.options.length = -1; threw exception IndexSizeError: Failed to set the 'length' property on 'HTMLOptionsCollection': The value provided (-1) is negative. Lengths must be greater than or equal to 0..
 PASS mySelect.options.length is 2
 PASS mySelect.selectedIndex is 1
 2) setting length to a larger length
@@ -71,6 +70,9 @@ PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 23) trying to add a non-option element
 PASS mySelect.options.add({}) threw exception TypeError: Failed to execute 'add' on 'HTMLOptionsCollection': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS mySelect.options.length is 10
+PASS mySelect.selectedIndex is -1
+24) setting length to a value greater than 10000
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 

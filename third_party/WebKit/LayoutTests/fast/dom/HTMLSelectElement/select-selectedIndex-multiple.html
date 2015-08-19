@@ -14,7 +14,7 @@ reset(mySelect);
 var i = 0;
 
 debug((++i) + ") setting length to a negative length");
-shouldThrow("mySelect.options.length = -1;");
+mySelect.options.length = -1;
 shouldBe("mySelect.options.length", "2");
 shouldBe("mySelect.selectedIndex", "0");
 
@@ -134,6 +134,11 @@ shouldBe("mySelect.selectedIndex", "0");
 
 debug((++i) + ") trying to set a option element using an invalid index: positive infinity");
 mySelect.options[1/0] = document.createElement("option");
+shouldBe("mySelect.options.length", "10");
+shouldBe("mySelect.selectedIndex", "0");
+
+debug((++i) + ") setting length to a value greater than 10000");
+mySelect.options.length = 10001;
 shouldBe("mySelect.options.length", "10");
 shouldBe("mySelect.selectedIndex", "0");
 

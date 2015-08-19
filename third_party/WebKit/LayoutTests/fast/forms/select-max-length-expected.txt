@@ -2,9 +2,9 @@ This test that setting HTMLSelectElement.length is capped to 10,000, but that yo
 
 Select length is 0
 Trying: - sel.length = 20000;
-Select length is 10000
+Select length is 0
 Trying: - sel.add(new Option, 0);
-Select length is 10001
+Select length is 1
 Trying: - sel.length = 0;
 Select length is 0
 

@@ -26,7 +26,7 @@
     SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLOptionsCollection : HTMLCollection {
     // inherits item()
-    [Custom=Setter, RaisesException=Setter] attribute unsigned long length; // shadows inherited length
+    [RaisesException=Setter] attribute unsigned long length; // shadows inherited length
     // FIXME: The spec has a legacycaller HTMLOptionElement? (DOMString name);
     [RaisesException, TypeChecking=Interface] setter void (unsigned long index, HTMLOptionElement? option);
     [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element, optional (HTMLElement or long)? before = null);

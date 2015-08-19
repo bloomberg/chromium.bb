@@ -492,7 +492,7 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
 void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionState)
 {
     if (newLen > maxSelectItems)
-        newLen = maxSelectItems;
+        return;
     int diff = length() - newLen;
 
     if (diff < 0) { // Add dummy elements.
