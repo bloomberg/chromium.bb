@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_LANGUAGE_SETTINGS_PRIVATE_LANGUAGE_SETTINGS_PRIVATE_API_H_
 
 #include "base/macros.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -43,6 +45,8 @@ class LanguageSettingsPrivateSetLanguageListFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateSetLanguageListFunction);
 };
 
@@ -101,6 +105,8 @@ class LanguageSettingsPrivateGetTranslateTargetLanguageFunction
   ResponseAction Run() override;
 
  private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
   DISALLOW_COPY_AND_ASSIGN(
       LanguageSettingsPrivateGetTranslateTargetLanguageFunction);
 };

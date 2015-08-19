@@ -32,6 +32,7 @@ LanguageSettingsPrivateDelegateFactory::LanguageSettingsPrivateDelegateFactory()
           "LanguageSettingsPrivateDelegate",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  DependsOn(SpellcheckServiceFactory::GetInstance());
 }
 
 LanguageSettingsPrivateDelegateFactory::

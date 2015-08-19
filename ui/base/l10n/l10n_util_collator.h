@@ -94,7 +94,7 @@ class StringComparator : public std::binary_function<const Element&,
       : collator_(collator) { }
 
   // Returns true if lhs precedes rhs.
-  bool operator()(const Element& lhs, const Element& rhs) {
+  bool operator()(const Element& lhs, const Element& rhs) const {
     const base::string16& lhs_string_key = lhs.GetStringKey();
     const base::string16& rhs_string_key = rhs.GetStringKey();
 
@@ -110,7 +110,7 @@ class StringComparator : public std::binary_function<const Element&,
 template <>
 UI_BASE_EXPORT inline bool StringComparator<base::string16>::operator()(
     const base::string16& lhs,
-    const base::string16& rhs) {
+    const base::string16& rhs) const {
   // If we can not get collator instance for specified locale, just do simple
   // string compare.
   if (!collator_)
