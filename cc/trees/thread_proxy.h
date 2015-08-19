@@ -129,8 +129,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
 
     bool input_throttled_until_commit;
 
-    base::TimeTicks animation_time;
-
     // Whether a commit has been completed since the last time animations were
     // ticked. If this happens, we need to animate again.
     bool did_commit_after_animating;

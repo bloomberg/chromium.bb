@@ -201,24 +201,6 @@ void SingleThreadProxy::SetNeedsUpdateLayers() {
   SetNeedsCommit();
 }
 
-void SingleThreadProxy::DoAnimate() {
-  // Don't animate if there is no root layer.
-  // TODO(mithro): Both Animate and UpdateAnimationState already have a
-  // "!active_tree_->root_layer()" check?
-  if (!layer_tree_host_impl_->active_tree()->root_layer()) {
-    return;
-  }
-
-  layer_tree_host_impl_->Animate(
-      layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
-
-  // If animations are not visible, update the animation state now as it
-  // won't happen in DoComposite.
-  if (!layer_tree_host_impl_->AnimationsAreVisible()) {
-    layer_tree_host_impl_->UpdateAnimationState(true);
-  }
-}
-
 void SingleThreadProxy::DoCommit() {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoCommit");
   DCHECK(Proxy::IsMainThread());
@@ -593,7 +575,8 @@ void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
     layer_tree_host_impl_->PrepareTiles();
     layer_tree_host_impl_->SynchronouslyInitializeAllTiles();
 
-    DoAnimate();
+    // TODO(danakj): Don't do this last... we prepared the wrong things. D:
+    layer_tree_host_impl_->Animate();
 
     LayerTreeHostImpl::FrameData frame;
     DoComposite(&frame);
@@ -881,7 +864,7 @@ void SingleThreadProxy::ScheduledActionCommit() {
 void SingleThreadProxy::ScheduledActionAnimate() {
   TRACE_EVENT0("cc", "ScheduledActionAnimate");
   DebugScopedSetImplThread impl(this);
-  DoAnimate();
+  layer_tree_host_impl_->Animate();
 }
 
 void SingleThreadProxy::ScheduledActionActivateSyncTree() {

@@ -227,7 +227,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void BeginMainFrameAborted(CommitEarlyOutReason reason);
   virtual void BeginCommit();
   virtual void CommitComplete();
-  virtual void Animate(base::TimeTicks monotonic_time);
+  virtual void Animate();
   virtual void UpdateAnimationState(bool start_ready_animations);
   void ActivateAnimations();
   void MainThreadHasStoppedFlinging();
@@ -433,8 +433,6 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
-
-  bool AnimationsAreVisible() { return visible() && CanDraw(); }
 
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
   void SetNeedsAnimate();

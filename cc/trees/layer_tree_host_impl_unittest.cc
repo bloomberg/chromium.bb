@@ -171,8 +171,10 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     // Set the BeginFrameArgs so that methods which use it are able to.
-    host_impl_->WillBeginImplFrame(
-        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE));
+    host_impl_->WillBeginImplFrame(CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1)));
+    host_impl_->DidFinishImplFrame();
     return init;
   }
 
@@ -1646,6 +1648,9 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
   base::TimeTicks halfway_through_animation = start_time + duration / 2;
   base::TimeTicks end_time = start_time + duration;
 
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
   // Non-anchor zoom-in
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
@@ -1666,22 +1671,31 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
     did_request_redraw_ = false;
     did_request_animate_ = false;
-    host_impl_->Animate(start_time);
+    begin_frame_args.frame_time = start_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_animate_);
+    host_impl_->DidFinishImplFrame();
 
     did_request_redraw_ = false;
     did_request_animate_ = false;
-    host_impl_->Animate(halfway_through_animation);
+    begin_frame_args.frame_time = halfway_through_animation;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_animate_);
+    host_impl_->DidFinishImplFrame();
 
     did_request_redraw_ = false;
     did_request_animate_ = false;
     did_request_commit_ = false;
-    host_impl_->Animate(end_time);
+    begin_frame_args.frame_time = end_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_commit_);
     EXPECT_FALSE(did_request_animate_);
+    host_impl_->DidFinishImplFrame();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -1689,6 +1703,10 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
     EXPECT_TRUE(ScrollInfoContains(*scroll_info, scroll_layer->id(),
                                    gfx::Vector2d(-50, -50)));
   }
+
+  start_time += base::TimeDelta::FromSeconds(10);
+  halfway_through_animation += base::TimeDelta::FromSeconds(10);
+  end_time += base::TimeDelta::FromSeconds(10);
 
   // Anchor zoom-out
   {
@@ -1710,17 +1728,23 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimation) {
 
     did_request_redraw_ = false;
     did_request_animate_ = false;
-    host_impl_->Animate(start_time);
+    begin_frame_args.frame_time = start_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_animate_);
+    host_impl_->DidFinishImplFrame();
 
     did_request_redraw_ = false;
     did_request_commit_ = false;
     did_request_animate_ = false;
-    host_impl_->Animate(end_time);
+    begin_frame_args.frame_time = end_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_FALSE(did_request_animate_);
     EXPECT_TRUE(did_request_commit_);
+    host_impl_->DidFinishImplFrame();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -1747,6 +1771,9 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
   base::TimeTicks halfway_through_animation = start_time + duration / 2;
   base::TimeTicks end_time = start_time + duration;
 
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
   // Anchor zoom with unchanged page scale should not change scroll or scale.
   {
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, min_page_scale,
@@ -1760,11 +1787,22 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationNoOp) {
             1.f,
             duration)));
     host_impl_->ActivateSyncTree();
-    host_impl_->Animate(start_time);
-    host_impl_->Animate(halfway_through_animation);
+    begin_frame_args.frame_time = start_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
+    host_impl_->DidFinishImplFrame();
+
+    begin_frame_args.frame_time = halfway_through_animation;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_redraw_);
-    host_impl_->Animate(end_time);
+    host_impl_->DidFinishImplFrame();
+
+    begin_frame_args.frame_time = end_time;
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_commit_);
+    host_impl_->DidFinishImplFrame();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -1799,6 +1837,9 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   base::TimeTicks end_time = start_time + duration;
   float target_scale = 2.f;
 
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
   scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(50, 50));
 
   // Make sure TakePageScaleAnimation works properly.
@@ -1825,9 +1866,12 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
           false,
           target_scale,
           duration)));
-  host_impl_->Animate(halfway_through_animation);
+  begin_frame_args.frame_time = halfway_through_animation;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_FALSE(did_request_animate_);
   EXPECT_FALSE(did_request_redraw_);
+  host_impl_->DidFinishImplFrame();
 
   // Activate the sync tree. This should cause the animation to become enabled.
   // It should also clear the pointer on the sync tree.
@@ -1837,34 +1881,51 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationTransferedOnSyncTreeActivate) {
   EXPECT_FALSE(did_request_redraw_);
   EXPECT_TRUE(did_request_animate_);
 
+  start_time += base::TimeDelta::FromSeconds(10);
+  third_through_animation += base::TimeDelta::FromSeconds(10);
+  halfway_through_animation += base::TimeDelta::FromSeconds(10);
+  end_time += base::TimeDelta::FromSeconds(10);
+
   // From here on, make sure the animation runs as normal.
   did_request_redraw_ = false;
   did_request_animate_ = false;
-  host_impl_->Animate(start_time);
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_animate_);
+  host_impl_->DidFinishImplFrame();
 
   did_request_redraw_ = false;
   did_request_animate_ = false;
-  host_impl_->Animate(third_through_animation);
+  begin_frame_args.frame_time = third_through_animation;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_animate_);
+  host_impl_->DidFinishImplFrame();
 
   // Another activation shouldn't have any effect on the animation.
   host_impl_->ActivateSyncTree();
 
   did_request_redraw_ = false;
   did_request_animate_ = false;
-  host_impl_->Animate(halfway_through_animation);
+  begin_frame_args.frame_time = halfway_through_animation;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_TRUE(did_request_redraw_);
   EXPECT_TRUE(did_request_animate_);
+  host_impl_->DidFinishImplFrame();
 
   did_request_redraw_ = false;
   did_request_animate_ = false;
   did_request_commit_ = false;
-  host_impl_->Animate(end_time);
+  begin_frame_args.frame_time = end_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_TRUE(did_request_commit_);
   EXPECT_FALSE(did_request_animate_);
+  host_impl_->DidFinishImplFrame();
 
   scoped_ptr<ScrollAndScaleSet> scroll_info =
       host_impl_->ProcessScrollDeltas();
@@ -1887,6 +1948,9 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
   base::TimeTicks halfway_through_animation = start_time + duration / 2;
   base::TimeTicks end_time = start_time + duration;
 
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
   scroll_layer->PushScrollOffsetFromMainThread(gfx::ScrollOffset(50, 50));
 
@@ -1895,14 +1959,23 @@ TEST_F(LayerTreeHostImplTest, PageScaleAnimationCompletedNotification) {
       scoped_ptr<PendingPageScaleAnimation>(new PendingPageScaleAnimation(
           gfx::Vector2d(), false, 2.f, duration)));
   host_impl_->ActivateSyncTree();
-  host_impl_->Animate(start_time);
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_FALSE(did_complete_page_scale_animation_);
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(halfway_through_animation);
+  begin_frame_args.frame_time = halfway_through_animation;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_FALSE(did_complete_page_scale_animation_);
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(end_time);
+  begin_frame_args.frame_time = end_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_TRUE(did_complete_page_scale_animation_);
+  host_impl_->DidFinishImplFrame();
 }
 
 class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
@@ -2016,13 +2089,17 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     EXPECT_FALSE(did_request_redraw_);
 
     // After the scrollbar animation begins, we should start getting redraws.
-    host_impl_->Animate(fake_now);
+    BeginFrameArgs begin_frame_args =
+        CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, fake_now);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_TRUE(did_request_animate_);
     did_request_animate_ = false;
     EXPECT_TRUE(did_request_redraw_);
     did_request_redraw_ = false;
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
+    host_impl_->DidFinishImplFrame();
 
     // Setting the scroll offset outside a scroll should also cause the
     // scrollbar to appear and to schedule a scrollbar animation.
@@ -7011,8 +7088,12 @@ const int LayerTreeHostImplWithTopControlsTest::top_controls_height_ = 50;
 TEST_F(LayerTreeHostImplWithTopControlsTest, NoIdleAnimations) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100))
       ->PushScrollOffsetFromMainThread(gfx::ScrollOffset(0, 10));
-  host_impl_->Animate(base::TimeTicks());
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   EXPECT_FALSE(did_request_redraw_);
+  host_impl_->DidFinishImplFrame();
 }
 
 TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsHeightIsCommitted) {
@@ -7181,7 +7262,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
 
   // The top controls should properly animate until finished, despite the scroll
   // offset being at the origin.
-  base::TimeTicks animation_time = base::TimeTicks::Now();
+  BeginFrameArgs begin_frame_args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, base::TimeTicks::Now());
   while (did_request_animate_) {
     did_request_redraw_ = false;
     did_request_animate_ = false;
@@ -7190,8 +7272,9 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
     float old_offset =
         host_impl_->top_controls_manager()->ControlsTopOffset();
 
-    animation_time += base::TimeDelta::FromMilliseconds(5);
-    host_impl_->Animate(animation_time);
+    begin_frame_args.frame_time += base::TimeDelta::FromMilliseconds(5);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
     EXPECT_EQ(gfx::Vector2dF().ToString(),
               scroll_layer->CurrentScrollOffset().ToString());
 
@@ -7209,6 +7292,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
       EXPECT_TRUE(host_impl_->top_controls_manager()->animation());
       EXPECT_TRUE(did_request_animate_);
     }
+    host_impl_->DidFinishImplFrame();
   }
   EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
 }
@@ -7251,7 +7335,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
   EXPECT_FALSE(did_request_commit_);
 
   // Animate the top controls to the limit.
-  base::TimeTicks animation_time = base::TimeTicks::Now();
+  BeginFrameArgs begin_frame_args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, base::TimeTicks::Now());
   while (did_request_animate_) {
     did_request_redraw_ = false;
     did_request_animate_ = false;
@@ -7260,8 +7345,9 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
     float old_offset =
         host_impl_->top_controls_manager()->ControlsTopOffset();
 
-    animation_time += base::TimeDelta::FromMilliseconds(5);
-    host_impl_->Animate(animation_time);
+    begin_frame_args.frame_time += base::TimeDelta::FromMilliseconds(5);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
 
     float new_offset =
         host_impl_->top_controls_manager()->ControlsTopOffset();
@@ -7270,6 +7356,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
       EXPECT_TRUE(did_request_redraw_);
       EXPECT_TRUE(did_request_commit_);
     }
+    host_impl_->DidFinishImplFrame();
   }
   EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
   EXPECT_EQ(-top_controls_height_,
@@ -7315,7 +7402,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
   EXPECT_FALSE(did_request_commit_);
 
   // Animate the top controls to the limit.
-  base::TimeTicks animation_time = base::TimeTicks::Now();
+  BeginFrameArgs begin_frame_args = CreateBeginFrameArgsForTesting(
+      BEGINFRAME_FROM_HERE, base::TimeTicks::Now());
   while (did_request_animate_) {
     did_request_redraw_ = false;
     did_request_animate_ = false;
@@ -7323,8 +7411,9 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
 
     float old_offset = host_impl_->top_controls_manager()->ControlsTopOffset();
 
-    animation_time += base::TimeDelta::FromMilliseconds(5);
-    host_impl_->Animate(animation_time);
+    begin_frame_args.frame_time += base::TimeDelta::FromMilliseconds(5);
+    host_impl_->WillBeginImplFrame(begin_frame_args);
+    host_impl_->Animate();
 
     float new_offset = host_impl_->top_controls_manager()->ControlsTopOffset();
 
@@ -7332,6 +7421,7 @@ TEST_F(LayerTreeHostImplWithTopControlsTest,
       EXPECT_TRUE(did_request_redraw_);
       EXPECT_TRUE(did_request_commit_);
     }
+    host_impl_->DidFinishImplFrame();
   }
   EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
   EXPECT_EQ(-top_controls_height_,
@@ -7777,17 +7867,26 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
 
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
 
   LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
 
-  host_impl_->Animate(start_time);
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(50));
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(50);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   float y = scrolling_layer->CurrentScrollOffset().y();
@@ -7796,20 +7895,29 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   // Update target.
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(200));
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(200);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   y = scrolling_layer->CurrentScrollOffset().y();
   EXPECT_TRUE(y > 50 && y < 100);
   EXPECT_EQ(scrolling_layer, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(250));
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 100),
                    scrolling_layer->CurrentScrollOffset());
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
 }
 
 // Evolved from LayerTreeHostImplTest.ScrollAnimated.
@@ -7820,17 +7928,26 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   base::TimeTicks start_time =
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
 
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
 
   LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
 
-  host_impl_->Animate(start_time);
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(50));
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(50);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   float y = scrolling_layer->CurrentScrollOffset().y();
@@ -7839,20 +7956,29 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   // Update target.
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(200));
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(200);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   y = scrolling_layer->CurrentScrollOffset().y();
   EXPECT_TRUE(y > 50 && y < 100);
   EXPECT_EQ(scrolling_layer, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
 
-  host_impl_->Animate(start_time + base::TimeDelta::FromMilliseconds(250));
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(250);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
   host_impl_->UpdateAnimationState(true);
 
   EXPECT_VECTOR_EQ(gfx::ScrollOffset(0, 100),
                    scrolling_layer->CurrentScrollOffset());
   EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
 }
 
 TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
@@ -8147,8 +8273,6 @@ class FakeVideoFrameController : public VideoFrameController {
 };
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
-  host_impl_->DidFinishImplFrame();
-
   BeginFrameArgs begin_frame_args =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
   FakeVideoFrameController controller;
@@ -8172,8 +8296,6 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerInsideFrame) {
 }
 
 TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
-  host_impl_->DidFinishImplFrame();
-
   BeginFrameArgs begin_frame_args =
       CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
   FakeVideoFrameController controller;

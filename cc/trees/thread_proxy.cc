@@ -858,22 +858,7 @@ void ThreadProxy::ScheduledActionAnimate() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionAnimate");
   DCHECK(IsImplThread());
 
-  // Don't animate if there is no root layer.
-  // TODO(mithro): Both Animate and UpdateAnimationState already have a
-  // "!active_tree_->root_layer()" check?
-  if (!impl().layer_tree_host_impl->active_tree()->root_layer()) {
-    return;
-  }
-
-  impl().animation_time =
-      impl().layer_tree_host_impl->CurrentBeginFrameArgs().frame_time;
-  impl().layer_tree_host_impl->Animate(impl().animation_time);
-
-  // If animations are not visible, update the state now as
-  // ScheduledActionDrawAndSwapIfPossible will never be called.
-  if (!impl().layer_tree_host_impl->AnimationsAreVisible()) {
-    impl().layer_tree_host_impl->UpdateAnimationState(true);
-  }
+  impl().layer_tree_host_impl->Animate();
 }
 
 void ThreadProxy::ScheduledActionCommit() {

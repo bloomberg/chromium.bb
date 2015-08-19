@@ -421,20 +421,33 @@ bool LayerTreeHostImpl::CanDraw() const {
   return true;
 }
 
-void LayerTreeHostImpl::Animate(base::TimeTicks monotonic_time) {
+void LayerTreeHostImpl::Animate() {
+  // Don't animate if there is no active root layer.
+  // TODO(ajuma): Does this break things if first commit has an animation?
+  if (!active_tree()->root_layer())
+    return;
+
+  base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
+
   // mithro(TODO): Enable these checks.
   // DCHECK(!current_begin_frame_tracker_.HasFinished());
   // DCHECK(monotonic_time == current_begin_frame_tracker_.Current().frame_time)
   //  << "Called animate with unknown frame time!?";
   if (!root_layer_scroll_offset_delegate_ ||
       (CurrentlyScrollingLayer() != InnerViewportScrollLayer() &&
-       CurrentlyScrollingLayer() != OuterViewportScrollLayer())) {
+       CurrentlyScrollingLayer() != OuterViewportScrollLayer()))
     AnimateInput(monotonic_time);
-  }
   AnimatePageScale(monotonic_time);
   AnimateLayers(monotonic_time);
   AnimateScrollbars(monotonic_time);
   AnimateTopControls(monotonic_time);
+
+  // If animations are not visible, update the state now as Draw/Swap will never
+  // occur.
+  // TODO(ajuma): Left-overs from now-deleted background ticking?
+  bool animations_are_visible = visible() && CanDraw();
+  if (!animations_are_visible)
+    UpdateAnimationState(true);
 }
 
 bool LayerTreeHostImpl::PrepareTiles() {
