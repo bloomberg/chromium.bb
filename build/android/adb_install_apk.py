@@ -53,7 +53,6 @@ def main():
                            'Default is env var BUILDTYPE or Debug.')
   parser.add_argument('-d', '--device', dest='device',
                       help='Target device for apk to install on.')
-  parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_argument('-v', '--verbose', action='count',
                       help='Enable verbose logging.')
 
@@ -83,13 +82,7 @@ def main():
             and helper.GetSplitName()):
           splits.append(f)
 
-  if args.blacklist_file:
-    blacklist = device_blacklist.Blacklist(args.blacklist_file)
-  else:
-    # TODO(jbudorick): Remove this once the bots are converted.
-    blacklist = device_blacklist.Blacklist(device_blacklist.BLACKLIST_JSON)
-
-  devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+  devices = device_utils.DeviceUtils.HealthyDevices()
 
   if args.device:
     devices = [d for d in devices if d == args.device]
@@ -106,14 +99,12 @@ def main():
         device.Install(apk, reinstall=args.keep_data)
     except device_errors.CommandFailedError:
       logging.exception('Failed to install %s', args.apk_name)
-      if blacklist:
-        blacklist.Extend([str(device)])
-        logging.warning('Blacklisting %s', str(device))
+      device_blacklist.ExtendBlacklist([str(device)])
+      logging.warning('Blacklisting %s', str(device))
     except device_errors.CommandTimeoutError:
       logging.exception('Timed out while installing %s', args.apk_name)
-      if blacklist:
-        blacklist.Extend([str(device)])
-        logging.warning('Blacklisting %s', str(device))
+      device_blacklist.ExtendBlacklist([str(device)])
+      logging.warning('Blacklisting %s', str(device))
 
   device_utils.DeviceUtils.parallel(devices).pMap(blacklisting_install)
 

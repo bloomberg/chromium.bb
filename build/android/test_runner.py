@@ -24,7 +24,6 @@ from pylib.base import environment_factory
 from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
-from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.gtest import gtest_config
@@ -189,7 +188,6 @@ def AddDeviceOptions(parser):
   group.add_argument('-d', '--device', dest='test_device',
                      help=('Target device for the test suite '
                            'to run on.'))
-  group.add_argument('--blacklist-file', help='Device blacklist file.')
 
 
 def AddGTestOptions(parser):
@@ -769,7 +767,7 @@ def _RunUIAutomatorTests(args, devices):
   """Subcommand of RunTestsCommands which runs uiautomator tests."""
   uiautomator_options = ProcessUIAutomatorOptions(args)
 
-  runner_factory, tests = uiautomator_setup.Setup(uiautomator_options, devices)
+  runner_factory, tests = uiautomator_setup.Setup(uiautomator_options)
 
   results, exit_code = test_dispatcher.RunTests(
       tests, runner_factory, devices, shard=True, test_timeout=None,
@@ -825,7 +823,7 @@ def _RunMonkeyTests(args, devices):
   return exit_code
 
 
-def _RunPerfTests(args, active_devices):
+def _RunPerfTests(args):
   """Subcommand of RunTestsCommands which runs perf tests."""
   perf_options = ProcessPerfTestOptions(args)
 
@@ -839,8 +837,7 @@ def _RunPerfTests(args, active_devices):
     return perf_test_runner.PrintTestOutput(
         perf_options.print_step, perf_options.output_chartjson_data)
 
-  runner_factory, tests, devices = perf_setup.Setup(
-      perf_options, active_devices)
+  runner_factory, tests, devices = perf_setup.Setup(perf_options)
 
   # shard=False means that each device will get the full list of tests
   # and then each one will decide their own affinity.
@@ -885,7 +882,7 @@ def _RunPythonTests(args):
     sys.path = sys.path[1:]
 
 
-def _GetAttachedDevices(blacklist_file, test_device):
+def _GetAttachedDevices(test_device=None):
   """Get all attached devices.
 
   Args:
@@ -894,14 +891,7 @@ def _GetAttachedDevices(blacklist_file, test_device):
   Returns:
     A list of attached devices.
   """
-  if not blacklist_file:
-    # TODO(jbudorick): Remove this once bots pass the blacklist file.
-    blacklist_file = device_blacklist.BLACKLIST_JSON
-    logging.warning('Using default device blacklist %s',
-                    device_blacklist.BLACKLIST_JSON)
-
-  blacklist = device_blacklist.Blacklist(blacklist_file)
-  attached_devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+  attached_devices = device_utils.DeviceUtils.HealthyDevices()
   if test_device:
     test_device = [d for d in attached_devices if d == test_device]
     if not test_device:
@@ -940,7 +930,7 @@ def RunTestsCommand(args, parser):
   if command in constants.LOCAL_MACHINE_TESTS:
     devices = []
   else:
-    devices = _GetAttachedDevices(args.blacklist_file, args.test_device)
+    devices = _GetAttachedDevices(args.test_device)
 
   forwarder.Forwarder.RemoveHostLog()
   if not ports.ResetTestServerPortAllocation():
@@ -961,7 +951,7 @@ def RunTestsCommand(args, parser):
   elif command == 'monkey':
     return _RunMonkeyTests(args, devices)
   elif command == 'perf':
-    return _RunPerfTests(args, devices)
+    return _RunPerfTests(args)
   elif command == 'python':
     return _RunPythonTests(args)
   else:

@@ -19,7 +19,7 @@ PULSE_PERIOD = 20
 def main():
   while True:
     try:
-      devices = device_utils.DeviceUtils.HealthyDevices(blacklist=None)
+      devices = device_utils.DeviceUtils.HealthyDevices()
       for d in devices:
         d.RunShellCommand(['touch', '/sdcard/host_heartbeat'],
                           check_return=True)

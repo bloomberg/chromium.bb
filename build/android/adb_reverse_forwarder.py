@@ -19,7 +19,6 @@ import time
 from pylib import constants
 from pylib import forwarder
 from pylib.device import adb_wrapper
-from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
@@ -37,7 +36,6 @@ def main(argv):
                     help='Verbose level (multiple times for more)')
   parser.add_option('--device',
                     help='Serial number of device we should use.')
-  parser.add_option('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_option('--debug', action='store_const', const='Debug',
                     dest='build_type', default='Release',
                     help='Use Debug build of host tools instead of Release.')
@@ -56,12 +54,7 @@ def main(argv):
     parser.error('Bad port number')
     sys.exit(1)
 
-  if options.blacklist_file:
-    blacklist = device_blacklist.Blacklist(options.blacklist_file)
-  else:
-    blacklist = None
-
-  devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+  devices = device_utils.DeviceUtils.HealthyDevices()
 
   if options.device:
     device = next((d for d in devices if d == options.device), None)

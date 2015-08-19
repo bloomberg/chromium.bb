@@ -9,14 +9,11 @@
 import argparse
 import sys
 
-from pylib.device import device_blacklist
 from pylib.device import device_utils
 
 
 def main():
   parser = argparse.ArgumentParser()
-
-  parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
 
   set_asserts_group = parser.add_mutually_exclusive_group(required=True)
   set_asserts_group.add_argument(
@@ -28,15 +25,9 @@ def main():
 
   args = parser.parse_args()
 
-  if args.blacklist_file:
-    blacklist = device_blacklist.Blacklist(args.blacklist_file)
-  else:
-    blacklist = None
-
   # TODO(jbudorick): Accept optional serial number and run only for the
   # specified device when present.
-  devices = device_utils.DeviceUtils.parallel(
-      device_utils.DeviceUtils.HealthyDevices(blacklist))
+  devices = device_utils.DeviceUtils.parallel()
 
   def set_java_asserts_and_restart(device):
     if device.SetJavaAsserts(args.set_asserts):

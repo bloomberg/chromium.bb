@@ -30,12 +30,8 @@ def _KillWebServers():
         logging.warning('Failed waiting for %s to die. %s', p.pid, e)
 
 
-def CleanupLeftoverProcesses(devices):
-  """Clean up the test environment, restarting fresh adb and HTTP daemons.
-
-  Args:
-    devices: The devices to clean.
-  """
+def CleanupLeftoverProcesses():
+  """Clean up the test environment, restarting fresh adb and HTTP daemons."""
   _KillWebServers()
   device_utils.RestartServer()
 
@@ -47,5 +43,5 @@ def CleanupLeftoverProcesses(devices):
       logging.error(str(e))
     d.WaitUntilFullyBooted()
 
-  device_utils.DeviceUtils.parallel(devices).pMap(cleanup_device)
+  device_utils.DeviceUtils.parallel().pMap(cleanup_device)
 

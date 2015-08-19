@@ -20,7 +20,6 @@ import sys
 import optparse
 
 from pylib.device import adb_wrapper
-from pylib.device import device_blacklist
 from pylib.device import device_errors
 from pylib.device import device_utils
 from pylib.utils import run_tests_helper
@@ -223,7 +222,6 @@ def main():
   parser.add_option('--device',
                     help='The serial number of the device. If not specified '
                          'will use all devices.')
-  parser.add_option('--blacklist-file', help='Device blacklist JSON file.')
   parser.add_option('-a', '--all-tombstones', action='store_true',
                     help="""Resolve symbols for all tombstones, rather than just
                          the most recent""")
@@ -237,15 +235,10 @@ def main():
                          'crash stacks.')
   options, _ = parser.parse_args()
 
-  if options.blacklist_file:
-    blacklist = device_blacklist.Blacklist(options.blacklist_file)
-  else:
-    blacklist = None
-
   if options.device:
     devices = [device_utils.DeviceUtils(options.device)]
   else:
-    devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
+    devices = device_utils.DeviceUtils.HealthyDevices()
 
   # This must be done serially because strptime can hit a race condition if
   # used for the first time in a multithreaded environment.

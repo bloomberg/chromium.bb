@@ -17,7 +17,7 @@ class TestPerfControl(unittest.TestCase):
     if not os.getenv('BUILDTYPE'):
       os.environ['BUILDTYPE'] = 'Debug'
 
-    devices = device_utils.DeviceUtils.HealthyDevices(blacklist=None)
+    devices = device_utils.DeviceUtils.HealthyDevices()
     self.assertGreater(len(devices), 0, 'No device attached!')
     self._device = devices[0]
 

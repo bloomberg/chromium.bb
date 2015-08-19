@@ -170,7 +170,7 @@ class TestJar(object):
             attached_min_sdk_level >= required_min_sdk_level)
 
   def GetAllMatchingTests(self, annotation_filter_list,
-                          exclude_annotation_list, test_filter, devices):
+                          exclude_annotation_list, test_filter):
     """Get a list of tests matching any of the annotations and the filter.
 
     Args:
@@ -180,7 +180,6 @@ class TestJar(object):
       exclude_annotation_list: List of test annotations. A test must not have
         any of these annotations.
       test_filter: Filter used for partial matching on the test method names.
-      devices: The set of devices against which tests will be run.
 
     Returns:
       List of all matching tests.
@@ -219,7 +218,7 @@ class TestJar(object):
 
     # Filter out any tests with SDK level requirements that don't match the set
     # of attached devices.
-    devices = device_utils.DeviceUtils.parallel(devices)
+    devices = device_utils.DeviceUtils.parallel()
     min_sdk_version = min(devices.build_version_sdk.pGet(None))
     tests = [t for t in tests
              if self._IsTestValidForSdkRange(t, min_sdk_version)]
