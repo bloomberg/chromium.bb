@@ -137,15 +137,14 @@ void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
 #endif
 
 struct StoragePartitionRemovalData {
-  uint32 remove_mask;
-  uint32 quota_storage_remove_mask;
+  uint32 remove_mask = 0;
+  uint32 quota_storage_remove_mask = 0;
   GURL remove_origin;
   base::Time remove_begin;
   base::Time remove_end;
   StoragePartition::OriginMatcherFunction origin_matcher;
 
-  StoragePartitionRemovalData() : remove_mask(0),
-                                  quota_storage_remove_mask(0) {}
+  StoragePartitionRemovalData() {}
 };
 
 class TestStoragePartition : public StoragePartition {
@@ -285,7 +284,7 @@ inline Matcher<const url::Origin&> SameOrigin(const url::Origin& reference) {
 
 class RemoveCookieTester {
  public:
-  RemoveCookieTester() : get_cookie_success_(false), cookie_store_(nullptr) {}
+  RemoveCookieTester() {}
 
   // Returns true, if the given cookie exists in the cookie store.
   bool ContainsCookie() {
@@ -333,9 +332,9 @@ class RemoveCookieTester {
     quit_closure_.Run();
   }
 
-  bool get_cookie_success_;
+  bool get_cookie_success_ = false;
   base::Closure quit_closure_;
-  net::CookieStore* cookie_store_;
+  net::CookieStore* cookie_store_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
 };
@@ -375,8 +374,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
 class RemoveChannelIDTester : public net::SSLConfigService::Observer {
  public:
-  explicit RemoveChannelIDTester(TestingProfile* profile)
-      : ssl_config_changed_count_(0) {
+  explicit RemoveChannelIDTester(TestingProfile* profile) {
     channel_id_service_ = profile->GetRequestContext()->
         GetURLRequestContext()->channel_id_service();
     ssl_config_service_ = profile->GetSSLConfigService();
@@ -432,15 +430,14 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
 
   net::ChannelIDService* channel_id_service_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
-  int ssl_config_changed_count_;
+  int ssl_config_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveChannelIDTester);
 };
 
 class RemoveHistoryTester {
  public:
-  RemoveHistoryTester()
-      : query_url_success_(false), history_service_(nullptr) {}
+  RemoveHistoryTester() {}
 
   bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
     if (!profile->CreateHistoryService(true, false))
@@ -482,22 +479,18 @@ class RemoveHistoryTester {
 
   // For History requests.
   base::CancelableTaskTracker tracker_;
-  bool query_url_success_;
+  bool query_url_success_ = false;
   base::Closure quit_closure_;
 
   // TestingProfile owns the history service; we shouldn't delete it.
-  history::HistoryService* history_service_;
+  history::HistoryService* history_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveHistoryTester);
 };
 
 class RemoveFaviconTester {
  public:
-  RemoveFaviconTester()
-      : got_favicon_(false),
-        got_expired_favicon_(false),
-        history_service_(nullptr),
-        favicon_service_(nullptr) {}
+  RemoveFaviconTester() {}
 
   bool Init(TestingProfile* profile) WARN_UNUSED_RESULT {
     // Create the history service if it has not been created yet.
@@ -570,13 +563,13 @@ class RemoveFaviconTester {
 
   // For favicon requests.
   base::CancelableTaskTracker tracker_;
-  bool got_favicon_;
-  bool got_expired_favicon_;
+  bool got_favicon_ = false;
+  bool got_expired_favicon_ = false;
   base::Closure quit_closure_;
 
   // Owned by TestingProfile.
-  history::HistoryService* history_service_;
-  favicon::FaviconService* favicon_service_;
+  history::HistoryService* history_service_ = nullptr;
+  favicon::FaviconService* favicon_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveFaviconTester);
 };
@@ -668,7 +661,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
 class RemoveLocalStorageTester {
  public:
   explicit RemoveLocalStorageTester(TestingProfile* profile)
-      : profile_(profile), dom_storage_context_(nullptr) {
+      : profile_(profile) {
     dom_storage_context_ =
         content::BrowserContext::GetDefaultStoragePartition(profile)->
             GetDOMStorageContext();
@@ -730,7 +723,7 @@ class RemoveLocalStorageTester {
 
   // We don't own these pointers.
   TestingProfile* profile_;
-  content::DOMStorageContext* dom_storage_context_;
+  content::DOMStorageContext* dom_storage_context_ = nullptr;
 
   std::vector<content::LocalStorageUsageInfo> infos_;
   base::Closure quit_closure_;
@@ -740,7 +733,7 @@ class RemoveLocalStorageTester {
 
 class MockDomainReliabilityService : public DomainReliabilityService {
  public:
-  MockDomainReliabilityService() : clear_count_(0) {}
+  MockDomainReliabilityService() {}
 
   ~MockDomainReliabilityService() override {}
 
@@ -770,7 +763,7 @@ class MockDomainReliabilityService : public DomainReliabilityService {
   }
 
  private:
-  unsigned clear_count_;
+  unsigned clear_count_ = 0;
   DomainReliabilityClearMode last_clear_mode_;
 };
 

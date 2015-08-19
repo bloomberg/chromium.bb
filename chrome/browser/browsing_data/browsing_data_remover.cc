@@ -217,35 +217,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       delete_begin_(delete_begin),
       delete_end_(delete_end),
       main_context_getter_(profile->GetRequestContext()),
-      media_context_getter_(profile->GetMediaRequestContext()),
-      deauthorize_content_licenses_request_id_(0),
-      waiting_for_clear_autofill_origin_urls_(false),
-      waiting_for_clear_cache_(false),
-      waiting_for_clear_channel_ids_(false),
-      waiting_for_clear_content_licenses_(false),
-      waiting_for_clear_cookies_count_(0),
-      waiting_for_clear_domain_reliability_monitor_(false),
-      waiting_for_clear_form_(false),
-      waiting_for_clear_history_(false),
-      waiting_for_clear_hostname_resolution_cache_(false),
-      waiting_for_clear_keyword_data_(false),
-      waiting_for_clear_nacl_cache_(false),
-      waiting_for_clear_network_predictor_(false),
-      waiting_for_clear_networking_history_(false),
-      waiting_for_clear_passwords_(false),
-      waiting_for_clear_platform_keys_(false),
-      waiting_for_clear_plugin_data_(false),
-      waiting_for_clear_pnacl_cache_(false),
-#if defined(OS_ANDROID)
-      waiting_for_clear_precache_history_(false),
-#endif
-      waiting_for_clear_storage_partition_data_(false),
-#if defined(ENABLE_WEBRTC)
-      waiting_for_clear_webrtc_logs_(false),
-#endif
-      remove_mask_(0),
-      origin_type_mask_(0),
-      storage_partition_for_testing_(nullptr) {
+      media_context_getter_(profile->GetMediaRequestContext()) {
   DCHECK(profile);
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max(). Work around

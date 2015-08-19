@@ -56,9 +56,9 @@ class BrowsingDataQuotaHelper
     bool operator ==(const QuotaInfo& rhs) const;
 
     std::string host;
-    int64 temporary_usage;
-    int64 persistent_usage;
-    int64 syncable_usage;
+    int64 temporary_usage = 0;
+    int64 persistent_usage = 0;
+    int64 syncable_usage = 0;
   };
 
   typedef std::list<QuotaInfo> QuotaInfoArray;

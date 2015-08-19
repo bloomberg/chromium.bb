@@ -59,7 +59,7 @@ class BrowsingDataQuotaHelperImpl : public BrowsingDataQuotaHelper {
   PendingHosts pending_hosts_;
   std::map<std::string, QuotaInfo> quota_info_;
 
-  bool is_fetching_;
+  bool is_fetching_ = false;
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_;

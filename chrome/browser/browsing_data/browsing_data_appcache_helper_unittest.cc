@@ -16,9 +16,7 @@
 namespace {
 class TestCompletionCallback {
  public:
-  TestCompletionCallback()
-      : have_result_(false) {
-  }
+  TestCompletionCallback() {}
 
   bool have_result() const { return have_result_; }
 
@@ -27,7 +25,7 @@ class TestCompletionCallback {
   }
 
  private:
-  bool have_result_;
+  bool have_result_ = false;
 };
 
 }  // namespace

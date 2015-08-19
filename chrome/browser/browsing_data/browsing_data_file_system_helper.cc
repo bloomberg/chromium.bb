@@ -81,14 +81,14 @@ class BrowsingDataFileSystemHelperImpl : public BrowsingDataFileSystemHelper {
   // when StartFetching is called on the UI thread, and reset to false when
   // NotifyOnUIThread triggers the success callback.
   // This property only mutates on the UI thread.
-  bool is_fetching_;
+  bool is_fetching_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataFileSystemHelperImpl);
 };
 
 BrowsingDataFileSystemHelperImpl::BrowsingDataFileSystemHelperImpl(
     storage::FileSystemContext* filesystem_context)
-    : filesystem_context_(filesystem_context), is_fetching_(false) {
+    : filesystem_context_(filesystem_context) {
   DCHECK(filesystem_context_.get());
 }
 

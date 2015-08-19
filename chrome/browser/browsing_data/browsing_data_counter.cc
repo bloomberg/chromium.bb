@@ -7,10 +7,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 
-BrowsingDataCounter::BrowsingDataCounter()
-    : counting_(false),
-      initialized_(false) {
-}
+BrowsingDataCounter::BrowsingDataCounter() {}
 
 BrowsingDataCounter::~BrowsingDataCounter() {
 }

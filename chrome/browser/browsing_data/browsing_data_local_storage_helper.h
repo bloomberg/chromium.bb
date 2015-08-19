@@ -57,7 +57,7 @@ class BrowsingDataLocalStorageHelper
 
   content::DOMStorageContext* dom_storage_context_;  // Owned by the profile
   base::Callback<void(const std::list<LocalStorageInfo>&)> completion_callback_;
-  bool is_fetching_;
+  bool is_fetching_ = false;
   std::list<LocalStorageInfo> local_storage_info_;
 
  private:

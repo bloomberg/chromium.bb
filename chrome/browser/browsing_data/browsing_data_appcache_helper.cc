@@ -17,10 +17,9 @@ using content::BrowserThread;
 
 BrowsingDataAppCacheHelper::BrowsingDataAppCacheHelper(
     BrowserContext* browser_context)
-    : is_fetching_(false),
-      appcache_service_(BrowserContext::GetDefaultStoragePartition(
-                            browser_context)->GetAppCacheService()) {
-}
+    : appcache_service_(
+          BrowserContext::GetDefaultStoragePartition(browser_context)
+              ->GetAppCacheService()) {}
 
 void BrowsingDataAppCacheHelper::StartFetching(const base::Closure& callback) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {

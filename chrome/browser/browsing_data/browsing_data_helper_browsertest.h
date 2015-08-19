@@ -19,9 +19,7 @@
 template <typename T>
 class BrowsingDataHelperCallback {
  public:
-  BrowsingDataHelperCallback()
-      : has_result_(false) {
-  }
+  BrowsingDataHelperCallback() {}
 
   const std::list<T>& result() {
     base::MessageLoop::current()->Run();
@@ -36,7 +34,7 @@ class BrowsingDataHelperCallback {
   }
 
  private:
-  bool has_result_;
+  bool has_result_ = false;
   std::list<T> result_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataHelperCallback);

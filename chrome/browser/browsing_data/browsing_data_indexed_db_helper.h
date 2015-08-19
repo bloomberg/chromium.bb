@@ -61,7 +61,7 @@ class BrowsingDataIndexedDBHelper
   // it's true when StartFetching() is called in the UI thread, and it's reset
   // after we notified the callback in the UI thread.
   // This member is only mutated on the UI thread.
-  bool is_fetching_;
+  bool is_fetching_ = false;
 
  private:
   friend class base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper>;

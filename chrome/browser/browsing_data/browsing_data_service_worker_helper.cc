@@ -22,7 +22,7 @@ using content::ServiceWorkerUsageInfo;
 
 BrowsingDataServiceWorkerHelper::BrowsingDataServiceWorkerHelper(
     ServiceWorkerContext* service_worker_context)
-    : service_worker_context_(service_worker_context), is_fetching_(false) {
+    : service_worker_context_(service_worker_context) {
   DCHECK(service_worker_context_);
 }
 

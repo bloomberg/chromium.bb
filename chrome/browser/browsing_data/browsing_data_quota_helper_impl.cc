@@ -60,7 +60,6 @@ BrowsingDataQuotaHelperImpl::BrowsingDataQuotaHelperImpl(
     storage::QuotaManager* quota_manager)
     : BrowsingDataQuotaHelper(io_thread),
       quota_manager_(quota_manager),
-      is_fetching_(false),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
       weak_factory_(this) {

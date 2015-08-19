@@ -52,7 +52,7 @@ class BrowsingDataChannelIDHelperImpl
   // it's true when StartFetching() is called in the UI thread, and it's reset
   // after we notify the callback in the UI thread.
   // This member is only mutated on the UI thread.
-  bool is_fetching_;
+  bool is_fetching_ = false;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
@@ -64,7 +64,7 @@ class BrowsingDataChannelIDHelperImpl
 
 BrowsingDataChannelIDHelperImpl::BrowsingDataChannelIDHelperImpl(
     net::URLRequestContextGetter* request_context)
-    : is_fetching_(false), request_context_getter_(request_context) {
+    : request_context_getter_(request_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

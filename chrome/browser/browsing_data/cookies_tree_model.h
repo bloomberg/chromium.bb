@@ -134,17 +134,19 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
 
     NodeType node_type;
     GURL origin;
-    const net::CanonicalCookie* cookie;
-    const BrowsingDataDatabaseHelper::DatabaseInfo* database_info;
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info;
+    const net::CanonicalCookie* cookie = nullptr;
+    const BrowsingDataDatabaseHelper::DatabaseInfo* database_info = nullptr;
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info =
+        nullptr;
     const BrowsingDataLocalStorageHelper::LocalStorageInfo*
-        session_storage_info;
-    const content::AppCacheInfo* appcache_info;
-    const content::IndexedDBInfo* indexed_db_info;
-    const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info;
-    const BrowsingDataQuotaHelper::QuotaInfo* quota_info;
-    const net::ChannelIDStore::ChannelID* channel_id;
-    const content::ServiceWorkerUsageInfo* service_worker_info;
+        session_storage_info = nullptr;
+    const content::AppCacheInfo* appcache_info = nullptr;
+    const content::IndexedDBInfo* indexed_db_info = nullptr;
+    const BrowsingDataFileSystemHelper::FileSystemInfo* file_system_info =
+        nullptr;
+    const BrowsingDataQuotaHelper::QuotaInfo* quota_info = nullptr;
+    const net::ChannelIDStore::ChannelID* channel_id = nullptr;
+    const content::ServiceWorkerUsageInfo* service_worker_info = nullptr;
     std::string flash_lso_domain;
   };
 
@@ -234,17 +236,17 @@ class CookieTreeHostNode : public CookieTreeNode {
   // the COOKIES node to add children. Checking each child and interrogating
   // them to see if they are a COOKIES, APPCACHES, DATABASES etc node seems
   // less preferable than storing an extra pointer per origin.
-  CookieTreeCookiesNode* cookies_child_;
-  CookieTreeDatabasesNode* databases_child_;
-  CookieTreeLocalStoragesNode* local_storages_child_;
-  CookieTreeSessionStoragesNode* session_storages_child_;
-  CookieTreeAppCachesNode* appcaches_child_;
-  CookieTreeIndexedDBsNode* indexed_dbs_child_;
-  CookieTreeFileSystemsNode* file_systems_child_;
-  CookieTreeQuotaNode* quota_child_;
-  CookieTreeChannelIDsNode* channel_ids_child_;
-  CookieTreeServiceWorkersNode* service_workers_child_;
-  CookieTreeFlashLSONode* flash_lso_child_;
+  CookieTreeCookiesNode* cookies_child_ = nullptr;
+  CookieTreeDatabasesNode* databases_child_ = nullptr;
+  CookieTreeLocalStoragesNode* local_storages_child_ = nullptr;
+  CookieTreeSessionStoragesNode* session_storages_child_ = nullptr;
+  CookieTreeAppCachesNode* appcaches_child_ = nullptr;
+  CookieTreeIndexedDBsNode* indexed_dbs_child_ = nullptr;
+  CookieTreeFileSystemsNode* file_systems_child_ = nullptr;
+  CookieTreeQuotaNode* quota_child_ = nullptr;
+  CookieTreeChannelIDsNode* channel_ids_child_ = nullptr;
+  CookieTreeServiceWorkersNode* service_workers_child_ = nullptr;
+  CookieTreeFlashLSONode* flash_lso_child_ = nullptr;
 
   // The URL for which this node was initially created.
   GURL url_;
@@ -668,7 +670,7 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
    private:
     CookiesTreeModel* model_;
     CookieTreeNode* node_;
-    bool batch_in_progress_;
+    bool batch_in_progress_ = false;
   };
 
   // ui::TreeModel methods:
@@ -812,17 +814,17 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
 
   // Keeps track of how many batches the consumer of this class says it is going
   // to send.
-  int batches_expected_;
+  int batches_expected_ = 0;
 
   // Keeps track of how many batches we've seen.
-  int batches_seen_;
+  int batches_seen_ = 0;
 
   // Counts how many batches have started already. If this is non-zero and lower
   // than batches_ended_, then this model is still batching updates.
-  int batches_started_;
+  int batches_started_ = 0;
 
   // Counts how many batches have finished.
-  int batches_ended_;
+  int batches_ended_ = 0;
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_COOKIES_TREE_MODEL_H_

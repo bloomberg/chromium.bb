@@ -43,7 +43,7 @@ class BrowsingDataAppCacheHelper
  private:
   void OnFetchComplete(int rv);
 
-  bool is_fetching_;
+  bool is_fetching_ = false;
   content::AppCacheService* appcache_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataAppCacheHelper);

@@ -22,8 +22,7 @@ class BrowsingDataChannelIDHelperTest
     : public testing::Test,
       public net::SSLConfigService::Observer {
  public:
-  BrowsingDataChannelIDHelperTest() : ssl_config_changed_count_(0) {
-  }
+  BrowsingDataChannelIDHelperTest() {}
 
   void SetUp() override {
     testing_profile_.reset(new TestingProfile());
@@ -65,7 +64,7 @@ class BrowsingDataChannelIDHelperTest
 
   net::ChannelIDStore::ChannelIDList channel_id_list_;
 
-  int ssl_config_changed_count_;
+  int ssl_config_changed_count_ = 0;
 };
 
 TEST_F(BrowsingDataChannelIDHelperTest, FetchData) {

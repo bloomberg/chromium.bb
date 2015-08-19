@@ -79,7 +79,7 @@ class BrowsingDataDatabaseHelper
   // it's true when StartFetching() is called in the UI thread, and it's reset
   // after we notify the callback in the UI thread.
   // This member is only mutated on the UI thread.
-  bool is_fetching_;
+  bool is_fetching_ = false;
 
  private:
   // Enumerates all databases. This must be called in the FILE thread.

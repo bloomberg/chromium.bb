@@ -21,7 +21,7 @@ class PasswordsCounter: public BrowsingDataCounter,
  private:
   const std::string pref_name_;
   base::CancelableTaskTracker cancelable_task_tracker_;
-  password_manager::PasswordStore* store_;
+  password_manager::PasswordStore* store_ = nullptr;
 
   void OnInitialized() override;
 

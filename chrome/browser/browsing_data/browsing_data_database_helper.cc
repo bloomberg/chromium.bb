@@ -38,10 +38,8 @@ BrowsingDataDatabaseHelper::DatabaseInfo::DatabaseInfo(
 BrowsingDataDatabaseHelper::DatabaseInfo::~DatabaseInfo() {}
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
-    : is_fetching_(false),
-      tracker_(BrowserContext::
-                  GetDefaultStoragePartition(profile)->GetDatabaseTracker()) {
-}
+    : tracker_(BrowserContext::GetDefaultStoragePartition(profile)
+                   ->GetDatabaseTracker()) {}
 
 BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
 }

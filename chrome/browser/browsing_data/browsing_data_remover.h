@@ -411,40 +411,40 @@ class BrowsingDataRemover
   scoped_ptr<PepperFlashSettingsManager> pepper_flash_settings_manager_;
 #endif
 
-  uint32 deauthorize_content_licenses_request_id_;
+  uint32 deauthorize_content_licenses_request_id_ = 0;
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
-  bool waiting_for_clear_autofill_origin_urls_;
-  bool waiting_for_clear_cache_;
-  bool waiting_for_clear_channel_ids_;
-  bool waiting_for_clear_content_licenses_;
+  bool waiting_for_clear_autofill_origin_urls_ = false;
+  bool waiting_for_clear_cache_ = false;
+  bool waiting_for_clear_channel_ids_ = false;
+  bool waiting_for_clear_content_licenses_ = false;
   // Non-zero if waiting for cookies to be cleared.
-  int waiting_for_clear_cookies_count_;
-  bool waiting_for_clear_domain_reliability_monitor_;
-  bool waiting_for_clear_form_;
-  bool waiting_for_clear_history_;
-  bool waiting_for_clear_hostname_resolution_cache_;
-  bool waiting_for_clear_keyword_data_;
-  bool waiting_for_clear_nacl_cache_;
-  bool waiting_for_clear_network_predictor_;
-  bool waiting_for_clear_networking_history_;
-  bool waiting_for_clear_passwords_;
-  bool waiting_for_clear_platform_keys_;
-  bool waiting_for_clear_plugin_data_;
-  bool waiting_for_clear_pnacl_cache_;
+  int waiting_for_clear_cookies_count_ = 0;
+  bool waiting_for_clear_domain_reliability_monitor_ = false;
+  bool waiting_for_clear_form_ = false;
+  bool waiting_for_clear_history_ = false;
+  bool waiting_for_clear_hostname_resolution_cache_ = false;
+  bool waiting_for_clear_keyword_data_ = false;
+  bool waiting_for_clear_nacl_cache_ = false;
+  bool waiting_for_clear_network_predictor_ = false;
+  bool waiting_for_clear_networking_history_ = false;
+  bool waiting_for_clear_passwords_ = false;
+  bool waiting_for_clear_platform_keys_ = false;
+  bool waiting_for_clear_plugin_data_ = false;
+  bool waiting_for_clear_pnacl_cache_ = false;
 #if defined(OS_ANDROID)
-  bool waiting_for_clear_precache_history_;
+  bool waiting_for_clear_precache_history_ = false;
 #endif
-  bool waiting_for_clear_storage_partition_data_;
+  bool waiting_for_clear_storage_partition_data_ = false;
 #if defined(ENABLE_WEBRTC)
-  bool waiting_for_clear_webrtc_logs_;
+  bool waiting_for_clear_webrtc_logs_ = false;
 #endif
 
   // The removal mask for the current removal operation.
-  int remove_mask_;
+  int remove_mask_ = 0;
 
   // From which types of origins should we remove data?
-  int origin_type_mask_;
+  int origin_type_mask_ = 0;
 
   base::ObserverList<Observer> observer_list_;
 
@@ -454,7 +454,7 @@ class BrowsingDataRemover
   scoped_ptr<TemplateURLService::Subscription> template_url_sub_;
 
   // We do not own this.
-  content::StoragePartition* storage_partition_for_testing_;
+  content::StoragePartition* storage_partition_for_testing_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemover);
 };

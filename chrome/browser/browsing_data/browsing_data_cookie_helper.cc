@@ -28,8 +28,7 @@ const char kGlobalCookieSetURL[] = "chrome://cookieset";
 
 BrowsingDataCookieHelper::BrowsingDataCookieHelper(
     net::URLRequestContextGetter* request_context_getter)
-    : is_fetching_(false),
-      request_context_getter_(request_context_getter) {
+    : request_context_getter_(request_context_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

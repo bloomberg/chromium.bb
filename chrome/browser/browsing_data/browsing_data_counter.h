@@ -57,10 +57,10 @@ class BrowsingDataCounter {
   BooleanPrefMember pref_;
 
   // Whether this counter is currently in the process of counting.
-  bool counting_;
+  bool counting_ = false;
 
   // Whether this class was properly initialized by calling |Init|.
-  bool initialized_;
+  bool initialized_ = false;
 };
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_H_

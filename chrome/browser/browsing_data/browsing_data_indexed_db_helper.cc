@@ -22,8 +22,7 @@ using content::IndexedDBInfo;
 
 BrowsingDataIndexedDBHelper::BrowsingDataIndexedDBHelper(
     IndexedDBContext* indexed_db_context)
-    : indexed_db_context_(indexed_db_context),
-      is_fetching_(false) {
+    : indexed_db_context_(indexed_db_context) {
   DCHECK(indexed_db_context_.get());
 }
 

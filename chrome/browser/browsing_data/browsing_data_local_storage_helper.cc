@@ -21,12 +21,9 @@ BrowsingDataLocalStorageHelper::LocalStorageInfo::LocalStorageInfo(
 
 BrowsingDataLocalStorageHelper::LocalStorageInfo::~LocalStorageInfo() {}
 
-BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
-    Profile* profile)
-    : dom_storage_context_(
-          BrowserContext::GetDefaultStoragePartition(profile)->
-              GetDOMStorageContext()),
-      is_fetching_(false) {
+BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(Profile* profile)
+    : dom_storage_context_(BrowserContext::GetDefaultStoragePartition(profile)
+                               ->GetDOMStorageContext()) {
   DCHECK(dom_storage_context_);
 }
 

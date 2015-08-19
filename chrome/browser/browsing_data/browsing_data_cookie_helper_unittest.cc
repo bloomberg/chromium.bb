@@ -18,7 +18,7 @@ namespace {
 // Test expectations for a given cookie.
 class CookieExpectation {
  public:
-  CookieExpectation() : matched_(false) {}
+  CookieExpectation() {}
 
   bool MatchesCookie(const net::CanonicalCookie& cookie) const {
     if (!source_.empty() && source_ != cookie.Source())
@@ -39,7 +39,7 @@ class CookieExpectation {
   std::string path_;
   std::string name_;
   std::string value_;
-  bool matched_;
+  bool matched_ = false;
 };
 
 // Matches a CookieExpectation against a Cookie.

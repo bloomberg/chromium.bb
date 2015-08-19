@@ -7,16 +7,10 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 
-BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo()
-    : temporary_usage(0),
-      persistent_usage(0),
-      syncable_usage(0) {}
+BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo() {}
 
 BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo(const std::string& host)
-    : host(host),
-      temporary_usage(0),
-      persistent_usage(0),
-      syncable_usage(0) {}
+    : host(host) {}
 
 BrowsingDataQuotaHelper::QuotaInfo::QuotaInfo(const std::string& host,
                                               int64 temporary_usage,

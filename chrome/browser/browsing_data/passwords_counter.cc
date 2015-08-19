@@ -7,10 +7,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 
-PasswordsCounter::PasswordsCounter()
-    : pref_name_(prefs::kDeletePasswords),
-      store_(nullptr) {
-}
+PasswordsCounter::PasswordsCounter() : pref_name_(prefs::kDeletePasswords) {}
 
 PasswordsCounter::~PasswordsCounter() {
   if (store_)

@@ -161,18 +161,7 @@ LocalDataContainer* GetLocalDataContainerForNode(CookieTreeNode* node) {
 
 }  // namespace
 
-CookieTreeNode::DetailedInfo::DetailedInfo()
-    : node_type(TYPE_NONE),
-      cookie(nullptr),
-      database_info(nullptr),
-      local_storage_info(nullptr),
-      session_storage_info(nullptr),
-      appcache_info(nullptr),
-      indexed_db_info(nullptr),
-      file_system_info(nullptr),
-      quota_info(nullptr),
-      channel_id(nullptr),
-      service_worker_info(nullptr) {}
+CookieTreeNode::DetailedInfo::DetailedInfo() : node_type(TYPE_NONE) {}
 
 CookieTreeNode::DetailedInfo::~DetailedInfo() {}
 
@@ -609,17 +598,6 @@ base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
 
 CookieTreeHostNode::CookieTreeHostNode(const GURL& url)
     : CookieTreeNode(TitleForUrl(url)),
-      cookies_child_(nullptr),
-      databases_child_(nullptr),
-      local_storages_child_(nullptr),
-      session_storages_child_(nullptr),
-      appcaches_child_(nullptr),
-      indexed_dbs_child_(nullptr),
-      file_systems_child_(nullptr),
-      quota_child_(nullptr),
-      channel_ids_child_(nullptr),
-      service_workers_child_(nullptr),
-      flash_lso_child_(nullptr),
       url_(url),
       canonicalized_host_(CanonicalizeHost(url)) {}
 
@@ -908,8 +886,9 @@ CookieTreeNode::DetailedInfo CookieTreeFlashLSONode::GetDetailedInfo() const {
 ///////////////////////////////////////////////////////////////////////////////
 // ScopedBatchUpdateNotifier
 CookiesTreeModel::ScopedBatchUpdateNotifier::ScopedBatchUpdateNotifier(
-  CookiesTreeModel* model, CookieTreeNode* node)
-      : model_(model), node_(node), batch_in_progress_(false) {
+    CookiesTreeModel* model,
+    CookieTreeNode* node)
+    : model_(model), node_(node) {
   model_->RecordBatchSeen();
 }
 
@@ -942,11 +921,7 @@ CookiesTreeModel::CookiesTreeModel(
 #if defined(ENABLE_EXTENSIONS)
       special_storage_policy_(special_storage_policy),
 #endif
-      group_by_cookie_source_(group_by_cookie_source),
-      batches_expected_(0),
-      batches_seen_(0),
-      batches_started_(0),
-      batches_ended_(0) {
+      group_by_cookie_source_(group_by_cookie_source) {
   data_container_->Init(this);
 }
 

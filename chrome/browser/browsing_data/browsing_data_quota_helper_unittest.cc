@@ -25,10 +25,7 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   typedef BrowsingDataQuotaHelper::QuotaInfo QuotaInfo;
   typedef BrowsingDataQuotaHelper::QuotaInfoArray QuotaInfoArray;
 
-  BrowsingDataQuotaHelperTest()
-      : fetching_completed_(true),
-        quota_(-1),
-        weak_factory_(this) {}
+  BrowsingDataQuotaHelperTest() : weak_factory_(this) {}
 
   ~BrowsingDataQuotaHelperTest() override {}
 
@@ -119,9 +116,9 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
   base::ScopedTempDir dir_;
   scoped_refptr<BrowsingDataQuotaHelper> helper_;
 
-  bool fetching_completed_;
+  bool fetching_completed_ = true;
   QuotaInfoArray quota_info_;
-  int64 quota_;
+  int64 quota_ = -1;
   base::WeakPtrFactory<BrowsingDataQuotaHelperTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataQuotaHelperTest);

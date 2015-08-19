@@ -37,8 +37,6 @@ LocalDataContainer::LocalDataContainer(
       channel_id_helper_(channel_id_helper),
       service_worker_helper_(service_worker_helper),
       flash_lso_helper_(flash_lso_helper),
-      model_(nullptr),
-      batches_started_(0),
       weak_ptr_factory_(this) {}
 
 LocalDataContainer::~LocalDataContainer() {}
