@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -223,50 +224,48 @@ void ProfileOAuth2TokenServiceIOSDelegate::ReloadCredentials() {
     return;
   }
 
-  std::vector<std::string> new_accounts(provider_->GetAllAccountIds());
-  if (GetExcludeAllSecondaryAccounts()) {
-    // Only keep the |primary_account_id| in the list of new accounts.
-    if (std::find(new_accounts.begin(), new_accounts.end(),
-                  primary_account_id_) != new_accounts.end()) {
-      new_accounts.clear();
-      new_accounts.push_back(primary_account_id_);
-    }
-  } else {
-    std::set<std::string> exclude_secondary_accounts =
-        GetExcludedSecondaryAccounts();
-    DCHECK(std::find(exclude_secondary_accounts.begin(),
-                     exclude_secondary_accounts.end(),
-                     primary_account_id_) == exclude_secondary_accounts.end());
-    for (const auto& excluded_account_id : exclude_secondary_accounts) {
-      DCHECK(!excluded_account_id.empty());
-      auto account_id_to_remove_position = std::remove(
-          new_accounts.begin(), new_accounts.end(), excluded_account_id);
-      new_accounts.erase(account_id_to_remove_position, new_accounts.end());
+  // Get the list of new account ids.
+  std::set<std::string> excluded_account_ids = GetExcludedSecondaryAccounts();
+  std::set<std::string> new_account_ids;
+  for (const auto& new_account : provider_->GetAllAccounts()) {
+    DCHECK(!new_account.gaia.empty());
+    DCHECK(!new_account.email.empty());
+    if (!IsAccountExcluded(new_account.gaia, new_account.email,
+                           excluded_account_ids)) {
+      // Account must to be seeded before adding an account to ensure that
+      // the GAIA ID is available if any client of this token service starts
+      // a fetch access token operation when it receives a
+      // |OnRefreshTokenAvailable| notification.
+      std::string account_id = account_tracker_service_->SeedAccountInfo(
+          new_account.gaia, new_account.email);
+      new_account_ids.insert(account_id);
     }
   }
+  DCHECK_EQ(1U, new_account_ids.count(primary_account_id_));
 
-  std::vector<std::string> old_accounts(GetAccounts());
-  std::sort(new_accounts.begin(), new_accounts.end());
-  std::sort(old_accounts.begin(), old_accounts.end());
-  if (new_accounts == old_accounts) {
-    // Avoid starting a batch change if there are no changes in the list of
-    // account.
+  // Get the list of existing account ids.
+  std::vector<std::string> old_account_ids = GetAccounts();
+  std::sort(old_account_ids.begin(), old_account_ids.end());
+
+  std::set<std::string> accounts_to_add =
+      base::STLSetDifference<std::set<std::string>>(new_account_ids,
+                                                    old_account_ids);
+  std::set<std::string> accounts_to_remove =
+      base::STLSetDifference<std::set<std::string>>(old_account_ids,
+                                                    new_account_ids);
+  if (accounts_to_add.empty() && accounts_to_remove.empty())
     return;
-  }
 
   // Remove all old accounts that do not appear in |new_accounts| and then
   // load |new_accounts|.
   ScopedBatchChange batch(this);
-  for (auto i = old_accounts.begin(); i != old_accounts.end(); ++i) {
-    if (std::find(new_accounts.begin(), new_accounts.end(), *i) ==
-        new_accounts.end()) {
-      RemoveAccount(*i);
-    }
+  for (const auto& account_to_remove : accounts_to_remove) {
+    RemoveAccount(account_to_remove);
   }
 
   // Load all new_accounts.
-  for (auto i = new_accounts.begin(); i != new_accounts.end(); ++i) {
-    AddOrUpdateAccount(*i);
+  for (const auto& account_to_add : accounts_to_add) {
+    AddOrUpdateAccount(account_to_add);
   }
 }
 
@@ -349,7 +348,10 @@ void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
 void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
     const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!account_id.empty());
+
+  // Account must have been seeded before attempting to add it.
+  DCHECK(!account_tracker_service_->GetAccountInfo(account_id).gaia.empty());
+  DCHECK(!account_tracker_service_->GetAccountInfo(account_id).email.empty());
 
   bool account_present = accounts_.count(account_id) > 0;
   if (account_present &&
@@ -468,4 +470,20 @@ void ProfileOAuth2TokenServiceIOSDelegate::ClearExcludedSecondaryAccounts() {
   client_->GetPrefs()->ClearPref(
       prefs::kTokenServiceExcludeAllSecondaryAccounts);
   client_->GetPrefs()->ClearPref(prefs::kTokenServiceExcludedSecondaryAccounts);
+}
+
+bool ProfileOAuth2TokenServiceIOSDelegate::IsAccountExcluded(
+    const std::string& gaia,
+    const std::string& email,
+    const std::set<std::string>& excluded_account_ids) {
+  std::string account_id =
+      account_tracker_service_->PickAccountIdForAccount(gaia, email);
+  if (account_id == primary_account_id_) {
+    // Only secondary account ids are excluded.
+    return false;
+  }
+
+  if (GetExcludeAllSecondaryAccounts())
+    return true;
+  return excluded_account_ids.count(account_id) > 0;
 }

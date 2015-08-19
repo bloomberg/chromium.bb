@@ -25,14 +25,14 @@ class FakeProfileOAuth2TokenServiceIOSProvider
                       const std::string& client_secret,
                       const std::set<std::string>& scopes,
                       const AccessTokenCallback& callback) override;
-  std::vector<std::string> GetAllAccountIds() override;
+  std::vector<AccountInfo> GetAllAccounts() const override;
+  AccountInfo GetAccountInfoForEmail(const std::string& email) const override;
+  AccountInfo GetAccountInfoForGaia(const std::string& gaia) const override;
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
       NSError* error) const override;
-  AccountInfo GetAccountInfo(const std::string& account_id) const override;
 
   // Methods to configure this fake provider.
-  void AddAccount(const std::string& account_id);
-  void SetAccounts(const std::vector<std::string>& accounts);
+  AccountInfo AddAccount(const std::string& gaia, const std::string& email);
   void ClearAccounts();
 
   // Issues access token responses.
@@ -42,7 +42,7 @@ class FakeProfileOAuth2TokenServiceIOSProvider
  private:
   typedef std::pair<std::string, AccessTokenCallback> AccessTokenRequest;
 
-  std::vector<std::string> accounts_;
+  std::vector<AccountInfo> accounts_;
   std::vector<AccessTokenRequest> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenServiceIOSProvider);

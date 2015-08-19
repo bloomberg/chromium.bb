@@ -21,14 +21,6 @@ class NSString;
 
 #include "base/callback.h"
 
-// Account information.
-struct AccountInfo {
-  AccountInfo() {}
-  ~AccountInfo() {}
-  std::string gaia;
-  std::string email;
-};
-
 enum AuthenticationErrorCategory {
   // Unknown errors.
   kAuthenticationErrorCategoryUnknownErrors,
@@ -48,6 +40,12 @@ enum AuthenticationErrorCategory {
 // Interface that provides support for ProfileOAuth2TokenServiceIOS.
 class ProfileOAuth2TokenServiceIOSProvider {
  public:
+  // Account information.
+  struct AccountInfo {
+    std::string gaia;
+    std::string email;
+  };
+
   typedef base::Callback<void(NSString* token,
                               NSDate* expiration,
                               NSError* error)> AccessTokenCallback;
@@ -56,7 +54,16 @@ class ProfileOAuth2TokenServiceIOSProvider {
   virtual ~ProfileOAuth2TokenServiceIOSProvider() {}
 
   // Returns the ids of all accounts.
-  virtual std::vector<std::string> GetAllAccountIds() = 0;
+  virtual std::vector<AccountInfo> GetAllAccounts() const = 0;
+
+  // Returns the account info composed of a GAIA id and email corresponding to
+  // email |email|.
+  virtual AccountInfo GetAccountInfoForEmail(
+      const std::string& email) const = 0;
+
+  // Returns the account info composed of a GAIA id and email corresponding to
+  // GAIA id |gaia|.
+  virtual AccountInfo GetAccountInfoForGaia(const std::string& gaia) const = 0;
 
   // Starts fetching an access token for the account with id |gaia_id| with
   // the given |scopes|. Once the token is obtained, |callback| is called.
@@ -69,10 +76,6 @@ class ProfileOAuth2TokenServiceIOSProvider {
   // Returns the authentication error category of |error|.
   virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
       NSError* error) const = 0;
-
-  // Returns the account info composed of a GAIA id and email corresponding to
-  // |account_id|.
-  virtual AccountInfo GetAccountInfo(const std::string& account_id) const = 0;
 };
 
 #endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_

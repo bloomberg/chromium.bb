@@ -117,6 +117,12 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // Clears exclude secondary accounts preferences.
   void ClearExcludedSecondaryAccounts();
 
+  // Returns true if the account having GAIA id |gaia| and email |email| is
+  // excluded.
+  bool IsAccountExcluded(const std::string& gaia,
+                         const std::string& email,
+                         const std::set<std::string>& excluded_account_ids);
+
   // The primary account id.
   std::string primary_account_id_;
 

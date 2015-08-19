@@ -158,12 +158,21 @@ void SigninClientImpl::OnSignedIn(const std::string& account_id,
   }
 }
 
+// TODO(msarda): http://crbug.com/522454 The account info is seeded by the token
+// service each timea new account is added. Remove the method
+// UpdateAccountInfo| as it is now obsolete.
 bool SigninClientImpl::UpdateAccountInfo(
     AccountTrackerService::AccountInfo* out_account_info) {
   DCHECK(!out_account_info->account_id.empty());
-  AccountInfo account_info = ios::GetChromeBrowserProvider()
-                                 ->GetProfileOAuth2TokenServiceIOSProvider()
-                                 ->GetAccountInfo(out_account_info->account_id);
+  ProfileOAuth2TokenServiceIOSProvider* provider =
+      ios::GetChromeBrowserProvider()
+          ->GetProfileOAuth2TokenServiceIOSProvider();
+  ProfileOAuth2TokenServiceIOSProvider::AccountInfo account_info;
+  if (!out_account_info->gaia.empty()) {
+    account_info = provider->GetAccountInfoForGaia(out_account_info->gaia);
+  } else if (!out_account_info->email.empty()) {
+    account_info = provider->GetAccountInfoForEmail(out_account_info->email);
+  }
   if (account_info.gaia.empty()) {
     // There is no account information for this account, so there is nothing
     // to be updated here.

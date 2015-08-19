@@ -26,19 +26,39 @@ void FakeProfileOAuth2TokenServiceIOSProvider::GetAccessToken(
   requests_.push_back(AccessTokenRequest(account_id, callback));
 }
 
-std::vector<std::string>
-FakeProfileOAuth2TokenServiceIOSProvider::GetAllAccountIds() {
+std::vector<ProfileOAuth2TokenServiceIOSProvider::AccountInfo>
+FakeProfileOAuth2TokenServiceIOSProvider::GetAllAccounts() const {
   return accounts_;
 }
 
-void FakeProfileOAuth2TokenServiceIOSProvider::AddAccount(
-    const std::string& account_id) {
-  accounts_.push_back(account_id);
+ProfileOAuth2TokenServiceIOSProvider::AccountInfo
+FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfoForEmail(
+    const std::string& email) const {
+  for (const auto& account : accounts_) {
+    if (account.email == email)
+      return account;
+  }
+  return ProfileOAuth2TokenServiceIOSProvider::AccountInfo();
 }
 
-void FakeProfileOAuth2TokenServiceIOSProvider::SetAccounts(
-    const std::vector<std::string>& accounts) {
-  accounts_ = accounts;
+ProfileOAuth2TokenServiceIOSProvider::AccountInfo
+FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfoForGaia(
+    const std::string& gaia) const {
+  for (const auto& account : accounts_) {
+    if (account.gaia == gaia)
+      return account;
+  }
+  return ProfileOAuth2TokenServiceIOSProvider::AccountInfo();
+}
+
+ProfileOAuth2TokenServiceIOSProvider::AccountInfo
+FakeProfileOAuth2TokenServiceIOSProvider::AddAccount(const std::string& gaia,
+                                                     const std::string& email) {
+  ProfileOAuth2TokenServiceIOSProvider::AccountInfo account;
+  account.gaia = gaia;
+  account.email = email;
+  accounts_.push_back(account);
+  return account;
 }
 
 void FakeProfileOAuth2TokenServiceIOSProvider::ClearAccounts() {
@@ -76,9 +96,4 @@ FakeProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
     NSError* error) const {
   DCHECK(error);
   return kAuthenticationErrorCategoryAuthorizationErrors;
-}
-
-AccountInfo FakeProfileOAuth2TokenServiceIOSProvider::GetAccountInfo(
-    const std::string& account_id) const {
-  return AccountInfo();
 }
