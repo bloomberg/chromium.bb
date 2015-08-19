@@ -730,7 +730,7 @@ android_apk("chrome_public_apk") {
     ":chrome_public_apk_manifest",
     ":chrome_public_template_resources",
     "//base:base_java",
-    "//third_party/android_tools:google_play_services_default_resources",
+    google_play_services_resources,
   ]
 }
 
