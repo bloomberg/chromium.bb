@@ -236,7 +236,7 @@ void ThreadProxy::SetRendererCapabilitiesMainThreadCopy(
   main().renderer_capabilities_main_thread_copy = capabilities;
 }
 
-void ThreadProxy::SendCommitRequestToImplThreadIfNeeded(
+bool ThreadProxy::SendCommitRequestToImplThreadIfNeeded(
     CommitPipelineStage required_stage) {
   DCHECK(IsMainThread());
   DCHECK_NE(NO_PIPELINE_STAGE, required_stage);
@@ -245,11 +245,12 @@ void ThreadProxy::SendCommitRequestToImplThreadIfNeeded(
   main().max_requested_pipeline_stage =
       std::max(main().max_requested_pipeline_stage, required_stage);
   if (already_posted)
-    return;
+    return false;
   Proxy::ImplThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::SetNeedsCommitOnImplThread,
                  impl_thread_weak_ptr_));
+  return true;
 }
 
 void ThreadProxy::DidCompletePageScaleAnimation() {
@@ -265,20 +266,24 @@ const RendererCapabilities& ThreadProxy::GetRendererCapabilities() const {
 
 void ThreadProxy::SetNeedsAnimate() {
   DCHECK(IsMainThread());
-  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsAnimate");
-  SendCommitRequestToImplThreadIfNeeded(ANIMATE_PIPELINE_STAGE);
+  if (SendCommitRequestToImplThreadIfNeeded(ANIMATE_PIPELINE_STAGE)) {
+    TRACE_EVENT_INSTANT0("cc", "ThreadProxy::SetNeedsAnimate",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
 }
 
 void ThreadProxy::SetNeedsUpdateLayers() {
   DCHECK(IsMainThread());
-  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsUpdateLayers");
   // If we are currently animating, make sure we also update the layers.
   if (main().current_pipeline_stage == ANIMATE_PIPELINE_STAGE) {
     main().final_pipeline_stage =
         std::max(main().final_pipeline_stage, UPDATE_LAYERS_PIPELINE_STAGE);
     return;
   }
-  SendCommitRequestToImplThreadIfNeeded(UPDATE_LAYERS_PIPELINE_STAGE);
+  if (SendCommitRequestToImplThreadIfNeeded(UPDATE_LAYERS_PIPELINE_STAGE)) {
+    TRACE_EVENT_INSTANT0("cc", "ThreadProxy::SetNeedsUpdateLayers",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
 }
 
 void ThreadProxy::SetNeedsCommit() {
@@ -291,8 +296,10 @@ void ThreadProxy::SetNeedsCommit() {
         std::max(main().final_pipeline_stage, COMMIT_PIPELINE_STAGE);
     return;
   }
-  TRACE_EVENT0("cc", "ThreadProxy::SetNeedsCommit");
-  SendCommitRequestToImplThreadIfNeeded(COMMIT_PIPELINE_STAGE);
+  if (SendCommitRequestToImplThreadIfNeeded(COMMIT_PIPELINE_STAGE)) {
+    TRACE_EVENT_INSTANT0("cc", "ThreadProxy::SetNeedsCommit",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
 }
 
 void ThreadProxy::UpdateRendererCapabilitiesOnImplThread() {

@@ -255,7 +255,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void RequestNewOutputSurface();
   void DidInitializeOutputSurface(bool success,
                                   const RendererCapabilities& capabilities);
-  void SendCommitRequestToImplThreadIfNeeded(
+  // Returns |true| if the request was actually sent, |false| if one was
+  // already outstanding.
+  bool SendCommitRequestToImplThreadIfNeeded(
       CommitPipelineStage required_stage);
   void DidCompletePageScaleAnimation();
 
