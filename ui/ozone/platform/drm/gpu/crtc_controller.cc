@@ -16,7 +16,6 @@ CrtcController::CrtcController(const scoped_refptr<DrmDevice>& drm,
                                uint32_t crtc,
                                uint32_t connector)
     : drm_(drm),
-      overlay_plane_manager_(nullptr),
       crtc_(crtc),
       connector_(connector) {}
 

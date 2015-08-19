@@ -77,8 +77,6 @@ class OZONE_EXPORT CrtcController
 
   scoped_refptr<DrmDevice> drm_;
 
-  HardwareDisplayPlaneManager* overlay_plane_manager_;  // Not owned.
-
   // Buffers need to be declared first so that they are destroyed last. Needed
   // since the controllers may reference the buffers.
   OverlayPlaneList current_planes_;
