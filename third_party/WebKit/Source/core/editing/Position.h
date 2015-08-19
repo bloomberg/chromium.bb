@@ -182,8 +182,6 @@ public:
     bool atFirstEditingPositionForNode() const;
     bool atLastEditingPositionForNode() const;
 
-    // Returns true if the visually equivalent positions around have different editability
-    bool atEditingBoundary() const;
     Node* parentEditingBoundary() const;
 
     bool atStartOfTree() const;

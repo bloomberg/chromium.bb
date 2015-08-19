@@ -437,22 +437,24 @@ bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
     return isAfterAnchorOrAfterChildren() || m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
-// A position is considered at editing boundary if one of the following is true:
-// 1. It is the first position in the node and the next visually equivalent position
-//    is non editable.
-// 2. It is the last position in the node and the previous visually equivalent position
-//    is non editable.
-// 3. It is an editable position and both the next and previous visually equivalent
-//    positions are both non editable.
+// Returns true if the visually equivalent positions around have different
+// editability. A position is considered at editing boundary if one of the
+// following is true:
+// 1. It is the first position in the node and the next visually equivalent
+//    position is non editable.
+// 2. It is the last position in the node and the previous visually equivalent
+//    position is non editable.
+// 3. It is an editable position and both the next and previous visually
+//    equivalent positions are both non editable.
 template <typename Strategy>
-bool PositionAlgorithm<Strategy>::atEditingBoundary() const
+static bool atEditingBoundary(const PositionAlgorithm<Strategy> positions)
 {
-    PositionAlgorithm<Strategy> nextPosition = downstream(CanCrossEditingBoundary);
-    if (atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
+    PositionAlgorithm<Strategy> nextPosition = positions.downstream(CanCrossEditingBoundary);
+    if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
         return true;
 
-    PositionAlgorithm<Strategy> prevPosition = upstream(CanCrossEditingBoundary);
-    if (atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
+    PositionAlgorithm<Strategy> prevPosition = positions.upstream(CanCrossEditingBoundary);
+    if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
         return true;
 
     return nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle()
@@ -893,12 +895,12 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
         if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
                 return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode());
-            return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary();
+            return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary(*this);
         }
     } else {
         LocalFrame* frame = m_anchorNode->document().frame();
         bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary();
+        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary(*this);
     }
 
     return false;
