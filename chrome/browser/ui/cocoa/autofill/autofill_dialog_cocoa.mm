@@ -66,17 +66,7 @@ void AutofillDialogCocoa::UpdatesStarted() {
 void AutofillDialogCocoa::UpdatesFinished() {
 }
 
-void AutofillDialogCocoa::UpdateAccountChooser() {
-  [sheet_delegate_ updateAccountChooser];
-}
-
 void AutofillDialogCocoa::UpdateButtonStrip() {
-  [sheet_delegate_ updateButtonStrip];
-}
-
-void AutofillDialogCocoa::UpdateOverlay() {
-  // TODO(estade): only update the overlay.
-  UpdateButtonStrip();
 }
 
 void AutofillDialogCocoa::UpdateDetailArea() {
@@ -112,26 +102,12 @@ bool AutofillDialogCocoa::SaveDetailsLocally() {
   return [sheet_delegate_ saveDetailsLocally];
 }
 
-const content::NavigationController* AutofillDialogCocoa::ShowSignIn(
-    const GURL& url) {
-  return [sheet_delegate_ showSignIn:url];
-}
-
-void AutofillDialogCocoa::HideSignIn() {
-  [sheet_delegate_ hideSignIn];
-}
-
 void AutofillDialogCocoa::ModelChanged() {
   [sheet_delegate_ modelChanged];
 }
 
 void AutofillDialogCocoa::UpdateErrorBubble() {
   [sheet_delegate_ updateErrorBubble];
-}
-
-void AutofillDialogCocoa::OnSignInResize(const gfx::Size& pref_size) {
-  [sheet_delegate_ onSignInResize:
-      NSMakeSize(pref_size.width(), pref_size.height())];
 }
 
 void AutofillDialogCocoa::ValidateSection(DialogSection section) {

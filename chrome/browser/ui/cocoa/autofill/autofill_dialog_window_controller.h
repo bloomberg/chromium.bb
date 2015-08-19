@@ -13,10 +13,7 @@
 #include "components/autofill/core/browser/dialog_section.h"
 
 @class AutofillHeader;
-@class AutofillLoadingShieldController;
 @class AutofillMainContainer;
-@class AutofillOverlayController;
-@class AutofillSignInContainer;
 
 class GURL;
 
@@ -35,8 +32,6 @@ class AutofillDialogCocoa;
 - (void)show;
 - (void)hide;
 - (void)updateNotificationArea;
-- (void)updateAccountChooser;
-- (void)updateButtonStrip;
 - (void)updateSection:(autofill::DialogSection)section;
 - (void)updateForErrors;
 - (void)fillSection:(autofill::DialogSection)section
@@ -45,11 +40,8 @@ class AutofillDialogCocoa;
        forSection:(autofill::DialogSection)section;
 - (NSString*)getCvc;
 - (BOOL)saveDetailsLocally;
-- (content::NavigationController*)showSignIn:(const GURL&)url;
-- (void)hideSignIn;
 - (void)modelChanged;
 - (void)updateErrorBubble;
-- (void)onSignInResize:(NSSize)size;
 - (void)validateSection:(autofill::DialogSection)section;
 
 @end
@@ -64,10 +56,6 @@ class AutofillDialogCocoa;
 
   base::scoped_nsobject<AutofillHeader> header_;
   base::scoped_nsobject<AutofillMainContainer> mainContainer_;
-  base::scoped_nsobject<AutofillSignInContainer> signInContainer_;
-  base::scoped_nsobject<AutofillOverlayController> overlayController_;
-  base::scoped_nsobject<AutofillLoadingShieldController>
-      loadingShieldController_;
   base::scoped_nsobject<NSTextView> fieldEditor_;
 
   // Signals the main container has recently become visible.

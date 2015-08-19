@@ -51,12 +51,6 @@ class AutofillDialogViewTester {
   // Get the size of the entire view.
   virtual gfx::Size GetSize() const = 0;
 
-  // Get the web contents used to sign in to Google.
-  virtual content::WebContents* GetSignInWebContents() = 0;
-
-  // Whether the overlay is visible.
-  virtual bool IsShowingOverlay() const = 0;
-
   // Whether |section| is currently showing.
   virtual bool IsShowingSection(DialogSection section) const = 0;
 };

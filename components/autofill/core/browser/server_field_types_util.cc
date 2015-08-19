@@ -52,7 +52,7 @@ bool ServerTypeMatchesField(DialogSection section,
 
   // The credit card name is filled from the billing section's data.
   if (field_type.GetStorableType() == CREDIT_CARD_NAME &&
-      (section == SECTION_BILLING || section == SECTION_CC_BILLING)) {
+      section == SECTION_BILLING) {
     return type == NAME_BILLING_FULL;
   }
 

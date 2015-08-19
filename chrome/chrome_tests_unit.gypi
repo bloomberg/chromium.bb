@@ -304,17 +304,14 @@
       'browser/ui/cocoa/applescript/bookmark_applescript_utils_unittest.mm',
       'browser/ui/cocoa/applescript/bookmark_folder_applescript_unittest.mm',
       'browser/ui/cocoa/applescript/bookmark_item_applescript_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_account_chooser_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_bubble_controller_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_details_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_main_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_notification_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_notification_controller_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_overlay_controller_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_pop_up_button_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_section_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_section_view_unittest.mm',
-      'browser/ui/cocoa/autofill/autofill_sign_in_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_suggestion_container_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_textfield_unittest.mm',
       'browser/ui/cocoa/autofill/autofill_tooltip_controller_unittest.mm',
@@ -1040,7 +1037,6 @@
     # These are the enable_autofill_dialog = 1 sources. Some autofill tests
     # are always compiled.
     'chrome_unit_tests_autofill_dialog_sources': [
-      'browser/ui/autofill/account_chooser_model_unittest.cc',
       'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
       'browser/ui/autofill/autofill_dialog_i18n_input_unittest.cc',
       'browser/ui/autofill/country_combobox_model_unittest.cc',

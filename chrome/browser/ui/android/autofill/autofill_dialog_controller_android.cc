@@ -59,7 +59,7 @@ const char kLastUsedBillingAddressGuid[] = "last_used_billing";
 const char kLastUsedShippingAddressGuid[] = "last_used_shipping";
 const char kLastUsedCreditCardGuid[] = "last_used_card";
 
-// Constructs |inputs| for the SECTION_CC_BILLING section.
+// Constructs |inputs| for the SECTION_BILLING section.
 void BuildCcBillingInputs(DetailInputs* inputs) {
   const DetailInput kCcBillingInputs[] = {
     { DetailInput::LONG, NAME_BILLING_FULL },
@@ -106,7 +106,7 @@ void FillOutputForSectionWithComparator(
     FormStructure& form_structure,
     FullWallet* full_wallet,
     const base::string16& email_address) {
-  if ((section == SECTION_CC_BILLING && !full_wallet->billing_address()) ||
+  if ((section == SECTION_BILLING && !full_wallet->billing_address()) ||
       (section == SECTION_SHIPPING && !full_wallet->shipping_address())) {
     return;
   }
@@ -118,10 +118,8 @@ void FillOutputForSectionWithComparator(
 
   std::vector<ServerFieldType> types = TypesFromInputs(inputs);
   form_structure.FillFields(
-      types,
-      compare,
-      get_info,
-      section == SECTION_CC_BILLING
+      types, compare, get_info,
+      section == SECTION_BILLING
           ? full_wallet->billing_address()->language_code()
           : full_wallet->shipping_address()->language_code(),
       g_browser_process->GetApplicationLocale());
@@ -132,9 +130,8 @@ void FillOutputForSection(
     FormStructure& form_structure,
     FullWallet* full_wallet,
     const base::string16& email_address) {
-  DCHECK(section == SECTION_CC_BILLING || section == SECTION_SHIPPING);
   DetailInputs inputs;
-  if (section == SECTION_CC_BILLING)
+  if (section == SECTION_BILLING)
     BuildCcBillingInputs(&inputs);
   else
     BuildShippingInputs(&inputs);
@@ -143,7 +140,7 @@ void FillOutputForSection(
       section, inputs, base::Bind(ServerTypeMatchesField, section),
       form_structure, full_wallet, email_address);
 
-  if (section == SECTION_CC_BILLING) {
+  if (section == SECTION_BILLING) {
     // Email is hidden while using Wallet, special case it.
     for (size_t i = 0; i < form_structure.field_count(); ++i) {
       AutofillField* field = form_structure.field(i);
@@ -467,8 +464,8 @@ void AutofillDialogControllerAndroid::DialogContinue(
 
   scoped_ptr<FullWallet> full_wallet =
       AutofillDialogResult::ConvertFromJava(env, wallet);
-  FillOutputForSection(
-      SECTION_CC_BILLING, form_structure_, full_wallet.get(), email);
+  FillOutputForSection(SECTION_BILLING, form_structure_, full_wallet.get(),
+                       email);
   FillOutputForSection(
       SECTION_SHIPPING, form_structure_, full_wallet.get(), email);
 

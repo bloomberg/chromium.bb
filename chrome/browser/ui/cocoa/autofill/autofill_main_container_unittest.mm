@@ -37,15 +37,12 @@ TEST_VIEW(AutofillMainContainerTest, [container_ view])
 
 TEST_F(AutofillMainContainerTest, SubViews) {
   bool hasButtons = false;
-  bool hasButtonStripImage = false;
-  bool hasTextView = false;
   bool hasDetailsContainer = false;
   bool hasCheckbox = false;
   bool hasCheckboxTooltip = false;
   bool hasNotificationContainer = false;
 
-  // Should have account chooser, button strip, and details section.
-  EXPECT_EQ(7U, [[[container_ view] subviews] count]);
+  EXPECT_EQ(5U, [[[container_ view] subviews] count]);
   for (NSView* view in [[container_ view] subviews]) {
     NSArray* subviews = [view subviews];
     if ([view isKindOfClass:[NSScrollView class]]) {
@@ -58,13 +55,6 @@ TEST_F(AutofillMainContainerTest, SubViews) {
       EXPECT_TRUE(
           [[subviews objectAtIndex:1] isKindOfClass:[NSButton class]]);
       hasButtons = true;
-    } else if ([view isKindOfClass:[NSImageView class]]) {
-      if (view == [container_ buttonStripImageForTesting])
-        hasButtonStripImage = true;
-      else
-        EXPECT_TRUE(false);  // Unknown image view; should not be reachable.
-    } else if ([view isKindOfClass:[NSTextView class]]) {
-      hasTextView = true;
     } else if ([view isKindOfClass:[NSButton class]] &&
                view == [container_ saveInChromeCheckboxForTesting]) {
       hasCheckbox = true;
@@ -76,8 +66,6 @@ TEST_F(AutofillMainContainerTest, SubViews) {
   }
 
   EXPECT_TRUE(hasButtons);
-  EXPECT_TRUE(hasButtonStripImage);
-  EXPECT_TRUE(hasTextView);
   EXPECT_TRUE(hasDetailsContainer);
   EXPECT_TRUE(hasNotificationContainer);
   EXPECT_TRUE(hasCheckbox);

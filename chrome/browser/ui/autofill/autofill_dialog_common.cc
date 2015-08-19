@@ -13,9 +13,6 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
     case SECTION_BILLING:
       return AutofillMetrics::DIALOG_UI_BILLING_ITEM_ADDED;
 
-    case SECTION_CC_BILLING:
-      return AutofillMetrics::DIALOG_UI_CC_BILLING_ITEM_ADDED;
-
     case SECTION_SHIPPING:
       return AutofillMetrics::DIALOG_UI_SHIPPING_ITEM_ADDED;
 
@@ -32,9 +29,6 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
   switch (section) {
     case SECTION_BILLING:
       return AutofillMetrics::DIALOG_UI_BILLING_SELECTED_SUGGESTION_CHANGED;
-
-    case SECTION_CC_BILLING:
-      return AutofillMetrics::DIALOG_UI_CC_BILLING_SELECTED_SUGGESTION_CHANGED;
 
     case SECTION_SHIPPING:
       return AutofillMetrics::DIALOG_UI_SHIPPING_SELECTED_SUGGESTION_CHANGED;

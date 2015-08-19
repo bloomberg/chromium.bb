@@ -31,20 +31,12 @@ namespace {
 // has a total of 30px - but 10px are already provided by details/suggestions.
 const CGFloat kButtonVerticalPadding = 20.0;
 
-// Padding around the text for the legal documents.
-const CGFloat kLegalDocumentsPadding = 20.0;
-
-// The font color for the legal documents text. Set to match the Views
-// implementation.
-const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
-
 }  // namespace
 
 @interface AutofillMainContainer (Private)
 - (void)buildWindowButtons;
 - (void)layoutButtons;
 - (void)updateButtons;
-- (NSSize)preferredLegalDocumentSizeForWidth:(CGFloat)width;
 @end
 
 
@@ -66,11 +58,6 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   [view setAutoresizesSubviews:YES];
   [view setSubviews:@[buttonContainer_]];
   [self setView:view];
-
-  // Set up Wallet icon.
-  buttonStripImage_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
-  [self updateWalletIcon];
-  [[self view] addSubview:buttonStripImage_];
 
   // Set up "Save in Chrome" checkbox.
   saveInChromeCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
@@ -100,55 +87,20 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   [[self view] setFrameSize:frameSize];
   [[self view] addSubview:[detailsContainer_ view]];
 
-  legalDocumentsView_.reset(
-      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
-  [legalDocumentsView_ setEditable:NO];
-  [legalDocumentsView_ setBackgroundColor:
-      [NSColor colorWithCalibratedRed:0.96
-                                green:0.96
-                                 blue:0.96
-                                alpha:1.0]];
-  [legalDocumentsView_ setDrawsBackground:YES];
-  [legalDocumentsView_ setTextContainerInset:
-      NSMakeSize(kLegalDocumentsPadding, kLegalDocumentsPadding)];
-  [legalDocumentsView_ setHidden:YES];
-  [legalDocumentsView_ setDelegate:self];
-  legalDocumentsSizeDirty_ = YES;
-  [[self view] addSubview:legalDocumentsView_];
-
   notificationContainer_.reset(
       [[AutofillNotificationContainer alloc] initWithDelegate:delegate_]);
   [[self view] addSubview:[notificationContainer_ view]];
 }
 
-// Called when embedded links are clicked.
-- (BOOL)textView:(NSTextView*)textView
-    clickedOnLink:(id)link
-          atIndex:(NSUInteger)charIndex {
-  int index = [base::mac::ObjCCastStrict<NSNumber>(link) intValue];
-  delegate_->LegalDocumentLinkClicked(
-      delegate_->LegalDocumentLinks()[index]);
-  return YES;
-}
-
 - (NSSize)decorationSizeForWidth:(CGFloat)width {
   NSSize buttonSize = [buttonContainer_ frame].size;
-  NSSize buttonStripImageSize = [buttonStripImage_ frame].size;
   NSSize buttonStripSize =
-      NSMakeSize(buttonSize.width + chrome_style::kHorizontalPadding +
-                     buttonStripImageSize.width,
-                 std::max(buttonSize.height + kButtonVerticalPadding,
-                          buttonStripImageSize.height) +
+      NSMakeSize(buttonSize.width + chrome_style::kHorizontalPadding,
+                 buttonSize.height + kButtonVerticalPadding +
                      chrome_style::kClientBottomPadding);
 
   NSSize size = NSMakeSize(std::max(buttonStripSize.width, width),
                            buttonStripSize.height);
-  if (![legalDocumentsView_ isHidden]) {
-    NSSize legalDocumentSize =
-        [self preferredLegalDocumentSizeForWidth:width];
-    size.height += legalDocumentSize.height + autofill::kVerticalSpacing;
-  }
-
   NSSize notificationSize =
       [notificationContainer_ preferredSizeForWidth:width];
   size.height += notificationSize.height;
@@ -171,21 +123,10 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   NSRect bounds = [[self view] bounds];
 
   CGFloat currentY = 0.0;
-  if (![legalDocumentsView_ isHidden]) {
-    [legalDocumentsView_ setFrameSize:
-        [self preferredLegalDocumentSizeForWidth:NSWidth(bounds)]];
-    currentY = NSMaxY([legalDocumentsView_ frame]) + autofill::kVerticalSpacing;
-  }
-
   NSRect buttonFrame = [buttonContainer_ frame];
   buttonFrame.origin.y = currentY + chrome_style::kClientBottomPadding;
   [buttonContainer_ setFrameOrigin:buttonFrame.origin];
   currentY = NSMaxY(buttonFrame) + kButtonVerticalPadding;
-
-  NSPoint walletIconOrigin =
-      NSMakePoint(chrome_style::kHorizontalPadding, buttonFrame.origin.y);
-  [buttonStripImage_ setFrameOrigin:walletIconOrigin];
-  currentY = std::max(currentY, NSMaxY([buttonStripImage_ frame]));
 
   NSRect checkboxFrame = [saveInChromeCheckbox_ frame];
   [saveInChromeCheckbox_ setFrameOrigin:
@@ -274,44 +215,12 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   [self layoutButtons];
 }
 
-// Compute the preferred size for the legal documents text, given a width.
-- (NSSize)preferredLegalDocumentSizeForWidth:(CGFloat)width {
-  // Only recompute if necessary (On text or frame width change).
-  if (!legalDocumentsSizeDirty_ &&
-      std::abs(legalDocumentsSize_.width - width) < 1.0) {
-    return legalDocumentsSize_;
-  }
-
-  // There's no direct API to compute desired sizes - use layouting instead.
-  // Layout in a rect with fixed width and "infinite" height.
-  NSRect currentFrame = [legalDocumentsView_ frame];
-  [legalDocumentsView_ setFrame:NSMakeRect(0, 0, width, CGFLOAT_MAX)];
-
-  // Now use the layout manager to compute layout.
-  NSLayoutManager* layoutManager = [legalDocumentsView_ layoutManager];
-  NSTextContainer* textContainer = [legalDocumentsView_ textContainer];
-  [layoutManager ensureLayoutForTextContainer:textContainer];
-  NSRect newFrame = [layoutManager usedRectForTextContainer:textContainer];
-
-  // And finally, restore old frame.
-  [legalDocumentsView_ setFrame:currentFrame];
-  newFrame.size.width = width;
-
-  // Account for the padding around the text.
-  newFrame.size.height += 2 * kLegalDocumentsPadding;
-
-  legalDocumentsSizeDirty_ = NO;
-  legalDocumentsSize_ = newFrame.size;
-  return legalDocumentsSize_;
-}
-
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section {
   return [detailsContainer_ sectionForId:section];
 }
 
 - (void)modelChanged {
   [self updateSaveInChrome];
-  [self updateWalletIcon];
   [self updateButtons];
   [detailsContainer_ modelChanged];
 }
@@ -320,42 +229,11 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   return [saveInChromeCheckbox_ state] == NSOnState;
 }
 
-- (void)updateLegalDocuments {
-  NSString* text = base::SysUTF16ToNSString(delegate_->LegalDocumentsText());
-
-  if ([text length]) {
-    NSFont* font =
-        [NSFont labelFontOfSize:[[legalDocumentsView_ font] pointSize]];
-    NSColor* color = gfx::SkColorToCalibratedNSColor(kLegalDocumentsTextColor);
-    [legalDocumentsView_ setMessage:text withFont:font messageColor:color];
-
-    const std::vector<gfx::Range>& link_ranges =
-        delegate_->LegalDocumentLinks();
-    for (size_t i = 0; i < link_ranges.size(); ++i) {
-      NSRange range = link_ranges[i].ToNSRange();
-      [legalDocumentsView_ addLinkRange:range
-                               withName:@(i)
-                              linkColor:[NSColor blueColor]];
-    }
-    legalDocumentsSizeDirty_ = YES;
-  }
-  [legalDocumentsView_ setHidden:[text length] == 0];
-
-  // Always request re-layout on state change.
-  id delegate = [[[self view] window] windowController];
-  if ([delegate respondsToSelector:@selector(requestRelayout)])
-    [delegate performSelector:@selector(requestRelayout)];
-}
-
 - (void)updateNotificationArea {
   [notificationContainer_ setNotifications:delegate_->CurrentNotifications()];
   id delegate = [[[self view] window] windowController];
   if ([delegate respondsToSelector:@selector(requestRelayout)])
     [delegate performSelector:@selector(requestRelayout)];
-}
-
-- (void)setAnchorView:(NSView*)anchorView {
-  [notificationContainer_ setAnchorView:anchorView];
 }
 
 - (BOOL)validate {
@@ -376,15 +254,6 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
 
   [detailsContainer_ scrollToView:field];
   [[[self view] window] makeFirstResponder:field];
-}
-
-- (void)updateWalletIcon {
-  gfx::Image image = delegate_->ButtonStripImage();
-  [buttonStripImage_ setHidden:image.IsEmpty()];
-  if (![buttonStripImage_ isHidden]) {
-    [buttonStripImage_ setImage:image.ToNSImage()];
-    [buttonStripImage_ setFrameSize:[[buttonStripImage_ image] size]];
-  }
 }
 
 - (void)scrollInitialEditorIntoViewAndMakeFirstResponder {
@@ -411,10 +280,6 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
 
 - (NSButton*)saveInChromeCheckboxForTesting {
   return saveInChromeCheckbox_.get();
-}
-
-- (NSImageView*)buttonStripImageForTesting {
-  return buttonStripImage_.get();
 }
 
 - (NSButton*)saveInChromeTooltipForTesting {

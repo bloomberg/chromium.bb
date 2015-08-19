@@ -27,9 +27,6 @@ namespace autofill {
   // Array of all AutofillNotificationControllers.
   base::scoped_nsobject<NSMutableArray> notificationControllers_;
 
-  // View that the arrow is anchored to. Weak.
-  NSView* anchorView_;
-
   // Main delegate for the dialog. Weak, owns dialog.
   autofill::AutofillDialogViewDelegate* delegate_;
 }
@@ -42,10 +39,6 @@ namespace autofill {
 
 // Sets the notification contents.
 - (void)setNotifications:(const autofill::DialogNotifications&) notifications;
-
-// Sets a view that the arrow is anchored to - center of arrow will be aligned
-// with center of anchorView. (horizontally only).
-- (void)setAnchorView:(NSView*)anchorView;
 
 @end
 

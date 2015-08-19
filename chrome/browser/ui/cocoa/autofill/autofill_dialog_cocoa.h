@@ -37,9 +37,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   void Hide() override;
   void UpdatesStarted() override;
   void UpdatesFinished() override;
-  void UpdateAccountChooser() override;
   void UpdateButtonStrip() override;
-  void UpdateOverlay() override;
   void UpdateDetailArea() override;
   void UpdateForErrors() override;
   void UpdateNotificationArea() override;
@@ -50,10 +48,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   void GetUserInput(DialogSection section, FieldValueMap* output) override;
   base::string16 GetCvc() override;
   bool SaveDetailsLocally() override;
-  const content::NavigationController* ShowSignIn(const GURL& url) override;
-  void HideSignIn() override;
   void ModelChanged() override;
-  void OnSignInResize(const gfx::Size& pref_size) override;
   void ValidateSection(DialogSection section) override;
 
   // ConstrainedWindowMacDelegate implementation:

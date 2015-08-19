@@ -53,6 +53,7 @@ class AutofillDialogController {
 
   // Called when the tab hosting this dialog is activated by a user gesture.
   // Used to trigger a refresh of the user's Wallet data.
+  // TODO(estade): remove.
   virtual void TabActivated() = 0;
 };
 

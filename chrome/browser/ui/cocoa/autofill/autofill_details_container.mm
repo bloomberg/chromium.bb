@@ -44,7 +44,6 @@ typedef BOOL (^FieldFilterBlock)(NSView<AutofillInputField>*);
 
   [self addSection:autofill::SECTION_CC];
   [self addSection:autofill::SECTION_BILLING];
-  [self addSection:autofill::SECTION_CC_BILLING];
   [self addSection:autofill::SECTION_SHIPPING];
 
   scrollView_.reset([[NSScrollView alloc] initWithFrame:NSZeroRect]);

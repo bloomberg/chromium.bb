@@ -12,11 +12,8 @@
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_header.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_input_field.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_loading_shield_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_textfield.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #include "content/public/browser/web_contents.h"
@@ -117,14 +114,8 @@ const CGFloat kMinimumContentsHeight = 101;
 // Compute maximum allowed height for the dialog.
 - (CGFloat)maxHeight;
 
-// Update size constraints on sign-in container.
-- (void)updateSignInSizeConstraints;
-
 // Notification that the WebContent's view frame has changed.
 - (void)onContentViewFrameDidChange:(NSNotification*)notification;
-
-// Update whether or not the main container is hidden.
-- (void)updateMainContainerVisibility;
 
 - (AutofillDialogWindow*)autofillWindow;
 
@@ -169,36 +160,16 @@ const CGFloat kMinimumContentsHeight = 101;
                              initWithDelegate:dialog->delegate()]);
     [mainContainer_ setTarget:self];
 
-    signInContainer_.reset(
-        [[AutofillSignInContainer alloc] initWithDialog:dialog]);
-    [[signInContainer_ view] setHidden:YES];
-
-    loadingShieldController_.reset(
-        [[AutofillLoadingShieldController alloc] initWithDelegate:
-            dialog->delegate()]);
-    [[loadingShieldController_ view] setHidden:YES];
-
-    overlayController_.reset(
-        [[AutofillOverlayController alloc] initWithDelegate:
-            dialog->delegate()]);
-    [[overlayController_ view] setHidden:YES];
-
     // This needs a flipped content view because otherwise the size
     // animation looks odd. However, replacing the contentView for constrained
     // windows does not work - it does custom rendering.
     base::scoped_nsobject<NSView> flippedContentView(
         [[FlippedView alloc] initWithFrame:
             [[[self window] contentView] frame]]);
-    [flippedContentView setSubviews:
-        @[[header_ view],
-          [mainContainer_ view],
-          [signInContainer_ view],
-          [loadingShieldController_ view],
-          [overlayController_ view]]];
+    [flippedContentView setSubviews:@[ [header_ view], [mainContainer_ view] ]];
     [flippedContentView setAutoresizingMask:
         (NSViewWidthSizable | NSViewHeightSizable)];
     [[[self window] contentView] addSubview:flippedContentView];
-    [mainContainer_ setAnchorView:[header_ anchorView]];
   }
   return self;
 }
@@ -217,42 +188,8 @@ const CGFloat kMinimumContentsHeight = 101;
   return NSHeight(dialogFrameRect);
 }
 
-- (void)updateSignInSizeConstraints {
-  // For the minimum height, account for the size of the footer. Even though the
-  // footer will not be visible when the sign-in view is showing, this prevents
-  // the dialog's size from bouncing around.
-  CGFloat width = NSWidth([[[self window] contentView] frame]);
-  CGFloat minHeight =
-      kMinimumContentsHeight +
-      [mainContainer_ decorationSizeForWidth:width].height;
-
-  // For the maximum size, factor in the size of the header.
-  CGFloat headerHeight = [[header_ view] frame].size.height;
-  CGFloat maxHeight = std::max([self maxHeight] - headerHeight, minHeight);
-
-  [signInContainer_ constrainSizeToMinimum:NSMakeSize(width, minHeight)
-                                   maximum:NSMakeSize(width, maxHeight)];
-}
-
 - (void)onContentViewFrameDidChange:(NSNotification*)notification {
-  [self updateSignInSizeConstraints];
-  if ([[signInContainer_ view] isHidden])
-    [self requestRelayout];
-}
-
-- (void)updateMainContainerVisibility {
-  BOOL visible =
-      [[loadingShieldController_ view] isHidden] &&
-      [[overlayController_ view] isHidden] &&
-      [[signInContainer_ view] isHidden];
-  BOOL wasVisible = ![[mainContainer_ view] isHidden];
-  [[mainContainer_ view] setHidden:!visible];
-
-  // Postpone [mainContainer_ didBecomeVisible] until layout is complete.
-  if (visible && !wasVisible) {
-    mainContainerBecameVisible_ = YES;
-    [self requestRelayout];
-  }
+  [self requestRelayout];
 }
 
 - (AutofillDialogWindow*)autofillWindow {
@@ -266,34 +203,24 @@ const CGFloat kMinimumContentsHeight = 101;
 - (NSSize)preferredSize {
   NSSize size;
 
-  if (![[overlayController_ view] isHidden]) {
-    // Overlay never changes window width.
-    size.width = NSWidth([[[self window] contentView] frame]);
-    size.height = [overlayController_ heightForWidth:size.width];
-  } else {
-    // Overall size is determined by either main container or sign in view.
-    if ([[signInContainer_ view] isHidden])
-      size = [mainContainer_ preferredSize];
-    else
-      size = [signInContainer_ preferredSize];
+  size = [mainContainer_ preferredSize];
 
-    // Always make room for the header.
-    CGFloat headerHeight = [header_ preferredSize].height;
-    size.height += headerHeight;
+  // Always make room for the header.
+  CGFloat headerHeight = [header_ preferredSize].height;
+  size.height += headerHeight;
 
-    // For the minimum height, account for both the header and the footer. Even
-    // though the footer will not be visible when the sign-in view is showing,
-    // this prevents the dialog's size from bouncing around.
-    CGFloat minHeight = kMinimumContentsHeight;
-    minHeight += [mainContainer_ decorationSizeForWidth:size.width].height;
-    minHeight += headerHeight;
+  // For the minimum height, account for both the header and the footer. Even
+  // though the footer will not be visible when the sign-in view is showing,
+  // this prevents the dialog's size from bouncing around.
+  CGFloat minHeight = kMinimumContentsHeight;
+  minHeight += [mainContainer_ decorationSizeForWidth:size.width].height;
+  minHeight += headerHeight;
 
-    // Show as much of the main view as is possible without going past the
-    // bottom of the browser window, unless this would cause the dialog to be
-    // less tall than the minimum height.
-    size.height = std::min(size.height, [self maxHeight]);
-    size.height = std::max(size.height, minHeight);
-  }
+  // Show as much of the main view as is possible without going past the
+  // bottom of the browser window, unless this would cause the dialog to be
+  // less tall than the minimum height.
+  size.height = std::min(size.height, [self maxHeight]);
+  size.height = std::max(size.height, minHeight);
 
   return size;
 }
@@ -309,18 +236,8 @@ const CGFloat kMinimumContentsHeight = 101;
   [[header_ view] setFrame:headerRect];
   [header_ performLayout];
 
-  if ([[signInContainer_ view] isHidden]) {
-    [[mainContainer_ view] setFrame:mainRect];
-    [mainContainer_ performLayout];
-  } else {
-    [[signInContainer_ view] setFrame:mainRect];
-  }
-
-  [[loadingShieldController_ view] setFrame:contentRect];
-  [loadingShieldController_ performLayout];
-
-  [[overlayController_ view] setFrame:contentRect];
-  [overlayController_ performLayout];
+  [[mainContainer_ view] setFrame:mainRect];
+  [mainContainer_ performLayout];
 
   NSRect frameRect = [[self window] frameRectForContentRect:contentRect];
   [[self window] setFrame:frameRect display:YES];
@@ -357,7 +274,6 @@ const CGFloat kMinimumContentsHeight = 101;
              name:NSWindowDidMoveNotification
            object:[self window]];
 
-  [self updateAccountChooser];
   [self updateNotificationArea];
   [self requestRelayout];
 }
@@ -369,23 +285,6 @@ const CGFloat kMinimumContentsHeight = 101;
 
 - (void)updateNotificationArea {
   [mainContainer_ updateNotificationArea];
-}
-
-- (void)updateAccountChooser {
-  [header_ update];
-  [mainContainer_ updateLegalDocuments];
-  [loadingShieldController_ update];
-  [self updateMainContainerVisibility];
-}
-
-- (void)updateButtonStrip {
-  // For the duration of the overlay, hide the main contents and the header.
-  // This prevents the currently focused text field "shining through". No need
-  // to remember previous state, because the overlay view is always the last
-  // state of the dialog.
-  [overlayController_ updateState];
-  [[header_ view] setHidden:![[overlayController_ view] isHidden]];
-  [self updateMainContainerVisibility];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {
@@ -403,44 +302,17 @@ const CGFloat kMinimumContentsHeight = 101;
   [mainContainer_ validate];
 }
 
-- (content::NavigationController*)showSignIn:(const GURL&)url {
-  [self updateSignInSizeConstraints];
-  // Ensure |signInContainer_| is set to the same size as |mainContainer_|, to
-  // force its minimum size so that there will not be a resize until the
-  // contents are loaded.
-  [[signInContainer_ view] setFrameSize:[[mainContainer_ view] frame].size];
-  [signInContainer_ loadSignInPage:url];
-
-  [[signInContainer_ view] setHidden:NO];
-  [self updateMainContainerVisibility];
-  [self requestRelayout];
-
-  return [signInContainer_ navigationController];
-}
-
 - (void)getInputs:(autofill::FieldValueMap*)output
        forSection:(autofill::DialogSection)section {
   [[mainContainer_ sectionForId:section] getInputs:output];
 }
 
 - (NSString*)getCvc {
-  autofill::DialogSection section = autofill::SECTION_CC;
-  NSString* value = [[mainContainer_ sectionForId:section] suggestionText];
-  if (!value) {
-    section = autofill::SECTION_CC_BILLING;
-    value = [[mainContainer_ sectionForId:section] suggestionText];
-  }
-  return value;
+  return [[mainContainer_ sectionForId:autofill::SECTION_CC] suggestionText];
 }
 
 - (BOOL)saveDetailsLocally {
   return [mainContainer_ saveDetailsLocally];
-}
-
-- (void)hideSignIn {
-  [[signInContainer_ view] setHidden:YES];
-  [self updateMainContainerVisibility];
-  [self requestRelayout];
 }
 
 - (void)modelChanged {
@@ -449,11 +321,6 @@ const CGFloat kMinimumContentsHeight = 101;
 
 - (void)updateErrorBubble {
   [mainContainer_ updateErrorBubble];
-}
-
-- (void)onSignInResize:(NSSize)size {
-  [signInContainer_ setPreferredSize:size];
-  [self requestRelayout];
 }
 
 - (void)validateSection:(autofill::DialogSection)section {

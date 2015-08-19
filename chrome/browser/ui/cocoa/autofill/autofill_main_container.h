@@ -31,22 +31,14 @@ namespace autofill {
                                                     NSTextViewDelegate> {
  @private
   base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
-  base::scoped_nsobject<NSImageView> buttonStripImage_;
   base::scoped_nsobject<NSButton> saveInChromeCheckbox_;
   base::scoped_nsobject<AutofillTooltipController> saveInChromeTooltip_;
   base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
-  base::scoped_nsobject<HyperlinkTextView> legalDocumentsView_;
   base::scoped_nsobject<AutofillNotificationContainer> notificationContainer_;
   AutofillDialogWindowController* target_;
 
   // Weak. Owns the dialog.
   autofill::AutofillDialogViewDelegate* delegate_;
-
-  // Preferred size for legal documents.
-  NSSize legalDocumentsSize_;
-
-  // Dirty marker for preferred size.
-  BOOL legalDocumentsSizeDirty_;
 }
 
 @property(assign, nonatomic) AutofillDialogWindowController* target;
@@ -58,9 +50,6 @@ namespace autofill {
 // |width|.
 - (NSSize)decorationSizeForWidth:(CGFloat)width;
 
-// Sets the anchor point for the notificationView_.
-- (void)setAnchorView:(NSView*)anchorView;
-
 // Returns the view delegate responsible for |section|.
 - (AutofillSectionContainer*)sectionForId:(autofill::DialogSection)section;
 
@@ -69,9 +58,6 @@ namespace autofill {
 
 // Get status of "Save in Chrome" checkbox.
 - (BOOL)saveDetailsLocally;
-
-// Called when the legal documents text might need to be refreshed.
-- (void)updateLegalDocuments;
 
 // Called when there are changes to the notification area.
 - (void)updateNotificationArea;
@@ -101,7 +87,6 @@ namespace autofill {
 @interface AutofillMainContainer (Testing)
 
 @property(readonly, nonatomic) NSButton* saveInChromeCheckboxForTesting;
-@property(readonly, nonatomic) NSImageView* buttonStripImageForTesting;
 @property(readonly, nonatomic) NSImageView* saveInChromeTooltipForTesting;
 
 @end

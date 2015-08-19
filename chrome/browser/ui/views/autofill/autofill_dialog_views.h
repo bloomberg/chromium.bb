@@ -67,7 +67,6 @@ class AutofillDialogViews : public AutofillDialogView,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
                             public views::ComboboxListener,
-                            public views::StyledLabelListener,
                             public views::MenuButtonListener {
  public:
   explicit AutofillDialogViews(AutofillDialogViewDelegate* delegate);
@@ -78,9 +77,7 @@ class AutofillDialogViews : public AutofillDialogView,
   void Hide() override;
   void UpdatesStarted() override;
   void UpdatesFinished() override;
-  void UpdateAccountChooser() override;
   void UpdateButtonStrip() override;
-  void UpdateOverlay() override;
   void UpdateDetailArea() override;
   void UpdateForErrors() override;
   void UpdateNotificationArea() override;
@@ -91,24 +88,19 @@ class AutofillDialogViews : public AutofillDialogView,
   void GetUserInput(DialogSection section, FieldValueMap* output) override;
   base::string16 GetCvc() override;
   bool SaveDetailsLocally() override;
-  const content::NavigationController* ShowSignIn(const GURL& url) override;
-  void HideSignIn() override;
   void ModelChanged() override;
-  void OnSignInResize(const gfx::Size& pref_size) override;
   void ValidateSection(DialogSection section) override;
 
   // views::View implementation.
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // views::DialogDelegate implementation:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   void DeleteDelegate() override;
-  views::View* CreateOverlayView() override;
   int GetDialogButtons() const override;
   int GetDefaultDialogButton() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -116,8 +108,6 @@ class AutofillDialogViews : public AutofillDialogView,
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
   views::View* CreateExtraView() override;
-  views::View* CreateTitlebarExtraView() override;
-  views::View* CreateFootnoteView() override;
   bool Cancel() override;
   bool Accept() override;
 
@@ -144,110 +134,17 @@ class AutofillDialogViews : public AutofillDialogView,
   // views::ComboboxListener implementation:
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // views::StyledLabelListener implementation:
-  void StyledLabelLinkClicked(const gfx::Range& range,
-                              int event_flags) override;
-
   // views::MenuButtonListener implementation.
   void OnMenuButtonClicked(views::View* source,
                            const gfx::Point& point) override;
 
  protected:
   // Exposed for testing.
-  views::View* GetLoadingShieldForTesting();
-  views::WebView* GetSignInWebViewForTesting();
   views::View* GetNotificationAreaForTesting();
   views::View* GetScrollableAreaForTesting();
 
  private:
   friend class AutofillDialogViewTesterViews;
-
-  // What the entire dialog should be doing (e.g. gathering info from the user,
-  // asking the user to sign in, etc.).
-  enum DialogMode {
-    DETAIL_INPUT,
-    LOADING,
-    SIGN_IN,
-  };
-
-  // A View which displays the currently selected account and lets the user
-  // switch accounts.
-  class AccountChooser : public views::View,
-                         public views::LinkListener,
-                         public views::MenuButtonListener,
-                         public base::SupportsWeakPtr<AccountChooser> {
-   public:
-    explicit AccountChooser(AutofillDialogViewDelegate* delegate);
-    ~AccountChooser() override;
-
-    // Updates the view based on the state that |delegate_| reports.
-    void Update();
-
-    // views::LinkListener implementation.
-    void LinkClicked(views::Link* source, int event_flags) override;
-
-    // views::MenuButtonListener implementation.
-    void OnMenuButtonClicked(views::View* source,
-                             const gfx::Point& point) override;
-
-   private:
-    // The icon for the currently in-use account.
-    views::ImageView* image_;
-
-    // The button for showing a menu to change the currently in-use account.
-    views::MenuButton* menu_button_;
-
-    // The sign in link.
-    views::Link* link_;
-
-    // The delegate |this| queries for logic and state.
-    AutofillDialogViewDelegate* delegate_;
-
-    // Runs the suggestion menu (triggered by each section's |suggested_button|.
-    scoped_ptr<views::MenuRunner> menu_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(AccountChooser);
-  };
-
-  // A view which displays an image, optionally some messages and a button. Used
-  // for the Wallet interstitial.
-  class OverlayView : public views::View {
-   public:
-    explicit OverlayView(AutofillDialogViewDelegate* delegate);
-    ~OverlayView() override;
-
-    // Returns a height which should be used when the contents view has width
-    // |w|. Note that the value returned should be used as the height of the
-    // dialog's contents.
-    int GetHeightForContentsForWidth(int width);
-
-    // Sets the state to whatever |delegate_| says it should be.
-    void UpdateState();
-
-    // views::View implementation:
-    gfx::Insets GetInsets() const override;
-    void Layout() override;
-    const char* GetClassName() const override;
-    void OnPaint(gfx::Canvas* canvas) override;
-    void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
-
-   private:
-    // Gets the border of the non-client frame view as a BubbleBorder.
-    views::BubbleBorder* GetBubbleBorder();
-
-    // Gets the bounds of this view without the frame view's bubble border.
-    gfx::Rect ContentBoundsSansBubbleBorder();
-
-    // The delegate that provides |state| when UpdateState is called.
-    AutofillDialogViewDelegate* delegate_;
-
-    // Child View. Front and center.
-    views::ImageView* image_view_;
-    // Child View. When visible, below |image_view_|.
-    views::Label* message_view_;
-
-    DISALLOW_COPY_AND_ASSIGN(OverlayView);
-  };
 
   // An area for notifications. Some notifications point at the account chooser.
   class NotificationArea : public views::View {
@@ -492,11 +389,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // Creates a grid of inputs for the given section.
   void InitInputsView(DialogSection section);
 
-  // Changes the function of the whole dialog. Currently this can show a loading
-  // shield, an embedded sign in web view, or the more typical detail input mode
-  // (suggestions and form inputs).
-  void ShowDialogInMode(DialogMode dialog_mode);
-
   // Updates the given section to match the state provided by |delegate_|. If
   // |clobber_inputs| is true, the current state of the textfields will be
   // ignored, otherwise their contents will be preserved.
@@ -580,10 +472,6 @@ class AutofillDialogViews : public AutofillDialogView,
   // sets the credit card and CVC icons according to the credit card number.
   void SetIconsForSection(DialogSection section);
 
-  // Iterates over all the inputs in |section| and sets their enabled/disabled
-  // state.
-  void SetEditabilityForSection(DialogSection section);
-
   // Handles mouse presses on the non-client view.
   void NonClientMousePressed();
 
@@ -610,31 +498,14 @@ class AutofillDialogViews : public AutofillDialogView,
   // Somewhere to show notification messages about errors, warnings, or promos.
   NotificationArea* notification_area_;
 
-  // Runs the suggestion menu (triggered by each section's |suggested_button|.
+  // Runs the suggestion menu (triggered by each section's |suggested_button|).
   scoped_ptr<views::MenuRunner> menu_runner_;
-
-  // The view that allows the user to toggle the data source.
-  AccountChooser* account_chooser_;
-
-  // A WebView to that navigates to a Google sign-in page to allow the user to
-  // sign-in.
-  views::WebView* sign_in_web_view_;
 
   // View that wraps |details_container_| and makes it scroll vertically.
   views::ScrollView* scrollable_area_;
 
   // View to host details sections.
   DetailsContainerView* details_container_;
-
-  // A view that overlays |this| (for "loading..." messages).
-  views::View* loading_shield_;
-
-  // The height for |loading_shield_|. This prevents the height of the dialog
-  // from changing while the loading shield is showing.
-  int loading_shield_height_;
-
-  // The view that completely overlays the dialog (used for the splash page).
-  OverlayView* overlay_view_;
 
   // The "Extra view" is on the same row as the dialog buttons.
   views::View* button_strip_extra_view_;
@@ -646,19 +517,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // Holds the above checkbox and an associated tooltip icon.
   views::View* save_in_chrome_checkbox_container_;
 
-  // Used to display an image in the button strip extra view.
-  views::ImageView* button_strip_image_;
-
   // View that aren't in the hierarchy but are owned by |this|. Currently
   // just holds the (hidden) country comboboxes.
   ScopedVector<views::View> other_owned_views_;
-
-  // The view that is appended to the bottom of the dialog, below the button
-  // strip. Used to display legal document links.
-  views::View* footnote_view_;
-
-  // The legal document text and links.
-  views::StyledLabel* legal_document_view_;
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;
@@ -670,9 +531,6 @@ class AutofillDialogViews : public AutofillDialogView,
   std::map<views::View*, base::string16> validity_map_;
 
   ScopedObserver<views::Widget, AutofillDialogViews> observer_;
-
-  // Delegate for the sign-in dialog's webview.
-  scoped_ptr<AutofillDialogSignInDelegate> sign_in_delegate_;
 
   // Used to tell the delegate when focus moves to hide the Autofill popup.
   scoped_ptr<ui::EventHandler> event_handler_;

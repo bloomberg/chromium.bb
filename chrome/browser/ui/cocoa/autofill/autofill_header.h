@@ -14,11 +14,8 @@ namespace autofill {
 class AutofillDialogViewDelegate;
 }  // autofill
 
-@class AutofillAccountChooser;
-
 @interface AutofillHeader : NSViewController<AutofillLayout> {
  @private
-  base::scoped_nsobject<AutofillAccountChooser> accountChooser_;
   base::scoped_nsobject<NSTextField> title_;
 
   autofill::AutofillDialogViewDelegate* delegate_;  // not owned, owns dialog.
@@ -26,10 +23,6 @@ class AutofillDialogViewDelegate;
 
 // Designated initializer.
 - (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate;
-
-// Returns the anchor view for notifications, which is the middle of the account
-// chooser view.
-- (NSView*)anchorView;
 
 // Updates the header's state from the dialog controller.
 - (void)update;

@@ -28,8 +28,6 @@ class AutofillDialogViewTesterViews : public AutofillDialogViewTester {
                                         const base::string16& text) override;
   void ActivateInput(ServerFieldType type) override;
   gfx::Size GetSize() const override;
-  content::WebContents* GetSignInWebContents() override;
-  bool IsShowingOverlay() const override;
   bool IsShowingSection(DialogSection section) const override;
 
  private:

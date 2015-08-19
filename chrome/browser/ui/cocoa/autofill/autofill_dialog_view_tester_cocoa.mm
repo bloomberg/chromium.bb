@@ -9,7 +9,6 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_dialog_window_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 
 
 // Mirrors the AutofillDialogViewTester API on the C++ side.
@@ -20,8 +19,6 @@
 - (void)setTextContents:(NSString*)text
  ofSuggestionForSection:(autofill::DialogSection)section;
 - (void)activateFieldForType:(autofill::ServerFieldType)type;
-- (content::WebContents*)getSignInWebContents;
-- (BOOL)isShowingOverlay;
 - (BOOL)isShowingSection:(autofill::DialogSection)section;
 
 @end
@@ -52,14 +49,6 @@
       continue;
     [[mainContainer_ sectionForId:section] activateFieldForType:type];
   }
-}
-
-- (content::WebContents*)getSignInWebContents {
-  return [signInContainer_ webContents];
-}
-
-- (BOOL)isShowingOverlay {
-  return ![[overlayController_ view] isHidden];
 }
 
 - (BOOL)isShowingSection:(autofill::DialogSection)section {
@@ -128,14 +117,6 @@ void AutofillDialogViewTesterCocoa::ActivateInput(ServerFieldType type) {
 
 gfx::Size AutofillDialogViewTesterCocoa::GetSize() const {
   return gfx::Size(NSSizeToCGSize([[controller() window] frame].size));
-}
-
-content::WebContents* AutofillDialogViewTesterCocoa::GetSignInWebContents() {
-  return [controller() getSignInWebContents];
-}
-
-bool AutofillDialogViewTesterCocoa::IsShowingOverlay() const {
-  return [controller() isShowingOverlay];
 }
 
 bool AutofillDialogViewTesterCocoa::IsShowingSection(

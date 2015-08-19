@@ -16,8 +16,6 @@ enum DialogSection {
   // The Autofill-backed dialog uses separate CC and billing sections.
   SECTION_CC = SECTION_MIN,
   SECTION_BILLING,
-  // The wallet-backed dialog uses a combined CC and billing section.
-  SECTION_CC_BILLING,
   SECTION_SHIPPING,
 
   // Upper boundary value for looping over all sections.

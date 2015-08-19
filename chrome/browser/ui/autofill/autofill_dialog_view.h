@@ -43,16 +43,8 @@ class AutofillDialogView {
   // Called when a different notification is available.
   virtual void UpdateNotificationArea() = 0;
 
-  // Called when account details may have changed (user logs in to GAIA, creates
-  // a new account, etc.).
-  virtual void UpdateAccountChooser() = 0;
-
   // Updates the button strip based on the current controller state.
   virtual void UpdateButtonStrip() = 0;
-
-  // Updates the dialog overlay in response to a change of state or animation
-  // progression.
-  virtual void UpdateOverlay() = 0;
 
   // Updates the container for the detail inputs.
   virtual void UpdateDetailArea() = 0;
@@ -82,19 +74,8 @@ class AutofillDialogView {
   // Returns true if new or edited autofill details should be saved.
   virtual bool SaveDetailsLocally() = 0;
 
-  // Triggers dialog to sign in to Google.
-  // Returns a NotificationSource to be used to monitor for sign-in completion.
-  virtual const content::NavigationController* ShowSignIn(const GURL& url) = 0;
-
-  // Closes out any sign-in UI and returns to normal operation.
-  virtual void HideSignIn() = 0;
-
   // Called when the active suggestions data model changed.
   virtual void ModelChanged() = 0;
-
-  // Called by AutofillDialogSignInDelegate when the sign-in page experiences a
-  // resize. |pref_size| is the new preferred size of the sign-in page.
-  virtual void OnSignInResize(const gfx::Size& pref_size) = 0;
 
   // Tells the view to validate its manual input in |section|.
   virtual void ValidateSection(DialogSection section) = 0;

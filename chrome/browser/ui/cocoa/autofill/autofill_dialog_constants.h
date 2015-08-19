@@ -11,10 +11,6 @@ namespace autofill {
 // Horizontal padding between text and other elements (in pixels).
 const CGFloat kAroundTextPadding = 4;
 
-// Sizing of notification arrow.
-const int kArrowHeight = 7;
-const int kArrowWidth = 2 * kArrowHeight;
-
 // Spacing between buttons.
 const CGFloat kButtonGap = 6;
 

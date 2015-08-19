@@ -61,11 +61,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     return false;
   }
 
-  if (section == autofill::SECTION_CC) {
-    return true;
-  }
-
-  return section == autofill::SECTION_CC_BILLING;
+  return section == autofill::SECTION_CC;
 }
 
 }  // namespace
@@ -109,9 +105,6 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
 
 // Refresh all field icons based on |delegate_| status.
 - (void)updateFieldIcons;
-
-// Refresh the enabled/disabled state of all input fields.
-- (void)updateEditability;
 
 @end
 
@@ -287,7 +280,6 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   delegate_->FocusMoved();
   [validationDelegate_ hideErrorBubble];
   [self validateFor:autofill::VALIDATE_EDIT];
-  [self updateEditability];
 }
 
 - (void)updateSuggestionState {
@@ -453,7 +445,6 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
   // Update the icon if necessary.
   if (delegate_->FieldControlsIcons(type))
     [self updateFieldIcons];
-  [self updateEditability];
 }
 
 - (autofill::ServerFieldType)fieldTypeForControl:(NSControl*)control {
@@ -532,13 +523,11 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     [self updateFieldIcons];
   }
 
-  [self updateEditability];
   [self modelChanged];
 }
 
 - (BOOL)isCreditCardSection {
-  return section_ == autofill::SECTION_CC ||
-      section_ == autofill::SECTION_CC_BILLING;
+  return section_ == autofill::SECTION_CC;
 }
 
 - (MenuButton*)makeSuggestionButton {
@@ -733,16 +722,6 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     AutofillTextField* textfield = base::mac::ObjCCastStrict<AutofillTextField>(
         [inputs_ viewWithTag:iter->first]);
     [[textfield cell] setIcon:iter->second.ToNSImage()];
-  }
-}
-
-- (void)updateEditability {
-  base::scoped_nsobject<NSMutableArray> controls([[NSMutableArray alloc] init]);
-  [self addInputsToArray:controls];
-  for (NSControl<AutofillInputField>* control in controls.get()) {
-    autofill::ServerFieldType type = [self fieldTypeForControl:control];
-    const autofill::DetailInput* input = [self detailInputForType:type];
-    [control setEnabled:delegate_->InputIsEditable(*input, section_)];
   }
 }
 
