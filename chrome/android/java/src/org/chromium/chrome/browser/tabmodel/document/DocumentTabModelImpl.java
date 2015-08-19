@@ -408,12 +408,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    public boolean isCoveredByChildActivity(int tabId) {
-        Entry entry = mEntryMap.get(tabId);
-        return entry == null ? false : entry.isCoveredByChildActivity;
-    }
-
-    @Override
     public void addInitializationObserver(InitializationObserver observer) {
         ThreadUtils.assertOnUiThread();
         mInitializationObservers.addObserver(observer);
@@ -449,13 +443,11 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         Entry currentEntry = mEntryMap.get(id);
         String currentUrl = tab.getUrl();
         boolean canGoBack = tab.canGoBack();
-        boolean isCoveredByChildActivity = tab.isCoveredByChildActivity();
         TabState state = tab.getState();
         if (currentEntry != null
                 && currentEntry.tabId == id
                 && TextUtils.equals(currentEntry.currentUrl, currentUrl)
                 && currentEntry.canGoBack == canGoBack
-                && currentEntry.isCoveredByChildActivity == isCoveredByChildActivity
                 && currentEntry.getTabState() == state
                 && !tab.isTabStateDirty()) {
             return;
@@ -468,7 +460,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         currentEntry.isDirty = true;
         currentEntry.currentUrl = currentUrl;
         currentEntry.canGoBack = canGoBack;
-        currentEntry.isCoveredByChildActivity = isCoveredByChildActivity;
         currentEntry.setTabState(state);
 
         // TODO(dfalcantara): This is different from how the normal Tab determines when to save its
@@ -721,7 +712,6 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
                     DocumentEntry docEntry = new DocumentEntry();
                     docEntry.tabId = entry.tabId;
                     docEntry.canGoBack = entry.canGoBack;
-                    docEntry.isCoveredByChildActivity = entry.isCoveredByChildActivity;
 
                     entriesList.add(docEntry);
                 }

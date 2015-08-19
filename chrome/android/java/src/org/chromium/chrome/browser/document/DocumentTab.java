@@ -41,11 +41,6 @@ public class DocumentTab extends ChromeTab {
          * @param image The favicon image that was received.
          */
         protected void onFaviconReceived(Bitmap image) { }
-
-        /**
-         * Called when a tab is set to be covered or uncovered by child activity.
-         */
-        protected void onSetCoveredByChildActivity() { }
     }
 
     private int mDesiredIconSizePx;
@@ -55,9 +50,6 @@ public class DocumentTab extends ChromeTab {
     private boolean mCreatedFromWebContents;
 
     private final DocumentActivity mActivity;
-
-    // Whether this tab is covered by its child activity.
-    private boolean mIsCoveredByChildActivity;
 
     /**
      * Standard constructor for the document tab.
@@ -217,24 +209,6 @@ public class DocumentTab extends ChromeTab {
             return new DocumentTab(activity, incognito, window, url, parentTabId, initiallyHidden);
         } else {
             return new DocumentTab(activity, incognito, window, "", tabState, parentTabId);
-        }
-    }
-
-    @Override
-    public boolean isCoveredByChildActivity() {
-        return mIsCoveredByChildActivity;
-    }
-
-    @Override
-    @VisibleForTesting
-    public void setCoveredByChildActivity(boolean isCoveredByChildActivity) {
-        mIsCoveredByChildActivity = isCoveredByChildActivity;
-        RewindableIterator<TabObserver> observers = getTabObservers();
-        while (observers.hasNext()) {
-            TabObserver observer = observers.next();
-            if (observer instanceof DocumentTabObserver) {
-                ((DocumentTabObserver) observer).onSetCoveredByChildActivity();
-            }
         }
     }
 

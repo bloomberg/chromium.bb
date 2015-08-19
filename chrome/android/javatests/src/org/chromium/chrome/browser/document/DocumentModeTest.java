@@ -24,9 +24,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel.InitializationObserver;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.document.OffTheRecordDocumentTabModel;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -46,8 +43,6 @@ import java.util.List;
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
 @DisableInTabbedMode
 public class DocumentModeTest extends DocumentModeTestBase {
-    private boolean mInitializationCompleted;
-
     /**
      * Confirm that you can't start ChromeTabbedActivity while the user is running in Document mode.
      */
@@ -440,66 +435,6 @@ public class DocumentModeTest extends DocumentModeTestBase {
                 (OffTheRecordDocumentTabModel) selector.getModel(true);
         assertFalse(selector.isIncognitoSelected());
         assertFalse(tabModel.isDocumentTabModelImplCreated());
-    }
-
-    /**
-     * Tests if a tab is covered by its child activity.
-     */
-    @MediumTest
-    public void testCoveredByChildActivity() throws Exception {
-        final int tabId = launchViaLaunchDocumentInstance(false, URL_1, "Page 1");
-        final DocumentTabModel model =
-                ChromeApplication.getDocumentTabModelSelector().getModelForTabId(tabId);
-        final Tab tab = model.getTabAt(0);
-        assertTrue(tab instanceof DocumentTab);
-        final DocumentTab documentTab = (DocumentTab) tab;
-
-        // We need to wait until the UI for document tab is initialized. So we create the
-        // InitializationObserver and set its satisfied criteria the same as
-        // DocumentActivity.mTabInitializationObserver.
-        InitializationObserver observer = new InitializationObserver(model) {
-                @Override
-                public boolean isSatisfied(int currentState) {
-                    return currentState >= DocumentTabModelImpl.STATE_LOAD_TAB_STATE_BG_END
-                            || model.isTabStateReady(tabId);
-                }
-
-                @Override
-                public boolean isCanceled() {
-                    return false;
-                }
-
-                @Override
-                public void runImmediately() {
-                    // This observer is created before DocumentActivity.mTabInitializationObserver.
-                    // Postpone setting mInitializationCompleted afterwards.
-                    ThreadUtils.postOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mInitializationCompleted = true;
-                        }
-                    });
-                }
-        };
-        observer.runWhenReady();
-
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mInitializationCompleted;
-            }
-        }));
-
-        assertFalse(documentTab.isCoveredByChildActivity());
-        assertFalse(model.isCoveredByChildActivity(tabId));
-
-        documentTab.setCoveredByChildActivity(true);
-        assertTrue(documentTab.isCoveredByChildActivity());
-        assertTrue(model.isCoveredByChildActivity(tabId));
-
-        documentTab.setCoveredByChildActivity(false);
-        assertFalse(documentTab.isCoveredByChildActivity());
-        assertFalse(model.isCoveredByChildActivity(tabId));
     }
 
     /**

@@ -189,9 +189,6 @@ public class StorageDelegate extends TabPersister {
 
                 // Restore information about the Tab.
                 entryMap.get(tabId).canGoBack = savedEntry.canGoBack;
-                entryMap.get(tabId).isCoveredByChildActivity =
-                        (savedEntry.isCoveredByChildActivity == null)
-                        ? false : savedEntry.isCoveredByChildActivity;
             }
         }
     }

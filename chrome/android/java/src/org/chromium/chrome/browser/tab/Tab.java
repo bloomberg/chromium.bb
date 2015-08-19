@@ -2745,23 +2745,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * Check if the tab is covered by its child activity.
-     * @return Whether the tab is covered by its child activity.
-     */
-    public boolean isCoveredByChildActivity() {
-        // Default return value, this is only used by subclasses.
-        return false;
-    }
-
-    /**
-     * Update whether the tab is covered by its child activity.
-     * @param isCoveredByChildActivity Whether the tab is covered by its child activity.
-     */
-    public void setCoveredByChildActivity(boolean isCoveredByChildActivity) {
-        // Empty implementation, only used by subclasses.
-    }
-
-    /**
      * @return the UMA object for the tab. Note that this may be null in some
      * cases.
      */

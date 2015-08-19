@@ -628,11 +628,6 @@ public class DocumentActivity extends ChromeActivity {
                 if (!isIncognito()) finish();
             }
 
-            @Override
-            public void onSetCoveredByChildActivity() {
-                mTabModel.updateEntry(getIntent(), mDocumentTab);
-            }
-
             private boolean hasSecurityWarningOrError(Tab tab) {
                 int securityLevel = tab.getSecurityLevel();
                 return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR

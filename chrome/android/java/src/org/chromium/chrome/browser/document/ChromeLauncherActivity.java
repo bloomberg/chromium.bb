@@ -416,8 +416,7 @@ public class ChromeLauncherActivity extends Activity
         int tabId = ChromeApplication.getDocumentTabModelSelector().getCurrentTabId();
         DocumentTabModel model =
                 ChromeApplication.getDocumentTabModelSelector().getModelForTabId(tabId);
-        if (tabId != Tab.INVALID_TAB_ID && model != null && !model.isCoveredByChildActivity(tabId)
-                && relaunchTask(tabId)) {
+        if (tabId != Tab.INVALID_TAB_ID && model != null && relaunchTask(tabId)) {
             return true;
         }
 
@@ -427,11 +426,6 @@ public class ChromeLauncherActivity extends Activity
         for (AppTask task : am.getAppTasks()) {
             String className = DocumentUtils.getTaskClassName(task, pm);
             if (className == null || !DocumentActivity.isDocumentActivity(className)) continue;
-
-            int id = ActivityDelegate.getTabIdFromIntent(task.getTaskInfo().baseIntent);
-            model = ChromeApplication.getDocumentTabModelSelector().getModelForTabId(id);
-            if (model != null && model.isCoveredByChildActivity(id)) continue;
-
             if (!moveToFront(task)) continue;
             return true;
         }
