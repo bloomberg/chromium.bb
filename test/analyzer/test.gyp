@@ -64,6 +64,7 @@
             'action_input.c',
             '../bad_path1.h',
             '../../bad_path2.h',
+            './rel_path1.h',
           ],
           'outputs': [
             'action_output.c',

@@ -338,7 +338,7 @@ def _GenerateTargets(data, target_list, target_dicts, toplevel_dir, files,
       sources = _ExtractSources(target_name, target_dicts[target_name],
                                 toplevel_dir)
       for source in sources:
-        if source in files:
+        if os.path.normpath(source) in files:
           print 'target', target_name, 'matches', source
           target.match_status = MATCH_STATUS_MATCHES
           matching_targets.append(target)

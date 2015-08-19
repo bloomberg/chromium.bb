@@ -236,6 +236,11 @@ _CreateConfigFile(['subdir/subdir_source.h'], [])
 run_analyzer()
 EnsureContains(matched=True, build_targets={'exe'})
 
+# Verifies relative paths in inputs are resolved correctly.
+_CreateConfigFile(['rel_path1.h'], [])
+run_analyzer()
+EnsureContains(matched=True, build_targets={'exe'})
+
 # Various permutations when passing in targets.
 _CreateConfigFile(['exe2.c', 'subdir/subdir2b_source.c'], ['exe', 'exe3'])
 run_analyzer()
