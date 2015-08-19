@@ -3624,3 +3624,15 @@
    fun:_ZN3net25MultiThreadedCertVerifier6VerifyEPNS_15X509CertificateERKSsS4_iPNS_6CRLSetEPNS_16CertVerifyResultERKN4base8CallbackIFviEEEP10scoped_ptrINS_12CertVerifier7RequestENS9_14DefaultDeleterISH_EEERKNS_11BoundNetLogE
    fun:_ZN3net56MultiThreadedCertVerifierTest_CancelRequestThenQuit_Test8TestBodyEv
 }
+{
+   bug_522524
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:CERT_NewTempCertificate
+   fun:_ZN3net15X509Certificate39CreateOSCertHandleFromBytesWithNicknameEPKciS2_
+   fun:_ZN3net15X509Certificate27CreateOSCertHandleFromBytesEPKci
+   fun:_ZN3net15X509Certificate30CreateCertificateListFromBytesEPKcii
+   fun:_ZN3net18ImportCertFromFileERKN4base8FilePathERKSs
+   fun:_ZN3net59CertVerifyProcTest_IsIssuedByKnownRootIgnoresTestRoots_Test8TestBodyEv
+}
