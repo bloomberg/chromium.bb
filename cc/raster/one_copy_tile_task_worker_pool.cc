@@ -36,6 +36,7 @@ class RasterBufferImpl : public RasterBuffer {
         resource_pool_(resource_pool),
         output_resource_(output_resource),
         raster_content_id_(0),
+        raster_resource_(nullptr),
         sequence_(0) {
     if (worker_pool->have_persistent_gpu_memory_buffers() &&
         previous_content_id) {
@@ -67,8 +68,8 @@ class RasterBufferImpl : public RasterBuffer {
 
     // Return resources to pool so they can be used by another RasterBuffer
     // instance.
-    resource_pool_->ReleaseResource(raster_resource_.Pass(),
-                                    raster_content_id_);
+    resource_pool_->ReleaseResource(raster_resource_, raster_content_id_);
+    raster_resource_ = nullptr;
   }
 
   // Overridden from RasterBuffer:
@@ -82,7 +83,7 @@ class RasterBufferImpl : public RasterBuffer {
     // content id.
     bool reusing_raster_resource = raster_content_id_ != 0;
     sequence_ = worker_pool_->PlaybackAndScheduleCopyOnWorkerThread(
-        reusing_raster_resource, lock_.Pass(), raster_resource_.get(),
+        reusing_raster_resource, lock_.Pass(), raster_resource_,
         output_resource_, raster_source, raster_full_rect, raster_dirty_rect,
         scale, include_images);
     // Store the content id of the resource to return to the pool.
@@ -95,7 +96,7 @@ class RasterBufferImpl : public RasterBuffer {
   ResourcePool* resource_pool_;
   const Resource* output_resource_;
   uint64_t raster_content_id_;
-  scoped_ptr<ScopedResource> raster_resource_;
+  Resource* raster_resource_;
   scoped_ptr<ResourceProvider::ScopedWriteLockGpuMemoryBuffer> lock_;
   CopySequenceNumber sequence_;
 

@@ -1353,14 +1353,13 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
   EXPECT_TRUE(host_impl_.is_likely_to_require_a_draw());
 
-  scoped_ptr<ScopedResource> resource =
-      host_impl_.resource_pool()->AcquireResource(gfx::Size(256, 256),
-                                                  RGBA_8888);
+  Resource* resource = host_impl_.resource_pool()->AcquireResource(
+      gfx::Size(256, 256), RGBA_8888);
 
   host_impl_.tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
 
-  host_impl_.resource_pool()->ReleaseResource(resource.Pass(), 0);
+  host_impl_.resource_pool()->ReleaseResource(resource, 0);
 }
 
 TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {

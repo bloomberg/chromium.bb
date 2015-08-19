@@ -12,10 +12,10 @@ namespace cc {
 TileDrawInfo::TileDrawInfo()
     : mode_(RESOURCE_MODE),
       solid_color_(SK_ColorWHITE),
+      resource_(nullptr),
       contents_swizzled_(false),
       was_ever_ready_to_draw_(false),
-      was_ever_used_to_draw_(false) {
-}
+      was_ever_used_to_draw_(false) {}
 
 TileDrawInfo::~TileDrawInfo() {
   DCHECK(!resource_);

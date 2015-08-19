@@ -74,9 +74,6 @@ class CC_EXPORT TileDrawInfo {
   inline bool has_resource() const { return !!resource_; }
 
   void SetSolidColorForTesting(SkColor color) { set_solid_color(color); }
-  void SetResourceForTesting(scoped_ptr<ScopedResource> resource) {
-    resource_ = resource.Pass();
-  }
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -98,7 +95,7 @@ class CC_EXPORT TileDrawInfo {
 
   Mode mode_;
   SkColor solid_color_;
-  scoped_ptr<ScopedResource> resource_;
+  Resource* resource_;
   bool contents_swizzled_;
 
   // Used for gathering UMA stats.

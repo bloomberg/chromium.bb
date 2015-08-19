@@ -7,15 +7,17 @@
 
 #include <deque>
 
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/scoped_ptr_deque.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_format.h"
+#include "cc/resources/scoped_resource.h"
 
 namespace cc {
-class ScopedResource;
 
 class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
  public:
@@ -30,11 +32,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
 
   ~ResourcePool() override;
 
-  scoped_ptr<ScopedResource> AcquireResource(const gfx::Size& size,
-                                             ResourceFormat format);
-  scoped_ptr<ScopedResource> TryAcquireResourceWithContentId(uint64 content_id);
-  void ReleaseResource(scoped_ptr<ScopedResource> resource,
-                       uint64_t content_id);
+  Resource* AcquireResource(const gfx::Size& size, ResourceFormat format);
+  Resource* TryAcquireResourceWithContentId(uint64 content_id);
+  void ReleaseResource(Resource* resource, uint64_t content_id);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
                               size_t max_unused_memory_usage_bytes,
@@ -67,8 +67,27 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   bool ResourceUsageTooHigh();
 
  private:
-  void DidFinishUsingResource(ScopedResource* resource, uint64_t content_id);
-  void DeleteResource(ScopedResource* resource);
+  class PoolResource : public ScopedResource {
+   public:
+    static scoped_ptr<PoolResource> Create(
+        ResourceProvider* resource_provider) {
+      return make_scoped_ptr(new PoolResource(resource_provider));
+    }
+    void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
+                      const ResourceProvider* resource_provider,
+                      bool is_free) const;
+
+    uint64_t content_id() const { return content_id_; }
+    void set_content_id(uint64_t content_id) { content_id_ = content_id; }
+
+   private:
+    explicit PoolResource(ResourceProvider* resource_provider)
+        : ScopedResource(resource_provider), content_id_(0) {}
+    uint64_t content_id_;
+  };
+
+  void DidFinishUsingResource(scoped_ptr<PoolResource> resource);
+  void DeleteResource(scoped_ptr<PoolResource> resource);
 
   ResourceProvider* resource_provider_;
   const GLenum target_;
@@ -79,19 +98,12 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   size_t unused_memory_usage_bytes_;
   size_t resource_count_;
 
-  struct PoolResource {
-    PoolResource(ScopedResource* resource, uint64_t content_id)
-        : resource(resource), content_id(content_id) {}
-    void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                      const ResourceProvider* resource_provider,
-                      bool is_free) const;
+  using ResourceDeque = ScopedPtrDeque<PoolResource>;
+  ResourceDeque unused_resources_;
+  ResourceDeque busy_resources_;
 
-    ScopedResource* resource;
-    uint64_t content_id;
-  };
-  typedef std::deque<PoolResource> ResourceList;
-  ResourceList unused_resources_;
-  ResourceList busy_resources_;
+  using ResourceMap = base::ScopedPtrMap<ResourceId, scoped_ptr<PoolResource>>;
+  ResourceMap in_use_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePool);
 };
