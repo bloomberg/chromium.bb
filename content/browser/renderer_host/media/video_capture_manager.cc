@@ -325,11 +325,6 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
   DCHECK(entry_it != devices_.end());
   DeviceEntry* entry =  (*entry_it);
 
-  media::VideoCaptureParams params = request->params();
-  params.use_gpu_memory_buffers =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseGpuMemoryBuffersForCapture);
-
   DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
            << entry->id << " start id = " << entry->serial_id;
   base::PostTaskAndReplyWithResult(
@@ -341,7 +336,7 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
           request->session_id(),
           entry->id,
           entry->stream_type,
-          params,
+          request->params(),
           base::Passed(entry->video_capture_controller()->NewDeviceClient(
               device_task_runner_))),
       base::Bind(&VideoCaptureManager::OnDeviceStarted, this,

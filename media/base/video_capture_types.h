@@ -124,7 +124,6 @@ struct MEDIA_EXPORT VideoCaptureParams {
 
   bool operator==(const VideoCaptureParams& other) const {
     return requested_format == other.requested_format &&
-           use_gpu_memory_buffers == other.use_gpu_memory_buffers &&
            resolution_change_policy == other.resolution_change_policy;
   }
 
@@ -133,9 +132,6 @@ struct MEDIA_EXPORT VideoCaptureParams {
 
   // Policy for resolution change.
   ResolutionChangePolicy resolution_change_policy;
-
-  // Indication to the Driver to try to use GpuMemoryBuffers.
-  bool use_gpu_memory_buffers;
 };
 
 }  // namespace media
