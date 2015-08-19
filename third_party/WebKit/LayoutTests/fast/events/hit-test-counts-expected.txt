@@ -16,14 +16,14 @@ MouseMove: 1+0
 MouseDown: 1+2
 MouseUp: 0+1
 Wheel: 0+1
-TouchStart: 1+0
+TouchStart: 0+1
 TouchMove: 0+0
 TouchEnd: 0+0
 GestureTapDown: 1+1
 GestureShowPress: 1+1
 GestureTap: 1+3 [with multiTargetTapNotification: 1+4]
 GestureScrollBegin: 0+1
-GestureTapCancel: 1+0
+GestureTapCancel: 0+1
 GestureScrollUpdate: 0+0
 GestureScrollEnd: 0+0
 
@@ -34,14 +34,14 @@ MouseMove: 1+0 1+0 1+0
 MouseDown: 1+1 1+1 1+1
 MouseUp: 0+1 0+1 0+1
 Wheel: 0+1 0+1 0+1
-TouchStart: 1+0 1+0 1+0
+TouchStart: 1+0 1+0 0+1
 TouchMove: 0+0 0+0 0+0
 TouchEnd: 0+0 0+0 0+0
 GestureTapDown: 1+0 1+0 1+1
 GestureShowPress: 1+0 1+0 1+1
 GestureTap: 1+0 1+0 1+3
 GestureScrollBegin: 0+1 0+1 0+1
-GestureTapCancel: 1+0 1+0 1+0
+GestureTapCancel: 1+0 1+0 0+1
 GestureScrollUpdate: 0+0 0+0 0+0
 GestureScrollEnd: 0+0 0+0 0+0
 
@@ -52,7 +52,7 @@ MouseMove: 1+0 1+0 0+0
 MouseDown: 1+1 1+1 0+0
 MouseUp: 0+1 0+1 0+0
 Wheel: 0+1 0+1 0+0
-TouchStart: 1+0 1+0 0+0
+TouchStart: 1+0 0+1 0+0
 TouchMove: 0+0 0+0 0+0
 TouchEnd: 0+0 0+0 0+0
 GestureTapDown: 1+0 1+0 1+0
@@ -70,14 +70,14 @@ MouseMove: 1+0
 MouseDown: 1+2
 MouseUp: 0+1
 Wheel: 0+1
-TouchStart: 1+0
+TouchStart: 0+1
 TouchMove: 0+0
 TouchEnd: 0+0
 GestureTapDown: 1+1
 GestureShowPress: 1+1
 GestureTap: 1+3 [with multiTargetTapNotification: 2+4]
 GestureScrollBegin: 0+1
-GestureTapCancel: 1+0
+GestureTapCancel: 0+1
 GestureScrollUpdate: 0+0
 GestureScrollEnd: 0+0
 

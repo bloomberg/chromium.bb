@@ -102,23 +102,24 @@ bool LayoutView::hitTestNoLifecycleUpdate(HitTestResult& result)
 
     uint64_t domTreeVersion = document().domTreeVersion();
     HitTestResult cacheResult = result;
-    bool cacheHit = m_hitTestCache->lookupCachedResult(cacheResult, domTreeVersion);
-    bool hitLayer = layer()->hitTest(result);
-
-    // FrameView scrollbars are not the same as Layer scrollbars tested by Layer::hitTestOverflowControls,
-    // so we need to test FrameView scrollbars separately here. Note that it's important we do this after
-    // the hit test above, because that may overwrite the entire HitTestResult when it finds a hit.
-    IntPoint framePoint = frameView()->contentsToFrame(result.hitTestLocation().roundedPoint());
-    if (Scrollbar* frameScrollbar = frameView()->scrollbarAtFramePoint(framePoint))
-        result.setScrollbar(frameScrollbar);
-
-    if (cacheHit) {
+    bool hitLayer = false;
+    if (m_hitTestCache->lookupCachedResult(cacheResult, domTreeVersion)) {
         m_hitTestCacheHits++;
-        m_hitTestCache->verifyCachedResult(result, cacheResult);
-    }
+        hitLayer = true;
+        result = cacheResult;
+    } else {
+        hitLayer = layer()->hitTest(result);
 
-    if (hitLayer)
-        m_hitTestCache->addCachedResult(result, domTreeVersion);
+        // FrameView scrollbars are not the same as Layer scrollbars tested by Layer::hitTestOverflowControls,
+        // so we need to test FrameView scrollbars separately here. Note that it's important we do this after
+        // the hit test above, because that may overwrite the entire HitTestResult when it finds a hit.
+        IntPoint framePoint = frameView()->contentsToFrame(result.hitTestLocation().roundedPoint());
+        if (Scrollbar* frameScrollbar = frameView()->scrollbarAtFramePoint(framePoint))
+            result.setScrollbar(frameScrollbar);
+
+        if (hitLayer)
+            m_hitTestCache->addCachedResult(result, domTreeVersion);
+    }
 
     TRACE_EVENT_END1("blink,devtools.timeline", "HitTest", "endData", InspectorHitTestEvent::endData(result.hitTestRequest(), result.hitTestLocation(), result));
     return hitLayer;
