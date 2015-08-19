@@ -1725,7 +1725,7 @@ void NavigationControllerImpl::NavigateToPendingEntry(ReloadType reload_type) {
 
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {
-    DCHECK_NE(pending_entry_index_, -1);
+    CHECK_NE(pending_entry_index_, -1);
     pending_entry_ = entries_[pending_entry_index_];
   }
 
@@ -1869,8 +1869,16 @@ void NavigationControllerImpl::LoadIfNecessary() {
   // Calling Reload() results in ignoring state, and not loading.
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
   // cached state.
-  pending_entry_index_ = last_committed_entry_index_;
-  NavigateToPendingEntry(NO_RELOAD);
+  if (pending_entry_) {
+    NavigateToPendingEntry(NO_RELOAD);
+  } else if (last_committed_entry_index_ != -1) {
+    pending_entry_index_ = last_committed_entry_index_;
+    NavigateToPendingEntry(NO_RELOAD);
+  } else {
+    // If there is something to reload, the successful reload will clear the
+    // |needs_reload_| flag. Otherwise, just do it here.
+    needs_reload_ = false;
+  }
 }
 
 void NavigationControllerImpl::NotifyEntryChanged(

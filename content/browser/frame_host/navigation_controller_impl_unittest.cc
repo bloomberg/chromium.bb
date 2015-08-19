@@ -3762,8 +3762,23 @@ TEST_F(NavigationControllerTest, LazyReload) {
             controller.GetPendingEntry()->GetTransitionType());
 }
 
-// Test requesting and triggering a lazy reload without any committed entry.
+// Test requesting and triggering a lazy reload without any committed entry nor
+// pending entry.
 TEST_F(NavigationControllerTest, LazyReloadWithoutCommittedEntry) {
+  NavigationControllerImpl& controller = controller_impl();
+  ASSERT_EQ(-1, controller.GetLastCommittedEntryIndex());
+  EXPECT_FALSE(controller.NeedsReload());
+  controller.SetNeedsReload();
+  EXPECT_TRUE(controller.NeedsReload());
+
+  // Doing a "load if necessary" shouldn't DCHECK.
+  controller.LoadIfNecessary();
+  ASSERT_FALSE(controller.NeedsReload());
+}
+
+// Test requesting and triggering a lazy reload without any committed entry and
+// only a pending entry.
+TEST_F(NavigationControllerTest, LazyReloadWithOnlyPendingEntry) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url("http://foo");
   controller.LoadURL(url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
