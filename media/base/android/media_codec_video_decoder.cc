@@ -267,6 +267,10 @@ void MediaCodecVideoDecoder::ReleaseOutputBuffer(int buffer_index,
 
   DVLOG(2) << class_name() << "::" << __FUNCTION__ << " pts:" << pts;
 
+  // Do not render if we are in emergency stop, there might be no surface.
+  if (InEmergencyStop())
+    render = false;
+
   media_codec_bridge_->ReleaseOutputBuffer(buffer_index, render);
 
   delayed_buffers_.erase(buffer_index);

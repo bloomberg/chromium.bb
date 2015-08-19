@@ -254,6 +254,9 @@ class MediaCodecDecoder {
   // Notifies the decoder if the frame is the last one.
   void CheckLastFrame(bool eos_encountered, bool has_delayed_tasks);
 
+  // Returns true is we are in the process of sync stop.
+  bool InEmergencyStop() const { return GetState() == kInEmergencyStop; }
+
   // Protected data.
 
   // Object for posting tasks on Media thread.
