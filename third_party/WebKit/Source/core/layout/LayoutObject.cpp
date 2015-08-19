@@ -3013,7 +3013,7 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
         // Find non-anonymous content after.
         for (LayoutObject* layoutObject = child->nextInPreOrder(parent); layoutObject; layoutObject = layoutObject->nextInPreOrder(parent)) {
             if (Node* node = layoutObject->nonPseudoNode())
-                return PositionWithAffinity(firstPositionInOrBeforeNode(node), DOWNSTREAM);
+                return PositionWithAffinity(firstPositionInOrBeforeNode(node));
         }
 
         // Find non-anonymous content before.
@@ -3021,12 +3021,12 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, EAffin
             if (layoutObject == parent)
                 break;
             if (Node* node = layoutObject->nonPseudoNode())
-                return PositionWithAffinity(lastPositionInOrAfterNode(node), DOWNSTREAM);
+                return PositionWithAffinity(lastPositionInOrAfterNode(node));
         }
 
         // Use the parent itself unless it too is anonymous.
         if (Node* node = parent->nonPseudoNode())
-            return PositionWithAffinity(firstPositionInOrBeforeNode(node), DOWNSTREAM);
+            return PositionWithAffinity(firstPositionInOrBeforeNode(node));
 
         // Repeat at the next level up.
         child = parent;

@@ -94,7 +94,7 @@ VisiblePosition VisiblePosition::previous(EditingBoundaryCrossingRule rule) cons
     // we should always be able to make the affinity DOWNSTREAM, because going previous from an
     // UPSTREAM position can never yield another UPSTREAM position (unless line wrap length is 0!).
     if (prev.isNotNull() && m_affinity == UPSTREAM) {
-        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent(), DOWNSTREAM), PositionWithAffinity(prev.deepEquivalent(), UPSTREAM)));
+        ASSERT(inSameLine(PositionWithAffinity(prev.deepEquivalent()), PositionWithAffinity(prev.deepEquivalent(), UPSTREAM)));
     }
 #endif
 
@@ -652,7 +652,7 @@ void VisiblePosition::init(const PositionAlgorithm<Strategy>& position, EAffinit
     }
 
     // When not at a line wrap, make sure to end up with DOWNSTREAM affinity.
-    if (!inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition, DOWNSTREAM), PositionWithAffinityTemplate<Strategy>(deepPosition, UPSTREAM)))
+    if (!inSameLine(PositionWithAffinityTemplate<Strategy>(deepPosition), PositionWithAffinityTemplate<Strategy>(deepPosition, UPSTREAM)))
         return;
     m_affinity = DOWNSTREAM;
 }

@@ -1887,7 +1887,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
                         box = newBox;
                 }
                 // y coordinate is above first root line box, so return the start of the first
-                return PositionWithAffinity(positionForBox(box, true), DOWNSTREAM);
+                return PositionWithAffinity(positionForBox(box, true));
             }
         }
 
@@ -1905,7 +1905,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
         ASSERT(moveCaretToBoundary);
         InlineBox* logicallyLastBox;
         if (lastRootBoxWithChildren->getLogicalEndBoxWithNode(logicallyLastBox))
-            return PositionWithAffinity(positionForBox(logicallyLastBox, false), DOWNSTREAM);
+            return PositionWithAffinity(positionForBox(logicallyLastBox, false));
     }
 
     // Can't reach this. We have a root line box, but it has no kids.
