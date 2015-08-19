@@ -1096,25 +1096,30 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
 }
 
+// Tests that if we go back twice (same-site then cross-site), and the same-site
+// RFH commits first, the cross-site RFH's navigation is canceled.
+// TODO(avi,creis): Consider changing this behavior to better match the user's
+// intent.
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   // Start with a web ui page, which gets a new RVH with WebUI bindings.
-  const GURL url1("chrome://gpu");
+  GURL url1(std::string(kChromeUIScheme) + "://" +
+            std::string(kChromeUIGpuHost));
   controller().LoadURL(
       url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  TestRenderFrameHost* ntp_rfh = contents()->GetMainFrame();
-  ntp_rfh->PrepareForCommit();
-  contents()->TestDidNavigate(ntp_rfh, 1, entry_id, true, url1,
+  TestRenderFrameHost* webui_rfh = contents()->GetMainFrame();
+  webui_rfh->PrepareForCommit();
+  contents()->TestDidNavigate(webui_rfh, 1, entry_id, true, url1,
                               ui::PAGE_TRANSITION_TYPED);
   NavigationEntry* entry1 = controller().GetLastCommittedEntry();
   SiteInstance* instance1 = contents()->GetSiteInstance();
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
-  EXPECT_EQ(ntp_rfh, contents()->GetMainFrame());
+  EXPECT_EQ(webui_rfh, contents()->GetMainFrame());
   EXPECT_EQ(url1, entry1->GetURL());
   EXPECT_EQ(instance1,
             NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
-  EXPECT_TRUE(ntp_rfh->GetRenderViewHost()->GetEnabledBindings() &
+  EXPECT_TRUE(webui_rfh->GetRenderViewHost()->GetEnabledBindings() &
               BINDINGS_POLICY_WEB_UI);
 
   // Navigate to new site.
@@ -1126,9 +1131,8 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   TestRenderFrameHost* google_rfh = contents()->GetPendingMainFrame();
 
   // Simulate beforeunload approval.
-  EXPECT_TRUE(ntp_rfh->is_waiting_for_beforeunload_ack());
-  base::TimeTicks now = base::TimeTicks::Now();
-  ntp_rfh->PrepareForCommit();
+  EXPECT_TRUE(webui_rfh->is_waiting_for_beforeunload_ack());
+  webui_rfh->PrepareForCommit();
 
   // DidNavigate from the pending page.
   contents()->TestDidNavigate(google_rfh, 1, entry_id, true, url2,
@@ -1180,7 +1184,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
 
   // Simulate beforeunload approval.
   EXPECT_TRUE(google_rfh->is_waiting_for_beforeunload_ack());
-  now = base::TimeTicks::Now();
+  base::TimeTicks now = base::TimeTicks::Now();
   google_rfh->PrepareForCommit();
   google_rfh->OnMessageReceived(
       FrameHostMsg_BeforeUnload_ACK(0, true, now, now));
@@ -1203,6 +1207,103 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
   EXPECT_EQ(instance1,
             NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
   EXPECT_EQ(url1, entry1->GetURL());
+}
+
+// Tests that if we go back twice (same-site then cross-site), and the cross-
+// site RFH commits first, we ignore the now-swapped-out RFH's commit.
+TEST_F(WebContentsImplTest, CrossSiteNavigationBackOldNavigationIgnored) {
+  // Start with a web ui page, which gets a new RVH with WebUI bindings.
+  GURL url1(std::string(kChromeUIScheme) + "://" +
+            std::string(kChromeUIGpuHost));
+  controller().LoadURL(url1, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  int entry_id = controller().GetPendingEntry()->GetUniqueID();
+  TestRenderFrameHost* webui_rfh = contents()->GetMainFrame();
+  webui_rfh->PrepareForCommit();
+  contents()->TestDidNavigate(webui_rfh, 1, entry_id, true, url1,
+                              ui::PAGE_TRANSITION_TYPED);
+  NavigationEntry* entry1 = controller().GetLastCommittedEntry();
+  SiteInstance* instance1 = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+  EXPECT_EQ(webui_rfh, contents()->GetMainFrame());
+  EXPECT_EQ(url1, entry1->GetURL());
+  EXPECT_EQ(instance1,
+            NavigationEntryImpl::FromNavigationEntry(entry1)->site_instance());
+  EXPECT_TRUE(webui_rfh->GetRenderViewHost()->GetEnabledBindings() &
+              BINDINGS_POLICY_WEB_UI);
+
+  // Navigate to new site.
+  const GURL url2("http://www.google.com");
+  controller().LoadURL(url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  entry_id = controller().GetPendingEntry()->GetUniqueID();
+  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
+  TestRenderFrameHost* google_rfh = contents()->GetPendingMainFrame();
+
+  // Simulate beforeunload approval.
+  EXPECT_TRUE(webui_rfh->is_waiting_for_beforeunload_ack());
+  webui_rfh->PrepareForCommit();
+
+  // DidNavigate from the pending page.
+  contents()->TestDidNavigate(google_rfh, 1, entry_id, true, url2,
+                              ui::PAGE_TRANSITION_TYPED);
+  NavigationEntry* entry2 = controller().GetLastCommittedEntry();
+  SiteInstance* instance2 = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+  EXPECT_EQ(google_rfh, contents()->GetMainFrame());
+  EXPECT_NE(instance1, instance2);
+  EXPECT_FALSE(contents()->GetPendingMainFrame());
+  EXPECT_EQ(url2, entry2->GetURL());
+  EXPECT_EQ(instance2,
+            NavigationEntryImpl::FromNavigationEntry(entry2)->site_instance());
+  EXPECT_FALSE(google_rfh->GetRenderViewHost()->GetEnabledBindings() &
+               BINDINGS_POLICY_WEB_UI);
+
+  // Navigate to third page on same site.
+  const GURL url3("http://news.google.com");
+  controller().LoadURL(url3, Referrer(), ui::PAGE_TRANSITION_TYPED,
+                       std::string());
+  entry_id = controller().GetPendingEntry()->GetUniqueID();
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+  contents()->GetMainFrame()->PrepareForCommit();
+  contents()->TestDidNavigate(google_rfh, 2, entry_id, true, url3,
+                              ui::PAGE_TRANSITION_TYPED);
+  NavigationEntry* entry3 = controller().GetLastCommittedEntry();
+  SiteInstance* instance3 = contents()->GetSiteInstance();
+
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+  EXPECT_EQ(google_rfh, contents()->GetMainFrame());
+  EXPECT_EQ(instance2, instance3);
+  EXPECT_FALSE(contents()->GetPendingMainFrame());
+  EXPECT_EQ(url3, entry3->GetURL());
+  EXPECT_EQ(instance3,
+            NavigationEntryImpl::FromNavigationEntry(entry3)->site_instance());
+
+  // Go back within the site.
+  controller().GoBack();
+  EXPECT_FALSE(contents()->CrossProcessNavigationPending());
+  EXPECT_EQ(entry2, controller().GetPendingEntry());
+
+  // Before that commits, go back again.
+  controller().GoBack();
+  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
+  EXPECT_TRUE(contents()->GetPendingMainFrame());
+  EXPECT_EQ(entry1, controller().GetPendingEntry());
+  webui_rfh = contents()->GetPendingMainFrame();
+
+  // DidNavigate from the second back.
+  contents()->TestDidNavigate(webui_rfh, 1, entry1->GetUniqueID(), false, url1,
+                              ui::PAGE_TRANSITION_TYPED);
+
+  // That should have landed us on the first entry.
+  EXPECT_EQ(entry1, controller().GetLastCommittedEntry());
+
+  // When the second back commits, it should be ignored.
+  contents()->TestDidNavigate(google_rfh, 1, entry2->GetUniqueID(), false, url2,
+                              ui::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(entry1, controller().GetLastCommittedEntry());
 }
 
 // Test that during a slow cross-site navigation, a sub-frame navigation in the
