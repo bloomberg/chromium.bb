@@ -20,6 +20,7 @@
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -75,7 +76,7 @@ v8::Local<v8::Value> AppBindings::GetDetailsImpl(blink::WebLocalFrame* frame) {
     return v8::Null(isolate);
 
   const Extension* extension =
-      dispatcher_->extensions()->GetExtensionOrAppByURL(
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
           frame->document().url());
 
   if (!extension)
@@ -116,7 +117,8 @@ void AppBindings::GetRunningState(
   // from the top frame.
   blink::WebSecurityOrigin top_frame_security_origin =
       context()->web_frame()->top()->securityOrigin();
-  const ExtensionSet* extensions = dispatcher_->extensions();
+  const RendererExtensionRegistry* extensions =
+      RendererExtensionRegistry::Get();
 
   // The app associated with the top level frame.
   const Extension* top_app = extensions->GetHostedAppByURL(

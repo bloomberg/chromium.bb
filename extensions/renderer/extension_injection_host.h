@@ -10,9 +10,6 @@
 #include "extensions/renderer/injection_host.h"
 
 namespace extensions {
-class ExtensionSet;
-
-class ExtensionSet;
 
 // A wrapper class that holds an extension and implements the InjectionHost
 // interface.
@@ -23,8 +20,8 @@ class ExtensionInjectionHost : public InjectionHost {
 
   // Create an ExtensionInjectionHost object. If the extension is gone, returns
   // a null scoped ptr.
-  static scoped_ptr<const InjectionHost> Create(const std::string& extension_id,
-                                                const ExtensionSet* extensions);
+  static scoped_ptr<const InjectionHost> Create(
+      const std::string& extension_id);
 
  private:
   // InjectionHost:

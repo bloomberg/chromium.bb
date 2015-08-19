@@ -9,12 +9,12 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/injection_host.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/user_script_injector.h"
@@ -39,9 +39,7 @@ GURL GetDocumentUrlForFrame(blink::WebLocalFrame* frame) {
 
 }  // namespace
 
-UserScriptSet::UserScriptSet(const ExtensionSet* extensions)
-    : extensions_(extensions) {
-}
+UserScriptSet::UserScriptSet() {}
 
 UserScriptSet::~UserScriptSet() {
 }
@@ -140,7 +138,8 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
     if (only_inject_incognito && !script->is_incognito_enabled())
       continue;  // This script shouldn't run in an incognito tab.
 
-    const Extension* extension = extensions_->GetByID(script->extension_id());
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(script->extension_id());
     if (whitelisted_only &&
         (!extension ||
          !PermissionsData::CanExecuteScriptEverywhere(extension))) {
@@ -188,7 +187,7 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
 
   const HostID& host_id = script->host_id();
   if (host_id.type() == HostID::EXTENSIONS) {
-    injection_host = ExtensionInjectionHost::Create(host_id.id(), extensions_);
+    injection_host = ExtensionInjectionHost::Create(host_id.id());
     if (!injection_host)
       return injection.Pass();
   } else {

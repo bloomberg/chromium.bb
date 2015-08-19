@@ -201,7 +201,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   // extension app's extent.
   bool CrossesExtensionExtents(blink::WebLocalFrame* frame,
                                const GURL& new_url,
-                               const extensions::ExtensionSet& extensions,
                                bool is_extension_url,
                                bool is_initial_navigation);
 #endif

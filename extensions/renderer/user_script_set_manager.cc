@@ -15,9 +15,7 @@
 
 namespace extensions {
 
-UserScriptSetManager::UserScriptSetManager(const ExtensionSet* extensions)
-    : static_scripts_(extensions),
-      extensions_(extensions) {
+UserScriptSetManager::UserScriptSetManager() {
   content::RenderThread::Get()->AddObserver(this);
 }
 
@@ -117,7 +115,7 @@ void UserScriptSetManager::OnUpdateUserScripts(
     // or just the owner.
     CHECK(changed_hosts.size() <= 1);
     if (programmatic_scripts_.find(host_id) == programmatic_scripts_.end()) {
-      scripts = new UserScriptSet(extensions_);
+      scripts = new UserScriptSet();
       programmatic_scripts_[host_id] = make_linked_ptr(scripts);
     } else {
       scripts = programmatic_scripts_[host_id].get();
@@ -138,7 +136,8 @@ void UserScriptSetManager::OnUpdateUserScripts(
     // No owner => all known hosts.
     // Owner    => just the owner host.
     if (host_id.id().empty()) {
-      std::set<std::string> extension_ids = extensions_->GetIDs();
+      std::set<std::string> extension_ids =
+          RendererExtensionRegistry::Get()->GetIDs();
       for (const std::string& extension_id : extension_ids)
         all_hosts.insert(HostID(HostID::EXTENSIONS, extension_id));
     } else {

@@ -70,6 +70,7 @@
 #include "extensions/renderer/print_native_handler.h"
 #include "extensions/renderer/process_info_native_handler.h"
 #include "extensions/renderer/render_frame_observer_natives.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/runtime_custom_bindings.h"
 #include "extensions/renderer/safe_builtins.h"
@@ -202,11 +203,10 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
         kInitialExtensionIdleHandlerDelayMs);
   }
 
-  script_context_set_.reset(
-      new ScriptContextSet(&extensions_, &active_extension_ids_));
-  user_script_set_manager_.reset(new UserScriptSetManager(&extensions_));
+  script_context_set_.reset(new ScriptContextSet(&active_extension_ids_));
+  user_script_set_manager_.reset(new UserScriptSetManager());
   script_injection_manager_.reset(
-      new ScriptInjectionManager(&extensions_, user_script_set_manager_.get()));
+      new ScriptInjectionManager(user_script_set_manager_.get()));
   user_script_set_manager_observer_.Add(user_script_set_manager_.get());
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
@@ -223,7 +223,7 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
   bool is_active =
       active_extension_ids_.find(extension_id) != active_extension_ids_.end();
   if (is_active)
-    CHECK(extensions_.Contains(extension_id));
+    CHECK(RendererExtensionRegistry::Get()->Contains(extension_id));
   return is_active;
 }
 
@@ -341,7 +341,8 @@ void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
       frame, frame->document().url(), true /* match_about_blank */);
 
   const Extension* extension =
-      extensions_.GetExtensionOrAppByURL(effective_document_url);
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(
+          effective_document_url);
 
   if (extension &&
       (extension->is_extension() || extension->is_platform_app())) {
@@ -423,7 +424,8 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
 
   // Tell the browser process when an event has been dispatched with a lazy
   // background page active.
-  const Extension* extension = extensions_.GetByID(extension_id);
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(extension_id);
   if (extension && BackgroundInfo::HasLazyBackgroundPage(extension) &&
       module_name == kEventBindings &&
       function_name == kEventDispatchFunction) {
@@ -710,10 +712,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "runtime", scoped_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
 }
 
-void Dispatcher::LoadExtensionForTest(const Extension* extension) {
-  CHECK(extensions_.Insert(extension));
-}
-
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(Dispatcher, message)
@@ -765,7 +763,8 @@ void Dispatcher::WebKitInitialized() {
   // Initialize host permissions for any extensions that were activated before
   // WebKit was initialized.
   for (const std::string& extension_id : active_extension_ids_) {
-    const Extension* extension = extensions_.GetByID(extension_id);
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(extension_id);
     CHECK(extension);
     InitOriginPermissions(extension);
   }
@@ -799,7 +798,8 @@ void Dispatcher::OnRenderProcessShutdown() {
 }
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {
-  const Extension* extension = extensions_.GetByID(extension_id);
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(extension_id);
   if (!extension) {
     // Extension was activated but was never loaded. This probably means that
     // the renderer failed to load it (or the browser failed to tell us when it
@@ -889,6 +889,8 @@ void Dispatcher::OnLoaded(
       continue;
     }
 
+    RendererExtensionRegistry* extension_registry =
+        RendererExtensionRegistry::Get();
     // TODO(kalman): This test is deliberately not a CHECK (though I wish it
     // could be) and uses extension->id() not params.id:
     // 1. For some reason params.id can be empty. I've only seen it with
@@ -898,8 +900,8 @@ void Dispatcher::OnLoaded(
     //    Dispatcher is attached to a RenderThread. Presumably there is a
     //    mismatch there. In theory one would think it's possible for the
     //    browser to figure this out itself - but again, cost/benefit.
-    if (!extensions_.Contains(extension->id()))
-      extensions_.Insert(extension);
+    if (!extension_registry->Contains(extension->id()))
+      extension_registry->Insert(extension);
   }
 
   // Update the available bindings for all contexts. These may have changed if
@@ -962,7 +964,7 @@ void Dispatcher::OnTransferBlobs(const std::vector<std::string>& blob_uuids) {
 void Dispatcher::OnUnloaded(const std::string& id) {
   // See comment in OnLoaded for why it would be nice, but perhaps incorrect,
   // to CHECK here rather than guarding.
-  if (!extensions_.Remove(id))
+  if (!RendererExtensionRegistry::Get()->Remove(id))
     return;
 
   active_extension_ids_.erase(id);
@@ -998,7 +1000,8 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 
 void Dispatcher::OnUpdatePermissions(
     const ExtensionMsg_UpdatePermissions_Params& params) {
-  const Extension* extension = extensions_.GetByID(params.extension_id);
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(params.extension_id);
   if (!extension)
     return;
 
@@ -1023,7 +1026,8 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
                                                 const URLPatternSet& new_hosts,
                                                 bool update_origin_whitelist,
                                                 int tab_id) {
-  const Extension* extension = extensions_.GetByID(extension_id);
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(extension_id);
   if (!extension)
     return;
 
@@ -1049,7 +1053,7 @@ void Dispatcher::OnClearTabSpecificPermissions(
     bool update_origin_whitelist,
     int tab_id) {
   for (const std::string& id : extension_ids) {
-    const Extension* extension = extensions_.GetByID(id);
+    const Extension* extension = RendererExtensionRegistry::Get()->GetByID(id);
     if (extension) {
       URLPatternSet old_effective =
           extension->permissions_data()->GetEffectiveHostPermissions();
@@ -1283,7 +1287,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
 }
 
 bool Dispatcher::IsRuntimeAvailableToContext(ScriptContext* context) {
-  for (const auto& extension : extensions_) {
+  for (const auto& extension :
+       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
     ExternallyConnectableInfo* info = static_cast<ExternallyConnectableInfo*>(
         extension->GetManifestData(manifest_keys::kExternallyConnectable));
     if (info && info->matches.MatchesURL(context->GetURL()))
@@ -1294,7 +1299,8 @@ bool Dispatcher::IsRuntimeAvailableToContext(ScriptContext* context) {
 
 void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
   APIPermissionSet permissions;
-  for (const auto& extension : extensions_) {
+  for (const auto& extension :
+       *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
     const ContentCapabilitiesInfo& info =
         ContentCapabilitiesInfo::Get(extension.get());
     if (info.url_patterns.MatchesURL(context->GetURL())) {
@@ -1321,7 +1327,8 @@ bool Dispatcher::IsWithinPlatformApp() {
   for (std::set<std::string>::iterator iter = active_extension_ids_.begin();
        iter != active_extension_ids_.end();
        ++iter) {
-    const Extension* extension = extensions_.GetByID(*iter);
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(*iter);
     if (extension && extension->is_platform_app())
       return true;
   }

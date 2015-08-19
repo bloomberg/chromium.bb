@@ -125,6 +125,7 @@
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/guest_view/extensions_guest_view_container_dispatcher.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #endif
 
@@ -638,7 +639,7 @@ const Extension* ChromeContentRendererClient::GetExtensionByOrigin(
     return NULL;
 
   const std::string extension_id = origin.host().utf8().data();
-  return extension_dispatcher_->extensions()->GetByID(extension_id);
+  return extensions::RendererExtensionRegistry::Get()->GetByID(extension_id);
 }
 #endif
 
@@ -835,8 +836,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             app_url = manifest_url;
           }
           const Extension* extension =
-              g_current_client->extension_dispatcher_->extensions()->
-                  GetExtensionOrAppByURL(manifest_url);
+              extensions::RendererExtensionRegistry::Get()
+                  ->GetExtensionOrAppByURL(manifest_url);
           if (!IsNaClAllowed(manifest_url,
                              app_url,
                              is_nacl_unrestricted,
@@ -1258,12 +1259,12 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   }
 
 #if defined(ENABLE_EXTENSIONS)
-  const extensions::ExtensionSet* extensions =
-      extension_dispatcher_->extensions();
+  const extensions::RendererExtensionRegistry* extension_registry =
+      extensions::RendererExtensionRegistry::Get();
 
   // Determine if the new URL is an extension (excluding bookmark apps).
   const Extension* new_url_extension = extensions::GetNonBookmarkAppExtension(
-      *extensions, url);
+      *extension_registry->GetMainThreadExtensionSet(), url);
   bool is_extension_url = !!new_url_extension;
 
   // If the navigation would cross an app extent boundary, we also need
@@ -1272,15 +1273,15 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
   // browser process when they are ready to commit.  It is necessary for client
   // redirects, which won't be transferred in the same way.
   if (!is_server_redirect &&
-      CrossesExtensionExtents(frame, url, *extensions, is_extension_url,
-          is_initial_navigation)) {
+      CrossesExtensionExtents(frame, url, is_extension_url,
+                              is_initial_navigation)) {
     // Include the referrer in this case since we're going from a hosted web
     // page. (the packaged case is handled previously by the extension
     // navigation test)
     *send_referrer = true;
 
     const Extension* extension =
-        extension_dispatcher_->extensions()->GetExtensionOrAppByURL(url);
+        extension_registry->GetExtensionOrAppByURL(url);
     if (extension && extension->is_app()) {
       extensions::RecordAppLaunchType(
           extension_misc::APP_LAUNCH_CONTENT_NAVIGATION, extension->GetType());
@@ -1314,11 +1315,8 @@ bool ChromeContentRendererClient::WillSendRequest(
   // URL to something invalid to prevent the request and cause an error.
 #if defined(ENABLE_EXTENSIONS)
   if (url.SchemeIs(extensions::kExtensionScheme) &&
-      !extensions::ResourceRequestPolicy::CanRequestResource(
-          url,
-          frame,
-          transition_type,
-          extension_dispatcher_->extensions())) {
+      !extensions::ResourceRequestPolicy::CanRequestResource(url, frame,
+                                                             transition_type)) {
     *new_url = GURL(chrome::kExtensionInvalidRequestURL);
     return true;
   }
@@ -1395,11 +1393,13 @@ ChromeContentRendererClient::GetExtensionDispatcherForTest() {
 bool ChromeContentRendererClient::CrossesExtensionExtents(
     blink::WebLocalFrame* frame,
     const GURL& new_url,
-    const extensions::ExtensionSet& extensions,
     bool is_extension_url,
     bool is_initial_navigation) {
   DCHECK(!frame->parent());
   GURL old_url(frame->document().url());
+
+  extensions::RendererExtensionRegistry* extension_registry =
+      extensions::RendererExtensionRegistry::Get();
 
   // If old_url is still empty and this is an initial navigation, then this is
   // a window.open operation.  We should look at the opener URL.  Note that the
@@ -1412,9 +1412,9 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     // opener to script it.
     WebDocument opener_document = opener_frame->document();
     WebSecurityOrigin opener_origin = opener_document.securityOrigin();
-    bool opener_is_extension_url =
-        !opener_origin.isUnique() && extensions.GetExtensionOrAppByURL(
-            opener_document.url()) != NULL;
+    bool opener_is_extension_url = !opener_origin.isUnique() &&
+                                   extension_registry->GetExtensionOrAppByURL(
+                                       opener_document.url()) != NULL;
     if (!is_extension_url &&
         !opener_is_extension_url &&
         IsStandaloneExtensionProcess() &&
@@ -1440,7 +1440,8 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
   bool should_consider_workaround = !!frame->opener();
 
   return extensions::CrossesExtensionProcessBoundary(
-      extensions, old_url, new_url, should_consider_workaround);
+      *extension_registry->GetMainThreadExtensionSet(), old_url, new_url,
+      should_consider_workaround);
 }
 #endif  // defined(ENABLE_EXTENSIONS)
 
@@ -1488,7 +1489,7 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
 bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
     const GURL& url, const std::set<std::string>& whitelist) {
   const extensions::ExtensionSet* extension_set =
-      g_current_client->extension_dispatcher_->extensions();
+      extensions::RendererExtensionRegistry::Get()->GetMainThreadExtensionSet();
   return chrome::IsExtensionOrSharedModuleWhitelisted(url, extension_set,
       whitelist);
 }

@@ -24,7 +24,6 @@ class RenderFrame;
 }
 
 namespace extensions {
-class ExtensionSet;
 class ScriptInjection;
 
 // The UserScriptSet is a collection of UserScripts which knows how to update
@@ -39,7 +38,7 @@ class UserScriptSet {
         const std::vector<UserScript*>& scripts) = 0;
   };
 
-  explicit UserScriptSet(const ExtensionSet* extensions);
+  UserScriptSet();
   ~UserScriptSet();
 
   // Adds or removes observers.
@@ -86,9 +85,6 @@ class UserScriptSet {
 
   // Shared memory containing raw script data.
   scoped_ptr<base::SharedMemory> shared_memory_;
-
-  // The set of all known extensions. Owned by the Dispatcher.
-  const ExtensionSet* extensions_;
 
   // The UserScripts this injector manages.
   ScopedVector<UserScript> scripts_;

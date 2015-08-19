@@ -27,6 +27,7 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/dispatcher.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #endif
 
 using blink::WebContentSettingCallbacks;
@@ -677,7 +678,7 @@ const extensions::Extension* ContentSettingsObserver::GetExtension(
   if (!extension_dispatcher_->IsExtensionActive(extension_id))
     return NULL;
 
-  return extension_dispatcher_->extensions()->GetByID(extension_id);
+  return extensions::RendererExtensionRegistry::Get()->GetByID(extension_id);
 }
 #endif
 

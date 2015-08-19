@@ -926,6 +926,8 @@
       'renderer/programmatic_script_injector.cc',
       'renderer/programmatic_script_injector.h',
       'renderer/render_frame_observer_natives.cc',
+      'renderer/renderer_extension_registry.cc',
+      'renderer/renderer_extension_registry.h',
       'renderer/request_sender.cc',
       'renderer/request_sender.h',
       'renderer/resource_bundle_source_map.cc',

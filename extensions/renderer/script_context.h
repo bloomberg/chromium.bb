@@ -31,7 +31,6 @@ class RenderFrame;
 
 namespace extensions {
 class Extension;
-class ExtensionSet;
 
 // Extensions wrapper for a v8 context.
 class ScriptContext : public RequestSender::Source {
@@ -48,8 +47,7 @@ class ScriptContext : public RequestSender::Source {
   // as declared in each Extension's manifest.
   // TODO(kalman): Delete this when crbug.com/466373 is fixed.
   // See comment in HasAccessOrThrowError.
-  static bool IsSandboxedPage(const ExtensionSet& extension_set,
-                              const GURL& url);
+  static bool IsSandboxedPage(const GURL& url);
 
   // Clears the WebFrame for this contexts and invalidates the associated
   // ModuleSystem.

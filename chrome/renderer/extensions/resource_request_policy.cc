@@ -10,9 +10,9 @@
 #include "chrome/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -32,12 +32,11 @@ namespace extensions {
 bool ResourceRequestPolicy::CanRequestResource(
     const GURL& resource_url,
     blink::WebFrame* frame,
-    ui::PageTransition transition_type,
-    const ExtensionSet* loaded_extensions) {
+    ui::PageTransition transition_type) {
   CHECK(resource_url.SchemeIs(extensions::kExtensionScheme));
 
   const Extension* extension =
-      loaded_extensions->GetExtensionOrAppByURL(resource_url);
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(resource_url);
   if (!extension) {
     // Allow the load in the case of a non-existent extension. We'll just get a
     // 404 from the browser process.

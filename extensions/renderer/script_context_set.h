@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
@@ -43,7 +43,6 @@ class ScriptContext;
 class ScriptContextSet {
  public:
   ScriptContextSet(
-      ExtensionSet* extensions,
       // Set of the IDs of extensions that are active in this process.
       // Must outlive this. TODO(kalman): Combine this and |extensions|.
       ExtensionIdSet* active_extension_ids);
@@ -129,9 +128,6 @@ class ScriptContextSet {
   // This is a helper designed to be used by OnExtensionUnloaded with ForEach.
   void DispatchOnUnloadEventAndRemove(std::set<ScriptContext*>* out,
                                       ScriptContext* context);
-
-  // Weak reference to all installed Extensions.
-  ExtensionSet* extensions_;
 
   // Weak reference to all installed Extensions that are also active in this
   // process.

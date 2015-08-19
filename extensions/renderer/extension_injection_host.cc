@@ -6,8 +6,8 @@
 
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -24,9 +24,9 @@ ExtensionInjectionHost::~ExtensionInjectionHost() {
 
 // static
 scoped_ptr<const InjectionHost> ExtensionInjectionHost::Create(
-    const std::string& extension_id,
-    const ExtensionSet* extensions) {
-  const Extension* extension = extensions->GetByID(extension_id);
+    const std::string& extension_id) {
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(extension_id);
   if (!extension)
     return scoped_ptr<const ExtensionInjectionHost>();
   return scoped_ptr<const ExtensionInjectionHost>(

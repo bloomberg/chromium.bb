@@ -27,7 +27,6 @@ class Message;
 
 namespace extensions {
 
-class ExtensionSet;
 class ScriptInjection;
 
 // Manager for separate UserScriptSets, one for each shared memory region.
@@ -49,7 +48,7 @@ class UserScriptSetManager : public content::RenderProcessObserver {
         const std::vector<UserScript*>& scripts) = 0;
   };
 
-  UserScriptSetManager(const ExtensionSet* extensions);
+  UserScriptSetManager();
 
   ~UserScriptSetManager() override;
 
@@ -100,9 +99,6 @@ class UserScriptSetManager : public content::RenderProcessObserver {
   // Scripts programmatically-defined through API calls (initialized and stored
   // per-extension).
   UserScriptSetMap programmatic_scripts_;
-
-  // The set of all known extensions. Owned by the Dispatcher.
-  const ExtensionSet* extensions_;
 
   // The associated observers.
   base::ObserverList<Observer> observers_;

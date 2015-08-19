@@ -73,7 +73,7 @@ TEST_F(RendererPermissionsPolicyDelegateTest, CannotScriptWebstore) {
   // script.
   scoped_refptr<const Extension> webstore_extension(
       CreateTestExtension(extensions::kWebStoreAppId));
-  extension_dispatcher_->LoadExtensionForTest(webstore_extension.get());
+  RendererExtensionRegistry::Get()->Insert(webstore_extension.get());
   extension_dispatcher_->OnActivateExtension(extensions::kWebStoreAppId);
   EXPECT_FALSE(extension->permissions_data()->CanAccessPage(
       extension.get(), kAnyUrl, -1, -1, &error))

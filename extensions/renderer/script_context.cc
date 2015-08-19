@@ -16,11 +16,11 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -119,12 +119,12 @@ ScriptContext::~ScriptContext() {
 }
 
 // static
-bool ScriptContext::IsSandboxedPage(const ExtensionSet& extensions,
-                                    const GURL& url) {
+bool ScriptContext::IsSandboxedPage(const GURL& url) {
   // TODO(kalman): This is checking the wrong thing. See comment in
   // HasAccessOrThrowError.
   if (url.SchemeIs(kExtensionScheme)) {
-    const Extension* extension = extensions.GetByID(url.host());
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(url.host());
     if (extension) {
       return SandboxedPageInfo::IsSandboxedPage(extension, url.path());
     }

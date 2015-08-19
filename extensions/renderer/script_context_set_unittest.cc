@@ -33,9 +33,8 @@ TEST(ScriptContextSetTest, Lifecycle) {
   gin::ContextHolder context_holder(isolate);
   context_holder.SetContext(v8_context);
 
-  ExtensionSet extensions;
   ExtensionIdSet active_extensions;
-  ScriptContextSet context_set(&extensions, &active_extensions);
+  ScriptContextSet context_set(&active_extensions);
   ScriptContext* context = context_set.Register(
       web_frame.frame(), v8_context, 0, 0);  // no extension group or world ID
 

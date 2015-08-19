@@ -29,7 +29,7 @@ void SetToTrue(bool* value) {
 
 class GCCallbackTest : public testing::Test {
  public:
-  GCCallbackTest() : script_context_set_(&extensions_, &active_extensions_) {}
+  GCCallbackTest() : script_context_set_(&active_extensions_) {}
 
  protected:
   base::MessageLoop& message_loop() { return message_loop_; }
@@ -72,7 +72,6 @@ class GCCallbackTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   ScopedWebFrame web_frame_;  // (this will construct the v8::Isolate)
-  ExtensionSet extensions_;
   ExtensionIdSet active_extensions_;
   ScriptContextSet script_context_set_;
   v8::Global<v8::Context> v8_context_;

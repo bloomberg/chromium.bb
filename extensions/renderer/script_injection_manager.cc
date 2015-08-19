@@ -17,6 +17,7 @@
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extension_injection_host.h"
 #include "extensions/renderer/programmatic_script_injector.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_injection.h"
 #include "extensions/renderer/scripts_run_info.h"
 #include "extensions/renderer/web_ui_injection_host.h"
@@ -215,10 +216,8 @@ void ScriptInjectionManager::RFOHelper::InvalidateAndResetFrame() {
 }
 
 ScriptInjectionManager::ScriptInjectionManager(
-    const ExtensionSet* extensions,
     UserScriptSetManager* user_script_set_manager)
-    : extensions_(extensions),
-      user_script_set_manager_(user_script_set_manager),
+    : user_script_set_manager_(user_script_set_manager),
       user_script_set_manager_observer_(this) {
   user_script_set_manager_observer_.Add(user_script_set_manager_);
 }
@@ -401,8 +400,7 @@ void ScriptInjectionManager::HandleExecuteCode(
     content::RenderFrame* render_frame) {
   scoped_ptr<const InjectionHost> injection_host;
   if (params.host_id.type() == HostID::EXTENSIONS) {
-    injection_host = ExtensionInjectionHost::Create(params.host_id.id(),
-                                                    extensions_);
+    injection_host = ExtensionInjectionHost::Create(params.host_id.id());
     if (!injection_host)
       return;
   } else if (params.host_id.type() == HostID::WEBUI) {

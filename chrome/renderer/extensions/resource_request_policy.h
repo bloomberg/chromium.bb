@@ -15,8 +15,6 @@ class WebFrame;
 
 namespace extensions {
 
-class ExtensionSet;
-
 // Encapsulates the policy for when chrome-extension:// and
 // chrome-extension-resource:// URLs can be requested.
 class ResourceRequestPolicy {
@@ -27,8 +25,7 @@ class ResourceRequestPolicy {
   // than those triggered through UI.
   static bool CanRequestResource(const GURL& resource_url,
                                  blink::WebFrame* frame,
-                                 ui::PageTransition transition_type,
-                                 const ExtensionSet* loaded_extensions);
+                                 ui::PageTransition transition_type);
   // Returns true if the chrome-extension-resource:// |resource_url| can be
   // requested from |frame_url|.
   static bool CanRequestExtensionResourceScheme(const GURL& resource_url,
