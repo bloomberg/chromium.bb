@@ -198,7 +198,6 @@ public:
     InlineBoxPosition computeInlineBoxPosition(EAffinity, TextDirection primaryDirection) const;
 
     static bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
-    static bool nodeIsUserSelectNone(Node*);
     static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);
     static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);

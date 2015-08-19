@@ -141,6 +141,7 @@ bool isRenderedAsNonInlineTableImageOrHR(const Node*);
 bool areIdenticalElements(const Node*, const Node*);
 bool isNonTableCellHTMLBlockElement(const Node*);
 bool isBlockFlowElement(const Node&);
+bool nodeIsUserSelectNone(Node*);
 TextDirection directionOfEnclosingBlock(const Position&);
 CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
 

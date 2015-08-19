@@ -545,6 +545,11 @@ bool inSameContainingBlockFlowElement(Node* a, Node* b)
     return a && b && enclosingBlockFlowElement(*a) == enclosingBlockFlowElement(*b);
 }
 
+bool nodeIsUserSelectNone(Node* node)
+{
+    return node && node->layoutObject() && !node->layoutObject()->isSelectable();
+}
+
 TextDirection directionOfEnclosingBlock(const Position& position)
 {
     Element* enclosingBlockElement = enclosingBlock(position.computeContainerNode());
