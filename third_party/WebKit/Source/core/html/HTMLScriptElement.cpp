@@ -128,15 +128,7 @@ void HTMLScriptElement::didNotifySubtreeInsertionsToDocument()
 
 void HTMLScriptElement::setText(const String &value)
 {
-    RefPtrWillBeRawPtr<Node> protectFromMutationEvents(this);
-
-    if (hasOneTextChild()) {
-        toText(firstChild())->setData(value);
-        return;
-    }
-
-    removeChildren();
-    appendChild(document().createTextNode(value.impl()), IGNORE_EXCEPTION);
+    setTextContent(value);
 }
 
 void HTMLScriptElement::setAsync(bool async)
