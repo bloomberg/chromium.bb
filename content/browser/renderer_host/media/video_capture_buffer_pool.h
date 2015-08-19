@@ -47,12 +47,13 @@ class CONTENT_EXPORT VideoCaptureBufferPool
   static const int kInvalidId;
 
   // Abstraction of a pool's buffer data buffer and size for clients.
+  // TODO(emircan): See https://crbug.com/521059, refactor this class.
   class BufferHandle {
    public:
     virtual ~BufferHandle() {}
     virtual size_t size() const = 0;
-    virtual void* data() = 0;
-    virtual ClientBuffer AsClientBuffer() = 0;
+    virtual void* data(int plane) = 0;
+    virtual ClientBuffer AsClientBuffer(int plane) = 0;
 #if defined(OS_POSIX)
     virtual base::FileDescriptor AsPlatformFile() = 0;
 #endif

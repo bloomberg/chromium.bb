@@ -19,7 +19,8 @@ typedef int VideoCaptureSessionId;
 
 // TODO(dshwang): replace it with media::VideoPixelFormat. crbug.com/489744
 // Color formats from camera. This list is sorted in order of preference.
-// TODO(mcasas): Consider if this list can be merged with media::Format.
+// TODO(emircan): http://crbug.com/521068 Consider if this list can be merged
+// with media::Format.
 // TODO(mcasas): http://crbug.com/504160 Consider making this an enum class.
 enum VideoCapturePixelFormat {
   VIDEO_CAPTURE_PIXEL_FORMAT_I420,

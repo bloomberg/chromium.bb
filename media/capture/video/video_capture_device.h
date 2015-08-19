@@ -182,8 +182,9 @@ class MEDIA_EXPORT VideoCaptureDevice {
       virtual ~Buffer() = 0;
       virtual int id() const = 0;
       virtual size_t size() const = 0;
-      virtual void* data() = 0;
-      virtual ClientBuffer AsClientBuffer() = 0;
+      virtual void* data(int plane) = 0;
+      void* data() { return data(0); }
+      virtual ClientBuffer AsClientBuffer(int plane) = 0;
 #if defined(OS_POSIX)
       virtual base::FileDescriptor AsPlatformFile() = 0;
 #endif

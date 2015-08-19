@@ -66,10 +66,12 @@ void DrawPacman(bool use_argb,
   canvas.drawText(time_string.data(), time_string.length(), 30, 20, paint);
 }
 
-FakeVideoCaptureDevice::FakeVideoCaptureDevice(
-    FakeVideoCaptureDeviceType device_type)
-    : device_type_(device_type), frame_count_(0), weak_factory_(this) {
-}
+FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
+                                               BufferPlanarity planarity)
+    : buffer_ownership_(buffer_ownership),
+      planarity_(planarity),
+      frame_count_(0),
+      weak_factory_(this) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -85,9 +87,6 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   // Incoming |params| can be none of the supported formats, so we get the
   // closest thing rounded up. TODO(mcasas): Use the |params|, if they belong to
   // the supported ones, when http://crbug.com/309554 is verified.
-  DCHECK_EQ(params.requested_format.pixel_format,
-            VIDEO_CAPTURE_PIXEL_FORMAT_I420);
-  capture_format_.pixel_format = params.requested_format.pixel_format;
   capture_format_.frame_rate = 30.0;
   if (params.requested_format.frame_size.width() > 1280)
     capture_format_.frame_size.SetSize(1920, 1080);
@@ -98,30 +97,37 @@ void FakeVideoCaptureDevice::AllocateAndStart(
   else
     capture_format_.frame_size.SetSize(320, 240);
 
-  if (device_type_ == USING_OWN_BUFFERS ||
-      device_type_ == USING_OWN_BUFFERS_TRIPLANAR) {
+  if (buffer_ownership_ == BufferOwnership::CLIENT_BUFFERS) {
+    if (planarity_ == BufferPlanarity::PACKED) {
+      capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
+      capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_ARGB;
+      DVLOG(1) << "starting with client argb buffers";
+    } else if (planarity_ == BufferPlanarity::TRIPLANAR) {
+      capture_format_.pixel_storage = PIXEL_STORAGE_GPUMEMORYBUFFER;
+      capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+      DVLOG(1) << "starting with gmb I420 buffers";
+    }
+  } else if (buffer_ownership_ == BufferOwnership::OWN_BUFFERS) {
     capture_format_.pixel_storage = PIXEL_STORAGE_CPU;
+    capture_format_.pixel_format = VIDEO_CAPTURE_PIXEL_FORMAT_I420;
+    DVLOG(1) << "starting with own I420 buffers";
+  }
+
+  if (capture_format_.pixel_format == VIDEO_CAPTURE_PIXEL_FORMAT_I420) {
     fake_frame_.reset(new uint8[VideoFrame::AllocationSize(
         PIXEL_FORMAT_I420, capture_format_.frame_size)]);
+  }
+
+  if (buffer_ownership_ == BufferOwnership::CLIENT_BUFFERS)
+    BeepAndScheduleNextCapture(
+        base::TimeTicks::Now(),
+        base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
+                   weak_factory_.GetWeakPtr()));
+  else if (buffer_ownership_ == BufferOwnership::OWN_BUFFERS)
     BeepAndScheduleNextCapture(
         base::TimeTicks::Now(),
         base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
                    weak_factory_.GetWeakPtr()));
-  } else if (device_type_ == USING_CLIENT_BUFFERS) {
-    DVLOG(1) << "starting with "
-             << (params.use_gpu_memory_buffers ? "GMB" : "ShMem");
-    BeepAndScheduleNextCapture(
-        base::TimeTicks::Now(),
-        base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
-                   weak_factory_.GetWeakPtr(),
-                   params.use_gpu_memory_buffers
-                       ? VIDEO_CAPTURE_PIXEL_FORMAT_ARGB
-                       : VIDEO_CAPTURE_PIXEL_FORMAT_I420,
-                   params.use_gpu_memory_buffers ? PIXEL_STORAGE_GPUMEMORYBUFFER
-                                                 : PIXEL_STORAGE_CPU));
-  } else {
-    client_->OnError("Unknown Fake Video Capture Device type.");
-  }
 }
 
 void FakeVideoCaptureDevice::StopAndDeAllocate() {
@@ -139,11 +145,11 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
              kFakeCapturePeriodMs, capture_format_.frame_size);
 
   // Give the captured frame to the client.
-  if (device_type_ == USING_OWN_BUFFERS) {
+  if (planarity_ == BufferPlanarity::PACKED) {
     client_->OnIncomingCapturedData(fake_frame_.get(), frame_size,
                                     capture_format_, 0 /* rotation */,
                                     base::TimeTicks::Now());
-  } else if (device_type_ == USING_OWN_BUFFERS_TRIPLANAR) {
+  } else if (planarity_ == BufferPlanarity::TRIPLANAR) {
     client_->OnIncomingCapturedYuvData(
         fake_frame_.get(),
         fake_frame_.get() + capture_format_.frame_size.GetArea(),
@@ -160,38 +166,51 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
 }
 
 void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
-    VideoCapturePixelFormat pixel_format,
-    VideoPixelStorage pixel_storage,
     base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<VideoCaptureDevice::Client::Buffer> capture_buffer(
-      client_->ReserveOutputBuffer(capture_format_.frame_size, pixel_format,
-                                   pixel_storage));
+      client_->ReserveOutputBuffer(capture_format_.frame_size,
+                                   capture_format_.pixel_format,
+                                   capture_format_.pixel_storage));
   DLOG_IF(ERROR, !capture_buffer) << "Couldn't allocate Capture Buffer";
+  DCHECK(capture_buffer->data()) << "Buffer has NO backing memory";
 
-  if (capture_buffer.get()) {
-    uint8_t* const data_ptr = static_cast<uint8_t*>(capture_buffer->data());
-    DCHECK(data_ptr) << "Buffer has NO backing memory";
+  if (capture_format_.pixel_storage == PIXEL_STORAGE_GPUMEMORYBUFFER &&
+      capture_format_.pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420) {
+    // Since SkBitmap expects a packed&continuous memory region for I420, we
+    // need to use |fake_frame_| to draw onto.
+    memset(fake_frame_.get(), 0, capture_format_.ImageAllocationSize());
+    DrawPacman(false /* use_argb */, fake_frame_.get(), frame_count_,
+               kFakeCapturePeriodMs, capture_format_.frame_size);
+
+    // Copy data from |fake_frame_| into the reserved planes of GpuMemoryBuffer.
+    size_t offset = 0;
+    for (size_t i = 0; i < VideoFrame::NumPlanes(PIXEL_FORMAT_I420); ++i) {
+      const size_t plane_size =
+          VideoFrame::PlaneSize(PIXEL_FORMAT_I420, i,
+                                capture_format_.frame_size)
+              .GetArea();
+      memcpy(capture_buffer->data(i), fake_frame_.get() + offset, plane_size);
+      offset += plane_size;
+    }
+  } else {
+    DCHECK_EQ(capture_format_.pixel_storage, PIXEL_STORAGE_CPU);
+    DCHECK_EQ(capture_format_.pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_ARGB);
+    uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
     memset(data_ptr, 0, capture_buffer->size());
-
-    DrawPacman(
-        (pixel_format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB), /* use_argb */
-        data_ptr, frame_count_, kFakeCapturePeriodMs,
-        capture_format_.frame_size);
-
-    // Give the captured frame to the client.
-    const VideoCaptureFormat format(capture_format_.frame_size,
-                                    capture_format_.frame_rate, pixel_format,
-                                    pixel_storage);
-    client_->OnIncomingCapturedBuffer(capture_buffer.Pass(), format,
-                                      base::TimeTicks::Now());
+    DrawPacman(true /* use_argb */, data_ptr, frame_count_,
+               kFakeCapturePeriodMs, capture_format_.frame_size);
   }
+
+  // Give the captured frame to the client.
+  client_->OnIncomingCapturedBuffer(capture_buffer.Pass(), capture_format_,
+                                    base::TimeTicks::Now());
 
   BeepAndScheduleNextCapture(
       expected_execution_time,
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingClientBuffers,
-                 weak_factory_.GetWeakPtr(), pixel_format, pixel_storage));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FakeVideoCaptureDevice::BeepAndScheduleNextCapture(

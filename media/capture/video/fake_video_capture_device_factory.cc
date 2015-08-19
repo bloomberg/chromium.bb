@@ -24,19 +24,21 @@ scoped_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::Create(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseFakeDeviceForMediaStream);
 
-  FakeVideoCaptureDevice::FakeVideoCaptureDeviceType fake_vcd_type;
-  if (option.empty())
-    fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS;
-  else if (base::EqualsCaseInsensitiveASCII(option, "triplanar"))
-    fake_vcd_type = FakeVideoCaptureDevice::USING_OWN_BUFFERS_TRIPLANAR;
-  else
-    fake_vcd_type = FakeVideoCaptureDevice::USING_CLIENT_BUFFERS;
+  const FakeVideoCaptureDevice::BufferOwnership fake_vcd_ownership =
+      base::StartsWith(option, "client", base::CompareCase::INSENSITIVE_ASCII)
+          ? FakeVideoCaptureDevice::BufferOwnership::CLIENT_BUFFERS
+          : FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS;
+
+  const FakeVideoCaptureDevice::BufferPlanarity fake_vcd_planarity =
+      base::EndsWith(option, "triplanar", base::CompareCase::INSENSITIVE_ASCII)
+          ? FakeVideoCaptureDevice::BufferPlanarity::TRIPLANAR
+          : FakeVideoCaptureDevice::BufferPlanarity::PACKED;
 
   for (int n = 0; n < number_of_devices_; ++n) {
     std::string possible_id = base::StringPrintf("/dev/video%d", n);
     if (device_name.id().compare(possible_id) == 0) {
       return scoped_ptr<VideoCaptureDevice>(
-          new FakeVideoCaptureDevice(fake_vcd_type));
+          new FakeVideoCaptureDevice(fake_vcd_ownership, fake_vcd_planarity));
     }
   }
   return scoped_ptr<VideoCaptureDevice>();

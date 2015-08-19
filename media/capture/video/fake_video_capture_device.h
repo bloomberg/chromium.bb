@@ -22,15 +22,20 @@ namespace media {
 
 class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
  public:
-  enum FakeVideoCaptureDeviceType {
-    USING_OWN_BUFFERS,
-    USING_OWN_BUFFERS_TRIPLANAR,
-    USING_CLIENT_BUFFERS,
+  enum class BufferOwnership {
+    OWN_BUFFERS,
+    CLIENT_BUFFERS,
+  };
+
+  enum class BufferPlanarity {
+    PACKED,
+    TRIPLANAR,
   };
 
   static int FakeCapturePeriodMs() { return kFakeCapturePeriodMs; }
 
-  explicit FakeVideoCaptureDevice(FakeVideoCaptureDeviceType device_type);
+  FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
+                         BufferPlanarity planarity);
   ~FakeVideoCaptureDevice() override;
 
   // VideoCaptureDevice implementation.
@@ -42,9 +47,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   static const int kFakeCapturePeriodMs = 50;
 
   void CaptureUsingOwnBuffers(base::TimeTicks expected_execution_time);
-  void CaptureUsingClientBuffers(VideoCapturePixelFormat pixel_format,
-                                 VideoPixelStorage pixel_storage,
-                                 base::TimeTicks expected_execution_time);
+  void CaptureUsingClientBuffers(base::TimeTicks expected_execution_time);
   void BeepAndScheduleNextCapture(
       base::TimeTicks expected_execution_time,
       const base::Callback<void(base::TimeTicks)>& next_capture);
@@ -53,7 +56,8 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // correct thread that owns the object.
   base::ThreadChecker thread_checker_;
 
-  const FakeVideoCaptureDeviceType device_type_;
+  const BufferOwnership buffer_ownership_;
+  const BufferPlanarity planarity_;
 
   scoped_ptr<VideoCaptureDevice::Client> client_;
   // |fake_frame_| is used for capturing on Own Buffers.

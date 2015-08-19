@@ -71,6 +71,24 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   double GetBufferPoolUtilization() const override;
 
  private:
+  // Reserve output buffer into which I420 contents can be copied directly.
+  // The dimensions of the frame is described by |dimensions|, and requested
+  // output buffer format is specified by |storage|. The reserved output buffer
+  // is returned; and the pointer to Y plane is stored at [y_plane_data], U
+  // plane is stored at [u_plane_data], V plane is stored at [v_plane_data].
+  // Returns an nullptr if allocation fails.
+  //
+  // When requested |storage| is PIXEL_STORAGE_CPU, a single shared memory
+  // chunk is reserved; whereas for PIXEL_STORAGE_GPUMEMORYBUFFER, three
+  // GpuMemoryBuffers in R_8 format representing I420 planes are reserved. The
+  // output buffers stay reserved and mapped for use until the Buffer objects
+  // are destroyed or returned.
+  scoped_ptr<Buffer> ReserveI420OutputBuffer(const gfx::Size& dimensions,
+                                             media::VideoPixelStorage storage,
+                                             uint8** y_plane_data,
+                                             uint8** u_plane_data,
+                                             uint8** v_plane_data);
+
   // The controller to which we post events.
   const base::WeakPtr<VideoCaptureController> controller_;
 
@@ -82,6 +100,10 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+
+  // Indication to the Client to copy-transform the incoming data into
+  // GpuMemoryBuffers.
+  const bool use_gpu_memory_buffers_;
 
   // Internal delegate for GpuMemoryBuffer-into-VideoFrame wrapping.
   class TextureWrapHelper;

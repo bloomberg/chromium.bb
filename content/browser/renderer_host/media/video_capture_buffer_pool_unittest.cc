@@ -34,8 +34,6 @@ static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
 #if !defined(OS_ANDROID)
     {media::VIDEO_CAPTURE_PIXEL_FORMAT_I420,
      media::PIXEL_STORAGE_GPUMEMORYBUFFER},
-    {media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB,
-     media::PIXEL_STORAGE_GPUMEMORYBUFFER},
 #endif
 };
 
@@ -127,7 +125,7 @@ class VideoCaptureBufferPoolTest
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
     int id() const { return id_; }
     size_t size() { return buffer_handle_->size(); }
-    void* data() { return buffer_handle_->data(); }
+    void* data() { return buffer_handle_->data(0); }
 
    private:
     const int id_;
@@ -209,23 +207,26 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
 
   scoped_ptr<Buffer> buffer1 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer1.get());
-  ASSERT_LE(format_lo.ImageAllocationSize(), buffer1->size());
   ASSERT_EQ(1.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   scoped_ptr<Buffer> buffer2 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer2.get());
-  ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
   ASSERT_EQ(2.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   scoped_ptr<Buffer> buffer3 = ReserveBuffer(size_lo, GetParam());
   ASSERT_NE(nullptr, buffer3.get());
-  ASSERT_LE(format_lo.ImageAllocationSize(), buffer3->size());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
+
+  // GMB backed frames have their platform and format specific allocations.
+  if (GetParam().pixel_storage != media::PIXEL_STORAGE_GPUMEMORYBUFFER) {
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer1->size());
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer3->size());
+  }
 
   // Texture backed Frames cannot be manipulated via mapping.
   if (GetParam().pixel_storage != media::PIXEL_STORAGE_TEXTURE) {
     ASSERT_NE(nullptr, buffer1->data());
     ASSERT_NE(nullptr, buffer2->data());
     ASSERT_NE(nullptr, buffer3->data());
-
   }
   // Touch the memory.
   if (buffer1->data() != nullptr)
@@ -324,7 +325,8 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   ASSERT_EQ(2.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   buffer2 = ReserveBuffer(size_hi, GetParam());
   ASSERT_NE(nullptr, buffer2.get());
-  ASSERT_LE(format_hi.ImageAllocationSize(), buffer2->size());
+  if (GetParam().pixel_storage != media::PIXEL_STORAGE_GPUMEMORYBUFFER)
+    ASSERT_LE(format_hi.ImageAllocationSize(), buffer2->size());
   ASSERT_EQ(3, buffer2->id());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   void* const memory_pointer_hi = buffer2->data();
@@ -337,7 +339,8 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
       << "Decrease in resolution should not reallocate buffer";
   ASSERT_NE(nullptr, buffer2.get());
   ASSERT_EQ(3, buffer2->id());
-  ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
+  if (GetParam().pixel_storage != media::PIXEL_STORAGE_GPUMEMORYBUFFER)
+    ASSERT_LE(format_lo.ImageAllocationSize(), buffer2->size());
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   ASSERT_FALSE(ReserveBuffer(size_lo, GetParam())) << "Pool should be empty";
   ASSERT_EQ(1.0, pool_->GetBufferPoolUtilization());

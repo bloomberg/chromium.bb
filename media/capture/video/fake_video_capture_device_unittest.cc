@@ -33,8 +33,8 @@ class MockBuffer : public VideoCaptureDevice::Client::Buffer {
 
   int id() const override { return id_; }
   size_t size() const override { return size_; }
-  void* data() override { return data_; }
-  ClientBuffer AsClientBuffer() override { return nullptr; }
+  void* data(int plane) override { return data_; }
+  ClientBuffer AsClientBuffer(int plane) override { return nullptr; }
 #if defined(OS_POSIX)
   base::FileDescriptor AsPlatformFile() override {
     return base::FileDescriptor();
@@ -78,9 +78,9 @@ class MockClient : public VideoCaptureDevice::Client {
   scoped_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
                                          media::VideoCapturePixelFormat format,
                                          media::VideoPixelStorage storage) {
-    EXPECT_TRUE((format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 &&
+    EXPECT_TRUE((format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB &&
                  storage == media::PIXEL_STORAGE_CPU) ||
-                (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_ARGB &&
+                (format == media::VIDEO_CAPTURE_PIXEL_FORMAT_I420 &&
                  storage == media::PIXEL_STORAGE_GPUMEMORYBUFFER));
     EXPECT_GT(dimensions.GetArea(), 0);
     const VideoCaptureFormat frame_format(dimensions, 0.0, format);
@@ -126,9 +126,9 @@ class DeviceEnumerationListener
 }  // namespace
 
 class FakeVideoCaptureDeviceTest
-    : public testing::TestWithParam<
-          ::testing::tuple<FakeVideoCaptureDevice::FakeVideoCaptureDeviceType,
-                           bool>> {
+    : public testing::TestWithParam<::testing::tuple<
+          FakeVideoCaptureDevice::BufferOwnership,
+          FakeVideoCaptureDevice::BufferPlanarity>> {
  protected:
   FakeVideoCaptureDeviceTest()
       : loop_(new base::MessageLoop()),
@@ -178,16 +178,13 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
   const scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
   ASSERT_FALSE(names->empty());
 
-  scoped_ptr<VideoCaptureDevice> device(
-      new FakeVideoCaptureDevice(testing::get<0>(GetParam())));
+  scoped_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
+      testing::get<0>(GetParam()), testing::get<1>(GetParam())));
   ASSERT_TRUE(device);
 
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30;
-  capture_params.requested_format.pixel_format =
-      VIDEO_CAPTURE_PIXEL_FORMAT_I420;
-  capture_params.use_gpu_memory_buffers = ::testing::get<1>(GetParam());
   device->AllocateAndStart(capture_params, client_.Pass());
 
   WaitForCapturedFrame();
@@ -200,10 +197,10 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
 INSTANTIATE_TEST_CASE_P(
     ,
     FakeVideoCaptureDeviceTest,
-    Combine(Values(FakeVideoCaptureDevice::USING_OWN_BUFFERS,
-                   FakeVideoCaptureDevice::USING_OWN_BUFFERS_TRIPLANAR,
-                   FakeVideoCaptureDevice::USING_CLIENT_BUFFERS),
-            Bool()));
+    Combine(Values(FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS,
+                   FakeVideoCaptureDevice::BufferOwnership::CLIENT_BUFFERS),
+            Values(FakeVideoCaptureDevice::BufferPlanarity::PACKED,
+                   FakeVideoCaptureDevice::BufferPlanarity::TRIPLANAR)));
 
 TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   scoped_ptr<VideoCaptureDevice::Names> names(EnumerateDevices());
