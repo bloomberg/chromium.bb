@@ -21,13 +21,13 @@ def _KillWebServers():
           logging.info('Killing %s %s %s', s, server, p.pid)
           p.send_signal(s)
           signalled.append(p)
-        except Exception as e:
-          logging.warning('Failed killing %s %s %s', server, p.pid, e)
+        except Exception:
+          logging.exception('Failed killing %s %s', server, p.pid)
     for p in signalled:
       try:
         p.wait(1)
-      except Exception as e:
-        logging.warning('Failed waiting for %s to die. %s', p.pid, e)
+      except Exception:
+        logging.exception('Failed waiting for %s to die.', p.pid)
 
 
 def CleanupLeftoverProcesses():
@@ -39,8 +39,8 @@ def CleanupLeftoverProcesses():
     d.RestartAdbd()
     try:
       d.EnableRoot()
-    except device_errors.CommandFailedError as e:
-      logging.error(str(e))
+    except device_errors.CommandFailedError:
+      logging.exception('Failed to enable root')
     d.WaitUntilFullyBooted()
 
   device_utils.DeviceUtils.parallel().pMap(cleanup_device)
