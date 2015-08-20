@@ -9,6 +9,9 @@
     <style name="BaseTheme" parent="@style/Theme.AppCompat.Light">
         <item name="colorPrimary">#E0E0E0</item>
         <item name="colorPrimaryDark">#616161</item>
+
+        <!-- The same blue color as the host-online icon. -->
+        <item name="colorAccent">#4285F4</item>
     </style>
     <style name="BaseTheme.NavigationDrawer" parent="@style/BaseTheme">
         <item name="windowActionBar">false</item>
