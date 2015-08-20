@@ -48,8 +48,10 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/Logging.h"
@@ -1448,6 +1450,25 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
         layoutObject = &boxPosition.inlineBox->layoutObject();
 
     return layoutObject->localCaretRect(boxPosition.inlineBox, boxPosition.offsetInBox);
+}
+
+static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
+{
+    return o->style()->isHorizontalWritingMode() ? rect.height() : rect.width();
+}
+
+bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
+{
+    LayoutObject* stop = layoutObject->nextInPreOrderAfterChildren();
+    for (LayoutObject *o = layoutObject->slowFirstChild(); o && o != stop; o = o->nextInPreOrder()) {
+        if (o->nonPseudoNode()) {
+            if ((o->isText() && boundingBoxLogicalHeight(o, toLayoutText(o)->linesBoundingBox()))
+                || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
+                || (o->isLayoutInline() && isEmptyInline(LineLayoutItem(o)) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
+                return true;
+        }
+    }
+    return false;
 }
 
 VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, LocalFrame* frame)

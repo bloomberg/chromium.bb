@@ -42,7 +42,6 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutText.h"
-#include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "wtf/text/CString.h"
 #include <stdio.h>
@@ -526,27 +525,6 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
     return mostBackwardCaretPosition(*this, rule);
-}
-
-static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
-{
-    return o->style()->isHorizontalWritingMode() ? rect.height() : rect.width();
-}
-
-// TODO(yosin) We should move |hasRenderedNonAnonymousDescendantsWithHeight|
-// to "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp"
-bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
-{
-    LayoutObject* stop = layoutObject->nextInPreOrderAfterChildren();
-    for (LayoutObject *o = layoutObject->slowFirstChild(); o && o != stop; o = o->nextInPreOrder()) {
-        if (o->nonPseudoNode()) {
-            if ((o->isText() && boundingBoxLogicalHeight(o, toLayoutText(o)->linesBoundingBox()))
-                || (o->isBox() && toLayoutBox(o)->pixelSnappedLogicalHeight())
-                || (o->isLayoutInline() && isEmptyInline(LineLayoutItem(o)) && boundingBoxLogicalHeight(o, toLayoutInline(o)->linesBoundingBox())))
-                return true;
-        }
-    }
-    return false;
 }
 
 template <typename Strategy>

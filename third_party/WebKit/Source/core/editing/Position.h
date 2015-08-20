@@ -434,10 +434,6 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
     return toPositionInComposedTree(position);
 }
 
-// TODO(yosin) We should move |hasRenderedNonAnonymousDescendantsWithHeight|
-// to "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp"
-bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
-
 // TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
 // reduce dependency of |LayoutObject| in |Position| class.
 CORE_EXPORT bool inRenderedText(const Position&);

@@ -128,6 +128,7 @@ bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
 
 // Rect is local to the returned layoutObject
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);
+bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
 
 // Returns a hit-tested VisiblePosition for the given point in contents-space
 // coordinates.
