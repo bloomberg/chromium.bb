@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_COMPRESSION_STATS_H_
 
-#include <stdint.h>
-
 #include <map>
 #include <string>
 
@@ -150,10 +148,6 @@ class DataReductionProxyCompressionStats
   // The pref is later written to |pref service_|.
   void SetInt64(const char* pref_path, int64 pref_value);
 
-  // Increments the pref value in the |DataReductionProxyPrefMap| map.
-  // The pref is later written to |pref service_|.
-  void IncrementInt64Pref(const char* pref_path, int64_t pref_increment);
-
   // Gets the pref list at |pref_path| from the |DataReductionProxyPrefMap|.
   base::ListValue* GetList(const char* pref_path);
 
@@ -182,17 +176,6 @@ class DataReductionProxyCompressionStats
                               const std::string& mime_type,
                               base::Time now);
 
-  void IncrementDailyUmaPrefs(int64_t original_size,
-                              int64_t received_size,
-                              const char* original_size_pref,
-                              const char* received_size_pref,
-                              bool data_reduction_proxy_enabled,
-                              const char* original_size_with_proxy_enabled_pref,
-                              const char* recevied_size_with_proxy_enabled_pref,
-                              bool via_data_reduction_proxy,
-                              const char* original_size_via_proxy_pref,
-                              const char* received_size_via_proxy_pref);
-
   // Record UMA with data savings bytes and percent over the past
   // |DataReductionProxy::kNumDaysInHistorySummary| days. These numbers
   // are displayed to users as their data savings.
@@ -209,8 +192,8 @@ class DataReductionProxyCompressionStats
   void ClearInMemoryDataUsage();
 
   // Normalizes the hostname for data usage attribution. Returns a substring
-  // without the protocol.
-  // Example: "http://www.finance.google.com" -> "www.finance.google.com"
+  // without protocol and "www".
+  // Example: "http://www.finance.google.com" -> "finance.google.com"
   static std::string NormalizeHostname(const std::string& host);
 
   DataReductionProxyService* service_;
