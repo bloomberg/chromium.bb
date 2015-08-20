@@ -58,6 +58,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <assert.h>
 
 #include "compositor.h"
 #include "ivi-layout-export.h"
@@ -809,53 +810,30 @@ commit_layer_list(struct ivi_layout *layout)
 
 		ivilayer->prop = ivilayer->pending.prop;
 
-		if (!(ivilayer->event_mask &
-		      (IVI_NOTIFICATION_ADD | IVI_NOTIFICATION_REMOVE)) ) {
+		if (!ivilayer->order.dirty) {
 			continue;
 		}
 
-		if (ivilayer->event_mask & IVI_NOTIFICATION_REMOVE) {
-			wl_list_for_each_safe(ivisurf, next,
-				&ivilayer->order.surface_list, order.link) {
-				remove_ordersurface_from_layer(ivisurf);
-
-				if (!wl_list_empty(&ivisurf->order.link)) {
-					wl_list_remove(&ivisurf->order.link);
-				}
-
-				wl_list_init(&ivisurf->order.link);
-				ivisurf->event_mask |= IVI_NOTIFICATION_REMOVE;
-			}
-
-			wl_list_init(&ivilayer->order.surface_list);
+		wl_list_for_each_safe(ivisurf, next, &ivilayer->order.surface_list,
+					 order.link) {
+			remove_ordersurface_from_layer(ivisurf);
+			wl_list_remove(&ivisurf->order.link);
+			wl_list_init(&ivisurf->order.link);
+			ivisurf->event_mask |= IVI_NOTIFICATION_REMOVE;
 		}
 
-		if (ivilayer->event_mask & IVI_NOTIFICATION_ADD) {
-			wl_list_for_each_safe(ivisurf, next,
-					      &ivilayer->order.surface_list, order.link) {
-				remove_ordersurface_from_layer(ivisurf);
+		assert(wl_list_empty(&ivilayer->order.surface_list));
 
-				if (!wl_list_empty(&ivisurf->order.link)) {
-					wl_list_remove(&ivisurf->order.link);
-				}
-
-				wl_list_init(&ivisurf->order.link);
-			}
-
-			wl_list_init(&ivilayer->order.surface_list);
-			wl_list_for_each(ivisurf, &ivilayer->pending.surface_list,
+		wl_list_for_each(ivisurf, &ivilayer->pending.surface_list,
 					 pending.link) {
-				if (!wl_list_empty(&ivisurf->order.link)) {
-					wl_list_remove(&ivisurf->order.link);
-					wl_list_init(&ivisurf->order.link);
-				}
-
-				wl_list_insert(&ivilayer->order.surface_list,
-					       &ivisurf->order.link);
-				add_ordersurface_to_layer(ivisurf, ivilayer);
-				ivisurf->event_mask |= IVI_NOTIFICATION_ADD;
-			}
+			wl_list_remove(&ivisurf->order.link);
+			wl_list_insert(&ivilayer->order.surface_list,
+				       &ivisurf->order.link);
+			add_ordersurface_to_layer(ivisurf, ivilayer);
+			ivisurf->event_mask |= IVI_NOTIFICATION_ADD;
 		}
+
+		ivilayer->order.dirty = 0;
 	}
 }
 
@@ -997,8 +975,6 @@ clear_surface_pending_list(struct ivi_layout_layer *ivilayer)
 
 		wl_list_init(&surface_link->pending.link);
 	}
-
-	ivilayer->event_mask |= IVI_NOTIFICATION_REMOVE;
 }
 
 static void
@@ -1015,8 +991,6 @@ clear_surface_order_list(struct ivi_layout_layer *ivilayer)
 
 		wl_list_init(&surface_link->order.link);
 	}
-
-	ivilayer->event_mask |= IVI_NOTIFICATION_REMOVE;
 }
 
 static void
@@ -2102,7 +2076,7 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 		}
 	}
 
-	ivilayer->event_mask |= IVI_NOTIFICATION_ADD;
+	ivilayer->order.dirty = 1;
 
 	return IVI_SUCCEEDED;
 }
@@ -2526,7 +2500,7 @@ ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 		}
 	}
 
-	ivilayer->event_mask |= IVI_NOTIFICATION_ADD;
+	ivilayer->order.dirty = 1;
 
 	return IVI_SUCCEEDED;
 }
@@ -2554,7 +2528,7 @@ ivi_layout_layer_remove_surface(struct ivi_layout_layer *ivilayer,
 		}
 	}
 
-	remsurf->event_mask |= IVI_NOTIFICATION_REMOVE;
+	ivilayer->order.dirty = 1;
 }
 
 static int32_t

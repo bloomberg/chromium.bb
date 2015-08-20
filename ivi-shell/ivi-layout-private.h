@@ -81,6 +81,7 @@ struct ivi_layout_layer {
 	} pending;
 
 	struct {
+		int dirty;
 		struct wl_list surface_list;
 		struct wl_list link;
 	} order;
