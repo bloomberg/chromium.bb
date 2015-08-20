@@ -251,21 +251,6 @@ installer::InstallStatus InstallNewVersion(
   return installer::INSTALL_FAILED;
 }
 
-// Deletes the old "Uninstall Google Chrome" shortcut in the Start menu which
-// was installed prior to Chrome 24.
-void CleanupLegacyShortcuts(const installer::InstallerState& installer_state,
-                            BrowserDistribution* dist,
-                            const base::FilePath& chrome_exe) {
-  ShellUtil::ShellChange shortcut_level = installer_state.system_install() ?
-      ShellUtil::SYSTEM_LEVEL : ShellUtil::CURRENT_USER;
-  base::FilePath uninstall_shortcut_path;
-  ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
-                             dist, shortcut_level, &uninstall_shortcut_path);
-  uninstall_shortcut_path = uninstall_shortcut_path.Append(
-      dist->GetUninstallLinkName() + installer::kLnkExt);
-  base::DeleteFile(uninstall_shortcut_path, false);
-}
-
 }  // end namespace
 
 namespace installer {
@@ -534,7 +519,6 @@ InstallStatus InstallOrUpdateProduct(
       BrowserDistribution* chrome_dist = chrome_product->distribution();
       const base::FilePath chrome_exe(
           installer_state.target_path().Append(kChromeExe));
-      CleanupLegacyShortcuts(installer_state, chrome_dist, chrome_exe);
 
       // Install per-user shortcuts on user-level installs and all-users
       // shortcuts on system-level installs. Note that Active Setup will take

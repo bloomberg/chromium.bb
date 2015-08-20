@@ -80,10 +80,6 @@ std::string ChromeFrameDistribution::GetSafeBrowsingName() {
   return "googlechromeframe";
 }
 
-base::string16 ChromeFrameDistribution::GetUninstallLinkName() {
-  return L"Uninstall Chrome Frame";
-}
-
 base::string16 ChromeFrameDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome Frame";

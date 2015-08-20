@@ -86,11 +86,6 @@ std::string ChromiumBinariesDistribution::GetSafeBrowsingName() {
   return std::string();
 }
 
-base::string16 ChromiumBinariesDistribution::GetUninstallLinkName() {
-  NOTREACHED();
-  return base::string16();
-}
-
 base::string16 ChromiumBinariesDistribution::GetUninstallRegPath() {
   NOTREACHED();
   return base::string16();

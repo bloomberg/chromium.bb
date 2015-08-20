@@ -130,8 +130,6 @@ class BrowserDistribution {
   virtual base::string16 GetDistributionData(HKEY root_key);
 #endif
 
-  virtual base::string16 GetUninstallLinkName();
-
   virtual base::string16 GetUninstallRegPath();
 
   // Returns an enum specifying the different ways in which this distribution

@@ -358,7 +358,7 @@ be available for now. -->
         <message name="IDS_UNINSTALL_VERIFY" desc="Message to confirm user wants to uninstall">
           Are you sure you want to uninstall Chromium?
         </message>
-        <message name="IDS_UNINSTALL_CHROME" desc="The text of the shortcut in the Start Menu for uninstalling chrome.">
+        <message name="IDS_UNINSTALL_CHROME" desc="The title of the Chromium uninstall dialog.">
           Uninstall Chromium
         </message>
       </if>

@@ -254,50 +254,23 @@ void AddProductSpecificWorkItems(const InstallationState& original_state,
 }
 
 // This is called when an MSI installation is run. It may be that a user is
-// attempting to install the MSI on top of a non-MSI managed installation.
-// If so, try and remove any existing uninstallation shortcuts, as we want the
+// attempting to install the MSI on top of a non-MSI managed installation. If
+// so, try and remove any existing "Add/Remove Programs" entry, as we want the
 // uninstall to be managed entirely by the MSI machinery (accessible via the
 // Add/Remove programs dialog).
-void AddDeleteUninstallShortcutsForMSIWorkItems(
+void AddDeleteUninstallEntryForMSIWorkItems(
     const InstallerState& installer_state,
     const Product& product,
-    const base::FilePath& temp_path,
     WorkItemList* work_item_list) {
   DCHECK(installer_state.is_msi())
       << "This must only be called for MSI installations!";
 
-  // First attempt to delete the old installation's ARP dialog entry.
   HKEY reg_root = installer_state.root_key();
   base::string16 uninstall_reg(product.distribution()->GetUninstallRegPath());
 
   WorkItem* delete_reg_key = work_item_list->AddDeleteRegKeyWorkItem(
       reg_root, uninstall_reg, KEY_WOW64_32KEY);
   delete_reg_key->set_ignore_failure(true);
-
-  // Then attempt to delete the old installation's start menu shortcut.
-  base::FilePath uninstall_link;
-  if (installer_state.system_install()) {
-    PathService::Get(base::DIR_COMMON_START_MENU, &uninstall_link);
-  } else {
-    PathService::Get(base::DIR_START_MENU, &uninstall_link);
-  }
-
-  if (uninstall_link.empty()) {
-    LOG(ERROR) << "Failed to get location for shortcut.";
-  } else {
-    uninstall_link = uninstall_link.Append(
-        product.distribution()->GetStartMenuShortcutSubfolder(
-            BrowserDistribution::SUBFOLDER_CHROME));
-    uninstall_link = uninstall_link.Append(
-        product.distribution()->GetUninstallLinkName() + installer::kLnkExt);
-    VLOG(1) << "Deleting old uninstall shortcut (if present): "
-            << uninstall_link.value();
-    WorkItem* delete_link = work_item_list->AddDeleteTreeWorkItem(
-        uninstall_link, temp_path);
-    delete_link->set_ignore_failure(true);
-    delete_link->set_log_message(
-        "Failed to delete old uninstall shortcut.");
-  }
 }
 
 // Adds Chrome specific install work items to |install_list|.
@@ -989,7 +962,6 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const base::FilePath& setup_path,
                             const Version* current_version,
                             const Version& new_version,
-                            const base::FilePath& temp_path,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
 
@@ -1117,14 +1089,12 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       AddSetMsiMarkerWorkItem(installer_state, product->distribution(), true,
                               post_install_task_list);
 
-      // We want MSI installs to take over the Add/Remove Programs shortcut.
-      // Make a best-effort attempt to delete any shortcuts left over from
-      // previous non-MSI installations for the same type of install (system or
-      // per user).
+      // We want MSI installs to take over the Add/Remove Programs entry. Make a
+      // best-effort attempt to delete any entry left over from previous non-MSI
+      // installations for the same type of install (system or per user).
       if (product->ShouldCreateUninstallEntry()) {
-        AddDeleteUninstallShortcutsForMSIWorkItems(installer_state, *product,
-                                                   temp_path,
-                                                   post_install_task_list);
+        AddDeleteUninstallEntryForMSIWorkItems(installer_state, *product,
+                                               post_install_task_list);
       }
     }
   }
@@ -1238,7 +1208,6 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          setup_path,
                          current_version,
                          new_version,
-                         temp_path,
                          install_list);
 }
 

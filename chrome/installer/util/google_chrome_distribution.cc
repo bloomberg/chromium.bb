@@ -227,12 +227,6 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   return result;
 }
 
-base::string16 GoogleChromeDistribution::GetUninstallLinkName() {
-  const base::string16& link_name =
-      installer::GetLocalizedString(IDS_UNINSTALL_CHROME_BASE);
-  return link_name;
-}
-
 base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome";

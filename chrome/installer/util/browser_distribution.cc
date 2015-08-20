@@ -240,10 +240,6 @@ base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }
 
-base::string16 BrowserDistribution::GetUninstallLinkName() {
-  return L"Uninstall Chromium";
-}
-
 base::string16 BrowserDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium";
 }

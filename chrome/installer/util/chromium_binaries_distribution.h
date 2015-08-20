@@ -38,8 +38,6 @@ class ChromiumBinariesDistribution : public BrowserDistribution {
 
   std::string GetSafeBrowsingName() override;
 
-  base::string16 GetUninstallLinkName() override;
-
   base::string16 GetUninstallRegPath() override;
 
   DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
