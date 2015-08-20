@@ -26,10 +26,10 @@ public:
     explicit PushPermissionStatusCallbacks(ScriptPromiseResolver*);
     ~PushPermissionStatusCallbacks() override;
 
-    void onSuccess(WebPushPermissionStatus*) override;
+    void onSuccess(WebPushPermissionStatus) override;
 
     // Called if for some reason the status of the push permission cannot be checked.
-    void onError(WebPushError*) override;
+    void onError(const WebPushError&) override;
 
 private:
     static WTF::String permissionString(WebPushPermissionStatus);

@@ -9,6 +9,7 @@
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "public/platform/modules/push_messaging/WebPushSubscription.h"
 
 namespace blink {
 
@@ -24,24 +25,19 @@ PushSubscriptionCallbacks::~PushSubscriptionCallbacks()
 {
 }
 
-void PushSubscriptionCallbacks::onSuccess(WebPushSubscription* webPushSubscription)
+void PushSubscriptionCallbacks::onSuccess(WebPassOwnPtr<WebPushSubscription> webPushSubscription)
 {
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
 
-    if (!webPushSubscription) {
-        m_resolver->resolve(v8::Null(m_resolver->scriptState()->isolate()));
-        return;
-    }
-    m_resolver->resolve(PushSubscription::take(m_resolver.get(), webPushSubscription, m_serviceWorkerRegistration));
+    m_resolver->resolve(PushSubscription::take(m_resolver.get(), webPushSubscription.release(), m_serviceWorkerRegistration));
 }
 
-void PushSubscriptionCallbacks::onError(WebPushError* error)
+void PushSubscriptionCallbacks::onError(const WebPushError& error)
 {
-    OwnPtr<WebPushError> ownError = adoptPtr(error);
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->reject(PushError::take(m_resolver.get(), *ownError));
+    m_resolver->reject(PushError::take(m_resolver.get(), error));
 }
 
 } // namespace blink

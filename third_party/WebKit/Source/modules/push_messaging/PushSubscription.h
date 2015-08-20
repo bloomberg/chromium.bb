@@ -24,7 +24,7 @@ struct WebPushSubscription;
 class PushSubscription final : public GarbageCollectedFinalized<PushSubscription>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PushSubscription* take(ScriptPromiseResolver*, WebPushSubscription*, ServiceWorkerRegistration*);
+    static PushSubscription* take(ScriptPromiseResolver*, PassOwnPtr<WebPushSubscription>, ServiceWorkerRegistration*);
     static void dispose(WebPushSubscription* subscriptionRaw);
 
     virtual ~PushSubscription();

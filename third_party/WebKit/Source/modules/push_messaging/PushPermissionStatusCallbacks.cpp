@@ -20,17 +20,16 @@ PushPermissionStatusCallbacks::~PushPermissionStatusCallbacks()
 {
 }
 
-void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus* status)
+void PushPermissionStatusCallbacks::onSuccess(WebPushPermissionStatus status)
 {
-    m_resolver->resolve(permissionString(*status));
+    m_resolver->resolve(permissionString(status));
 }
 
-void PushPermissionStatusCallbacks::onError(WebPushError* error)
+void PushPermissionStatusCallbacks::onError(const WebPushError& error)
 {
-    OwnPtr<WebPushError> ownError = adoptPtr(error);
     if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->reject(PushError::take(m_resolver.get(), *ownError));
+    m_resolver->reject(PushError::take(m_resolver.get(), error));
 }
 
 // static

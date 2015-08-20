@@ -17,10 +17,11 @@
 
 namespace blink {
 
-PushSubscription* PushSubscription::take(ScriptPromiseResolver*, WebPushSubscription* pushSubscription, ServiceWorkerRegistration* serviceWorkerRegistration)
+PushSubscription* PushSubscription::take(ScriptPromiseResolver*, PassOwnPtr<WebPushSubscription> pushSubscription, ServiceWorkerRegistration* serviceWorkerRegistration)
 {
-    OwnPtr<WebPushSubscription> subscription = adoptPtr(pushSubscription);
-    return new PushSubscription(*subscription, serviceWorkerRegistration);
+    if (!pushSubscription)
+        return nullptr;
+    return new PushSubscription(*pushSubscription, serviceWorkerRegistration);
 }
 
 void PushSubscription::dispose(WebPushSubscription* pushSubscription)

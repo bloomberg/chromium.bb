@@ -7,14 +7,13 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/modules/push_messaging/WebPushError.h"
+#include "public/platform/modules/push_messaging/WebPushProvider.h"
 
 namespace blink {
 
 class WebServiceWorkerRegistration;
 struct WebPushSubscription;
 struct WebPushSubscriptionOptions;
-
-using WebPushSubscriptionCallbacks = WebCallbacks<WebPushSubscription*, WebPushError*>;
 
 class WebPushClient {
 public:
