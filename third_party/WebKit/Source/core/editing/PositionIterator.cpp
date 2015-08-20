@@ -94,7 +94,7 @@ void PositionIteratorAlgorithm<Strategy>::increment()
     }
 
     if (m_anchorNode->layoutObject() && !Strategy::hasChildren(*m_anchorNode) && m_offsetInAnchor < Strategy::lastOffsetForEditing(m_anchorNode)) {
-        m_offsetInAnchor = PositionAlgorithm<Strategy>::uncheckedNextOffset(m_anchorNode, m_offsetInAnchor);
+        m_offsetInAnchor = uncheckedNextOffset(m_anchorNode, m_offsetInAnchor);
     } else {
         m_nodeAfterPositionInAnchor = m_anchorNode;
         m_anchorNode = Strategy::parent(*m_nodeAfterPositionInAnchor);
@@ -127,7 +127,7 @@ void PositionIteratorAlgorithm<Strategy>::decrement()
         m_offsetInAnchor = Strategy::hasChildren(*m_anchorNode)? 0 : Strategy::lastOffsetForEditing(m_anchorNode);
     } else {
         if (m_offsetInAnchor && m_anchorNode->layoutObject()) {
-            m_offsetInAnchor = PositionAlgorithm<Strategy>::uncheckedPreviousOffset(m_anchorNode, m_offsetInAnchor);
+            m_offsetInAnchor = uncheckedPreviousOffset(m_anchorNode, m_offsetInAnchor);
         } else {
             m_nodeAfterPositionInAnchor = m_anchorNode;
             m_anchorNode = Strategy::parent(*m_anchorNode);

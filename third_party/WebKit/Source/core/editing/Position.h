@@ -170,9 +170,6 @@ public:
     // using composed characters, the result may be inside a single user-visible character if a ligature is formed.
     PositionAlgorithm<Strategy> previous(PositionMoveType = CodePoint) const;
     PositionAlgorithm<Strategy> next(PositionMoveType = CodePoint) const;
-    static int uncheckedPreviousOffset(const Node*, int current);
-    static int uncheckedPreviousOffsetForBackwardDeletion(const Node*, int current);
-    static int uncheckedNextOffset(const Node*, int current);
 
     int compareTo(const PositionAlgorithm<Strategy>&) const;
 
@@ -445,6 +442,9 @@ bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
 // reduce dependency of |LayoutObject| in |Position| class.
 CORE_EXPORT bool inRenderedText(const Position&);
 CORE_EXPORT bool inRenderedText(const PositionInComposedTree&);
+
+CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
+CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
 
 } // namespace blink
 

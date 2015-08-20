@@ -314,6 +314,10 @@ int PositionAlgorithm<Strategy>::compareTo(const PositionAlgorithm<Strategy>& ot
     return comparePositions(*this, other);
 }
 
+// TODO(yosin) To avoid forward declaration, we should move implementation of
+// |uncheckedPreviousOffsetForBackwardDeletion()| here.
+static int uncheckedPreviousOffsetForBackwardDeletion(const Node*, int current);
+
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::previous(PositionMoveType moveType) const
 {
@@ -384,20 +388,17 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::next(PositionMoveType m
     return PositionAlgorithm<Strategy>(*this);
 }
 
-template <typename Strategy>
-int PositionAlgorithm<Strategy>::uncheckedPreviousOffset(const Node* n, int current)
+int uncheckedPreviousOffset(const Node* n, int current)
 {
     return n->layoutObject() ? n->layoutObject()->previousOffset(current) : current - 1;
 }
 
-template <typename Strategy>
-int PositionAlgorithm<Strategy>::uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
+static int uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
 {
     return n->layoutObject() ? n->layoutObject()->previousOffsetForBackwardDeletion(current) : current - 1;
 }
 
-template <typename Strategy>
-int PositionAlgorithm<Strategy>::uncheckedNextOffset(const Node* n, int current)
+int uncheckedNextOffset(const Node* n, int current)
 {
     return n->layoutObject() ? n->layoutObject()->nextOffset(current) : current + 1;
 }
