@@ -70830,6 +70830,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE"/>
   <int value="3" label="SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE"/>
   <int value="4" label="SHOW_SSL_INTERSTITIAL_OVERRIDABLE"/>
+  <int value="5" label="WWW_MISMATCH_FOUND"/>
+  <int value="6" label="WWW_MISMATCH_URL_AVAILABLE"/>
+  <int value="7" label="WWW_MISMATCH_URL_NOT_AVAILABLE"/>
 </enum>
 
 <enum name="SSLErrorTypes" type="int">

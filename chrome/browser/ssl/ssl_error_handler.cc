@@ -40,8 +40,9 @@ enum SSLErrorHandlerEvent {
   SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE,
   SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE,
   SHOW_SSL_INTERSTITIAL_OVERRIDABLE,
-  SHOW_COMMON_NAME_MISMATCH_INTERSTITIAL_NONOVERRIDABLE,
-  SHOW_COMMON_NAME_MISMATCH_INTERSTITIAL_OVERRIDABLE,
+  WWW_MISMATCH_FOUND,
+  WWW_MISMATCH_URL_AVAILABLE,
+  WWW_MISMATCH_URL_NOT_AVAILABLE,
   SSL_ERROR_HANDLER_EVENT_COUNT
 };
 
@@ -149,6 +150,7 @@ void SSLErrorHandler::StartHandlingError() {
   GURL suggested_url;
   if (ssl_info_.cert_status == net::CERT_STATUS_COMMON_NAME_INVALID &&
       GetSuggestedUrl(dns_names, &suggested_url)) {
+    RecordUMA(WWW_MISMATCH_FOUND);
     net::CertStatus extra_cert_errors =
         ssl_info_.cert_status ^ net::CERT_STATUS_COMMON_NAME_INVALID;
 
@@ -317,8 +319,10 @@ void SSLErrorHandler::CommonNameMismatchHandlerCallback(
   timer_.Stop();
   if (result == CommonNameMismatchHandler::SuggestedUrlCheckResult::
                     SUGGESTED_URL_AVAILABLE) {
+    RecordUMA(WWW_MISMATCH_URL_AVAILABLE);
     NavigateToSuggestedURL(suggested_url);
   } else {
+    RecordUMA(WWW_MISMATCH_URL_NOT_AVAILABLE);
     ShowSSLInterstitial();
   }
 }
