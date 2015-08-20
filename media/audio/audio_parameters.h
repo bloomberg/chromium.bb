@@ -20,18 +20,24 @@ namespace media {
 // Use a struct-in-struct approach to ensure that we can calculate the required
 // size as sizeof(AudioInputBufferParameters) + #(bytes in audio buffer) without
 // using packing. Also align AudioInputBufferParameters instead of in
-// AudioInputBuffer to be able to calculate size like so.
+// AudioInputBuffer to be able to calculate size like so. Use a macro for the
+// alignment value that's the same as AudioBus::kChannelAlignment, since MSVC
+// doesn't accept the latter to be used.
 #if defined(OS_WIN)
 #pragma warning(push)
 #pragma warning(disable: 4324)  // Disable warning for added padding.
 #endif
-struct MEDIA_EXPORT ALIGNAS(16) AudioInputBufferParameters {
+#define PARAMETERS_ALIGNMENT 16
+COMPILE_ASSERT(AudioBus::kChannelAlignment == PARAMETERS_ALIGNMENT,
+               AudioInputBufferParameters_alignment_not_same_as_AudioBus);
+struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioInputBufferParameters {
   double volume;
   uint32 size;
   uint32_t hardware_delay_bytes;
   uint32_t id;
   bool key_pressed;
 };
+#undef PARAMETERS_ALIGNMENT
 #if defined(OS_WIN)
 #pragma warning(pop)
 #endif
