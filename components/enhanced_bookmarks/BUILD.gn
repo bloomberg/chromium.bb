@@ -79,9 +79,23 @@ source_set("test_support") {
     "test_image_store.h",
   ]
 
-  deps = [
+  public_deps = [
     ":enhanced_bookmarks",
     "//skia",
     "//testing/gtest",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "enhanced_bookmark_model_unittest.cc",
+    "image_store_ios_unittest.mm",
+    "image_store_unittest.cc",
+    "item_position_unittest.cc",
+  ]
+  deps = [
+    ":test_support",
+    "//components/enhanced_bookmarks/proto",
   ]
 }

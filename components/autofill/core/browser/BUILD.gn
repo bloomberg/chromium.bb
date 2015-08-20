@@ -251,6 +251,7 @@ source_set("unit_tests") {
     "phone_field_unittest.cc",
     "phone_number_i18n_unittest.cc",
     "phone_number_unittest.cc",
+    "ui/card_unmask_prompt_controller_impl_unittest.cc",
     "validation_unittest.cc",
     "webdata/autofill_profile_syncable_service_unittest.cc",
     "webdata/autofill_table_unittest.cc",

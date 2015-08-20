@@ -2,7 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("audio_modem") {
+source_set("audio_modem") {
+  public = [
+    "public/audio_modem_types.h",
+    "public/modem.h",
+    "public/whispernet_client.h",
+  ]
   sources = [
     "audio_modem_switches.cc",
     "audio_modem_switches.h",
@@ -15,9 +20,6 @@ static_library("audio_modem") {
     "constants.cc",
     "modem_impl.cc",
     "modem_impl.h",
-    "public/audio_modem_types.h",
-    "public/modem.h",
-    "public/whispernet_client.h",
   ]
 
   deps = [
@@ -30,6 +32,7 @@ static_library("audio_modem") {
 }
 
 source_set("test_support") {
+  testonly = true
   sources = [
     "test/random_samples.cc",
     "test/random_samples.h",
@@ -39,8 +42,25 @@ source_set("test_support") {
     "test/stub_whispernet_client.h",
   ]
 
+  public_deps = [
+    ":audio_modem",
+  ]
   deps = [
     "//base",
     "//media",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "audio_player_unittest.cc",
+    "audio_recorder_unittest.cc",
+    "modem_unittest.cc",
+  ]
+
+  deps = [
+    ":test_support",
+    "//testing/gtest",
   ]
 }

@@ -103,8 +103,11 @@ if (enable_webrtc || !is_android) {
       "notifier/listener/fake_push_client_observer.cc",
       "notifier/listener/fake_push_client_observer.h",
     ]
-    deps = [
+    public_deps = [
+      ":jingle_glue",
       ":notifier",
+    ]
+    deps = [
       "//base",
       "//testing/gmock",
     ]
