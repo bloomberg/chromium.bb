@@ -17,6 +17,11 @@
             [-30, -30, 50, 100],
             [-30, -30, 50, 50]
           ],
+          "paintInvalidationClients": [
+            "##ALL##",
+            "LayoutBlockFlow (positioned) DIV id='composited-box'",
+            "LayoutBlockFlow DIV class='child'"
+          ],
           "children": [
             {
               "bounds": [90, 90],

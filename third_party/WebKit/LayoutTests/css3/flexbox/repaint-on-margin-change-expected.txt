@@ -8,6 +8,9 @@
       "repaintRects": [
         [48, 28, 20, 20],
         [8, 28, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='child-to-grow' class='child'"
       ]
     }
   ]

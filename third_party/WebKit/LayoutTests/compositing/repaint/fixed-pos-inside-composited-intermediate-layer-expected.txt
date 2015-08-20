@@ -23,6 +23,9 @@
               "repaintRects": [
                 [25, 125, 50, 50],
                 [25, 25, 50, 50]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (positioned) DIV class='fixed'"
               ]
             }
           ]

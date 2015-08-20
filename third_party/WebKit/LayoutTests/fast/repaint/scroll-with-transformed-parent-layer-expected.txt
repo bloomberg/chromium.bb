@@ -6,10 +6,14 @@
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
+        [79, 129, 142, 142],
+        [79, 129, 142, 142],
         [79, 129, 142, 142]
       ],
       "paintInvalidationClients": [
-        "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'"
+        "LayoutBlockFlow (positioned) DIV id='moveMe' class='absolute clipped'",
+        "LayoutBlockFlow (positioned) DIV class='absolute green'",
+        "LayoutBlockFlow (positioned) DIV class='absolute red'"
       ]
     }
   ]
