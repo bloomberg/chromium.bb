@@ -545,6 +545,12 @@ bool inSameContainingBlockFlowElement(Node* a, Node* b)
     return a && b && enclosingBlockFlowElement(*a) == enclosingBlockFlowElement(*b);
 }
 
+bool nodeIsUserSelectAll(const Node* node)
+{
+    return RuntimeEnabledFeatures::userSelectAllEnabled() && node && node->layoutObject() && node->layoutObject()->style()->userSelect() == SELECT_ALL;
+
+}
+
 bool nodeIsUserSelectNone(Node* node)
 {
     return node && node->layoutObject() && !node->layoutObject()->isSelectable();

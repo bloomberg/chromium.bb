@@ -195,7 +195,6 @@ public:
     InlineBoxPosition computeInlineBoxPosition(TextAffinity) const;
     InlineBoxPosition computeInlineBoxPosition(TextAffinity, TextDirection primaryDirection) const;
 
-    static bool nodeIsUserSelectAll(const Node*);
     static Node* rootUserSelectAllForNode(Node*);
     static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> afterNode(Node* anchorNode);

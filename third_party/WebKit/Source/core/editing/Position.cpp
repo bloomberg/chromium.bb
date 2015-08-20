@@ -834,12 +834,6 @@ bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layoutObject)
 }
 
 template <typename Strategy>
-bool PositionAlgorithm<Strategy>::nodeIsUserSelectAll(const Node* node)
-{
-    return RuntimeEnabledFeatures::userSelectAllEnabled() && node && node->layoutObject() && node->layoutObject()->style()->userSelect() == SELECT_ALL;
-}
-
-template <typename Strategy>
 Node* PositionAlgorithm<Strategy>::rootUserSelectAllForNode(Node* node)
 {
     if (!node || !nodeIsUserSelectAll(node))
