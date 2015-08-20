@@ -3,6 +3,10 @@
  * found in the LICENSE file. */
 
 /* Special attribute used in HTML to hide elements. */
+body:not([type]) [visibleif] {
+  display: none;
+}
+
 body[type='folder'] [invisibleif~='folder'],
 body[type='upload-folder'] [invisibleif~='upload-folder'],
 body[type='saveas-file'] [invisibleif~='saveas-file'],
