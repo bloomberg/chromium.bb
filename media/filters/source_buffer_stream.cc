@@ -69,6 +69,9 @@ base::TimeDelta kSeekToStartFudgeRoom() {
 
 // Helper method for logging, converts a range into a readable string.
 std::string RangeToString(const SourceBufferRange& range) {
+  if (range.size_in_bytes() == 0) {
+    return "[]";
+  }
   std::stringstream ss;
   ss << "[" << range.GetStartTimestamp().InSecondsF()
      << ";" << range.GetEndTimestamp().InSecondsF()
