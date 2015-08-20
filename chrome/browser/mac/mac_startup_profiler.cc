@@ -24,9 +24,8 @@ void MacStartupProfiler::Profile(Location location) {
 }
 
 void MacStartupProfiler::RecordMetrics() {
-  const base::Time* main_entry_time =
-      startup_metric_utils::MainEntryPointTime();
-  DCHECK(main_entry_time);
+  const base::Time main_entry_time = startup_metric_utils::MainEntryPointTime();
+  DCHECK(!main_entry_time.is_null());
   DCHECK(!recorded_metrics_);
 
   recorded_metrics_ = true;
@@ -36,7 +35,7 @@ void MacStartupProfiler::RecordMetrics() {
        it != profiled_times_.end();
        ++it) {
     const base::Time& location_time = it->second;
-    base::TimeDelta delta = location_time - *main_entry_time;
+    base::TimeDelta delta = location_time - main_entry_time;
     RecordHistogram(it->first, delta);
   }
 }

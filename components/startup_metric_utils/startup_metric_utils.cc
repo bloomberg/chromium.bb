@@ -6,6 +6,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/environment.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_info.h"
@@ -18,16 +19,16 @@
 #include "base/win/windows_version.h"
 #endif
 
+namespace startup_metric_utils {
+
 namespace {
 
 // Mark as volatile to defensively make sure usage is thread-safe.
 // Note that at the time of this writing, access is only on the UI thread.
 volatile bool g_non_browser_ui_displayed = false;
 
-base::Time* MainEntryPointTimeInternal() {
-  static base::Time main_start_time = base::Time::Now();
-  return &main_start_time;
-}
+base::LazyInstance<base::Time>::Leaky g_main_entry_point_time =
+    LAZY_INSTANCE_INITIALIZER;
 
 #if defined(OS_WIN)
 
@@ -179,8 +180,9 @@ void RecordHardFaultHistogram(bool is_first_run) {
 void RecordMainEntryTimeHistogram() {
   const int kLowWordMask = 0xFFFFFFFF;
   const int kLower31BitsMask = 0x7FFFFFFF;
+  DCHECK(!MainEntryPointTime().is_null());
   base::TimeDelta browser_main_entry_time_absolute =
-      *MainEntryPointTimeInternal() - base::Time::UnixEpoch();
+      MainEntryPointTime() - base::Time::UnixEpoch();
 
   uint64 browser_main_entry_time_raw_ms =
       browser_main_entry_time_absolute.InMilliseconds();
@@ -200,8 +202,6 @@ void RecordMainEntryTimeHistogram() {
       browser_main_entry_time_raw_ms_low_word);
 }
 
-bool g_main_entry_time_was_recorded = false;
-
 // Environment variable that stores the timestamp when the executable's main()
 // function was entered.
 const char kChromeMainTimeEnvVar[] = "CHROME_MAIN_TIME";
@@ -220,8 +220,6 @@ base::Time ExeMainEntryPointTime() {
 
 }  // namespace
 
-namespace startup_metric_utils {
-
 bool WasNonBrowserUIDisplayed() {
   return g_non_browser_ui_displayed;
 }
@@ -231,9 +229,9 @@ void SetNonBrowserUIDisplayed() {
 }
 
 void RecordMainEntryPointTime(const base::Time& time) {
-  DCHECK(!g_main_entry_time_was_recorded);
-  g_main_entry_time_was_recorded = true;
-  *MainEntryPointTimeInternal() = time;
+  DCHECK(MainEntryPointTime().is_null());
+  g_main_entry_point_time.Get() = time;
+  DCHECK(!MainEntryPointTime().is_null());
 }
 
 void RecordExeMainEntryPointTime(const base::Time& time) {
@@ -273,7 +271,7 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
   //   time.
   // * Only measure launches that occur 7 minutes after boot to try to avoid
   //   cases where Chrome is auto-started and IO is heavily loaded.
-  const base::Time dll_main_time = *MainEntryPointTime();
+  const base::Time dll_main_time = MainEntryPointTime();
   base::TimeDelta startup_time_from_main_entry = time - dll_main_time;
   if (is_first_run) {
     UMA_HISTOGRAM_LONG_TIMES(
@@ -305,10 +303,8 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
   }
 }
 
-const base::Time* MainEntryPointTime() {
-  if (!g_main_entry_time_was_recorded)
-    return nullptr;
-  return MainEntryPointTimeInternal();
+base::Time MainEntryPointTime() {
+  return g_main_entry_point_time.Get();
 }
 
 }  // namespace startup_metric_utils

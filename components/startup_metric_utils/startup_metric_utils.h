@@ -43,9 +43,9 @@ void RecordBrowserMainMessageLoopStart(const base::Time& time,
                                        bool is_first_run);
 
 // Returns the time of main entry recorded from RecordMainEntryPointTime.
-// Returns NULL if that method has not yet been called.
+// Returns a null Time if a value has not been recorded yet.
 // This method is expected to be called from the UI thread.
-const base::Time* MainEntryPointTime();
+base::Time MainEntryPointTime();
 
 }  // namespace startup_metric_utils
 
