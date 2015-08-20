@@ -186,6 +186,7 @@ public:
     bool atEndOfTree() const;
 
     // These return useful visually equivalent positions.
+    // FIXME: We should use mostForwardCaretPosition and mostBackwardPosition.
     PositionAlgorithm<Strategy> upstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
     PositionAlgorithm<Strategy> downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
 

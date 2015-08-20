@@ -36,6 +36,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/Position.h"
+#include "core/editing/PositionIterator.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
@@ -1600,6 +1601,310 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
     }
 
     return true;
+}
+
+// Whether or not [node, 0] and [node, lastOffsetForEditing(node)] are their own VisiblePositions.
+// If true, adjacent candidates are visually distinct.
+// FIXME: Disregard nodes with layoutObjects that have no height, as we do in isCandidate.
+// FIXME: Share code with isCandidate, if possible.
+static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
+{
+    if (!node || !node->layoutObject())
+        return false;
+
+    if (!node->layoutObject()->isInline())
+        return true;
+
+    // Don't include inline tables.
+    if (isHTMLTableElement(*node))
+        return false;
+
+    // A Marquee elements are moving so we should assume their ends are always
+    // visibily distinct.
+    if (isHTMLMarqueeElement(*node))
+        return true;
+
+    // There is a VisiblePosition inside an empty inline-block container.
+    return node->layoutObject()->isReplaced() && canHaveChildrenForEditing(node) && toLayoutBox(node->layoutObject())->size().height() != 0 && !node->hasChildren();
+}
+
+template <typename Strategy>
+static Node* enclosingVisualBoundary(Node* node)
+{
+    while (node && !endsOfNodeAreVisuallyDistinctPositions(node))
+        node = Strategy::parent(*node);
+
+    return node;
+}
+
+// upstream() and downstream() want to return positions that are either in a
+// text node or at just before a non-text node.  This method checks for that.
+template <typename Strategy>
+static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos)
+{
+    if (!pos.node())
+        return true;
+
+    if (isAtomicNode(pos.node()))
+        return true;
+
+    return pos.atStartOfNode();
+}
+
+template <typename Strategy>
+static PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+{
+    TRACE_EVENT0("blink", "Position::upstream");
+
+    Node* startNode = position.anchorNode();
+    if (!startNode)
+        return PositionAlgorithm<Strategy>();
+
+    // iterate backward from there, looking for a qualified position
+    Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
+    // FIXME: PositionIterator should respect Before and After positions.
+    PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionAlgorithm<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
+    PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
+    bool startEditable = startNode->hasEditableStyle();
+    Node* lastNode = startNode;
+    bool boundaryCrossed = false;
+    for (; !currentPos.atStart(); currentPos.decrement()) {
+        Node* currentNode = currentPos.node();
+        // Don't check for an editability change if we haven't moved to a different node,
+        // to avoid the expense of computing hasEditableStyle().
+        if (currentNode != lastNode) {
+            // Don't change editability.
+            bool currentEditable = currentNode->hasEditableStyle();
+            if (startEditable != currentEditable) {
+                if (rule == CannotCrossEditingBoundary)
+                    break;
+                boundaryCrossed = true;
+            }
+            lastNode = currentNode;
+        }
+
+        // If we've moved to a position that is visually distinct, return the last saved position. There
+        // is code below that terminates early if we're *about* to move to a visually distinct position.
+        if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentNode != boundary)
+            return lastVisible.deprecatedComputePosition();
+
+        // skip position in non-laid out or invisible node
+        LayoutObject* layoutObject = currentNode->layoutObject();
+        if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
+            continue;
+
+        if (rule == CanCrossEditingBoundary && boundaryCrossed) {
+            lastVisible = currentPos;
+            break;
+        }
+
+        // track last visible streamer position
+        if (isStreamer<Strategy>(currentPos))
+            lastVisible = currentPos;
+
+        // Don't move past a position that is visually distinct.  We could rely on code above to terminate and
+        // return lastVisible on the next iteration, but we terminate early to avoid doing a nodeIndex() call.
+        if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentPos.atStartOfNode())
+            return lastVisible.deprecatedComputePosition();
+
+        // Return position after tables and nodes which have content that can be ignored.
+        if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
+            if (currentPos.atEndOfNode())
+                return PositionAlgorithm<Strategy>::afterNode(currentNode);
+            continue;
+        }
+
+        // return current position if it is in laid out text
+        if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
+            if (currentNode != startNode) {
+                // This assertion fires in layout tests in the case-transform.html test because
+                // of a mix-up between offsets in the text in the DOM tree with text in the
+                // layout tree which can have a different length due to case transformation.
+                // Until we resolve that, disable this so we can run the layout tests!
+                // ASSERT(currentOffset >= layoutObject->caretMaxOffset());
+                return PositionAlgorithm<Strategy>(currentNode, layoutObject->caretMaxOffset());
+            }
+
+            unsigned textOffset = currentPos.offsetInLeafNode();
+            LayoutText* textLayoutObject = toLayoutText(layoutObject);
+            InlineTextBox* lastTextBox = textLayoutObject->lastTextBox();
+            for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+                if (textOffset <= box->start() + box->len()) {
+                    if (textOffset > box->start())
+                        return currentPos.computePosition();
+                    continue;
+                }
+
+                if (box == lastTextBox || textOffset != box->start() + box->len() + 1)
+                    continue;
+
+                // The text continues on the next line only if the last text box is not on this line and
+                // none of the boxes on this line have a larger start offset.
+
+                bool continuesOnNextLine = true;
+                InlineBox* otherBox = box;
+                while (continuesOnNextLine) {
+                    otherBox = otherBox->nextLeafChild();
+                    if (!otherBox)
+                        break;
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
+                        continuesOnNextLine = false;
+                }
+
+                otherBox = box;
+                while (continuesOnNextLine) {
+                    otherBox = otherBox->prevLeafChild();
+                    if (!otherBox)
+                        break;
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
+                        continuesOnNextLine = false;
+                }
+
+                if (continuesOnNextLine)
+                    return currentPos.computePosition();
+            }
+        }
+    }
+    return lastVisible.deprecatedComputePosition();
+}
+
+Position mostForwardCaretPosition(const Position& position, EditingBoundaryCrossingRule rule)
+{
+    return mostForwardCaretPosition<EditingStrategy>(position, rule);
+}
+
+PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+{
+    return mostForwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
+}
+
+template <typename Strategy>
+PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+{
+    TRACE_EVENT0("blink", "Position::downstream");
+
+    Node* startNode = position.anchorNode();
+    if (!startNode)
+        return PositionAlgorithm<Strategy>();
+
+    // iterate forward from there, looking for a qualified position
+    Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
+    // FIXME: PositionIterator should respect Before and After positions.
+    PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionAlgorithm<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
+    PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
+    bool startEditable = startNode->hasEditableStyle();
+    Node* lastNode = startNode;
+    bool boundaryCrossed = false;
+    for (; !currentPos.atEnd(); currentPos.increment()) {
+        Node* currentNode = currentPos.node();
+        // Don't check for an editability change if we haven't moved to a different node,
+        // to avoid the expense of computing hasEditableStyle().
+        if (currentNode != lastNode) {
+            // Don't change editability.
+            bool currentEditable = currentNode->hasEditableStyle();
+            if (startEditable != currentEditable) {
+                if (rule == CannotCrossEditingBoundary)
+                    break;
+                boundaryCrossed = true;
+            }
+
+            lastNode = currentNode;
+        }
+
+        // stop before going above the body, up into the head
+        // return the last visible streamer position
+        if (isHTMLBodyElement(*currentNode) && currentPos.atEndOfNode())
+            break;
+
+        // Do not move to a visually distinct position.
+        if (endsOfNodeAreVisuallyDistinctPositions(currentNode) && currentNode != boundary)
+            return lastVisible.deprecatedComputePosition();
+        // Do not move past a visually disinct position.
+        // Note: The first position after the last in a node whose ends are visually distinct
+        // positions will be [boundary->parentNode(), originalBlock->nodeIndex() + 1].
+        if (boundary && Strategy::parent(*boundary) == currentNode)
+            return lastVisible.deprecatedComputePosition();
+
+        // skip position in non-laid out or invisible node
+        LayoutObject* layoutObject = currentNode->layoutObject();
+        if (!layoutObject || layoutObject->style()->visibility() != VISIBLE)
+            continue;
+
+        if (rule == CanCrossEditingBoundary && boundaryCrossed) {
+            lastVisible = currentPos;
+            break;
+        }
+
+        // track last visible streamer position
+        if (isStreamer<Strategy>(currentPos))
+            lastVisible = currentPos;
+
+        // Return position before tables and nodes which have content that can be ignored.
+        if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
+            if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
+                return PositionAlgorithm<Strategy>::editingPositionOf(currentNode, layoutObject->caretMinOffset());
+            continue;
+        }
+
+        // return current position if it is in laid out text
+        if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
+            if (currentNode != startNode) {
+                ASSERT(currentPos.atStartOfNode());
+                return PositionAlgorithm<Strategy>(currentNode, layoutObject->caretMinOffset());
+            }
+
+            unsigned textOffset = currentPos.offsetInLeafNode();
+            LayoutText* textLayoutObject = toLayoutText(layoutObject);
+            InlineTextBox* lastTextBox = textLayoutObject->lastTextBox();
+            for (InlineTextBox* box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+                if (textOffset <= box->end()) {
+                    if (textOffset >= box->start())
+                        return currentPos.computePosition();
+                    continue;
+                }
+
+                if (box == lastTextBox || textOffset != box->start() + box->len())
+                    continue;
+
+                // The text continues on the next line only if the last text box is not on this line and
+                // none of the boxes on this line have a larger start offset.
+
+                bool continuesOnNextLine = true;
+                InlineBox* otherBox = box;
+                while (continuesOnNextLine) {
+                    otherBox = otherBox->nextLeafChild();
+                    if (!otherBox)
+                        break;
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
+                        continuesOnNextLine = false;
+                }
+
+                otherBox = box;
+                while (continuesOnNextLine) {
+                    otherBox = otherBox->prevLeafChild();
+                    if (!otherBox)
+                        break;
+                    if (otherBox == lastTextBox || (otherBox->layoutObject() == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
+                        continuesOnNextLine = false;
+                }
+
+                if (continuesOnNextLine)
+                    return currentPos.computePosition();
+            }
+        }
+    }
+
+    return lastVisible.deprecatedComputePosition();
+}
+
+Position mostBackwardCaretPosition(const Position& position, EditingBoundaryCrossingRule rule)
+{
+    return mostBackwardCaretPosition<EditingStrategy>(position, rule);
+}
+
+PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+{
+    return mostBackwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
 }
 
 }
