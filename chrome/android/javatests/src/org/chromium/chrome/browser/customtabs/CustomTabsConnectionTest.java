@@ -13,6 +13,8 @@ import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
+
 /** Tests for CustomTabsConnection. */
 public class CustomTabsConnectionTest extends InstrumentationTestCase {
     private CustomTabsConnection mCustomTabsConnection;
@@ -192,8 +194,10 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
 
     /**
      * Tests that the mayLaunchUrl() throttling is reset after a long enough wait.
+     * @SmallTest
+     * crbug.com/523057
      */
-    @SmallTest
+    @DisabledTest
     public void testThrottlingIsReset() {
         ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
         mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, null);
