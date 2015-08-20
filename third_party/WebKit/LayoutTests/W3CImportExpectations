@@ -217,6 +217,7 @@ imported/web-platform-tests/html/browsers/browsing-the-web/read-text/load-text-p
 # crbug.com/498120: Using absolute URL links.
 imported/web-platform-tests/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
 imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
+imported/web-platform-tests/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Skip ]
 imported/web-platform-tests/html/editing/dnd/the-draggable-attribute/draggable_attribute.html [ Skip ]
 imported/web-platform-tests/html/infrastructure/urls/terminology-0/document-base-url.html [ Skip ]
 imported/web-platform-tests/html/rendering/non-replaced-elements/the-page/body_text_00ffff-expected.html [ Skip ]

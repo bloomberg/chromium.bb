@@ -386,6 +386,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/css-variables/tes
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-008.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/styles/test-010.html [ Failure Crash ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-002.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/user-interaction/ranges-and-selections/test-002.html [ Failure Crash ]
 
@@ -551,6 +552,10 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ ImageOnlyFailure ]
 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/bidi-normal-011.html [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vlr-007.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vlr-009.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vrl-006.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/caption-side-vrl-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-009.xht [ ImageOnlyFailure ]
@@ -728,9 +733,6 @@ crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Slow Timeout ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Slow Timeout ]
-
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 
 crbug.com/356957 [ Win Mac Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Timeout ]
 
