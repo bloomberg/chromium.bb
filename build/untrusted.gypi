@@ -266,7 +266,7 @@
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) -L>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
@@ -307,7 +307,7 @@
                    '--name', '>(out_newlib64)',
                    '--objdir', '>(objdir_newlib64)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_newlib64) ^(link_flags) >(_link_flags)',
@@ -435,7 +435,7 @@
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) -L>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
@@ -476,7 +476,7 @@
                    '--name', '>(out_newlib32)',
                    '--objdir', '>(objdir_newlib32)',
                    '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32  ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_newlib32) ^(link_flags) >(_link_flags)',
@@ -714,7 +714,7 @@
                   '--name', '>(out_glibc_arm)',
                   '--objdir', '>(objdir_glibc_arm)',
                   '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=<(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=<(arm_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_glibc_arm) -L>(tc_lib_dir_glibc_arm) ^(link_flags) >(_link_flags)',
@@ -754,7 +754,7 @@
                   '--name', '>(out_glibc_arm)',
                   '--objdir', '>(objdir_glibc_arm)',
                   '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=<(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=<(arm_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_glibc_arm) ^(link_flags) >(_link_flags)',
@@ -794,7 +794,7 @@
                    '--name', '>(out_glibc_arm)',
                    '--objdir', '>(objdir_glibc_arm)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-fPIC <(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-fPIC <(arm_compile_flags) ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc_arm) ^(link_flags) >(_link_flags)',
@@ -835,7 +835,7 @@
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=<(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=<(arm_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) -L>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
@@ -876,7 +876,7 @@
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=<(arm_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=<(arm_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_newlib_arm) ^(link_flags) >(_link_flags)',
@@ -916,7 +916,7 @@
                   '--name', '>(out_bionic_arm)',
                   '--objdir', '>(objdir_bionic_arm)',
                   '--include-dirs=>(tc_include_dir_bionic) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_bionic_arm) ^(link_flags) >(_link_flags)',
@@ -959,7 +959,7 @@
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(native_irt_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(native_irt_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_arm) ^(native_irt_link_flags) ^(link_flags) >(_link_flags)',
@@ -1002,7 +1002,7 @@
                   '--name', '>(out_newlib_arm)',
                   '--objdir', '>(objdir_newlib_arm)',
                   '--include-dirs=>(tc_include_dir_newlib) ^(include_dirs) >(_include_dirs)',
-                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(native_irt_compile_flags) ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                  '--compile_flags=-Wno-unused-local-typedefs -Wno-psabi ^(native_irt_compile_flags) ^(compile_flags) >(_compile_flags)',
                   '--gomadir', '<(gomadir)',
                   '--defines=^(defines) >(_defines)',
                   '--link_flags=-B>(tc_lib_dir_irt_arm) ^(native_irt_link_flags) ^(link_flags) >(_link_flags)',
@@ -1321,7 +1321,7 @@
                    '--name', '>(out_glibc64)',
                    '--objdir', '>(objdir_glibc64)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
@@ -1362,7 +1362,7 @@
                    '--name', '>(out_glibc32)',
                    '--objdir', '>(objdir_glibc32)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
@@ -1403,7 +1403,7 @@
                    '--name', '>(out_glibc64)',
                    '--objdir', '>(objdir_glibc64)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
@@ -1444,7 +1444,7 @@
                    '--name', '>(out_glibc32)',
                    '--objdir', '>(objdir_glibc32)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
@@ -1485,7 +1485,7 @@
                    '--name', '>(out_glibc64)',
                    '--objdir', '>(objdir_glibc64)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m64 -fPIC ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m64 -fPIC ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-B>(tc_lib_dir_glibc64) ^(link_flags) >(_link_flags)',
@@ -1526,7 +1526,7 @@
                    '--name', '>(out_glibc32)',
                    '--objdir', '>(objdir_glibc32)',
                    '--include-dirs=>(tc_include_dir_glibc) ^(include_dirs) >(_include_dirs)',
-                   '--compile_flags=-m32 -fPIC ^(gcc_compile_flags) >(_gcc_compile_flags) ^(compile_flags) >(_compile_flags)',
+                   '--compile_flags=-m32 -fPIC ^(compile_flags) >(_compile_flags)',
                    '--gomadir', '<(gomadir)',
                    '--defines=^(defines) >(_defines)',
                    '--link_flags=-m32 -B>(tc_lib_dir_glibc32) ^(link_flags) >(_link_flags)',
@@ -1540,7 +1540,6 @@
     }], # end target_arch == ia32 or x64
   ],
   'target_defaults': {
-    'gcc_compile_flags': [],
     'pnacl_compile_flags': [],
     'variables': {
       'disable_pnacl%': 0,
@@ -1559,17 +1558,6 @@
       'compile_flags': [
         '<@(nacl_default_compile_flags)',
       ],
-      'gcc_compile_flags': [
-        '-fomit-frame-pointer',
-        # A debugger should be able to unwind IRT call frames. As the IRT is
-        # compiled with high level of optimizations and without debug info,
-        # compiler is requested to generate unwind tables explicitly. This
-        # is the default behavior on x86-64 and when compiling C++ with
-        # exceptions enabled, the change is for the benefit of x86-32 C.
-        # These are only required for the IRT but are here for all
-        # nacl-gcc-compiled binaries because the IRT depends on other libs
-        '-fasynchronous-unwind-tables',
-      ],
       'pnacl_compile_flags': [
         '-Wno-extra-semi',
         '-Wno-unused-private-field',
@@ -1577,11 +1565,19 @@
         '-Wno-unused-function',
         '-std=gnu++11',
       ],
-      # IRT compile/link flags to make the binary smaller.
-      # Omitted from non-IRT libraries to keep the libraries themselves small.
       'native_irt_compile_flags': [
+        # IRT compile/link flags to make the binary smaller.
+        # Omitted from non-IRT libraries to keep the libraries themselves small.
         '-ffunction-sections',
         '-fdata-sections',
+        # A debugger should be able to unwind IRT call frames. As the IRT is
+        # compiled with high level of optimizations and without debug info,
+        # compiler is requested to generate unwind tables explicitly. This
+        # is the default behavior on x86-64 and when compiling C++ with
+        # exceptions enabled, the change is for the benefit of x86-32 C.
+        # The frame pointer is unnecessary when unwind tables are used.
+        '-fasynchronous-unwind-tables',
+        '-fomit-frame-pointer',
       ],
       'native_irt_link_flags': [
         '-Wl,--gc-sections',
