@@ -55,7 +55,6 @@ crbug.com/521862 [ Linux Win ] storage/websql/read-transactions-running-concurre
 crbug.com/521861 [ Debug ] media/track/tracklist-is-reachable-no-crash.html [ Crash Pass ]
 crbug.com/521859 http/tests/navigatorconnect/postmessage-from-worker.html [ Pass Timeout ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
-crbug.com/521857 [ Win7 ] imported/web-platform-tests/IndexedDB/idbdatabase_createObjectStore10-1000ends.htm [ Pass Timeout ]
 crbug.com/521856 [ Mac Win ] svg/custom/resource-client-removal.svg [ Failure Pass ]
 crbug.com/521855 transitions/cancel-and-start-new.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]

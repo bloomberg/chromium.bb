@@ -217,3 +217,5 @@ crbug.com/459009 crypto/subtle/ [ Slow ]
 
 crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
+
+crbug.com/521857 [ Win Debug ] imported/web-platform-tests/IndexedDB/idbdatabase_createObjectStore10-1000ends.htm [ Slow ]
