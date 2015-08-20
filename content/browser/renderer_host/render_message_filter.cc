@@ -984,7 +984,8 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
   // in weburlloader_impl.cc).
   const net::RequestPriority kPriority = net::LOW;
   scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
-  memcpy(buf->data(), &data.front(), data.size());
+  if (!data.empty())
+    memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
                        data.size());
 }
