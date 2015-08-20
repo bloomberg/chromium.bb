@@ -11,9 +11,16 @@ GPU_MODIFIERS = ['amd', 'arm', 'broadcom', 'hisilicon', 'intel', 'imagination',
                  'nvidia', 'qualcomm', 'vivante']
 CONFIG_MODIFIERS = ['debug', 'release']
 
-class _Expectation(object):
-  def __init__(self, expectation, parent_expectations,
-      pattern, conditions=None, bug=None):
+class Expectation(object):
+  """Represents a single test expectation for a page.
+
+  Subclass this class and call super.__init__ last in your constructor
+  in order to add new user-defined conditions. The conditions are
+  parsed at the end of this class's constructor, so be careful not to
+  overwrite the results of the constructor call!
+  """
+
+  def __init__(self, expectation, pattern, conditions=None, bug=None):
     self.expectation = expectation.lower()
     self.name_pattern = pattern
     self.url_pattern = pattern
@@ -23,8 +30,6 @@ class _Expectation(object):
     self.gpu_conditions = []
     self.config_conditions = []
     self.device_id_conditions = []
-    # These are made legal by TestExpectations.IsValidUserDefinedCondition.
-    self.user_defined_conditions = []
 
     # Make sure that non-absolute paths are searchable
     if not '://' in self.url_pattern:
@@ -32,26 +37,49 @@ class _Expectation(object):
 
     if conditions:
       for c in conditions:
-        if isinstance(c, tuple):
-          c0 = c[0].lower()
-          if c0 in GPU_MODIFIERS:
-            self.device_id_conditions.append((c0, c[1]))
-          elif parent_expectations.IsValidUserDefinedCondition(c0):
-            self.user_defined_conditions.append((c0, c[1]))
-          else:
-            raise ValueError('Unknown expectation condition: "%s"' % c0)
-        else:
-          condition = c.lower()
-          if condition in OS_MODIFIERS:
-            self.os_conditions.append(condition)
-          elif condition in GPU_MODIFIERS:
-            self.gpu_conditions.append(condition)
-          elif condition in CONFIG_MODIFIERS:
-            self.config_conditions.append(condition)
-          elif parent_expectations.IsValidUserDefinedCondition(condition):
-            self.user_defined_conditions.append(condition)
-          else:
-            raise ValueError('Unknown expectation condition: "%s"' % condition)
+        self.ParseCondition(c)
+
+  def ParseCondition(self, condition):
+    """Parses a single test expectation condition.
+
+    Can be overridden to handle new types of conditions. Call the
+    superclass's implementation of ParseCondition at the end of your
+    subclass if you don't handle the condition. The base
+    implementation will raise an exception if the condition is
+    unsupported.
+
+    Valid expectation conditions are:
+
+    Operating systems:
+      win, xp, vista, win7, mac, leopard, snowleopard, lion,
+      mountainlion, mavericks, yosemite, linux, chromeos, android
+
+    GPU vendors:
+      amd, arm, broadcom, hisilicon, intel, imagination, nvidia,
+      qualcomm, vivante
+
+    Specific GPUs can be listed as a tuple with vendor name and device ID.
+    Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
+    Device IDs must be paired with a GPU vendor.
+
+    """
+    if isinstance(condition, tuple):
+      c0 = condition[0].lower()
+      if c0 in GPU_MODIFIERS:
+        self.device_id_conditions.append((c0, condition[1]))
+      else:
+        raise ValueError('Unknown expectation condition: "%s"' % c0)
+    else:
+      cl = condition.lower()
+      if cl in OS_MODIFIERS:
+        self.os_conditions.append(cl)
+      elif cl in GPU_MODIFIERS:
+        self.gpu_conditions.append(cl)
+      elif cl in CONFIG_MODIFIERS:
+        self.config_conditions.append(cl)
+      else:
+        raise ValueError('Unknown expectation condition: "%s"' % cl)
+
 
 class TestExpectations(object):
   """A class which defines the expectations for a page set test execution"""
@@ -76,22 +104,61 @@ class TestExpectations(object):
 
   def CreateExpectation(self, expectation, url_pattern, conditions=None,
                         bug=None):
-    return _Expectation(expectation, self, url_pattern, conditions, bug)
+    return Expectation(expectation, url_pattern, conditions, bug)
 
-  def GetExpectationForPage(self, browser, page):
+  def _GetExpectationObjectForPage(self, browser, page):
     for e in self.expectations:
       if self.ExpectationAppliesToPage(e, browser, page):
-        return e.expectation
+        return e
+    return None
+
+  def GetExpectationForPage(self, browser, page):
+    e = self._GetExpectationObjectForPage(browser, page)
+    if e:
+      return e.expectation
     return 'pass'
 
   def ExpectationAppliesToPage(self, expectation, browser, page):
+    """Defines whether the given expectation applies to the given page.
+
+    Override this in subclasses to add more conditions. Call the
+    superclass's implementation first, and return false if it returns
+    false.
+
+    Args:
+      expectation: an instance of a subclass of Expectation, created
+          by a call to CreateExpectation.
+      browser: the currently running browser.
+      page: the page to be run.
+    """
     matches_url = fnmatch.fnmatch(page.url, expectation.url_pattern)
     matches_name = page.name and fnmatch.fnmatch(page.name,
                                                  expectation.name_pattern)
-    if matches_url or matches_name:
-      if self.ModifiersApply(browser, expectation):
-        return True
-    return False
+    if not (matches_url or matches_name):
+      return False
+
+    platform = browser.platform
+    os_matches = (not expectation.os_conditions or
+        platform.GetOSName() in expectation.os_conditions or
+        platform.GetOSVersionName() in expectation.os_conditions)
+
+    if not os_matches:
+      return False
+
+    gpu_matches = True
+
+    # TODO(kbr): factor out all of the GPU-related conditions into
+    # GpuTestExpectations, including unit tests.
+    if browser.supports_system_info:
+      gpu_info = browser.GetSystemInfo().gpu
+      gpu_vendor = self._GetGpuVendorString(gpu_info)
+      gpu_device_id = self._GetGpuDeviceId(gpu_info)
+      gpu_matches = ((not expectation.gpu_conditions and
+          not expectation.device_id_conditions) or
+          gpu_vendor in expectation.gpu_conditions or
+          (gpu_vendor, gpu_device_id) in expectation.device_id_conditions)
+
+    return gpu_matches
 
   def _GetGpuVendorString(self, gpu_info):
     if gpu_info:
@@ -117,49 +184,3 @@ class TestExpectations(object):
         return primary_gpu.device_id or primary_gpu.device_string
 
     return 0
-
-  def ModifiersApply(self, browser, expectation):
-    """Determines if the conditions for an expectation apply to this system.
-    Can be overridden by subclasses to support new user-defined conditions.
-
-    Args:
-      browser: the currently running browser.
-      expectation: a object which is guaranteed to have the property
-          "user_defined_conditions" defined, which is an array of
-          strings or tuples specified in the test expectations for
-          which IsValidUserDefinedCondition returned true.
-
-    """
-    platform = browser.platform
-    os_matches = (not expectation.os_conditions or
-        platform.GetOSName() in expectation.os_conditions or
-        platform.GetOSVersionName() in expectation.os_conditions)
-
-    gpu_matches = True
-
-    # TODO(kbr): factor out all of the GPU-related conditions into
-    # GpuTestExpectations, including unit tests.
-    if browser.supports_system_info:
-      gpu_info = browser.GetSystemInfo().gpu
-      gpu_vendor = self._GetGpuVendorString(gpu_info)
-      gpu_device_id = self._GetGpuDeviceId(gpu_info)
-      gpu_matches = ((not expectation.gpu_conditions and
-          not expectation.device_id_conditions) or
-          gpu_vendor in expectation.gpu_conditions or
-          (gpu_vendor, gpu_device_id) in expectation.device_id_conditions)
-
-    return os_matches and gpu_matches
-
-  def IsValidUserDefinedCondition(self, _condition):
-    """Returns true if the given condition should be treated as a
-    valid user-defined condition.
-
-    Args:
-      _condition: a string. Returning true causes a new entry to be
-          added to the user_defined_expectations for the expectation
-          currently being parsed. The entry added may be either the
-          simple string of the condition, or a tuple if the condition
-          represents the name of a new GPU type and there was an
-          associated device ID in the expectation.
-    """
-    return False

@@ -33,55 +33,63 @@ ANGLE_MODIFIERS = ['d3d9', 'd3d11', 'opengl']
 BROWSER_TYPE_MODIFIERS = [
     'android-webview-shell', 'android-content-shell', 'debug' ]
 
-class _FlakyExpectation(object):
-  def __init__(self, expectation, max_num_retries):
-    self.expectation = expectation
+class FlakyExpectation(test_expectations.Expectation):
+  def __init__(self, expectation, pattern, conditions=None, bug=None,
+               max_num_retries=0):
     self.max_num_retries = max_num_retries
+    self.angle_conditions = []
+    self.browser_conditions = []
+    super(FlakyExpectation, self).__init__(
+      expectation, pattern, conditions=conditions, bug=bug)
 
-class GpuTestExpectations(test_expectations.TestExpectations):
-  def __init__(self):
-    self._flaky_expectations = []
-    super(GpuTestExpectations, self).__init__()
+  def ParseCondition(self, condition):
+    """Adds support for ANGLE and browser type conditions.
 
-  def Flaky(self, url_pattern, conditions=None, bug=None, max_num_retries=2):
-    expectation = _FlakyExpectation(self.CreateExpectation(
-      'pass', url_pattern, conditions, bug), max_num_retries)
-    self._flaky_expectations.append(expectation)
+    Browser types:
+      android-webview-shell, android-content-shell, debug
 
-  def GetFlakyRetriesForPage(self, page, browser):
-    for fe in self._flaky_expectations:
-      e = fe.expectation
-      if self.ExpectationAppliesToPage(e, browser, page):
-        return fe.max_num_retries
-    return 0
-
-  def IsValidUserDefinedCondition(self, condition):
+    ANGLE renderer:
+      d3d9, d3d11, opengl
+    """
     # Add support for d3d9, d3d11 and opengl-specific expectations.
     if condition in ANGLE_MODIFIERS:
-      return True
+      self.angle_conditions.append(condition)
+      return
     # Add support for browser-type-specific expectations.
     if condition in BROWSER_TYPE_MODIFIERS:
-      return True
-    return super(GpuTestExpectations,
-        self).IsValidUserDefinedCondition(condition)
+      self.browser_conditions.append(condition)
+      return
+    # Delegate to superclass.
+    super(FlakyExpectation, self).ParseCondition(condition)
 
-  def ModifiersApply(self, browser, expectation):
-    if not super(GpuTestExpectations, self).ModifiersApply(
-        browser, expectation):
+
+class GpuTestExpectations(test_expectations.TestExpectations):
+  def CreateExpectation(self, expectation, url_pattern, conditions=None,
+                        bug=None):
+    return FlakyExpectation(expectation, url_pattern, conditions, bug)
+
+  def Flaky(self, url_pattern, conditions=None, bug=None, max_num_retries=2):
+    self.expectations.append(FlakyExpectation(
+      'pass', url_pattern, conditions=conditions, bug=bug,
+      max_num_retries=max_num_retries))
+
+  def GetFlakyRetriesForPage(self, page, browser):
+    e = self._GetExpectationObjectForPage(browser, page)
+    if e:
+      return e.max_num_retries
+    return 0
+
+  def ExpectationAppliesToPage(self, expectation, browser, page):
+    if not super(GpuTestExpectations, self).ExpectationAppliesToPage(
+        expectation, browser, page):
       return False
 
     # We'll only get here if the OS and GPU matched the expectation.
 
-    # TODO(kbr): refactor _Expectation to be a public class so that
-    # the GPU-specific properties can be moved into a subclass, and
-    # run the unit tests from this directory on the CQ and the bots.
-    # crbug.com/495868 crbug.com/495870
-
     # Check for presence of Android WebView.
-    browser_expectations = [x for x in expectation.user_defined_conditions
-                            if x in BROWSER_TYPE_MODIFIERS]
-    browser_matches = ((not browser_expectations) or
-                       browser.browser_type in browser_expectations)
+    browser_matches = (
+      (not expectation.browser_conditions) or
+      browser.browser_type in expectation.browser_conditions)
     if not browser_matches:
       return False
     angle_renderer = ''
@@ -97,8 +105,7 @@ class GpuTestExpectations(test_expectations.TestExpectations):
           angle_renderer = 'd3d9'
         elif 'OpenGL' in gl_renderer:
           angle_renderer = 'opengl'
-    angle_expectations = [x for x in expectation.user_defined_conditions
-                        if x in ANGLE_MODIFIERS]
-    angle_matches = ((not angle_expectations) or
-                   angle_renderer in angle_expectations)
+    angle_matches = (
+      (not expectation.angle_conditions) or
+      angle_renderer in expectation.angle_conditions)
     return angle_matches

@@ -47,7 +47,29 @@ class StubBrowser(object):
   def GetSystemInfo(self):
     return self.system_info
 
+
+class SampleExpectationSubclass(test_expectations.Expectation):
+  def __init__(self, expectation, pattern, conditions=None, bug=None):
+    self.valid_condition_matched = False
+    self.valid_condition_unmatched = False
+    super(SampleExpectationSubclass, self).__init__(
+      expectation, pattern, conditions=conditions, bug=bug)
+
+  def ParseCondition(self, condition):
+    if condition == 'valid_condition_matched':
+      self.valid_condition_matched = True
+    elif condition == 'valid_condition_unmatched':
+      self.valid_condition_unmatched = True
+    else:
+      super(SampleExpectationSubclass, self).ParseCondition(condition)
+
+
 class SampleTestExpectations(test_expectations.TestExpectations):
+  def CreateExpectation(self, expectation, url_pattern, conditions=None,
+                        bug=None):
+    return SampleExpectationSubclass(expectation, url_pattern,
+                                     conditions=conditions, bug=bug)
+
   def SetExpectations(self):
     self.Fail('page1.html', ['win', 'mac'], bug=123)
     self.Fail('page2.html', ['vista'], bug=123)
@@ -66,15 +88,16 @@ class SampleTestExpectations(test_expectations.TestExpectations):
     self.Fail('page15.html', ['amd', 'valid_condition_matched'])
     self.Fail('page16.html', ['amd', 'valid_condition_unmatched'])
 
-  def IsValidUserDefinedCondition(self, condition):
-    return condition in ('valid_condition_matched', 'valid_condition_unmatched')
-
-  def ModifiersApply(self, shared_page_state, expectation):
+  def ExpectationAppliesToPage(self, expectation, browser, page):
     if not super(SampleTestExpectations,
-        self).ModifiersApply(shared_page_state, expectation):
+        self).ExpectationAppliesToPage(expectation, browser, page):
       return False
-    return ((not expectation.user_defined_conditions) or
-        'valid_condition_matched' in expectation.user_defined_conditions)
+    # These tests can probably be expressed more tersely, but that
+    # would reduce readability.
+    if (not expectation.valid_condition_matched and
+        not expectation.valid_condition_unmatched):
+      return True
+    return expectation.valid_condition_matched
 
 class TestExpectationsTest(unittest.TestCase):
   def setUp(self):
@@ -156,7 +179,7 @@ class TestExpectationsTest(unittest.TestCase):
     self.assertExpectationEquals('pass', page, gpu=VENDOR_AMD, device=0x1001)
 
   # Pages with multiple expectations should only return them when all criteria
-  # is met
+  # are met
   def testMultipleExpectations(self):
     story_set = story.StorySet()
     page = page_module.Page('http://test.com/page8.html', story_set)
@@ -199,8 +222,8 @@ class TestExpectationsTest(unittest.TestCase):
                                  vendor_string='Acme',
                                  device_string=DEVICE_STRING_SGX)
 
-  # Pages with user-defined expectations.
-  def testUserDefinedExpectations(self):
+  # Pages with user-defined conditions.
+  def testUserDefinedConditions(self):
     story_set = story.StorySet()
     page = page_module.Page('http://test.com/page15.html', story_set)
     self.assertExpectationEquals('fail', page, gpu=VENDOR_AMD)

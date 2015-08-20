@@ -21,9 +21,11 @@ class StubPlatform(object):
     return self.os_version_name
 
 class StubBrowser(object):
-  def __init__(self, platform, gpu, device, vendor_string, device_string):
+  def __init__(self, platform, gpu, device, vendor_string, device_string,
+               browser_type=None, gl_renderer=None):
     self.platform = platform
-    self.system_info = system_info.SystemInfo.FromDict({
+    self.browser_type = browser_type
+    sys_info = {
       'model_name': '',
       'gpu': {
         'devices': [
@@ -31,7 +33,12 @@ class StubBrowser(object):
            'vendor_string': vendor_string, 'device_string': device_string},
         ]
       }
-    })
+    }
+    if gl_renderer:
+      sys_info['gpu']['aux_attributes'] = {
+        'gl_renderer': gl_renderer
+      }
+    self.system_info = system_info.SystemInfo.FromDict(sys_info)
 
   @property
   def supports_system_info(self):
@@ -45,15 +52,21 @@ class SampleTestExpectations(gpu_test_expectations.GpuTestExpectations):
     self.Flaky('test1.html', bug=123, max_num_retries=5)
     self.Flaky('test2.html', ['win'], bug=123, max_num_retries=6)
     self.Flaky('wildcardtest*.html', ['win'], bug=123, max_num_retries=7)
+    # Test ANGLE conditions.
+    self.Fail('test3.html', ['win', 'd3d9'], bug=345)
+    # Test browser conditions.
+    self.Fail('test4.html', ['android', 'android-webview-shell'], bug=456)
 
 class GpuTestExpectationsTest(unittest.TestCase):
   def setUp(self):
     self.expectations = SampleTestExpectations()
 
   def assertExpectationEquals(self, expected, page, platform='', gpu=0,
-      device=0, vendor_string='', device_string=''):
+                              device=0, vendor_string='', device_string='',
+                              browser_type=None, gl_renderer=None):
     result = self.expectations.GetExpectationForPage(StubBrowser(
-      platform, gpu, device, vendor_string, device_string), page)
+      platform, gpu, device, vendor_string, device_string,
+      browser_type=browser_type, gl_renderer=gl_renderer), page)
     self.assertEquals(expected, result)
 
   def getRetriesForPage(self, page, platform='', gpu=0,
@@ -81,3 +94,21 @@ class GpuTestExpectationsTest(unittest.TestCase):
     self.assertEquals(7, self.getRetriesForPage(page2, StubPlatform('win')))
     self.assertExpectationEquals('pass', page2, StubPlatform('mac'))
     self.assertEquals(0, self.getRetriesForPage(page2, StubPlatform('mac')))
+
+  # Test ANGLE conditions.
+  def testANGLEConditions(self):
+    ps = story_set.StorySet()
+    page = page_module.Page('http://test.com/test3.html', ps)
+    self.assertExpectationEquals('pass', page, StubPlatform('win'),
+                                 gl_renderer='Direct3D11')
+    self.assertExpectationEquals('fail', page, StubPlatform('win'),
+                                 gl_renderer='Direct3D9')
+
+  # Test browser type conditions.
+  def testBrowserTypeConditions(self):
+    ps = story_set.StorySet()
+    page = page_module.Page('http://test.com/test4.html', ps)
+    self.assertExpectationEquals('pass', page, StubPlatform('android'),
+                                 browser_type='android-content-shell')
+    self.assertExpectationEquals('fail', page, StubPlatform('android'),
+                                 browser_type='android-webview-shell')
