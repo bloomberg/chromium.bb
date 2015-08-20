@@ -18,7 +18,6 @@
 #include "jni/JniInterface_jni.h"
 #include "media/base/yuv_convert.h"
 #include "remoting/base/url_request_context_getter.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
@@ -324,9 +323,9 @@ void ChromotingJniRuntime::HandleExtensionMessage(const std::string& type,
 }
 
 base::android::ScopedJavaLocalRef<jobject> ChromotingJniRuntime::NewBitmap(
-    webrtc::DesktopSize size) {
+    int width, int height) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_JniInterface_newBitmap(env, size.width(), size.height());
+  return Java_JniInterface_newBitmap(env, width, height);
 }
 
 void ChromotingJniRuntime::UpdateFrameBitmap(jobject bitmap) {

@@ -6,9 +6,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "remoting/codec/video_decoder.h"
-#include "remoting/codec/video_decoder_verbatim.h"
-#include "remoting/codec/video_decoder_vpx.h"
+#include "remoting/proto/video.pb.h"
 
 namespace remoting {
 namespace protocol {

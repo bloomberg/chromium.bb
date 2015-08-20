@@ -15,6 +15,7 @@
 #include "remoting/client/client_status_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/client/token_fetcher_proxy.h"
 #include "remoting/protocol/chromium_port_allocator.h"
@@ -85,10 +86,9 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
       token_fetcher.Pass(), auth_methods));
 
   // Post a task to start connection
-  jni_runtime_->display_task_runner()->PostTask(
+  jni_runtime_->network_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromotingJniInstance::ConnectToHostOnDisplayThread,
-                 this));
+      base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread, this));
 }
 
 ChromotingJniInstance::~ChromotingJniInstance() {
@@ -105,23 +105,25 @@ ChromotingJniInstance::~ChromotingJniInstance() {
 }
 
 void ChromotingJniInstance::Disconnect() {
-  if (!jni_runtime_->display_task_runner()->BelongsToCurrentThread()) {
-    jni_runtime_->display_task_runner()->PostTask(
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&ChromotingJniInstance::Disconnect, this));
     return;
   }
 
-  // This must be destroyed on the display thread before the producer is gone.
+  host_id_.clear();
+
+  stats_logging_enabled_ = false;
+
+  // |client_| must be torn down before |signaling_|.
+  client_.reset();
+  client_status_logger_.reset();
+  video_renderer_.reset();
   view_.reset();
-
-  // The weak pointers must be invalidated on the same thread they were used.
-  view_weak_factory_->InvalidateWeakPtrs();
-
-  jni_runtime_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniInstance::DisconnectFromHostOnNetworkThread,
-                 this));
+  authenticator_.reset();
+  signaling_.reset();
+  client_context_.reset();
 }
 
 void ChromotingJniInstance::FetchThirdPartyToken(
@@ -381,36 +383,17 @@ void ChromotingJniInstance::SetCursorShape(
   jni_runtime_->UpdateCursorShape(shape);
 }
 
-void ChromotingJniInstance::ConnectToHostOnDisplayThread() {
-  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
-
-  view_.reset(new JniFrameConsumer(jni_runtime_, this));
-  view_weak_factory_.reset(new base::WeakPtrFactory<JniFrameConsumer>(
-      view_.get()));
-  scoped_ptr<FrameConsumerProxy> frame_consumer =
-      make_scoped_ptr(new FrameConsumerProxy(view_weak_factory_->GetWeakPtr()));
-
-  jni_runtime_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread, this,
-                 base::Passed(&frame_consumer)));
-}
-
-void ChromotingJniInstance::ConnectToHostOnNetworkThread(
-    scoped_ptr<FrameConsumerProxy> frame_consumer) {
+void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
-  DCHECK(frame_consumer);
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
 
   client_context_.reset(new ClientContext(jni_runtime_->network_task_runner()));
   client_context_->Start();
 
-  SoftwareVideoRenderer* renderer = new SoftwareVideoRenderer(
-      client_context_->main_task_runner(),
-      client_context_->decode_task_runner(), frame_consumer.Pass());
-  view_->set_frame_producer(renderer);
-  video_renderer_.reset(renderer);
+  view_.reset(new JniFrameConsumer(jni_runtime_));
+  video_renderer_.reset(new SoftwareVideoRenderer(
+      client_context_->decode_task_runner(), view_.get()));
 
   client_.reset(new ChromotingClient(
       client_context_.get(), this, video_renderer_.get(), nullptr));
@@ -439,22 +422,6 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread(
 
   client_->Start(signaling_.get(), authenticator_.Pass(),
                  transport_factory.Pass(), host_jid_, capabilities_);
-}
-
-void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
-  DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
-
-  host_id_.clear();
-
-  stats_logging_enabled_ = false;
-
-  // |client_| must be torn down before |signaling_|.
-  client_.reset();
-  client_status_logger_.reset();
-  video_renderer_.reset();
-  authenticator_.reset();
-  signaling_.reset();
-  client_context_.reset();
 }
 
 void ChromotingJniInstance::FetchSecret(
@@ -493,7 +460,6 @@ void ChromotingJniInstance::SendKeyEventInternal(int usb_key_code,
                               this, usb_key_code, key_down));
     return;
   }
-
 
   protocol::KeyEvent event;
   event.set_usb_keycode(usb_key_code);

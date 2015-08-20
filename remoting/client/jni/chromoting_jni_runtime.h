@@ -97,8 +97,7 @@ class ChromotingJniRuntime {
                               const std::string& message);
 
   // Creates a new Bitmap object to store a video frame.
-  base::android::ScopedJavaLocalRef<jobject> NewBitmap(
-      webrtc::DesktopSize size);
+  base::android::ScopedJavaLocalRef<jobject> NewBitmap(int width, int height);
 
   // Updates video frame bitmap. |bitmap| must be an instance of
   // android.graphics.Bitmap. Call on the display thread.

@@ -151,6 +151,14 @@ scoped_ptr<SessionConfig> SessionConfig::ForTest() {
   return result.Pass();
 }
 
+scoped_ptr<SessionConfig> SessionConfig::ForTestWithVerbatimVideo() {
+  scoped_ptr<SessionConfig> result = ForTest();
+  result->video_config_ = ChannelConfig(ChannelConfig::TRANSPORT_QUIC_STREAM,
+                                        kDefaultStreamVersion,
+                                        ChannelConfig::CODEC_VERBATIM);
+  return result.Pass();
+}
+
 SessionConfig::SessionConfig() {}
 
 CandidateSessionConfig::CandidateSessionConfig() {}

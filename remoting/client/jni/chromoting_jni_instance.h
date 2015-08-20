@@ -14,8 +14,6 @@
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
-#include "remoting/client/frame_consumer_proxy.h"
-#include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/cursor_shape_stub.h"
 #include "remoting/signaling/xmpp_signal_strategy.h"
@@ -27,9 +25,11 @@ class ClipboardEvent;
 class CursorShapeInfo;
 }  // namespace protocol
 
+class ChromotingJniRuntime;
 class ClientStatusLogger;
-class VideoRenderer;
+class JniFrameConsumer;
 class TokenFetcherProxy;
+class VideoRenderer;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
 class ChromotingJniInstance
@@ -118,10 +118,7 @@ class ChromotingJniInstance
   // This object is ref-counted, so it cleans itself up.
   ~ChromotingJniInstance() override;
 
-  void ConnectToHostOnDisplayThread();
-  void ConnectToHostOnNetworkThread(
-      scoped_ptr<FrameConsumerProxy> frame_consumer);
-  void DisconnectFromHostOnNetworkThread();
+  void ConnectToHostOnNetworkThread();
 
   // Notifies the user interface that the user needs to enter a PIN. The
   // current authentication attempt is put on hold until |callback| is invoked.
@@ -150,12 +147,9 @@ class ChromotingJniInstance
   std::string host_id_;
   std::string host_jid_;
 
-  // This group of variables is to be used on the display thread.
-  scoped_ptr<JniFrameConsumer> view_;
-  scoped_ptr<base::WeakPtrFactory<JniFrameConsumer>> view_weak_factory_;
-
   // This group of variables is to be used on the network thread.
   scoped_ptr<ClientContext> client_context_;
+  scoped_ptr<JniFrameConsumer> view_;
   scoped_ptr<VideoRenderer> video_renderer_;
   scoped_ptr<protocol::Authenticator> authenticator_;
   scoped_ptr<ChromotingClient> client_;

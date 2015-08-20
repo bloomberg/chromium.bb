@@ -4,28 +4,29 @@
 
 #include "remoting/client/software_video_renderer.h"
 
-#include <list>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
 #include "remoting/base/util.h"
 #include "remoting/client/frame_consumer.h"
 #include "remoting/codec/video_decoder.h"
 #include "remoting/codec/video_decoder_verbatim.h"
 #include "remoting/codec/video_decoder_vpx.h"
+#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/session_config.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
-using base::Passed;
 using remoting::protocol::ChannelConfig;
 using remoting::protocol::SessionConfig;
 
 namespace remoting {
+
+namespace {
 
 // This class wraps a VideoDecoder and byte-swaps the pixels for compatibility
 // with the android.graphics.Bitmap class.
@@ -34,8 +35,7 @@ namespace remoting {
 class RgbToBgrVideoDecoderFilter : public VideoDecoder {
  public:
   RgbToBgrVideoDecoderFilter(scoped_ptr<VideoDecoder> parent)
-      : parent_(parent.Pass()) {
-  }
+      : parent_(parent.Pass()) {}
 
   bool DecodePacket(const VideoPacket& packet) override {
     return parent_->DecodePacket(packet);
@@ -58,7 +58,7 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
          i.Advance()) {
       webrtc::DesktopRect rect = i.rect();
       uint8* pixels = image_buffer + (rect.top() * image_stride) +
-        (rect.left() * kBytesPerPixel);
+                      (rect.left() * kBytesPerPixel);
       libyuv::ABGRToARGB(pixels, image_stride, pixels, image_stride,
                          rect.width(), rect.height());
     }
@@ -72,71 +72,41 @@ class RgbToBgrVideoDecoderFilter : public VideoDecoder {
   scoped_ptr<VideoDecoder> parent_;
 };
 
-class SoftwareVideoRenderer::Core {
- public:
-  Core(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-       scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-       scoped_ptr<FrameConsumerProxy> consumer);
-  ~Core();
+scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
+    VideoDecoder* decoder,
+    scoped_ptr<VideoPacket> packet,
+    scoped_ptr<webrtc::DesktopFrame> frame) {
+  if (!decoder->DecodePacket(*packet))
+    return nullptr;
 
-  void OnSessionConfig(const protocol::SessionConfig& config);
-  void DrawBuffer(webrtc::DesktopFrame* buffer);
-  void InvalidateRegion(const webrtc::DesktopRegion& region);
-  void RequestReturnBuffers(const base::Closure& done);
-  void SetOutputSizeAndClip(
-      const webrtc::DesktopSize& view_size,
-      const webrtc::DesktopRect& clip_area);
+  decoder->RenderFrame(
+      frame->size(), webrtc::DesktopRect::MakeSize(frame->size()),
+      frame->data(), frame->stride(), frame->mutable_updated_region());
 
-  // Decodes the contents of |packet|. DecodePacket may keep a reference to
-  // |packet| so the |packet| must remain alive and valid until |done| is
-  // executed.
-  void DecodePacket(scoped_ptr<VideoPacket> packet, const base::Closure& done);
+  const webrtc::DesktopRegion* shape = decoder->GetImageShape();
+  if (shape)
+    frame->set_shape(new webrtc::DesktopRegion(*shape));
 
- private:
-  // Paints the invalidated region to the next available buffer and returns it
-  // to the consumer.
-  void SchedulePaint();
-  void DoPaint();
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
-  scoped_ptr<FrameConsumerProxy> consumer_;
-  scoped_ptr<VideoDecoder> decoder_;
-
-  // Remote screen size in pixels.
-  webrtc::DesktopSize source_size_;
-
-  // Vertical and horizontal DPI of the remote screen.
-  webrtc::DesktopVector source_dpi_;
-
-  // The current dimensions of the frame consumer view.
-  webrtc::DesktopSize view_size_;
-  webrtc::DesktopRect clip_area_;
-
-  // The drawing buffers supplied by the frame consumer.
-  std::list<webrtc::DesktopFrame*> buffers_;
-
-  // Flag used to coalesce runs of SchedulePaint()s into a single DoPaint().
-  bool paint_scheduled_;
-
-  base::WeakPtrFactory<Core> weak_factory_;
-};
-
-SoftwareVideoRenderer::Core::Core(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    scoped_ptr<FrameConsumerProxy> consumer)
-    : main_task_runner_(main_task_runner),
-      decode_task_runner_(decode_task_runner),
-      consumer_(consumer.Pass()),
-      paint_scheduled_(false),
-      weak_factory_(this) {}
-
-SoftwareVideoRenderer::Core::~Core() {
+  return frame.Pass();
 }
 
-void SoftwareVideoRenderer::Core::OnSessionConfig(const SessionConfig& config) {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
+}  // namespace
+
+SoftwareVideoRenderer::SoftwareVideoRenderer(
+    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
+    FrameConsumer* consumer)
+    : decode_task_runner_(decode_task_runner),
+      consumer_(consumer),
+      weak_factory_(this) {}
+
+SoftwareVideoRenderer::~SoftwareVideoRenderer() {
+  if (decoder_)
+    decode_task_runner_->DeleteSoon(FROM_HERE, decoder_.release());
+}
+
+void SoftwareVideoRenderer::OnSessionConfig(
+    const protocol::SessionConfig& config) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Initialize decoder based on the selected codec.
   ChannelConfig::Codec codec = config.video_config().codec;
@@ -157,248 +127,92 @@ void SoftwareVideoRenderer::Core::OnSessionConfig(const SessionConfig& config) {
   }
 }
 
-void SoftwareVideoRenderer::Core::DecodePacket(scoped_ptr<VideoPacket> packet,
-                                                const base::Closure& done) {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-
-  bool notify_size_or_dpi_change = false;
-
-  // If the packet includes screen size or DPI information, store them.
-  if (packet->format().has_screen_width() &&
-      packet->format().has_screen_height()) {
-    webrtc::DesktopSize source_size(packet->format().screen_width(),
-                                    packet->format().screen_height());
-    if (!source_size_.equals(source_size)) {
-      source_size_ = source_size;
-      notify_size_or_dpi_change = true;
-    }
-  }
-  if (packet->format().has_x_dpi() && packet->format().has_y_dpi()) {
-    webrtc::DesktopVector source_dpi(packet->format().x_dpi(),
-                                     packet->format().y_dpi());
-    if (!source_dpi.equals(source_dpi_)) {
-      source_dpi_ = source_dpi;
-      notify_size_or_dpi_change = true;
-    }
-  }
-
-  // If we've never seen a screen size, ignore the packet.
-  if (source_size_.is_empty()) {
-    main_task_runner_->PostTask(FROM_HERE, base::Bind(done));
-    return;
-  }
-
-  if (notify_size_or_dpi_change)
-    consumer_->SetSourceSize(source_size_, source_dpi_);
-
-  if (decoder_->DecodePacket(*packet.get())) {
-    SchedulePaint();
-  } else {
-    LOG(ERROR) << "DecodePacket() failed.";
-  }
-
-  main_task_runner_->PostTask(FROM_HERE, base::Bind(done));
-}
-
-void SoftwareVideoRenderer::Core::SchedulePaint() {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-  if (paint_scheduled_)
-    return;
-  paint_scheduled_ = true;
-  decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::DoPaint,
-                            weak_factory_.GetWeakPtr()));
-}
-
-void SoftwareVideoRenderer::Core::DoPaint() {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-  DCHECK(paint_scheduled_);
-  paint_scheduled_ = false;
-
-  // If the view size is empty or we have no output buffers ready, return.
-  if (buffers_.empty() || view_size_.is_empty())
-    return;
-
-  // If no Decoder is initialized, or the host dimensions are empty, return.
-  if (!decoder_.get() || source_size_.is_empty())
-    return;
-
-  // Draw the invalidated region to the buffer.
-  webrtc::DesktopFrame* buffer = buffers_.front();
-  webrtc::DesktopRegion output_region;
-  decoder_->RenderFrame(view_size_, clip_area_,
-                        buffer->data(), buffer->stride(), &output_region);
-
-  // Notify the consumer that painting is done.
-  if (!output_region.is_empty()) {
-    buffers_.pop_front();
-    consumer_->ApplyBuffer(view_size_, clip_area_, buffer, output_region,
-                           decoder_->GetImageShape());
-  }
-}
-
-void SoftwareVideoRenderer::Core::RequestReturnBuffers(
-    const base::Closure& done) {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-
-  while (!buffers_.empty()) {
-    consumer_->ReturnBuffer(buffers_.front());
-    buffers_.pop_front();
-  }
-
-  if (!done.is_null())
-    done.Run();
-}
-
-void SoftwareVideoRenderer::Core::DrawBuffer(webrtc::DesktopFrame* buffer) {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-  DCHECK(clip_area_.width() <= buffer->size().width() &&
-         clip_area_.height() <= buffer->size().height());
-
-  buffers_.push_back(buffer);
-  SchedulePaint();
-}
-
-void SoftwareVideoRenderer::Core::InvalidateRegion(
-    const webrtc::DesktopRegion& region) {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-
-  if (decoder_.get()) {
-    decoder_->Invalidate(view_size_, region);
-    SchedulePaint();
-  }
-}
-
-void SoftwareVideoRenderer::Core::SetOutputSizeAndClip(
-    const webrtc::DesktopSize& view_size,
-    const webrtc::DesktopRect& clip_area) {
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
-
-  // The whole frame needs to be repainted if the scaling factor has changed.
-  if (!view_size_.equals(view_size) && decoder_.get()) {
-    webrtc::DesktopRegion region;
-    region.AddRect(webrtc::DesktopRect::MakeSize(view_size));
-    decoder_->Invalidate(view_size, region);
-  }
-
-  if (!view_size_.equals(view_size) ||
-      !clip_area_.equals(clip_area)) {
-    view_size_ = view_size;
-    clip_area_ = clip_area;
-
-    // Return buffers that are smaller than needed to the consumer for
-    // reuse/reallocation.
-    std::list<webrtc::DesktopFrame*>::iterator i = buffers_.begin();
-    while (i != buffers_.end()) {
-      if ((*i)->size().width() < clip_area_.width() ||
-          (*i)->size().height() < clip_area_.height()) {
-        consumer_->ReturnBuffer(*i);
-        i = buffers_.erase(i);
-      } else {
-        ++i;
-      }
-    }
-
-    SchedulePaint();
-  }
-}
-
-SoftwareVideoRenderer::SoftwareVideoRenderer(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner,
-    scoped_ptr<FrameConsumerProxy> consumer)
-    : decode_task_runner_(decode_task_runner),
-      core_(new Core(main_task_runner, decode_task_runner, consumer.Pass())),
-      weak_factory_(this) {
-  DCHECK(CalledOnValidThread());
-}
-
-SoftwareVideoRenderer::~SoftwareVideoRenderer() {
-  DCHECK(CalledOnValidThread());
-  bool result = decode_task_runner_->DeleteSoon(FROM_HERE, core_.release());
-  DCHECK(result);
-}
-
-void SoftwareVideoRenderer::OnSessionConfig(
-    const protocol::SessionConfig& config) {
-  DCHECK(CalledOnValidThread());
-  decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::OnSessionConfig,
-                            base::Unretained(core_.get()), config));
-}
-
 ChromotingStats* SoftwareVideoRenderer::GetStats() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return &stats_;
 }
 
 protocol::VideoStub* SoftwareVideoRenderer::GetVideoStub() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return this;
 }
 
 void SoftwareVideoRenderer::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                                const base::Closure& done) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::ScopedClosureRunner done_runner(done);
 
   stats_.RecordVideoPacketStats(*packet);
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
   if (!packet->has_data() || packet->data().size() == 0) {
-    done.Run();
     return;
   }
 
-  // Measure the latency between the last packet being received and presented.
-  base::Time decode_start = base::Time::Now();
+  if (packet->format().has_screen_width() &&
+      packet->format().has_screen_height()) {
+    source_size_.set(packet->format().screen_width(),
+                     packet->format().screen_height());
+  }
 
-  base::Closure decode_done = base::Bind(&SoftwareVideoRenderer::OnPacketDone,
-                                         weak_factory_.GetWeakPtr(),
-                                         decode_start, done);
+  if (packet->format().has_x_dpi() && packet->format().has_y_dpi()) {
+    webrtc::DesktopVector source_dpi(packet->format().x_dpi(),
+                                     packet->format().y_dpi());
+    if (!source_dpi.equals(source_dpi_)) {
+      source_dpi_ = source_dpi;
+    }
+  }
 
-  decode_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &SoftwareVideoRenderer::Core::DecodePacket,
-      base::Unretained(core_.get()), base::Passed(&packet), decode_done));
+  if (source_size_.is_empty()) {
+    LOG(ERROR) << "Received VideoPacket with unknown size.";
+    return;
+  }
+
+  scoped_ptr<webrtc::DesktopFrame> frame =
+      consumer_->AllocateFrame(source_size_);
+  frame->set_dpi(source_dpi_);
+
+  base::PostTaskAndReplyWithResult(
+      decode_task_runner_.get(), FROM_HERE,
+      base::Bind(&DoDecodeFrame, decoder_.get(), base::Passed(&packet),
+                 base::Passed(&frame)),
+      base::Bind(&SoftwareVideoRenderer::RenderFrame,
+                 weak_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                 done_runner.Release()));
 }
 
-void SoftwareVideoRenderer::DrawBuffer(webrtc::DesktopFrame* buffer) {
-  decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::DrawBuffer,
-                            base::Unretained(core_.get()), buffer));
+void SoftwareVideoRenderer::RenderFrame(
+    base::TimeTicks decode_start_time,
+    const base::Closure& done,
+    scoped_ptr<webrtc::DesktopFrame> frame) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  stats_.RecordDecodeTime(
+      (base::TimeTicks::Now() - decode_start_time).InMilliseconds());
+
+  if (!frame) {
+    if (!done.is_null())
+      done.Run();
+    return;
+  }
+
+  consumer_->DrawFrame(
+      frame.Pass(),
+      base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
+                 weak_factory_.GetWeakPtr(), base::TimeTicks::Now(), done));
 }
 
-void SoftwareVideoRenderer::InvalidateRegion(
-    const webrtc::DesktopRegion& region) {
-  decode_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SoftwareVideoRenderer::Core::InvalidateRegion,
-                            base::Unretained(core_.get()), region));
-}
+void SoftwareVideoRenderer::OnFrameRendered(base::TimeTicks paint_start_time,
+                                            const base::Closure& done) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-void SoftwareVideoRenderer::RequestReturnBuffers(const base::Closure& done) {
-  decode_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SoftwareVideoRenderer::Core::RequestReturnBuffers,
-                 base::Unretained(core_.get()), done));
-}
+  stats_.RecordPaintTime(
+      (base::TimeTicks::Now() - paint_start_time).InMilliseconds());
 
-void SoftwareVideoRenderer::SetOutputSizeAndClip(
-    const webrtc::DesktopSize& view_size,
-    const webrtc::DesktopRect& clip_area) {
-  decode_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SoftwareVideoRenderer::Core::SetOutputSizeAndClip,
-                 base::Unretained(core_.get()), view_size, clip_area));
-}
-
-void SoftwareVideoRenderer::OnPacketDone(base::Time decode_start,
-                                         const base::Closure& done) {
-  DCHECK(CalledOnValidThread());
-
-  // Record the latency between the packet being received and presented.
-  base::TimeDelta decode_time = base::Time::Now() - decode_start;
-  stats_.RecordDecodeTime(decode_time.InMilliseconds());
-
-  done.Run();
+  if (!done.is_null())
+    done.Run();
 }
 
 }  // namespace remoting

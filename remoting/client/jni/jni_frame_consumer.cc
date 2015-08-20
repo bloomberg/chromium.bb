@@ -5,11 +5,9 @@
 #include "remoting/client/jni/jni_frame_consumer.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
-#include "base/synchronization/waitable_event.h"
 #include "remoting/base/util.h"
-#include "remoting/client/frame_producer.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
@@ -18,47 +16,51 @@
 
 namespace remoting {
 
-JniFrameConsumer::JniFrameConsumer(
-    ChromotingJniRuntime* jni_runtime,
-    scoped_refptr<ChromotingJniInstance> jni_instance)
-    : jni_runtime_(jni_runtime),
-      jni_instance_(jni_instance),
-      frame_producer_(nullptr) {
-}
-
-JniFrameConsumer::~JniFrameConsumer() {
-  // The producer should now return any pending buffers. At this point, however,
-  // ReturnBuffer() tasks scheduled by the producer will not be delivered,
-  // so we free all the buffers once the producer's queue is empty.
-  base::WaitableEvent done_event(true, false);
-  frame_producer_->RequestReturnBuffers(
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done_event)));
-  done_event.Wait();
-
-  STLDeleteElements(&buffers_);
-}
-
-void JniFrameConsumer::set_frame_producer(FrameProducer* producer) {
-  frame_producer_ = producer;
-}
-
-void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
-                                   const webrtc::DesktopRect& clip_area,
-                                   webrtc::DesktopFrame* buffer,
-                                   const webrtc::DesktopRegion& region,
-                                   const webrtc::DesktopRegion* shape) {
-  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
-  DCHECK(!shape);
-
-  if (bitmap_->size().width() != buffer->size().width() ||
-      bitmap_->size().height() != buffer->size().height()) {
-    // Drop the frame, since the data belongs to the previous generation,
-    // before SetSourceSize() called SetOutputSizeAndClip().
-    FreeBuffer(buffer);
-    return;
+class JniFrameConsumer::Renderer {
+ public:
+  Renderer(ChromotingJniRuntime* jni_runtime) : jni_runtime_(jni_runtime) {}
+  ~Renderer() {
+    DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
   }
 
-  // Copy pixels from |buffer| into the Java Bitmap.
+  void RenderFrame(scoped_ptr<webrtc::DesktopFrame> frame);
+
+ private:
+  // Used to obtain task runner references and make calls to Java methods.
+  ChromotingJniRuntime* jni_runtime_;
+
+  // This global reference is required, instead of a local reference, so it
+  // remains valid for the lifetime of |bitmap_| - gfx::JavaBitmap does not
+  // create its own global reference internally. And this global ref must be
+  // destroyed (released) after |bitmap_| is destroyed.
+  base::android::ScopedJavaGlobalRef<jobject> bitmap_global_ref_;
+
+  // Reference to the frame bitmap that is passed to Java when the frame is
+  // allocated. This provides easy access to the underlying pixels.
+  scoped_ptr<gfx::JavaBitmap> bitmap_;
+};
+
+// Function called on the display thread to render the frame.
+void JniFrameConsumer::Renderer::RenderFrame(
+    scoped_ptr<webrtc::DesktopFrame> frame) {
+  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
+
+  if (!bitmap_ || bitmap_->size().width() != frame->size().width() ||
+      bitmap_->size().height() != frame->size().height()) {
+    // Allocate a new Bitmap, store references here, and pass it to Java.
+    JNIEnv* env = base::android::AttachCurrentThread();
+
+    // |bitmap_| must be deleted before |bitmap_global_ref_| is released.
+    bitmap_.reset();
+    bitmap_global_ref_.Reset(
+        env,
+        jni_runtime_->NewBitmap(frame->size().width(), frame->size().height())
+            .obj());
+    bitmap_.reset(new gfx::JavaBitmap(bitmap_global_ref_.obj()));
+    jni_runtime_->UpdateFrameBitmap(bitmap_global_ref_.obj());
+  }
+
+  // Copy pixels from |frame| into the Java Bitmap.
   // TODO(lambroslambrou): Optimize away this copy by having the VideoDecoder
   // decode directly into the Bitmap's pixel memory. This currently doesn't
   // work very well because the VideoDecoder writes the decoded data in BGRA,
@@ -66,70 +68,53 @@ void JniFrameConsumer::ApplyBuffer(const webrtc::DesktopSize& view_size,
   // If a repaint is triggered from a Java event handler, the unswapped pixels
   // can sometimes appear on the display.
   uint8* dest_buffer = static_cast<uint8*>(bitmap_->pixels());
-  webrtc::DesktopRect buffer_rect = webrtc::DesktopRect::MakeSize(view_size);
-
-  for (webrtc::DesktopRegion::Iterator i(region); !i.IsAtEnd(); i.Advance()) {
-    const webrtc::DesktopRect& rect(i.rect());
-    CopyRGB32Rect(buffer->data(), buffer->stride(), buffer_rect, dest_buffer,
-                  bitmap_->stride(), buffer_rect, rect);
+  webrtc::DesktopRect buffer_rect =
+      webrtc::DesktopRect::MakeSize(frame->size());
+  for (webrtc::DesktopRegion::Iterator i(frame->updated_region()); !i.IsAtEnd();
+       i.Advance()) {
+    CopyRGB32Rect(frame->data(), frame->stride(), buffer_rect, dest_buffer,
+                  bitmap_->stride(), buffer_rect, i.rect());
   }
 
-  // TODO(lambroslambrou): Optimize this by only repainting the changed pixels.
-  base::TimeTicks start_time = base::TimeTicks::Now();
   jni_runtime_->RedrawCanvas();
-  jni_instance_->RecordPaintTime(
-      (base::TimeTicks::Now() - start_time).InMilliseconds());
-
-  // Supply |frame_producer_| with a buffer to render the next frame into.
-  frame_producer_->DrawBuffer(buffer);
 }
 
-void JniFrameConsumer::ReturnBuffer(webrtc::DesktopFrame* buffer) {
-  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
-  FreeBuffer(buffer);
+JniFrameConsumer::JniFrameConsumer(ChromotingJniRuntime* jni_runtime)
+    : jni_runtime_(jni_runtime),
+      renderer_(new Renderer(jni_runtime)),
+      weak_factory_(this) {}
+
+JniFrameConsumer::~JniFrameConsumer() {
+  jni_runtime_->display_task_runner()->DeleteSoon(FROM_HERE,
+                                                  renderer_.release());
 }
 
-void JniFrameConsumer::SetSourceSize(const webrtc::DesktopSize& source_size,
-                                     const webrtc::DesktopVector& dpi) {
-  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
+scoped_ptr<webrtc::DesktopFrame> JniFrameConsumer::AllocateFrame(
+    const webrtc::DesktopSize& size) {
+  return make_scoped_ptr(new webrtc::BasicDesktopFrame(size));
+}
 
-  // We currently render the desktop 1:1 and perform pan/zoom scaling
-  // and cropping on the managed canvas.
-  clip_area_ = webrtc::DesktopRect::MakeSize(source_size);
-  frame_producer_->SetOutputSizeAndClip(source_size, clip_area_);
+void JniFrameConsumer::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+                                 const base::Closure& done) {
+  DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 
-  // Allocate buffer and start drawing frames onto it.
-  AllocateBuffer(source_size);
+  jni_runtime_->display_task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&Renderer::RenderFrame, base::Unretained(renderer_.get()),
+                 base::Passed(&frame)),
+      base::Bind(&JniFrameConsumer::OnFrameRendered, weak_factory_.GetWeakPtr(),
+                 done));
+}
+
+void JniFrameConsumer::OnFrameRendered(const base::Closure& done) {
+  DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+
+  if (!done.is_null())
+    done.Run();
 }
 
 FrameConsumer::PixelFormat JniFrameConsumer::GetPixelFormat() {
   return FORMAT_RGBA;
-}
-
-void JniFrameConsumer::AllocateBuffer(const webrtc::DesktopSize& source_size) {
-  DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
-
-  webrtc::DesktopSize size(source_size.width(), source_size.height());
-
-  // Allocate a new Bitmap, store references here, and pass it to Java.
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  // |bitmap_| must be deleted before |bitmap_global_ref_| is released.
-  bitmap_.reset();
-  bitmap_global_ref_.Reset(env, jni_runtime_->NewBitmap(size).obj());
-  bitmap_.reset(new gfx::JavaBitmap(bitmap_global_ref_.obj()));
-  jni_runtime_->UpdateFrameBitmap(bitmap_global_ref_.obj());
-
-  webrtc::DesktopFrame* buffer = new webrtc::BasicDesktopFrame(size);
-  buffers_.push_back(buffer);
-  frame_producer_->DrawBuffer(buffer);
-}
-
-void JniFrameConsumer::FreeBuffer(webrtc::DesktopFrame* buffer) {
-  DCHECK(std::find(buffers_.begin(), buffers_.end(), buffer) != buffers_.end());
-
-  buffers_.remove(buffer);
-  delete buffer;
 }
 
 }  // namespace remoting

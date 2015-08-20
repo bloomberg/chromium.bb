@@ -9,9 +9,11 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "ppapi/cpp/graphics_2d.h"
+#include "ppapi/cpp/image_data.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/view.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -21,11 +23,12 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace base {
-class Time;
+class ScopedClosureRunner;
 }  // namespace base
 
 namespace webrtc {
 class DesktopFrame;
+class SharedDesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {
@@ -35,16 +38,15 @@ class SoftwareVideoRenderer;
 // Video renderer that wraps SoftwareVideoRenderer and displays it using Pepper
 // 2D graphics API.
 class PepperVideoRenderer2D : public PepperVideoRenderer,
-                              public FrameConsumer,
-                              public base::NonThreadSafe {
+                              public FrameConsumer {
  public:
   PepperVideoRenderer2D();
   ~PepperVideoRenderer2D() override;
 
   // PepperVideoRenderer interface.
   bool Initialize(pp::Instance* instance,
-                                const ClientContext& context,
-                                EventHandler* event_handler) override;
+                  const ClientContext& context,
+                  EventHandler* event_handler) override;
   void OnViewChanged(const pp::View& view) override;
   void EnableDebugDirtyRegion(bool enable) override;
 
@@ -55,68 +57,26 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
  private:
   // FrameConsumer implementation.
-  void ApplyBuffer(const webrtc::DesktopSize& view_size,
-                   const webrtc::DesktopRect& clip_area,
-                   webrtc::DesktopFrame* buffer,
-                   const webrtc::DesktopRegion& region,
-                   const webrtc::DesktopRegion* shape) override;
-  void ReturnBuffer(webrtc::DesktopFrame* buffer) override;
-  void SetSourceSize(const webrtc::DesktopSize& source_size,
-                     const webrtc::DesktopVector& dpi) override;
+  scoped_ptr<webrtc::DesktopFrame> AllocateFrame(
+      const webrtc::DesktopSize& size) override;
+  void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+                 const base::Closure& done) override;
   PixelFormat GetPixelFormat() override;
 
-  // Helper to allocate buffers for the decoder.
-  void AllocateBuffers();
 
-  // Frees a frame buffer previously allocated by AllocateBuffer.
-  void FreeBuffer(webrtc::DesktopFrame* buffer);
-
-  // Renders the parts of |buffer| identified by |region| to the view.  If the
-  // clip area of the view has changed since the buffer was generated then
-  // FrameProducer is supplied the missed parts of |region|.  The FrameProducer
-  // will be supplied a new buffer when FlushBuffer() completes.
-  void FlushBuffer(const webrtc::DesktopRect& clip_area,
-                   webrtc::DesktopFrame* buffer,
-                   const webrtc::DesktopRegion& region);
-
-  // Handles completion of FlushBuffer(), triggering a new buffer to be
-  // returned to FrameProducer for rendering.
-  void OnFlushDone(int result,
-                   const base::Time& paint_start,
-                   webrtc::DesktopFrame* buffer);
+  void Flush();
+  void OnFlushDone(int result);
 
   // Parameters passed to Initialize().
-  pp::Instance* instance_;
-  EventHandler* event_handler_;
+  pp::Instance* instance_ = nullptr;
+  EventHandler* event_handler_ = nullptr;
 
   pp::Graphics2D graphics2d_;
 
   scoped_ptr<SoftwareVideoRenderer> software_video_renderer_;
 
-  // List of allocated image buffers.
-  std::list<webrtc::DesktopFrame*> buffers_;
-
-  // Queued buffer to paint, with clip area and dirty region in device pixels.
-  webrtc::DesktopFrame* merge_buffer_;
-  webrtc::DesktopRect merge_clip_area_;
-  webrtc::DesktopRegion merge_region_;
-
-  // View size in Density Independent Pixels (DIPs).
-  webrtc::DesktopSize dips_size_;
-
-  // Scale factor from DIPs to device pixels.
-  float dips_to_device_scale_;
-
-  // View size in output pixels. This is the size at which FrameProducer must
-  // render frames. It usually matches the DIPs size of the view, but may match
-  // the size in device pixels when scaling is in effect, to reduce artefacts.
+  // View size in output pixels.
   webrtc::DesktopSize view_size_;
-
-  // Scale factor from output pixels to device pixels.
-  float dips_to_view_scale_;
-
-  // Visible area of the view, in output pixels.
-  webrtc::DesktopRect clip_area_;
 
   // Size of the most recent source frame in pixels.
   webrtc::DesktopSize source_size_;
@@ -127,14 +87,25 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
   // Shape of the most recent source frame.
   scoped_ptr<webrtc::DesktopRegion> source_shape_;
 
-  // True if there is already a Flush() pending on the Graphics2D context.
-  bool flush_pending_;
+  // Done callbacks for the frames that have been painted but not flushed.
+  ScopedVector<base::ScopedClosureRunner> pending_frames_done_callbacks_;
 
-  // True after the first call to ApplyBuffer().
-  bool frame_received_;
+  // Done callbacks for the frames that are currently being flushed.
+  ScopedVector<base::ScopedClosureRunner> flushing_frames_done_callbacks_;
+
+  // True if there paint operations that need to be flushed.
+  bool need_flush_ = false;
+
+  // True if there is already a Flush() pending on the Graphics2D context.
+  bool flush_pending_ = false;
+
+  // True after the first call to DrawFrame().
+  bool frame_received_ = false;
 
   // True if dirty regions are to be sent to |event_handler_| for debugging.
-  bool debug_dirty_region_;
+  bool debug_dirty_region_ = false;
+
+  base::ThreadChecker thread_checker_;
 
   pp::CompletionCallbackFactory<PepperVideoRenderer2D> callback_factory_;
   base::WeakPtrFactory<PepperVideoRenderer2D> weak_factory_;
