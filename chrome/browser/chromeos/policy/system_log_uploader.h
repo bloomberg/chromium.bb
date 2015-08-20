@@ -76,6 +76,10 @@ class SystemLogUploader : public UploadJob::Delegate {
   void OnSuccess() override;
   void OnFailure(UploadJob::ErrorCode error_code) override;
 
+  // Remove lines from |data| that contain common PII (IP addresses, SSIDs, URLs
+  // e-mail addresses).
+  static std::string RemoveSensitiveData(const std::string& data);
+
  private:
   // Updates the system log upload enabled field from settings.
   void RefreshUploadSettings();

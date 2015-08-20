@@ -8694,6 +8694,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.SystemLogPIILeak" enum="SystemLogPIIType">
+  <owner>pbond@chromium.org</owner>
+  <summary>
+    Events for counting sensitive data occurrences in system logs to upload.
+    (Email addresses, IP addresses, SSIDs, URLs). The lines with this data will
+    be removed before upload.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.UserCloudPolicyStore.LoadStatus"
     enum="PolicyLoadStatus">
   <owner>atwilson@chromium.org</owner>
@@ -71487,6 +71496,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Configuration retry"/>
   <int value="4" label="Configuration failure"/>
   <int value="5" label="Actionable error"/>
+</enum>
+
+<enum name="SystemLogPIIType" type="int">
+  <int value="0" label="Email address"/>
+  <int value="1" label="IP address"/>
+  <int value="2" label="Web URL"/>
+  <int value="3" label="SSID"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus" type="int">

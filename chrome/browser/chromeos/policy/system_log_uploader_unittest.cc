@@ -283,4 +283,25 @@ TEST_F(SystemLogUploaderTest, DisableLogUpload) {
                     SystemLogUploader::kDefaultUploadDelayMs));
 }
 
+// Test RemovePII function.
+TEST_F(SystemLogUploaderTest, TestPII) {
+  std::string data =
+      "aaaaaaaaSSID=123aaaaaaaaaaa\n"     // SSID.
+      "aaaaaaaahttp://tets.comaaaaaaa\n"  // URL.
+      "aaaaaemail@example.comaaa\n"       //  Email address.
+      "example@@1234\n"          //  No PII, it is not valid email address.
+      "255.255.355.255\n"        // No PII, it is not valid IP address format.
+      "aaaa123.123.45.4aaa\n"    // IP address.
+      "11:11;11::11\n"           // IP address.
+      "11::11\n"                 // IP address.
+      "11:11:abcdef:0:0:0:0:0";  // No PII, it is not valid IP address format.
+
+  std::string result =
+      "example@@1234\n"
+      "255.255.355.255\n"
+      "11:11:abcdef:0:0:0:0:0\n";
+
+  EXPECT_EQ(result, SystemLogUploader::RemoveSensitiveData(data));
+}
+
 }  // namespace policy
