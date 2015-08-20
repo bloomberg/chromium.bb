@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -146,14 +147,25 @@ base::string16 PowerHandler::GetStatusValue() const {
     int hour = 0;
     int min = 0;
     PowerStatus::SplitTimeIntoHoursAndMinutes(time_left, &hour, &min);
-    base::string16 minute_text = base::ASCIIToUTF16(min < 10 ? "0" : "") +
-                                 base::IntToString16(min);
+
+    base::string16 time_text;
+    if (hour == 0 || min == 0) {
+      // Display only one unit ("2 hours" or "10 minutes").
+      time_text = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
+                                         ui::TimeFormat::LENGTH_LONG,
+                                         time_left);
+    } else {
+      time_text = ui::TimeFormat::Detailed(ui::TimeFormat::FORMAT_DURATION,
+                                           ui::TimeFormat::LENGTH_LONG,
+                                           -1,  // force hour and minute output
+                                           time_left);
+    }
+
     return l10n_util::GetStringFUTF16(
         charging ? IDS_OPTIONS_BATTERY_STATUS_CHARGING :
                    IDS_OPTIONS_BATTERY_STATUS,
         base::IntToString16(percent),
-        base::IntToString16(hour),
-        minute_text);
+        time_text);
   }
 }
 
