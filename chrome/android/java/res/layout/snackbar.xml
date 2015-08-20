@@ -27,12 +27,13 @@
         android:id="@+id/snackbar_button"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/snackbar_min_height"
-        android:background="#282C32"
+        android:layout_gravity="center_vertical"
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
         android:fontFamily="sans-serif-medium"
         android:textAllCaps="true"
         android:textColor="@color/snackbar_button_color"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        style="@style/ButtonCompatBorderless" />
 
 </LinearLayout>
