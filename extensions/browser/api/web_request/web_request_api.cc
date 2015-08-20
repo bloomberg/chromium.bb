@@ -997,8 +997,9 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
   challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
   dict->Set(keys::kChallengerKey, challenger);
   dict->Set(keys::kStatusLineKey, GetStatusLine(request->response_headers()));
-  dict->SetInteger(keys::kStatusCodeKey,
-      request->response_headers()->response_code());
+  if (request->response_headers())
+    dict->SetInteger(keys::kStatusCodeKey,
+                     request->response_headers()->response_code());
   if (extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) {
     dict->Set(keys::kResponseHeadersKey,
               GetResponseHeadersList(request->response_headers()));
