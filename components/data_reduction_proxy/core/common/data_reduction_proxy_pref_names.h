@@ -16,12 +16,33 @@ extern const char kDailyContentLengthLongBypassWithDataReductionProxyEnabled[];
 extern const char kDailyContentLengthShortBypassWithDataReductionProxyEnabled[];
 extern const char kDailyContentLengthUnknownWithDataReductionProxyEnabled[];
 extern const char kDailyContentLengthViaDataReductionProxy[];
+extern const char kDailyContentLengthViaDataReductionProxyApplication[];
+extern const char kDailyContentLengthViaDataReductionProxyVideo[];
+extern const char kDailyContentLengthViaDataReductionProxyUnknown[];
 extern const char kDailyContentLengthWithDataReductionProxyEnabled[];
+extern const char kDailyContentLengthWithDataReductionProxyEnabledApplication[];
+extern const char kDailyContentLengthWithDataReductionProxyEnabledVideo[];
+extern const char kDailyContentLengthWithDataReductionProxyEnabledUnknown[];
 extern const char kDailyHttpContentLengthLastUpdateDate[];
 extern const char kDailyHttpOriginalContentLength[];
+extern const char kDailyHttpOriginalContentLengthApplication[];
+extern const char kDailyHttpOriginalContentLengthVideo[];
+extern const char kDailyHttpOriginalContentLengthUnknown[];
 extern const char kDailyHttpReceivedContentLength[];
+extern const char kDailyHttpReceivedContentLengthApplication[];
+extern const char kDailyHttpReceivedContentLengthVideo[];
+extern const char kDailyHttpReceivedContentLengthUnknown[];
 extern const char kDailyOriginalContentLengthViaDataReductionProxy[];
+extern const char kDailyOriginalContentLengthViaDataReductionProxyApplication[];
+extern const char kDailyOriginalContentLengthViaDataReductionProxyVideo[];
+extern const char kDailyOriginalContentLengthViaDataReductionProxyUnknown[];
 extern const char kDailyOriginalContentLengthWithDataReductionProxyEnabled[];
+extern const char
+    kDailyOriginalContentLengthWithDataReductionProxyEnabledApplication[];
+extern const char
+    kDailyOriginalContentLengthWithDataReductionProxyEnabledVideo[];
+extern const char
+    kDailyOriginalContentLengthWithDataReductionProxyEnabledUnknown[];
 extern const char kDataReductionProxy[];
 extern const char kDataReductionProxyConfig[];
 extern const char kDataReductionProxyEnabled[];
