@@ -29,13 +29,14 @@ namespace blink {
 class Dictionary;
 class ExceptionState;
 class MediaDeviceInfoCallback;
+class MediaStreamConstraints;
 class Navigator;
 class NavigatorUserMediaErrorCallback;
 class NavigatorUserMediaSuccessCallback;
 
 class NavigatorMediaStream {
 public:
-    static void webkitGetUserMedia(Navigator&, const Dictionary&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
+    static void webkitGetUserMedia(Navigator&, const MediaStreamConstraints&, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, ExceptionState&);
 
     static void getMediaDevices(Navigator&, MediaDeviceInfoCallback*, ExceptionState&);
 

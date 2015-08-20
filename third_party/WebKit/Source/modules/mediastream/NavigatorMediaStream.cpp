@@ -34,6 +34,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "modules/mediastream/MediaDevicesRequest.h"
+#include "modules/mediastream/MediaStreamConstraints.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
 #include "modules/mediastream/UserMediaController.h"
@@ -50,7 +51,7 @@ NavigatorMediaStream::~NavigatorMediaStream()
 {
 }
 
-void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const Dictionary& options, NavigatorUserMediaSuccessCallback* successCallback, NavigatorUserMediaErrorCallback* errorCallback, ExceptionState& exceptionState)
+void NavigatorMediaStream::webkitGetUserMedia(Navigator& navigator, const MediaStreamConstraints& options, NavigatorUserMediaSuccessCallback* successCallback, NavigatorUserMediaErrorCallback* errorCallback, ExceptionState& exceptionState)
 {
     if (!successCallback)
         return;

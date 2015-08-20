@@ -12,6 +12,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/MediaStreamConstraints.h"
 #include "modules/mediastream/NavigatorMediaStream.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
@@ -86,7 +87,7 @@ private:
 
 } // namespace
 
-ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const Dictionary& options, ExceptionState& exceptionState)
+ScriptPromise MediaDevices::getUserMedia(ScriptState* scriptState, const MediaStreamConstraints& options, ExceptionState& exceptionState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
 

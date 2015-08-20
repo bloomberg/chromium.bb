@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class Dictionary;
+class MediaStreamConstraints;
 class ScriptState;
 
 class MediaDevices final : public GarbageCollected<MediaDevices>, public ScriptWrappable {
@@ -22,7 +22,7 @@ public:
     }
 
     ScriptPromise enumerateDevices(ScriptState*);
-    ScriptPromise getUserMedia(ScriptState*, const Dictionary&, ExceptionState&);
+    ScriptPromise getUserMedia(ScriptState*, const MediaStreamConstraints&, ExceptionState&);
     DEFINE_INLINE_TRACE() { }
 
 private:

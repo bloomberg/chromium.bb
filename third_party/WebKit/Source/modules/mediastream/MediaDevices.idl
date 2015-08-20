@@ -12,5 +12,5 @@
 ]
 interface MediaDevices {
     [RuntimeEnabled=EnumerateDevices, TypeChecking=Interface, CallWith=ScriptState] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
-    [CallWith=ScriptState, RaisesException] Promise<MediaStream> getUserMedia(Dictionary options);
+    [CallWith=ScriptState, RaisesException] Promise<MediaStream> getUserMedia(MediaStreamConstraints options);
 };
