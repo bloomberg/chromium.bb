@@ -810,7 +810,6 @@
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_48" file="settings_app_icon_48.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
-      <structure type="chrome_scaled_image" name="IDR_SHARE" file="share.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR" file="common/star.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="common/star_lit.png" />
       <if expr="toolkit_views or is_macosx or is_ios">
@@ -994,15 +993,17 @@
       <structure type="chrome_scaled_image" name="IDR_WALLET_ICON" file="wallet.png" />
       <structure type="chrome_scaled_image" name="IDR_WALLET_LOGO" file="common/wallet_logo.png" />
       <structure type="chrome_scaled_image" name="IDR_WARNING" file="common/alert_small.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_CENTER" file="website_settings_tabstrip_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_LEFT" file="website_settings_tabstrip_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_RIGHT" file="website_settings_tabstrip_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_CENTER" file="website_settings_tab_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_LEFT" file="website_settings_tab_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_RIGHT" file="website_settings_tab_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_CENTER2" file="website_settings_tab_center2.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_LEFT2" file="website_settings_tab_left2.png" />
-      <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_RIGHT2" file="website_settings_tab_right2.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_CENTER" file="mac/website_settings_tabstrip_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_LEFT" file="mac/website_settings_tabstrip_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TABSTRIP_RIGHT" file="mac/website_settings_tabstrip_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_CENTER" file="mac/website_settings_tab_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_LEFT" file="mac/website_settings_tab_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_RIGHT" file="mac/website_settings_tab_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_CENTER2" file="mac/website_settings_tab_center2.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_LEFT2" file="mac/website_settings_tab_left2.png" />
+        <structure type="chrome_scaled_image" name="IDR_WEBSITE_SETTINGS_TAB_RIGHT2" file="mac/website_settings_tab_right2.png" />
+      </if>
       <if expr="not _google_chrome">
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON" file="chromium/webstore_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_WEBSTORE_ICON_16" file="chromium/webstore_icon_16.png" />
