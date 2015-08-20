@@ -94,14 +94,13 @@ struct ivi_layout_screen {
 	struct ivi_layout *layout;
 	struct weston_output *output;
 
-	uint32_t event_mask;
-
 	struct {
 		struct wl_list layer_list;
 		struct wl_list link;
 	} pending;
 
 	struct {
+		int dirty;
 		struct wl_list layer_list;
 		struct wl_list link;
 	} order;
@@ -432,7 +431,6 @@ create_screen(struct weston_compositor *ec)
 		count++;
 
 		iviscrn->output = output;
-		iviscrn->event_mask = 0;
 
 		wl_list_init(&iviscrn->pending.layer_list);
 		wl_list_init(&iviscrn->pending.link);
@@ -846,33 +844,17 @@ commit_screen_list(struct ivi_layout *layout)
 	struct ivi_layout_surface *ivisurf  = NULL;
 
 	wl_list_for_each(iviscrn, &layout->screen_list, link) {
-		if (iviscrn->event_mask & IVI_NOTIFICATION_REMOVE) {
+		if (iviscrn->order.dirty) {
 			wl_list_for_each_safe(ivilayer, next,
 					      &iviscrn->order.layer_list, order.link) {
 				remove_orderlayer_from_screen(ivilayer);
-
-				if (!wl_list_empty(&ivilayer->order.link)) {
-				    wl_list_remove(&ivilayer->order.link);
-				}
-
+				wl_list_remove(&ivilayer->order.link);
 				wl_list_init(&ivilayer->order.link);
 				ivilayer->event_mask |= IVI_NOTIFICATION_REMOVE;
 			}
-		}
 
-		if (iviscrn->event_mask & IVI_NOTIFICATION_ADD) {
-			wl_list_for_each_safe(ivilayer, next,
-					      &iviscrn->order.layer_list, order.link) {
-				remove_orderlayer_from_screen(ivilayer);
+			assert(wl_list_empty(&iviscrn->order.layer_list));
 
-				if (!wl_list_empty(&ivilayer->order.link)) {
-					wl_list_remove(&ivilayer->order.link);
-				}
-
-				wl_list_init(&ivilayer->order.link);
-			}
-
-			wl_list_init(&iviscrn->order.layer_list);
 			wl_list_for_each(ivilayer, &iviscrn->pending.layer_list,
 					 pending.link) {
 				wl_list_insert(&iviscrn->order.layer_list,
@@ -880,9 +862,9 @@ commit_screen_list(struct ivi_layout *layout)
 				add_orderlayer_to_screen(ivilayer, iviscrn);
 				ivilayer->event_mask |= IVI_NOTIFICATION_ADD;
 			}
-		}
 
-		iviscrn->event_mask = 0;
+			iviscrn->order.dirty = 0;
+		}
 
 		/* Clear view list of layout ivi_layer */
 		wl_list_init(&layout->layout_layer.view_list.link);
@@ -2323,7 +2305,7 @@ ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 		}
 	}
 
-	iviscrn->event_mask |= IVI_NOTIFICATION_ADD;
+	iviscrn->order.dirty = 1;
 
 	return IVI_SUCCEEDED;
 }
@@ -2346,23 +2328,11 @@ ivi_layout_screen_set_render_order(struct ivi_layout_screen *iviscrn,
 
 	wl_list_for_each_safe(ivilayer, next,
 			      &iviscrn->pending.layer_list, pending.link) {
+		wl_list_remove(&ivilayer->pending.link);
 		wl_list_init(&ivilayer->pending.link);
 	}
 
-	wl_list_init(&iviscrn->pending.layer_list);
-
-	if (pLayer == NULL) {
-		wl_list_for_each_safe(ivilayer, next, &iviscrn->pending.layer_list, pending.link) {
-			if (!wl_list_empty(&ivilayer->pending.link)) {
-				wl_list_remove(&ivilayer->pending.link);
-			}
-
-			wl_list_init(&ivilayer->pending.link);
-		}
-
-		iviscrn->event_mask |= IVI_NOTIFICATION_REMOVE;
-		return IVI_SUCCEEDED;
-	}
+	assert(wl_list_empty(&iviscrn->pending.layer_list));
 
 	for (i = 0; i < number; i++) {
 		id_layer = &pLayer[i]->id_layer;
@@ -2371,17 +2341,14 @@ ivi_layout_screen_set_render_order(struct ivi_layout_screen *iviscrn,
 				continue;
 			}
 
-			if (!wl_list_empty(&ivilayer->pending.link)) {
-				wl_list_remove(&ivilayer->pending.link);
-			}
-			wl_list_init(&ivilayer->pending.link);
+			wl_list_remove(&ivilayer->pending.link);
 			wl_list_insert(&iviscrn->pending.layer_list,
 				       &ivilayer->pending.link);
 			break;
 		}
 	}
 
-	iviscrn->event_mask |= IVI_NOTIFICATION_ADD;
+	iviscrn->order.dirty = 1;
 
 	return IVI_SUCCEEDED;
 }
