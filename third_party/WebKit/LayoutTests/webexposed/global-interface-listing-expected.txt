@@ -5503,6 +5503,9 @@ interface USBConfiguration
     getter configurationValue
     getter interfaces
     method constructor
+interface USBConnectionEvent
+    getter device
+    method constructor
 interface USBDevice
     getter configurations
     getter deviceClass
