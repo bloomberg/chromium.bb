@@ -51,6 +51,7 @@
         '../../components/components.gyp:bookmarks_managed',
         '../../components/components.gyp:component_updater',
         '../../components/components.gyp:content_settings_core_browser',
+        '../../components/components.gyp:crash_keys',
         '../../components/components.gyp:data_reduction_proxy_core_common',
         '../../components/components.gyp:dom_distiller_core',
         '../../components/components.gyp:dom_distiller_ios',
@@ -82,6 +83,7 @@
         '../../components/components.gyp:undo_component',
         '../../components/components.gyp:update_client',
         '../../components/components.gyp:upload_list',
+        '../../components/components.gyp:variations',
         '../../components/components.gyp:version_info',
         '../../components/components.gyp:web_resource',
         '../../components/components.gyp:webdata_services',
@@ -267,6 +269,8 @@
         'browser/memory/memory_debugger_manager.mm',
         'browser/memory/memory_metrics.cc',
         'browser/memory/memory_metrics.h',
+        'browser/metrics/field_trial_synchronizer.cc',
+        'browser/metrics/field_trial_synchronizer.h',
         'browser/metrics/ios_stability_metrics_provider.h',
         'browser/metrics/ios_stability_metrics_provider.mm',
         'browser/metrics/previous_session_info.h',
@@ -488,7 +492,7 @@
         ],
       },
     },
-    {   
+    {
       'target_name': 'app_group_common',
       'type': 'static_library',
       'sources': [
@@ -496,47 +500,47 @@
         'common/app_group/app_group_constants.mm',
         'common/app_group/app_group_metrics.h',
         'common/app_group/app_group_metrics.mm',
-      ],  
+      ],
       'dependencies': [
         # This target will be included into application extensions and the list
         # of its dependencies must be kept as short as possible.
         '../../base/base.gyp:base',
         '../../components/components.gyp:version_info',
-      ],  
+      ],
       'include_dirs': [
         '../..',
-      ],  
-    },  
-    {   
+      ],
+    },
+    {
       'target_name': 'app_group_client',
       'type': 'static_library',
       'sources': [
         'common/app_group/app_group_metrics_client.h',
         'common/app_group/app_group_metrics_client.mm',
-      ],  
+      ],
       'dependencies': [
         # This target will be included into application extensions and the list
         # of its dependencies must be kept as short as possible.
         'app_group_common',
-      ],  
+      ],
       'include_dirs': [
         '../..',
-      ],  
-    },  
-    {   
+      ],
+    },
+    {
       'target_name': 'app_group_mainapp',
       'type': 'static_library',
       'sources': [
         'common/app_group/app_group_metrics_mainapp.h',
         'common/app_group/app_group_metrics_mainapp.mm',
-      ],  
+      ],
       'dependencies': [
         'app_group_common',
-      ],  
+      ],
       'include_dirs': [
         '../..',
-      ],  
-    },  
+      ],
+    },
   ],
   'conditions': [
     ['enable_rlz_support==1', {
