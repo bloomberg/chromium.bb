@@ -659,7 +659,7 @@ bool ThreadState::shouldSchedulePreciseGC()
 
 bool ThreadState::shouldSchedulePageNavigationGC(float estimatedRemovalRatio)
 {
-    return judgeGCThreshold(1024 * 1024, 1.5);
+    return judgeGCThreshold(1024 * 1024, 1.5 * (1 - estimatedRemovalRatio));
 }
 
 bool ThreadState::shouldForceConservativeGC()
