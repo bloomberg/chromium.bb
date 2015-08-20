@@ -54,8 +54,8 @@ using web::NavigationManagerImpl;
 @property(nonatomic, readonly) CRWWebControllerContainerView* containerView;
 - (void)setJsMessageQueueThrottled:(BOOL)throttle;
 - (void)removeDocumentLoadCommandsFromQueue;
-- (GURL)updateURLForHistoryNavigationFromURL:(const GURL&)startURL
-                                       toURL:(const GURL&)endURL;
+- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
+                                 toItem:(web::NavigationItem*)toItem;
 - (BOOL)checkForUnexpectedURLChange;
 - (void)injectEarlyInjectionScripts;
 - (void)stopExpectingURLChangeIfNecessary;
@@ -379,6 +379,7 @@ class CRWWKWebViewWebControllerTest
 
     // Called by resetInjectedWebView
     [[result stub] configuration];
+    [[result stub] backForwardList];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
     [[result stub] setUIDelegate:OCMOCK_ANY];
     [[result stub] addObserver:webController_
@@ -824,23 +825,27 @@ WEB_TEST_F(CRWUIWebViewWebControllerTest,
       [urlsWithFragments addObject:[url stringByAppendingString:fragment]];
     }
   }
+  web::NavigationItemImpl fromItem;
+  web::NavigationItemImpl toItem;
 
   // No start fragment: the end url is never changed.
   for (NSString* start in urlsNoFragments) {
     for (NSString* end in urlsWithFragments) {
+      fromItem.SetURL(MAKE_URL(start));
+      toItem.SetURL(MAKE_URL(end));
       EXPECT_EQ(MAKE_URL(end),
-                [this->webController_
-                    updateURLForHistoryNavigationFromURL:MAKE_URL(start)
-                                                   toURL:MAKE_URL(end)]);
+                [this->webController_ URLForHistoryNavigationFromItem:&fromItem
+                                                               toItem:&toItem]);
     }
   }
   // Both contain fragments: the end url is never changed.
   for (NSString* start in urlsWithFragments) {
     for (NSString* end in urlsWithFragments) {
+      fromItem.SetURL(MAKE_URL(start));
+      toItem.SetURL(MAKE_URL(end));
       EXPECT_EQ(MAKE_URL(end),
-                [this->webController_
-                    updateURLForHistoryNavigationFromURL:MAKE_URL(start)
-                                                   toURL:MAKE_URL(end)]);
+                [this->webController_ URLForHistoryNavigationFromItem:&fromItem
+                                                               toItem:&toItem]);
     }
   }
   for (unsigned start_index = 0; start_index < [urlsWithFragments count];
@@ -851,17 +856,20 @@ WEB_TEST_F(CRWUIWebViewWebControllerTest,
       NSString* end = urlsNoFragments[end_index];
       if (start_index / 2 != end_index) {
         // The URLs have nothing in common, they are left untouched.
-        EXPECT_EQ(MAKE_URL(end),
-                  [this->webController_
-                      updateURLForHistoryNavigationFromURL:MAKE_URL(start)
-                                                     toURL:MAKE_URL(end)]);
+        fromItem.SetURL(MAKE_URL(start));
+        toItem.SetURL(MAKE_URL(end));
+        EXPECT_EQ(MAKE_URL(end), [this->webController_
+                                     URLForHistoryNavigationFromItem:&fromItem
+                                                              toItem:&toItem]);
       } else {
         // Start contains a fragment and matches end: An empty fragment is
         // added.
-        EXPECT_EQ(MAKE_URL([end stringByAppendingString:@"#"]),
-                  [this->webController_
-                      updateURLForHistoryNavigationFromURL:MAKE_URL(start)
-                                                     toURL:MAKE_URL(end)]);
+        fromItem.SetURL(MAKE_URL(start));
+        toItem.SetURL(MAKE_URL(end));
+        EXPECT_EQ(
+            MAKE_URL([end stringByAppendingString:@"#"]),
+            [this->webController_ URLForHistoryNavigationFromItem:&fromItem
+                                                           toItem:&toItem]);
       }
     }
   }

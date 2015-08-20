@@ -14,6 +14,7 @@
 @class CRWSessionController;
 namespace web {
 struct FrameInfo;
+class NavigationItem;
 }  // namespace web
 
 namespace web {
@@ -190,6 +191,19 @@ struct NewWindowInfo {
 // Clears WebUI, if one exists.
 - (void)clearWebUI;
 
+// Called to make a request for the URL of the current navigation item. Builds
+// a new NSURLRequest and calls |loadRequest| on the underlying web view.
+// Subclasses may override this to use native web view navigation instead,
+// where possible (for example, going back and forward through the history
+// stack).
+- (void)loadRequestForCurrentNavigationItem;
+
+// Compares the two URLs being navigated between during a history navigation to
+// determine if a # needs to be appended to the URL of |toItem| to trigger a
+// hashchange event. If so, also saves the modified URL into |toItem|.
+- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
+                                 toItem:(web::NavigationItem*)toItem;
+
 #pragma mark - Internal methods for use by subclasses
 
 // The web view's view of the current URL. During page transitions
@@ -364,8 +378,14 @@ struct NewWindowInfo {
 // Returns the referrer for the current page.
 - (web::Referrer)currentReferrer;
 
+// Returns the referrer for current navigation item. May be empty.
+- (web::Referrer)currentSessionEntryReferrer;
+
 // Returns the current transition type.
 - (ui::PageTransition)currentTransition;
+
+// Returns the current entry from the underlying session controller.
+- (CRWSessionEntry*)currentSessionEntry;
 
 // Resets pending external request information.
 - (void)resetExternalRequest;

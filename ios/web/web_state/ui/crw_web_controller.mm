@@ -320,11 +320,6 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 - (void)didFinishWithURL:(const GURL&)currentURL loadSuccess:(BOOL)loadSuccess;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
-// Compares the two URLs being navigated between during a history navigation to
-// determine if a # needs to be appended to endURL to trigger a hashchange
-// event. If so, also saves the new endURL in the current CRWSessionEntry.
-- (GURL)updateURLForHistoryNavigationFromURL:(const GURL&)startURL
-                                       toURL:(const GURL&)endURL;
 // Evaluates the supplied JavaScript in the web view. Calls |handler| with
 // results of the evaluation (which may be nil if the implementing object has no
 // way to run the evaluation or the evaluation returns a nil value) or an
@@ -394,16 +389,12 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject;
 
-// Returns the current entry from the underlying session controller.
 // TODO(stuartmorgan): Audit all calls to these methods; these are just wrappers
 // around the same logic as GetActiveEntry, so should probably not be used for
 // the same reason that GetActiveEntry is deprecated. (E.g., page operations
 // should generally be dealing with the last commited entry, not a pending
 // entry).
-- (CRWSessionEntry*)currentSessionEntry;
 - (web::NavigationItem*)currentNavItem;
-// Returns the referrer for currentURL as a string. May return nil.
-- (web::Referrer)currentSessionEntryReferrer;
 // The data and HTTP headers associated to the current entry. These are nil
 // unless the request was a POST.
 - (NSData*)currentPOSTData;
@@ -1314,8 +1305,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 // Load the current URL in a web view, first ensuring the web view is visible.
-// If a native controller is present, remove it and swap a new web view in
-// its place.
 - (void)loadCurrentURLInWebView {
   [self willLoadCurrentURLInWebView];
 
@@ -1335,15 +1324,22 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // JavaScript should never be evaluated here. User-entered JS should be
   // evaluated via stringByEvaluatingUserJavaScriptFromString.
   DCHECK(!targetURL.SchemeIs(url::kJavaScriptScheme));
+
   [self ensureWebViewCreated];
 
+  [self loadRequestForCurrentNavigationItem];
+}
+
+- (void)loadRequestForCurrentNavigationItem {
   DCHECK(self.webView && !self.nativeController);
-  NSMutableURLRequest* request =
-      [NSMutableURLRequest requestWithURL:net::NSURLWithGURL(targetURL)];
+  const GURL currentNavigationURL([self currentNavigationURL]);
+
+  NSMutableURLRequest* request = [NSMutableURLRequest
+      requestWithURL:net::NSURLWithGURL(currentNavigationURL)];
   const web::Referrer referrer([self currentSessionEntryReferrer]);
   if (referrer.url.is_valid()) {
     std::string referrerValue =
-        web::ReferrerHeaderValueForNavigation(targetURL, referrer);
+        web::ReferrerHeaderValueForNavigation(currentNavigationURL, referrer);
     if (!referrerValue.empty()) {
       [request setValue:base::SysUTF8ToNSString(referrerValue)
           forHTTPHeaderField:kReferrerHeaderName];
@@ -1361,6 +1357,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   }
 
+  // TODO(bhnascar): Move the POST handling out of here because it is
+  // UIWebView specific. See http://crbug.com/517242 .
   NSData* postData = [self currentPOSTData];
   if (postData) {
     web::NavigationItemImpl* currentItem =
@@ -1398,7 +1396,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // registerLoadRequest will be called when load is about to begin.
   // The phase at that point is guaranteed to be web::LOAD_REQUESTED.
   // However the delegate is not immediately called.
-  [self registerLoadRequest:targetURL
+  [self registerLoadRequest:currentNavigationURL
                    referrer:referrer
                  transition:[self currentTransition]];
   [self loadRequest:request];
@@ -1821,12 +1819,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self finishPushStateNavigationToURL:[self currentNavigationURL]
                          withStateObject:state];
   } else {
-    GURL activeURL = [self currentNavigationURL];
-    GURL fromURL = fromEntry.navigationItem->GetURL();
-    GURL endURL =
-        [self updateURLForHistoryNavigationFromURL:fromURL toURL:activeURL];
     web::NavigationItem* currentItem =
         _webStateImpl->GetNavigationManagerImpl().GetVisibleItem();
+    GURL endURL = [self URLForHistoryNavigationFromItem:fromEntry.navigationItem
+                                                 toItem:currentItem];
     ui::PageTransition transition = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_RELOAD | ui::PAGE_TRANSITION_FORWARD_BACK);
 
@@ -1839,8 +1835,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (GURL)updateURLForHistoryNavigationFromURL:(const GURL&)startURL
-                                       toURL:(const GURL&)endURL {
+- (GURL)URLForHistoryNavigationFromItem:(web::NavigationItem*)fromItem
+                                 toItem:(web::NavigationItem*)toItem {
+  const GURL& startURL = fromItem->GetURL();
+  const GURL& endURL = toItem->GetURL();
+
   // Check the state of the fragments on both URLs (aka, is there a '#' in the
   // url or not).
   if (!startURL.has_ref() || endURL.has_ref()) {
@@ -1858,10 +1857,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   url::StringPieceReplacements<std::string> emptyRef;
   emptyRef.SetRefStr("");
   GURL newEndURL = endURL.ReplaceComponents(emptyRef);
-  web::NavigationItem* item =
-      _webStateImpl->GetNavigationManagerImpl().GetVisibleItem();
-  if (item)
-    item->SetURL(newEndURL);
+  toItem->SetURL(newEndURL);
   return newEndURL;
 }
 
