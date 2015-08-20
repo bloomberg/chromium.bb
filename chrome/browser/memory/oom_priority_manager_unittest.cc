@@ -112,10 +112,10 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   int index = 0;
   EXPECT_EQ(kSelected, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kPlayingAudio, test_list[index++].child_process_host_id);
   EXPECT_EQ(kPinned, test_list[index++].child_process_host_id);
   EXPECT_EQ(kOldButPinned, test_list[index++].child_process_host_id);
   EXPECT_EQ(kApp, test_list[index++].child_process_host_id);
-  EXPECT_EQ(kPlayingAudio, test_list[index++].child_process_host_id);
   EXPECT_EQ(kRecent, test_list[index++].child_process_host_id);
   EXPECT_EQ(kOld, test_list[index++].child_process_host_id);
   EXPECT_EQ(kReallyOld, test_list[index++].child_process_host_id);

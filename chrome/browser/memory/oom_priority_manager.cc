@@ -71,6 +71,24 @@ int64 IdFromWebContents(WebContents* web_contents) {
   return reinterpret_cast<int64>(web_contents);
 }
 
+int FindTabStripModelById(int64 target_web_contents_id, TabStripModel** model) {
+  DCHECK(model);
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    Browser* browser = *it;
+    TabStripModel* local_model = browser->tab_strip_model();
+    for (int idx = 0; idx < local_model->count(); idx++) {
+      WebContents* web_contents = local_model->GetWebContentsAt(idx);
+      int64 web_contents_id = IdFromWebContents(web_contents);
+      if (web_contents_id == target_web_contents_id) {
+        *model = local_model;
+        return idx;
+      }
+    }
+  }
+
+  return -1;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,27 +185,29 @@ bool OomPriorityManager::DiscardTab() {
 }
 
 bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    Browser* browser = *it;
-    TabStripModel* model = browser->tab_strip_model();
-    for (int idx = 0; idx < model->count(); idx++) {
-      // Can't discard tabs that are already discarded or active.
-      if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
-        continue;
-      WebContents* web_contents = model->GetWebContentsAt(idx);
-      int64 web_contents_id = IdFromWebContents(web_contents);
-      if (web_contents_id == target_web_contents_id) {
-        VLOG(1) << "Discarding tab " << idx << " id " << target_web_contents_id;
-        // Record statistics before discarding because we want to capture the
-        // memory state that lead to the discard.
-        RecordDiscardStatistics();
-        model->DiscardWebContentsAt(idx);
-        recent_tab_discard_ = true;
-        return true;
-      }
-    }
-  }
-  return false;
+  TabStripModel* model;
+  int idx = FindTabStripModelById(target_web_contents_id, &model);
+
+  if (idx == -1)
+    return false;
+
+  // Can't discard tabs that are already discarded or active.
+  if (model->IsTabDiscarded(idx) || (model->active_index() == idx))
+    return false;
+
+  // We also ignore tabs that are playing audio as it's too distruptive to
+  // the user experience.
+  if (model->GetWebContentsAt(idx)->WasRecentlyAudible())
+    return false;
+
+  VLOG(1) << "Discarding tab " << idx << " id " << target_web_contents_id;
+  // Record statistics before discarding because we want to capture the
+  // memory state that lead to the discard.
+  RecordDiscardStatistics();
+  model->DiscardWebContentsAt(idx);
+  recent_tab_discard_ = true;
+
+  return true;
 }
 
 void OomPriorityManager::LogMemoryAndDiscardTab() {
@@ -320,6 +340,11 @@ bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
   if (first.is_selected != second.is_selected)
     return first.is_selected;
 
+  // Protect streaming audio and video conferencing tabs as these are similar to
+  // active tabs.
+  if (first.is_playing_audio != second.is_playing_audio)
+    return first.is_playing_audio;
+
   // Tab with internal web UI like NTP or Settings are good choices to discard,
   // so protect non-Web UI and let the other conditionals finish the sort.
   if (first.is_internal_page != second.is_internal_page)
@@ -333,10 +358,6 @@ bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
   // window and we don't want to discard that.
   if (first.is_app != second.is_app)
     return first.is_app;
-
-  // Protect streaming audio and video conferencing tabs.
-  if (first.is_playing_audio != second.is_playing_audio)
-    return first.is_playing_audio;
 
   // TODO(jamescook): Incorporate sudden_termination_allowed into the sort
   // order.  We don't do this now because pages with unload handlers set
