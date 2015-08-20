@@ -71,6 +71,8 @@
         'aw_resource.h',
         'aw_settings.cc',
         'aw_settings.h',
+        'aw_webview_lifecycle_observer.cc',
+        'aw_webview_lifecycle_observer.h',
         'aw_web_contents_delegate.cc',
         'aw_web_contents_delegate.h',
         'aw_web_contents_view_delegate.cc',
@@ -123,6 +125,7 @@
       'type': 'none',
       'sources': [
           '../java/src/org/chromium/android_webview/AndroidProtocolHandler.java',
+          '../java/src/org/chromium/android_webview/AwWebViewLifecycleObserver.java',
           '../java/src/org/chromium/android_webview/AwAutofillClient.java',
           '../java/src/org/chromium/android_webview/AwContents.java',
           '../java/src/org/chromium/android_webview/AwContentsClientBridge.java',

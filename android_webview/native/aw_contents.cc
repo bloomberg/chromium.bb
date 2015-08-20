@@ -25,6 +25,7 @@
 #include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
+#include "android_webview/native/aw_webview_lifecycle_observer.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/permission/aw_permission_request.h"
 #include "android_webview/native/permission/permission_request_handler.h"
@@ -185,7 +186,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
           this,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
-  base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
+  int32_t current_instance_count =
+      base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
   web_contents_->SetUserData(android_webview::kAwContentsUserDataKey,
@@ -204,6 +206,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
   content::SynchronousCompositor::SetClientForWebContents(
       web_contents_.get(), &browser_view_renderer_);
+  if (current_instance_count == 1)
+    AwWebViewLifecycleObserver::OnFirstWebViewCreated();
 }
 
 void AwContents::SetJavaPeers(JNIEnv* env,
@@ -297,8 +301,11 @@ AwContents::~AwContents() {
   // Chromium, because the app process may continue to run for a long time
   // without ever using another WebView.
   if (base::subtle::NoBarrier_Load(&g_instance_count) == 0) {
+    // TODO(timvolodine): consider moving NotifyMemoryPressure to
+    // AwWebViewLifecycleObserver (crbug.com/522988).
     base::MemoryPressureListener::NotifyMemoryPressure(
         base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+    AwWebViewLifecycleObserver::OnLastWebViewDestroyed();
   }
 }
 
