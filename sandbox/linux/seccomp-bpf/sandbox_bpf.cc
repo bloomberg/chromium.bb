@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/third_party/valgrind/valgrind.h"
+#include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
@@ -107,6 +108,14 @@ uint64_t EscapePC() {
     return 0;
   }
   return static_cast<uint64_t>(static_cast<uintptr_t>(rv));
+}
+
+intptr_t SandboxPanicTrap(const struct arch_seccomp_data&, void* aux) {
+  SANDBOX_DIE(static_cast<const char*>(aux));
+}
+
+bpf_dsl::ResultExpr SandboxPanic(const char* error) {
+  return bpf_dsl::Trap(SandboxPanicTrap, error);
 }
 
 }  // namespace
@@ -219,6 +228,7 @@ scoped_ptr<CodeGen::Program> SandboxBPF::AssembleFilter(
   if (Trap::SandboxDebuggingAllowedByUser()) {
     compiler.DangerousSetEscapePC(EscapePC());
   }
+  compiler.SetPanicFunc(SandboxPanic);
   return compiler.Compile(force_verification);
 }
 

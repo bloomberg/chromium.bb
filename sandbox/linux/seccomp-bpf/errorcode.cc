@@ -18,6 +18,10 @@ ErrorCode::ErrorCode(int err) {
       err_ = SECCOMP_RET_ALLOW;
       error_type_ = ET_SIMPLE;
       break;
+    case ERR_KILL:
+      err_ = SECCOMP_RET_KILL;
+      error_type_ = ET_SIMPLE;
+      break;
     case ERR_MIN_ERRNO... ERR_MAX_ERRNO:
       err_ = SECCOMP_RET_ERRNO + err;
       error_type_ = ET_SIMPLE;

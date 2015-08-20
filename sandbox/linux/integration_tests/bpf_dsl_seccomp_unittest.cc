@@ -1267,7 +1267,7 @@ ResultExpr AllBitTestPolicy::EvaluateSyscall(int sysno) const {
         .Case(9, HasAllBits64(0x300000000ULL))
         .Case(10, HasAllBits64(0x100000001ULL))
 #endif
-        .Default(Kill("Invalid test case number"));
+        .Default(Kill());
   }
   return Allow();
 }
@@ -1453,7 +1453,7 @@ ResultExpr AnyBitTestPolicy::EvaluateSyscall(int sysno) const {
         .Case(9, HasAnyBits64(0x300000000ULL))
         .Case(10, HasAnyBits64(0x100000001ULL))
 #endif
-        .Default(Kill("Invalid test case number"));
+        .Default(Kill());
   }
   return Allow();
 }
@@ -1598,7 +1598,7 @@ ResultExpr MaskedEqualTestPolicy::EvaluateSyscall(int sysno) const {
         .Case(1, MaskedEqual64(0x00ff00ff00000000, 0x005500aa00000000))
         .Case(2, MaskedEqual64(0x00ff00ff00ff00ff, 0x005500aa005500aa))
 #endif
-        .Default(Kill("Invalid test case number"));
+        .Default(Kill());
   }
 
   return Allow();

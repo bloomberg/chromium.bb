@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
+#include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/sandbox_export.h"
 
@@ -27,6 +28,8 @@ class Policy;
 // Linux kernel.
 class SANDBOX_EXPORT PolicyCompiler {
  public:
+  using PanicFunc = bpf_dsl::ResultExpr (*)(const char* error);
+
   PolicyCompiler(const Policy* policy, TrapRegistry* registry);
   ~PolicyCompiler();
 
@@ -37,6 +40,12 @@ class SANDBOX_EXPORT PolicyCompiler {
   // DangerousSetEscapePC sets the "escape PC" that is allowed to issue any
   // system calls, regardless of policy.
   void DangerousSetEscapePC(uint64_t escapepc);
+
+  // SetPanicFunc sets the callback function used for handling faulty
+  // system call conditions.  The default behavior is to immediately kill
+  // the process.
+  // TODO(mdempsky): Move this into Policy?
+  void SetPanicFunc(PanicFunc panic_func);
 
   // Error returns an ErrorCode to indicate the system call should fail with
   // the specified error number.
@@ -145,6 +154,7 @@ class SANDBOX_EXPORT PolicyCompiler {
   const Policy* policy_;
   TrapRegistry* registry_;
   uint64_t escapepc_;
+  PanicFunc panic_func_;
 
   Conds conds_;
   CodeGen gen_;

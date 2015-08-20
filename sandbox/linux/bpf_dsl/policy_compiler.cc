@@ -56,6 +56,10 @@ bool HasExactlyOneBit(uint64_t x) {
   return x != 0 && (x & (x - 1)) == 0;
 }
 
+ResultExpr DefaultPanic(const char* error) {
+  return Kill();
+}
+
 // A Trap() handler that returns an "errno" value. The value is encoded
 // in the "aux" parameter.
 intptr_t ReturnErrno(const struct arch_seccomp_data&, void* aux) {
@@ -88,6 +92,7 @@ PolicyCompiler::PolicyCompiler(const Policy* policy, TrapRegistry* registry)
     : policy_(policy),
       registry_(registry),
       escapepc_(0),
+      panic_func_(DefaultPanic),
       conds_(),
       gen_(),
       has_unsafe_traps_(HasUnsafeTraps(policy_)) {
@@ -137,6 +142,10 @@ void PolicyCompiler::DangerousSetEscapePC(uint64_t escapepc) {
   escapepc_ = escapepc;
 }
 
+void PolicyCompiler::SetPanicFunc(PanicFunc panic_func) {
+  panic_func_ = panic_func;
+}
+
 CodeGen::Node PolicyCompiler::AssemblePolicy() {
   // A compiled policy consists of three logical parts:
   //   1. Check that the "arch" field matches the expected architecture.
@@ -152,9 +161,9 @@ CodeGen::Node PolicyCompiler::CheckArch(CodeGen::Node passed) {
   // system call.
   return gen_.MakeInstruction(
       BPF_LD + BPF_W + BPF_ABS, SECCOMP_ARCH_IDX,
-      gen_.MakeInstruction(
-          BPF_JMP + BPF_JEQ + BPF_K, SECCOMP_ARCH, passed,
-          CompileResult(Kill("Invalid audit architecture in BPF filter"))));
+      gen_.MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, SECCOMP_ARCH, passed,
+                           CompileResult(panic_func_(
+                               "Invalid audit architecture in BPF filter"))));
 }
 
 CodeGen::Node PolicyCompiler::MaybeAddEscapeHatch(CodeGen::Node rest) {
@@ -209,7 +218,7 @@ CodeGen::Node PolicyCompiler::CheckSyscallNumber(CodeGen::Node passed) {
     // On Intel architectures, verify that system call numbers are in the
     // expected number range.
     CodeGen::Node invalidX32 =
-        CompileResult(Kill("Illegal mixing of system call ABIs"));
+        CompileResult(panic_func_("Illegal mixing of system call ABIs"));
     if (kIsX32) {
       // The newer x32 API always sets bit 30.
       return gen_.MakeInstruction(
@@ -445,7 +454,7 @@ CodeGen::Node PolicyCompiler::CondExpressionHalf(const ErrorCode& cond,
 }
 
 ErrorCode PolicyCompiler::Unexpected64bitArgument() {
-  return Kill("Unexpected 64bit argument detected")->Compile(this);
+  return panic_func_("Unexpected 64bit argument detected")->Compile(this);
 }
 
 ErrorCode PolicyCompiler::Error(int err) {

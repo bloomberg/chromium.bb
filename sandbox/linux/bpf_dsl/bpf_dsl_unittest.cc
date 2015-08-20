@@ -134,6 +134,10 @@ class PolicyEmulator {
     EXPECT_EQ(SECCOMP_RET_ERRNO | err, Emulate(data));
   }
 
+  void ExpectKill(const struct arch_seccomp_data& data) const {
+    EXPECT_EQ(SECCOMP_RET_KILL, Emulate(data));
+  }
+
  private:
   CodeGen::Program program_;
   FakeTrapRegistry traps_;
@@ -152,7 +156,7 @@ class BasicPolicy : public Policy {
     }
     if (sysno == __NR_setuid) {
       const Arg<uid_t> uid(0);
-      return If(uid != 42, Error(ESRCH)).Else(Error(ENOMEM));
+      return If(uid != 42, Kill()).Else(Allow());
     }
     return Allow();
   }
@@ -168,8 +172,8 @@ TEST(BPFDSL, Basic) {
   emulator.ExpectErrno(EPERM, FakeSyscall(__NR_getpgid, 0));
   emulator.ExpectErrno(EINVAL, FakeSyscall(__NR_getpgid, 1));
 
-  emulator.ExpectErrno(ENOMEM, FakeSyscall(__NR_setuid, 42));
-  emulator.ExpectErrno(ESRCH, FakeSyscall(__NR_setuid, 43));
+  emulator.ExpectAllow(FakeSyscall(__NR_setuid, 42));
+  emulator.ExpectKill(FakeSyscall(__NR_setuid, 43));
 }
 
 /* On IA-32, socketpair() is implemented via socketcall(). :-( */

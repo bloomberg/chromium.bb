@@ -55,7 +55,7 @@
 //
 // More generally, the DSL currently supports the following grammar:
 //
-//   result = Allow() | Error(errno) | Kill(msg) | Trace(aux)
+//   result = Allow() | Error(errno) | Kill() | Trace(aux)
 //          | Trap(trap_func, aux) | UnsafeTrap(trap_func, aux)
 //          | If(bool, result)[.ElseIf(bool, result)].Else(result)
 //          | Switch(arg)[.Case(val, result)].Default(result)
@@ -89,8 +89,8 @@ SANDBOX_EXPORT ResultExpr Allow();
 // side effects.
 SANDBOX_EXPORT ResultExpr Error(int err);
 
-// Kill specifies a result to kill the program and print an error message.
-SANDBOX_EXPORT ResultExpr Kill(const char* msg);
+// Kill specifies a result to kill the process (task) immediately.
+SANDBOX_EXPORT ResultExpr Kill();
 
 // Trace specifies a result to notify a tracing process via the
 // PTRACE_EVENT_SECCOMP event and allow it to change or skip the system call.
