@@ -11,6 +11,7 @@ component("message_center") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//components/url_formatter",
     "//skia",
     "//ui/accessibility",
     "//ui/base",

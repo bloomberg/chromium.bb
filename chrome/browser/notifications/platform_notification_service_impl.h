@@ -90,10 +90,10 @@ class PlatformNotificationServiceImpl
   friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
   friend class PushMessagingBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(
-      PlatformNotificationServiceTest, DisplayNameForOrigin);
   FRIEND_TEST_ALL_PREFIXES(PlatformNotificationServiceTest,
-                           TestWebOriginDisplayName);
+                           CreateNotificationFromData);
+  FRIEND_TEST_ALL_PREFIXES(PlatformNotificationServiceTest,
+                           DisplayNameForContextMessage);
 
   PlatformNotificationServiceImpl();
   ~PlatformNotificationServiceImpl() override;
@@ -112,18 +112,9 @@ class PlatformNotificationServiceImpl
   // used by tests. Tests are responsible for cleaning up after themselves.
   void SetNotificationUIManagerForTesting(NotificationUIManager* manager);
 
-  // Returns a display name for an origin, to be used in permission infobar or
-  // on the frame of the notification toast. Different from the origin itself
-  // when dealing with extensions.
-  base::string16 DisplayNameForOrigin(Profile* profile,
-                                      const GURL& origin) const;
-
-  // Translates a URL into a slightly more readable version that may omit
-  // the port and scheme for common cases.
-  // TODO(dewittj): Remove this when the proper function is implemented in a
-  // chrome/browser/ui library function.  See crbug.com/402698.
-  static base::string16 WebOriginDisplayName(const GURL& origin,
-                                             const std::string& languages);
+  // Returns a display name for an origin, to be used in the context message
+  base::string16 DisplayNameForContextMessage(Profile* profile,
+                                              const GURL& origin) const;
 
   // Weak reference. Ownership maintains with the test.
   NotificationUIManager* notification_ui_manager_for_tests_;

@@ -121,13 +121,13 @@ DownloadItemNotification::DownloadItemNotification(
   // by UpdateNotificationData() below.
   notification_.reset(new Notification(
       message_center::NOTIFICATION_TYPE_PROGRESS,
-      GURL(kDownloadNotificationOrigin),  // origin_url
-      base::string16(),                   // title
-      base::string16(),                   // body
+      base::string16(),  // title
+      base::string16(),  // body
       bundle.GetImageNamed(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kDownloadNotificationNotifierId),
       base::string16(),                    // display_source
+      GURL(kDownloadNotificationOrigin),   // origin_url
       base::UintToString(item_->GetId()),  // tag
       data, watcher()));
 
@@ -779,4 +779,3 @@ bool DownloadItemNotification::IsNotificationVisible() const {
   }
   return false;
 }
-

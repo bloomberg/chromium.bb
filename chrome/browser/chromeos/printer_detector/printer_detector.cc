@@ -211,14 +211,14 @@ void ShowPrinterPluggedNotification(
                               PRINTER_SERVICE_EVENT_MAX);
     notification.reset(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
-        GURL(kPrinterProviderFoundNotificationID),
         GetNotificationTitle(device->vendor_id(), device->product_id()),
         l10n_util::GetStringUTF16(
             IDS_PRINTER_DETECTED_NOTIFICATION_PRINT_APP_FOUND_BODY),
         bundle.GetImageNamed(IDR_PRINTER_NOTIFICATION),
         message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                    kPrinterProviderFoundNotificationID),
-        base::string16(), GetNotificationTag(kVendorIdStr, kProductIdStr),
+        base::string16(), GURL(kPrinterProviderFoundNotificationID),
+        GetNotificationTag(kVendorIdStr, kProductIdStr),
         message_center::RichNotificationData(),
         new PrinterProviderExistsNotificationDelegate(kVendorIdStr,
                                                       kProductIdStr)));
@@ -230,17 +230,17 @@ void ShowPrinterPluggedNotification(
     options.clickable = true;
     notification.reset(new Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
-        GURL(kNoPrinterProviderNotificationID),
         GetNotificationTitle(device->vendor_id(), device->product_id()),
         l10n_util::GetStringUTF16(
             IDS_PRINTER_DETECTED_NOTIFICATION_NO_PRINT_APP_BODY),
         bundle.GetImageNamed(IDR_PRINTER_NOTIFICATION),
         message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                    kNoPrinterProviderNotificationID),
-        base::string16(), GetNotificationTag(kVendorIdStr, kProductIdStr),
-        options, new SearchPrinterAppNotificationDelegate(
-                     profile, device->vendor_id(), kVendorIdStr,
-                     device->product_id(), kProductIdStr)));
+        base::string16(), GURL(kNoPrinterProviderNotificationID),
+        GetNotificationTag(kVendorIdStr, kProductIdStr), options,
+        new SearchPrinterAppNotificationDelegate(
+            profile, device->vendor_id(), kVendorIdStr, device->product_id(),
+            kProductIdStr)));
   }
 
   notification->SetSystemPriority();

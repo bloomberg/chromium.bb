@@ -257,17 +257,12 @@ void PrivetNotificationService::PrivetNotify(int devices_active,
           IDS_LOCAL_DISCOVERY_NOTIFICATIONS_DISABLE_BUTTON_LABEL)));
 
   Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      GURL(kPrivetNotificationOriginUrl),
-      title,
-      body,
+      message_center::NOTIFICATION_TYPE_SIMPLE, title, body,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
       message_center::NotifierId(GURL(kPrivetNotificationOriginUrl)),
-      product_name,
-      kPrivetNotificationID,
-      rich_notification_data,
-      new PrivetNotificationDelegate(profile_));
+      product_name, GURL(kPrivetNotificationOriginUrl), kPrivetNotificationID,
+      rich_notification_data, new PrivetNotificationDelegate(profile_));
 
   bool updated = g_browser_process->notification_ui_manager()->Update(
       notification, profile_object);

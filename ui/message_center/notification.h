@@ -16,6 +16,7 @@
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
+#include "url/gurl.h"
 
 namespace message_center {
 
@@ -62,6 +63,7 @@ class MESSAGE_CENTER_EXPORT Notification {
                const base::string16& message,
                const gfx::Image& icon,
                const base::string16& display_source,
+               const GURL& origin_url,
                const NotifierId& notifier_id,
                const RichNotificationData& optional_fields,
                NotificationDelegate* delegate);
@@ -91,6 +93,11 @@ class MESSAGE_CENTER_EXPORT Notification {
 
   const base::string16& message() const { return message_; }
   void set_message(const base::string16& message) { message_ = message; }
+
+  // The origin URL of the script which requested the notification.
+  // Can be empty if the notification is requested by an extension or
+  // Chrome app.
+  const GURL& origin_url() const { return origin_url_; }
 
   // A display string for the source of the notification.
   const base::string16& display_source() const { return display_source_; }
@@ -123,12 +130,16 @@ class MESSAGE_CENTER_EXPORT Notification {
     optional_fields_.timestamp = timestamp;
   }
 
-  const base::string16& context_message() const {
+  const base::string16 context_message() const {
     return optional_fields_.context_message;
   }
+
   void set_context_message(const base::string16& context_message) {
     optional_fields_.context_message = context_message;
   }
+
+  // Decides if the notification origin should be used as a context message
+  bool UseOriginAsContextMessage() const;
 
   const std::vector<NotificationItem>& items() const {
     return optional_fields_.items;
@@ -233,6 +244,10 @@ class MESSAGE_CENTER_EXPORT Notification {
   base::string16 display_source_;
 
  private:
+  // The origin URL of the script which requested the notification.
+  // Can be empty if requested through a chrome app or extension or if
+  // it's a system notification.
+  GURL origin_url_;
   NotifierId notifier_id_;
   unsigned serial_number_;
   RichNotificationData optional_fields_;

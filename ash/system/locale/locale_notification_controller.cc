@@ -100,18 +100,15 @@ void LocaleNotificationController::OnLocaleChanged(
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      kLocaleChangeNotificationId,
-      base::string16()  /* title */,
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE, from, to),
+      message_center::NOTIFICATION_TYPE_SIMPLE, kLocaleChangeNotificationId,
+      base::string16() /* title */,
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_MESSAGE,
+                                 from, to),
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_LOCALE),
-      base::string16()  /* display_source */,
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierLocale),
-      optional,
-      new LocaleNotificationDelegate(delegate)));
+      base::string16() /* display_source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierLocale),
+      optional, new LocaleNotificationDelegate(delegate)));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 

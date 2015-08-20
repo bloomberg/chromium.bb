@@ -225,18 +225,14 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      kNotificationId,
-      message,
-      timeout_message,
-      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
-      base::string16() /* display_source */,
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
+      timeout_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+      base::string16() /* display_source */, GURL(),
       message_center::NotifierId(
           message_center::NotifierId::SYSTEM_COMPONENT,
           system_notifier::kNotifierDisplayResolutionChange),
-      data,
-      new ResolutionChangeNotificationDelegate(
-          this, change_info_->timeout_count > 0)));
+      data, new ResolutionChangeNotificationDelegate(
+                this, change_info_->timeout_count > 0)));
   notification->SetSystemPriority();
   message_center->AddNotification(notification.Pass());
 }

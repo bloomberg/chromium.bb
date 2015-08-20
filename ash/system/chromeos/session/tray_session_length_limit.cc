@@ -149,18 +149,16 @@ void TraySessionLengthLimit::UpdateNotification() {
       (limit_state_ != last_limit_state_);
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          kNotificationId,
+          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           base::string16() /* title */,
           ComposeNotificationMessage() /* message */,
           bundle.GetImageNamed(
               IDR_AURA_UBER_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT),
-          base::string16() /* display_source */,
+          base::string16() /* display_source */, GURL(),
           message_center::NotifierId(
               message_center::NotifierId::SYSTEM_COMPONENT,
               system_notifier::kNotifierSessionLengthTimeout),
-          data,
-          NULL /* delegate */));
+          data, NULL /* delegate */));
   notification->SetSystemPriority();
   if (message_center->FindVisibleNotificationById(kNotificationId))
     message_center->UpdateNotification(kNotificationId, notification.Pass());

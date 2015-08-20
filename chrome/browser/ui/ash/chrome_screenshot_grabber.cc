@@ -410,7 +410,7 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
     optional_field.buttons.push_back(message_center::ButtonInfo(label));
   }
   return new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, GURL(kNotificationOriginUrl),
+      message_center::NOTIFICATION_TYPE_SIMPLE,
       l10n_util::GetStringUTF16(
           GetScreenshotNotificationTitle(screenshot_result)),
       l10n_util::GetStringUTF16(
@@ -420,7 +420,7 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  ash::system_notifier::kNotifierScreenshot),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
-      notification_id, optional_field,
+      GURL(kNotificationOriginUrl), notification_id, optional_field,
       new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                 screenshot_path));
 }

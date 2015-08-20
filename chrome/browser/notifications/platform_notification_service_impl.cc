@@ -323,17 +323,17 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
     const SkBitmap& icon,
     const content::PlatformNotificationData& notification_data,
     NotificationDelegate* delegate) const {
-  base::string16 display_source = DisplayNameForOrigin(profile, origin);
-
   // TODO(peter): Icons for Web Notifications are currently always requested for
   // 1x scale, whereas the displays on which they can be displayed can have a
   // different pixel density. Be smarter about this when the API gets updated
   // with a way for developers to specify images of different resolutions.
-  Notification notification(origin, notification_data.title,
-      notification_data.body, gfx::Image::CreateFrom1xBitmap(icon),
-      display_source, notification_data.tag, delegate);
+  Notification notification(
+      origin, notification_data.title, notification_data.body,
+      gfx::Image::CreateFrom1xBitmap(icon), base::UTF8ToUTF16(origin.host()),
+      notification_data.tag, delegate);
 
-  notification.set_context_message(display_source);
+  notification.set_context_message(
+      DisplayNameForContextMessage(profile, origin));
   notification.set_vibration_pattern(notification_data.vibration_pattern);
   notification.set_silent(notification_data.silent);
 
@@ -362,7 +362,7 @@ void PlatformNotificationServiceImpl::SetNotificationUIManagerForTesting(
   notification_ui_manager_for_tests_ = manager;
 }
 
-base::string16 PlatformNotificationServiceImpl::DisplayNameForOrigin(
+base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(
     Profile* profile,
     const GURL& origin) const {
 #if defined(ENABLE_EXTENSIONS)
@@ -377,38 +377,5 @@ base::string16 PlatformNotificationServiceImpl::DisplayNameForOrigin(
   }
 #endif
 
-  std::string languages =
-      profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
-
-  return WebOriginDisplayName(origin, languages);
-}
-
-// static
-// TODO(palmer): It might be good to replace this with a call to
-// |FormatUrlForSecurityDisplay|. crbug.com/496965
-base::string16 PlatformNotificationServiceImpl::WebOriginDisplayName(
-    const GURL& origin,
-    const std::string& languages) {
-  if (origin.SchemeIsHTTPOrHTTPS()) {
-    base::string16 formatted_origin;
-    if (origin.SchemeIs(url::kHttpScheme)) {
-      const url::Parsed& parsed = origin.parsed_for_possibly_invalid_spec();
-      const std::string& spec = origin.possibly_invalid_spec();
-      formatted_origin.append(
-          spec.begin(),
-          spec.begin() +
-              parsed.CountCharactersBefore(url::Parsed::USERNAME, true));
-    }
-    formatted_origin.append(
-        url_formatter::IDNToUnicode(origin.host(), languages));
-    if (origin.has_port()) {
-      formatted_origin.push_back(':');
-      formatted_origin.append(base::UTF8ToUTF16(origin.port()));
-    }
-    return formatted_origin;
-  }
-
-  // TODO(dewittj): Once file:// URLs are passed in to the origin
-  // GURL here, begin returning the path as the display name.
-  return url_formatter::FormatUrl(origin, languages);
+  return base::string16();
 }

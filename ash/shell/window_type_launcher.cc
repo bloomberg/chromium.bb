@@ -311,16 +311,13 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == show_web_notification_) {
     scoped_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        "id0",
+        message_center::NOTIFICATION_TYPE_SIMPLE, "id0",
         base::ASCIIToUTF16("Test Shell Web Notification"),
-        base::ASCIIToUTF16("Notification message body."),
-        gfx::Image(),
-        base::ASCIIToUTF16("www.testshell.org"),
-        message_center::NotifierId(
-            message_center::NotifierId::APPLICATION, "test-id"),
-        message_center::RichNotificationData(),
-        NULL /* delegate */));
+        base::ASCIIToUTF16("Notification message body."), gfx::Image(),
+        base::ASCIIToUTF16("www.testshell.org"), GURL(),
+        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                   "test-id"),
+        message_center::RichNotificationData(), NULL /* delegate */));
 
     ash::Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget()
         ->web_notification_tray()->message_center()

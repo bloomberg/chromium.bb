@@ -94,16 +94,11 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 
   std::string AddNotification() {
     std::string id = base::IntToString(id_++);
-    scoped_ptr<Notification> notification(
-        new Notification(NOTIFICATION_TYPE_BASE_FORMAT,
-                         id,
-                         base::UTF8ToUTF16("test title"),
-                         base::UTF8ToUTF16("test message"),
-                         gfx::Image(),
-                         base::string16() /* display_source */,
-                         NotifierId(),
-                         message_center::RichNotificationData(),
-                         NULL /* delegate */));
+    scoped_ptr<Notification> notification(new Notification(
+        NOTIFICATION_TYPE_BASE_FORMAT, id, base::UTF8ToUTF16("test title"),
+        base::UTF8ToUTF16("test message"), gfx::Image(),
+        base::string16() /* display_source */, GURL(), NotifierId(),
+        message_center::RichNotificationData(), NULL /* delegate */));
     MessageCenter::Get()->AddNotification(notification.Pass());
     return id;
   }

@@ -11,6 +11,8 @@
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/view_targeter_delegate.h"
 
+class GURL;
+
 namespace views {
 class ProgressBar;
 }
@@ -73,6 +75,7 @@ class MESSAGE_CENTER_EXPORT NotificationView
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, CreateOrUpdateTest);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, FormatContextMessageTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestLineLimits);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestImageSizing);
@@ -98,6 +101,12 @@ class MESSAGE_CENTER_EXPORT NotificationView
 
   int GetMessageLineLimit(int title_lines, int width) const;
   int GetMessageHeight(int width, int limit) const;
+
+  // Formats the context message to be displayed based on |context|
+  // so it shows as much information as possible
+  // given the space available in the ContextMessage section of the
+  // notification.
+  base::string16 FormatContextMessage(const Notification& notification) const;
 
   MessageCenterController* controller_;  // Weak, lives longer then views.
 

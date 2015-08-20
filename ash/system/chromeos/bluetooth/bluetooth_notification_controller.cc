@@ -274,19 +274,15 @@ void BluetoothNotificationController::NotifyAdapterDiscoverable() {
 
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      kBluetoothDeviceDiscoverableNotificationId,
-      base::string16() /* title */,
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
-          base::UTF8ToUTF16(adapter_->GetName()),
-          base::UTF8ToUTF16(adapter_->GetAddress())),
+      kBluetoothDeviceDiscoverableNotificationId, base::string16() /* title */,
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERABLE,
+                                 base::UTF8ToUTF16(adapter_->GetName()),
+                                 base::UTF8ToUTF16(adapter_->GetAddress())),
       bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
-      base::string16() /* display source */,
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierBluetooth),
-      optional,
-      NULL));
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierBluetooth),
+      optional, NULL));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
@@ -308,17 +304,13 @@ void BluetoothNotificationController::NotifyPairing(
 
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      kBluetoothDevicePairingNotificationId,
-      base::string16()  /* title */,
-      message,
-      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
-      base::string16()  /* display source */,
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierBluetooth),
-      optional,
-      new BluetoothPairingNotificationDelegate(adapter_,
-                                               device->GetAddress())));
+      kBluetoothDevicePairingNotificationId, base::string16() /* title */,
+      message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierBluetooth),
+      optional, new BluetoothPairingNotificationDelegate(
+                    adapter_, device->GetAddress())));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
@@ -336,17 +328,14 @@ void BluetoothNotificationController::NotifyPairedDevice(
 
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      kBluetoothDevicePairedNotificationId,
-      base::string16() /* title */,
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED, device->GetName()),
+      kBluetoothDevicePairedNotificationId, base::string16() /* title */,
+      l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED,
+                                 device->GetName()),
       bundle.GetImageNamed(IDR_AURA_NOTIFICATION_BLUETOOTH),
-      base::string16() /* display source */,
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierBluetooth),
-      optional,
-      NULL));
+      base::string16() /* display source */, GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierBluetooth),
+      optional, NULL));
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 

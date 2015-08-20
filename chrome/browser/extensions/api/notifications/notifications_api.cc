@@ -358,18 +358,12 @@ bool NotificationsApiFunction::CreateNotification(
   NotificationsApiDelegate* api_delegate(new NotificationsApiDelegate(
       this, GetProfile(), extension_->id(), id));  // ownership is passed to
                                                    // Notification
-  Notification notification(type,
-                            extension_->url(),
-                            title,
-                            message,
-                            icon,
-                            message_center::NotifierId(
-                                message_center::NotifierId::APPLICATION,
-                                extension_->id()),
-                            base::UTF8ToUTF16(extension_->name()),
-                            api_delegate->id(),
-                            optional_fields,
-                            api_delegate);
+  Notification notification(
+      type, title, message, icon,
+      message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                 extension_->id()),
+      base::UTF8ToUTF16(extension_->name()), extension_->url(),
+      api_delegate->id(), optional_fields, api_delegate);
 
   g_browser_process->notification_ui_manager()->Add(notification, GetProfile());
   return true;

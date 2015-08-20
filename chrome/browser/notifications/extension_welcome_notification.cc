@@ -260,12 +260,10 @@ void ExtensionWelcomeNotification::ShowWelcomeNotification(
             l10n_util::GetStringUTF16(IDS_NOTIFICATION_WELCOME_BODY),
             ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_NOTIFICATION_WELCOME_ICON),
-            display_source,
-            notifier_id_,
-            rich_notification_data,
-            new NotificationCallbacks(
-                profile_, notifier_id_, welcome_notification_id_,
-                delegate_.get())));
+            display_source, GURL(), notifier_id_, rich_notification_data,
+            new NotificationCallbacks(profile_, notifier_id_,
+                                      welcome_notification_id_,
+                                      delegate_.get())));
 
     if (pop_up_request == POP_UP_HIDDEN)
       message_center_notification->set_shown_as_popup(true);

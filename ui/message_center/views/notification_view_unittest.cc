@@ -165,16 +165,11 @@ void NotificationViewTest::SetUp() {
   // Create a dummy notification.
   SkBitmap bitmap;
   data_.reset(new RichNotificationData());
-  notification_.reset(
-      new Notification(NOTIFICATION_TYPE_BASE_FORMAT,
-                       std::string("notification id"),
-                       base::UTF8ToUTF16("title"),
-                       base::UTF8ToUTF16("message"),
-                       CreateTestImage(80, 80),
-                       base::UTF8ToUTF16("display source"),
-                       NotifierId(NotifierId::APPLICATION, "extension_id"),
-                       *data_,
-                       NULL));
+  notification_.reset(new Notification(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string("notification id"),
+      base::UTF8ToUTF16("title"), base::UTF8ToUTF16("message"),
+      CreateTestImage(80, 80), base::UTF8ToUTF16("display source"), GURL(),
+      NotifierId(NotifierId::APPLICATION, "extension_id"), *data_, NULL));
   notification_->set_small_image(CreateTestImage(16, 16));
   notification_->set_image(CreateTestImage(320, 240));
 
@@ -267,7 +262,7 @@ TEST_F(NotificationViewTest, TestLineLimits) {
   EXPECT_EQ(2, notification_view()->GetMessageLineLimit(1, 360));
   EXPECT_EQ(1, notification_view()->GetMessageLineLimit(2, 360));
 
-  notification()->set_context_message(base::UTF8ToUTF16("foo"));
+  notification()->set_context_message(base::ASCIIToUTF16("foo"));
   notification_view()->CreateOrUpdateViews(*notification());
 
   EXPECT_TRUE(notification_view()->context_message_view_ != NULL);
@@ -459,6 +454,77 @@ TEST_F(NotificationViewTest, ViewOrderingTest) {
   // Tests that views remain in that order even after an update.
   UpdateNotificationViews();
   CheckVerticalOrderInNotification();
+}
+
+TEST_F(NotificationViewTest, FormatContextMessageTest) {
+  const std::string kRegularContextText = "Context Text";
+  const std::string kVeryLongContextText =
+      "VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY"
+      "VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY"
+      "VERY VERY VERY VERY Long Long Long Long Long Long Long Long context";
+
+  const std::string kVeryLongElidedContextText =
+      "VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERYVERY VERY "
+      "VERY VERY VERY VERY VERY VERY VERY VERY VERY\xE2\x80\xA6";
+
+  const std::string kChromeUrl = "chrome://settings";
+  const std::string kUrlContext = "http://chromium.org/hello";
+  const std::string kHostContext = "chromium.org";
+  const std::string kLongUrlContext =
+      "https://"
+      "veryveryveryveryveyryveryveryveryveryveyryveryvery.veryveryveyrylong."
+      "chromium.org/hello";
+
+  Notification notification1(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
+      base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
+      GURL(), message_center::NotifierId(GURL()), *data(), NULL);
+  notification1.set_context_message(base::ASCIIToUTF16(kRegularContextText));
+
+  base::string16 result =
+      notification_view()->FormatContextMessage(notification1);
+  EXPECT_EQ(kRegularContextText, base::UTF16ToUTF8(result));
+
+  notification1.set_context_message(base::ASCIIToUTF16(kVeryLongContextText));
+  result = notification_view()->FormatContextMessage(notification1);
+  EXPECT_EQ(kVeryLongElidedContextText, base::UTF16ToUTF8(result));
+
+  Notification notification2(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
+      base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
+      GURL(kUrlContext), message_center::NotifierId(GURL()), *data(), NULL);
+  notification2.set_context_message(base::ASCIIToUTF16(""));
+
+  result = notification_view()->FormatContextMessage(notification2);
+  EXPECT_EQ(kHostContext, base::UTF16ToUTF8(result));
+
+  // Non http url and empty context message should yield an empty context
+  // message.
+  Notification notification3(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
+      base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
+      GURL(kChromeUrl), message_center::NotifierId(GURL()), *data(), NULL);
+  notification3.set_context_message(base::ASCIIToUTF16(""));
+  result = notification_view()->FormatContextMessage(notification3);
+  EXPECT_TRUE(result.empty());
+
+  // Long http url should be elided
+  Notification notification4(
+      NOTIFICATION_TYPE_BASE_FORMAT, std::string(""), base::UTF8ToUTF16(""),
+      base::UTF8ToUTF16(""), CreateTestImage(80, 80), base::UTF8ToUTF16(""),
+      GURL(kLongUrlContext), message_center::NotifierId(GURL()), *data(), NULL);
+  notification4.set_context_message(base::ASCIIToUTF16(""));
+  result = notification_view()->FormatContextMessage(notification4);
+
+  // Different platforms elide at different lengths so we do
+  // some generic checking here.
+  // The url has been elided (it starts with an ellipsis)
+  // The end of the domainsuffix is shown
+  // the url piece is not shown
+  EXPECT_TRUE(base::UTF16ToUTF8(result).find(
+                  ".veryveryveyrylong.chromium.org") != std::string::npos);
+  EXPECT_TRUE(base::UTF16ToUTF8(result).find("\xE2\x80\xA6") == 0);
+  EXPECT_TRUE(base::UTF16ToUTF8(result).find("hello") == std::string::npos);
 }
 
 }  // namespace message_center

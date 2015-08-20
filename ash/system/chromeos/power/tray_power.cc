@@ -190,18 +190,15 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
   // Check for a USB charger being connected.
   if (usb_charger_is_connected && !usb_charger_was_connected_) {
     scoped_ptr<Notification> notification(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        kNotificationId,
+        message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
         rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
         ash::SubstituteChromeOSDeviceType(
             IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
         rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
-        base::string16(),
-        message_center::NotifierId(
-            message_center::NotifierId::SYSTEM_COMPONENT,
-            system_notifier::kNotifierPower),
-        message_center::RichNotificationData(),
-        NULL));
+        base::string16(), GURL(),
+        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                   system_notifier::kNotifierPower),
+        message_center::RichNotificationData(), NULL));
     message_center_->AddNotification(notification.Pass());
     return true;
   }

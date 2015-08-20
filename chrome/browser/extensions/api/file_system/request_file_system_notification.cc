@@ -58,6 +58,7 @@ scoped_ptr<Notification> CreateAutoGrantedNotification(
       base::UTF8ToUTF16(extension.name()), message,
       gfx::Image(),      // Updated asynchronously later.
       base::string16(),  // display_source
+      GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  notification_id),
       data, delegate));

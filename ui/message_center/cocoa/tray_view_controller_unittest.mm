@@ -72,15 +72,10 @@ TEST_F(TrayViewControllerTest, AddRemoveOne) {
   EXPECT_EQ(0u, [[view subviews] count]);
   scoped_ptr<message_center::Notification> notification_data;
   notification_data.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1",
       ASCIIToUTF16("First notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification_data.Pass());
   [tray_ onMessageCenterTrayChanged];
   ASSERT_EQ(1u, [[view subviews] count]);
@@ -109,37 +104,22 @@ TEST_F(TrayViewControllerTest, AddThreeClearAll) {
   EXPECT_EQ(0u, [[view subviews] count]);
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1",
       ASCIIToUTF16("First notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "2",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "2",
       ASCIIToUTF16("Second notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "3",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "3",
       ASCIIToUTF16("Third notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];
   ASSERT_EQ(3u, [[view subviews] count]);
@@ -167,15 +147,10 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
   // Add a notification.
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1",
       ASCIIToUTF16("First notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];
 
@@ -186,15 +161,10 @@ TEST_F(TrayViewControllerTest, NoClearAllWhenNoNotifications) {
 
   // Adding a second notification should keep things still visible.
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "2",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "2",
       ASCIIToUTF16("Second notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];
   EXPECT_FALSE([[tray_ clearAllButton] isHidden]);
@@ -262,15 +232,10 @@ TEST_F(TrayViewControllerTest, EmptyCenter) {
 
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1",
       ASCIIToUTF16("First notification"),
-      ASCIIToUTF16("This is a simple test."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      ASCIIToUTF16("This is a simple test."), gfx::Image(), base::string16(),
+      GURL(), DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   [tray_ onMessageCenterTrayChanged];
 

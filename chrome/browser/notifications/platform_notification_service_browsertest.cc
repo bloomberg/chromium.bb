@@ -287,8 +287,9 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
 
   const Notification& notification = ui_manager()->GetNotificationAt(0);
 
-  EXPECT_EQ(base::UTF8ToUTF16(host_port.ToString()),
-            notification.context_message());
+  EXPECT_TRUE(notification.context_message().empty());
+  EXPECT_EQ("https://" + host_port.ToString() + "/",
+            notification.origin_url().spec());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,

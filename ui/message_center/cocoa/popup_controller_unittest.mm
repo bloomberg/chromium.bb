@@ -21,15 +21,11 @@ class PopupControllerTest : public ui::CocoaTest {
 TEST_F(PopupControllerTest, Creation) {
   scoped_ptr<message_center::Notification> notification(
       new message_center::Notification(
-          message_center::NOTIFICATION_TYPE_SIMPLE,
-          "",
+          message_center::NOTIFICATION_TYPE_SIMPLE, "",
           ASCIIToUTF16("Added to circles"),
-          ASCIIToUTF16("Jonathan and 5 others"),
-          gfx::Image(),
-          base::string16(),
-          message_center::NotifierId(),
-          message_center::RichNotificationData(),
-          NULL));
+          ASCIIToUTF16("Jonathan and 5 others"), gfx::Image(), base::string16(),
+          GURL(), message_center::NotifierId(),
+          message_center::RichNotificationData(), NULL));
 
   base::scoped_nsobject<MCPopupController> controller(
       [[MCPopupController alloc] initWithNotification:notification.get()

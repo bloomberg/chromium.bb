@@ -33,12 +33,12 @@ class Notification : public message_center::Notification {
 
   Notification(
       message_center::NotificationType type,
-      const GURL& origin_url,
       const base::string16& title,
       const base::string16& body,
       const gfx::Image& icon,
       const message_center::NotifierId& notifier_id,
       const base::string16& display_source,
+      const GURL& origin_url,
       const std::string& tag,
       const message_center::RichNotificationData& rich_notification_data,
       NotificationDelegate* delegate);
@@ -49,9 +49,6 @@ class Notification : public message_center::Notification {
   ~Notification() override;
   Notification& operator=(const Notification& notification);
 
-  // The origin URL of the script which requested the notification.
-  const GURL& origin_url() const { return origin_url_; }
-
   // A unique identifier used to update (replace) or remove a notification.
   const std::string& tag() const { return tag_; }
 
@@ -61,9 +58,6 @@ class Notification : public message_center::Notification {
   NotificationDelegate* delegate() const { return delegate_.get(); }
 
  private:
-  // The Origin of the page/worker which created this notification.
-  GURL origin_url_;
-
   // The user-supplied tag for the notification.
   std::string tag_;
 

@@ -131,7 +131,7 @@ NotificationManager::CreateNotification() {
                   : IDS_FILE_SYSTEM_PROVIDER_MANY_UNRESPONSIVE_WARNING),
           extension_icon_.get() ? *extension_icon_.get() : gfx::Image(),
           base::string16(),  // display_source
-          notifier_id, rich_notification_data,
+          GURL(), notifier_id, rich_notification_data,
           new ProviderNotificationDelegate(this)));
 
   notification->SetSystemPriority();

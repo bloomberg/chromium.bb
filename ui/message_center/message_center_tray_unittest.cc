@@ -69,16 +69,12 @@ class MessageCenterTrayTest : public testing::Test {
   }
 
   void AddNotification(const std::string& id) {
-    scoped_ptr<Notification> notification(
-        new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                         id,
-                         ASCIIToUTF16("Test Web Notification"),
-                         ASCIIToUTF16("Notification message body."),
-                         gfx::Image(),
-                         ASCIIToUTF16("www.test.org"),
-                         DummyNotifierId(),
-                         message_center::RichNotificationData(),
-                         NULL /* delegate */));
+    scoped_ptr<Notification> notification(new Notification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, id,
+        ASCIIToUTF16("Test Web Notification"),
+        ASCIIToUTF16("Notification message body."), gfx::Image(),
+        ASCIIToUTF16("www.test.org"), GURL(), DummyNotifierId(),
+        message_center::RichNotificationData(), NULL /* delegate */));
     message_center_->AddNotification(notification.Pass());
   }
   scoped_ptr<MockDelegate> delegate_;
@@ -174,16 +170,13 @@ TEST_F(MessageCenterTrayTest, MessageCenterReopenPopupsForSystemPriority) {
   ASSERT_FALSE(message_center_tray_->popups_visible());
   ASSERT_FALSE(message_center_tray_->message_center_visible());
 
-  scoped_ptr<Notification> notification(
-      new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                       "MessageCenterReopnPopupsForSystemPriority",
-                       ASCIIToUTF16("Test Web Notification"),
-                       ASCIIToUTF16("Notification message body."),
-                       gfx::Image(),
-                       ASCIIToUTF16("www.test.org"),
-                       DummyNotifierId(),
-                       message_center::RichNotificationData(),
-                       NULL /* delegate */));
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE,
+      "MessageCenterReopnPopupsForSystemPriority",
+      ASCIIToUTF16("Test Web Notification"),
+      ASCIIToUTF16("Notification message body."), gfx::Image(),
+      ASCIIToUTF16("www.test.org"), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL /* delegate */));
   notification->SetSystemPriority();
   message_center_->AddNotification(notification.Pass());
 
@@ -249,16 +242,12 @@ TEST_F(MessageCenterTrayTest, ContextMenuTest) {
   NotifierId notifier_id = DummyNotifierId();
 
   NotifierId notifier_id2(NotifierId::APPLICATION, "sample-app");
-  scoped_ptr<Notification> notification(
-      new Notification(message_center::NOTIFICATION_TYPE_SIMPLE,
-                       id2,
-                       ASCIIToUTF16("Test Web Notification"),
-                       ASCIIToUTF16("Notification message body."),
-                       gfx::Image(),
-                       base::string16() /* empty display source */,
-                       notifier_id2,
-                       message_center::RichNotificationData(),
-                       NULL /* delegate */));
+  scoped_ptr<Notification> notification(new Notification(
+      message_center::NOTIFICATION_TYPE_SIMPLE, id2,
+      ASCIIToUTF16("Test Web Notification"),
+      ASCIIToUTF16("Notification message body."), gfx::Image(),
+      base::string16() /* empty display source */, GURL(), notifier_id2,
+      message_center::RichNotificationData(), NULL /* delegate */));
   message_center_->AddNotification(notification.Pass());
 
   AddNotification(id3);

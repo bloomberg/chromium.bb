@@ -221,16 +221,12 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
                         const message_center::NotifierId& notifier_id) const {
     message_center::RichNotificationData rich_notification_data;
     rich_notification_data.priority = 0;
-    Notification notification(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
-                              GURL("http://tests.url"),
-                              base::UTF8ToUTF16("Title"),
-                              base::UTF8ToUTF16("Body"),
-                              gfx::Image(),
-                              notifier_id,
-                              base::UTF8ToUTF16("Source"),
-                              notification_id,
-                              rich_notification_data,
-                              new TestNotificationDelegate("TestNotification"));
+    Notification notification(
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+        base::UTF8ToUTF16("Title"), base::UTF8ToUTF16("Body"), gfx::Image(),
+        notifier_id, base::UTF8ToUTF16("Source"), GURL("http://tests.url"),
+        notification_id, rich_notification_data,
+        new TestNotificationDelegate("TestNotification"));
     welcome_notification_->ShowWelcomeNotificationIfNecessary(notification);
   }
 

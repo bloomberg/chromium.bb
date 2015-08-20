@@ -81,15 +81,11 @@ class MessageCenterImplTest : public testing::Test,
     RichNotificationData optional_fields;
     optional_fields.buttons.push_back(ButtonInfo(UTF8ToUTF16("foo")));
     optional_fields.buttons.push_back(ButtonInfo(UTF8ToUTF16("foo")));
-    return new Notification(type,
-                            id,
-                            UTF8ToUTF16("title"),
-                            UTF8ToUTF16(id),
+    return new Notification(type, id, UTF8ToUTF16("title"), UTF8ToUTF16(id),
                             gfx::Image() /* icon */,
-                            base::string16() /* display_source */,
+                            base::string16() /* display_source */, GURL(),
                             NotifierId(NotifierId::APPLICATION, notifier_id),
-                            optional_fields,
-                            NULL);
+                            optional_fields, NULL);
   }
 
 
@@ -351,26 +347,16 @@ TEST_F(MessageCenterImplTest, NotificationBlocker) {
   ToggledNotificationBlocker blocker1(message_center());
   ToggledNotificationBlocker blocker2(message_center());
 
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id1",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id,
-      RichNotificationData(),
-      NULL)));
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id2",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id, RichNotificationData(), NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id, RichNotificationData(), NULL)));
   EXPECT_EQ(2u, message_center()->GetPopupNotifications().size());
   EXPECT_EQ(2u, message_center()->GetVisibleNotifications().size());
 
@@ -407,31 +393,21 @@ TEST_F(MessageCenterImplTest, NotificationsDuringBlocked) {
   NotifierId notifier_id(NotifierId::APPLICATION, "app1");
   ToggledNotificationBlocker blocker(message_center());
 
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id1",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id, RichNotificationData(), NULL)));
   EXPECT_EQ(1u, message_center()->GetPopupNotifications().size());
   EXPECT_EQ(1u, message_center()->GetVisibleNotifications().size());
 
   // Create a notification during blocked. Still no popups.
   blocker.SetNotificationsEnabled(false);
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id2",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id, RichNotificationData(), NULL)));
   EXPECT_TRUE(message_center()->GetPopupNotifications().empty());
   EXPECT_EQ(2u, message_center()->GetVisibleNotifications().size());
 
@@ -451,26 +427,16 @@ TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
   NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
   PopupNotificationBlocker blocker(message_center(), notifier_id2);
 
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id1",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id1,
-      RichNotificationData(),
-      NULL)));
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id2",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id2,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL)));
 
   // "id1" is closed but "id2" is still visible as a popup.
   blocker.SetNotificationsEnabled(false);
@@ -480,26 +446,16 @@ TEST_F(MessageCenterImplTest, NotificationBlockerAllowsPopups) {
   EXPECT_TRUE(PopupNotificationsContain(popups, "id2"));
   EXPECT_EQ(2u, message_center()->GetVisibleNotifications().size());
 
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id3",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id1,
-      RichNotificationData(),
-      NULL)));
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id4",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id2,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id3", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id4", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL)));
   popups = message_center()->GetPopupNotifications();
   EXPECT_EQ(2u, popups.size());
   EXPECT_TRUE(PopupNotificationsContain(popups, "id2"));
@@ -523,26 +479,16 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
   NotifierId notifier_id2(NotifierId::APPLICATION, "app2");
   TotalNotificationBlocker blocker(message_center(), notifier_id2);
 
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id1",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id1,
-      RichNotificationData(),
-      NULL)));
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id2",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id2,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id1", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id2", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL)));
 
   // "id1" becomes invisible while "id2" is still visible.
   blocker.SetNotificationsEnabled(false);
@@ -552,26 +498,16 @@ TEST_F(MessageCenterImplTest, TotalNotificationBlocker) {
   EXPECT_FALSE(NotificationsContain(notifications, "id1"));
   EXPECT_TRUE(NotificationsContain(notifications, "id2"));
 
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id3",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id1,
-      RichNotificationData(),
-      NULL)));
-  message_center()->AddNotification(scoped_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE,
-      "id4",
-      UTF8ToUTF16("title"),
-      UTF8ToUTF16("message"),
-      gfx::Image() /* icon */,
-      base::string16() /* display_source */,
-      notifier_id2,
-      RichNotificationData(),
-      NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id3", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id1, RichNotificationData(), NULL)));
+  message_center()->AddNotification(scoped_ptr<Notification>(
+      new Notification(NOTIFICATION_TYPE_SIMPLE, "id4", UTF8ToUTF16("title"),
+                       UTF8ToUTF16("message"), gfx::Image() /* icon */,
+                       base::string16() /* display_source */, GURL(),
+                       notifier_id2, RichNotificationData(), NULL)));
   EXPECT_EQ(2u, message_center()->NotificationCount());
   notifications = message_center()->GetVisibleNotifications();
   EXPECT_FALSE(NotificationsContain(notifications, "id1"));

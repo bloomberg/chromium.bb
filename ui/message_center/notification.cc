@@ -28,6 +28,7 @@ RichNotificationData::RichNotificationData()
     : priority(DEFAULT_PRIORITY),
       never_timeout(false),
       timestamp(base::Time::Now()),
+      context_message(base::string16()),
       progress(0),
       should_make_spoken_feedback_for_popup_updates(true),
       clickable(true),
@@ -57,6 +58,7 @@ Notification::Notification(NotificationType type,
                            const base::string16& message,
                            const gfx::Image& icon,
                            const base::string16& display_source,
+                           const GURL& origin_url,
                            const NotifierId& notifier_id,
                            const RichNotificationData& optional_fields,
                            NotificationDelegate* delegate)
@@ -66,6 +68,7 @@ Notification::Notification(NotificationType type,
       message_(message),
       icon_(icon),
       display_source_(display_source),
+      origin_url_(origin_url),
       notifier_id_(notifier_id),
       serial_number_(g_next_serial_number_++),
       optional_fields_(optional_fields),
@@ -80,13 +83,13 @@ Notification::Notification(const std::string& id, const Notification& other)
       message_(other.message_),
       icon_(other.icon_),
       display_source_(other.display_source_),
+      origin_url_(other.origin_url_),
       notifier_id_(other.notifier_id_),
       serial_number_(other.serial_number_),
       optional_fields_(other.optional_fields_),
       shown_as_popup_(other.shown_as_popup_),
       is_read_(other.is_read_),
-      delegate_(other.delegate_) {
-}
+      delegate_(other.delegate_) {}
 
 Notification::Notification(const Notification& other)
     : type_(other.type_),
@@ -95,6 +98,7 @@ Notification::Notification(const Notification& other)
       message_(other.message_),
       icon_(other.icon_),
       display_source_(other.display_source_),
+      origin_url_(other.origin_url_),
       notifier_id_(other.notifier_id_),
       serial_number_(other.serial_number_),
       optional_fields_(other.optional_fields_),
@@ -109,6 +113,7 @@ Notification& Notification::operator=(const Notification& other) {
   message_ = other.message_;
   icon_ = other.icon_;
   display_source_ = other.display_source_;
+  origin_url_ = other.origin_url_;
   notifier_id_ = other.notifier_id_;
   serial_number_ = other.serial_number_;
   optional_fields_ = other.optional_fields_;
@@ -144,6 +149,11 @@ void Notification::SetSystemPriority() {
   optional_fields_.never_timeout = true;
 }
 
+bool Notification::UseOriginAsContextMessage() const {
+  return optional_fields_.context_message.empty() && origin_url_.is_valid() &&
+         origin_url_.SchemeIsHTTPOrHTTPS();
+}
+
 // static
 scoped_ptr<Notification> Notification::CreateSystemNotification(
     const std::string& notification_id,
@@ -152,17 +162,12 @@ scoped_ptr<Notification> Notification::CreateSystemNotification(
     const gfx::Image& icon,
     const std::string& system_component_id,
     const base::Closure& click_callback) {
-  scoped_ptr<Notification> notification(
-      new Notification(
-          NOTIFICATION_TYPE_SIMPLE,
-          notification_id,
-          title,
-          message,
-          icon,
-          base::string16()  /* display_source */,
-          NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),
-          RichNotificationData(),
-          new HandleNotificationClickedDelegate(click_callback)));
+  scoped_ptr<Notification> notification(new Notification(
+      NOTIFICATION_TYPE_SIMPLE, notification_id, title, message, icon,
+      base::string16() /* display_source */, GURL(),
+      NotifierId(NotifierId::SYSTEM_COMPONENT, system_component_id),
+      RichNotificationData(),
+      new HandleNotificationClickedDelegate(click_callback)));
   notification->SetSystemPriority();
   return notification.Pass();
 }

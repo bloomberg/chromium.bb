@@ -391,15 +391,12 @@ void TrayDisplay::CreateOrUpdateNotification(
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   scoped_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      kNotificationId,
-      message,
-      additional_message,
-      bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
+      message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, message,
+      additional_message, bundle.GetImageNamed(IDR_AURA_NOTIFICATION_DISPLAY),
       base::string16(),  // display_source
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          system_notifier::kNotifierDisplay),
+      GURL(),
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 system_notifier::kNotifierDisplay),
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
           base::Bind(&OpenSettings))));

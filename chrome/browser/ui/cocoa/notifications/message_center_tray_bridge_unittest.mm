@@ -46,15 +46,10 @@ class MessageCenterTrayBridgeTest : public ui::CocoaTest {
     message_center::RichNotificationData data;
     data.priority = -1;
     return make_scoped_ptr(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        "1",
+        message_center::NOTIFICATION_TYPE_SIMPLE, "1",
         base::ASCIIToUTF16("First notification"),
-        base::ASCIIToUTF16("This is a simple test."),
-        gfx::Image(),
-        base::string16(),
-        message_center::NotifierId(),
-        data,
-        NULL));
+        base::ASCIIToUTF16("This is a simple test."), gfx::Image(),
+        base::string16(), GURL(), message_center::NotifierId(), data, NULL));
   }
 
   TestingPrefServiceSimple* local_state() { return local_state_->Get(); }

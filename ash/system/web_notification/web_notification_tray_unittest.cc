@@ -101,14 +101,11 @@ class WebNotificationTrayTest : public test::AshTestBase {
   void AddNotification(const std::string& id) {
     scoped_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        id,
+        message_center::NOTIFICATION_TYPE_SIMPLE, id,
         base::ASCIIToUTF16("Test Web Notification"),
-        base::ASCIIToUTF16("Notification message body."),
-        gfx::Image(),
-        base::ASCIIToUTF16("www.test.org"),
-        message_center::NotifierId(),
-        message_center::RichNotificationData(),
+        base::ASCIIToUTF16("Notification message body."), gfx::Image(),
+        base::ASCIIToUTF16("www.test.org"), GURL(),
+        message_center::NotifierId(), message_center::RichNotificationData(),
         NULL /* delegate */));
     GetMessageCenter()->AddNotification(notification.Pass());
   }
@@ -117,14 +114,11 @@ class WebNotificationTrayTest : public test::AshTestBase {
                           const std::string& new_id) {
     scoped_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        new_id,
+        message_center::NOTIFICATION_TYPE_SIMPLE, new_id,
         base::ASCIIToUTF16("Updated Web Notification"),
-        base::ASCIIToUTF16("Updated message body."),
-        gfx::Image(),
-        base::ASCIIToUTF16("www.test.org"),
-        message_center::NotifierId(),
-        message_center::RichNotificationData(),
+        base::ASCIIToUTF16("Updated message body."), gfx::Image(),
+        base::ASCIIToUTF16("www.test.org"), GURL(),
+        message_center::NotifierId(), message_center::RichNotificationData(),
         NULL /* delegate */));
     GetMessageCenter()->UpdateNotification(old_id, notification.Pass());
   }

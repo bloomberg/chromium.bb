@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/elide_url.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -22,7 +23,7 @@
 #include "ui/message_center/notification.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
-
+#include "url/gurl.h"
 
 @interface MCNotificationProgressBar : NSProgressIndicator
 @end
@@ -380,11 +381,11 @@
 
   // Set the title and recalculate the frame.
   size_t actualTitleLines = 0;
-  [title_ setString:base::SysUTF16ToNSString(
-      [self wrapText:notification_->title()
-                forFont:[title_ font]
-       maxNumberOfLines:message_center::kMaxTitleLines
-            actualLines:&actualTitleLines])];
+  [title_ setString:base::SysUTF16ToNSString([self
+                                wrapText:notification_->title()
+                                 forFont:[title_ font]
+                        maxNumberOfLines:message_center::kMaxTitleLines
+                             actualLines:&actualTitleLines])];
   [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
   titleFrame.origin.y = NSMaxY(rootFrame) - titlePadding - NSHeight(titleFrame);
@@ -396,7 +397,9 @@
     messageLineLimit -= (actualTitleLines - 1) * 2;
   if (!notification_->image().IsEmpty()) {
     messageLineLimit /= 2;
-    if (!notification_->context_message().empty())
+
+    if (!notification_->context_message().empty() &&
+        !notification_->UseOriginAsContextMessage())
       messageLineLimit -= message_center::kContextMessageLineLimit;
   }
   if (messageLineLimit < 0)
@@ -428,14 +431,26 @@
   }
 
   // Set the context message and recalculate the frame.
-  [contextMessage_ setString:base::SysUTF16ToNSString(
-      [self wrapText:notification_->context_message()
+  base::string16 message;
+  if (notification->UseOriginAsContextMessage()) {
+    gfx::FontList font_list((gfx::Font([message_ font])));
+    message =
+        url_formatter::ElideHost(notification->origin_url(), font_list,
+                                 message_center::kContextMessageViewWidth);
+  } else {
+    message = notification->context_message();
+  }
+
+  base::string16 elided =
+      [self wrapText:message
              forFont:[contextMessage_ font]
-       maxNumberOfLines:message_center::kContextMessageLineLimit])];
+          maxNumberOfLines:message_center::kContextMessageLineLimit];
+  [contextMessage_ setString:base::SysUTF16ToNSString(elided)];
   [contextMessage_ sizeToFit];
   NSRect contextMessageFrame = [contextMessage_ frame];
 
-  if (notification_->context_message().empty()) {
+  if (notification->context_message().empty() &&
+      !notification->UseOriginAsContextMessage()) {
     [contextMessage_ setHidden:YES];
     contextMessageFrame.origin.y = messageFrame.origin.y;
     contextMessageFrame.size.height = 0;

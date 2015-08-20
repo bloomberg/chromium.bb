@@ -427,17 +427,13 @@ void HotwordService::ShowHotwordNotification() {
 
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
-      GURL(),
       l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_TITLE),
       l10n_util::GetStringUTF16(IDS_HOTWORD_NOTIFICATION_DESCRIPTION),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_HOTWORD_NOTIFICATION_ICON),
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          hotword_internal::kHotwordNotifierId),
-      base::string16(),
-      std::string(),
-      data,
+      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                 hotword_internal::kHotwordNotifierId),
+      base::string16(), GURL(), std::string(), data,
       new HotwordNotificationDelegate(profile_));
 
   g_browser_process->notification_ui_manager()->Add(notification, profile_);

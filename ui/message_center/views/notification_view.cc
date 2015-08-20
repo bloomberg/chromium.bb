@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/url_formatter/elide_url.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/cursor/cursor.h"
@@ -41,6 +42,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -285,11 +287,11 @@ views::View* NotificationView::TargetForRect(views::View* root,
 void NotificationView::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateTitleView(notification);
   CreateOrUpdateMessageView(notification);
-  CreateOrUpdateContextMessageView(notification);
   CreateOrUpdateProgressBarView(notification);
   CreateOrUpdateListItemViews(notification);
   CreateOrUpdateIconView(notification);
   CreateOrUpdateImageView(notification);
+  CreateOrUpdateContextMessageView(notification);
   CreateOrUpdateActionButtonViews(notification);
 }
 
@@ -553,9 +555,23 @@ void NotificationView::CreateOrUpdateMessageView(
   message_view_->SetVisible(!notification.items().size());
 }
 
+base::string16 NotificationView::FormatContextMessage(
+    const Notification& notification) const {
+  if (notification.UseOriginAsContextMessage()) {
+    const GURL url = notification.origin_url();
+    DCHECK(url.is_valid());
+    return url_formatter::ElideHost(url, views::Label().font_list(),
+                                    kContextMessageViewWidth);
+  }
+
+  return gfx::TruncateString(notification.context_message(),
+                             kContextMessageCharacterLimit, gfx::WORD_BREAK);
+}
+
 void NotificationView::CreateOrUpdateContextMessageView(
     const Notification& notification) {
-  if (notification.context_message().empty()) {
+  if (notification.context_message().empty() &&
+      !notification.UseOriginAsContextMessage()) {
     if (context_message_view_) {
       // Deletion will also remove |context_message_view_| from its parent.
       delete context_message_view_;
@@ -566,12 +582,11 @@ void NotificationView::CreateOrUpdateContextMessageView(
 
   DCHECK(top_view_ != NULL);
 
-  base::string16 text = gfx::TruncateString(notification.context_message(),
-                                            kContextMessageCharacterLimit,
-                                            gfx::WORD_BREAK);
+  base::string16 message = FormatContextMessage(notification);
+
   if (!context_message_view_) {
     int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
-    context_message_view_ = new BoundedLabel(text);
+    context_message_view_ = new BoundedLabel(message);
     context_message_view_->SetLineLimit(
         message_center::kContextMessageLineLimit);
     context_message_view_->SetLineHeight(kMessageLineHeight);
@@ -580,7 +595,7 @@ void NotificationView::CreateOrUpdateContextMessageView(
     context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
     top_view_->AddChildView(context_message_view_);
   } else {
-    context_message_view_->SetText(text);
+    context_message_view_->SetText(message);
   }
 }
 

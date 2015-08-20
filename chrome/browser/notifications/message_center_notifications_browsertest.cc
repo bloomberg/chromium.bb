@@ -121,18 +121,14 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
 
     message_center::RichNotificationData data;
 
-    return Notification(message_center::NOTIFICATION_TYPE_BASE_FORMAT,
-                        GURL("chrome-test://testing/"),
-                        base::ASCIIToUTF16("title"),
-                        base::ASCIIToUTF16("message"),
-                        gfx::Image(),
-                        message_center::NotifierId(
-                            message_center::NotifierId::APPLICATION,
-                            "extension_id"),
-                        base::UTF8ToUTF16("chrome-test://testing/"),
-                        "REPLACE-ME",
-                        data,
-                        new_delegate);
+    return Notification(
+        message_center::NOTIFICATION_TYPE_BASE_FORMAT,
+        base::ASCIIToUTF16("title"), base::ASCIIToUTF16("message"),
+        gfx::Image(),
+        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                   "extension_id"),
+        base::UTF8ToUTF16("chrome-test://testing/"),
+        GURL("chrome-test://testing/"), "REPLACE-ME", data, new_delegate);
   }
 };
 

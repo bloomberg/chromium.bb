@@ -49,45 +49,30 @@ class PopupCollectionTest : public ui::CocoaTest {
   void AddThreeNotifications() {
     scoped_ptr<message_center::Notification> notification;
     notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        "1",
-        ASCIIToUTF16("One"),
+        message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
         ASCIIToUTF16("This is the first notification to"
                      " be displayed"),
-        gfx::Image(),
-        base::string16(),
-        DummyNotifierId(),
-        message_center::RichNotificationData(),
-        NULL));
+        gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
+        message_center::RichNotificationData(), NULL));
     center_->AddNotification(notification.Pass());
 
     notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        "2",
-        ASCIIToUTF16("Two"),
-        ASCIIToUTF16("This is the second notification."),
-        gfx::Image(),
-        base::string16(),
-        DummyNotifierId(),
-        message_center::RichNotificationData(),
-        NULL));
+        message_center::NOTIFICATION_TYPE_SIMPLE, "2", ASCIIToUTF16("Two"),
+        ASCIIToUTF16("This is the second notification."), gfx::Image(),
+        base::string16(), GURL(), DummyNotifierId(),
+        message_center::RichNotificationData(), NULL));
     center_->AddNotification(notification.Pass());
 
     notification.reset(new message_center::Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        "3",
-        ASCIIToUTF16("Three"),
+        message_center::NOTIFICATION_TYPE_SIMPLE, "3", ASCIIToUTF16("Three"),
         ASCIIToUTF16("This is the third notification "
                      "that has a much longer body "
                      "than the other notifications. It "
                      "may not fit on the screen if we "
                      "set the screen size too small or "
                      "if the notification is way too big"),
-        gfx::Image(),
-        base::string16(),
-        DummyNotifierId(),
-        message_center::RichNotificationData(),
-        NULL));
+        gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
+        message_center::RichNotificationData(), NULL));
     center_->AddNotification(notification.Pass());
     WaitForAnimationEnded();
   }
@@ -134,15 +119,10 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
   scoped_ptr<message_center::Notification> notification;
 
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "4",
-      ASCIIToUTF16("Four"),
-      ASCIIToUTF16("This is the fourth notification."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      message_center::NOTIFICATION_TYPE_SIMPLE, "4", ASCIIToUTF16("Four"),
+      ASCIIToUTF16("This is the fourth notification."), gfx::Image(),
+      base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
 
@@ -183,15 +163,9 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
   optional.priority = message_center::HIGH_PRIORITY;
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "4",
-      ASCIIToUTF16("Four"),
-      ASCIIToUTF16("This is the fourth notification."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      optional,
-      NULL));
+      message_center::NOTIFICATION_TYPE_SIMPLE, "4", ASCIIToUTF16("Four"),
+      ASCIIToUTF16("This is the fourth notification."), gfx::Image(),
+      base::string16(), GURL(), DummyNotifierId(), optional, NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:2],
@@ -220,38 +194,28 @@ TEST_F(PopupCollectionTest, TinyScreen) {
   EXPECT_EQ(0u, [[collection_ popups] count]);
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
-      ASCIIToUTF16("One"),
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
       ASCIIToUTF16("This is the first notification to"
-              " be displayed"),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+                   " be displayed"),
+      gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
   EXPECT_EQ(1u, [[collection_ popups] count]);
 
   // Now give the notification a longer message so that it no longer fits.
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
-      ASCIIToUTF16("One"),
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
       ASCIIToUTF16("This is now a very very very very "
-              "very very very very very very very "
-              "very very very very very very very "
-              "very very very very very very very "
-              "very very very very very very very "
-              "very very very very very very very "
-              "very very very very very very very "
-              "long notification."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+                   "very very very very very very very "
+                   "very very very very very very very "
+                   "very very very very very very very "
+                   "very very very very very very very "
+                   "very very very very very very very "
+                   "very very very very very very very "
+                   "long notification."),
+      gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   center_->UpdateNotification("1", notification.Pass());
   WaitForAnimationEnded();
   EXPECT_EQ(0u, [[collection_ popups] count]);
@@ -283,19 +247,15 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
   NSRect old_frame = [[controller view] frame];
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1",
       ASCIIToUTF16("One is going to get a much longer "
-              "title than it previously had."),
+                   "title than it previously had."),
       ASCIIToUTF16("This is the first notification to "
-              "be displayed, but it will also be "
-              "updated to have a significantly "
-              "longer body"),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+                   "be displayed, but it will also be "
+                   "updated to have a significantly "
+                   "longer body"),
+      gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
   WaitForAnimationEnded();
   EXPECT_GT(NSHeight([[controller view] frame]), NSHeight(old_frame));
@@ -314,15 +274,10 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
 TEST_F(PopupCollectionTest, UpdatePriority) {
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
-      ASCIIToUTF16("One"),
-      ASCIIToUTF16("This notification should not yet toast."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
+      ASCIIToUTF16("This notification should not yet toast."), gfx::Image(),
+      base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   notification->set_priority(-1);
 
   center_->AddNotification(notification.Pass());
@@ -332,15 +287,10 @@ TEST_F(PopupCollectionTest, UpdatePriority) {
 
   // Raise priority -1 to 1. Notification should display.
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
-      ASCIIToUTF16("One"),
-      ASCIIToUTF16("This notification should now toast"),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
+      ASCIIToUTF16("This notification should now toast"), gfx::Image(),
+      base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   notification->set_priority(1);
 
   center_->UpdateNotification("1", notification.Pass());
@@ -352,16 +302,11 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
   // Add a notification and don't wait for the animation to finish.
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
-      ASCIIToUTF16("One"),
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
       ASCIIToUTF16("This is the first notification to"
                    " be displayed"),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
+      message_center::RichNotificationData(), NULL));
   center_->AddNotification(notification.Pass());
 
   // Release the popup collection before the animation ends. No crash should
@@ -386,15 +331,9 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
   // Update a notification and don't wait for the animation to finish.
   scoped_ptr<message_center::Notification> notification;
   notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      "1",
-      ASCIIToUTF16("One"),
-      ASCIIToUTF16("New message."),
-      gfx::Image(),
-      base::string16(),
-      DummyNotifierId(),
-      message_center::RichNotificationData(),
-      NULL));
+      message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
+      ASCIIToUTF16("New message."), gfx::Image(), base::string16(), GURL(),
+      DummyNotifierId(), message_center::RichNotificationData(), NULL));
   center_->UpdateNotification("1", notification.Pass());
 
   // Release the popup collection before the animation ends. No crash should

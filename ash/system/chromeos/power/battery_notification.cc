@@ -80,7 +80,7 @@ scoped_ptr<Notification> CreateNotification(
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
       base::string16(), message, GetBatteryImage(notification_state),
-      base::string16(),
+      base::string16(), GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  system_notifier::kNotifierBattery),
       message_center::RichNotificationData(), NULL));
