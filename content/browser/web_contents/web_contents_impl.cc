@@ -4136,10 +4136,15 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
     }
 
     if (GetBrowserPluginGuest()) {
-      // We create a swapped out RenderView for the embedder in the guest's
-      // render process but we intentionally do not expose the embedder's
-      // opener chain to it.
-      source_web_contents->CreateSwappedOutRenderView(GetSiteInstance());
+      // We create a swapped out RenderView or RenderFrameProxyHost for the
+      // embedder in the guest's render process but we intentionally do not
+      // expose the embedder's opener chain to it.
+      if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
+        source_web_contents->GetRenderManager()->CreateRenderFrameProxy(
+            GetSiteInstance());
+      } else {
+        source_web_contents->CreateSwappedOutRenderView(GetSiteInstance());
+      }
     } else {
       RenderFrameHostImpl* source_rfhi =
           static_cast<RenderFrameHostImpl*>(source_rfh);

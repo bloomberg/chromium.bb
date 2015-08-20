@@ -16,6 +16,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -29,6 +30,7 @@
 #include "content/common/drag_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -128,8 +130,17 @@ int BrowserPluginGuest::GetGuestProxyRoutingID() {
   // |guest_proxy_routing_id_| and perform any necessary cleanup on Detach
   // to enable this.
   SiteInstance* owner_site_instance = owner_web_contents_->GetSiteInstance();
-  guest_proxy_routing_id_ =
-      GetWebContents()->CreateSwappedOutRenderView(owner_site_instance);
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden()) {
+    int proxy_routing_id =
+        GetWebContents()->GetFrameTree()->root()->render_manager()->
+            CreateRenderFrameProxy(owner_site_instance);
+    guest_proxy_routing_id_ = RenderFrameProxyHost::FromID(
+        owner_site_instance->GetProcess()->GetID(), proxy_routing_id)
+            ->GetRenderViewHost()->GetRoutingID();
+  } else {
+    guest_proxy_routing_id_ =
+        GetWebContents()->CreateSwappedOutRenderView(owner_site_instance);
+  }
 
   return guest_proxy_routing_id_;
 }
