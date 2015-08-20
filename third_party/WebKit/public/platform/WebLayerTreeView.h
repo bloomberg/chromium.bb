@@ -54,38 +54,38 @@ public:
     // Initialization and lifecycle --------------------------------------
 
     // Sets the root of the tree. The root is set by way of the constructor.
-    virtual void setRootLayer(const WebLayer&) = 0;
-    virtual void clearRootLayer() = 0;
+    virtual void setRootLayer(const WebLayer&) { }
+    virtual void clearRootLayer() { }
 
     virtual void attachCompositorAnimationTimeline(WebCompositorAnimationTimeline*) { }
     virtual void detachCompositorAnimationTimeline(WebCompositorAnimationTimeline*) { }
 
     // View properties ---------------------------------------------------
 
-    virtual void setViewportSize(const WebSize& deviceViewportSize) = 0;
+    virtual void setViewportSize(const WebSize& deviceViewportSize) { }
     // Gives the viewport size in physical device pixels.
-    virtual WebSize deviceViewportSize() const = 0;
+    virtual WebSize deviceViewportSize() const { return WebSize(); }
 
-    virtual void setDeviceScaleFactor(float) = 0;
-    virtual float deviceScaleFactor() const = 0;
+    virtual void setDeviceScaleFactor(float) { }
+    virtual float deviceScaleFactor() const { return 0; }
 
     // Sets the background color for the viewport.
-    virtual void setBackgroundColor(WebColor) = 0;
+    virtual void setBackgroundColor(WebColor) { }
 
     // Sets the background transparency for the viewport. The default is 'false'.
-    virtual void setHasTransparentBackground(bool) = 0;
+    virtual void setHasTransparentBackground(bool) { }
 
     // Sets whether this view is visible. In threaded mode, a view that is not visible will not
     // composite or trigger updateAnimations() or layout() calls until it becomes visible.
-    virtual void setVisible(bool) = 0;
+    virtual void setVisible(bool) { }
 
     // Sets the current page scale factor and minimum / maximum limits. Both limits are initially 1 (no page scale allowed).
-    virtual void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum) = 0;
+    virtual void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum) { }
 
     // Starts an animation of the page scale to a target scale factor and scroll offset.
     // If useAnchor is true, destination is a point on the screen that will remain fixed for the duration of the animation.
     // If useAnchor is false, destination is the final top-left scroll position.
-    virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec) = 0;
+    virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec) { }
 
     virtual void heuristicsForGpuRasterizationUpdated(bool) { }
 
@@ -130,7 +130,7 @@ public:
 
     // Blocks until the most recently composited frame has finished rendering on the GPU.
     // This can have a significant performance impact and should be used with care.
-    virtual void finishAllRendering() = 0;
+    virtual void finishAllRendering() { }
 
     // Prevents updates to layer tree from becoming visible.
     virtual void setDeferCommits(bool deferCommits) { }

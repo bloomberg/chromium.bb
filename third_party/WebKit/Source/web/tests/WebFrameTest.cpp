@@ -4527,22 +4527,11 @@ public:
     CompositedSelectionBoundsTestLayerTreeView() : m_selectionCleared(false) { }
     ~CompositedSelectionBoundsTestLayerTreeView() override { }
 
-    void setRootLayer(const WebLayer&)  override { }
-    void clearRootLayer()  override { }
-    void setViewportSize(const WebSize& deviceViewportSize)  override { }
-    WebSize deviceViewportSize() const  override { return WebSize(); }
-    void setDeviceScaleFactor(float) override { }
-    float deviceScaleFactor() const  override { return 1.f; }
-    void setBackgroundColor(WebColor)  override { }
-    void setHasTransparentBackground(bool)  override { }
-    void setVisible(bool)  override { }
-    void setPageScaleFactorAndLimits(float pageScaleFactor, float minimum, float maximum)  override { }
-    void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec)  override { }
-    void finishAllRendering()  override { }
     void registerSelection(const WebSelection& selection) override
     {
         m_selection = adoptPtr(new WebSelection(selection));
     }
+
     void clearSelection() override
     {
         m_selectionCleared = true;
