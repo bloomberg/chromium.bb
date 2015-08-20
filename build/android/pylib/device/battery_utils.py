@@ -434,6 +434,40 @@ class BatteryUtils(object):
     finally:
       self.EnableBatteryUpdates(timeout=timeout, retries=retries)
 
+  def _DischargeDevice(self, percent, wait_period=120):
+    """Disables charging and waits for device to discharge given amount
+
+    Args:
+      percent: level of charge to discharge.
+
+    Raises:
+      ValueError: If percent is not between 1 and 99.
+    """
+    battery_level = int(self.GetBatteryInfo().get('level'))
+    if not 0 < percent < 100:
+      raise ValueError('Discharge amount(%s) must be between 1 and 99'
+                       % percent)
+    if battery_level is None:
+      logging.warning('Unable to find current battery level. Cannot discharge.')
+      return
+    # Do not discharge if it would make battery level too low.
+    if percent >= battery_level - 10:
+      logging.warning('Battery is too low or discharge amount requested is too '
+                      'high. Cannot discharge phone %s percent.', percent)
+      return
+
+    self.SetCharging(False)
+    def device_discharged():
+      self.SetCharging(True)
+      current_level = int(self.GetBatteryInfo().get('level'))
+      logging.info('current battery level: %s', current_level)
+      if battery_level - current_level >= percent:
+        return True
+      self.SetCharging(False)
+      return False
+
+    timeout_retry.WaitFor(device_discharged, wait_period=wait_period)
+
   def ChargeDeviceToLevel(self, level, wait_period=60):
     """Enables charging and waits for device to be charged to given level.
 
@@ -462,6 +496,8 @@ class BatteryUtils(object):
       wait_period: time in seconds to wait between checking.
     """
     def cool_device():
+      if self._cache['profile']['name'] == 'Nexus 5':
+        self._DischargeDevice(1)
       temp = self.GetBatteryInfo().get('temperature')
       if temp is None:
         logging.warning('Unable to find current battery temperature.')
@@ -469,6 +505,8 @@ class BatteryUtils(object):
       else:
         logging.info('Current battery temperature: %s', temp)
       return int(temp) <= target_temp
+
+    self._DiscoverDeviceProfile()
     self.EnableBatteryUpdates()
     logging.info('Waiting for the device to cool down to %s (0.1 C)',
                  target_temp)

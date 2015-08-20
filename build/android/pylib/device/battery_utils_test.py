@@ -269,6 +269,62 @@ class BatteryUtilsChargeDevice(BatteryUtilsTest):
       self.battery.ChargeDeviceToLevel(95)
 
 
+class BatteryUtilsDischargeDevice(BatteryUtilsTest):
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testDischargeDevice_exact(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'level': '100'}),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '99'})):
+      self.battery._DischargeDevice(1)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testDischargeDevice_over(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'level': '100'}),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '50'})):
+      self.battery._DischargeDevice(1)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testDischargeDevice_takeslong(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'level': '100'}),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '100'}),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '99'}),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '98'}),
+        (self.call.battery.SetCharging(False)),
+        (self.call.battery.SetCharging(True)),
+        (self.call.battery.GetBatteryInfo(), {'level': '97'})):
+      self.battery._DischargeDevice(3)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testDischargeDevice_dischargeTooClose(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'level': '100'})):
+      self.battery._DischargeDevice(99)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testDischargeDevice_percentageOutOfBounds(self):
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'level': '100'})):
+      with self.assertRaises(ValueError):
+          self.battery._DischargeDevice(100)
+    with self.assertCalls(
+        (self.call.battery.GetBatteryInfo(), {'level': '100'})):
+      with self.assertRaises(ValueError):
+          self.battery._DischargeDevice(0)
+
+
 class BatteryUtilsGetBatteryInfoTest(BatteryUtilsTest):
 
   def testGetBatteryInfo_normal(self):
@@ -381,6 +437,7 @@ class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
 
   @mock.patch('time.sleep', mock.Mock())
   def testLetBatteryCoolToTemperature_startUnder(self):
+    self.battery._cache['profile'] = self._NEXUS_6
     with self.assertCalls(
         (self.call.battery.EnableBatteryUpdates(), []),
         (self.call.battery.GetBatteryInfo(), {'temperature': '500'})):
@@ -388,11 +445,24 @@ class BatteryUtilsLetBatteryCoolToTemperatureTest(BatteryUtilsTest):
 
   @mock.patch('time.sleep', mock.Mock())
   def testLetBatteryCoolToTemperature_startOver(self):
+    self.battery._cache['profile'] = self._NEXUS_6
     with self.assertCalls(
         (self.call.battery.EnableBatteryUpdates(), []),
         (self.call.battery.GetBatteryInfo(), {'temperature': '500'}),
         (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
       self.battery.LetBatteryCoolToTemperature(400)
+
+  @mock.patch('time.sleep', mock.Mock())
+  def testLetBatteryCoolToTemperature_nexus5(self):
+    self.battery._cache['profile'] = self._NEXUS_5
+    with self.assertCalls(
+        (self.call.battery.EnableBatteryUpdates(), []),
+        (self.call.battery._DischargeDevice(1), []),
+        (self.call.battery.GetBatteryInfo(), {'temperature': '500'}),
+        (self.call.battery._DischargeDevice(1), []),
+        (self.call.battery.GetBatteryInfo(), {'temperature': '400'})):
+      self.battery.LetBatteryCoolToTemperature(400)
+
 
 class BatteryUtilsSupportsFuelGaugeTest(BatteryUtilsTest):
 
