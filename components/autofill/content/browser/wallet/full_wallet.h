@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 
 namespace base {
@@ -36,11 +35,6 @@ class FullWallet {
  public:
   ~FullWallet();
 
-  // Returns an empty scoped_ptr if the input invalid, an empty wallet with
-  // required actions if there are any, or a valid wallet.
-  static scoped_ptr<FullWallet>
-      CreateFullWallet(const base::DictionaryValue& dictionary);
-
   // Returns a wallet built from the provided clear-text data.
   // Data is not validated; |pan|, |cvn| and |billing_address| must be set.
   static scoped_ptr<FullWallet>
@@ -55,9 +49,6 @@ class FullWallet {
   base::string16 GetInfo(const std::string& app_locale,
                          const AutofillType& type);
 
-  // Whether or not |action| is in |required_actions_|.
-  bool HasRequiredAction(RequiredAction action) const;
-
   // The type of the card that this FullWallet contains and the last four digits
   // like this "Visa - 4111".
   base::string16 TypeAndLastFourDigits();
@@ -69,16 +60,9 @@ class FullWallet {
   bool operator==(const FullWallet& other) const;
   bool operator!=(const FullWallet& other) const;
 
-  // If there are required actions |billing_address_| might contain NULL.
   const Address* billing_address() const { return billing_address_.get(); }
-
-  // If there are required actions or shipping address is not required
-  // |shipping_address_| might contain NULL.
   const Address* shipping_address() const { return shipping_address_.get(); }
 
-  const std::vector<RequiredAction>& required_actions() const {
-    return required_actions_;
-  }
   int expiration_month() const { return expiration_month_; }
   int expiration_year() const { return expiration_year_; }
 
@@ -88,11 +72,9 @@ class FullWallet {
 
  private:
   friend class FullWalletTest;
-  friend scoped_ptr<FullWallet> GetTestFullWalletWithRequiredActions(
-      const std::vector<RequiredAction>& action);
+  friend scoped_ptr<FullWallet> GetTestFullWallet();
   friend scoped_ptr<FullWallet> GetTestFullWalletInstrumentOnly();
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWallet);
-  FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWalletWithRequiredActions);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthCorrectDecryptionTest);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, RestLengthUnderDecryptionTest);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, GetCreditCardInfo);
@@ -102,8 +84,7 @@ class FullWallet {
              const std::string& iin,
              const std::string& encrypted_rest,
              scoped_ptr<Address> billing_address,
-             scoped_ptr<Address> shipping_address,
-             const std::vector<RequiredAction>& required_actions);
+             scoped_ptr<Address> shipping_address);
 
   // Decrypts both |pan_| and |cvn_|.
   void DecryptCardInfo();
@@ -135,10 +116,6 @@ class FullWallet {
 
   // The shipping address for the transaction.
   scoped_ptr<Address> shipping_address_;
-
-  // Actions that must be completed by the user before a FullWallet can be
-  // issued to them by the Online Wallet service.
-  std::vector<RequiredAction> required_actions_;
 
   // The one time pad used for FullWallet encryption.
   std::vector<uint8> one_time_pad_;

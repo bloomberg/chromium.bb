@@ -5,8 +5,6 @@
 source_set("test_support") {
   testonly = true
   sources = [
-    "mock_wallet_client.cc",
-    "mock_wallet_client.h",
     "wallet_test_util.cc",
     "wallet_test_util.h",
   ]

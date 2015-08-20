@@ -15,27 +15,12 @@ static_library("browser") {
     "request_autocomplete_manager.h",
     "risk/fingerprint.cc",
     "risk/fingerprint.h",
-    "wallet/form_field_error.cc",
-    "wallet/form_field_error.h",
     "wallet/full_wallet.cc",
     "wallet/full_wallet.h",
-    "wallet/gaia_account.cc",
-    "wallet/gaia_account.h",
-    "wallet/instrument.cc",
-    "wallet/instrument.h",
-    "wallet/required_action.cc",
-    "wallet/required_action.h",
     "wallet/wallet_address.cc",
     "wallet/wallet_address.h",
-    "wallet/wallet_client.cc",
-    "wallet/wallet_client.h",
-    "wallet/wallet_client_delegate.h",
-    "wallet/wallet_items.cc",
-    "wallet/wallet_items.h",
     "wallet/wallet_service_url.cc",
     "wallet/wallet_service_url.h",
-    "wallet/wallet_signin_helper.cc",
-    "wallet/wallet_signin_helper.h",
   ]
 
   configs += [ "//components/autofill/core/browser:wallet_service" ]
@@ -85,12 +70,8 @@ source_set("unit_tests") {
     "content_autofill_driver_unittest.cc",
     "request_autocomplete_manager_unittest.cc",
     "wallet/full_wallet_unittest.cc",
-    "wallet/instrument_unittest.cc",
     "wallet/wallet_address_unittest.cc",
-    "wallet/wallet_client_unittest.cc",
-    "wallet/wallet_items_unittest.cc",
     "wallet/wallet_service_url_unittest.cc",
-    "wallet/wallet_signin_helper_unittest.cc",
   ]
 
   deps = [
