@@ -55,6 +55,7 @@
             style="@style/LocationBarButton"
             android:layout_height="match_parent"
             android:layout_width="match_parent"
+            android:layoutDirection="locale"
             android:src="@drawable/btn_menu"
             android:contentDescription="@string/accessibility_toolbar_btn_menu" />
         <org.chromium.chrome.browser.widget.TintedImageButton
