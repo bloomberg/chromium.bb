@@ -187,6 +187,9 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   // despite being handled by the providing extension or not.
   void Abort(int operation_request_id);
 
+  // Called when aborting is completed with either a success or an error.
+  void OnAbortCompleted(int operation_request_id, base::File::Error result);
+
   // Adds a watcher within |watcher_queue_|.
   AbortCallback AddWatcherInQueue(const AddWatcherInQueueArgs& args);
 

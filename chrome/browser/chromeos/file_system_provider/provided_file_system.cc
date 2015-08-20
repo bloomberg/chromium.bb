@@ -294,8 +294,8 @@ AbortCallback ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
     return AbortCallback();
   }
 
-  return base::Bind(
-      &ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), request_id);
+  return base::Bind(&ProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(),
+                    request_id);
 }
 
 AbortCallback ProvidedFileSystem::CloseFile(
@@ -541,16 +541,32 @@ void ProvidedFileSystem::Configure(
 }
 
 void ProvidedFileSystem::Abort(int operation_request_id) {
-  request_manager_->RejectRequest(operation_request_id,
-                                  make_scoped_ptr(new RequestValue()),
-                                  base::File::FILE_ERROR_ABORT);
   if (!request_manager_->CreateRequest(
           ABORT,
           scoped_ptr<RequestManager::HandlerInterface>(new operations::Abort(
               event_router_, file_system_info_, operation_request_id,
-              base::Bind(&EmptyStatusCallback))))) {
+              base::Bind(&ProvidedFileSystem::OnAbortCompleted,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         operation_request_id))))) {
+    // If the aborting event is not handled, then the operation should simply
+    // be not aborted. Instead we'll wait until it completes.
     LOG(ERROR) << "Failed to create an abort request.";
   }
+}
+
+void ProvidedFileSystem::OnAbortCompleted(int operation_request_id,
+                                          base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    // If an error in aborting happens, then do not abort the request in the
+    // request manager, as the operation is supposed to complete. The only case
+    // it wouldn't complete is if there is a bug in the extension code, and
+    // the extension never calls the callback. We consiously *do not* handle
+    // bugs in extensions here.
+    return;
+  }
+  request_manager_->RejectRequest(operation_request_id,
+                                  make_scoped_ptr(new RequestValue()),
+                                  base::File::FILE_ERROR_ABORT);
 }
 
 AbortCallback ProvidedFileSystem::AddWatcherInQueue(

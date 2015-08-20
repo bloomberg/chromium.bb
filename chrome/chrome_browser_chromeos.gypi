@@ -336,6 +336,8 @@
         'browser/chromeos/file_system_provider/service.h',
         'browser/chromeos/file_system_provider/service_factory.cc',
         'browser/chromeos/file_system_provider/service_factory.h',
+        'browser/chromeos/file_system_provider/scoped_file_opener.cc',
+        'browser/chromeos/file_system_provider/scoped_file_opener.h',
         'browser/chromeos/file_system_provider/throttled_file_system.cc',
         'browser/chromeos/file_system_provider/throttled_file_system.h',
         'browser/chromeos/file_system_provider/watcher.cc',

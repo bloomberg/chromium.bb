@@ -1220,6 +1220,7 @@
       'browser/chromeos/file_system_provider/queue_unittest.cc',
       'browser/chromeos/file_system_provider/registry_unittest.cc',
       'browser/chromeos/file_system_provider/request_manager_unittest.cc',
+      'browser/chromeos/file_system_provider/scoped_file_opener_unittest.cc',
       'browser/chromeos/file_system_provider/service_unittest.cc',
       'browser/chromeos/file_system_provider/throttled_file_system_unittest.cc',
       'browser/chromeos/fileapi/external_file_url_request_job_unittest.cc',

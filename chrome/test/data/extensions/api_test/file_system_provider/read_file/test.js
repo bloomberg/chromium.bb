@@ -58,6 +58,15 @@ var TESTING_VANILLA_FOR_ABORT_FILE = Object.freeze({
 var readBreakpointCallback = null;
 
 /**
+ * Open breakpoint callback invoked when opening some testing files.
+ * The first argument is a file path, and the second one is a callback to resume
+ * opening the file.
+ *
+ * @type {?function(string, function()}
+ */
+var openBreakpointCallback = null;
+
+/**
  * Requests reading contents of a file, previously opened with <code>
  * openRequestId</code>.
  *
@@ -114,6 +123,36 @@ function onReadFileRequested(options, onSuccess, onError) {
 }
 
 /**
+ * Handles opening files. Further file operations will be associated with the
+ * <code>requestId</code>.
+ *
+ * @param {OpenFileRequestedOptions} options Options.
+ * @param {function()} onSuccess Success callback.
+ * @param {function(string)} onError Error callback.
+ */
+function onOpenFileRequested(options, onSuccess, onError) {
+  if (options.fileSystemId !== test_util.FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  var continueOpen = function() {
+    var metadata = test_util.defaultMetadata[options.filePath];
+    if (metadata && !metadata.is_directory) {
+      test_util.openedFiles[options.requestId] = options.filePath;
+      onSuccess();
+    } else {
+      onError('NOT_FOUND');  // enum ProviderError.
+    }
+  };
+
+  if (openBreakpointCallback)
+    openBreakpointCallback(options.filePath, continueOpen);
+  else
+    continueOpen();
+};
+
+/**
  * Sets up the tests. Called once per all test cases. For each test case,
  * setUpFileSystem() must to be called with additional, test-case specific
  * options.
@@ -121,8 +160,6 @@ function onReadFileRequested(options, onSuccess, onError) {
 function setUp() {
   chrome.fileSystemProvider.onGetMetadataRequested.addListener(
       test_util.onGetMetadataRequestedDefault);
-  chrome.fileSystemProvider.onOpenFileRequested.addListener(
-      test_util.onOpenFileRequested);
   chrome.fileSystemProvider.onCloseFileRequested.addListener(
       test_util.onCloseFileRequested);
 
@@ -135,6 +172,8 @@ function setUp() {
 
   chrome.fileSystemProvider.onReadFileRequested.addListener(
       onReadFileRequested);
+  chrome.fileSystemProvider.onOpenFileRequested.addListener(
+      onOpenFileRequested);
 }
 
 /**
@@ -320,7 +359,101 @@ function runTests() {
               chrome.test.fail(error.name);
             });
       }));
-    }
+    },
+
+    // Abort opening a file while trying to read it without an abort handler
+    // wired up. This should cause closing the file anyway.
+    function abortViaCloseSuccess() {
+      setUpFileSystem(0 /* no limit */, chrome.test.callbackPass(function() {
+        test_util.fileSystem.root.getFile(
+            TESTING_VANILLA_FOR_ABORT_FILE.name,
+            {create: false, exclusive: false},
+            chrome.test.callbackPass(function(fileEntry) {
+              fileEntry.file(chrome.test.callbackPass(function(file) {
+                var fileReader = new FileReader();
+                fileReader.onerror = chrome.test.callbackPass(function(e) {
+                  chrome.test.assertEq(
+                      'AbortError', fileReader.error.name);
+                  // Confirm that the file is closed on the provider side.
+                  chrome.test.assertEq(
+                      0, Object.keys(test_util.openedFiles).length);
+                });
+                // Set a breakpoint on reading a file, so aborting is invoked
+                // after it's started.
+                openBreakpointCallback = chrome.test.callbackPass(
+                    function(filePath, continueCallback) {
+                      fileReader.abort();
+                      setTimeout(chrome.test.callbackPass(function() {
+                        continueCallback();
+                        chrome.test.assertEq(
+                            1, Object.keys(test_util.openedFiles).length);
+                      }), 0);
+                    });
+                fileReader.readAsText(file);
+              }),
+              function(error) {
+                chrome.test.fail(error.name);
+              });
+            }),
+            function(error) {
+              chrome.test.fail(error.name);
+            });
+      }));
+    },
+
+    // Abort opening a file while trying to read it without an abort handler
+    // wired up, then quickly try to open it again while having a limit of 1
+    // opened files at once. This is a regression test for: crbug.com/519063.
+    function abortOpenedAndReopenSuccess() {
+      setUpFileSystem(1 /* no limit */, chrome.test.callbackPass(function() {
+        test_util.fileSystem.root.getFile(
+            TESTING_VANILLA_FOR_ABORT_FILE.name,
+            {create: false, exclusive: false},
+            chrome.test.callbackPass(function(fileEntry) {
+              fileEntry.file(chrome.test.callbackPass(function(file) {
+                var fileReader = new FileReader();
+                var fileReader2 = new FileReader();
+                fileReader.onerror = chrome.test.callbackPass(function(e) {
+                  chrome.test.assertEq(
+                      'AbortError', fileReader.error.name);
+                  // Confirm that the file is closed on the provider side.
+                  chrome.test.assertEq(
+                      0, Object.keys(test_util.openedFiles).length);
+                });
+                // Set a breakpoint on reading a file, so aborting is invoked
+                // after it's started.
+                openBreakpointCallback = chrome.test.callbackPass(
+                    function(filePath, continueCallback) {
+                      fileReader.abort();
+                      setTimeout(chrome.test.callbackPass(function() {
+                        continueCallback();
+                        chrome.test.assertEq(
+                            1, Object.keys(test_util.openedFiles).length);
+                      }), 0);
+                      openBreakpointCallback = chrome.test.callbackPass(
+                          function() {
+                            // The next OpenFile request should happen only
+                            // after the previous file is closed successfully
+                            // due to abort.
+                            chrome.test.assertEq(
+                                0, Object.keys(test_util.openedFiles).length);
+                          });
+                    });
+                fileReader.readAsText(file);
+                // The second reader should enqueue until the first file is
+                // closed.
+                fileReader2.readAsText(file);
+              }),
+              function(error) {
+                chrome.test.fail(error.name);
+              });
+            }),
+            function(error) {
+              chrome.test.fail(error.name);
+            });
+      }));
+    },
+
   ]);
 }
 

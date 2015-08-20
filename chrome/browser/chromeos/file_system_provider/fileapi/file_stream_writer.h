@@ -40,7 +40,14 @@ class FileStreamWriter : public storage::FileStreamWriter {
   class OperationRunner;
 
   // State of the file stream writer.
-  enum State { NOT_INITIALIZED, INITIALIZING, INITIALIZED, EXECUTING, FAILED };
+  enum State {
+    NOT_INITIALIZED,
+    INITIALIZING,
+    INITIALIZED,
+    EXECUTING,
+    FAILED,
+    CANCELLING
+  };
 
   // Called when OperationRunner::WriteOnUIThread is completed.
   void OnWriteFileCompleted(int buffer_length,
