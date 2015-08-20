@@ -175,6 +175,13 @@ public class DataReductionProxySettings {
     }
 
     /**
+     * Counts the number of times the Lo-Fi snackbar has been shown.
+     *  */
+    public void incrementLoFiSnackbarShown() {
+        nativeIncrementLoFiSnackbarShown(mNativeDataReductionProxySettings);
+    }
+
+    /**
      * Counts the number of requests to reload the page with images from the Lo-Fi snackbar. If the
      * user requests the page with images a certain number of times, then Lo-Fi is disabled for the
      * session.
@@ -260,6 +267,8 @@ public class DataReductionProxySettings {
     private native boolean nativeWasLoFiLoadImageRequestedBefore(
             long nativeDataReductionProxySettingsAndroid);
     private native void nativeSetLoFiLoadImageRequested(
+            long nativeDataReductionProxySettingsAndroid);
+    private native void nativeIncrementLoFiSnackbarShown(
             long nativeDataReductionProxySettingsAndroid);
     private native void nativeIncrementLoFiUserRequestsForImages(
             long nativeDataReductionProxySettingsAndroid);

@@ -175,6 +175,12 @@ void DataReductionProxySettings::SetLoFiLoadImageRequested() {
   lo_fi_load_image_requested_ = true;
 }
 
+void DataReductionProxySettings::IncrementLoFiSnackbarShown() {
+  prefs_->SetInteger(
+      prefs::kLoFiSnackbarsShownPerSession,
+      prefs_->GetInteger(prefs::kLoFiSnackbarsShownPerSession) + 1);
+}
+
 void DataReductionProxySettings::IncrementLoFiUserRequestsForImages() {
   if (!prefs_ || params::IsLoFiAlwaysOnViaFlags())
     return;

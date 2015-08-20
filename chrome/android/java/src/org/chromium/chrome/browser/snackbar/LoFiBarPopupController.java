@@ -44,6 +44,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
                 .setAction(mContext.getString(R.string.data_reduction_lo_fi_snackbar_action),
                         tab.getId())
                 .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
+        DataReductionProxySettings.getInstance().incrementLoFiSnackbarShown();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_SHOWN);
     }

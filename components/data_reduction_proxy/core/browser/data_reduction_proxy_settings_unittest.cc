@@ -337,15 +337,20 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
   test_context_->config()->ResetLoFiStatusForTest();
   EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
                    prefs::kLoFiLoadImagesPerSession));
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiSnackbarsShownPerSession));
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
             test_context_->config()->GetLoFiStatus());
 
   // Click "Load images" |lo_fi_user_requests_for_images_per_session_| times.
   for (int i = 1; i <= settings_->lo_fi_user_requests_for_images_per_session_;
        ++i) {
+    settings_->IncrementLoFiSnackbarShown();
     settings_->IncrementLoFiUserRequestsForImages();
     EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
                      prefs::kLoFiLoadImagesPerSession));
+    EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
+                     prefs::kLoFiSnackbarsShownPerSession));
   }
 
   test_context_->RunUntilIdle();
@@ -360,22 +365,47 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
   settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
   EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
                    prefs::kLoFiLoadImagesPerSession));
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiSnackbarsShownPerSession));
+  EXPECT_EQ(1, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
+            test_context_->config()->GetLoFiStatus());
+
+  // Don't show any snackbars or have any "Load images" requests, but start
+  // a new session. kLoFiConsecutiveSessionDisables should not reset since
+  // the minimum number of snackbars were not shown.
+  test_context_->config()->ResetLoFiStatusForTest();
+  settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiLoadImagesPerSession));
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiSnackbarsShownPerSession));
+  EXPECT_EQ(1, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiConsecutiveSessionDisables));
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
             test_context_->config()->GetLoFiStatus());
 
   // Have a session that doesn't have
-  // |lo_fi_user_requests_for_images_per_session_| so
-  // kLoFiConsecutiveSessionDisables resets.
+  // |lo_fi_user_requests_for_images_per_session_|, but has that number of
+  // snackbars shown so kLoFiConsecutiveSessionDisables resets.
   for (int i = 1;
        i <= settings_->lo_fi_user_requests_for_images_per_session_ - 1; ++i) {
+    settings_->IncrementLoFiSnackbarShown();
     settings_->IncrementLoFiUserRequestsForImages();
     EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
                      prefs::kLoFiLoadImagesPerSession));
+    EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
+                     prefs::kLoFiSnackbarsShownPerSession));
   }
+  settings_->IncrementLoFiSnackbarShown();
+  EXPECT_EQ(settings_->lo_fi_user_requests_for_images_per_session_,
+            test_context_->pref_service()->GetInteger(
+                prefs::kLoFiSnackbarsShownPerSession));
 
   test_context_->RunUntilIdle();
   // Still should have only one consecutive session disable and Lo-Fi status
-  // shouldn't have been set to off.
+  // should have been set to off.
   EXPECT_EQ(1, test_context_->pref_service()->GetInteger(
                    prefs::kLoFiConsecutiveSessionDisables));
   EXPECT_EQ(LoFiStatus::LOFI_STATUS_TEMPORARILY_OFF,
@@ -387,6 +417,8 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
   settings_->data_reduction_proxy_service_->InitializeLoFiPrefs();
   EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
                    prefs::kLoFiConsecutiveSessionDisables));
+  EXPECT_EQ(0, test_context_->pref_service()->GetInteger(
+                   prefs::kLoFiSnackbarsShownPerSession));
 }
 
 TEST_F(DataReductionProxySettingsTest,
@@ -412,8 +444,11 @@ TEST_F(DataReductionProxySettingsTest,
     for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
          ++j) {
       settings_->IncrementLoFiUserRequestsForImages();
+      settings_->IncrementLoFiSnackbarShown();
       EXPECT_EQ(j, test_context_->pref_service()->GetInteger(
                        prefs::kLoFiLoadImagesPerSession));
+      EXPECT_EQ(j, test_context_->pref_service()->GetInteger(
+                       prefs::kLoFiSnackbarsShownPerSession));
     }
 
     test_context_->RunUntilIdle();

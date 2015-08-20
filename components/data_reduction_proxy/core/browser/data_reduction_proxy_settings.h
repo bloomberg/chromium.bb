@@ -116,6 +116,9 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver {
   // the last main frame request.
   bool WasLoFiLoadImageRequestedBefore();
 
+  // Increments the number of times the Lo-Fi snackbar has been shown.
+  void IncrementLoFiSnackbarShown();
+
   // Sets |lo_fi_load_image_requested_| to true, which means a "Load image"
   // context menu request has been made since the last main frame request.
   void SetLoFiLoadImageRequested();

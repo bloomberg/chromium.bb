@@ -43,6 +43,7 @@ class DataReductionProxySettingsAndroid {
   jboolean WasLoFiLoadImageRequestedBefore(JNIEnv* env, jobject obj);
   void SetLoFiLoadImageRequested(JNIEnv* env, jobject obj);
   jboolean IsDataReductionProxyManaged(JNIEnv* env, jobject obj);
+  void IncrementLoFiSnackbarShown(JNIEnv* env, jobject obj);
   void IncrementLoFiUserRequestsForImages(JNIEnv* env, jobject obj);
   void SetDataReductionProxyEnabled(JNIEnv* env, jobject obj, jboolean enabled);
 

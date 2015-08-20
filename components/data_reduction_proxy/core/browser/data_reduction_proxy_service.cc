@@ -209,14 +209,16 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
       // session.
       SetLoFiModeOff();
     } else if (prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) <
-               lo_fi_user_requests_for_images_per_session) {
+                   lo_fi_user_requests_for_images_per_session &&
+               prefs_->GetInteger(prefs::kLoFiSnackbarsShownPerSession) >=
+                   lo_fi_user_requests_for_images_per_session) {
       // If the last session didn't have
-      // |lo_fi_user_requests_for_images_per_session| and the number of
-      // |consecutive_session_disables| hasn't been met, reset the consecutive
-      // sessions count.
+      // |lo_fi_user_requests_for_images_per_session|, but the user saw at least
+      // that many "Load image" snackbars, reset the consecutive sessions count.
       prefs_->SetInteger(prefs::kLoFiConsecutiveSessionDisables, 0);
     }
     prefs_->SetInteger(prefs::kLoFiLoadImagesPerSession, 0);
+    prefs_->SetInteger(prefs::kLoFiSnackbarsShownPerSession, 0);
     prefs_->SetBoolean(prefs::kLoFiWasUsedThisSession, false);
   }
 }

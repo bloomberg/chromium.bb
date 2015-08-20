@@ -94,6 +94,11 @@ const char kHttpOriginalContentLength[] = "http_original_content_length";
 const char kLoFiImplicitOptOutEpoch[] =
     "data_reduction_lo_fi.implicit_opt_out_epoch";
 
+// An integer pref that contains the number of times that "Load images" Lo-Fi
+// snackbar has been shown for the current session.
+const char kLoFiSnackbarsShownPerSession[] =
+    "data_reduction_lo_fi.load_images_snackbars_shown_per_session";
+
 // An integer pref that contains the number of times that "Load images" has been
 // requested on the Lo-Fi snackbar for the current session.
 const char kLoFiLoadImagesPerSession[] =
