@@ -3656,7 +3656,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // last user interaction, then the page has changed since the user last
     // interacted.
     BOOL userInteractedWithRequestMainFrame =
-        _lastUserInteraction &&
+        [self userClickedRecently] &&
         net::GURLWithNSURL(request.mainDocumentURL) ==
             _lastUserInteraction->main_document_url;
     // Prevent subframe requests from opening an external URL if the user has
