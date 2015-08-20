@@ -404,9 +404,7 @@ void BuildPropertyTreesInternal(
       AddTransformNodeIfNeeded(data_from_parent, layer, &data_for_children);
   AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
                       &data_for_children);
-
-  if (data_from_parent.effect_tree)
-    AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
+  AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
   if (layer == data_from_parent.page_scale_layer)
     data_for_children.in_subtree_of_page_scale_layer = true;

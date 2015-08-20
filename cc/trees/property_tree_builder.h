@@ -16,8 +16,6 @@ class LayerTreeHost;
 
 class PropertyTreeBuilder {
  public:
-  // Building an opacity tree is optional, and can be skipped by passing
-  // in a null |opacity_tree|.
   static void BuildPropertyTrees(Layer* root_layer,
                                  const Layer* page_scale_layer,
                                  const Layer* inner_viewport_scroll_layer,
