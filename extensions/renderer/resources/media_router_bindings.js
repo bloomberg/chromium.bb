@@ -508,7 +508,7 @@ define('media_router_bindings', [
    *    an empty list if an error occurred.
    */
   MediaRouteProvider.prototype.listenForRouteMessages = function(routeId) {
-    return this.handlers_.listenForRouteMessages([routeId])
+    return this.handlers_.listenForRouteMessages(routeId)
         .then(function(messages) {
           return {'messages': messages.map(messageToMojo_)};
         }, function() {
