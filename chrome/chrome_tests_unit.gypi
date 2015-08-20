@@ -585,6 +585,7 @@
       'browser/spellchecker/spelling_service_client_unittest.cc',
       'browser/spellchecker/word_trimmer_unittest.cc',
       'renderer/spellchecker/custom_dictionary_engine_unittest.cc',
+      'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
       'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
       'renderer/spellchecker/spellcheck_provider_mac_unittest.cc',
       'renderer/spellchecker/spellcheck_provider_test.cc',
@@ -2519,6 +2520,8 @@
             # on Mac.
             'browser/spellchecker/spellcheck_service_unittest.cc',
             'browser/ui/tests/ui_gfx_image_unittest.cc',
+            # This tests Chrome's spellchecker which Mac doesn't use.
+            'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
             'tools/convert_dict/convert_dict_unittest.cc',
           ],
@@ -2635,6 +2638,7 @@
           ],
           'sources!': [
             'renderer/spellchecker/spellcheck_provider_hunspell_unittest.cc',
+            'renderer/spellchecker/spellcheck_multilingual_unittest.cc',
             'renderer/spellchecker/spellcheck_unittest.cc',
           ],
           'ldflags': [

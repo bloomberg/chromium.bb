@@ -37,6 +37,8 @@ class FakeTextCheckingCompletion : public blink::WebTextCheckingCompletion {
 class TestingSpellCheckProvider : public SpellCheckProvider {
  public:
   TestingSpellCheckProvider();
+  // Takes ownership of |spellcheck|.
+  explicit TestingSpellCheckProvider(SpellCheck* spellcheck);
 
   ~TestingSpellCheckProvider() override;
   bool Send(IPC::Message* message) override;

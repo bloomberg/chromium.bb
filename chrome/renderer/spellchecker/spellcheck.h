@@ -62,15 +62,16 @@ class SpellCheck : public content::RenderProcessObserver,
   bool InitializeIfNeeded();
 
   // SpellCheck a word.
-  // Returns true if spelled correctly, false otherwise.
-  // If the spellchecker failed to initialize, always returns true.
+  // Returns true if spelled correctly for any language in |languages_|, false
+  // otherwise.
+  // If any spellcheck languages failed to initialize, always returns true.
   // The |tag| parameter should either be a unique identifier for the document
   // that the word came from (if the current platform requires it), or 0.
   // In addition, finds the suggested words for a given word
   // and puts them into |*optional_suggestions|.
   // If the word is spelled correctly, the vector is empty.
   // If optional_suggestions is NULL, suggested words will not be looked up.
-  // Note that Doing suggest lookups can be slow.
+  // Note that doing suggest lookups can be slow.
   bool SpellCheckWord(const base::char16* text_begin,
                       int position_in_text,
                       int text_length,

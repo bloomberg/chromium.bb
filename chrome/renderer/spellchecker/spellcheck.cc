@@ -258,18 +258,75 @@ bool SpellCheck::SpellCheckWord(
   if (InitializeIfNeeded())
     return true;
 
-  SpellcheckLanguage::SpellcheckWordResult result;
-  for (result = languages_.front()->SpellCheckWord(
-           text_begin, position_in_text, text_length, tag, misspelling_start,
-           misspelling_len, optional_suggestions);
-       result == SpellcheckLanguage::SpellcheckWordResult::IS_SKIPPABLE;
-       result = languages_.front()->SpellCheckWord(
-           text_begin, position_in_text, text_length, tag, misspelling_start,
-           misspelling_len, optional_suggestions)) {
-    position_in_text = *misspelling_start + *misspelling_len;
+  // These are for holding misspelling or skippable word positions and lengths
+  // between calls to SpellcheckLanguage::SpellCheckWord.
+  int possible_misspelling_start;
+  int possible_misspelling_len;
+  // The longest sequence of text that all languages agree is skippable.
+  int agreed_skippable_len;
+
+  // This loop only advances if all languages agree that a sequence of text is
+  // skippable.
+  for (; position_in_text <= text_length;
+       position_in_text += agreed_skippable_len) {
+    // Reseting |agreed_skippable_len| to the worst-case length each time
+    // prevents some unnecessary iterations.
+    agreed_skippable_len = text_length;
+    *misspelling_start = 0;
+    *misspelling_len = 0;
+
+    if (optional_suggestions)
+      optional_suggestions->clear();
+
+    for (ScopedVector<SpellcheckLanguage>::iterator language =
+             languages_.begin();
+         language != languages_.end();) {
+      SpellcheckLanguage::SpellcheckWordResult result =
+          (*language)->SpellCheckWord(text_begin, position_in_text, text_length,
+                                      tag, &possible_misspelling_start,
+                                      &possible_misspelling_len,
+                                      optional_suggestions);
+
+      switch (result) {
+        case SpellcheckLanguage::SpellcheckWordResult::IS_CORRECT:
+          *misspelling_start = 0;
+          *misspelling_len = 0;
+          return true;
+        case SpellcheckLanguage::SpellcheckWordResult::IS_SKIPPABLE:
+          agreed_skippable_len =
+              std::min(agreed_skippable_len, possible_misspelling_len);
+          // If true, this means the spellchecker moved past a word that was
+          // previously determined to be misspelled or skippable, which means
+          // another spellcheck language marked it as correct.
+          if (position_in_text != possible_misspelling_start) {
+            *misspelling_len = 0;
+            position_in_text = possible_misspelling_start;
+            language = languages_.begin();
+          } else {
+            language++;
+          }
+          break;
+        case SpellcheckLanguage::SpellcheckWordResult::IS_MISSPELLED:
+          *misspelling_start = possible_misspelling_start;
+          *misspelling_len = possible_misspelling_len;
+          // If true, this means the spellchecker moved past a word that was
+          // previously determined to be misspelled or skippable, which means
+          // another spellcheck language marked it as correct.
+          language = position_in_text != *misspelling_start ? languages_.begin()
+                                                            : language + 1;
+          position_in_text = *misspelling_start;
+          break;
+      }
+    }
+
+    // If |*misspelling_len| is non-zero, that means at least one language
+    // marked a word misspelled and no other language considered it correct.
+    if (*misspelling_len != 0)
+      return false;
   }
 
-  return result == SpellcheckLanguage::SpellcheckWordResult::IS_CORRECT;
+  NOTREACHED();
+  return true;
 }
 
 bool SpellCheck::SpellCheckParagraph(

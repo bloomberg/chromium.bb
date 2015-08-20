@@ -70,8 +70,9 @@ class SpellCheckTest : public testing::Test {
     spell_check_->languages_.front()->platform_spelling_engine_.reset(
         new HunspellEngine);
     spell_check_->languages_.front()->Init(file.Pass(), language);
-#endif
+#else
     spell_check_->AddSpellcheckLanguage(file.Pass(), language);
+#endif
   }
 
   void EnableAutoCorrect(bool enable_autocorrect) {

@@ -35,6 +35,12 @@ TestingSpellCheckProvider::TestingSpellCheckProvider()
         spelling_service_call_count_(0) {
 }
 
+TestingSpellCheckProvider::TestingSpellCheckProvider(
+    SpellCheck* spellcheck)
+    : SpellCheckProvider(nullptr, spellcheck),
+      spelling_service_call_count_(0) {
+}
+
 TestingSpellCheckProvider::~TestingSpellCheckProvider() {
   delete spellcheck_;
 }
