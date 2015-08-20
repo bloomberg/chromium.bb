@@ -108,8 +108,8 @@ bool DeviceSettingsTestHelper::IsScreenLocked() const { return false; }
 
 void DeviceSettingsTestHelper::EmitLoginPromptVisible() {}
 
-void DeviceSettingsTestHelper::RestartJob(int pid,
-                                          const std::string& command_line) {}
+void DeviceSettingsTestHelper::RestartJob(
+    const std::vector<std::string>& argv) {}
 
 void DeviceSettingsTestHelper::StartSession(const std::string& user_email) {}
 

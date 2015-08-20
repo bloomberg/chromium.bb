@@ -15,16 +15,14 @@ class CommandLine;
 
 namespace chromeos {
 
-// Returns the command line string to be used for the OTR process. Also modifies
-// the given command line.
-std::string GetOffTheRecordCommandLine(
-    const GURL& start_url,
-    bool is_oobe_completed,
-    const base::CommandLine& base_command_line,
-    base::CommandLine* command_line);
+// Determines the |command_line| to be used for the OTR process.
+void GetOffTheRecordCommandLine(const GURL& start_url,
+                                bool is_oobe_completed,
+                                const base::CommandLine& base_command_line,
+                                base::CommandLine* command_line);
 
 // Request session manager to restart chrome with a new command line.
-void RestartChrome(const std::string& command_line);
+void RestartChrome(const base::CommandLine& command_line);
 
 }  // namespace chromeos
 

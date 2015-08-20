@@ -73,8 +73,8 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Kicks off an attempt to emit the "login-prompt-visible" upstart signal.
   virtual void EmitLoginPromptVisible() = 0;
 
-  // Restarts a job referenced by |pid| with the provided command line.
-  virtual void RestartJob(int pid, const std::string& command_line) = 0;
+  // Restarts the browser job, passing |argv| as the updated command line.
+  virtual void RestartJob(const std::vector<std::string>& argv) = 0;
 
   // Starts the session for the user.
   virtual void StartSession(const std::string& user_email) = 0;
