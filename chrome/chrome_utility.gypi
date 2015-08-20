@@ -73,6 +73,8 @@
       'utility/safe_browsing/mac/hfs.h',
       'utility/safe_browsing/mac/read_stream.cc',
       'utility/safe_browsing/mac/read_stream.h',
+      'utility/safe_browsing/mac/udif.cc',
+      'utility/safe_browsing/mac/udif.h',
     ],
     'chrome_utility_shared_media_sources': [
       'utility/media_galleries/image_metadata_extractor.cc',
