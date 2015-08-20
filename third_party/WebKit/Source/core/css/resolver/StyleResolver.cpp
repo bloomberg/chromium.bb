@@ -95,8 +95,8 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
 {
     // If any changes to CSS Animations were detected, stash the update away for application after the
     // layout object is updated if we're in the appropriate scope.
-    if (state.animationUpdate())
-        element.ensureElementAnimations().cssAnimations().setPendingUpdate(state.takeAnimationUpdate());
+    if (!state.animationUpdate().isEmpty())
+        element.ensureElementAnimations().cssAnimations().setPendingUpdate(state.animationUpdate());
 }
 
 } // namespace
@@ -930,12 +930,12 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
         && !state.style()->transitions() && !state.style()->animations())
         return false;
 
-    state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(), state.parentStyle(), this));
-    if (!state.animationUpdate())
+    CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(), state.parentStyle(), state.animationUpdate(), this);
+    if (state.animationUpdate().isEmpty())
         return false;
 
-    const ActiveInterpolationMap& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
-    const ActiveInterpolationMap& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
+    const ActiveInterpolationMap& activeInterpolationsForAnimations = state.animationUpdate().activeInterpolationsForAnimations();
+    const ActiveInterpolationMap& activeInterpolationsForTransitions = state.animationUpdate().activeInterpolationsForTransitions();
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForAnimations);
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsForTransitions);
 

@@ -24,6 +24,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "core/animation/css/CSSAnimationUpdate.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/resolver/CSSToStyleMap.h"
@@ -38,7 +39,6 @@
 
 namespace blink {
 
-class CSSAnimationUpdate;
 class FontDescription;
 
 class CORE_EXPORT StyleResolverState {
@@ -79,9 +79,7 @@ public:
     void setConversionFontSizes(const CSSToLengthConversionData::FontSizes& fontSizes) { m_cssToLengthConversionData.setFontSizes(fontSizes); }
     void setConversionZoom(float zoom) { m_cssToLengthConversionData.setZoom(zoom); }
 
-    void setAnimationUpdate(PassOwnPtrWillBeRawPtr<CSSAnimationUpdate>);
-    const CSSAnimationUpdate* animationUpdate() { return m_animationUpdate.get(); }
-    PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> takeAnimationUpdate();
+    CSSAnimationUpdate& animationUpdate() { return m_animationUpdate; }
 
     void setParentStyle(PassRefPtr<ComputedStyle> parentStyle) { m_parentStyle = parentStyle; }
     const ComputedStyle* parentStyle() const { return m_parentStyle.get(); }
@@ -167,7 +165,7 @@ private:
     // so we keep it separate.
     RefPtr<ComputedStyle> m_parentStyle;
 
-    OwnPtrWillBeMember<CSSAnimationUpdate> m_animationUpdate;
+    CSSAnimationUpdate m_animationUpdate;
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;

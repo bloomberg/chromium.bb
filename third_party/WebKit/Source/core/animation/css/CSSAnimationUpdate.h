@@ -6,6 +6,7 @@
 #define CSSAnimationUpdate_h
 
 #include "core/animation/AnimationStack.h"
+#include "core/animation/InertEffect.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -20,16 +21,13 @@
 namespace blink {
 
 class Animation;
-class InertEffect;
 
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
-class CSSAnimationUpdate final : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSAnimationUpdate);
+class CSSAnimationUpdate final {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(CSSAnimationUpdate);
 public:
-    CSSAnimationUpdate() { }
-
     class NewAnimation {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
@@ -135,6 +133,48 @@ public:
         CompositableStyleSnapshot snapshot;
     };
 
+    CSSAnimationUpdate()
+    {
+    }
+
+    ~CSSAnimationUpdate()
+    {
+#if ENABLE(OILPAN)
+        // For performance reasons, explicitly clear HeapVectors and
+        // HeapHashMaps to avoid giving a pressure on Oilpan's GC.
+        clear();
+#endif
+    }
+
+    void copy(const CSSAnimationUpdate& update)
+    {
+        ASSERT(isEmpty());
+        m_newAnimations = update.newAnimations();
+        m_animationsWithUpdates = update.animationsWithUpdates();
+        m_animationsWithStyleUpdates = update.animationsWithStyleUpdates();
+        m_newTransitions = update.newTransitions();
+        m_activeInterpolationsForAnimations = update.activeInterpolationsForAnimations();
+        m_activeInterpolationsForTransitions = update.activeInterpolationsForTransitions();
+        m_cancelledAnimationNames = update.cancelledAnimationNames();
+        m_animationsWithPauseToggled = update.animationsWithPauseToggled();
+        m_cancelledTransitions = update.cancelledTransitions();
+        m_finishedTransitions = update.finishedTransitions();
+    }
+
+    void clear()
+    {
+        m_newAnimations.clear();
+        m_animationsWithUpdates.clear();
+        m_animationsWithStyleUpdates.clear();
+        m_newTransitions.clear();
+        m_activeInterpolationsForAnimations.clear();
+        m_activeInterpolationsForTransitions.clear();
+        m_cancelledAnimationNames.clear();
+        m_animationsWithPauseToggled.clear();
+        m_cancelledTransitions.clear();
+        m_finishedTransitions.clear();
+    }
+
     void startAnimation(const AtomicString& animationName, PassRefPtrWillBeRawPtr<InertEffect> effect, const Timing& timing, PassRefPtrWillBeRawPtr<StyleRuleKeyframes> styleRule)
     {
         effect->setName(animationName);
@@ -235,7 +275,18 @@ public:
             && m_activeInterpolationsForTransitions.isEmpty();
     }
 
-    DECLARE_TRACE();
+    DEFINE_INLINE_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_newTransitions);
+        visitor->trace(m_activeInterpolationsForAnimations);
+        visitor->trace(m_activeInterpolationsForTransitions);
+        visitor->trace(m_newAnimations);
+        visitor->trace(m_suppressedAnimations);
+        visitor->trace(m_animationsWithUpdates);
+        visitor->trace(m_animationsWithStyleUpdates);
+#endif
+    }
 
 private:
     // Order is significant since it defines the order in which new animations

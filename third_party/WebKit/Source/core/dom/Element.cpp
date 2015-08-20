@@ -1589,7 +1589,7 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject()
     // FIXME: Instead of clearing updates that may have been added from calls to styleForElement
     // outside recalcStyle, we should just never set them if we're not inside recalcStyle.
     if (ElementAnimations* elementAnimations = this->elementAnimations())
-        elementAnimations->cssAnimations().setPendingUpdate(nullptr);
+        elementAnimations->cssAnimations().clearPendingUpdate();
 
     if (hasCustomStyleCallbacks())
         style = customStyleForLayoutObject();
