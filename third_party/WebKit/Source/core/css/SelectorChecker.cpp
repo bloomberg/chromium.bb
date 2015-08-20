@@ -309,6 +309,15 @@ SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const SelectorCheck
     return matchSelector(context, result);
 }
 
+static inline Element* parentOrShadowHostElementButDisallowClosedShadowTree(const Element& element)
+{
+    if (element.parentNode() && element.parentNode()->isShadowRoot()) {
+        if (!toShadowRoot(element.parentNode())->isOpen())
+            return nullptr;
+    }
+    return element.parentOrShadowHostElement();
+}
+
 SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingContext& context, MatchResult& result) const
 {
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
@@ -423,6 +432,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             }
 
             if (context.selector->relationIsAffectedByPseudoContent()) {
+                // TODO(kochi): closed mode tree should be handled as well for ::content.
                 for (Element* element = context.element; element; element = element->parentOrShadowHostElement()) {
                     if (matchForShadowDistributed(nextContext, *element, result) == SelectorMatches)
                         return SelectorMatches;
@@ -432,7 +442,8 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
             nextContext.isSubSelector = false;
             nextContext.inRightmostCompound = false;
-            for (nextContext.element = context.element->parentOrShadowHostElement(); nextContext.element; nextContext.element = nextContext.element->parentOrShadowHostElement()) {
+
+            for (nextContext.element = parentOrShadowHostElementButDisallowClosedShadowTree(*context.element); nextContext.element; nextContext.element = parentOrShadowHostElementButDisallowClosedShadowTree(*nextContext.element)) {
                 Match match = matchSelector(nextContext, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;

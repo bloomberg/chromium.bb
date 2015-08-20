@@ -266,6 +266,11 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
             return false;
     }
 
+    ShadowRoot* root1 = element().containingShadowRoot();
+    ShadowRoot* root2 = candidate.containingShadowRoot();
+    if (root1 && root2 && root1->type() != root2->type())
+        return false;
+
     if (document().containsValidityStyleRules()) {
         if (candidate.isValidElement() != element().isValidElement())
             return false;
