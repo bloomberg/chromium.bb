@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Basic//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-basic.dtd">  
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"  id="svg-root" width="100%" height="100%" viewBox="0 0 480 360" onload="runRepaintAndPixelTest()">
+<script xlink:href="../../resources/run-after-layout-and-paint.js"/>
 <script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
 <g id="content"/>
 
@@ -9,8 +10,7 @@
     var content = document.getElementById("content");
 
     function repaintTest() {
-        // FIXME: we need a better way of waiting for layout/repainting to happen
-        setTimeout(createPatterns, 1);
+        runAfterLayoutAndPaint(createPatterns);
     }
 
     function createPatterns()
@@ -71,8 +71,7 @@
 
         content.appendChild(pattern2);
 
-        // FIXME: we need a better way of waiting for layout/repainting to happen
-        setTimeout(setupPatternUsers, 1);
+        runAfterLayoutAndPaint(setupPatternUsers);
     }
 
     function setupPatternUsers()
