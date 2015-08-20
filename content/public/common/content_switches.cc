@@ -223,6 +223,9 @@ const char kDisablePluginsDiscovery[]       = "disable-plugins-discovery";
 // Disables the Presentation API.
 const char kDisablePresentationAPI[]        = "disable-presentation-api";
 
+// Disables RGBA_4444 textures.
+const char kDisableRGBA4444Textures[]       = "disable-rgba-4444-textures";
+
 // Taints all <canvas> elements, regardless of origin.
 const char kDisableReadingFromCanvas[]      = "disable-reading-from-canvas";
 
@@ -407,6 +410,9 @@ const char kEnablePreciseMemoryInfo[] = "enable-precise-memory-info";
 
 // Enables payloads for received push messages when using the W3C Push API.
 const char kEnablePushMessagePayload[] = "enable-push-message-payload";
+
+// Enables RGBA_4444 textures.
+const char kEnableRGBA4444Textures[] = "enable-rgba-4444-textures";
 
 // Set options to cache V8 data. (off, preparse data, or code)
 const char kV8CacheOptions[] = "v8-cache-options";

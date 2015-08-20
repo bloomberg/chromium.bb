@@ -182,6 +182,8 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
                                           const gfx::Rect& canvas_playback_rect,
                                           float scale,
                                           bool include_images) {
+  TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory");
+
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
@@ -219,19 +221,25 @@ void TileTaskWorkerPool::PlaybackToMemory(void* memory,
       skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
   canvas->setDrawFilter(image_filter.get());
+  // TODO(reveman): Improve partial raster support by reducing the size of
+  // playback rect passed to PlaybackToCanvas. crbug.com/519070
   raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
-                                  canvas_playback_rect, scale);
+                                  canvas_bitmap_rect, scale);
 
-  SkImageInfo dst_info =
-      SkImageInfo::Make(info.width(), info.height(), buffer_color_type,
-                        info.alphaType(), info.profileType());
-  // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
-  // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
-  // is fixed.
-  const size_t dst_row_bytes = SkAlign4(dst_info.minRowBytes());
-  DCHECK_EQ(0u, dst_row_bytes % 4);
-  bool success = canvas->readPixels(dst_info, memory, dst_row_bytes, 0, 0);
-  DCHECK_EQ(true, success);
+  {
+    TRACE_EVENT0("cc", "TileTaskWorkerPool::PlaybackToMemory::ConvertPixels");
+
+    SkImageInfo dst_info =
+        SkImageInfo::Make(info.width(), info.height(), buffer_color_type,
+                          info.alphaType(), info.profileType());
+    // TODO(kaanb): The GL pipeline assumes a 4-byte alignment for the
+    // bitmap data. There will be no need to call SkAlign4 once crbug.com/293728
+    // is fixed.
+    const size_t dst_row_bytes = SkAlign4(dst_info.minRowBytes());
+    DCHECK_EQ(0u, dst_row_bytes % 4);
+    bool success = canvas->readPixels(dst_info, memory, dst_row_bytes, 0, 0);
+    DCHECK_EQ(true, success);
+  }
 }
 
 }  // namespace cc

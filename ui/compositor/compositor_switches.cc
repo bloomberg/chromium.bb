@@ -20,6 +20,8 @@ const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
 const char kUIEnableCompositorAnimationTimelines[] =
     "ui-enable-compositor-animation-timelines";
 
+const char kUIEnableRGBA4444Textures[] = "ui-enable-rgba-4444-textures";
+
 const char kUIEnableZeroCopy[] = "ui-enable-zero-copy";
 
 const char kUIShowPaintRects[] = "ui-show-paint-rects";

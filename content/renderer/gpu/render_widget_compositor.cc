@@ -421,7 +421,7 @@ void RenderWidgetCompositor::Initialize() {
   // low end, so always use default policy.
   bool use_low_memory_policy =
       base::SysInfo::IsLowEndDevice() && !synchronous_compositor_factory;
-  // RGBA_4444 textures are only enabled for low end devices
+  // RGBA_4444 textures are only enabled by default for low end devices
   // and are disabled for Android WebView as it doesn't support the format.
   settings.renderer_settings.use_rgba_4444_textures = use_low_memory_policy;
   if (use_low_memory_policy) {
@@ -463,6 +463,11 @@ void RenderWidgetCompositor::Initialize() {
     settings.create_low_res_tiling = false;
   if (cmd->HasSwitch(cc::switches::kEnableBeginFrameScheduling))
     settings.use_external_begin_frame_source = true;
+
+  settings.renderer_settings.use_rgba_4444_textures |=
+      cmd->HasSwitch(switches::kEnableRGBA4444Textures);
+  settings.renderer_settings.use_rgba_4444_textures &=
+      !cmd->HasSwitch(switches::kDisableRGBA4444Textures);
 
   if (widget_->for_oopif()) {
     // TODO(simonhong): Apply BeginFrame scheduling for OOPIF.

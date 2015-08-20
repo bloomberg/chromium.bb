@@ -325,7 +325,7 @@ void OneCopyTileTaskWorkerPool::CheckForCompletedTasks() {
 }
 
 ResourceFormat OneCopyTileTaskWorkerPool::GetResourceFormat() const {
-  return resource_provider_->best_texture_format();
+  return resource_provider_->memory_efficient_texture_format();
 }
 
 bool OneCopyTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
@@ -338,10 +338,12 @@ scoped_ptr<RasterBuffer> OneCopyTileTaskWorkerPool::AcquireBufferForRaster(
     uint64_t previous_content_id) {
   // TODO(danakj): If resource_content_id != 0, we only need to copy/upload
   // the dirty rect.
-  DCHECK_EQ(resource->format(), resource_provider_->best_texture_format());
+  DCHECK_EQ(resource->format(),
+            resource_provider_->memory_efficient_texture_format());
   return make_scoped_ptr<RasterBuffer>(new RasterBufferImpl(
-      this, resource_provider_, resource_provider_->best_texture_format(),
-      resource, previous_content_id));
+      this, resource_provider_,
+      resource_provider_->memory_efficient_texture_format(), resource,
+      previous_content_id));
 }
 
 void OneCopyTileTaskWorkerPool::ReleaseBufferForRaster(

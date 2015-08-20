@@ -139,6 +139,9 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.use_zero_copy = IsUIZeroCopyEnabled();
   settings.use_one_copy = IsUIOneCopyEnabled();
 
+  settings.renderer_settings.use_rgba_4444_textures =
+      command_line->HasSwitch(switches::kUIEnableRGBA4444Textures);
+
   // Use PERSISTENT_MAP memory buffers to support partial tile raster for
   // software raster into GpuMemoryBuffers.
   gfx::BufferUsage usage = gfx::BufferUsage::PERSISTENT_MAP;

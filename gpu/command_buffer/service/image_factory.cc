@@ -63,7 +63,26 @@ gfx::BufferUsage ImageFactory::ImageUsageToGpuMemoryBufferUsage(
 bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     unsigned internalformat,
     gfx::BufferFormat format) {
-  return ImageFormatToGpuMemoryBufferFormat(internalformat) == format;
+  switch (format) {
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::YUV_420:
+      return ImageFormatToGpuMemoryBufferFormat(internalformat) == format;
+    case gfx::BufferFormat::RGBA_4444:
+      return internalformat == GL_RGBA;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return false;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 // static

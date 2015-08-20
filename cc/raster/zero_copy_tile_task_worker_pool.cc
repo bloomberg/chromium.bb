@@ -182,7 +182,7 @@ void ZeroCopyTileTaskWorkerPool::CheckForCompletedTasks() {
 }
 
 ResourceFormat ZeroCopyTileTaskWorkerPool::GetResourceFormat() const {
-  return resource_provider_->best_texture_format();
+  return resource_provider_->memory_efficient_texture_format();
 }
 
 bool ZeroCopyTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
