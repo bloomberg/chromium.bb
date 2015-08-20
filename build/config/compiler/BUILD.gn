@@ -571,6 +571,12 @@ config("compiler") {
         # Let clang find the ld.gold in the NDK.
         ldflags += [ "--gcc-toolchain=$rebased_android_toolchain_root" ]
       }
+
+      # Use -mstackrealign due to a bug on ia32 Jelly Bean.
+      # See crbug.com/521527
+      if (current_cpu == "x86") {
+        cflags += [ "-mstackrealign" ]
+      }
     }
 
     ldflags += [

@@ -114,6 +114,7 @@ android_java_prebuilt("google_play_services_default_java") {
     ":android_support_v13_java",
     ":android_support_v7_mediarouter_java",
     ":google_play_services_default_resources",
+    ":legacy_http_javalib",
   ]
   proguard_preprocess = true
   proguard_config = "//third_party/android_tools/proguard.flags"
@@ -141,4 +142,9 @@ action("check_sdk_extras_version") {
   outputs = [
     "$target_gen_dir/checked_sdk_extras_version.stamp",
   ]
+}
+
+# TODO(jbudorick): Remove this once net_java_test_support no longer needs it.
+android_java_prebuilt("legacy_http_javalib") {
+  jar_path = "$android_sdk/optional/org.apache.http.legacy.jar"
 }

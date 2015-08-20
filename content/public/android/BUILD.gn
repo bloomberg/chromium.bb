@@ -52,10 +52,6 @@ android_library("content_java") {
     #"//content:content_common",
   ]
 
-  if (android_sdk_version != "M") {
-    deps += [ "//third_party/android_tools:preview_java_sources" ]
-  }
-
   srcjar_deps = [
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",
@@ -183,6 +179,7 @@ android_library("content_javatests") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:legacy_http_javalib",
     "//third_party/mojo/src/mojo/public/interfaces/bindings/tests:test_interfaces_java",
     "//third_party/mojo/src/mojo/public/java:bindings",
     "//third_party/mojo/src/mojo/public/java:system",

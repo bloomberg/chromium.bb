@@ -1715,8 +1715,8 @@
             'android_ndk_absolute_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/ndk/',
             'android_host_arch%': '<!(uname -m)',
             # Android API-level of the SDK used for compilation.
-            'android_sdk_version%': '22',
-            'android_sdk_build_tools_version%': '22.0.0',
+            'android_sdk_version%': '23',
+            'android_sdk_build_tools_version%': '23.0.0',
             'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
 
             'conditions': [
@@ -3955,8 +3955,14 @@
                 'conditions': [
                   # Use gold linker for Android ia32 target.
                   ['OS=="android"', {
+                     # Use gold linker for Android ia32 target.
                     'ldflags': [
                       '-fuse-ld=gold',
+                    ],
+                    # Use -mstackrealign due to a bug on ia32 Jelly Bean.
+                    # See crbug.com/521527
+                    'cflags': [
+                      '-mstackrealign',
                     ],
                   }],
                 ],

@@ -413,7 +413,7 @@ deps_os = {
      Var('chromium_git') + '/external/android_protobuf.git' + '@' + '999188d0dc72e97f7fe08bb756958a2cf090f4e7',
 
     'src/third_party/android_tools':
-     Var('chromium_git') + '/android_tools.git' + '@' + '9e9b6169a098bc19986e44fbbf65e4c29031e4bd',
+     Var('chromium_git') + '/android_tools.git' + '@' + '4238a28593b7e6178c95431f91ca8c24e45fa7eb',
 
     'src/third_party/apache-mime4j':
      Var('chromium_git') + '/chromium/deps/apache-mime4j.git' + '@' + '28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',

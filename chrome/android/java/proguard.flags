@@ -121,6 +121,7 @@
 # TODO(aurimas): remove this when Google Play Services no longer uses setLatestEventInfo call
 # that was deprecated in Android M. It is save to suppress this according to b/18510449.
 -dontwarn com.google.android.gms.common.GooglePlayServicesUtil
+-dontwarn com.google.android.gms.gcm.zza
 
 # IntentUtils uses reflection to access a method that is hidden until API level 18.
 -dontnote org.chromium.chrome.browser.util.IntentUtils
