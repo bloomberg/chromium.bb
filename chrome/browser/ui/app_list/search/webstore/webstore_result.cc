@@ -30,32 +30,6 @@
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/image/canvas_image_source.h"
-
-namespace {
-
-// BadgedImageSource adds a webstore badge to a webstore app icon.
-class BadgedIconSource : public gfx::CanvasImageSource {
- public:
-  BadgedIconSource(const gfx::ImageSkia& icon, const gfx::Size& icon_size)
-      : CanvasImageSource(icon_size, false), icon_(icon) {}
-
-  void Draw(gfx::Canvas* canvas) override {
-    canvas->DrawImageInt(icon_, 0, 0);
-    const gfx::ImageSkia& badge = *ui::ResourceBundle::GetSharedInstance().
-         GetImageSkiaNamed(IDR_WEBSTORE_ICON_16);
-    canvas->DrawImageInt(
-        badge, icon_.width() - badge.width(), icon_.height() - badge.height());
-  }
-
- private:
-  gfx::ImageSkia icon_;
-
-  DISALLOW_COPY_AND_ASSIGN(BadgedIconSource);
-};
-
-}  // namespace
 
 namespace app_list {
 
@@ -176,14 +150,15 @@ void WebstoreResult::SetDefaultDetails() {
 }
 
 void WebstoreResult::OnIconLoaded() {
+  // Set webstore badge.
+  SetBadgeIcon(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_WEBSTORE_ICON_16));
+
   // Remove the existing image reps since the icon data is loaded and they
   // need to be re-created.
   const std::vector<gfx::ImageSkiaRep>& image_reps = icon_.image_reps();
   for (size_t i = 0; i < image_reps.size(); ++i)
     icon_.RemoveRepresentation(image_reps[i].scale());
-  int icon_dimension = GetPreferredIconDimension();
-  gfx::Size icon_size(icon_dimension, icon_dimension);
-  icon_ = gfx::ImageSkia(new BadgedIconSource(icon_, icon_size), icon_size);
 
   SetIcon(icon_);
 }
