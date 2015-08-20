@@ -189,9 +189,6 @@ public:
 
     bool isCandidate() const;
 
-    InlineBoxPosition computeInlineBoxPosition(TextAffinity) const;
-    InlineBoxPosition computeInlineBoxPosition(TextAffinity, TextDirection primaryDirection) const;
-
     static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> afterNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> inParentBeforeNode(const Node& anchorNode);
@@ -432,6 +429,17 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 {
     return toPositionInComposedTree(position);
 }
+
+// TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
+// |VisiblePosition::characterAfter()| and |VisiblePosition::characterBefore()|.
+// TODO(yosin) We should move |isRenderedCharacter()| to "VisibleUnits.cpp",
+// since it is used only in "editing/commands/"
+CORE_EXPORT bool isRenderedCharacter(const Position&);
+// TODO(yosin) We should move |computeInlineBoxPosition()| to "VisibleUnits.cpp"
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity, TextDirection primaryDirection);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity, TextDirection primaryDirection);
 
 // TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
 // reduce dependency of |LayoutObject| in |Position| class.

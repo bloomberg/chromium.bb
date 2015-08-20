@@ -124,7 +124,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
 
     while (true) {
-        InlineBoxPosition boxPosition = p.computeInlineBoxPosition(m_affinity, primaryDirection);
+        InlineBoxPosition boxPosition = computeInlineBoxPosition(p, m_affinity, primaryDirection);
         InlineBox* box = boxPosition.inlineBox;
         int offset = boxPosition.offsetInBox;
         if (!box)
@@ -161,7 +161,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
                     if (positionOnLeft.isNull())
                         return Position();
 
-                    InlineBox* boxOnLeft = positionOnLeft.computeInlineBoxPosition(m_affinity, primaryDirection).inlineBox;
+                    InlineBox* boxOnLeft = computeInlineBoxPosition(positionOnLeft, m_affinity, primaryDirection).inlineBox;
                     if (boxOnLeft && boxOnLeft->root() == box->root())
                         return Position();
                     return positionOnLeft;
@@ -283,7 +283,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
 
     while (true) {
-        InlineBoxPosition boxPosition = p.computeInlineBoxPosition(m_affinity, primaryDirection);
+        InlineBoxPosition boxPosition = computeInlineBoxPosition(p, m_affinity, primaryDirection);
         InlineBox* box = boxPosition.inlineBox;
         int offset = boxPosition.offsetInBox;
         if (!box)
@@ -320,7 +320,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
                     if (positionOnRight.isNull())
                         return Position();
 
-                    InlineBox* boxOnRight = positionOnRight.computeInlineBoxPosition(m_affinity, primaryDirection).inlineBox;
+                    InlineBox* boxOnRight = computeInlineBoxPosition(positionOnRight, m_affinity, primaryDirection).inlineBox;
                     if (boxOnRight && boxOnRight->root() == box->root())
                         return Position();
                     return positionOnRight;

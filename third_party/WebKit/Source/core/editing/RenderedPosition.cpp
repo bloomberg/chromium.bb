@@ -92,7 +92,7 @@ RenderedPosition::RenderedPosition(const Position& position, TextAffinity affini
 {
     if (position.isNull())
         return;
-    InlineBoxPosition boxPosition = position.computeInlineBoxPosition(affinity);
+    InlineBoxPosition boxPosition = computeInlineBoxPosition(position, affinity);
     m_inlineBox = boxPosition.inlineBox;
     m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)

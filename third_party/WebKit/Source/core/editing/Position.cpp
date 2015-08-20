@@ -619,9 +619,19 @@ bool inRenderedText(const PositionInComposedTree& position)
 }
 
 template <typename Strategy>
-InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(TextAffinity affinity) const
+static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
 {
-    return computeInlineBoxPosition(affinity, primaryDirectionOf(*anchorNode()));
+    return computeInlineBoxPositionAlgorithm<Strategy>(position, affinity, primaryDirectionOf(*position.anchorNode()));
+}
+
+InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity)
+{
+    return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity);
+}
+
+InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity)
+{
+    return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
 }
 
 static bool isNonTextLeafChild(LayoutObject* object)
@@ -683,28 +693,28 @@ PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<
 }
 
 template <typename Strategy>
-InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(TextAffinity affinity, TextDirection primaryDirection) const
+static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity, TextDirection primaryDirection)
 {
     InlineBox* inlineBox = nullptr;
-    int caretOffset = computeEditingOffset();
-    LayoutObject* layoutObject = m_anchorNode->isShadowRoot() ? toShadowRoot(m_anchorNode)->host()->layoutObject() : m_anchorNode->layoutObject();
+    int caretOffset = position.computeEditingOffset();
+    Node* const anchorNode = position.anchorNode();
+    LayoutObject* layoutObject = anchorNode->isShadowRoot() ? toShadowRoot(anchorNode)->host()->layoutObject() : anchorNode->layoutObject();
 
     if (!layoutObject->isText()) {
         inlineBox = 0;
-        if (canHaveChildrenForEditing(anchorNode()) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
+        if (canHaveChildrenForEditing(anchorNode) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
             // Try a visually equivalent position with possibly opposite
             // editability. This helps in case |this| is in an editable block
             // but surrounded by non-editable positions. It acts to negate the
             // logic at the beginning of LayoutObject::createVisiblePosition().
-            PositionAlgorithm<Strategy> thisPosition = PositionAlgorithm<Strategy>(*this);
-            PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(thisPosition);
-            if (equivalent == thisPosition) {
-                equivalent = upstreamIgnoringEditingBoundaries(thisPosition);
-                if (equivalent == thisPosition || downstreamIgnoringEditingBoundaries(equivalent) == thisPosition)
+            PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(position);
+            if (equivalent == position) {
+                equivalent = upstreamIgnoringEditingBoundaries(position);
+                if (equivalent == position || downstreamIgnoringEditingBoundaries(equivalent) == position)
                     return InlineBoxPosition(inlineBox, caretOffset);
             }
 
-            return equivalent.computeInlineBoxPosition(TextAffinity::Upstream, primaryDirection);
+            return computeInlineBoxPosition(equivalent, TextAffinity::Upstream, primaryDirection);
         }
         if (layoutObject->isBox()) {
             inlineBox = toLayoutBox(layoutObject)->inlineBoxWrapper();
@@ -846,6 +856,16 @@ InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(TextAffi
         inlineBox = tertiaryBox;
     }
     return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+}
+
+InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity, TextDirection primaryDirection)
+{
+    return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity, primaryDirection);
+}
+
+InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity, TextDirection primaryDirection)
+{
+    return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity, primaryDirection);
 }
 
 template <typename Strategy>

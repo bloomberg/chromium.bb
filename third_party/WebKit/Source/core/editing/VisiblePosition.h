@@ -142,7 +142,7 @@ private:
 // with |Position| version.
 inline InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
 {
-    return position.deepEquivalent().computeInlineBoxPosition(position.affinity());
+    return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
 }
 
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);

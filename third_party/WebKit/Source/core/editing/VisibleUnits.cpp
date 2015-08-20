@@ -377,7 +377,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
         if (adjacentCharacterPosition.deepEquivalent() == current.deepEquivalent() || adjacentCharacterPosition.isNull())
             return VisiblePosition();
 
-        InlineBoxPosition boxPosition = adjacentCharacterPosition.deepEquivalent().computeInlineBoxPosition(TextAffinity::Upstream);
+        InlineBoxPosition boxPosition = computeInlineBoxPosition(adjacentCharacterPosition.deepEquivalent(), TextAffinity::Upstream);
         InlineBox* box = boxPosition.inlineBox;
         int offsetInBox = boxPosition.offsetInBox;
 
@@ -1444,7 +1444,7 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
     if (!layoutObject)
         return LayoutRect();
 
-    InlineBoxPosition boxPosition = position.position().computeInlineBoxPosition(position.affinity());
+    InlineBoxPosition boxPosition = computeInlineBoxPosition(position.position(), position.affinity());
 
     if (boxPosition.inlineBox)
         layoutObject = &boxPosition.inlineBox->layoutObject();
@@ -1592,8 +1592,8 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
     if (layoutObject == posLayoutObject && renderedOffset1 == renderedOffset2)
         return false;
 
-    InlineBoxPosition boxPosition1 = position1.computeInlineBoxPosition(TextAffinity::Downstream);
-    InlineBoxPosition boxPosition2 = position2.computeInlineBoxPosition(TextAffinity::Downstream);
+    InlineBoxPosition boxPosition1 = computeInlineBoxPosition(position1, TextAffinity::Downstream);
+    InlineBoxPosition boxPosition2 = computeInlineBoxPosition(position2, TextAffinity::Downstream);
 
     WTF_LOG(Editing, "layoutObject1:   %p [%p]\n", layoutObject, boxPosition1.inlineBox);
     WTF_LOG(Editing, "renderedOffset1: %d\n", renderedOffset1);
