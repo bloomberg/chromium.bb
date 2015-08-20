@@ -495,6 +495,8 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
 
   // Opens the message center.
   GetMessageCenter()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
+  // Ensures the notification exists.
+  EXPECT_EQ(1u, GetMessageCenter()->GetVisibleNotifications().size());
 
   NotificationRemoveObserver notification_close_observer;
 
@@ -505,6 +507,9 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DiscardDangerousFile) {
 
   // Confirms that the notification is closed.
   EXPECT_EQ(notification_id(), notification_close_observer.Wait());
+
+  // Ensures the notification has closed.
+  EXPECT_EQ(0u, GetMessageCenter()->GetVisibleNotifications().size());
 
   // Wait for the download completion.
   download_terminal_observer.WaitForFinished();

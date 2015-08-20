@@ -50,7 +50,7 @@ DownloadNotificationManager::DownloadNotificationManager(Profile* profile)
 DownloadNotificationManager::~DownloadNotificationManager() {
 }
 
-void DownloadNotificationManager::OnAllDownloadsRemoved(Profile* profile) {
+void DownloadNotificationManager::OnAllDownloadsRemoving(Profile* profile) {
   DownloadNotificationManagerForProfile* manager_for_profile =
       manager_for_profile_[profile];
   manager_for_profile_.erase(profile);
@@ -123,10 +123,12 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
   item->OnDownloadRemoved(download);
   group_notification_->OnDownloadRemoved(download);
 
-  delete item;
+  // This removing might be initiated from DownloadNotificationItem, so delaying
+  // deleting for item to do remaining cleanups.
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, item);
 
   if (items_.size() == 0 && parent_manager_)
-    parent_manager_->OnAllDownloadsRemoved(profile_);
+    parent_manager_->OnAllDownloadsRemoving(profile_);
 }
 
 void DownloadNotificationManagerForProfile::OnDownloadDestroyed(
@@ -138,10 +140,12 @@ void DownloadNotificationManagerForProfile::OnDownloadDestroyed(
   item->OnDownloadRemoved(download);
   group_notification_->OnDownloadRemoved(download);
 
-  delete item;
+  // This removing might be initiated from DownloadNotificationItem, so delaying
+  // deleting for item to do remaining cleanups.
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, item);
 
   if (items_.size() == 0 && parent_manager_)
-    parent_manager_->OnAllDownloadsRemoved(profile_);
+    parent_manager_->OnAllDownloadsRemoving(profile_);
 }
 
 void DownloadNotificationManagerForProfile::OnNewDownloadReady(
