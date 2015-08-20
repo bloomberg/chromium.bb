@@ -529,7 +529,7 @@ private:
     void layoutRunsAndFloatsInRange(LineLayoutState&, InlineBidiResolver&,
         const InlineIterator& cleanLineStart, const BidiStatus& cleanLineBidiStatus);
     void linkToEndLineIfNeeded(LineLayoutState&);
-    static void markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>& floats);
+    void markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>& floats);
     RootInlineBox* determineStartPosition(LineLayoutState&, InlineBidiResolver&);
     void determineEndPosition(LineLayoutState&, RootInlineBox* startBox, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus);
     bool lineBoxHasBRWithClearance(RootInlineBox*);

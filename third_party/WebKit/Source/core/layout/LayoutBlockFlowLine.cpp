@@ -1042,12 +1042,14 @@ void LayoutBlockFlow::markDirtyFloatsForPaintInvalidation(Vector<FloatWithRect>&
     // painted by now if they had moved, but if they stayed at (0, 0), they still need to be
     // painted.
     for (size_t i = 0; i < floatCount; ++i) {
+        LayoutBox* f = floats[i].object;
         if (!floats[i].everHadLayout) {
-            LayoutBox* f = floats[i].object;
             if (!f->location().x() && !f->location().y())
                 f->setShouldDoFullPaintInvalidation();
         }
+        insertFloatingObject(*f);
     }
+    positionNewFloats();
 }
 
 struct InlineMinMaxIterator {
@@ -1530,7 +1532,6 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         // deleted and only dirtied. In that case, we can layout the replaced
         // elements at the same time.
         Vector<LayoutBox*> replacedChildren;
-        LayoutObject* lastChild = nullptr;
         for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
             LayoutObject* o = walker.current();
 
@@ -1565,13 +1566,7 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                     dirtyLineBoxesForObject(o, layoutState.isFullLayout());
                 o->clearNeedsLayout();
             }
-            if (!o->isText() || !toLayoutText(o)->isAllCollapsibleWhitespace())
-                lastChild = o;
         }
-        // If there is a trailing float on the line that will possibly occur after a natural line break
-        // then dirty its adjacent lineboxes to ensure it gets placed.
-        if (lastChild && lastChild->isFloating())
-            dirtyLinesFromChangedChild(lastChild);
 
         for (size_t i = 0; i < replacedChildren.size(); i++)
             replacedChildren[i]->layoutIfNeeded();
