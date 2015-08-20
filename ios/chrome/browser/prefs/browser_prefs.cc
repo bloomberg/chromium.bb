@@ -7,12 +7,8 @@
 #include "base/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
 
-namespace ios {
-
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteIOSProfilePrefs(PrefService* prefs) {
   // Added 08/2015.
   prefs->ClearPref(::prefs::kSigninSharedAuthenticationUserId);
 }
-
-}  // namespace ios
