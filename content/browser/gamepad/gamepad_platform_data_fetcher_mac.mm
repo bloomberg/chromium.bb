@@ -53,7 +53,7 @@ const uint32_t kAxisMinimumUsageNumber = 0x30;
 }  // namespace
 
 GamepadPlatformDataFetcherMac::GamepadPlatformDataFetcherMac()
-    : enabled_(true) {
+    : enabled_(true), paused_(false) {
   memset(associated_, 0, sizeof(associated_));
 
   xbox_fetcher_.reset(new XboxDataFetcher(this));
@@ -83,7 +83,7 @@ void GamepadPlatformDataFetcherMac::RegisterForNotifications() {
   // Register for plug/unplug notifications.
   IOHIDManagerRegisterDeviceMatchingCallback(
       hid_manager_ref_,
-      &DeviceAddCallback,
+      DeviceAddCallback,
       this);
   IOHIDManagerRegisterDeviceRemovalCallback(
       hid_manager_ref_,
@@ -119,10 +119,7 @@ void GamepadPlatformDataFetcherMac::UnregisterFromNotifications() {
 }
 
 void GamepadPlatformDataFetcherMac::PauseHint(bool pause) {
-  if (pause)
-    UnregisterFromNotifications();
-  else
-    RegisterForNotifications();
+  paused_ = pause;
 }
 
 GamepadPlatformDataFetcherMac::~GamepadPlatformDataFetcherMac() {
@@ -352,7 +349,7 @@ void GamepadPlatformDataFetcherMac::DeviceRemove(IOHIDDeviceRef device) {
 }
 
 void GamepadPlatformDataFetcherMac::ValueChanged(IOHIDValueRef value) {
-  if (!enabled_)
+  if (!enabled_ || paused_)
     return;
 
   IOHIDElementRef element = IOHIDValueGetElement(value);
