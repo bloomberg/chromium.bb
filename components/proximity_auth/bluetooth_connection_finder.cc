@@ -81,9 +81,9 @@ void BluetoothConnectionFinder::PollIfReady() {
   if (has_delayed_poll_scheduled_)
     return;
 
-  // If the |connection_| exists, wait for it to connect or fail prior to
+  // If the |connection_| is pending, wait for it to connect or fail prior to
   // polling again.
-  if (connection_)
+  if (connection_ && connection_->status() != Connection::DISCONNECTED)
     return;
 
   // This SeekDeviceByAddress operation is needed to connect to a device if
@@ -194,7 +194,6 @@ void BluetoothConnectionFinder::OnConnectionStatusChanged(
   } else if (old_status == Connection::IN_PROGRESS) {
     PA_LOG(WARNING)
         << "Connection failed! Scheduling another polling iteration.";
-    connection_.reset();
     PostDelayedPoll();
   }
 }

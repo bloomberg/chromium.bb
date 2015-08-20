@@ -41,16 +41,26 @@ RemoteDevice CreateRemoteDevice() {
 
 class MockConnection : public Connection {
  public:
-  MockConnection() : Connection(CreateRemoteDevice()) {}
-  ~MockConnection() override {}
+  MockConnection() : Connection(CreateRemoteDevice()), do_not_destroy_(false) {}
+  ~MockConnection() override { EXPECT_FALSE(do_not_destroy_); }
 
   MOCK_METHOD0(Connect, void());
 
-  using Connection::SetStatus;
+  void SetStatus(Connection::Status status) {
+    // This object should not be destroyed after setting the status and calling
+    // observers.
+    do_not_destroy_ = true;
+    Connection::SetStatus(status);
+    do_not_destroy_ = false;
+  }
 
  private:
   void Disconnect() override {}
   void SendMessageImpl(scoped_ptr<WireMessage> message) override {}
+
+  // If true, we do not expect |this| object to be destroyed until this value is
+  // toggled back to false.
+  bool do_not_destroy_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
