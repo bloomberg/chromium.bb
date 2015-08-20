@@ -12,6 +12,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/module_args/v8.gni")
+import("//media/media_options.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -390,7 +391,6 @@ group("both_gn_and_gyp") {
       "//gpu:gpu_perftests",
       "//gpu:gl_tests",
       "//ipc:ipc_perftests",
-      "//media:ffmpeg_regression_tests",  # TODO(GYP) this should be conditional on media_use_ffmpeg
       "//media:media_perftests",
       "//media/cast:generate_barcode_video",
       "//media/cast:generate_timecode_audio",
@@ -424,6 +424,10 @@ group("both_gn_and_gyp") {
 
     if (enable_nacl && enable_remoting) {
       deps += [ "//remoting:remoting_key_tester" ]
+    }
+
+    if (media_use_ffmpeg) {
+      deps += [ "//media:ffmpeg_regression_tests" ]
     }
 
     if (use_ash) {
