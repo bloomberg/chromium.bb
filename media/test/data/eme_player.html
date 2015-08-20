@@ -61,16 +61,21 @@
     var testConfig;
     var emeApp;
     var player;
+    var heartbeatCount = 0;
 
     function initApp() {
       testConfig = new TestConfig();
       testConfig.loadQueryParams();
       // Update document with test configuration values.
       emeApp = new EMEApp(testConfig);
+      setInterval(function () {
+                      Utils.timeLog('heartbeat #' + ++heartbeatCount);
+                  }, 1000);
     }
 
     function onTimeUpdate(e) {
       var video = e.target;
+      Utils.timeLog('timeupdate @ ' + video.currentTime);
       if (video.currentTime < 1)
         return;
       // For loadSession() tests, addKey() will not be called after
@@ -85,6 +90,7 @@
             !video.receivedRenewalMessage)
           Utils.failTest('license-renewal message not received.');
       }
+      Utils.timeLog('waiting for video to end.');
       video.removeEventListener('ended', Utils.failTest);
       Utils.installTitleEventHandler(video, 'ended');
       video.removeEventListener('timeupdate', onTimeUpdate);

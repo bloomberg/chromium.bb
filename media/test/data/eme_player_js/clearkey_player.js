@@ -24,6 +24,7 @@ ClearKeyPlayer.prototype.onMessage = function(message) {
   var keyId = Utils.extractFirstLicenseKeyId(message.message);
   var key = Utils.getDefaultKey(this.testConfig.forceInvalidResponse);
   var jwkSet = Utils.createJWKData(keyId, key);
+  Utils.timeLog('Calling update: ' + String.fromCharCode.apply(null, jwkSet));
   message.target.update(jwkSet).catch(function(error) {
     // Ignore the error if a crash is expected. This ensures that the decoder
     // actually detects and reports the error.
