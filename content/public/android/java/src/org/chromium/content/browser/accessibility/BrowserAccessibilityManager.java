@@ -830,6 +830,12 @@ public class BrowserAccessibilityManager {
         mView.getLocationOnScreen(viewLocation);
         rect.offset(viewLocation[0], viewLocation[1]);
 
+        // Clip the node's bounding rect to the viewport bounds.
+        int viewportRectTop = viewLocation[1] + (int) mRenderCoordinates.getContentOffsetYPix();
+        int viewportRectBottom = viewportRectTop + mContentViewCore.getViewportHeightPix();
+        if (rect.top < viewportRectTop) rect.top = viewportRectTop;
+        if (rect.bottom > viewportRectBottom) rect.bottom = viewportRectBottom;
+
         node.setBoundsInScreen(rect);
 
         // Work around a bug in the Android framework where if the object with accessibility
