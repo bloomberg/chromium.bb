@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/uversion.h"
@@ -41,6 +42,7 @@ base::string16 GetShortTimeZone(const Time& time) {
 TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
   // Test for a locale defaulted to 12h clock.
   // As an instance, we use third_party/icu/source/data/locales/en.txt.
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
 
   Time time(Time::FromLocalExploded(kTestDateTimeExploded));
@@ -76,6 +78,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
 TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
   // Test for a locale defaulted to 24h clock.
   // As an instance, we use third_party/icu/source/data/locales/en_GB.txt.
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
 
   Time time(Time::FromLocalExploded(kTestDateTimeExploded));
@@ -111,6 +114,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
 TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
   // Test for a locale that uses different mark than "AM" and "PM".
   // As an instance, we use third_party/icu/source/data/locales/ja.txt.
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("ja_JP");
 
   Time time(Time::FromLocalExploded(kTestDateTimeExploded));
@@ -144,6 +148,7 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
 TEST(TimeFormattingTest, TimeFormatDateUS) {
   // See third_party/icu/source/data/locales/en.txt.
   // The date patterns are "EEEE, MMMM d, y", "MMM d, y", and "M/d/yy".
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
 
   Time time(Time::FromLocalExploded(kTestDateTimeExploded));
@@ -166,6 +171,7 @@ TEST(TimeFormattingTest, TimeFormatDateUS) {
 TEST(TimeFormattingTest, TimeFormatDateGB) {
   // See third_party/icu/source/data/locales/en_GB.txt.
   // The date patterns are "EEEE, d MMMM y", "d MMM y", and "dd/MM/yyyy".
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_GB");
 
   Time time(Time::FromLocalExploded(kTestDateTimeExploded));

@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
@@ -305,6 +306,7 @@ TEST_F(RTLTest, WrapString) {
 
   const bool was_rtl = IsRTL();
 
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
     SetRTL(!IsRTL());
@@ -352,6 +354,7 @@ TEST_F(RTLTest, GetDisplayStringInLTRDirectionality) {
 
   const bool was_rtl = IsRTL();
 
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
     SetRTL(!IsRTL());
@@ -438,6 +441,7 @@ TEST_F(RTLTest, UnadjustStringForLocaleDirection) {
 
   const bool was_rtl = IsRTL();
 
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < 2; ++i) {
     // Toggle the application default text direction (to try each direction).
     SetRTL(!IsRTL());

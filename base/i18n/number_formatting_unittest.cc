@@ -7,7 +7,9 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/i18n/unicode/usearch.h"
 
 namespace base {
 namespace {
@@ -26,6 +28,8 @@ TEST(NumberFormattingTest, FormatNumber) {
         "-9,223,372,036,854,775,808", "-9.223.372.036.854.775.808"},
     {-42, "-42", "-42"},
   };
+
+  test::ScopedRestoreICUDefaultLocale restore_locale;
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     i18n::SetICUDefaultLocale("en");
@@ -72,6 +76,7 @@ TEST(NumberFormattingTest, FormatDouble) {
     {-42.7, 3, "-42.700", "-42,700"},
   };
 
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   for (size_t i = 0; i < arraysize(cases); ++i) {
     i18n::SetICUDefaultLocale("en");
     testing::ResetFormatters();

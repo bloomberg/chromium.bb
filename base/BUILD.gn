@@ -1383,6 +1383,8 @@ test("base_unittests") {
     "task_runner_util_unittest.cc",
     "template_util_unittest.cc",
     "test/histogram_tester_unittest.cc",
+    "test/icu_test_util.cc",
+    "test/icu_test_util.h",
     "test/test_pending_task_unittest.cc",
     "test/test_reg_util_win_unittest.cc",
     "test/trace_event_analyzer_unittest.cc",

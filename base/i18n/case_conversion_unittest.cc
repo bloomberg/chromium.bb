@@ -5,6 +5,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/icu_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/i18n/unicode/usearch.h"
 
@@ -58,7 +59,7 @@ TEST(CaseConversionTest, TurkishLocaleConversion) {
   const string16 expected_lower(WideToUTF16(L"\x69\x131"));
   const string16 expected_upper(WideToUTF16(L"\x49\x49"));
 
-  std::string default_locale(uloc_getDefault());
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
 
   string16 result = ToLower(mixed);
@@ -77,8 +78,6 @@ TEST(CaseConversionTest, TurkishLocaleConversion) {
 
   result = ToUpper(mixed);
   EXPECT_EQ(expected_upper_turkish, result);
-
-  SetICUDefaultLocale(default_locale.data());
 }
 
 TEST(CaseConversionTest, FoldCase) {
@@ -97,7 +96,7 @@ TEST(CaseConversionTest, FoldCase) {
   const string16 turkish(WideToUTF16(L"\x49\x131"));
   const string16 turkish_expected(WideToUTF16(L"\x69\x131"));
 
-  std::string default_locale(uloc_getDefault());
+  test::ScopedRestoreICUDefaultLocale restore_locale;
   i18n::SetICUDefaultLocale("en_US");
   EXPECT_EQ(turkish_expected, FoldCase(turkish));
 
