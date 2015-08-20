@@ -21,12 +21,23 @@ def _CommonChecks(input_api, output_api):
     # Modules in tools/perf depend on telemetry.
     sys.path = [os.path.join(os.pardir, 'telemetry')] + sys.path
     results.extend(input_api.canned_checks.RunPylint(
-        input_api, output_api, black_list=[], pylintrc='pylintrc'))
+        input_api, output_api, black_list=[], pylintrc='pylintrc',
+        extra_paths_list=_GetPathsToPrepend(input_api)))
     results.extend(_CheckJson(input_api, output_api))
     results.extend(_CheckWprShaFiles(input_api, output_api))
   finally:
     sys.path = old_sys_path
   return results
+
+
+def _GetPathsToPrepend(input_api):
+  perf_dir = input_api.PresubmitLocalPath()
+  chromium_src_dir = input_api.os_path.join(perf_dir, '..', '..')
+  telemetry_dir = input_api.os_path.join(chromium_src_dir, 'tools', 'telemetry')
+  return [
+      telemetry_dir,
+      input_api.os_path.join(telemetry_dir, 'third_party', 'mock'),
+  ]
 
 
 def _CheckWprShaFiles(input_api, output_api):

@@ -8,11 +8,12 @@ from telemetry import decorators
 from telemetry.page import page
 from telemetry.testing import options_for_unittests
 from telemetry.testing import page_test_test_case
-from telemetry.third_party import mock
 from telemetry.util import wpr_modes
 from telemetry.value import scalar
 
 from measurements import smoothness
+
+import mock
 
 
 class FakeTracingController(object):
