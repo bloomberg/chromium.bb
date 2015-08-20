@@ -87,7 +87,6 @@ source_set("unit_tests") {
     "url_blacklist_policy_handler_unittest.cc",
   ]
   deps = [
-    ":browser",
     "//components/policy:policy_component_test_support",
     "//testing/gmock",
     "//testing/gtest",

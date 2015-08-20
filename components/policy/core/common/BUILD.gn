@@ -260,7 +260,7 @@ source_set("unit_tests") {
   }
 
   deps = [
-    "//components/policy:test_support",
+    "//components/policy:policy_component_test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
