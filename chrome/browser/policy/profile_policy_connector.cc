@@ -138,10 +138,11 @@ void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
 
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
-  BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (is_primary_user_)
+  if (is_primary_user_) {
+    BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
     connector->SetUserPolicyDelegate(nullptr);
+  }
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
