@@ -67,18 +67,9 @@ ThumbnailMode.prototype.hasActiveTool = function() { return true; };
  * Handles key down event.
  * @param {!Event} event An event.
  * @return {boolean} True when an event is handled.
- *
- * TODO(yawano): Move not-mode-specific logics to ThumbnailView.
  */
 ThumbnailMode.prototype.onKeyDown = function(event) {
   switch (event.keyIdentifier) {
-    case 'Right':
-    case 'Left':
-    case 'Up':
-    case 'Down':
-      this.thumbnailView_.moveSelection(event.keyIdentifier);
-      return true;
-
     case 'Enter':
       this.changeToSlideModeCallback_();
       return true;
@@ -130,6 +121,13 @@ ThumbnailMode.prototype.performEnterAnimation = function(index, rect) {
 };
 
 /**
+ * Focus to thumbnail mode.
+ */
+ThumbnailMode.prototype.focus = function() {
+  this.thumbnailView_.focus();
+};
+
+/**
  * Returns thumbnail rect of the index.
  * @param {number} index An index of thumbnail.
  * @return {!ClientRect} A rect of thumbnail.
@@ -147,7 +145,6 @@ ThumbnailMode.prototype.getThumbnailRect = function(index) {
  * @extends {cr.EventTarget}
  * @struct
  *
- * TODO(yawano): Implement multi selection.
  * TODO(yawano): Optimization. Remove DOMs outside of viewport, reuse them.
  * TODO(yawano): Extract ThumbnailView as a polymer element.
  */
@@ -227,7 +224,10 @@ function ThumbnailView(container, dataModel, selectionModel) {
   this.container_.addEventListener('scroll', this.onScroll_.bind(this));
   this.container_.addEventListener('click', this.onClick_.bind(this));
   this.container_.addEventListener('dblclick', this.onDblClick_.bind(this));
-  this.container_.addEventListener('focusin', this.onFocusin_.bind(this));
+
+  // Set tabIndex to -1 as the container can capture keydown events.
+  this.container_.tabIndex = -1;
+  this.container_.addEventListener('keydown', this.onKeydown_.bind(this));
 
   this.scrollbarThumb_.addEventListener(
       'mousedown', this.onScrollbarThumbMouseDown_.bind(this));
@@ -262,6 +262,16 @@ ThumbnailView.MARGIN = 4; // px
  * @const {number}
  */
 ThumbnailView.SCROLLBAR_TIMEOUT = 1500; // ms
+
+/**
+ * Selection mode.
+ * @enum {string}
+ */
+ThumbnailView.SelectionMode = {
+  SINGLE: 'single',
+  MULTIPLE: 'multiple',
+  RANGE: 'range'
+};
 
 /**
  * Shows thumbnail view.
@@ -386,6 +396,7 @@ ThumbnailView.prototype.moveSelection = function(direction) {
   if (index !== null) {
     // Move selection.
     this.selectionModel_.selectedIndex = index;
+    this.selectionModel_.leadIndex = index;
     this.scrollTo_(index);
   }
 };
@@ -512,6 +523,7 @@ ThumbnailView.prototype.onContent_ = function(event) {
  */
 ThumbnailView.prototype.onSelectionChange_ = function(event) {
   var changes = event.changes;
+  var lastSelectedThumbnail = null;
 
   for (var i = 0; i < changes.length; i++) {
     var change = changes[i];
@@ -525,7 +537,16 @@ ThumbnailView.prototype.onSelectionChange_ = function(event) {
       continue;
 
     thumbnail.setSelected(change.selected);
+
+    // We should not focus to error thumbnail.
+    if (change.selected && !thumbnail.isError())
+      lastSelectedThumbnail = thumbnail;
   }
+
+  // If new item is selected, focus to it. If multiple thumbnails are selected,
+  // focus to the last one.
+  if (lastSelectedThumbnail)
+    lastSelectedThumbnail.getContainer().focus();
 };
 
 /**
@@ -535,8 +556,15 @@ ThumbnailView.prototype.onSelectionChange_ = function(event) {
  */
 ThumbnailView.prototype.onClick_ = function(event) {
   var target = event.target;
-  if (target.matches('.selection.frame'))
-    this.selectByThumbnail_(target.parentNode.getThumbnail());
+  if (target.matches('.selection.frame')) {
+    var selectionMode = ThumbnailView.SelectionMode.SINGLE;
+    if (event.ctrlKey)
+      selectionMode = ThumbnailView.SelectionMode.MULTIPLE;
+    if (event.shiftKey)
+      selectionMode = ThumbnailView.SelectionMode.RANGE;
+
+    this.selectByThumbnail_(target.parentNode.getThumbnail(), selectionMode);
+  }
 };
 
 /**
@@ -547,34 +575,60 @@ ThumbnailView.prototype.onClick_ = function(event) {
 ThumbnailView.prototype.onDblClick_ = function(event) {
   var target = event.target;
   if (target.matches('.selection.frame')) {
-    this.selectByThumbnail_(target.parentNode.getThumbnail());
+    this.selectByThumbnail_(target.parentNode.getThumbnail(),
+        ThumbnailView.SelectionMode.SINGLE);
     var thumbnailDoubleClickEvent = new Event('thumbnail-double-click');
     this.dispatchEvent(thumbnailDoubleClickEvent);
   }
 };
 
 /**
- * Handles focusin event.
- * @param {!Event} event An event.
- * @private
+ * Handles keydown event.
+ * @param {!Event} event
  */
-ThumbnailView.prototype.onFocusin_ = function(event) {
-  var target = event.target;
-  if (target.matches('li.thumbnail'))
-    this.selectByThumbnail_(target.getThumbnail());
+ThumbnailView.prototype.onKeydown_ = function(event) {
+  var keyString = util.getKeyModifiers(event) + event.keyIdentifier;
+
+  switch (keyString) {
+    case 'Right':
+    case 'Left':
+    case 'Up':
+    case 'Down':
+      this.moveSelection(event.keyIdentifier);
+      event.stopPropagation();
+      break;
+    case 'Ctrl-U+0041': // Crtl+A
+      this.selectionModel_.selectAll();
+      event.stopPropagation();
+      break;
+  }
 };
 
 /**
  * Selects a thumbnail.
  * @param {!ThumbnailView.Thumbnail} thumbnail Thumbnail to be selected.
+ * @param {ThumbnailView.SelectionMode} selectionMode
  * @private
  */
-ThumbnailView.prototype.selectByThumbnail_ = function(thumbnail) {
-  // Unselect all other items.
-  this.selectionModel_.unselectAll();
-
+ThumbnailView.prototype.selectByThumbnail_ = function(
+    thumbnail, selectionMode) {
   var index = this.dataModel_.indexOf(thumbnail.getGalleryItem());
-  this.selectionModel_.setIndexSelected(index, true);
+
+  if (selectionMode === ThumbnailView.SelectionMode.SINGLE) {
+    this.selectionModel_.unselectAll();
+    this.selectionModel_.setIndexSelected(index, true);
+  } else if (selectionMode === ThumbnailView.SelectionMode.MULTIPLE) {
+    this.selectionModel_.setIndexSelected(index,
+        this.selectionModel_.selectedIndexes.indexOf(index) === -1);
+  } else if (selectionMode === ThumbnailView.SelectionMode.RANGE) {
+    var leadIndex = this.selectionModel_.leadIndex;
+    this.selectionModel_.unselectAll();
+    this.selectionModel_.selectRange(leadIndex, index);
+  } else {
+    assertNotReached();
+  }
+
+  this.selectionModel_.leadIndex = index;
 };
 
 /**
@@ -682,6 +736,21 @@ ThumbnailView.prototype.performEnterAnimation = function(index, rect) {
 };
 
 /**
+ * Focus to thumbnail view. If an item is selected, focus to it.
+ */
+ThumbnailView.prototype.focus = function() {
+  if (this.selectionModel_.selectedIndexes.length === 0) {
+    this.container_.focus();
+    return;
+  }
+
+  var index = this.selectionModel_.leadIndex !== -1 ?
+      this.selectionModel_.leadIndex : this.selectionModel_.selectedIndex;
+  var thumbnail = this.getThumbnailAt_(index);
+  thumbnail.getContainer().focus();
+};
+
+/**
  * Thumbnail.
  * @param {!Gallery.Item} galleryItem A gallery item.
  * @constructor
@@ -763,8 +832,6 @@ ThumbnailView.Thumbnail.prototype.getGalleryItem = function() {
 ThumbnailView.Thumbnail.prototype.setSelected = function(selected) {
   this.selected_ = selected;
   this.container_.classList.toggle('selected', selected);
-  if (selected)
-    this.container_.focus();
 };
 
 /**

@@ -471,6 +471,7 @@ Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
               this.thumbnailMode_.performEnterAnimation(
                   thumbnailIndex, fromRect);
             }
+            this.thumbnailMode_.focus();
 
             onModeChanged();
           }.bind(this));
