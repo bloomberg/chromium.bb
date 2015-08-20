@@ -152,7 +152,6 @@ private:
     int m_panelWidth;
 
     bool m_allowHiddenVolumeControls : 1;
-    bool m_keepMuteButton : 1;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControls, isMediaControls());

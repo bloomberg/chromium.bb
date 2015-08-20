@@ -118,7 +118,6 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     , m_panelWidthChangedTimer(this, &MediaControls::panelWidthChangedTimerFired)
     , m_panelWidth(0)
     , m_allowHiddenVolumeControls(RuntimeEnabledFeatures::newMediaPlaybackUiEnabled())
-    , m_keepMuteButton(false)
 {
 }
 
@@ -201,8 +200,6 @@ void MediaControls::initializeControls()
     RefPtrWillBeRawPtr<MediaControlMuteButtonElement> muteButton = MediaControlMuteButtonElement::create(*this);
     m_muteButton = muteButton.get();
     panel->appendChild(muteButton.release());
-    if (m_allowHiddenVolumeControls && preferHiddenVolumeControls(document()))
-        m_muteButton->setIsWanted(false);
 
     RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = MediaControlVolumeSliderElement::create(*this);
     m_volumeSlider = slider.get();
@@ -235,7 +232,6 @@ void MediaControls::reset()
     BatchedControlUpdate batch(this);
 
     m_allowHiddenVolumeControls = useNewUi;
-    m_keepMuteButton = false;
 
     const double duration = mediaElement().duration();
     m_durationDisplay->setInnerText(LayoutTheme::theme().formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
@@ -443,14 +439,8 @@ void MediaControls::updateVolume()
     // instead leave it to the CSS.
     // Note that this is why m_allowHiddenVolumeControls isn't rolled into prefer...().
     if (m_allowHiddenVolumeControls) {
-        // If there is no audio track, then hide the mute button.  If there
-        // is an audio track, then we always show the mute button unless
-        // we prefer to hide it and the media isn't muted.  If it's muted,
-        // then we show it to let the user unmute it.  In this case, we don't
-        // want to re-hide the mute button later.
-        m_keepMuteButton |= mediaElement().muted();
-        m_muteButton->setIsWanted(mediaElement().hasAudio()
-            && (!preferHiddenVolumeControls(document()) || m_keepMuteButton));
+        // If there is no audio track, then hide the mute button.
+        m_muteButton->setIsWanted(mediaElement().hasAudio());
     }
 
     // Invalidate the volume slider because it paints differently according to volume.
@@ -729,8 +719,6 @@ void MediaControls::computeWhichControlsFit()
 void MediaControls::setAllowHiddenVolumeControls(bool allow)
 {
     m_allowHiddenVolumeControls = allow;
-    // Clear the 'keep muted flag', for tests.
-    m_keepMuteButton = false;
     // Update the controls visibility.
     updateVolume();
 }

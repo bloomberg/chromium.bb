@@ -8,16 +8,13 @@ RUN(video.muted = false)
 EXPECTED (getComputedStyle(muteButton).display != 'none') OK
 EXPECTED (getComputedStyle(volumeSlider).display != 'none') OK
 RUN(video.muted = true)
-RUN(window.internals.setAllowHiddenVolumeControls(video, true))
 EXPECTED (getComputedStyle(muteButton).display != 'none') OK
 EXPECTED (getComputedStyle(volumeSlider).display != 'none') OK
 RUN(window.internals.settings.setPreferHiddenVolumeControls(true))
 RUN(video.muted = false)
-RUN(window.internals.setAllowHiddenVolumeControls(video, true))
-EXPECTED (getComputedStyle(muteButton).display == 'none') OK
+EXPECTED (getComputedStyle(muteButton).display != 'none') OK
 EXPECTED (getComputedStyle(volumeSlider).display == 'none') OK
 RUN(video.muted = true)
-RUN(window.internals.setAllowHiddenVolumeControls(video, true))
 EXPECTED (getComputedStyle(muteButton).display != 'none') OK
 EXPECTED (getComputedStyle(volumeSlider).display == 'none') OK
 END OF TEST
