@@ -4,6 +4,7 @@
 
 source_set("gles2") {
   visibility = [
+    "//components/view_manager:lib",
     "//components/view_manager/surfaces:*",
     "//mojo/runner:lib",  # For android
   ]
@@ -31,6 +32,7 @@ source_set("gles2") {
   deps = [
     "//base",
     "//components/view_manager/public/interfaces",
+    "//gpu/command_buffer/client",
     "//gpu/command_buffer/service",
     "//mojo/converters/geometry",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
@@ -39,6 +41,12 @@ source_set("gles2") {
     "//ui/gfx/geometry",
     "//ui/gl",
   ]
+
+  if (is_android) {
+    deps += [ "//mojo/platform_handle:defs" ]
+  } else {
+    deps += [ "//mojo/platform_handle" ]
+  }
 
   include_dirs = [ "../.." ]
 }
@@ -62,8 +70,11 @@ source_set("lib") {
     "//cc",
     "//components/view_manager/public/interfaces",
     "//gpu/command_buffer/common",
+    "//gpu/command_buffer/client",
     "//third_party/mojo/src/mojo/public/cpp/bindings",
     "//third_party/mojo/src/mojo/public/cpp/system",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
   ]
 
   include_dirs = [ "../.." ]

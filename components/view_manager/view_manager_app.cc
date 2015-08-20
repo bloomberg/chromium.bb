@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "components/view_manager/client_connection.h"
 #include "components/view_manager/connection_manager.h"
+#include "components/view_manager/gles2/gpu_impl.h"
 #include "components/view_manager/public/cpp/args.h"
 #include "components/view_manager/surfaces/surfaces_impl.h"
 #include "components/view_manager/surfaces/surfaces_scheduler.h"

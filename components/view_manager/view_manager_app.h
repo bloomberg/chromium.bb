@@ -5,19 +5,24 @@
 #ifndef COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_APP_H_
 #define COMPONENTS_VIEW_MANAGER_VIEW_MANAGER_APP_H_
 
+#include <set>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_manager.h"
 #include "components/view_manager/connection_manager_delegate.h"
-#include "components/view_manager/gles2/gpu_impl.h"
+#include "components/view_manager/public/interfaces/gpu.mojom.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager.mojom.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
 #include "components/view_manager/surfaces/surfaces_delegate.h"
-#include "components/view_manager/surfaces/surfaces_state.h"
 #include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/tracing_impl.h"
+
+namespace gles2 {
+class GpuState;
+}
 
 namespace mojo {
 class ApplicationImpl;
@@ -27,6 +32,7 @@ namespace surfaces {
 class DisplayImpl;
 class SurfacesImpl;
 class SurfacesScheduler;
+class SurfacesState;
 }
 
 namespace ui {

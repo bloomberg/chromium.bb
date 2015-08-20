@@ -27,6 +27,8 @@ source_set("surfaces") {
     "//cc/surfaces:surface_id",
     "//components/view_manager/gles2",
     "//components/view_manager/public/interfaces",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//mojo/application/public/cpp",

@@ -49,6 +49,7 @@ check_targets = [
   "//components/user_manager/*",
   "//components/user_prefs/*",
   "//components/variations/*",
+  "//components/view_manager/*",
   "//components/wallpaper/*",
   "//components/web_cache/*",
   "//components/webcrypto/*",

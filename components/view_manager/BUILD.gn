@@ -31,17 +31,7 @@ if (is_android) {
 
     deps = [
       ":lib",
-      "//base",
-      "//components/view_manager/public/interfaces",
-      "//components/view_manager/surfaces",
-      "//mojo/application/public/cpp",
-      "//mojo/converters/geometry",
-      "//mojo/environment:chromium",
-      "//mojo/platform_handle",
-      "//third_party/mojo/src/mojo/public/cpp/bindings:bindings",
-      "//ui/events",
-      "//ui/events/platform",
-      "//ui/gl",
+      "//mojo/application/public/cpp:sources",
     ]
   }
 }
@@ -104,8 +94,10 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//components/view_manager/gles2:gles2",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
     "//components/view_manager/surfaces",
@@ -120,10 +112,12 @@ source_set("lib") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gl:gl",
     "//ui/gl:test_support",
     "//ui/mojo/events:interfaces",
     "//ui/mojo/geometry:interfaces",
     "//ui/platform_window:platform_impls",
+    "//ui/platform_window:platform_window",
   ]
 }
 
@@ -175,9 +169,11 @@ test("view_manager_unittests") {
     "//base/test:test_config",
     "//components/view_manager/public/cpp:common",
     "//components/view_manager/public/interfaces",
+    "//components/view_manager/surfaces",
     "//mojo/application/public/interfaces",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
+    "//mojo/converters/transform",
     "//mojo/environment:chromium",
     "//mojo/platform_handle",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
@@ -211,6 +207,7 @@ mojo_native_application("apptests") {
     "//components/view_manager/public/cpp",
     "//components/view_manager/public/cpp/tests:test_support",
     "//components/view_manager/public/interfaces",
+    "//mojo/application/public/cpp:sources",
     "//mojo/application/public/cpp:test_support",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",

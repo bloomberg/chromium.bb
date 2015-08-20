@@ -14,7 +14,6 @@
 #include "components/view_manager/view_manager_root_connection.h"
 #include "components/view_manager/view_manager_service_impl.h"
 #include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 

@@ -9,19 +9,25 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/context_provider.h"
-#include "components/view_manager/gles2/command_buffer_local.h"
 #include "components/view_manager/gles2/command_buffer_local_client.h"
-#include "components/view_manager/gles2/gpu_state.h"
-#include "gpu/command_buffer/client/gles2_cmd_helper.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/transfer_buffer.h"
-#include "third_party/mojo/src/mojo/public/c/gles2/gles2.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/core.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace gpu {
+
+class TransferBuffer;
+
+namespace gles2 {
+class GLES2CmdHelper;
+class GLES2Implementation;
+}
+
+}  // namespace gpu
 
 namespace gles2 {
 class CommandBufferDriver;
 class CommandBufferImpl;
+class CommandBufferLocal;
+class GpuState;
 }
 
 namespace surfaces {

@@ -12,7 +12,6 @@
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
 #include "components/view_manager/surfaces/surfaces_state.h"
 #include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/common/weak_binding_set.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
 namespace cc {

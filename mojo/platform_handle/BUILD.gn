@@ -25,6 +25,7 @@ source_set("platform_handle") {
 source_set("defs") {
   visibility = [
     ":platform_handle",
+    "//components/view_manager/gles2",
     "//mojo/gles2",
     "//mojo/runner:native_application_support",
   ]

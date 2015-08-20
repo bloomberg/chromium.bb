@@ -9,8 +9,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "components/view_manager/gles2/command_buffer_driver.h"
 #include "components/view_manager/gles2/command_buffer_impl.h"
+#include "components/view_manager/gles2/command_buffer_local.h"
 #include "components/view_manager/gles2/gpu_state.h"
 #include "components/view_manager/surfaces/surfaces_context_provider_delegate.h"
+#include "gpu/command_buffer/client/gles2_cmd_helper.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "gpu/command_buffer/client/transfer_buffer.h"
 
 namespace surfaces {
 
