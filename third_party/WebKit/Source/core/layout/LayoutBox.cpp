@@ -699,13 +699,15 @@ int LayoutBox::intrinsicScrollbarLogicalWidth() const
         return 0;
 
     if (isHorizontalWritingMode() && style()->overflowY() == OSCROLL) {
-        ASSERT(layer()->scrollableArea() && layer()->scrollableArea()->hasVerticalScrollbar());
-        return verticalScrollbarWidth();
+        ASSERT(layer()->scrollableArea());
+        // Even with OSCROLL, the scrollbar may not exist (crbug.com/415031).
+        return layer()->scrollableArea()->hasVerticalScrollbar() ? verticalScrollbarWidth() : 0;
     }
 
     if (!isHorizontalWritingMode() && style()->overflowX() == OSCROLL) {
-        ASSERT(layer()->scrollableArea() && layer()->scrollableArea()->hasHorizontalScrollbar());
-        return horizontalScrollbarHeight();
+        ASSERT(layer()->scrollableArea());
+        // Even with OSCROLL, the scrollbar may not exist (crbug.com/415031).
+        return layer()->scrollableArea()->hasHorizontalScrollbar() ? horizontalScrollbarHeight() : 0;
     }
 
     return 0;
