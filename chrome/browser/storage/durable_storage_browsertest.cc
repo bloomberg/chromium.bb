@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, DenyString) {
   bool default_box_is_persistent;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       GetRenderFrameHost(), "requestPermission()", &default_box_is_persistent));
-  EXPECT_EQ(false, default_box_is_persistent);
+  EXPECT_FALSE(default_box_is_persistent);
   std::string permission_string;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       GetRenderFrameHost(), "checkPermission()", &permission_string));
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
   bool default_box_is_persistent = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       GetRenderFrameHost(), "requestPermission()", &default_box_is_persistent));
-  EXPECT_EQ(true, default_box_is_persistent);
+  EXPECT_TRUE(default_box_is_persistent);
 
   browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
