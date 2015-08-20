@@ -4,6 +4,8 @@
 
 #include "media/cast/sender/external_video_encoder.h"
 
+#include <cmath>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
@@ -11,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/logging/logging_defines.h"
@@ -37,16 +40,32 @@ namespace cast {
 
 // Container for the associated data of a video frame being processed.
 struct InProgressFrameEncode {
-  const RtpTimestamp rtp_timestamp;
+  // The source content to encode.
+  const scoped_refptr<VideoFrame> video_frame;
+
+  // The reference time for this frame.
   const base::TimeTicks reference_time;
+
+  // The callback to run when the result is ready.
   const VideoEncoder::FrameEncodedCallback frame_encoded_callback;
 
-  InProgressFrameEncode(RtpTimestamp rtp,
+  // The target encode bit rate.
+  const int target_bit_rate;
+
+  // The real-world encode start time.  This is used to compute the encoded
+  // frame's |deadline_utilization| and so it uses the real-world clock instead
+  // of the CastEnvironment clock, the latter of which might be simulated.
+  const base::TimeTicks start_time;
+
+  InProgressFrameEncode(const scoped_refptr<VideoFrame>& v_frame,
                         base::TimeTicks r_time,
-                        VideoEncoder::FrameEncodedCallback callback)
-      : rtp_timestamp(rtp),
+                        VideoEncoder::FrameEncodedCallback callback,
+                        int bit_rate)
+      : video_frame(v_frame),
         reference_time(r_time),
-        frame_encoded_callback(callback) {}
+        frame_encoded_callback(callback),
+        target_bit_rate(bit_rate),
+        start_time(base::TimeTicks::Now()) {}
 };
 
 // Owns a VideoEncoderAccelerator instance and provides the necessary adapters
@@ -72,7 +91,8 @@ class ExternalVideoEncoder::VEAClientImpl
         video_encode_accelerator_(vea.Pass()),
         encoder_active_(false),
         next_frame_id_(0u),
-        key_frame_encountered_(false) {
+        key_frame_encountered_(false),
+        requested_bit_rate_(-1) {
   }
 
   base::SingleThreadTaskRunner* task_runner() const {
@@ -85,6 +105,7 @@ class ExternalVideoEncoder::VEAClientImpl
                   uint32 first_frame_id) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
+    requested_bit_rate_ = start_bit_rate;
     encoder_active_ = video_encode_accelerator_->Initialize(
         media::PIXEL_FORMAT_I420, frame_size, codec_profile, start_bit_rate,
         this);
@@ -104,6 +125,7 @@ class ExternalVideoEncoder::VEAClientImpl
   void SetBitRate(int bit_rate) {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
+    requested_bit_rate_ = bit_rate;
     video_encode_accelerator_->RequestEncodingParametersChange(bit_rate,
                                                                max_frame_rate_);
   }
@@ -119,9 +141,8 @@ class ExternalVideoEncoder::VEAClientImpl
       return;
 
     in_progress_frame_encodes_.push_back(InProgressFrameEncode(
-        TimeDeltaToRtpDelta(video_frame->timestamp(), kVideoFrequency),
-        reference_time,
-        frame_encoded_callback));
+        video_frame, reference_time, frame_encoded_callback,
+        requested_bit_rate_));
 
     // BitstreamBufferReady will be called once the encoder is done.
     video_encode_accelerator_->Encode(video_frame, key_frame_requested);
@@ -205,7 +226,8 @@ class ExternalVideoEncoder::VEAClientImpl
         encoded_frame->referenced_frame_id = encoded_frame->frame_id;
       else
         encoded_frame->referenced_frame_id = encoded_frame->frame_id - 1;
-      encoded_frame->rtp_timestamp = request.rtp_timestamp;
+      encoded_frame->rtp_timestamp = TimeDeltaToRtpDelta(
+          request.video_frame->timestamp(), kVideoFrequency);
       encoded_frame->reference_time = request.reference_time;
       if (!stream_header_.empty()) {
         encoded_frame->data = stream_header_;
@@ -213,8 +235,39 @@ class ExternalVideoEncoder::VEAClientImpl
       }
       encoded_frame->data.append(
           static_cast<const char*>(output_buffer->memory()), payload_size);
-      // TODO(miu): Compute and populate the |deadline_utilization| and
-      // |lossy_utilization| performance metrics in |encoded_frame|.
+
+      // If FRAME_DURATION metadata was provided in the source VideoFrame,
+      // compute the utilization metrics.
+      base::TimeDelta frame_duration;
+      if (request.video_frame->metadata()->GetTimeDelta(
+              media::VideoFrameMetadata::FRAME_DURATION, &frame_duration) &&
+          frame_duration > base::TimeDelta()) {
+        // Compute deadline utilization as the real-world time elapsed divided
+        // by the frame duration.
+        const base::TimeDelta processing_time =
+            base::TimeTicks::Now() - request.start_time;
+        encoded_frame->deadline_utilization =
+            processing_time.InSecondsF() / frame_duration.InSecondsF();
+
+        // See vp8_encoder.cc for an explanation of this math.  Here, we are
+        // computing a substitute value for |quantizer| using the
+        // QuantizerEstimator.
+        const double actual_bit_rate =
+            encoded_frame->data.size() * 8.0 / frame_duration.InSecondsF();
+        DCHECK_GT(request.target_bit_rate, 0);
+        const double bitrate_utilization =
+            actual_bit_rate / request.target_bit_rate;
+        const double quantizer =
+            (encoded_frame->dependency == EncodedFrame::KEY) ?
+            quantizer_estimator_.EstimateForKeyFrame(*request.video_frame) :
+            quantizer_estimator_.EstimateForDeltaFrame(*request.video_frame);
+        if (quantizer != QuantizerEstimator::NO_RESULT) {
+          encoded_frame->lossy_utilization = bitrate_utilization *
+              (quantizer / QuantizerEstimator::MAX_VP8_QUANTIZER);
+        }
+      } else {
+        quantizer_estimator_.Reset();
+      }
 
       cast_environment_->PostTask(
           CastEnvironment::MAIN,
@@ -298,6 +351,12 @@ class ExternalVideoEncoder::VEAClientImpl
 
   // FIFO list.
   std::list<InProgressFrameEncode> in_progress_frame_encodes_;
+
+  // The requested encode bit rate for the next frame.
+  int requested_bit_rate_;
+
+  // Used to compute utilization metrics for each frame.
+  QuantizerEstimator quantizer_estimator_;
 
   DISALLOW_COPY_AND_ASSIGN(VEAClientImpl);
 };
@@ -466,6 +525,152 @@ scoped_ptr<VideoEncoder> SizeAdaptableExternalVideoEncoder::CreateEncoder() {
       CreateEncoderStatusChangeCallback(),
       create_vea_cb_,
       create_video_encode_memory_cb_));
+}
+
+QuantizerEstimator::QuantizerEstimator() {}
+
+QuantizerEstimator::~QuantizerEstimator() {}
+
+void QuantizerEstimator::Reset() {
+  last_frame_pixel_buffer_.reset();
+}
+
+double QuantizerEstimator::EstimateForKeyFrame(const VideoFrame& frame) {
+  if (!CanExamineFrame(frame))
+    return NO_RESULT;
+
+  // If the size of the frame is different from the last frame, allocate a new
+  // buffer.  The buffer only needs to be a fraction of the size of the entire
+  // frame, since the entropy analysis only examines a subset of each frame.
+  const gfx::Size size = frame.visible_rect().size();
+  const int rows_in_subset =
+      std::max(1, size.height() * FRAME_SAMPLING_PERCENT / 100);
+  if (last_frame_size_ != size || !last_frame_pixel_buffer_) {
+    last_frame_pixel_buffer_.reset(new uint8[size.width() * rows_in_subset]);
+    last_frame_size_ = size;
+  }
+
+  // Compute a histogram where each bucket represents the number of times two
+  // neighboring pixels were different by a specific amount.  511 buckets are
+  // needed, one for each integer in the range [-255,255].
+  int histogram[511];
+  memset(histogram, 0, sizeof(histogram));
+  const int row_skip = size.height() / rows_in_subset;
+  int y = 0;
+  for (int i = 0; i < rows_in_subset; ++i, y += row_skip) {
+    const uint8* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
+        y * frame.stride(VideoFrame::kYPlane);
+    const uint8* const row_end = row_begin + size.width();
+    int left_hand_pixel_value = static_cast<int>(*row_begin);
+    for (const uint8* p = row_begin + 1; p < row_end; ++p) {
+      const int right_hand_pixel_value = static_cast<int>(*p);
+      const int difference = right_hand_pixel_value - left_hand_pixel_value;
+      const int histogram_index = difference + 255;
+      ++histogram[histogram_index];
+      left_hand_pixel_value = right_hand_pixel_value;  // For next iteration.
+    }
+
+    // Copy the row of pixels into the buffer.  This will be used when
+    // generating histograms for future delta frames.
+    memcpy(last_frame_pixel_buffer_.get() + i * size.width(),
+           row_begin,
+           size.width());
+  }
+
+  // Estimate a quantizer value depending on the difference data in the
+  // histogram and return it.
+  const int num_samples = (size.width() - 1) * rows_in_subset;
+  return ToQuantizerEstimate(ComputeEntropyFromHistogram(
+      histogram, arraysize(histogram), num_samples));
+}
+
+double QuantizerEstimator::EstimateForDeltaFrame(const VideoFrame& frame) {
+  if (!CanExamineFrame(frame))
+    return NO_RESULT;
+
+  // If the size of the |frame| has changed, no difference can be examined.
+  // In this case, process this frame as if it were a key frame.
+  const gfx::Size size = frame.visible_rect().size();
+  if (last_frame_size_ != size || !last_frame_pixel_buffer_)
+    return EstimateForKeyFrame(frame);
+  const int rows_in_subset =
+      std::max(1, size.height() * FRAME_SAMPLING_PERCENT / 100);
+
+  // Compute a histogram where each bucket represents the number of times the
+  // same pixel in this frame versus the last frame was different by a specific
+  // amount.  511 buckets are needed, one for each integer in the range
+  // [-255,255].
+  int histogram[511];
+  memset(histogram, 0, sizeof(histogram));
+  const int row_skip = size.height() / rows_in_subset;
+  int y = 0;
+  for (int i = 0; i < rows_in_subset; ++i, y += row_skip) {
+    const uint8* const row_begin = frame.visible_data(VideoFrame::kYPlane) +
+        y * frame.stride(VideoFrame::kYPlane);
+    const uint8* const row_end = row_begin + size.width();
+    uint8* const last_frame_row_begin =
+        last_frame_pixel_buffer_.get() + i * size.width();
+    for (const uint8* p = row_begin, *q = last_frame_row_begin; p < row_end;
+         ++p, ++q) {
+      const int difference = static_cast<int>(*p) - static_cast<int>(*q);
+      const int histogram_index = difference + 255;
+      ++histogram[histogram_index];
+    }
+
+    // Copy the row of pixels into the buffer.  This will be used when
+    // generating histograms for future delta frames.
+    memcpy(last_frame_row_begin, row_begin, size.width());
+  }
+
+  // Estimate a quantizer value depending on the difference data in the
+  // histogram and return it.
+  const int num_samples = size.width() * rows_in_subset;
+  return ToQuantizerEstimate(ComputeEntropyFromHistogram(
+      histogram, arraysize(histogram), num_samples));
+}
+
+// static
+bool QuantizerEstimator::CanExamineFrame(const VideoFrame& frame) {
+  DCHECK_EQ(8, VideoFrame::PlaneHorizontalBitsPerPixel(frame.format(),
+                                                       VideoFrame::kYPlane));
+  return media::IsYuvPlanar(frame.format()) &&
+      !frame.visible_rect().IsEmpty();
+}
+
+// static
+double QuantizerEstimator::ComputeEntropyFromHistogram(const int* histogram,
+                                                       size_t num_buckets,
+                                                       int num_samples) {
+  DCHECK_LT(0, num_samples);
+  double entropy = 0.0;
+  for (size_t i = 0; i < num_buckets; ++i) {
+    const double probability = static_cast<double>(histogram[i]) / num_samples;
+    if (probability > 0.0)
+      entropy = entropy - probability * log2(probability);
+  }
+  return entropy;
+}
+
+// static
+double QuantizerEstimator::ToQuantizerEstimate(double shannon_entropy) {
+  DCHECK_GE(shannon_entropy, 0.0);
+
+  // This math is based on an analysis of data produced by running a wide range
+  // of mirroring content in a Cast streaming session on a Chromebook Pixel
+  // (2013 edition).  The output from the Pixel's built-in hardware encoder was
+  // compared to an identically-configured software implementation (libvpx)
+  // running alongside.  Based on an analysis of the data, the following linear
+  // mapping seems to produce reasonable VP8 quantizer values from the
+  // |shannon_entropy| values.
+  //
+  // TODO(miu): Confirm whether this model and value work well on other
+  // platforms.
+  const double kEntropyAtMaxQuantizer = 7.5;
+  const double slope =
+      (MAX_VP8_QUANTIZER - MIN_VP8_QUANTIZER) / kEntropyAtMaxQuantizer;
+  const double quantizer = std::min<double>(
+      MAX_VP8_QUANTIZER, MIN_VP8_QUANTIZER + slope * shannon_entropy);
+  return quantizer;
 }
 
 }  //  namespace cast

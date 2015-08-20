@@ -102,6 +102,61 @@ class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
   DISALLOW_COPY_AND_ASSIGN(SizeAdaptableExternalVideoEncoder);
 };
 
+// A utility class for examining the sequence of frames sent to an external
+// encoder, and returning an estimate of the what the software VP8 encoder would
+// have used for a quantizer value when encoding each frame.  The quantizer
+// value is related to the complexity of the content of the frame.
+class QuantizerEstimator {
+ public:
+  enum {
+    NO_RESULT = 0,
+    MIN_VP8_QUANTIZER = 4,
+    MAX_VP8_QUANTIZER = 63,
+  };
+
+  QuantizerEstimator();
+  ~QuantizerEstimator();
+
+  // Discard any state related to the processing of prior frames.
+  void Reset();
+
+  // Examine |frame| and estimate and return the quantizer value the software
+  // VP8 encoder would have used when encoding the frame, in the range
+  // [4.0,63.0].  If |frame| is not in planar YUV format, or its size is empty,
+  // this returns |NO_RESULT|.
+  double EstimateForKeyFrame(const VideoFrame& frame);
+  double EstimateForDeltaFrame(const VideoFrame& frame);
+
+ private:
+  enum {
+    // The percentage of each frame to sample.  This value is based on an
+    // analysis that showed sampling 10% of the rows of a frame generated
+    // reasonably accurate results.
+    FRAME_SAMPLING_PERCENT = 10,
+  };
+
+  // Returns true if the frame is in planar YUV format.
+  static bool CanExamineFrame(const VideoFrame& frame);
+
+  // Returns a value in the range [0,log2(num_buckets)], the Shannon Entropy
+  // based on the probabilities of values falling within each of the buckets of
+  // the given |histogram|.
+  static double ComputeEntropyFromHistogram(const int* histogram,
+                                            size_t num_buckets,
+                                            int num_samples);
+
+  // Map the |shannon_entropy| to its corresponding software VP8 quantizer.
+  static double ToQuantizerEstimate(double shannon_entropy);
+
+  // A cache of a subset of rows of pixels from the last frame examined.  This
+  // is used to compute the entropy of the difference between frames, which in
+  // turn is used to compute the entropy and quantizer.
+  scoped_ptr<uint8[]> last_frame_pixel_buffer_;
+  gfx::Size last_frame_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuantizerEstimator);
+};
+
 }  // namespace cast
 }  // namespace media
 
