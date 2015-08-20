@@ -682,7 +682,8 @@ bool VaapiWrapper::CreateCodedBuffer(size_t size, VABufferID* buffer_id) {
                                    buffer_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed to create a coded buffer", false);
 
-  DCHECK(coded_buffers_.insert(*buffer_id).second);
+  const auto is_new_entry = coded_buffers_.insert(*buffer_id).second;
+  DCHECK(is_new_entry);
   return true;
 }
 
@@ -931,7 +932,8 @@ bool VaapiWrapper::DownloadAndDestroyCodedBuffer(VABufferID buffer_id,
   va_res = vaDestroyBuffer(va_display_, buffer_id);
   VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
 
-  DCHECK(coded_buffers_.erase(buffer_id));
+  const auto was_found = coded_buffers_.erase(buffer_id);
+  DCHECK(was_found);
 
   return buffer_segment == NULL;
 }
