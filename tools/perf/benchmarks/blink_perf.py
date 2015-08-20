@@ -164,6 +164,7 @@ class BlinkPerfCSS(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Disabled('xp',  # http://crbug.com/488059
+                    'win7',  # http://crbug.com/522972
                     'android',  # http://crbug.com/496707
                     'reference')  # http://crbug.com/520092
 class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
