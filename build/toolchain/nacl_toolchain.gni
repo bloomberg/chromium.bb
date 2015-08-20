@@ -42,6 +42,12 @@ template("nacl_toolchain") {
   cxx = invoker.cxx
   ar = invoker.ar
   ld = invoker.ld
+  if (defined(invoker.postlink)) {
+    postlink = invoker.postlink
+  }
+  if (defined(invoker.link_outputs)) {
+    link_outputs = invoker.link_outputs
+  }
 
   # NaCl toolchains do not support shared libraries and so they don't support
   # component_mode builds.

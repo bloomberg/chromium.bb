@@ -77,7 +77,14 @@ nacl_toolchain("newlib_pnacl") {
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
   ld = cxx
-  executable_extension = ".pexe"
+  executable_extension = ".pexe.debug"
+
+  finalize = toolprefix + "finalize"
+  nonfinal_file =
+    "{{root_out_dir}}/{{target_output_name}}${executable_extension}"
+  finalized_file = "{{root_out_dir}}/{{target_output_name}}.pexe"
+  postlink = "$finalize $nonfinal_file -o $finalized_file"
+  link_outputs = [ finalized_file ]
 }
 
 nacl_toolchain("glibc_x86") {
