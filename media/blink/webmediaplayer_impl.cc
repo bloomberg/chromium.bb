@@ -116,6 +116,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       preload_(BufferedDataSource::AUTO),
       main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_task_runner_(params.media_task_runner()),
+      worker_task_runner_(params.worker_task_runner()),
       media_log_(params.media_log()),
       pipeline_(media_task_runner_, media_log_.get()),
       load_type_(LoadTypeURL),
@@ -941,9 +942,9 @@ void WebMediaPlayerImpl::StartPipeline() {
   seeking_ = true;
 
   pipeline_.Start(
-      demuxer_.get(),
-      renderer_factory_->CreateRenderer(
-          media_task_runner_, audio_source_provider_.get(), compositor_),
+      demuxer_.get(), renderer_factory_->CreateRenderer(
+                          media_task_runner_, worker_task_runner_,
+                          audio_source_provider_.get(), compositor_),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),

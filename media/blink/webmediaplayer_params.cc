@@ -5,6 +5,7 @@
 #include "media/blink/webmediaplayer_params.h"
 
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_log.h"
 
@@ -15,6 +16,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
     const scoped_refptr<MediaLog>& media_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
     const Context3DCB& context_3d_cb,
     MediaPermission* media_permission,
@@ -23,11 +25,11 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(media_log),
       media_task_runner_(media_task_runner),
+      worker_task_runner_(worker_task_runner),
       compositor_task_runner_(compositor_task_runner),
       context_3d_cb_(context_3d_cb),
       media_permission_(media_permission),
-      initial_cdm_(initial_cdm) {
-}
+      initial_cdm_(initial_cdm) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}
 

@@ -30,6 +30,7 @@ class ChromecastMediaRendererFactory : public ::media::RendererFactory {
   // ::media::RendererFactory implementation.
   scoped_ptr<::media::Renderer> CreateRenderer(
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::TaskRunner>& worker_task_runner,
       ::media::AudioRendererSink* audio_renderer_sink,
       ::media::VideoRendererSink* video_renderer_sink) final;
 

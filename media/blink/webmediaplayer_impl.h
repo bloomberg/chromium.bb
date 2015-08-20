@@ -40,6 +40,7 @@ class WebMediaPlayerEncryptedMediaClient;
 
 namespace base {
 class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace cc_blink {
@@ -246,6 +247,7 @@ class MEDIA_EXPORT WebMediaPlayerImpl
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<MediaLog> media_log_;
   Pipeline pipeline_;
 

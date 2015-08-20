@@ -52,7 +52,8 @@ class MEDIA_EXPORT VideoRendererImpl
   //
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
   VideoRendererImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::TaskRunner>& worker_task_runner,
       VideoRendererSink* sink,
       ScopedVector<VideoDecoder> decoders,
       bool drop_frames,
@@ -95,6 +96,13 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Callback for |video_frame_stream_| initialization.
   void OnVideoFrameStreamInitialized(bool success);
+
+  // Callback for |video_frame_stream_| to deliver decoded video frames and
+  // report video decoding status. If a frame is available the planes will be
+  // copied asynchronously and FrameReady will be called once finished copying.
+  void FrameReadyForCopyingToGpuMemoryBuffers(
+      VideoFrameStream::Status status,
+      const scoped_refptr<VideoFrame>& frame);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status.

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "media/base/video_frame.h"
 
 namespace base {
@@ -26,17 +27,24 @@ class GpuVideoAcceleratorFactories;
 class MEDIA_EXPORT GpuMemoryBufferVideoFramePool {
  public:
   GpuMemoryBufferVideoFramePool(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::TaskRunner>& worker_task_runner,
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories);
   ~GpuMemoryBufferVideoFramePool();
 
-  // Returns a new VideoFrame containing only mailboxes to native resources.
-  // The content of the returned object is copied from the software-allocated
+  // Callback used by MaybeCreateHardwareFrame to deliver a new VideoFrame
+  // after it has been copied to GpuMemoryBuffers.
+  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> FrameReadyCB;
+
+  // Calls |cb| on |media_worker_pool| with a new VideoFrame containing only
+  // mailboxes to native resources. |cb| will be destroyed on
+  // |media_worker_pool|.
+  // The content of the new object is copied from the software-allocated
   // |video_frame|.
   // If it's not possible to create a new hardware VideoFrame, |video_frame|
-  // itself will be returned.
-  scoped_refptr<VideoFrame> MaybeCreateHardwareFrame(
-      const scoped_refptr<VideoFrame>& video_frame);
+  // itself will passed to |cb|.
+  void MaybeCreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
+                                const FrameReadyCB& frame_ready_cb);
 
  private:
   class PoolImpl;

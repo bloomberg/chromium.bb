@@ -7,14 +7,15 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+#include <algorithm>
 #include <list>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/containers/stack_container.h"
 #include "base/location.h"
 #include "base/memory/linked_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
@@ -26,22 +27,32 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
     : public base::RefCountedThreadSafe<
           GpuMemoryBufferVideoFramePool::PoolImpl> {
  public:
-  // |task_runner| is associated to the thread where the context of
-  // GLES2Interface returned by |gpu_factories| lives.
+  // |media_task_runner| is the media task runner associated with the
+  // GL context provided by |gpu_factories|
+  // |worker_task_runner| is a task runner used to asynchronously copy
+  // video frame's planes.
   // |gpu_factories| is an interface to GPU related operation and can be
-  // null.
-  PoolImpl(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+  // null if a GL context is not available.
+  PoolImpl(const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+           const scoped_refptr<base::TaskRunner>& worker_task_runner,
            const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
-      : task_runner_(task_runner),
+      : media_task_runner_(media_task_runner),
+        worker_task_runner_(worker_task_runner),
         gpu_factories_(gpu_factories),
-        texture_target_(gpu_factories_ ? gpu_factories_->ImageTextureTarget()
-                                       : GL_TEXTURE_2D) {}
+        texture_target_(gpu_factories ? gpu_factories->ImageTextureTarget()
+                                      : GL_TEXTURE_2D) {
+    DCHECK(media_task_runner_);
+    DCHECK(worker_task_runner_);
+  }
 
-  // Takes a software VideoFrame and returns a VideoFrame backed by native
-  // textures if possible.
-  // The data contained in video_frame is copied into the returned frame.
-  scoped_refptr<VideoFrame> CreateHardwareFrame(
-      const scoped_refptr<VideoFrame>& video_frame);
+  // Takes a software VideoFrame and calls |frame_ready_cb| with a VideoFrame
+  // backed by native textures if possible.
+  // The data contained in video_frame is copied into the returned frame
+  // asynchronously posting tasks to |worker_task_runner_|, while
+  // |frame_ready_cb| will be called on |media_task_runner_| once all the data
+  // has been copied.
+  void CreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
+                           const FrameReadyCB& cb);
 
  private:
   friend class base::RefCountedThreadSafe<
@@ -67,6 +78,27 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
     PlaneResource plane_resources[VideoFrame::kMaxPlanes];
   };
 
+  // Copy |video_frame| data into |frame_resouces|
+  // and calls |done| when done.
+  void CopyVideoFrameToGpuMemoryBuffers(
+      const scoped_refptr<VideoFrame>& video_frame,
+      FrameResources* frame_resources,
+      const FrameReadyCB& frame_ready_cb);
+
+  // Called when all the data has been copied.
+  void OnCopiesDone(const scoped_refptr<VideoFrame>& video_frame,
+                    FrameResources* frame_resources,
+                    const FrameReadyCB& frame_ready_cb);
+
+  // Prepares GL resources, mailboxes and calls |frame_ready_cb| with the new
+  // VideoFrame.
+  // This has to be run on |media_task_runner_| where |frame_ready_cb| will also
+  // be run.
+  void BindAndCreateMailboxesHardwareFrameResources(
+      const scoped_refptr<VideoFrame>& video_frame,
+      FrameResources* frame_resources,
+      const FrameReadyCB& frame_ready_cb);
+
   // Return true if |resources| can be used to represent a frame for
   // specific |format| and |size|.
   static bool AreFrameResourcesCompatible(const FrameResources* resources,
@@ -88,7 +120,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
                               uint32 sync_point);
 
   // Return frame resources to the pool. This has to be called on the thread
-  // where |task_runner| is current.
+  // where |media_task_runner_| is current.
   void ReturnFrameResources(FrameResources* frame_resources);
 
   // Delete resources. This has to be called on the thread where |task_runner|
@@ -97,7 +129,12 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
       const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       FrameResources* frame_resources);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // Task runner associated to the GL context provided by |gpu_factories_|.
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  // Task runner used to asynchronously copy planes.
+  scoped_refptr<base::TaskRunner> worker_task_runner_;
+
+  // Interface to GPU related operations.
   scoped_refptr<GpuVideoAcceleratorFactories> gpu_factories_;
 
   // Pool of resources.
@@ -109,70 +146,162 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
 namespace {
 
-// Copy a buffer info a GpuMemoryBuffer.
-// |bytes_per_row| is expected to be less or equal than the strides of the two
-// buffers.
-void CopyPlaneToGpuMemoryBuffer(int rows,
-                                int bytes_per_row,
-                                const uint8* source,
-                                int source_stride,
-                                gfx::GpuMemoryBuffer* buffer) {
-  TRACE_EVENT2("media", "CopyPlaneToGpuMemoryBuffer", "bytes_per_row",
-               bytes_per_row, "rows", rows);
+// VideoFrame copies to GpuMemoryBuffers will be split in |kBytesPerCopyTarget|
+// bytes copies and run in parallel.
+const size_t kBytesPerCopyTarget = 1024 * 1024;  // 1MB
 
-  DCHECK(buffer);
-  DCHECK(source);
-  void* data = nullptr;
-  CHECK(buffer->Map(&data));
-  uint8* mapped_buffer = static_cast<uint8*>(data);
-  int dest_stride = 0;
-  buffer->GetStride(&dest_stride);
+void CopyRowsToBuffer(int first_row,
+                      int rows,
+                      int bytes_per_row,
+                      const uint8* source,
+                      int source_stride,
+                      uint8* output,
+                      int dest_stride,
+                      const base::Closure& done) {
+  TRACE_EVENT2("media", "CopyRowsToBuffer", "bytes_per_row", bytes_per_row,
+               "rows", rows);
   DCHECK_NE(dest_stride, 0);
   DCHECK_LE(bytes_per_row, std::abs(dest_stride));
   DCHECK_LE(bytes_per_row, source_stride);
-  for (int row = 0; row < rows; ++row) {
-    memcpy(mapped_buffer + dest_stride * row, source + source_stride * row,
+  for (int row = first_row; row < first_row + rows; ++row) {
+    memcpy(output + dest_stride * row, source + source_stride * row,
            bytes_per_row);
   }
-  buffer->Unmap();
+  done.Run();
 }
 
 }  // unnamed namespace
 
 // Creates a VideoFrame backed by native textures starting from a software
 // VideoFrame.
-// The data contained in video_frame is copied into the returned VideoFrame.
-scoped_refptr<VideoFrame>
-GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
-    const scoped_refptr<VideoFrame>& video_frame) {
-  if (!gpu_factories_)
-    return video_frame;
-
-  if (!gpu_factories_->IsTextureRGSupported())
-    return video_frame;
-
-  gpu::gles2::GLES2Interface* gles2 = gpu_factories_->GetGLES2Interface();
-  if (!gles2)
-    return video_frame;
+// The data contained in |video_frame| is copied into the VideoFrame passed to
+// |frame_ready_cb|.
+// This has to be called on the thread where |media_task_runner_| is current.
+void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
+    const scoped_refptr<VideoFrame>& video_frame,
+    const FrameReadyCB& frame_ready_cb) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+  if (!gpu_factories_ || !gpu_factories_->IsTextureRGSupported()) {
+    frame_ready_cb.Run(video_frame);
+    return;
+  }
+  switch (video_frame->format()) {
+    // Supported cases.
+    case PIXEL_FORMAT_YV12:
+    case PIXEL_FORMAT_I420:
+      break;
+    // Unsupported cases.
+    case PIXEL_FORMAT_YV12A:
+    case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_YV24:
+    case PIXEL_FORMAT_NV12:
+    case PIXEL_FORMAT_ARGB:
+    case PIXEL_FORMAT_XRGB:
+    case PIXEL_FORMAT_UNKNOWN:
+      frame_ready_cb.Run(video_frame);
+      return;
+  }
 
   VideoPixelFormat format = video_frame->format();
-  size_t planes = VideoFrame::NumPlanes(format);
   DCHECK(video_frame->visible_rect().origin().IsOrigin());
-  gfx::Size size = video_frame->visible_rect().size();
-  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  const gfx::Size size = video_frame->visible_rect().size();
 
   // Acquire resources. Incompatible ones will be dropped from the pool.
   FrameResources* frame_resources = GetOrCreateFrameResources(size, format);
+  if (!frame_resources) {
+    frame_ready_cb.Run(video_frame);
+    return;
+  }
 
-  // Set up the planes copying data into it and creating the mailboxes needed
-  // to refer to the textures.
+  worker_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&PoolImpl::CopyVideoFrameToGpuMemoryBuffers, this,
+                            video_frame, frame_resources, frame_ready_cb));
+}
+
+void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
+    const scoped_refptr<VideoFrame>& video_frame,
+    FrameResources* frame_resources,
+    const FrameReadyCB& frame_ready_cb) {
+  const VideoPixelFormat format = video_frame->format();
+  const size_t planes = VideoFrame::NumPlanes(format);
+  for (size_t i = 0; i < planes; ++i) {
+    frame_resources->plane_resources[i].gpu_memory_buffer->Unmap();
+  }
+
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PoolImpl::BindAndCreateMailboxesHardwareFrameResources, this,
+                 video_frame, frame_resources, frame_ready_cb));
+}
+
+// Copies |video_frame| into |frame_resources| asynchronously, posting n tasks
+// that will be synchronized by a barrier.
+// After the barrier is passed OnCopiesDone will be called.
+void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
+    const scoped_refptr<VideoFrame>& video_frame,
+    FrameResources* frame_resources,
+    const FrameReadyCB& frame_ready_cb) {
+  const VideoPixelFormat format = video_frame->format();
+  const size_t planes = VideoFrame::NumPlanes(format);
+  gfx::Size size = video_frame->visible_rect().size();
+  size_t copies = 0;
+  for (size_t i = 0; i < planes; ++i) {
+    int rows = VideoFrame::Rows(i, format, size.height());
+    int bytes_per_row = VideoFrame::RowBytes(i, format, size.width());
+    int rows_per_copy =
+        std::max<size_t>(kBytesPerCopyTarget / bytes_per_row, 1);
+    copies += rows / rows_per_copy;
+    if (rows % rows_per_copy)
+      ++copies;
+  }
+
+  base::Closure copies_done =
+      base::Bind(&PoolImpl::OnCopiesDone, this, video_frame, frame_resources,
+                 frame_ready_cb);
+  base::Closure barrier = base::BarrierClosure(copies, copies_done);
+
+  for (size_t i = 0; i < planes; ++i) {
+    int rows = VideoFrame::Rows(i, format, size.height());
+    int bytes_per_row = VideoFrame::RowBytes(i, format, size.width());
+    int rows_per_copy =
+        std::max<size_t>(kBytesPerCopyTarget / bytes_per_row, 1);
+
+    PlaneResource& plane_resource = frame_resources->plane_resources[i];
+    void* data = nullptr;
+    CHECK(plane_resource.gpu_memory_buffer->Map(&data));
+    uint8* mapped_buffer = static_cast<uint8*>(data);
+    int dest_stride = 0;
+    plane_resource.gpu_memory_buffer->GetStride(&dest_stride);
+
+    for (int row = 0; row < rows; row += rows_per_copy) {
+      worker_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&CopyRowsToBuffer, row,
+                     std::min(rows_per_copy, rows - row), bytes_per_row,
+                     video_frame->data(i), video_frame->stride(i),
+                     mapped_buffer, dest_stride, barrier));
+    }
+  }
+}
+
+void GpuMemoryBufferVideoFramePool::PoolImpl::
+    BindAndCreateMailboxesHardwareFrameResources(
+        const scoped_refptr<VideoFrame>& video_frame,
+        FrameResources* frame_resources,
+        const FrameReadyCB& frame_ready_cb) {
+  gpu::gles2::GLES2Interface* gles2 = gpu_factories_->GetGLES2Interface();
+  if (!gles2) {
+    frame_ready_cb.Run(video_frame);
+    return;
+  }
+
+  const VideoPixelFormat format = video_frame->format();
+  const size_t planes = VideoFrame::NumPlanes(format);
+  const gfx::Size size = video_frame->visible_rect().size();
+  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  // Set up the planes creating the mailboxes needed to refer to the textures.
   for (size_t i = 0; i < planes; ++i) {
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
-    CopyPlaneToGpuMemoryBuffer(VideoFrame::Rows(i, format, size.height()),
-                               VideoFrame::RowBytes(i, format, size.width()),
-                               video_frame->data(i), video_frame->stride(i),
-                               plane_resource.gpu_memory_buffer.get());
-
     // Bind the texture and create or rebind the image.
     gles2->BindTexture(texture_target_, plane_resource.texture_id);
 
@@ -209,17 +338,17 @@ GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       video_frame->timestamp());
   if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
-  return frame;
+  frame_ready_cb.Run(frame);
 }
 
 // Destroy all the resources posting one task per FrameResources
-// to the |task_runner_|.
+// to the |media_task_runner_|.
 GpuMemoryBufferVideoFramePool::PoolImpl::~PoolImpl() {
   // Delete all the resources on the media thread.
   while (!resources_pool_.empty()) {
     FrameResources* frame_resources = resources_pool_.front();
     resources_pool_.pop_front();
-    task_runner_->PostTask(
+    media_task_runner_->PostTask(
         FROM_HERE, base::Bind(&PoolImpl::DeleteFrameResources, gpu_factories_,
                               base::Owned(frame_resources)));
   }
@@ -231,8 +360,6 @@ GpuMemoryBufferVideoFramePool::PoolImpl::FrameResources*
 GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     const gfx::Size& size,
     VideoPixelFormat format) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
   auto it = resources_pool_.begin();
   while (it != resources_pool_.end()) {
     FrameResources* frame_resources = *it;
@@ -252,7 +379,8 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
 
   // Create the resources.
   gpu::gles2::GLES2Interface* gles2 = gpu_factories_->GetGLES2Interface();
-  DCHECK(gles2);
+  if (!gles2)
+    return nullptr;
   gles2->ActiveTexture(GL_TEXTURE0);
   size_t planes = VideoFrame::NumPlanes(format);
   FrameResources* frame_resources = new FrameResources(format, size);
@@ -301,14 +429,14 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
     FrameResources* frame_resources,
     uint32 sync_point) {
   // Return the resource on the media thread.
-  task_runner_->PostTask(FROM_HERE, base::Bind(&PoolImpl::ReturnFrameResources,
-                                               this, frame_resources));
+  media_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&PoolImpl::ReturnFrameResources, this, frame_resources));
 }
 
 // Put back the resoruces in the pool.
 void GpuMemoryBufferVideoFramePool::PoolImpl::ReturnFrameResources(
     FrameResources* frame_resources) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
 
   auto it = std::find(resources_pool_.begin(), resources_pool_.end(),
                       frame_resources);
@@ -321,33 +449,20 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::ReturnFrameResources(
 }
 
 GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
-    : pool_impl_(new PoolImpl(task_runner, gpu_factories)) {
-}
+    : pool_impl_(
+          new PoolImpl(media_task_runner, worker_task_runner, gpu_factories)) {}
 
 GpuMemoryBufferVideoFramePool::~GpuMemoryBufferVideoFramePool() {
 }
 
-scoped_refptr<VideoFrame>
-GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
-    const scoped_refptr<VideoFrame>& video_frame) {
-  switch (video_frame->format()) {
-    // Supported cases.
-    case PIXEL_FORMAT_YV12:
-    case PIXEL_FORMAT_I420:
-      return pool_impl_->CreateHardwareFrame(video_frame);
-    // Unsupported cases.
-    case PIXEL_FORMAT_YV12A:
-    case PIXEL_FORMAT_YV16:
-    case PIXEL_FORMAT_YV24:
-    case PIXEL_FORMAT_NV12:
-    case PIXEL_FORMAT_ARGB:
-    case PIXEL_FORMAT_XRGB:
-    case PIXEL_FORMAT_UNKNOWN:
-      break;
-  }
-  return video_frame;
+void GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
+    const scoped_refptr<VideoFrame>& video_frame,
+    const FrameReadyCB& frame_ready_cb) {
+  DCHECK(video_frame);
+  pool_impl_->CreateHardwareFrame(video_frame, frame_ready_cb);
 }
 
 }  // namespace media

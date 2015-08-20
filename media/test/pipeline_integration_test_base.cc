@@ -249,8 +249,9 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 
   // Disable frame dropping if hashing is enabled.
   scoped_ptr<VideoRenderer> video_renderer(new VideoRendererImpl(
-      message_loop_.task_runner(), video_sink_.get(),
-      video_decoders.Pass(), false, nullptr, new MediaLog()));
+      message_loop_.task_runner(), message_loop_.task_runner().get(),
+      video_sink_.get(), video_decoders.Pass(), false, nullptr,
+      new MediaLog()));
 
   if (!clockless_playback_) {
     audio_sink_ = new NullAudioSink(message_loop_.task_runner());

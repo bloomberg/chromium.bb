@@ -2038,6 +2038,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
                  static_cast<RenderFrame*>(this), has_played_media_),
       render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_),
       media_log, render_thread->GetMediaThreadTaskRunner(),
+      render_thread->GetWorkerTaskRunner(),
       render_thread->compositor_task_runner(),
       base::Bind(&GetSharedMainThreadContext3D), GetMediaPermission(),
       initial_cdm);

@@ -94,9 +94,9 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   media::WebMediaPlayerParams params(
       media::WebMediaPlayerParams::DeferLoadCB(), CreateAudioRendererSink(),
-      media_log, GetMediaThreadTaskRunner(), compositor_task_runner_,
-      media::WebMediaPlayerParams::Context3DCB(), GetMediaPermission(),
-      initial_cdm);
+      media_log, GetMediaThreadTaskRunner(), GetMediaThreadTaskRunner(),
+      compositor_task_runner_, media::WebMediaPlayerParams::Context3DCB(),
+      GetMediaPermission(), initial_cdm);
   base::WeakPtr<media::WebMediaPlayerDelegate> delegate;
 
   return new media::WebMediaPlayerImpl(frame, client, encrypted_client,

@@ -44,20 +44,23 @@ static bool ShouldUseVideoRenderingPath() {
 }
 
 VideoRendererImpl::VideoRendererImpl(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
     VideoRendererSink* sink,
     ScopedVector<VideoDecoder> decoders,
     bool drop_frames,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     const scoped_refptr<MediaLog>& media_log)
-    : task_runner_(task_runner),
+    : task_runner_(media_task_runner),
       use_new_video_renderering_path_(ShouldUseVideoRenderingPath()),
       sink_(sink),
       sink_started_(false),
       video_frame_stream_(
-          new VideoFrameStream(task_runner, decoders.Pass(), media_log)),
+          new VideoFrameStream(media_task_runner, decoders.Pass(), media_log)),
       gpu_memory_buffer_pool_(
-          new GpuMemoryBufferVideoFramePool(task_runner, gpu_factories)),
+          new GpuMemoryBufferVideoFramePool(media_task_runner,
+                                            worker_task_runner,
+                                            gpu_factories)),
       media_log_(media_log),
       low_delay_(false),
       received_end_of_stream_(false),
@@ -76,8 +79,7 @@ VideoRendererImpl::VideoRendererImpl(
       time_progressing_(false),
       render_first_frame_and_stop_(false),
       posted_maybe_stop_after_first_paint_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 VideoRendererImpl::~VideoRendererImpl() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -474,6 +476,20 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
       base::Bind(&VideoRendererImpl::AttemptRead, weak_factory_.GetWeakPtr()));
 }
 
+void VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers(
+    VideoFrameStream::Status status,
+    const scoped_refptr<VideoFrame>& frame) {
+  if (status != VideoFrameStream::OK || start_timestamp_ > frame->timestamp()) {
+    VideoRendererImpl::FrameReady(status, frame);
+    return;
+  }
+
+  DCHECK(frame);
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      frame, base::Bind(&VideoRendererImpl::FrameReady,
+                        weak_factory_.GetWeakPtr(), status));
+}
+
 void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -685,8 +701,10 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPlaying:
       pending_read_ = true;
-      video_frame_stream_->Read(base::Bind(&VideoRendererImpl::FrameReady,
-                                           weak_factory_.GetWeakPtr()));
+
+      video_frame_stream_->Read(
+          base::Bind(&VideoRendererImpl::FrameReady,
+                     weak_factory_.GetWeakPtr()));
       return;
 
     case kUninitialized:

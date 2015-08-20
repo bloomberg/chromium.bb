@@ -31,6 +31,7 @@ ChromecastMediaRendererFactory::~ChromecastMediaRendererFactory() {
 
 scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+    const scoped_refptr<base::TaskRunner>& worker_task_runner,
     ::media::AudioRendererSink* audio_renderer_sink,
     ::media::VideoRendererSink* video_renderer_sink) {
   if (!default_render_factory_) {
@@ -67,9 +68,9 @@ scoped_ptr<::media::Renderer> ChromecastMediaRendererFactory::CreateRenderer(
   scoped_ptr<CmaRenderer> cma_renderer(new CmaRenderer(
       cma_media_pipeline.Pass(), video_renderer_sink, gpu_factories_));
   scoped_ptr<::media::Renderer> default_media_render(
-      default_render_factory_->CreateRenderer(media_task_runner,
-                                              audio_renderer_sink,
-                                              video_renderer_sink));
+      default_render_factory_->CreateRenderer(
+          media_task_runner, media_task_runner, audio_renderer_sink,
+          video_renderer_sink));
   scoped_ptr<SwitchingMediaRenderer> media_renderer(new SwitchingMediaRenderer(
       default_media_render.Pass(), cma_renderer.Pass()));
   return media_renderer.Pass();

@@ -12,6 +12,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TaskRunner;
 }
 
 namespace blink {
@@ -39,6 +40,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
       const scoped_refptr<AudioRendererSink>& audio_renderer_sink,
       const scoped_refptr<MediaLog>& media_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
+      const scoped_refptr<base::TaskRunner>& worker_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
       const Context3DCB& context_3d,
       MediaPermission* media_permission,
@@ -60,6 +62,10 @@ class MEDIA_EXPORT WebMediaPlayerParams {
     return media_task_runner_;
   }
 
+  const scoped_refptr<base::TaskRunner> worker_task_runner() const {
+    return worker_task_runner_;
+  }
+
   const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner()
       const {
     return compositor_task_runner_;
@@ -79,6 +85,7 @@ class MEDIA_EXPORT WebMediaPlayerParams {
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   scoped_refptr<MediaLog> media_log_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  scoped_refptr<base::TaskRunner> worker_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   Context3DCB context_3d_cb_;
 
