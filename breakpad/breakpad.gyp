@@ -24,8 +24,6 @@
             'src/processor/basic_code_modules.cc',
             'src/processor/basic_code_modules.h',
             'src/processor/basic_source_line_resolver.cc',
-            'src/processor/binarystream.cc',
-            'src/processor/binarystream.h',
             'src/processor/call_stack.cc',
             'src/processor/cfi_frame_info.cc',
             'src/processor/cfi_frame_info.h',
@@ -38,6 +36,7 @@
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
             'src/processor/process_state.cc',
+            'src/processor/proc_maps_linux.cc',
             'src/processor/simple_symbol_supplier.cc',
             'src/processor/simple_symbol_supplier.h',
             'src/processor/source_line_resolver_base.cc',
@@ -157,6 +156,7 @@
             'src/processor/minidump_dump.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
+            'src/processor/proc_maps_linux.cc',
           ],
           'conditions': [
             ['OS=="ios"', {
@@ -518,8 +518,6 @@
             'src/client/linux/log/log.cc',
             'src/client/linux/log/log.h',
             'src/client/linux/dump_writer_common/mapping_info.h',
-            'src/client/linux/dump_writer_common/seccomp_unwinder.cc',
-            'src/client/linux/dump_writer_common/seccomp_unwinder.h',
             'src/client/linux/dump_writer_common/thread_info.cc',
             'src/client/linux/dump_writer_common/thread_info.h',
             'src/client/linux/dump_writer_common/ucontext_reader.cc',
@@ -624,6 +622,7 @@
             'src/processor/minidump.cc',
             'src/processor/pathname_stripper.cc',
             'src/processor/pathname_stripper.h',
+            'src/processor/proc_maps_linux.cc',
           ],
 
           'include_dirs': [
