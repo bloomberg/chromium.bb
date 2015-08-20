@@ -204,7 +204,7 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       kCloudPolicyRegistrationType));
   registration_helper_->StartRegistration(
       oauth2_token_service_,
-      signin_manager()->GetAuthenticatedUsername(),
+      signin_manager()->GetAuthenticatedAccountId(),
       base::Bind(&UserPolicySigninService::OnRegistrationDone,
                  base::Unretained(this)));
 }
