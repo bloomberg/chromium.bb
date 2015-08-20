@@ -33,7 +33,6 @@
         android:layout_height="wrap_content"
         android:singleLine="true"
         android:visibility="gone"
-        android:contentDescription="@string/accessibility_js_modal_dialog_prompt"
         android:inputType="text" />
 
     <CheckBox
@@ -41,7 +40,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:text="@string/suppress_js_modal_dialogs" />
 

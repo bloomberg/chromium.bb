@@ -881,32 +881,20 @@ To obtain new licenses, connect to the internet and play your downloaded content
         https://www.google.com/intl/[GRITLANGCODE]/chrome/browser/privacy/eula_text.html
       </message>
 
-      <message desc="Popup button for user to confirm a beforeunload dialog box triggered by a page navigation, i.e. they want to leave the current page [CHAR-LIMIT=20]" name="IDS_LEAVE_THIS_PAGE">
-        Leave this Page
+      <!-- JavaScript dialogs -->
+      <message name="IDS_LEAVE" desc="Dialog button to leave the current page and navigate to a new page. [CHAR-LIMIT=20]">
+        Leave
       </message>
-      <message desc="Popup button for user to cancel a beforeunload dialog box triggerd by a page navigation, i.e. they want to stay on the current page [CHAR-LIMIT=20]" name="IDS_STAY_ON_THIS_PAGE">
-        Stay on this Page
+      <message name="IDS_RELOAD" desc="Dialog button to reload the current page. [CHAR-LIMIT=20]">
+        Reload
       </message>
-      <message desc="Popup button for user to confirm a beforeunload dialog box triggered by a page reload action, i.e. they want to reload the current page [CHAR-LIMIT=20]" name="IDS_RELOAD_THIS_PAGE">
-        Reload this Page
-      </message>
-      <message desc="Popup button for user to cancel a beforeunload dialog box triggered by a page reload action, i.e. they do not want to reload the current page [CHAR-LIMIT=20]" name="IDS_DONT_RELOAD_THIS_PAGE">
-        Don't reload
-      </message>
-      <message desc="Standard popup button for allowing user confirmation of some webpage event. [CHAR-LIMIT=12]" name="IDS_JS_MODAL_DIALOG_CONFIRM">
-        OK
-      </message>
-      <message desc="Standard popup button for allowing user to cancel some webpage event. [CHAR-LIMIT=12]" name="IDS_JS_MODAL_DIALOG_CANCEL">
-        Cancel
-      </message>
-      <message desc="Checkbox allowing users to forgoe an additional prompts from a web page. [CHAR-LIMIT=None]" name="IDS_SUPPRESS_JS_MODAL_DIALOGS">
+      <message name="IDS_SUPPRESS_JS_MODAL_DIALOGS" desc="Checkbox allowing users to forgo additional prompts from a web page.">
         Prevent this page from creating additional dialogs
       </message>
-      <message desc="Content description for the input javascript modal dialog prompt. [CHAR-LIMIT=32]" name="IDS_ACCESSIBILITY_JS_MODAL_DIALOG_PROMPT">
-        Prompt
-      </message>
-      <message desc="Dialog box title for viewing security certificates. [CHAR-LIMIT=32]" name="IDS_CERTTITLE">
-        Certificate Viewer
+
+      <!-- Certificate viewer -->
+      <message name="IDS_CERTTITLE" desc="Dialog box title for viewing security certificates. [CHAR-LIMIT=32]">
+        Certificate viewer
       </message>
 
       <!-- Sign-in strings -->

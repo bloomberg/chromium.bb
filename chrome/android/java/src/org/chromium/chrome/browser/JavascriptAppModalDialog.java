@@ -30,6 +30,8 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
     private final String mTitle;
     private final String mMessage;
+    private final int mPositiveButtonTextId;
+    private final int mNegativeButtonTextId;
     private final boolean mShouldShowSuppressCheckBox;
     private long mNativeDialogPointer;
     private AlertDialog mDialog;
@@ -37,28 +39,34 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     private TextView mPromptTextView;
 
     private JavascriptAppModalDialog(String title, String message,
+            int positiveButtonTextId, int negativeButtonTextId,
             boolean shouldShowSuppressCheckBox) {
         mTitle = title;
         mMessage = message;
+        mPositiveButtonTextId = positiveButtonTextId;
+        mNegativeButtonTextId = negativeButtonTextId;
         mShouldShowSuppressCheckBox = shouldShowSuppressCheckBox;
     }
 
     @CalledByNative
     public static JavascriptAppModalDialog createAlertDialog(String title, String message,
             boolean shouldShowSuppressCheckBox) {
-        return new JavascriptAppAlertDialog(title, message, shouldShowSuppressCheckBox);
+        return new JavascriptAppModalDialog(title, message, R.string.ok, 0,
+                shouldShowSuppressCheckBox);
     }
 
     @CalledByNative
     public static JavascriptAppModalDialog createConfirmDialog(String title, String message,
             boolean shouldShowSuppressCheckBox) {
-        return new JavascriptAppConfirmDialog(title, message, shouldShowSuppressCheckBox);
+        return new JavascriptAppModalDialog(title, message, R.string.ok, R.string.cancel,
+                shouldShowSuppressCheckBox);
     }
 
     @CalledByNative
     public static JavascriptAppModalDialog createBeforeUnloadDialog(String title, String message,
             boolean isReload, boolean shouldShowSuppressCheckBox) {
-        return new JavascriptAppBeforeUnloadDialog(title, message, isReload,
+        return new JavascriptAppModalDialog(title, message,
+                isReload ? R.string.reload : R.string.leave, R.string.cancel,
                 shouldShowSuppressCheckBox);
     }
 
@@ -82,9 +90,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
         // Cache the native dialog pointer so that we can use it to return the response.
         mNativeDialogPointer = nativeDialogPointer;
 
-        LayoutInflater inflater =
-                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
+        LayoutInflater inflater = LayoutInflater.from(context);
         ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.js_modal_dialog, null);
         mSuppressCheckBox = (CheckBox) layout.findViewById(R.id.suppress_js_modal_dialogs);
         mPromptTextView = (TextView) layout.findViewById(R.id.js_modal_dialog_prompt);
@@ -100,12 +106,8 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
                         cancel(false);
                     }
                 });
-        if (hasPositiveButton()) {
-            builder.setPositiveButton(getPositiveButtonText(), this);
-        }
-        if (hasNegativeButton()) {
-            builder.setNegativeButton(getNegativeButtonText(), this);
-        }
+        if (mPositiveButtonTextId != 0) builder.setPositiveButton(mPositiveButtonTextId, this);
+        if (mNegativeButtonTextId != 0) builder.setNegativeButton(mNegativeButtonTextId, this);
 
         mDialog = builder.create();
         mDialog.setCanceledOnTouchOutside(false);
@@ -117,67 +119,19 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     public void onClick(DialogInterface dialog, int which) {
         switch (which) {
             case DialogInterface.BUTTON_POSITIVE:
-                onPositiveButtonClicked();
+                confirm(mPromptTextView.getText().toString(), mSuppressCheckBox.isChecked());
+                mDialog.dismiss();
                 break;
             case DialogInterface.BUTTON_NEGATIVE:
-                onNegativeButtonClicked();
+                cancel(mSuppressCheckBox.isChecked());
+                mDialog.dismiss();
                 break;
             default:
                 Log.e(TAG, "Unexpected button pressed in dialog: " + which);
         }
     }
 
-    @CalledByNative
-    void dismiss() {
-        mDialog.dismiss();
-        mNativeDialogPointer = 0;
-    }
-
-    /**
-     * Returns the currently showing dialog, null if none is showing.
-     */
-    @VisibleForTesting
-    public static JavascriptAppModalDialog getCurrentDialogForTest() {
-        return nativeGetCurrentModalDialog();
-    }
-
-
-    /**
-     * Returns the AlertDialog associated with this JavascriptAppPromptDialog.
-     */
-    @VisibleForTesting
-    public AlertDialog getDialogForTest() {
-        return mDialog;
-    }
-
-    // Methods that subclasses should override to set buttons behavior.
-    public boolean hasPositiveButton() {
-        return false;
-    }
-
-    public int getPositiveButtonText() {
-        return -1;
-    }
-
-    public boolean hasNegativeButton() {
-        return false;
-    }
-
-    public int getNegativeButtonText() {
-        return -1;
-    }
-
-    public void onPositiveButtonClicked() {
-        confirm(mPromptTextView.getText().toString(), mSuppressCheckBox.isChecked());
-        mDialog.dismiss();
-    }
-
-    public void onNegativeButtonClicked() {
-        cancel(mSuppressCheckBox.isChecked());
-        mDialog.dismiss();
-    }
-
-    void prepare(final ViewGroup layout) {
+    protected void prepare(final ViewGroup layout) {
         // Display the checkbox for suppressing dialogs if necessary.
         layout.findViewById(R.id.suppress_js_modal_dialogs).setVisibility(
                 mShouldShowSuppressCheckBox ? View.VISIBLE : View.GONE);
@@ -191,93 +145,51 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
         }
     }
 
-    public void confirm(String promptResult, boolean suppressDialogs) {
+    private void confirm(String promptResult, boolean suppressDialogs) {
         if (mNativeDialogPointer != 0) {
             nativeDidAcceptAppModalDialog(mNativeDialogPointer, promptResult, suppressDialogs);
         }
     }
 
-    public void cancel(boolean suppressDialogs) {
+    private void cancel(boolean suppressDialogs) {
         if (mNativeDialogPointer != 0) {
             nativeDidCancelAppModalDialog(mNativeDialogPointer, suppressDialogs);
         }
     }
 
-    private static class JavascriptAppAlertDialog extends JavascriptAppModalDialog {
-        public JavascriptAppAlertDialog(String title, String message,
-                boolean shouldShowSuppressCheckBox) {
-            super(title, message, shouldShowSuppressCheckBox);
-        }
-
-        @Override
-        public boolean hasPositiveButton() {
-            return true;
-        }
-
-        @Override
-        public int getPositiveButtonText() {
-            return R.string.js_modal_dialog_confirm;
-        }
+    @CalledByNative
+    private void dismiss() {
+        mDialog.dismiss();
+        mNativeDialogPointer = 0;
     }
 
-    private static class JavascriptAppConfirmDialog extends JavascriptAppAlertDialog {
-        public JavascriptAppConfirmDialog(String title, String message,
-                boolean shouldShowSuppressCheckBox) {
-            super(title, message, shouldShowSuppressCheckBox);
-        }
-
-        @Override
-        public boolean hasNegativeButton() {
-            return true;
-        }
-
-        @Override
-        public int getNegativeButtonText() {
-            return R.string.js_modal_dialog_cancel;
-        }
+    /**
+     * Returns the currently showing dialog, null if none is showing.
+     */
+    @VisibleForTesting
+    public static JavascriptAppModalDialog getCurrentDialogForTest() {
+        return nativeGetCurrentModalDialog();
     }
 
-    private static class JavascriptAppBeforeUnloadDialog extends JavascriptAppConfirmDialog {
-        private final boolean mIsReload;
-
-        public JavascriptAppBeforeUnloadDialog(String title, String message,
-                boolean isReload, boolean shouldShowSuppressCheckBox) {
-            super(title, message, shouldShowSuppressCheckBox);
-            mIsReload = isReload;
-        }
-
-        @Override
-        public boolean hasPositiveButton() {
-            return true;
-        }
-
-        @Override
-        public int getPositiveButtonText() {
-            return mIsReload ? R.string.reload_this_page : R.string.leave_this_page;
-        }
-
-        @Override
-        public boolean hasNegativeButton() {
-            return true;
-        }
-
-        @Override
-        public int getNegativeButtonText() {
-            return mIsReload ? R.string.dont_reload_this_page : R.string.stay_on_this_page;
-        }
+    /**
+     * Returns the AlertDialog associated with this JavascriptAppPromptDialog.
+     */
+    @VisibleForTesting
+    public AlertDialog getDialogForTest() {
+        return mDialog;
     }
 
-    private static class JavascriptAppPromptDialog extends JavascriptAppConfirmDialog {
+    private static class JavascriptAppPromptDialog extends JavascriptAppModalDialog {
         private final String mDefaultPromptText;
 
-        public JavascriptAppPromptDialog(String title, String message,
-                boolean shouldShowSuppressCheckBox, String defaultPromptText) {
-            super(title, message, shouldShowSuppressCheckBox);
+        JavascriptAppPromptDialog(String title, String message, boolean shouldShowSuppressCheckBox,
+                String defaultPromptText) {
+            super(title, message, R.string.ok, R.string.cancel, shouldShowSuppressCheckBox);
             mDefaultPromptText = defaultPromptText;
         }
 
         @Override
-        public void prepare(ViewGroup layout) {
+        protected void prepare(ViewGroup layout) {
             super.prepare(layout);
             EditText prompt = (EditText) layout.findViewById(R.id.js_modal_dialog_prompt);
             prompt.setVisibility(View.VISIBLE);
@@ -291,9 +203,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
     private native void nativeDidAcceptAppModalDialog(long nativeJavascriptAppModalDialogAndroid,
             String prompt, boolean suppress);
-
     private native void nativeDidCancelAppModalDialog(long nativeJavascriptAppModalDialogAndroid,
             boolean suppress);
-
     private static native JavascriptAppModalDialog nativeGetCurrentModalDialog();
 }

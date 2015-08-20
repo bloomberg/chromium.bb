@@ -17,6 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -179,9 +180,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
-        checkButtonPresenceVisibilityText(
-                jsDialog, 0, org.chromium.chrome.R.string.stay_on_this_page,
-                "Stay on this page");
+        checkButtonPresenceVisibilityText(jsDialog, 0, R.string.cancel, "Cancel");
         clickCancel(jsDialog);
 
         assertEquals(BEFORE_UNLOAD_URL, getActivity().getCurrentContentViewCore()
@@ -190,9 +189,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
 
         jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
-        checkButtonPresenceVisibilityText(
-                jsDialog, 2, org.chromium.chrome.R.string.leave_this_page,
-                "Leave this page");
+        checkButtonPresenceVisibilityText(jsDialog, 2, R.string.leave, "Leave");
 
         final TestCallbackHelperContainer.OnPageFinishedHelper onPageLoaded =
                 getActiveTabTestCallbackHelperContainer().getOnPageFinishedHelper();
@@ -216,12 +213,8 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
         JavascriptAppModalDialog jsDialog = getCurrentDialog();
         assertNotNull("No dialog showing.", jsDialog);
 
-        checkButtonPresenceVisibilityText(
-                jsDialog, 0, org.chromium.chrome.R.string.dont_reload_this_page,
-                "Don't reload this page");
-        checkButtonPresenceVisibilityText(
-                jsDialog, 2, org.chromium.chrome.R.string.reload_this_page,
-                "Reload this page");
+        checkButtonPresenceVisibilityText(jsDialog, 0, R.string.cancel, "Cancel");
+        checkButtonPresenceVisibilityText(jsDialog, 2, R.string.reload, "Reload");
     }
 
     /**
