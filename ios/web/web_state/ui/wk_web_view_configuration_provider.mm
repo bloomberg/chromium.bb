@@ -111,7 +111,8 @@ void WKWebViewConfigurationProvider::Purge() {
   configuration_.reset();
   // Make sure that no one retains configuration and processPool.
   DCHECK(!weak_configuration);
-  DCHECK(!weak_process_pool);
+  // TODO(shreyasv): Enable this DCHECK (crbug.com/522672).
+  // DCHECK(!weak_process_pool);
 }
 
 }  // namespace web
