@@ -66,6 +66,13 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
      */
     @CalledByNative
     private void requestTextCheck(String text) {
+        // SpellCheckerSession thinks that any word ending with a period is a typo.
+        // We trim the period off before sending the text for spellchecking in order to avoid
+        // unnecessary red underlines when the user ends a sentence with a period.
+        // Filed as an Android bug here: https://code.google.com/p/android/issues/detail?id=183294
+        if (text.endsWith(".")) {
+            text = text.substring(0, text.length() - 1);
+        }
         mSpellCheckerSession.getSentenceSuggestions(new TextInfo[] {new TextInfo(text)}, 0);
     }
 
