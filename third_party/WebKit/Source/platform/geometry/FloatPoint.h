@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
+#include <iosfwd>
 
 #if OS(MACOSX)
 typedef struct CGPoint CGPoint;
@@ -269,6 +270,10 @@ inline FloatSize toFloatSize(const FloatPoint& a)
 
 // Find point where lines through the two pairs of points intersect. Returns false if the lines don't intersect.
 PLATFORM_EXPORT bool findIntersection(const FloatPoint& p1, const FloatPoint& p2, const FloatPoint& d1, const FloatPoint& d2, FloatPoint& intersection);
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const FloatPoint&, std::ostream*);
 
 }
 

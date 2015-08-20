@@ -48,6 +48,7 @@
             'dependencies': [
                 '../../public/blink.gyp:blink',
                 '../config.gyp:unittest_config',
+                '../platform/blink_platform_tests.gyp:blink_platform_test_support',
                 '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                 'web.gyp:blink_web_test_support',
                 '<(DEPTH)/base/base.gyp:base',

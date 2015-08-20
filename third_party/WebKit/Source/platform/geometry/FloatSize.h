@@ -31,6 +31,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "wtf/MathExtras.h"
+#include <iosfwd>
 
 #if OS(MACOSX)
 typedef struct CGSize CGSize;
@@ -203,6 +204,10 @@ inline IntPoint flooredIntPoint(const FloatSize& p)
 {
     return IntPoint(clampTo<int>(floorf(p.width())), clampTo<int>(floorf(p.height())));
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const FloatSize&, std::ostream*);
 
 } // namespace blink
 

@@ -30,18 +30,6 @@
 const static float kTestEpsilon = 1e-6;
 
 namespace blink {
-
-void PrintTo(const FloatBox& box, ::std::ostream* os)
-{
-    *os << "FloatBox("
-        << box.x() << ", "
-        << box.y() << ", "
-        << box.z() << ", "
-        << box.width() << ", "
-        << box.height() << ", "
-        << box.depth() << ")";
-}
-
 namespace FloatBoxTest {
 
 bool ApproximatelyEqual(const float& a, const float& b)

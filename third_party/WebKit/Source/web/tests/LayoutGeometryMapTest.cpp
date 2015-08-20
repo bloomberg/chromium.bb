@@ -39,8 +39,6 @@
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebFrameClient.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/tests/FloatPointTestHelpers.h"
-#include "web/tests/FloatQuadTestHelpers.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 

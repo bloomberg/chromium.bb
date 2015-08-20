@@ -77,6 +77,7 @@
       'target_name': 'blink_platform_unittests',
       'type': 'executable',
       'dependencies': [
+        'blink_platform_test_support',
         '../config.gyp:unittest_config',
         '../wtf/wtf.gyp:wtf',
         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
@@ -111,6 +112,20 @@
             '<(DEPTH)/tools/android/forwarder2/forwarder.gyp:forwarder2',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'blink_platform_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../config.gyp:config',
+        'blink_platform.gyp:blink_platform',
+      ],
+      'defines': [
+        'INSIDE_BLINK',
+      ],
+      'sources': [
+        '<@(platform_test_support_files)',
       ],
     },
   ],

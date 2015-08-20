@@ -35,17 +35,6 @@
 #include <gtest/gtest.h>
 
 namespace blink {
-
-// FIXME: Move this somewhere more generic.
-void PrintTo(const LayoutRect& rect, std::ostream* os)
-{
-    *os << "LayoutRect("
-        << rect.x().toFloat() << ", "
-        << rect.y().toFloat() << ", "
-        << rect.width().toFloat() << ", "
-        << rect.height().toFloat() << ")";
-}
-
 namespace {
 
 LayoutRect initialLayoutOverflow()
@@ -187,5 +176,4 @@ TEST_F(OverflowModelTest, MoveAffectsContentsVisualOverflow)
 }
 
 } // anonymous namespace
-
 } // namespace blink

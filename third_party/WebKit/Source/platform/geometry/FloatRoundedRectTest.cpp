@@ -34,38 +34,6 @@
 
 namespace blink {
 
-void PrintTo(const FloatSize& size, std::ostream* os)
-{
-    *os << "FloatSize("
-        << size.width() << ", "
-        << size.height() << ")";
-}
-
-void PrintTo(const FloatRect& rect, std::ostream* os)
-{
-    *os << "FloatRect("
-        << rect.x() << ", "
-        << rect.y() << ", "
-        << rect.width() << ", "
-        << rect.height() << ")";
-}
-
-void PrintTo(const FloatRoundedRect::Radii& radii, std::ostream* os)
-{
-    *os << "FloatRoundedRect::Radii("
-        << ::testing::PrintToString(radii.topLeft()) << ", "
-        << ::testing::PrintToString(radii.topRight()) << ", "
-        << ::testing::PrintToString(radii.bottomRight()) << ", "
-        << ::testing::PrintToString(radii.bottomLeft()) << ")";
-}
-
-void PrintTo(const FloatRoundedRect& roundedRect, std::ostream* os)
-{
-    *os << "FloatRoundedRect("
-        << ::testing::PrintToString(roundedRect.rect()) << ", "
-        << ::testing::PrintToString(roundedRect.radii()) << ")";
-}
-
 #define TEST_INTERCEPTS(roundedRect, yCoordinate, expectedMinXIntercept, expectedMaxXIntercept) \
 {                                                                                               \
     float minXIntercept;                                                                        \

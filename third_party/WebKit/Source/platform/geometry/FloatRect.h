@@ -31,6 +31,7 @@
 #include "platform/geometry/FloatRectOutsets.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "wtf/Vector.h"
+#include <iosfwd>
 
 #if OS(MACOSX)
 typedef struct CGRect CGRect;
@@ -245,6 +246,10 @@ PLATFORM_EXPORT IntRect roundedIntRect(const FloatRect&);
 // Map supplied rect from srcRect to an equivalent rect in destRect.
 PLATFORM_EXPORT FloatRect mapRect(const FloatRect&, const FloatRect& srcRect, const FloatRect& destRect);
 
-}
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const FloatRect&, std::ostream*);
+
+} // namespace blink
 
 #endif

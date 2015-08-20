@@ -1025,11 +1025,16 @@
       'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
       'image-decoders/webp/WEBPImageDecoderTest.cpp',
     ],
+    # TODO(jbroman): Move these into platform_test_support_files.
     'platform_unittest_support_files': [
       'testing/URLTestHelpers.cpp',
       'testing/URLTestHelpers.h',
       'testing/UnitTestHelpers.cpp',
       'testing/UnitTestHelpers.h',
+    ],
+    'platform_test_support_files': [
+      'testing/GeometryPrinters.cpp',
+      'testing/GeometryPrinters.h',
     ],
     'conditions': [
       ['OS=="win"',

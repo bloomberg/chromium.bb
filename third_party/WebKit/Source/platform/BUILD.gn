@@ -319,6 +319,21 @@ component("platform") {
   }
 }
 
+source_set("test_support") {
+  sources = platform_test_support_files
+  visibility += [ "//third_party/WebKit/*" ]
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/WebKit/Source:non_test_config",
+  ]
+
+  deps = [
+    ":platform",
+  ]
+}
+
 if (!is_mac) {
   # TODO(GYP): Can't link Blink binaries yet.
   test("heap_unittests") {
@@ -368,6 +383,7 @@ if (!is_mac) {
     deps = [
       ":blink_common",
       ":platform",
+      ":test_support",
       "//base",
       "//base/allocator",
       "//base/test:test_support",

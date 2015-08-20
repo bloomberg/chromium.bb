@@ -28,7 +28,6 @@
 namespace blink {
 class FloatBox;
 
-void PrintTo(const FloatBox&, ::std::ostream*);
 bool ApproximatelyEqual(const float&, const float&);
 
 namespace FloatBoxTest {

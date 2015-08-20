@@ -35,6 +35,7 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutRectOutsets.h"
 #include "wtf/Vector.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -250,6 +251,10 @@ inline IntRect pixelSnappedIntRect(LayoutPoint location, LayoutSize size)
 {
     return IntRect(roundedIntPoint(location), pixelSnappedIntSize(size, location));
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const LayoutRect&, std::ostream*);
 
 } // namespace blink
 

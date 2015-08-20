@@ -33,6 +33,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutSize.h"
+#include <iosfwd>
 
 namespace blink {
 
@@ -179,8 +180,11 @@ inline bool operator!=(const FloatQuad& a, const FloatQuad& b)
            a.p4() != b.p4();
 }
 
-}   // namespace blink
 
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const FloatQuad&, std::ostream*);
+
+} // namespace blink
 
 #endif // FloatQuad_h
-

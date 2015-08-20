@@ -83,6 +83,7 @@
             'conditions': [
                 ['component=="shared_library"', {
                     'dependencies': [
+                        '../platform/blink_platform_tests.gyp:blink_platform_test_support',
                         '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/testing/gmock.gyp:gmock',

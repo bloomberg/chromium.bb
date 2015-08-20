@@ -33,6 +33,7 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include <algorithm>
 #include <cmath>
+#include <iosfwd>
 
 namespace blink {
 
@@ -175,6 +176,10 @@ inline bool operator!=(const FloatBox& a, const FloatBox& b)
 {
     return !(a == b);
 }
+
+// Redeclared here to avoid ODR issues.
+// See platform/testing/GeometryPrinters.h.
+void PrintTo(const FloatBox&, std::ostream*);
 
 } // namespace blink
 
