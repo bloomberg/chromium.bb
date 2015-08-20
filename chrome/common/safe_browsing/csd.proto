@@ -297,7 +297,7 @@ message ClientDownloadRequest {
     optional PEImageHeaders pe_headers = 1;
 
     // OS X Mach-O image headers.
-    optional MachOHeaders mach_o_headers = 2;
+    repeated MachOHeaders mach_o_headers = 2;
   };
 
   // Fields 12-17 are reserved for server-side use and are never sent by the
