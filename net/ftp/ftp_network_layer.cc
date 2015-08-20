@@ -34,11 +34,6 @@ FtpTransaction* FtpNetworkLayer::CreateTransaction() {
 
 void FtpNetworkLayer::Suspend(bool suspend) {
   suspended_ = suspend;
-
-  /* TODO(darin): We'll need this code once we have a connection manager.
-  if (suspend)
-    session_->connection_manager()->CloseIdleSockets();
-  */
 }
 
 }  // namespace net
