@@ -12,6 +12,7 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_exit.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
@@ -64,8 +65,10 @@ int main(int argc, char **argv) {
      * find another contiguous 512MB region for the second NaCl
      * module.
      */
+    NaClXMutexLock(&app[i].mu);
     CHECK(NaClAppLoadFileAslr(nd, &app[i],
                               NACL_DISABLE_ASLR) == LOAD_OK);
+    NaClXMutexUnlock(&app[i].mu);
     NaClAppInitialDescriptorHookup(&app[i]);
     CHECK(NaClAppPrepareToLaunch(&app[i]) == LOAD_OK);
   }

@@ -13,10 +13,12 @@
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
+#include "native_client/src/trusted/service_runtime/sys_memory.h"
 
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
@@ -106,6 +108,7 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
 
 /*
  * Apply memory protection to memory regions.
+ * Expects that "nap->mu" lock is already held.
  */
 NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   uintptr_t start_addr;
@@ -272,36 +275,43 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
 
   /* stack is read/write but not execute */
   region_size = nap->stack_size;
-  start_addr = NaClUserToSys(nap,
-                             NaClTruncAllocPage(
-                                 ((uintptr_t) 1U << nap->addr_bits)
-                                 - nap->stack_size));
+  /*
+   * "start_addr" must not be converted to "sys" address -- it is being passed
+   * to NaClSysMmapIntern, which can also be called through user code.
+   */
+  start_addr = NaClTruncAllocPage(((uintptr_t) 1U << nap->addr_bits)
+                                  - nap->stack_size);
   NaClLog(3,
           ("RW stack region start 0x%08"NACL_PRIxPTR", size 0x%08"NACL_PRIxS","
            " end 0x%08"NACL_PRIxPTR"\n"),
           start_addr, region_size,
           start_addr + region_size);
-  if (0 != (err = NaClMprotect((void *) start_addr,
-                               NaClRoundAllocPage(nap->stack_size),
-                               PROT_READ | PROT_WRITE))) {
+  /*
+   * It is necessary to unlock the NaClApp mutex here, as the NaClSysMmapIntern
+   * function both claims and releases the lock itself.
+   */
+  NaClXMutexUnlock(&nap->mu);
+  if ((int32_t) start_addr !=
+      (err = NaClSysMmapIntern(nap,
+                               (void *) start_addr,
+                               region_size,
+                               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+                               NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_ANONYMOUS |
+                               NACL_ABI_MAP_FIXED,
+                               -1,
+                               0))) {
+    NaClXMutexLock(&nap->mu);
     NaClLog(LOG_ERROR,
             ("NaClMemoryProtection: "
-             "NaClMprotect(0x%08"NACL_PRIxPTR", "
-             "0x%08"NACL_PRIxS", 0x%x) failed, "
+             "NaClSysMmapIntern(nap,"
+             "0x%08"NACL_PRIxPTR", "
+             "0x%08"NACL_PRIxS") failed, "
              "error %d (stack)\n"),
-            start_addr, region_size, PROT_READ | PROT_WRITE,
+            start_addr, region_size,
             err);
     return LOAD_MPROTECT_FAIL;
   }
-
-  NaClVmmapAdd(&nap->mem_map,
-               NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
-               nap->stack_size >> NACL_PAGESHIFT,
-               NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-               NACL_ABI_MAP_PRIVATE,
-               NULL,
-               0,
-               0);
+  NaClXMutexLock(&nap->mu);
   return LOAD_OK;
 }
 

@@ -199,7 +199,9 @@ void NaClLogAddressSpaceLayout(struct NaClApp *nap) {
   NaClLog(2, "nap->bundle_size        = 0x%x\n", nap->bundle_size);
 }
 
-
+/*
+ * Expects that "nap->mu" lock is already held.
+ */
 NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
                                   struct NaClApp *nap,
                                   enum NaClAslrMode aslr_mode) {
