@@ -443,9 +443,10 @@ Texture::CanRenderCondition Texture::GetCanRenderCondition() const {
   if (needs_mips) {
     if (!texture_complete())
       return CAN_RENDER_NEVER;
-    if (target_ == GL_TEXTURE_CUBE_MAP && !cube_complete())
-      return CAN_RENDER_NEVER;
   }
+
+  if (target_ == GL_TEXTURE_CUBE_MAP && !cube_complete())
+    return CAN_RENDER_NEVER;
 
   bool is_npot_compatible = !needs_mips &&
       wrap_s_ == GL_CLAMP_TO_EDGE &&
