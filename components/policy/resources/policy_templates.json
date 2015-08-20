@@ -133,14 +133,16 @@
 #     $6 is reserved for doc_writer
 #
 # Device Policy:
-#   An additional flag device_only (optional, defaults to False) indicates
+#   An additional flag 'device_only' (optional, defaults to False) indicates
 #   that this policy is only supported as a device-level Cloud Policy.
 #   In that case no entry in the UserPolicy Protobuf is generated and
 #   it is assumed that it will be added to the DevicePolicy Protobuf manually.
 #
 # Enterprise defaults:
-#   An optional key 'default_for_enterprise_users' contains value that's set for
-#   enterprise users as a default.
+#   For managed users on Chrome OS (i.e. users receiving user policy from the
+#   cloud), if the optional key 'default_for_enterprise_users' is set, its value
+#   is applied as mandatory policy unless a different setting is received from
+#   the cloud.
 #
   'policy_definitions': [
     {
