@@ -106,17 +106,6 @@ const CGFloat kTabLabelTopPadding = 6;
 // The amount of padding to leave on either side of the tab label.
 const CGFloat kTabLabelXPadding = 12;
 
-// Return the text color to use for the identity status when the site's
-// identity has been verified.
-NSColor* IdentityVerifiedTextColor() {
-  // RGB components are specified using integer RGB [0-255] values for easy
-  // comparison to other platforms.
-  return [NSColor colorWithCalibratedRed:0x07/255.0
-                                   green:0x95/255.0
-                                    blue:0
-                                   alpha:1.0];
-}
-
 // Takes in the parent window, which should be a BrowserWindow, and gets the
 // proper anchor point for the bubble. The returned point is in screen
 // coordinates.
@@ -1067,11 +1056,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [identityStatusField_ setStringValue:
       base::SysUTF16ToNSString(identityInfo.GetIdentityStatusText())];
 
-  WebsiteSettings::SiteIdentityStatus status = identityInfo.identity_status;
-  if (status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
-      status == WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
-    [identityStatusField_ setTextColor:IdentityVerifiedTextColor()];
-  }
   // If there is a certificate, add a button for viewing the certificate info.
   certificateId_ = identityInfo.cert_id;
   if (certificateId_) {
