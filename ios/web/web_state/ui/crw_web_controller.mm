@@ -389,17 +389,6 @@ void CancelAllTouches(UIScrollView* web_scroll_view) {
 - (void)replaceStateWithPageURL:(const GURL&)pageUrl
                     stateObject:(NSString*)stateObject;
 
-// TODO(stuartmorgan): Audit all calls to these methods; these are just wrappers
-// around the same logic as GetActiveEntry, so should probably not be used for
-// the same reason that GetActiveEntry is deprecated. (E.g., page operations
-// should generally be dealing with the last commited entry, not a pending
-// entry).
-- (web::NavigationItem*)currentNavItem;
-// The data and HTTP headers associated to the current entry. These are nil
-// unless the request was a POST.
-- (NSData*)currentPOSTData;
-- (NSDictionary*)currentHttpHeaders;
-
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
@@ -1331,9 +1320,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)loadRequestForCurrentNavigationItem {
-  DCHECK(self.webView && !self.nativeController);
-  const GURL currentNavigationURL([self currentNavigationURL]);
+  // Handled differently by UIWebView and WKWebView subclasses.
+  NOTIMPLEMENTED();
+}
 
+- (NSMutableURLRequest*)requestForCurrentNavigationItem {
+  const GURL currentNavigationURL([self currentNavigationURL]);
   NSMutableURLRequest* request = [NSMutableURLRequest
       requestWithURL:net::NSURLWithGURL(currentNavigationURL)];
   const web::Referrer referrer([self currentSessionEntryReferrer]);
@@ -1349,7 +1341,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // If there are headers in the current session entry add them to |request|.
   // Headers that would overwrite fields already present in |request| are
   // skipped.
-  NSDictionary* headers = [self currentHttpHeaders];
+  NSDictionary* headers = [self currentHTTPHeaders];
   for (NSString* headerName in headers) {
     if (![request valueForHTTPHeaderField:headerName]) {
       [request setValue:[headers objectForKey:headerName]
@@ -1357,49 +1349,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     }
   }
 
-  // TODO(bhnascar): Move the POST handling out of here because it is
-  // UIWebView specific. See http://crbug.com/517242 .
-  NSData* postData = [self currentPOSTData];
-  if (postData) {
-    web::NavigationItemImpl* currentItem =
-        [self currentSessionEntry].navigationItemImpl;
-    if ([postData length] > 0 &&
-        !(currentItem && currentItem->ShouldSkipResubmitDataConfirmation())) {
-      id cancelBlock = ^{
-        [self registerLoadRequest:[self currentNavigationURL]
-                         referrer:[self currentSessionEntryReferrer]
-                       transition:[self currentTransition]];
-        [self loadRequest:request];
-      };
-      id continueBlock = ^{
-        [request setHTTPMethod:@"POST"];
-        [request setHTTPBody:[self currentPOSTData]];
-        [request setAllHTTPHeaderFields:[self currentHttpHeaders]];
-        [self registerLoadRequest:[self currentNavigationURL]
-                         referrer:[self currentSessionEntryReferrer]
-                       transition:[self currentTransition]];
-        [self loadRequest:request];
-      };
-      [_delegate webController:self
-          onFormResubmissionForRequest:request
-                         continueBlock:continueBlock
-                           cancelBlock:cancelBlock];
-      return;
-    } else {
-      // The user does not need to confirm if POST data is empty.
-      [request setHTTPMethod:@"POST"];
-      [request setHTTPBody:postData];
-      [request setAllHTTPHeaderFields:[self currentHttpHeaders]];
-    }
-  }
-
-  // registerLoadRequest will be called when load is about to begin.
-  // The phase at that point is guaranteed to be web::LOAD_REQUESTED.
-  // However the delegate is not immediately called.
-  [self registerLoadRequest:currentNavigationURL
-                   referrer:referrer
-                 transition:[self currentTransition]];
-  [self loadRequest:request];
+  return request;
 }
 
 - (void)loadNativeViewWithSuccess:(BOOL)loadSuccess {
@@ -1428,7 +1378,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self removeWebViewAllowingCachedReconstruction:NO];
 
   const GURL currentUrl = [self currentNavigationURL];
-  BOOL isPost = [self currentPOSTData] != nil;
+
+  // TODO(bhnascar): Fix POST data check for WKWebView here and elsewhere.
+  // See crbug.com/517911.
+  DCHECK([self currentSessionEntry]);
+  NSData* currentPOSTData =
+      [self currentSessionEntry].navigationItemImpl->GetPostData();
+  BOOL isPost = currentPOSTData != nil;
 
   error = web::NetErrorFromError(error);
   [self setNativeController:[_nativeProvider controllerForURL:currentUrl
@@ -3292,12 +3248,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return currentItem ? currentItem->GetReferrer() : web::Referrer();
 }
 
-- (NSData*)currentPOSTData {
-  DCHECK([self currentSessionEntry]);
-  return [self currentSessionEntry].navigationItemImpl->GetPostData();
-}
-
-- (NSDictionary*)currentHttpHeaders {
+- (NSDictionary*)currentHTTPHeaders {
   DCHECK([self currentSessionEntry]);
   return [self currentSessionEntry].navigationItem->GetHttpRequestHeaders();
 }

@@ -19,6 +19,7 @@
 #import "ios/net/nsurlrequest_util.h"
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/crw_session_entry.h"
+#import "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/net/clients/crw_redirect_network_client_factory.h"
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
 #include "ios/web/net/request_group_util.h"
@@ -616,6 +617,51 @@ const size_t kMaxMessageQueueSize = 262144;
     DLOG_IF(ERROR, wrongRequestGroupID) << "Incorrect user agent in UIWebView";
   }
 #endif  // !defined(NDEBUG)
+}
+
+- (void)loadRequestForCurrentNavigationItem {
+  DCHECK(self.webView && !self.nativeController);
+  NSMutableURLRequest* request = [self requestForCurrentNavigationItem];
+
+  ProceduralBlock GETBlock = ^{
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    [self loadRequest:request];
+  };
+
+  // If there is no POST data, load the request as a GET right away.
+  DCHECK([self currentSessionEntry]);
+  web::NavigationItemImpl* currentItem =
+      [self currentSessionEntry].navigationItemImpl;
+  NSData* POSTData = currentItem->GetPostData();
+  if (!POSTData) {
+    GETBlock();
+    return;
+  }
+
+  ProceduralBlock POSTBlock = ^{
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:POSTData];
+    [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    [self loadRequest:request];
+  };
+
+  // If POST data is empty or the user does not need to confirm,
+  // load the request right away.
+  if (!POSTData.length || currentItem->ShouldSkipResubmitDataConfirmation()) {
+    POSTBlock();
+    return;
+  }
+
+  // Prompt the user to confirm the POST request.
+  [self.delegate webController:self
+      onFormResubmissionForRequest:request
+                     continueBlock:POSTBlock
+                       cancelBlock:GETBlock];
 }
 
 - (void)setPageChangeProbability:(web::PageChangeProbability)probability {

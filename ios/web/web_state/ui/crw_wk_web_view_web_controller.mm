@@ -430,20 +430,20 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // code working for debug builds.
 }
 
-// Overrides the standard request mechanism. If possible, navigates
-// by using WKWebView's WKBackForwardList instead of a building a new
-// request per load, because this will send along cached POST data that
-// is not otherwise accessible. See rdar://20464240.
 - (void)loadRequestForCurrentNavigationItem {
-  web::WKBackForwardListItemHolder* holder =
-      [self currentBackForwardListItemHolder];
+  DCHECK(self.webView && !self.nativeController);
 
   ProceduralBlock defaultNavigationBlock = ^{
-    [super loadRequestForCurrentNavigationItem];
+    [self registerLoadRequest:[self currentNavigationURL]
+                     referrer:[self currentSessionEntryReferrer]
+                   transition:[self currentTransition]];
+    [self loadRequest:[self requestForCurrentNavigationItem]];
   };
 
   // If there is no corresponding WKBackForwardListItem, fall back to
   // the standard loading mechanism.
+  web::WKBackForwardListItemHolder* holder =
+      [self currentBackForwardListItemHolder];
   if (!holder->back_forward_list_item()) {
     defaultNavigationBlock();
     return;
