@@ -17,7 +17,7 @@ namespace {
 
 // A stub implementation of an InkDropAnimationController that can be used when
 // material design is not enabled.
-class VIEWS_EXPORT InkDropAnimationControllerStub
+class InkDropAnimationControllerStub
     : public InkDropAnimationController {
  public:
   explicit InkDropAnimationControllerStub(InkDropHost* ink_drop_host);
