@@ -42,6 +42,7 @@ function test_matchall(frame, expected, query_options) {
   return new Promise(function(resolve, reject) {
     var channel = new MessageChannel();
     channel.port1.onmessage = function(e) {
+      e.data.sort(function(a, b) { return a[2] > b[2] ? 1 : -1; });
       assert_equals(e.data.length, expected.length);
       for (var i = 0; i < e.data.length; i++)
         assert_array_equals(e.data[i], expected[i]);

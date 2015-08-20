@@ -26,7 +26,6 @@ var expected_with_all = [
 function test_matchall(frame, expected, query_options) {
   // Make sure the frame gets focus.
   frame.focus();
-  expected.sort(function(a, b) { return a[2] > b[2] ? 1 : -1; });
   return new Promise(function(resolve, reject) {
     var channel = new MessageChannel();
     channel.port1.onmessage = function(e) {
