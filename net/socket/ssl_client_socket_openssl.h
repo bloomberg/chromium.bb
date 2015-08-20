@@ -300,6 +300,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
     STATE_VERIFY_CERT_COMPLETE,
   };
   State next_handshake_state_;
+
+  // True if the socket has been disconnected.
+  bool disconnected_;
+
   NextProtoStatus npn_status_;
   std::string npn_proto_;
   // Written by the |channel_id_service_|.

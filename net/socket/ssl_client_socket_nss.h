@@ -187,6 +187,9 @@ class SSLClientSocketNSS : public SSLClientSocket {
 
   State next_handshake_state_;
 
+  // True if the socket has been disconnected.
+  bool disconnected_;
+
   // The NSS SSL state machine. This is owned by |core_|.
   // TODO(rsleevi): http://crbug.com/130616 - Remove this member once
   // ExportKeyingMaterial is updated to be asynchronous.

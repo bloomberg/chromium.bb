@@ -2381,6 +2381,7 @@ SSLClientSocketNSS::SSLClientSocketNSS(
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       completed_handshake_(false),
       next_handshake_state_(STATE_NONE),
+      disconnected_(false),
       nss_fd_(NULL),
       net_log_(transport_->socket()->NetLog()),
       transport_security_state_(context.transport_security_state),
@@ -2532,6 +2533,14 @@ int SSLClientSocketNSS::Connect(const CompletionCallback& callback) {
   DCHECK(user_connect_callback_.is_null());
   DCHECK(!callback.is_null());
 
+  // Although StreamSocket does allow calling Connect() after Disconnect(),
+  // this has never worked for layered sockets. CHECK to detect any consumers
+  // reconnecting an SSL socket.
+  //
+  // TODO(davidben,mmenke): Remove this API feature. See
+  // https://crbug.com/499289.
+  CHECK(!disconnected_);
+
   EnsureThreadIdAssigned();
 
   net_log_.BeginEvent(NetLog::TYPE_SSL_CONNECT);
@@ -2576,6 +2585,8 @@ void SSLClientSocketNSS::Disconnect() {
   core_->Detach();
   cert_verifier_request_.reset();
   transport_->socket()->Disconnect();
+
+  disconnected_ = true;
 
   // Reset object state.
   user_connect_callback_.Reset();
@@ -2986,6 +2997,7 @@ int SSLClientSocketNSS::DoHandshakeLoop(int last_io_result) {
 
 int SSLClientSocketNSS::DoHandshake() {
   EnterFunction("");
+
   int rv = core_->Connect(
       base::Bind(&SSLClientSocketNSS::OnHandshakeIOComplete,
                  base::Unretained(this)));

@@ -466,6 +466,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       ssl_config_(ssl_config),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       next_handshake_state_(STATE_NONE),
+      disconnected_(false),
       npn_status_(kNextProtoUnsupported),
       channel_id_sent_(false),
       session_pending_(false),
@@ -539,6 +540,14 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
   // TransportSecurityState.
   DCHECK(transport_security_state_);
 
+  // Although StreamSocket does allow calling Connect() after Disconnect(),
+  // this has never worked for layered sockets. CHECK to detect any consumers
+  // reconnecting an SSL socket.
+  //
+  // TODO(davidben,mmenke): Remove this API feature. See
+  // https://crbug.com/499289.
+  CHECK(!disconnected_);
+
   net_log_.BeginEvent(NetLog::TYPE_SSL_CONNECT);
 
   // Set up new ssl object.
@@ -574,6 +583,8 @@ void SSLClientSocketOpenSSL::Disconnect() {
     BIO_free_all(transport_bio_);
     transport_bio_ = NULL;
   }
+
+  disconnected_ = true;
 
   // Shut down anything that may call us back.
   cert_verifier_request_.reset();
