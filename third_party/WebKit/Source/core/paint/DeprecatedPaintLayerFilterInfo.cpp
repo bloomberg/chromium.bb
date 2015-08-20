@@ -100,13 +100,7 @@ void DeprecatedPaintLayerFilterInfo::setBuilder(PassRefPtrWillBeRawPtr<FilterEff
 
 void DeprecatedPaintLayerFilterInfo::notifyFinished(Resource*)
 {
-    LayoutObject* layoutObject = m_layer->layoutObject();
-    // FIXME: This caller of scheduleSVGFilterLayerUpdateHack() is not correct. It's using the layer update
-    // system to trigger a Layer to go through the filter updating logic, but that might not
-    // even happen if this element is style sharing and LayoutObject::setStyle() returns early.
-    // Filters need to find a better way to hook into the system.
-    toElement(layoutObject->node())->scheduleSVGFilterLayerUpdateHack();
-    layoutObject->setShouldDoFullPaintInvalidation();
+    m_layer->filterNeedsPaintInvalidation();
 }
 
 void DeprecatedPaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
