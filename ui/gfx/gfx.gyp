@@ -124,6 +124,7 @@
         'animation/throb_animation.h',
         'animation/tween.cc',
         'animation/tween.h',
+        'break_list.h',
         'blit.cc',
         'blit.h',
         'break_list.h',
@@ -178,8 +179,7 @@
         'gfx_export.h',
         'gfx_paths.cc',
         'gfx_paths.h',
-        'gpu_memory_buffer.cc',
-        'gpu_memory_buffer.h',
+        
         'harfbuzz_font_skia.cc',
         'harfbuzz_font_skia.h',
         'hud_font.cc',
@@ -329,9 +329,22 @@
             'xcode_settings': {'OTHER_LDFLAGS': ['-ObjC']},
           },
           'sources!': [
+            'blit.cc',
+            'blit.h',
+            'canvas.cc',
+            'canvas.h',
+            'canvas_notimplemented.cc',
+            'canvas_paint_mac.h',
+            'canvas_paint_mac.mm',
+            'canvas_skia.cc',
+            'canvas_skia_paint.h',
             'codec/jpeg_codec.cc',
           ],
         }, {
+          'sources':[
+            'gpu_memory_buffer.cc',
+            'gpu_memory_buffer.h',
+          ],
           'dependencies': [
             '<(libjpeg_gyp_path):libjpeg',
           ],

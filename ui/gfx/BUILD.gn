@@ -52,18 +52,9 @@ component("gfx") {
     "animation/throb_animation.h",
     "animation/tween.cc",
     "animation/tween.h",
-    "blit.cc",
-    "blit.h",
     "break_list.h",
     "buffer_format_util.cc",
     "buffer_format_util.h",
-    "canvas.cc",
-    "canvas.h",
-    "canvas_notimplemented.cc",
-    "canvas_paint_mac.h",
-    "canvas_paint_mac.mm",
-    "canvas_skia.cc",
-    "canvas_skia_paint.h",
     "codec/jpeg_codec.cc",
     "codec/jpeg_codec.h",
     "codec/png_codec.cc",
@@ -107,14 +98,10 @@ component("gfx") {
     "generic_shared_memory_id.h",
     "gfx_paths.cc",
     "gfx_paths.h",
-    "gpu_memory_buffer.cc",
-    "gpu_memory_buffer.h",
     "hud_font.cc",
     "hud_font.h",
     "icon_util.cc",
     "icon_util.h",
-    "image/canvas_image_source.cc",
-    "image/canvas_image_source.h",
     "image/image.cc",
     "image/image.h",
     "image/image_family.cc",
@@ -125,8 +112,6 @@ component("gfx") {
     "image/image_png_rep.h",
     "image/image_skia.cc",
     "image/image_skia.h",
-    "image/image_skia_operations.cc",
-    "image/image_skia_operations.h",
     "image/image_skia_rep.cc",
     "image/image_skia_rep.h",
     "image/image_skia_source.h",
@@ -149,8 +134,6 @@ component("gfx") {
     "native_widget_types.h",
     "nine_image_painter.cc",
     "nine_image_painter.h",
-    "paint_throbber.cc",
-    "paint_throbber.h",
     "path.cc",
     "path.h",
     "path_win.cc",
@@ -236,6 +219,27 @@ component("gfx") {
     "win/window_impl.cc",
     "win/window_impl.h",
   ]
+  if (!is_ios) {
+    sources += [
+      "blit.cc",
+      "blit.h",
+      "canvas.cc",
+      "canvas.h",
+      "canvas_notimplemented.cc",
+      "canvas_paint_mac.h",
+      "canvas_paint_mac.mm",
+      "canvas_skia.cc",
+      "canvas_skia_paint.h",
+      "gpu_memory_buffer.cc",
+      "gpu_memory_buffer.h",
+      "image/canvas_image_source.cc",
+      "image/canvas_image_source.h",
+      "image/image_skia_operations.cc",
+      "image/image_skia_operations.h",
+      "paint_throbber.cc",
+      "paint_throbber.h",
+    ]
+  }
 
   configs += [
     "//build/config:precompiled_headers",
@@ -270,14 +274,19 @@ component("gfx") {
     sources += [
       "harfbuzz_font_skia.cc",
       "harfbuzz_font_skia.h",
-      "render_text.cc",
-      "render_text.h",
       "render_text_harfbuzz.cc",
       "render_text_harfbuzz.h",
       "render_text_mac.cc",
       "render_text_mac.h",
       "text_utils_skia.cc",
     ]
+
+    if (!is_ios) {
+      sources += [
+        "render_text.cc",
+        "render_text.h",
+      ]
+    }
   } else {
     # We don't support RenderText on these platforms.
   }
@@ -332,7 +341,7 @@ component("gfx") {
       "android",
       "jnigraphics",
     ]
-  } else {
+  } else if (!is_ios) {
     sources -= [ "canvas_notimplemented.cc" ]
   }
 

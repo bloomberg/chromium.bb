@@ -66,6 +66,7 @@ group("both_gn_and_gyp") {
   deps = [
     "//base:base_unittests",
     "//sql:sql_unittests",
+    "//ui/base:ui_base_unittests",
   ]
 
   if (!is_ios) {
@@ -158,7 +159,6 @@ group("both_gn_and_gyp") {
       "//tools/telemetry:bitmaptools($host_toolchain)",
       "//ui/accessibility:accessibility_unittests",
       "//ui/app_list:app_list_unittests",
-      "//ui/base:ui_base_unittests",
       "//ui/display:display_unittests",
       "//ui/events:events_unittests",
       "//ui/gfx:gfx_unittests",

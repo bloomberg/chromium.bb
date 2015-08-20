@@ -6,7 +6,7 @@
 
 namespace gfx {
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
 void ReadColorProfile(std::vector<char>* profile);
 #else
 void ReadColorProfile(std::vector<char>* profile) { }
