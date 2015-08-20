@@ -347,7 +347,6 @@ crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-element
 crbug.com/490511 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-2.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01.html [ ImageOnlyFailure ]
-crbug.com/521954 imported/web-platform-tests/html/semantics/embedded-content/the-img-element/srcset/parse-a-srcset-attribute.html [ Crash Failure Timeout ]
 crbug.com/508725 imported/web-platform-tests/html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html [ Failure Timeout ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/text-level-semantics/the-wbr-element/wbr-element.html [ ImageOnlyFailure ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]

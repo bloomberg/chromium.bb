@@ -100,7 +100,7 @@ LayoutSize LayoutImageResource::getImageSize(float multiplier, ImageResource::Si
     if (!m_cachedImage)
         return LayoutSize();
     LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_layoutObject, multiplier, type);
-    if (m_layoutObject && m_layoutObject->isLayoutImage())
+    if (m_layoutObject && m_layoutObject->isLayoutImage() && size.width() && size.height())
         size.scale(toLayoutImage(m_layoutObject)->imageDevicePixelRatio());
     return size;
 }
