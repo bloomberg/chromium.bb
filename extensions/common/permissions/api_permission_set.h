@@ -5,7 +5,11 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_SET_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_SET_H_
 
+#include <set>
+#include <string>
+#include <vector>
 
+#include "base/strings/string16.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/base_set_operators.h"
 
@@ -136,15 +140,11 @@ class PermissionIDSet {
   PermissionIDSet GetAllPermissionsWithIDs(
       const std::set<APIPermission::ID>& permission_ids) const;
 
-  // Convenience functions that call their stl_util counterparts.
+  // Convenience functions for common set operations.
   bool Includes(const PermissionIDSet& subset) const;
   bool Equals(const PermissionIDSet& set) const;
   static PermissionIDSet Difference(const PermissionIDSet& set_1,
                                     const PermissionIDSet& set_2);
-  static PermissionIDSet Intersection(const PermissionIDSet& set_1,
-                                      const PermissionIDSet& set_2);
-  static PermissionIDSet Union(const PermissionIDSet& set_1,
-                               const PermissionIDSet& set_2);
 
   size_t size() const;
   bool empty() const;

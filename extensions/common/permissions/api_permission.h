@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_H_
 #define EXTENSIONS_COMMON_PERMISSIONS_API_PERMISSION_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -288,14 +287,6 @@ class APIPermission {
   // ChromePermissionMessageProvider.
   virtual PermissionIDSet GetPermissions() const = 0;
 
-  // Returns true if this permission has any PermissionMessages.
-  // TODO(sashab): Deprecate this in favor of GetPermissions() above.
-  virtual bool HasMessages() const = 0;
-
-  // Returns the localized permission messages of this permission.
-  // TODO(sashab): Deprecate this in favor of GetPermissions() above.
-  virtual PermissionMessages GetMessages() const = 0;
-
   // Returns true if the given permission is allowed.
   virtual bool Check(const CheckParam* param) const = 0;
 
@@ -338,11 +329,6 @@ class APIPermission {
 
   // Logs this permission.
   virtual void Log(std::string* log) const = 0;
-
- protected:
-  // Returns the localized permission message associated with this api.
-  // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.
-  PermissionMessage GetMessage_() const;
 
  private:
   const APIPermissionInfo* const info_;
@@ -387,11 +373,6 @@ class APIPermissionInfo {
   int flags() const { return flags_; }
 
   APIPermission::ID id() const { return id_; }
-
-  // Returns the message id associated with this permission.
-  PermissionMessage::ID message_id() const {
-    return message_id_;
-  }
 
   // Returns the name of this permission.
   const char* name() const { return name_; }
@@ -440,22 +421,14 @@ class APIPermissionInfo {
     APIPermission::ID id;
     const char* name;
     int flags;
-    int l10n_message_id;
-    PermissionMessage::ID message_id;
     APIPermissionInfo::APIPermissionConstructor constructor;
   };
 
   explicit APIPermissionInfo(const InitInfo& info);
 
-  // Returns the localized permission message associated with this api.
-  // Use GetMessage_ to avoid name conflict with macro GetMessage on Windows.
-  PermissionMessage GetMessage_() const;
-
   const APIPermission::ID id_;
   const char* const name_;
   const int flags_;
-  const int l10n_message_id_;
-  const PermissionMessage::ID message_id_;
   const APIPermissionConstructor api_permission_constructor_;
 };
 

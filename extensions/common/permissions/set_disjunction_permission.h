@@ -34,8 +34,6 @@ class SetDisjunctionPermission : public APIPermission {
   ~SetDisjunctionPermission() override {}
 
   // APIPermission overrides
-  bool HasMessages() const override { return !data_set_.empty(); }
-
   bool Check(const APIPermission::CheckParam* param) const override {
     for (typename std::set<PermissionDataType>::const_iterator i =
              data_set_.begin();

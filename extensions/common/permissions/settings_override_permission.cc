@@ -24,39 +24,6 @@ PermissionIDSet SettingsOverrideAPIPermission::GetPermissions() const {
   return permissions;
 }
 
-bool SettingsOverrideAPIPermission::HasMessages() const {
-  return info()->message_id() > PermissionMessage::kNone;
-}
-
-PermissionMessages SettingsOverrideAPIPermission::GetMessages() const {
-  DCHECK(HasMessages());
-  int string_id = -1;
-  // Warning: when modifying this function, be sure to modify the correct rule
-  // in ChromePermissionMessageProvider.
-  switch (id()) {
-    case kHomepage: {
-      string_id = IDS_EXTENSION_PROMPT_WARNING_HOME_PAGE_SETTING_OVERRIDE;
-      break;
-    }
-    case kStartupPages: {
-      string_id = IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE;
-      break;
-    }
-    case kSearchProvider: {
-      string_id = IDS_EXTENSION_PROMPT_WARNING_SEARCH_SETTINGS_OVERRIDE;
-      break;
-    }
-    default:
-      NOTREACHED();
-  }
-  PermissionMessages result;
-  result.push_back(
-      PermissionMessage(info()->message_id(),
-                        l10n_util::GetStringFUTF16(
-                            string_id, base::UTF8ToUTF16(setting_value_))));
-  return result;
-}
-
 bool SettingsOverrideAPIPermission::Check(
     const APIPermission::CheckParam* param) const {
   return (param == NULL);

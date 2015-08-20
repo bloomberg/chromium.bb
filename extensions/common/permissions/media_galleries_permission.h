@@ -44,7 +44,6 @@ class MediaGalleriesPermission
 
   // APIPermission overrides.
   PermissionIDSet GetPermissions() const override;
-  PermissionMessages GetMessages() const override;
 
   // Permission strings.
   static const char kAllAutoDetectedPermission[];

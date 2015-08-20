@@ -146,11 +146,4 @@ PermissionIDSet UsbDevicePermission::GetPermissions() const {
   return ids;
 }
 
-PermissionMessages UsbDevicePermission::GetMessages() const {
-  DCHECK(HasMessages());
-  PermissionMessages messages;
-  AddPermissionsToLists(data_set_, NULL, &messages);
-  return messages;
-}
-
 }  // namespace extensions

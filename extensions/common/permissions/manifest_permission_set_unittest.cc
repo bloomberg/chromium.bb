@@ -23,12 +23,6 @@ class MockManifestPermission : public ManifestPermission {
 
   PermissionIDSet GetPermissions() const override { return PermissionIDSet(); }
 
-  bool HasMessages() const override { return false; }
-
-  PermissionMessages GetMessages() const override {
-    return PermissionMessages();
-  }
-
   bool FromValue(const base::Value* value) override { return true; }
 
   scoped_ptr<base::Value> ToValue() const override {

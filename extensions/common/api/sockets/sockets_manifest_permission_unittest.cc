@@ -34,7 +34,7 @@ static void AssertEmptyPermission(const SocketsManifestPermission* permission) {
   EXPECT_TRUE(permission);
   EXPECT_EQ(std::string(extensions::manifest_keys::kSockets), permission->id());
   EXPECT_EQ(permission->id(), permission->name());
-  EXPECT_FALSE(permission->HasMessages());
+  EXPECT_TRUE(permission->GetPermissions().empty());
   EXPECT_EQ(0u, permission->entries().size());
 }
 

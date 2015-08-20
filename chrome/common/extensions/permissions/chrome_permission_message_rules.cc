@@ -304,7 +304,7 @@ ChromePermissionMessageRule::GetAllRules() {
       // TODO(sashab, reillyg): Rework the permission message logic for USB
       // devices to generate more meaningful messages and better fit the current
       // rules system. Maybe model it similarly to host or socket permissions
-      // above.
+      // above. crbug.com/522842
       {new SingleParameterFormatter(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE),
        {APIPermission::kUsbDevice},
        {}},
@@ -566,6 +566,9 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kDeclarativeWebRequest},
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_SERIAL, {APIPermission::kSerial}, {}},
+      {IDS_EXTENSION_PROMPT_WARNING_NETWORKING_CONFIG,
+       {APIPermission::kNetworkingConfig},
+       {}},
 
       // Because warning messages for the "socket" permission vary based
       // on the permissions parameters, no message ID or message text is

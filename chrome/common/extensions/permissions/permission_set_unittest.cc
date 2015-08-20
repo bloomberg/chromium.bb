@@ -840,12 +840,12 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kFileSystemWrite);
   skip.insert(APIPermission::kSocket);
   skip.insert(APIPermission::kUsb);
-  skip.insert(APIPermission::kUsbDevice);
   skip.insert(APIPermission::kLauncherSearchProvider);
 
   // We already have a generic message for declaring externally_connectable.
   skip.insert(APIPermission::kExternallyConnectableAllUrls);
 
+  const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   PermissionsInfo* info = PermissionsInfo::GetInstance();
   APIPermissionSet permissions = info->GetAll();
   for (APIPermissionSet::const_iterator i = permissions.begin();
@@ -853,13 +853,11 @@ TEST(PermissionsTest, PermissionMessages) {
     const APIPermissionInfo* permission_info = i->info();
     EXPECT_TRUE(permission_info != NULL);
 
-    if (skip.count(i->id())) {
-      EXPECT_EQ(PermissionMessage::kNone, permission_info->message_id())
-          << "unexpected message_id for " << permission_info->name();
-    } else {
-      EXPECT_NE(PermissionMessage::kNone, permission_info->message_id())
-          << "missing message_id for " << permission_info->name();
-    }
+    PermissionIDSet id;
+    id.insert(permission_info->id());
+    bool has_message = !provider->GetPermissionMessages(id).empty();
+    bool should_have_message = !skip.count(i->id());
+    EXPECT_EQ(should_have_message, has_message) << permission_info->name();
   }
 }
 

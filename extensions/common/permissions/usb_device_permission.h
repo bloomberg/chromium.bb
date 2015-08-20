@@ -31,7 +31,6 @@ class UsbDevicePermission
 
   // APIPermission overrides
   PermissionIDSet GetPermissions() const override;
-  PermissionMessages GetMessages() const override;
 };
 
 }  // namespace extensions

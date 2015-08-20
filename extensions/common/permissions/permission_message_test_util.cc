@@ -91,7 +91,7 @@ bool CheckThatSubmessagesMatch(
 
   std::vector<base::string16> actual_sorted(actual_submessages);
   std::sort(actual_sorted.begin(), actual_sorted.end());
-  if (actual_sorted != actual_submessages) {
+  if (expected_sorted != actual_sorted) {
     // This is always a failure, even within an EXPECT_FALSE.
     // Message: Expected submessages for "Message" to be { "Foo" }, but got
     // { "Bar", "Baz" }

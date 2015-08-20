@@ -141,28 +141,6 @@ PermissionIDSet BluetoothManifestPermission::GetPermissions() const {
   return permissions;
 }
 
-bool BluetoothManifestPermission::HasMessages() const { return true; }
-
-PermissionMessages BluetoothManifestPermission::GetMessages() const {
-  // When modifying this function, be careful to also modify GetPermissions()
-  // above to have the same functionality.
-  DCHECK(HasMessages());
-  PermissionMessages result;
-
-  result.push_back(PermissionMessage(
-      PermissionMessage::kBluetooth,
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH)));
-
-  if (!uuids_.empty()) {
-    result.push_back(
-        PermissionMessage(PermissionMessage::kBluetoothDevices,
-                          l10n_util::GetStringUTF16(
-                              IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_DEVICES)));
-  }
-
-  return result;
-}
-
 bool BluetoothManifestPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;

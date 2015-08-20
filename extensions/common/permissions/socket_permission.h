@@ -29,8 +29,6 @@ class SocketPermission
   ~SocketPermission() override;
 
   PermissionIDSet GetPermissions() const override;
-  // Returns the localized permission messages of this permission.
-  PermissionMessages GetMessages() const override;
 
  private:
   // Add all host messages for this manifest permission into the given lists.

@@ -212,7 +212,7 @@ PermissionIDSet::~PermissionIDSet() {
 }
 
 void PermissionIDSet::insert(APIPermission::ID permission_id) {
-  permissions_.insert(PermissionID(permission_id, base::string16()));
+  insert(permission_id, base::string16());
 }
 
 void PermissionIDSet::insert(APIPermission::ID permission_id,
@@ -277,20 +277,6 @@ bool PermissionIDSet::Equals(const PermissionIDSet& set) const {
 PermissionIDSet PermissionIDSet::Difference(const PermissionIDSet& set_1,
                                             const PermissionIDSet& set_2) {
   return PermissionIDSet(base::STLSetDifference<std::set<PermissionID>>(
-      set_1.permissions_, set_2.permissions_));
-}
-
-// static
-PermissionIDSet PermissionIDSet::Intersection(const PermissionIDSet& set_1,
-                                              const PermissionIDSet& set_2) {
-  return PermissionIDSet(base::STLSetIntersection<std::set<PermissionID>>(
-      set_1.permissions_, set_2.permissions_));
-}
-
-// static
-PermissionIDSet PermissionIDSet::Union(const PermissionIDSet& set_1,
-                                       const PermissionIDSet& set_2) {
-  return PermissionIDSet(base::STLSetUnion<std::set<PermissionID>>(
       set_1.permissions_, set_2.permissions_));
 }
 

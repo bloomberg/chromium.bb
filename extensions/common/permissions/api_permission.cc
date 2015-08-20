@@ -27,17 +27,6 @@ class SimpleAPIPermission : public APIPermission {
     return permissions;
   }
 
-  bool HasMessages() const override {
-    return info()->message_id() > PermissionMessage::kNone;
-  }
-
-  PermissionMessages GetMessages() const override {
-    DCHECK(HasMessages());
-    PermissionMessages result;
-    result.push_back(GetMessage_());
-    return result;
-  }
-
   bool Check(const APIPermission::CheckParam* param) const override {
     return !param;
   }
@@ -110,10 +99,6 @@ const char* APIPermission::name() const {
   return info()->name();
 }
 
-PermissionMessage APIPermission::GetMessage_() const {
-  return info()->GetMessage_();
-}
-
 //
 // APIPermissionInfo
 //
@@ -122,8 +107,6 @@ APIPermissionInfo::APIPermissionInfo(const APIPermissionInfo::InitInfo& info)
     : id_(info.id),
       name_(info.name),
       flags_(info.flags),
-      l10n_message_id_(info.l10n_message_id),
-      message_id_(info.message_id ? info.message_id : PermissionMessage::kNone),
       api_permission_constructor_(info.constructor) {
 }
 
@@ -132,11 +115,6 @@ APIPermissionInfo::~APIPermissionInfo() { }
 APIPermission* APIPermissionInfo::CreateAPIPermission() const {
   return api_permission_constructor_ ?
     api_permission_constructor_(this) : new SimpleAPIPermission(this);
-}
-
-PermissionMessage APIPermissionInfo::GetMessage_() const {
-  return PermissionMessage(
-      message_id_, l10n_util::GetStringUTF16(l10n_message_id_));
 }
 
 }  // namespace extensions

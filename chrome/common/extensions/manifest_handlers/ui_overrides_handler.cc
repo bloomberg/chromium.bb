@@ -45,23 +45,6 @@ class UIOverridesHandler::ManifestPermissionImpl : public ManifestPermission {
     return permissions;
   }
 
-  bool HasMessages() const override {
-    return override_bookmarks_ui_permission_;
-  }
-
-  PermissionMessages GetMessages() const override {
-    // When making changes to this function, be careful to modify
-    // GetPermissions() above to have the same behaviour.
-    PermissionMessages result;
-    if (override_bookmarks_ui_permission_) {
-      result.push_back(PermissionMessage(
-          PermissionMessage::kOverrideBookmarksUI,
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_OVERRIDE_BOOKMARKS_UI)));
-    }
-    return result;
-  }
-
   bool FromValue(const base::Value* value) override {
     return value && value->GetAsBoolean(&override_bookmarks_ui_permission_);
   }

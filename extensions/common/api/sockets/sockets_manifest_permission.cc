@@ -272,17 +272,6 @@ PermissionIDSet SocketsManifestPermission::GetPermissions() const {
   return ids;
 }
 
-bool SocketsManifestPermission::HasMessages() const {
-  bool is_empty = permissions_.empty();
-  return !is_empty;
-}
-
-PermissionMessages SocketsManifestPermission::GetMessages() const {
-  PermissionMessages messages;
-  AddSocketHostPermissions(permissions_, NULL, &messages);
-  return messages;
-}
-
 bool SocketsManifestPermission::FromValue(const base::Value* value) {
   if (!value)
     return false;

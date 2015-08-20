@@ -44,8 +44,6 @@ class SocketsManifestPermission : public ManifestPermission {
   std::string name() const override;
   std::string id() const override;
   PermissionIDSet GetPermissions() const override;
-  bool HasMessages() const override;
-  PermissionMessages GetMessages() const override;
   bool FromValue(const base::Value* value) override;
   scoped_ptr<base::Value> ToValue() const override;
   ManifestPermission* Diff(const ManifestPermission* rhs) const override;

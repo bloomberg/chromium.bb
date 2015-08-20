@@ -187,16 +187,8 @@ bool MediaGalleriesPermission::FromValue(
 }
 
 PermissionIDSet MediaGalleriesPermission::GetPermissions() const {
-  DCHECK(HasMessages());
   PermissionIDSet result;
   AddPermissionsToLists(data_set_, &result, NULL);
-  return result;
-}
-
-PermissionMessages MediaGalleriesPermission::GetMessages() const {
-  DCHECK(HasMessages());
-  PermissionMessages result;
-  AddPermissionsToLists(data_set_, NULL, &result);
   return result;
 }
 
