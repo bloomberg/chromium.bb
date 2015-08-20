@@ -224,7 +224,6 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
         return page == null ? url : page.getOfflineUrl();
     }
 
-
     /**
      * @return The id of the default folder to add bookmarks/folders to.
      */

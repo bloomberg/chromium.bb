@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -64,7 +65,8 @@ public class EnhancedBookmarkUtils {
     public static void addOrEditBookmark(long idToAdd, final EnhancedBookmarksModel bookmarkModel,
             Tab tab, final SnackbarManager snackbarManager, final Activity activity) {
         if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
-            startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL));
+            startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL),
+                    tab.getWebContents());
             return;
         }
 
@@ -93,7 +95,7 @@ public class EnhancedBookmarkUtils {
                         Pair<EnhancedBookmarksModel, BookmarkId> pair = (Pair<
                                 EnhancedBookmarksModel, BookmarkId>) actionData;
                         // Show edit activity with the name of parent folder highlighted.
-                        startEditActivity(activity, enhancedId);
+                        startEditActivity(activity, enhancedId, null);
                         pair.first.destroy();
                     }
                 };
@@ -130,10 +132,19 @@ public class EnhancedBookmarkUtils {
     /**
      * Starts an {@link EnhancedBookmarkEditActivity} for the given {@link BookmarkId}.
      */
-    public static void startEditActivity(Context context, BookmarkId bookmarkId) {
+    public static void startEditActivity(
+            Context context, BookmarkId bookmarkId, WebContents webContents) {
         Intent intent = new Intent(context, EnhancedBookmarkEditActivity.class);
         intent.putExtra(EnhancedBookmarkEditActivity.INTENT_BOOKMARK_ID, bookmarkId.toString());
-        context.startActivity(intent);
+        if (webContents != null) {
+            intent.putExtra(EnhancedBookmarkEditActivity.INTENT_WEB_CONTENTS, webContents);
+        }
+        if (context instanceof EnhancedBookmarkActivity) {
+            ((EnhancedBookmarkActivity) context).startActivityForResult(
+                    intent, EnhancedBookmarkActivity.EDIT_BOOKMARK_REQUEST_CODE);
+        } else {
+            context.startActivity(intent);
+        }
     }
 
     /**

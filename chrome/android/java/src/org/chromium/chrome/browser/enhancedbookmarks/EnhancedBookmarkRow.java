@@ -144,7 +144,8 @@ abstract class EnhancedBookmarkRow extends FrameLayout implements EnhancedBookma
                             EnhancedBookmarkAddEditFolderActivity.startEditFolderActivity(
                                     getContext(), item.getId());
                         } else {
-                            EnhancedBookmarkUtils.startEditActivity(getContext(), item.getId());
+                            EnhancedBookmarkUtils.startEditActivity(
+                                    getContext(), item.getId(), null);
                         }
                     } else if (position == 2) {
                         EnhancedBookmarkFolderSelectActivity.startFolderSelectActivity(getContext(),
