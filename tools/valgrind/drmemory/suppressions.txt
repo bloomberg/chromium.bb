@@ -727,3 +727,19 @@ system call NtCreateEvent
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlDosPathNameToNtPathName_U_WithStatus
 ntdll.dll!RtlEncodePointer
+
+UNADDRESSABLE ACCESS
+name=bug_522049
+...
+*!`anonymous namespace'::ConvertInputMode
+*!content::RenderWidget::UpdateTextInputState
+*!content::RenderWidget::WillBeginCompositorFrame
+*!content::`anonymous namespace'::RenderWidgetCompositorOutputSurface::SynchronousComposite
+*!base::internal::Invoker<>::Run
+*!base::debug::TaskAnnotator::RunTask
+*!base::MessageLoop::RunTask
+*!base::MessageLoop::DeferOrRunPendingTask
+*!base::MessageLoop::DoWork
+*!base::MessagePumpDefault::Run
+*!base::MessageLoop::RunHandler
+*!base::MessageLoop::Run
