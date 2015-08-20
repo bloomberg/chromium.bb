@@ -63,6 +63,11 @@ protected:
     void setEndingSelection(const VisibleSelection&);
     void setEndingSelection(const VisiblePosition&);
 
+    // TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
+    // |VisiblePosition::characterAfter()| and
+    // |VisiblePosition::characterBefore()|.
+    static bool isRenderedCharacter(const Position&);
+
 private:
     RefPtrWillBeMember<Document> m_document;
     VisibleSelection m_startingSelection;

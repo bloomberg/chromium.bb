@@ -31,6 +31,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/commands/CompositeEditCommand.h"
 #include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutText.h"
 
 namespace blink {
 
@@ -87,6 +88,21 @@ void EditCommand::setEndingSelection(const VisibleSelection& selection)
 void EditCommand::setEndingSelection(const VisiblePosition& position)
 {
     setEndingSelection(VisibleSelection(position));
+}
+
+bool EditCommand::isRenderedCharacter(const Position& position)
+{
+    if (position.isNull())
+        return false;
+    ASSERT(position.isOffsetInAnchor());
+    if (!position.anchorNode()->isTextNode())
+        return false;
+
+    LayoutObject* layoutObject = position.anchorNode()->layoutObject();
+    if (!layoutObject)
+        return false;
+
+    return toLayoutText(layoutObject)->isRenderedCharacter(position.offsetInContainerNode());
 }
 
 void EditCommand::setParent(CompositeEditCommand* parent)

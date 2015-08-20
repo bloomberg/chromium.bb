@@ -242,12 +242,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
-// TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
-// |VisiblePosition::characterAfter()| and |VisiblePosition::characterBefore()|.
-// TODO(yosin) We should move |isRenderedCharacter()| to "VisibleUnits.cpp",
-// since it is used only in "editing/commands/"
-CORE_EXPORT bool isRenderedCharacter(const Position&);
-
 // TODO(yosin) We should make |parentEditingBoundary()| as static function
 // in "VisibleUnits.cpp", since it is used only there.
 CORE_EXPORT Node* parentEditingBoundary(const Position&);

@@ -662,21 +662,6 @@ bool inRenderedText(const PositionInComposedTree& position)
     return inRenderedTextAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
-bool isRenderedCharacter(const Position& position)
-{
-    if (position.isNull())
-        return false;
-    ASSERT(position.isOffsetInAnchor());
-    if (!position.anchorNode()->isTextNode())
-        return false;
-
-    LayoutObject* layoutObject = position.anchorNode()->layoutObject();
-    if (!layoutObject)
-        return false;
-
-    return toLayoutText(layoutObject)->isRenderedCharacter(position.offsetInContainerNode());
-}
-
 template <typename Strategy>
 InlineBoxPosition PositionAlgorithm<Strategy>::computeInlineBoxPosition(TextAffinity affinity) const
 {
