@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/shortcut_data_fetcher.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_data_fetcher.h"
 
 #include "base/basictypes.h"
 #include "base/location.h"
@@ -32,9 +32,9 @@ using content::Manifest;
 
 // Android's preferred icon size in DP is 48, as defined in
 // http://developer.android.com/design/style/iconography.html
-const int ShortcutDataFetcher::kPreferredIconSizeInDp = 48;
+const int AddToHomescreenDataFetcher::kPreferredIconSizeInDp = 48;
 
-ShortcutDataFetcher::ShortcutDataFetcher(
+AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
     content::WebContents* web_contents,
     Observer* observer)
     : WebContentsObserver(web_contents),
@@ -53,7 +53,7 @@ ShortcutDataFetcher::ShortcutDataFetcher(
   Send(new ChromeViewMsg_GetWebApplicationInfo(routing_id()));
 }
 
-void ShortcutDataFetcher::OnDidGetWebApplicationInfo(
+void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
     const WebApplicationInfo& received_web_app_info) {
   is_waiting_for_web_application_info_ = false;
   if (!web_contents() || !weak_observer_) return;
@@ -93,11 +93,12 @@ void ShortcutDataFetcher::OnDidGetWebApplicationInfo(
       break;
   }
 
-  web_contents()->GetManifest(base::Bind(&ShortcutDataFetcher::OnDidGetManifest,
-                                         this));
+  web_contents()->GetManifest(
+      base::Bind(&AddToHomescreenDataFetcher::OnDidGetManifest, this));
 }
 
-void ShortcutDataFetcher::OnDidGetManifest(const content::Manifest& manifest) {
+void AddToHomescreenDataFetcher::OnDidGetManifest(
+    const content::Manifest& manifest) {
   if (!web_contents() || !weak_observer_) return;
 
   if (!manifest.IsEmpty()) {
@@ -117,7 +118,7 @@ void ShortcutDataFetcher::OnDidGetManifest(const content::Manifest& manifest) {
         false,
         preferred_icon_size_in_px_,
         false,
-        base::Bind(&ShortcutDataFetcher::OnManifestIconFetched,
+        base::Bind(&AddToHomescreenDataFetcher::OnManifestIconFetched,
                    this));
   } else {
     // Grab the best favicon for the page.
@@ -130,17 +131,19 @@ void ShortcutDataFetcher::OnDidGetManifest(const content::Manifest& manifest) {
   // the timeout, fall back to using a dynamically-generated launcher icon.
   icon_timeout_timer_.Start(FROM_HERE,
                             base::TimeDelta::FromMilliseconds(3000),
-                            base::Bind(&ShortcutDataFetcher::OnFaviconFetched,
-                                       this,
-                                       favicon_base::FaviconRawBitmapResult()));
+                            base::Bind(
+                                &AddToHomescreenDataFetcher::OnFaviconFetched,
+                                this,
+                                favicon_base::FaviconRawBitmapResult()));
 }
 
-bool ShortcutDataFetcher::OnMessageReceived(const IPC::Message& message) {
+bool AddToHomescreenDataFetcher::OnMessageReceived(
+    const IPC::Message& message) {
   if (!is_waiting_for_web_application_info_) return false;
 
   bool handled = true;
 
-  IPC_BEGIN_MESSAGE_MAP(ShortcutDataFetcher, message)
+  IPC_BEGIN_MESSAGE_MAP(AddToHomescreenDataFetcher, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DidGetWebApplicationInfo,
                         OnDidGetWebApplicationInfo)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -149,11 +152,11 @@ bool ShortcutDataFetcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-ShortcutDataFetcher::~ShortcutDataFetcher() {
+AddToHomescreenDataFetcher::~AddToHomescreenDataFetcher() {
   DCHECK(!weak_observer_);
 }
 
-void ShortcutDataFetcher::FetchFavicon() {
+void AddToHomescreenDataFetcher::FetchFavicon() {
   if (!web_contents() || !weak_observer_) return;
 
   Profile* profile =
@@ -177,11 +180,11 @@ void ShortcutDataFetcher::FetchFavicon() {
       shortcut_info_.url,
       icon_types,
       threshold_to_get_any_largest_icon,
-      base::Bind(&ShortcutDataFetcher::OnFaviconFetched, this),
+      base::Bind(&AddToHomescreenDataFetcher::OnFaviconFetched, this),
       &favicon_task_tracker_);
 }
 
-void ShortcutDataFetcher::OnFaviconFetched(
+void AddToHomescreenDataFetcher::OnFaviconFetched(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (!web_contents() || !weak_observer_ || is_icon_saved_) {
     return;
@@ -190,12 +193,12 @@ void ShortcutDataFetcher::OnFaviconFetched(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&ShortcutDataFetcher::CreateLauncherIcon,
+      base::Bind(&AddToHomescreenDataFetcher::CreateLauncherIcon,
                  this,
                  bitmap_result));
 }
 
-void ShortcutDataFetcher::CreateLauncherIcon(
+void AddToHomescreenDataFetcher::CreateLauncherIcon(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
   if (!web_contents() || !weak_observer_) return;
 
@@ -215,10 +218,12 @@ void ShortcutDataFetcher::CreateLauncherIcon(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&ShortcutDataFetcher::NotifyObserver, this, icon_bitmap));
+      base::Bind(&AddToHomescreenDataFetcher::NotifyObserver,
+                 this,
+                 icon_bitmap));
 }
 
-void ShortcutDataFetcher::OnManifestIconFetched(
+void AddToHomescreenDataFetcher::OnManifestIconFetched(
     int id,
     int http_status_code,
     const GURL& url,
@@ -246,7 +251,7 @@ void ShortcutDataFetcher::OnManifestIconFetched(
   NotifyObserver(bitmaps[preferred_bitmap_index]);
 }
 
-void ShortcutDataFetcher::NotifyObserver(const SkBitmap& bitmap) {
+void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& bitmap) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_contents() || !weak_observer_ || is_icon_saved_)
     return;

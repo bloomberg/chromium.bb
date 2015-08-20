@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.UrlConstants;
@@ -73,9 +72,9 @@ public class ShortcutActivity extends AsyncInitializationActivity implements
     @Override
     public void onBookmarkSelected(String url, String title, Bitmap favicon) {
         int dominantColor = FaviconHelper.getDominantColorForBitmap(favicon);
-        Bitmap launcherIcon = BookmarkUtils.createLauncherIcon(this, favicon, url,
+        Bitmap launcherIcon = ShortcutHelper.createLauncherIcon(this, favicon, url,
                 Color.red(dominantColor), Color.green(dominantColor), Color.blue(dominantColor));
-        Intent intent = BookmarkUtils.createAddToHomeIntent(url, title, launcherIcon);
+        Intent intent = ShortcutHelper.createAddToHomeIntent(url, title, launcherIcon);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.BOOKMARK_SHORTCUT_WIDGET);
         setResult(RESULT_OK, intent);
         RecordUserAction.record("BookmarkShortcutWidgetAdded");

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_SHORTCUT_DATA_FETCHER_H_
-#define CHROME_BROWSER_ANDROID_SHORTCUT_DATA_FETCHER_H_
+#ifndef CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
+#define CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 
 #include "base/basictypes.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -31,8 +31,8 @@ class GURL;
 // refcounted to prevent the class from being prematurely deleted.  If the
 // pointer to the ShortcutHelper becomes invalid, the pipeline should kill
 // itself.
-class ShortcutDataFetcher
-    : public base::RefCounted<ShortcutDataFetcher>,
+class AddToHomescreenDataFetcher
+    : public base::RefCounted<AddToHomescreenDataFetcher>,
       public content::WebContentsObserver {
  public:
   class Observer {
@@ -52,7 +52,8 @@ class ShortcutDataFetcher
   // Initialize the fetcher by requesting the information about the page to the
   // renderer process. The initialization is asynchronous and
   // OnDidGetWebApplicationInfo is expected to be called when finished.
-  ShortcutDataFetcher(content::WebContents* web_contents, Observer* observer);
+  AddToHomescreenDataFetcher(content::WebContents* web_contents,
+                             Observer* observer);
 
   // IPC message received when the initialization is finished.
   void OnDidGetWebApplicationInfo(const WebApplicationInfo& web_app_info);
@@ -70,7 +71,7 @@ class ShortcutDataFetcher
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  ~ShortcutDataFetcher() override;
+  ~AddToHomescreenDataFetcher() override;
 
   // Grabs the favicon for the current URL.
   void FetchFavicon();
@@ -107,8 +108,8 @@ class ShortcutDataFetcher
   const int preferred_icon_size_in_px_;
   static const int kPreferredIconSizeInDp;
 
-  friend class base::RefCounted<ShortcutDataFetcher>;
-  DISALLOW_COPY_AND_ASSIGN(ShortcutDataFetcher);
+  friend class base::RefCounted<AddToHomescreenDataFetcher>;
+  DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_SHORTCUT_DATA_FETCHER_H_
+#endif  // CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_

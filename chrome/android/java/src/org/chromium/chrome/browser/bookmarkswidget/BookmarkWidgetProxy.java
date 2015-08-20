@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -29,7 +28,7 @@ public class BookmarkWidgetProxy extends BroadcastReceiver {
             Intent view = new Intent(intent);
             view.setClass(context, ChromeLauncherActivity.class);
             view.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.BOOKMARK_NAVIGATOR_WIDGET);
-            view.putExtra(BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+            view.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
             startActivity(context, view);
         }
     }

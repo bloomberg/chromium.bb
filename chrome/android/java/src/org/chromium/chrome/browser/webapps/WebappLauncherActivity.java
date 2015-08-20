@@ -12,7 +12,6 @@ import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.WebappAuthenticator;
@@ -77,7 +76,7 @@ public class WebappLauncherActivity extends Activity {
                 // launch the URL with a VIEW Intent in the regular browser.
                 launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(webappUrl));
                 launchIntent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
-                launchIntent.putExtra(BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+                launchIntent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
                 launchIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
             }
 

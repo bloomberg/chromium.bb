@@ -28,7 +28,6 @@ import android.util.Log;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.TraceEvent;
-import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -319,7 +318,7 @@ public class ChromeLauncherActivity extends Activity
         boolean append = IntentUtils.safeGetBooleanExtra(
                 getIntent(), IntentHandler.EXTRA_APPEND_TASK, false);
         boolean reuse = IntentUtils.safeGetBooleanExtra(
-                getIntent(), BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, false);
+                getIntent(), ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, false);
         boolean affiliated = IntentUtils.safeGetBooleanExtra(
                 getIntent(), IntentHandler.EXTRA_OPEN_IN_BG, false);
 

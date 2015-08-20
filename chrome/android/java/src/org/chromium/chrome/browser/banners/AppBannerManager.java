@@ -12,7 +12,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BookmarkUtils;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -51,7 +51,7 @@ public class AppBannerManager extends EmptyTabObserver {
     public static boolean isEnabled() {
         if (sIsEnabled == null) {
             Context context = ApplicationStatus.getApplicationContext();
-            sIsEnabled = nativeIsEnabled() && BookmarkUtils.isAddToHomeIntentSupported(context);
+            sIsEnabled = nativeIsEnabled() && ShortcutHelper.isAddToHomeIntentSupported(context);
         }
         return sIsEnabled;
     }

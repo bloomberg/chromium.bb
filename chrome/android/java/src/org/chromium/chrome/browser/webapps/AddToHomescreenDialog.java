@@ -17,7 +17,6 @@ import android.widget.ImageView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -76,15 +75,15 @@ public class AddToHomescreenDialog {
             }
         });
 
-        final ShortcutHelper shortcutHelper =
-                new ShortcutHelper(activity.getApplicationContext(), currentTab);
+        final AddToHomescreenDialogHelper shortcutHelper =
+                new AddToHomescreenDialogHelper(activity.getApplicationContext(), currentTab);
 
         // Initializing the shortcut helper is asynchronous. Until it is
         // initialized, the UI will show a disabled text field and OK buttons.
         // They will be enabled and pre-filled as soon as the onInitialized
         // callback will be run. The user will still be able to cancel the
         // operation.
-        shortcutHelper.initialize(new ShortcutHelper.ShortcutHelperObserver() {
+        shortcutHelper.initialize(new AddToHomescreenDialogHelper.Observer() {
             @Override
             public void onUserTitleAvailable(String title) {
                 input.setEnabled(true);

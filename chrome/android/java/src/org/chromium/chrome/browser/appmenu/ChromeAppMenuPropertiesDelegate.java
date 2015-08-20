@@ -11,11 +11,11 @@ import android.view.MenuItem;
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.BookmarksBridge;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
@@ -140,7 +140,7 @@ public class ChromeAppMenuPropertiesDelegate implements AppMenuPropertiesDelegat
             // creating shortcuts is supported at all.
             MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
             boolean canAddShortcutToHomescreen =
-                    BookmarkUtils.isAddToHomeIntentSupported(mActivity);
+                    ShortcutHelper.isAddToHomeIntentSupported(mActivity);
             homescreenItem.setVisible(
                     canAddShortcutToHomescreen && !isChromeScheme && !isIncognito);
 

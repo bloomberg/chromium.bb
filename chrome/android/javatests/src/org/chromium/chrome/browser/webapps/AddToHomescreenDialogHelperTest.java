@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,8 @@ import android.text.TextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
@@ -22,9 +24,9 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import java.util.concurrent.Callable;
 
 /**
- * Tests org.chromium.chrome.browser.ShortcutHelper and it's C++ counterpart.
+ * Tests org.chromium.chrome.browser.webapps.AddToHomescreenDialogHelper and it's C++ counterpart.
  */
-public class ShortcutHelperTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String WEBAPP_ACTION_NAME = "WEBAPP_ACTION";
 
     private static final String WEBAPP_TITLE = "Webapp shortcut";
@@ -78,7 +80,7 @@ public class ShortcutHelperTest extends ChromeActivityTestCaseBase<ChromeActivit
     private ChromeActivity mActivity;
     private TestShortcutHelperDelegate mShortcutHelperDelegate;
 
-    public ShortcutHelperTest() {
+    public AddToHomescreenDialogHelperTest() {
         super(ChromeActivity.class);
     }
 
@@ -177,13 +179,14 @@ public class ShortcutHelperTest extends ChromeActivityTestCaseBase<ChromeActivit
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(observer));
 
         // Add the shortcut.
-        Callable<ShortcutHelper> callable = new Callable<ShortcutHelper>() {
+        Callable<AddToHomescreenDialogHelper> callable =
+                new Callable<AddToHomescreenDialogHelper>() {
             @Override
-            public ShortcutHelper call() {
-                final ShortcutHelper helper = new ShortcutHelper(
+            public AddToHomescreenDialogHelper call() {
+                final AddToHomescreenDialogHelper helper = new AddToHomescreenDialogHelper(
                         mActivity.getApplicationContext(), mActivity.getActivityTab());
                 // Calling initialize() isn't strictly required but it is testing this code path.
-                helper.initialize(new ShortcutHelper.ShortcutHelperObserver() {
+                helper.initialize(new AddToHomescreenDialogHelper.Observer() {
                     @Override
                     public void onUserTitleAvailable(String t) {
                     }
@@ -196,7 +199,8 @@ public class ShortcutHelperTest extends ChromeActivityTestCaseBase<ChromeActivit
                 return helper;
             }
         };
-        final ShortcutHelper helper = ThreadUtils.runOnUiThreadBlockingNoException(callable);
+        final AddToHomescreenDialogHelper helper =
+                ThreadUtils.runOnUiThreadBlockingNoException(callable);
 
         // Make sure that the shortcut was added.
         assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {

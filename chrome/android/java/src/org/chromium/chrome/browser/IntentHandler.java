@@ -736,7 +736,7 @@ public class IntentHandler {
      */
     private TabOpenType getTabOpenType(Intent intent) {
         if (IntentUtils.safeGetBooleanExtra(
-                    intent, BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, false)) {
+                    intent, ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, false)) {
             return TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB;
         }
 

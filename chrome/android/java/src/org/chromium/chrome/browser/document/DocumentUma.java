@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.document;
 import android.content.Intent;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -46,7 +46,7 @@ public class DocumentUma {
             intentSource = IntentUtils.safeGetIntExtra(intent,
                     IntentHandler.EXTRA_STARTED_BY, DocumentMetricIds.STARTED_BY_UNKNOWN);
         } else if (IntentUtils.safeGetBooleanExtra(intent,
-                BookmarkUtils.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, false)) {
+                ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, false)) {
             // TODO(dfalcantara): Add a new a boolean instead of piggybacking on this Intent extra.
             intentSource = DocumentMetricIds.STARTED_BY_LAUNCHER;
         } else if (IntentUtils.safeGetBooleanExtra(
