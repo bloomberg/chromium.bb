@@ -193,21 +193,6 @@ void V8DebuggerAgent::enable()
     m_client->debuggerAgentEnabled();
 }
 
-void V8DebuggerAgent::disable()
-{
-    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
-    m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
-    m_state->setString(DebuggerAgentState::skipStackPattern, "");
-    m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
-    m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
-
-    debugger().removeListener(m_contextGroupId);
-    m_client->debuggerAgentDisabled();
-    clear();
-    m_skipAllPauses = false;
-}
-
 bool V8DebuggerAgent::enabled()
 {
     return m_state->getBoolean(DebuggerAgentState::debuggerEnabled);
@@ -228,7 +213,35 @@ void V8DebuggerAgent::disable(ErrorString*)
     if (!enabled())
         return;
 
-    disable();
+    m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
+    m_state->setLong(DebuggerAgentState::pauseOnExceptionsState, V8Debugger::DontPauseOnExceptions);
+    m_state->setString(DebuggerAgentState::skipStackPattern, "");
+    m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
+    m_state->setLong(DebuggerAgentState::asyncCallStackDepth, 0);
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
+    m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
+
+    debugger().removeListener(m_contextGroupId);
+    m_client->debuggerAgentDisabled();
+    m_pausedScriptState = nullptr;
+    m_currentCallStack.Reset();
+    m_scripts.clear();
+    m_breakpointIdToDebuggerBreakpointIds.clear();
+    internalSetAsyncCallStackDepth(0);
+    m_promiseTracker->setEnabled(false, false);
+    m_continueToLocationBreakpointId = String();
+    clearBreakDetails();
+    m_scheduledDebuggerStep = NoStep;
+    m_skipNextDebuggerStepOut = false;
+    m_javaScriptPauseScheduled = false;
+    m_steppingFromFramework = false;
+    m_pausingOnNativeEvent = false;
+    m_skippedStepFrameCount = 0;
+    m_recursionLevelForStepFrame = 0;
+    m_asyncOperationNotifications.clear();
+    m_compiledScripts.Clear();
+    clearStepIntoAsync();
+    m_skipAllPauses = false;
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, false);
 }
 
@@ -282,7 +295,7 @@ void V8DebuggerAgent::restore()
         m_skipContentScripts = m_state->getBoolean(DebuggerAgentState::skipContentScripts);
         m_skipAllPauses = m_state->getBoolean(DebuggerAgentState::skipAllPauses);
         internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
-        promiseTracker().setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
+        m_promiseTracker->setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
     }
 }
 
@@ -748,14 +761,14 @@ void V8DebuggerAgent::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> context,
 
 bool V8DebuggerAgent::v8PromiseEventsEnabled() const
 {
-    return promiseTracker().isEnabled();
+    return m_promiseTracker->isEnabled();
 }
 
 void V8DebuggerAgent::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
 {
-    ASSERT(promiseTracker().isEnabled());
+    ASSERT(m_promiseTracker->isEnabled());
     ScriptState* scriptState = ScriptState::from(context);
-    promiseTracker().didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
+    m_promiseTracker->didReceiveV8PromiseEvent(scriptState, promise, parentPromise, status);
 }
 
 void V8DebuggerAgent::pause(ErrorString* errorString)
@@ -1089,7 +1102,7 @@ void V8DebuggerAgent::enablePromiseTracker(ErrorString* errorString, const bool*
         return;
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, true);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, asBool(captureStacks));
-    promiseTracker().setEnabled(true, asBool(captureStacks));
+    m_promiseTracker->setEnabled(true, asBool(captureStacks));
 }
 
 void V8DebuggerAgent::disablePromiseTracker(ErrorString* errorString)
@@ -1097,18 +1110,18 @@ void V8DebuggerAgent::disablePromiseTracker(ErrorString* errorString)
     if (!checkEnabled(errorString))
         return;
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
-    promiseTracker().setEnabled(false, false);
+    m_promiseTracker->setEnabled(false, false);
 }
 
 void V8DebuggerAgent::getPromiseById(ErrorString* errorString, int promiseId, const String* objectGroup, RefPtr<RemoteObject>& promise)
 {
     if (!checkEnabled(errorString))
         return;
-    if (!promiseTracker().isEnabled()) {
+    if (!m_promiseTracker->isEnabled()) {
         *errorString = "Promise tracking is disabled";
         return;
     }
-    ScriptValue value = promiseTracker().promiseById(promiseId);
+    ScriptValue value = m_promiseTracker->promiseById(promiseId);
     if (value.isEmpty()) {
         *errorString = "Promise with specified ID not found.";
         return;
@@ -1641,28 +1654,6 @@ void V8DebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum bre
     debugger().breakProgram();
 }
 
-void V8DebuggerAgent::clear()
-{
-    m_pausedScriptState = nullptr;
-    m_currentCallStack.Reset();
-    m_scripts.clear();
-    m_breakpointIdToDebuggerBreakpointIds.clear();
-    internalSetAsyncCallStackDepth(0);
-    promiseTracker().clear();
-    m_continueToLocationBreakpointId = String();
-    clearBreakDetails();
-    m_scheduledDebuggerStep = NoStep;
-    m_skipNextDebuggerStepOut = false;
-    m_javaScriptPauseScheduled = false;
-    m_steppingFromFramework = false;
-    m_pausingOnNativeEvent = false;
-    m_skippedStepFrameCount = 0;
-    m_recursionLevelForStepFrame = 0;
-    m_asyncOperationNotifications.clear();
-    m_compiledScripts.Clear();
-    clearStepIntoAsync();
-}
-
 void V8DebuggerAgent::clearStepIntoAsync()
 {
     m_startingStepIntoAsync = false;
@@ -1703,7 +1694,7 @@ void V8DebuggerAgent::reset()
     m_scripts.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();
-    promiseTracker().clear();
+    m_promiseTracker->clear();
     if (m_frontend)
         m_frontend->globalObjectCleared();
 }

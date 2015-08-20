@@ -170,7 +170,6 @@ public:
 private:
     bool checkEnabled(ErrorString*);
     void enable();
-    void disable();
 
     SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const Vector<String>& hitBreakpoints, bool isPromiseRejection) final;
     void didContinue() final;
@@ -199,7 +198,6 @@ private:
 
     PassRefPtr<TypeBuilder::Debugger::Location> resolveBreakpoint(const String& breakpointId, const String& scriptId, const ScriptBreakpoint&, BreakpointSource);
     void removeBreakpoint(const String& breakpointId);
-    void clear();
     void clearStepIntoAsync();
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
@@ -209,7 +207,6 @@ private:
     bool isCallStackEmptyOrBlackboxed();
     bool isTopCallFrameBlackboxed();
     bool isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<JavaScriptCallFrame>);
-    PromiseTracker& promiseTracker() const { return *m_promiseTracker; }
 
     void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();
