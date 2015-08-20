@@ -60,6 +60,7 @@ void SchedulerHelper::Shutdown() {
 
 scoped_refptr<TaskQueue> SchedulerHelper::NewTaskQueue(
     const TaskQueue::Spec& spec) {
+  DCHECK(task_queue_manager_.get());
   return task_queue_manager_->NewTaskQueue(spec);
 }
 
@@ -84,6 +85,7 @@ void SchedulerHelper::SetTimeSourceForTesting(
 
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   CheckOnValidThread();
+  DCHECK(task_queue_manager_.get());
   task_queue_manager_->SetWorkBatchSize(work_batch_size);
 }
 
@@ -98,11 +100,13 @@ base::TimeTicks SchedulerHelper::Now() const {
 
 base::TimeTicks SchedulerHelper::NextPendingDelayedTaskRunTime() const {
   CheckOnValidThread();
+  DCHECK(task_queue_manager_.get());
   return task_queue_manager_->NextPendingDelayedTaskRunTime();
 }
 
 bool SchedulerHelper::GetAndClearSystemIsQuiescentBit() {
   CheckOnValidThread();
+  DCHECK(task_queue_manager_.get());
   return task_queue_manager_->GetAndClearSystemIsQuiescentBit();
 }
 

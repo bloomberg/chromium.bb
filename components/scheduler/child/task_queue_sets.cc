@@ -23,6 +23,9 @@ void TaskQueueSets::RemoveQueue(internal::TaskQueueImpl* queue) {
     return;
   size_t set_index = queue->get_task_queue_set_index();
   DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size());
+  DCHECK_EQ(
+      queue,
+      enqueue_order_to_queue_maps_[set_index].find(enqueue_order)->second);
   enqueue_order_to_queue_maps_[set_index].erase(enqueue_order);
 }
 

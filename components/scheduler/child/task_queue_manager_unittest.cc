@@ -1120,4 +1120,71 @@ TEST_F(TaskQueueManagerTest, SequenceNumSetWhenTaskIsPosted) {
   manager_->RemoveTaskObserver(&observer);
 }
 
+TEST_F(TaskQueueManagerTest, NewTaskQueues) {
+  Initialize(1u);
+
+  scoped_refptr<internal::TaskQueueImpl> queue1 =
+      manager_->NewTaskQueue(TaskQueue::Spec("foo"));
+  scoped_refptr<internal::TaskQueueImpl> queue2 =
+      manager_->NewTaskQueue(TaskQueue::Spec("bar"));
+  scoped_refptr<internal::TaskQueueImpl> queue3 =
+      manager_->NewTaskQueue(TaskQueue::Spec("baz"));
+
+  ASSERT_NE(queue1, queue2);
+  ASSERT_NE(queue1, queue3);
+  ASSERT_NE(queue2, queue3);
+
+  std::vector<int> run_order;
+  queue1->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  queue2->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  queue3->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+}
+
+TEST_F(TaskQueueManagerTest, UnregisterTaskQueue) {
+  Initialize(1u);
+
+  scoped_refptr<internal::TaskQueueImpl> queue1 =
+      manager_->NewTaskQueue(TaskQueue::Spec("foo"));
+  scoped_refptr<internal::TaskQueueImpl> queue2 =
+      manager_->NewTaskQueue(TaskQueue::Spec("bar"));
+  scoped_refptr<internal::TaskQueueImpl> queue3 =
+      manager_->NewTaskQueue(TaskQueue::Spec("baz"));
+
+  ASSERT_NE(queue1, queue2);
+  ASSERT_NE(queue1, queue3);
+  ASSERT_NE(queue2, queue3);
+
+  std::vector<int> run_order;
+  queue1->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  queue2->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  queue3->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+
+  queue2->UnregisterTaskQueue();
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(run_order, ElementsAre(1, 3));
+}
+
+TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
+  Initialize(2u);
+
+  // Register three delayed tasks
+  std::vector<int> run_order;
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order),
+                               base::TimeDelta::FromMilliseconds(10));
+  runners_[1]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order),
+                               base::TimeDelta::FromMilliseconds(20));
+  runners_[0]->PostDelayedTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order),
+                               base::TimeDelta::FromMilliseconds(30));
+
+  runners_[1]->UnregisterTaskQueue();
+  test_task_runner_->RunUntilIdle();
+
+  test_task_runner_->RunForPeriod(base::TimeDelta::FromMilliseconds(40));
+  ASSERT_THAT(run_order, ElementsAre(1, 3));
+}
+
 }  // namespace scheduler

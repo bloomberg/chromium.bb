@@ -52,21 +52,57 @@ TaskQueueManager::TaskQueueManager(
 TaskQueueManager::~TaskQueueManager() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(disabled_by_default_tracing_category_,
                                      "TaskQueueManager", this);
-  for (auto& queue : queues_)
-    queue->WillDeleteTaskQueueManager();
+
+  while (!queues_.empty())
+    (*queues_.begin())->UnregisterTaskQueue();
+
   selector_.SetTaskQueueSelectorObserver(nullptr);
 }
 
 scoped_refptr<internal::TaskQueueImpl> TaskQueueManager::NewTaskQueue(
     const TaskQueue::Spec& spec) {
+  TRACE_EVENT1(disabled_by_default_tracing_category_,
+               "TaskQueueManager::NewTaskQueue", "queue_name", spec.name);
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<internal::TaskQueueImpl> queue(
       make_scoped_refptr(new internal::TaskQueueImpl(
           this, spec, disabled_by_default_tracing_category_,
           disabled_by_default_verbose_tracing_category_)));
-  queues_.insert(queue.get());
+  queues_.insert(queue);
   selector_.AddQueue(queue.get());
   return queue;
+}
+
+void TaskQueueManager::UnregisterTaskQueue(
+    scoped_refptr<internal::TaskQueueImpl> task_queue) {
+  TRACE_EVENT1(disabled_by_default_tracing_category_,
+              "TaskQueueManager::UnregisterTaskQueue",
+              "queue_name", task_queue->GetName());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  // Add |task_queue| to |queues_to_delete_| so we can prevent it from being
+  // freed while any of our structures hold hold a raw pointer to it.
+  queues_to_delete_.insert(task_queue);
+  queues_.erase(task_queue);
+  selector_.RemoveQueue(task_queue.get());
+
+  // We need to remove |task_queue| from delayed_wakeup_map_ which is a little
+  // awkward since it's keyed by time. O(n) running time.
+  for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_map_.begin();
+       iter != delayed_wakeup_map_.end();) {
+    if (iter->second == task_queue.get()) {
+      DelayedWakeupMultimap::iterator temp = iter;
+      iter++;
+      // O(1) amortized.
+      delayed_wakeup_map_.erase(temp);
+    } else {
+      iter++;
+    }
+  }
+
+  // |newly_updatable_| might contain |task_queue|, we use
+  // MoveNewlyUpdatableQueuesIntoUpdatableQueueSet to flush it out.
+  MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
+  updatable_queue_set_.erase(task_queue.get());
 }
 
 base::TimeTicks TaskQueueManager::NextPendingDelayedTaskRunTime() {
@@ -104,10 +140,20 @@ void TaskQueueManager::UnregisterAsUpdatableTaskQueue(
   updatable_queue_set_.erase(queue);
 }
 
+void TaskQueueManager::MoveNewlyUpdatableQueuesIntoUpdatableQueueSet() {
+  base::AutoLock lock(newly_updatable_lock_);
+  while (!newly_updatable_.empty()) {
+    updatable_queue_set_.insert(newly_updatable_.back());
+    newly_updatable_.pop_back();
+  }
+}
+
 void TaskQueueManager::UpdateWorkQueues(
     bool should_trigger_wakeup,
     const internal::TaskQueueImpl::Task* previous_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  TRACE_EVENT0(disabled_by_default_tracing_category_,
+               "TaskQueueManager::UpdateWorkQueues");
   internal::LazyNow lazy_now(this);
 
   // Move any ready delayed tasks into the incomming queues.
@@ -223,6 +269,8 @@ void TaskQueueManager::DoWork(bool decrement_pending_dowork_count) {
   }
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
+  queues_to_delete_.clear();
+
   // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
   // pump-after-wakeup queue.
   UpdateWorkQueues(false, nullptr);
@@ -290,6 +338,8 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
       FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
                         WillProcessTask(pending_task));
     }
+    TRACE_EVENT1(disabled_by_default_tracing_category_,
+                 "Run Task From Queue", "queue", queue->GetName());
     task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 
     // Detect if the TaskQueueManager just got deleted.  If this happens we must

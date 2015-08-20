@@ -14,6 +14,10 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
  public:
   TaskQueue() {}
 
+  // Unregisters the task queue after which no tasks posted to it will run and
+  // the TaskQueueManager's reference to it will be released soon.
+  virtual void UnregisterTaskQueue() = 0;
+
   // Post a delayed task at an absolute desired run time instead of a time
   // delta from the current time.
   virtual bool PostDelayedTaskAt(const tracked_objects::Location& from_here,

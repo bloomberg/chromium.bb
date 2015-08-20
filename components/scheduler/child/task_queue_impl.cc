@@ -53,12 +53,18 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
   sequence_num = sequence_number;
 }
 
-void TaskQueueImpl::WillDeleteTaskQueueManager() {
-  base::AutoLock lock(lock_);
-  task_queue_manager_ = nullptr;
-  delayed_task_queue_ = std::priority_queue<Task>();
-  incoming_queue_ = std::queue<Task>();
-  work_queue_ = std::queue<Task>();
+void TaskQueueImpl::UnregisterTaskQueue() {
+  if (!task_queue_manager_)
+    return;
+  task_queue_manager_->UnregisterTaskQueue(make_scoped_refptr(this));
+
+  {
+    base::AutoLock lock(lock_);
+    task_queue_manager_ = nullptr;
+    delayed_task_queue_ = std::priority_queue<Task>();
+    incoming_queue_ = std::queue<Task>();
+    work_queue_ = std::queue<Task>();
+  }
 }
 
 bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
@@ -135,7 +141,6 @@ bool TaskQueueImpl::PostDelayedTaskLocked(
 }
 
 void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueue(LazyNow* lazy_now) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   if (!task_queue_manager_)
     return;
@@ -149,8 +154,6 @@ void TaskQueueImpl::MoveReadyDelayedTasksToIncomingQueueLocked(
   // Enqueue all delayed tasks that should be running now.
   while (!delayed_task_queue_.empty() &&
          delayed_task_queue_.top().delayed_run_time <= lazy_now->Now()) {
-    in_flight_kick_delayed_tasks_.erase(
-        delayed_task_queue_.top().delayed_run_time);
     // TODO(alexclarke): consider std::move() when allowed.
     EnqueueDelayedTaskLocked(delayed_task_queue_.top());
     delayed_task_queue_.pop();

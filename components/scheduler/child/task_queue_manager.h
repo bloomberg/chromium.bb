@@ -99,6 +99,12 @@ class SCHEDULER_EXPORT TaskQueueManager
     ~DeletionSentinel() {}
   };
 
+  // Unregisters a TaskQueue previously created by |NewTaskQueue()|.
+  // NOTE we have to flush the queue from |newly_updatable_| which means as a
+  // side effect MoveNewlyUpdatableQueuesIntoUpdatableQueueSet is called by this
+  // function.
+  void UnregisterTaskQueue(scoped_refptr<internal::TaskQueueImpl> task_queue);
+
   // TaskQueueSelector::Observer implementation:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
 
@@ -177,7 +183,13 @@ class SCHEDULER_EXPORT TaskQueueManager
   // registered queue for which the delay has elapsed.
   void WakeupReadyDelayedQueues(internal::LazyNow* lazy_now);
 
+  void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
+
   std::set<scoped_refptr<internal::TaskQueueImpl>> queues_;
+
+  // We have to be careful when deleting a queue because some of the code uses
+  // raw pointers and doesn't expect the rug to be pulled out from underneath.
+  std::set<scoped_refptr<internal::TaskQueueImpl>> queues_to_delete_;
 
   // This lock guards only |newly_updatable_|.  It's not expected to be heavily
   // contended.
