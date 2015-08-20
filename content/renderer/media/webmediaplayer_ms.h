@@ -53,6 +53,7 @@ class VideoFrameProvider;
 //   WebKit client of this media player object.
 class WebMediaPlayerMS
     : public blink::WebMediaPlayer,
+      public cc::VideoFrameProvider,
       public base::SupportsWeakPtr<WebMediaPlayerMS> {
  public:
   // Construct a WebMediaPlayerMS with reference to the client, and
@@ -61,10 +62,7 @@ class WebMediaPlayerMS
                    blink::WebMediaPlayerClient* client,
                    base::WeakPtr<media::WebMediaPlayerDelegate> delegate,
                    media::MediaLog* media_log,
-                   scoped_ptr<MediaStreamRendererFactory> factory,
-                   const scoped_refptr<base::SingleThreadTaskRunner>&
-                       compositor_task_runner);
-
+                   scoped_ptr<MediaStreamRendererFactory> factory);
   virtual ~WebMediaPlayerMS();
 
   virtual void load(LoadType load_type,
@@ -127,68 +125,16 @@ class WebMediaPlayerMS
       bool premultiply_alpha,
       bool flip_y) override;
 
+  // VideoFrameProvider implementation.
+  void SetVideoFrameProviderClient(
+      cc::VideoFrameProvider::Client* client) override;
+  bool UpdateCurrentFrame(base::TimeTicks deadline_min,
+                          base::TimeTicks deadline_max) override;
+  bool HasCurrentFrame() override;
+  scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
+  void PutCurrentFrame() override;
+
  private:
-  class Compositor : public cc::VideoFrameProvider {
-   public:
-    explicit Compositor(const scoped_refptr<base::SingleThreadTaskRunner>&
-                            compositor_task_runner);
-    ~Compositor() override;
-
-    void EnqueueFrame(scoped_refptr<media::VideoFrame> const& frame);
-
-    // Statistical data
-    gfx::Size GetCurrentSize();
-    base::TimeDelta GetCurrentTime();
-    unsigned GetTotalFrameCount();
-    unsigned GetDroppedFrameCount();
-
-    // VideoFrameProvider implementation.
-    void SetVideoFrameProviderClient(
-        cc::VideoFrameProvider::Client* client) override;
-    bool UpdateCurrentFrame(base::TimeTicks deadline_min,
-                            base::TimeTicks deadline_max) override;
-    bool HasCurrentFrame() override;
-    scoped_refptr<media::VideoFrame> GetCurrentFrame() override;
-    void PutCurrentFrame() override;
-
-    void StartRendering();
-    void StopRendering();
-
-   private:
-    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-
-    // A pointer back to the compositor to inform it about state changes. This
-    // is not NULL while the compositor is actively using this webmediaplayer.
-    cc::VideoFrameProvider::Client* video_frame_provider_client_;
-
-    // |current_frame_| is updated only on compositor thread. The object it
-    // holds can be freed on the compositor thread if it is the last to hold a
-    // reference but media::VideoFrame is a thread-safe ref-pointer. It is
-    // however read on the compositor and main thread so locking is required
-    // around all modifications and all reads on the any thread.
-    scoped_refptr<media::VideoFrame> current_frame_;
-
-    // |current_frame_used_| is updated on compositor thread only.
-    // It's used to track whether |current_frame_| was painted for detecting
-    // when to increase |dropped_frame_count_|.
-    bool current_frame_used_;
-
-    // TODO(qiangchen): To be replaced by VRA.
-    scoped_refptr<media::VideoFrame> staging_frame_;
-
-    base::TimeTicks last_deadline_max_;
-    unsigned total_frame_count_;
-    unsigned dropped_frame_count_;
-
-    bool paused_;
-
-    media::SkCanvasVideoRenderer video_renderer_;
-
-    // |current_frame_lock_| protects |current_frame_used_| and
-    // |current_frame_|.
-    base::Lock current_frame_lock_;
-  };
-
   // The callback for VideoFrameProvider to signal a new frame is available.
   void OnFrameAvailable(const scoped_refptr<media::VideoFrame>& frame);
   // Need repaint due to state change.
@@ -225,23 +171,36 @@ class WebMediaPlayerMS
   scoped_refptr<content::VideoFrameProvider> video_frame_provider_;
   bool paused_;
 
+  // |current_frame_| is updated only on main thread. The object it holds
+  // can be freed on the compositor thread if it is the last to hold a
+  // reference but media::VideoFrame is a thread-safe ref-pointer. It is
+  // however read on the compositing thread so locking is required around all
+  // modifications on the main thread, and all reads on the compositing thread.
+  scoped_refptr<media::VideoFrame> current_frame_;
+  // |current_frame_used_| is updated on both main and compositing thread.
+  // It's used to track whether |current_frame_| was painted for detecting
+  // when to increase |dropped_frame_count_|.
+  bool current_frame_used_;
+  // |current_frame_lock_| protects |current_frame_used_| and |current_frame_|.
+  base::Lock current_frame_lock_;
+
   scoped_ptr<cc_blink::WebLayerImpl> video_weblayer_;
 
+  // A pointer back to the compositor to inform it about state changes. This is
+  // not NULL while the compositor is actively using this webmediaplayer.
+  cc::VideoFrameProvider::Client* video_frame_provider_client_;
+
   bool received_first_frame_;
+  base::TimeDelta current_time_;
+  unsigned total_frame_count_;
+  unsigned dropped_frame_count_;
+  media::SkCanvasVideoRenderer video_renderer_;
 
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;
-
-  media::SkCanvasVideoRenderer video_renderer_;
 
   scoped_refptr<media::MediaLog> media_log_;
 
   scoped_ptr<MediaStreamRendererFactory> renderer_factory_;
-
-  // WebMediaPlayerMS owns the Compositor instance, but the destructions of
-  // compositor should take place on Compositor Thread.
-  scoped_ptr<Compositor> compositor_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerMS);
 };

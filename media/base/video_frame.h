@@ -364,9 +364,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   const VideoFrameMetadata* metadata() const { return &metadata_; }
   VideoFrameMetadata* metadata() { return &metadata_; }
 
-  // The time span between the current frame and the first frame of the stream.
-  // This is the media timestamp, and not the reference time.
-  // See VideoFrameMetadata::REFERENCE_TIME for details.
   base::TimeDelta timestamp() const { return timestamp_; }
   void set_timestamp(base::TimeDelta timestamp) {
     timestamp_ = timestamp;
