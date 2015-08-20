@@ -39,6 +39,10 @@ static_library("sync_driver") {
     "glue/synced_session.h",
     "glue/typed_url_model_associator.cc",
     "glue/typed_url_model_associator.h",
+    "invalidation_adapter.cc",
+    "invalidation_adapter.h",
+    "invalidation_helper.cc",
+    "invalidation_helper.h",
     "local_device_info_provider.h",
     "model_association_manager.cc",
     "model_association_manager.h",
@@ -92,10 +96,12 @@ static_library("sync_driver") {
   deps = [
     "//base",
     "//components/history/core/browser",
+    "//components/invalidation/public",
     "//components/os_crypt",
     "//components/signin/core/browser",
     "//net",
     "//sync",
+    "//third_party/cacheinvalidation",
   ]
 
   if (enable_configuration_policy) {

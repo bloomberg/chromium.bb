@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/sync/glue/invalidation_helper.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
+#include "components/sync_driver/invalidation_helper.h"
 #include "sync/internal_api/public/base/model_type.h"
 
 namespace fake_server {

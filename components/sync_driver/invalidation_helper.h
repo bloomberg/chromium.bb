@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_INVALIDATION_HELPER_H_
-#define CHROME_BROWSER_SYNC_GLUE_INVALIDATION_HELPER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_INVALIDATION_HELPER_H_
+#define COMPONENTS_SYNC_DRIVER_INVALIDATION_HELPER_H_
 
 #include "components/invalidation/public/invalidation_util.h"
 #include "google/cacheinvalidation/include/types.h"
@@ -17,4 +17,4 @@ bool RealModelTypeToObjectId(ModelType model_type,
 ObjectIdSet ModelTypeSetToObjectIdSet(ModelTypeSet model_types);
 }
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_INVALIDATION_HELPER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_INVALIDATION_HELPER_H_

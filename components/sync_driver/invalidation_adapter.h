@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_INVALIDATION_ADAPTER_H_
-#define CHROME_BROWSER_SYNC_GLUE_INVALIDATION_ADAPTER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
+#define COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
 
 #include "components/invalidation/public/invalidation.h"
 #include "sync/internal_api/public/base/invalidation_interface.h"
@@ -29,4 +29,4 @@ class InvalidationAdapter : public syncer::InvalidationInterface {
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_INVALIDATION_ADAPTER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_
