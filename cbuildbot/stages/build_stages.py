@@ -379,7 +379,8 @@ class BuildImageStage(BuildPackagesStage):
     self.board_runattrs.SetParallel('images_generated', True)
 
     parallel.RunParallelSteps(
-        [self._BuildVMImage, lambda: self._GenerateAuZip(cbuildbot_image_link)])
+        [self._BuildVMImage, lambda: self._GenerateAuZip(cbuildbot_image_link),
+         self._BuildGceTarballs])
 
   def _BuildVMImage(self):
     if self._run.config.vm_tests and not self._afdo_generate_min:
@@ -394,6 +395,28 @@ class BuildImageStage(BuildPackagesStage):
       commands.GenerateAuZip(self._build_root,
                              image_dir,
                              extra_env=self._portage_extra_env)
+
+  def _BuildGceTarballs(self):
+    """Creates .tar.gz files that can be converted to GCE images.
+
+    These files will be used by VMTestStage for tests on GCE. They will also be
+    be uploaded to GCS buckets, where they can be used as input to the "gcloud
+    compute images create" command. This will convert them into images that can
+    be used to create GCE VM instances.
+    """
+    if self._run.config.upload_gce_images:
+      image_bins = []
+      if 'base' in self._run.config['images']:
+        image_bins.append(constants.IMAGE_TYPE_TO_NAME['base'])
+      if 'test' in self._run.config['images']:
+        image_bins.append(constants.IMAGE_TYPE_TO_NAME['test'])
+
+      image_dir = self.GetImageDirSymlink('latest')
+      for image_bin in image_bins:
+        if os.path.exists(os.path.join(image_dir, image_bin)):
+          commands.BuildGceTarball(image_dir, image_dir, image_bin)
+        else:
+          logging.warning('Missing image file skipped: %s', image_bin)
 
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""

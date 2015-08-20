@@ -79,32 +79,19 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testGceTests(self):
     """Tests if GCE_VM_TEST_TYPE tests are run on GCE."""
     self._run.config['vm_tests'] = [constants.GCE_VM_TEST_TYPE]
-    gce_path = constants.TEST_IMAGE_GCE_TAR
-    board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
+    gce_tarball = constants.TEST_IMAGE_GCE_TAR
 
     # pylint: disable=unused-argument
     def _MockRunTestSuite(buildroot, board, image_path, results_dir, test_type,
                           *args, **kwargs):
-      self.assertEndsWith(image_path, gce_path)
+      self.assertEndsWith(image_path, gce_tarball)
       self.assertEqual(test_type, constants.GCE_VM_TEST_TYPE)
     # pylint: enable=unused-argument
 
-    def _MockWaitForGsPaths(_, paths, *_args, **_kwargs):
-      self.assertEndsWith(paths[0], gce_path)
-
-    self.PatchObject(generic_stages.BoardSpecificBuilderStage, 'GetParallel',
-                     autospec=True)
-    self.PatchObject(gs.GSContext, 'WaitForGsPaths',
-                     side_effect=_MockWaitForGsPaths, autospec=True)
     commands.RunTestSuite.side_effect = _MockRunTestSuite
-    board_runattrs.SetParallel('gce_tarball_generated', True)
 
     self.RunStage()
 
-    generic_stages.BoardSpecificBuilderStage.GetParallel.assert_any_call(
-        mock.ANY, 'gce_tarball_generated')
-    self.assertTrue(gs.GSContext.WaitForGsPaths.called and
-                    gs.GSContext.WaitForGsPaths.call_count == 1)
     self.assertTrue(commands.RunTestSuite.called and
                     commands.RunTestSuite.call_count == 1)
 

@@ -158,18 +158,6 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           prefix = ''
         self.PrintDownloadLink(filename, prefix)
 
-  def _WaitForGceTarball(self, image_path):
-    """Waits until GCE tarball is available."""
-    gce_tar_generated = self.GetParallel('gce_tarball_generated')
-    if not gce_tar_generated:
-      return
-    # Still need to check its availability as artifacts are uploaded in the
-    # background.
-    gs_ctx = gs.GSContext()
-    logging.info('Waiting for GCE tarball to be uploaded at %s.' % image_path)
-    gs_ctx.WaitForGsPaths([image_path], self.CHECK_GCS_TIMEOUT,
-                          self.CHECK_GCS_PERIOD)
-
   def _RunTest(self, test_type, test_results_dir):
     """Run a VM test.
 
@@ -184,11 +172,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           self._build_root, self._current_board, self.GetImageDirSymlink())
     else:
       if test_type == constants.GCE_VM_TEST_TYPE:
-        # If tests are to run on GCE, use the uploaded tar ball.
-        image_path = ('%s/%s' % (self.download_url.rstrip('/'),
-                                 constants.TEST_IMAGE_GCE_TAR))
-
-        self._WaitForGceTarball(image_path)
+        image_path = os.path.join(self.GetImageDirSymlink(),
+                                  constants.TEST_IMAGE_GCE_TAR)
       else:
         image_path = os.path.join(self.GetImageDirSymlink(),
                                   constants.TEST_IMAGE_BIN)
@@ -203,8 +188,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       commands.RunTestSuite(self._build_root,
                             self._current_board,
                             image_path,
-                            os.path.join(test_results_dir,
-                                         'test_harness'),
+                            os.path.join(test_results_dir, 'test_harness'),
                             test_type=test_type,
                             whitelist_chrome_crashes=self._chrome_rev is None,
                             archive_dir=self.bot_archive_root,
