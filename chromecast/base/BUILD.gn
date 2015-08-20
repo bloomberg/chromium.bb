@@ -16,6 +16,8 @@ source_set("base") {
     "error_codes.h",
     "path_utils.cc",
     "path_utils.h",
+    "pref_names.cc",
+    "pref_names.h",
     "process_utils.cc",
     "process_utils.h",
     "serializers.cc",

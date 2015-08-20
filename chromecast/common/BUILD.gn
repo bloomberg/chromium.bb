@@ -12,8 +12,6 @@ source_set("common") {
     "cast_resource_delegate.h",
     "global_descriptors.h",
     "platform_client_auth.h",
-    "pref_names.cc",
-    "pref_names.h",
   ]
 
   if (chromecast_branding == "public") {
