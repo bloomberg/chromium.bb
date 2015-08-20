@@ -38,6 +38,13 @@ namespace views {
 namespace {
 
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
+  // If the Widget is modal, it will be displayed as a sheet. This works best if
+  // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
+  // parent window still accepts input.
+  if (params.delegate &&
+      params.delegate->GetModalType() == ui::MODAL_TYPE_WINDOW)
+    return NSTitledWindowMask;
+
   // TODO(tapted): Determine better masks when there are use cases for it.
   if (params.remove_standard_frame)
     return NSBorderlessWindowMask;
