@@ -1567,6 +1567,46 @@ TEST_F(DisplayManagerTest, UnifiedDesktopBasic) {
   EXPECT_EQ("400x500", ScreenUtil::GetSecondaryDisplay().size().ToString());
 }
 
+TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
+  if (!SupportsMultipleDisplays())
+    return;
+  // Don't check root window destruction in unified mode.
+  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
+
+  // Enter to hardware mirroring.
+  DisplayInfo d1(1, "", false);
+  d1.SetBounds(gfx::Rect(0, 0, 500, 500));
+  DisplayInfo d2(2, "", false);
+  d2.SetBounds(gfx::Rect(0, 0, 500, 500));
+  std::vector<DisplayInfo> display_info_list;
+  display_info_list.push_back(d1);
+  display_info_list.push_back(d2);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  ASSERT_TRUE(display_manager()->IsInMirrorMode());
+  display_manager()->SetUnifiedDesktopEnabled(true);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
+
+  // The display manager automaticaclly switches to software mirroring
+  // if the displays are configured to use mirroring when running on desktop.
+  // This is a workdaround to force the display manager to forget
+  // the mirroing layout.
+  DisplayIdPair pair = CreateDisplayIdPair(1, 2);
+  DisplayLayout layout =
+      display_manager()->layout_store()->GetRegisteredDisplayLayout(pair);
+  layout.mirrored = false;
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdPair(1, 2,
+                                                                    layout);
+
+  // Exit from hardware mirroring.
+  d2.SetBounds(gfx::Rect(0, 500, 500, 500));
+  display_info_list.clear();
+  display_info_list.push_back(d1);
+  display_info_list.push_back(d2);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_FALSE(display_manager()->IsInMirrorMode());
+  EXPECT_TRUE(display_manager()->IsInUnifiedMode());
+}
+
 TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
   if (!SupportsMultipleDisplays())
     return;

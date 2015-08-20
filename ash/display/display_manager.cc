@@ -876,7 +876,11 @@ bool DisplayManager::IsInMirrorMode() const {
 
 void DisplayManager::SetUnifiedDesktopEnabled(bool enable) {
   unified_desktop_enabled_ = enable;
-  ReconfigureDisplays();
+  // There is no need to update the displays in mirror mode. Doing
+  // this in hardware mirroring mode can cause crash because display
+  // info in hardware mirroring comes from DisplayConfigurator.
+  if (!IsInMirrorMode())
+    ReconfigureDisplays();
 }
 
 bool DisplayManager::IsInUnifiedMode() const {
