@@ -3505,13 +3505,6 @@ else:
 # https://code.google.com/p/nativeclient/issues/detail?id=4088
 if nacl_irt_env.Bit('build_x86_64') or nacl_irt_env.Bit('build_x86_32'):
   nacl_irt_env.SetBits('nacl_clang')
-  # The IRT must be built using LLVM's assembler on x86-64 to preserve sandbox
-  # base address hiding. It's also used on x86-32 for consistency.
-  nacl_irt_env.Append(CCFLAGS=['-integrated-as'])
-  if nacl_irt_env.Bit('build_x86_32'):
-    # The x86-32 IRT needs to be callable with an under-aligned stack.
-    # See  https://code.google.com/p/nativeclient/issues/detail?id=3935
-    nacl_irt_env.Append(CCFLAGS=['-mstackrealign', '-mno-sse'])
 
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
@@ -3525,6 +3518,16 @@ nacl_irt_env.Replace(EXTRA_CFLAGS=nacl_env['EXTRA_CFLAGS'],
 FixWindowsAssembler(nacl_irt_env)
 # Make it find the libraries it builds, rather than the SDK ones.
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
+
+# The IRT must be built using LLVM's assembler on x86-64 to preserve sandbox
+# base address hiding. It's also used on x86-32 for consistency.
+if nacl_irt_env.Bit('build_x86_64') or nacl_irt_env.Bit('build_x86_32'):
+  nacl_irt_env.Append(CCFLAGS=['-integrated-as'])
+if nacl_irt_env.Bit('build_x86_32'):
+  # The x86-32 IRT needs to be callable with an under-aligned stack.
+  # See  https://code.google.com/p/nativeclient/issues/detail?id=3935
+  nacl_irt_env.Append(CCFLAGS=['-mstackrealign', '-mno-sse'])
+
 
 if nacl_irt_env.Bit('bitcode'):
   nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native'])
