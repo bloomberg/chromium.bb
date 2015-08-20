@@ -199,6 +199,10 @@ void ProfileOAuth2TokenServiceIOSDelegate::Shutdown() {
 void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const std::string& primary_account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (account_tracker_service_->GetMigrationState() ==
+      AccountTrackerService::MIGRATION_IN_PROGRESS) {
+    MigrateExcludedSecondaryAccountIds();
+  }
 
   // LoadCredentials() is called iff the user is signed in to Chrome, so the
   // primary account id must not be empty.
@@ -486,4 +490,50 @@ bool ProfileOAuth2TokenServiceIOSDelegate::IsAccountExcluded(
   if (GetExcludeAllSecondaryAccounts())
     return true;
   return excluded_account_ids.count(account_id) > 0;
+}
+
+void ProfileOAuth2TokenServiceIOSDelegate::
+    MigrateExcludedSecondaryAccountIds() {
+  DCHECK_EQ(AccountTrackerService::MIGRATION_IN_PROGRESS,
+            account_tracker_service_->GetMigrationState());
+
+  // Before the account id migration, emails were used as account identifiers.
+  // Thus the pref |prefs::kTokenServiceExcludedSecondaryAccounts| holds the
+  // emails of the excluded secondary accounts.
+  std::set<std::string> excluded_emails = GetExcludedSecondaryAccounts();
+  if (excluded_emails.empty())
+    return;
+
+  std::vector<std::string> excluded_account_ids;
+  for (const std::string& excluded_email : excluded_emails) {
+    ProfileOAuth2TokenServiceIOSProvider::AccountInfo account_info =
+        provider_->GetAccountInfoForEmail(excluded_email);
+    if (account_info.gaia.empty()) {
+      // The provider no longer has an account with email |excluded_email|.
+      // This can occur for 2 reasons:
+      // 1. The account with email |excluded_email| was removed before being
+      //   migrated. It may simply be ignored in this case (no need to exclude
+      //   an account that is no longer available).
+      // 2. The migration of the excluded account ids was already done before,
+      //   but the entire migration of the accounts did not end for whatever
+      //   reason (e.g. the app crashed during the previous attempt to migrate
+      //   the accounts). The entire migration should be ignored in this case.
+      if (provider_->GetAccountInfoForGaia(excluded_email).gaia.empty()) {
+        // Case 1 above (account was removed).
+        DVLOG(1) << "Excluded secondary account with email " << excluded_email
+                 << " was removed before migration.";
+      } else {
+        // Case 2 above (migration already done).
+        DVLOG(1) << "Excluded secondary account ids were already migrated.";
+        return;
+      }
+    } else {
+      std::string excluded_account_id =
+          account_tracker_service_->PickAccountIdForAccount(account_info.gaia,
+                                                            account_info.email);
+      excluded_account_ids.push_back(excluded_account_id);
+    }
+  }
+  ClearExcludedSecondaryAccounts();
+  ExcludeSecondaryAccounts(excluded_account_ids);
 }

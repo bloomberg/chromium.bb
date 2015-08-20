@@ -123,6 +123,9 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
                          const std::string& email,
                          const std::set<std::string>& excluded_account_ids);
 
+  // Migrates the excluded secondary accounts from emails to account ids.
+  void MigrateExcludedSecondaryAccountIds();
+
   // The primary account id.
   std::string primary_account_id_;
 
