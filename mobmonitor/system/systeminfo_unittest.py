@@ -12,7 +12,9 @@ import mock
 import os
 import time
 
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import partial_mock
 from chromite.mobmonitor.system import systeminfo
 
 # Strings that are used to mock particular system files for testing.
@@ -341,6 +343,40 @@ class DiskTest(cros_test_lib.MockTestCase):
                                                    mock_percent_used)
 
     self.assertEquals(disk.DiskUsage(partition), mock_diskusage)
+
+  def testDiskByExisting(self):
+    """Test diskby information collection when a record exists."""
+    disk = self._CreateDisk(1)
+
+    device = '/dev/sda1'
+    dataname = '%s:%s' % (systeminfo.RESOURCENAME_DISKBY, device)
+    data = 'testvalue'
+
+    disk.Update(dataname, data)
+
+    self.assertEquals(disk.DiskBy(device), data)
+
+  def testDiskBy(self):
+    """Test diskby info when there is no record or a record is stale."""
+    disk = self._CreateDisk(1)
+
+    mock_device = '/dev/sda1'
+    mock_ids = ['ata-ST1000DM003-1ER162_Z4Y3WQDB-part1']
+    mock_labels = ['BOOT-PARTITION']
+
+    # Mock the calls to cros_buil_lib.RunCommand.
+    with cros_build_lib_unittest.RunCommandMock() as rc_mock:
+      rc_mock.AddCmdResult(
+          partial_mock.In(systeminfo.SYSTEMFILE_DEV_DISKBY['ids']),
+          output='\n'.join(mock_ids))
+      rc_mock.AddCmdResult(
+          partial_mock.In(systeminfo.SYSTEMFILE_DEV_DISKBY['labels']),
+          output='\n'.join(mock_labels))
+
+      mock_diskby = systeminfo.RESOURCE_DISKBY(mock_device, mock_ids,
+                                               mock_labels)
+
+      self.assertEquals(disk.DiskBy(mock_device), mock_diskby)
 
 
 class Cpu(cros_test_lib.MockTestCase):

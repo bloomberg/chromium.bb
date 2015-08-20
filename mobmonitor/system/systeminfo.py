@@ -41,11 +41,17 @@ import itertools
 import os
 import time
 
+from chromite.lib import cros_build_lib
+
 
 SYSTEMFILE_PROC_MOUNTS = '/proc/mounts'
 SYSTEMFILE_PROC_MEMINFO = '/proc/meminfo'
 SYSTEMFILE_PROC_FILESYSTEMS = '/proc/filesystems'
 SYSTEMFILE_PROC_STAT = '/proc/stat'
+SYSTEMFILE_DEV_DISKBY = {
+    'ids': '/dev/disk/by-id',
+    'labels': '/dev/disk/by-label',
+}
 
 
 UPDATE_DEFAULT_SEC = 30
@@ -56,6 +62,7 @@ UPDATE_CPU_SEC = 2
 RESOURCENAME_MEMORY = 'memory'
 RESOURCENAME_DISKPARTITIONS = 'diskpartitions'
 RESOURCENAME_DISKUSAGE = 'diskusage'
+RESOURCENAME_DISKBY = 'diskby'
 RESOURCENAME_CPUPREVTIMES = 'cpuprevtimes'
 RESOURCENAME_CPUTIMES = 'cputimes'
 RESOURCENAME_CPULOADS = 'cpuloads'
@@ -63,10 +70,12 @@ RESOURCENAME_CPULOADS = 'cpuloads'
 RESOURCE_MEMORY = collections.namedtuple('memory', ['total', 'available',
                                                     'percent_used'])
 RESOURCE_DISKPARTITION = collections.namedtuple('diskpartition',
-                                                ['total', 'used', 'free'])
+                                                ['devicename', 'mountpoint',
+                                                 'filesystem'])
 RESOURCE_DISKUSAGE = collections.namedtuple('diskusage', ['total', 'used',
                                                           'free',
                                                           'percent_used'])
+RESOURCE_DISKBY = collections.namedtuple('diskby', ['device', 'ids', 'labels'])
 RESOURCE_CPUTIME = collections.namedtuple('cputime', ['cpu', 'total', 'idle',
                                                       'nonidle'])
 RESOURCE_CPULOAD = collections.namedtuple('cpuload', ['cpu', 'load'])
@@ -259,7 +268,7 @@ class Disk(SystemInfoStorage):
 
     Returns:
       A list of named tuples. Each named tuple has the following fields:
-        mountname: The name of the partition.
+        devicename: The name of the partition.
         mountpoint: The mount point of the partition.
         filesystem: The file system in use on the partition.
     """
@@ -300,7 +309,7 @@ class Disk(SystemInfoStorage):
 
     Args:
       partition: The partition for which to check usage. This is the
-        same as the 'mountpoint' attribute given in the return value
+        same as the 'devicename' attribute given in the return value
         of DiskPartitions.
 
     Returns:
@@ -321,6 +330,41 @@ class Disk(SystemInfoStorage):
     diskusage = RESOURCE_DISKUSAGE(total, used, free, percent_used)
 
     return diskusage
+
+  @CheckStorage(RESOURCENAME_DISKBY)
+  def DiskBy(self, device):
+    """Collects information under the SYSTEMFILE_DEV_DISKBY directories.
+
+    Args:
+      device: This is the same as the 'devicename' attribute given
+        in the return value of DiskPartitions.
+
+    Returns:
+      A named tuple with the following fields:
+        device: The name of the device, same as the given argument.
+        ids: A list of ids assigned to this device.
+        labels: A list of labels assigned to this device.
+    """
+    ids = []
+    labels = []
+
+    devicename = os.path.basename(device)
+    for prop, diskdir in SYSTEMFILE_DEV_DISKBY.iteritems():
+      cmd = ['find', diskdir, '-lname', '*%s' % devicename]
+      cmd_result = cros_build_lib.RunCommand(cmd, log_output=True)
+
+      if not cmd_result.output:
+        continue
+
+      results = cmd_result.output.split()
+      results = [os.path.basename(p) for p in results]
+
+      if 'ids' == prop:
+        ids = results
+      elif 'labels' == prop:
+        labels = results
+
+    return RESOURCE_DISKBY(device, ids, labels)
 
 
 class Cpu(SystemInfoStorage):
