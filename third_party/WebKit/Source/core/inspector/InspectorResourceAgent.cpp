@@ -58,6 +58,7 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
@@ -174,6 +175,21 @@ KURL urlWithoutFragment(const KURL& url)
     KURL result = url;
     result.removeFragmentIdentifier();
     return result;
+}
+
+TypeBuilder::Network::Request::MixedContentType::Enum mixedContentTypeForContextType(MixedContentChecker::ContextType contextType)
+{
+    switch (contextType) {
+    case MixedContentChecker::ContextTypeNotMixedContent:
+        return TypeBuilder::Network::Request::MixedContentType::None;
+    case MixedContentChecker::ContextTypeBlockable:
+        return TypeBuilder::Network::Request::MixedContentType::Blockable;
+    case MixedContentChecker::ContextTypeOptionallyBlockable:
+    case MixedContentChecker::ContextTypeShouldBeBlockable:
+        return TypeBuilder::Network::Request::MixedContentType::Optionally_blockable;
+    }
+
+    return TypeBuilder::Network::Request::MixedContentType::None;
 }
 
 } // namespace
@@ -349,7 +365,7 @@ DEFINE_TRACE(InspectorResourceAgent)
     InspectorBaseAgent::trace(visitor);
 }
 
-void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
+void InspectorResourceAgent::willSendRequest(LocalFrame* frame, unsigned long identifier, DocumentLoader* loader, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
     // Ignore the request initiated internally.
     if (initiatorInfo.name == FetchInitiatorTypeNames::internal)
@@ -397,6 +413,8 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
     }
 
     RefPtr<TypeBuilder::Network::Request> requestInfo(buildObjectForResourceRequest(request));
+
+    requestInfo->setMixedContentType(mixedContentTypeForContextType(MixedContentChecker::contextTypeForInspector(frame, request)));
 
     if (!m_hostId.isEmpty())
         request.addHTTPHeaderField(kDevToolsEmulateNetworkConditionsClientId, AtomicString(m_hostId));

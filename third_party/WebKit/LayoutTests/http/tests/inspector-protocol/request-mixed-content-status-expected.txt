@@ -1,0 +1,12 @@
+CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/inspector-protocol/resources/active-mixed-content-iframe.html' was loaded over HTTPS, but requested an insecure script 'http://127.0.0.1:8000/inspector-protocol/resources/blank.js'. This content should also be served over HTTPS.
+CONSOLE WARNING: Mixed Content: The page at 'https://127.0.0.1:8443/inspector-protocol/resources/passive-mixed-content-iframe.html' was loaded over HTTPS, but requested an insecure image 'http://127.0.0.1:8000/resources/square.png'. This content should also be served over HTTPS.
+Tests that willSendRequest contains the correct mixed content status.
+
+Network agent enabled
+Mixed content type of https://127.0.0.1:8443/inspector-protocol/resources/no-mixed-content-iframe.html: none
+Mixed content type of https://127.0.0.1:8443/inspector-protocol/resources/active-mixed-content-iframe.html: none
+Mixed content type of https://127.0.0.1:8443/inspector-protocol/resources/passive-mixed-content-iframe.html: none
+Mixed content type of https://127.0.0.1:8443/inspector-protocol/resources/blank.js: none
+Mixed content type of http://127.0.0.1:8000/inspector-protocol/resources/blank.js: blockable
+Mixed content type of http://127.0.0.1:8000/resources/square.png: optionally-blockable
+

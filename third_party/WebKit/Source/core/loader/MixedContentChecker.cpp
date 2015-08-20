@@ -342,6 +342,9 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         if (allowed)
             client->didDisplayInsecureContent();
         break;
+    case ContextTypeNotMixedContent:
+        ASSERT_NOT_REACHED();
+        break;
     };
 
     if (reportingStatus == SendReport)
@@ -425,6 +428,37 @@ void MixedContentChecker::checkMixedPrivatePublic(LocalFrame* frame, const Atomi
     // Just count these for the moment, don't block them.
     if (Platform::current()->isReservedIPAddress(resourceIPAddress) && !frame->document()->isHostedInReservedIPRange())
         UseCounter::count(frame->document(), UseCounter::MixedContentPrivateHostnameInPublicHostname);
+}
+
+LocalFrame* MixedContentChecker::effectiveFrameForFrameType(LocalFrame* frame, WebURLRequest::FrameType frameType)
+{
+    // If we're loading the main resource of a subframe, ensure that we check
+    // against the parent of the active frame, rather than the frame itself.
+    LocalFrame* effectiveFrame = frame;
+    if (frameType == WebURLRequest::FrameTypeNested) {
+        // FIXME: Deal with RemoteFrames.
+        Frame* parentFrame = effectiveFrame->tree().parent();
+        ASSERT(parentFrame);
+        if (parentFrame->isLocalFrame())
+            effectiveFrame = toLocalFrame(parentFrame);
+    }
+    return effectiveFrame;
+}
+
+MixedContentChecker::ContextType MixedContentChecker::contextTypeForInspector(LocalFrame* frame, const ResourceRequest& request)
+{
+    LocalFrame* effectiveFrame = effectiveFrameForFrameType(frame, request.frameType());
+
+    LocalFrame* mixedFrame = inWhichFrameIsContentMixed(effectiveFrame, request.frameType(), request.url());
+    if (!mixedFrame)
+        return ContextTypeNotMixedContent;
+
+    // See comment in shouldBlockFetch() about loading the main resource of a subframe.
+    if (request.frameType() == WebURLRequest::FrameTypeNested && !SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())) {
+        return ContextTypeOptionallyBlockable;
+    }
+
+    return contextTypeFromContext(request.requestContext(), mixedFrame);
 }
 
 } // namespace blink

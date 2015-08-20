@@ -225,7 +225,7 @@ interface InspectorInstrumentation {
     void applyUserAgentOverride(LocalFrame*, String* userAgent);
 
     [Resource]
-    void willSendRequest(LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
+    void willSendRequest([Keep] LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 
     [Resource]
     void markResourceAsCached(LocalFrame*, unsigned long identifier);

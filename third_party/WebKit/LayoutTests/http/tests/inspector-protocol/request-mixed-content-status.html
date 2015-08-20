@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="../inspector-protocol/inspector-protocol-test.js"></script>
+<script src="/resources/get-host-info.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.overridePreference("WebKitAllowRunningInsecureContent", true);
+    testRunner.overridePreference("WebKitAllowDisplayingInsecureContent", true);
+}
+
+function noMixedContent()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = get_host_info().HTTPS_ORIGIN + "/inspector-protocol/resources/no-mixed-content-iframe.html";
+    document.body.appendChild(iframe);
+}
+
+function blockableMixedContent()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = get_host_info().HTTPS_ORIGIN + "/inspector-protocol/resources/active-mixed-content-iframe.html";
+    document.body.appendChild(iframe);
+}
+
+function optionallyBlockableMixedContent()
+{
+    var iframe = document.createElement("iframe");
+    iframe.src = get_host_info().HTTPS_ORIGIN + "/inspector-protocol/resources/passive-mixed-content-iframe.html";
+    document.body.appendChild(iframe);
+}
+
+function test()
+{
+    InspectorTest.eventHandler["Network.requestWillBeSent"] = onRequestWillBeSent;
+    InspectorTest.sendCommand("Network.enable", {}, didEnableNetwork);
+
+    function didEnableNetwork(messageObject)
+    {
+        if (messageObject.error) {
+            InspectorTest.log("FAIL: Couldn't enable network agent" + messageObject.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.log("Network agent enabled");
+        // FIXME(estark): use Runtime.evaluate callbacks instead of
+        // firing these off all at once and tracking state in
+        // onRequestWillBeSent().
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "noMixedContent()" });
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "blockableMixedContent()" });
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "optionallyBlockableMixedContent()" });
+    }
+
+    var num_requests = 0;
+    var num_expected_requests = 6;
+    function onRequestWillBeSent(event) {
+        var req = event.params.request;
+        InspectorTest.log("Mixed content type of " + req.url + ": " + req.mixedContentType);
+        num_requests++;
+        if (num_requests == num_expected_requests)
+            InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    <p>Tests that willSendRequest contains the correct mixed content status.</p>
+</body>
+</html>
