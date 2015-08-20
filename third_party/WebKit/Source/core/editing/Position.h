@@ -235,11 +235,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionAlgorithm<EditingInCom
 using Position = PositionAlgorithm<EditingStrategy>;
 using PositionInComposedTree = PositionAlgorithm<EditingInComposedTreeStrategy>;
 
-// TODO(yosin) We should make |parentEditingBoundary()| as static function
-// in "VisibleUnits.cpp", since it is used only there.
-CORE_EXPORT Node* parentEditingBoundary(const Position&);
-CORE_EXPORT Node* parentEditingBoundary(const PositionInComposedTree&);
-
 template <typename Strategy>
 bool operator==(const PositionAlgorithm<Strategy>& a, const PositionAlgorithm<Strategy>& b)
 {

@@ -455,6 +455,30 @@ VisiblePosition rightWordPosition(const VisiblePosition& visiblePosition, bool s
     return rightWordBreak;
 }
 
+template <typename Strategy>
+static ContainerNode* nonShadowBoundaryParentNode(Node* node)
+{
+    ContainerNode* parent = Strategy::parent(*node);
+    return parent && !parent->isShadowRoot() ? parent : nullptr;
+}
+
+template <typename Strategy>
+static Node* parentEditingBoundary(const PositionAlgorithm<Strategy>& position)
+{
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode)
+        return nullptr;
+
+    Node* documentElement = anchorNode->document().documentElement();
+    if (!documentElement)
+        return nullptr;
+
+    Node* boundary = position.computeContainerNode();
+    while (boundary != documentElement && nonShadowBoundaryParentNode<Strategy>(boundary) && anchorNode->hasEditableStyle() == Strategy::parent(*boundary)->hasEditableStyle())
+        boundary = nonShadowBoundaryParentNode<Strategy>(boundary);
+
+    return boundary;
+}
 
 enum BoundarySearchContextAvailability { DontHaveMoreContext, MayHaveMoreContext };
 
