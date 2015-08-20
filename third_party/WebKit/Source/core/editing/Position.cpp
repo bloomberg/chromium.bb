@@ -528,29 +528,6 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
 }
 
 template <typename Strategy>
-Node* PositionAlgorithm<Strategy>::rootUserSelectAllForNode(Node* node)
-{
-    if (!node || !nodeIsUserSelectAll(node))
-        return 0;
-    Node* parent = Strategy::parent(*node);
-    if (!parent)
-        return node;
-
-    Node* candidateRoot = node;
-    while (parent) {
-        if (!parent->layoutObject()) {
-            parent = Strategy::parent(*parent);
-            continue;
-        }
-        if (!nodeIsUserSelectAll(parent))
-            break;
-        candidateRoot = parent;
-        parent = Strategy::parent(*candidateRoot);
-    }
-    return candidateRoot;
-}
-
-template <typename Strategy>
 bool PositionAlgorithm<Strategy>::isCandidate() const
 {
     if (isNull())

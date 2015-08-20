@@ -639,7 +639,7 @@ VisiblePosition FrameSelection::nextWordPositionForPlatform(const VisiblePositio
 
 static void adjustPositionForUserSelectAll(VisiblePosition& pos, bool isForward)
 {
-    if (Node* rootUserSelectAll = Position::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
+    if (Node* rootUserSelectAll = EditingStrategy::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
         pos = VisiblePosition(isForward ? positionAfterNode(rootUserSelectAll).downstream(CanCrossEditingBoundary) : positionBeforeNode(rootUserSelectAll).upstream(CanCrossEditingBoundary));
 }
 

@@ -67,6 +67,29 @@ int EditingAlgorithm<Traversal>::lastOffsetForEditing(const Node* node)
     return 1;
 }
 
+template <typename Strategy>
+Node* EditingAlgorithm<Strategy>::rootUserSelectAllForNode(Node* node)
+{
+    if (!node || !nodeIsUserSelectAll(node))
+        return nullptr;
+    Node* parent = Strategy::parent(*node);
+    if (!parent)
+        return node;
+
+    Node* candidateRoot = node;
+    while (parent) {
+        if (!parent->layoutObject()) {
+            parent = Strategy::parent(*parent);
+            continue;
+        }
+        if (!nodeIsUserSelectAll(parent))
+            break;
+        candidateRoot = parent;
+        parent = Strategy::parent(*candidateRoot);
+    }
+    return candidateRoot;
+}
+
 template class CORE_TEMPLATE_EXPORT EditingAlgorithm<NodeTraversal>;
 template class CORE_TEMPLATE_EXPORT EditingAlgorithm<ComposedTreeTraversal>;
 
