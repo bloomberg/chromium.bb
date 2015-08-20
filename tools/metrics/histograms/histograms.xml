@@ -46725,6 +46725,58 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tabs.StateTransfer.NumberOfOtherTabsActivatedBeforeMadeActive"
+    units="tabs">
+  <owner>kouhei@chromium.org</owner>
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Recorded once per tab activation. The number of tabs that were activated
+    while the tab was inactive.
+  </summary>
+  <details>
+    This metric is to be removed after M46 hits stable. We don't expect this
+    metric to change over release, so we will remove this once we have the
+    numbers from stable.
+  </details>
+</histogram>
+
+<histogram name="Tabs.StateTransfer.TabDistanceInactiveToActive" units="tabs">
+  <owner>kouhei@chromium.org</owner>
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Number of tabs between the previously active tab and the new active tab.
+  </summary>
+  <details>
+    This metric is to be removed after M46 hits stable. We don't expect this
+    metric to change over release, so we will remove this once we have the
+    numbers from stable.
+  </details>
+</histogram>
+
+<histogram name="Tabs.StateTransfer.Target" enum="TabStripState">
+  <owner>kouhei@chromium.org</owner>
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    The state to which a tab transitioned. Recorded when a tab transitions from
+    the state in the histogram name to a new state.
+  </summary>
+  <details>
+    kouhei@ and tzik@ will remove some variation of these once M46 hits stable.
+  </details>
+</histogram>
+
+<histogram name="Tabs.StateTransfer.Time" units="milliseconds">
+  <owner>kouhei@chromium.org</owner>
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Tabs.StateTransfer.TimeA_B measures the time a tab was in state A before it
+    transferred to state B.
+  </summary>
+  <details>
+    kouhei@ and tzik@ will remove some variation of these once M46 hits stable.
+  </details>
+</histogram>
+
 <histogram name="Tabs.SwitchFromCloseLatency" units="ms">
   <owner>simonb@chromium.org</owner>
   <summary>
@@ -71551,6 +71603,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="Evicted due to page loading when backgrounding"/>
 </enum>
 
+<enum name="TabStripState" type="int">
+  <int value="0" label="Initial state"/>
+  <int value="1" label="Tab is active, shown foreground."/>
+  <int value="2" label="Tab is inactive, in background."/>
+  <int value="3" label="Tab is detached from tab-strip."/>
+  <int value="4" label="Tab is closed."/>
+</enum>
+
 <enum name="TabSwitchedToForegroundLaunchedWithURL" type="int">
   <obsolete>
     Deprecated as of 04/2014.
@@ -73401,6 +73461,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Tray"/>
   <suffix name="Help"/>
   <affected-histogram name="CrosFirstRun.TimeSpentOnStep"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CurrentTabState">
+  <suffix name="Initial" label="For a tab that is just being created."/>
+  <suffix name="Active"
+      label="For an active tab which is shown foreground in a browser window."/>
+  <suffix name="Inactive"
+      label="For tabs in background and not shown to user."/>
+  <suffix name="Detached"
+      label="For a tab that is being dragged by user to outside of the
+             browser window."/>
+  <affected-histogram name="Tabs.StateTransfer.Target"/>
+  <affected-histogram name="Tabs.StateTransfer.Time"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="DataReductionProxy">
@@ -76056,6 +76129,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Startup" label="NTP loaded during browser startup."/>
   <suffix name="NewTab" label="NTP loaded on a new tab."/>
   <affected-histogram name="NewTabPage.LoadTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="NextTabState">
+  <suffix name="Active"
+      label="For a tab active which is shown foreground in a browser window."/>
+  <suffix name="Inactive"
+      label="For tabs in background and not shown to user."/>
+  <suffix name="Detached"
+      label="For a tab that is being dragged by user to outside of the
+             browser window."/>
+  <suffix name="Closed" label="For a tab that is about to be closed."/>
+  <affected-histogram name="Tabs.StateTransfer.Time_Active"/>
+  <affected-histogram name="Tabs.StateTransfer.Time_Detached"/>
+  <affected-histogram name="Tabs.StateTransfer.Time_Inactive"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NQE.DifferentPercentiles" separator=".">
