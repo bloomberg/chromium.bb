@@ -51,6 +51,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/input/EventHandler.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutListBox.h"
@@ -467,8 +468,11 @@ HTMLOptionElement* HTMLSelectElement::item(unsigned index)
 
 void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, ExceptionState& exceptionState)
 {
-    if (index > maxSelectItems - 1)
-        index = maxSelectItems - 1;
+    if (index >= length() && index >= maxSelectItems) {
+        document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
+            String::format("Blocked to expand the option list and set an option at index=%u.  The maximum list length is %u.", index, maxSelectItems)));
+        return;
+    }
     int diff = index - length();
     HTMLOptionElementOrHTMLOptGroupElement element;
     element.setHTMLOptionElement(option);
@@ -491,8 +495,11 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
 
 void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionState)
 {
-    if (newLen > maxSelectItems)
+    if (newLen > length() && newLen > maxSelectItems) {
+        document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,
+            String::format("Blocked to expand the option list to %u items.  The maximum list length is %u.", newLen, maxSelectItems)));
         return;
+    }
     int diff = length() - newLen;
 
     if (diff < 0) { // Add dummy elements.
