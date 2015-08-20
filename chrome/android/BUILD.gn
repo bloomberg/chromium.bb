@@ -675,7 +675,7 @@ jinja_template("chrome_public_apk_manifest") {
   variables = jinja_variables
   variables += [
     "min_sdk_version=16",
-    "target_sdk_version=22",
+    "target_sdk_version=23",
   ]
 }
 
