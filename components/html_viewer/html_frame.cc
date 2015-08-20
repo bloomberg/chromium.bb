@@ -34,7 +34,6 @@
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager.h"
 #include "components/view_manager/public/interfaces/surfaces.mojom.h"
-#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/connect.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"

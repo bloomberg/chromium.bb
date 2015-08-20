@@ -10,10 +10,8 @@
 #include "components/view_manager/public/cpp/view_manager_delegate.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
 #include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
-#include "mandoline/services/navigation/public/interfaces/navigation.mojom.h"
 #include "mandoline/tab/public/cpp/web_view.h"
 #include "mandoline/tab/public/interfaces/web_view.mojom.h"
-#include "mandoline/ui/browser/navigator_host_impl.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
@@ -38,7 +36,6 @@ class Browser : public mojo::ViewManagerDelegate,
                 public mojo::ViewManagerRootClient,
                 public web_view::mojom::WebViewClient,
                 public ViewEmbedder,
-                public mojo::InterfaceFactory<mojo::NavigatorHost>,
                 public mojo::InterfaceFactory<ViewEmbedder> {
  public:
   Browser(mojo::ApplicationImpl* app, BrowserUI* ui);
@@ -76,10 +73,6 @@ class Browser : public mojo::ViewManagerDelegate,
   // Overridden from ViewEmbedder:
   void Embed(mojo::URLRequestPtr request) override;
 
-  // Overridden from mojo::InterfaceFactory<mojo::NavigatorHost>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::NavigatorHost> request) override;
-
   // Overridden from mojo::InterfaceFactory<ViewEmbedder>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
@@ -96,8 +89,6 @@ class Browser : public mojo::ViewManagerDelegate,
   GURL default_url_;
 
   mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
-
-  NavigatorHostImpl navigator_host_;
 
   GURL current_url_;
 

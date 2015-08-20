@@ -35,7 +35,6 @@ Browser::Browser(mojo::ApplicationImpl* app, BrowserUI* ui)
       view_manager_init_(app, this, this),
       root_(nullptr),
       content_(nullptr),
-      navigator_host_(this),
       web_view_(this) {
 }
 
@@ -119,7 +118,7 @@ void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
 void Browser::OnAccelerator(mojo::EventPtr event) {
   DCHECK_EQ(mojo::KEYBOARD_CODE_BROWSER_BACK,
             event->key_data->windows_key_code);
-  navigator_host_.RequestNavigateHistory(-1);
+  NOTIMPLEMENTED();
 }
 
 void Browser::TopLevelNavigate(mojo::URLRequestPtr request) {
@@ -150,13 +149,6 @@ void Browser::Embed(mojo::URLRequestPtr request) {
     ui_->OnURLChanged();
 
   web_view_.web_view()->LoadRequest(request.Pass());
-
-  navigator_host_.RecordNavigation(gurl.spec());
-}
-
-void Browser::Create(mojo::ApplicationConnection* connection,
-                     mojo::InterfaceRequest<mojo::NavigatorHost> request) {
-  navigator_host_.Bind(request.Pass());
 }
 
 void Browser::Create(mojo::ApplicationConnection* connection,

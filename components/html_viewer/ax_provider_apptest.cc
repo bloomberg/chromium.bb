@@ -30,15 +30,6 @@ bool AxTreeContainsText(const Array<AxNodePtr>& tree, const String& text) {
   return false;
 }
 
-// Switch to disable out of process iframes.
-const char kDisableOOPIF[] = "disable--oopifs";
-
-bool EnableOOPIFs() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableOOPIF))
-    return false;
-  return true;
-}
-
 class TestFrameTreeServer : public mandoline::FrameTreeServer {
  public:
   TestFrameTreeServer() {}
@@ -93,23 +84,21 @@ TEST_F(AXProviderTest, HelloWorld) {
   View* embed_view = window_manager()->CreateView();
   embed_view->Embed(view_manager_client.Pass());
 
-  if (EnableOOPIFs()) {
-    TestFrameTreeServer frame_tree_server;
-    mandoline::FrameTreeServerPtr frame_tree_server_ptr;
-    mojo::Binding<mandoline::FrameTreeServer> frame_tree_server_binding(
-        &frame_tree_server);
-    frame_tree_server_binding.Bind(GetProxy(&frame_tree_server_ptr).Pass());
+  TestFrameTreeServer frame_tree_server;
+  mandoline::FrameTreeServerPtr frame_tree_server_ptr;
+  mojo::Binding<mandoline::FrameTreeServer> frame_tree_server_binding(
+      &frame_tree_server);
+  frame_tree_server_binding.Bind(GetProxy(&frame_tree_server_ptr).Pass());
 
-    mojo::Array<mandoline::FrameDataPtr> array(1u);
-    array[0] = mandoline::FrameData::New().Pass();
-    array[0]->frame_id = embed_view->id();
-    array[0]->parent_id = 0u;
+  mojo::Array<mandoline::FrameDataPtr> array(1u);
+  array[0] = mandoline::FrameData::New().Pass();
+  array[0]->frame_id = embed_view->id();
+  array[0]->parent_id = 0u;
 
-    mandoline::FrameTreeClientPtr frame_tree_client;
-    connection->ConnectToService(&frame_tree_client);
-    frame_tree_client->OnConnect(frame_tree_server_ptr.Pass(), 1u,
-                                 array.Pass());
-  }
+  mandoline::FrameTreeClientPtr frame_tree_client;
+  connection->ConnectToService(&frame_tree_client);
+  frame_tree_client->OnConnect(frame_tree_server_ptr.Pass(), 1u,
+                               array.Pass());
 
   // Connect to the AxProvider of the HTML document and get the AxTree.
   AxProviderPtr ax_provider;

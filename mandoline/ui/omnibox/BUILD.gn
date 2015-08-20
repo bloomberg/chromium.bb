@@ -11,7 +11,6 @@ mojo_native_application("omnibox") {
 
   deps = [
     ":lib",
-    "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/common/resources",
     "//mojo/application/public/cpp",
   ]
@@ -28,7 +27,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/view_manager/public/cpp",
-    "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/aura",
     "//mandoline/ui/browser/public/interfaces",
     "//mojo/application/public/cpp:sources",

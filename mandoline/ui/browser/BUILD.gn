@@ -13,7 +13,6 @@ mojo_native_application("browser") {
 
   deps = [
     ":lib",
-    "//mandoline/services/navigation/public/interfaces",
     "//mandoline/ui/common/resources",
     "//mojo/application/public/cpp",
   ]
@@ -27,15 +26,11 @@ source_set("lib") {
     "browser.h",
     "browser_manager.cc",
     "browser_manager.h",
-    "navigator_host_impl.cc",
-    "navigator_host_impl.h",
   ]
 
   deps = [
     "public/interfaces",
     "//base",
-    "//components/view_manager/public/cpp",
-    "//mandoline/services/navigation/public/interfaces",
     "//mandoline/tab/public/cpp",
     "//mandoline/tab/public/interfaces",
     "//mojo/application/public/cpp:sources",

@@ -31,19 +31,10 @@ namespace mojo {
 
 namespace {
 
-// Switch to enable out of process iframes.
-const char kDisableOOPIF[] = "disable--oopifs";
-
 const char kAddFrameWithEmptyPageScript[] =
     "var iframe = document.createElement(\"iframe\");"
     "iframe.src = \"http://127.0.0.1:%u/files/empty_page.html\";"
     "document.body.appendChild(iframe);";
-
-bool EnableOOPIFs() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableOOPIF))
-    return false;
-  return true;
-}
 
 mojo::ApplicationConnection* ApplicationConnectionForFrame(Frame* frame) {
   return static_cast<FrameConnection*>(frame->user_data())
@@ -204,9 +195,6 @@ class HTMLFrameTest : public ViewManagerTestBase {
 };
 
 TEST_F(HTMLFrameTest, PageWithSingleFrame) {
-  if (!EnableOOPIFs())
-    return;
-
   View* embed_view = window_manager()->CreateView();
 
   FrameConnection* root_connection =
@@ -286,9 +274,6 @@ class ExistingFrameNavigationDelegate
 // Creates two frames. The parent navigates the child frame by way of changing
 // the location of the child frame.
 TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
-  if (!EnableOOPIFs())
-    return;
-
   View* embed_view = window_manager()->CreateView();
 
   ExistingFrameNavigationDelegate frame_tree_delegate(application_impl());
@@ -328,9 +313,6 @@ TEST_F(HTMLFrameTest, ChangeLocationOfChildFrame) {
 }
 
 TEST_F(HTMLFrameTest, DynamicallyAddFrameAndVerifyParent) {
-  if (!EnableOOPIFs())
-    return;
-
   Frame* child_frame = LoadEmptyPageAndCreateFrame(nullptr);
   ASSERT_TRUE(child_frame);
 
@@ -353,9 +335,6 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndVerifyParent) {
 }
 
 TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
-  if (!EnableOOPIFs())
-    return;
-
   Frame* child_frame = LoadEmptyPageAndCreateFrame(nullptr);
   ASSERT_TRUE(child_frame);
 
@@ -391,9 +370,6 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
 
 // Triggers dynamic addition and removal of a frame.
 TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
-  if (!EnableOOPIFs())
-    return;
-
   // Create a child frame, and in that child frame create another child frame.
   Frame* child_frame = LoadEmptyPageAndCreateFrame(nullptr);
   ASSERT_TRUE(child_frame);
@@ -451,9 +427,6 @@ TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
 
 // Verifies PostMessage() works across frames.
 TEST_F(HTMLFrameTest, PostMessage) {
-  if (!EnableOOPIFs())
-    return;
-
   mandoline::TestFrameTreeDelegate frame_tree_delegate;
   Frame* child_frame = LoadEmptyPageAndCreateFrame(&frame_tree_delegate);
   ASSERT_TRUE(child_frame);

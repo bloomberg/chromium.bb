@@ -5,11 +5,8 @@
 #include "components/html_viewer/html_document_application_delegate.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "components/html_viewer/global_state.h"
-#include "components/html_viewer/html_document.h"
 #include "components/html_viewer/html_document_oopif.h"
-#include "components/html_viewer/html_viewer_switches.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/connect.h"
@@ -17,14 +14,6 @@
 namespace html_viewer {
 
 namespace {
-
-bool EnableOOPIFs() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOOPIF)) {
-    return false;
-  }
-  return true;
-}
 
 HTMLFrame* CreateHTMLFrame(HTMLFrame::CreateParams* params) {
   return new HTMLFrame(params);
@@ -91,11 +80,6 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
   // Deleting the documents is going to trigger a callback to
   // OnHTMLDocumentDeleted() and remove from |documents_|. Copy the set so we
   // don't have to worry about the set being modified out from under us.
-  std::set<HTMLDocument*> documents(documents_);
-  for (HTMLDocument* doc : documents)
-    doc->Destroy();
-  DCHECK(documents_.empty());
-
   std::set<HTMLDocumentOOPIF*> documents2(documents2_);
   for (HTMLDocumentOOPIF* doc : documents2)
     doc->Destroy();
@@ -155,12 +139,6 @@ bool HTMLDocumentApplicationDelegate::ConfigureIncomingConnection(
   return true;
 }
 
-void HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted(
-    HTMLDocument* document) {
-  DCHECK(documents_.count(document) > 0);
-  documents_.erase(document);
-}
-
 void HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2(
     HTMLDocumentOOPIF* document) {
   DCHECK(documents2_.count(document) > 0);
@@ -174,20 +152,12 @@ void HTMLDocumentApplicationDelegate::OnResponseReceived(
     mojo::URLResponsePtr response) {
   // HTMLDocument is destroyed when the hosting view is destroyed, or
   // explicitly from our destructor.
-  if (EnableOOPIFs()) {
-    HTMLDocumentOOPIF* document = new HTMLDocumentOOPIF(
-        &app_, connection, response.Pass(), global_state_,
-        base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2,
-                   base::Unretained(this)),
-        html_frame_creation_callback_);
-    documents2_.insert(document);
-  } else {
-    HTMLDocument::CreateParams params(
-        &app_, connection, response.Pass(), global_state_,
-        base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted,
-                   base::Unretained(this)));
-    documents_.insert(new HTMLDocument(&params));
-  }
+  HTMLDocumentOOPIF* document = new HTMLDocumentOOPIF(
+      &app_, connection, response.Pass(), global_state_,
+      base::Bind(&HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2,
+                 base::Unretained(this)),
+      html_frame_creation_callback_);
+  documents2_.insert(document);
 
   if (connector_queue) {
     connector_queue->PushRequestsTo(connection);
