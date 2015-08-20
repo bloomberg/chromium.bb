@@ -66,9 +66,8 @@ group("remoting_all") {
     ]
   }
 
-  # TODO(GYP) Depends on crbug.com/471924 being fixed for PNaCl.
   if (enable_nacl) {
-    deps += [ "//remoting:remoting_key_tester" ]
+    deps += [ "//remoting/tools/javascript_key_tester" ]
   }
 }
 
@@ -188,52 +187,5 @@ if (!is_mac) {
   }
 } else {
   group("remoting_unittests") {
-  }
-}
-
-if (enable_pnacl) {
-  group("remoting_key_tester") {
-    deps = [
-      ":remoting_key_tester_copies",
-    ]
-  }
-
-  copy("remoting_key_tester_copies") {
-    sources = [
-      "tools/javascript_key_tester/background.js",
-      "tools/javascript_key_tester/chord_tracker.js",
-      "tools/javascript_key_tester/event_listeners.js",
-      "tools/javascript_key_tester/icon_128.png",
-      "tools/javascript_key_tester/main.css",
-      "tools/javascript_key_tester/main.html",
-      "tools/javascript_key_tester/main.js",
-      "tools/javascript_key_tester/manifest.json",
-      "tools/javascript_key_tester/pnacl/remoting_key_tester.nmf",
-
-      # TODO(GYP): crbug.com/471924 "$target_out_dir/remoting_key_tester_newlib.pexe",
-    ]
-
-    outputs = [
-      "$target_out_dir/remoting/key_tester/{{source_file_part}}",
-    ]
-
-    deps = [
-      ":remoting_key_tester_jscompile",
-      ":remoting_key_tester_pexe",
-    ]
-  }
-
-  group("remoting_key_tester_jscompile") {
-    # TODO(GYP): crbug.com/471926 add support for run_jscompile=true.
-    run_jscompile = false
-    if (run_jscompile) {
-    }
-  }
-
-  group("remoting_key_tester_pexe") {
-    # TODO(GYP): crbug.com/471924 implement me when we have a pnacl toolchain.
-    #sources = [
-    # "tools/javascript_key_tester/pnacl/remoting_key_tester.cc",
-    #]
   }
 }

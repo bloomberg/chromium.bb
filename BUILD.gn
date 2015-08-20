@@ -422,10 +422,6 @@ group("both_gn_and_gyp") {
       deps += [ "//components/nacl:nacl_loader_unittests" ]
     }
 
-    if (enable_nacl && enable_remoting) {
-      deps += [ "//remoting:remoting_key_tester" ]
-    }
-
     if (media_use_ffmpeg) {
       deps += [ "//media:ffmpeg_regression_tests" ]
     }
