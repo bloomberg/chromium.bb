@@ -2,47 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UTILITY_PROCESS_CONTROL_IMPL_H_
-#define UTILITY_PROCESS_CONTROL_IMPL_H_
-
-#include <map>
+#ifndef CONTENT_UTILITY_UTILITY_PROCESS_CONTROL_IMPL_H_
+#define CONTENT_UTILITY_UTILITY_PROCESS_CONTROL_IMPL_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
-#include "content/common/process_control.mojom.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
-
-class GURL;
-
-namespace mojo {
-namespace shell {
-class ApplicationLoader;
-}  // namespace shell
-}  // namespace mojo
+#include "content/child/process_control_impl.h"
 
 namespace content {
 
-// Implementation of the ProcessControl interface. Exposed to the browser via
-// the utility process's ServiceRegistry.
-class UtilityProcessControlImpl : public ProcessControl {
+// Customization of ProcessControlImpl for the utility process. Exposed to the
+// browser via the utility process's ServiceRegistry.
+class UtilityProcessControlImpl : public ProcessControlImpl {
  public:
   UtilityProcessControlImpl();
   ~UtilityProcessControlImpl() override;
 
-  using URLToLoaderMap = std::map<GURL, mojo::shell::ApplicationLoader*>;
-
-  // ProcessControl:
-  void LoadApplication(const mojo::String& url,
-                       mojo::InterfaceRequest<mojo::Application> request,
-                       const LoadApplicationCallback& callback) override;
+  // ProcessControlImpl:
+  void RegisterApplicationLoaders(URLToLoaderMap* url_to_loader_map) override;
 
  private:
-  URLToLoaderMap url_to_loader_map_;
-
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessControlImpl);
 };
 
 }  // namespace content
 
-#endif  // UTILITY_PROCESS_CONTROL_IMPL_H_
+#endif  // CONTENT_UTILITY_UTILITY_PROCESS_CONTROL_IMPL_H_

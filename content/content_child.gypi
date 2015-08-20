@@ -186,6 +186,8 @@
       'child/plugin_param_traits.h',
       'child/power_monitor_broadcast_source.cc',
       'child/power_monitor_broadcast_source.h',
+      'child/process_control_impl.cc',
+      'child/process_control_impl.h',
       'child/push_messaging/push_dispatcher.cc',
       'child/push_messaging/push_dispatcher.h',
       'child/push_messaging/push_provider.cc',

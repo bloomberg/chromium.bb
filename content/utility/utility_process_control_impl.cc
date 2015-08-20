@@ -5,12 +5,10 @@
 #include "content/utility/utility_process_control_impl.h"
 
 #include "base/bind.h"
-#include "base/stl_util.h"
 #include "content/public/common/content_client.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "mojo/shell/static_application_loader.h"
-#include "url/gurl.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
 #include "media/mojo/services/mojo_media_application.h"
@@ -27,39 +25,28 @@ void QuitProcess() {
 
 }  // namespace
 
-UtilityProcessControlImpl::UtilityProcessControlImpl() {
+UtilityProcessControlImpl::UtilityProcessControlImpl() {}
+
+UtilityProcessControlImpl::~UtilityProcessControlImpl() {}
+
+void UtilityProcessControlImpl::RegisterApplicationLoaders(
+    URLToLoaderMap* url_to_loader_map) {
+  URLToLoaderMap& map_ref = *url_to_loader_map;
+
   ContentUtilityClient::StaticMojoApplicationMap apps;
   GetContentClient()->utility()->RegisterMojoApplications(&apps);
+
   for (const auto& entry : apps) {
-    url_to_loader_map_[entry.first] = new mojo::shell::StaticApplicationLoader(
+    map_ref[entry.first] = new mojo::shell::StaticApplicationLoader(
         entry.second, base::Bind(&QuitProcess));
   }
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  url_to_loader_map_[media::MojoMediaApplication::AppUrl()] =
+  map_ref[media::MojoMediaApplication::AppUrl()] =
       new mojo::shell::StaticApplicationLoader(
           base::Bind(&media::MojoMediaApplication::CreateApp),
           base::Bind(&QuitProcess));
 #endif
-}
-
-UtilityProcessControlImpl::~UtilityProcessControlImpl() {
-  STLDeleteValues(&url_to_loader_map_);
-}
-
-void UtilityProcessControlImpl::LoadApplication(
-    const mojo::String& url,
-    mojo::InterfaceRequest<mojo::Application> request,
-    const LoadApplicationCallback& callback) {
-  GURL application_url = GURL(url.To<std::string>());
-  auto it = url_to_loader_map_.find(application_url);
-  if (it == url_to_loader_map_.end()) {
-    callback.Run(false);
-    return;
-  }
-
-  callback.Run(true);
-  it->second->Load(application_url, request.Pass());
 }
 
 }  // namespace content
