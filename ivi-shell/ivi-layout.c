@@ -154,12 +154,8 @@ remove_link_to_surface(struct ivi_layout_layer *ivilayer)
 	struct link_layer *next = NULL;
 
 	wl_list_for_each_safe(link, next, &ivilayer->link_to_surface, link_to_layer) {
-		if (!wl_list_empty(&link->link_to_layer)) {
-			wl_list_remove(&link->link_to_layer);
-		}
-		if (!wl_list_empty(&link->link)) {
-			wl_list_remove(&link->link);
-		}
+		wl_list_remove(&link->link_to_layer);
+		wl_list_remove(&link->link);
 		free(link);
 	}
 
@@ -173,7 +169,6 @@ static void
 add_link_to_layer(struct ivi_layout_screen *iviscrn,
 		  struct link_screen *link_screen)
 {
-	wl_list_init(&link_screen->link_to_screen);
 	wl_list_insert(&iviscrn->link_to_layer, &link_screen->link_to_screen);
 }
 
@@ -193,7 +188,6 @@ add_ordersurface_to_layer(struct ivi_layout_surface *ivisurf,
 	}
 
 	link_layer->ivilayer = ivilayer;
-	wl_list_init(&link_layer->link);
 	wl_list_insert(&ivisurf->layer_list, &link_layer->link);
 	add_link_to_surface(ivilayer, link_layer);
 }
@@ -205,12 +199,8 @@ remove_ordersurface_from_layer(struct ivi_layout_surface *ivisurf)
 	struct link_layer *next = NULL;
 
 	wl_list_for_each_safe(link_layer, next, &ivisurf->layer_list, link) {
-		if (!wl_list_empty(&link_layer->link)) {
-			wl_list_remove(&link_layer->link);
-		}
-		if (!wl_list_empty(&link_layer->link_to_layer)) {
-			wl_list_remove(&link_layer->link_to_layer);
-		}
+		wl_list_remove(&link_layer->link);
+		wl_list_remove(&link_layer->link_to_layer);
 		free(link_layer);
 	}
 	wl_list_init(&ivisurf->layer_list);
@@ -232,7 +222,6 @@ add_orderlayer_to_screen(struct ivi_layout_layer *ivilayer,
 	}
 
 	link_scrn->iviscrn = iviscrn;
-	wl_list_init(&link_scrn->link);
 	wl_list_insert(&ivilayer->screen_list, &link_scrn->link);
 	add_link_to_layer(iviscrn, link_scrn);
 }
@@ -244,12 +233,8 @@ remove_orderlayer_from_screen(struct ivi_layout_layer *ivilayer)
 	struct link_screen *next = NULL;
 
 	wl_list_for_each_safe(link_scrn, next, &ivilayer->screen_list, link) {
-		if (!wl_list_empty(&link_scrn->link)) {
-			wl_list_remove(&link_scrn->link);
-		}
-		if (!wl_list_empty(&link_scrn->link_to_screen)) {
-			wl_list_remove(&link_scrn->link_to_screen);
-		}
+		wl_list_remove(&link_scrn->link);
+		wl_list_remove(&link_scrn->link_to_screen);
 		free(link_scrn);
 	}
 	wl_list_init(&ivilayer->screen_list);
@@ -305,9 +290,7 @@ remove_all_notification(struct wl_list *listener_list)
 
 	wl_list_for_each_safe(listener, next, listener_list, link) {
 		struct listener_layout_notification *notification = NULL;
-		if (!wl_list_empty(&listener->link)) {
-			wl_list_remove(&listener->link);
-		}
+		wl_list_remove(&listener->link);
 
 		notification =
 			container_of(listener,
@@ -424,7 +407,6 @@ create_screen(struct weston_compositor *ec)
 			continue;
 		}
 
-		wl_list_init(&iviscrn->link);
 		iviscrn->layout = layout;
 
 		iviscrn->id_screen = count;
@@ -951,10 +933,7 @@ clear_surface_pending_list(struct ivi_layout_layer *ivilayer)
 
 	wl_list_for_each_safe(surface_link, surface_next,
 			      &ivilayer->pending.surface_list, pending.link) {
-		if (!wl_list_empty(&surface_link->pending.link)) {
-			wl_list_remove(&surface_link->pending.link);
-		}
-
+		wl_list_remove(&surface_link->pending.link);
 		wl_list_init(&surface_link->pending.link);
 	}
 }
@@ -967,10 +946,7 @@ clear_surface_order_list(struct ivi_layout_layer *ivilayer)
 
 	wl_list_for_each_safe(surface_link, surface_next,
 			      &ivilayer->order.surface_list, order.link) {
-		if (!wl_list_empty(&surface_link->order.link)) {
-			wl_list_remove(&surface_link->order.link);
-		}
-
+		wl_list_remove(&surface_link->order.link);
 		wl_list_init(&surface_link->order.link);
 	}
 }
@@ -1139,9 +1115,7 @@ remove_notification(struct wl_list *listener_list, void *callback, void *userdat
 			continue;
 		}
 
-		if (!wl_list_empty(&listener->link)) {
-			wl_list_remove(&listener->link);
-		}
+		wl_list_remove(&listener->link);
 
 		free(notification->userdata);
 		free(notification);
@@ -1705,7 +1679,6 @@ ivi_layout_layer_create_with_dimension(uint32_t id_layer,
 	}
 
 	ivilayer->ref_count = 1;
-	wl_list_init(&ivilayer->link);
 	wl_signal_init(&ivilayer->property_changed);
 	wl_list_init(&ivilayer->screen_list);
 	wl_list_init(&ivilayer->link_to_surface);
@@ -1771,15 +1744,10 @@ ivi_layout_layer_destroy(struct ivi_layout_layer *ivilayer)
 	clear_surface_pending_list(ivilayer);
 	clear_surface_order_list(ivilayer);
 
-	if (!wl_list_empty(&ivilayer->pending.link)) {
-		wl_list_remove(&ivilayer->pending.link);
-	}
-	if (!wl_list_empty(&ivilayer->order.link)) {
-		wl_list_remove(&ivilayer->order.link);
-	}
-	if (!wl_list_empty(&ivilayer->link)) {
-		wl_list_remove(&ivilayer->link);
-	}
+	wl_list_remove(&ivilayer->pending.link);
+	wl_list_remove(&ivilayer->order.link);
+	wl_list_remove(&ivilayer->link);
+
 	remove_orderlayer_from_screen(ivilayer);
 	remove_link_to_surface(ivilayer);
 	ivi_layout_layer_remove_notification(ivilayer);
@@ -2048,10 +2016,7 @@ ivi_layout_layer_set_render_order(struct ivi_layout_layer *ivilayer,
 				continue;
 			}
 
-			if (!wl_list_empty(&ivisurf->pending.link)) {
-				wl_list_remove(&ivisurf->pending.link);
-			}
-			wl_list_init(&ivisurf->pending.link);
+			wl_list_remove(&ivisurf->pending.link);
 			wl_list_insert(&ivilayer->pending.surface_list,
 				       &ivisurf->pending.link);
 			break;
@@ -2295,10 +2260,7 @@ ivi_layout_screen_add_layer(struct ivi_layout_screen *iviscrn,
 
 	wl_list_for_each_safe(ivilayer, next, &layout->layer_list, link) {
 		if (ivilayer->id_layer == addlayer->id_layer) {
-			if (!wl_list_empty(&ivilayer->pending.link)) {
-				wl_list_remove(&ivilayer->pending.link);
-			}
-			wl_list_init(&ivilayer->pending.link);
+			wl_list_remove(&ivilayer->pending.link);
 			wl_list_insert(&iviscrn->pending.layer_list,
 				       &ivilayer->pending.link);
 			break;
@@ -2457,10 +2419,7 @@ ivi_layout_layer_add_surface(struct ivi_layout_layer *ivilayer,
 
 	wl_list_for_each_safe(ivisurf, next, &layout->surface_list, link) {
 		if (ivisurf->id_surface == addsurf->id_surface) {
-			if (!wl_list_empty(&ivisurf->pending.link)) {
-				wl_list_remove(&ivisurf->pending.link);
-			}
-			wl_list_init(&ivisurf->pending.link);
+			wl_list_remove(&ivisurf->pending.link);
 			wl_list_insert(&ivilayer->pending.surface_list,
 				       &ivisurf->pending.link);
 			break;
@@ -2487,9 +2446,7 @@ ivi_layout_layer_remove_surface(struct ivi_layout_layer *ivilayer,
 	wl_list_for_each_safe(ivisurf, next,
 			      &ivilayer->pending.surface_list, pending.link) {
 		if (ivisurf->id_surface == remsurf->id_surface) {
-			if (!wl_list_empty(&ivisurf->pending.link)) {
-				wl_list_remove(&ivisurf->pending.link);
-			}
+			wl_list_remove(&ivisurf->pending.link);
 			wl_list_init(&ivisurf->pending.link);
 			break;
 		}
@@ -2703,7 +2660,6 @@ ivi_layout_surface_create(struct weston_surface *wl_surface,
 		return NULL;
 	}
 
-	wl_list_init(&ivisurf->link);
 	wl_signal_init(&ivisurf->property_changed);
 	wl_signal_init(&ivisurf->configured);
 	wl_list_init(&ivisurf->layer_list);
