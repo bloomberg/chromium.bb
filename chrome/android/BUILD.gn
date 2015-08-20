@@ -637,6 +637,11 @@ android_library("chrome_shared_test_java") {
   ]
 }
 
+android_resources("chrome_public_apk_resources") {
+  resource_dirs = [ "java/res_chromium" ]
+  custom_package = "org.chromium.chrome"
+}
+
 chrome_public_apk_assets_dir = "$root_build_dir/chrome_public_apk_assets"
 
 copy_ex("chrome_public_apk_assets") {
@@ -726,6 +731,7 @@ android_apk("chrome_public_apk") {
     ":chrome_public",
     ":chrome_public_apk_assets",
     ":chrome_public_apk_manifest",
+    ":chrome_public_apk_resources",
     ":chrome_public_template_resources",
     "//base:base_java",
     google_play_services_resources,
