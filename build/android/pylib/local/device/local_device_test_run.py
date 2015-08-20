@@ -21,15 +21,14 @@ class LocalDeviceTestRun(test_run.TestRun):
   def RunTests(self):
     tests = self._GetTests()
 
-    def run_tests_on_device(dev, tests):
-      r = base_test_result.TestRunResults()
+    def run_tests_on_device(dev, tests, results):
       for test in tests:
         try:
           result = self._RunTest(dev, test)
           if isinstance(result, base_test_result.BaseTestResult):
-            r.AddResult(result)
+            results.AddResult(result)
           elif isinstance(result, list):
-            r.AddResults(result)
+            results.AddResults(result)
           else:
             raise Exception(
                 'Unexpected result type: %s' % type(result).__name__)
@@ -41,7 +40,6 @@ class LocalDeviceTestRun(test_run.TestRun):
           if isinstance(tests, test_collection.TestCollection):
             tests.test_completed()
       logging.info('Finished running tests on this device.')
-      return r
 
     tries = 0
     results = base_test_result.TestRunResults()
@@ -55,13 +53,14 @@ class LocalDeviceTestRun(test_run.TestRun):
         logging.debug('  %s', t)
 
       try:
+        try_results = base_test_result.TestRunResults()
         if self._ShouldShard():
           tc = test_collection.TestCollection(self._CreateShards(tests))
-          try_results = self._env.parallel_devices.pMap(
-              run_tests_on_device, tc).pGet(None)
+          self._env.parallel_devices.pMap(
+              run_tests_on_device, tc, try_results).pGet(None)
         else:
-          try_results = self._env.parallel_devices.pMap(
-              run_tests_on_device, tests).pGet(None)
+          self._env.parallel_devices.pMap(
+              run_tests_on_device, tests, try_results).pGet(None)
       except device_errors.CommandFailedError:
         logging.exception('Shard terminated: command failed')
       except device_errors.CommandTimeoutError:
@@ -69,13 +68,12 @@ class LocalDeviceTestRun(test_run.TestRun):
       except device_errors.DeviceUnreachableError:
         logging.exception('Shard terminated: device became unreachable')
 
-      for try_result in try_results:
-        for result in try_result.GetAll():
-          if result.GetType() in (base_test_result.ResultType.PASS,
-                                  base_test_result.ResultType.SKIP):
-            results.AddResult(result)
-          else:
-            all_fail_results[result.GetName()] = result
+      for result in try_results.GetAll():
+        if result.GetType() in (base_test_result.ResultType.PASS,
+                                base_test_result.ResultType.SKIP):
+          results.AddResult(result)
+        else:
+          all_fail_results[result.GetName()] = result
 
       results_names = set(r.GetName() for r in results.GetAll())
       tests = [t for t in tests if self._GetTestName(t) not in results_names]

@@ -4,6 +4,9 @@
 
 """Module containing base test results classes."""
 
+import threading
+
+
 class ResultType(object):
   """Class enumerating test types."""
   PASS = 'PASS'
@@ -91,60 +94,64 @@ class TestRunResults(object):
 
   def __init__(self):
     self._results = set()
+    self._results_lock = threading.RLock()
 
   def GetLogs(self):
     """Get the string representation of all test logs."""
-    s = []
-    for test_type in ResultType.GetTypes():
-      if test_type != ResultType.PASS:
-        for t in sorted(self._GetType(test_type)):
-          log = t.GetLog()
-          if log:
-            s.append('[%s] %s:' % (test_type, t))
-            s.append(log)
-    return '\n'.join(s)
+    with self._results_lock:
+      s = []
+      for test_type in ResultType.GetTypes():
+        if test_type != ResultType.PASS:
+          for t in sorted(self._GetType(test_type)):
+            log = t.GetLog()
+            if log:
+              s.append('[%s] %s:' % (test_type, t))
+              s.append(log)
+      return '\n'.join(s)
 
   def GetGtestForm(self):
     """Get the gtest string representation of this object."""
-    s = []
-    plural = lambda n, s, p: '%d %s' % (n, p if n != 1 else s)
-    tests = lambda n: plural(n, 'test', 'tests')
+    with self._results_lock:
+      s = []
+      plural = lambda n, s, p: '%d %s' % (n, p if n != 1 else s)
+      tests = lambda n: plural(n, 'test', 'tests')
 
-    s.append('[==========] %s ran.' % (tests(len(self.GetAll()))))
-    s.append('[  PASSED  ] %s.' % (tests(len(self.GetPass()))))
+      s.append('[==========] %s ran.' % (tests(len(self.GetAll()))))
+      s.append('[  PASSED  ] %s.' % (tests(len(self.GetPass()))))
 
-    skipped = self.GetSkip()
-    if skipped:
-      s.append('[  SKIPPED ] Skipped %s, listed below:' % tests(len(skipped)))
-      for t in sorted(skipped):
-        s.append('[  SKIPPED ] %s' % str(t))
+      skipped = self.GetSkip()
+      if skipped:
+        s.append('[  SKIPPED ] Skipped %s, listed below:' % tests(len(skipped)))
+        for t in sorted(skipped):
+          s.append('[  SKIPPED ] %s' % str(t))
 
-    all_failures = self.GetFail().union(self.GetCrash(), self.GetTimeout(),
-        self.GetUnknown())
-    if all_failures:
-      s.append('[  FAILED  ] %s, listed below:' % tests(len(all_failures)))
-      for t in sorted(self.GetFail()):
-        s.append('[  FAILED  ] %s' % str(t))
-      for t in sorted(self.GetCrash()):
-        s.append('[  FAILED  ] %s (CRASHED)' % str(t))
-      for t in sorted(self.GetTimeout()):
-        s.append('[  FAILED  ] %s (TIMEOUT)' % str(t))
-      for t in sorted(self.GetUnknown()):
-        s.append('[  FAILED  ] %s (UNKNOWN)' % str(t))
-      s.append('')
-      s.append(plural(len(all_failures), 'FAILED TEST', 'FAILED TESTS'))
-    return '\n'.join(s)
+      all_failures = self.GetFail().union(self.GetCrash(), self.GetTimeout(),
+          self.GetUnknown())
+      if all_failures:
+        s.append('[  FAILED  ] %s, listed below:' % tests(len(all_failures)))
+        for t in sorted(self.GetFail()):
+          s.append('[  FAILED  ] %s' % str(t))
+        for t in sorted(self.GetCrash()):
+          s.append('[  FAILED  ] %s (CRASHED)' % str(t))
+        for t in sorted(self.GetTimeout()):
+          s.append('[  FAILED  ] %s (TIMEOUT)' % str(t))
+        for t in sorted(self.GetUnknown()):
+          s.append('[  FAILED  ] %s (UNKNOWN)' % str(t))
+        s.append('')
+        s.append(plural(len(all_failures), 'FAILED TEST', 'FAILED TESTS'))
+      return '\n'.join(s)
 
   def GetShortForm(self):
     """Get the short string representation of this object."""
-    s = []
-    s.append('ALL: %d' % len(self._results))
-    for test_type in ResultType.GetTypes():
-      s.append('%s: %d' % (test_type, len(self._GetType(test_type))))
-    return ''.join([x.ljust(15) for x in s])
+    with self._results_lock:
+      s = []
+      s.append('ALL: %d' % len(self._results))
+      for test_type in ResultType.GetTypes():
+        s.append('%s: %d' % (test_type, len(self._GetType(test_type))))
+      return ''.join([x.ljust(15) for x in s])
 
   def __str__(self):
-    return self.GetLongForm()
+    return self.GetGtestForm()
 
   def AddResult(self, result):
     """Add |result| to the set.
@@ -153,7 +160,8 @@ class TestRunResults(object):
       result: An instance of BaseTestResult.
     """
     assert isinstance(result, BaseTestResult)
-    self._results.add(result)
+    with self._results_lock:
+      self._results.add(result)
 
   def AddResults(self, results):
     """Add |results| to the set.
@@ -161,8 +169,9 @@ class TestRunResults(object):
     Args:
       results: An iterable of BaseTestResult objects.
     """
-    for t in results:
-      self.AddResult(t)
+    with self._results_lock:
+      for t in results:
+        self.AddResult(t)
 
   def AddTestRunResults(self, results):
     """Add the set of test results from |results|.
@@ -171,16 +180,19 @@ class TestRunResults(object):
       results: An instance of TestRunResults.
     """
     assert isinstance(results, TestRunResults)
-    # pylint: disable=W0212
-    self._results.update(results._results)
+    with self._results_lock:
+      # pylint: disable=W0212
+      self._results.update(results._results)
 
   def GetAll(self):
     """Get the set of all test results."""
-    return self._results.copy()
+    with self._results_lock:
+      return self._results.copy()
 
   def _GetType(self, test_type):
     """Get the set of test results with the given test type."""
-    return set(t for t in self._results if t.GetType() == test_type)
+    with self._results_lock:
+      return set(t for t in self._results if t.GetType() == test_type)
 
   def GetPass(self):
     """Get the set of all passed test results."""
