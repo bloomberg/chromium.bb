@@ -36,6 +36,10 @@
 #include "chromecast/browser/metrics/external_metrics.h"
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_ANDROID)
+#include "chromecast/base/android/dumpstate_writer.h"
+#endif
+
 namespace chromecast {
 namespace metrics {
 
@@ -45,7 +49,9 @@ const int kStandardUploadIntervalMinutes = 5;
 
 const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+const char kClientIdName[] = "Client ID";
+#else
 const char kExternalUmaEventsRelativePath[] = "metrics/uma-events";
 const char kPlatformUmaEventsPath[] = "/data/share/chrome/metrics/uma-events";
 
@@ -97,6 +103,9 @@ void CastMetricsServiceClient::SetMetricsClientId(
   LOG(INFO) << "Metrics client ID set: " << client_id;
   shell::CastBrowserProcess::GetInstance()->browser_client()->
       SetMetricsClientId(client_id);
+#if defined(OS_ANDROID)
+  DumpstateWriter::AddDumpValue(kClientIdName, client_id);
+#endif
 }
 
 void CastMetricsServiceClient::OnRecordingDisabled() {

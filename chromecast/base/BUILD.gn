@@ -8,6 +8,10 @@ import("//testing/test.gni")
 
 source_set("base") {
   sources = [
+    "android/dumpstate_writer.cc",
+    "android/dumpstate_writer.h",
+    "android/system_time_change_notifier_android.cc",
+    "android/system_time_change_notifier_android.h",
     "cast_paths.cc",
     "cast_paths.h",
     "chromecast_switches.cc",
@@ -22,6 +26,8 @@ source_set("base") {
     "process_utils.h",
     "serializers.cc",
     "serializers.h",
+    "system_time_change_notifier.cc",
+    "system_time_change_notifier.h",
     "task_runner_impl.cc",
     "task_runner_impl.h",
   ]
@@ -43,6 +49,7 @@ test("cast_base_unittests") {
     "path_utils_unittest.cc",
     "process_utils_unittest.cc",
     "serializers_unittest.cc",
+    "system_time_change_notifier_unittest.cc",
   ]
 
   deps = [

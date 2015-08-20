@@ -75,6 +75,10 @@
         '../base/base.gyp:base',
       ],
       'sources': [
+        'base/android/dumpstate_writer.cc',
+        'base/android/dumpstate_writer.h',
+        'base/android/system_time_change_notifier_android.cc',
+        'base/android/system_time_change_notifier_android.h',
         'base/cast_paths.cc',
         'base/cast_paths.h',
         'base/chromecast_config_android.cc',
@@ -96,6 +100,8 @@
         'base/process_utils.h',
         'base/serializers.cc',
         'base/serializers.h',
+        'base/system_time_change_notifier.cc',
+        'base/system_time_change_notifier.h',
         'base/task_runner_impl.cc',
         'base/task_runner_impl.h',
       ],
@@ -618,6 +624,8 @@
           'type': 'none',
           'sources': [
             'base/java/src/org/chromium/chromecast/base/ChromecastConfigAndroid.java',
+            'base/java/src/org/chromium/chromecast/base/DumpstateWriter.java',
+            'base/java/src/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastCrashHandler.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastMetricsHelper.java',
             'browser/android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroid.java',

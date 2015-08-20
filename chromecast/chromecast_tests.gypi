@@ -20,6 +20,7 @@
         'base/path_utils_unittest.cc',
         'base/process_utils_unittest.cc',
         'base/serializers_unittest.cc',
+        'base/system_time_change_notifier_unittest.cc',
       ],
       'conditions': [
         ['OS == "android"', {
