@@ -22,6 +22,8 @@
 # Authors:
 #    Jérôme Glisse <glisse@freedesktop.org>
 
+include Makefile.sources
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS) -Wno-switch-enum \
 	-I$(top_srcdir) \
@@ -33,22 +35,10 @@ libdrm_amdgpu_ladir = $(libdir)
 libdrm_amdgpu_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 libdrm_amdgpu_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 
-libdrm_amdgpu_la_SOURCES = \
-	amdgpu.h \
-	amdgpu_bo.c \
-	amdgpu_cs.c \
-	amdgpu_device.c \
-	amdgpu_gpu_info.c \
-	amdgpu_internal.h \
-	amdgpu_vamgr.c \
-	util_hash.c \
-	util_hash.h \
-	util_hash_table.c \
-	util_hash_table.h
+libdrm_amdgpu_la_SOURCES = $(LIBDRM_AMDGPU_FILES)
 
 libdrm_amdgpuincludedir = ${includedir}/libdrm
-libdrm_amdgpuinclude_HEADERS = \
-	amdgpu.h
+libdrm_amdgpuinclude_HEADERS = $(LIBDRM_AMDGPU_H_FILES)
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm_amdgpu.pc
