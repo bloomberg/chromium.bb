@@ -11,6 +11,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -22,24 +23,6 @@ class AppearAnimationObserver;
 class InkDropDelegate;
 class InkDropHost;
 class View;
-
-// The different states that the ink drop animation can be animated to.
-enum class InkDropState {
-  // The ink drop is not visible.
-  HIDDEN,
-  // The view is being interacted with but the action to be triggered has not
-  // yet been determined.
-  ACTION_PENDING,
-  // The quick action for the view has been triggered. e.g. A tap gesture to
-  // click a button.
-  QUICK_ACTION,
-  // The slow action for the view has been triggered. e.g. A long press to bring
-  // up a menu.
-  SLOW_ACTION,
-  // An active state for a view that is no longer being interacted with. e.g. A
-  // pressed button that is showing a menu.
-  ACTIVATED
-};
 
 // Base class for an ink drop animation which is hosted by an InkDropHost.
 class VIEWS_EXPORT InkDropAnimationController {
