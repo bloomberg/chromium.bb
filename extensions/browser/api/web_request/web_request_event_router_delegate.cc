@@ -16,12 +16,15 @@ WebRequestEventRouterDelegate::WebRequestEventRouterDelegate() {
 WebRequestEventRouterDelegate::~WebRequestEventRouterDelegate() {
 }
 void WebRequestEventRouterDelegate::ExtractExtraRequestDetails(
-      net::URLRequest* request, base::DictionaryValue* out){
+    const net::URLRequest* request,
+    base::DictionaryValue* out) {
   out->SetInteger(keys::kTabIdKey, -1);
 }
 
 bool WebRequestEventRouterDelegate::OnGetMatchingListenersImplCheck(
-    int tab_id, int window_id, net::URLRequest* request) {
+    int tab_id,
+    int window_id,
+    const net::URLRequest* request) {
   return false;
 }
 

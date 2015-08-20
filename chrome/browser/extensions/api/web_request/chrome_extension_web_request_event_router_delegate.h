@@ -6,21 +6,24 @@
 #define CHROME_BROWSER_EXTENSIONS_API_WEB_REQUEST_CHROME_EXTENSION_WEB_REQUEST_EVENT_ROUTER_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/values.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"
 
-class ChromeExtensionWebRequestEventRouterDelegate :
-  public extensions::WebRequestEventRouterDelegate {
+namespace base {
+class DictionaryValue;
+}
+
+class ChromeExtensionWebRequestEventRouterDelegate
+    : public extensions::WebRequestEventRouterDelegate {
  public:
   ChromeExtensionWebRequestEventRouterDelegate();
   ~ChromeExtensionWebRequestEventRouterDelegate() override;
 
   // WebRequestEventRouterDelegate implementation.
-  void ExtractExtraRequestDetails(net::URLRequest* request,
+  void ExtractExtraRequestDetails(const net::URLRequest* request,
                                   base::DictionaryValue* out) override;
   bool OnGetMatchingListenersImplCheck(int tab_id,
                                        int window_id,
-                                       net::URLRequest* request) override;
+                                       const net::URLRequest* request) override;
   void LogExtensionActivity(content::BrowserContext* browser_context,
                             bool is_incognito,
                             const std::string& extension_id,

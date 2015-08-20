@@ -4,11 +4,6 @@
 
 #include "chrome/browser/extensions/api/web_request/chrome_extension_web_request_event_router_delegate.h"
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
@@ -25,21 +20,20 @@ namespace keys = extension_web_request_api_constants;
 
 namespace {
 
-void ExtractExtraRequestDetailsInternal(
-    net::URLRequest* request, int* tab_id, int* window_id) {
+void ExtractExtraRequestDetailsInternal(const net::URLRequest* request,
+                                        int* tab_id,
+                                        int* window_id) {
   if (!request->GetUserData(NULL))
     return;
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
   ExtensionRendererState::GetInstance()->GetTabAndWindowId(
-      info, tab_id, window_id);
+      content::ResourceRequestInfo::ForRequest(request), tab_id, window_id);
 }
 
 }  // namespace
 
 ChromeExtensionWebRequestEventRouterDelegate::
-    ChromeExtensionWebRequestEventRouterDelegate(){
+    ChromeExtensionWebRequestEventRouterDelegate() {
 }
 
 ChromeExtensionWebRequestEventRouterDelegate::
@@ -55,8 +49,9 @@ void ChromeExtensionWebRequestEventRouterDelegate::LogExtensionActivity(
     scoped_ptr<base::DictionaryValue> details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(
-      browser_context))
+      browser_context)) {
     return;
+  }
 
   scoped_refptr<extensions::Action> action =
       new extensions::Action(extension_id,
@@ -71,7 +66,8 @@ void ChromeExtensionWebRequestEventRouterDelegate::LogExtensionActivity(
 }
 
 void ChromeExtensionWebRequestEventRouterDelegate::ExtractExtraRequestDetails(
-   net::URLRequest* request, base::DictionaryValue* out) {
+    const net::URLRequest* request,
+    base::DictionaryValue* out) {
   int tab_id = -1;
   int window_id = -1;
   ExtractExtraRequestDetailsInternal(request, &tab_id, &window_id);
@@ -80,13 +76,13 @@ void ChromeExtensionWebRequestEventRouterDelegate::ExtractExtraRequestDetails(
 
 bool
 ChromeExtensionWebRequestEventRouterDelegate::OnGetMatchingListenersImplCheck(
-    int filter_tab_id, int filter_window_id, net::URLRequest* request) {
+    int filter_tab_id,
+    int filter_window_id,
+    const net::URLRequest* request) {
   int tab_id = -1;
   int window_id = -1;
   ExtractExtraRequestDetailsInternal(request, &tab_id, &window_id);
   if (filter_tab_id != -1 && tab_id != filter_tab_id)
     return true;
-  if (filter_window_id != -1 && window_id != filter_window_id)
-    return true;
-  return false;
+  return (filter_window_id != -1 && window_id != filter_window_id);
 }
