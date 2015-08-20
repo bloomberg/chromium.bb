@@ -400,6 +400,8 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
                                       false,
                                       default_matrix);
 
+  // TODO(henryhsu): Pass (0, 0) as visible size will cause several test
+  // cases failed. We should make sure |size_| is coded size or visible size.
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyPictureReady,
                             weak_this_factory_.GetWeakPtr(),

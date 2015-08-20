@@ -1016,6 +1016,11 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   available_picture_ids_.pop_back();
   picture_bindings_[picture_id] = frame.image;
+  // TODO(sandersd): Currently, the size got from
+  // CMVideoFormatDescriptionGetDimensions is visible size. We pass it to
+  // GpuVideoDecoder so that GpuVideoDecoder can use correct visible size in
+  // resolution changed. We should find the correct API to get the real
+  // coded size and fix it.
   client_->PictureReady(media::Picture(picture_id, frame.bitstream_id,
                                        gfx::Rect(frame.coded_size), false));
   return true;

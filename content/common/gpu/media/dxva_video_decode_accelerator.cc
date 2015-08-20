@@ -1506,13 +1506,14 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
 
 void DXVAVideoDecodeAccelerator::NotifyPictureReady(
     int picture_buffer_id,
-    int input_buffer_id,
-    const gfx::Rect& picture_buffer_size) {
+    int input_buffer_id) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
+    // TODO(henryhsu): Use correct visible size instead of (0, 0). We can't use
+    // coded size here so use (0, 0) intentionally to have the client choose.
     media::Picture picture(picture_buffer_id, input_buffer_id,
-                           picture_buffer_size, false);
+                           gfx::Rect(0, 0), false);
     client_->PictureReady(picture);
   }
 }
@@ -1833,9 +1834,7 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   picture_buffer->CopySurfaceComplete(src_surface,
                                       dest_surface);
 
-  NotifyPictureReady(picture_buffer->id(),
-                     input_buffer_id,
-                     gfx::Rect(picture_buffer->size()));
+  NotifyPictureReady(picture_buffer->id(), input_buffer_id);
 
   {
     base::AutoLock lock(decoder_lock_);

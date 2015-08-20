@@ -151,8 +151,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Notifies the client about the availability of a picture.
   void NotifyPictureReady(int picture_buffer_id,
-                          int input_buffer_id,
-                          const gfx::Rect& picture_buffer_size);
+                          int input_buffer_id);
 
   // Sends pending input buffer processed acks to the client if we don't have
   // output samples waiting to be processed.

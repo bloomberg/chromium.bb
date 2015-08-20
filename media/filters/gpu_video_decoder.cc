@@ -372,32 +372,31 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   PictureBufferMap::iterator it =
       assigned_picture_buffers_.find(picture.picture_buffer_id());
   if (it == assigned_picture_buffers_.end()) {
-    NOTREACHED() << "Missing picture buffer: " << picture.picture_buffer_id();
+    DLOG(ERROR) << "Missing picture buffer: " << picture.picture_buffer_id();
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
   const PictureBuffer& pb = it->second;
 
-  // Validate picture rectangle from GPU. This is for sanity/security check
-  // even the rectangle is not used in this class.
-  if (picture.visible_rect().IsEmpty() ||
-      !gfx::Rect(pb.size()).Contains(picture.visible_rect())) {
-    NOTREACHED() << "Invalid picture size from VDA: "
-                 << picture.visible_rect().ToString() << " should fit in "
-                 << pb.size().ToString();
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-    return;
-  }
-
   // Update frame's timestamp.
   base::TimeDelta timestamp;
-  // Some of the VDAs don't support and thus don't provide us with visible
-  // size in picture.size, passing coded size instead, so always drop it and
-  // use config information instead.
+  // Some of the VDAs like DXVA, AVDA, and VTVDA don't support and thus don't
+  // provide us with visible size in picture.size, passing (0, 0) instead, so
+  // for those cases drop it and use config information instead.
   gfx::Rect visible_rect;
   gfx::Size natural_size;
   GetBufferData(picture.bitstream_buffer_id(), &timestamp, &visible_rect,
                 &natural_size);
+
+  if (!picture.visible_rect().IsEmpty()) {
+    visible_rect = picture.visible_rect();
+  }
+  if (!gfx::Rect(pb.size()).Contains(visible_rect)) {
+    LOG(WARNING) << "Visible size " << visible_rect.ToString()
+                 << " is larger than coded size " << pb.size().ToString();
+    visible_rect = gfx::Rect(pb.size());
+  }
+
   DCHECK(decoder_texture_target_);
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
@@ -408,6 +407,11 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
           &GpuVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
       pb.size(), visible_rect, natural_size, timestamp));
+  if (!frame) {
+    DLOG(ERROR) << "Create frame failed for: " << picture.picture_buffer_id();
+    NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
   if (picture.allow_overlay())
     frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
   CHECK_GT(available_pictures_, 0);
