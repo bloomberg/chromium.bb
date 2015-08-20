@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
 // Disabled due to flakiness due to resizes, see http://crbug.com/407998.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        DISABLED_AutoSavingGeneratedPassword) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());

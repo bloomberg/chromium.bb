@@ -1116,7 +1116,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        DontPromptWhenEnableAutomaticPasswordSavingSwitchIsSet) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
@@ -1205,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
   // interested in is for a new tab to be opened, and thus does not exist yet.
   login_observer.Register(content::NotificationService::AllSources());
 
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
@@ -1340,7 +1340,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PromptWhenPasswordFormWithoutUsernameFieldSubmitted) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
@@ -1370,7 +1370,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        AutofillSuggetionsForPasswordFormWithoutUsernameField) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
@@ -1746,7 +1746,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // login form still gets autofilled.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        AutofillSuggetionsForLoginSignupForm) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
@@ -1790,7 +1790,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // the form is not set. Regression test for https://crbug.com/360230.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        BaseTagWithNoActionTest) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());

@@ -37,7 +37,7 @@ void SimulateUserTypingInField(content::RenderViewHost* render_view_host,
 namespace password_manager {
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
-  password_manager::TestPasswordStore* password_store =
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
