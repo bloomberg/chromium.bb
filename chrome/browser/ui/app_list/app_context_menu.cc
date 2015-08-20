@@ -117,25 +117,33 @@ ui::MenuModel* AppContextMenu::GetMenuModel() {
     if (!is_platform_app_) {
       // When bookmark apps are enabled, hosted apps can only toggle between
       // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR.
-      if (extensions::util::IsNewBookmarkAppsEnabled()) {
-        menu_model_->AddCheckItemWithStringId(USE_LAUNCH_TYPE_WINDOW,
-                                              IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
-      } else {
+      if (extensions::util::CanHostedAppsOpenInWindows() &&
+          extensions::util::IsNewBookmarkAppsEnabled()) {
+        // When both flags are enabled, only allow toggling between
+        // USE_LAUNCH_TYPE_WINDOW and USE_LAUNCH_TYPE_REGULAR
+        menu_model_->AddCheckItemWithStringId(
+            USE_LAUNCH_TYPE_WINDOW, IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+      } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
+        // When new bookmark apps are disabled, add pinned and full screen
+        // options as well. Add open as window if CanHostedAppsOpenInWindows
+        // is enabled.
         menu_model_->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_REGULAR,
             IDS_APP_CONTEXT_MENU_OPEN_REGULAR);
         menu_model_->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_PINNED,
             IDS_APP_CONTEXT_MENU_OPEN_PINNED);
+        if (extensions::util::CanHostedAppsOpenInWindows()) {
+          menu_model_->AddCheckItemWithStringId(
+              USE_LAUNCH_TYPE_WINDOW,
+              IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
+        }
 #if defined(OS_MACOSX)
         // Mac does not support standalone web app browser windows or maximize.
         menu_model_->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_FULLSCREEN,
             IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
 #else
-        menu_model_->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_WINDOW,
-            IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
         // Even though the launch type is Full Screen it is more accurately
         // described as Maximized in Ash.
         menu_model_->AddCheckItemWithStringId(

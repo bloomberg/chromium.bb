@@ -1255,6 +1255,9 @@ const char kDisableAppWindowCycling[] = "disable-app-window-cycling";
 // Disables app shim creation for hosted apps on Mac.
 const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
+// Prevents hosted apps from being opened in windows on Mac.
+const char kDisableHostedAppsInWindows[] = "disable-hosted-apps-in-windows";
+
 // Disables use of toolkit-views based native app windows.
 const char kDisableMacViewsNativeAppWindows[] =
     "disable-mac-views-native-app-windows";
@@ -1265,6 +1268,9 @@ const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
 
 // Enables custom Cmd+` window cycling for platform apps and hosted apps.
 const char kEnableAppWindowCycling[] = "enable-app-window-cycling";
+
+// Allows hosted apps to be opened in windows on Mac.
+const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 
 // Enables use of toolkit-views based native app windows.
 const char kEnableMacViewsNativeAppWindows[] =

@@ -58,6 +58,10 @@ class ManagementAPIDelegate {
   // chrome.
   virtual bool IsNewBookmarkAppsEnabled() const = 0;
 
+  // Forwards the call to extensions::util::CanHostedAppsOpenInWindows in
+  // chrome.
+  virtual bool CanHostedAppsOpenInWindows() const = 0;
+
   // Forwards the call to AppLaunchInfo::GetFullLaunchURL in chrome.
   virtual GURL GetFullLaunchURL(const Extension* extension) const = 0;
 

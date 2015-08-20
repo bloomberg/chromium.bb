@@ -49,9 +49,14 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
     result = static_cast<LaunchType>(value);
 
 #if defined(OS_MACOSX)
-  // On Mac, opening in a window is currently disabled for non platform apps.
-  if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
+  // Disable opening as window on Mac if:
+  //  1. the extension isn't a platform app, AND
+  //  2. the intended result is open as window, AND
+  //  3. CanHostedAppsOpenInWindows() is false
+  if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW &&
+      !extensions::util::CanHostedAppsOpenInWindows()) {
     result = LAUNCH_TYPE_REGULAR;
+  }
 #else
   if (extensions::util::IsNewBookmarkAppsEnabled()) {
     if (result == LAUNCH_TYPE_PINNED)

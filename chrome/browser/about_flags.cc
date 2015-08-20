@@ -1478,6 +1478,12 @@ const Experiment kExperiments[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableNewBookmarkApps,
                                switches::kDisableNewBookmarkApps)},
 #if defined(OS_MACOSX)
+    {"disable-hosted-apps-in-windows",
+     IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_NAME,
+     IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_DESCRIPTION,
+     kOsMac,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableHostedAppsInWindows,
+                               switches::kDisableHostedAppsInWindows)},
     {"disable-hosted-app-shim-creation",
      IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_NAME,
      IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_DESCRIPTION,

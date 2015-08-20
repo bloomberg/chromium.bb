@@ -66,9 +66,11 @@ LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
     launch_type_messages_.push_back(
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_TAB));
 
-    launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
+    if (extensions::util::CanHostedAppsOpenInWindows()) {
+      launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
+      launch_type_messages_.push_back(
+          l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
+    }
   } else {
     launch_types_.push_back(extensions::LAUNCH_TYPE_REGULAR);
     launch_type_messages_.push_back(
@@ -78,6 +80,11 @@ LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
     launch_type_messages_.push_back(
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_PINNED));
 
+    if (extensions::util::CanHostedAppsOpenInWindows()) {
+      launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
+      launch_type_messages_.push_back(
+          l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
+    }
 #if defined(OS_MACOSX)
     // Mac does not support standalone web app browser windows or maximize
     // unless the new bookmark apps system is enabled.
@@ -85,10 +92,6 @@ LaunchOptionsComboboxModel::LaunchOptionsComboboxModel() {
     launch_type_messages_.push_back(
         l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
 #else
-    launch_types_.push_back(extensions::LAUNCH_TYPE_WINDOW);
-    launch_type_messages_.push_back(
-        l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
-
     // Even though the launch type is Full Screen, it is more accurately
     // described as Maximized in non-Mac OSs.
     launch_types_.push_back(extensions::LAUNCH_TYPE_FULLSCREEN);

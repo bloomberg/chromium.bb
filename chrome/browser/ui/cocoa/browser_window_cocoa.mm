@@ -15,6 +15,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
@@ -582,7 +583,11 @@ void BrowserWindowCocoa::ShowBookmarkAppBubble(
   base::scoped_nsobject<NSView> view([[NSView alloc]
       initWithFrame:NSMakeRect(0, 0, kBookmarkAppBubbleViewWidth,
                                kBookmarkAppBubbleViewHeight)]);
-  [view addSubview:open_as_window_checkbox];
+
+  // When CanHostedAppsOpenInWindows() returns false, do not show the open as
+  // window checkbox to avoid confusing users.
+  if (extensions::util::CanHostedAppsOpenInWindows())
+    [view addSubview:open_as_window_checkbox];
   [view addSubview:app_title];
   [alert setAccessoryView:view];
 

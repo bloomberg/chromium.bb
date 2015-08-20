@@ -6465,6 +6465,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_NEW_BOOKMARK_APPS_DESCRIPTION" desc="Description for the flag to enable the new bookmark app system.">
         Enables the new system for creating bookmark apps.
       </message>
+      <if expr="is_macosx">
+        <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_NAME" desc="Name of the flag to enable hosted apps opening in windows.">
+          Enable hosted apps to be opened in windows.
+        </message>
+        <message name="IDS_FLAGS_HOSTED_APPS_IN_WINDOWS_DESCRIPTION" desc="Description for the flag to enable hosted apps opening in windows">
+          Enable hosted apps to be opened in windows instead of being limited to tabs.
+        </message>
+      </if>
       <message name="IDS_FLAGS_DISABLE_HOSTED_APP_SHIM_CREATION_NAME" desc="Name of the flag to enable creation of app shims for hosted apps on Mac.">
         Disable creation of app shims for hosted apps on Mac.
       </message>

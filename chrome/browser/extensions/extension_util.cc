@@ -366,6 +366,15 @@ bool IsNewBookmarkAppsEnabled() {
 #endif
 }
 
+bool CanHostedAppsOpenInWindows() {
+#if defined(OS_MACOSX)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableHostedAppsInWindows);
+#else
+  return true;
+#endif
+}
+
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
   return extension->was_installed_by_custodian() && profile->IsSupervised();
 }

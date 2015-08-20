@@ -272,6 +272,10 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
   return scoped_ptr<extensions::AppForLinkDelegate>(delegate);
 }
 
+bool ChromeManagementAPIDelegate::CanHostedAppsOpenInWindows() const {
+  return extensions::util::CanHostedAppsOpenInWindows();
+}
+
 bool ChromeManagementAPIDelegate::IsNewBookmarkAppsEnabled() const {
   return extensions::util::IsNewBookmarkAppsEnabled();
 }

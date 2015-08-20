@@ -62927,7 +62927,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-384589459" label="disable-supervised-user-safesites"/>
   <int value="-378033324" label="disable-win32k-renderer-lockdown"/>
   <int value="-360038744" label="invert-viewport-scroll-order"/>
+  <int value="-351552989" label="disable-hosted-apps-in-windows"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
+  <int value="-345838366" label="enable-hosted-apps-in-windows"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>
