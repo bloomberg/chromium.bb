@@ -415,10 +415,8 @@ void InputHandler::SynthesizeRepeatingScroll(
     std::string interaction_marker_name,
     DevToolsCommandId command_id) {
   if (!interaction_marker_name.empty()) {
-    // Telemetry expects the interaction markers to be in the blink.console
-    // category.
     // TODO(alexclarke): Can we move this elsewhere? It doesn't really fit here.
-    TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console",
+    TRACE_EVENT_COPY_ASYNC_BEGIN0("benchmark",
                                   interaction_marker_name.c_str(), command_id);
   }
 
@@ -437,9 +435,7 @@ void InputHandler::OnScrollFinished(
     DevToolsCommandId command_id,
     SyntheticGesture::Result result) {
   if (!interaction_marker_name.empty()) {
-    // Telemetry expects the interaction markers to be in the blink.console
-    // category.
-    TRACE_EVENT_COPY_ASYNC_END0("blink.console",
+    TRACE_EVENT_COPY_ASYNC_END0("benchmark",
                                 interaction_marker_name.c_str(), command_id);
   }
 
