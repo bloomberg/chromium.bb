@@ -59,7 +59,7 @@ void GamepadPlatformDataFetcherAndroid::PauseHint(bool paused) {
   if (!env)
     return;
 
-  Java_GamepadList_notifyForGamepadsAccess(env, paused);
+  Java_GamepadList_setGamepadAPIActive(env, !paused);
 }
 
 static void SetGamepadData(JNIEnv* env,

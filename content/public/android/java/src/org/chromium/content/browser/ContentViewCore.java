@@ -1176,6 +1176,13 @@ public class ContentViewCore implements
         return mFocusedNodeEditable;
     }
 
+    /**
+     * @return Whether the HTML5 gamepad API is active.
+     */
+    public boolean isGamepadAPIActive() {
+        return GamepadList.isGamepadAPIActive();
+    }
+
     // End FrameLayout overrides.
 
     /**

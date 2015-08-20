@@ -33,7 +33,7 @@ public class GamepadList {
     private final GamepadDevice[] mGamepadDevices = new GamepadDevice[MAX_GAMEPADS];
     private InputManager mInputManager;
     private int mAttachedToWindowCounter;
-    private boolean mIsGamepadAccessed;
+    private boolean mIsGamepadAPIActive;
     private InputDeviceListener mInputDeviceListener;
 
     private GamepadList() {
@@ -179,7 +179,7 @@ public class GamepadList {
 
     private boolean handleKeyEvent(KeyEvent event) {
         synchronized (mLock) {
-            if (!mIsGamepadAccessed) return false;
+            if (!mIsGamepadAPIActive) return false;
             GamepadDevice gamepad = getGamepadForEvent(event);
             if (gamepad == null) return false;
             return gamepad.handleKeyEvent(event);
@@ -197,7 +197,7 @@ public class GamepadList {
 
     private boolean handleMotionEvent(MotionEvent event) {
         synchronized (mLock) {
-            if (!mIsGamepadAccessed) return false;
+            if (!mIsGamepadAPIActive) return false;
             GamepadDevice gamepad = getGamepadForEvent(event);
             if (gamepad == null) return false;
             return gamepad.handleMotionEvent(event);
@@ -247,6 +247,13 @@ public class GamepadList {
     }
 
     /**
+     * @return True if HTML5 gamepad API is active.
+     */
+    public static boolean isGamepadAPIActive() {
+        return getInstance().mIsGamepadAPIActive;
+    }
+
+    /**
      * @return True if the motion event corresponds to a gamepad event.
      */
     public static boolean isGamepadEvent(MotionEvent event) {
@@ -293,14 +300,14 @@ public class GamepadList {
     }
 
     @CalledByNative
-    static void notifyForGamepadsAccess(boolean isAccessPaused) {
-        getInstance().setIsGamepadAccessed(!isAccessPaused);
+    static void setGamepadAPIActive(boolean isActive) {
+        getInstance().setIsGamepadActive(isActive);
     }
 
-    private void setIsGamepadAccessed(boolean isGamepadAccessed) {
+    private void setIsGamepadActive(boolean isGamepadActive) {
         synchronized (mLock) {
-            mIsGamepadAccessed = isGamepadAccessed;
-            if (isGamepadAccessed) {
+            mIsGamepadAPIActive = isGamepadActive;
+            if (isGamepadActive) {
                 for (int i = 0; i < MAX_GAMEPADS; i++) {
                     GamepadDevice gamepadDevice = getDevice(i);
                     if (gamepadDevice == null) continue;
