@@ -1003,7 +1003,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
         // a stacking container. This means we can just walk the layer tree directly.
         for (DeprecatedPaintLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
             if (!layer->reflectionInfo() || layer->reflectionInfo()->reflectionLayer() != curr)
-                clipRect.unite(DeprecatedPaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, DeprecatedPaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags));
+                clipRect.unite(DeprecatedPaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, DeprecatedPaintLayer::DescendantsOfTransparencyClipBox, globalPaintFlags));
         }
     }
 
@@ -1021,7 +1021,7 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
 }
 
 LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer* layer, const DeprecatedPaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
-    TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
+    TransparencyClipBoxMode transparencyMode, GlobalPaintFlags globalPaintFlags)
 {
     // FIXME: Although this function completely ignores CSS-imposed clipping, we did already intersect with the
     // paintDirtyRect, and that should cut down on the amount we have to paint.  Still it
@@ -1036,7 +1036,7 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
         LayoutPoint delta;
         layer->convertToLayerCoords(rootLayerForTransform, delta);
 
-        delta.move(subPixelAccumulation);
+        delta.move(layer->subpixelAccumulation());
         IntPoint pixelSnappedDelta = roundedIntPoint(delta);
         TransformationMatrix transform;
         transform.translate(pixelSnappedDelta.x(), pixelSnappedDelta.y());
@@ -1046,7 +1046,7 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
         // We don't use fragment boxes when collecting a transformed layer's bounding box, since it always
         // paints unfragmented.
         LayoutRect clipRect = layer->physicalBoundingBox(layer);
-        expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
+        expandClipRectForDescendantsAndReflection(clipRect, layer, layer, transparencyBehavior, layer->subpixelAccumulation(), globalPaintFlags);
         clipRect.expand(layer->layoutObject()->style()->filterOutsets());
         LayoutRect result = transform.mapRect(clipRect);
         if (!paginationLayer)
@@ -1065,15 +1065,15 @@ LayoutRect DeprecatedPaintLayer::transparencyClipBox(const DeprecatedPaintLayer*
     }
 
     LayoutRect clipRect = layer->fragmentsBoundingBox(rootLayer);
-    expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, subPixelAccumulation, globalPaintFlags);
+    expandClipRectForDescendantsAndReflection(clipRect, layer, rootLayer, transparencyBehavior, layer->subpixelAccumulation(), globalPaintFlags);
     clipRect.expand(layer->layoutObject()->style()->filterOutsets());
-    clipRect.move(subPixelAccumulation);
+    clipRect.move(layer->subpixelAccumulation());
     return clipRect;
 }
 
-LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, GlobalPaintFlags globalPaintFlags)
+LayoutRect DeprecatedPaintLayer::paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, GlobalPaintFlags globalPaintFlags)
 {
-    return intersection(transparencyClipBox(this, rootLayer, PaintingTransparencyClipBox, RootOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags), paintDirtyRect);
+    return intersection(transparencyClipBox(this, rootLayer, PaintingTransparencyClipBox, RootOfTransparencyClipBox, globalPaintFlags), paintDirtyRect);
 }
 
 void* DeprecatedPaintLayer::operator new(size_t sz)
@@ -1797,7 +1797,7 @@ DeprecatedPaintLayer* DeprecatedPaintLayer::hitTestTransformedLayerInFragments(D
     DeprecatedPaintLayerFragments enclosingPaginationFragments;
     LayoutPoint offsetOfPaginationLayerFromRoot;
     // FIXME: We're missing a sub-pixel offset here crbug.com/348728
-    LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), HitTestingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, LayoutSize());
+    LayoutRect transformedExtent = transparencyClipBox(this, enclosingPaginationLayer(), HitTestingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox);
     enclosingPaginationLayer()->collectFragments(enclosingPaginationFragments, rootLayer, hitTestRect,
         clipRectsCacheSlot, IncludeOverlayScrollbarSize, RespectOverflowClip, &offsetOfPaginationLayerFromRoot, LayoutSize(), &transformedExtent);
 
