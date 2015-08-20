@@ -330,28 +330,33 @@ long mkvparser::ParseElementHeader(IMkvReader* pReader, long long& pos,
   return 0;  // success
 }
 
-bool mkvparser::Match(IMkvReader* pReader, long long& pos, unsigned long id_,
-                      long long& val) {
+bool mkvparser::Match(IMkvReader* pReader, long long& pos,
+                      unsigned long expected_id, long long& val) {
   assert(pReader);
   assert(pos >= 0);
+  if (!pReader || pos < 0)
+    return false;
 
-  long long total, available;
+  long long total = 0;
+  long long available = 0;
 
   const long status = pReader->Length(&total, &available);
   assert(status >= 0);
   assert((total < 0) || (available <= total));
-  if (status < 0)
+  if (status < 0 || (total >= 0 && available > total))
     return false;
 
-  long len;
+  long len = 0;
 
   const long long id = ReadUInt(pReader, pos, len);
   assert(id >= 0);
   assert(len > 0);
-  assert(len <= 8);
+  assert(len <= 4);
   assert((pos + len) <= available);
+  if (id < 0 || len < 1 || len > 4 || (available - pos) > len)
+    return false;
 
-  if ((unsigned long)id != id_)
+  if (static_cast<unsigned long>(id) != expected_id)
     return false;
 
   pos += len;  // consume id
@@ -362,62 +367,93 @@ bool mkvparser::Match(IMkvReader* pReader, long long& pos, unsigned long id_,
   assert(len > 0);
   assert(len <= 8);
   assert((pos + len) <= available);
+  if (size < 0 || size > 8 || len < 1 || len > 8 || (available - pos) > len)
+    return false;
 
   pos += len;  // consume length of size of payload
 
   val = UnserializeUInt(pReader, pos, size);
   assert(val >= 0);
+  if (val < 0)
+    return false;
 
   pos += size;  // consume size of payload
 
   return true;
 }
 
-bool mkvparser::Match(IMkvReader* pReader, long long& pos, unsigned long id_,
+bool mkvparser::Match(IMkvReader* pReader, long long& pos,
+                      unsigned long expected_id,
                       unsigned char*& buf, size_t& buflen) {
   assert(pReader);
   assert(pos >= 0);
+  if (!pReader || pos < 0)
+    return false;
 
-  long long total, available;
+  long long total = 0;
+  long long available = 0;
 
   long status = pReader->Length(&total, &available);
   assert(status >= 0);
   assert((total < 0) || (available <= total));
-  if (status < 0)
+  if (status < 0 || (total >= 0 && available > total))
     return false;
 
-  long len;
+  long len = 0;
   const long long id = ReadUInt(pReader, pos, len);
   assert(id >= 0);
   assert(len > 0);
-  assert(len <= 8);
+  assert(len <= 4);
   assert((pos + len) <= available);
+  if (id < 0 || len < 1 || len > 4 || (available - pos) > len)
+    return false;
 
-  if ((unsigned long)id != id_)
+  if (static_cast<unsigned long>(id) != expected_id)
     return false;
 
   pos += len;  // consume id
 
-  const long long size_ = ReadUInt(pReader, pos, len);
-  assert(size_ >= 0);
+  const long long size = ReadUInt(pReader, pos, len);
+  assert(size >= 0);
   assert(len > 0);
   assert(len <= 8);
   assert((pos + len) <= available);
+  if (size < 0 || len <= 0 || len > 8 || (available - pos) > len)
+    return false;
+
+  unsigned long long rollover_check =
+      static_cast<unsigned long long>(pos) + len;
+  if (rollover_check > LONG_LONG_MAX)
+    return false;
 
   pos += len;  // consume length of size of payload
-  assert((pos + size_) <= available);
 
-  const long buflen_ = static_cast<long>(size_);
+  rollover_check = static_cast<unsigned long long>(pos) + size;
+  if (rollover_check > LONG_LONG_MAX)
+    return false;
+
+  assert((pos + size) <= available);
+  if ((pos + size) > available)
+    return false;
+
+  if (size >= LONG_MAX)
+    return false;
+
+  const long buflen_ = static_cast<long>(size);
 
   buf = new (std::nothrow) unsigned char[buflen_];
-  assert(buf);  // TODO
+  assert(buf);
+  if (!buf)
+    return false;
 
   status = pReader->Read(pos, buflen_, buf);
-  assert(status == 0);  // TODO
+  assert(status == 0);
+  if (status != 0)
+    return false;
 
   buflen = buflen_;
 
-  pos += size_;  // consume size of payload
+  pos += size;  // consume size of payload
   return true;
 }
 
