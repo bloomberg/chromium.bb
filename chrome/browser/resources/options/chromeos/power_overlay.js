@@ -86,10 +86,8 @@ cr.define('options', function() {
       }
 
       var chargerRow = $('power-source-charger');
-      var chargingDescRow = $('charging-description');
 
-      $('power-sources').hidden = chargerRow.hidden =
-          chargingDescRow.hidden = true;
+      $('power-sources').hidden = chargerRow.hidden = true;
 
       // If no power sources are available, only show the battery status text.
       if (sources.length == 0)
@@ -119,7 +117,6 @@ cr.define('options', function() {
             isUsbCharger ? 'powerSourceLowPowerCharger' :
                            'powerSourceAcAdapter');
         chargerRow.hidden = false;
-        chargingDescRow.hidden = isUsbCharger;
       } else {
         this.showPowerSourceList_(sources, selectedId);
       }

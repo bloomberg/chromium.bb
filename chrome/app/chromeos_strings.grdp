@@ -2049,9 +2049,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_POWER_OVERLAY_TITLE" desc="The title for the 'Power' overlay.">
     Power
   </message>
-  <message name="IDS_OPTIONS_POWER_OVERLAY_CHARGING_DEVICES" desc="The description in the 'Power' overlay when the device is charging connected devices.">
-    All connected devices will be charged.
-  </message>
   <message name="IDS_OPTIONS_POWER_OVERLAY_CALCULATING" desc="The description in the 'Power' overlay when the power status is being determined.">
     Checking...
   </message>
@@ -2068,37 +2065,37 @@ Press any key to continue exploring.
     Low-power charger
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT" desc="The text referring to the USB Type-C port on the left side of the device.">
-    Left port
+    USB-C device (left port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT" desc="The text referring to the USB Type-C port on the right side of the device.">
-    Right port
+    USB-C device (right port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK" desc="The text referring to the USB Type-C port on the back of the device.">
-    Rear port
+    USB-C device (rear port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_FRONT" desc="The text referring to the USB Type-C port on the front of the device.">
-    Front port
+    USB-C device (front port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_FRONT" desc="The text referring to the furthest front USB Type-C port on the left side of the device.">
-    Left port (front)
+    USB-C device (left-front port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_LEFT_BACK" desc="The text referring to the furthest back USB Type-C port on the left side of the device.">
-    Left port (back)
+    USB-C device (left-back port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_FRONT" desc="The text referring to the furthest front USB Type-C port on the right side of the device.">
-    Right port (front)
+    USB-C device (right-front port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_RIGHT_BACK" desc="The text referring to the furthest back USB Type-C port on the right side of the device.">
-    Right port (back)
+    USB-C device (right-back port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK_LEFT" desc="The text referring to the furthest left USB Type-C port on the back of the device.">
-    Rear port (left)
+    USB-C device (rear-left port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_BACK_RIGHT" desc="The text referring to the furthest right USB Type-C port on the back of the device.">
-    Rear port (right)
+    USB-C device (rear-right port)
   </message>
   <message name="IDS_OPTIONS_POWER_SOURCE_PORT_UNKNOWN" desc="The text referring to the device to charge from, when its port location cannot be determined.">
-    Connected device
+    USB-C device
   </message>
   <message name="IDS_OPTIONS_BATTERY_STATUS_LABEL" desc="The label for the battery information in the 'Power' overlay.">
     Battery:

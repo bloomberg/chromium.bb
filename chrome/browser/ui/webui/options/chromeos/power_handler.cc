@@ -91,9 +91,6 @@ void PowerHandler::GetLocalizedValues(
       "powerSourceLowPowerCharger",
       l10n_util::GetStringUTF16(IDS_OPTIONS_POWER_SOURCE_LOW_POWER_CHARGER));
   localized_strings->SetString(
-      "chargingDevices",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_POWER_OVERLAY_CHARGING_DEVICES));
-  localized_strings->SetString(
       "calculatingPower",
       l10n_util::GetStringUTF16(IDS_OPTIONS_POWER_OVERLAY_CALCULATING));
 }

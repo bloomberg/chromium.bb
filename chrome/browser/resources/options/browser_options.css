@@ -456,6 +456,11 @@ list:not([disabled]) > .network-group[selected] {
   -webkit-border-vertical-spacing: 0.65em;
 }
 
+#power-settings-link {
+  /* Match the spacing of the touchpad/mouse slider. */
+  line-height: 25px;
+}
+
 #accessibility-autoclick .controlled-setting-with-label {
   -webkit-box-align: baseline;
 }

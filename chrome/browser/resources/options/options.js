@@ -210,7 +210,7 @@ function load() {
                                 BrowserOptions.getInstance());
     PageManager.registerOverlay(PowerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
-                                [$('power-settings-button')]);
+                                [$('power-settings-link')]);
     PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
   }

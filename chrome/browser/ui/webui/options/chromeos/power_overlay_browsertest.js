@@ -72,7 +72,7 @@ PowerOverlayWebUITest.prototype = {
 TEST_F('PowerOverlayWebUITest', 'testNoPowerSources', function() {
   assertEquals(this.browsePreload, document.location.href);
   this.mockHandler.expects(never()).setPowerSource();
-  $('power-settings-button').click();
+  $('power-settings-link').click();
 
   // This should be the initial state.
   this.checkNoSources();
@@ -85,7 +85,7 @@ TEST_F('PowerOverlayWebUITest', 'testNoPowerSources', function() {
 TEST_F('PowerOverlayWebUITest', 'testDedicatedCharger', function() {
   assertEquals(this.browsePreload, document.location.href);
   this.mockHandler.expects(never()).setPowerSource();
-  $('power-settings-button').click();
+  $('power-settings-link').click();
 
   var fakeSources = [{
     id: 'source1',
@@ -107,7 +107,7 @@ TEST_F('PowerOverlayWebUITest', 'testDedicatedCharger', function() {
 
 TEST_F('PowerOverlayWebUITest', 'testSingleSource', function() {
   assertEquals(this.browsePreload, document.location.href);
-  $('power-settings-button').click();
+  $('power-settings-link').click();
 
   var fakeSources = [{
     id: 'source1',
@@ -128,7 +128,7 @@ TEST_F('PowerOverlayWebUITest', 'testSingleSource', function() {
 
 TEST_F('PowerOverlayWebUITest', 'testMultipleSources', function() {
   assertEquals(this.browsePreload, document.location.href);
-  $('power-settings-button').click();
+  $('power-settings-link').click();
 
   var fakeSources = [{
     id: 'source1',

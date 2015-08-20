@@ -307,7 +307,7 @@ cr.define('options', function() {
       // Device section (ChromeOS only).
       if (cr.isChromeOS) {
         if (loadTimeData.getBoolean('showPowerStatus')) {
-          $('power-settings-button').onclick = function(evt) {
+          $('power-settings-link').onclick = function(evt) {
             PageManager.showPageByName('power-overlay');
             chrome.send('coreOptionsUserMetricsAction',
                         ['Options_ShowPowerSettings']);
