@@ -93,6 +93,8 @@
         'sync_driver/sync_service_observer.h',
         'sync_driver/sync_service_utils.cc',
         'sync_driver/sync_service_utils.h',
+        'sync_driver/sync_stopped_reporter.cc',
+        'sync_driver/sync_stopped_reporter.h',
         'sync_driver/system_encryptor.cc',
         'sync_driver/system_encryptor.h',
         'sync_driver/tab_node_pool.cc',

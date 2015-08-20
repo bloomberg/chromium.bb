@@ -2923,8 +2923,6 @@
       'browser/sync/supervised_user_signin_manager_wrapper.h',
       'browser/sync/sync_startup_tracker.cc',
       'browser/sync/sync_startup_tracker.h',
-      'browser/sync/sync_stopped_reporter.cc',
-      'browser/sync/sync_stopped_reporter.h',
       'browser/sync/sync_type_preference_provider.h',
     ],
     'chrome_browser_task_manager_sources': [

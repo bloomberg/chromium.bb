@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_stopped_reporter.h"
+#include "components/sync_driver/sync_stopped_reporter.h"
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -10,8 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/glue/local_device_info_provider_impl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"

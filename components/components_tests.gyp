@@ -604,6 +604,7 @@
       'sync_driver/shared_change_processor_unittest.cc',
       'sync_driver/sync_policy_handler_unittest.cc',
       'sync_driver/sync_prefs_unittest.cc',
+      'sync_driver/sync_stopped_reporter_unittest.cc',
       'sync_driver/system_encryptor_unittest.cc',
       'sync_driver/tab_node_pool_unittest.cc',
       'sync_driver/ui_data_type_controller_unittest.cc',
