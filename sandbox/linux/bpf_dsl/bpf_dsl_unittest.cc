@@ -23,9 +23,8 @@
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
-#include "sandbox/linux/bpf_dsl/trap_registry.h"
+#include "sandbox/linux/bpf_dsl/test_trap_registry.h"
 #include "sandbox/linux/bpf_dsl/verifier.h"
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/system_headers/linux_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,57 +55,6 @@ struct arch_seccomp_data FakeSyscall(int nr,
   };
 
   return data;
-}
-
-class FakeTrapRegistry : public TrapRegistry {
- public:
-  FakeTrapRegistry() : map_() {}
-  virtual ~FakeTrapRegistry() {}
-
-  uint16_t Add(TrapFnc fnc, const void* aux, bool safe) override {
-    EXPECT_TRUE(safe);
-
-    const uint16_t next_id = map_.size() + 1;
-    return map_.insert(std::make_pair(Key(fnc, aux), next_id)).first->second;
-  }
-
-  bool EnableUnsafeTraps() override {
-    ADD_FAILURE() << "Unimplemented";
-    return false;
-  }
-
- private:
-  using Key = std::pair<TrapFnc, const void*>;
-
-  std::map<Key, uint16_t> map_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeTrapRegistry);
-};
-
-intptr_t FakeTrapFuncOne(const arch_seccomp_data& data, void* aux) { return 1; }
-intptr_t FakeTrapFuncTwo(const arch_seccomp_data& data, void* aux) { return 2; }
-
-// Test that FakeTrapRegistry correctly assigns trap IDs to trap handlers.
-TEST(FakeTrapRegistry, TrapIDs) {
-  struct {
-    TrapRegistry::TrapFnc fnc;
-    const void* aux;
-  } funcs[] = {
-      {FakeTrapFuncOne, nullptr},
-      {FakeTrapFuncTwo, nullptr},
-      {FakeTrapFuncOne, funcs},
-      {FakeTrapFuncTwo, funcs},
-  };
-
-  FakeTrapRegistry traps;
-
-  // Add traps twice to test that IDs are reused correctly.
-  for (int i = 0; i < 2; ++i) {
-    for (size_t j = 0; j < arraysize(funcs); ++j) {
-      // Trap IDs start at 1.
-      EXPECT_EQ(j + 1, traps.Add(funcs[j].fnc, funcs[j].aux, true));
-    }
-  }
 }
 
 class PolicyEmulator {
@@ -140,7 +88,7 @@ class PolicyEmulator {
 
  private:
   CodeGen::Program program_;
-  FakeTrapRegistry traps_;
+  TestTrapRegistry traps_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyEmulator);
 };

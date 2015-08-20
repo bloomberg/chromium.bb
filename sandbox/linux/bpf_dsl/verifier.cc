@@ -10,11 +10,11 @@
 
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
+#include "sandbox/linux/bpf_dsl/errorcode.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
 #include "sandbox/linux/bpf_dsl/seccomp_macros.h"
 #include "sandbox/linux/bpf_dsl/syscall_set.h"
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/system_headers/linux_filter.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 

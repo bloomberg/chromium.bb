@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_impl.h"
+#include "sandbox/linux/bpf_dsl/errorcode.h"
 #include "sandbox/linux/bpf_dsl/policy_compiler.h"
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
 
 namespace sandbox {
 namespace bpf_dsl {

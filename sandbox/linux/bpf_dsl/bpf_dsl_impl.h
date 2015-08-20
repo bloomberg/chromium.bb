@@ -10,9 +10,8 @@
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
-class ErrorCode;
-
 namespace bpf_dsl {
+class ErrorCode;
 class PolicyCompiler;
 
 namespace internal {

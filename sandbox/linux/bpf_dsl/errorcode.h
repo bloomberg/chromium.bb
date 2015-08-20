@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
-#define SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
+#ifndef SANDBOX_LINUX_BPF_DSL_ERRORCODE_H__
+#define SANDBOX_LINUX_BPF_DSL_ERRORCODE_H__
 
-#include "sandbox/linux/seccomp-bpf/trap.h"
+#include "sandbox/linux/bpf_dsl/trap_registry.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 namespace bpf_dsl {
-class PolicyCompiler;
-}
 
 // This class holds all the possible values that can be returned by a sandbox
 // policy.
@@ -155,15 +153,15 @@ class SANDBOX_EXPORT ErrorCode {
   };
 
  private:
-  friend bpf_dsl::PolicyCompiler;
-  friend class CodeGen;
-  friend class SandboxBPF;
-  friend class Trap;
+  friend class PolicyCompiler;
 
   // If we are wrapping a callback, we must assign a unique id. This id is
   // how the kernel tells us which one of our different SECCOMP_RET_TRAP
   // cases has been triggered.
-  ErrorCode(uint16_t trap_id, Trap::TrapFnc fnc, const void* aux, bool safe);
+  ErrorCode(uint16_t trap_id,
+            TrapRegistry::TrapFnc fnc,
+            const void* aux,
+            bool safe);
 
   // Some system calls require inspection of arguments. This constructor
   // allows us to specify additional constraints.
@@ -179,9 +177,9 @@ class SANDBOX_EXPORT ErrorCode {
   union {
     // Fields needed for SECCOMP_RET_TRAP callbacks
     struct {
-      Trap::TrapFnc fnc_;  // Callback function and arg, if trap was
-      void* aux_;          //   triggered by the kernel's BPF filter.
-      bool safe_;          // Keep sandbox active while calling fnc_()
+      TrapRegistry::TrapFnc fnc_;  // Callback function and arg, if trap was
+      void* aux_;                  //   triggered by the kernel's BPF filter.
+      bool safe_;                  // Keep sandbox active while calling fnc_()
     };
 
     // Fields needed when inspecting additional arguments.
@@ -201,6 +199,7 @@ class SANDBOX_EXPORT ErrorCode {
   uint32_t err_;
 };
 
+}  // namespace bpf_dsl
 }  // namespace sandbox
 
-#endif  // SANDBOX_LINUX_SECCOMP_BPF_ERRORCODE_H__
+#endif  // SANDBOX_LINUX_BPF_DSL_ERRORCODE_H__

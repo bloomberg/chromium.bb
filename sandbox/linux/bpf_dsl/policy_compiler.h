@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl_forward.h"
 #include "sandbox/linux/bpf_dsl/codegen.h"
+#include "sandbox/linux/bpf_dsl/errorcode.h"
 #include "sandbox/linux/bpf_dsl/trap_registry.h"
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {

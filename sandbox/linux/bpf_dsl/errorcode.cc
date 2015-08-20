@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/linux/seccomp-bpf/errorcode.h"
+#include "sandbox/linux/bpf_dsl/errorcode.h"
 
-#include "sandbox/linux/seccomp-bpf/die.h"
+#include "base/logging.h"
 #include "sandbox/linux/system_headers/linux_seccomp.h"
 
 namespace sandbox {
+namespace bpf_dsl {
 
-ErrorCode::ErrorCode() : error_type_(ET_INVALID), err_(SECCOMP_RET_INVALID) {
-}
+ErrorCode::ErrorCode() : error_type_(ET_INVALID), err_(SECCOMP_RET_INVALID) {}
 
 ErrorCode::ErrorCode(int err) {
   switch (err) {
@@ -32,20 +32,19 @@ ErrorCode::ErrorCode(int err) {
         error_type_ = ET_SIMPLE;
         break;
       }
-      SANDBOX_DIE("Invalid use of ErrorCode object");
+      LOG(FATAL) << "Invalid use of ErrorCode object";
   }
 }
 
 ErrorCode::ErrorCode(uint16_t trap_id,
-                     Trap::TrapFnc fnc,
+                     TrapRegistry::TrapFnc fnc,
                      const void* aux,
                      bool safe)
     : error_type_(ET_TRAP),
       fnc_(fnc),
       aux_(const_cast<void*>(aux)),
       safe_(safe),
-      err_(SECCOMP_RET_TRAP + trap_id) {
-}
+      err_(SECCOMP_RET_TRAP + trap_id) {}
 
 ErrorCode::ErrorCode(int argno,
                      ArgType width,
@@ -60,12 +59,11 @@ ErrorCode::ErrorCode(int argno,
       width_(width),
       passed_(passed),
       failed_(failed),
-      err_(SECCOMP_RET_INVALID) {
-}
+      err_(SECCOMP_RET_INVALID) {}
 
 bool ErrorCode::Equals(const ErrorCode& err) const {
   if (error_type_ == ET_INVALID || err.error_type_ == ET_INVALID) {
-    SANDBOX_DIE("Dereferencing invalid ErrorCode");
+    LOG(FATAL) << "Dereferencing invalid ErrorCode";
   }
   if (error_type_ != err.error_type_) {
     return false;
@@ -77,7 +75,8 @@ bool ErrorCode::Equals(const ErrorCode& err) const {
            width_ == err.width_ && passed_->Equals(*err.passed_) &&
            failed_->Equals(*err.failed_);
   } else {
-    SANDBOX_DIE("Corrupted ErrorCode");
+    LOG(FATAL) << "Corrupted ErrorCode";
+    return false;
   }
 }
 
@@ -87,7 +86,7 @@ bool ErrorCode::LessThan(const ErrorCode& err) const {
   // into std::set<>. Actual ordering is not important as long as it is
   // deterministic.
   if (error_type_ == ET_INVALID || err.error_type_ == ET_INVALID) {
-    SANDBOX_DIE("Dereferencing invalid ErrorCode");
+    LOG(FATAL) << "Dereferencing invalid ErrorCode";
   }
   if (error_type_ != err.error_type_) {
     return error_type_ < err.error_type_;
@@ -111,9 +110,11 @@ bool ErrorCode::LessThan(const ErrorCode& err) const {
         return false;
       }
     } else {
-      SANDBOX_DIE("Corrupted ErrorCode");
+      LOG(FATAL) << "Corrupted ErrorCode";
+      return false;
     }
   }
 }
 
+}  // namespace bpf_dsl
 }  // namespace sandbox
