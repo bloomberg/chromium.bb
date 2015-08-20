@@ -487,23 +487,30 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
           video_frame->visible_rect().height());
       break;
 
-    case PIXEL_FORMAT_YV12A:
-      // Since libyuv doesn't support YUVA, fallback to media, which is not ARM
-      // optimized.
-      // TODO(fbarchard, mtomasz): Use libyuv, then copy the alpha channel.
-      ConvertYUVAToARGB(
+  case PIXEL_FORMAT_YV12A:
+      libyuv::I420AlphaToARGB(
           video_frame->data(VideoFrame::kYPlane) + y_offset,
-          video_frame->data(VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(VideoFrame::kVPlane) + uv_offset,
-          video_frame->data(VideoFrame::kAPlane),
-          static_cast<uint8*>(rgb_pixels),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
           video_frame->stride(VideoFrame::kYPlane),
+          video_frame->data(VideoFrame::kUPlane) + uv_offset,
           video_frame->stride(VideoFrame::kUPlane),
+          video_frame->data(VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(VideoFrame::kVPlane),
+          video_frame->data(VideoFrame::kAPlane) + y_offset,
           video_frame->stride(VideoFrame::kAPlane),
+          static_cast<uint8*>(rgb_pixels),
           row_bytes,
-          YV12);
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
+    // TODO(fbarchard): Implement I420AlphaToABGR and remove swizzle below.
+#if SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+      libyuv::ARGBToABGR(static_cast<uint8*>(rgb_pixels),
+                         row_bytes,
+                         static_cast<uint8*>(rgb_pixels),
+                         row_bytes,
+                         video_frame->visible_rect().width(),
+                         video_frame->visible_rect().height());
+#endif
       break;
 
     case PIXEL_FORMAT_YV24:
