@@ -1053,8 +1053,8 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 - (void)setIdentityInfo:(const WebsiteSettingsUI::IdentityInfo&)identityInfo {
   [identityField_ setStringValue:
       base::SysUTF8ToNSString(identityInfo.site_identity)];
-  [identityStatusField_ setStringValue:
-      base::SysUTF16ToNSString(identityInfo.GetIdentityStatusText())];
+  [identityStatusField_ setStringValue:base::SysUTF16ToNSString(
+                                           identityInfo.GetSecuritySummary())];
 
   // If there is a certificate, add a button for viewing the certificate info.
   certificateId_ = identityInfo.cert_id;

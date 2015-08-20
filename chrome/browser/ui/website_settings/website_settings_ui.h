@@ -82,7 +82,7 @@ class WebsiteSettingsUI {
     // Status of the site's identity.
     WebsiteSettings::SiteIdentityStatus identity_status;
     // Helper to get the status text to display to the user.
-    base::string16 GetIdentityStatusText() const;
+    base::string16 GetSecuritySummary() const;
     // Textual description of the site's identity status that is displayed to
     // the user.
     std::string identity_status_description;

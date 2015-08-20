@@ -569,7 +569,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 
 void WebsiteSettingsPopupView::SetIdentityInfo(
     const IdentityInfo& identity_info) {
-  base::string16 identity_status_text = identity_info.GetIdentityStatusText();
+  base::string16 identity_status_text = identity_info.GetSecuritySummary();
   header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
   header_->SetIdentityStatus(identity_status_text, SK_ColorBLACK);
 

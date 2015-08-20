@@ -91,11 +91,16 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
 
 WebsiteSettingsUI::IdentityInfo::~IdentityInfo() {}
 
-base::string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
+base::string16 WebsiteSettingsUI::IdentityInfo::GetSecuritySummary() const {
   switch (identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
+      if (connection_status ==
+          WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT) {
+        return l10n_util::GetStringUTF16(
+            IDS_WEBSITE_SETTINGS_MIXED_PASSIVE_CONTENT);
+      }
       return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_SECURE_TRANSPORT);
     case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
       return l10n_util::GetStringUTF16(
