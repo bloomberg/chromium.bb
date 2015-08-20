@@ -35,6 +35,10 @@ class ExtensionToolbarMenuView : public views::View,
   int GetHeightForWidth(int width) const override;
   void Layout() override;
 
+  BrowserActionsContainer* container_for_testing() {
+    return container_;
+  }
+
  private:
   // BrowserActionsContainerObserver:
   void OnBrowserActionDragDone() override;
