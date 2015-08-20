@@ -190,8 +190,6 @@ def _RunAntTest(test_dir, test_class, class_path, sys_props, jvm_args, verbose):
                  'fork="yes"',
                  'haltonfailure="no"',
                  'haltonerror="no"']
-  if "webdriver.chrome.android_package=org.chromium.chrome.shell" in sys_props:
-    junit_props.remove('fork="yes"')
   if verbose:
     junit_props += ['showoutput="yes"']
 
