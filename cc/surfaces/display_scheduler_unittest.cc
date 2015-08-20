@@ -267,6 +267,25 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
   EXPECT_EQ(1, client_->draw_and_swap_count());
 }
 
+TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
+  SurfaceId sid1(1);
+
+  // DrawAndSwap normally.
+  BeginFrameForTest();
+  EXPECT_LT(now_src().NowTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+  EXPECT_EQ(0, client_->draw_and_swap_count());
+  scheduler_->SurfaceDamaged(sid1);
+  scheduler_->BeginFrameDeadlineForTest();
+  EXPECT_EQ(1, client_->draw_and_swap_count());
+
+  scheduler_->DisplayResized();
+  BeginFrameForTest();
+  // DisplayResized should trigger a swap to happen.
+  scheduler_->BeginFrameDeadlineForTest();
+  EXPECT_EQ(2, client_->draw_and_swap_count());
+}
+
 TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
   SurfaceId sid1(1);
   base::TimeTicks late_deadline;

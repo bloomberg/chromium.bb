@@ -60,6 +60,7 @@ void DisplayScheduler::ForceImmediateSwapIfPossible() {
 void DisplayScheduler::DisplayResized() {
   expecting_root_surface_damage_because_of_resize_ = true;
   expect_damage_from_root_surface_ = true;
+  needs_draw_ = true;
   ScheduleBeginFrameDeadline();
 }
 

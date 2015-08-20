@@ -253,6 +253,28 @@ TEST_F(DisplayTest, DisplayDamaged) {
   }
 
   {
+    // Previous frame wasn't swapped, so next swap should have full damage.
+    pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 100, 100);
+    pass->damage_rect = gfx::Rect(10, 10, 0, 0);
+    pass->id = RenderPassId(1, 1);
+
+    pass_list.push_back(pass.Pass());
+    scheduler.ResetDamageForTest();
+    SubmitFrame(&pass_list, surface_id);
+    EXPECT_TRUE(scheduler.damaged);
+    EXPECT_FALSE(scheduler.display_resized_);
+    EXPECT_FALSE(scheduler.has_new_root_surface);
+
+    scheduler.swapped = false;
+    display.DrawAndSwap();
+    EXPECT_TRUE(scheduler.swapped);
+    EXPECT_EQ(3u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
+              software_output_device_->damage_rect());
+  }
+
+  {
     // Pass has copy output request so should be swapped.
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
@@ -272,7 +294,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.DrawAndSwap();
     EXPECT_TRUE(scheduler.swapped);
-    EXPECT_EQ(3u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
     EXPECT_TRUE(copy_called);
   }
 
@@ -301,7 +323,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.DrawAndSwap();
     EXPECT_TRUE(scheduler.swapped);
-    EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
   }
 
   // Resize should cause a swap if no frame was swapped at the previous size.
@@ -309,7 +331,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler.swapped);
-    EXPECT_EQ(4u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
 
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 200, 200);
@@ -333,7 +355,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     scheduler.swapped = false;
     display.Resize(gfx::Size(100, 100));
     EXPECT_TRUE(scheduler.swapped);
-    EXPECT_EQ(5u, output_surface_ptr_->num_sent_frames());
+    EXPECT_EQ(6u, output_surface_ptr_->num_sent_frames());
   }
 
   factory_.Destroy(surface_id);
