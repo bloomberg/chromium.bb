@@ -29,6 +29,10 @@ class BackButton : public ToolbarButton {
 
   void SetLeadingMargin(int margin);
 
+ protected:
+  // ToolbarButton:
+  void LayoutInkDrop() override;
+
  private:
   // ToolbarButton:
   const char* GetClassName() const override;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -22,7 +23,8 @@ class MenuRunner;
 // This class provides basic drawing and mouse-over behavior for buttons
 // appearing in the toolbar.
 class ToolbarButton : public views::LabelButton,
-                      public views::ContextMenuController {
+                      public views::ContextMenuController,
+                      public views::InkDropHost {
  public:
   // Takes ownership of the |model|, which can be null if no menu
   // is to be shown.
@@ -39,6 +41,7 @@ class ToolbarButton : public views::LabelButton,
 
   // views::LabelButton:
   gfx::Size GetPreferredSize() const override;
+  void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
@@ -54,6 +57,10 @@ class ToolbarButton : public views::LabelButton,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
+  // views::InkDropHost:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+
  protected:
   // Overridden from CustomButton. Returns true if the button should become
   // pressed when a user holds the mouse down over the button. For this
@@ -66,6 +73,12 @@ class ToolbarButton : public views::LabelButton,
 
   // Function to show the dropdown menu.
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
+
+  virtual void LayoutInkDrop();
+
+  views::InkDropAnimationController* ink_drop_animation_controller() {
+    return ink_drop_animation_controller_.get();
+  }
 
  private:
   // views::LabelButton:

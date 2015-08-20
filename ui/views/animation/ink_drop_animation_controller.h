@@ -7,7 +7,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/views_export.h"
 
 namespace ui {
@@ -17,74 +20,47 @@ class Layer;
 namespace views {
 class AppearAnimationObserver;
 class InkDropDelegate;
+class InkDropHost;
 class View;
 
-// Controls an animation which can be associated to a ui::Layer backed View.
-// It sets itself as the pre-target handler for the supplied view, providing
-// animations for user interactions. The events will not be consumed.
-//
-// The supplied views::View will be forced to have a layer, and this controller
-// will add child layers to that.
-class VIEWS_EXPORT InkDropAnimationController : public ui::EventHandler {
+// The different states that the ink drop animation can be animated to.
+enum class InkDropState {
+  // The ink drop is not visible.
+  HIDDEN,
+  // The view is being interacted with but the action to be triggered has not
+  // yet been determined.
+  ACTION_PENDING,
+  // The quick action for the view has been triggered. e.g. A tap gesture to
+  // click a button.
+  QUICK_ACTION,
+  // The slow action for the view has been triggered. e.g. A long press to bring
+  // up a menu.
+  SLOW_ACTION,
+  // An active state for a view that is no longer being interacted with. e.g. A
+  // pressed button that is showing a menu.
+  ACTIVATED
+};
+
+// Base class for an ink drop animation which is hosted by an InkDropHost.
+class VIEWS_EXPORT InkDropAnimationController {
  public:
-  explicit InkDropAnimationController(View* view);
-  ~InkDropAnimationController() override;
+  InkDropAnimationController() {}
+  virtual ~InkDropAnimationController() {}
+
+  // Animates from the current InkDropState to |state|.
+  virtual void AnimateToState(InkDropState state) = 0;
+
+  // Sets the size of the ink drop.
+  virtual void SetInkDropSize(const gfx::Size& size) = 0;
+
+  // Returns the ink drop bounds.
+  virtual gfx::Rect GetInkDropBounds() const = 0;
+
+  // Sets the bounds for the ink drop. |bounds| are in the coordinate space of
+  // the parent ui::Layer that the ink drop layer is added to.
+  virtual void SetInkDropBounds(const gfx::Rect& bounds) = 0;
 
  private:
-  // Starts the animation of a touch event.
-  void AnimateTapDown();
-
-  // Schedules the hide animation of |ink_drop_layer_| for once its current
-  // animation has completed. If |ink_drop_layer_| is not animating, the hide
-  // animation begins immediately.
-  void AnimateHide();
-
-  // Starts the animation of a long press, and cancels hiding |ink_drop_layer_|
-  // until the long press has completed.
-  void AnimateLongPress();
-
-  // Starts the showing animation on |layer|, with a |duration| in milliseconds.
-  void AnimateShow(ui::Layer* layer,
-                   AppearAnimationObserver* observer,
-                   bool circle,
-                   base::TimeDelta duration);
-
-  // Sets the bounds for |layer|.
-  void SetLayerBounds(ui::Layer* layer, bool circle, int width, int height);
-
-  // Initializes |layer| and attaches it to |parent|.
-  void SetupAnimationLayer(ui::Layer* parent,
-                           ui::Layer* layer,
-                           InkDropDelegate* delegate);
-
-  // ui::EventHandler:
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // The layer for animating a user touch. Added as a child to |view_|'s layer.
-  // It will be stacked underneath.
-  scoped_ptr<ui::Layer> ink_drop_layer_;
-
-  // ui::LayerDelegate responsible for painting to |ink_drop_layer_|.
-  scoped_ptr<InkDropDelegate> ink_drop_delegate_;
-
-  // ui::ImplicitAnimationObserver which observes |ink_drop_layer_| and can be
-  // used to automatically trigger a hide animation upon completion.
-  scoped_ptr<AppearAnimationObserver> appear_animation_observer_;
-
-  // The layer for animating a long press. Added as a child to |view_|'s layer.
-  // It will be stacked underneath.
-  scoped_ptr<ui::Layer> long_press_layer_;
-
-  // ui::LayerDelegate responsible for painting to |long_press_layer_|.
-  scoped_ptr<InkDropDelegate> long_press_delegate_;
-
-  // ui::ImplicitAnimationObserver which observers |long_press_layer_| and can
-  // be used to automatically trigger a hide animation upon completion.
-  scoped_ptr<AppearAnimationObserver> long_press_animation_observer_;
-
-  // The View for which InkDropAnimationController is a PreTargetHandler.
-  View* view_;
-
   DISALLOW_COPY_AND_ASSIGN(InkDropAnimationController);
 };
 

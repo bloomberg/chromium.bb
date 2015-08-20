@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/animation/ink_drop_animation_controller.h"
+#include "ui/views/animation/ink_drop_animation_controller_impl.h"
 
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
@@ -13,6 +13,9 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/views/animation/ink_drop_delegate.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -113,8 +116,7 @@ class AppearAnimationObserver : public ui::LayerAnimationObserver {
 };
 
 AppearAnimationObserver::AppearAnimationObserver(ui::Layer* layer, bool hide)
-    : layer_(layer), background_layer_(nullptr), hide_(hide) {
-}
+    : layer_(layer), background_layer_(nullptr), hide_(hide) {}
 
 AppearAnimationObserver::~AppearAnimationObserver() {
   StopObserving();
@@ -182,98 +184,78 @@ bool AppearAnimationObserver::RequiresNotificationWhenAnimatorDestroyed()
   return true;
 }
 
-// Renders the visual feedback. Will render a circle if |circle_| is true,
-// otherwise renders a rounded rectangle.
-class InkDropDelegate : public ui::LayerDelegate {
- public:
-  InkDropDelegate(ui::Layer* layer, SkColor color);
-  ~InkDropDelegate() override;
-
-  // Sets the visual style of the feedback.
-  void set_should_render_circle(bool should_render_circle) {
-    should_render_circle_ = should_render_circle;
-  }
-
-  // ui::LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override;
-  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
-  void OnDeviceScaleFactorChanged(float device_scale_factor) override;
-  base::Closure PrepareForLayerBoundsChange() override;
-
- private:
-  // The ui::Layer being rendered to.
-  ui::Layer* layer_;
-
-  // The color to paint.
-  SkColor color_;
-
-  // When true renders a circle, otherwise renders a rounded rectangle.
-  bool should_render_circle_;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropDelegate);
-};
-
-InkDropDelegate::InkDropDelegate(ui::Layer* layer, SkColor color)
-    : layer_(layer), color_(color), should_render_circle_(true) {
-}
-
-InkDropDelegate::~InkDropDelegate() {
-}
-
-void InkDropDelegate::OnPaintLayer(const ui::PaintContext& context) {
-  SkPaint paint;
-  paint.setColor(color_);
-  paint.setFlags(SkPaint::kAntiAlias_Flag);
-  paint.setStyle(SkPaint::kFill_Style);
-
-  gfx::Rect bounds = layer_->bounds();
-
-  ui::PaintRecorder recorder(context, layer_->size());
-  gfx::Canvas* canvas = recorder.canvas();
-  if (should_render_circle_) {
-    gfx::Point midpoint(bounds.width() * 0.5f, bounds.height() * 0.5f);
-    canvas->DrawCircle(midpoint, kCircleRadius, paint);
-  } else {
-    canvas->DrawRoundRect(bounds, kRoundedRectCorners, paint);
-  }
-}
-
-void InkDropDelegate::OnDelegatedFrameDamage(
-    const gfx::Rect& damage_rect_in_dip) {
-}
-
-void InkDropDelegate::OnDeviceScaleFactorChanged(float device_scale_factor) {
-}
-
-base::Closure InkDropDelegate::PrepareForLayerBoundsChange() {
-  return base::Closure();
-}
-
-InkDropAnimationController::InkDropAnimationController(views::View* view)
-    : ink_drop_layer_(new ui::Layer()),
-      ink_drop_delegate_(
-          new InkDropDelegate(ink_drop_layer_.get(), kInkDropColor)),
+InkDropAnimationControllerImpl::InkDropAnimationControllerImpl(
+    InkDropHost* ink_drop_host)
+    : ink_drop_host_(ink_drop_host),
+      root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
+      ink_drop_layer_(new ui::Layer()),
       appear_animation_observer_(nullptr),
       long_press_layer_(new ui::Layer()),
-      long_press_delegate_(
-          new InkDropDelegate(long_press_layer_.get(), kLongPressColor)),
       long_press_animation_observer_(nullptr),
-      view_(view) {
-  view_->SetPaintToLayer(true);
-  view_->AddPreTargetHandler(this);
-  ui::Layer* layer = view_->layer();
-  layer->SetMasksToBounds(!UseCircularFeedback());
-  SetupAnimationLayer(layer, long_press_layer_.get(),
-                      long_press_delegate_.get());
-  SetupAnimationLayer(layer, ink_drop_layer_.get(), ink_drop_delegate_.get());
-  ink_drop_delegate_->set_should_render_circle(UseCircularFeedback());
+      ink_drop_bounds_(0, 0, 0, 0) {
+  ink_drop_delegate_.reset(new InkDropDelegate(ink_drop_layer_.get(),
+                                               kInkDropColor, kCircleRadius,
+                                               kRoundedRectCorners));
+  long_press_delegate_.reset(new InkDropDelegate(long_press_layer_.get(),
+                                                 kLongPressColor, kCircleRadius,
+                                                 kRoundedRectCorners));
+
+  SetupAnimationLayer(long_press_layer_.get(), long_press_delegate_.get());
+  SetupAnimationLayer(ink_drop_layer_.get(), ink_drop_delegate_.get());
+
+  root_layer_->Add(ink_drop_layer_.get());
+  root_layer_->Add(long_press_layer_.get());
+
+  // TODO(bruthig): Change this to only be called before the ink drop becomes
+  // active. See www.crbug.com/522175.
+  ink_drop_host_->AddInkDropLayer(root_layer_.get());
 }
 
-InkDropAnimationController::~InkDropAnimationController() {
-  view_->RemovePreTargetHandler(this);
+InkDropAnimationControllerImpl::~InkDropAnimationControllerImpl() {
+  // TODO(bruthig): Change this to be called when the ink drop becomes hidden.
+  // See www.crbug.com/522175.
+  ink_drop_host_->RemoveInkDropLayer(root_layer_.get());
 }
 
-void InkDropAnimationController::AnimateTapDown() {
+void InkDropAnimationControllerImpl::AnimateToState(InkDropState state) {
+  // TODO(bruthig): Do not transition if we are already in |state| and restrict
+  // any state transition that don't make sense or wouldn't look visually
+  // appealing.
+  switch (state) {
+    case InkDropState::HIDDEN:
+      AnimateHide();
+      break;
+    case InkDropState::ACTION_PENDING:
+      AnimateTapDown();
+      break;
+    case InkDropState::QUICK_ACTION:
+      AnimateTapDown();
+      AnimateHide();
+      break;
+    case InkDropState::SLOW_ACTION:
+      AnimateLongPress();
+      break;
+    case InkDropState::ACTIVATED:
+      AnimateLongPress();
+      break;
+  }
+}
+
+void InkDropAnimationControllerImpl::SetInkDropSize(const gfx::Size& size) {
+  SetInkDropBounds(gfx::Rect(ink_drop_bounds_.origin(), size));
+}
+
+gfx::Rect InkDropAnimationControllerImpl::GetInkDropBounds() const {
+  return ink_drop_bounds_;
+}
+
+void InkDropAnimationControllerImpl::SetInkDropBounds(const gfx::Rect& bounds) {
+  ink_drop_bounds_ = bounds;
+  SetLayerBounds(ink_drop_layer_.get());
+  SetLayerBounds(long_press_layer_.get());
+}
+
+void InkDropAnimationControllerImpl::AnimateTapDown() {
   if ((appear_animation_observer_ &&
        appear_animation_observer_->IsAnimationActive()) ||
       (long_press_animation_observer_ &&
@@ -285,18 +267,21 @@ void InkDropAnimationController::AnimateTapDown() {
   appear_animation_observer_.reset(
       new AppearAnimationObserver(ink_drop_layer_.get(), false));
   AnimateShow(ink_drop_layer_.get(), appear_animation_observer_.get(),
-              UseCircularFeedback(),
               base::TimeDelta::FromMilliseconds(
                   (UseFastAnimations() ? kShowInkDropAnimationDurationFastMs
                                        : kShowInkDropAnimationDurationSlowMs)));
 }
 
-void InkDropAnimationController::AnimateHide() {
-  if (appear_animation_observer_)
+void InkDropAnimationControllerImpl::AnimateHide() {
+  if (appear_animation_observer_ &&
+      appear_animation_observer_->IsAnimationActive()) {
     appear_animation_observer_->HideNowIfDoneOrOnceCompleted();
+  } else if (long_press_animation_observer_) {
+    long_press_animation_observer_->HideNowIfDoneOrOnceCompleted();
+  }
 }
 
-void InkDropAnimationController::AnimateLongPress() {
+void InkDropAnimationControllerImpl::AnimateLongPress() {
   // Only one animation at a time. Subsequent long presses are ignored until the
   // current animation completes.
   if (long_press_animation_observer_ &&
@@ -305,25 +290,25 @@ void InkDropAnimationController::AnimateLongPress() {
   }
   appear_animation_observer_.reset();
   long_press_animation_observer_.reset(
-      new AppearAnimationObserver(long_press_layer_.get(), true));
+      new AppearAnimationObserver(long_press_layer_.get(), false));
   long_press_animation_observer_->SetBackgroundToHide(ink_drop_layer_.get());
   AnimateShow(long_press_layer_.get(), long_press_animation_observer_.get(),
-              true,
               base::TimeDelta::FromMilliseconds(
                   UseFastAnimations() ? kShowLongPressAnimationDurationFastMs
                                       : kShowLongPressAnimationDurationSlowMs));
 }
 
-void InkDropAnimationController::AnimateShow(ui::Layer* layer,
-                                             AppearAnimationObserver* observer,
-                                             bool circle,
-                                             base::TimeDelta duration) {
-  SetLayerBounds(layer, circle, view_->width(), view_->height());
+void InkDropAnimationControllerImpl::AnimateShow(
+    ui::Layer* layer,
+    AppearAnimationObserver* observer,
+    base::TimeDelta duration) {
   layer->SetVisible(true);
   layer->SetOpacity(1.0f);
 
-  float start_x = layer->bounds().width() * kMinimumScaleCenteringOffset;
-  float start_y = layer->bounds().height() * kMinimumScaleCenteringOffset;
+  float start_x = ink_drop_bounds_.x() +
+                  layer->bounds().width() * kMinimumScaleCenteringOffset;
+  float start_y = ink_drop_bounds_.y() +
+                  layer->bounds().height() * kMinimumScaleCenteringOffset;
 
   gfx::Transform initial_transform;
   initial_transform.Translate(start_x, start_y);
@@ -335,9 +320,10 @@ void InkDropAnimationController::AnimateShow(ui::Layer* layer,
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  gfx::Transform identity_transform;
+  gfx::Transform target_transform;
+  target_transform.Translate(ink_drop_bounds_.x(), ink_drop_bounds_.y());
   ui::LayerAnimationElement* element =
-      ui::LayerAnimationElement::CreateTransformElement(identity_transform,
+      ui::LayerAnimationElement::CreateTransformElement(target_transform,
                                                         duration);
   ui::LayerAnimationSequence* sequence =
       new ui::LayerAnimationSequence(element);
@@ -345,48 +331,24 @@ void InkDropAnimationController::AnimateShow(ui::Layer* layer,
   animator->StartAnimation(sequence);
 }
 
-void InkDropAnimationController::SetLayerBounds(ui::Layer* layer,
-                                                bool circle,
-                                                int width,
-                                                int height) {
-  float circle_width = circle ? 2.0f * kCircleRadius : width;
-  float circle_height = circle ? 2.0f * kCircleRadius : height;
-  float circle_x = circle ? (width - circle_width) * 0.5f : 0;
-  float circle_y = circle ? (height - circle_height) * 0.5f : 0;
+void InkDropAnimationControllerImpl::SetLayerBounds(ui::Layer* layer) {
+  bool circle = UseCircularFeedback();
+  gfx::Size size = ink_drop_bounds_.size();
+  float circle_width = circle ? 2.0f * kCircleRadius : size.width();
+  float circle_height = circle ? 2.0f * kCircleRadius : size.height();
+  float circle_x = circle ? (size.width() - circle_width) * 0.5f : 0;
+  float circle_y = circle ? (size.height() - circle_height) * 0.5f : 0;
   layer->SetBounds(gfx::Rect(circle_x, circle_y, circle_width, circle_height));
 }
 
-void InkDropAnimationController::SetupAnimationLayer(
-    ui::Layer* parent,
+void InkDropAnimationControllerImpl::SetupAnimationLayer(
     ui::Layer* layer,
     InkDropDelegate* delegate) {
   layer->SetFillsBoundsOpaquely(false);
   layer->set_delegate(delegate);
   layer->SetVisible(false);
   layer->SetBounds(gfx::Rect());
-  parent->Add(layer);
-  parent->StackAtBottom(layer);
-}
-
-void InkDropAnimationController::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->target() != view_)
-    return;
-
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      AnimateTapDown();
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      AnimateLongPress();
-      break;
-    case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_TAP_CANCEL:
-    case ui::ET_GESTURE_TAP:
-      AnimateHide();
-      break;
-    default:
-      break;
-  }
+  delegate->set_should_render_circle(UseCircularFeedback());
 }
 
 }  // namespace views

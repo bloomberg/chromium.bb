@@ -19,6 +19,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop_animation_controller.h"
+#include "ui/views/animation/ink_drop_animation_controller_factory.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -32,18 +33,8 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       show_menu_factory_(this) {
-#if defined(OS_CHROMEOS)
-  // The ink drop animation is only targeted at ChromeOS because there is
-  // concern it will conflict with OS level touch feedback in a bad way.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    ink_drop_animation_controller_.reset(
-        new views::InkDropAnimationController(this));
-    layer()->SetFillsBoundsOpaquely(false);
-    image()->SetPaintToLayer(true);
-    image()->SetFillsBoundsOpaquely(false);
-  }
-#endif  // defined(OS_CHROMEOS)
-
+  ink_drop_animation_controller_ = views::InkDropAnimationControllerFactory::
+      CreateInkDropAnimationController(this);
   set_context_menu_controller(this);
 }
 
@@ -86,6 +77,11 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
   return size;
 }
 
+void ToolbarButton::Layout() {
+  LabelButton::Layout();
+  LayoutInkDrop();
+}
+
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
   if (enabled() && ShouldShowMenu() &&
       IsTriggerableEvent(event) && HitTestPoint(event.location())) {
@@ -102,6 +98,10 @@ bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
                               ui::GetMenuSourceTypeForEvent(event)),
         base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
   }
+
+  ink_drop_animation_controller_->AnimateToState(
+      views::InkDropState::ACTION_PENDING);
+
   return LabelButton::OnMousePressed(event);
 }
 
@@ -129,6 +129,8 @@ void ToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
 
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
+
+  ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
 }
 
 void ToolbarButton::OnMouseCaptureLost() {
@@ -150,6 +152,29 @@ void ToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
   }
 
   LabelButton::OnGestureEvent(event);
+
+  views::InkDropState ink_drop_state = views::InkDropState::HIDDEN;
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN:
+      ink_drop_state = views::InkDropState::ACTION_PENDING;
+      // The ui::ET_GESTURE_TAP_DOWN event needs to be marked as handled so that
+      // subsequent events for the gesture are sent to |this|.
+      event->SetHandled();
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      ink_drop_state = views::InkDropState::SLOW_ACTION;
+      break;
+    case ui::ET_GESTURE_TAP:
+      ink_drop_state = views::InkDropState::QUICK_ACTION;
+      break;
+    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      ink_drop_state = views::InkDropState::HIDDEN;
+      break;
+    default:
+      return;
+  }
+  ink_drop_animation_controller_->AnimateToState(ink_drop_state);
 }
 
 void ToolbarButton::GetAccessibleState(ui::AXViewState* state) {
@@ -183,6 +208,23 @@ void ToolbarButton::ShowContextMenuForView(View* source,
 
   show_menu_factory_.InvalidateWeakPtrs();
   ShowDropDownMenu(source_type);
+}
+
+void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  SetPaintToLayer(true);
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+
+  layer()->Add(ink_drop_layer);
+  layer()->StackAtBottom(ink_drop_layer);
+}
+
+void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  layer()->Remove(ink_drop_layer);
+
+  image()->SetFillsBoundsOpaquely(true);
+  image()->SetPaintToLayer(false);
+  SetPaintToLayer(false);
 }
 
 bool ToolbarButton::ShouldEnterPushedState(const ui::Event& event) {
@@ -269,6 +311,8 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
       return;
   }
 
+  ink_drop_animation_controller_->AnimateToState(views::InkDropState::HIDDEN);
+
   menu_showing_ = false;
 
   // Need to explicitly clear mouse handler so that events get sent
@@ -279,6 +323,10 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   // Set the state back to normal after the drop down menu is closed.
   if (state_ != STATE_DISABLED)
     SetState(STATE_NORMAL);
+}
+
+void ToolbarButton::LayoutInkDrop() {
+  ink_drop_animation_controller_->SetInkDropSize(size());
 }
 
 const char* ToolbarButton::GetClassName() const {
