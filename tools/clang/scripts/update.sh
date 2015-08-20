@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=242792
+CLANG_REVISION=245402
 
 # This is incremented when pushing a new build of Clang at the same revision.
 CLANG_SUB_REVISION=1
@@ -374,61 +374,8 @@ if [ "${OS}" = "Darwin" ]; then
 fi
 
 if [[ -n "$with_patches" ]]; then
-
-  # Apply patch for tests failing with --disable-pthreads (llvm.org/PR11974)
-  pushd "${CLANG_DIR}"
-  cat << 'EOF' |
---- test/Index/crash-recovery-modules.m	(revision 202554)
-+++ test/Index/crash-recovery-modules.m	(working copy)
-@@ -12,6 +12,8 @@
- 
- // REQUIRES: crash-recovery
- // REQUIRES: shell
-+// XFAIL: *
-+//    (PR11974)
- 
- @import Crash;
-EOF
-patch -p0
-popd
-
-pushd "${CLANG_DIR}"
-cat << 'EOF' |
---- unittests/libclang/LibclangTest.cpp (revision 215949)
-+++ unittests/libclang/LibclangTest.cpp (working copy)
-@@ -431,7 +431,7 @@
-   EXPECT_EQ(0U, clang_getNumDiagnostics(ClangTU));
- }
-
--TEST_F(LibclangReparseTest, ReparseWithModule) {
-+TEST_F(LibclangReparseTest, DISABLED_ReparseWithModule) {
-   const char *HeaderTop = "#ifndef H\n#define H\nstruct Foo { int bar;";
-   const char *HeaderBottom = "\n};\n#endif\n";
-   const char *MFile = "#include \"HeaderFile.h\"\nint main() {"
-EOF
-  patch -p0
-  popd
-
-  # The UBSan run-time, which is now bundled with the ASan run-time, doesn't work
-  # on Mac OS X 10.8 (PR23539).
-  pushd "${COMPILER_RT_DIR}"
-  cat << 'EOF' |
-Index: CMakeLists.txt
-===================================================================
---- CMakeLists.txt	(revision 241602)
-+++ CMakeLists.txt	(working copy)
-@@ -305,6 +305,7 @@
-       list(APPEND SANITIZER_COMMON_SUPPORTED_OS iossim)
-     endif()
-   endif()
-+  set(SANITIZER_MIN_OSX_VERSION "10.7")
-   if(SANITIZER_MIN_OSX_VERSION VERSION_LESS "10.7")
-     message(FATAL_ERROR "Too old OS X version: ${SANITIZER_MIN_OSX_VERSION}")
-   endif()
-EOF
-  patch -p0
-  popd
-
+  # No patches.
+  true
 fi
 
 # Echo all commands.
@@ -642,6 +589,7 @@ MACOSX_DEPLOYMENT_TARGET=${deployment_target} cmake -GNinja \
     -DLLVM_ENABLE_THREADS=OFF \
     -DCMAKE_C_COMPILER="${CC}" \
     -DCMAKE_CXX_COMPILER="${CXX}" \
+    -DSANITIZER_MIN_OSX_VERSION="10.7" \
     -DLLVM_CONFIG_PATH="${ABS_LLVM_BUILD_DIR}/bin/llvm-config" \
     "${ABS_COMPILER_RT_DIR}"
 
