@@ -41,10 +41,7 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
                               size_t max_resource_count);
 
   void ReduceResourceUsage();
-  // This might block if |wait_if_needed| is true and one of the currently
-  // busy resources has a read lock fence that needs to be waited upon before
-  // it can be locked for write again.
-  void CheckBusyResources(bool wait_if_needed);
+  void CheckBusyResources();
 
   size_t total_memory_usage_bytes() const { return memory_usage_bytes_; }
   size_t acquired_memory_usage_bytes() const {

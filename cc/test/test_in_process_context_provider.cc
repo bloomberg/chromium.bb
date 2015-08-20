@@ -142,6 +142,7 @@ TestInProcessContextProvider::ContextCapabilities() {
   ContextProvider::Capabilities capabilities;
   capabilities.gpu.image = true;
   capabilities.gpu.texture_rectangle = true;
+  capabilities.gpu.sync_query = true;
 
   switch (PlatformColor::Format()) {
     case PlatformColor::SOURCE_FORMAT_RGBA8:

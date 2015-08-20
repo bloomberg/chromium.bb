@@ -4006,7 +4006,7 @@ _FUNCTION_INFO = {
   'OrderingBarrierCHROMIUM': {
     'impl_func': False,
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_miscellaneous",
     'chromium': True,
     'client_test': False,
   },

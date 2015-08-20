@@ -242,14 +242,6 @@ bool IsOneCopyUploadEnabled() {
 bool IsZeroCopyUploadEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  // Single-threaded mode in the renderer process (for layout tests) is
-  // synchronous, which depends on tiles being ready to draw when raster is
-  // complete.  Therefore, it must use one of zero copy, software raster, or
-  // GPU raster. So we force zero-copy on for the case where software/GPU raster
-  // is not used.
-  // TODO(reveman): One-copy can work with sync compositing: crbug.com/490295.
-  if (command_line.HasSwitch(switches::kDisableThreadedCompositing))
-    return true;
   return command_line.HasSwitch(switches::kEnableZeroCopy);
 }
 

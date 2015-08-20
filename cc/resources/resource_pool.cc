@@ -205,13 +205,10 @@ void ResourcePool::DeleteResource(scoped_ptr<PoolResource> resource) {
   --resource_count_;
 }
 
-void ResourcePool::CheckBusyResources(bool wait_if_needed) {
+void ResourcePool::CheckBusyResources() {
   for (size_t i = 0; i < busy_resources_.size();) {
     ResourceDeque::iterator it(busy_resources_.begin() + i);
     PoolResource* resource = *it;
-
-    if (wait_if_needed)
-      resource_provider_->WaitReadLockIfNeeded(resource->id());
 
     if (resource_provider_->CanLockForWrite(resource->id())) {
       DidFinishUsingResource(busy_resources_.take(it));
