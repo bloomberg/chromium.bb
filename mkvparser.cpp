@@ -3970,7 +3970,13 @@ long SegmentInfo::Parse() {
     assert(pos <= stop);
   }
 
+  const double rollover_check = m_duration * m_timecodeScale;
+  if (rollover_check > LONG_LONG_MAX)
+    return E_FILE_FORMAT_INVALID;
+
   assert(pos == stop);
+  if (pos != stop)
+    return E_FILE_FORMAT_INVALID;
 
   return 0;
 }
