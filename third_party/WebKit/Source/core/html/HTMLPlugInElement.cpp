@@ -556,7 +556,8 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     }
     setPlaceholder(nullptr);
     document().setContainsPlugins();
-    scheduleSVGFilterLayerUpdateHack();
+    // TODO(esprehn): WebPluginContainerImpl::setWebLayer also schedules a compositing update, do we need both?
+    setNeedsCompositingUpdate();
     // Make sure any input event handlers introduced by the plugin are taken into account.
     if (Page* page = document().frame()->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())

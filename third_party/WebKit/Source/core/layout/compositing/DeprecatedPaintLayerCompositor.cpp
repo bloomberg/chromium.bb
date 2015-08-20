@@ -106,20 +106,13 @@ void DeprecatedPaintLayerCompositor::setCompositingModeEnabled(bool enable)
 
     m_compositing = enable;
 
-    // LayoutPart::requiresAcceleratedCompositing is used to determine self-paintingness
-    // and bases it's return value for frames on the m_compositing bit here.
-    if (HTMLFrameOwnerElement* ownerElement = m_layoutView.document().ownerElement()) {
-        if (LayoutPart* layoutObject = ownerElement->layoutPart())
-            layoutObject->layer()->updateSelfPaintingLayer();
-    }
-
     if (m_compositing)
         ensureRootLayer();
     else
         destroyRootLayer();
 
-    // Compositing also affects the answer to LayoutIFrame::requiresAcceleratedCompositing(), so
-    // we need to schedule a style recalc in our parent document.
+    // Schedule an update in the parent frame so the <iframe>'s layer in the owner
+    // document matches the compositing state here.
     if (HTMLFrameOwnerElement* ownerElement = m_layoutView.document().ownerElement())
         ownerElement->setNeedsCompositingUpdate();
 }

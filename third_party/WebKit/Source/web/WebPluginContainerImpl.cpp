@@ -318,12 +318,6 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
 #endif
 
     m_element->setNeedsCompositingUpdate();
-    // Being composited or not affects the self painting layer bit
-    // on the DeprecatedPaintLayer.
-    if (LayoutPart* layoutObject = m_element->layoutPart()) {
-        ASSERT(layoutObject->hasLayer());
-        layoutObject->layer()->updateSelfPaintingLayer();
-    }
 }
 
 bool WebPluginContainerImpl::supportsPaginatedPrint() const

@@ -186,8 +186,6 @@ void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
 
     ASSERT(owner());
     toHTMLFrameOwnerElement(owner())->setNeedsCompositingUpdate();
-    if (LayoutPart* layoutObject = ownerLayoutObject())
-        layoutObject->layer()->updateSelfPaintingLayer();
 }
 
 } // namespace blink

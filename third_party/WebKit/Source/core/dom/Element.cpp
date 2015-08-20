@@ -1824,6 +1824,9 @@ void Element::setNeedsCompositingUpdate()
     if (!layoutObject->hasLayer())
         return;
     layoutObject->layer()->setNeedsCompositingInputsUpdate();
+    // Changes in the return value of requiresAcceleratedCompositing change if
+    // the DeprecatedPaintLayer is self-painting.
+    layoutObject->layer()->updateSelfPaintingLayer();
 }
 
 void Element::setCustomElementDefinition(PassRefPtrWillBeRawPtr<CustomElementDefinition> definition)
