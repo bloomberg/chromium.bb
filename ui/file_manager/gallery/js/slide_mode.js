@@ -360,6 +360,7 @@ function SlideMode(container, content, topToolbar, bottomToolbar, prompt,
    * @const
    */
   this.editButton_ = queryRequiredElement(this.topToolbar_, 'button.edit');
+  GalleryUtil.decorateMouseFocusHandling(this.editButton_);
   this.editButton_.addEventListener('click', this.toggleEditor.bind(this));
 
   /**

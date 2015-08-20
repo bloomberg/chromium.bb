@@ -64,4 +64,16 @@ GalleryUtil.isOnMTPVolume = function(entry, volumeManager) {
   var volumeInfo = volumeManager.getVolumeInfo(entry);
   return volumeInfo &&
       volumeInfo.volumeType === VolumeManagerCommon.VolumeType.MTP;
-}
+};
+
+/**
+ * Decorates an element to handle mouse focus specific logic. The element
+ * becomes to have using-mouse class when it is focused by mouse.
+ * @param {!HTMLElement} element
+ */
+GalleryUtil.decorateMouseFocusHandling = function(element) {
+  element.addEventListener('mousedown',
+      element.classList.toggle.bind(element.classList, 'using-mouse', true));
+  element.addEventListener('blur',
+      element.classList.toggle.bind(element.classList, 'using-mouse', false));
+};

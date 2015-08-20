@@ -113,6 +113,7 @@ function Gallery(volumeManager) {
   this.errorBanner_ = new ErrorBanner(this.container_);
 
   var modeSwitchButton = queryRequiredElement(this.topToolbar_, 'button.mode');
+  GalleryUtil.decorateMouseFocusHandling(modeSwitchButton);
   modeSwitchButton.addEventListener('click',
       this.onModeSwitchButtonClicked_.bind(this));
 

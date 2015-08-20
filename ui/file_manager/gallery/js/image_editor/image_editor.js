@@ -1176,14 +1176,9 @@ ImageEditor.Toolbar.createButton_ = function(
   button.label = strf(title);
   button.title = strf(title);
 
-  // Click event is late for setting using-mouse class. i.e. if we set this
-  // class with click event, user can see a blink of :focus:not(.using-mouse)
-  // state.
-  button.addEventListener('mousedown',
-      button.classList.toggle.bind(button.classList, 'using-mouse', true));
+  GalleryUtil.decorateMouseFocusHandling(button);
+
   button.addEventListener('click', handler , false);
-  button.addEventListener('blur',
-      button.classList.toggle.bind(button.classList, 'using-mouse', false));
 
   return button;
 };

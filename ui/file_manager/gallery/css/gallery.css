@@ -582,6 +582,10 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   outline: none;
 }
 
+.gallery > .toolbar button.using-mouse:focus {
+  background-color: transparent;
+}
+
 .gallery > .toolbar button > .icon {
   background-position: center;
   background-repeat: no-repeat;
