@@ -122,7 +122,7 @@ public:
     void appendTo(BlobData&) const override;
 
     const String& path() const { ASSERT(hasValidFilePath()); return m_path; }
-    const String name() const { return m_name; }
+    const String& name() const { return m_name; }
 
     // Getter for the lastModified IDL attribute,
     // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
