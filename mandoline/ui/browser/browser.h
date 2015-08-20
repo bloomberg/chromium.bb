@@ -41,16 +41,14 @@ class Browser : public mojo::ViewManagerDelegate,
                 public mojo::InterfaceFactory<mojo::NavigatorHost>,
                 public mojo::InterfaceFactory<ViewEmbedder> {
  public:
-  Browser(mojo::ApplicationImpl* app,
-          BrowserDelegate* delegate,
-          const GURL& default_url);
+  Browser(mojo::ApplicationImpl* app, BrowserUI* ui);
   ~Browser() override;
-
-  void ReplaceContentWithRequest(mojo::URLRequestPtr request);
 
   mojo::View* content() { return content_; }
 
   const GURL& current_url() const { return current_url_; }
+
+  void LoadURL(const GURL& url);
 
   // Starts the Omnibox application (if necessary) and shows it.
   void ShowOmnibox();
@@ -86,6 +84,9 @@ class Browser : public mojo::ViewManagerDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
 
+  mojo::ApplicationImpl* app_;
+  BrowserUI* ui_;
+
   mojo::ViewManagerInit view_manager_init_;
 
   // Only support being embedded once, so both application-level
@@ -104,10 +105,6 @@ class Browser : public mojo::ViewManagerDelegate,
 
   OmniboxPtr omnibox_;
   scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
-
-  scoped_ptr<BrowserUI> ui_;
-  mojo::ApplicationImpl* app_;
-  BrowserDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

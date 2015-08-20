@@ -28,7 +28,7 @@ void NavigatorHostImpl::DidNavigateLocally(const mojo::String& url) {
 void NavigatorHostImpl::RequestNavigate(mojo::Target target,
                                         mojo::URLRequestPtr request) {
   // The Browser sets up default services including navigation.
-  browser_->ReplaceContentWithRequest(request.Pass());
+  static_cast<ViewEmbedder*>(browser_)->Embed(request.Pass());
 }
 
 void NavigatorHostImpl::RequestNavigateHistory(int32_t delta) {
@@ -39,7 +39,7 @@ void NavigatorHostImpl::RequestNavigateHistory(int32_t delta) {
                            static_cast<int32_t>(history_.size()) - 1));
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From(history_[current_index_]);
-  browser_->ReplaceContentWithRequest(request.Pass());
+  static_cast<ViewEmbedder*>(browser_)->Embed(request.Pass());
 }
 
 void NavigatorHostImpl::RecordNavigation(const std::string& url) {

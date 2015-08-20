@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/view_manager/public/cpp/view.h"
 #include "components/view_manager/public/cpp/view_manager_init.h"
-#include "mandoline/ui/browser/browser_delegate.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/common/common_type_converters.h"
@@ -30,28 +29,29 @@ gfx::Size GetInitialViewportSize() {
 
 }  // namespace
 
-Browser::Browser(mojo::ApplicationImpl* app,
-                 BrowserDelegate* delegate,
-                 const GURL& default_url)
-    : view_manager_init_(app, this, this),
+Browser::Browser(mojo::ApplicationImpl* app, BrowserUI* ui)
+    : app_(app),
+      ui_(ui),
+      view_manager_init_(app, this, this),
       root_(nullptr),
       content_(nullptr),
-      default_url_(default_url),
       navigator_host_(this),
-      web_view_(this),
-      app_(app),
-      delegate_(delegate) {
-  ui_.reset(BrowserUI::Create(this, app));
+      web_view_(this) {
 }
 
 Browser::~Browser() {
-  // Destruct ui_ manually while |this| is alive and reset the pointer first.
-  // This is to avoid a double delete when OnViewManagerDestroyed gets
-  // called.
-  ui_.reset();
 }
 
-void Browser::ReplaceContentWithRequest(mojo::URLRequestPtr request) {
+void Browser::LoadURL(const GURL& url) {
+  // Haven't been embedded yet, can't embed.
+  // TODO(beng): remove this.
+  if (!root_) {
+    default_url_ = url;
+    return;
+  }
+
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = url.spec();
   Embed(request.Pass());
 }
 
@@ -89,8 +89,6 @@ void Browser::OnEmbed(mojo::View* root) {
   //             the UI class.
   root_ = root;
 
-  delegate_->InitUIIfNecessary(this, root_);
-
   content_ = root_->view_manager()->CreateView();
   ui_->Init(root_);
 
@@ -114,9 +112,8 @@ void Browser::OnEmbed(mojo::View* root) {
 }
 
 void Browser::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
-  ui_.reset();
   root_ = nullptr;
-  delegate_->BrowserClosed(this);
+  ui_->ViewManagerDisconnected();
 }
 
 void Browser::OnAccelerator(mojo::EventPtr event) {

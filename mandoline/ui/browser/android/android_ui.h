@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/view_manager/public/cpp/view_observer.h"
+#include "mandoline/ui/browser/browser.h"
 #include "mandoline/ui/browser/browser_ui.h"
 
 namespace mojo {
@@ -16,17 +17,17 @@ class View;
 
 namespace mandoline {
 
-class Browser;
-
 class AndroidUI : public BrowserUI,
                   public mojo::ViewObserver {
  public:
-  AndroidUI(Browser* browser, mojo::ApplicationImpl* application_impl);
+  AndroidUI(mojo::ApplicationImpl* application_impl, BrowserManager* manager);
   ~AndroidUI() override;
 
  private:
   // Overridden from BrowserUI:
   void Init(mojo::View* root) override;
+  void LoadURL(const GURL& url) override;
+  void ViewManagerDisconnected() override;
   void EmbedOmnibox(mojo::ApplicationConnection* connection) override;
   void OnURLChanged() override;
   void LoadingStateChanged(bool loading) override;
@@ -37,7 +38,8 @@ class AndroidUI : public BrowserUI,
                                    const mojo::Rect& old_bounds,
                                    const mojo::Rect& new_bounds) override;
 
-  Browser* browser_;
+  Browser browser_;
+  BrowserManager* manager_;
   mojo::ApplicationImpl* application_impl_;
   mojo::View* root_;
 

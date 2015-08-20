@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/memory/scoped_vector.h"
-#include "mandoline/ui/browser/browser_delegate.h"
 #include "mandoline/ui/browser/public/interfaces/launch_handler.mojom.h"
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -16,29 +15,26 @@
 #include "mojo/common/weak_binding_set.h"
 #include "url/gurl.h"
 
-#if defined(USE_AURA)
-#include "mandoline/ui/aura/aura_init.h"
-#endif
-
 namespace mojo {
 class View;
 }
 
 namespace mandoline {
 
-class Browser;
+class BrowserUI;
 
 // BrowserManager creates and manages the lifetime of Browsers.
 class BrowserManager : public mojo::ApplicationDelegate,
-                       public BrowserDelegate,
                        public LaunchHandler,
                        public mojo::InterfaceFactory<LaunchHandler> {
  public:
   BrowserManager();
   ~BrowserManager() override;
 
-  // BrowserManager owns the returned Browser.
-  Browser* CreateBrowser(const GURL& default_url);
+  // BrowserManager owns the returned BrowserUI.
+  BrowserUI* CreateBrowser(const GURL& default_url);
+
+  void BrowserUIClosed(BrowserUI* browser);
 
  private:
   // Overridden from LaunchHandler:
@@ -49,21 +45,13 @@ class BrowserManager : public mojo::ApplicationDelegate,
   bool ConfigureIncomingConnection(
       mojo::ApplicationConnection* connection) override;
 
-  // Overridden from BrowserDelegate:
-  void InitUIIfNecessary(Browser* browser, mojo::View* view) override;
-  void BrowserClosed(Browser* browser) override;
-
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::ApplicationImpl* app_;
-  // TODO(sky): This should be held in the ui classes, not here.
-#if defined(USE_AURA)
-  scoped_ptr<AuraInit> aura_init_;
-#endif
   mojo::WeakBindingSet<LaunchHandler> launch_handler_bindings_;
-  std::set<Browser*> browsers_;
+  std::set<BrowserUI*> browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserManager);
 };

@@ -5,6 +5,8 @@
 #ifndef MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
 #define MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
 
+#include "mandoline/ui/aura/aura_init.h"
+#include "mandoline/ui/browser/browser.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "ui/views/controls/button/button.h"
@@ -29,12 +31,14 @@ class DesktopUI : public BrowserUI,
                   public views::LayoutManager,
                   public views::ButtonListener {
  public:
-  DesktopUI(Browser* browser, mojo::ApplicationImpl* application_impl);
+  DesktopUI(mojo::ApplicationImpl* application_impl, BrowserManager* manager);
   ~DesktopUI() override;
 
  private:
   // Overridden from BrowserUI
   void Init(mojo::View* root) override;
+  void LoadURL(const GURL& url) override;
+  void ViewManagerDisconnected() override;
   void EmbedOmnibox(mojo::ApplicationConnection* connection) override;
   void OnURLChanged() override;
   void LoadingStateChanged(bool loading) override;
@@ -49,8 +53,10 @@ class DesktopUI : public BrowserUI,
 
   void ShowOmnibox();
 
-  Browser* browser_;
   mojo::ApplicationImpl* application_impl_;
+  Browser browser_;
+  BrowserManager* manager_;
+  scoped_ptr<AuraInit> aura_init_;
   views::LabelButton* omnibox_launcher_;
   ProgressView* progress_bar_;
   mojo::View* root_;

@@ -7,7 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mandoline/ui/aura/native_widget_view_manager.h"
-#include "mandoline/ui/browser/browser.h"
+#include "mandoline/ui/browser/browser_manager.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -59,9 +59,11 @@ class ProgressView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopUI, public:
 
-DesktopUI::DesktopUI(Browser* browser, mojo::ApplicationImpl* application_impl)
-    : browser_(browser),
-      application_impl_(application_impl),
+DesktopUI::DesktopUI(mojo::ApplicationImpl* application_impl,
+                     BrowserManager* manager)
+    : application_impl_(application_impl),
+      browser_(application_impl, this),
+      manager_(manager),
       omnibox_launcher_(nullptr),
       progress_bar_(nullptr),
       root_(nullptr),
@@ -74,6 +76,10 @@ DesktopUI::~DesktopUI() {}
 // DesktopUI, BrowserUI implementation:
 
 void DesktopUI::Init(mojo::View* root) {
+  DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
+  if (!aura_init_)
+    aura_init_.reset(new AuraInit(root, application_impl_->shell()));
+
   root_ = root;
   omnibox_ = root_->view_manager()->CreateView();
   root_->AddChild(omnibox_);
@@ -101,6 +107,14 @@ void DesktopUI::Init(mojo::View* root) {
   root_->SetFocus();
 }
 
+void DesktopUI::LoadURL(const GURL& url) {
+  browser_.LoadURL(url);
+}
+
+void DesktopUI::ViewManagerDisconnected() {
+  manager_->BrowserUIClosed(this);
+}
+
 void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
   mojo::ViewManagerClientPtr view_manager_client;
   connection->ConnectToService(&view_manager_client);
@@ -114,7 +128,7 @@ void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
 }
 
 void DesktopUI::OnURLChanged() {
-  omnibox_launcher_->SetText(base::UTF8ToUTF16(browser_->current_url().spec()));
+  omnibox_launcher_->SetText(base::UTF8ToUTF16(browser_.current_url().spec()));
 }
 
 void DesktopUI::LoadingStateChanged(bool loading) {
@@ -149,7 +163,7 @@ void DesktopUI::Layout(views::View* host) {
   content_bounds_mojo.width = progress_bar_bounds.width();
   content_bounds_mojo.height =
       host->bounds().height() - content_bounds_mojo.y - 10;
-  browser_->content()->SetBounds(content_bounds_mojo);
+  browser_.content()->SetBounds(content_bounds_mojo);
   omnibox_->SetBounds(
       mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(host->bounds()));
 }
@@ -159,16 +173,16 @@ void DesktopUI::Layout(views::View* host) {
 
 void DesktopUI::ButtonPressed(views::Button* sender, const ui::Event& event) {
   DCHECK_EQ(sender, omnibox_launcher_);
-  browser_->ShowOmnibox();
+  browser_.ShowOmnibox();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserUI, public:
 
 // static
-BrowserUI* BrowserUI::Create(Browser* browser,
-                             mojo::ApplicationImpl* application_impl) {
-  return new DesktopUI(browser, application_impl);
+BrowserUI* BrowserUI::Create(mojo::ApplicationImpl* application_impl,
+                             BrowserManager* manager) {
+  return new DesktopUI(application_impl, manager);
 }
 
 }  // namespace mandoline

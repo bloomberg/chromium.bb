@@ -5,6 +5,8 @@
 #ifndef MANDOLINE_UI_BROWSER_BROWSER_UI_H_
 #define MANDOLINE_UI_BROWSER_BROWSER_UI_H_
 
+class GURL;
+
 namespace mojo {
 class ApplicationConnection;
 class ApplicationImpl;
@@ -13,19 +15,26 @@ class View;
 
 namespace mandoline {
 
-class Browser;
+class BrowserManager;
 
 class BrowserUI {
  public:
   virtual ~BrowserUI() {}
-  static BrowserUI* Create(Browser* browser,
-                           mojo::ApplicationImpl* application_impl);
+  static BrowserUI* Create(mojo::ApplicationImpl* application_impl,
+                           BrowserManager* manager);
 
   // Called when the Browser UI is embedded within the specified view.
   // BrowserUI is destroyed prior to |root| being destroyed. That is, the
   // BrowserUI implementations can assume |root| is never deleted out from under
   // them.
   virtual void Init(mojo::View* root) = 0;
+
+  // Loads the specified URL in the active tab.
+  virtual void LoadURL(const GURL& url) = 0;
+
+  // TODO(beng): remove this method once BrowserManager is the
+  //             ViewManagerDelegate.
+  virtual void ViewManagerDisconnected() = 0;
 
   // Embeds the Omnibox UI. The connection object passed is an existing
   // connection to the Omnibox application from which a ViewManagerClient can be
