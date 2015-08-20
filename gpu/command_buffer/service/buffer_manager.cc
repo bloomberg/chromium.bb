@@ -5,6 +5,9 @@
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include <limits>
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/context_state.h"
@@ -13,34 +16,46 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/trace_util.h"
 
 namespace gpu {
 namespace gles2 {
 
-BufferManager::BufferManager(
-    MemoryTracker* memory_tracker,
-    FeatureInfo* feature_info)
-    : memory_tracker_(
+BufferManager::BufferManager(MemoryTracker* memory_tracker,
+                             FeatureInfo* feature_info)
+    : memory_type_tracker_(
           new MemoryTypeTracker(memory_tracker, MemoryTracker::kManaged)),
+      memory_tracker_(memory_tracker),
       feature_info_(feature_info),
       allow_buffers_on_multiple_targets_(false),
       allow_fixed_attribs_(false),
       buffer_count_(0),
       have_context_(true),
       use_client_side_arrays_for_stream_buffers_(
-          feature_info ? feature_info->workarounds(
-              ).use_client_side_arrays_for_stream_buffers : 0) {
+          feature_info
+              ? feature_info->workarounds()
+                    .use_client_side_arrays_for_stream_buffers
+              : 0) {
+  // When created from InProcessCommandBuffer, we won't have a |memory_tracker_|
+  // so don't register a dump provider.
+  if (memory_tracker_) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, base::ThreadTaskRunnerHandle::Get());
+  }
 }
 
 BufferManager::~BufferManager() {
   DCHECK(buffers_.empty());
   CHECK_EQ(buffer_count_, 0u);
+
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 void BufferManager::Destroy(bool have_context) {
   have_context_ = have_context;
   buffers_.clear();
-  DCHECK_EQ(0u, memory_tracker_->GetMemRepresented());
+  DCHECK_EQ(0u, memory_type_tracker_->GetMemRepresented());
 }
 
 void BufferManager::CreateBuffer(GLuint client_id, GLuint service_id) {
@@ -70,7 +85,7 @@ void BufferManager::StartTracking(Buffer* /* buffer */) {
 }
 
 void BufferManager::StopTracking(Buffer* buffer) {
-  memory_tracker_->TrackMemFree(buffer->size());
+  memory_type_tracker_->TrackMemFree(buffer->size());
   --buffer_count_;
 }
 
@@ -274,7 +289,7 @@ bool BufferManager::UseNonZeroSizeForClientSideArrayBuffer() {
 void BufferManager::SetInfo(Buffer* buffer, GLenum target, GLsizeiptr size,
                             GLenum usage, const GLvoid* data) {
   DCHECK(buffer);
-  memory_tracker_->TrackMemFree(buffer->size());
+  memory_type_tracker_->TrackMemFree(buffer->size());
   const bool is_client_side_array = IsUsageClientSideArray(usage);
   const bool support_fixed_attribs =
     gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
@@ -284,7 +299,7 @@ void BufferManager::SetInfo(Buffer* buffer, GLenum target, GLsizeiptr size,
                       (allow_fixed_attribs_ && !support_fixed_attribs) ||
                       is_client_side_array;
   buffer->SetInfo(size, usage, shadow, data, is_client_side_array);
-  memory_tracker_->TrackMemAlloc(buffer->size());
+  memory_type_tracker_->TrackMemAlloc(buffer->size());
 }
 
 void BufferManager::ValidateAndDoBufferData(
@@ -314,7 +329,7 @@ void BufferManager::ValidateAndDoBufferData(
     return;
   }
 
-  if (!memory_tracker_->EnsureGPUMemoryAvailable(size)) {
+  if (!memory_type_tracker_->EnsureGPUMemoryAvailable(size)) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_OUT_OF_MEMORY, "glBufferData", "out of memory");
     return;
@@ -517,7 +532,28 @@ Buffer* BufferManager::GetBufferInfoForTarget(
   }
 }
 
+bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                                 base::trace_event::ProcessMemoryDump* pmd) {
+  const int client_id = memory_tracker_->ClientId();
+  for (const auto& buffer_entry : buffers_) {
+    const auto& client_buffer_id = buffer_entry.first;
+    const auto& buffer = buffer_entry.second;
+
+    std::string dump_name = base::StringPrintf("gl/client_%d/buffers/buffer_%d",
+                                               client_id, client_buffer_id);
+    base::trace_event::MemoryAllocatorDump* dump =
+        pmd->CreateAllocatorDump(dump_name);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    static_cast<uint64_t>(buffer->size()));
+
+    auto guid = gfx::GetGLBufferGUIDForTracing(
+        memory_tracker_->ClientTracingId(), client_buffer_id);
+    pmd->CreateSharedGlobalAllocatorDump(guid);
+    pmd->AddOwnershipEdge(dump->guid(), guid);
+  }
+  return true;
+}
+
 }  // namespace gles2
 }  // namespace gpu
-
-

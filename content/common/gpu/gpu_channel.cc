@@ -900,11 +900,8 @@ void GpuChannel::HandleUpdateValueState(
 
 bool GpuChannel::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                               base::trace_event::ProcessMemoryDump* pmd) {
-  auto dump_name = GetChannelName();
-  std::replace(dump_name.begin(), dump_name.end(), '.', '_');
-
   base::trace_event::MemoryAllocatorDump* dump =
-      pmd->CreateAllocatorDump(base::StringPrintf("gl/%s", dump_name.c_str()));
+      pmd->CreateAllocatorDump(base::StringPrintf("gl/client_%d", client_id_));
 
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                   base::trace_event::MemoryAllocatorDump::kUnitsBytes,

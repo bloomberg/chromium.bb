@@ -202,10 +202,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 //
 // NOTE: To support shared resources an instance of this class will need to be
 // shared by multiple GLES2Decoders.
-class GPU_EXPORT BufferManager {
+class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
  public:
   BufferManager(MemoryTracker* memory_tracker, FeatureInfo* feature_info);
-  ~BufferManager();
+  ~BufferManager() override;
 
   // Must call before destruction.
   void Destroy(bool have_context);
@@ -256,7 +256,7 @@ class GPU_EXPORT BufferManager {
   }
 
   size_t mem_represented() const {
-    return memory_tracker_->GetMemRepresented();
+    return memory_type_tracker_->GetMemRepresented();
   }
 
   // Tells for a given usage if this would be a client side array.
@@ -267,6 +267,10 @@ class GPU_EXPORT BufferManager {
   bool UseNonZeroSizeForClientSideArrayBuffer();
 
   Buffer* GetBufferInfoForTarget(ContextState* state, GLenum target) const;
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   friend class Buffer;
@@ -301,7 +305,8 @@ class GPU_EXPORT BufferManager {
   void SetInfo(Buffer* buffer, GLenum target, GLsizeiptr size, GLenum usage,
                const GLvoid* data);
 
-  scoped_ptr<MemoryTypeTracker> memory_tracker_;
+  scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
+  MemoryTracker* memory_tracker_;
   scoped_refptr<FeatureInfo> feature_info_;
 
   // Info for each buffer in the system.

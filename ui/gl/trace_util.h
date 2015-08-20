@@ -11,8 +11,15 @@
 namespace gfx {
 
 GL_EXPORT base::trace_event::MemoryAllocatorDumpGuid GetGLTextureGUIDForTracing(
-    uint64_t tracing_process_id,
+    uint64_t tracing_id,
     uint32_t texture_id);
+
+GL_EXPORT base::trace_event::MemoryAllocatorDumpGuid GetGLBufferGUIDForTracing(
+    uint64_t tracing_id,
+    uint32_t buffer_id);
+
+GL_EXPORT base::trace_event::MemoryAllocatorDumpGuid
+GetGLRenderbufferGUIDForTracing(uint64_t tracing_id, uint32_t renderbuffer_id);
 
 }  // namespace ui
 

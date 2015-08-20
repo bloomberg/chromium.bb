@@ -2073,7 +2073,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
     return;
 
   std::string dump_name =
-      base::StringPrintf("gl/textures/client_%d/texture_%d",
+      base::StringPrintf("gl/client_%d/textures/texture_%d",
                          memory_tracker_->ClientId(), ref->client_id());
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(dump_name);

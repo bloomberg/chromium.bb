@@ -124,13 +124,14 @@ class GPU_EXPORT Renderbuffer
 
 // This class keeps track of the renderbuffers and whether or not they have
 // been cleared.
-class GPU_EXPORT RenderbufferManager {
+class GPU_EXPORT RenderbufferManager
+    : public base::trace_event::MemoryDumpProvider {
  public:
   RenderbufferManager(MemoryTracker* memory_tracker,
                       GLint max_renderbuffer_size,
                       GLint max_samples,
                       FeatureInfo* feature_info);
-  ~RenderbufferManager();
+  ~RenderbufferManager() override;
 
   GLint max_renderbuffer_size() const {
     return max_renderbuffer_size_;
@@ -163,7 +164,7 @@ class GPU_EXPORT RenderbufferManager {
   void RemoveRenderbuffer(GLuint client_id);
 
   size_t mem_represented() const {
-    return memory_tracker_->GetMemRepresented();
+    return memory_type_tracker_->GetMemRepresented();
   }
 
   bool ComputeEstimatedRenderbufferSize(int width,
@@ -173,13 +174,18 @@ class GPU_EXPORT RenderbufferManager {
                                         uint32* size) const;
   GLenum InternalRenderbufferFormatToImplFormat(GLenum impl_format) const;
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   friend class Renderbuffer;
 
   void StartTracking(Renderbuffer* renderbuffer);
   void StopTracking(Renderbuffer* renderbuffer);
 
-  scoped_ptr<MemoryTypeTracker> memory_tracker_;
+  scoped_ptr<MemoryTypeTracker> memory_type_tracker_;
+  MemoryTracker* memory_tracker_;
 
   GLint max_renderbuffer_size_;
   GLint max_samples_;

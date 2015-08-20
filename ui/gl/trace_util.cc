@@ -10,10 +10,24 @@
 namespace gfx {
 
 base::trace_event::MemoryAllocatorDumpGuid GetGLTextureGUIDForTracing(
-    uint64_t tracing_process_id,
+    uint64_t tracing_id,
     uint32_t texture_id) {
   return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
-      "gl-texture-x-process/%" PRIx64 "/%d", tracing_process_id, texture_id));
+      "gl-texture-x-process/%" PRIx64 "/%d", tracing_id, texture_id));
+}
+
+base::trace_event::MemoryAllocatorDumpGuid GetGLBufferGUIDForTracing(
+    uint64_t tracing_id,
+    uint32_t buffer_id) {
+  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
+      "gl-buffer-x-process/%" PRIx64 "/%d", tracing_id, buffer_id));
+}
+
+base::trace_event::MemoryAllocatorDumpGuid GetGLRenderbufferGUIDForTracing(
+    uint64_t tracing_id,
+    uint32_t renderbuffer_id) {
+  return base::trace_event::MemoryAllocatorDumpGuid(base::StringPrintf(
+      "gl-renderbuffer-x-process/%" PRIx64 "/%d", tracing_id, renderbuffer_id));
 }
 
 }  // namespace ui
