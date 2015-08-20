@@ -42,6 +42,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/MainThread.h"
+#include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
 
@@ -241,9 +242,9 @@ void AsyncCallTracker::didEnqueueEvent(EventTarget* eventTarget, Event* event)
 {
     ASSERT(eventTarget->executionContext());
     ASSERT(m_debuggerAgent->trackingAsyncCalls());
-    OwnPtr<ScriptForbiddenScope::AllowUserAgentScript> allowScripting;
+    Optional<ScriptForbiddenScope::AllowUserAgentScript> allowScripting;
     if (isMainThread())
-        allowScripting = adoptPtr(new ScriptForbiddenScope::AllowUserAgentScript());
+        allowScripting.emplace();
     int operationId = m_debuggerAgent->traceAsyncOperationStarting(event->type());
     ExecutionContextData* data = createContextDataIfNeeded(eventTarget->executionContext());
     data->m_eventCallChains.set(event, operationId);
