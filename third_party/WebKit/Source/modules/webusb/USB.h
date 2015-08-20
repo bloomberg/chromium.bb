@@ -21,14 +21,11 @@ class USB final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<USB> {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(USB);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(USB);
 public:
     static USB* create(LocalFrame& frame)
     {
         return new USB(frame);
     }
-
-    explicit USB(LocalFrame& frame);
 
     // USB.idl
     ScriptPromise getDevices(ScriptState*);
@@ -43,6 +40,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    explicit USB(LocalFrame& frame);
+
     RawPtrWillBeMember<USBController> m_controller;
 };
 
