@@ -20,39 +20,9 @@ namespace blink {
 // This object is owned by Blink, and should be destroyed as each Cache instance is no longer in use.
 class WebServiceWorkerCache {
 public:
-    class CacheMatchCallbacks : public WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError> {
-    public:
-        void onSuccess(WebServiceWorkerResponse* r) { onSuccess(*r); }
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onSuccess(const WebServiceWorkerResponse&) override {}
-        void onError(WebServiceWorkerCacheError) override {}
-    };
-    class CacheWithResponsesCallbacks : public WebCallbacks<const WebVector<WebServiceWorkerResponse>&, WebServiceWorkerCacheError> {
-    public:
-        void onSuccess(WebVector<WebServiceWorkerResponse>* r) { onSuccess(*r); }
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onSuccess(const WebVector<WebServiceWorkerResponse>&) override {}
-        void onError(WebServiceWorkerCacheError) override {}
-    };
-    class CacheWithRequestsCallbacks : public WebCallbacks<const WebVector<WebServiceWorkerRequest>&, WebServiceWorkerCacheError> {
-    public:
-        void onSuccess(WebVector<WebServiceWorkerRequest>* r) { onSuccess(*r); }
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onSuccess(const WebVector<WebServiceWorkerRequest>&) override {}
-        void onError(WebServiceWorkerCacheError) override {}
-    };
+    using CacheMatchCallbacks = WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError>;
+    using CacheWithResponsesCallbacks = WebCallbacks<const WebVector<WebServiceWorkerResponse>&, WebServiceWorkerCacheError>;
+    using CacheWithRequestsCallbacks = WebCallbacks<const WebVector<WebServiceWorkerRequest>&, WebServiceWorkerCacheError>;
     using CacheBatchCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
 
     virtual ~WebServiceWorkerCache() { }

@@ -22,51 +22,10 @@ class WebServiceWorkerCache;
 // after operations complete.
 class WebServiceWorkerCacheStorage {
 public:
-    class CacheStorageCallbacks : public WebCallbacks<void, WebServiceWorkerCacheError> {
-    public:
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onError(WebServiceWorkerCacheError) override {}
-    };
-    class CacheStorageWithCacheCallbacks : public WebCallbacks<WebPassOwnPtr<WebServiceWorkerCache>, WebServiceWorkerCacheError> {
-    public:
-        void onSuccess(WebServiceWorkerCache* r)
-        {
-            onSuccess(adoptWebPtr(r));
-        }
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onSuccess(WebPassOwnPtr<WebServiceWorkerCache>) override {}
-        void onError(WebServiceWorkerCacheError) override {}
-    };
-    class CacheStorageKeysCallbacks : public WebCallbacks<const WebVector<WebString>&, WebServiceWorkerCacheError> {
-    public:
-        void onSuccess(WebVector<WebString>* r) { onSuccess(*r); }
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onSuccess(const WebVector<WebString>&) override {}
-        void onError(WebServiceWorkerCacheError) override {}
-    };
-    class CacheStorageMatchCallbacks : public WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError> {
-    public:
-        void onSuccess(WebServiceWorkerResponse* r) { onSuccess(*r); }
-        void onError(WebServiceWorkerCacheError* e)
-        {
-            onError(*e);
-            delete e;
-        }
-        void onSuccess(const WebServiceWorkerResponse&) override {}
-        void onError(WebServiceWorkerCacheError) override {}
-    };
+    using CacheStorageCallbacks = WebCallbacks<void, WebServiceWorkerCacheError>;
+    using CacheStorageWithCacheCallbacks = WebCallbacks<WebPassOwnPtr<WebServiceWorkerCache>, WebServiceWorkerCacheError>;
+    using CacheStorageKeysCallbacks = WebCallbacks<const WebVector<WebString>&, WebServiceWorkerCacheError>;
+    using CacheStorageMatchCallbacks = WebCallbacks<const WebServiceWorkerResponse&, WebServiceWorkerCacheError>;
 
     virtual ~WebServiceWorkerCacheStorage() { }
 
