@@ -36,7 +36,8 @@ CastBrowserProcess* CastBrowserProcess::GetInstance() {
 }
 
 CastBrowserProcess::CastBrowserProcess()
-    : net_log_(nullptr) {
+    : cast_content_browser_client_(nullptr),
+      net_log_(nullptr) {
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -52,6 +53,12 @@ void CastBrowserProcess::SetBrowserContext(
     scoped_ptr<CastBrowserContext> browser_context) {
   DCHECK(!browser_context_);
   browser_context_.swap(browser_context);
+}
+
+void CastBrowserProcess::SetCastContentBrowserClient(
+    CastContentBrowserClient* cast_content_browser_client) {
+  DCHECK(!cast_content_browser_client_);
+  cast_content_browser_client_ = cast_content_browser_client;
 }
 
 void CastBrowserProcess::SetCastService(scoped_ptr<CastService> cast_service) {

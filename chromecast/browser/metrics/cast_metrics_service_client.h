@@ -48,7 +48,11 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
       net::URLRequestContextGetter* request_context);
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Use |client_id| when starting MetricsService instead of generating a new
+  // client ID. If used, SetForceClientId must be called before Initialize.
+  void SetForceClientId(const std::string& client_id);
   void OnApplicationNotIdle();
+
   void Initialize(CastService* cast_service);
   void Finalize();
 
@@ -88,6 +92,8 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   PrefService* const pref_service_;
   CastService* cast_service_;
   std::string client_id_;
+  std::string force_client_id_;
+  bool client_info_loaded_;
 
 #if defined(OS_LINUX)
   ExternalMetrics* external_metrics_;

@@ -43,7 +43,6 @@ source_set("browser") {
     "metrics/cast_metrics_service_client.h",
     "metrics/cast_stability_metrics_provider.cc",
     "metrics/cast_stability_metrics_provider.h",
-    "metrics/platform_metrics_providers.h",
     "pref_service_helper.cc",
     "pref_service_helper.h",
     "service/cast_service.cc",
@@ -64,7 +63,6 @@ source_set("browser") {
 
     if (!is_android) {
       sources += [
-        "metrics/platform_metrics_providers_simple.cc",
         "service/cast_service_simple.cc",
         "service/cast_service_simple.h",
       ]

@@ -10,7 +10,6 @@ source_set("metrics") {
     "cast_metrics_service_client.h",
     "cast_stability_metrics_provider.cc",
     "cast_stability_metrics_provider.h",
-    "platform_metrics_providers.h",
   ]
 
   deps = [
@@ -35,7 +34,4 @@ source_set("metrics") {
 
     deps += [ "//components/metrics:serialization" ]
   }
-
-  # TODO(kmackay) add source "platform_metrics_providers_simple.cc"
-  #               according to condition (chromecast_branding != "Chrome")
 }

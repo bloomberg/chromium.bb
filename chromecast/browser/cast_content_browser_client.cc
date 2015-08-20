@@ -95,11 +95,21 @@ void CastContentBrowserClient::ProcessExiting() {
       FROM_HERE, base::Bind(&media::CastMediaShlib::Finalize));
 }
 
+void CastContentBrowserClient::SetMetricsClientId(
+    const std::string& client_id) {
+}
+
+void CastContentBrowserClient::RegisterMetricsProviders(
+    ::metrics::MetricsService* metrics_service) {
+}
+
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  return new CastBrowserMainParts(parameters,
-                                  url_request_context_factory_.get(),
-                                  CreateAudioManagerFactory());
+  content::BrowserMainParts* parts = new CastBrowserMainParts(
+      parameters, url_request_context_factory_.get(),
+      CreateAudioManagerFactory());
+  CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
+  return parts;
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(

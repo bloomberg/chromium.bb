@@ -345,7 +345,6 @@
         'browser/metrics/cast_metrics_service_client.h',
         'browser/metrics/cast_stability_metrics_provider.cc',
         'browser/metrics/cast_stability_metrics_provider.h',
-        'browser/metrics/platform_metrics_providers.h',
         'browser/pref_service_helper.cc',
         'browser/pref_service_helper.h',
         'browser/service/cast_service.cc',
@@ -381,7 +380,6 @@
             'browser/cast_content_browser_client_simple.cc',
             'browser/cast_network_delegate_simple.cc',
             'browser/devtools/remote_debugging_server_simple.cc',
-            'browser/metrics/platform_metrics_providers_simple.cc',
             'browser/pref_service_helper_simple.cc',
             'browser/service/cast_service_android.cc',
             'browser/service/cast_service_android.h',
@@ -415,6 +413,7 @@
         ['OS=="android"', {
           'dependencies': [
             '../components/components.gyp:cdm_browser',
+            '../components/components.gyp:external_video_surface',
             'cast_jni_headers',
           ],
         }],
@@ -520,7 +519,6 @@
             'cast_version_header',
             '../base/base.gyp:base',
             '../components/components.gyp:breakpad_host',
-            '../components/components.gyp:external_video_surface',
             '../content/content.gyp:content',
             '../skia/skia.gyp:skia',
             '../ui/gfx/gfx.gyp:gfx',

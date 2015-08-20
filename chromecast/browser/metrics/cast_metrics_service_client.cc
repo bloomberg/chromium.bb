@@ -17,8 +17,9 @@
 #include "chromecast/base/path_utils.h"
 #include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
+#include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
-#include "chromecast/browser/metrics/platform_metrics_providers.h"
 #include "chromecast/public/cast_sys_info.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
@@ -94,7 +95,8 @@ void CastMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {
   client_id_ = client_id;
   LOG(INFO) << "Metrics client ID set: " << client_id;
-  PlatformSetClientID(cast_service_, client_id);
+  shell::CastBrowserProcess::GetInstance()->browser_client()->
+      SetMetricsClientId(client_id);
 }
 
 void CastMetricsServiceClient::OnRecordingDisabled() {
@@ -110,6 +112,7 @@ void CastMetricsServiceClient::StoreClientInfo(
 
 scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
   scoped_ptr< ::metrics::ClientInfo> client_info(new ::metrics::ClientInfo);
+  client_info_loaded_ = true;
 
   // kMetricsIsNewClientID would be missing if either the device was just
   // FDR'ed, or it is on pre-v1.2 build.
@@ -125,19 +128,20 @@ scoped_ptr< ::metrics::ClientInfo> CastMetricsServiceClient::LoadClientInfo() {
     // else the device was just FDR'ed, pass through.
   }
 
-  const std::string client_id(GetPlatformClientID(cast_service_));
-  if (!client_id.empty() && base::IsValidGUID(client_id)) {
-    client_info->client_id = client_id;
+  // Use "forced" client ID if available.
+  if (!force_client_id_.empty() && base::IsValidGUID(force_client_id_)) {
+    client_info->client_id = force_client_id_;
     return client_info.Pass();
-  } else {
-    if (client_id.empty()) {
-      LOG(WARNING) << "Empty client id from platform,"
-                   << " assuming this is the first boot up of a new device.";
-    } else {
-      LOG(ERROR) << "Invalid client id " << client_id << " from platform.";
-    }
-    return scoped_ptr< ::metrics::ClientInfo>();
   }
+
+  if (force_client_id_.empty()) {
+    LOG(WARNING) << "Empty client id from platform,"
+                 << " assuming this is the first boot up of a new device.";
+  } else {
+    LOG(ERROR) << "Invalid client id from platform: " << force_client_id_
+               << " from platform.";
+  }
+  return scoped_ptr< ::metrics::ClientInfo>();
 }
 
 bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
@@ -258,6 +262,7 @@ CastMetricsServiceClient::CastMetricsServiceClient(
     : io_task_runner_(io_task_runner),
       pref_service_(pref_service),
       cast_service_(nullptr),
+      client_info_loaded_(false),
 #if defined(OS_LINUX)
       external_metrics_(nullptr),
       platform_metrics_(nullptr),
@@ -275,6 +280,14 @@ CastMetricsServiceClient::~CastMetricsServiceClient() {
 
 void CastMetricsServiceClient::OnApplicationNotIdle() {
   metrics_service_->OnApplicationNotIdle();
+}
+
+void CastMetricsServiceClient::SetForceClientId(
+    const std::string& client_id) {
+  DCHECK(force_client_id_.empty());
+  DCHECK(!client_info_loaded_)
+      << "Force client ID must be set before client info is loaded.";
+  force_client_id_ = client_id;
 }
 
 void CastMetricsServiceClient::Initialize(CastService* cast_service) {
@@ -319,7 +332,8 @@ void CastMetricsServiceClient::Initialize(CastService* cast_service) {
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
           new ::metrics::ProfilerMetricsProvider));
-  RegisterPlatformMetricsProviders(metrics_service_.get(), cast_service_);
+  shell::CastBrowserProcess::GetInstance()->browser_client()->
+      RegisterMetricsProviders(metrics_service_.get());
 
   metrics_service_->InitializeMetricsRecordingState();
 #if !defined(OS_ANDROID)
