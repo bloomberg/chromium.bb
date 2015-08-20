@@ -672,7 +672,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   for (i = 0; i < argc; ++i) {
     *p++ = (uint32_t) NaClSysToUser(nap, (uintptr_t) strp);
     NaClLog(2, "copying arg %d  %p -> %p\n",
-            i, argv[i], strp);
+            i, (void *) argv[i], (void *) strp);
     strcpy(strp, argv[i]);
     strp += argv_len[i];
   }
@@ -681,7 +681,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   for (i = 0; i < envc; ++i) {
     *p++ = (uint32_t) NaClSysToUser(nap, (uintptr_t) strp);
     NaClLog(2, "copying env %d  %p -> %p\n",
-            i, envv[i], strp);
+            i, (void *) envv[i], (void *) strp);
     strcpy(strp, envv[i]);
     strp += envv_len[i];
   }

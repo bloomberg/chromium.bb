@@ -6,8 +6,9 @@
 
 /* Sanity test for AddressSanitizer. */
 
+volatile int idx = 2;
+volatile char a[1] = {0};
+
 int main(void) {
-  volatile char a[1] = {0};
-  volatile int idx = 1;
   return a[idx];
 }

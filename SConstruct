@@ -2362,9 +2362,12 @@ def SetUpClang(env):
       # but other trusted test binaries are run from their respective
       # obj/.../ directories).  So instead just point the dynamic linker
       # at the right directory using an environment variable.
-      clang_lib_dir = '${CLANG_DIR}/../lib/clang/*/lib/darwin'
-      env['ENV']['DYLD_LIBRARY_PATH'] = ':'.join([dir.abspath for dir in
-                                                  env.Glob(clang_lib_dir)])
+      # Be sure to check and update clang_lib_version whenever updating
+      # tools/clang revs in DEPS.
+      clang_lib_version = '3.7.0'
+      clang_lib_dir = str(env.Dir('${CLANG_DIR}/../lib/clang/%s/lib/darwin' %
+                                  clang_lib_version).abspath)
+      env['ENV']['DYLD_LIBRARY_PATH'] = clang_lib_dir
       if 'PROPAGATE_ENV' not in env:
         env['PROPAGATE_ENV'] = []
       env['PROPAGATE_ENV'].append('DYLD_LIBRARY_PATH')

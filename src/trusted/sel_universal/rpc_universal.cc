@@ -377,7 +377,7 @@ static bool HandleStrcpy(NaClCommandLoop* ncl, const vector<string>& args) {
   // skip leading and trailing double quote
   string payload = args[3].substr(1, args[3].size() - 2);
   char* dst = reinterpret_cast<char*>(start + offset);
-  NaClLog(1, "copy [%s] to %p\n", args[3].c_str(), dst);
+  NaClLog(1, "copy [%s] to %p\n", args[3].c_str(), static_cast<void*>(dst));
   // prevent sanity warning
   strncpy(dst, payload.c_str(), payload.size() + 1);
   return true;
@@ -397,7 +397,8 @@ static bool HandleMemset(NaClCommandLoop* ncl, const vector<string>& args) {
   const int pattern = (int)  ExtractInt32(args[4]);
 
   char* dst = reinterpret_cast<char*>(start + offset);
-  NaClLog(1, "setting [%p, %p] to 0x%02x\n", dst, dst + length, pattern);
+  NaClLog(1, "setting [%p, %p] to 0x%02x\n", static_cast<void*>(dst),
+          static_cast<void*>(dst + length), pattern);
   memset(dst, pattern, length);
   return true;
 }

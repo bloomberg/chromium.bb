@@ -11,7 +11,9 @@ vars = {
   # chrome_rev: 314402
   "valgrind_rev": "59886873b4b8258a8e0f098c23e1958e0d0c0a26", # from svn revision 231553
   "tools_valgrind_rev": "b81cde70b77b0461b18ad24616bdadb98a466647", # from svn revision 275834
-  "clang_rev": "0825693c3460f23b1d78ad272999f850447ad333", # from cr commit position 313267
+  # NOTE: be sure to update clang_lib_version in SConstruct whenever
+  # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
+  "clang_rev": "44f7f0bbbce9e581d9328e80d5b0ae88efbc3db4", # from cr commit position 327281
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.

@@ -142,7 +142,8 @@ bool HandlerSaveToFile(NaClCommandLoop* ncl, const vector<string>& args) {
   }
 
 
-  NaClLog(1, "writing %d bytes from %p\n", (int) size, start + offset);
+  NaClLog(1, "writing %d bytes from %p\n", (int) size,
+          static_cast<const void*>(start + offset));
   const size_t n = fwrite(start + offset, 1, size, fp);
   if (static_cast<int>(n) != size) {
     NaClLog(LOG_ERROR, "wrote %d bytes, expected %d\n",
@@ -174,7 +175,8 @@ bool HandlerLoadFromFile(NaClCommandLoop* ncl, const vector<string>& args) {
      return false;
   }
 
-  NaClLog(1, "loading %d bytes to %p\n", (int) size, start + offset);
+  NaClLog(1, "loading %d bytes to %p\n", (int) size,
+          static_cast<void*>(start + offset));
   const size_t n = fread(start + offset, 1, size, fp);
   if (static_cast<int>(n) != size) {
     NaClLog(LOG_ERROR, "read %d bytes, expected %d\n",
