@@ -18,31 +18,14 @@ namespace remoting {
 // video frames.
 class VideoDecoderVerbatim : public VideoDecoder {
  public:
+  VideoDecoderVerbatim();
   ~VideoDecoderVerbatim() override;
 
-  VideoDecoderVerbatim();
-
   // VideoDecoder implementation.
-  bool DecodePacket(const VideoPacket& packet) override;
-  void Invalidate(const webrtc::DesktopSize& view_size,
-                  const webrtc::DesktopRegion& region) override;
-  void RenderFrame(const webrtc::DesktopSize& view_size,
-                   const webrtc::DesktopRect& clip_area,
-                   uint8* image_buffer,
-                   int image_stride,
-                   webrtc::DesktopRegion* output_region) override;
-  const webrtc::DesktopRegion* GetImageShape() override;
+  bool DecodePacket(const VideoPacket& packet,
+                    webrtc::DesktopFrame* frame) override;
 
  private:
-  // The region updated that hasn't been copied to the screen yet.
-  webrtc::DesktopRegion updated_region_;
-
-  // Size of the remote screen.
-  webrtc::DesktopSize screen_size_;
-
-  // The bitmap holding the remote screen bits.
-  scoped_ptr<uint8[]> screen_buffer_;
-
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderVerbatim);
 };
 

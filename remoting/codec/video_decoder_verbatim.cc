@@ -6,109 +6,55 @@
 
 #include "base/logging.h"
 #include "remoting/base/util.h"
+#include "remoting/proto/video.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace remoting {
 
-VideoDecoderVerbatim::VideoDecoderVerbatim() {}
+static const int kBytesPerPixel = 4;
 
+VideoDecoderVerbatim::VideoDecoderVerbatim() {}
 VideoDecoderVerbatim::~VideoDecoderVerbatim() {}
 
-bool VideoDecoderVerbatim::DecodePacket(const VideoPacket& packet) {
-  if (packet.format().has_screen_width() &&
-      packet.format().has_screen_height()) {
-    webrtc::DesktopSize screen_size(packet.format().screen_width(),
-                                    packet.format().screen_height());
-    // Allocate the screen buffer, if necessary.
-    if (!screen_size.equals(screen_size_)) {
-      screen_size_ = screen_size;
-      screen_buffer_.reset(new uint8[screen_size_.width() *
-                                     screen_size_.height() * kBytesPerPixel]);
-      updated_region_.Clear();
-    }
-  }
-
-  webrtc::DesktopRegion region;
-
-  const char* in = packet.data().data();
-  int stride = kBytesPerPixel * screen_size_.width();
+bool VideoDecoderVerbatim::DecodePacket(const VideoPacket& packet,
+                                        webrtc::DesktopFrame* frame) {
+  webrtc::DesktopRegion* region = frame->mutable_updated_region();
+  region->Clear();
+  const char* current_data_pos = packet.data().data();
   for (int i = 0; i < packet.dirty_rects_size(); ++i) {
     Rect proto_rect = packet.dirty_rects(i);
     webrtc::DesktopRect rect =
-        webrtc::DesktopRect::MakeXYWH(proto_rect.x(),
-                                      proto_rect.y(),
-                                      proto_rect.width(),
-                                      proto_rect.height());
-    region.AddRect(rect);
+        webrtc::DesktopRect::MakeXYWH(proto_rect.x(), proto_rect.y(),
+                                      proto_rect.width(), proto_rect.height());
+    region->AddRect(rect);
 
-    if (!DoesRectContain(webrtc::DesktopRect::MakeSize(screen_size_), rect)) {
-      LOG(ERROR) << "Invalid packet received";
+    if (!DoesRectContain(webrtc::DesktopRect::MakeSize(frame->size()), rect)) {
+      LOG(ERROR) << "Invalid packet received.";
       return false;
     }
 
     int rect_row_size = kBytesPerPixel * rect.width();
-    uint8_t* out = screen_buffer_.get() + rect.top() * stride +
-                   rect.left() * kBytesPerPixel;
-    for (int y = rect.top(); y < rect.top() + rect.height(); ++y) {
-      if (in + rect_row_size > packet.data().data() + packet.data().size()) {
-        LOG(ERROR) << "Invalid packet received";
-        return false;
-      }
-      memcpy(out, in, rect_row_size);
-      in += rect_row_size;
-      out += stride;
+    const char* rect_data_end =
+        current_data_pos + rect_row_size * rect.height();
+    if (rect_data_end > packet.data().data() + packet.data().size()) {
+      LOG(ERROR) << "Invalid packet received.";
+      return false;
     }
+
+    uint8_t* source =
+        reinterpret_cast<uint8_t*>(const_cast<char*>(current_data_pos));
+    frame->CopyPixelsFrom(source, rect_row_size, rect);
+    current_data_pos = rect_data_end;
   }
 
-  if (in != packet.data().data() + packet.data().size()) {
-    LOG(ERROR) << "Invalid packet received";
+  if (current_data_pos != packet.data().data() + packet.data().size()) {
+    LOG(ERROR) << "Invalid packet received.";
     return false;
   }
 
-  updated_region_.AddRegion(region);
-
   return true;
-}
-
-void VideoDecoderVerbatim::Invalidate(const webrtc::DesktopSize& view_size,
-                                      const webrtc::DesktopRegion& region) {
-  updated_region_.AddRegion(region);
-}
-
-void VideoDecoderVerbatim::RenderFrame(const webrtc::DesktopSize& view_size,
-                                       const webrtc::DesktopRect& clip_area,
-                                       uint8* image_buffer,
-                                       int image_stride,
-                                       webrtc::DesktopRegion* output_region) {
-  output_region->Clear();
-
-  // TODO(alexeypa): scaling is not implemented.
-  webrtc::DesktopRect clip_rect = webrtc::DesktopRect::MakeSize(screen_size_);
-  clip_rect.IntersectWith(clip_area);
-  if (clip_rect.is_empty())
-    return;
-
-  int screen_stride = screen_size_.width() * kBytesPerPixel;
-
-  for (webrtc::DesktopRegion::Iterator i(updated_region_);
-       !i.IsAtEnd(); i.Advance()) {
-    webrtc::DesktopRect rect(i.rect());
-    rect.IntersectWith(clip_rect);
-    if (rect.is_empty())
-      continue;
-
-    CopyRGB32Rect(screen_buffer_.get(), screen_stride,
-                  clip_rect,
-                  image_buffer, image_stride,
-                  clip_area,
-                  rect);
-    output_region->AddRect(rect);
-  }
-
-  updated_region_.Clear();
-}
-
-const webrtc::DesktopRegion* VideoDecoderVerbatim::GetImageShape() {
-  return nullptr;
 }
 
 }  // namespace remoting

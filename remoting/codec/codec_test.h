@@ -45,7 +45,6 @@ void TestVideoEncoderDecoder(VideoEncoder* encoder,
 void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
                                      VideoDecoder* decoder,
                                      const webrtc::DesktopSize& screen_size,
-                                     const webrtc::DesktopSize& view_size,
                                      double max_error_limit,
                                      double mean_error_limit);
 

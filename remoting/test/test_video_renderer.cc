@@ -17,6 +17,7 @@
 #include "remoting/test/rgb_value.h"
 #include "remoting/test/video_frame_writer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
+#include "third_party/webrtc/modules/desktop_capture/shared_desktop_frame.h"
 
 namespace {
 
@@ -76,20 +77,14 @@ class TestVideoRenderer::Core {
   // Used to decode video packets.
   scoped_ptr<VideoDecoder> decoder_;
 
-  // Updated region of the current desktop frame compared to previous one.
-  webrtc::DesktopRegion updated_region_;
-
-  // Screen size of the remote host.
-  webrtc::DesktopSize screen_size_;
-
   // Used to post tasks back to main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
-  // Used to store decoded video frame.
-  scoped_ptr<webrtc::DesktopFrame> frame_;
-
   // Protects access to |frame_|.
   mutable base::Lock lock_;
+
+  // Used to store decoded video frame.
+  scoped_ptr<webrtc::SharedDesktopFrame> frame_;
 
   // Used to store the expected image pattern.
   webrtc::DesktopRect expected_rect_;
@@ -155,11 +150,11 @@ scoped_ptr<webrtc::DesktopFrame>
 TestVideoRenderer::Core::GetCurrentFrameForTest() const {
   base::AutoLock auto_lock(lock_);
   DCHECK(frame_);
-  return make_scoped_ptr(webrtc::BasicDesktopFrame::CopyOf(*frame_.get()));
+  return make_scoped_ptr(webrtc::BasicDesktopFrame::CopyOf(*frame_));
 }
 
-void TestVideoRenderer::Core::ProcessVideoPacket(
-    scoped_ptr<VideoPacket> packet, const base::Closure& done) {
+void TestVideoRenderer::Core::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
+                                                 const base::Closure& done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(decoder_);
   DCHECK(packet);
@@ -172,38 +167,36 @@ void TestVideoRenderer::Core::ProcessVideoPacket(
       packet->format().has_screen_height()) {
     webrtc::DesktopSize source_size(packet->format().screen_width(),
                                     packet->format().screen_height());
-    if (!screen_size_.equals(source_size)) {
-      screen_size_ = source_size;
-      frame_.reset(new webrtc::BasicDesktopFrame(screen_size_));
+    if (!frame_ || !frame_->size().equals(source_size)) {
+      base::AutoLock auto_lock(lock_);
+      frame_.reset(webrtc::SharedDesktopFrame::Wrap(
+          new webrtc::BasicDesktopFrame(source_size)));
     }
   }
 
   // To make life easier, assume that the desktop shape is a single rectangle.
   packet->clear_use_desktop_shape();
-  if (!decoder_->DecodePacket(*packet.get())) {
-    LOG(ERROR) << "Decoder::DecodePacket() failed.";
-    return;
-  }
+
+  // Render the result into a new DesktopFrame instance that shares buffer with
+  // |frame_|. updated_region() will be updated for |new_frame|, but not for
+  // |frame_|.
+  scoped_ptr<webrtc::DesktopFrame> new_frame(frame_->Share());
 
   {
     base::AutoLock auto_lock(lock_);
-
-    // Render the decoded packet and write results to the buffer.
-    // Note that the |updated_region_| maintains the changed regions compared to
-    // previous video frame.
-    decoder_->RenderFrame(screen_size_,
-                          webrtc::DesktopRect::MakeWH(screen_size_.width(),
-                                                      screen_size_.height()),
-                          frame_->data(), frame_->stride(), &updated_region_);
+    if (!decoder_->DecodePacket(*packet, new_frame.get())) {
+      LOG(ERROR) << "Decoder::DecodePacket() failed.";
+      return;
+    }
   }
 
   main_task_runner_->PostTask(FROM_HERE, done);
 
   if (save_frame_data_to_disk_) {
     scoped_ptr<webrtc::DesktopFrame> frame(
-        webrtc::BasicDesktopFrame::CopyOf(*frame_.get()));
+        webrtc::BasicDesktopFrame::CopyOf(*frame_));
     video_frame_writer.HighlightRectInFrame(frame.get(), expected_rect_);
-    video_frame_writer.WriteFrameToDefaultPath(*frame.get());
+    video_frame_writer.WriteFrameToDefaultPath(*frame);
   }
 
   // Check to see if a image pattern matched reply is passed in, and whether

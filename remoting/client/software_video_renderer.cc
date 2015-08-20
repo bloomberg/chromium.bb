@@ -35,37 +35,23 @@ namespace {
 class RgbToBgrVideoDecoderFilter : public VideoDecoder {
  public:
   RgbToBgrVideoDecoderFilter(scoped_ptr<VideoDecoder> parent)
-      : parent_(parent.Pass()) {}
-
-  bool DecodePacket(const VideoPacket& packet) override {
-    return parent_->DecodePacket(packet);
+      : parent_(parent.Pass()) {
   }
 
-  void Invalidate(const webrtc::DesktopSize& view_size,
-                  const webrtc::DesktopRegion& region) override {
-    return parent_->Invalidate(view_size, region);
-  }
-
-  void RenderFrame(const webrtc::DesktopSize& view_size,
-                   const webrtc::DesktopRect& clip_area,
-                   uint8* image_buffer,
-                   int image_stride,
-                   webrtc::DesktopRegion* output_region) override {
-    parent_->RenderFrame(view_size, clip_area, image_buffer, image_stride,
-                         output_region);
-
-    for (webrtc::DesktopRegion::Iterator i(*output_region); !i.IsAtEnd();
-         i.Advance()) {
+  bool DecodePacket(const VideoPacket& packet,
+                    webrtc::DesktopFrame* frame) override {
+    if (!parent_->DecodePacket(packet, frame))
+      return false;
+    for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
+         !i.IsAtEnd(); i.Advance()) {
       webrtc::DesktopRect rect = i.rect();
-      uint8* pixels = image_buffer + (rect.top() * image_stride) +
-                      (rect.left() * kBytesPerPixel);
-      libyuv::ABGRToARGB(pixels, image_stride, pixels, image_stride,
+      uint8_t* pixels = frame->data() + (rect.top() * frame->stride()) +
+                        (rect.left() * webrtc::DesktopFrame::kBytesPerPixel);
+      libyuv::ABGRToARGB(pixels, frame->stride(), pixels, frame->stride(),
                          rect.width(), rect.height());
     }
-  }
 
-  const webrtc::DesktopRegion* GetImageShape() override {
-    return parent_->GetImageShape();
+    return true;
   }
 
  private:
@@ -76,17 +62,8 @@ scoped_ptr<webrtc::DesktopFrame> DoDecodeFrame(
     VideoDecoder* decoder,
     scoped_ptr<VideoPacket> packet,
     scoped_ptr<webrtc::DesktopFrame> frame) {
-  if (!decoder->DecodePacket(*packet))
-    return nullptr;
-
-  decoder->RenderFrame(
-      frame->size(), webrtc::DesktopRect::MakeSize(frame->size()),
-      frame->data(), frame->stride(), frame->mutable_updated_region());
-
-  const webrtc::DesktopRegion* shape = decoder->GetImageShape();
-  if (shape)
-    frame->set_shape(new webrtc::DesktopRegion(*shape));
-
+  if (!decoder->DecodePacket(*packet, frame.get()))
+    frame.reset();
   return frame.Pass();
 }
 

@@ -6,57 +6,25 @@
 #define REMOTING_CODEC_VIDEO_DECODER_H_
 
 #include "base/basictypes.h"
-#include "remoting/proto/video.pb.h"
 
 namespace webrtc {
-class DesktopRect;
-class DesktopRegion;
-class DesktopSize;
+class DesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {
 
-// Interface for a decoder that takes a stream of bytes from the network and
-// outputs frames of data.
-// TODO(sergeyu): Simplify this interface.
+class VideoPacket;
+
+// Interface for a decoder that decodes video packets.
 class VideoDecoder {
  public:
-  static const int kBytesPerPixel = 4;
-
   VideoDecoder() {}
   virtual ~VideoDecoder() {}
 
-  // Feeds more data into the decoder. Returns true if |packet| was processed
-  // and the frame can be displayed now.
-  virtual bool DecodePacket(const VideoPacket& packet) = 0;
-
-  // Marks the specified |region| of the view for update the next time
-  // RenderFrame() is called.  |region| is expressed in |view_size| coordinates.
-  // |view_size| must not be empty.
-  virtual void Invalidate(const webrtc::DesktopSize& view_size,
-                          const webrtc::DesktopRegion& region) = 0;
-
-  // Copies invalidated pixels within |clip_area| to |image_buffer|. Pixels are
-  // invalidated either by new data received in DecodePacket(), or by explicit
-  // calls to Invalidate(). |clip_area| is specified in |view_size| coordinates.
-  // If |view_size| differs from the source size then the copied pixels will be
-  // scaled accordingly. |view_size| cannot be empty.
-  //
-  // |image_buffer|'s origin must correspond to the top-left of |clip_area|,
-  // and the buffer must be large enough to hold |clip_area| RGBA32 pixels.
-  // |image_stride| gives the output buffer's stride in pixels.
-  //
-  // On return, |output_region| contains the updated area, in |view_size|
-  // coordinates.
-  virtual void RenderFrame(const webrtc::DesktopSize& view_size,
-                           const webrtc::DesktopRect& clip_area,
-                           uint8* image_buffer,
-                           int image_stride,
-                           webrtc::DesktopRegion* output_region) = 0;
-
-  // Returns the "shape", if any, of the most recently rendered frame.
-  // The shape is returned in source dimensions.
-  virtual const webrtc::DesktopRegion* GetImageShape() = 0;
+  // Decodes a video frame. Returns false in case of a failure. The caller must
+  // pre-allocate a |frame| with the size specified in the |packet|.
+  virtual bool DecodePacket(const VideoPacket& packet,
+                            webrtc::DesktopFrame* frame) = 0;
 };
 
 }  // namespace remoting
