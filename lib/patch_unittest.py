@@ -460,6 +460,92 @@ class TestGitRepoPatch(GitRepoPatchTestCase):
     self.assertIn('Change-Id: %s\n' % changeid, patch.commit_message)
 
 
+class TestGerritFetchOnlyPatch(cros_test_lib.MockTestCase):
+  """Test of GerritFetchOnlyPatch."""
+
+  def testFromAttrDict(self):
+    """Test whether FromAttrDict can handle with commit message."""
+    attr_dict_without_msg = {
+        cros_patch.ATTR_PROJECT_URL: 'https://host/chromite/tacos',
+        cros_patch.ATTR_PROJECT: 'chromite/tacos',
+        cros_patch.ATTR_REF: 'refs/changes/11/12345/4',
+        cros_patch.ATTR_BRANCH: 'master',
+        cros_patch.ATTR_REMOTE: 'cros-internal',
+        cros_patch.ATTR_COMMIT: '7181e4b5e182b6f7d68461b04253de095bad74f9',
+        cros_patch.ATTR_CHANGE_ID: 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+        cros_patch.ATTR_GERRIT_NUMBER: '12345',
+        cros_patch.ATTR_PATCH_NUMBER: '4',
+        cros_patch.ATTR_OWNER_EMAIL: 'foo@chromium.org',
+        cros_patch.ATTR_FAIL_COUNT: 1,
+        cros_patch.ATTR_PASS_COUNT: 1,
+        cros_patch.ATTR_TOTAL_FAIL_COUNT: 3}
+
+    attr_dict_with_msg = {
+        cros_patch.ATTR_PROJECT_URL: 'https://host/chromite/tacos',
+        cros_patch.ATTR_PROJECT: 'chromite/tacos',
+        cros_patch.ATTR_REF: 'refs/changes/11/12345/4',
+        cros_patch.ATTR_BRANCH: 'master',
+        cros_patch.ATTR_REMOTE: 'cros-internal',
+        cros_patch.ATTR_COMMIT: '7181e4b5e182b6f7d68461b04253de095bad74f9',
+        cros_patch.ATTR_CHANGE_ID: 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+        cros_patch.ATTR_GERRIT_NUMBER: '12345',
+        cros_patch.ATTR_PATCH_NUMBER: '4',
+        cros_patch.ATTR_OWNER_EMAIL: 'foo@chromium.org',
+        cros_patch.ATTR_FAIL_COUNT: 1,
+        cros_patch.ATTR_PASS_COUNT: 1,
+        cros_patch.ATTR_TOTAL_FAIL_COUNT: 3,
+        cros_patch.ATTR_COMMIT_MESSAGE: 'commit message'}
+
+    self.PatchObject(cros_patch.GitRepoPatch, '_AddFooters',
+                     return_value='commit message')
+
+    result_1 = (cros_patch.GerritFetchOnlyPatch.
+                FromAttrDict(attr_dict_without_msg).commit_message)
+    result_2 = (cros_patch.GerritFetchOnlyPatch.
+                FromAttrDict(attr_dict_with_msg).commit_message)
+    self.assertEqual(None, result_1)
+    self.assertEqual('commit message', result_2)
+
+  def testGetAttributeDict(self):
+    """Test Whether GetAttributeDict can get the commit message properly."""
+    change = cros_patch.GerritFetchOnlyPatch(
+        'https://host/chromite/tacos',
+        'chromite/tacos',
+        'refs/changes/11/12345/4',
+        'master',
+        'cros-internal',
+        '7181e4b5e182b6f7d68461b04253de095bad74f9',
+        'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+        '12345',
+        '4',
+        'foo@chromium.org',
+        1,
+        1,
+        3)
+
+    expected = {
+        cros_patch.ATTR_PROJECT_URL: 'https://host/chromite/tacos',
+        cros_patch.ATTR_PROJECT: 'chromite/tacos',
+        cros_patch.ATTR_REF: 'refs/changes/11/12345/4',
+        cros_patch.ATTR_BRANCH: 'master',
+        cros_patch.ATTR_REMOTE: 'cros-internal',
+        cros_patch.ATTR_COMMIT: '7181e4b5e182b6f7d68461b04253de095bad74f9',
+        cros_patch.ATTR_CHANGE_ID: 'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+        cros_patch.ATTR_GERRIT_NUMBER: '12345',
+        cros_patch.ATTR_PATCH_NUMBER: '4',
+        cros_patch.ATTR_OWNER_EMAIL: 'foo@chromium.org',
+        cros_patch.ATTR_FAIL_COUNT: '1',
+        cros_patch.ATTR_PASS_COUNT: '1',
+        cros_patch.ATTR_TOTAL_FAIL_COUNT: '3',
+        cros_patch.ATTR_COMMIT_MESSAGE: None}
+    self.assertEqual(change.GetAttributeDict(), expected)
+
+    self.PatchObject(cros_patch.GitRepoPatch, '_AddFooters',
+                     return_value='commit message')
+    change.commit_message = 'commit message'
+    expected[cros_patch.ATTR_COMMIT_MESSAGE] = 'commit message'
+    self.assertEqual(change.GetAttributeDict(), expected)
+
 
 class TestGetOptionLinesFromCommitMessage(cros_test_lib.TestCase):
   """Tests of GetOptionFromCommitMessage."""
