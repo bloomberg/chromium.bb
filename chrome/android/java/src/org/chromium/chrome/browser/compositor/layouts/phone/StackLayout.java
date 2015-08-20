@@ -313,6 +313,17 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     @Override
+    public boolean onBackPressed() {
+        // Force any in progress animations to end. This was introduced because
+        // we end up with 0 tabs if the animation for all tabs closing is still
+        // running when the back button is pressed. We should finish the animation
+        // and close Chrome instead.
+        // See http://crbug.com/522447
+        onUpdateAnimation(SystemClock.currentThreadTimeMillis(), true);
+        return false;
+    }
+
+    @Override
     public void onTabCreating(int sourceTabId) {
         // Force any in progress animations to end. This was introduced because
         // we end up with 0 tabs if the animation for all tabs closing is still
