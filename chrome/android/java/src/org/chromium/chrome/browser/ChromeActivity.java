@@ -15,6 +15,8 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -238,7 +240,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         super.preInflationStartup();
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
-        getWindow().setBackgroundDrawableResource(R.color.light_background_color);
+        getWindow().setBackgroundDrawable(getBackgroundDrawable());
     }
 
     @SuppressLint("NewApi")
@@ -800,6 +802,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public SnackbarManager getSnackbarManager() {
         return mSnackbarManager;
+    }
+
+    protected Drawable getBackgroundDrawable() {
+        return new ColorDrawable(getResources().getColor(R.color.light_background_color));
     }
 
     /**

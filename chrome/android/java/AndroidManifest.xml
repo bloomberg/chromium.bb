@@ -338,7 +338,7 @@ by a child template that "extends" this file.
             android:targetActivity="org.chromium.chrome.browser.webapps.WebappLauncherActivity">
         </activity-alias>
         <activity android:name="org.chromium.chrome.browser.webapps.WebappActivity"
-            android:theme="@style/MainTheme"
+            android:theme="@style/WebappTheme"
             android:label="@string/webapp_activity_title"
             android:documentLaunchMode="intoExisting"
             android:windowSoftInputMode="adjustResize"
@@ -352,7 +352,7 @@ by a child template that "extends" this file.
         </activity-alias>
         {% for i in range(10) %}
         <activity android:name="org.chromium.chrome.browser.webapps.WebappActivity{{ i }}"
-            android:theme="@style/MainTheme"
+            android:theme="@style/WebappTheme"
             android:icon="@mipmap/app_shortcut_icon"
             android:label="@string/webapp_activity_title"
             android:launchMode="singleTask"

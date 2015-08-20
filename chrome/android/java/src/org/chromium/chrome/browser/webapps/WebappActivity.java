@@ -6,12 +6,15 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -49,6 +52,7 @@ public class WebappActivity extends FullScreenActivity {
 
     private WebContentsObserver mWebContentsObserver;
 
+    private ViewGroup mSplashScreen;
     private WebappUrlBar mUrlBar;
 
     private boolean mIsInitialized;
@@ -95,7 +99,6 @@ public class WebappActivity extends FullScreenActivity {
         getActivityTab().getChromeWebContentsDelegateAndroid().setDisplayMode(
                 (int) WebDisplayMode.Standalone);
         updateTaskDescription();
-        removeWindowBackground();
     }
 
     @Override
@@ -155,6 +158,17 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     public void postInflationStartup() {
+        ViewGroup contentView = (ViewGroup) findViewById(android.R.id.content);
+        mSplashScreen = (ViewGroup) LayoutInflater.from(this)
+                .inflate(R.layout.webapp_splashscreen, contentView, false);
+
+        if (mWebappInfo.backgroundColor() == ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING) {
+            mSplashScreen.setBackgroundResource(R.color.webapp_default_bg);
+        } else {
+            mSplashScreen.setBackgroundColor((int) mWebappInfo.backgroundColor());
+        }
+        contentView.addView(mSplashScreen);
+
         super.postInflationStartup();
         WebappControlContainer controlContainer =
                 (WebappControlContainer) findViewById(R.id.control_container);
@@ -214,6 +228,23 @@ public class WebappActivity extends FullScreenActivity {
             @Override
             public void didDetachInterstitialPage() {
                 updateUrlBar();
+            }
+
+            @Override
+            public void didFirstVisuallyNonEmptyPaint() {
+                if (mSplashScreen == null) return;
+
+                mSplashScreen.animate()
+                        .alpha(0f)
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                ViewGroup contentView =
+                                        (ViewGroup) findViewById(android.R.id.content);
+                                contentView.removeView(mSplashScreen);
+                                mSplashScreen = null;
+                            }
+                        });
             }
         };
     }
@@ -308,6 +339,11 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     public int getControlContainerHeightResource() {
         return R.dimen.webapp_control_container_height;
+    }
+
+    @Override
+    protected Drawable getBackgroundDrawable() {
+        return null;
     }
 
     // Implements {@link FullScreenActivityTab.TopControlsVisibilityDelegate}.
