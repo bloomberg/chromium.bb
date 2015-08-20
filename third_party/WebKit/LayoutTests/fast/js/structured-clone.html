@@ -189,7 +189,7 @@ promise_test(function() {
     var map = new Map([['key', function(){}]]);
     return structuredClone(map).then(function(clone) {
         assert_unreached('Should have thrown an exception');
-    }).catch(function(ex) {
+    }, function(ex) {
         assert_true(ex instanceof DOMException, 'Should throw a DOMException');
         assert_equals(ex.code, DOMException.DATA_CLONE_ERR, 'Should be a DataCloneError');
     });
@@ -199,10 +199,19 @@ promise_test(function() {
     var set = new Set([function(){}]);
     return structuredClone(set).then(function(clone) {
         assert_unreached('Should have thrown an exception');
-    }).catch(function(ex) {
+    }, function(ex) {
         assert_true(ex instanceof DOMException, 'Should throw a DOMException');
         assert_equals(ex.code, DOMException.DATA_CLONE_ERR, 'Should be a DataCloneError');
     });
 }, 'Cloning Sets should fail if they contain non-cloneable things');
+
+promise_test(function() {
+    return structuredClone(Symbol('foo')).then(function(clone) {
+        assert_unreached('Should have thrown an exception');
+    }, function(ex) {
+        assert_true(ex instanceof DOMException, 'Should throw a DOMException');
+        assert_equals(ex.code, DOMException.DATA_CLONE_ERR, 'Should be a DataCloneError');
+    });
+}, 'Cloning Symbols should fail');
 
 </script>

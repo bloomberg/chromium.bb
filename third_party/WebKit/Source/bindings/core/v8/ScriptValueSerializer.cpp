@@ -712,7 +712,6 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Local<v
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
-    uint32_t arrayBufferIndex;
     if (value.IsEmpty())
         return handleError(InputError, "The empty property name cannot be cloned.", next);
     if (value->IsUndefined()) {
@@ -729,25 +728,26 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
         m_writer.writeUint32(value.As<v8::Uint32>()->Value());
     } else if (value->IsNumber()) {
         m_writer.writeNumber(value.As<v8::Number>()->Value());
-    } else if (V8ArrayBufferView::hasInstance(value, isolate())) {
-        return writeAndGreyArrayBufferView(value.As<v8::Object>(), next);
     } else if (value->IsString()) {
         writeString(value);
-    } else if (V8MessagePort::hasInstance(value, isolate())) {
-        uint32_t messagePortIndex;
-        if (m_transferredMessagePorts.tryGet(value.As<v8::Object>(), &messagePortIndex)) {
-            m_writer.writeTransferredMessagePort(messagePortIndex);
-        } else {
-            return handleError(DataCloneError, "A MessagePort could not be cloned.", next);
-        }
-    } else if (V8ArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(value.As<v8::Object>(), &arrayBufferIndex)) {
-        return writeTransferredArrayBuffer(value, arrayBufferIndex, next);
-    } else if (V8SharedArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(value.As<v8::Object>(), &arrayBufferIndex)) {
-        return writeTransferredSharedArrayBuffer(value, arrayBufferIndex, next);
-    } else {
+    } else if (value->IsObject()) {
         v8::Local<v8::Object> jsObject = value.As<v8::Object>();
-        if (jsObject.IsEmpty())
-            return handleError(DataCloneError, "An object could not be cloned.", next);
+
+        uint32_t arrayBufferIndex;
+        if (V8ArrayBufferView::hasInstance(value, isolate())) {
+            return writeAndGreyArrayBufferView(jsObject, next);
+        } else if (V8MessagePort::hasInstance(value, isolate())) {
+            uint32_t messagePortIndex;
+            if (!m_transferredMessagePorts.tryGet(jsObject, &messagePortIndex))
+                return handleError(DataCloneError, "A MessagePort could not be cloned.", next);
+            m_writer.writeTransferredMessagePort(messagePortIndex);
+            return nullptr;
+        } else if (V8ArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(jsObject, &arrayBufferIndex)) {
+            return writeTransferredArrayBuffer(value, arrayBufferIndex, next);
+        } else if (V8SharedArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(jsObject, &arrayBufferIndex)) {
+            return writeTransferredSharedArrayBuffer(value, arrayBufferIndex, next);
+        }
+
         greyObject(jsObject);
         if (value->IsDate()) {
             m_writer.writeDate(value.As<v8::Date>()->ValueOf());
@@ -777,15 +777,15 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Lo
             return writeArrayBuffer(value, next);
         } else if (V8CompositorProxy::hasInstance(value, isolate())) {
             return writeCompositorProxy(value, next);
-        } else if (value->IsObject()) {
-            if (isHostObject(jsObject) || jsObject->IsCallable() || value->IsNativeError())
-                return handleError(DataCloneError, "An object could not be cloned.", next);
-            return startObjectState(jsObject, next);
+        } else if (isHostObject(jsObject) || jsObject->IsCallable() || value->IsNativeError()) {
+            return handleError(DataCloneError, "An object could not be cloned.", next);
         } else {
-            return handleError(DataCloneError, "A value could not be cloned.", next);
+            return startObjectState(jsObject, next);
         }
+    } else {
+        return handleError(DataCloneError, "A value could not be cloned.", next);
     }
-    return 0;
+    return nullptr;
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeArrayBuffer(v8::Local<v8::Value> arrayBuffer, ScriptValueSerializer::StateBase* next)
