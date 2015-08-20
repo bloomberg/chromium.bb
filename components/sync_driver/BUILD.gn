@@ -107,12 +107,29 @@ static_library("sync_driver") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "data_type_manager_impl_unittest.cc",
+    "device_info_data_type_controller_unittest.cc",
+    "device_info_sync_service_unittest.cc",
+    "generic_change_processor_unittest.cc",
+    "model_association_manager_unittest.cc",
+    "non_blocking_data_type_controller_unittest.cc",
+    "non_ui_data_type_controller_unittest.cc",
+    "shared_change_processor_unittest.cc",
+    "sync_policy_handler_unittest.cc",
+    "sync_prefs_unittest.cc",
+    "system_encryptor_unittest.cc",
     "tab_node_pool_unittest.cc",
+    "ui_data_type_controller_unittest.cc",
   ]
 
   deps = [
     ":sync_driver",
+    ":test_support",
+    "//base",
+    "//components/os_crypt",
+    "//components/pref_registry",
     "//sync",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
