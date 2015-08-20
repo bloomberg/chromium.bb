@@ -261,7 +261,6 @@ crbug.com/498539 [ Win7 ] inspector/console/console-format-table.html [ Failure 
 crbug.com/498539 [ Win7 ] inspector/console/console-log-eval-syntax-error.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-object-constructor-name.html [ Failure Pass ]
 crbug.com/521099 inspector/console/shadow-element.html [ Crash Pass Timeout ]
-crbug.com/522399 inspector/console/console-stack-overflow.html [ NeedsRebaseline ]
 crbug.com/498539 [ Win7 ] inspector/console/console-trace-arguments.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-trace-in-eval.html [ Failure Pass ]
 crbug.com/498539 [ Win7 Mavericks ] inspector/console/worker-exception-message-contains-stack.html [ Failure Pass ]
