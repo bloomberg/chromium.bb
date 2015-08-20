@@ -54,8 +54,9 @@ function ListPicker(element, config) {
     this._selectElement.addEventListener("change", this._handleChange.bind(this), false);
     window.addEventListener("message", this._handleWindowMessage.bind(this), false);
     window.addEventListener("mousemove", this._handleWindowMouseMove.bind(this), false);
-    window.addEventListener("touchmove", this._handleWindowTouchMove.bind(this), false);
-    window.addEventListener("touchend", this._handleWindowTouchEnd.bind(this), false);
+    this._handleWindowTouchMoveBound = this._handleWindowTouchMove.bind(this);
+    this._handleWindowTouchEndBound = this._handleWindowTouchEnd.bind(this);
+    this._handleTouchSelectModeScrollBound = this._handleTouchSelectModeScroll.bind(this);
     this.lastMousePositionX = Infinity;
     this.lastMousePositionY = Infinity;
     this._selectionSetByMouseHover = false;
@@ -104,10 +105,26 @@ ListPicker.prototype._handleMouseUp = function(event) {
 ListPicker.prototype._handleTouchStart = function(event) {
     if (this._trackingTouchId !== null)
         return;
+    // Enter touch select mode. In touch select mode the highlight follows the
+    // finger and on touchend the highlighted item is selected.
     var touch = event.touches[0];
     this._trackingTouchId = touch.identifier;
     this._highlightOption(touch.target);
     this._selectionSetByMouseHover = false;
+    this._selectElement.addEventListener("scroll", this._handleTouchSelectModeScrollBound, false);
+    window.addEventListener("touchmove", this._handleWindowTouchMoveBound, false);
+    window.addEventListener("touchend", this._handleWindowTouchEndBound, false);
+};
+
+ListPicker.prototype._handleTouchSelectModeScroll = function(event) {
+    this._exitTouchSelectMode();
+};
+
+ListPicker.prototype._exitTouchSelectMode = function(event) {
+    this._trackingTouchId = null;
+    this._selectElement.removeEventListener("scroll", this._handleTouchSelectModeScrollBound, false);
+    window.removeEventListener("touchmove", this._handleWindowTouchMoveBound, false);
+    window.removeEventListener("touchend", this._handleWindowTouchEndBound, false);
 };
 
 ListPicker.prototype._handleWindowTouchMove = function(event) {
@@ -129,7 +146,7 @@ ListPicker.prototype._handleWindowTouchEnd = function(event) {
     var target = document.elementFromPoint(touch.clientX, touch.clientY)
     if (target.tagName === "OPTION")
         window.pagePopupController.setValueAndClosePopup(0, this._selectElement.value);
-    this._trackingTouchId = null;
+    this._exitTouchSelectMode();
 };
 
 ListPicker.prototype._getTouchForId = function (touchList, id) {
