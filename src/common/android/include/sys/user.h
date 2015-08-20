@@ -34,28 +34,13 @@
 // glibc) and therefore avoid doing otherwise awkward #ifdefs in the code.
 // The following quirks are currently handled by this file:
 // - i386: Use the Android NDK but alias user_fxsr_struct > user_fpxregs_struct.
-// - x86_64: Override a typo in user_fpregs_struct (mxcsr_mask -> mxcr_mask).
-//     The typo has been fixed in NDK r10d, but a preprocessor workaround is
-//     required to make breakpad build with r10c and lower (more details below).
+// - aarch64: Add missing user_regs_struct and user_fpsimd_struct structs.
 // - Other platforms: Just use the Android NDK unchanged.
 
-// TODO(primiano): remove this after Chromium has stably rolled to NDK r10d.
-// Historical context: NDK releases < r10d had a typo in sys/user.h (mxcsr_mask
-// instead of mxcr_mask), which is fixed in r10d. However, just switching to use
-// the correct one (mxcr_mask) would put Breakpad in a state where it can be
-// rolled in chromium only atomically with the r10d NDK. A revert of either
-// project (android_tools, breakpad) would make the other one unrollable.
-// This hack makes breakpad code compatible with both r10c and r10d NDKs,
-// reducing the dependency entangling with android_tools.
-#if defined(__x86_64__)
-#define mxcsr_mask mxcr_mask
-#endif
+// TODO(primiano): remove these changes after Chromium has stably rolled to
+// an NDK with the appropriate fixes.
 
 #include_next <sys/user.h>
-
-#if defined(__x86_64__)
-#undef mxcsr_mask
-#endif
 
 #ifdef __i386__
 #ifdef __cplusplus
@@ -66,5 +51,25 @@ typedef struct user_fxsr_struct user_fpxregs_struct;
 }  // extern "C"
 #endif  // __cplusplus
 #endif  // __i386__
+
+#ifdef __aarch64__
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+struct user_regs_struct {
+ __u64 regs[31];
+ __u64 sp;
+ __u64 pc;
+ __u64 pstate;
+};
+struct user_fpsimd_struct {
+ __uint128_t vregs[32];
+ __u32 fpsr;
+ __u32 fpcr;
+};
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+#endif  // __aarch64__
 
 #endif  // GOOGLE_BREAKPAD_COMMON_ANDROID_INCLUDE_SYS_USER_H
