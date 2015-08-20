@@ -61,7 +61,6 @@ CredentialsSelectionView::CredentialsSelectionView(
   // ColumnSet.
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
-  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, 0, 0);
   column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
