@@ -138,19 +138,21 @@ class CC_EXPORT LayerAnimationController
 
   bool HasAnimationThatAffectsScale() const;
 
-  bool HasOnlyTranslationTransforms() const;
+  bool HasOnlyTranslationTransforms(ObserverType observer_type) const;
 
   bool AnimationsPreserveAxisAlignment() const;
 
   // Sets |start_scale| to the maximum of starting animation scale along any
   // dimension at any destination in active animations. Returns false if the
   // starting scale cannot be computed.
-  bool AnimationStartScale(float* start_scale) const;
+  bool AnimationStartScale(ObserverType observer_type,
+                           float* start_scale) const;
 
   // Sets |max_scale| to the maximum scale along any dimension at any
   // destination in active animations. Returns false if the maximum scale cannot
   // be computed.
-  bool MaximumTargetScale(float* max_scale) const;
+  bool MaximumTargetScale(ObserverType event_observers_,
+                          float* max_scale) const;
 
   // When a scroll animation is removed on the main thread, its compositor
   // thread counterpart continues producing scroll deltas until activation.

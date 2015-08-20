@@ -124,11 +124,16 @@ class CC_EXPORT AnimationHost {
                                       const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
 
-  bool HasOnlyTranslationTransforms(int layer_id) const;
+  bool HasOnlyTranslationTransforms(int layer_id,
+                                    LayerTreeType tree_type) const;
   bool AnimationsPreserveAxisAlignment(int layer_id) const;
 
-  bool MaximumTargetScale(int layer_id, float* max_scale) const;
-  bool AnimationStartScale(int layer_id, float* start_scale) const;
+  bool MaximumTargetScale(int layer_id,
+                          LayerTreeType tree_type,
+                          float* max_scale) const;
+  bool AnimationStartScale(int layer_id,
+                           LayerTreeType tree_type,
+                           float* start_scale) const;
 
   bool HasAnyAnimation(int layer_id) const;
   bool HasActiveAnimation(int layer_id) const;

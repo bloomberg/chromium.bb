@@ -579,10 +579,17 @@ bool LayerAnimationController::HasAnimationThatAffectsScale() const {
   return false;
 }
 
-bool LayerAnimationController::HasOnlyTranslationTransforms() const {
+bool LayerAnimationController::HasOnlyTranslationTransforms(
+    ObserverType observer_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != Animation::TRANSFORM)
+      continue;
+
+    if ((observer_type == ObserverType::ACTIVE &&
+         !animations_[i]->affects_active_observers()) ||
+        (observer_type == ObserverType::PENDING &&
+         !animations_[i]->affects_pending_observers()))
       continue;
 
     const TransformAnimationCurve* transform_animation_curve =
@@ -609,11 +616,18 @@ bool LayerAnimationController::AnimationsPreserveAxisAlignment() const {
   return true;
 }
 
-bool LayerAnimationController::AnimationStartScale(float* start_scale) const {
+bool LayerAnimationController::AnimationStartScale(ObserverType observer_type,
+                                                   float* start_scale) const {
   *start_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != Animation::TRANSFORM)
+      continue;
+
+    if ((observer_type == ObserverType::ACTIVE &&
+         !animations_[i]->affects_active_observers()) ||
+        (observer_type == ObserverType::PENDING &&
+         !animations_[i]->affects_pending_observers()))
       continue;
 
     bool forward_direction = true;
@@ -639,11 +653,18 @@ bool LayerAnimationController::AnimationStartScale(float* start_scale) const {
   return true;
 }
 
-bool LayerAnimationController::MaximumTargetScale(float* max_scale) const {
+bool LayerAnimationController::MaximumTargetScale(ObserverType observer_type,
+                                                  float* max_scale) const {
   *max_scale = 0.f;
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->is_finished() ||
         animations_[i]->target_property() != Animation::TRANSFORM)
+      continue;
+
+    if ((observer_type == ObserverType::ACTIVE &&
+         !animations_[i]->affects_active_observers()) ||
+        (observer_type == ObserverType::PENDING &&
+         !animations_[i]->affects_pending_observers()))
       continue;
 
     bool forward_direction = true;

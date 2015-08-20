@@ -494,9 +494,14 @@ bool AnimationHost::TransformAnimationBoundsForBox(int layer_id,
                     : true;
 }
 
-bool AnimationHost::HasOnlyTranslationTransforms(int layer_id) const {
+bool AnimationHost::HasOnlyTranslationTransforms(
+    int layer_id,
+    LayerTreeType tree_type) const {
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->HasOnlyTranslationTransforms() : true;
+  return controller
+             ? controller->HasOnlyTranslationTransforms(
+                   ObserverTypeFromTreeType(tree_type))
+             : true;
 }
 
 bool AnimationHost::AnimationsPreserveAxisAlignment(int layer_id) const {
@@ -504,17 +509,26 @@ bool AnimationHost::AnimationsPreserveAxisAlignment(int layer_id) const {
   return controller ? controller->AnimationsPreserveAxisAlignment() : true;
 }
 
-bool AnimationHost::MaximumTargetScale(int layer_id, float* max_scale) const {
+bool AnimationHost::MaximumTargetScale(int layer_id,
+                                       LayerTreeType tree_type,
+                                       float* max_scale) const {
   *max_scale = 0.f;
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->MaximumTargetScale(max_scale) : true;
+  return controller
+             ? controller->MaximumTargetScale(
+                   ObserverTypeFromTreeType(tree_type), max_scale)
+             : true;
 }
 
 bool AnimationHost::AnimationStartScale(int layer_id,
+                                        LayerTreeType tree_type,
                                         float* start_scale) const {
   *start_scale = 0.f;
   LayerAnimationController* controller = GetControllerForLayerId(layer_id);
-  return controller ? controller->AnimationStartScale(start_scale) : true;
+  return controller
+             ? controller->AnimationStartScale(
+                   ObserverTypeFromTreeType(tree_type), start_scale)
+             : true;
 }
 
 bool AnimationHost::HasAnyAnimation(int layer_id) const {

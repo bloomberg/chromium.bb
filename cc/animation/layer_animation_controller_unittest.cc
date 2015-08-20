@@ -2019,14 +2019,20 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
 
-  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
 
   controller_impl->AddAnimation(CreateAnimation(
       scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
       1, Animation::OPACITY));
 
   // Opacity animations aren't non-translation transforms.
-  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve1(
       KeyframedTransformAnimationCurve::Create());
@@ -2043,7 +2049,10 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
   controller_impl->AddAnimation(animation.Pass());
 
   // The only transform animation we've added is a translation.
-  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve2(
       KeyframedTransformAnimationCurve::Create());
@@ -2056,17 +2065,36 @@ TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
   animation = Animation::Create(curve2.Pass(), 3, 3, Animation::TRANSFORM);
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
   // A scale animation is not a translation.
-  EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms());
+  EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
+
+  controller_impl->GetAnimationById(3)->set_affects_pending_observers(false);
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
+  EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
 
   controller_impl->GetAnimationById(3)
       ->SetRunState(Animation::FINISHED, TicksFromSecondsF(0.0));
 
   // Only unfinished animations should be considered by
   // HasOnlyTranslationTransforms.
-  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::PENDING));
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms(
+      LayerAnimationController::ObserverType::ACTIVE));
 }
 
 TEST(LayerAnimationControllerTest, AnimationStartScale) {
@@ -2084,10 +2112,23 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
   scoped_ptr<Animation> animation(
       Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
   float start_scale = 0.f;
-  EXPECT_TRUE(controller_impl->AnimationStartScale(&start_scale));
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::PENDING, &start_scale));
+  EXPECT_EQ(4.f, start_scale);
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::ACTIVE, &start_scale));
+  EXPECT_EQ(0.f, start_scale);
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::PENDING, &start_scale));
+  EXPECT_EQ(4.f, start_scale);
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::ACTIVE, &start_scale));
   EXPECT_EQ(4.f, start_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve2(
@@ -2105,6 +2146,7 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
 
   // Reverse Direction
   animation->set_direction(Animation::DIRECTION_REVERSE);
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve3(
@@ -2119,9 +2161,22 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
       base::TimeDelta::FromSecondsD(1.0), operations5, nullptr));
 
   animation = Animation::Create(curve3.Pass(), 3, 3, Animation::TRANSFORM);
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_TRUE(controller_impl->AnimationStartScale(&start_scale));
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::PENDING, &start_scale));
+  EXPECT_EQ(6.f, start_scale);
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::ACTIVE, &start_scale));
+  EXPECT_EQ(0.f, start_scale);
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::PENDING, &start_scale));
+  EXPECT_EQ(6.f, start_scale);
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::ACTIVE, &start_scale));
   EXPECT_EQ(6.f, start_scale);
 
   controller_impl->GetAnimationById(2)
@@ -2129,7 +2184,11 @@ TEST(LayerAnimationControllerTest, AnimationStartScale) {
 
   // Only unfinished animations should be considered by
   // AnimationStartScale.
-  EXPECT_TRUE(controller_impl->AnimationStartScale(&start_scale));
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::PENDING, &start_scale));
+  EXPECT_EQ(5.f, start_scale);
+  EXPECT_TRUE(controller_impl->AnimationStartScale(
+      LayerAnimationController::ObserverType::ACTIVE, &start_scale));
   EXPECT_EQ(5.f, start_scale);
 }
 
@@ -2138,7 +2197,11 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       LayerAnimationController::Create(0));
 
   float max_scale = 0.f;
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(0.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(0.f, max_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve1(
@@ -2153,9 +2216,22 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve1.Pass(), 1, 1, Animation::TRANSFORM));
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(4.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
+  EXPECT_EQ(0.f, max_scale);
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(4.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(4.f, max_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve2(
@@ -2169,9 +2245,22 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
 
   animation = Animation::Create(curve2.Pass(), 2, 2, Animation::TRANSFORM);
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
+  EXPECT_EQ(4.f, max_scale);
+
+  controller_impl->ActivateAnimations();
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   scoped_ptr<KeyframedTransformAnimationCurve> curve3(
@@ -2185,9 +2274,20 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
       base::TimeDelta::FromSecondsD(1.0), operations3, nullptr));
 
   animation = Animation::Create(curve3.Pass(), 3, 3, Animation::TRANSFORM);
+  animation->set_affects_active_observers(false);
   controller_impl->AddAnimation(animation.Pass());
 
-  EXPECT_FALSE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_FALSE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+
+  controller_impl->ActivateAnimations();
+  EXPECT_FALSE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_FALSE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
 
   controller_impl->GetAnimationById(3)
       ->SetRunState(Animation::FINISHED, TicksFromSecondsF(0.0));
@@ -2196,7 +2296,11 @@ TEST(LayerAnimationControllerTest, MaximumTargetScale) {
 
   // Only unfinished animations should be considered by
   // MaximumTargetScale.
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(4.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(4.f, max_scale);
 }
 
@@ -2226,44 +2330,76 @@ TEST(LayerAnimationControllerTest, MaximumTargetScaleWithDirection) {
 
   // NORMAL direction with positive playback rate.
   animation->set_direction(Animation::DIRECTION_NORMAL);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   // ALTERNATE direction with positive playback rate.
   animation->set_direction(Animation::DIRECTION_ALTERNATE);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   // REVERSE direction with positive playback rate.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(3.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   // ALTERNATE reverse direction.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(3.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   animation->set_playback_rate(-1.0);
 
   // NORMAL direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_NORMAL);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(3.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   // ALTERNATE direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_ALTERNATE);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(3.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(3.f, max_scale);
 
   // REVERSE direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 
   // ALTERNATE reverse direction with negative playback rate.
   animation->set_direction(Animation::DIRECTION_REVERSE);
-  EXPECT_TRUE(controller_impl->MaximumTargetScale(&max_scale));
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::PENDING, &max_scale));
+  EXPECT_EQ(6.f, max_scale);
+  EXPECT_TRUE(controller_impl->MaximumTargetScale(
+      LayerAnimationController::ObserverType::ACTIVE, &max_scale));
   EXPECT_EQ(6.f, max_scale);
 }
 

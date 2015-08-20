@@ -1278,21 +1278,33 @@ bool LayerImpl::HasOnlyTranslationTransforms() const {
   if (!layer_animation_controller_)
     return layer_tree_impl_->HasOnlyTranslationTransforms(this);
 
-  return layer_animation_controller_->HasOnlyTranslationTransforms();
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
+  return layer_animation_controller_->HasOnlyTranslationTransforms(
+      observer_type);
 }
 
 bool LayerImpl::MaximumTargetScale(float* max_scale) const {
   if (!layer_animation_controller_)
     return layer_tree_impl_->MaximumTargetScale(this, max_scale);
 
-  return layer_animation_controller_->MaximumTargetScale(max_scale);
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
+  return layer_animation_controller_->MaximumTargetScale(observer_type,
+                                                         max_scale);
 }
 
 bool LayerImpl::AnimationStartScale(float* start_scale) const {
   if (!layer_animation_controller_)
     return layer_tree_impl_->AnimationStartScale(this, start_scale);
 
-  return layer_animation_controller_->AnimationStartScale(start_scale);
+  LayerAnimationController::ObserverType observer_type =
+      IsActive() ? LayerAnimationController::ObserverType::ACTIVE
+                 : LayerAnimationController::ObserverType::PENDING;
+  return layer_animation_controller_->AnimationStartScale(observer_type,
+                                                          start_scale);
 }
 
 bool LayerImpl::HasAnyAnimationTargetingProperty(

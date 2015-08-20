@@ -1687,27 +1687,33 @@ bool LayerTreeImpl::TransformIsAnimatingOnImplOnly(
 }
 
 bool LayerTreeImpl::HasOnlyTranslationTransforms(const LayerImpl* layer) const {
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()
-                   ->HasOnlyTranslationTransforms(layer->id())
+                   ->HasOnlyTranslationTransforms(layer->id(), tree_type)
              : true;
 }
 
 bool LayerTreeImpl::MaximumTargetScale(const LayerImpl* layer,
                                        float* max_scale) const {
   *max_scale = 0.f;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()->MaximumTargetScale(
-                   layer->id(), max_scale)
+                   layer->id(), tree_type, max_scale)
              : true;
 }
 
 bool LayerTreeImpl::AnimationStartScale(const LayerImpl* layer,
                                         float* start_scale) const {
   *start_scale = 0.f;
+  LayerTreeType tree_type =
+      IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING;
   return layer_tree_host_impl_->animation_host()
              ? layer_tree_host_impl_->animation_host()->AnimationStartScale(
-                   layer->id(), start_scale)
+                   layer->id(), tree_type, start_scale)
              : true;
 }
 
