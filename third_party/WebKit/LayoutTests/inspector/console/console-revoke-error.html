@@ -25,33 +25,35 @@ function test()
     InspectorTest.addResult("Creating promise");
     InspectorTest.evaluateInPageWithTimeout("createPromises()");
 
+    var messageNumber = 0;
     function messageAdded(event)
     {
-        InspectorTest.addResult("");
         InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
+        if (++messageNumber < 3)
+            return;
+        messageNumber = 0;
+
+        InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+        InspectorTest.addResult("");
         InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
         InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
 
-        if (event.data.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
-            InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
-            // Process array as a batch.
-            setTimeout(function() {
-                InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
-                InspectorTest.dumpConsoleClassesBrief();
-                InspectorTest.addResult("");
-                InspectorTest.addResult("Handling promise");
-                InspectorTest.evaluateInPageWithTimeout("handleSomeRejections()");
-            });
-        }
+        // Process array as a batch.
+        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
+        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Handling promise");
+        InspectorTest.evaluateInPageWithTimeout("handleSomeRejections()");
     }
 
     function messageUpdated()
     {
-        // Process array as a batch.
-        setTimeout(function() {
-            InspectorTest.dumpConsoleClassesBrief();
-            InspectorTest.completeTest();
-        });
+        if (++messageNumber < 2)
+            return;
+        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
+        InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
+        InspectorTest.completeTest();
     }
 }
 
