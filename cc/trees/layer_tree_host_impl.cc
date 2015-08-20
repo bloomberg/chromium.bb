@@ -441,13 +441,6 @@ void LayerTreeHostImpl::Animate() {
   AnimateLayers(monotonic_time);
   AnimateScrollbars(monotonic_time);
   AnimateTopControls(monotonic_time);
-
-  // If animations are not visible, update the state now as Draw/Swap will never
-  // occur.
-  // TODO(ajuma): Left-overs from now-deleted background ticking?
-  bool animations_are_visible = visible() && CanDraw();
-  if (!animations_are_visible)
-    UpdateAnimationState(true);
 }
 
 bool LayerTreeHostImpl::PrepareTiles() {

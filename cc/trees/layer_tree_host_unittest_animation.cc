@@ -548,49 +548,6 @@ class LayerTreeHostAnimationTestAnimateAfterSetNeedsCommit
 
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestAnimateAfterSetNeedsCommit);
 
-// Make sure the main thread can still execute animations when CanDraw() is not
-// true.
-class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
-    : public LayerTreeHostAnimationTest {
- public:
-  LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw() : started_times_(0) {}
-
-  void SetupTree() override {
-    LayerTreeHostAnimationTest::SetupTree();
-    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
-    picture_->SetBounds(gfx::Size(4, 4));
-    picture_->set_layer_animation_delegate(this);
-    layer_tree_host()->root_layer()->AddChild(picture_);
-  }
-
-  void BeginTest() override {
-    layer_tree_host()->SetViewportSize(gfx::Size());
-    PostAddAnimationToMainThread(picture_.get());
-  }
-
-  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
-                              int group) override {
-    started_times_++;
-  }
-
-  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
-                               int group) override {
-    EndTest();
-  }
-
-  void AfterTest() override { EXPECT_EQ(1, started_times_); }
-
- private:
-  int started_times_;
-  FakeContentLayerClient client_;
-  scoped_refptr<FakePictureLayer> picture_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw);
-
 // Animations should not be started when frames are being skipped due to
 // checkerboard.
 class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
@@ -1164,7 +1121,6 @@ class LayerTreeHostAnimationTestNotifyAnimationFinished
   }
 
   void BeginTest() override {
-    layer_tree_host()->SetViewportSize(gfx::Size());
     PostAddLongAnimationToMainThread(picture_.get());
   }
 

@@ -444,53 +444,6 @@ class LayerTreeHostTimelinesTestLayerAddedWithAnimation
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTimelinesTestLayerAddedWithAnimation);
 
-// Make sure the main thread can still execute animations when CanDraw() is not
-// true.
-// Evolved from LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
-class LayerTreeHostTimelinesTestRunAnimationWhenNotCanDraw
-    : public LayerTreeHostTimelinesTest {
- public:
-  LayerTreeHostTimelinesTestRunAnimationWhenNotCanDraw() : started_times_(0) {}
-
-  void SetupTree() override {
-    LayerTreeHostTimelinesTest::SetupTree();
-    picture_ = FakePictureLayer::Create(layer_settings(), &client_);
-    picture_->SetBounds(gfx::Size(4, 4));
-    layer_tree_host()->root_layer()->AddChild(picture_);
-
-    AttachPlayersToTimeline();
-    player_child_->AttachLayer(picture_->id());
-    player_child_->set_layer_animation_delegate(this);
-  }
-
-  void BeginTest() override {
-    layer_tree_host()->SetViewportSize(gfx::Size());
-    PostAddAnimationToMainThreadPlayer(player_child_.get());
-  }
-
-  void NotifyAnimationStarted(base::TimeTicks monotonic_time,
-                              Animation::TargetProperty target_property,
-                              int group) override {
-    started_times_++;
-  }
-
-  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
-                               Animation::TargetProperty target_property,
-                               int group) override {
-    EndTest();
-  }
-
-  void AfterTest() override { EXPECT_EQ(1, started_times_); }
-
- private:
-  int started_times_;
-  FakeContentLayerClient client_;
-  scoped_refptr<FakePictureLayer> picture_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTimelinesTestRunAnimationWhenNotCanDraw);
-
 // Animations should not be started when frames are being skipped due to
 // checkerboard.
 // Evolved from LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations.
