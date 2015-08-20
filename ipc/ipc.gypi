@@ -87,8 +87,6 @@
           'param_traits_macros.h',
           'param_traits_read_macros.h',
           'param_traits_write_macros.h',
-          'placeholder_brokerable_attachment.cc',
-          'placeholder_brokerable_attachment.h',
           'struct_constructor_macros.h',
           'struct_destructor_macros.h',
           'unix_domain_socket_util.cc',

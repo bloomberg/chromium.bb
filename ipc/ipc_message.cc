@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
-#include "ipc/placeholder_brokerable_attachment.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -47,9 +46,6 @@ Message::~Message() {
 Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
   header()->flags = GetRefNumUpper24();
-#if USE_ATTACHMENT_BROKER
-  header()->num_brokered_attachments = 0;
-#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -63,9 +59,6 @@ Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
   header()->type = type;
   DCHECK((priority & 0xffffff00) == 0);
   header()->flags = priority | GetRefNumUpper24();
-#if USE_ATTACHMENT_BROKER
-  header()->num_brokered_attachments = 0;
-#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -134,91 +127,10 @@ void Message::set_received_time(int64 time) const {
 }
 #endif
 
-Message::NextMessageInfo::NextMessageInfo()
-    : message_found(false), pickle_end(nullptr), message_end(nullptr) {}
-Message::NextMessageInfo::~NextMessageInfo() {}
-
-// static
-Message::NextMessageInfo Message::FindNext(const char* range_start,
-                                           const char* range_end) {
-  NextMessageInfo info;
-  const char* pickle_end =
-      base::Pickle::FindNext(sizeof(Header), range_start, range_end);
-  if (pickle_end == nullptr)
-    return info;
-  info.pickle_end = pickle_end;
-
-#if USE_ATTACHMENT_BROKER
-  // The data is not copied.
-  size_t pickle_len = static_cast<size_t>(pickle_end - range_start);
-  Message message(range_start, static_cast<int>(pickle_len));
-  int num_attachments = message.header()->num_brokered_attachments;
-
-  // Each brokered attachment adds kNonceSize bytes of data to the message. We
-  // want to avoid overflows in our computations, so we limit the number of
-  // brokerable attachments to 100.
-  if (num_attachments > 100)
-    return info;
-
-  // Check whether the range includes the attachments.
-  size_t attachment_length = num_attachments * BrokerableAttachment::kNonceSize;
-  size_t buffer_length = static_cast<size_t>(range_end - range_start);
-  if (buffer_length < attachment_length + pickle_len)
-    return info;
-
-  for (int i = 0; i < num_attachments; ++i) {
-    const char* attachment_start =
-        pickle_end + i * (BrokerableAttachment::kNonceSize);
-    BrokerableAttachment::AttachmentId id(attachment_start,
-                                          BrokerableAttachment::kNonceSize);
-    info.attachment_ids.push_back(id);
-  }
-  info.message_end =
-      pickle_end + num_attachments * BrokerableAttachment::kNonceSize;
-#else
-  info.message_end = pickle_end;
-#endif  // USE_ATTACHMENT_BROKER
-
-  info.message_found = true;
-  return info;
-}
-
-Message::SerializedAttachmentIds
-Message::SerializedIdsOfBrokerableAttachments() {
-  DCHECK(HasBrokerableAttachments());
-  std::vector<const BrokerableAttachment*> attachments =
-      attachment_set_->PeekBrokerableAttachments();
-  size_t size = attachments.size() * BrokerableAttachment::kNonceSize;
-  char* buffer = static_cast<char*>(malloc(size));
-  for (size_t i = 0; i < attachments.size(); ++i) {
-    const BrokerableAttachment* attachment = attachments[i];
-    char* start_range = buffer + i * BrokerableAttachment::kNonceSize;
-    BrokerableAttachment::AttachmentId id = attachment->GetIdentifier();
-    id.SerializeToBuffer(start_range, BrokerableAttachment::kNonceSize);
-  }
-  SerializedAttachmentIds ids;
-  ids.buffer = buffer;
-  ids.size = size;
-  return ids;
-}
-
-bool Message::AddPlaceholderBrokerableAttachmentWithId(
-    BrokerableAttachment::AttachmentId id) {
-  scoped_refptr<PlaceholderBrokerableAttachment> attachment(
-      new PlaceholderBrokerableAttachment(id));
-  return attachment_set()->AddAttachment(attachment);
-}
-
 bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
   // We write the index of the descriptor so that we don't have to
   // keep the current descriptor as extra decoding state when deserialising.
   WriteInt(attachment_set()->size());
-
-#if USE_ATTACHMENT_BROKER
-  if (attachment->GetType() == MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
-    header()->num_brokered_attachments += 1;
-#endif
-
   return attachment_set()->AddAttachment(attachment);
 }
 

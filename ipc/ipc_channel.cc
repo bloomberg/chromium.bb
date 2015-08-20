@@ -41,26 +41,4 @@ std::string Channel::GenerateUniqueRandomChannelID() {
       base::RandInt(0, std::numeric_limits<int32>::max()));
 }
 
-Channel::OutputElement::OutputElement(Message* message)
-    : message_(message), buffer_(nullptr), length_(0) {}
-
-Channel::OutputElement::OutputElement(void* buffer, size_t length)
-    : message_(nullptr), buffer_(buffer), length_(length) {}
-
-Channel::OutputElement::~OutputElement() {
-  free(buffer_);
-}
-
-size_t Channel::OutputElement::size() const {
-  if (message_)
-    return message_->size();
-  return length_;
-}
-
-const void* Channel::OutputElement::data() const {
-  if (message_)
-    return message_->data();
-  return buffer_;
-}
-
 }  // namespace IPC

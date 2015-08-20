@@ -22,15 +22,6 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   struct IPC_EXPORT AttachmentId {
     uint8_t nonce[kNonceSize];
 
-    // Default constructor returns a random nonce.
-    AttachmentId();
-
-    // Constructs an AttachmentId from a buffer.
-    AttachmentId(const char* start_address, size_t size);
-
-    // Writes the nonce into a buffer.
-    void SerializeToBuffer(char* start_address, size_t size);
-
     bool operator==(const AttachmentId& rhs) const {
       for (size_t i = 0; i < kNonceSize; ++i) {
         if (nonce[i] != rhs.nonce[i])
@@ -51,7 +42,6 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   };
 
   enum BrokerableType {
-    PLACEHOLDER,
     WIN_HANDLE,
   };
 
@@ -62,26 +52,31 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   // can be used.
   bool NeedsBrokering() const;
 
+  // Fills in the data of this instance with the data from |attachment|.
+  // This instance must require brokering, |attachment| must be brokered, and
+  // both instances must have the same identifier.
+  virtual void PopulateWithAttachment(
+      const BrokerableAttachment* attachment) = 0;
+
   // Returns TYPE_BROKERABLE_ATTACHMENT
   Type GetType() const override;
 
   virtual BrokerableType GetBrokerableType() const = 0;
 
-// MessageAttachment override.
-#if defined(OS_POSIX)
-  base::PlatformFile TakePlatformFile() override;
-#endif  // OS_POSIX
-
  protected:
   BrokerableAttachment();
-  BrokerableAttachment(const AttachmentId& id);
+  BrokerableAttachment(const AttachmentId& id, bool needs_brokering);
   ~BrokerableAttachment() override;
+
+  void SetNeedsBrokering(bool needs_brokering);
 
  private:
   // This member uniquely identifies a BrokerableAttachment across all Chrome
   // processes.
   const AttachmentId id_;
 
+  // Whether the attachment still needs to be filled in by an AttachmentBroker.
+  bool needs_brokering_;
   DISALLOW_COPY_AND_ASSIGN(BrokerableAttachment);
 };
 

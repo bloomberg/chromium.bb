@@ -9,7 +9,6 @@
 #include "ipc/attachment_broker.h"
 #include "ipc/brokerable_attachment.h"
 #include "ipc/ipc_channel_reader.h"
-#include "ipc/placeholder_brokerable_attachment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if USE_ATTACHMENT_BROKER
@@ -20,9 +19,15 @@ namespace {
 
 class MockAttachment : public BrokerableAttachment {
  public:
-  MockAttachment() {}
+  MockAttachment(int internal_state) : internal_state_(internal_state) {}
   MockAttachment(BrokerableAttachment::AttachmentId id)
-      : BrokerableAttachment(id) {}
+      : BrokerableAttachment(id, true), internal_state_(-1) {}
+
+  void PopulateWithAttachment(const BrokerableAttachment* attachment) override {
+    const MockAttachment* mock_attachment =
+        static_cast<const MockAttachment*>(attachment);
+    internal_state_ = mock_attachment->internal_state_;
+  }
 
 #if defined(OS_POSIX)
   base::PlatformFile TakePlatformFile() override {
@@ -34,6 +39,8 @@ class MockAttachment : public BrokerableAttachment {
 
  private:
   ~MockAttachment() override {}
+  // Internal state differentiates MockAttachments.
+  int internal_state_;
 };
 
 class MockAttachmentBroker : public AttachmentBroker {
@@ -98,12 +105,12 @@ TEST(ChannelReaderTest, AttachmentAlreadyBrokered) {
   MockAttachmentBroker broker;
   MockChannelReader reader;
   reader.set_broker(&broker);
-  scoped_refptr<MockAttachment> attachment(new MockAttachment);
+  scoped_refptr<MockAttachment> attachment(new MockAttachment(5));
   broker.AddAttachment(attachment);
 
   Message* m = new Message;
-  PlaceholderBrokerableAttachment* needs_brokering_attachment =
-      new PlaceholderBrokerableAttachment(attachment->GetIdentifier());
+  MockAttachment* needs_brokering_attachment =
+      new MockAttachment(attachment->GetIdentifier());
   EXPECT_TRUE(m->WriteAttachment(needs_brokering_attachment));
   reader.AddMessageForDispatch(m);
   EXPECT_EQ(ChannelReader::DISPATCH_FINISHED, reader.DispatchMessages());
@@ -114,11 +121,11 @@ TEST(ChannelReaderTest, AttachmentNotYetBrokered) {
   MockAttachmentBroker broker;
   MockChannelReader reader;
   reader.set_broker(&broker);
-  scoped_refptr<MockAttachment> attachment(new MockAttachment);
+  scoped_refptr<MockAttachment> attachment(new MockAttachment(5));
 
   Message* m = new Message;
-  PlaceholderBrokerableAttachment* needs_brokering_attachment =
-      new PlaceholderBrokerableAttachment(attachment->GetIdentifier());
+  MockAttachment* needs_brokering_attachment =
+      new MockAttachment(attachment->GetIdentifier());
   EXPECT_TRUE(m->WriteAttachment(needs_brokering_attachment));
   reader.AddMessageForDispatch(m);
   EXPECT_EQ(ChannelReader::DISPATCH_WAITING_ON_BROKER,

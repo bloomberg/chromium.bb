@@ -105,7 +105,7 @@ class ChannelWin : public Channel,
   std::queue<Message*> prelim_queue_;
 
   // Messages to be sent are queued here.
-  std::queue<OutputElement*> output_queue_;
+  std::queue<Message*> output_queue_;
 
   // In server-mode, we have to wait for the client to connect before we
   // can begin reading.  We make use of the input_state_ when performing

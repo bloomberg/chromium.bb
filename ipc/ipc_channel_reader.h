@@ -75,10 +75,6 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
 
   Listener* listener() const { return listener_; }
 
-  // Subclasses should call this method in their destructor to give this class a
-  // chance to clean up state that might be dependent on subclass members.
-  void CleanUp();
-
   // Populates the given buffer with data from the pipe.
   //
   // Returns the state of the read. On READ_SUCCESS, the number of bytes
