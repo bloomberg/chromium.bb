@@ -28,7 +28,6 @@ MediaRouterAction::MediaRouterAction(Browser* browser)
     : media_router::IssuesObserver(GetMediaRouter(browser)),
       media_router::MediaRoutesObserver(GetMediaRouter(browser)),
       id_(ComponentToolbarActionsFactory::kMediaRouterActionId),
-      name_(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TITLE)),
       media_router_active_icon_(
           ui::ResourceBundle::GetSharedInstance()
               .GetImageNamed(IDR_MEDIA_ROUTER_ACTIVE_ICON)),
@@ -62,7 +61,7 @@ gfx::Image MediaRouterAction::GetIcon(content::WebContents* web_contents,
 }
 
 base::string16 MediaRouterAction::GetActionName() const {
-  return name_;
+  return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_TITLE);
 }
 
 base::string16 MediaRouterAction::GetAccessibleName(
@@ -72,7 +71,7 @@ base::string16 MediaRouterAction::GetAccessibleName(
 
 base::string16 MediaRouterAction::GetTooltip(
     content::WebContents* web_contents) const {
-  return name_;
+  return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_TEXT);
 }
 
 bool MediaRouterAction::IsEnabled(

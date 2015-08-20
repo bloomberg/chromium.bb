@@ -70,7 +70,6 @@ class MediaRouterAction : public ToolbarActionViewController,
   const gfx::Image* GetCurrentIcon() const;
 
   const std::string id_;
-  const base::string16 name_;
 
   // Cached icons.
   // Indicates that the current Chrome profile is using at least one device.

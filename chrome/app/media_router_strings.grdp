@@ -5,6 +5,9 @@
   <message name="IDS_MEDIA_ROUTER_TITLE" desc="Title for media router">
     Media Router
   </message>
+  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_TEXT" desc="Text for Media Router Action tooltip, which appears on mouseover of the action icon in the toolbar.">
+   Share your screen
+  </message>
 
   <!-- Cast Modes -->
   <message name="IDS_MEDIA_ROUTER_DEFAULT_CAST_MODE" desc="Message for default cast mode.">
