@@ -1896,8 +1896,6 @@
       'browser/net/dns_probe_runner.h',
       'browser/net/dns_probe_service.cc',
       'browser/net/dns_probe_service.h',
-      'browser/net/evicted_domain_cookie_counter.cc',
-      'browser/net/evicted_domain_cookie_counter.h',
       'browser/net/file_downloader.cc',
       'browser/net/file_downloader.h',
       'browser/net/http_server_properties_manager_factory.cc',

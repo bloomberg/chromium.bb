@@ -6,7 +6,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/evicted_domain_cookie_counter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/os_crypt.h"
@@ -15,11 +14,6 @@
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 
 namespace chrome_browser_net {
-
-net::CookieMonsterDelegate* CreateCookieDelegate(
-    scoped_refptr<net::CookieMonsterDelegate> next_cookie_monster_delegate) {
-  return new EvictedDomainCookieCounter(next_cookie_monster_delegate);
-}
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 namespace {

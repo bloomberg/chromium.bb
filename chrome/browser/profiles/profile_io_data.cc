@@ -382,14 +382,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->host_content_settings_map = profile->GetHostContentSettingsMap();
   params->ssl_config_service = profile->GetSSLConfigService();
 
-  scoped_refptr<net::CookieMonsterDelegate> next_cookie_monster_delegate;
 #if defined(ENABLE_EXTENSIONS)
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
-  next_cookie_monster_delegate = new ExtensionCookieMonsterDelegate(profile);
+  params->cookie_monster_delegate = new ExtensionCookieMonsterDelegate(profile);
 #endif
-  params->cookie_monster_delegate =
-      chrome_browser_net::CreateCookieDelegate(next_cookie_monster_delegate);
 
   if (predictors::ResourcePrefetchPredictor* predictor =
           predictors::ResourcePrefetchPredictorFactory::GetForProfile(

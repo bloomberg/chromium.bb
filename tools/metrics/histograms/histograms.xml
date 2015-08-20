@@ -4538,7 +4538,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.ReinstatedCookies" units="seconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <obsolete>
+    Deprecated as of 8/2015.
+  </obsolete>
+  <owner>huangs@chromium.org</owner>
   <summary>
     The duration in seconds between a cookie getting evicted (due to the number
     of cookies exceeding a domain limit), and subsequently reinstated.

@@ -17,12 +17,6 @@ class CookieMonsterDelegate;
 
 namespace chrome_browser_net {
 
-// Factory method for creating a CookieStore delegate, taking a
-// |next_cookie_monster_delegate| which may be NULL. This delegate is stateless
-// so only one is necessary per profile.
-net::CookieMonsterDelegate* CreateCookieDelegate(
-    scoped_refptr<net::CookieMonsterDelegate> next_cookie_monster_delegate);
-
 // Factory method for returning a CookieCryptoDelegate if one is appropriate for
 // this platform. The object returned is a LazyInstance. Ownership is not
 // transferred.
