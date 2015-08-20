@@ -885,7 +885,7 @@ bool CanvasRenderingContext2D::draw(const DrawFunc& drawFunc, const ContainsFunc
         return false;
 
     SkIRect clipBounds;
-    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
+    if (!drawingCanvas() || !drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return false;
 
     // If gradient size is zero, then paint nothing.
