@@ -444,7 +444,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     dismissed_picture_ids_.erase(id);
   }
 
-  RETURN_ON_FAILURE(output_picture_buffers_.size() == kNumPictureBuffers,
+  RETURN_ON_FAILURE(output_picture_buffers_.size() >= kNumPictureBuffers,
                     "Invalid picture buffers were passed.",
                     INVALID_ARGUMENT);
 

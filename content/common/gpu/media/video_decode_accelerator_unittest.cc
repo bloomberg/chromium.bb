@@ -143,6 +143,9 @@ const int kMaxFramesToDelayReuse = 64;
 const base::TimeDelta kReuseDelay = base::TimeDelta::FromSeconds(1);
 // Simulate WebRTC and call VDA::Decode 30 times per second.
 const int kWebRtcDecodeCallsPerSecond = 30;
+// Simulate an adjustment to a larger number of pictures to make sure the
+// decoder supports an upwards adjustment.
+const int kExtraPictureBuffers = 2;
 
 struct TestVideoFile {
   explicit TestVideoFile(base::FilePath::StringType file_name)
@@ -614,6 +617,8 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
   if (decoder_deleted())
     return;
   std::vector<media::PictureBuffer> buffers;
+
+  requested_num_of_buffers += kExtraPictureBuffers;
 
   texture_target_ = texture_target;
   for (uint32 i = 0; i < requested_num_of_buffers; ++i) {

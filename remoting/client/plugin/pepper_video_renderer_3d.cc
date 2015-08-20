@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/c/ppb_opengles2.h"
+#include "ppapi/c/ppb_video_decoder.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
 #include "ppapi/lib/gl/include/GLES2/gl2ext.h"
@@ -18,6 +19,10 @@
 #include "remoting/protocol/session_config.h"
 
 namespace remoting {
+
+// The implementation here requires this minimum number of pictures from the
+// video decoder interface to work.
+const uint32_t kMinimumPictureCount = 3;
 
 class PepperVideoRenderer3D::PendingPacket {
  public:
@@ -170,8 +175,13 @@ void PepperVideoRenderer3D::OnSessionConfig(
     default:
       NOTREACHED();
   }
+
+  bool supports_video_decoder_1_1 =
+      pp::Module::Get()->GetBrowserInterface(
+          PPB_VIDEODECODER_INTERFACE_1_1) != NULL;
   int32_t result = video_decoder_.Initialize(
       graphics_, video_profile, PP_HARDWAREACCELERATION_WITHFALLBACK,
+      supports_video_decoder_1_1 ? kMinimumPictureCount : 0,
       callback_factory_.NewCallback(&PepperVideoRenderer3D::OnInitialized));
   CHECK_EQ(result, PP_OK_COMPLETIONPENDING)
       << "video_decoder_.Initialize() returned " << result;

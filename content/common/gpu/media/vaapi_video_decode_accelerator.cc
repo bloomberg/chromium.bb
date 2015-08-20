@@ -651,7 +651,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     output_buffers_.pop();
 
   RETURN_AND_NOTIFY_ON_FAILURE(
-      buffers.size() == requested_num_pics_,
+      buffers.size() >= requested_num_pics_,
       "Got an invalid number of picture buffers. (Got " << buffers.size()
       << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
   DCHECK(requested_pic_size_ == buffers[0].size());

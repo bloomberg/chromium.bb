@@ -322,10 +322,13 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
   DVLOG(3) << "AssignPictureBuffers(): buffer_count=" << buffers.size();
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  if (buffers.size() != output_buffer_map_.size()) {
+  const uint32_t req_buffer_count =
+      output_dpb_size_ + kDpbOutputBufferExtraCount;
+
+  if (buffers.size() < req_buffer_count) {
     LOG(ERROR) << "AssignPictureBuffers(): Failed to provide requested picture"
                   " buffers. (Got " << buffers.size()
-               << ", requested " << output_buffer_map_.size() << ")";
+               << ", requested " << req_buffer_count << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -340,6 +343,23 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
 
   // It's safe to manipulate all the buffer state here, because the decoder
   // thread is waiting on pictures_assigned_.
+
+  // Allocate the output buffers.
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count  = buffers.size();
+  reqbufs.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  IOCTL_OR_ERROR_RETURN(VIDIOC_REQBUFS, &reqbufs);
+
+  if (reqbufs.count != buffers.size()) {
+    DLOG(ERROR) << "Could not allocate enough output buffers";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
+
+  output_buffer_map_.resize(buffers.size());
+
   DCHECK(free_output_buffers_.empty());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     DCHECK(buffers[i].size() == coded_size_);
@@ -1861,22 +1881,13 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
 
   // Output format setup in Initialize().
 
-  // Allocate the output buffers.
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count  = output_dpb_size_ + kDpbOutputBufferExtraCount;
-  reqbufs.type   = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  reqbufs.memory = V4L2_MEMORY_MMAP;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
-
-  output_buffer_map_.resize(reqbufs.count);
-
+  const uint32_t buffer_count = output_dpb_size_ + kDpbOutputBufferExtraCount;
   DVLOG(3) << "CreateOutputBuffers(): ProvidePictureBuffers(): "
-           << "buffer_count=" << output_buffer_map_.size()
+           << "buffer_count=" << buffer_count
            << ", coded_size=" << coded_size_.ToString();
   child_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
-                            output_buffer_map_.size(), coded_size_,
+                            buffer_count, coded_size_,
                             device_->GetTextureTarget()));
 
   // Wait for the client to call AssignPictureBuffers() on the Child thread.

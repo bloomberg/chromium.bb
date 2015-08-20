@@ -255,6 +255,7 @@ Decoder::Decoder(MyInstance* instance,
   decoder_->Initialize(graphics_3d,
                        kBitstreamProfile,
                        PP_HARDWAREACCELERATION_WITHFALLBACK,
+                       0,
                        callback_factory_.NewCallback(&Decoder::InitializeDone));
 }
 

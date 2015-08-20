@@ -1970,10 +1970,11 @@ IPC_MESSAGE_CONTROL2(PpapiPluginMsg_OutputProtection_QueryStatusReply,
 // VideoDecoder ------------------------------------------------------
 
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDecoder_Create)
-IPC_MESSAGE_CONTROL3(PpapiHostMsg_VideoDecoder_Initialize,
+IPC_MESSAGE_CONTROL4(PpapiHostMsg_VideoDecoder_Initialize,
                      ppapi::HostResource /* graphics_context */,
                      PP_VideoProfile /* profile */,
-                     PP_HardwareAcceleration /* acceleration */)
+                     PP_HardwareAcceleration /* acceleration */,
+                     uint32_t /* min_picture_count */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_VideoDecoder_InitializeReply)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDecoder_GetShm,
                      uint32_t /* shm_id */,

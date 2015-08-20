@@ -65,6 +65,12 @@ class VideoDecoder : public Resource {
   /// codec profile.
   /// @param[in] acceleration A <code>PP_HardwareAcceleration</code> specifying
   /// whether to use a hardware accelerated or a software implementation.
+  /// @param[in] min_picture_count A count of pictures the plugin would like to
+  /// have in flight. This is effectively the number of times the plugin can
+  /// call GetPicture() and get a decoded frame without calling
+  /// RecyclePicture(). The decoder has its own internal minimum count, and will
+  /// take the larger of its internal and this value. A client that doesn't care
+  /// can therefore just pass in zero for this argument.
   /// @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
   /// completion.
   ///
@@ -75,6 +81,7 @@ class VideoDecoder : public Resource {
   int32_t Initialize(const Graphics3D& graphics3d_context,
                      PP_VideoProfile profile,
                      PP_HardwareAcceleration acceleration,
+                     uint32_t min_picture_count,
                      const CompletionCallback& callback);
 
   /// Decodes a bitstream buffer. Copies |size| bytes of data from the plugin's

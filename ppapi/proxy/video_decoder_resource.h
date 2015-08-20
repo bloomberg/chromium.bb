@@ -48,9 +48,15 @@ class PPAPI_PROXY_EXPORT VideoDecoderResource
       PP_VideoProfile profile,
       PP_Bool allow_software_fallback,
       scoped_refptr<TrackedCallback> callback) override;
+  int32_t Initialize0_2(
+      PP_Resource graphics_context,
+      PP_VideoProfile profile,
+      PP_HardwareAcceleration acceleration,
+      scoped_refptr<TrackedCallback> callback) override;
   int32_t Initialize(PP_Resource graphics_context,
                      PP_VideoProfile profile,
                      PP_HardwareAcceleration acceleration,
+                     uint32_t min_picture_count,
                      scoped_refptr<TrackedCallback> callback) override;
   int32_t Decode(uint32_t decode_id,
                  uint32_t size,
@@ -167,6 +173,8 @@ class PPAPI_PROXY_EXPORT VideoDecoderResource
   // NOTE: because we count decodes mod 2^31, this value must be a power of 2.
   static const int kMaximumPictureDelay = 128;
   uint32_t decode_ids_[kMaximumPictureDelay];
+
+  uint32_t min_picture_count_;
 
   // State for pending get_picture_callback_.
   PP_VideoPicture* get_picture_;

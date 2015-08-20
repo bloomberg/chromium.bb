@@ -19,7 +19,12 @@ enum {
 
   // Maximum size of shared-memory buffers (4 MB). This should be enough even
   // for 4K video at reasonable compression levels.
-  kMaximumBitstreamBufferSize = 4 << 20
+  kMaximumBitstreamBufferSize = 4 << 20,
+
+  // The maximum number of pictures that the client can pass in for
+  // min_picture_count, just as a sanity check on the argument.
+  // This should match the constant of the same name in test_video_decoder.cc.
+  kMaximumPictureCount = 100
 };
 
 }  // namespace proxy

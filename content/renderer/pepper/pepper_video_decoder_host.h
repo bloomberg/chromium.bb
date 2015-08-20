@@ -70,7 +70,8 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   int32_t OnHostMsgInitialize(ppapi::host::HostMessageContext* context,
                               const ppapi::HostResource& graphics_context,
                               PP_VideoProfile profile,
-                              PP_HardwareAcceleration acceleration);
+                              PP_HardwareAcceleration acceleration,
+                              uint32_t min_picture_count);
   int32_t OnHostMsgGetShm(ppapi::host::HostMessageContext* context,
                           uint32_t shm_id,
                           uint32_t shm_size);
@@ -109,6 +110,7 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   // This is parallel to |shm_buffers_|.
   std::vector<uint8_t> shm_buffer_busy_;
 
+  uint32_t min_picture_count_;
   typedef std::set<uint32_t> TextureSet;
   TextureSet pictures_in_use_;
   TextureSet dismissed_pictures_in_use_;

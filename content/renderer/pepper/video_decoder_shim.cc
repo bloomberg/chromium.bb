@@ -730,11 +730,9 @@ void VideoDecoderShim::DecoderImpl::Stop() {
 void VideoDecoderShim::DecoderImpl::OnInitDone(bool success) {
   int32_t result = success ? PP_OK : PP_ERROR_NOTSUPPORTED;
 
-  // Calculate how many textures the shim should create.
-  uint32_t shim_texture_pool_size = media::limits::kMaxVideoFrames + 1;
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VideoDecoderShim::OnInitializeComplete, shim_,
-                            result, shim_texture_pool_size));
+                            result));
 }
 
 void VideoDecoderShim::DecoderImpl::DoDecode() {
@@ -799,14 +797,15 @@ void VideoDecoderShim::DecoderImpl::OnResetComplete() {
       FROM_HERE, base::Bind(&VideoDecoderShim::OnResetComplete, shim_));
 }
 
-VideoDecoderShim::VideoDecoderShim(PepperVideoDecoderHost* host)
+VideoDecoderShim::VideoDecoderShim(
+    PepperVideoDecoderHost* host, uint32_t texture_pool_size)
     : state_(UNINITIALIZED),
       host_(host),
       media_task_runner_(
           RenderThreadImpl::current()->GetMediaThreadTaskRunner()),
       context_provider_(
           RenderThreadImpl::current()->SharedMainThreadContextProvider()),
-      texture_pool_size_(0),
+      texture_pool_size_(texture_pool_size),
       num_pending_decodes_(0),
       yuv_converter_(new YUVConverter(context_provider_)),
       weak_ptr_factory_(this) {
@@ -948,14 +947,12 @@ void VideoDecoderShim::Destroy() {
   delete this;
 }
 
-void VideoDecoderShim::OnInitializeComplete(int32_t result,
-                                            uint32_t texture_pool_size) {
+void VideoDecoderShim::OnInitializeComplete(int32_t result) {
   DCHECK(RenderThreadImpl::current());
   DCHECK(host_);
 
   if (result == PP_OK) {
     state_ = DECODING;
-    texture_pool_size_ = texture_pool_size;
   }
 
   host_->OnInitializeComplete(result);

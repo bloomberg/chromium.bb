@@ -23,9 +23,6 @@ class TestVideoDecoder : public TestCase {
 
   std::string TestCreate();
 
-  // Used by the tests that access the C API directly.
-  const PPB_VideoDecoder_0_1* video_decoder_interface_;
-
   pp::Graphics3D graphics_3d_;
 };
 

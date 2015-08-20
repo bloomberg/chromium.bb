@@ -729,28 +729,14 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
     return false;
   }
 
-  struct v4l2_requestbuffers reqbufs;
-  memset(&reqbufs, 0, sizeof(reqbufs));
-  reqbufs.count = num_pictures;
-  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  reqbufs.memory = V4L2_MEMORY_MMAP;
-  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
-
-  if (reqbufs.count < num_pictures) {
-    PLOG(ERROR) << "Could not allocate enough output buffers";
-    return false;
-  }
-
-  output_buffer_map_.resize(reqbufs.count);
-
-  DVLOGF(3) << "buffer_count=" << output_buffer_map_.size()
+  DVLOGF(3) << "buffer_count=" << num_pictures
             << ", visible size=" << visible_size_.ToString()
             << ", coded size=" << coded_size_.ToString();
 
   child_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoDecodeAccelerator::Client::ProvidePictureBuffers,
-                 client_, output_buffer_map_.size(), coded_size_,
+                 client_, num_pictures, coded_size_,
                  device_->GetTextureTarget()));
 
   // Wait for the client to call AssignPictureBuffers() on the Child thread.
@@ -1432,10 +1418,12 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
   DVLOGF(3);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  if (buffers.size() != output_buffer_map_.size()) {
+  const uint32_t req_buffer_count = decoder_->GetRequiredNumOfPictures();
+
+  if (buffers.size() < req_buffer_count) {
     DLOG(ERROR) << "Failed to provide requested picture buffers. "
                 << "(Got " << buffers.size()
-                << ", requested " << output_buffer_map_.size() << ")";
+                << ", requested " << req_buffer_count << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1450,6 +1438,23 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffers(
 
   // It's safe to manipulate all the buffer state here, because the decoder
   // thread is waiting on pictures_assigned_.
+
+  // Allocate the output buffers.
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count = buffers.size();
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  IOCTL_OR_ERROR_RETURN(VIDIOC_REQBUFS, &reqbufs);
+
+  if (reqbufs.count != buffers.size()) {
+    DLOG(ERROR) << "Could not allocate enough output buffers";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
+
+  output_buffer_map_.resize(buffers.size());
+
   DCHECK(free_output_buffers_.empty());
   for (size_t i = 0; i < output_buffer_map_.size(); ++i) {
     DCHECK(buffers[i].size() == coded_size_);

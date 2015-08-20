@@ -13,7 +13,8 @@ label Chrome {
   /** Though not labeled 'channel=dev', 0.1 is a still a 'Dev' only API. */
   M36 = 0.1,
   M39 = 0.2,
-  M40 = 1.0
+  M40 = 1.0,
+  [channel=dev] M46 = 1.1
 };
 
 /**
@@ -118,6 +119,43 @@ interface PPB_VideoDecoder {
       [in] PP_Resource graphics3d_context,
       [in] PP_VideoProfile profile,
       [in] PP_HardwareAcceleration acceleration,
+      [in] PP_CompletionCallback callback);
+
+  /**
+   * Initializes a video decoder resource. This should be called after Create()
+   * and before any other functions.
+   *
+   * @param[in] video_decoder A <code>PP_Resource</code> identifying the video
+   * decoder.
+   * @param[in] graphics3d_context A <code>PPB_Graphics3D</code> resource to use
+   * during decoding.
+   * @param[in] profile A <code>PP_VideoProfile</code> specifying the video
+   * codec profile.
+   * @param[in] acceleration A <code>PP_HardwareAcceleration</code> specifying
+   * whether to use a hardware accelerated or a software implementation.
+   * @param[in] min_picture_count A count of pictures the plugin would like to
+   * have in flight. This is effectively the number of times the plugin can
+   * call GetPicture() and get a decoded frame without calling
+   * RecyclePicture(). The decoder has its own internal minimum count, and will
+   * take the larger of its internal and this value. A client that doesn't care
+   * can therefore just pass in zero for this argument.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   * Returns PP_ERROR_NOTSUPPORTED if video decoding is not available, or the
+   * requested profile is not supported. In this case, the client may call
+   * Initialize() again with different parameters to find a good configuration.
+   * Returns PP_ERROR_BADARGUMENT if the requested minimum picture count is
+   * unreasonably large.
+   */
+  [version = 1.1]
+  int32_t Initialize(
+      [in] PP_Resource video_decoder,
+      [in] PP_Resource graphics3d_context,
+      [in] PP_VideoProfile profile,
+      [in] PP_HardwareAcceleration acceleration,
+      [in] uint32_t min_picture_count,
       [in] PP_CompletionCallback callback);
 
   /**

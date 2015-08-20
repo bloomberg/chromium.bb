@@ -30,6 +30,11 @@ const char* interface_name<PPB_VideoDecoder_1_0>() {
   return PPB_VIDEODECODER_INTERFACE_1_0;
 }
 
+template <>
+const char* interface_name<PPB_VideoDecoder_1_1>() {
+  return PPB_VIDEODECODER_INTERFACE_1_1;
+}
+
 // This struct is used to adapt CompletionCallbackWithOutput<PP_VideoPicture> to
 // the pre-1.0 APIs, which return PP_VideoPicture_0_1. This struct is allocated
 // on the heap, and deleted in CallbackConverter.
@@ -69,7 +74,10 @@ VideoDecoder::VideoDecoder() {
 }
 
 VideoDecoder::VideoDecoder(const InstanceHandle& instance) {
-  if (has_interface<PPB_VideoDecoder_1_0>()) {
+  if (has_interface<PPB_VideoDecoder_1_1>()) {
+    PassRefFromConstructor(
+        get_interface<PPB_VideoDecoder_1_1>()->Create(instance.pp_instance()));
+  } else if (has_interface<PPB_VideoDecoder_1_0>()) {
     PassRefFromConstructor(
         get_interface<PPB_VideoDecoder_1_0>()->Create(instance.pp_instance()));
   } else if (has_interface<PPB_VideoDecoder_0_2>()) {
@@ -87,18 +95,30 @@ VideoDecoder::VideoDecoder(const VideoDecoder& other) : Resource(other) {
 int32_t VideoDecoder::Initialize(const Graphics3D& context,
                                  PP_VideoProfile profile,
                                  PP_HardwareAcceleration acceleration,
+                                 uint32_t min_picture_count,
                                  const CompletionCallback& cc) {
+  if (has_interface<PPB_VideoDecoder_1_1>()) {
+    return get_interface<PPB_VideoDecoder_1_1>()->Initialize(
+        pp_resource(), context.pp_resource(), profile, acceleration,
+        min_picture_count, cc.pp_completion_callback());
+  }
   if (has_interface<PPB_VideoDecoder_1_0>()) {
+    if (min_picture_count != 0)
+        return cc.MayForce(PP_ERROR_NOTSUPPORTED);
     return get_interface<PPB_VideoDecoder_1_0>()->Initialize(
         pp_resource(), context.pp_resource(), profile, acceleration,
         cc.pp_completion_callback());
   }
   if (has_interface<PPB_VideoDecoder_0_2>()) {
+    if (min_picture_count != 0)
+        return cc.MayForce(PP_ERROR_NOTSUPPORTED);
     return get_interface<PPB_VideoDecoder_0_2>()->Initialize(
         pp_resource(), context.pp_resource(), profile, acceleration,
         cc.pp_completion_callback());
   }
   if (has_interface<PPB_VideoDecoder_0_1>()) {
+    if (min_picture_count != 0)
+        return cc.MayForce(PP_ERROR_NOTSUPPORTED);
     if (acceleration == PP_HARDWAREACCELERATION_NONE)
       return cc.MayForce(PP_ERROR_NOTSUPPORTED);
     return get_interface<PPB_VideoDecoder_0_1>()->Initialize(

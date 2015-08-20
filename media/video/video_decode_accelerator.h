@@ -61,6 +61,8 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   class MEDIA_EXPORT Client {
    public:
     // Callback to tell client how many and what size of buffers to provide.
+    // Note that the actual count provided through AssignPictureBuffers() can be
+    // larger than the value requested.
     virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                        const gfx::Size& dimensions,
                                        uint32 texture_target) = 0;
@@ -115,7 +117,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // callback has been initiated for a given buffer.
   //
   // Parameters:
-  //  |buffers| contains the allocated picture buffers for the output.
+  //  |buffers| contains the allocated picture buffers for the output.  Note
+  //  that the count of buffers may be larger than the count requested through
+  //  the call to Client::ProvidePictureBuffers().
   virtual void AssignPictureBuffers(
       const std::vector<PictureBuffer>& buffers) = 0;
 
