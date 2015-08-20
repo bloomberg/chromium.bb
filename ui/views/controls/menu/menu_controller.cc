@@ -1104,7 +1104,6 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       if (hot_view) {
         hot_view->ShowContextMenu(hot_view->GetKeyboardContextMenuLocation(),
                                   ui::MENU_SOURCE_KEYBOARD);
-        return false;
       } else if (pending_state_.item->enabled() &&
                  pending_state_.item->GetRootMenuItem() !=
                      pending_state_.item) {
@@ -1116,7 +1115,6 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         ShowContextMenu(pending_state_.item,
                         pending_state_.item->GetKeyboardContextMenuLocation(),
                         ui::MENU_SOURCE_KEYBOARD);
-        return false;
       }
       break;
     }

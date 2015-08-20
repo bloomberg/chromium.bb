@@ -57,6 +57,9 @@ uint32_t MenuEventDispatcher::DispatchEvent(const ui::PlatformEvent& event) {
           break;
         }
 
+        if (menu_controller_->exit_type() != MenuController::EXIT_NONE)
+          break;
+
         // Do not check mnemonics if the Alt or Ctrl modifiers are pressed.
         int flags = key_event->flags();
         if ((flags & (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)) == 0) {
