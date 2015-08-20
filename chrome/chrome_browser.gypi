@@ -915,13 +915,6 @@
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.cc',
       'browser/renderer_host/pepper/pepper_platform_verification_message_filter.h',
     ],
-    # Used everywhere but ChromeOS.
-    'chrome_browser_non_chromeos_sources': [
-      'browser/signin/signin_global_error.cc',
-      'browser/signin/signin_global_error.h',
-      'browser/signin/signin_global_error_factory.cc',
-      'browser/signin/signin_global_error_factory.h',
-    ],
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
       'browser/platform_util.cc',
@@ -3533,8 +3526,6 @@
             '../components/components.gyp:user_manager',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
           ],
-        }, {  # Non-ChromeOS.
-          'sources': [ '<@(chrome_browser_non_chromeos_sources)' ],
         }],
         ['use_cups==1', {
           'dependencies': [

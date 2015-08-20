@@ -308,7 +308,6 @@ TEST_F(PanelCocoaTest, MenuItems) {
   NSMenuItem* fullscreen_menu_item = CreateMenuItem(menu, IDC_FULLSCREEN);
   NSMenuItem* presentation_menu_item =
       CreateMenuItem(menu, IDC_PRESENTATION_MODE);
-  NSMenuItem* sync_menu_item = CreateMenuItem(menu, IDC_SHOW_SYNC_SETUP);
   NSMenuItem* dev_tools_item = CreateMenuItem(menu, IDC_DEV_TOOLS);
   NSMenuItem* dev_tools_console_item =
       CreateMenuItem(menu, IDC_DEV_TOOLS_CONSOLE);
@@ -327,7 +326,6 @@ TEST_F(PanelCocoaTest, MenuItems) {
   EXPECT_FALSE([find_next_menu_item isEnabled]);
   EXPECT_FALSE([fullscreen_menu_item isEnabled]);
   EXPECT_FALSE([presentation_menu_item isEnabled]);
-  EXPECT_FALSE([sync_menu_item isEnabled]);
   // These are not enabled by Panel, so they are expected to be disabled for
   // this unit_test. In real Chrome app, they are enabled by Chrome NSApp
   // controller. PanelCocoaBrowsertest.MenuItems verifies that.
@@ -337,11 +335,6 @@ TEST_F(PanelCocoaTest, MenuItems) {
 
   EXPECT_TRUE([dev_tools_item isEnabled]);
   EXPECT_TRUE([dev_tools_console_item isEnabled]);
-
-  // Verify that commandDispatch on an invalid menu item does not crash.
-  [NSApp sendAction:[sync_menu_item action]
-                 to:[sync_menu_item target]
-               from:sync_menu_item];
 
   ClosePanelAndWait(panel);
 }
