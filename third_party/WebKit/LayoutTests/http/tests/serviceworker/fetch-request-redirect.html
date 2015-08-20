@@ -18,11 +18,21 @@ function assert_rejects(promise, description) {
       function() {});
 }
 
-function iframe_test(url) {
+function iframe_test(url, timeout_enabled) {
   return new Promise(function(resolve, reject) {
       var frame = document.createElement('iframe');
       frame.src = url;
+      if (timeout_enabled) {
+        // We can't catch the network error on iframe. So we use the timer for
+        // failure detection.
+        var timer = setTimeout(function() {
+            reject(new Error('iframe load timeout'));
+            frame.remove();
+          }, 1000);
+      }
       frame.onload = function() {
+        if (timeout_enabled)
+          clearTimeout(timer);
         if (frame.contentDocument.body.textContent == 'Hello world\n')
           resolve();
         else
@@ -146,23 +156,20 @@ promise_test(function(t) {
                             '&redirect-mode=follow'),
                 'Redirected iframe loading with Request.redirect=follow should'+
                 ' succeed.'),
-
-            /*
-               TODO(horo): iframe load failure detection is unreliable.
-               Rework these. crbug.com/522587
             assert_rejects(
                 iframe_test(SCOPE + '?url=' +
                             encodeURIComponent(REDIRECT_TO_HTML_URL) +
-                            '&redirect-mode=error'),
+                            '&redirect-mode=error',
+                            true /* timeout_enabled */),
                 'Redirected iframe loading with Request.redirect=error should '+
                 'fail.'),
             assert_resolves(
                 iframe_test(SCOPE + '?url=' +
                             encodeURIComponent(REDIRECT_TO_HTML_URL) +
-                            '&redirect-mode=manual'),
+                            '&redirect-mode=manual',
+                            true /* timeout_enabled */),
                 'Redirected iframe loading with Request.redirect=manual should'+
                 ' succeed.'),
-            */
           ]);
         })
       .then(function() {
