@@ -187,8 +187,6 @@ public:
     PositionAlgorithm<Strategy> upstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
     PositionAlgorithm<Strategy> downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
 
-    bool isCandidate() const;
-
     static PositionAlgorithm<Strategy> beforeNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> afterNode(Node* anchorNode);
     static PositionAlgorithm<Strategy> inParentBeforeNode(const Node& anchorNode);
@@ -443,6 +441,11 @@ CORE_EXPORT bool inRenderedText(const PositionInComposedTree&);
 
 CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
 CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
+
+// TODO(yosin) We should move |isVisuallyEquivalentCandidate()| to
+// "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp".
+CORE_EXPORT bool isVisuallyEquivalentCandidate(const Position&);
+CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInComposedTree&);
 
 } // namespace blink
 

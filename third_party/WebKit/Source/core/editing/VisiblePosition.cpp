@@ -253,7 +253,7 @@ Position VisiblePosition::leftVisuallyDistinctCandidate() const
 
         p = Position::editingPositionOf(layoutObject->node(), offset);
 
-        if ((p.isCandidate() && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
+        if ((isVisuallyEquivalentCandidate(p) && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
 
         ASSERT(p != m_deepPosition);
@@ -415,7 +415,7 @@ Position VisiblePosition::rightVisuallyDistinctCandidate() const
 
         p = Position::editingPositionOf(layoutObject->node(), offset);
 
-        if ((p.isCandidate() && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
+        if ((isVisuallyEquivalentCandidate(p) && p.downstream() != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
 
         ASSERT(p != m_deepPosition);
@@ -548,9 +548,9 @@ static PositionType canonicalizeCandidate(const PositionType& candidate)
 {
     if (candidate.isNull())
         return PositionType();
-    ASSERT(candidate.isCandidate());
+    ASSERT(isVisuallyEquivalentCandidate(candidate));
     PositionType upstream = candidate.upstream();
-    if (upstream.isCandidate())
+    if (isVisuallyEquivalentCandidate(upstream))
         return upstream;
     return candidate;
 }
@@ -582,10 +582,10 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     Node* node = position.computeContainerNode();
 
     PositionType candidate = position.upstream();
-    if (candidate.isCandidate())
+    if (isVisuallyEquivalentCandidate(candidate))
         return candidate;
     candidate = position.downstream();
-    if (candidate.isCandidate())
+    if (isVisuallyEquivalentCandidate(candidate))
         return candidate;
 
     // When neither upstream or downstream gets us to a candidate (upstream/downstream won't leave

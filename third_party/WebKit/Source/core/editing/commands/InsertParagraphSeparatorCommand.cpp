@@ -184,7 +184,7 @@ void InsertParagraphSeparatorCommand::doApply()
 
     // Use the leftmost candidate.
     insertionPosition = insertionPosition.upstream();
-    if (!insertionPosition.isCandidate())
+    if (!isVisuallyEquivalentCandidate(insertionPosition))
         insertionPosition = insertionPosition.downstream();
 
     // Adjust the insertion position after the delete

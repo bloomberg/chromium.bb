@@ -338,7 +338,7 @@ PositionAlgorithm<Strategy> nextCandidateAlgorithm(const PositionAlgorithm<Strat
     p.increment();
     while (!p.atEnd()) {
         PositionAlgorithm<Strategy> candidate = p.computePosition();
-        if (candidate.isCandidate())
+        if (isVisuallyEquivalentCandidate(candidate))
             return candidate;
 
         p.increment();
@@ -371,7 +371,7 @@ Position nextVisuallyDistinctCandidate(const Position& position)
     p.increment();
     while (!p.atEnd()) {
         Position candidate = p.computePosition();
-        if (candidate.isCandidate() && candidate.downstream() != downstreamStart)
+        if (isVisuallyEquivalentCandidate(candidate) && candidate.downstream() != downstreamStart)
             return candidate;
 
         p.increment();
@@ -388,7 +388,7 @@ PositionAlgorithm<Strategy> previousCandidateAlgorithm(const PositionAlgorithm<S
     p.decrement();
     while (!p.atStart()) {
         PositionAlgorithm<Strategy> candidate = p.computePosition();
-        if (candidate.isCandidate())
+        if (isVisuallyEquivalentCandidate(candidate))
             return candidate;
 
         p.decrement();
@@ -422,7 +422,7 @@ PositionAlgorithm<Strategy> previousVisuallyDistinctCandidateAlgorithm(const Pos
     p.decrement();
     while (!p.atStart()) {
         PositionAlgorithm<Strategy> candidate = p.computePosition();
-        if (candidate.isCandidate() && candidate.downstream() != downstreamStart)
+        if (isVisuallyEquivalentCandidate(candidate) && candidate.downstream() != downstreamStart)
             return candidate;
 
         p.decrement();
@@ -1151,7 +1151,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
     Element* fromRootEditableElement = position.anchorNode()->rootEditableElement();
 
     bool atStartOfLine = isStartOfLine(VisiblePosition(position, affinity));
-    bool rendered = position.isCandidate();
+    bool rendered = isVisuallyEquivalentCandidate(position);
 
     Position currentPos = position;
     while (!currentPos.atStartOfTree()) {
@@ -1161,7 +1161,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
             return position;
 
         if (atStartOfLine || !rendered) {
-            if (currentPos.isCandidate())
+            if (isVisuallyEquivalentCandidate(currentPos))
                 return currentPos;
         } else if (rendersInDifferentPosition(position, currentPos)) {
             return currentPos;

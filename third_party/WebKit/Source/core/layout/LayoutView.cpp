@@ -804,11 +804,11 @@ void LayoutView::commitPendingSelectionAlgorithm()
     // and will fill the gap before 'bar'.
     PositionType startPos = Strategy::selectionStart(selection);
     PositionType candidate = startPos.downstream();
-    if (candidate.isCandidate())
+    if (isVisuallyEquivalentCandidate(candidate))
         startPos = candidate;
     PositionType endPos = Strategy::selectionEnd(selection);
     candidate = endPos.upstream();
-    if (candidate.isCandidate())
+    if (isVisuallyEquivalentCandidate(candidate))
         endPos = candidate;
 
     // We can get into a state where the selection endpoints map to the same VisiblePosition when a selection is deleted

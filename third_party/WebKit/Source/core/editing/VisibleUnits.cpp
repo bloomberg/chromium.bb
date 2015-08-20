@@ -107,7 +107,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
         Position pos = isHTMLBRElement(*previousNode) ? positionBeforeNode(previousNode) :
             Position::editingPositionOf(previousNode, caretMaxOffset(previousNode));
 
-        if (pos.isCandidate())
+        if (isVisuallyEquivalentCandidate(pos))
             return pos;
 
         previousNode = previousLeafWithSameEditability(previousNode, editableType);
@@ -129,7 +129,7 @@ static Position nextRootInlineBoxCandidatePosition(Node* node, const VisiblePosi
         Position pos;
         pos = Position::editingPositionOf(nextNode, caretMinOffset(nextNode));
 
-        if (pos.isCandidate())
+        if (isVisuallyEquivalentCandidate(pos))
             return pos;
 
         nextNode = nextLeafWithSameEditability(nextNode, editableType);
@@ -1595,10 +1595,10 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
             return true;
     }
 
-    if (isHTMLBRElement(*position1.anchorNode()) && position2.isCandidate())
+    if (isHTMLBRElement(*position1.anchorNode()) && isVisuallyEquivalentCandidate(position2))
         return true;
 
-    if (isHTMLBRElement(*position2.anchorNode()) && position1.isCandidate())
+    if (isHTMLBRElement(*position2.anchorNode()) && isVisuallyEquivalentCandidate(position1))
         return true;
 
     if (!inSameContainingBlockFlowElement(position1.anchorNode(), position2.anchorNode()))

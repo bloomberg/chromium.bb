@@ -492,13 +492,16 @@ PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBound
     return mostBackwardCaretPosition(*this, rule);
 }
 
+// TODO(yosin) We should move |isVisuallyEquivalentCandidate()| to
+// "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp".
 template <typename Strategy>
-bool PositionAlgorithm<Strategy>::isCandidate() const
+static bool isVisuallyEquivalentCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    if (isNull())
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode)
         return false;
 
-    LayoutObject* layoutObject = anchorNode()->layoutObject();
+    LayoutObject* layoutObject = anchorNode->layoutObject();
     if (!layoutObject)
         return false;
 
@@ -509,34 +512,37 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
         // TODO(leviw) The condition should be
         // m_anchorType == PositionAnchorType::BeforeAnchor, but for now we
         // still need to support legacy positions.
-        return !m_offset && !isAfterAnchor() && !nodeIsUserSelectNone(Strategy::parent(*anchorNode()));
+        if (position.isAfterAnchor())
+            return false;
+        return !position.computeEditingOffset() && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
     }
 
     if (layoutObject->isText())
-        return !nodeIsUserSelectNone(anchorNode()) && inRenderedText(*this);
+        return !nodeIsUserSelectNone(anchorNode) && inRenderedText(position);
 
     if (layoutObject->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
-        // associated layoutObject returns isText() true, e.g. LayoutSVGInlineText.
+        // associated |layoutObject| returns |isText()| true,
+        // e.g. |LayoutSVGInlineText|.
         return false;
     }
 
-    if (isRenderedHTMLTableElement(anchorNode()) || Strategy::editingIgnoresContent(anchorNode()))
-        return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*anchorNode()));
+    if (isRenderedHTMLTableElement(anchorNode) || Strategy::editingIgnoresContent(anchorNode))
+        return (position.atFirstEditingPositionForNode() || position.atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
 
-    if (isHTMLHtmlElement(*m_anchorNode))
+    if (isHTMLHtmlElement(*anchorNode))
         return false;
 
     if (layoutObject->isLayoutBlockFlow() || layoutObject->isFlexibleBox() || layoutObject->isLayoutGrid()) {
-        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
+        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*anchorNode)) {
             if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
-                return atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode());
-            return m_anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary(*this);
+                return position.atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode);
+            return anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
         }
     } else {
-        LocalFrame* frame = m_anchorNode->document().frame();
+        LocalFrame* frame = anchorNode->document().frame();
         bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || m_anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode()) && atEditingBoundary(*this);
+        return (caretBrowsing || anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
     }
 
     return false;
@@ -544,6 +550,16 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
 
 // TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
 // reduce dependency of |LayoutObject| in |Position| class.
+bool isVisuallyEquivalentCandidate(const Position& position)
+{
+    return isVisuallyEquivalentCandidateAlgorithm<EditingStrategy>(position);
+}
+
+bool isVisuallyEquivalentCandidate(const PositionInComposedTree& position)
+{
+    return isVisuallyEquivalentCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
+}
+
 template <typename Strategy>
 static bool inRenderedTextAlgorithm(const PositionAlgorithm<Strategy>& position)
 {

@@ -1282,7 +1282,7 @@ IntRect FrameSelection::absoluteCaretBounds()
         clearCaretRect();
     } else {
         if (isTextFormControl(m_selection))
-            updateCaretRect(PositionWithAffinity(m_selection.start().isCandidate() ? m_selection.start() : Position(), m_selection.affinity()));
+            updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(m_selection.start()) ? m_selection.start() : Position(), m_selection.affinity()));
         else
             updateCaretRect(VisiblePosition(m_selection.start(), m_selection.affinity()));
     }

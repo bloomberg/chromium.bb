@@ -177,7 +177,7 @@ void InsertTextCommand::doApply()
     deleteInsignificantText(startPosition, startPosition.downstream());
     if (!startPosition.inDocument())
         startPosition = positionBeforeStartNode;
-    if (!startPosition.isCandidate())
+    if (!isVisuallyEquivalentCandidate(startPosition))
         startPosition = startPosition.downstream();
 
     startPosition = positionAvoidingSpecialElementBoundary(startPosition);
