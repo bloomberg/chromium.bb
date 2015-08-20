@@ -57,9 +57,7 @@ remoting.It2MeActivity.prototype.start = function() {
     if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
-      var errorDiv = document.getElementById('connect-error-message');
-      l10n.localizeElementFromTag(errorDiv, error.getTag());
-      remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
+      that.showErrorMessage_(error);
     }
   }));
 };
