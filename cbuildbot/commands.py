@@ -634,7 +634,7 @@ def RunUnitTests(buildroot, board, blacklist=None, extra_env=None):
 
 
 def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
-                 whitelist_chrome_crashes, archive_dir, ssh_private_key=None):
+                 whitelist_chrome_crashes, archive_dir):
   """Runs the test harness suite."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -669,9 +669,6 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_type,
 
   if whitelist_chrome_crashes:
     cmd.append('--whitelist_chrome_crashes')
-
-  if ssh_private_key is not None:
-    cmd.append('--ssh_private_key=%s' % ssh_private_key)
 
   result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True)
   if result.returncode:

@@ -111,17 +111,6 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
                          stage.BuildAndArchiveDeltaSysroot)
     self.assertFalse(stage._upload_queue.put.called)
 
-  def testGeneratedKeysAreArchived(self):
-    """Tests that generated ssh keys are archived if any."""
-    stage = self.ConstructStage()
-    image_dir = stage.GetImageDirSymlink()
-    keys = (constants.TEST_KEY_PRIVATE, constants.TEST_KEY_PUBLIC)
-    for key in keys:
-      osutils.Touch(os.path.join(image_dir, key), makedirs=True)
-    stage.LoadArtifactsList(self._current_board, image_dir)
-    for key in keys:
-      self.assertTrue(stage.IsArchivedFile(key))
-
 
 class UploadPrebuiltsStageTest(
     generic_stages_unittest.RunCommandAbstractStageTestCase,
