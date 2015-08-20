@@ -174,7 +174,7 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilterForLayoutObject(LayoutObject
         transform.translate(dstRect.x(), dstRect.y());
     }
 
-    SkPictureBuilder filterPicture(FloatRect(FloatPoint(), dstRect.size()));
+    SkPictureBuilder filterPicture(dstRect);
     {
         TransformRecorder transformRecorder(filterPicture.context(), layoutObject, transform);
         SVGPaintContext::paintSubtree(&filterPicture.context(), &layoutObject);
