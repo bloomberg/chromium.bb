@@ -48,13 +48,17 @@
 
 namespace blink {
 
-enum PersistentConfiguration {
-    NormalPersistentConfiguration,
-    WeakPersistentConfiguration,
-    CrossThreadPersistentConfiguration,
+enum WeaknessPersistentConfiguration {
+    NonWeakPersistentConfiguration,
+    WeakPersistentConfiguration
 };
 
-template<typename T, PersistentConfiguration persistentConfiguration>
+enum CrossThreadnessPersistentConfiguration {
+    SingleThreadPersistentConfiguration,
+    CrossThreadPersistentConfiguration
+};
+
+template<typename T, WeaknessPersistentConfiguration weaknessConfiguration, CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
 class PersistentBase {
 public:
     PersistentBase() : m_raw(nullptr)
@@ -89,7 +93,7 @@ public:
     }
 
     template<typename U>
-    PersistentBase(const PersistentBase<U, persistentConfiguration>& other) : m_raw(other)
+    PersistentBase(const PersistentBase<U, weaknessConfiguration, crossThreadnessConfiguration>& other) : m_raw(other)
     {
         initialize();
         checkPointer();
@@ -123,7 +127,7 @@ public:
     {
         static_assert(sizeof(T), "T must be fully defined");
         static_assert(IsGarbageCollectedType<T>::value, "T needs to be a garbage collected object");
-        if (persistentConfiguration == WeakPersistentConfiguration) {
+        if (weaknessConfiguration == WeakPersistentConfiguration) {
             visitor->registerWeakCell(&m_raw);
         } else {
             visitor->mark(m_raw);
@@ -169,7 +173,7 @@ public:
     }
 
     template<typename U>
-    PersistentBase& operator=(const PersistentBase<U, persistentConfiguration>& other)
+    PersistentBase& operator=(const PersistentBase<U, weaknessConfiguration, crossThreadnessConfiguration>& other)
     {
         m_raw = other;
         checkPointer();
@@ -200,8 +204,8 @@ private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void initialize()
     {
-        TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, persistentConfiguration>, &PersistentBase<T, persistentConfiguration>::trace>::trampoline;
-        if (persistentConfiguration == CrossThreadPersistentConfiguration) {
+        TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::trace>::trampoline;
+        if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             m_persistentNode = ThreadState::crossThreadPersistentRegion().allocatePersistentNode(this, traceCallback);
         } else {
             ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
@@ -216,7 +220,7 @@ private:
 
     void uninitialize()
     {
-        if (persistentConfiguration == CrossThreadPersistentConfiguration) {
+        if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
             ThreadState::crossThreadPersistentRegion().freePersistentNode(m_persistentNode);
         } else {
             ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
@@ -272,8 +276,8 @@ private:
 //
 // We have to construct and destruct Persistent in the same thread.
 template<typename T>
-class Persistent : public PersistentBase<T, NormalPersistentConfiguration> {
-    typedef PersistentBase<T, NormalPersistentConfiguration> Parent;
+class Persistent : public PersistentBase<T, NonWeakPersistentConfiguration, SingleThreadPersistentConfiguration> {
+    typedef PersistentBase<T, NonWeakPersistentConfiguration, SingleThreadPersistentConfiguration> Parent;
 public:
     Persistent() : Parent() { }
     Persistent(std::nullptr_t) : Parent(nullptr) { }
@@ -300,8 +304,8 @@ public:
 //   HashSet<WeakPersistent<T>> m_set; // wrong
 //   PersistentHeapHashSet<WeakMember<T>> m_set; // correct
 template<typename T>
-class WeakPersistent : public PersistentBase<T, WeakPersistentConfiguration> {
-    typedef PersistentBase<T, WeakPersistentConfiguration> Parent;
+class WeakPersistent : public PersistentBase<T, WeakPersistentConfiguration, SingleThreadPersistentConfiguration> {
+    typedef PersistentBase<T, WeakPersistentConfiguration, SingleThreadPersistentConfiguration> Parent;
 public:
     WeakPersistent() : Parent() { }
     WeakPersistent(std::nullptr_t) : Parent(nullptr) { }
@@ -319,8 +323,8 @@ public:
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
 // different from the construction thread.
 template<typename T>
-class CrossThreadPersistent : public PersistentBase<T, CrossThreadPersistentConfiguration> {
-    typedef PersistentBase<T, CrossThreadPersistentConfiguration> Parent;
+class CrossThreadPersistent : public PersistentBase<T, NonWeakPersistentConfiguration, CrossThreadPersistentConfiguration> {
+    typedef PersistentBase<T, NonWeakPersistentConfiguration, CrossThreadPersistentConfiguration> Parent;
 public:
     CrossThreadPersistent() : Parent() { }
     CrossThreadPersistent(std::nullptr_t) : Parent(nullptr) { }
@@ -333,6 +337,23 @@ public:
     CrossThreadPersistent(const Member<U>& other) : Parent(other) { }
     template<typename U>
     CrossThreadPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
+};
+
+template<typename T>
+class CrossThreadWeakPersistent : public PersistentBase<T, WeakPersistentConfiguration, CrossThreadPersistentConfiguration> {
+    typedef PersistentBase<T, WeakPersistentConfiguration, CrossThreadPersistentConfiguration> Parent;
+public:
+    CrossThreadWeakPersistent() : Parent() { }
+    CrossThreadWeakPersistent(std::nullptr_t) : Parent(nullptr) { }
+    CrossThreadWeakPersistent(T* raw) : Parent(raw) { }
+    CrossThreadWeakPersistent(T& raw) : Parent(raw) { }
+    CrossThreadWeakPersistent(const CrossThreadWeakPersistent& other) : Parent(other) { }
+    template<typename U>
+    CrossThreadWeakPersistent(const CrossThreadWeakPersistent<U>& other) : Parent(other) { }
+    template<typename U>
+    CrossThreadWeakPersistent(const Member<U>& other) : Parent(other) { }
+    template<typename U>
+    CrossThreadWeakPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
 };
 
 // PersistentNode must be the left-most class to let the

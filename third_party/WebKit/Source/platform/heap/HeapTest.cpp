@@ -6361,4 +6361,69 @@ TEST(HeapTest, WeakPersistent)
     EXPECT_FALSE(holder->object());
 }
 
+namespace {
+
+void workerThreadMainForCrossThreadWeakPersistentTest(DestructorLockingObject** object)
+{
+    // Step 2: Create an object and store the pointer.
+    MutexLocker locker(workerThreadMutex());
+    ThreadState::attach();
+    *object = DestructorLockingObject::create();
+    wakeMainThread();
+    parkWorkerThread();
+
+    // Step 4: Run a GC.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, ThreadState::GCWithSweep, Heap::ForcedGC);
+    wakeMainThread();
+    parkWorkerThread();
+
+    // Step 6: Finish.
+    ThreadState::detach();
+    wakeMainThread();
+}
+
+} // anonymous namespace
+
+TEST(HeapTest, CrossThreadWeakPersistent)
+{
+    // Create an object in the worker thread, have a CrossThreadWeakPersistent pointing to it on the main thread,
+    // clear the reference in the worker thread, run a GC in the worker thread, and see if the
+    // CrossThreadWeakPersistent is cleared.
+
+    DestructorLockingObject::s_destructorCalls = 0;
+
+    // Step 1: Initiate a worker thread, and wait for |object| to get allocated on the worker thread.
+    MutexLocker mainThreadMutexLocker(mainThreadMutex());
+    OwnPtr<WebThread> workerThread = adoptPtr(Platform::current()->createThread("Test Worker Thread"));
+    DestructorLockingObject* object = nullptr;
+    workerThread->postTask(FROM_HERE, new Task(threadSafeBind(workerThreadMainForCrossThreadWeakPersistentTest, AllowCrossThreadAccessWrapper<DestructorLockingObject**>(&object))));
+    parkMainThread();
+
+    // Step 3: Set up a CrossThreadWeakPersistent.
+    ASSERT_TRUE(object);
+    CrossThreadWeakPersistent<DestructorLockingObject> crossThreadWeakPersistent(object);
+    object = nullptr;
+    {
+        SafePointAwareMutexLocker recursiveMutexLocker(recursiveMutex());
+        EXPECT_EQ(0, DestructorLockingObject::s_destructorCalls);
+    }
+
+    {
+        // Pretend we have no pointers on stack during the step 4.
+        SafePointScope scope(ThreadState::NoHeapPointersOnStack);
+        wakeWorkerThread();
+        parkMainThread();
+    }
+
+    // Step 5: Make sure the weak persistent is cleared.
+    EXPECT_FALSE(crossThreadWeakPersistent.get());
+    {
+        SafePointAwareMutexLocker recursiveMutexLocker(recursiveMutex());
+        EXPECT_EQ(1, DestructorLockingObject::s_destructorCalls);
+    }
+
+    wakeWorkerThread();
+    parkMainThread();
+}
+
 } // namespace blink
