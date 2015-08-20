@@ -152,6 +152,7 @@ public class CustomTab extends ChromeTab {
 
     private CustomTabObserver mTabObserver;
     private final boolean mEnableUrlBarHiding;
+    private boolean mShouldReplaceCurrentEntry;
 
     /**
      * Construct an CustomTab. Note that url and referrer given here is only used to retrieve a
@@ -166,6 +167,11 @@ public class CustomTab extends ChromeTab {
         CustomTabsConnection customTabsConnection =
                 CustomTabsConnection.getInstance(activity.getApplication());
         WebContents webContents = customTabsConnection.takePrerenderedUrl(session, url, referrer);
+        if (webContents == null) {
+            webContents = customTabsConnection.takeSpareWebContents();
+            // TODO(lizeb): Remove this once crbug.com/521729 is fixed.
+            if (webContents != null) mShouldReplaceCurrentEntry = true;
+        }
         if (webContents == null) {
             webContents = WebContentsFactory.createWebContents(isIncognito(), false);
         }
@@ -184,6 +190,8 @@ public class CustomTab extends ChromeTab {
      */
     void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
         mTabObserver.trackNextPageLoadFromTimestamp(timestamp);
+        if (mShouldReplaceCurrentEntry) params.setShouldReplaceCurrentEntry(true);
+        mShouldReplaceCurrentEntry = false;
         loadUrl(params);
     }
 

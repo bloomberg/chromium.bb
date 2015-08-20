@@ -925,19 +925,15 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             // We load the URL from the tab rather than directly from the ContentView so the tab has
             // a chance of using a prerenderer page is any.
-            int loadType = nativeLoadUrl(
-                    mNativeTabAndroid,
-                    params.getUrl(),
-                    params.getVerbatimHeaders(),
-                    params.getPostData(),
-                    params.getTransitionType(),
+            int loadType = nativeLoadUrl(mNativeTabAndroid, params.getUrl(),
+                    params.getVerbatimHeaders(), params.getPostData(), params.getTransitionType(),
                     params.getReferrer() != null ? params.getReferrer().getUrl() : null,
                     // Policy will be ignored for null referrer url, 0 is just a placeholder.
                     // TODO(ppi): Should we pass Referrer jobject and add JNI methods to read it
                     //            from the native?
                     params.getReferrer() != null ? params.getReferrer().getPolicy() : 0,
-                    params.getIsRendererInitiated(), params.getIntentReceivedTimestamp(),
-                    params.getHasUserGesture());
+                    params.getIsRendererInitiated(), params.getShouldReplaceCurrentEntry(),
+                    params.getIntentReceivedTimestamp(), params.getHasUserGesture());
 
             for (TabObserver observer : mObservers) {
                 observer.onLoadUrl(this, params, loadType);
@@ -2813,7 +2809,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
     private native int nativeLoadUrl(long nativeTabAndroid, String url, String extraHeaders,
             byte[] postData, int transition, String referrerUrl, int referrerPolicy,
-            boolean isRendererInitiated, long intentReceivedTimestamp, boolean hasUserGesture);
+            boolean isRendererInitiated, boolean shoulReplaceCurrentEntry,
+            long intentReceivedTimestamp, boolean hasUserGesture);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(long nativeTabAndroid);

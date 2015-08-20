@@ -527,17 +527,19 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
   return profile_android->GetJavaObject();
 }
 
-TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
-                                              jobject obj,
-                                              jstring url,
-                                              jstring j_extra_headers,
-                                              jbyteArray j_post_data,
-                                              jint page_transition,
-                                              jstring j_referrer_url,
-                                              jint referrer_policy,
-                                              jboolean is_renderer_initiated,
-                                              jlong intent_received_timestamp,
-                                              jboolean has_user_gesture) {
+TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
+    JNIEnv* env,
+    jobject obj,
+    jstring url,
+    jstring j_extra_headers,
+    jbyteArray j_post_data,
+    jint page_transition,
+    jstring j_referrer_url,
+    jint referrer_policy,
+    jboolean is_renderer_initiated,
+    jboolean should_replace_current_entry,
+    jlong intent_received_timestamp,
+    jboolean has_user_gesture) {
   if (!web_contents())
     return PAGE_LOAD_FAILED;
 
@@ -619,6 +621,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(JNIEnv* env,
       return DEFAULT_PAGE_LOAD;
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
+    load_params.should_replace_current_entry = should_replace_current_entry;
     load_params.intent_received_timestamp = intent_received_timestamp;
     load_params.has_user_gesture = has_user_gesture;
     web_contents()->GetController().LoadURLWithParams(load_params);

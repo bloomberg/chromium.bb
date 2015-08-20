@@ -163,6 +163,7 @@ class TabAndroid : public CoreTabHelperDelegate,
                         jstring j_referrer_url,
                         jint referrer_policy,
                         jboolean is_renderer_initiated,
+                        jboolean should_replace_current_entry,
                         jlong intent_received_timestamp,
                         jboolean has_user_gesture);
   void SetActiveNavigationEntryTitleForUrl(JNIEnv* env,

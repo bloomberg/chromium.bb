@@ -40,11 +40,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
@@ -136,6 +138,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
     private PrerenderedUrlParams mPrerender;
+    private WebContents mSpareWebContents;
 
     /** Per-session values. */
     private static class SessionParams {
@@ -278,6 +281,24 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         return true;
     }
 
+    /**
+     * Creates a spare {@link WebContents}, if none exists.
+     *
+     * Navigating to "about:blank" forces a lot of initialization to take place
+     * here. This improves PLT. This navigation is never registered in the history, as
+     * "about:blank" is filtered by CanAddURLToHistory.
+     *
+     * TODO(lizeb): Replace this with a cleaner method. See crbug.com/521729.
+     */
+    private void createSpareWebContents() {
+        ThreadUtils.assertOnUiThread();
+        if (mSpareWebContents != null) return;
+        mSpareWebContents = WebContentsFactory.createWebContents(false, false);
+        if (mSpareWebContents != null) {
+            mSpareWebContents.getNavigationController().loadUrl(new LoadUrlParams("about:blank"));
+        }
+    }
+
     @Override
     public boolean mayLaunchUrl(ICustomTabsCallback callback, Uri url, final Bundle extras,
             List<Bundle> otherLikelyBundles) {
@@ -308,8 +329,12 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                     warmupManager.maybePreconnectUrlAndSubResources(
                             Profile.getLastUsedProfile(), urlString);
                 }
-                // Calling with a null or empty url cancels a current prerender.
-                if (!noPrerendering) prerenderUrl(session, urlString, extras);
+                if (!noPrerendering && mayPrerender()) {
+                    // Calling with a null or empty url cancels a current prerender.
+                    prerenderUrl(session, urlString, extras);
+                } else {
+                    createSpareWebContents();
+                }
             }
         });
         return true;
@@ -318,6 +343,22 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     @Override
     public Bundle extraCommand(String commandName, Bundle args) {
         return null;
+    }
+
+    /**
+     * @return a spare WebContents, or null.
+     *
+     * This WebContents has already navigated to "about:blank". You have to call
+     * {@link LoadUrlParams.setShouldReplaceCurrentEntry(true)} for the next
+     * navigation to ensure that a back navigation doesn't lead to about:blank.
+     *
+     * TODO(lizeb): Update this when crbug.com/521729 is fixed.
+     */
+    WebContents takeSpareWebContents() {
+        ThreadUtils.assertOnUiThread();
+        WebContents result = mSpareWebContents;
+        mSpareWebContents = null;
+        return result;
     }
 
     /**

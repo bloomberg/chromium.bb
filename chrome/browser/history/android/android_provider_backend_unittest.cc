@@ -263,6 +263,11 @@ class AndroidProviderBackendTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackendTest);
 };
 
+TEST_F(AndroidProviderBackendTest, IgnoreAboutBlank) {
+  GURL url("about:blank");
+  ASSERT_FALSE(history_client_->CanAddURL(url));
+}
+
 TEST_F(AndroidProviderBackendTest, UpdateTables) {
   GURL url1("http://www.cnn.com");
   URLID url_id1 = 0;

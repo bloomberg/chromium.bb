@@ -60,7 +60,8 @@ class CONTENT_EXPORT NavigationControllerAndroid {
                jstring base_url_for_data_url,
                jstring virtual_url_for_data_url,
                jboolean can_load_local_resources,
-               jboolean is_renderer_initiated);
+               jboolean is_renderer_initiated,
+               jboolean should_replace_current_entry);
   void ClearSslPreferences(JNIEnv* env, jobject /* obj */);
   bool GetUseDesktopUserAgent(JNIEnv* env, jobject /* obj */);
   void SetUseDesktopUserAgent(JNIEnv* env,
