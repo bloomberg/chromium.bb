@@ -98,27 +98,16 @@
   'conditions': [
     ['OS=="ios"', {
       'variables': {
-        # Controls whether the extra version path should be overridden to
-        # use ios/build/util/CANARY_VERSION (legacy until the bots have
-        # been updated to override ios_extra_version_path instead).
-        # TODO(sdefresne): remove once http://crbug.com/514560 is fixed.
-        'use_canary_version_file%': 0,
-
-        # Path to the file used to override the version PATH level on iOS.
-        # Default to ios/build/util/VERSION.
-        'ios_extra_version_path%': '../ios/build/util/VERSION',
+        # Use nested 'variables' to workaround how variables work with gyp (no
+        # determined ordering and thuse it is not possible to define a variable
+        # in function of another).
+        'variables': {
+          # Path to the file used to override the version PATH level on iOS.
+          # Default to ios/build/util/VERSION.
+          'ios_extra_version_path%': '../ios/build/util/VERSION',
+        },
+        'extra_version_name': '<(ios_extra_version_path)'
       },
-      'conditions': [
-        ['use_canary_version_file==1', {
-          'variables': {
-            'extra_version_name': '../ios/build/util/CANARY_VERSION',
-          },
-        }, {
-          'variables': {
-            'extra_version_name': '<(ios_extra_version_path)',
-          },
-        }],
-      ],
     }],
   ],
 }

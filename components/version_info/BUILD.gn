@@ -9,12 +9,6 @@ if (is_ios) {
     # Path to the file used to override the version PATH level on iOS.
     # Default to ios/build/util/VERSION.
     ios_extra_version_path = "//ios/build/util/VERSION"
-
-    # Controls whether the extra version path should be overridden to
-    # use ios/build/util/CANARY_VERSION (legacy until the bots have
-    # been updated to override ios_extra_version_path instead).
-    # TODO(sdefresne): remove once http://crbug.com/514560 is fixed.
-    use_canary_version_file = false
   }
 }
 
@@ -38,21 +32,15 @@ process_version("generate_version_info") {
   output = "$target_gen_dir/version_info_values.h"
 
   if (is_ios) {
-    if (use_canary_version_file) {
-      extra_version_path = "//ios/build/util/CANARY_VERSION"
-    } else {
-      extra_version_path = ios_extra_version_path
-    }
-
     # iOS overrides PATCH level of the version with the value from the file
     # named by ios_version_path, however, this needs to be the last argument
-    # to the version.py script, so it cannot be added to the source variable
+    # to the version.py script, so it cannot be added to the sources variable
     # and instead need to be managed manually.
 
-    inputs += [ extra_version_path ]
+    inputs += [ ios_extra_version_path ]
     extra_args = [
       "-f",
-      rebase_path(extra_version_path, root_build_dir),
+      rebase_path(ios_extra_version_path, root_build_dir),
     ]
   }
 }
