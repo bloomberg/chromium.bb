@@ -562,3 +562,37 @@ bool IsRTLUILayout() {
               [[NSLocale currentLocale] objectForKey:NSLocaleLanguageCode]] ==
       NSLocaleLanguageDirectionRightToLeft;
 }
+
+UIViewAutoresizing UIViewAutoresizingFlexibleLeadingMargin() {
+  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
+             ? UIViewAutoresizingFlexibleRightMargin
+             : UIViewAutoresizingFlexibleLeftMargin;
+}
+
+UIViewAutoresizing UIViewAutoresizingFlexibleTrailingMargin() {
+  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater()
+             ? UIViewAutoresizingFlexibleLeftMargin
+             : UIViewAutoresizingFlexibleRightMargin;
+}
+
+UIEdgeInsets UIEdgeInsetsMakeUsingDirection(
+    CGFloat top,
+    CGFloat leading,
+    CGFloat bottom,
+    CGFloat trailing,
+    base::i18n::TextDirection direction) {
+  if (direction == base::i18n::RIGHT_TO_LEFT) {
+    using std::swap;
+    swap(leading, trailing);
+  }
+  // At this point, |leading| == left, |trailing| = right.
+  return UIEdgeInsetsMake(top, leading, bottom, trailing);
+}
+
+UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
+                                      CGFloat leading,
+                                      CGFloat bottom,
+                                      CGFloat trailing) {
+  return UIEdgeInsetsMakeUsingDirection(top, leading, bottom, trailing,
+                                        LayoutDirection());
+}

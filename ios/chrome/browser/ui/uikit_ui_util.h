@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "base/i18n/rtl.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
 // UI Util containing functions that require UIKit.
@@ -199,5 +200,25 @@ bool IsCompactTablet();
 // pseudo language. Remove that method once base::i18n::IsRTL() is fixed.
 // crbug/514625.
 bool IsRTLUILayout();
+
+// Leading/trailing autoresizing masks. 'Leading' is 'Left' under iOS <= 8 or
+// in an LTR language, 'Right' otherwise; 'Trailing' is the obverse.
+UIViewAutoresizing UIViewAutoresizingFlexibleLeadingMargin();
+UIViewAutoresizing UIViewAutoresizingFlexibleTrailingMargin();
+
+// Text-direction aware UIEdgeInsets constructor; just like UIEdgeInsetsMake(),
+// except |leading| and |trailing| map to left and right when |direction| is
+// LEFT_TO_RIGHT, and are swapped for RIGHT_TO_LEFT.
+UIEdgeInsets UIEdgeInsetsMakeUsingDirection(
+    CGFloat top,
+    CGFloat leading,
+    CGFloat bottom,
+    CGFloat trailing,
+    base::i18n::TextDirection direction);
+// As above, but uses LayoutDirection() for |direction|.
+UIEdgeInsets UIEdgeInsetsMakeDirected(CGFloat top,
+                                      CGFloat leading,
+                                      CGFloat bottom,
+                                      CGFloat trailing);
 
 #endif  // IOS_CHROME_BROWSER_UI_UIKIT_UI_UTIL_H_

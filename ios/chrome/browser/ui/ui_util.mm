@@ -7,12 +7,109 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/ios_util.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/gfx/ios/uikit_util.h"
 
 bool IsIPadIdiom() {
   UIUserInterfaceIdiom idiom = [[UIDevice currentDevice] userInterfaceIdiom];
   return idiom == UIUserInterfaceIdiomPad;
+}
+
+const CGFloat kPortraitWidth[INTERFACE_IDIOM_COUNT] = {
+    320,  // IPHONE_IDIOM
+    768   // IPAD_IDIOM
+};
+
+bool UseRTLLayout() {
+  return base::i18n::IsRTL() && base::ios::IsRunningOnIOS9OrLater();
+}
+
+base::i18n::TextDirection LayoutDirection() {
+  return UseRTLLayout() ? base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;
+}
+
+CGRect LayoutRectGetRectUsingDirection(LayoutRect layout,
+                                       base::i18n::TextDirection direction) {
+  CGRect rect;
+  if (direction == base::i18n::RIGHT_TO_LEFT) {
+    CGFloat trailing =
+        layout.contextWidth - (layout.leading + layout.size.width);
+    rect = CGRectMake(trailing, layout.yOrigin, layout.size.width,
+                      layout.size.height);
+  } else {
+    DCHECK_EQ(direction, base::i18n::LEFT_TO_RIGHT);
+    rect = CGRectMake(layout.leading, layout.yOrigin, layout.size.width,
+                      layout.size.height);
+  }
+  return rect;
+}
+
+CGRect LayoutRectGetRect(LayoutRect layout) {
+  return LayoutRectGetRectUsingDirection(layout, LayoutDirection());
+}
+
+CGRect LayoutRectGetBoundsRect(LayoutRect layout) {
+  return CGRectMake(0, 0, layout.size.width, layout.size.height);
+}
+
+CGPoint LayoutRectGetPositionForAnchorUsingDirection(
+    LayoutRect layout,
+    CGPoint anchor,
+    base::i18n::TextDirection direction) {
+  CGRect rect = LayoutRectGetRectUsingDirection(layout, direction);
+  return CGPointMake(CGRectGetMinX(rect) + (rect.size.width * anchor.x),
+                     CGRectGetMinY(rect) + (rect.size.height * anchor.y));
+}
+
+CGPoint LayoutRectGetPositionForAnchor(LayoutRect layout, CGPoint anchor) {
+  return LayoutRectGetPositionForAnchorUsingDirection(layout, anchor,
+                                                      LayoutDirection());
+}
+
+LayoutRect LayoutRectForRectInRectUsingDirection(
+    CGRect rect,
+    CGRect contextRect,
+    base::i18n::TextDirection direction) {
+  LayoutRect layout;
+  if (direction == base::i18n::RIGHT_TO_LEFT) {
+    layout.leading = contextRect.size.width - CGRectGetMaxX(rect);
+  } else {
+    layout.leading = CGRectGetMinX(rect);
+  }
+  layout.contextWidth = contextRect.size.width;
+  layout.yOrigin = rect.origin.y;
+  layout.size = rect.size;
+  return layout;
+}
+
+LayoutRect LayoutRectForRectInRect(CGRect rect, CGRect contextRect) {
+  return LayoutRectForRectInRectUsingDirection(rect, contextRect,
+                                               LayoutDirection());
+}
+
+LayoutRect LayoutRectGetLeadingLayout(LayoutRect layout) {
+  LayoutRect leadingLayout;
+  leadingLayout.leading = 0;
+  leadingLayout.contextWidth = layout.contextWidth;
+  leadingLayout.yOrigin = leadingLayout.yOrigin;
+  leadingLayout.size = CGSizeMake(layout.leading, layout.size.height);
+  return leadingLayout;
+}
+
+LayoutRect LayoutRectGetTrailingLayout(LayoutRect layout) {
+  LayoutRect leadingLayout;
+  CGFloat trailing = LayoutRectGetTrailing(layout);
+  leadingLayout.leading = trailing;
+  leadingLayout.contextWidth = layout.contextWidth;
+  leadingLayout.yOrigin = leadingLayout.yOrigin;
+  leadingLayout.size =
+      CGSizeMake((layout.contextWidth - trailing), layout.size.height);
+  return leadingLayout;
+}
+
+CGFloat LayoutRectGetTrailing(LayoutRect layout) {
+  return layout.leading + layout.size.width;
 }
 
 bool IsHighResScreen() {
