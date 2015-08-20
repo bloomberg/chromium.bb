@@ -178,10 +178,11 @@ public class TabRedirectHandler {
     }
 
     /**
-     * @return whether we should stay in Chrome or not. There are two different
+     * @param hasExternalProtocol whether the destination URI has an external protocol or not.
+     * @return whether we should stay in Chrome or not.
      */
-    public boolean shouldStayInChrome() {
-        return mIsInitialIntentHeadingToChrome
+    public boolean shouldStayInChrome(boolean hasExternalProtocol) {
+        return (mIsInitialIntentHeadingToChrome && !hasExternalProtocol)
                 || mInitialNavigationType == NAVIGATION_TYPE_FROM_LINK_WITHOUT_USER_GESTURE
                 || mInitialNavigationType == NAVIGATION_TYPE_FROM_RELOAD;
     }

@@ -167,7 +167,7 @@ public class ExternalNavigationHandler {
         // http://crbug/331571 : Do not override a navigation started from user typing.
         // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
         if (params.getRedirectHandler() != null) {
-            if (params.getRedirectHandler().shouldStayInChrome()
+            if (params.getRedirectHandler().shouldStayInChrome(isExternalProtocol)
                     || params.getRedirectHandler().shouldNotOverrideUrlLoading()) {
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }

@@ -188,12 +188,15 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         fooIntent.putExtra(Browser.EXTRA_APPLICATION_ID, TEST_PACKAGE_NAME);
         handler.updateIntent(fooIntent);
         assertFalse(handler.isOnNavigation());
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
         handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -201,7 +204,8 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -240,12 +244,15 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         fooIntent.setPackage(TEST_PACKAGE_NAME);
         handler.updateIntent(fooIntent);
         assertFalse(handler.isOnNavigation());
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         handler.updateNewUrlLoading(TRANS_TYPE_OF_LINK_FROM_INTENT, false, false, 0, 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
         handler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -253,7 +260,8 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -307,14 +315,17 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         TabRedirectHandler handler = new TabRedirectHandler(mContext);
         handler.updateIntent(sYtIntent);
         assertFalse(handler.isOnNavigation());
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertTrue(handler.shouldStayInChrome(true));
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertTrue(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -322,7 +333,8 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -334,14 +346,17 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         TabRedirectHandler handler = new TabRedirectHandler(mContext);
         handler.updateIntent(sYtIntent);
         assertFalse(handler.isOnNavigation());
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         handler.updateNewUrlLoading(
                 PageTransition.RELOAD, false, false, SystemClock.elapsedRealtime(), 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertTrue(handler.shouldStayInChrome(true));
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertTrue(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -349,7 +364,8 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -361,14 +377,17 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         TabRedirectHandler handler = new TabRedirectHandler(mContext);
         handler.updateIntent(sYtIntent);
         assertFalse(handler.isOnNavigation());
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK,
                 false, true, SystemClock.elapsedRealtime(), 0);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertTrue(handler.shouldStayInChrome(true));
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
-        assertTrue(handler.shouldStayInChrome());
+        assertTrue(handler.shouldStayInChrome(false));
+        assertTrue(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(0, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
@@ -376,7 +395,8 @@ public class TabRedirectHandlerTest extends InstrumentationTestCase {
         SystemClock.sleep(1);
         handler.updateNewUrlLoading(
                 PageTransition.LINK, false, true, SystemClock.elapsedRealtime(), 2);
-        assertFalse(handler.shouldStayInChrome());
+        assertFalse(handler.shouldStayInChrome(false));
+        assertFalse(handler.shouldStayInChrome(true));
 
         assertTrue(handler.isOnNavigation());
         assertEquals(2, handler.getLastCommittedEntryIndexBeforeStartingNavigation());
