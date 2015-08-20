@@ -422,11 +422,6 @@ bool LayerTreeHostImpl::CanDraw() const {
 }
 
 void LayerTreeHostImpl::Animate() {
-  // Don't animate if there is no active root layer.
-  // TODO(ajuma): Does this break things if first commit has an animation?
-  if (!active_tree()->root_layer())
-    return;
-
   base::TimeTicks monotonic_time = CurrentBeginFrameArgs().frame_time;
 
   // mithro(TODO): Enable these checks.
@@ -3129,7 +3124,7 @@ void LayerTreeHostImpl::AnimateScrollbars(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
-  if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
+  if (!settings_.accelerated_animation_enabled)
     return;
 
   if (animation_host_) {
@@ -3142,7 +3137,7 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
-  if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
+  if (!settings_.accelerated_animation_enabled)
     return;
 
   bool has_active_animations = false;
@@ -3166,7 +3161,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
 }
 
 void LayerTreeHostImpl::ActivateAnimations() {
-  if (!settings_.accelerated_animation_enabled || !active_tree_->root_layer())
+  if (!settings_.accelerated_animation_enabled)
     return;
 
   if (animation_host_) {
