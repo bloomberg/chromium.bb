@@ -35,6 +35,7 @@
         '../../ui/file_manager/gallery/js/compiled_resources.gyp:*',
         '../../ui/file_manager/image_loader/compiled_resources.gyp:*',
         '../../ui/file_manager/video_player/js/compiled_resources.gyp:*',
+	'../../ui/webui/resources/cr_elements/v1_0/network/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/chromeos/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/chromeos/compiled_resources.gyp:*',
         '../../ui/webui/resources/js/compiled_resources.gyp:*',

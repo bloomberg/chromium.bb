@@ -7,7 +7,7 @@
 <dom-module id="cr-network-list">
   <link rel="import" type="css" href="cr_network_list.css">
   <template>
-    <cr-collapse on-core-resize="onResized_" opened="{{opened}}">
+    <cr-collapse opened="{{opened}}">
       <div id="container" class="layout vertical flex">
         <template is="dom-repeat" items="[[networks]]">
           <cr-network-list-item network-state="[[item]]" is-list-item

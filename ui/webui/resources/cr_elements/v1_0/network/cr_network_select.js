@@ -69,18 +69,18 @@ Polymer({
 
   /**
    * Listener function for chrome.networkingPrivate.onNetworkListChanged event.
-   * @type {?function(!Array<string>)}
+   * @type {function(!Array<string>)}
    * @private
    */
-  networkListChangedListener_: null,
+  networkListChangedListener_: function() {},
 
   /**
    * Listener function for chrome.networkingPrivate.onDeviceStateListChanged
    * event.
-   * @type {?function(!Array<string>)}
+   * @type {function(!Array<string>)}
    * @private
    */
-  deviceStateListChangedListener_: null,
+  deviceStateListChangedListener_: function() {},
 
   /** @override */
   attached: function() {
@@ -99,7 +99,7 @@ Polymer({
   /** @override */
   detached: function() {
     chrome.networkingPrivate.onNetworksChanged.removeListener(
-        this.networksChangedListener_);
+        this.networkListChangedListener_);
     chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
         this.deviceStateListChangedListener_);
   },
@@ -119,7 +119,7 @@ Polymer({
    */
   refreshNetworks_: function() {
     var filter = {
-      networkType: 'All',
+      networkType: chrome.networkingPrivate.NetworkType.ALL,
       visible: true,
       configured: false
     };

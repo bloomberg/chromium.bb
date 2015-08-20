@@ -7,6 +7,7 @@
  * in a list or summary based on ONC state properties.
  */
 (function() {
+'use strict';
 
 /**
  * TODO(stevenjb): Replace getText with a proper localization function that
@@ -14,7 +15,7 @@
  * Performs argument substitution, replacing $1, $2, etc in 'text' with
  * corresponding entries in |args|.
  * @param {string} text The string to perform the substitution on.
- * @param {?Array<string>} args The arguments to replace $1, $2, etc with.
+ * @param {?Array<string>=} args The arguments to replace $1, $2, etc with.
  */
 function getText(text, args) {
   var res;
@@ -24,8 +25,8 @@ function getText(text, args) {
     res = text;
   if (!args)
     return res;
-  for (var i = 0; i < args.length; ++i) {
-    var key = '$' + (i + 1);
+  for (let i = 0; i < args.length; ++i) {
+    let key = '$' + (i + 1);
     res = res.replace(key, args[i]);
   }
   return res;

@@ -182,7 +182,7 @@ Polymer({
 
   /**
    * Event triggered when a network-list-item is the network list is selected.
-   * @param {!{detail: NetworkListItem}} event
+   * @param {!{detail: !CrOnc.NetworkStateProperties}} event
    * @private
    */
   onListItemSelected_: function(event) {

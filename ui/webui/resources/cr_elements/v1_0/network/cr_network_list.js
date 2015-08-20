@@ -53,17 +53,8 @@ Polymer({
   },
 
   /**
-   * Called when the cr-collapse element changes size (i.e. is opened).
-   * @private
-   */
-  onResized_: function() {
-    if (this.opened)
-      this.$.networkList.updateSize();
-  },
-
-  /**
    * Event triggered when a list item is selected.
-   * @param {!{target: !NetworkListItem}} event
+   * @param {!{model: {item: !CrOnc.NetworkStateProperties}}} event
    * @private
    */
   onSelected_: function(event) {

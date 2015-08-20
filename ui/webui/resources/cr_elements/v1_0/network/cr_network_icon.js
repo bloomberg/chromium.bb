@@ -7,7 +7,6 @@
  * state properties.
  */
 
-(function() {
 /**
  * @typedef {{
  *   showBadges: boolean,
@@ -15,8 +14,9 @@
  *   strength: number
  * }}
  */
-var IconParams;
+var NetworkIconParamType;
 
+(function() {
 /** @const {string} */ var RESOURCE_IMAGE_BASE =
     'chrome://resources/cr_elements/network/';
 
@@ -54,7 +54,6 @@ Polymer({
   properties: {
     /**
      * If set, the ONC state properties will be used to display the icon.
-     *
      * @type {?CrOnc.NetworkStateProperties}
      */
     networkState: {
@@ -65,12 +64,11 @@ Polymer({
 
     /**
      * If set, the ONC network type will be used to display the icon.
-     *
-     * @type {?CrOnc.Type}
+     * @type {?chrome.networkingPrivate.NetworkType}
      */
     networkType:  {
       type: String,
-      value: undefined,
+      value: null,
       observer: 'networkTypeChanged_'
     },
 
@@ -85,40 +83,28 @@ Polymer({
       observer: 'isListItemChanged_'
     },
 
-    /**
-     * The icon type to use for the base image of the icon.
-     * @private
-     */
+    /** The icon type to use for the base image of the icon. */
     iconType_: {
       type: String,
-      value: 'ethernet',
+      value: 'ethernet'
     },
 
-    /**
-     * Set to true to show a badge for roaming networks.
-     * @private
-     */
+    /** Set to true to show a badge for roaming networks. */
     roaming_: {
       type: Boolean,
-      value: false,
+      value: false
     },
 
-    /**
-     * Set to true to show a badge for secure networks.
-     * @private
-     */
+    /** Set to true to show a badge for secure networks. */
     secure_: {
       type: Boolean,
-      value: false,
+      value: false
     },
 
-    /**
-     * Set to the name of a technology to show show a badge.
-     * @private
-     */
+    /** Set to the name of a technology to show show a badge. */
     technology_: {
       type: String,
-      value: '',
+      value: ''
     },
   },
 
@@ -131,11 +117,11 @@ Polymer({
     if (!this.networkState)
       return;
 
-    this.networkType = undefined;
+    this.networkType = null;
     this.iconType_ = getIconTypeFromNetworkType(this.networkState.Type);
     var strength = /** @type {number} */ (
         CrOnc.getTypeProperty(this.networkState, 'SignalStrength') || 0);
-    var params = /** @type {IconParams} */ {
+    var params = /** @type {NetworkIconParamType} */ {
       showBadges: true,
       showDisconnected: !this.isListItem,
       strength: strength
@@ -154,7 +140,7 @@ Polymer({
 
     this.networkState = null;
     this.iconType_ = getIconTypeFromNetworkType(this.networkType);
-    var params = /** @type {IconParams} */ {
+    var params = /** @type {NetworkIconParamType} */ {
       showBadges: false,
       showDisconnected: true,
       strength: 0,
@@ -195,7 +181,7 @@ Polymer({
 
   /**
    * Sets the icon and badge based on the current state and |strength|.
-   * @param {!IconParams} params The set of params describing the icon.
+   * @param {!NetworkIconParamType} params Set of params describing the icon.
    * @private
    */
   setIcon_: function(params) {
@@ -216,7 +202,7 @@ Polymer({
   /**
    * Toggles icon classes based on strength and connecting properties.
    * |this.networkState| is expected to be specified.
-   * @param {!IconParams} params The set of params describing the icon.
+   * @param {!NetworkIconParamType} params Set of params describing the icon.
    * @private
    */
   setMultiLevelIcon_: function(params) {
@@ -246,7 +232,7 @@ Polymer({
 
   /**
    * Sets the icon badge visibility properties: roaming, secure, technology.
-   * @param {!IconParams} params The set of params describing the icon.
+   * @param {!NetworkIconParamType} params Set of params describing the icon.
    * @private
    */
   setIconBadges_: function(params) {
@@ -257,7 +243,7 @@ Polymer({
     if (type == CrOnc.Type.WI_FI) {
       this.roaming_ = false;
       var security = CrOnc.getTypeProperty(networkState, 'Security');
-      this.secure_ = security && security != 'None';
+      this.secure_ = !!security && security != 'None';
       this.technology_ = '';
     } else if (type == CrOnc.Type.WI_MAX) {
       this.roaming_ = false;
