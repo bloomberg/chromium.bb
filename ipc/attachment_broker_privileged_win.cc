@@ -22,7 +22,7 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
     const BrokerableAttachment* attachment,
     base::ProcessId destination_process) {
   switch (attachment->GetBrokerableType()) {
-    case BrokerableAttachment::WIN_HANDLE: {
+    case BrokerableAttachment::WIN_HANDLE:
       const internal::HandleAttachmentWin* handle_attachment =
           static_cast<const internal::HandleAttachmentWin*>(attachment);
       HandleWireFormat wire_format =
@@ -33,10 +33,6 @@ bool AttachmentBrokerPrivilegedWin::SendAttachmentToProcess(
         return false;
       RouteDuplicatedHandle(new_wire_format);
       return true;
-    }
-    case BrokerableAttachment::PLACEHOLDER:
-      // TODO(erikchen): Check what to do here.
-      return false;
   }
   return false;
 }
