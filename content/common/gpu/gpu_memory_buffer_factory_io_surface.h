@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
+#include "content/common/mac/io_surface_manager.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -54,7 +55,7 @@ class GpuMemoryBufferFactoryIOSurface : public GpuMemoryBufferFactory,
       int client_id) override;
 
  private:
-  typedef std::pair<int, int> IOSurfaceMapKey;
+  typedef std::pair<IOSurfaceId, int> IOSurfaceMapKey;
   typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
   IOSurfaceMap io_surfaces_;

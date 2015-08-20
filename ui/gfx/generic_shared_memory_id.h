@@ -49,6 +49,15 @@ struct hash<gfx::GenericSharedMemoryId> {
     return BASE_HASH_NAMESPACE::hash<int>()(key.id);
   }
 };
+
+template <typename Second>
+struct hash<std::pair<gfx::GenericSharedMemoryId, Second>> {
+  size_t operator()(
+      const std::pair<gfx::GenericSharedMemoryId, Second>& pair) const {
+    return base::HashPair(pair.first.id, pair.second);
+  }
+};
+
 }  // namespace BASE_HASH_NAMESPACE
 
 #endif  // UI_GFX_GENERIC_SHARED_MEMORY_ID_H_

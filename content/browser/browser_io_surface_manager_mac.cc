@@ -51,7 +51,7 @@ base::mac::ScopedMachSendRight BrowserIOSurfaceManager::LookupServicePort(
   return base::mac::ScopedMachSendRight(port);
 }
 
-bool BrowserIOSurfaceManager::RegisterIOSurface(int io_surface_id,
+bool BrowserIOSurfaceManager::RegisterIOSurface(IOSurfaceId io_surface_id,
                                                 int client_id,
                                                 IOSurfaceRef io_surface) {
   base::AutoLock lock(lock_);
@@ -63,7 +63,7 @@ bool BrowserIOSurfaceManager::RegisterIOSurface(int io_surface_id,
   return true;
 }
 
-void BrowserIOSurfaceManager::UnregisterIOSurface(int io_surface_id,
+void BrowserIOSurfaceManager::UnregisterIOSurface(IOSurfaceId io_surface_id,
                                                   int client_id) {
   base::AutoLock lock(lock_);
 
@@ -72,7 +72,8 @@ void BrowserIOSurfaceManager::UnregisterIOSurface(int io_surface_id,
   io_surfaces_.erase(key);
 }
 
-IOSurfaceRef BrowserIOSurfaceManager::AcquireIOSurface(int io_surface_id) {
+IOSurfaceRef BrowserIOSurfaceManager::AcquireIOSurface(
+    IOSurfaceId io_surface_id) {
   base::AutoLock lock(lock_);
 
   IOSurfaceMapKey key(
@@ -80,7 +81,7 @@ IOSurfaceRef BrowserIOSurfaceManager::AcquireIOSurface(int io_surface_id) {
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId());
   auto it = io_surfaces_.find(key);
   if (it == io_surfaces_.end()) {
-    LOG(ERROR) << "Invalid Id for IOSurface " << io_surface_id;
+    LOG(ERROR) << "Invalid Id for IOSurface " << io_surface_id.id;
     return nullptr;
   }
 
@@ -242,7 +243,7 @@ bool BrowserIOSurfaceManager::HandleRegisterIOSurfaceRequest(
     return false;
   }
 
-  IOSurfaceMapKey key(request.io_surface_id, request.client_id);
+  IOSurfaceMapKey key(IOSurfaceId(request.io_surface_id), request.client_id);
   io_surfaces_.add(key, make_scoped_ptr(new base::mac::ScopedMachSendRight(
                             request.io_surface_port.name)));
 
@@ -266,7 +267,7 @@ bool BrowserIOSurfaceManager::HandleUnregisterIOSurfaceRequest(
     return false;
   }
 
-  IOSurfaceMapKey key(request.io_surface_id, request.client_id);
+  IOSurfaceMapKey key(IOSurfaceId(request.io_surface_id), request.client_id);
   io_surfaces_.erase(key);
   return true;
 }
@@ -291,7 +292,8 @@ bool BrowserIOSurfaceManager::HandleAcquireIOSurfaceRequest(
   reply->header.msgh_remote_port = request.header.msgh_remote_port;
   reply->header.msgh_size = sizeof(*reply);
 
-  IOSurfaceMapKey key(request.io_surface_id, child_process_id_it->second);
+  IOSurfaceMapKey key(IOSurfaceId(request.io_surface_id),
+                      child_process_id_it->second);
   auto it = io_surfaces_.find(key);
   if (it == io_surfaces_.end()) {
     LOG(ERROR) << "Invalid Id for IOSurface " << request.io_surface_id;

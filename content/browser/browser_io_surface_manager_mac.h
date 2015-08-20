@@ -41,11 +41,11 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
   static base::mac::ScopedMachSendRight LookupServicePort(pid_t pid);
 
   // Overridden from IOSurfaceManager:
-  bool RegisterIOSurface(int io_surface_id,
+  bool RegisterIOSurface(IOSurfaceId io_surface_id,
                          int client_id,
                          IOSurfaceRef io_surface) override;
-  void UnregisterIOSurface(int io_surface_id, int client_id) override;
-  IOSurfaceRef AcquireIOSurface(int io_surface_id) override;
+  void UnregisterIOSurface(IOSurfaceId io_surface_id, int client_id) override;
+  IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) override;
 
   // Performs any necessary setup that cannot happen in the constructor.
   void EnsureRunning();
@@ -99,7 +99,7 @@ class CONTENT_EXPORT BrowserIOSurfaceManager : public IOSurfaceManager {
 
   // Stores the IOSurfaces for all GPU clients. The key contains the IOSurface
   // id and the Child process unique id of the owner.
-  using IOSurfaceMapKey = std::pair<int, int>;
+  using IOSurfaceMapKey = std::pair<IOSurfaceId, int>;
   using IOSurfaceMap =
       base::ScopedPtrHashMap<IOSurfaceMapKey,
                              scoped_ptr<base::mac::ScopedMachSendRight>>;

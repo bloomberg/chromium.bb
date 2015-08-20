@@ -23,11 +23,11 @@ class CONTENT_EXPORT ChildIOSurfaceManager : public IOSurfaceManager {
   static ChildIOSurfaceManager* GetInstance();
 
   // Overridden from IOSurfaceManager:
-  bool RegisterIOSurface(int io_surface_id,
+  bool RegisterIOSurface(IOSurfaceId io_surface_id,
                          int client_id,
                          IOSurfaceRef io_surface) override;
-  void UnregisterIOSurface(int io_surface_id, int client_id) override;
-  IOSurfaceRef AcquireIOSurface(int io_surface_id) override;
+  void UnregisterIOSurface(IOSurfaceId io_surface_id, int client_id) override;
+  IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) override;
 
   // Set the service Mach port. Ownership of |service_port| is passed to the
   // manager.

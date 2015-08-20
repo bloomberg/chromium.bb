@@ -21,11 +21,11 @@ class CONTENT_EXPORT InProcessIOSurfaceManager : public IOSurfaceManager {
   static InProcessIOSurfaceManager* GetInstance();
 
   // Overridden from IOSurfaceManager:
-  bool RegisterIOSurface(int io_surface_id,
+  bool RegisterIOSurface(IOSurfaceId io_surface_id,
                          int client_id,
                          IOSurfaceRef io_surface) override;
-  void UnregisterIOSurface(int io_surface_id, int client_id) override;
-  IOSurfaceRef AcquireIOSurface(int io_surface_id) override;
+  void UnregisterIOSurface(IOSurfaceId io_surface_id, int client_id) override;
+  IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) override;
 
  private:
   friend struct DefaultSingletonTraits<InProcessIOSurfaceManager>;
@@ -34,7 +34,8 @@ class CONTENT_EXPORT InProcessIOSurfaceManager : public IOSurfaceManager {
   ~InProcessIOSurfaceManager() override;
 
   using IOSurfaceMap =
-      base::ScopedPtrHashMap<int, scoped_ptr<base::mac::ScopedMachSendRight>>;
+      base::ScopedPtrHashMap<IOSurfaceId,
+                             scoped_ptr<base::mac::ScopedMachSendRight>>;
   IOSurfaceMap io_surfaces_;
   base::Lock lock_;
 

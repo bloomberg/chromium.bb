@@ -8,8 +8,11 @@
 #include <IOSurface/IOSurface.h>
 
 #include "content/common/content_export.h"
+#include "ui/gfx/generic_shared_memory_id.h"
 
 namespace content {
+
+using IOSurfaceId = gfx::GenericSharedMemoryId;
 
 // This interface provides a mechanism for different processes to securely
 // share IOSurfaces. A process can register an IOSurface for use in another
@@ -21,16 +24,17 @@ class CONTENT_EXPORT IOSurfaceManager {
   static void SetInstance(IOSurfaceManager* instance);
 
   // Register an IO surface for use in another process.
-  virtual bool RegisterIOSurface(int io_surface_id,
+  virtual bool RegisterIOSurface(IOSurfaceId io_surface_id,
                                  int client_id,
                                  IOSurfaceRef io_surface) = 0;
 
   // Unregister an IO surface previously registered for use in another
   // process.
-  virtual void UnregisterIOSurface(int io_surface_id, int client_id) = 0;
+  virtual void UnregisterIOSurface(IOSurfaceId io_surface_id,
+                                   int client_id) = 0;
 
   // Acquire IO surface reference for a registered IO surface.
-  virtual IOSurfaceRef AcquireIOSurface(int io_surface_id) = 0;
+  virtual IOSurfaceRef AcquireIOSurface(IOSurfaceId io_surface_id) = 0;
 
  protected:
   virtual ~IOSurfaceManager() {}
