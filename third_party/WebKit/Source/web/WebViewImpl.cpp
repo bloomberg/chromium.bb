@@ -76,6 +76,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/ContextMenuController.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/DragController.h"
@@ -454,6 +455,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_backgroundColorOverride(Color::transparent)
     , m_zoomFactorOverride(0)
     , m_userGestureObserved(false)
+    , m_shouldDispatchFirstVisuallyNonEmptyLayout(false)
     , m_displayMode(WebDisplayModeBrowser)
     , m_elasticOverscroll(FloatSize())
 {
@@ -1897,6 +1899,15 @@ void WebViewImpl::layout()
         m_inspectorOverlay->layout();
     for (size_t i = 0; i < m_linkHighlights.size(); ++i)
         m_linkHighlights[i]->updateGeometry();
+
+    if (FrameView* view = mainFrameImpl()->frameView()) {
+        if (m_shouldDispatchFirstVisuallyNonEmptyLayout && view->isVisuallyNonEmpty()) {
+            m_shouldDispatchFirstVisuallyNonEmptyLayout = false;
+            // TODO(esprehn): Move users of this callback to something
+            // better, the heuristic for "visually non-empty" is bad.
+            mainFrameImpl()->frame()->loader().client()->dispatchDidFirstVisuallyNonEmptyLayout();
+        }
+    }
 }
 
 void WebViewImpl::paint(WebCanvas* canvas, const WebRect& rect)
@@ -4148,6 +4159,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // attempt to paint too early in the next page load.
         m_layerTreeView->setDeferCommits(true);
         m_layerTreeView->clearRootLayer();
+        m_shouldDispatchFirstVisuallyNonEmptyLayout = true;
         page()->frameHost().visualViewport().clearLayersForTreeView(m_layerTreeView);
     }
 
