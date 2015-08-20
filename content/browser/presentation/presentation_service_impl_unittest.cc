@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+#include <vector>
+
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -300,7 +303,8 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   }
 
   void RunListenForSessionMessages(const std::string& text_msg,
-                                   const std::vector<uint8_t>& binary_data) {
+                                   const std::vector<uint8_t>& binary_data,
+                                   bool pass_ownership) {
     mojo::Array<presentation::SessionMessagePtr> expected_msgs(2);
     expected_msgs[0] = presentation::SessionMessage::New();
     expected_msgs[0]->type =
@@ -342,8 +346,8 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
       base::RunLoop run_loop;
       EXPECT_CALL(mock_client_, MessagesReceived())
           .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    message_cb.Run(messages.Pass());
-    run_loop.Run();
+      message_cb.Run(messages.Pass(), pass_ownership);
+      run_loop.Run();
     }
     ExpectSessionMessages(expected_msgs, mock_client_.messages_received_);
   }
@@ -542,16 +546,22 @@ TEST_F(PresentationServiceImplTest, CloseSession) {
   run_loop.Run();
 }
 
-TEST_F(PresentationServiceImplTest, ListenForSessionMessages) {
+TEST_F(PresentationServiceImplTest, ListenForSessionMessagesPassed) {
   std::string text_msg("123");
   std::vector<uint8_t> binary_data(3, '\1');
-  RunListenForSessionMessages(text_msg, binary_data);
+  RunListenForSessionMessages(text_msg, binary_data, true);
+}
+
+TEST_F(PresentationServiceImplTest, ListenForSessionMessagesCopied) {
+  std::string text_msg("123");
+  std::vector<uint8_t> binary_data(3, '\1');
+  RunListenForSessionMessages(text_msg, binary_data, false);
 }
 
 TEST_F(PresentationServiceImplTest, ListenForSessionMessagesWithEmptyMsg) {
   std::string text_msg("");
   std::vector<uint8_t> binary_data;
-  RunListenForSessionMessages(text_msg, binary_data);
+  RunListenForSessionMessages(text_msg, binary_data, false);
 }
 
 TEST_F(PresentationServiceImplTest, StartSessionInProgress) {
@@ -703,7 +713,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
 TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   // Create buffer with size exceeding the limit.
   // Use same size as in content::kMaxPresentationSessionMessageSize.
-  const size_t kMaxBufferSizeInBytes = 64 * 1024; // 64 KB.
+  const size_t kMaxBufferSizeInBytes = 64 * 1024;  // 64 KB.
   uint8 buffer[kMaxBufferSizeInBytes+1];
   memset(buffer, 0, kMaxBufferSizeInBytes+1);
   std::vector<uint8> data;

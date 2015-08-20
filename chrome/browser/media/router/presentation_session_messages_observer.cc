@@ -24,10 +24,12 @@ PresentationSessionMessagesObserver::~PresentationSessionMessagesObserver() {
 }
 
 void PresentationSessionMessagesObserver::OnMessagesReceived(
-    const ScopedVector<content::PresentationSessionMessage>& messages) {
-  DVLOG(2) << __FUNCTION__ << ", number of messages : " << messages.size();
+    const ScopedVector<content::PresentationSessionMessage>& messages,
+    bool pass_ownership) {
+  DVLOG(2) << __FUNCTION__ << ", number of messages : " << messages.size()
+           << " (pass_ownership = " << pass_ownership << ")";
   DCHECK(!messages.empty());
-  message_cb_.Run(messages);
+  message_cb_.Run(messages, pass_ownership);
 }
 
 }  // namespace media_router

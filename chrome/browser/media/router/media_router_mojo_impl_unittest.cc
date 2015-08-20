@@ -97,11 +97,14 @@ class SendMessageCallbackHandler {
 class ListenForMessagesCallbackHandler {
  public:
   ListenForMessagesCallbackHandler(
-      ScopedVector<content::PresentationSessionMessage> expected_messages)
-      : expected_messages_(expected_messages.Pass()) {}
-  void Invoke(
-      const ScopedVector<content::PresentationSessionMessage>& messages) {
+      ScopedVector<content::PresentationSessionMessage> expected_messages,
+      bool pass_ownership)
+      : expected_messages_(expected_messages.Pass()),
+        pass_ownership_(pass_ownership) {}
+  void Invoke(const ScopedVector<content::PresentationSessionMessage>& messages,
+              bool pass_ownership) {
     InvokeObserver();
+    EXPECT_EQ(pass_ownership_, pass_ownership);
     EXPECT_EQ(messages.size(), expected_messages_.size());
     for (size_t i = 0; i < expected_messages_.size(); ++i) {
       EXPECT_TRUE(ArePresentationSessionMessagesEqual(expected_messages_[i],
@@ -113,6 +116,7 @@ class ListenForMessagesCallbackHandler {
 
  private:
   ScopedVector<content::PresentationSessionMessage> expected_messages_;
+  bool pass_ownership_;
 };
 
 template <typename T>
@@ -460,7 +464,7 @@ TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
   ProcessEventLoop();
 }
 
-TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesObserver) {
+TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   mojo::Array<interfaces::RouteMessagePtr> mojo_messages(2);
   mojo_messages[0] = interfaces::RouteMessage::New();
   mojo_messages[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
@@ -487,7 +491,9 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesObserver) {
               ListenForRouteMessages(Eq(expected_route_id), _))
       .WillOnce(SaveArg<1>(&mojo_callback));
 
-  ListenForMessagesCallbackHandler handler(expected_messages.Pass());
+  // |pass_ownership| param is "true" here because there is only one observer.
+  ListenForMessagesCallbackHandler handler(expected_messages.Pass(), true);
+
   EXPECT_CALL(handler, InvokeObserver());
   // Creating PresentationSessionMessagesObserver will register itself to the
   // MediaRouter, which in turn will start listening for route messages.
@@ -515,6 +521,74 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesObserver) {
   mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
   mojo_messages_2[0]->message = "foo";
   observer.reset();
+  mojo_callback_2.Run(mojo_messages_2.Pass());
+  ProcessEventLoop();
+}
+
+TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
+  mojo::Array<interfaces::RouteMessagePtr> mojo_messages(2);
+  mojo_messages[0] = interfaces::RouteMessage::New();
+  mojo_messages[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages[0]->message = "text";
+  mojo_messages[1] = interfaces::RouteMessage::New();
+  mojo_messages[1]->type = interfaces::RouteMessage::Type::TYPE_BINARY;
+  mojo_messages[1]->data.push_back(1);
+
+  ScopedVector<content::PresentationSessionMessage> expected_messages;
+  scoped_ptr<content::PresentationSessionMessage> message;
+  message.reset(new content::PresentationSessionMessage(
+      content::PresentationMessageType::TEXT));
+  message->message = "text";
+  expected_messages.push_back(message.Pass());
+
+  message.reset(new content::PresentationSessionMessage(
+      content::PresentationMessageType::ARRAY_BUFFER));
+  message->data.reset(new std::vector<uint8_t>(1, 1));
+  expected_messages.push_back(message.Pass());
+
+  MediaRoute::Id expected_route_id("foo");
+  interfaces::MediaRouteProvider::ListenForRouteMessagesCallback mojo_callback;
+  EXPECT_CALL(mock_media_route_provider_,
+              ListenForRouteMessages(Eq(expected_route_id), _))
+      .WillOnce(SaveArg<1>(&mojo_callback));
+
+  // |pass_ownership| param is "false" here because there are more than one
+  // observers.
+  ListenForMessagesCallbackHandler handler(expected_messages.Pass(), false);
+
+  EXPECT_CALL(handler, InvokeObserver()).Times(2);
+  // Creating PresentationSessionMessagesObserver will register itself to the
+  // MediaRouter, which in turn will start listening for route messages.
+  scoped_ptr<PresentationSessionMessagesObserver> observer1(
+      new PresentationSessionMessagesObserver(
+          base::Bind(&ListenForMessagesCallbackHandler::Invoke,
+                     base::Unretained(&handler)),
+          expected_route_id, router()));
+  scoped_ptr<PresentationSessionMessagesObserver> observer2(
+      new PresentationSessionMessagesObserver(
+          base::Bind(&ListenForMessagesCallbackHandler::Invoke,
+                     base::Unretained(&handler)),
+          expected_route_id, router()));
+  ProcessEventLoop();
+
+  // Simulate messages by invoking the saved mojo callback.
+  // We expect one more ListenForRouteMessages call since |observer| was
+  // still registered when the first set of messages arrived.
+  mojo_callback.Run(mojo_messages.Pass());
+  interfaces::MediaRouteProvider::ListenForRouteMessagesCallback
+      mojo_callback_2;
+  EXPECT_CALL(mock_media_route_provider_, ListenForRouteMessages(_, _))
+      .WillOnce(SaveArg<1>(&mojo_callback_2));
+  ProcessEventLoop();
+
+  // Stop listening for messages. In particular, MediaRouterMojoImpl will not
+  // call ListenForRouteMessages again when it sees there are no more observers.
+  mojo::Array<interfaces::RouteMessagePtr> mojo_messages_2(1);
+  mojo_messages_2[0] = interfaces::RouteMessage::New();
+  mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages_2[0]->message = "foo";
+  observer1.reset();
+  observer2.reset();
   mojo_callback_2.Run(mojo_messages_2.Pass());
   ProcessEventLoop();
 }

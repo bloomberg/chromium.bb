@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_PRESENTATION_PRESENTATION_SERVICE_IMPL_H_
 
 #include <deque>
+#include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -246,7 +248,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // later invocation when session messages arrive.
   void OnSessionMessages(
       const content::PresentationSessionInfo& session,
-      const ScopedVector<PresentationSessionMessage>& messages);
+      const ScopedVector<PresentationSessionMessage>& messages,
+      bool pass_ownership);
 
   // Associates a JoinSession |callback| with a unique request ID and
   // stores it in a map.

@@ -32,8 +32,11 @@ class PresentationSessionMessagesObserver {
   // Invoked by |router_| whenever messages are received. Invokes |message_cb_|
   // with |messages|.
   // |messages| is guaranteed to be non-empty.
+  // If |pass_ownership| is true, then this observer may reuse buffers from the
+  // contents of |messages| without copying.
   void OnMessagesReceived(
-      const ScopedVector<content::PresentationSessionMessage>& messages);
+      const ScopedVector<content::PresentationSessionMessage>& messages,
+      bool pass_ownership);
 
   const MediaRoute::Id& route_id() const { return route_id_; }
 

@@ -474,10 +474,12 @@ void MediaRouterMojoImpl::OnRouteMessagesReceived(
         ConvertToPresentationSessionMessage(messages[i].Pass()).Pass());
   }
 
-  // TODO(imcheng): If there is only 1 observer, we should be able to pass
-  // the messages to avoid additional copies. (crbug.com/517234)
+  base::ObserverList<PresentationSessionMessagesObserver>::Iterator
+      observer_it(observer_list);
+  bool single_observer =
+      observer_it.GetNext() != nullptr && observer_it.GetNext() == nullptr;
   FOR_EACH_OBSERVER(PresentationSessionMessagesObserver, *observer_list,
-                    OnMessagesReceived(session_messages));
+                    OnMessagesReceived(session_messages, single_observer));
 
   // Listen for more messages.
   media_route_provider_->ListenForRouteMessages(

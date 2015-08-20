@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -21,8 +22,12 @@ class PresentationScreenAvailabilityListener;
 using SessionStateChangedCallback =
     base::Callback<void(const PresentationSessionInfo&,
                         PresentationSessionState)>;
-using PresentationSessionMessageCallback = base::Callback<void(
-    const ScopedVector<content::PresentationSessionMessage>&)>;
+
+// Param #0: a vector of messages that are received.
+// Param #1: tells the callback handler that it may reuse strings or buffers
+//           in the messages contained within param #0.
+using PresentationSessionMessageCallback = base::Callback<
+    void(const ScopedVector<content::PresentationSessionMessage>&, bool)>;
 
 // An interface implemented by embedders to handle presentation API calls
 // forwarded from PresentationServiceImpl.
