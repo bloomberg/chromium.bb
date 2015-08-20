@@ -66,7 +66,7 @@ public:
     // AttributeConfiguration translates into calls to SetAccessor() on either
     // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
-        WTF_MAKE_NONCOPYABLE(AttributeConfiguration);
+        AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;
         DISALLOW_ALLOCATION();
         const char* const name;
         v8::AccessorNameGetterCallback getter;
@@ -88,7 +88,7 @@ public:
     // AccessorConfiguration translates into calls to SetAccessorProperty()
     // on prototype ObjectTemplate.
     struct AccessorConfiguration {
-        WTF_MAKE_NONCOPYABLE(AccessorConfiguration);
+        AccessorConfiguration& operator=(const AccessorConfiguration&) = delete;
         DISALLOW_ALLOCATION();
         const char* const name;
         v8::FunctionCallback getter;
@@ -123,7 +123,7 @@ public:
     // object's constants. It sets the constant on both the FunctionTemplate and
     // the ObjectTemplate. PropertyAttributes is always ReadOnly.
     struct ConstantConfiguration {
-        WTF_MAKE_NONCOPYABLE(ConstantConfiguration);
+        ConstantConfiguration& operator=(const ConstantConfiguration&) = delete;
         DISALLOW_ALLOCATION();
         const char* const name;
         int ivalue;
@@ -150,7 +150,7 @@ public:
     // object's callbacks. It sets the method on both the FunctionTemplate or
     // the ObjectTemplate.
     struct MethodConfiguration {
-        WTF_MAKE_NONCOPYABLE(MethodConfiguration);
+        MethodConfiguration& operator=(const MethodConfiguration&) = delete;
         DISALLOW_ALLOCATION();
         v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return v8AtomicString(isolate, name); }
         v8::FunctionCallback callbackForWorld(const DOMWrapperWorld& world) const
@@ -166,7 +166,7 @@ public:
     };
 
     struct SymbolKeyedMethodConfiguration {
-        WTF_MAKE_NONCOPYABLE(SymbolKeyedMethodConfiguration);
+        SymbolKeyedMethodConfiguration& operator=(const SymbolKeyedMethodConfiguration&) = delete;
         DISALLOW_ALLOCATION();
         v8::Local<v8::Name> methodName(v8::Isolate* isolate) const { return getSymbol(isolate); }
         v8::FunctionCallback callbackForWorld(const DOMWrapperWorld&) const
