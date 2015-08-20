@@ -709,7 +709,13 @@ IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadRemoved) {
   EXPECT_EQ(0u, downloads.size());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, DownloadMultipleFiles) {
+#if defined(MEMORY_SANITIZER)
+# define MAYBE_DownloadMultipleFiles DISABLED_DownloadMultipleFiles
+#else
+# define MAYBE_DownloadMultipleFiles DownloadMultipleFiles
+#endif
+
+IN_PROC_BROWSER_TEST_F(DownloadNotificationTest, MAYBE_DownloadMultipleFiles) {
   GURL url1(net::URLRequestSlowDownloadJob::kUnknownSizeUrl);
   GURL url2(net::URLRequestSlowDownloadJob::kKnownSizeUrl);
 
