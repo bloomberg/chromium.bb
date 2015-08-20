@@ -1,6 +1,7 @@
 # Until upstreaming is complete, substantial changes should also be reviewed by
 # someone in chrome/browser/media/OWNERS.
 
+imcheng@chromium.org
 kmarshall@chromium.org
 mfoltz@chromium.org
 wez@chromium.org
