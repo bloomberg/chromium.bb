@@ -59,6 +59,7 @@ class DownloadItemNotification : public DownloadNotification,
 
   // Set preview image of the notification. Must be called on IO thread.
   void OnImageLoaded(const std::string& image_data);
+  void OnImageCropped(const SkBitmap& image);
 
   // ImageDecoder::ImageRequest overrides:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
