@@ -743,6 +743,8 @@ TEST_IMAGE_NAME = 'chromiumos_test_image'
 TEST_IMAGE_TAR = '%s.tar.xz' % TEST_IMAGE_NAME
 TEST_IMAGE_BIN = '%s.bin' % TEST_IMAGE_NAME
 TEST_IMAGE_GCE_TAR = ImageBinToGceTar(TEST_IMAGE_BIN)
+TEST_KEY_PRIVATE = 'id_rsa'
+TEST_KEY_PUBLIC = 'id_rsa.pub'
 
 DEV_IMAGE_NAME = 'chromiumos_image'
 DEV_IMAGE_BIN = '%s.bin' % DEV_IMAGE_NAME

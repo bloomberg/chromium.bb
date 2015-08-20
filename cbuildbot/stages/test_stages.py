@@ -192,6 +192,14 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       else:
         image_path = os.path.join(self.GetImageDirSymlink(),
                                   constants.TEST_IMAGE_BIN)
+      ssh_private_key = os.path.join(self.GetImageDirSymlink(),
+                                     constants.TEST_KEY_PRIVATE)
+      if not os.path.exists(ssh_private_key):
+        # TODO: Disallow usage of default test key completely.
+        logging.warning('Test key was not found in the image directory. '
+                        'Default key will be used.')
+        ssh_private_key = None
+
       commands.RunTestSuite(self._build_root,
                             self._current_board,
                             image_path,
@@ -199,7 +207,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
                                          'test_harness'),
                             test_type=test_type,
                             whitelist_chrome_crashes=self._chrome_rev is None,
-                            archive_dir=self.bot_archive_root)
+                            archive_dir=self.bot_archive_root,
+                            ssh_private_key=ssh_private_key)
 
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
