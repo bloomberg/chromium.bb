@@ -2305,7 +2305,17 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, BadCertFollowedByGoodCert) {
   EXPECT_FALSE(state->HasAllowException(https_server_host));
 }
 
-using CommonNameMismatchBrowserTest = CertVerifierBrowserTest;
+class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
+ public:
+  CommonNameMismatchBrowserTest() : CertVerifierBrowserTest(){};
+  ~CommonNameMismatchBrowserTest() override{};
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable finch experiment for SSL common name mismatch handling.
+    command_line->AppendSwitchASCII(switches::kForceFieldTrials,
+                                    "SSLCommonNameMismatchHandling/Enabled/");
+  }
+};
 
 // Visit the URL www.mail.example.com on a server that presents a valid
 // certificate for mail.example.com. Verify that the page navigates to

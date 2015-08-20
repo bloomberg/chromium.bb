@@ -85,6 +85,11 @@ bool IsCaptivePortalInterstitialEnabled() {
 }
 #endif
 
+bool IsSSLCommonNameMismatchHandlingEnabled() {
+  return base::FieldTrialList::FindFullName("SSLCommonNameMismatchHandling") ==
+         "Enabled";
+}
+
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SSLErrorHandler);
@@ -148,7 +153,8 @@ void SSLErrorHandler::StartHandlingError() {
   ssl_info_.cert->GetDNSNames(&dns_names);
   DCHECK(!dns_names.empty());
   GURL suggested_url;
-  if (ssl_info_.cert_status == net::CERT_STATUS_COMMON_NAME_INVALID &&
+  if (IsSSLCommonNameMismatchHandlingEnabled() &&
+      ssl_info_.cert_status == net::CERT_STATUS_COMMON_NAME_INVALID &&
       GetSuggestedUrl(dns_names, &suggested_url)) {
     RecordUMA(WWW_MISMATCH_FOUND);
     net::CertStatus extra_cert_errors =

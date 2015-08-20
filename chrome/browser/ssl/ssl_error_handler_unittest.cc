@@ -157,6 +157,9 @@ class SSLErrorHandlerTest : public ChromeRenderViewHostTestHarness {
     // Enable finch experiment for captive portal interstitials.
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
                     "CaptivePortalInterstitial", "Enabled"));
+    // Enable finch experiment for SSL common name mismatch handling.
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+                    "SSLCommonNameMismatchHandling", "Enabled"));
   }
 
   void TearDown() override {
