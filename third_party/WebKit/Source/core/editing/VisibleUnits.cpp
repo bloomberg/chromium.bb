@@ -1559,10 +1559,10 @@ bool rendersInDifferentPosition(const Position& position1, const Position& posit
     if (!inSameContainingBlockFlowElement(position1.anchorNode(), position2.anchorNode()))
         return true;
 
-    if (position1.anchorNode()->isTextNode() && !position1.inRenderedText())
+    if (position1.anchorNode()->isTextNode() && !inRenderedText(position1))
         return false;
 
-    if (position2.anchorNode()->isTextNode() && !position2.inRenderedText())
+    if (position2.anchorNode()->isTextNode() && !inRenderedText(position2))
         return false;
 
     const int renderedOffset1 = renderedOffsetOf(position1);

@@ -191,7 +191,6 @@ public:
     PositionAlgorithm<Strategy> downstream(EditingBoundaryCrossingRule = CannotCrossEditingBoundary) const;
 
     bool isCandidate() const;
-    bool inRenderedText() const;
 
     InlineBoxPosition computeInlineBoxPosition(TextAffinity) const;
     InlineBoxPosition computeInlineBoxPosition(TextAffinity, TextDirection primaryDirection) const;
@@ -447,6 +446,11 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 // TODO(yosin) We should move |hasRenderedNonAnonymousDescendantsWithHeight|
 // to "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp"
 bool hasRenderedNonAnonymousDescendantsWithHeight(LayoutObject*);
+
+// TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
+// reduce dependency of |LayoutObject| in |Position| class.
+CORE_EXPORT bool inRenderedText(const Position&);
+CORE_EXPORT bool inRenderedText(const PositionInComposedTree&);
 
 } // namespace blink
 

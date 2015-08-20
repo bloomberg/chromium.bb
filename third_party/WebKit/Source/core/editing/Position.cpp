@@ -592,7 +592,7 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     }
 
     if (layoutObject->isText())
-        return !nodeIsUserSelectNone(anchorNode()) && inRenderedText();
+        return !nodeIsUserSelectNone(anchorNode()) && inRenderedText(*this);
 
     if (layoutObject->isSVG()) {
         // We don't consider SVG elements are contenteditable except for
@@ -621,31 +621,45 @@ bool PositionAlgorithm<Strategy>::isCandidate() const
     return false;
 }
 
+// TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
+// reduce dependency of |LayoutObject| in |Position| class.
 template <typename Strategy>
-bool PositionAlgorithm<Strategy>::inRenderedText() const
+static bool inRenderedTextAlgorithm(const PositionAlgorithm<Strategy>& position)
 {
-    if (isNull() || !anchorNode()->isTextNode())
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode || !anchorNode->isTextNode())
         return false;
 
-    LayoutObject* layoutObject = anchorNode()->layoutObject();
+    LayoutObject* layoutObject = anchorNode->layoutObject();
     if (!layoutObject)
         return false;
 
+    const int offsetInNode = position.computeEditingOffset();
     LayoutText* textLayoutObject = toLayoutText(layoutObject);
     for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
-        if (m_offset < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
+        if (offsetInNode < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
             // The offset we're looking for is before this node
             // this means the offset must be in content that is
             // not laid out. Return false.
             return false;
         }
-        if (box->containsCaretOffset(m_offset)) {
+        if (box->containsCaretOffset(offsetInNode)) {
             // Return false for offsets inside composed characters.
-            return m_offset == 0 || m_offset == textLayoutObject->nextOffset(textLayoutObject->previousOffset(m_offset));
+            return offsetInNode == 0 || offsetInNode == textLayoutObject->nextOffset(textLayoutObject->previousOffset(offsetInNode));
         }
     }
 
     return false;
+}
+
+bool inRenderedText(const Position& position)
+{
+    return inRenderedTextAlgorithm<EditingStrategy>(position);
+}
+
+bool inRenderedText(const PositionInComposedTree& position)
+{
+    return inRenderedTextAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 bool isRenderedCharacter(const Position& position)
