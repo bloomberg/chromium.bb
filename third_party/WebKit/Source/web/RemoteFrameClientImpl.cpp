@@ -126,6 +126,19 @@ unsigned RemoteFrameClientImpl::backForwardLength()
 // process. See http://crbug.com/339659.
 void RemoteFrameClientImpl::forwardInputEvent(Event* event)
 {
+    // It is possible for a platform event to cause the remote iframe element
+    // to be hidden, which destroys the layout object (for instance, a mouse
+    // event that moves between elements will trigger a mouseout on the old
+    // element, which might hide the new element). In that case we do not
+    // forward. This is divergent behavior from local frames, where the
+    // content of the frame can receive events even after the frame is hidden.
+    // We might need to revisit this after browser hit testing is fully
+    // implemented, since this code path will need to be removed or refactored
+    // anyway.
+    // See https://crbug.com/520705.
+    if (!toCoreFrame(m_webFrame)->ownerLayoutObject())
+        return;
+
     // This is only called when we have out-of-process iframes, which
     // need to forward input events across processes.
     // FIXME: Add a check for out-of-process iframes enabled.
