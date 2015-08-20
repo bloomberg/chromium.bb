@@ -1290,6 +1290,12 @@ bool CompositedDeprecatedPaintLayerMapping::toggleScrollbarLayerIfNeeded(OwnPtr<
 
 bool CompositedDeprecatedPaintLayerMapping::updateOverflowControlsLayers(bool needsHorizontalScrollbarLayer, bool needsVerticalScrollbarLayer, bool needsScrollCornerLayer, bool needsAncestorClip)
 {
+    // If the subtree is invisible, we don't actually need scrollbar layers.
+    bool invisible = m_owningLayer.subtreeIsInvisible();
+    needsHorizontalScrollbarLayer &= !invisible;
+    needsVerticalScrollbarLayer &= !invisible;
+    needsScrollCornerLayer &= !invisible;
+
     bool horizontalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForHorizontalScrollbar, needsHorizontalScrollbarLayer, CompositingReasonLayerForHorizontalScrollbar);
     bool verticalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForVerticalScrollbar, needsVerticalScrollbarLayer, CompositingReasonLayerForVerticalScrollbar);
     bool scrollCornerLayerChanged = toggleScrollbarLayerIfNeeded(m_layerForScrollCorner, needsScrollCornerLayer, CompositingReasonLayerForScrollCorner);
