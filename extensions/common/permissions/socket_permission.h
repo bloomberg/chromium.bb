@@ -29,23 +29,6 @@ class SocketPermission
   ~SocketPermission() override;
 
   PermissionIDSet GetPermissions() const override;
-
- private:
-  // Add all host messages for this manifest permission into the given lists.
-  // TODO(sashab): Remove the |messages| argument from these methods, and remove
-  // the AddAllHostMessages() function (move all the logic into GetPermissions()
-  // above).
-  void AddAllHostMessages(PermissionMessages& messages,
-                          PermissionIDSet& ids) const;
-
-  bool AddAnyHostMessage(PermissionMessages& messages,
-                         PermissionIDSet& ids) const;
-  void AddSubdomainHostMessage(PermissionMessages& messages,
-                               PermissionIDSet& ids) const;
-  void AddSpecificHostMessage(PermissionMessages& messages,
-                              PermissionIDSet& ids) const;
-  void AddNetworkListMessage(PermissionMessages& messages,
-                             PermissionIDSet& ids) const;
 };
 
 }  // namespace extensions

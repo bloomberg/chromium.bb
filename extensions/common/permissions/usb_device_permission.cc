@@ -21,11 +21,9 @@ namespace extensions {
 
 namespace {
 
-// Adds the permissions from the |data_set| to the permission lists that are
-// not NULL. If NULL, that list is ignored.
+// Adds the permissions from the |data_set| to |ids|.
 void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
-                           PermissionIDSet* ids,
-                           PermissionMessages* messages) {
+                           PermissionIDSet* ids) {
   // TODO(sashab): Once GetMessages() is deprecated, move this logic back into
   // GetPermissions().
   // TODO(sashab, reillyg): Once GetMessages() is deprecated, rework the
@@ -43,38 +41,13 @@ void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
             IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
             base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor));
 
-        if (messages) {
-          messages->push_back(
-              PermissionMessage(PermissionMessage::kUsbDevice,
-                                l10n_util::GetStringFUTF16(
-                                    IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
-                                    product_name_and_vendor)));
-        }
-        if (ids)
-          ids->insert(APIPermission::kUsbDevice, product_name_and_vendor);
+        ids->insert(APIPermission::kUsbDevice, product_name_and_vendor);
       } else {
-        if (messages) {
-          messages->push_back(PermissionMessage(
-              PermissionMessage::kUsbDevice,
-              l10n_util::GetStringFUTF16(
-                  IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT,
-                  base::UTF8ToUTF16(vendor))));
-        }
-        if (ids) {
-          ids->insert(APIPermission::kUsbDeviceUnknownProduct,
-                      base::UTF8ToUTF16(vendor));
-        }
+        ids->insert(APIPermission::kUsbDeviceUnknownProduct,
+                    base::UTF8ToUTF16(vendor));
       }
     } else {
-      if (messages) {
-        messages->push_back(PermissionMessage(
-            PermissionMessage::kUsbDevice,
-            l10n_util::GetStringUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR)));
-      }
-      if (ids) {
-        ids->insert(APIPermission::kUsbDeviceUnknownVendor);
-    }
+      ids->insert(APIPermission::kUsbDeviceUnknownVendor);
     }
   } else if (data_set.size() > 1) {
     std::vector<base::string16> details;
@@ -116,17 +89,8 @@ void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
           IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR));
     }
 
-    if (messages) {
-      messages->push_back(PermissionMessage(
-          PermissionMessage::kUsbDevice,
-          l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
-          base::JoinString(details, base::ASCIIToUTF16("\n"))));
-    }
-    if (ids) {
-      for (const auto& detail : details)
-        ids->insert(APIPermission::kUsbDeviceList, detail);
-    }
+    for (const auto& detail : details)
+      ids->insert(APIPermission::kUsbDeviceList, detail);
   }
 }
 
@@ -142,7 +106,7 @@ UsbDevicePermission::~UsbDevicePermission() {
 
 PermissionIDSet UsbDevicePermission::GetPermissions() const {
   PermissionIDSet ids;
-  AddPermissionsToLists(data_set_, &ids, NULL);
+  AddPermissionsToLists(data_set_, &ids);
   return ids;
 }
 

@@ -12,7 +12,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission.h"
-#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"

@@ -43,7 +43,6 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
-#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
@@ -187,31 +186,6 @@ ChromeExtensionsClient::CreateFeatureProviderSource(
     source.reset();
   }
   return source.Pass();
-}
-
-void ChromeExtensionsClient::FilterHostPermissions(
-    const URLPatternSet& hosts,
-    URLPatternSet* new_hosts,
-    std::set<PermissionMessage>* messages) const {
-  // When editing this function, be sure to add the same functionality to
-  // FilterHostPermissions() below.
-  // TODO(sashab): Deprecate and remove this function.
-  for (URLPatternSet::const_iterator i = hosts.begin();
-       i != hosts.end(); ++i) {
-    // Filters out every URL pattern that matches chrome:// scheme.
-    if (i->scheme() == content::kChromeUIScheme) {
-      // chrome://favicon is the only URL for chrome:// scheme that we
-      // want to support. We want to deprecate the "chrome" scheme.
-      // We should not add any additional "host" here.
-      if (GURL(chrome::kChromeUIFaviconURL).host() != i->host())
-        continue;
-      messages->insert(PermissionMessage(
-          PermissionMessage::kFavicon,
-          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FAVICON)));
-    } else {
-      new_hosts->AddPattern(*i);
-    }
-  }
 }
 
 void ChromeExtensionsClient::FilterHostPermissions(

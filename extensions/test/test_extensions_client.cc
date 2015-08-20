@@ -118,12 +118,6 @@ TestExtensionsClient::CreateFeatureProviderSource(
 void TestExtensionsClient::FilterHostPermissions(
     const URLPatternSet& hosts,
     URLPatternSet* new_hosts,
-    std::set<PermissionMessage>* messages) const {
-}
-
-void TestExtensionsClient::FilterHostPermissions(
-    const URLPatternSet& hosts,
-    URLPatternSet* new_hosts,
     PermissionIDSet* permissions) const {
 }
 

@@ -15,7 +15,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/coalesced_permission_message.h"
-#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 

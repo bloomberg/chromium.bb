@@ -142,13 +142,6 @@ ShellExtensionsClient::CreateFeatureProviderSource(
 void ShellExtensionsClient::FilterHostPermissions(
     const URLPatternSet& hosts,
     URLPatternSet* new_hosts,
-    std::set<PermissionMessage>* messages) const {
-  NOTIMPLEMENTED();
-}
-
-void ShellExtensionsClient::FilterHostPermissions(
-    const URLPatternSet& hosts,
-    URLPatternSet* new_hosts,
     PermissionIDSet* permissions) const {
   NOTIMPLEMENTED();
 }

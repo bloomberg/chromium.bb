@@ -55,8 +55,7 @@ class SocketsManifestPermission : public ManifestPermission {
   // Adds the permissions from |sockets| into the permission lists |ids| and
   // |messages|. If either is NULL, that list is ignored.
   static void AddSocketHostPermissions(const SocketPermissionEntrySet& sockets,
-                                       PermissionIDSet* ids,
-                                       PermissionMessages* messages);
+                                       PermissionIDSet* ids);
 
   SocketPermissionEntrySet permissions_;
 };

@@ -11,7 +11,6 @@
 #include "base/pickle.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/coalesced_permission_message.h"
-#include "extensions/common/permissions/permission_message.h"
 
 namespace base {
 class PickleIterator;

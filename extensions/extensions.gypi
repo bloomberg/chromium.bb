@@ -181,8 +181,6 @@
       'common/permissions/media_galleries_permission.h',
       'common/permissions/media_galleries_permission_data.cc',
       'common/permissions/media_galleries_permission_data.h',
-      'common/permissions/permission_message.cc',
-      'common/permissions/permission_message.h',
       'common/permissions/permission_message_provider.cc',
       'common/permissions/permission_message_provider.h',
       'common/permissions/permission_message_util.cc',

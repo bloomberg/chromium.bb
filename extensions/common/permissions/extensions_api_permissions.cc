@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "extensions/common/permissions/api_permission.h"
-#include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/socket_permission.h"
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "grit/extensions_strings.h"

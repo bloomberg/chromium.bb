@@ -11,8 +11,6 @@ namespace {
 
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
-using extensions::PermissionMessage;
-using extensions::PermissionMessages;
 
 class SimpleAPIPermission : public APIPermission {
  public:

@@ -87,23 +87,14 @@ static void SetHostPatterns(
 }
 
 // Helper function for adding the 'any host' permission. Determines if the
-// message is needed from |sockets|, and adds the permission to |ids| and/or
-// |messages|, ignoring them if they are NULL. Returns true if it added the
-// message.
+// message is needed from |sockets|, and adds the permission to |ids|.
+// Returns true if it added the message.
 bool AddAnyHostMessage(const SocketPermissionEntrySet& sockets,
-                       PermissionIDSet* ids,
-                       PermissionMessages* messages) {
+                       PermissionIDSet* ids) {
   for (const auto& socket : sockets) {
     if (socket.IsAddressBoundType() &&
         socket.GetHostType() == SocketPermissionEntry::ANY_HOST) {
-      if (ids)
-        ids->insert(APIPermission::kSocketAnyHost);
-      if (messages) {
-        messages->push_back(PermissionMessage(
-            PermissionMessage::kSocketAnyHost,
-            l10n_util::GetStringUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_SOCKET_ANY_HOST)));
-      }
+      ids->insert(APIPermission::kSocketAnyHost);
       return true;
     }
   }
@@ -111,85 +102,42 @@ bool AddAnyHostMessage(const SocketPermissionEntrySet& sockets,
 }
 
 // Helper function for adding subdomain socket permissions. Determines what
-// messages are needed from |sockets|, and adds permissions to |ids| and/or
-// |messages|, ignoring them if they are NULL.
+// messages are needed from |sockets|, and adds permissions to |ids|.
 void AddSubdomainHostMessage(const SocketPermissionEntrySet& sockets,
-                             PermissionIDSet* ids,
-                             PermissionMessages* messages) {
+                             PermissionIDSet* ids) {
   std::set<base::string16> domains;
   for (const auto& socket : sockets) {
     if (socket.GetHostType() == SocketPermissionEntry::HOSTS_IN_DOMAINS)
       domains.insert(base::UTF8ToUTF16(socket.pattern().host));
   }
   if (!domains.empty()) {
-    // TODO(sashab): This is not correct for all languages - add proper
-    // internationalization of this string for all plural states.
-    if (messages) {
-      int id = (domains.size() == 1)
-                   ? IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAIN
-                   : IDS_EXTENSION_PROMPT_WARNING_SOCKET_HOSTS_IN_DOMAINS;
-      messages->push_back(PermissionMessage(
-          PermissionMessage::kSocketDomainHosts,
-          l10n_util::GetStringFUTF16(
-              id, base::JoinString(std::vector<base::string16>(domains.begin(),
-                                                               domains.end()),
-                                   base::ASCIIToUTF16(" ")))));
-    }
-    if (ids) {
-      for (const auto& domain : domains)
-        ids->insert(APIPermission::kSocketDomainHosts, domain);
-    }
+    for (const auto& domain : domains)
+      ids->insert(APIPermission::kSocketDomainHosts, domain);
   }
 }
 
 // Helper function for adding specific host socket permissions. Determines what
-// messages are needed from |sockets|, and adds permissions to |ids| and/or
-// |messages|, ignoring them if they are NULL.
+// messages are needed from |sockets|, and adds permissions to |ids|.
 void AddSpecificHostMessage(const SocketPermissionEntrySet& sockets,
-                            PermissionIDSet* ids,
-                            PermissionMessages* messages) {
+                            PermissionIDSet* ids) {
   std::set<base::string16> hostnames;
   for (const auto& socket : sockets) {
     if (socket.GetHostType() == SocketPermissionEntry::SPECIFIC_HOSTS)
       hostnames.insert(base::UTF8ToUTF16(socket.pattern().host));
   }
   if (!hostnames.empty()) {
-    // TODO(sashab): This is not correct for all languages - add proper
-    // internationalization of this string for all plural states.
-    if (messages) {
-      int id = (hostnames.size() == 1)
-                   ? IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOST
-                   : IDS_EXTENSION_PROMPT_WARNING_SOCKET_SPECIFIC_HOSTS;
-      messages->push_back(PermissionMessage(
-          PermissionMessage::kSocketSpecificHosts,
-          l10n_util::GetStringFUTF16(
-              id, base::JoinString(std::vector<base::string16>(
-                                       hostnames.begin(), hostnames.end()),
-                                   base::ASCIIToUTF16(" ")))));
-    }
-    if (ids) {
-      for (const auto& hostname : hostnames)
-        ids->insert(APIPermission::kSocketSpecificHosts, hostname);
-    }
+    for (const auto& hostname : hostnames)
+      ids->insert(APIPermission::kSocketSpecificHosts, hostname);
   }
 }
 
 // Helper function for adding the network list socket permission. Determines if
-// the message is needed from |sockets|, and adds the permission to |ids| and/or
-// |messages|, ignoring them if they are NULL.
+// the message is needed from |sockets|, and adds the permission to |ids|.
 void AddNetworkListMessage(const SocketPermissionEntrySet& sockets,
-                           PermissionIDSet* ids,
-                           PermissionMessages* messages) {
+                           PermissionIDSet* ids) {
   for (const auto& socket : sockets) {
     if (socket.pattern().type == SocketPermissionRequest::NETWORK_STATE) {
-      if (ids)
-        ids->insert(APIPermission::kNetworkState);
-      if (messages) {
-        messages->push_back(
-            PermissionMessage(PermissionMessage::kNetworkState,
-                              l10n_util::GetStringUTF16(
-                                  IDS_EXTENSION_PROMPT_WARNING_NETWORK_STATE)));
-      }
+      ids->insert(APIPermission::kNetworkState);
     }
   }
 }
@@ -268,7 +216,7 @@ std::string SocketsManifestPermission::id() const { return name(); }
 
 PermissionIDSet SocketsManifestPermission::GetPermissions() const {
   PermissionIDSet ids;
-  AddSocketHostPermissions(permissions_, &ids, NULL);
+  AddSocketHostPermissions(permissions_, &ids);
   return ids;
 }
 
@@ -360,13 +308,12 @@ void SocketsManifestPermission::AddPermission(
 // static
 void SocketsManifestPermission::AddSocketHostPermissions(
     const SocketPermissionEntrySet& sockets,
-    PermissionIDSet* ids,
-    PermissionMessages* messages) {
-  if (!AddAnyHostMessage(sockets, ids, messages)) {
-    AddSpecificHostMessage(sockets, ids, messages);
-    AddSubdomainHostMessage(sockets, ids, messages);
+    PermissionIDSet* ids) {
+  if (!AddAnyHostMessage(sockets, ids)) {
+    AddSpecificHostMessage(sockets, ids);
+    AddSubdomainHostMessage(sockets, ids);
   }
-  AddNetworkListMessage(sockets, ids, messages);
+  AddNetworkListMessage(sockets, ids);
 }
 
 }  // namespace extensions

@@ -13,7 +13,6 @@
 
 namespace extensions {
 class PermissionIDSet;
-class PermissionMessage;
 class URLPatternSet;
 }
 
@@ -23,19 +22,10 @@ enum PermissionMessageProperties { kReadOnly, kReadWrite };
 
 // Get a list of hosts to display in a permission message from the given list of
 // hosts from the manifest.
-// TODO(sashab): Merge this into AddHostPermissions() once CreateFromHostList()
-// is deprecated.
+// TODO(sashab): Merge this into AddHostPermissions().
 std::vector<base::string16> GetHostListFromHosts(
     const std::set<std::string>& hosts,
     PermissionMessageProperties properties);
-
-// Creates the corresponding permission message for a list of hosts.
-// The messages change depending on how many hosts are present, and whether
-// |read_only| is true.
-// TODO(sashab): Deprecate this, prefer AddHostPermissions() instead.
-extensions::PermissionMessage CreateFromHostList(
-    const std::set<std::string>& hosts,
-    PermissionMessageProperties);
 
 // Adds the appropriate permissions from given hosts to |permissions|.
 void AddHostPermissions(extensions::PermissionIDSet* permissions,

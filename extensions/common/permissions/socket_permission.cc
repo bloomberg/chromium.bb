@@ -41,7 +41,7 @@ SocketPermission::~SocketPermission() {}
 PermissionIDSet SocketPermission::GetPermissions() const {
   PermissionIDSet ids;
   SocketPermissionEntrySet entries = ExtractSocketEntries(data_set_);
-  SocketsManifestPermission::AddSocketHostPermissions(entries, &ids, NULL);
+  SocketsManifestPermission::AddSocketHostPermissions(entries, &ids);
   return ids;
 }
 
