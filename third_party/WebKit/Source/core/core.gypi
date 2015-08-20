@@ -1133,6 +1133,8 @@
             'css/FontLoader.h',
             'css/FontSize.cpp',
             'css/FontSize.h',
+            'css/FontStyleMatcher.cpp',
+            'css/FontStyleMatcher.h'
             'css/HashTools.h',
             'css/KeyframeStyleRuleCSSStyleDeclaration.cpp',
             'css/KeyframeStyleRuleCSSStyleDeclaration.h',

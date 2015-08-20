@@ -32,15 +32,15 @@
 namespace blink {
 
 enum FontWeight {
-    FontWeight100,
-    FontWeight200,
-    FontWeight300,
-    FontWeight400,
-    FontWeight500,
-    FontWeight600,
-    FontWeight700,
-    FontWeight800,
-    FontWeight900,
+    FontWeight100 = 0,
+    FontWeight200 = 1,
+    FontWeight300 = 2,
+    FontWeight400 = 3,
+    FontWeight500 = 4,
+    FontWeight600 = 5,
+    FontWeight700 = 6,
+    FontWeight800 = 7,
+    FontWeight900 = 8,
     FontWeightNormal = FontWeight400,
     FontWeightBold = FontWeight700
 };
@@ -61,7 +61,8 @@ enum FontStretch {
 
 enum FontStyle {
     FontStyleNormal = 0,
-    FontStyleItalic = 1
+    FontStyleOblique = 1,
+    FontStyleItalic = 2
 };
 
 enum FontVariant {
@@ -75,17 +76,19 @@ struct FontTraits {
     FontTraits(FontStyle style, FontVariant variant, FontWeight weight, FontStretch stretch)
     {
         m_traits.m_style = style;
+        // TODO(drott): crbug.com/516673 Variant is not relevant for font selection,
+        // should be removed here.
         m_traits.m_variant = variant;
         m_traits.m_weight = weight;
         m_traits.m_stretch = stretch;
         m_traits.m_filler = 0;
-        ASSERT(!(m_bitfield >> 10));
+        ASSERT(!(m_bitfield >> 11));
     }
     FontTraits(FontTraitsBitfield bitfield)
         : m_bitfield(bitfield)
     {
         ASSERT(!m_traits.m_filler);
-        ASSERT(!(m_bitfield >> 10));
+        ASSERT(!(m_bitfield >> 11));
     }
     FontStyle style() const { return static_cast<FontStyle>(m_traits.m_style); }
     FontVariant variant() const { return static_cast<FontVariant>(m_traits.m_variant); }
@@ -95,11 +98,11 @@ struct FontTraits {
 
     union {
         struct {
-            unsigned m_style : 1;
+            unsigned m_style : 2;
             unsigned m_variant : 1;
             unsigned m_weight : 4;
             unsigned m_stretch : 4;
-            unsigned m_filler : 22;
+            unsigned m_filler : 21;
         } m_traits;
         FontTraitsBitfield m_bitfield;
     };

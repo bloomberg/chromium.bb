@@ -242,7 +242,7 @@ private:
 
     unsigned m_widthVariant : 2; // FontWidthVariant
 
-    unsigned m_style : 1; // FontStyle
+    unsigned m_style : 2; // FontStyle
     unsigned m_variant : 1; // FontVariant
     unsigned m_isAbsoluteSize : 1; // Whether or not CSS specified an explicit size
                                   // (logical sizes like "medium" don't count).

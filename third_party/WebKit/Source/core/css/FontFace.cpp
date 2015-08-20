@@ -150,7 +150,7 @@ FontFace::FontFace(ExecutionContext* context, const AtomicString& family, const 
     Document* document = toDocument(context);
     setPropertyFromString(document, descriptors.style(), CSSPropertyFontStyle);
     setPropertyFromString(document, descriptors.weight(), CSSPropertyFontWeight);
-    // FIXME: we don't implement 'font-strech' property yet so we can't set the property.
+    setPropertyFromString(document, descriptors.stretch(), CSSPropertyFontStretch);
     setPropertyFromString(document, descriptors.unicodeRange(), CSSPropertyUnicodeRange);
     setPropertyFromString(document, descriptors.variant(), CSSPropertyFontVariant);
     setPropertyFromString(document, descriptors.featureSettings(), CSSPropertyWebkitFontFeatureSettings);
@@ -398,6 +398,41 @@ void FontFace::loadInternal(ExecutionContext* context)
 
 FontTraits FontFace::traits() const
 {
+    FontStretch stretch = FontStretchNormal;
+    if (m_stretch) {
+        if (!m_stretch->isPrimitiveValue())
+            return 0;
+
+        switch (toCSSPrimitiveValue(m_stretch.get())->getValueID()) {
+        case CSSValueUltraCondensed:
+            stretch = FontStretchUltraCondensed;
+            break;
+        case CSSValueExtraCondensed:
+            stretch = FontStretchExtraCondensed;
+            break;
+        case CSSValueCondensed:
+            stretch = FontStretchCondensed;
+            break;
+        case CSSValueSemiCondensed:
+            stretch = FontStretchSemiCondensed;
+            break;
+        case CSSValueSemiExpanded:
+            stretch = FontStretchSemiExpanded;
+            break;
+        case CSSValueExpanded:
+            stretch = FontStretchExpanded;
+            break;
+        case CSSValueExtraExpanded:
+            stretch = FontStretchExtraExpanded;
+            break;
+        case CSSValueUltraExpanded:
+            stretch = FontStretchUltraExpanded;
+            break;
+        default:
+            break;
+        }
+    }
+
     FontStyle style = FontStyleNormal;
     if (m_style) {
         if (!m_style->isPrimitiveValue())
@@ -407,8 +442,10 @@ FontTraits FontFace::traits() const
         case CSSValueNormal:
             style = FontStyleNormal;
             break;
-        case CSSValueItalic:
         case CSSValueOblique:
+            style = FontStyleOblique;
+            break;
+        case CSSValueItalic:
             style = FontStyleItalic;
             break;
         default:
@@ -492,7 +529,7 @@ FontTraits FontFace::traits() const
         }
     }
 
-    return FontTraits(style, variant, weight, FontStretchNormal);
+    return FontTraits(style, variant, weight, stretch);
 }
 
 static PassOwnPtrWillBeRawPtr<CSSFontFace> createCSSFontFace(FontFace* fontFace, CSSValue* unicodeRange)

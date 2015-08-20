@@ -55,6 +55,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     }
 
     // See if we have a mapping in our FontData cache.
+    // TODO(drott): Check whether losing traits information here is problematic. crbug.com/516677
     FontCacheKey key = fontDescription.cacheKey(FontFaceCreationParams());
 
     RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), nullptr).storedValue->value;

@@ -700,6 +700,16 @@ crbug.com/396941 ietestcenter/css3/multicolumn/column-width-applies-to-015.htm [
 crbug.com/396945 ietestcenter/css3/namespaces/syntax-021.xml [ ImageOnlyFailure ]
 crbug.com/378610 [ Win7 ] svg/custom/focus-ring-text.svg [ ImageOnlyFailure ]
 
+crbug.com/515454 css3/fonts/font-style-matching.html [ Slow ]
+crbug.com/514751 fast/text/first-letter-bad-line-boxes-crash.html [ NeedsRebaseline ]
+
+crbug.com/514751 [ Win ] css1/font_properties/font_style.html [ NeedsRebaseline ]
+crbug.com/514751 [ Win ] css2.1/t1504-c523-font-style-00-b.html [ NeedsRebaseline ]
+crbug.com/514751 [ Win ] css2.1/t1508-c527-font-08-b.html [ NeedsRebaseline ]
+crbug.com/514751 [ Win7 Win10 ] svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
+crbug.com/514751 [ Win ] svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
+crbug.com/514751 [ Win ] svg/batik/text/textStyles.svg [ NeedsRebaseline ]
+
 crbug.com/474987 [ Win7 Mac ] css3/flexbox/auto-margins.html [ ImageOnlyFailure ]
 
 crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]

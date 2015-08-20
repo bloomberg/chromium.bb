@@ -3232,6 +3232,9 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontStyle italic)
     case FontStyleNormal:
         m_value.valueID = CSSValueNormal;
         return;
+    case FontStyleOblique:
+        m_value.valueID = CSSValueOblique;
+        return;
     case FontStyleItalic:
         m_value.valueID = CSSValueItalic;
         return;
@@ -3246,7 +3249,7 @@ template<> inline CSSPrimitiveValue::operator FontStyle() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueOblique:
-    // FIXME: oblique is the same as italic for the moment...
+        return FontStyleOblique;
     case CSSValueItalic:
         return FontStyleItalic;
     case CSSValueNormal:

@@ -76,7 +76,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackOnStandardFontStyle(
     if (substitutePlatformData && substitutePlatformData->fontContainsCharacter(character)) {
         FontPlatformData platformData = FontPlatformData(*substitutePlatformData);
         platformData.setSyntheticBold(fontDescription.weight() >= FontWeight600);
-        platformData.setSyntheticItalic(fontDescription.style() == FontStyleItalic);
+        platformData.setSyntheticItalic(fontDescription.style() == FontStyleItalic || fontDescription.style() == FontStyleOblique);
         return fontDataFromFontPlatformData(&platformData, DoNotRetain);
     }
 
@@ -117,7 +117,7 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(const FontDescrip
     }
     if (fallbackFont.isItalic && description.style() == FontStyleNormal)
         description.setStyle(FontStyleItalic);
-    if (!fallbackFont.isItalic && description.style() == FontStyleItalic) {
+    if (!fallbackFont.isItalic && (description.style() == FontStyleItalic || description.style() == FontStyleOblique)) {
         shouldSetSyntheticItalic = true;
         description.setStyle(FontStyleNormal);
     }
@@ -248,7 +248,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         name.data(),
         fontSize,
         (fontDescription.weight() >= FontWeight600 && !tf->isBold()) || fontDescription.isSyntheticBold(),
-        (fontDescription.style() && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
+        ((fontDescription.style() == FontStyleItalic || fontDescription.style() == FontStyleOblique) && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
         fontDescription.useSubpixelPositioning());
     return result;

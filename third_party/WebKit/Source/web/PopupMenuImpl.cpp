@@ -68,11 +68,15 @@ const char* fontVariantToString(FontVariant variant)
     return nullptr;
 }
 
+// TODO crbug.com/516675 Add stretch to serialization
+
 const char* fontStyleToString(FontStyle style)
 {
     switch (style) {
     case FontStyleNormal:
         return "normal";
+    case FontStyleOblique:
+        return "oblique";
     case FontStyleItalic:
         return "italic";
     }
