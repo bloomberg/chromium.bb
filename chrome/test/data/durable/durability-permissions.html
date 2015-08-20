@@ -7,4 +7,9 @@ function checkPermission() {
   });
 }
 
+function requestPermission() {
+  navigator.storage.requestPersistent().then(function(is_persistent) {
+    window.domAutomationController.send(is_persistent);
+  });
+}
 </script>

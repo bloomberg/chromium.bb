@@ -21,18 +21,21 @@
 
 class DurableStorageBrowserTest : public InProcessBrowserTest {
  public:
-  DurableStorageBrowserTest();
-  ~DurableStorageBrowserTest() override;
+  DurableStorageBrowserTest() = default;
+  ~DurableStorageBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine*) override;
+  void SetUpOnMainThread() override;
+
+ protected:
+  content::RenderFrameHost* GetRenderFrameHost() {
+    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  }
+  GURL url_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DurableStorageBrowserTest);
 };
-
-DurableStorageBrowserTest::DurableStorageBrowserTest() {}
-
-DurableStorageBrowserTest::~DurableStorageBrowserTest() {}
 
 void DurableStorageBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
@@ -40,46 +43,47 @@ void DurableStorageBrowserTest::SetUpCommandLine(
               switches::kEnableExperimentalWebPlatformFeatures);
 }
 
-// TODO(dgrogan): Reenable after https://codereview.chromium.org/1302643002
-// lands.
-IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
-  EXPECT_TRUE(embedded_test_server()->Started() ||
-              embedded_test_server()->InitializeAndWaitUntilReady());
+void DurableStorageBrowserTest::SetUpOnMainThread() {
+  if (embedded_test_server()->Started())
+    return;
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  url_ = embedded_test_server()->GetURL("/durable/durability-permissions.html");
+}
 
-  Browser* current_browser = browser();
-
-  const GURL& url =
-      embedded_test_server()->GetURL("/durable/durability-window1.html");
-  ui_test_utils::NavigateToURL(current_browser, url);
-  content::RenderFrameHost* render_frame_host =
-      current_browser->tab_strip_model()
-          ->GetActiveWebContents()
-          ->GetMainFrame();
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, DenyString) {
+  ui_test_utils::NavigateToURL(browser(), url_);
+  PermissionBubbleManager::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents())
+      ->set_auto_response_for_test(PermissionBubbleManager::DENY_ALL);
+  bool default_box_is_persistent;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderFrameHost(), "requestPermission()", &default_box_is_persistent));
+  EXPECT_EQ(false, default_box_is_persistent);
   std::string permission_string;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      render_frame_host, "checkPermission()", &permission_string));
+      GetRenderFrameHost(), "checkPermission()", &permission_string));
+  EXPECT_EQ("denied", permission_string);
+}
+
+IN_PROC_BROWSER_TEST_F(DurableStorageBrowserTest, FirstTabSeesResult) {
+  ui_test_utils::NavigateToURL(browser(), url_);
+  std::string permission_string;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderFrameHost(), "checkPermission()", &permission_string));
   EXPECT_EQ("default", permission_string);
 
-  chrome::NewTab(current_browser);
-  const GURL& url2 =
-      embedded_test_server()->GetURL("/durable/durability-window2.html");
-  ui_test_utils::NavigateToURL(current_browser, url2);
-  render_frame_host = current_browser->tab_strip_model()
-                          ->GetActiveWebContents()
-                          ->GetMainFrame();
+  chrome::NewTab(browser());
+  ui_test_utils::NavigateToURL(browser(), url_);
   PermissionBubbleManager::FromWebContents(
-      current_browser->tab_strip_model()->GetActiveWebContents())
+      browser()->tab_strip_model()->GetActiveWebContents())
       ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
   bool default_box_is_persistent = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      render_frame_host, "requestPermission()", &default_box_is_persistent));
+      GetRenderFrameHost(), "requestPermission()", &default_box_is_persistent));
   EXPECT_EQ(true, default_box_is_persistent);
 
-  current_browser->tab_strip_model()->ActivateTabAt(0, false);
-  render_frame_host = current_browser->tab_strip_model()
-                          ->GetActiveWebContents()
-                          ->GetMainFrame();
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      render_frame_host, "checkPermission()", &permission_string));
+      GetRenderFrameHost(), "checkPermission()", &permission_string));
   EXPECT_EQ("granted", permission_string);
 }
