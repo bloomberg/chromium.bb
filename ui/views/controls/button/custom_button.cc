@@ -197,12 +197,7 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
     SetState(STATE_PRESSED);
   } else if (event.key_code() == ui::VKEY_RETURN) {
     SetState(STATE_NORMAL);
-    // TODO(beng): remove once NotifyClick takes ui::Event.
-    ui::MouseEvent synthetic_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
-                                   gfx::Point(), ui::EventTimeForNow(),
-                                   ui::EF_LEFT_MOUSE_BUTTON,
-                                   ui::EF_LEFT_MOUSE_BUTTON);
-    NotifyClick(synthetic_event);
+    NotifyClick(event);
   } else {
     return false;
   }
@@ -214,11 +209,7 @@ bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
     return false;
 
   SetState(STATE_NORMAL);
-  // TODO(beng): remove once NotifyClick takes ui::Event.
-  ui::MouseEvent synthetic_event(
-      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  NotifyClick(synthetic_event);
+  NotifyClick(event);
   return true;
 }
 
