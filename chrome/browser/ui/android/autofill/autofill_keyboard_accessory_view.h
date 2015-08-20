@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ANDROID_AUTOFILL_AUTOFILL_KEYBOARD_ACCESSORY_VIEW_H_
 
 #include <jni.h>
+#include <vector>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/compiler_specific.h"
@@ -56,6 +57,9 @@ class AutofillKeyboardAccessoryView : public AutofillPopupView {
   // The index of the last item the user long-pressed (they will be shown a
   // confirmation dialog).
   int deleting_index_;
+
+  // Mapping from Java list index to autofill suggestion index.
+  std::vector<int> positions_;
 
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
