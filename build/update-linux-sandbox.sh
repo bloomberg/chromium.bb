@@ -39,8 +39,9 @@ if [ ! -d "${CHROME_OUT_DIR}" ]; then
 fi
 
 if [ ! -f "${CHROME_SANDBOX_BUILD_PATH}" ]; then
-  echo -n "Could not find ${CHROME_SANDBOX_BUILD_PATH}, "
-  echo "please make sure you build the chrome_sandbox target"
+  echo "Could not find ${CHROME_SANDBOX_BUILD_PATH}"
+  echo -n "BUILDTYPE is $BUILDTYPE, use \"BUILDTYPE=<value> ${0}\" to override "
+  echo "after you build the chrome_sandbox target"
   exit 1
 fi
 
