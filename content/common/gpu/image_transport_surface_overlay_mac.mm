@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/image_transport_surface_overlay_mac.h"
 
+#include <algorithm>
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/CGLRenderers.h>
 #include <OpenGL/CGLTypes.h>
@@ -69,21 +70,70 @@ void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
 
 namespace content {
 
+class ImageTransportSurfaceOverlayMac::OverlayPlane {
+ public:
+  enum Type {
+    ROOT = 0,
+    ROOT_PARTIAL_DAMAGE = 1,
+    OVERLAY = 2,
+  };
+
+  OverlayPlane(
+      Type type,
+      int z_order,
+      base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+      gfx::Rect dip_frame_rect,
+      gfx::RectF contents_rect)
+      : type(type), z_order(z_order), io_surface(io_surface),
+        dip_frame_rect(dip_frame_rect), contents_rect(contents_rect) {}
+  ~OverlayPlane() {}
+
+  static bool Compare(const linked_ptr<OverlayPlane>& a,
+                      const linked_ptr<OverlayPlane>& b) {
+    // Sort by z_order first.
+    if (a->z_order < b->z_order)
+      return true;
+    if (a->z_order > b->z_order)
+      return false;
+    // Then ensure that the root partial damage is after the root.
+    if (a->type < b->type)
+      return true;
+    if (a->type > b->type)
+      return false;
+    // Then sort by x.
+    if (a->dip_frame_rect.x() < b->dip_frame_rect.x())
+      return true;
+    if (a->dip_frame_rect.x() > b->dip_frame_rect.x())
+      return false;
+    // Then sort by y.
+    if (a->dip_frame_rect.y() < b->dip_frame_rect.y())
+      return true;
+    if (a->dip_frame_rect.y() > b->dip_frame_rect.y())
+      return false;
+
+    return false;
+  }
+
+  const Type type;
+  const int z_order;
+  // The IOSurface to set the CALayer's contents to. This can be nil for the
+  // root layer, indicating that the layer's content has not been damaged since
+  // the last time it was set.
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+  const gfx::Rect dip_frame_rect;
+  const gfx::RectF contents_rect;
+};
+
 class ImageTransportSurfaceOverlayMac::PendingSwap {
  public:
-  PendingSwap() : scale_factor(1) {}
+  PendingSwap() {}
   ~PendingSwap() { DCHECK(!gl_fence); }
 
   gfx::Size pixel_size;
   float scale_factor;
+
+  std::vector<linked_ptr<OverlayPlane>> overlay_planes;
   std::vector<ui::LatencyInfo> latency_info;
-
-  // If true, the partial damage rect for the frame.
-  bool use_partial_damage;
-  gfx::Rect pixel_partial_damage_rect;
-
-  // The IOSurface with new content for this swap.
-  base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
 
   // A fence object, and the CGL context it was issued in.
   base::ScopedTypeRef<CGLContextObj> cgl_context;
@@ -103,9 +153,8 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     gfx::PluginWindowHandle handle)
-    : scale_factor_(1), gl_renderer_id_(0), pending_overlay_image_(nullptr),
-      vsync_parameters_valid_(false), display_pending_swap_timer_(true, false),
-      weak_factory_(this) {
+    : scale_factor_(1), gl_renderer_id_(0), vsync_parameters_valid_(false),
+      display_pending_swap_timer_(true, false), weak_factory_(this) {
   helper_.reset(new ImageTransportHelper(this, manager, stub, handle));
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 }
@@ -128,9 +177,6 @@ bool ImageTransportSurfaceOverlayMac::Initialize() {
   [layer_ setGeometryFlipped:YES];
   [layer_ setOpaque:YES];
   [ca_context_ setLayer:layer_];
-
-  partial_damage_layer_.reset([[CALayer alloc] init]);
-  [partial_damage_layer_ setOpaque:YES];
   return true;
 }
 
@@ -142,8 +188,76 @@ bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
   return false;
 }
 
-gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
-    const gfx::Rect& pixel_damage_rect) {
+void ImageTransportSurfaceOverlayMac::ScheduleOverlayPlaneForPartialDamage(
+    const gfx::Rect& this_damage_pixel_rect) {
+  // Find the root plane. If none is present, then we're hosed.
+  linked_ptr<OverlayPlane> root_plane;
+  for (linked_ptr<OverlayPlane>& plane : pending_overlay_planes_) {
+    if (plane->type == OverlayPlane::ROOT) {
+      root_plane = plane;
+      break;
+    }
+  }
+  if (!root_plane.get())
+    return;
+  bool damage_full_window = false;
+
+  // Grow the partial damage rect to include the new damage.
+  gfx::Rect this_damage_dip_rect = gfx::ConvertRectToDIP(
+      scale_factor_, this_damage_pixel_rect);
+  accumulated_damage_dip_rect_.Union(this_damage_dip_rect);
+
+  // If the accumulated partial damage is covered by opaque layers, then tell
+  // the root layer not to draw anything, and don't add a partial damage
+  // overlay.
+  bool overlays_cover_accumulated_damage = false;
+  bool overlays_cover_this_damage = false;
+  for (const linked_ptr<OverlayPlane>& plane : pending_overlay_planes_) {
+    if (plane->type == OverlayPlane::OVERLAY) {
+      overlays_cover_accumulated_damage |=
+          plane->dip_frame_rect.Contains(accumulated_damage_dip_rect_);
+      overlays_cover_this_damage |=
+          plane->dip_frame_rect.Contains(this_damage_dip_rect);
+    }
+  }
+  if (overlays_cover_accumulated_damage) {
+    root_plane->io_surface.reset();
+    return;
+  }
+  // If the current damage is covered, but not the accumulated damage, then
+  // damage the full window, so that we might hit this path next frame.
+  if (overlays_cover_this_damage)
+    damage_full_window = true;
+
+  // Compute the fraction of the accumulated partial damage rect that has been
+  // damaged. If this gets too small (<75%), just re-damage the full window,
+  // so we can re-create a smaller partial damage layer next frame.
+  const double kMinimumFractionOfPartialDamage = 0.75;
+  double fraction_of_damage =
+      this_damage_dip_rect.size().GetArea() / static_cast<double>(
+          accumulated_damage_dip_rect_.size().GetArea());
+  if (fraction_of_damage <= kMinimumFractionOfPartialDamage)
+    damage_full_window = true;
+
+  // Early-out if we decided to damage the full window.
+  if (damage_full_window) {
+    accumulated_damage_dip_rect_ = gfx::Rect();
+    return;
+  }
+
+  // Create a new overlay plane for the partial damage, and un-set the root
+  // plane's damage by un-setting its IOSurface.
+  gfx::RectF contents_rect = gfx::RectF(accumulated_damage_dip_rect_);
+  contents_rect.Scale(1. / root_plane->dip_frame_rect.width(),
+                      1. / root_plane->dip_frame_rect.height());
+  pending_overlay_planes_.push_back(linked_ptr<OverlayPlane>(new OverlayPlane(
+      OverlayPlane::ROOT_PARTIAL_DAMAGE, 0, root_plane->io_surface,
+      accumulated_damage_dip_rect_, contents_rect)));
+
+  root_plane->io_surface.reset();
+}
+
+gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal() {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
   // Use the same concept of 'now' for the entire function. The duration of
@@ -174,23 +288,13 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   linked_ptr<PendingSwap> new_swap(new PendingSwap);
   new_swap->pixel_size = pixel_size_;
   new_swap->scale_factor = scale_factor_;
+  new_swap->overlay_planes.swap(pending_overlay_planes_);
   new_swap->latency_info.swap(latency_info_);
-
-  // There should exist only one overlay image, and it should cover the whole
-  // surface.
-  DCHECK(pending_overlay_image_);
-  if (pending_overlay_image_) {
-    gfx::GLImageIOSurface* pending_overlay_image_io_surface =
-        static_cast<gfx::GLImageIOSurface*>(pending_overlay_image_);
-    new_swap->io_surface = pending_overlay_image_io_surface->io_surface();
-    pending_overlay_image_ = nullptr;
-  }
 
   // A flush is required to ensure that all content appears in the layer.
   {
     gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
-    TRACE_EVENT1("gpu", "ImageTransportSurfaceOverlayMac::glFlush", "surface",
-                 new_swap->io_surface.get());
+    TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::glFlush");
     CheckGLErrors("before flushing frame");
     new_swap->cgl_context.reset(CGLGetCurrentContext(),
                                 base::scoped_policy::RETAIN);
@@ -199,36 +303,6 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     else
       glFlush();
     CheckGLErrors("while flushing frame");
-  }
-
-  // Determine if this will be a full or partial damage, and compute the rects
-  // for the damage.
-  {
-    // Grow the partial damage rect to include the new damage.
-    accumulated_partial_damage_pixel_rect_.Union(pixel_damage_rect);
-    // Compute the fraction of the full layer that has been damaged. If this
-    // fraction is very large (>85%), just damage the full layer, and don't
-    // bother with the partial layer.
-    const double kMaximumFractionOfFullDamage = 0.85;
-    double fraction_of_full_damage =
-        accumulated_partial_damage_pixel_rect_.size().GetArea() /
-            static_cast<double>(pixel_size_.GetArea());
-    // Compute the fraction of the accumulated partial damage rect that has been
-    // damaged. If this gets too small (<75%), just re-damage the full window,
-    // so we can re-create a smaller partial damage layer next frame.
-    const double kMinimumFractionOfPartialDamage = 0.75;
-    double fraction_of_partial_damage =
-        pixel_damage_rect.size().GetArea() / static_cast<double>(
-            accumulated_partial_damage_pixel_rect_.size().GetArea());
-    if (fraction_of_full_damage < kMaximumFractionOfFullDamage &&
-        fraction_of_partial_damage > kMinimumFractionOfPartialDamage) {
-      new_swap->use_partial_damage = true;
-      new_swap->pixel_partial_damage_rect =
-          accumulated_partial_damage_pixel_rect_;
-    } else {
-      new_swap->use_partial_damage = false;
-      accumulated_partial_damage_pixel_rect_ = gfx::Rect();
-    }
   }
 
   // Compute the deadlines for drawing this frame.
@@ -294,62 +368,77 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   }
 
   // Update the CALayer hierarchy.
-  {
-    TRACE_EVENT1("gpu", "ImageTransportSurfaceOverlayMac::setContents",
-                 "surface", swap->io_surface.get());
-    ScopedCAActionDisabler disabler;
-
-    id new_contents = static_cast<id>(swap->io_surface.get());
-    if (swap->use_partial_damage) {
-      if (![partial_damage_layer_ superlayer])
-        [layer_ addSublayer:partial_damage_layer_];
-      [partial_damage_layer_ setContents:new_contents];
-
-      gfx::Rect dip_partial_damage_rect = gfx::ConvertRectToDIP(
-          swap->scale_factor, swap->pixel_partial_damage_rect);
-      gfx::Size dip_size = gfx::ConvertSizeToDIP(
-          swap->scale_factor, swap->pixel_size);
-
-      CGRect new_frame = dip_partial_damage_rect.ToCGRect();
-      if (!CGRectEqualToRect([partial_damage_layer_ frame], new_frame))
-        [partial_damage_layer_ setFrame:new_frame];
-
-      gfx::RectF contents_rect = gfx::RectF(dip_partial_damage_rect);
-      contents_rect.Scale(1. / dip_size.width(), 1. / dip_size.height());
-      [partial_damage_layer_ setContentsRect:contents_rect.ToCGRect()];
-    } else {
-      // Remove the partial damage layer.
-      if ([partial_damage_layer_ superlayer]) {
-        [partial_damage_layer_ removeFromSuperlayer];
-        [partial_damage_layer_ setContents:nil];
-      }
-
-      // Note that calling setContents with the same IOSurface twice will result
-      // in the screen not being updated, even if the IOSurface's content has
-      // changed. Avoid this by calling setContentsChanged.
-      if ([layer_ contents] == new_contents)
-        [layer_ setContentsChanged];
-      else
-        [layer_ setContents:new_contents];
-
-      CGRect new_frame = gfx::ConvertRectToDIP(
-          swap->scale_factor, gfx::Rect(swap->pixel_size)).ToCGRect();
-      if (!CGRectEqualToRect([layer_ frame], new_frame))
-        [layer_ setFrame:new_frame];
-    }
-  }
+  UpdateCALayerTree(layer_.get(), swap.get());
 
   // Send acknowledgement to the browser.
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
   params.surface_handle =
       ui::SurfaceHandleFromCAContextID([ca_context_ contextId]);
-  params.size = pixel_size_;
-  params.scale_factor = scale_factor_;
+  params.size = swap->pixel_size;
+  params.scale_factor = swap->scale_factor;
   params.latency_info.swap(swap->latency_info);
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
 
   // Remove this from the queue, and reset any callback timers.
   pending_swaps_.pop_front();
+}
+
+// static
+void ImageTransportSurfaceOverlayMac::UpdateCALayerTree(
+    CALayer* root_layer, PendingSwap* swap) {
+  TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::UpdateCALayerTree");
+  ScopedCAActionDisabler disabler;
+
+  // Sort the planes by z-index.
+  std::sort(swap->overlay_planes.begin(), swap->overlay_planes.end(),
+            OverlayPlane::Compare);
+
+  NSUInteger child_index = 0;
+  for (linked_ptr<OverlayPlane>& plane : swap->overlay_planes) {
+    // Look up or create the CALayer for this plane.
+    CALayer* plane_layer = nil;
+    if (plane->type == OverlayPlane::ROOT) {
+      plane_layer = root_layer;
+    } else {
+      if (child_index >= [[root_layer sublayers] count]) {
+        base::scoped_nsobject<CALayer> new_layer([[CALayer alloc] init]);
+        [new_layer setOpaque:YES];
+        [root_layer addSublayer:new_layer];
+      }
+      plane_layer = [[root_layer sublayers] objectAtIndex:child_index];
+      child_index += 1;
+    }
+
+    // Update layer contents if needed.
+    if (plane->io_surface) {
+      // Note that calling setContents with the same IOSurface twice will result
+      // in the screen not being updated, even if the IOSurface's content has
+      // changed. This can be avoided by calling setContentsChanged. Only call
+      // this on the root layer, because it is the only layer that will ignore
+      // damage.
+      id new_contents = static_cast<id>(plane->io_surface.get());
+      if ([plane_layer contents] == new_contents) {
+        if (plane->type == OverlayPlane::ROOT)
+          [plane_layer setContentsChanged];
+      } else {
+        [plane_layer setContents:new_contents];
+      }
+    } else {
+      // A nil IOSurface indicates that partial damage is being tracked by a
+      // sub-layer.
+      DCHECK(plane->type == OverlayPlane::ROOT);
+    }
+
+    [plane_layer setFrame:plane->dip_frame_rect.ToCGRect()];
+    [plane_layer setContentsRect:plane->contents_rect.ToCGRect()];
+  }
+
+  // Remove any now-obsolete children.
+  while ([[root_layer sublayers] count] > child_index) {
+    CALayer* layer = [[root_layer sublayers] objectAtIndex:child_index];
+    [layer setContents:nil];
+    [layer removeFromSuperlayer];
+  }
 }
 
 void ImageTransportSurfaceOverlayMac::DisplayAndClearAllPendingSwaps() {
@@ -389,14 +478,18 @@ void ImageTransportSurfaceOverlayMac::PostCheckPendingSwapsCallbackIfNeeded(
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers() {
-  return SwapBuffersInternal(gfx::Rect(pixel_size_));
+  // Clear the accumulated damage rect, since the partial damage overlay will be
+  // removed.
+  accumulated_damage_dip_rect_ = gfx::Rect();
+  return SwapBuffersInternal();
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(int x,
                                                                int y,
                                                                int width,
                                                                int height) {
-  return SwapBuffersInternal(gfx::Rect(x, y, width, height));
+  ScheduleOverlayPlaneForPartialDamage(gfx::Rect(x, y, width, height));
+  return SwapBuffersInternal();
 }
 
 bool ImageTransportSurfaceOverlayMac::SupportsPostSubBuffer() {
@@ -433,15 +526,24 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     gfx::GLImage* image,
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect) {
-  // For now we allow only the one full-surface overlay plane.
-  // TODO(ccameron): This will need to be updated when support for multiple
-  // planes is enabled.
-  DCHECK_EQ(z_order, 0);
-  DCHECK_EQ(bounds_rect.ToString(), gfx::Rect(pixel_size_).ToString());
-  DCHECK_EQ(crop_rect.ToString(), gfx::RectF(0, 0, 1, 1).ToString());
+  DCHECK_GE(z_order, 0);
   DCHECK_EQ(transform, gfx::OVERLAY_TRANSFORM_NONE);
-  DCHECK(!pending_overlay_image_);
-  pending_overlay_image_ = image;
+  if (z_order < 0 || transform != gfx::OVERLAY_TRANSFORM_NONE)
+    return false;
+
+  OverlayPlane::Type type = z_order == 0 ?
+      OverlayPlane::ROOT : OverlayPlane::OVERLAY;
+  gfx::Rect dip_frame_rect = gfx::ConvertRectToDIP(
+      scale_factor_, bounds_rect);
+  gfx::RectF contents_rect = crop_rect;
+
+  gfx::GLImageIOSurface* image_io_surface =
+      static_cast<gfx::GLImageIOSurface*>(image);
+
+  pending_overlay_planes_.push_back(linked_ptr<OverlayPlane>(
+      new OverlayPlane(
+          type, z_order, image_io_surface->io_surface(), dip_frame_rect,
+          contents_rect)));
   return true;
 }
 

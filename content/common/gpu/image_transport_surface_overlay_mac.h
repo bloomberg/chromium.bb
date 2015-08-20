@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_GPU_IMAGE_TRANSPORT_SURFACE_OVERLAY_MAC_H_
 
 #include <deque>
+#include <vector>
 
 #include "base/memory/linked_ptr.h"
 #import "base/mac/scoped_nsobject.h"
@@ -58,10 +59,13 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
  private:
   class PendingSwap;
+  class OverlayPlane;
 
   ~ImageTransportSurfaceOverlayMac() override;
 
-  gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
+  void ScheduleOverlayPlaneForPartialDamage(const gfx::Rect& pixel_damage_rect);
+  gfx::SwapResult SwapBuffersInternal();
+  static void UpdateCALayerTree(CALayer* root_layer, PendingSwap* swap);
 
   // Returns true if the front of |pending_swaps_| has completed, or has timed
   // out by |now|.
@@ -91,7 +95,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   scoped_ptr<ImageTransportHelper> helper_;
   base::scoped_nsobject<CAContext> ca_context_;
   base::scoped_nsobject<CALayer> layer_;
-  base::scoped_nsobject<CALayer> partial_damage_layer_;
 
   gfx::Size pixel_size_;
   float scale_factor_;
@@ -104,7 +107,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // Weak pointer to the image provided when ScheduleOverlayPlane is called. Is
   // consumed and reset when SwapBuffers is called. For now, only one overlay
   // plane is supported.
-  gfx::GLImage* pending_overlay_image_;
+  std::vector<linked_ptr<OverlayPlane>> pending_overlay_planes_;
 
   // A queue of all frames that have been created by SwapBuffersInternal but
   // have not yet been displayed. This queue is checked at the beginning of
@@ -113,7 +116,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   // The union of the damage rects of SwapBuffersInternal since the last
   // non-partial swap.
-  gfx::Rect accumulated_partial_damage_pixel_rect_;
+  gfx::Rect accumulated_damage_dip_rect_;
 
   // The time of the last swap was issued. If this is more than two vsyncs, then
   // use the simpler non-smooth animation path.
