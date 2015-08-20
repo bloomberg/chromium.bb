@@ -131,14 +131,11 @@ class MEDIA_EXPORT AudioInputController
    public:
     virtual ~SyncWriter() {}
 
-    // Notify the synchronous writer about the number of bytes in the
-    // soundcard which has been recorded.
-    virtual void UpdateRecordedBytes(uint32 bytes) = 0;
-
     // Write certain amount of data from |data|.
     virtual void Write(const AudioBus* data,
                        double volume,
-                       bool key_pressed) = 0;
+                       bool key_pressed,
+                       uint32 hardware_delay_bytes) = 0;
 
     // Close this synchronous writer.
     virtual void Close() = 0;

@@ -526,8 +526,7 @@ void AudioInputController::OnData(AudioInputStream* stream,
   // Use SharedMemory and SyncSocket if the client has created a SyncWriter.
   // Used by all low-latency clients except WebSpeech.
   if (SharedMemoryAndSyncSocketMode()) {
-    sync_writer_->Write(source, volume, key_pressed);
-    sync_writer_->UpdateRecordedBytes(hardware_delay_bytes);
+    sync_writer_->Write(source, volume, key_pressed, hardware_delay_bytes);
 
 #if defined(AUDIO_POWER_MONITORING)
     // Only do power-level measurements if DoCreate() has been called. It will

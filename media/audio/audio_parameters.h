@@ -5,24 +5,41 @@
 #ifndef MEDIA_AUDIO_AUDIO_PARAMETERS_H_
 #define MEDIA_AUDIO_AUDIO_PARAMETERS_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "media/base/audio_bus.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
 
 namespace media {
 
-struct MEDIA_EXPORT AudioInputBufferParameters {
-  double volume;
-  uint32 size;
-  bool key_pressed;
-};
-
 // Use a struct-in-struct approach to ensure that we can calculate the required
 // size as sizeof(AudioInputBufferParameters) + #(bytes in audio buffer) without
-// using packing.
+// using packing. Also align AudioInputBufferParameters instead of in
+// AudioInputBuffer to be able to calculate size like so.
+#if defined(OS_WIN)
+#pragma warning(push)
+#pragma warning(disable: 4324)  // Disable warning for added padding.
+#endif
+struct MEDIA_EXPORT ALIGNAS(16) AudioInputBufferParameters {
+  double volume;
+  uint32 size;
+  uint32_t hardware_delay_bytes;
+  uint32_t id;
+  bool key_pressed;
+};
+#if defined(OS_WIN)
+#pragma warning(pop)
+#endif
+
+COMPILE_ASSERT(
+    sizeof(AudioInputBufferParameters) % AudioBus::kChannelAlignment == 0,
+    AudioInputBufferParameters_not_aligned);
+
 struct MEDIA_EXPORT AudioInputBuffer {
   AudioInputBufferParameters params;
   int8 audio[1];

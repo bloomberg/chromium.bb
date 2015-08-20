@@ -20,7 +20,8 @@ AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory,
       shared_memory_segment_count_(shared_memory_segment_count),
       current_segment_id_(0),
       creation_time_(base::Time::Now()),
-      audio_bus_memory_size_(AudioBus::CalculateMemorySize(params)) {
+      audio_bus_memory_size_(AudioBus::CalculateMemorySize(params)),
+      next_buffer_id_(0) {
   DCHECK_GT(shared_memory_segment_count, 0);
   DCHECK_EQ(shared_memory->requested_size() % shared_memory_segment_count, 0u);
   shared_memory_segment_size_ =
@@ -33,6 +34,8 @@ AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory,
   // Create vector of audio buses by wrapping existing blocks of memory.
   uint8* ptr = static_cast<uint8*>(shared_memory_->memory());
   for (int i = 0; i < shared_memory_segment_count; ++i) {
+    CHECK((reinterpret_cast<uintptr_t>(ptr) &
+          (media::AudioBus::kChannelAlignment - 1)) == 0U);
     media::AudioInputBuffer* buffer =
         reinterpret_cast<media::AudioInputBuffer*>(ptr);
     scoped_ptr<media::AudioBus> audio_bus =
@@ -44,14 +47,10 @@ AudioInputSyncWriter::AudioInputSyncWriter(base::SharedMemory* shared_memory,
 
 AudioInputSyncWriter::~AudioInputSyncWriter() {}
 
-// TODO(henrika): Combine into one method (including Write).
-void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
-  socket_->Send(&bytes, sizeof(bytes));
-}
-
 void AudioInputSyncWriter::Write(const media::AudioBus* data,
                                  double volume,
-                                 bool key_pressed) {
+                                 bool key_pressed,
+                                 uint32 hardware_delay_bytes) {
 #if !defined(OS_ANDROID)
   static const base::TimeDelta kLogDelayThreadhold =
       base::TimeDelta::FromMilliseconds(500);
@@ -86,11 +85,15 @@ void AudioInputSyncWriter::Write(const media::AudioBus* data,
   buffer->params.volume = volume;
   buffer->params.size = audio_bus_memory_size_;
   buffer->params.key_pressed = key_pressed;
+  buffer->params.hardware_delay_bytes = hardware_delay_bytes;
+  buffer->params.id = next_buffer_id_++;
 
   // Copy data from the native audio layer into shared memory using pre-
   // allocated audio buses.
   media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
   data->CopyTo(audio_bus);
+
+  socket_->Send(&current_segment_id_, sizeof(current_segment_id_));
 
   if (++current_segment_id_ >= shared_memory_segment_count_)
     current_segment_id_ = 0;

@@ -35,10 +35,10 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
   ~AudioInputSyncWriter() override;
 
   // media::AudioInputController::SyncWriter implementation.
-  void UpdateRecordedBytes(uint32 bytes) override;
   void Write(const media::AudioBus* data,
              double volume,
-             bool key_pressed) override;
+             bool key_pressed,
+             uint32 hardware_delay_bytes) override;
   void Close() override;
 
   bool Init();
@@ -66,6 +66,9 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
 
   // Size in bytes of each audio bus.
   const int audio_bus_memory_size_;
+
+  // Increasing ID used for audio buffers correct sequence at read side.
+  uint32_t next_buffer_id_;
 
   // Vector of audio buses allocated during construction and deleted in the
   // destructor.

@@ -39,6 +39,7 @@ class AudioInputDevice::AudioThreadCallback
 
  private:
   int current_segment_id_;
+  uint32 last_buffer_id_;
   ScopedVector<media::AudioBus> audio_buses_;
   CaptureCallback* capture_callback_;
 
@@ -272,6 +273,7 @@ AudioInputDevice::AudioThreadCallback::AudioThreadCallback(
     : AudioDeviceThread::Callback(audio_parameters, memory, memory_length,
                                   total_segments),
       current_segment_id_(0),
+      last_buffer_id_(UINT32_MAX),
       capture_callback_(capture_callback) {
 }
 
@@ -294,27 +296,34 @@ void AudioInputDevice::AudioThreadCallback::MapSharedMemory() {
 }
 
 void AudioInputDevice::AudioThreadCallback::Process(uint32 pending_data) {
+  CHECK_EQ(current_segment_id_, static_cast<int>(pending_data));
+
   // The shared memory represents parameters, size of the data buffer and the
   // actual data buffer containing audio data. Map the memory into this
   // structure and parse out parameters and the data area.
   uint8* ptr = static_cast<uint8*>(shared_memory_.memory());
   ptr += current_segment_id_ * segment_length_;
   AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
+
   // Usually this will be equal but in the case of low sample rate (e.g. 8kHz,
   // the buffer may be bigger (on mac at least)).
   DCHECK_GE(buffer->params.size,
             segment_length_ - sizeof(AudioInputBufferParameters));
-  double volume = buffer->params.volume;
-  bool key_pressed = buffer->params.key_pressed;
+
+  // Verify correct sequence.
+  CHECK_EQ(last_buffer_id_ + 1, buffer->params.id);
+  last_buffer_id_ = buffer->params.id;
 
   // Use pre-allocated audio bus wrapping existing block of shared memory.
   media::AudioBus* audio_bus = audio_buses_[current_segment_id_];
 
-  // Deliver captured data to the client in floating point format
-  // and update the audio-delay measurement.
-  int audio_delay_milliseconds = pending_data / bytes_per_ms_;
+  // Deliver captured data to the client in floating point format and update
+  // the audio delay measurement.
   capture_callback_->Capture(
-      audio_bus, audio_delay_milliseconds, volume, key_pressed);
+      audio_bus,
+      buffer->params.hardware_delay_bytes / bytes_per_ms_,  // Delay in ms
+      buffer->params.volume,
+      buffer->params.key_pressed);
 
   if (++current_segment_id_ >= total_segments_)
     current_segment_id_ = 0;
