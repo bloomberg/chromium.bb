@@ -201,7 +201,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
   var text = util.createChild(message, 'drive-welcome-text');
   text.innerHTML = str(messageId);
 
-  var links = util.createChild(wrapper, 'drive-welcome-links');
+  var links = util.createChild(message, 'drive-welcome-links');
 
   var more;
   if (this.usePromoWelcomeBanner_) {
