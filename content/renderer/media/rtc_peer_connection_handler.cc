@@ -505,13 +505,26 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
  public:
   PeerConnectionUMAObserver() {}
   ~PeerConnectionUMAObserver() override {}
-
-  void IncrementCounter(
-      webrtc::PeerConnectionUMAMetricsCounter counter) override {
-    // Runs on libjingle's signaling thread.
-    UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics",
-                              counter,
-                              webrtc::kBoundary);
+  void IncrementEnumCounter(webrtc::PeerConnectionEnumCounterType counter_type,
+                            int counter,
+                            int counter_max) override {
+    switch (counter_type) {
+      case webrtc::kEnumCounterAddressFamily:
+        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.IPMetrics", counter,
+                                  counter_max);
+        break;
+      case webrtc::kEnumCounterIceCandidatePairTypeUdp:
+        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.CandidatePairType_UDP",
+                                  counter, counter_max);
+        break;
+      case webrtc::kEnumCounterIceCandidatePairTypeTcp:
+        UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.CandidatePairType_TCP",
+                                  counter, counter_max);
+        break;
+      case webrtc::kPeerConnectionEnumCounterMax:
+        NOTREACHED();
+        break;
+    }
   }
 
   void AddHistogramSample(webrtc::PeerConnectionUMAMetricsName type,
@@ -722,10 +735,6 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     PeerConnectionDependencyFactory* dependency_factory)
     : client_(client),
       dependency_factory_(dependency_factory),
-      frame_(NULL),
-      num_data_channels_created_(0),
-      num_local_candidates_ipv4_(0),
-      num_local_candidates_ipv6_(0),
       weak_factory_(this) {
   g_peer_connection_handlers.Get().insert(this);
 }
@@ -1317,6 +1326,7 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceConnectionChange");
   DCHECK(thread_checker_.CalledOnValidThread());
+  ReportICEState(new_state);
   if (new_state == webrtc::PeerConnectionInterface::kIceConnectionChecking) {
     ice_connection_checking_start_ = base::TimeTicks::Now();
   } else if (new_state ==
@@ -1370,8 +1380,7 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
              webrtc::PeerConnectionInterface::kIceGatheringGathering) {
     // ICE restarts will change gathering state back to "gathering",
     // reset the counter.
-    num_local_candidates_ipv6_ = 0;
-    num_local_candidates_ipv4_ = 0;
+    ResetUMAStats();
   }
 
   blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState state =
@@ -1526,4 +1535,21 @@ void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
   }
 }
 
+void RTCPeerConnectionHandler::ReportICEState(
+    webrtc::PeerConnectionInterface::IceConnectionState new_state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (ice_state_seen_[new_state])
+    return;
+  ice_state_seen_[new_state] = true;
+  UMA_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.ConnectionState", new_state,
+                            webrtc::PeerConnectionInterface::kIceConnectionMax);
+}
+
+void RTCPeerConnectionHandler::ResetUMAStats() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  num_local_candidates_ipv6_ = 0;
+  num_local_candidates_ipv4_ = 0;
+  ice_connection_checking_start_ = base::TimeTicks();
+  memset(ice_state_seen_, 0, sizeof(ice_state_seen_));
+}
 }  // namespace content

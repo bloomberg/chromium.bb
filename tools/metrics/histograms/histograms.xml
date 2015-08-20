@@ -50775,6 +50775,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.CandidatePairType"
+    enum="IceCandidatePairTypes">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    Counters of various ICE Endpoint types. These values are logged for the
+    first selected candidate pair of a PeerConnection.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.ConnectionState"
+    enum="IceConnectionStates">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    Counters of ICE Connection states. These values are logged when the
+    PeerConnection gets into that state for the first time or after the ICE
+    restart.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.IPMetrics" enum="PeerConnectionCounters">
   <owner>mallinath@chromium.org</owner>
   <summary>
@@ -61021,6 +61040,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     connected unused socket (idle prior to use)
   </int>
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
+</enum>
+
+<enum name="IceCandidatePairTypes" type="int">
+  <int value="0" label="host_host"/>
+  <int value="1" label="host_srflx"/>
+  <int value="2" label="host_relay"/>
+  <int value="3" label="host_prflx"/>
+  <int value="4" label="srflx_host"/>
+  <int value="5" label="srflx_srflx"/>
+  <int value="6" label="srflx_relay"/>
+  <int value="7" label="srflx_prflx"/>
+  <int value="8" label="relay_host"/>
+  <int value="9" label="relay_srflx"/>
+  <int value="10" label="relay_relay"/>
+  <int value="11" label="relay_prflx"/>
+  <int value="12" label="prflx_host"/>
+  <int value="13" label="prflx_srflx"/>
+  <int value="14" label="prflx_relay"/>
+</enum>
+
+<enum name="IceConnectionStates" type="int">
+  <int value="0" label="IceConnectionNew"/>
+  <int value="1" label="IceConnectionChecking"/>
+  <int value="2" label="IceConnectionConnected"/>
+  <int value="3" label="IceconnectionCompleted"/>
+  <int value="4" label="IceconnectionFailed"/>
+  <int value="5" label="IceconnectionDisconnected"/>
+  <int value="6" label="IceconnectionClosed"/>
 </enum>
 
 <enum name="IDBContextForcedCloseReason" type="int">
@@ -74493,6 +74540,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="IPProtocolType" separator="_">
   <suffix name="UDP"/>
   <suffix name="TCP"/>
+  <affected-histogram name="WebRTC.PeerConnection.CandidatePairType"/>
   <affected-histogram name="WebRTC.SystemMaxConsecutiveBytesDelayed"/>
   <affected-histogram name="WebRTC.SystemPercentPacketsDelayed"/>
   <affected-histogram name="WebRTC.SystemSendPacketDuration"/>

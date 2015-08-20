@@ -204,6 +204,15 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const std::string& sdp, const std::string& type,
       webrtc::SdpParseError* error);
 
+  // Report to UMA whether an IceConnectionState has occurred. It only records
+  // the first occurrence of a given state.
+  void ReportICEState(
+      webrtc::PeerConnectionInterface::IceConnectionState new_state);
+
+  // Reset UMA related members to the initial state. This is invoked at the
+  // constructor as well as after Ice Restart.
+  void ResetUMAStats();
+
   // Virtual to allow mocks to override.
   virtual scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
 
@@ -219,7 +228,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // RenderThreadImpl.
   PeerConnectionDependencyFactory* const dependency_factory_;
 
-  blink::WebFrame* frame_;
+  blink::WebFrame* frame_ = nullptr;
 
   ScopedVector<WebRtcMediaStreamAdapter> local_streams_;
 
@@ -228,11 +237,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   MediaStreamTrackMetrics track_metrics_;
 
   // Counter for a UMA stat reported at destruction time.
-  int num_data_channels_created_;
+  int num_data_channels_created_ = 0;
 
   // Counter for number of IPv4 and IPv6 local candidates.
-  int num_local_candidates_ipv4_;
-  int num_local_candidates_ipv6_;
+  int num_local_candidates_ipv4_ = 0;
+  int num_local_candidates_ipv6_ = 0;
 
   // To make sure the observer is released after the native_peer_connection_,
   // it has to come first.
@@ -246,6 +255,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   RemoteStreamMap remote_streams_;
   scoped_refptr<webrtc::UMAObserver> uma_observer_;
   base::TimeTicks ice_connection_checking_start_;
+
+  // Track which ICE Connection state that this PeerConnection has gone through.
+  bool ice_state_seen_[webrtc::PeerConnectionInterface::kIceConnectionMax] = {};
+
   base::WeakPtrFactory<RTCPeerConnectionHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCPeerConnectionHandler);
