@@ -10,3 +10,4 @@ DownloadFile/DownloadFileTestWithRename.RenameWithErrorRetry/1
 
 # http://crbug.com/522049
 RenderWidgetCompositorOutputSurfaceTest.SucceedTwice
+RenderWidgetCompositorOutputSurfaceTest.FallbackSuccessNormalSuccess
