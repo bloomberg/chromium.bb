@@ -35,6 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "modules/EventTargetModules.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
@@ -57,6 +58,9 @@ void ServiceWorker::postMessage(ExecutionContext* context, PassRefPtr<Serialized
         exceptionState.throwDOMException(InvalidStateError, "ServiceWorker is in redundant state.");
         return;
     }
+
+    if (message->containsTransferableArrayBuffer())
+        context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "ServiceWorker cannot send an ArrayBuffer as a transferable object yet. See http://crbug.com/511119"));
 
     WebString messageString = message->toWireString();
     OwnPtr<WebMessagePortChannelArray> webChannels = MessagePort::toWebMessagePortChannelArray(channels.release());
