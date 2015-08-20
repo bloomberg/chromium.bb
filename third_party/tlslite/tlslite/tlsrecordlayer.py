@@ -119,6 +119,7 @@ class TLSRecordLayer(object):
         self._handshake_md5 = hashlib.md5()
         self._handshake_sha = hashlib.sha1()
         self._handshake_sha256 = hashlib.sha256()
+        self._ems_handshake_hash = b""
 
         #TLS Protocol Version
         self.version = (0,0) #read-only
@@ -814,6 +815,8 @@ class TLSRecordLayer(object):
                 self._handshake_md5.update(compat26Str(p.bytes))
                 self._handshake_sha.update(compat26Str(p.bytes))
                 self._handshake_sha256.update(compat26Str(p.bytes))
+                if subType == HandshakeType.client_key_exchange:
+                    self._ems_handshake_hash = self._getHandshakeHash()
 
                 #Parse based on handshake type
                 if subType == HandshakeType.client_hello:
@@ -1112,6 +1115,7 @@ class TLSRecordLayer(object):
         self._handshake_md5 = hashlib.md5()
         self._handshake_sha = hashlib.sha1()
         self._handshake_sha256 = hashlib.sha256()
+        self._ems_handshake_hash = b""
         self._handshakeBuffer = []
         self.allegedSrpUsername = None
         self._refCount = 1
@@ -1256,3 +1260,9 @@ class TLSRecordLayer(object):
 
         return md5Bytes + shaBytes
 
+    def _getHandshakeHash(self):
+        if self.version in ((3,1), (3,2)):
+            return self._handshake_md5.digest() + \
+                self._handshake_sha.digest()
+        elif self.version == (3,3):
+            return self._handshake_sha256.digest()

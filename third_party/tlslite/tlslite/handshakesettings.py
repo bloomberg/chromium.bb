@@ -111,6 +111,10 @@ class HandshakeSettings(object):
     @type alertAfterHandshake: bool
     @ivar alertAfterHandshake: If true, the server will send a fatal
     alert immediately after the handshake completes.
+
+    @type enableExtendedMasterSecret: bool
+    @ivar enableExtendedMasterSecret: If true, the server supports the extended
+    master secret TLS extension and will negotiated it with supporting clients.
     
     Note that TACK support is not standardized by IETF and uses a temporary
     TLS Extension number, so should NOT be used in production software.
@@ -129,6 +133,7 @@ class HandshakeSettings(object):
         self.tlsIntoleranceType = 'alert'
         self.useExperimentalTackExtension = False
         self.alertAfterHandshake = False
+        self.enableExtendedMasterSecret = True
 
     # Validates the min/max fields, and certificateTypes
     # Filters out unsupported cipherNames and cipherImplementations
