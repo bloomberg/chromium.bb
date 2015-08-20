@@ -80,7 +80,7 @@
         ],
         'conditions': [
           # Shard this target into parts to work around linker limitations.
-          ['OS=="win" and buildtype=="Official"', {
+          ['OS=="win" and (buildtype=="Official" or (fastbuild==0 and win_z7==1))', {
             'msvs_shard': 4,
           }],
         ],
