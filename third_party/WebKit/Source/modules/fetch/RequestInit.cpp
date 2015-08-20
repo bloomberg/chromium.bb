@@ -38,7 +38,6 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     v8::Local<v8::Value> v8Body;
     if (!DictionaryHelper::get(options, "body", v8Body) || v8Body->IsUndefined() || v8Body->IsNull())
         return;
-    RefPtr<FormData> formData = FormData::create();
     v8::Isolate* isolate = toIsolate(context);
     if (v8Body->IsArrayBuffer()) {
         body = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Body)));
