@@ -724,7 +724,7 @@ public class DocumentActivity extends ChromeActivity {
             }
             RecordUserAction.record("MobileMenuAllBookmarks");
         } else if (id == R.id.recent_tabs_menu_id) {
-            NewTabPage.launchRecentTabsDialog(this, mDocumentTab, false);
+            NewTabPage.launchRecentTabsDialog(this, mDocumentTab);
             RecordUserAction.record("MobileMenuOpenTabs");
         } else if (id == R.id.find_in_page_id) {
             mFindToolbarManager.showToolbar();

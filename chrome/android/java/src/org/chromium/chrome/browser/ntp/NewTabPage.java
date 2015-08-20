@@ -159,10 +159,8 @@ public class NewTabPage
         }
     }
 
-    public static void launchRecentTabsDialog(Activity activity, Tab tab,
-            boolean finishActivityOnOpen) {
-        DocumentRecentTabsManager manager =
-                new DocumentRecentTabsManager(tab, activity, finishActivityOnOpen);
+    public static void launchRecentTabsDialog(Activity activity, Tab tab) {
+        DocumentRecentTabsManager manager = new DocumentRecentTabsManager(tab, activity);
         NativePage page = new RecentTabsPage(activity, manager);
         page.updateForUrl(UrlConstants.RECENT_TABS_URL);
         Dialog dialog = new NativePageDialog(activity, page);
@@ -296,7 +294,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
             RecordUserAction.record("MobileNTPSwitchToOpenTabs");
             if (FeatureUtilities.isDocumentMode(mActivity)) {
-                launchRecentTabsDialog(mActivity, mTab, true);
+                launchRecentTabsDialog(mActivity, mTab);
             } else {
                 mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
             }

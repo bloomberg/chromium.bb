@@ -262,7 +262,7 @@ public class DocumentModeRecentlyClosedTest extends DocumentModeTestBase {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<DocumentRecentTabsManager>() {
             @Override
             public DocumentRecentTabsManager call() {
-                return new DocumentRecentTabsManager(activity.getActivityTab(), activity, false);
+                return new DocumentRecentTabsManager(activity.getActivityTab(), activity);
             }
         });
     }

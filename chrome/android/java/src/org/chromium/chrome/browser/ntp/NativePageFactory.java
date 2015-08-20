@@ -49,7 +49,7 @@ public class NativePageFactory {
 
         protected NativePage buildRecentTabsPage(Activity activity, Tab tab) {
             RecentTabsManager recentTabsManager = FeatureUtilities.isDocumentMode(activity)
-                    ? new DocumentRecentTabsManager(tab, activity, false)
+                    ? new DocumentRecentTabsManager(tab, activity)
                     : new RecentTabsManager(tab, tab.getProfile(), activity);
             return new RecentTabsPage(activity, recentTabsManager);
         }
