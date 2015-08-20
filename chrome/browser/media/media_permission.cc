@@ -15,12 +15,10 @@
 MediaPermission::MediaPermission(ContentSettingsType content_type,
                                  content::MediaStreamRequestType request_type,
                                  const GURL& origin,
-                                 const std::string& device_id,
                                  Profile* profile)
     : content_type_(content_type),
       request_type_(request_type),
       origin_(origin),
-      device_id_(device_id),
       profile_(profile) {
 }
 
@@ -33,19 +31,25 @@ ContentSetting MediaPermission::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  // Deny the request if there is no device attached to the OS of the requested
-  // type.
-  if (!HasAvailableDevices()) {
-    *denial_reason = content::MEDIA_DEVICE_NO_HARDWARE;
-    return CONTENT_SETTING_BLOCK;
-  }
-
   // Check policy and content settings.
   ContentSetting result = GetStoredContentSetting();
   if (result == CONTENT_SETTING_BLOCK)
     *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
 
   return result;
+}
+
+ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(
+    const std::string& device_id,
+    content::MediaStreamRequestResult* denial_reason) const {
+  // Deny the request if there is no device attached to the OS of the requested
+  // type.
+  if (!HasAvailableDevices(device_id)) {
+    *denial_reason = content::MEDIA_DEVICE_NO_HARDWARE;
+    return CONTENT_SETTING_BLOCK;
+  }
+
+  return GetPermissionStatus(denial_reason);
 }
 
 ContentSetting MediaPermission::GetStoredContentSetting() const {
@@ -98,7 +102,7 @@ ContentSetting MediaPermission::GetStoredContentSetting() const {
   return setting;
 }
 
-bool MediaPermission::HasAvailableDevices() const {
+bool MediaPermission::HasAvailableDevices(const std::string& device_id) const {
   const content::MediaStreamDevices* devices = nullptr;
   if (content_type_ == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
     devices =
@@ -121,7 +125,7 @@ bool MediaPermission::HasAvailableDevices() const {
   // Note: we check device_id before dereferencing devices. If the requested
   // device id is non-empty, then the corresponding device list must not be
   // NULL.
-  if (!device_id_.empty() && !devices->FindById(device_id_))
+  if (!device_id.empty() && !devices->FindById(device_id))
     return false;
 
   return true;

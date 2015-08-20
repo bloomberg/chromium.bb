@@ -425,9 +425,9 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
 
   if (ContentTypeIsRequested(content_type, request)) {
     MediaPermission permission(content_type, request.request_type,
-                               request.security_origin, requested_device_id,
-                               profile_);
-    return permission.GetPermissionStatus(denial_reason);
+                               request.security_origin, profile_);
+    return permission.GetPermissionStatusWithDeviceRequired(requested_device_id,
+                                                            denial_reason);
   }
   // Return the default content setting if the device is not requested.
   return CONTENT_SETTING_DEFAULT;

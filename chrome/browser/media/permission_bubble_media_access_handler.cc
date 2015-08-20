@@ -5,6 +5,7 @@
 #include "chrome/browser/media/permission_bubble_media_access_handler.h"
 
 #include "base/metrics/field_trial.h"
+#include "chrome/browser/media/media_permission.h"
 #include "chrome/browser/media/media_stream_device_permissions.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,35 +59,16 @@ bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
     const extensions::Extension* extension) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
   ContentSettingsType content_settings_type =
       type == content::MEDIA_DEVICE_AUDIO_CAPTURE
           ? CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
           : CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
-
-  if (CheckAllowAllMediaStreamContentForOrigin(profile, security_origin,
-                                               content_settings_type)) {
+  MediaPermission permission(content_settings_type,
+                             content::MEDIA_DEVICE_ACCESS, security_origin,
+                             profile);
+  content::MediaStreamRequestResult unused;
+  if (permission.GetPermissionStatus(&unused) == CONTENT_SETTING_ALLOW)
     return true;
-  }
-
-  const char* policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
-                                ? prefs::kAudioCaptureAllowed
-                                : prefs::kVideoCaptureAllowed;
-  const char* list_policy_name = type == content::MEDIA_DEVICE_AUDIO_CAPTURE
-                                     ? prefs::kAudioCaptureAllowedUrls
-                                     : prefs::kVideoCaptureAllowedUrls;
-  if (GetDevicePolicy(profile, security_origin, policy_name,
-                      list_policy_name) == ALWAYS_ALLOW) {
-    return true;
-  }
-
-  // There's no secondary URL for these content types, hence duplicating
-  // |security_origin|.
-  if (profile->GetHostContentSettingsMap()->GetContentSetting(
-          security_origin, security_origin, content_settings_type,
-          content_settings::ResourceIdentifier()) == CONTENT_SETTING_ALLOW) {
-    return true;
-  }
 
   return false;
 }

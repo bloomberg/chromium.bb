@@ -60,15 +60,6 @@ bool ShouldPersistContentSetting(ContentSetting setting,
   return false;
 }
 
-bool CheckAllowAllMediaStreamContentForOrigin(Profile* profile,
-                                              const GURL& security_origin,
-                                              ContentSettingsType type) {
-  DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-         type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-  return profile->GetHostContentSettingsMap()->ShouldAllowAllContent(
-      security_origin, security_origin, type);
-}
-
 MediaStreamDevicePolicy GetDevicePolicy(const Profile* profile,
                                         const GURL& security_origin,
                                         const char* policy_name,

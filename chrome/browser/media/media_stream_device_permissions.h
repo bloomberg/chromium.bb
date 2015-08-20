@@ -23,12 +23,6 @@ bool ShouldPersistContentSetting(ContentSetting setting,
                                  const GURL& origin,
                                  content::MediaStreamRequestType type);
 
-// Returns true if security origin is from internal objects like
-// chrome://URLs, otherwise returns false.
-bool CheckAllowAllMediaStreamContentForOrigin(Profile* profile,
-                                              const GURL& security_origin,
-                                              ContentSettingsType type);
-
 // Get the device policy for |security_origin| and |profile|.
 MediaStreamDevicePolicy GetDevicePolicy(const Profile* profile,
                                         const GURL& security_origin,
