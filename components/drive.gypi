@@ -21,10 +21,6 @@
 
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
-
-        # TODO(lukasza): Remove this dependency (see DEPS file for more info).
-        '../storage/storage_browser.gyp:storage',
-
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/re2/re2.gyp:re2',

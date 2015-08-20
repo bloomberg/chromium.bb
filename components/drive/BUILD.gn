@@ -46,10 +46,6 @@ source_set("drive") {
 
     "//google_apis:google_apis",
     "//net:net",
-
-    # TODO(lukasza): Remove this dependency (see DEPS file for more info).
-    "//storage/browser:browser",
-
     "//third_party/re2:re2",
   ]
   public_deps = [

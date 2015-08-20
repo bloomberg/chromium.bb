@@ -1068,6 +1068,8 @@
         'browser/chromeos/extensions/file_manager/file_browser_handler_api.cc',
         'browser/chromeos/extensions/file_manager/file_browser_handler_api.h',
         'browser/chromeos/extensions/file_manager/file_manager_private_api_functions.h',
+        'browser/chromeos/extensions/file_manager/file_stream_md5_digester.cc',
+        'browser/chromeos/extensions/file_manager/file_stream_md5_digester.h',
         'browser/chromeos/extensions/file_manager/job_event_router.cc',
         'browser/chromeos/extensions/file_manager/job_event_router.h',
         'browser/chromeos/extensions/file_manager/private_api_base.cc',

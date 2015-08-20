@@ -17,9 +17,7 @@
 #include "base/values.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "net/base/escape.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "storage/browser/fileapi/file_stream_reader.h"
 #include "third_party/re2/re2/re2.h"
 #include "url/gurl.h"
 
@@ -169,55 +167,6 @@ std::string GetMd5Digest(const base::FilePath& file_path,
   base::MD5Digest digest;
   base::MD5Final(&digest, &context);
   return base::MD5DigestToBase16(digest);
-}
-
-FileStreamMd5Digester::FileStreamMd5Digester()
-    : buffer_(new net::IOBuffer(kMd5DigestBufferSize)) {
-}
-
-FileStreamMd5Digester::~FileStreamMd5Digester() {
-}
-
-void FileStreamMd5Digester::GetMd5Digest(
-    scoped_ptr<storage::FileStreamReader> stream_reader,
-    const ResultCallback& callback) {
-  reader_ = stream_reader.Pass();
-  base::MD5Init(&md5_context_);
-
-  // Start the read/hash.
-  ReadNextChunk(callback);
-}
-
-void FileStreamMd5Digester::ReadNextChunk(const ResultCallback& callback) {
-  const int result =
-      reader_->Read(buffer_.get(), kMd5DigestBufferSize,
-                    base::Bind(&FileStreamMd5Digester::OnChunkRead,
-                               base::Unretained(this), callback));
-  if (result != net::ERR_IO_PENDING)
-    OnChunkRead(callback, result);
-}
-
-void FileStreamMd5Digester::OnChunkRead(const ResultCallback& callback,
-                                        int bytes_read) {
-  if (bytes_read < 0) {
-    // Error - just return empty string.
-    callback.Run("");
-    return;
-  } else if (bytes_read == 0) {
-    // EOF.
-    base::MD5Digest digest;
-    base::MD5Final(&digest, &md5_context_);
-    std::string result = base::MD5DigestToBase16(digest);
-    callback.Run(result);
-    return;
-  }
-
-  // Read data and digest it.
-  base::MD5Update(&md5_context_,
-                  base::StringPiece(buffer_->data(), bytes_read));
-
-  // Kick off the next read.
-  ReadNextChunk(callback);
 }
 
 std::string GetHostedDocumentExtension(const std::string& mime_type) {

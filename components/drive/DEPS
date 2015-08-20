@@ -11,13 +11,6 @@ specific_include_rules = {
   # The following dependency should be removed to fully make this
   # directory chrome/ and content/ and storage/ independent.
   # crbug.com/257943
-  "drive_api_util\.cc": [
-    "+storage/browser/fileapi/file_stream_reader.h"
-  ],
-
-  # The following dependency should be removed to fully make this
-  # directory chrome/ and content/ and storage/ independent.
-  # crbug.com/257943
   "drive_uploader\.cc": [
     "+content/public/browser/power_save_blocker.h",
   ],
