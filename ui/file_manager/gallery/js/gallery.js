@@ -112,16 +112,21 @@ function Gallery(volumeManager) {
 
   this.errorBanner_ = new ErrorBanner(this.container_);
 
-  var modeSwitchButton = queryRequiredElement(this.topToolbar_, 'button.mode');
-  GalleryUtil.decorateMouseFocusHandling(modeSwitchButton);
-  modeSwitchButton.addEventListener('click',
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.modeSwitchButton_ = queryRequiredElement(this.topToolbar_,
+      'button.mode');
+  GalleryUtil.decorateMouseFocusHandling(this.modeSwitchButton_);
+  this.modeSwitchButton_.addEventListener('click',
       this.onModeSwitchButtonClicked_.bind(this));
 
   /**
    * @private {!PaperRipple}
    */
   this.modeSwitchButtonRipple_ = /** @type {!PaperRipple} */
-      (queryRequiredElement(modeSwitchButton, 'paper-ripple'));
+      (queryRequiredElement(this.modeSwitchButton_, 'paper-ripple'));
 
   /**
    * @private {!DimmableUIController}
@@ -156,10 +161,25 @@ function Gallery(volumeManager) {
     cr.dispatchSimpleEvent(this, 'image-displayed');
   }.bind(this));
 
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
   this.deleteButton_ = queryRequiredElement(
       this.topToolbar_, 'paper-button.delete');
   this.deleteButton_.addEventListener('click', this.delete_.bind(this));
 
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
+  this.slideshowButton_ = queryRequiredElement(this.topToolbar_,
+      'paper-button.slideshow');
+
+  /**
+   * @private {!HTMLElement}
+   * @const
+   */
   this.shareButton_ = queryRequiredElement(
       this.topToolbar_, 'paper-button.share');
   this.shareButton_.addEventListener(
@@ -706,6 +726,10 @@ Gallery.prototype.updateSelectionAndState_ = function() {
 
   // If it's selecting something, update the variable values.
   if (numSelectedItems) {
+    // Enable mode and slideshow button.
+    this.modeSwitchButton_.disabled = false;
+    this.slideshowButton_.disabled = false;
+
     // Delete button is available when all images are NOT readOnly.
     this.deleteButton_.disabled = !this.selectionModel_.selectedIndexes
         .every(function(i) {
@@ -729,6 +753,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
       this.filenameEdit_.value =
           ImageUtil.getDisplayNameFromName(this.selectedEntry_.name);
       this.resizeRenameField_();
+
       this.shareButton_.hidden = !selectedItem.getLocationInfo().isDriveBased;
     } else {
       if (this.context_.curDirEntry) {
@@ -743,14 +768,18 @@ Gallery.prototype.updateSelectionAndState_ = function() {
       this.filenameEdit_.value =
           strf('GALLERY_ITEMS_SELECTED', numSelectedItems);
       this.resizeRenameField_();
+
       this.shareButton_.hidden = true;
     }
   } else {
     document.title = '';
     this.filenameEdit_.disabled = true;
-    this.deleteButton_.disabled = true;
     this.filenameEdit_.value = '';
     this.resizeRenameField_();
+
+    this.deleteButton_.disabled = true;
+    this.modeSwitchButton_.disabled = true;
+    this.slideshowButton_.disabled = true;
     this.shareButton_.hidden = true;
   }
 
