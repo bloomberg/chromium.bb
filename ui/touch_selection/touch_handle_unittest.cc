@@ -458,6 +458,14 @@ TEST_F(TouchHandleTest, DragTargettingUsesTouchSize) {
   event.SetTouchMajor(0);
   EXPECT_TRUE(handle.WillHandleTouchEvent(event));
   EXPECT_TRUE(IsDragging());
+
+  // Touches centered above the handle region should never register a hit, even
+  // if the touch region intersects the handle region.
+  event = MockMotionEvent(MockMotionEvent::ACTION_DOWN, event_time,
+                          kDefaultDrawableSize / 2.f, -kTouchSize / 3.f);
+  event.SetTouchMajor(kTouchSize);
+  EXPECT_FALSE(handle.WillHandleTouchEvent(event));
+  EXPECT_FALSE(IsDragging());
 }
 
 TEST_F(TouchHandleTest, Tap) {

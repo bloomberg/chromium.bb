@@ -160,9 +160,12 @@ bool TouchHandle::WillHandleTouchEvent(const MotionEvent& event) {
       const float touch_radius = std::max(
           kMinTouchMajorForHitTesting,
           std::min(kMaxTouchMajorForHitTesting, event.GetTouchMajor())) * 0.5f;
-      if (!RectIntersectsCircle(drawable_->GetVisibleBounds(),
-                                touch_point,
-                                touch_radius)) {
+      const gfx::RectF drawable_bounds = drawable_->GetVisibleBounds();
+      // Only use the touch radius for targetting if the touch is at or below
+      // the drawable area. This makes it easier to interact with the line of
+      // text above the drawable.
+      if (touch_point.y() < drawable_bounds.y() ||
+          !RectIntersectsCircle(drawable_bounds, touch_point, touch_radius)) {
         EndDrag();
         return false;
       }
