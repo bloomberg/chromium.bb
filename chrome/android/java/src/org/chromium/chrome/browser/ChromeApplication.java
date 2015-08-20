@@ -440,7 +440,6 @@ public class ChromeApplication extends ContentApplication {
         mInitializedSharedClasses = true;
 
         GoogleServicesManager.get(this).onMainActivityStart();
-        SyncController.get(this).onMainActivityStart();
         RevenueStats.getInstance();
 
         getPKCS11AuthenticationManager().initialize(ChromeApplication.this);

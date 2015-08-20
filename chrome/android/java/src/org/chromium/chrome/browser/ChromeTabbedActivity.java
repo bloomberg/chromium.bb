@@ -68,7 +68,6 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPrefer
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.signin.SigninPromoScreen;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarPopupController;
-import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.ChromeTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -811,7 +810,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      * been exposed to the ToS and Privacy Notice.
      */
     private void launchFirstRunExperience() {
-        SyncController.get(this).setDelaySync(false);
         if (mIsOnFirstRun) {
             mTabModelSelectorImpl.clearState();
             return;

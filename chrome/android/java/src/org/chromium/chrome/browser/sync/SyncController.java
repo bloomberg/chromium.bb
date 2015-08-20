@@ -7,13 +7,8 @@ package org.chromium.chrome.browser.sync;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.chromium.base.ApplicationState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -42,9 +37,8 @@ import org.chromium.sync.signin.ChromeSigninController;
  * are careful to not change the Android Chrome sync setting so we know whether to turn sync back
  * on when it is re-enabled.
  */
-public class SyncController implements ApplicationStateListener,
-        ProfileSyncService.SyncStateChangedListener,
-        AndroidSyncSettings.AndroidSyncSettingsObserver {
+public class SyncController implements ProfileSyncService.SyncStateChangedListener,
+                                       AndroidSyncSettings.AndroidSyncSettingsObserver {
     private static final String TAG = "SyncController";
 
     /**
@@ -53,11 +47,6 @@ public class SyncController implements ApplicationStateListener,
      * method.
      */
     public static final String GENERATOR_ID = "SYNC";
-
-    /**
-     * Key for the delay_sync_setup preference.
-     */
-    private static final String DELAY_SYNC_SETUP_PREF = "delay_sync_setup";
 
     private static SyncController sInstance;
 
@@ -85,8 +74,6 @@ public class SyncController implements ApplicationStateListener,
         mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
 
         updateSyncStateFromAndroid();
-
-        ApplicationStatus.registerApplicationStateListener(this);
     }
 
     /**
@@ -217,30 +204,5 @@ public class SyncController implements ApplicationStateListener,
      */
     public SyncNotificationController getSyncNotificationController() {
         return mSyncNotificationController;
-    }
-
-    @Override
-    public void onApplicationStateChange(int newState) {
-        if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
-            onMainActivityStart();
-        }
-    }
-
-    /**
-     * Set the value of the delay_sync_setup preference.
-     */
-    public void setDelaySync(boolean delay) {
-        PreferenceManager.getDefaultSharedPreferences(mContext).edit()
-                .putBoolean(DELAY_SYNC_SETUP_PREF, delay).apply();
-    }
-
-    public void onMainActivityStart() {
-        if (mProfileSyncService.isFirstSetupInProgress()) {
-            mProfileSyncService.setSyncSetupCompleted();
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-            if (prefs.getBoolean(DELAY_SYNC_SETUP_PREF, false)) {
-                mProfileSyncService.setSetupInProgress(false);
-            }
-        }
     }
 }
