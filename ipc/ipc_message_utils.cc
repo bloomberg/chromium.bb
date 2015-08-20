@@ -452,7 +452,7 @@ void ParamTraits<std::vector<bool> >::Log(const param_type& p, std::string* l) {
 void ParamTraits<BrokerableAttachment::AttachmentId>::Write(
     Message* m,
     const param_type& p) {
-  m->WriteBytes(p.nonce, BrokerableAttachment::kNonceSize);
+  m->WriteBytes(p.nonce, static_cast<int>(BrokerableAttachment::kNonceSize));
 }
 
 bool ParamTraits<BrokerableAttachment::AttachmentId>::Read(
@@ -460,8 +460,10 @@ bool ParamTraits<BrokerableAttachment::AttachmentId>::Read(
     base::PickleIterator* iter,
     param_type* r) {
   const char* data;
-  if (!iter->ReadBytes(&data, BrokerableAttachment::kNonceSize))
+  if (!iter->ReadBytes(&data,
+                       static_cast<int>(BrokerableAttachment::kNonceSize))) {
     return false;
+  }
   memcpy(r->nonce, data, BrokerableAttachment::kNonceSize);
   return true;
 }

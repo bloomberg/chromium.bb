@@ -61,8 +61,11 @@ class IPC_EXPORT MessageAttachmentSet
 
   // Returns a vector of all brokerable attachments.
   std::vector<const BrokerableAttachment*> PeekBrokerableAttachments() const;
-  std::vector<scoped_refptr<BrokerableAttachment>>
-  GetBrokerableAttachmentsForUpdating();
+
+  // Replaces a placeholder brokerable attachment with |attachment|, matching
+  // them by their id.
+  void ReplacePlaceholderWithAttachment(
+      const scoped_refptr<BrokerableAttachment>& attachment);
 
 #if defined(OS_POSIX)
   // This is the maximum number of descriptors per message. We need to know this
