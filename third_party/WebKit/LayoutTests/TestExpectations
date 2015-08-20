@@ -372,9 +372,7 @@ crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-temp
 crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-descendant-head.html [ Failure Slow ]
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]
-crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/retargeting-relatedtarget/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-001.html [ Failure Crash ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
