@@ -8,7 +8,9 @@
     GarbageCollected,
     NoInterfaceObject,
     RuntimeEnabled=WebUSB,
-] interface USB {
+] interface USB : EventTarget {
+    attribute EventHandler onconnect;
+    attribute EventHandler ondisconnect;
     [CallWith=ScriptState] Promise<sequence<USBDevice>> getDevices();
     [CallWith=ScriptState] Promise<sequence<USBDevice>> requestDevice(USBDeviceRequestOptions options);
 };

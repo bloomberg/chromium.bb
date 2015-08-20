@@ -11,6 +11,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/EventTargetModules.h"
 #include "modules/webusb/USBDevice.h"
 #include "modules/webusb/USBDeviceFilter.h"
 #include "modules/webusb/USBDeviceRequestOptions.h"
@@ -108,9 +109,21 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
     return promise;
 }
 
+ExecutionContext* USB::executionContext() const
+{
+    LocalFrame* frame = m_controller->frame();
+    return frame ? frame->document() : nullptr;
+}
+
+const AtomicString& USB::interfaceName() const
+{
+    return EventTargetNames::USB;
+}
+
 DEFINE_TRACE(USB)
 {
     visitor->trace(m_controller);
+    RefCountedGarbageCollectedEventTargetWithInlineData<USB>::trace(visitor);
 }
 
 } // namespace blink

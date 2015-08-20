@@ -60,6 +60,8 @@ FAIL childWindow.navigator.serviceWorker.oncontrollerchange should be null. Thre
 FAIL childWindow.navigator.serviceWorker.onmessage should be null. Threw exception TypeError: Cannot read property 'onmessage' of null
 PASS childWindow.navigator.services.onclose is null
 PASS childWindow.navigator.services.onmessage is null
+FAIL childWindow.navigator.usb.onconnect should be null. Threw exception TypeError: Cannot read property 'onconnect' of null
+FAIL childWindow.navigator.usb.ondisconnect should be null. Threw exception TypeError: Cannot read property 'ondisconnect' of null
 PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
 PASS childWindow.navigator.vendorSub is ''
