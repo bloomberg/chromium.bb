@@ -363,7 +363,7 @@ void InspectorOverlayImpl::drawNodeHighlight()
 
     RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
     evaluateInOverlay("drawHighlight", highlightJSON.release());
-    if (m_layoutEditor) {
+    if (m_layoutEditor && m_nodeHighlightConfig.showLayoutEditor) {
         RefPtr<JSONObject> layoutEditorInfo = m_layoutEditor->buildJSONInfo();
         if (layoutEditorInfo)
             evaluateInOverlay("showLayoutEditor", layoutEditorInfo.release());

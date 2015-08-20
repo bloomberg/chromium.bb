@@ -1220,15 +1220,10 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode searchMode, JSONObject* highlightInspectorObject)
 {
-    if (m_searchingForNode == searchMode)
-        return;
-
     m_searchingForNode = searchMode;
     m_overlay->setInspectModeEnabled(searchMode != NotSearching);
     if (searchMode != NotSearching) {
         m_inspectModeHighlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
-        if (!m_inspectModeHighlightConfig)
-            return;
     } else {
         m_hoveredNodeForInspectMode.clear();
         hideHighlight(errorString);
