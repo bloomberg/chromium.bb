@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -221,12 +220,13 @@ struct FormFieldData;
 
 class AutofillTable : public WebDatabaseTable {
  public:
-  explicit AutofillTable(const std::string& app_locale);
+  AutofillTable();
   ~AutofillTable() override;
 
-  // Retrieves the AutofillTable* owned by |database|.
+  // Retrieves the AutofillTable* owned by |db|.
   static AutofillTable* FromWebDatabase(WebDatabase* db);
 
+  // WebDatabaseTable:
   WebDatabaseTable::TypeKey GetTypeKey() const override;
   bool CreateTablesIfNecessary() override;
   bool IsSyncable() override;
@@ -299,11 +299,12 @@ class AutofillTable : public WebDatabaseTable {
   // of the profile to remove.
   virtual bool RemoveAutofillProfile(const std::string& guid);
 
-  // Retrieves a profile with guid |guid|.  The caller owns |profile|.
-  bool GetAutofillProfile(const std::string& guid, AutofillProfile** profile);
+  // Retrieves a profile with guid |guid|.
+  scoped_ptr<AutofillProfile> GetAutofillProfile(const std::string& guid);
 
   // Retrieves local/server profiles in the database. Caller owns the returned
   // profiles.
+  // TODO(thestig): Convert to scopers.
   virtual bool GetAutofillProfiles(std::vector<AutofillProfile*>* profiles);
   virtual bool GetServerProfiles(std::vector<AutofillProfile*>* profiles);
 
@@ -317,16 +318,16 @@ class AutofillTable : public WebDatabaseTable {
   // Updates the database values for the specified credit card.
   bool UpdateCreditCard(const CreditCard& credit_card);
 
-  // Removes a row from the credit_cards table.  |guid| is the identifer  of the
+  // Removes a row from the credit_cards table.  |guid| is the identifer of the
   // credit card to remove.
   bool RemoveCreditCard(const std::string& guid);
 
-  // Retrieves a credit card with guid |guid|.  The caller owns
-  // |credit_card_id|.
-  bool GetCreditCard(const std::string& guid, CreditCard** credit_card);
+  // Retrieves a credit card with guid |guid|.
+  scoped_ptr<CreditCard> GetCreditCard(const std::string& guid);
 
   // Retrieves the local/server credit cards in the database. Caller owns the
   // returned credit cards.
+  // TODO(thestig): Convert to scopers.
   virtual bool GetCreditCards(std::vector<CreditCard*>* credit_cards);
   virtual bool GetServerCreditCards(std::vector<CreditCard*>* credit_cards);
 
@@ -401,7 +402,9 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion64AddUnmaskDate();
   bool MigrateToVersion65AddServerMetadataTables();
 
-  // Max data length saved in the table;
+  // Max data length saved in the table, AKA the maximum length allowed for
+  // form data.
+  // Copied to components/autofill/ios/browser/resources/autofill_controller.js.
   static const size_t kMaxDataLength;
 
  private:
@@ -472,12 +475,6 @@ class AutofillTable : public WebDatabaseTable {
   bool InitServerCardMetadataTable();
   bool InitServerAddressesTable();
   bool InitServerAddressMetadataTable();
-
-  // The application locale.  The locale is needed for the migration to version
-  // 35. Since it must be read on the UI thread, it is set when the table is
-  // created (on the UI thread), and cached here so that it can be used for
-  // migrations (on the DB thread).
-  std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillTable);
 };

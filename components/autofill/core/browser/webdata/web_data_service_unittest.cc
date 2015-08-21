@@ -72,11 +72,11 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
 };
 
+const int kWebDataServiceTimeoutSeconds = 8;
+
 }  // namespace
 
 namespace autofill {
-
-static const int kWebDataServiceTimeoutSeconds = 8;
 
 ACTION_P(SignalEvent, event) {
   event->Signal();
@@ -104,7 +104,7 @@ class WebDataServiceTest : public testing::Test {
 
     wdbs_ = new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                    db_thread_.task_runner());
-    wdbs_->AddTable(scoped_ptr<WebDatabaseTable>(new AutofillTable("en-US")));
+    wdbs_->AddTable(make_scoped_ptr(new AutofillTable));
     wdbs_->LoadDatabase();
 
     wds_ = new AutofillWebDataService(

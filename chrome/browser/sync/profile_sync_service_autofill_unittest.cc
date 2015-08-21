@@ -105,10 +105,6 @@ using testing::Not;
 using testing::SetArgumentPointee;
 using testing::Return;
 
-namespace syncable {
-class Id;
-}
-
 namespace {
 
 const char kTestProfileName[] = "test-profile";
@@ -122,7 +118,7 @@ void RunAndSignal(const base::Closure& cb, WaitableEvent* event) {
 
 class AutofillTableMock : public AutofillTable {
  public:
-  AutofillTableMock() : AutofillTable("en-US") {}
+  AutofillTableMock() {}
   MOCK_METHOD2(RemoveFormElement,
                bool(const base::string16& name,
                     const base::string16& value));  // NOLINT
@@ -433,8 +429,8 @@ class MockPersonalDataManager : public PersonalDataManager {
 template <class T> class AddAutofillHelper;
 
 class ProfileSyncServiceAutofillTest
-   : public AbstractProfileSyncServiceTest,
-     public syncer::DataTypeDebugInfoListener {
+    : public AbstractProfileSyncServiceTest,
+      public syncer::DataTypeDebugInfoListener {
  public:
   // DataTypeDebugInfoListener implementation.
   void OnDataTypeConfigureComplete(const std::vector<

@@ -131,7 +131,7 @@ class AutofillTableTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
 
-    table_.reset(new AutofillTable("en-US"));
+    table_.reset(new AutofillTable);
     db_.reset(new WebDatabase);
     db_->AddTable(table_.get());
     ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
@@ -663,8 +663,9 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   Time post_creation_time = Time::Now();
 
   // Get the 'Home' profile.
-  AutofillProfile* db_profile;
-  ASSERT_TRUE(table_->GetAutofillProfile(home_profile.guid(), &db_profile));
+  scoped_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(home_profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(home_profile, *db_profile);
   sql::Statement s_home(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified "
@@ -675,7 +676,6 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   EXPECT_GE(s_home.ColumnInt64(0), pre_creation_time.ToTimeT());
   EXPECT_LE(s_home.ColumnInt64(0), post_creation_time.ToTimeT());
   EXPECT_FALSE(s_home.Step());
-  delete db_profile;
 
   // Add a 'Billing' profile.
   AutofillProfile billing_profile = home_profile;
@@ -690,7 +690,8 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   post_creation_time = Time::Now();
 
   // Get the 'Billing' profile.
-  ASSERT_TRUE(table_->GetAutofillProfile(billing_profile.guid(), &db_profile));
+  db_profile = table_->GetAutofillProfile(billing_profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
@@ -700,14 +701,14 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   EXPECT_GE(s_billing.ColumnInt64(0), pre_creation_time.ToTimeT());
   EXPECT_LE(s_billing.ColumnInt64(0), post_creation_time.ToTimeT());
   EXPECT_FALSE(s_billing.Step());
-  delete db_profile;
 
   // Update the 'Billing' profile, name only.
   billing_profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
   Time post_modification_time = Time::Now();
-  ASSERT_TRUE(table_->GetAutofillProfile(billing_profile.guid(), &db_profile));
+  db_profile = table_->GetAutofillProfile(billing_profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles WHERE guid=?"));
@@ -719,7 +720,6 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   EXPECT_LE(s_billing_updated.ColumnInt64(0),
             post_modification_time.ToTimeT());
   EXPECT_FALSE(s_billing_updated.Step());
-  delete db_profile;
 
   // Update the 'Billing' profile.
   billing_profile.set_origin("Chrome settings");
@@ -742,7 +742,8 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   Time pre_modification_time_2 = Time::Now();
   EXPECT_TRUE(table_->UpdateAutofillProfile(billing_profile));
   Time post_modification_time_2 = Time::Now();
-  ASSERT_TRUE(table_->GetAutofillProfile(billing_profile.guid(), &db_profile));
+  db_profile = table_->GetAutofillProfile(billing_profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(billing_profile, *db_profile);
   sql::Statement s_billing_updated_2(
       db_->GetSQLConnection()->GetUniqueStatement(
@@ -755,11 +756,11 @@ TEST_F(AutofillTableTest, AutofillProfile) {
   EXPECT_LE(s_billing_updated_2.ColumnInt64(0),
             post_modification_time_2.ToTimeT());
   EXPECT_FALSE(s_billing_updated_2.Step());
-  delete db_profile;
 
   // Remove the 'Billing' profile.
   EXPECT_TRUE(table_->RemoveAutofillProfile(billing_profile.guid()));
-  EXPECT_FALSE(table_->GetAutofillProfile(billing_profile.guid(), &db_profile));
+  db_profile = table_->GetAutofillProfile(billing_profile.guid());
+  EXPECT_FALSE(db_profile);
 }
 
 TEST_F(AutofillTableTest, AutofillProfileTrash) {
@@ -801,19 +802,17 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   // adding it.
   EXPECT_TRUE(table_->AddAutofillGUIDToTrash(profile.guid()));
   EXPECT_TRUE(table_->AddAutofillProfile(profile));
-  AutofillProfile* added_profile = NULL;
-  EXPECT_FALSE(table_->GetAutofillProfile(profile.guid(), &added_profile));
-  EXPECT_EQ(static_cast<AutofillProfile*>(NULL), added_profile);
+  scoped_ptr<AutofillProfile> added_profile =
+      table_->GetAutofillProfile(profile.guid());
+  EXPECT_FALSE(added_profile);
 
   // Add the profile for real this time.
   EXPECT_TRUE(table_->EmptyAutofillProfilesTrash());
   EXPECT_TRUE(table_->GetAutofillProfilesInTrash(&guids));
   EXPECT_TRUE(guids.empty());
   EXPECT_TRUE(table_->AddAutofillProfile(profile));
-  EXPECT_TRUE(table_->GetAutofillProfile(profile.guid(),
-                                                        &added_profile));
-  ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
-  delete added_profile;
+  added_profile = table_->GetAutofillProfile(profile.guid());
+  EXPECT_TRUE(added_profile);
 
   // Mark this profile as in the trash.  This stops |UpdateAutofillProfileMulti|
   // from updating it.  In normal operation a profile should not be both in the
@@ -821,11 +820,10 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   EXPECT_TRUE(table_->AddAutofillGUIDToTrash(profile.guid()));
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Jane"));
   EXPECT_TRUE(table_->UpdateAutofillProfile(profile));
-  AutofillProfile* updated_profile = NULL;
-  EXPECT_TRUE(table_->GetAutofillProfile(profile.guid(), &updated_profile));
-  ASSERT_NE(static_cast<AutofillProfile*>(NULL), added_profile);
+  scoped_ptr<AutofillProfile> updated_profile =
+      table_->GetAutofillProfile(profile.guid());
+  EXPECT_TRUE(updated_profile);
   EXPECT_EQ(ASCIIToUTF16("John"), updated_profile->GetRawInfo(NAME_FIRST));
-  delete updated_profile;
 
   // Try to delete the trashed profile.  This stops |RemoveAutofillProfile| from
   // deleting it.  In normal operation deletion is done by migration step, and
@@ -834,18 +832,16 @@ TEST_F(AutofillTableTest, AutofillProfileTrashInteraction) {
   // other clients remove it (via Sync say) then it is gone and doesn't need to
   // be processed further by |WebDataService|.
   EXPECT_TRUE(table_->RemoveAutofillProfile(profile.guid()));
-  AutofillProfile* removed_profile = NULL;
-  EXPECT_TRUE(table_->GetAutofillProfile(profile.guid(), &removed_profile));
+  scoped_ptr<AutofillProfile> removed_profile =
+      table_->GetAutofillProfile(profile.guid());
+  EXPECT_TRUE(removed_profile);
   EXPECT_FALSE(table_->IsAutofillGUIDInTrash(profile.guid()));
-  ASSERT_NE(static_cast<AutofillProfile*>(NULL), removed_profile);
-  delete removed_profile;
 
   // Check that emptying the trash now allows removal to occur.
   EXPECT_TRUE(table_->EmptyAutofillProfilesTrash());
   EXPECT_TRUE(table_->RemoveAutofillProfile(profile.guid()));
-  removed_profile = NULL;
-  EXPECT_FALSE(table_->GetAutofillProfile(profile.guid(), &removed_profile));
-  EXPECT_EQ(static_cast<AutofillProfile*>(NULL), removed_profile);
+  removed_profile = table_->GetAutofillProfile(profile.guid());
+  EXPECT_FALSE(removed_profile);
 }
 
 TEST_F(AutofillTableTest, CreditCard) {
@@ -864,8 +860,9 @@ TEST_F(AutofillTableTest, CreditCard) {
   Time post_creation_time = Time::Now();
 
   // Get the 'Work' credit card.
-  CreditCard* db_creditcard;
-  ASSERT_TRUE(table_->GetCreditCard(work_creditcard.guid(), &db_creditcard));
+  scoped_ptr<CreditCard> db_creditcard =
+      table_->GetCreditCard(work_creditcard.guid());
+  ASSERT_TRUE(db_creditcard);
   EXPECT_EQ(work_creditcard, *db_creditcard);
   sql::Statement s_work(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
@@ -877,7 +874,6 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_GE(s_work.ColumnInt64(5), pre_creation_time.ToTimeT());
   EXPECT_LE(s_work.ColumnInt64(5), post_creation_time.ToTimeT());
   EXPECT_FALSE(s_work.Step());
-  delete db_creditcard;
 
   // Add a 'Target' credit card.
   CreditCard target_creditcard;
@@ -892,7 +888,8 @@ TEST_F(AutofillTableTest, CreditCard) {
   pre_creation_time = Time::Now();
   EXPECT_TRUE(table_->AddCreditCard(target_creditcard));
   post_creation_time = Time::Now();
-  ASSERT_TRUE(table_->GetCreditCard(target_creditcard.guid(), &db_creditcard));
+  db_creditcard = table_->GetCreditCard(target_creditcard.guid());
+  ASSERT_TRUE(db_creditcard);
   EXPECT_EQ(target_creditcard, *db_creditcard);
   sql::Statement s_target(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
@@ -904,7 +901,6 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_GE(s_target.ColumnInt64(5), pre_creation_time.ToTimeT());
   EXPECT_LE(s_target.ColumnInt64(5), post_creation_time.ToTimeT());
   EXPECT_FALSE(s_target.Step());
-  delete db_creditcard;
 
   // Update the 'Target' credit card.
   target_creditcard.set_origin("Interactive Autofill dialog");
@@ -912,7 +908,8 @@ TEST_F(AutofillTableTest, CreditCard) {
   Time pre_modification_time = Time::Now();
   EXPECT_TRUE(table_->UpdateCreditCard(target_creditcard));
   Time post_modification_time = Time::Now();
-  ASSERT_TRUE(table_->GetCreditCard(target_creditcard.guid(), &db_creditcard));
+  db_creditcard = table_->GetCreditCard(target_creditcard.guid());
+  ASSERT_TRUE(db_creditcard);
   EXPECT_EQ(target_creditcard, *db_creditcard);
   sql::Statement s_target_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
@@ -924,11 +921,11 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_GE(s_target_updated.ColumnInt64(5), pre_modification_time.ToTimeT());
   EXPECT_LE(s_target_updated.ColumnInt64(5), post_modification_time.ToTimeT());
   EXPECT_FALSE(s_target_updated.Step());
-  delete db_creditcard;
 
   // Remove the 'Target' credit card.
   EXPECT_TRUE(table_->RemoveCreditCard(target_creditcard.guid()));
-  EXPECT_FALSE(table_->GetCreditCard(target_creditcard.guid(), &db_creditcard));
+  db_creditcard = table_->GetCreditCard(target_creditcard.guid());
+  EXPECT_FALSE(db_creditcard);
 }
 
 TEST_F(AutofillTableTest, UpdateAutofillProfile) {
@@ -959,9 +956,9 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
-  AutofillProfile* tmp_profile;
-  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
-  scoped_ptr<AutofillProfile> db_profile(tmp_profile);
+  scoped_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_original(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -976,8 +973,8 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   table_->UpdateAutofillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
-  db_profile.reset(tmp_profile);
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1000,8 +997,8 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   table_->UpdateAutofillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
-  db_profile.reset(tmp_profile);
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_unchanged(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1030,9 +1027,9 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the credit card.
-  CreditCard* tmp_credit_card;
-  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
-  scoped_ptr<CreditCard> db_credit_card(tmp_credit_card);
+  scoped_ptr<CreditCard> db_credit_card =
+      table_->GetCreditCard(credit_card.guid());
+  ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_original(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM credit_cards"));
@@ -1047,8 +1044,8 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   table_->UpdateCreditCard(credit_card);
 
   // Get the credit card.
-  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
-  db_credit_card.reset(tmp_credit_card);
+  db_credit_card = table_->GetCreditCard(credit_card.guid());
+  ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM credit_cards"));
@@ -1071,8 +1068,8 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
   table_->UpdateCreditCard(credit_card);
 
   // Get the credit card.
-  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
-  db_credit_card.reset(tmp_credit_card);
+  db_credit_card = table_->GetCreditCard(credit_card.guid());
+  ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_unchanged(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM credit_cards"));
@@ -1109,9 +1106,9 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the profile.
-  AutofillProfile* tmp_profile;
-  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
-  scoped_ptr<AutofillProfile> db_profile(tmp_profile);
+  scoped_ptr<AutofillProfile> db_profile =
+      table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_original(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1126,8 +1123,8 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
   table_->UpdateAutofillProfile(profile);
 
   // Get the profile.
-  ASSERT_TRUE(table_->GetAutofillProfile(profile.guid(), &tmp_profile));
-  db_profile.reset(tmp_profile);
+  db_profile = table_->GetAutofillProfile(profile.guid());
+  ASSERT_TRUE(db_profile);
   EXPECT_EQ(profile, *db_profile);
   sql::Statement s_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM autofill_profiles"));
@@ -1156,9 +1153,9 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
   ASSERT_TRUE(s_mock_creation_date.Run());
 
   // Get the credit card.
-  CreditCard* tmp_credit_card;
-  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
-  scoped_ptr<CreditCard> db_credit_card(tmp_credit_card);
+  scoped_ptr<CreditCard> db_credit_card =
+      table_->GetCreditCard(credit_card.guid());
+  ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_original(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM credit_cards"));
@@ -1173,8 +1170,8 @@ TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
   table_->UpdateCreditCard(credit_card);
 
   // Get the credit card.
-  ASSERT_TRUE(table_->GetCreditCard(credit_card.guid(), &tmp_credit_card));
-  db_credit_card.reset(tmp_credit_card);
+  db_credit_card = table_->GetCreditCard(credit_card.guid());
+  ASSERT_TRUE(db_credit_card);
   EXPECT_EQ(credit_card, *db_credit_card);
   sql::Statement s_updated(db_->GetSQLConnection()->GetUniqueStatement(
       "SELECT date_modified FROM credit_cards"));

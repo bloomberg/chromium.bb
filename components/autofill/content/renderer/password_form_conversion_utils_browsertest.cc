@@ -178,7 +178,7 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     LoadHTML(html.c_str());
 
     WebFrame* frame = GetMainFrame();
-    ASSERT_NE(static_cast<WebFrame*>(NULL), frame);
+    ASSERT_NE(nullptr, frame);
 
     WebVector<WebFormElement> forms;
     frame->document().forms(forms);

@@ -40,17 +40,13 @@
 
 using base::ASCIIToUTF16;
 using base::Time;
+using base::TimeDelta;
 
 namespace autofill {
 namespace {
 
 // The period after which autocomplete entries should expire in days.
 const int64 kExpirationPeriodInDays = 60;
-
-template<typename T>
-T* address_of(T& v) {
-  return &v;
-}
 
 // Helper struct for AutofillTable::RemoveFormElementsAddedBetween().
 // Contains all the necessary fields to update a row in the 'autofill' table.
@@ -80,7 +76,7 @@ base::string16 GetInfo(const AutofillDataModel& data_model,
 }
 
 void BindAutofillProfileToStatement(const AutofillProfile& profile,
-                                    const base::Time& modification_date,
+                                    const Time& modification_date,
                                     sql::Statement* s) {
   DCHECK(base::IsValidGUID(profile.guid()));
   int index = 0;
@@ -118,8 +114,8 @@ scoped_ptr<AutofillProfile> AutofillProfileFromStatement(
   profile->SetRawInfo(ADDRESS_HOME_SORTING_CODE, s.ColumnString16(index++));
   profile->SetRawInfo(ADDRESS_HOME_COUNTRY, s.ColumnString16(index++));
   profile->set_use_count(s.ColumnInt64(index++));
-  profile->set_use_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
-  profile->set_modification_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
+  profile->set_use_date(Time::FromTimeT(s.ColumnInt64(index++)));
+  profile->set_modification_date(Time::FromTimeT(s.ColumnInt64(index++)));
   profile->set_origin(s.ColumnString(index++));
   profile->set_language_code(s.ColumnString(index++));
 
@@ -133,11 +129,10 @@ void BindEncryptedCardToColumn(sql::Statement* s,
   OSCrypt::EncryptString16(number, &encrypted_data);
   s->BindBlob(column_index, encrypted_data.data(),
               static_cast<int>(encrypted_data.length()));
-
 }
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
-                               const base::Time& modification_date,
+                               const Time& modification_date,
                                sql::Statement* s) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
   int index = 0;
@@ -183,9 +178,8 @@ scoped_ptr<CreditCard> CreditCardFromStatement(const sql::Statement& s) {
   credit_card->SetRawInfo(CREDIT_CARD_NUMBER,
                           UnencryptedCardFromColumn(s, index++));
   credit_card->set_use_count(s.ColumnInt64(index++));
-  credit_card->set_use_date(base::Time::FromTimeT(s.ColumnInt64(index++)));
-  credit_card->set_modification_date(
-      base::Time::FromTimeT(s.ColumnInt64(index++)));
+  credit_card->set_use_date(Time::FromTimeT(s.ColumnInt64(index++)));
+  credit_card->set_modification_date(Time::FromTimeT(s.ColumnInt64(index++)));
   credit_card->set_origin(s.ColumnString(index++));
 
   return credit_card.Pass();
@@ -342,8 +336,8 @@ WebDatabaseTable::TypeKey GetKey() {
   return reinterpret_cast<void*>(&table_key);
 }
 
-time_t GetEndTime(const base::Time& end) {
-  if (end.is_null() || end == base::Time::Max())
+time_t GetEndTime(const Time& end) {
+  if (end.is_null() || end == Time::Max())
     return std::numeric_limits<time_t>::max();
 
   return end.ToTimeT();
@@ -394,11 +388,10 @@ base::string16 Substitute(const base::string16& s,
 
 }  // namespace
 
-// The maximum length allowed for form data.
+// static
 const size_t AutofillTable::kMaxDataLength = 1024;
 
-AutofillTable::AutofillTable(const std::string& app_locale)
-    : app_locale_(app_locale) {
+AutofillTable::AutofillTable() {
 }
 
 AutofillTable::~AutofillTable() {
@@ -667,8 +660,8 @@ bool AutofillTable::RemoveFormElementsAddedBetween(
 
 bool AutofillTable::RemoveExpiredFormElements(
     std::vector<AutofillChange>* changes) {
-  base::Time expiration_time =
-      base::Time::Now() - base::TimeDelta::FromDays(kExpirationPeriodInDays);
+  Time expiration_time =
+      Time::Now() - TimeDelta::FromDays(kExpirationPeriodInDays);
 
   // Query for the name and value of all form elements that were last used
   // before the |expiration_time|.
@@ -705,14 +698,13 @@ bool AutofillTable::AddFormFieldValuesTime(
   const size_t kMaximumUniqueNames = 256;
   std::set<base::string16> seen_names;
   bool result = true;
-  for (std::vector<FormFieldData>::const_iterator itr = elements.begin();
-       itr != elements.end(); ++itr) {
+  for (const FormFieldData& element : elements) {
     if (seen_names.size() >= kMaximumUniqueNames)
       break;
-    if (seen_names.find(itr->name) != seen_names.end())
+    if (ContainsKey(seen_names, element.name))
       continue;
-    result = result && AddFormFieldValueTime(*itr, changes, time);
-    seen_names.insert(itr->name);
+    result = result && AddFormFieldValueTime(element, changes, time);
+    seen_names.insert(element.name);
   }
   return result;
 }
@@ -858,7 +850,7 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
       " zipcode, sorting_code, country_code, use_count, use_date, "
       " date_modified, origin, language_code)"
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  BindAutofillProfileToStatement(profile, base::Time::Now(), &s);
+  BindAutofillProfileToStatement(profile, Time::Now(), &s);
 
   if (!s.Run())
     return false;
@@ -866,10 +858,9 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
   return AddAutofillProfilePieces(profile, db_);
 }
 
-bool AutofillTable::GetAutofillProfile(const std::string& guid,
-                                       AutofillProfile** profile) {
+scoped_ptr<AutofillProfile> AutofillTable::GetAutofillProfile(
+    const std::string& guid) {
   DCHECK(base::IsValidGUID(guid));
-  DCHECK(profile);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, company_name, street_address, dependent_locality, city,"
       " state, zipcode, sorting_code, country_code, use_count, use_date,"
@@ -878,10 +869,11 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
       "WHERE guid=?"));
   s.BindString(0, guid);
 
+  scoped_ptr<AutofillProfile> p;
   if (!s.Step())
-    return false;
+    return p;
 
-  scoped_ptr<AutofillProfile> p = AutofillProfileFromStatement(s);
+  p = AutofillProfileFromStatement(s);
 
   // Get associated name info.
   AddAutofillProfileNamesToProfile(db_, p.get());
@@ -892,8 +884,7 @@ bool AutofillTable::GetAutofillProfile(const std::string& guid,
   // Get associated phone info.
   AddAutofillProfilePhonesToProfile(db_, p.get());
 
-  *profile = p.release();
-  return true;
+  return p;
 }
 
 bool AutofillTable::GetAutofillProfiles(
@@ -908,10 +899,10 @@ bool AutofillTable::GetAutofillProfiles(
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
-    AutofillProfile* profile = NULL;
-    if (!GetAutofillProfile(guid, &profile))
+    scoped_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    if (!profile)
       return false;
-    profiles->push_back(profile);
+    profiles->push_back(profile.release());
   }
 
   return s.Succeeded();
@@ -945,8 +936,7 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
     scoped_ptr<AutofillProfile> profile(new AutofillProfile(
         AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
     profile->set_use_count(s.ColumnInt64(index++));
-    profile->set_use_date(
-        base::Time::FromInternalValue(s.ColumnInt64(index++)));
+    profile->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
 
     base::string16 recipient_name = s.ColumnString16(index++);
     profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
@@ -1043,11 +1033,10 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
   if (!IsAutofillProfilesTrashEmpty())
     return true;
 
-  AutofillProfile* tmp_profile = NULL;
-  if (!GetAutofillProfile(profile.guid(), &tmp_profile))
+  scoped_ptr<AutofillProfile> old_profile = GetAutofillProfile(profile.guid());
+  if (!old_profile)
     return false;
 
-  scoped_ptr<AutofillProfile> old_profile(tmp_profile);
   bool update_modification_date = *old_profile != profile;
 
   sql::Statement s(db_->GetUniqueStatement(
@@ -1058,8 +1047,7 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
       "WHERE guid=?"));
   BindAutofillProfileToStatement(
       profile,
-      update_modification_date ? base::Time::Now() :
-                                 old_profile->modification_date(),
+      update_modification_date ? Time::Now() : old_profile->modification_date(),
       &s);
   s.BindString(14, profile.guid());
 
@@ -1129,7 +1117,7 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
       "(guid, name_on_card, expiration_month, expiration_year, "
       " card_number_encrypted, use_count, use_date, date_modified, origin)"
       "VALUES (?,?,?,?,?,?,?,?,?)"));
-  BindCreditCardToStatement(credit_card, base::Time::Now(), &s);
+  BindCreditCardToStatement(credit_card, Time::Now(), &s);
 
   if (!s.Run())
     return false;
@@ -1138,8 +1126,7 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
   return true;
 }
 
-bool AutofillTable::GetCreditCard(const std::string& guid,
-                                  CreditCard** credit_card) {
+scoped_ptr<CreditCard> AutofillTable::GetCreditCard(const std::string& guid) {
   DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
@@ -1150,10 +1137,9 @@ bool AutofillTable::GetCreditCard(const std::string& guid,
   s.BindString(0, guid);
 
   if (!s.Step())
-    return false;
+    return scoped_ptr<CreditCard>();
 
-  *credit_card = CreditCardFromStatement(s).release();
-  return true;
+  return CreditCardFromStatement(s);
 }
 
 bool AutofillTable::GetCreditCards(
@@ -1168,10 +1154,10 @@ bool AutofillTable::GetCreditCards(
 
   while (s.Step()) {
     std::string guid = s.ColumnString(0);
-    CreditCard* credit_card = NULL;
-    if (!GetCreditCard(guid, &credit_card))
+    scoped_ptr<CreditCard> credit_card = GetCreditCard(guid);
+    if (!credit_card)
       return false;
-    credit_cards->push_back(credit_card);
+    credit_cards->push_back(credit_card.release());
   }
 
   return s.Succeeded();
@@ -1214,7 +1200,7 @@ bool AutofillTable::GetServerCreditCards(
         record_type == CreditCard::MASKED_SERVER_CARD ? last_four
                                                       : full_card_number);
     card->set_use_count(s.ColumnInt64(index++));
-    card->set_use_date(base::Time::FromInternalValue(s.ColumnInt64(index++)));
+    card->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
 
     std::string card_type = s.ColumnString(index++);
     if (record_type == CreditCard::MASKED_SERVER_CARD) {
@@ -1303,7 +1289,7 @@ bool AutofillTable::UnmaskServerCreditCard(const CreditCard& masked,
   OSCrypt::EncryptString16(full_number, &encrypted_data);
   s.BindBlob(1, encrypted_data.data(),
              static_cast<int>(encrypted_data.length()));
-  s.BindInt64(2, base::Time::Now().ToInternalValue());  // unmask_date
+  s.BindInt64(2, Time::Now().ToInternalValue());  // unmask_date
 
   s.Run();
 
@@ -1412,11 +1398,10 @@ bool AutofillTable::ClearAllServerData() {
 bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
   DCHECK(base::IsValidGUID(credit_card.guid()));
 
-  CreditCard* tmp_credit_card = NULL;
-  if (!GetCreditCard(credit_card.guid(), &tmp_credit_card))
+  scoped_ptr<CreditCard> old_credit_card = GetCreditCard(credit_card.guid());
+  if (!old_credit_card)
     return false;
 
-  scoped_ptr<CreditCard> old_credit_card(tmp_credit_card);
   bool update_modification_date = *old_credit_card != credit_card;
 
   sql::Statement s(db_->GetUniqueStatement(
@@ -1427,7 +1412,7 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
       "WHERE guid=?"));
   BindCreditCardToStatement(
       credit_card,
-      update_modification_date ? base::Time::Now() :
+      update_modification_date ? Time::Now() :
                                  old_credit_card->modification_date(),
       &s);
   s.BindString(9, credit_card.guid());
@@ -1541,19 +1526,18 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
     return false;
 
   // Clear out the origins for the found Autofill profiles.
-  for (std::vector<std::string>::const_iterator it = profile_guids.begin();
-       it != profile_guids.end(); ++it) {
+  for (const std::string& guid : profile_guids) {
     sql::Statement s_profile(db_->GetUniqueStatement(
         "UPDATE autofill_profiles SET origin='' WHERE guid=?"));
-    s_profile.BindString(0, *it);
+    s_profile.BindString(0, guid);
     if (!s_profile.Run())
       return false;
 
-    AutofillProfile* profile;
-    if (!GetAutofillProfile(*it, &profile))
+    scoped_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
+    if (!profile)
       return false;
 
-    profiles->push_back(profile);
+    profiles->push_back(profile.release());
   }
 
   // Remember Autofill credit cards with URL origins in the time range.
@@ -1574,11 +1558,10 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
     return false;
 
   // Clear out the origins for the found credit cards.
-  for (std::vector<std::string>::const_iterator it = credit_card_guids.begin();
-       it != credit_card_guids.end(); ++it) {
+  for (const std::string& guid : credit_card_guids) {
     sql::Statement s_credit_card(db_->GetUniqueStatement(
         "UPDATE credit_cards SET origin='' WHERE guid=?"));
-    s_credit_card.BindString(0, *it);
+    s_credit_card.BindString(0, guid);
     if (!s_credit_card.Run())
       return false;
   }

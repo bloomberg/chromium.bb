@@ -104,7 +104,7 @@ class PersonalDataManagerTest : public testing::Test {
     account_tracker_->Initialize(signin_client_.get());
 
     // Hacky: hold onto a pointer but pass ownership.
-    autofill_table_ = new AutofillTable("en-US");
+    autofill_table_ = new AutofillTable;
     web_database_->AddTable(scoped_ptr<WebDatabaseTable>(autofill_table_));
     web_database_->LoadDatabase();
     autofill_database_service_ = new AutofillWebDataService(
@@ -166,7 +166,7 @@ class PersonalDataManagerTest : public testing::Test {
 
 TEST_F(PersonalDataManagerTest, AddProfile) {
   // Add profile0 to the database.
-  AutofillProfile profile0(autofill::test::GetFullProfile());
+  AutofillProfile profile0(test::GetFullProfile());
   profile0.SetRawInfo(EMAIL_ADDRESS, ASCIIToUTF16("j@s.com"));
   personal_data_->AddProfile(profile0);
 
@@ -850,7 +850,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
                                               &imported_credit_card));
-  ASSERT_EQ(static_cast<CreditCard*>(NULL), imported_credit_card.get());
+  ASSERT_FALSE(imported_credit_card);
 
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(0U, results.size());
@@ -1656,7 +1656,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
   base::MessageLoop::current()->Run();
 
   CreditCard expected2(base::GenerateGUID(), "https://www.example.com");
-  test::SetCreditCardInfo(&expected2,"", "5500000000000004", "02", "2012");
+  test::SetCreditCardInfo(&expected2, "", "5500000000000004", "02", "2012");
   std::vector<CreditCard*> cards;
   cards.push_back(&expected);
   cards.push_back(&expected2);
@@ -2932,7 +2932,7 @@ TEST_F(PersonalDataManagerTest, MaxTimesToShowAddressBookPrompt) {
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 TEST_F(PersonalDataManagerTest, RecordUseOf) {
-  AutofillProfile profile(autofill::test::GetFullProfile());
+  AutofillProfile profile(test::GetFullProfile());
   EXPECT_EQ(0U, profile.use_count());
   EXPECT_EQ(base::Time(), profile.use_date());
   EXPECT_EQ(base::Time(), profile.modification_date());

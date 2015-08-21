@@ -48,8 +48,8 @@ __gCrWeb['autofill'] = {};
 /**
  * The maximum length allowed for form data.
  *
- * This variable is from
- * chromium/src/components/autofill/content/renderer/form_autofill_util.cc
+ * This variable is from AutofillTable::kMaxDataLength in
+ * chromium/src/components/autofill/core/browser/webdata/autofill_table.h
  *
  * @const {number}
  */
@@ -62,7 +62,7 @@ __gCrWeb.autofill.MAX_DATA_LENGTH = 1024;
  * (3) router configuration pages; and (4) other configuration pages, e.g. for
  * Google code project settings.
  *
- * This variable is from
+ * This variable is |kMaxParseableFields| from
  * chromium/src/components/autofill/content/renderer/form_autofill_util.h
  *
  * @const {number}

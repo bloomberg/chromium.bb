@@ -51,7 +51,7 @@ void AutofillWebDataBackendImpl::RemoveObserver(
 }
 
 AutofillWebDataBackendImpl::~AutofillWebDataBackendImpl() {
-  DCHECK(!user_data_.get()); // Forgot to call ResetUserData?
+  DCHECK(!user_data_.get());  // Forgot to call ResetUserData?
 }
 
 WebDatabase* AutofillWebDataBackendImpl::GetDatabase() {
@@ -193,13 +193,11 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
   // Only perform the update if the profile exists.  It is currently
   // valid to try to update a missing profile.  We simply drop the write and
   // the caller will detect this on the next refresh.
-  AutofillProfile* original_profile = NULL;
-  if (!AutofillTable::FromWebDatabase(db)->GetAutofillProfile(profile.guid(),
-      &original_profile)) {
+  scoped_ptr<AutofillProfile> original_profile =
+      AutofillTable::FromWebDatabase(db)->GetAutofillProfile(profile.guid());
+  if (!original_profile) {
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
-  scoped_ptr<AutofillProfile> scoped_profile(original_profile);
-
   if (!AutofillTable::FromWebDatabase(db)->UpdateAutofillProfile(profile)) {
     NOTREACHED();
     return WebDatabase::COMMIT_NEEDED;
@@ -218,12 +216,12 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateAutofillProfile(
 WebDatabase::State AutofillWebDataBackendImpl::RemoveAutofillProfile(
     const std::string& guid, WebDatabase* db) {
   DCHECK(db_thread_->BelongsToCurrentThread());
-  AutofillProfile* profile = NULL;
-  if (!AutofillTable::FromWebDatabase(db)->GetAutofillProfile(guid, &profile)) {
+  scoped_ptr<AutofillProfile> profile =
+      AutofillTable::FromWebDatabase(db)->GetAutofillProfile(guid);
+  if (!profile) {
     NOTREACHED();
     return WebDatabase::COMMIT_NOT_NEEDED;
   }
-  scoped_ptr<AutofillProfile> scoped_profile(profile);
 
   if (!AutofillTable::FromWebDatabase(db)->RemoveAutofillProfile(guid)) {
     NOTREACHED();
@@ -296,12 +294,10 @@ WebDatabase::State AutofillWebDataBackendImpl::UpdateCreditCard(
   DCHECK(db_thread_->BelongsToCurrentThread());
   // It is currently valid to try to update a missing profile.  We simply drop
   // the write and the caller will detect this on the next refresh.
-  CreditCard* original_credit_card = NULL;
-  if (!AutofillTable::FromWebDatabase(db)->GetCreditCard(credit_card.guid(),
-      &original_credit_card)) {
+  scoped_ptr<CreditCard> original_credit_card =
+      AutofillTable::FromWebDatabase(db)->GetCreditCard(credit_card.guid());
+  if (!original_credit_card)
     return WebDatabase::COMMIT_NOT_NEEDED;
-  }
-  scoped_ptr<CreditCard> scoped_credit_card(original_credit_card);
 
   if (!AutofillTable::FromWebDatabase(db)->UpdateCreditCard(credit_card)) {
     NOTREACHED();
