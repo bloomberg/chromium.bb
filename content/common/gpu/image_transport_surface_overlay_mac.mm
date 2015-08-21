@@ -17,12 +17,14 @@
 typedef void* GLeglImageOES;
 #endif
 
+#include "base/command_line.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/accelerated_widget_mac/io_surface_context.h"
 #include "ui/accelerated_widget_mac/surface_handle_types.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -427,6 +429,25 @@ void ImageTransportSurfaceOverlayMac::UpdateCALayerTree(
       // A nil IOSurface indicates that partial damage is being tracked by a
       // sub-layer.
       DCHECK(plane->type == OverlayPlane::ROOT);
+    }
+
+    static bool show_borders =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kShowMacOverlayBorders);
+    if (show_borders) {
+      base::ScopedCFTypeRef<CGColorRef> color;
+      if (!plane->io_surface) {
+        // Green represents contents that are unchanged across frames.
+        color.reset(CGColorCreateGenericRGB(0, 1, 0, 1));
+      } else if (plane->type == OverlayPlane::OVERLAY) {
+        // Pink represents overlay planes
+        color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
+      } else {
+        // Red represents damaged contents.
+        color.reset(CGColorCreateGenericRGB(1, 0, 0, 1));
+      }
+      [plane_layer setBorderWidth:2];
+      [plane_layer setBorderColor:color];
     }
 
     [plane_layer setFrame:plane->dip_frame_rect.ToCGRect()];

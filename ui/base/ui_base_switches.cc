@@ -14,6 +14,9 @@ const char kDisableMacOverlays[] = "disable-mac-overlays";
 // Disable use of cross-process CALayers to display content directly from the
 // GPU process on Mac.
 const char kDisableRemoteCoreAnimation[] = "disable-remote-core-animation";
+
+// Show borders around CALayers corresponding to overlays and partial damage.
+const char kShowMacOverlayBorders[] = "show-mac-overlay-borders";
 #endif
 
 // Disables use of DWM composition for top level windows.

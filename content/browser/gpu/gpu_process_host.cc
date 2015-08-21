@@ -121,6 +121,7 @@ static const char* const kSwitchNames[] = {
   switches::kDisableRemoteCoreAnimation,
   switches::kDisableMacOverlays,
   switches::kEnableSandboxLogging,
+  switches::kShowMacOverlayBorders,
 #endif
 #if defined(USE_AURA)
   switches::kUIPrioritizeInGpuProcess,
