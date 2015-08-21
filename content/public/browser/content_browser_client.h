@@ -523,6 +523,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // else we should do with the file.
   virtual std::string GetDefaultDownloadName();
 
+  // Returns the path to the browser shader disk cache root.
+  virtual base::FilePath GetShaderDiskCacheDirectory();
+
   // Notification that a pepper plugin has just been spawned. This allows the
   // embedder to add filters onto the host to implement interfaces.
   // This is called on the IO thread.

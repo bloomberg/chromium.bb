@@ -18,10 +18,6 @@ int main(int argc, char** argv) {
 #if defined(OS_ANDROID)
   // Register JNI bindings for android.
   base::RegisterContentUriTestUtils(base::android::AttachCurrentThread());
-
-  // Android wants to call GetChannelId() (even though GPU channels
-  // are not getting created in content_unittests).
-  content::BrowserGpuChannelHostFactory::Initialize(false);
 #endif
 #if !defined(OS_IOS)
   content::InitializeMojo();

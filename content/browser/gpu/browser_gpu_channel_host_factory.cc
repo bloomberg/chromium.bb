@@ -5,6 +5,7 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
@@ -17,11 +18,14 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
+#include "content/browser/gpu/shader_disk_cache.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_client.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 
@@ -238,7 +242,23 @@ BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
       gpu_memory_buffer_manager_(
           new BrowserGpuMemoryBufferManager(gpu_client_id_,
                                             gpu_client_tracing_id_)),
-      gpu_host_id_(0) {}
+      gpu_host_id_(0) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuShaderDiskCache)) {
+    DCHECK(GetContentClient());
+    base::FilePath cache_dir =
+        GetContentClient()->browser()->GetShaderDiskCacheDirectory();
+    if (!cache_dir.empty()) {
+      GetIOThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO,
+              gpu_client_id_, cache_dir));
+    } else {
+      LOG(ERROR) << "Failed to init browser shader disk cache.";
+    }
+  }
+}
 
 BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
   DCHECK(IsMainThread());
@@ -417,6 +437,13 @@ void BrowserGpuChannelHostFactory::AddFilterOnIO(
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host)
     host->AddFilter(filter.get());
+}
+
+// static
+void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
+    int gpu_client_id,
+    const base::FilePath& cache_dir) {
+  ShaderCacheFactory::GetInstance()->SetCacheInfo(gpu_client_id, cache_dir);
 }
 
 }  // namespace content

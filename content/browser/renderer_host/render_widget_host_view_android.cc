@@ -1539,7 +1539,8 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
   gfx::GLSurfaceHandle handle =
       gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
-  if (using_browser_compositor_) {
+  // Null check for when we're running inside content_unittests.
+  if (using_browser_compositor_ && BrowserGpuChannelHostFactory::instance()) {
     handle.parent_client_id =
         BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   }
