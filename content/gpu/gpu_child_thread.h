@@ -65,10 +65,12 @@ class GpuChildThread : public ChildThreadImpl {
   // ChildThread overrides.
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
+  bool OnMessageReceived(const IPC::Message& msg) override;
 
  private:
   // Message handlers.
   void OnInitialize();
+  void OnFinalize();
   void OnCollectGraphicsInfo();
   void OnGetVideoMemoryUsageStats();
   void OnSetVideoMemoryWindowCount(uint32 window_count);

@@ -8,7 +8,7 @@
 #include <deque>
 #include <string>
 
-#include "base/id_map.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -16,6 +16,7 @@
 #include "base/process/process.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
+#include "content/common/content_export.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_result_codes.h"
@@ -55,39 +56,38 @@ class GpuWatchdog;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
 // process. On the renderer side there's a corresponding GpuChannelHost.
-class GpuChannel : public IPC::Listener,
-                   public IPC::Sender,
-                   public gpu::gles2::SubscriptionRefSet::Observer,
-                   public base::trace_event::MemoryDumpProvider {
+class CONTENT_EXPORT GpuChannel
+    : public IPC::Listener,
+      public IPC::Sender,
+      public gpu::gles2::SubscriptionRefSet::Observer,
+      public base::trace_event::MemoryDumpProvider {
  public:
   // Takes ownership of the renderer process handle.
   GpuChannel(GpuChannelManager* gpu_channel_manager,
              GpuWatchdog* watchdog,
              gfx::GLShareGroup* share_group,
              gpu::gles2::MailboxManager* mailbox_manager,
+             base::SingleThreadTaskRunner* task_runner,
+             base::SingleThreadTaskRunner* io_task_runner,
              int client_id,
              uint64_t client_tracing_id,
              bool software,
              bool allow_future_sync_points);
   ~GpuChannel() override;
 
-  void Init(base::SingleThreadTaskRunner* io_task_runner,
-            base::WaitableEvent* shutdown_event,
-            IPC::AttachmentBroker* broker);
+  // Initializes the IPC channel. Caller takes ownership of the client FD in
+  // the returned handle and is responsible for closing it.
+  virtual IPC::ChannelHandle Init(base::WaitableEvent* shutdown_event,
+                                  IPC::AttachmentBroker* attachment_broker);
 
   // Get the GpuChannelManager that owns this channel.
   GpuChannelManager* gpu_channel_manager() const {
     return gpu_channel_manager_;
   }
 
-  // Returns the name of the associated IPC channel.
-  std::string GetChannelName();
+  const std::string& channel_id() const { return channel_id_; }
 
-#if defined(OS_POSIX)
-  base::ScopedFD TakeRendererFileDescriptor();
-#endif  // defined(OS_POSIX)
-
-  base::ProcessId renderer_pid() const { return channel_->GetPeerPID(); }
+  virtual base::ProcessId GetClientPID() const;
 
   int client_id() const { return client_id_; }
 
@@ -156,8 +156,8 @@ class GpuChannel : public IPC::Listener,
 
   void CacheShader(const std::string& key, const std::string& shader);
 
-  void AddFilter(IPC::MessageFilter* filter);
-  void RemoveFilter(IPC::MessageFilter* filter);
+  virtual void AddFilter(IPC::MessageFilter* filter);
+  virtual void RemoveFilter(IPC::MessageFilter* filter);
 
   uint64 GetMemoryUsage();
 
@@ -180,6 +180,13 @@ class GpuChannel : public IPC::Listener,
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
+
+ protected:
+  // The message filter on the io thread.
+  scoped_refptr<GpuChannelMessageFilter> filter_;
+
+  // Map of routing id to command buffer stub.
+  base::ScopedPtrHashMap<int32, scoped_ptr<GpuCommandBufferStub>> stubs_;
 
  private:
   friend class GpuChannelMessageFilter;
@@ -209,6 +216,12 @@ class GpuChannel : public IPC::Listener,
 
   scoped_ptr<IPC::SyncChannel> channel_;
 
+  // Uniquely identifies the channel within this GPU process.
+  std::string channel_id_;
+
+  // Used to implement message routing functionality to CommandBuffer objects
+  MessageRouter router_;
+
   uint64 messages_processed_;
 
   // Whether the processing of IPCs on this channel is stalled and we should
@@ -227,11 +240,9 @@ class GpuChannel : public IPC::Listener,
   // The tracing ID used for memory allocations associated with this client.
   uint64_t client_tracing_id_;
 
-  // Uniquely identifies the channel within this GPU process.
-  std::string channel_id_;
-
-  // Used to implement message routing functionality to CommandBuffer objects
-  MessageRouter router_;
+  // The task runners for the main thread and the io thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The share group that all contexts associated with a particular renderer
   // process use.
@@ -243,20 +254,13 @@ class GpuChannel : public IPC::Listener,
 
   scoped_refptr<gpu::ValueStateMap> pending_valuebuffer_state_;
 
-  typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
-  StubMap stubs_;
-
   scoped_ptr<GpuJpegDecodeAccelerator> jpeg_decoder_;
 
-  bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* watchdog_;
   bool software_;
   bool handle_messages_scheduled_;
   IPC::Message* currently_processing_message_;
-
-  scoped_refptr<GpuChannelMessageFilter> filter_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   size_t num_stubs_descheduled_;
 
