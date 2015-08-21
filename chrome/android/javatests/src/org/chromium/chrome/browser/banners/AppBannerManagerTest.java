@@ -48,7 +48,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
             TestHttpServerClient.getUrl("chrome/test/data/banners/play_app_test_page.html");
 
     private static final String NATIVE_ICON_URL =
-            TestHttpServerClient.getUrl("chrome/test/data/banners/launcher-icon-1x.png");
+            TestHttpServerClient.getUrl("chrome/test/data/banners/launcher-icon-4x.png");
 
     private static final String NATIVE_APP_TITLE = "Mock app title";
 
