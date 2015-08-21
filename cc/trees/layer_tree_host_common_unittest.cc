@@ -6016,6 +6016,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
+
   TransformOperations translation;
   translation.AppendTranslate(1.f, 2.f, 3.f);
 
@@ -6030,6 +6040,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
+
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
 
   TransformOperations scale;
   scale.AppendScale(5.f, 4.f, 3.f);
@@ -6047,6 +6067,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(
       5.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(1.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      1.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
+
   AddAnimatedTransformToLayer(
       grand_parent.get(), 1.0, TransformOperations(), scale);
   grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -6063,6 +6093,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
+  EXPECT_EQ(1.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(1.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
+
   AddAnimatedTransformToLayer(parent_raw, 1.0, TransformOperations(), scale);
   parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
@@ -6075,6 +6115,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
+
+  EXPECT_EQ(1.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
 
   grand_parent->layer_animation_controller()->AbortAnimations(
       Animation::TRANSFORM);
@@ -6100,6 +6150,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
+
   child_raw->layer_animation_controller()->AbortAnimations(
       Animation::TRANSFORM);
 
@@ -6123,6 +6183,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       10.f,
       grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(2.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(2.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      2.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
+
   gfx::Transform perspective_matrix;
   perspective_matrix.ApplyPerspectiveDepth(2.f);
   child_raw->SetTransform(perspective_matrix);
@@ -6138,6 +6208,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(2.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
+
   parent_raw->SetTransform(perspective_matrix);
   grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(grand_parent.get());
@@ -6151,6 +6231,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
+
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
 
   parent_raw->SetTransform(identity_matrix);
   child_raw->SetTransform(identity_matrix);
@@ -6167,6 +6257,16 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
+
+  EXPECT_EQ(0.f,
+            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            parent_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(0.f,
+            child_raw->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_child_raw->draw_properties().starting_animation_contents_scale);
 }
 
 static int membership_id(LayerImpl* layer) {

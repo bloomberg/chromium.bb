@@ -965,6 +965,7 @@ static inline void CalculateAnimationContentsScale(
     LayerImpl* layer,
     bool ancestor_is_animating_scale,
     float ancestor_maximum_animation_contents_scale,
+    float ancestor_starting_animation_contents_scale,
     const gfx::Transform& ancestor_transform,
     const gfx::Transform& combined_transform,
     bool* combined_is_animating_scale,
@@ -1020,11 +1021,12 @@ static inline void CalculateAnimationContentsScale(
   if (!layer_is_animating_scale) {
     gfx::Vector2dF layer_transform_scales =
         MathUtil::ComputeTransform2dScaleComponents(layer->transform(), 0.f);
-    *combined_maximum_animation_contents_scale =
-        ancestor_maximum_animation_contents_scale *
+    float max_layer_scale =
         std::max(layer_transform_scales.x(), layer_transform_scales.y());
+    *combined_maximum_animation_contents_scale =
+        ancestor_maximum_animation_contents_scale * max_layer_scale;
     *combined_starting_animation_contents_scale =
-        *combined_maximum_animation_contents_scale;
+        ancestor_starting_animation_contents_scale * max_layer_scale;
     return;
   }
 
@@ -1337,8 +1339,14 @@ struct DataForRecursion {
   gfx::Rect clip_rect_of_target_surface_in_target_space;
 
   // The maximum amount by which this layer will be scaled during the lifetime
-  // of currently running animations.
+  // of currently running animations, considering only scales at keyframes not
+  // including the starting keyframe of each animation.
   float maximum_animation_contents_scale;
+
+  // The maximum amout by which this layer will be scaled during the lifetime of
+  // currently running animations, consdering only the starting scale of each
+  // animation.
+  float starting_animation_contents_scale;
 
   bool ancestor_is_animating_scale;
   bool ancestor_clips_subtree;
@@ -1667,6 +1675,7 @@ static void CalculateDrawPropertiesInternal(
     CalculateAnimationContentsScale(
         layer, data_from_ancestor.ancestor_is_animating_scale,
         data_from_ancestor.maximum_animation_contents_scale,
+        data_from_ancestor.starting_animation_contents_scale,
         data_from_ancestor.parent_matrix, combined_transform,
         &combined_is_animating_scale,
         &combined_maximum_animation_contents_scale,
@@ -1675,6 +1684,8 @@ static void CalculateDrawPropertiesInternal(
   data_for_children.ancestor_is_animating_scale = combined_is_animating_scale;
   data_for_children.maximum_animation_contents_scale =
       combined_maximum_animation_contents_scale;
+  data_for_children.starting_animation_contents_scale =
+      combined_starting_animation_contents_scale;
 
   // Compute the 2d scale components of the transform hierarchy up to the target
   // surface. From there, we can decide on a contents scale for the layer.
@@ -2201,6 +2212,7 @@ static void ProcessCalcDrawPropsInputs(
   data_for_recursion->clip_rect_of_target_surface_in_target_space =
       device_viewport_rect;
   data_for_recursion->maximum_animation_contents_scale = 0.f;
+  data_for_recursion->starting_animation_contents_scale = 0.f;
   data_for_recursion->ancestor_is_animating_scale = false;
   data_for_recursion->ancestor_clips_subtree = true;
   data_for_recursion->nearest_occlusion_immune_ancestor_surface = NULL;
