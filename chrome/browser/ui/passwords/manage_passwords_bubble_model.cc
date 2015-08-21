@@ -86,7 +86,8 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       display_disposition_(metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
-      dismissal_reason_(metrics_util::NOT_DISPLAYED) {
+      dismissal_reason_(metrics_util::NOT_DISPLAYED),
+      update_password_submission_event_(metrics_util::NO_UPDATE_SUBMISSION) {
   ManagePasswordsUIController* controller =
       ManagePasswordsUIController::FromWebContents(web_contents);
 
@@ -154,21 +155,41 @@ ManagePasswordsBubbleModel::~ManagePasswordsBubbleModel() {}
 void ManagePasswordsBubbleModel::OnBubbleShown(
     ManagePasswordsBubble::DisplayReason reason) {
   if (reason == ManagePasswordsBubble::USER_ACTION) {
-    if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-      display_disposition_ = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
-    } else {
-      display_disposition_ = metrics_util::MANUAL_MANAGE_PASSWORDS;
+    switch (state_) {
+      case password_manager::ui::PENDING_PASSWORD_STATE:
+        display_disposition_ = metrics_util::MANUAL_WITH_PASSWORD_PENDING;
+        break;
+      case password_manager::ui::PENDING_PASSWORD_UPDATE_STATE:
+        display_disposition_ =
+            metrics_util::MANUAL_WITH_PASSWORD_PENDING_UPDATE;
+        break;
+      case password_manager::ui::MANAGE_STATE:
+        display_disposition_ = metrics_util::MANUAL_MANAGE_PASSWORDS;
+        break;
+      default:
+        break;
     }
   } else {
-    if (state_ == password_manager::ui::CONFIRMATION_STATE) {
-      display_disposition_ =
-          metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
-    } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-      display_disposition_ = metrics_util::AUTOMATIC_CREDENTIAL_REQUEST;
-    } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-      display_disposition_ = metrics_util::AUTOMATIC_SIGNIN_TOAST;
-    } else {
-      display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
+    switch (state_) {
+      case password_manager::ui::PENDING_PASSWORD_STATE:
+        display_disposition_ = metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING;
+        break;
+      case password_manager::ui::PENDING_PASSWORD_UPDATE_STATE:
+        display_disposition_ =
+            metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE;
+        break;
+      case password_manager::ui::CONFIRMATION_STATE:
+        display_disposition_ =
+            metrics_util::AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION;
+        break;
+      case password_manager::ui::CREDENTIAL_REQUEST_STATE:
+        display_disposition_ = metrics_util::AUTOMATIC_CREDENTIAL_REQUEST;
+        break;
+      case password_manager::ui::AUTO_SIGNIN_STATE:
+        display_disposition_ = metrics_util::AUTOMATIC_SIGNIN_TOAST;
+        break;
+      default:
+        break;
     }
   }
   metrics_util::LogUIDisplayDisposition(display_disposition_);
@@ -193,11 +214,24 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)
     return;
 
-  metrics_util::LogUIDismissalReason(dismissal_reason_);
+  if (state_ != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+    // We have separate metrics for the Update bubble so do not record dismissal
+    // reason for it.
+    metrics_util::LogUIDismissalReason(dismissal_reason_);
+  }
   // Other use cases have been reported in the callbacks like OnSaveClicked().
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE &&
       dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)
     RecordExperimentStatistics(web_contents(), dismissal_reason_);
+  // Check if this was update password and record update statistics.
+  if (update_password_submission_event_ == metrics_util::NO_UPDATE_SUBMISSION &&
+      (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+       state_ == password_manager::ui::PENDING_PASSWORD_STATE)) {
+    update_password_submission_event_ =
+        GetUpdateDismissalReason(NO_INTERACTION);
+  }
+  if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
+    LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
 }
 
 void ManagePasswordsBubbleModel::OnCancelClicked() {
@@ -207,6 +241,7 @@ void ManagePasswordsBubbleModel::OnCancelClicked() {
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   dismissal_reason_ = metrics_util::CLICKED_NEVER;
+  update_password_submission_event_ = GetUpdateDismissalReason(NOPE_CLICKED);
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
@@ -216,18 +251,22 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
 void ManagePasswordsBubbleModel::OnSaveClicked() {
   dismissal_reason_ = metrics_util::CLICKED_SAVE;
   RecordExperimentStatistics(web_contents(), dismissal_reason_);
+  update_password_submission_event_ = GetUpdateDismissalReason(UPDATE_CLICKED);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->SavePassword();
-  state_ = password_manager::ui::MANAGE_STATE;
+}
+
+void ManagePasswordsBubbleModel::OnNopeUpdateClicked() {
+  update_password_submission_event_ = GetUpdateDismissalReason(NOPE_CLICKED);
 }
 
 void ManagePasswordsBubbleModel::OnUpdateClicked(
     const autofill::PasswordForm& password_form) {
+  update_password_submission_event_ = GetUpdateDismissalReason(UPDATE_CLICKED);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->UpdatePassword(password_form);
-  state_ = password_manager::ui::MANAGE_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnDoneClicked() {
@@ -266,7 +305,6 @@ void ManagePasswordsBubbleModel::OnAutoSignInClicked() {
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->ManageAccounts();
-  state_ = password_manager::ui::MANAGE_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(
@@ -294,7 +332,6 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->ChooseCredential(password_form,
                                                    credential_type);
-  state_ = password_manager::ui::INACTIVE_STATE;
 }
 
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
@@ -328,4 +365,33 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
       IsSmartLockBrandingEnabled(GetProfile()),
       state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE, &title_,
       &title_brand_link_range_);
+}
+
+password_manager::metrics_util::UpdatePasswordSubmissionEvent
+ManagePasswordsBubbleModel::GetUpdateDismissalReason(
+    UserBehaviorOnUpdateBubble behavior) const {
+  using namespace password_manager::metrics_util;
+  static const password_manager::metrics_util::UpdatePasswordSubmissionEvent
+      update_events[4][3] = {
+          {NO_ACCOUNTS_CLICKED_UPDATE, NO_ACCOUNTS_CLICKED_NOPE,
+           NO_ACCOUNTS_NO_INTERACTION},
+          {ONE_ACCOUNT_CLICKED_UPDATE, ONE_ACCOUNT_CLICKED_NOPE,
+           ONE_ACCOUNT_NO_INTERACTION},
+          {MULTIPLE_ACCOUNTS_CLICKED_UPDATE, MULTIPLE_ACCOUNTS_CLICKED_NOPE,
+           MULTIPLE_ACCOUNTS_NO_INTERACTION},
+          {PASSWORD_OVERRIDDEN_CLICKED_UPDATE, PASSWORD_OVERRIDDEN_CLICKED_NOPE,
+           PASSWORD_OVERRIDDEN_NO_INTERACTION}};
+
+  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
+    if (pending_password_.IsPossibleChangePasswordFormWithoutUsername())
+      return update_events[0][behavior];
+    return NO_UPDATE_SUBMISSION;
+  }
+  if (state_ != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
+    return NO_UPDATE_SUBMISSION;
+  if (password_overridden_)
+    return update_events[3][behavior];
+  if (ShouldShowMultipleAccountUpdateUI())
+    return update_events[2][behavior];
+  return update_events[1][behavior];
 }

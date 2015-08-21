@@ -31,6 +31,8 @@ enum UIDisplayDisposition {
   AUTOMATIC_GENERATED_PASSWORD_CONFIRMATION,
   AUTOMATIC_CREDENTIAL_REQUEST,
   AUTOMATIC_SIGNIN_TOAST,
+  MANUAL_WITH_PASSWORD_PENDING_UPDATE,
+  AUTOMATIC_WITH_PASSWORD_PENDING_UPDATE,
   NUM_DISPLAY_DISPOSITIONS
 };
 
@@ -85,6 +87,24 @@ enum PasswordSubmissionEvent {
   PASSWORD_OVERRIDDEN,
   PASSWORD_USED,
   SUBMISSION_EVENT_ENUM_COUNT
+};
+
+enum UpdatePasswordSubmissionEvent {
+  NO_ACCOUNTS_CLICKED_UPDATE,
+  NO_ACCOUNTS_CLICKED_NOPE,
+  NO_ACCOUNTS_NO_INTERACTION,
+  ONE_ACCOUNT_CLICKED_UPDATE,
+  ONE_ACCOUNT_CLICKED_NOPE,
+  ONE_ACCOUNT_NO_INTERACTION,
+  MULTIPLE_ACCOUNTS_CLICKED_UPDATE,
+  MULTIPLE_ACCOUNTS_CLICKED_NOPE,
+  MULTIPLE_ACCOUNTS_NO_INTERACTION,
+  PASSWORD_OVERRIDDEN_CLICKED_UPDATE,
+  PASSWORD_OVERRIDDEN_CLICKED_NOPE,
+  PASSWORD_OVERRIDDEN_NO_INTERACTION,
+  UPDATE_PASSWORD_EVENT_COUNT,
+
+  NO_UPDATE_SUBMISSION
 };
 
 // We monitor the performance of the save password heuristic for a handful of
@@ -143,6 +163,9 @@ void LogPasswordSyncState(PasswordSyncState state);
 
 // Log submission events related to generation.
 void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event);
+
+// Log submission events related to password update.
+void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event);
 
 }  // namespace metrics_util
 

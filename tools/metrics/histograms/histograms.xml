@@ -29458,6 +29458,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.UpdatePasswordSubmissionEvent"
+    enum="UpdatePasswordSubmissionEvent">
+  <owner>dvadym@chromium.org</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The password submission event happened when the user changes her password on
+    a website, say foo.com or types new password on a sign-in form for saved
+    credential (which might mean that the password was changed in a different
+    browser). The later case called password overriding. This histogram measures
+    whether the user has any passwords saved in the Chrome password manager for
+    foo.com or the password was overriden on sign-in form, and what action the
+    user performed on the offered bubble. It's recorded when the bubble is
+    closed.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.UserStoredPasswordWithInvalidSSLCert"
     enum="Boolean">
   <owner>xunlu@chromium.org</owner>
@@ -66179,6 +66195,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5"
       label="Opened automatically / Offering a credential to choose"/>
   <int value="6" label="Opened automatically / Auto-signin toast"/>
+  <int value="7" label="Opened manually / Offering a password to update"/>
+  <int value="8" label="Opened automatically / Offering a password to update"/>
 </enum>
 
 <enum name="PasswordFormQueryVolume" type="int">
@@ -72291,6 +72309,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Full"/>
   <int value="1" label="Delta"/>
   <int value="2" label="Forced Full"/>
+</enum>
+
+<enum name="UpdatePasswordSubmissionEvent" type="int">
+  <int value="0" label="NO_ACCOUNTS_CLICKED_UPDATE"/>
+  <int value="1" label="NO_ACCOUNTS_CLICKED_NOPE"/>
+  <int value="2" label="NO_ACCOUNTS_NO_INTERACTION"/>
+  <int value="3" label="ONE_ACCOUNT_CLICKED_UPDATE"/>
+  <int value="4" label="ONE_ACCOUNT_CLICKED_NOPE"/>
+  <int value="5" label="ONE_ACCOUNT_NO_INTERACTION"/>
+  <int value="6" label="MULTIPLE_ACCOUNTS_CLICKED_UPDATE"/>
+  <int value="7" label="MULTIPLE_ACCOUNTS_CLICKED_NOPE"/>
+  <int value="8" label="MULTIPLE_ACCOUNTS_NO_INTERACTION"/>
+  <int value="9" label="PASSWORD_OVERRIDDEN_CLICKED_UPDATE"/>
+  <int value="10" label="PASSWORD_OVERRIDDEN_CLICKED_NOPE"/>
+  <int value="11" label="PASSWORD_OVERRIDDEN_NO_INTERACTION"/>
 </enum>
 
 <enum name="UpdatePolicy" type="int">

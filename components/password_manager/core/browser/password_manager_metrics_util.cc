@@ -169,6 +169,12 @@ void LogPasswordGenerationSubmissionEvent(PasswordSubmissionEvent event) {
                             SUBMISSION_EVENT_ENUM_COUNT);
 }
 
+void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event) {
+  DCHECK_LT(event, UPDATE_PASSWORD_EVENT_COUNT);
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UpdatePasswordSubmissionEvent",
+                            event, UPDATE_PASSWORD_EVENT_COUNT);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

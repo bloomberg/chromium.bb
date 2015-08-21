@@ -73,6 +73,18 @@ class PasswordManagerClient {
   // password store if the user allows it. The embedder is not required to
   // prompt the user if it decides that this form doesn't need to be saved or
   // updated. Returns true if the prompt was indeed displayed.
+  // There are 3 different cases when |update_password| == true:
+  // 1.A change password form was submitted and the user has only one stored
+  // credential. Then form_to_save.pending_credentials() should correspond to
+  // the unique element from |form_to_save.best_matches_|.
+  // 2.A change password form was submitted and the user has more than one
+  // stored credential. Then we shouldn't expect anything from
+  // form_to_save.pending_credentials() except correct origin, since we don't
+  // know which credentials should be updated.
+  // 3.A sign-in password form was submitted with a password different from
+  // the stored one. In this case form_to_save.password_overridden() == true
+  // and form_to_save.pending_credentials() should correspond to the credential
+  // that was overidden.
   virtual bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<PasswordFormManager> form_to_save,
       CredentialSourceType type,

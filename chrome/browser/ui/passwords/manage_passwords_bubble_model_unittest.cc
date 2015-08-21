@@ -125,7 +125,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   model_->OnBubbleHidden();
   EXPECT_EQ(model_->dismissal_reason(),
             password_manager::metrics_util::CLICKED_SAVE);
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   EXPECT_TRUE(controller()->saved_password());
   EXPECT_FALSE(controller()->never_saved_password());
 
@@ -275,7 +274,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
   PretendUpdatePasswordWaiting();
   model_->OnUpdateClicked(autofill::PasswordForm());
   model_->OnBubbleHidden();
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, model_->state());
   EXPECT_TRUE(controller()->updated_password());
   EXPECT_FALSE(controller()->never_saved_password());
 }

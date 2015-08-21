@@ -836,9 +836,6 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
         parent->model()->pending_password().username_value);
     item = selection_view_;
   } else {
-    DCHECK_EQ(1u, parent->model()->local_credentials().size());
-    DCHECK_EQ(parent->model()->local_credentials()[0]->username_value,
-              parent->model()->pending_password().username_value);
     std::vector<const autofill::PasswordForm*> forms;
     forms.push_back(&parent->model()->pending_password());
     item = new ManagePasswordItemsView(parent_->model(), forms);
@@ -900,9 +897,10 @@ void ManagePasswordsBubbleView::UpdatePendingView::ButtonPressed(
       parent_->model()->OnUpdateClicked(
           *selection_view_->GetSelectedCredentials());
     } else {
-      parent_->model()->OnUpdateClicked(
-          *parent_->model()->local_credentials()[0]);
+      parent_->model()->OnUpdateClicked(parent_->model()->pending_password());
     }
+  } else {
+    parent_->model()->OnNopeUpdateClicked();
   }
   parent_->Close();
 }

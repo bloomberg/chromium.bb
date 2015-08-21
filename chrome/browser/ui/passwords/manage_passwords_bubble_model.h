@@ -48,6 +48,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the "Cancel" button in clicked by the user.
   void OnCancelClicked();
 
+  // Called by the view code when the "Nope" button in clicked by the user in
+  // update bubble.
+  void OnNopeUpdateClicked();
+
   // Called by the view code when the "Never for this site." button in clicked
   // by the user.
   void OnNeverForThisSiteClicked();
@@ -148,9 +152,16 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   static int PasswordFieldWidth();
 
  private:
+  enum UserBehaviorOnUpdateBubble {
+    UPDATE_CLICKED,
+    NOPE_CLICKED,
+    NO_INTERACTION
+  };
   // Updates |title_| and |title_brand_link_range_| for the
   // PENDING_PASSWORD_STATE.
   void UpdatePendingStateTitle();
+  password_manager::metrics_util::UpdatePasswordSubmissionEvent
+  GetUpdateDismissalReason(UserBehaviorOnUpdateBubble behavior) const;
   // URL of the page from where this bubble was triggered.
   GURL origin_;
   password_manager::ui::State state_;
@@ -167,6 +178,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   gfx::Range save_confirmation_link_range_;
   password_manager::metrics_util::UIDisplayDisposition display_disposition_;
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
+  password_manager::metrics_util::UpdatePasswordSubmissionEvent
+      update_password_submission_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleModel);
 };

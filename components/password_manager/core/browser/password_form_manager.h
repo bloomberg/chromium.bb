@@ -149,7 +149,8 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Update the password store entry for |credentials_to_update|, using the
   // password from |pending_credentials_|. It modifies |pending_credentials_|.
-  // |credentials_to_update| should be one of |best_matches_|.
+  // |credentials_to_update| should be one of |best_matches_| or
+  // |pending_credentials_|.
   void Update(const autofill::PasswordForm& credentials_to_update);
 
   // Call these if/when we know the form submission worked or failed.
