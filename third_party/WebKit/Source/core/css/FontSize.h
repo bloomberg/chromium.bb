@@ -23,6 +23,7 @@
 #define FontSize_h
 
 #include "core/CSSValueKeywords.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -31,11 +32,7 @@ class Document;
 enum ESmartMinimumForFontSize { DoNotUseSmartMinimumForFontSize, UseSmartMinimumForFontFize };
 
 class FontSize {
-private:
-    FontSize()
-    {
-    }
-
+    STATIC_ONLY(FontSize);
 public:
     static float getComputedSizeFromSpecifiedSize(const Document*, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize = UseSmartMinimumForFontFize);
 

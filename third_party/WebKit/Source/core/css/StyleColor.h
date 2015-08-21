@@ -32,10 +32,12 @@
 #define StyleColor_h
 
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class StyleColor {
+    DISALLOW_ALLOCATION();
 public:
     StyleColor(Color color) : m_color(color), m_currentColor(false) { }
     static StyleColor currentColor() { return StyleColor(); }

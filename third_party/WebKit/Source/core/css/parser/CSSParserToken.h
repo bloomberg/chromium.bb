@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/parser/CSSParserString.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -64,6 +65,7 @@ enum HashTokenType {
 };
 
 class CORE_EXPORT CSSParserToken {
+    WTF_MAKE_FAST_ALLOCATED(CSSParserToken);
 public:
     enum BlockType {
         NotBlock,
@@ -145,6 +147,7 @@ private:
 namespace WTF {
 template <>
 struct IsTriviallyMoveAssignable<blink::CSSParserToken> {
+    STATIC_ONLY(IsTriviallyMoveAssignable);
     static const bool value = true;
 };
 }

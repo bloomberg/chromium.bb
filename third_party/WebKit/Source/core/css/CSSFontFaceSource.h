@@ -27,6 +27,7 @@
 #define CSSFontFaceSource_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -37,6 +38,8 @@ class FontDescription;
 class SimpleFontData;
 
 class CSSFontFaceSource : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFaceSource> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSFontFaceSource);
+    WTF_MAKE_NONCOPYABLE(CSSFontFaceSource);
 public:
     virtual ~CSSFontFaceSource();
 

@@ -34,6 +34,7 @@
 #include "core/MediaFeatureNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -42,6 +43,7 @@ namespace blink {
 class CSSParserToken;
 
 struct MediaQueryExpValue {
+    DISALLOW_ALLOCATION();
     CSSValueID id;
     double value;
     CSSPrimitiveValue::UnitType unit;

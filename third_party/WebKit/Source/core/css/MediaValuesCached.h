@@ -13,6 +13,7 @@ namespace blink {
 class CORE_EXPORT MediaValuesCached final : public MediaValues {
 public:
     struct MediaValuesCachedData {
+        DISALLOW_ALLOCATION();
         // Members variables must be thread safe, since they're copied to the parser thread
         int viewportWidth;
         int viewportHeight;

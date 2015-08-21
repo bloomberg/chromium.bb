@@ -105,6 +105,7 @@ private:
     using PseudoTypeInvalidationSetMap = WillBeHeapHashMap<CSSSelector::PseudoType, RefPtrWillBeMember<DescendantInvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
 
     struct FeatureMetadata {
+        DISALLOW_ALLOCATION();
         FeatureMetadata()
             : usesFirstLineRules(false)
             , usesWindowInactiveSelector(false)
@@ -131,6 +132,7 @@ private:
     void updateInvalidationSetsForContentAttribute(const RuleData&);
 
     struct InvalidationSetFeatures {
+        DISALLOW_ALLOCATION();
         InvalidationSetFeatures()
             : customPseudoElement(false)
             , hasBeforeOrAfter(false)

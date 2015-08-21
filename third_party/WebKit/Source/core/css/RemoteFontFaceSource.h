@@ -8,6 +8,7 @@
 #include "core/css/CSSFontFaceSource.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourcePtr.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -42,6 +43,7 @@ protected:
 
 private:
     class FontLoadHistograms {
+        DISALLOW_ALLOCATION();
     public:
         FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0) { }
         void loadStarted();

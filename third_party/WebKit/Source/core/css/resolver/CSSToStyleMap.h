@@ -27,6 +27,7 @@
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/animation/TimingFunction.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -37,6 +38,7 @@ class NinePieceImage;
 class BorderImageLengthBox;
 
 class CSSToStyleMap {
+    STATIC_ONLY(CSSToStyleMap);
 public:
     static void mapFillAttachment(StyleResolverState&, FillLayer*, CSSValue*);
     static void mapFillClip(StyleResolverState&, FillLayer*, CSSValue*);

@@ -21,12 +21,14 @@
 #ifndef CSSParserString_h
 #define CSSParserString_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 struct CSSParserString {
+    STACK_ALLOCATED();
     void init(const LChar* characters, unsigned length)
     {
         m_data.characters8 = characters;

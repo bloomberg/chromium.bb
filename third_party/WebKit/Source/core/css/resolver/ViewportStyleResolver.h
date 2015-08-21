@@ -44,6 +44,7 @@ class MutableStylePropertySet;
 class StyleRuleViewport;
 
 class CORE_EXPORT ViewportStyleResolver : public NoBaseWillBeGarbageCollected<ViewportStyleResolver> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ViewportStyleResolver);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
 public:
     static PassOwnPtrWillBeRawPtr<ViewportStyleResolver> create(Document* document)

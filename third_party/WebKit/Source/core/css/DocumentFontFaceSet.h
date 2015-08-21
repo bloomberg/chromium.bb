@@ -27,6 +27,7 @@
 #define DocumentFontFaceSet_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -35,6 +36,7 @@ class Document;
 class FontFaceSet;
 
 class DocumentFontFaceSet {
+    STATIC_ONLY(DocumentFontFaceSet);
 public:
     static PassRefPtrWillBeRawPtr<FontFaceSet> fonts(Document&);
 };

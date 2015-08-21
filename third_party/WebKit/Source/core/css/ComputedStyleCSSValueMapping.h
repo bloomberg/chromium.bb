@@ -7,6 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/CSSValue.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,7 @@ class StyleColor;
 class Node;
 
 class ComputedStyleCSSValueMapping {
+    STATIC_ONLY(ComputedStyleCSSValueMapping);
 public:
     // FIXME: Resolve computed auto alignment in applyProperty/ComputedStyle and remove this non-const styledNode parameter.
     static PassRefPtrWillBeRawPtr<CSSValue> get(CSSPropertyID, const ComputedStyle&, const LayoutObject* = nullptr, Node* styledNode = nullptr, bool allowVisitedStyle = false);

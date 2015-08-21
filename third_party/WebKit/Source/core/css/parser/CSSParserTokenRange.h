@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/parser/CSSParserToken.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -17,6 +18,7 @@ CORE_EXPORT extern const CSSParserToken& staticEOFToken;
 // Accessing outside of the range will return an endless stream of EOF tokens.
 // This class refers to half-open intervals [first, last).
 class CORE_EXPORT CSSParserTokenRange {
+    DISALLOW_ALLOCATION();
 public:
     CSSParserTokenRange(const Vector<CSSParserToken>& vector)
     : m_first(vector.begin())

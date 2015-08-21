@@ -6,6 +6,7 @@
 #define LocalFontFaceSource_h
 
 #include "core/css/CSSFontFaceSource.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 
 namespace blink {
@@ -20,6 +21,7 @@ private:
     PassRefPtr<SimpleFontData> createFontData(const FontDescription&) override;
 
     class LocalFontHistograms {
+        DISALLOW_ALLOCATION();
     public:
         LocalFontHistograms() : m_reported(false) { }
         void record(bool loadSuccess);

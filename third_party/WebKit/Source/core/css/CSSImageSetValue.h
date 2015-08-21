@@ -29,6 +29,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/weborigin/Referrer.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -56,6 +57,7 @@ public:
     bool isPending() const { return !m_accessedBestFitImage; }
 
     struct ImageWithScale {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         String imageURL;
         Referrer referrer;
         float scaleFactor;

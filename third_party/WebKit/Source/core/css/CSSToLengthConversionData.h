@@ -32,6 +32,7 @@
 #define CSSToLengthConversionData_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include <limits>
@@ -43,9 +44,11 @@ class LayoutView;
 class Font;
 
 class CORE_EXPORT CSSToLengthConversionData {
+    DISALLOW_ALLOCATION();
 public:
 
     class FontSizes {
+        DISALLOW_ALLOCATION();
     public:
         FontSizes() : m_em(0), m_rem(0), m_font(nullptr) { }
         FontSizes(float em, float rem, const Font*);
@@ -62,6 +65,7 @@ public:
     };
 
     class ViewportSize {
+        DISALLOW_ALLOCATION();
     public:
         ViewportSize() : m_width(0), m_height(0) { }
         ViewportSize(double width, double height) : m_width(width), m_height(height) { }

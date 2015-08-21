@@ -24,6 +24,7 @@
 #define CSSDefaultStyleSheets_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -32,6 +33,8 @@ class RuleSet;
 class StyleSheetContents;
 
 class CSSDefaultStyleSheets : public NoBaseWillBeGarbageCollected<CSSDefaultStyleSheets> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSDefaultStyleSheets);
+    WTF_MAKE_NONCOPYABLE(CSSDefaultStyleSheets);
 public:
     static CSSDefaultStyleSheets& instance();
 

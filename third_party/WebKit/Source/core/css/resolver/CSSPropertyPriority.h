@@ -6,6 +6,7 @@
 #define CSSPropertyPriority_h
 
 #include "core/CSSPropertyNames.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -20,6 +21,7 @@ enum CSSPropertyPriority {
 
 template <CSSPropertyPriority priority>
 class CSSPropertyPriorityData {
+    STATIC_ONLY(CSSPropertyPriorityData);
 public:
     static inline CSSPropertyID first();
     static inline CSSPropertyID last();

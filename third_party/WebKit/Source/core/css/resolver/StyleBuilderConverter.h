@@ -39,6 +39,7 @@
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/text/TabSize.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -48,6 +49,7 @@ class ScaleTransformOperation;
 
 // Note that we assume the parser only allows valid CSSValue types.
 class StyleBuilderConverter {
+    STATIC_ONLY(StyleBuilderConverter);
 public:
     static PassRefPtr<StyleReflection> convertBoxReflect(StyleResolverState&, CSSValue*);
     static AtomicString convertFragmentIdentifier(StyleResolverState&, CSSValue*);

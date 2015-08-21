@@ -6,14 +6,15 @@
 #define MediaQueryBlockWatcher_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class CSSParserToken;
 
 class CORE_EXPORT MediaQueryBlockWatcher {
+    STACK_ALLOCATED();
 public:
-
     MediaQueryBlockWatcher();
     void handleToken(const CSSParserToken&);
     unsigned blockLevel() const { return m_blockLevel; }

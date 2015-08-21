@@ -27,6 +27,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParserString.h"
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -37,6 +38,7 @@ struct CSSParserCalcFunction;
 class CSSParserValueList;
 
 struct CSSParserValue {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     CSSValueID id;
     bool isInt;
     union {

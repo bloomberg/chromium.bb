@@ -20,14 +20,18 @@
 #ifndef HashTools_h
 #define HashTools_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 struct Property {
+    DISALLOW_ALLOCATION();
     int nameOffset;
     int id;
 };
 
 struct Value {
+    DISALLOW_ALLOCATION();
     int nameOffset;
     int id;
 };

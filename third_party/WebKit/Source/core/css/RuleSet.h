@@ -110,6 +110,7 @@ private:
 };
 
 struct SameSizeAsRuleData {
+    DISALLOW_ALLOCATION();
     void* a;
     unsigned b;
     unsigned c;

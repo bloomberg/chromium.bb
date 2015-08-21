@@ -42,6 +42,7 @@ class RemoteFontFaceSource;
 class SimpleFontData;
 
 class CORE_EXPORT CSSFontFace final : public NoBaseWillBeGarbageCollectedFinalized<CSSFontFace> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSFontFace);
     WTF_MAKE_NONCOPYABLE(CSSFontFace);
 public:
     struct UnicodeRange;
@@ -73,6 +74,7 @@ public:
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 
     struct UnicodeRange {
+        ALLOW_ONLY_INLINE_ALLOCATION();
         UnicodeRange(UChar32 from, UChar32 to)
             : m_from(from)
             , m_to(to)
@@ -91,6 +93,7 @@ public:
     };
 
     class CORE_EXPORT UnicodeRangeSet {
+        ALLOW_ONLY_INLINE_ALLOCATION();
     public:
         explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
         bool contains(UChar32) const;

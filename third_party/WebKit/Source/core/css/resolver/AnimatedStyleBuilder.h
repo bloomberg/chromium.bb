@@ -32,6 +32,7 @@
 #define AnimatedStyleBuilder_h
 
 #include "core/CSSPropertyNames.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -39,6 +40,7 @@ class AnimatableValue;
 class StyleResolverState;
 
 class AnimatedStyleBuilder {
+    STATIC_ONLY(AnimatedStyleBuilder);
 public:
     static void applyProperty(CSSPropertyID, StyleResolverState&, const AnimatableValue*);
 };

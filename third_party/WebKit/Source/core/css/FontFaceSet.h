@@ -34,6 +34,7 @@
 #include "core/events/EventTarget.h"
 #include "platform/AsyncMethodRunner.h"
 #include "platform/RefCountedSupplement.h"
+#include "wtf/Allocator.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -117,6 +118,7 @@ private:
     }
 
     class FontLoadHistogram {
+        DISALLOW_ALLOCATION();
     public:
         enum Status { NoWebFonts, HadBlankText, DidNotHaveBlankText, Reported };
         FontLoadHistogram() : m_status(NoWebFonts), m_count(0), m_recorded(false) { }
