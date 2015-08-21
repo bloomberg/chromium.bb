@@ -35,10 +35,6 @@ public class AwResource {
         sResourceCache = new SparseArray<SoftReference<String>>();
     }
 
-    public static void setErrorPageResources(int loaderror, int nodomain) {
-        // TODO(mnaganov): Remove after getting rid of all usages.
-    }
-
     public static void setConfigKeySystemUuidMapping(int config) {
         sStringArrayConfigKeySystemUUIDMapping = config;
     }
