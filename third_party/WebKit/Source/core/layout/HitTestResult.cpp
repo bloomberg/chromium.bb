@@ -163,7 +163,7 @@ PositionWithAffinity HitTestResult::position() const
     if (!layoutObject)
         return PositionWithAffinity();
     if (m_innerPossiblyPseudoNode->isPseudoElement() && m_innerPossiblyPseudoNode->pseudoId() == BEFORE)
-        return Position(m_innerNode, PositionAnchorType::BeforeChildren).downstream();
+        return mostBackwardCaretPosition(Position(m_innerNode, PositionAnchorType::BeforeChildren));
     return layoutObject->positionForPoint(localPoint());
 }
 
