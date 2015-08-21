@@ -503,7 +503,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForOffTheRecord) {
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
+// http://crbug.com/523387
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       DISABLED_NoLeakFromOffTheRecord) {
   // Check prompt will be created for incognito profile.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
   SetFrameHost("");
@@ -570,7 +572,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   CheckGeoposition(cached_position_latitude, cached_position_lognitude);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
+// http://crbug.com/523387
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       DISABLED_CancelPermissionForFrame) {
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
