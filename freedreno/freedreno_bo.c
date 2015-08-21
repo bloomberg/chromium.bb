@@ -237,8 +237,9 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 		return NULL;
 	}
 
-	/* hmm, would be nice if we had a way to figure out the size.. */
-	size = 0;
+	/* lseek() to get bo size */
+	size = lseek(fd, 0, SEEK_END);
+	lseek(fd, 0, SEEK_CUR);
 
 	bo = fd_bo_from_handle(dev, req.handle, size);
 	bo->fd = fd;
