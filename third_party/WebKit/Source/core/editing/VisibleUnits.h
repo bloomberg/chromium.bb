@@ -66,21 +66,21 @@ struct InlineBoxPosition {
 // collapsible, there are two candidates that map to the VisiblePosition
 // between 'b' and the space, after first space and before last space.
 //
-// mostForwardCaretPosition returns the left candidate and also returs
+// mostBackwardCaretPosition returns the left candidate and also returs
 // [boundary, 0] for any of the positions from [boundary, 0] to the first
 // candidate in boundary, where
 // endsOfNodeAreVisuallyDistinctPositions(boundary) is true.
 //
-// mostBackwardCaretPosition() returns the right one and also returns the
+// mostForwardCaretPosition() returns the right one and also returns the
 // last position in the last atomic node in boundary for all of the positions
 // in boundary after the last candidate, where
 // endsOfNodeAreVisuallyDistinctPositions(boundary).
 // FIXME: This function should never be called when the line box tree is dirty.
 // See https://bugs.webkit.org/show_bug.cgi?id=97264
-CORE_EXPORT Position mostForwardCaretPosition(const Position &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT Position mostBackwardCaretPosition(const Position &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT Position mostForwardCaretPosition(const Position &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const Position&);
 CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInComposedTree&);

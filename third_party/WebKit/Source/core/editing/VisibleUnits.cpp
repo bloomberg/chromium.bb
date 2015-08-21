@@ -1954,7 +1954,7 @@ static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos)
 }
 
 template <typename Strategy>
-static PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+static PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
 {
     TRACE_EVENT0("blink", "Position::upstream");
 
@@ -2070,18 +2070,18 @@ static PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgori
     return lastVisible.deprecatedComputePosition();
 }
 
-Position mostForwardCaretPosition(const Position& position, EditingBoundaryCrossingRule rule)
+Position mostBackwardCaretPosition(const Position& position, EditingBoundaryCrossingRule rule)
 {
-    return mostForwardCaretPosition<EditingStrategy>(position, rule);
+    return mostBackwardCaretPosition<EditingStrategy>(position, rule);
 }
 
-PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
 {
-    return mostForwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
+    return mostBackwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
 {
     TRACE_EVENT0("blink", "Position::downstream");
 
@@ -2199,14 +2199,14 @@ PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgorithm<St
     return lastVisible.deprecatedComputePosition();
 }
 
-Position mostBackwardCaretPosition(const Position& position, EditingBoundaryCrossingRule rule)
+Position mostForwardCaretPosition(const Position& position, EditingBoundaryCrossingRule rule)
 {
-    return mostBackwardCaretPosition<EditingStrategy>(position, rule);
+    return mostForwardCaretPosition<EditingStrategy>(position, rule);
 }
 
-PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
 {
-    return mostBackwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
+    return mostForwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
 }
 
 // Returns true if the visually equivalent positions around have different

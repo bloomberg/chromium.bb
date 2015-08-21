@@ -449,13 +449,13 @@ bool PositionAlgorithm<Strategy>::atEndOfTree() const
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::upstream(EditingBoundaryCrossingRule rule) const
 {
-    return mostForwardCaretPosition(*this, rule);
+    return mostBackwardCaretPosition(*this, rule);
 }
 
 template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
-    return mostBackwardCaretPosition(*this, rule);
+    return mostForwardCaretPosition(*this, rule);
 }
 
 template <typename Strategy>
