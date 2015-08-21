@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsTextChanged) {
+                       DISABLED_AccessibilityEventsTextChanged) {
   RunEventTest(FILE_PATH_LITERAL("text-changed.html"));
 }
 

@@ -1,8 +1,5 @@
 AXWebArea
-++AXGroup AXValue='A contenteditable with a link and an   and a  .
-Always expose editable tables as tables.
-Editable list item.
-'
+++AXGroup
 ++++AXGroup
 ++++++AXStaticText AXValue='A contenteditable with a '
 ++++++AXLink AXTitle='link'
@@ -19,7 +16,7 @@ Editable list item.
 ++++++AXColumn
 ++++++AXGroup
 ++++AXList
-++++++AXGroup AXTitle='Editable list item.'
+++++++AXGroup
 ++++++++AXListMarker AXValue='1'
 ++++++++AXStaticText AXValue='Editable list item.'
 ++AXGroup
