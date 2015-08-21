@@ -5,6 +5,7 @@
 #include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
+#include "ui/ozone/public/client_native_pixmap.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -74,15 +75,19 @@ GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
                << ", usage " << static_cast<int>(usage);
     return gfx::GpuMemoryBufferHandle();
   }
-  base::AutoLock lock(native_pixmaps_lock_);
-  NativePixmapMapKey key(id.id, client_id);
-  DCHECK(native_pixmaps_.find(key) == native_pixmaps_.end())
-      << "pixmap with this key must not exist";
-  native_pixmaps_[key] = pixmap;
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
   handle.id = id;
+  handle.native_pixmap_handle = pixmap->ExportHandle();
+
+  {
+    base::AutoLock lock(native_pixmaps_lock_);
+    NativePixmapMapKey key(id.id, client_id);
+    DCHECK(native_pixmaps_.find(key) == native_pixmaps_.end());
+    native_pixmaps_[key] = pixmap;
+  }
+
   return handle;
 }
 
@@ -91,7 +96,7 @@ void GpuMemoryBufferFactoryOzoneNativePixmap::DestroyGpuMemoryBuffer(
     int client_id) {
   base::AutoLock lock(native_pixmaps_lock_);
   auto it = native_pixmaps_.find(NativePixmapMapKey(id.id, client_id));
-  DCHECK(it != native_pixmaps_.end()) << "pixmap with this key must exist";
+  DCHECK(it != native_pixmaps_.end());
   native_pixmaps_.erase(it);
 }
 

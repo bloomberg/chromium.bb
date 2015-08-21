@@ -405,6 +405,10 @@ component("gfx") {
     sources -= [ "path_x11.cc" ]
   }
 
+  if (use_ozone) {
+    sources += [ "native_pixmap_handle_ozone.h" ]
+  }
+
   if (use_cairo) {
     configs += [ "//build/config/linux:pangocairo" ]
   }

@@ -9,9 +9,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/public/client_native_pixmap.h"
+
+namespace gfx {
+struct NativePixmapHandle;
+class Size;
+}
 
 namespace base {
 
@@ -42,8 +46,9 @@ class OZONE_EXPORT ClientNativePixmapFactory {
 
   // TODO(dshwang): implement it. crbug.com/475633
   // Import the native pixmap from |handle| to be used in non-GPU processes.
-  virtual scoped_ptr<ClientNativePixmap> ImportNativePixmap(
-      const base::FileDescriptor& handle,
+  // This function takes ownership of any file descriptors in |handle|.
+  virtual scoped_ptr<ClientNativePixmap> ImportFromHandle(
+      const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;

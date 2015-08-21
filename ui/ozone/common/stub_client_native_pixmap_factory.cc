@@ -19,12 +19,12 @@ class StubClientNativePixmapFactory : public ClientNativePixmapFactory {
   std::vector<Configuration> GetSupportedConfigurations() const override {
     return std::vector<Configuration>();
   }
-  scoped_ptr<ClientNativePixmap> ImportNativePixmap(
-      const base::FileDescriptor& handle,
+  scoped_ptr<ClientNativePixmap> ImportFromHandle(
+      const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
     return nullptr;
   }
 

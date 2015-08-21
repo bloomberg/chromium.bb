@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 
@@ -52,6 +53,10 @@ class NativePixmap : public base::RefCountedThreadSafe<NativePixmap> {
   // Set callback function for the pixmap used for scaling.
   virtual void SetScalingCallback(const ScalingCallback& scaling_callback) = 0;
   virtual scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) = 0;
+
+  // Export the buffer for sharing across processes.
+  // Any file descriptors in the exported handle are owned by the caller.
+  virtual gfx::NativePixmapHandle ExportHandle() = 0;
 
  protected:
   virtual ~NativePixmap() {}

@@ -12,12 +12,23 @@
 #include "ui/gfx/ipc/gfx_ipc_export.h"
 #include "ipc/ipc_message_macros.h"
 
+#if defined(USE_OZONE)
+#include "ui/gfx/native_pixmap_handle_ozone.h"
+#endif
+
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT GFX_IPC_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::BufferFormat, gfx::BufferFormat::LAST)
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::BufferUsage, gfx::BufferUsage::LAST)
+
+#if defined(USE_OZONE)
+IPC_STRUCT_TRAITS_BEGIN(gfx::NativePixmapHandle)
+  IPC_STRUCT_TRAITS_MEMBER(fd)
+  IPC_STRUCT_TRAITS_MEMBER(stride)
+IPC_STRUCT_TRAITS_END()
+#endif
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT

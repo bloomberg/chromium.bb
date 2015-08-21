@@ -10,8 +10,10 @@
 #include <xf86drm.h>
 
 #include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
 
@@ -92,6 +94,20 @@ void GbmPixmap::SetScalingCallback(const ScalingCallback& scaling_callback) {
 
 scoped_refptr<NativePixmap> GbmPixmap::GetScaledPixmap(gfx::Size new_size) {
   return scaling_callback_.Run(new_size);
+}
+
+gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
+  gfx::NativePixmapHandle handle;
+
+  int dmabuf_fd = HANDLE_EINTR(dup(dma_buf_));
+  if (dmabuf_fd < 0) {
+    PLOG(ERROR) << "dup";
+    return handle;
+  }
+
+  handle.fd = base::FileDescriptor(dmabuf_fd, true /* auto_close */);
+  handle.stride = gbm_bo_get_stride(buffer_->bo());
+  return handle;
 }
 
 GbmPixmap::~GbmPixmap() {

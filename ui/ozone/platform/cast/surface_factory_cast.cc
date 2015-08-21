@@ -211,6 +211,9 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     scoped_refptr<NativePixmap> GetScaledPixmap(gfx::Size new_size) override {
       return nullptr;
     }
+    gfx::NativePixmapHandle ExportHandle() override {
+      return gfx::NativePixmapHandle();
+    }
 
    private:
     ~CastPixmap() override {}

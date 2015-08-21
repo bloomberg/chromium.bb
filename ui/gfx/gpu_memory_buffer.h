@@ -12,6 +12,10 @@
 #include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gfx/gfx_export.h"
 
+#if defined(USE_OZONE)
+#include "ui/gfx/native_pixmap_handle_ozone.h"
+#endif
+
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 
 namespace gfx {
@@ -33,6 +37,9 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;
   base::SharedMemoryHandle handle;
+#if defined(USE_OZONE)
+  NativePixmapHandle native_pixmap_handle;
+#endif
 };
 
 base::trace_event::MemoryAllocatorDumpGuid GFX_EXPORT

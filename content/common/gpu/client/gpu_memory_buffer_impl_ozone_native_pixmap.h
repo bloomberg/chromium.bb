@@ -7,11 +7,17 @@
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
+namespace ui {
+class ClientNativePixmap;
+}
+
 namespace content {
 
 // Implementation of GPU memory buffer based on Ozone native pixmap.
 class GpuMemoryBufferImplOzoneNativePixmap : public GpuMemoryBufferImpl {
  public:
+  ~GpuMemoryBufferImplOzoneNativePixmap() override;
+
   static scoped_ptr<GpuMemoryBufferImpl> CreateFromHandle(
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
@@ -26,11 +32,14 @@ class GpuMemoryBufferImplOzoneNativePixmap : public GpuMemoryBufferImpl {
   gfx::GpuMemoryBufferHandle GetHandle() const override;
 
  private:
-  GpuMemoryBufferImplOzoneNativePixmap(gfx::GpuMemoryBufferId id,
-                                       const gfx::Size& size,
-                                       gfx::BufferFormat format,
-                                       const DestructionCallback& callback);
-  ~GpuMemoryBufferImplOzoneNativePixmap() override;
+  GpuMemoryBufferImplOzoneNativePixmap(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      const DestructionCallback& callback,
+      scoped_ptr<ui::ClientNativePixmap> native_pixmap);
+
+  scoped_ptr<ui::ClientNativePixmap> pixmap_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplOzoneNativePixmap);
 };

@@ -110,6 +110,7 @@
         'common/stub_overlay_manager.h',
         'platform_selection.cc',
         'platform_selection.h',
+        'public/client_native_pixmap.h',
         'public/client_native_pixmap_factory.cc',
         'public/client_native_pixmap_factory.h',
         'public/input_controller.cc',
