@@ -18,6 +18,7 @@ class HitTestRequest;
 class HitTestLocation;
 class LayoutObject;
 class LineLayoutBox;
+class LineLayoutBoxModel;
 
 enum HitTestFilter;
 
@@ -61,9 +62,14 @@ public:
     }
 
     // Implemented in LineLayoutBox.h
-    // Intentionally returns a Box instead of a Block to avoid exposing LayoutBlock
+    // Intentionally returns a LineLayoutBox to avoid exposing LayoutBlock
     // to the line layout code.
     LineLayoutBox containingBlock() const;
+
+    // Implemented in LineLayoutBoxModel.h
+    // Intentionally returns a LineLayoutBoxModel to avoid exposing LayoutBoxModelObject
+    // to the line layout code.
+    LineLayoutBoxModel enclosingBoxModelObject() const;
 
     LineLayoutItem container() const
     {

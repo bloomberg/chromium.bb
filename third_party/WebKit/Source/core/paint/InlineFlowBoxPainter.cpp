@@ -8,6 +8,7 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
@@ -44,8 +45,8 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
                     containingBlockPaintsContinuationOutline = false;
                 } else {
                     cb = enclosingAnonymousBlock->containingBlock();
-                    for (LayoutBoxModelObject* box = m_inlineFlowBox.deprecatedBoxModelObject(); box != cb; box = box->parent()->enclosingBoxModelObject()) {
-                        if (box->hasSelfPaintingLayer()) {
+                    for (LineLayoutBoxModel box = m_inlineFlowBox.boxModelObject(); box != cb; box = box.parent().enclosingBoxModelObject()) {
+                        if (box.hasSelfPaintingLayer()) {
                             containingBlockPaintsContinuationOutline = false;
                             break;
                         }
@@ -84,7 +85,7 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
             childInfo.updatePaintingRootForChildren(&m_inlineFlowBox.layoutObject());
 
         for (InlineBox* curr = m_inlineFlowBox.firstChild(); curr; curr = curr->nextOnLine()) {
-            if (curr->layoutObject().isText() || !curr->deprecatedBoxModelObject()->hasSelfPaintingLayer())
+            if (curr->lineLayoutItem().isText() || !curr->boxModelObject().hasSelfPaintingLayer())
                 curr->paint(childInfo, paintOffset, lineTop, lineBottom);
         }
     }
@@ -249,7 +250,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     BorderPaintingType borderPaintingType = getBorderPaintType(adjustedFrameRect, adjustedClipRect);
 
     // Shadow comes first and is behind the background and border.
-    if (!m_inlineFlowBox.deprecatedBoxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))
+    if (!m_inlineFlowBox.boxModelObject().boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))
         paintBoxShadow(paintInfo, *styleToUse, Normal, adjustedFrameRect);
 
     Color backgroundColor = m_inlineFlowBox.layoutObject().resolveColor(*styleToUse, CSSPropertyBackgroundColor);
@@ -291,7 +292,7 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoi
 
     // Figure out if we need to push a transparency layer to render our mask.
     bool pushTransparencyLayer = false;
-    bool compositedMask = m_inlineFlowBox.layoutObject().hasLayer() && m_inlineFlowBox.deprecatedBoxModelObject()->layer()->hasCompositedMask();
+    bool compositedMask = m_inlineFlowBox.layoutObject().hasLayer() && m_inlineFlowBox.boxModelObject().layer()->hasCompositedMask();
     bool flattenCompositingLayers = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
     SkXfermode::Mode compositeOp = SkXfermode::kSrcOver_Mode;
     if (!compositedMask || flattenCompositingLayers) {

@@ -133,10 +133,20 @@ public:
         return toBoxModel()->borderAndPaddingLogicalHeight();
     }
 
+    bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance bleedAvoidance, InlineFlowBox* inlineFlowBox = nullptr) const
+    {
+        return toBoxModel()->boxShadowShouldBeAppliedToBackground(bleedAvoidance, inlineFlowBox);
+    }
+
 private:
     LayoutBoxModelObject* toBoxModel() { return toLayoutBoxModelObject(layoutObject()); }
     const LayoutBoxModelObject* toBoxModel() const { return toLayoutBoxModelObject(layoutObject()); }
 };
+
+inline LineLayoutBoxModel LineLayoutItem::enclosingBoxModelObject() const
+{
+    return LineLayoutBoxModel(layoutObject()->enclosingBoxModelObject());
+}
 
 } // namespace blink
 
