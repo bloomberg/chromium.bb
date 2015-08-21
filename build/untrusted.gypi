@@ -1033,7 +1033,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib_arm_nonsfi)',
                   '^(source_list_newlib_arm_nonsfi)',
-                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                   '>(tc_lib_dir_nonsfi_helper_arm)/libnacl_sys_private.a',
                 ],
                 'outputs': ['>(out_newlib_arm_nonsfi)'],
@@ -1089,7 +1089,7 @@
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib_arm_nonsfi)',
                   '^(source_list_newlib_arm_nonsfi)',
-                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
+                  '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_arm_nonsfi)'],
                 'action': [
