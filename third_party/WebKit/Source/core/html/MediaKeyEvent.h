@@ -70,7 +70,7 @@ private:
     RefPtr<DOMUint8Array> m_initData;
     RefPtr<DOMUint8Array> m_message;
     String m_defaultURL;
-    RefPtrWillBeMember<MediaKeyError> m_errorCode;
+    PersistentWillBeMember<MediaKeyError> m_errorCode;
     unsigned short m_systemCode;
 };
 

@@ -300,11 +300,11 @@ double MediaSource::duration() const
     return isClosed() ? std::numeric_limits<float>::quiet_NaN() : m_webMediaSource->duration();
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::buffered() const
+TimeRanges* MediaSource::buffered() const
 {
     // Implements MediaSource algorithm for HTMLMediaElement.buffered.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
-    WillBeHeapVector<RefPtrWillBeMember<TimeRanges>> ranges(m_activeSourceBuffers->length());
+    HeapVector<Member<TimeRanges>> ranges(m_activeSourceBuffers->length());
     for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
         ranges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
 
@@ -326,7 +326,7 @@ PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::buffered() const
         return TimeRanges::create();
 
     // 4. Let intersection ranges equal a TimeRange object containing a single range from 0 to highest end time.
-    RefPtrWillBeRawPtr<TimeRanges> intersectionRanges = TimeRanges::create(0, highestEndTime);
+    TimeRanges* intersectionRanges = TimeRanges::create(0, highestEndTime);
 
     // 5. For each SourceBuffer object in activeSourceBuffers run the following steps:
     bool ended = readyState() == endedKeyword();
@@ -343,10 +343,10 @@ PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::buffered() const
         intersectionRanges->intersectWith(sourceRanges);
     }
 
-    return intersectionRanges.release();
+    return intersectionRanges;
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::seekable() const
+TimeRanges* MediaSource::seekable() const
 {
     // Implements MediaSource algorithm for HTMLMediaElement.seekable.
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
@@ -358,7 +358,7 @@ PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::seekable() const
 
     // If duration equals positive Infinity:
     if (sourceDuration == std::numeric_limits<double>::infinity()) {
-        RefPtrWillBeRawPtr<TimeRanges> buffered = m_attachedElement->buffered();
+        TimeRanges* buffered = m_attachedElement->buffered();
 
         // 1. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges object, then
         // return an empty TimeRanges object and abort these steps.

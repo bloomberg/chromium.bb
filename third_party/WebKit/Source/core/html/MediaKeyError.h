@@ -29,12 +29,10 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT MediaKeyError final : public RefCountedWillBeGarbageCollectedFinalized<MediaKeyError>, public ScriptWrappable {
+class CORE_EXPORT MediaKeyError final : public GarbageCollected<MediaKeyError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum {
@@ -47,9 +45,9 @@ public:
     };
     typedef unsigned short Code;
 
-    static PassRefPtrWillBeRawPtr<MediaKeyError> create(Code code, unsigned systemCode = 0)
+    static MediaKeyError* create(Code code, unsigned systemCode = 0)
     {
-        return adoptRefWillBeNoop(new MediaKeyError(code, systemCode));
+        return new MediaKeyError(code, systemCode);
     }
 
     Code code() const { return m_code; }

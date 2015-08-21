@@ -28,12 +28,11 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class CORE_EXPORT MediaError final : public RefCountedWillBeGarbageCollectedFinalized<MediaError>, public ScriptWrappable {
+class CORE_EXPORT MediaError final : public GarbageCollected<MediaError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Code {
@@ -43,9 +42,9 @@ public:
         MEDIA_ERR_SRC_NOT_SUPPORTED,
     };
 
-    static PassRefPtrWillBeRawPtr<MediaError> create(Code code)
+    static MediaError* create(Code code)
     {
-        return adoptRefWillBeNoop(new MediaError(code));
+        return new MediaError(code);
     }
 
     Code code() const { return m_code; }

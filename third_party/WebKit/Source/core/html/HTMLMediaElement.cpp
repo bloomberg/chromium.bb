@@ -653,7 +653,7 @@ void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
     m_pendingActionFlags = 0;
 }
 
-PassRefPtrWillBeRawPtr<MediaError> HTMLMediaElement::error() const
+MediaError* HTMLMediaElement::error() const
 {
     return m_error;
 }
@@ -1286,7 +1286,7 @@ void HTMLMediaElement::noneSupported()
         layoutObject()->updateFromElement();
 }
 
-void HTMLMediaElement::mediaEngineError(PassRefPtrWillBeRawPtr<MediaError> err)
+void HTMLMediaElement::mediaEngineError(MediaError* err)
 {
     ASSERT(m_readyState >= HAVE_METADATA);
     WTF_LOG(Media, "HTMLMediaElement::mediaEngineError(%p, %d)", this, static_cast<int>(err->code()));
@@ -1672,7 +1672,7 @@ void HTMLMediaElement::seek(double time)
     // seekable attribute, then let it be the position in one of the ranges given in the seekable attribute
     // that is the nearest to the new playback position. ... If there are no ranges given in the seekable
     // attribute then set the seeking IDL attribute to false and abort these steps.
-    RefPtrWillBeRawPtr<TimeRanges> seekableRanges = seekable();
+    TimeRanges* seekableRanges = seekable();
 
     if (!seekableRanges->length()) {
         m_seeking = false;
@@ -2865,7 +2865,7 @@ void HTMLMediaElement::sizeChanged()
         layoutObject()->updateFromElement();
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::buffered() const
+TimeRanges* HTMLMediaElement::buffered() const
 {
     if (m_mediaSource)
         return m_mediaSource->buffered();
@@ -2876,7 +2876,7 @@ PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::buffered() const
     return TimeRanges::create(webMediaPlayer()->buffered());
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::played()
+TimeRanges* HTMLMediaElement::played()
 {
     if (m_playing) {
         double time = currentTime();
@@ -2890,7 +2890,7 @@ PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::played()
     return m_playedTimeRanges->copy();
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> HTMLMediaElement::seekable() const
+TimeRanges* HTMLMediaElement::seekable() const
 {
     if (!webMediaPlayer())
         return TimeRanges::create();
@@ -2944,7 +2944,7 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
 bool HTMLMediaElement::stoppedDueToErrors() const
 {
     if (m_readyState >= HAVE_METADATA && m_error) {
-        RefPtrWillBeRawPtr<TimeRanges> seekableRanges = seekable();
+        TimeRanges* seekableRanges = seekable();
         if (!seekableRanges->contain(currentTime()))
             return true;
     }

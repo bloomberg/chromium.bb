@@ -26,7 +26,7 @@
 // https://html.spec.whatwg.org/#time-ranges
 
 [
-    WillBeGarbageCollected,
+    GarbageCollected,
     RuntimeEnabled=Media
 ] interface TimeRanges {
     readonly attribute unsigned long length;

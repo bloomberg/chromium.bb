@@ -28,9 +28,8 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebTimeRange.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 #include <algorithm>
@@ -39,7 +38,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT TimeRanges : public RefCountedWillBeGarbageCollectedFinalized<TimeRanges>, public ScriptWrappable {
+class CORE_EXPORT TimeRanges : public GarbageCollectedFinalized<TimeRanges>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // We consider all the Ranges to be semi-bounded as follow: [start, end[
@@ -85,17 +84,17 @@ public:
         }
     };
 
-    static PassRefPtrWillBeRawPtr<TimeRanges> create()
+    static TimeRanges* create()
     {
-        return adoptRefWillBeNoop(new TimeRanges);
+        return new TimeRanges;
     }
-    static PassRefPtrWillBeRawPtr<TimeRanges> create(double start, double end)
+    static TimeRanges* create(double start, double end)
     {
-        return adoptRefWillBeNoop(new TimeRanges(start, end));
+        return new TimeRanges(start, end);
     }
-    static PassRefPtrWillBeRawPtr<TimeRanges> create(const blink::WebTimeRanges&);
+    static TimeRanges* create(const WebTimeRanges&);
 
-    PassRefPtrWillBeRawPtr<TimeRanges> copy() const;
+    TimeRanges* copy() const;
     void intersectWith(const TimeRanges*);
     void unionWith(const TimeRanges*);
 

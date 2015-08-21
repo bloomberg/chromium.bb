@@ -39,31 +39,31 @@ TimeRanges::TimeRanges(double start, double end)
     add(start, end);
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> TimeRanges::create(const blink::WebTimeRanges& webRanges)
+TimeRanges* TimeRanges::create(const blink::WebTimeRanges& webRanges)
 {
-    RefPtrWillBeRawPtr<TimeRanges> ranges = TimeRanges::create();
+    TimeRanges* ranges = TimeRanges::create();
 
     unsigned size = webRanges.size();
     for (unsigned i = 0; i < size; ++i)
         ranges->add(webRanges[i].start, webRanges[i].end);
 
-    return ranges.release();
+    return ranges;
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> TimeRanges::copy() const
+TimeRanges* TimeRanges::copy() const
 {
-    RefPtrWillBeRawPtr<TimeRanges> newSession = TimeRanges::create();
+    TimeRanges* newSession = TimeRanges::create();
 
     unsigned size = m_ranges.size();
     for (unsigned i = 0; i < size; i++)
         newSession->add(m_ranges[i].m_start, m_ranges[i].m_end);
 
-    return newSession.release();
+    return newSession;
 }
 
 void TimeRanges::invert()
 {
-    RefPtrWillBeRawPtr<TimeRanges> inverted = TimeRanges::create();
+    TimeRanges* inverted = TimeRanges::create();
     double posInf = std::numeric_limits<double>::infinity();
     double negInf = -std::numeric_limits<double>::infinity();
 
@@ -92,18 +92,18 @@ void TimeRanges::intersectWith(const TimeRanges* other)
     if (other == this)
         return;
 
-    RefPtrWillBeRawPtr<TimeRanges> invertedOther = other->copy();
+    TimeRanges* invertedOther = other->copy();
     invertedOther->invert();
 
     invert();
-    unionWith(invertedOther.get());
+    unionWith(invertedOther);
     invert();
 }
 
 void TimeRanges::unionWith(const TimeRanges* other)
 {
     ASSERT(other);
-    RefPtrWillBeRawPtr<TimeRanges> unioned = copy();
+    TimeRanges* unioned = copy();
     for (size_t index = 0; index < other->m_ranges.size(); ++index) {
         const Range& range = other->m_ranges[index];
         unioned->add(range.m_start, range.m_end);

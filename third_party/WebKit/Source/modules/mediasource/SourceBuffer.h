@@ -72,7 +72,7 @@ public:
     const AtomicString& mode() const { return m_mode; }
     void setMode(const AtomicString&, ExceptionState&);
     bool updating() const { return m_updating; }
-    PassRefPtrWillBeRawPtr<TimeRanges> buffered(ExceptionState&) const;
+    TimeRanges* buffered(ExceptionState&) const;
     double timestampOffset() const;
     void setTimestampOffset(double, ExceptionState&);
     void appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState&);

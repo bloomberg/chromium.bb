@@ -64,8 +64,8 @@ public:
     virtual void close() = 0;
     virtual bool isClosed() const = 0;
     virtual double duration() const = 0;
-    virtual PassRefPtrWillBeRawPtr<TimeRanges> buffered() const = 0;
-    virtual PassRefPtrWillBeRawPtr<TimeRanges> seekable() const = 0;
+    virtual TimeRanges* buffered() const = 0;
+    virtual TimeRanges* seekable() const = 0;
 #if !ENABLE(OILPAN)
     virtual void refHTMLMediaSource() = 0;
     virtual void derefHTMLMediaSource() = 0;

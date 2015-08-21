@@ -159,7 +159,7 @@ void SourceBuffer::setMode(const AtomicString& newMode, ExceptionState& exceptio
     m_mode = newMode;
 }
 
-PassRefPtrWillBeRawPtr<TimeRanges> SourceBuffer::buffered(ExceptionState& exceptionState) const
+TimeRanges* SourceBuffer::buffered(ExceptionState& exceptionState) const
 {
     // Section 3.1 buffered attribute steps.
     // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an

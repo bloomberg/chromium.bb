@@ -79,8 +79,8 @@ public:
     void close() override;
     bool isClosed() const override;
     double duration() const override;
-    PassRefPtrWillBeRawPtr<TimeRanges> buffered() const override;
-    PassRefPtrWillBeRawPtr<TimeRanges> seekable() const override;
+    TimeRanges* buffered() const override;
+    TimeRanges* seekable() const override;
 #if !ENABLE(OILPAN)
     void refHTMLMediaSource() override { ref(); }
     void derefHTMLMediaSource() override { deref(); }

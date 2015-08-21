@@ -103,7 +103,7 @@ public:
     bool isPlayingRemotely() const { return m_playingRemotely; }
 
     // error state
-    PassRefPtrWillBeRawPtr<MediaError> error() const;
+    MediaError* error() const;
 
     // network state
     void setSrc(const AtomicString&);
@@ -117,7 +117,7 @@ public:
     WebMediaPlayer::Preload preloadType() const;
     WebMediaPlayer::Preload effectivePreloadType() const;
 
-    PassRefPtrWillBeRawPtr<TimeRanges> buffered() const;
+    TimeRanges* buffered() const;
     void load();
     String canPlayType(const String& mimeType, const String& keySystem = String()) const;
 
@@ -136,8 +136,8 @@ public:
     double playbackRate() const;
     void setPlaybackRate(double);
     void updatePlaybackRate();
-    PassRefPtrWillBeRawPtr<TimeRanges> played();
-    PassRefPtrWillBeRawPtr<TimeRanges> seekable() const;
+    TimeRanges* played();
+    TimeRanges* seekable() const;
     bool ended() const;
     bool autoplay() const;
     bool loop() const;
@@ -364,7 +364,7 @@ private:
     void clearMediaPlayerAndAudioSourceProviderClientWithoutLocking();
     bool havePotentialSourceChild();
     void noneSupported();
-    void mediaEngineError(PassRefPtrWillBeRawPtr<MediaError>);
+    void mediaEngineError(MediaError*);
     void cancelPendingEventsAndCallbacks();
     void waitForSourceChange();
     void prepareToPlay();
@@ -451,7 +451,7 @@ private:
     Timer<HTMLMediaElement> m_progressEventTimer;
     Timer<HTMLMediaElement> m_playbackProgressTimer;
     Timer<HTMLMediaElement> m_audioTracksTimer;
-    RefPtrWillBeMember<TimeRanges> m_playedTimeRanges;
+    PersistentWillBeMember<TimeRanges> m_playedTimeRanges;
     OwnPtrWillBeMember<GenericEventQueue> m_asyncEventQueue;
 
     double m_playbackRate;
@@ -461,7 +461,7 @@ private:
     ReadyState m_readyStateMaximum;
     KURL m_currentSrc;
 
-    RefPtrWillBeMember<MediaError> m_error;
+    PersistentWillBeMember<MediaError> m_error;
 
     double m_volume;
     double m_lastSeekTime;
