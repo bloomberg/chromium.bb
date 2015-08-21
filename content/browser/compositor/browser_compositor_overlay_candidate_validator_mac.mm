@@ -24,7 +24,10 @@ void BrowserCompositorOverlayCandidateValidatorMac::CheckOverlaySupport(
   if (software_mirror_active_)
     return;
 
-  // TODO(andresantoso): Enable video overlay when it's ready.
+  for (size_t i = 0; i < surfaces->size(); ++i) {
+    if (surfaces->at(i).plane_z_order > 0)
+      surfaces->at(i).overlay_handled = true;
+  }
 }
 
 void BrowserCompositorOverlayCandidateValidatorMac::SetSoftwareMirrorMode(
