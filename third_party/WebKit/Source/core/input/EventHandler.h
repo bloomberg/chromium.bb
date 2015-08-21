@@ -279,14 +279,14 @@ private:
 
     void invalidateClick();
 
-    void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&, bool);
+    void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
 
     /* Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another. */
     void sendMouseEventsForNodeTransition(Node*, Node*, const PlatformMouseEvent&);
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
-    bool dispatchMouseEvent(const AtomicString& eventType, Node* target, int clickCount, const PlatformMouseEvent&, bool setUnder);
+    bool dispatchMouseEvent(const AtomicString& eventType, Node* target, int clickCount, const PlatformMouseEvent&);
     bool dispatchDragEvent(const AtomicString& eventType, Node* target, const PlatformMouseEvent&, DataTransfer*);
 
     void clearDragDataTransfer();
@@ -372,7 +372,6 @@ private:
     bool m_eventHandlerWillResetCapturingMouseEventsNode;
 
     RefPtrWillBeMember<Node> m_nodeUnderMouse;
-    RefPtrWillBeMember<Node> m_lastNodeUnderMouse;
     RefPtrWillBeMember<LocalFrame> m_lastMouseMoveEventSubframe;
     RefPtrWillBeMember<Scrollbar> m_lastScrollbarUnderMouse;
 
