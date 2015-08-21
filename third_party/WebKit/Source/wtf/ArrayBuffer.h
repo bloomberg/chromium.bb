@@ -122,6 +122,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source, unsigned byteLen
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBufferContents& contents)
 {
+    RELEASE_ASSERT(contents.data());
     return adoptRef(new ArrayBuffer(contents));
 }
 

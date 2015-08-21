@@ -134,7 +134,7 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes, SharingT
     void* data = nullptr;
     allocateMemory(sizeInBytes, policy, data);
     m_data = data;
-    m_sizeInBytes = sizeInBytes;
+    m_sizeInBytes = data ? sizeInBytes : 0;
     m_isShared = isShared;
 }
 
