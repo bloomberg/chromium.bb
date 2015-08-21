@@ -210,7 +210,8 @@ public:
     void rowLogicalHeightChanged(LayoutTableRow*);
 
     void removeCachedCollapsedBorders(const LayoutTableCell*);
-    void setCachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide, const CollapsedBorderValue&);
+    // Returns true if any collapsed borders of the cell changed.
+    bool setCachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide, const CollapsedBorderValue&);
     const CollapsedBorderValue& cachedCollapsedBorder(const LayoutTableCell*, CollapsedBorderSide) const;
 
     // distributeExtraLogicalHeightToRows methods return the *consumed* extra logical height.

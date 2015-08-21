@@ -91,6 +91,12 @@ public:
         SelectionGap,
         SelectionTint,
         TableCellBackgroundFromSelfPaintingRow, // FIXME: To be deprecated.
+        // Table collapsed borders can be painted together (e.g., left & top) but there are at most 4 phases of collapsed
+        // border painting for a single cell. To disambiguate these phases of collapsed border painting, a mask is used.
+        // TableCollapsedBorderBase can be larger than TableCollapsedBorderUnalignedBase to ensure the base lower bits are 0's.
+        TableCollapsedBorderUnalignedBase,
+        TableCollapsedBorderBase = (((TableCollapsedBorderUnalignedBase - 1) >> 4) + 1) << 4,
+        TableCollapsedBorderLast = TableCollapsedBorderBase + 0x0f,
         VideoBitmap,
         WebPlugin,
         WebFont,
@@ -178,6 +184,16 @@ public:
         TypeLast = UninitializedType
     };
 
+    static_assert(TableCollapsedBorderBase >= TableCollapsedBorderUnalignedBase, "TableCollapsedBorder types overlap with other types");
+    static_assert((TableCollapsedBorderBase & 0xf) == 0, "The lowest 4 bits of TableCollapsedBorderBase should be zero");
+    // Bits or'ed onto TableCollapsedBorderBase to generate a real table collapsed border type.
+    enum TableCollspaedBorderSides {
+        TableCollapsedBorderTop = 1 << 0,
+        TableCollapsedBorderRight = 1 << 1,
+        TableCollapsedBorderBottom = 1 << 2,
+        TableCollapsedBorderLeft = 1 << 3,
+    };
+
     DisplayItem(const DisplayItemClientWrapper& client, Type type, size_t derivedSize)
         : m_client(client.displayItemClient())
         , m_scope(0)
@@ -219,19 +235,19 @@ public:
     };
 
     // Convert cached type to non-cached type (e.g., Type::CachedSVGImage -> Type::SVGImage).
-    Type nonCachedType() const
+    static Type nonCachedType(Type type)
     {
-        if (isCachedDrawingType(m_type))
-            return cachedDrawingTypeToDrawingType(m_type);
-        if (isCachedSubtreeType(m_type))
-            return cachedSubtreeTypeToBeginSubtreeType(m_type);
-        return m_type;
+        if (isCachedDrawingType(type))
+            return cachedDrawingTypeToDrawingType(type);
+        if (isCachedSubtreeType(type))
+            return cachedSubtreeTypeToBeginSubtreeType(type);
+        return type;
     }
 
     // Return the Id with cached type converted to non-cached type.
     Id nonCachedId() const
     {
-        return Id(m_client, nonCachedType(), m_scope);
+        return Id(m_client, nonCachedType(m_type), m_scope);
     }
 
     virtual void replay(GraphicsContext&) { }

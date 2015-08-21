@@ -10,6 +10,8 @@
       ],
       "paintInvalidationClients": [
         "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTableRow TR id='row'"
       ]
     }

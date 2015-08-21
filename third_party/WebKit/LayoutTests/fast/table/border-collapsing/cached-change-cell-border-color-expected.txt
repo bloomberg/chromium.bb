@@ -9,6 +9,8 @@
         [8, 8, 60, 54]
       ],
       "paintInvalidationClients": [
+        "LayoutTableCell TD id='foo'",
+        "LayoutTableCell TD",
         "LayoutTableCell TD id='foo'"
       ]
     }

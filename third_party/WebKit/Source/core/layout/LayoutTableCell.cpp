@@ -951,10 +951,15 @@ void LayoutTableCell::collectBorderValues(LayoutTable::CollapsedBorderValues& bo
     CollapsedBorderValue beforeBorder = computeCollapsedBeforeBorder();
     CollapsedBorderValue afterBorder = computeCollapsedAfterBorder();
     LayoutTableSection* section = this->section();
-    section->setCachedCollapsedBorder(this, CBSStart, startBorder);
-    section->setCachedCollapsedBorder(this, CBSEnd, endBorder);
-    section->setCachedCollapsedBorder(this, CBSBefore, beforeBorder);
-    section->setCachedCollapsedBorder(this, CBSAfter, afterBorder);
+    bool changed = section->setCachedCollapsedBorder(this, CBSStart, startBorder);
+    changed |= section->setCachedCollapsedBorder(this, CBSEnd, endBorder);
+    changed |= section->setCachedCollapsedBorder(this, CBSBefore, beforeBorder);
+    changed |= section->setCachedCollapsedBorder(this, CBSAfter, afterBorder);
+
+    // In slimming paint mode, we need to invalidate all cells with collapsed border changed.
+    // FIXME: Need a way to invalidate/repaint the borders only. crbug.com/451090#c5.
+    if (changed && RuntimeEnabledFeatures::slimmingPaintEnabled())
+        invalidateDisplayItemClient(*this);
 
     addBorderStyle(borderValues, startBorder);
     addBorderStyle(borderValues, endBorder);

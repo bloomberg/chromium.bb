@@ -11,6 +11,17 @@
         [3, 264, 118, 110]
       ],
       "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='t1'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='t2'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD id='t3'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTableCell TD id='t1'",
         "LayoutTableCell TD id='t2'",
         "LayoutTableCell TD id='t3'"

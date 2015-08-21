@@ -451,6 +451,10 @@ crbug.com/318978 [ Linux ] http/tests/security/frameNavigation/xss-DENIED-plugin
 crbug.com/318978 [ Linux ] permissionclient/plugin-permission.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/ [ Skip ]
 
+crbug.com/510492 fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/510492 fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+crbug.com/510492 fast/table/border-collapsing/cached-change-cell-sl-border-color.html [ NeedsRebaseline ]
+
 crbug.com/380217 [ Linux Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-large-radius.html [ Skip ]
 crbug.com/380217 [ Win ] fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-left.html [ Skip ]
 

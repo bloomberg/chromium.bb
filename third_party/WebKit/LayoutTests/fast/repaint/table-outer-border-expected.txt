@@ -26,6 +26,8 @@
         "LayoutTableRow TR",
         "LayoutTableSection TBODY",
         "LayoutTable TABLE id='table'",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
         "LayoutTable TABLE id='table' class='green'",
         "LayoutTableCell TD",
         "LayoutTableCell TD",

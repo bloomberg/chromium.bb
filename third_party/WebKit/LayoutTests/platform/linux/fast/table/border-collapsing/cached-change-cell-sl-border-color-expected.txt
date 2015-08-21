@@ -13,6 +13,8 @@
         "InlineTextBox 'A'",
         "LayoutText #text",
         "RootInlineBox",
+        "LayoutTableCell TD id='foo'",
+        "LayoutTableCell TD",
         "LayoutTableCell TD id='foo'"
       ]
     }

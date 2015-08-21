@@ -53,6 +53,23 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
 
 static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
 {
+    if (type >= DisplayItem::TableCollapsedBorderUnalignedBase) {
+        if (type <= DisplayItem::TableCollapsedBorderBase)
+            return "TableCollapsedBorderAlignment";
+        if (type <= DisplayItem::TableCollapsedBorderLast) {
+            StringBuilder sb;
+            sb.append("TableCollapsedBorder");
+            if (type & DisplayItem::TableCollapsedBorderTop)
+                sb.append("Top");
+            if (type & DisplayItem::TableCollapsedBorderRight)
+                sb.append("Right");
+            if (type & DisplayItem::TableCollapsedBorderBottom)
+                sb.append("Bottom");
+            if (type & DisplayItem::TableCollapsedBorderLeft)
+                sb.append("Left");
+            return sb.toString();
+        }
+    }
     switch (type) {
         DEBUG_STRING_CASE(BoxDecorationBackground);
         DEBUG_STRING_CASE(Caret);

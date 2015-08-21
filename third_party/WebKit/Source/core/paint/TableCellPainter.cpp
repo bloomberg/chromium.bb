@@ -83,12 +83,17 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     const CollapsedBorderValue& topBorderValue = cachedCollapsedTopBorder(styleForCellFlow);
     const CollapsedBorderValue& bottomBorderValue = cachedCollapsedBottomBorder(styleForCellFlow);
 
-    bool shouldPaintTop = topBorderValue.shouldPaint(*tableCurrentBorderValue);
-    bool shouldPaintBottom = bottomBorderValue.shouldPaint(*tableCurrentBorderValue);
-    bool shouldPaintLeft = leftBorderValue.shouldPaint(*tableCurrentBorderValue);
-    bool shouldPaintRight = rightBorderValue.shouldPaint(*tableCurrentBorderValue);
+    int displayItemType = DisplayItem::TableCollapsedBorderBase;
+    if (topBorderValue.shouldPaint(*tableCurrentBorderValue))
+        displayItemType |= DisplayItem::TableCollapsedBorderTop;
+    if (bottomBorderValue.shouldPaint(*tableCurrentBorderValue))
+        displayItemType |= DisplayItem::TableCollapsedBorderBottom;
+    if (leftBorderValue.shouldPaint(*tableCurrentBorderValue))
+        displayItemType |= DisplayItem::TableCollapsedBorderLeft;
+    if (rightBorderValue.shouldPaint(*tableCurrentBorderValue))
+        displayItemType |= DisplayItem::TableCollapsedBorderRight;
 
-    if (!shouldPaintTop && !shouldPaintBottom && !shouldPaintLeft && !shouldPaintRight)
+    if (displayItemType == DisplayItem::TableCollapsedBorderBase)
         return;
 
     // Adjust our x/y/width/height so that we paint the collapsed borders at the correct location.
@@ -107,28 +112,28 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
         return;
 
     GraphicsContext* graphicsContext = paintInfo.context;
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*graphicsContext, m_layoutTableCell, paintInfo.phase))
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*graphicsContext, m_layoutTableCell, static_cast<DisplayItem::Type>(displayItemType)))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, paintInfo.phase, borderRect);
+    LayoutObjectDrawingRecorder recorder(*graphicsContext, m_layoutTableCell, static_cast<DisplayItem::Type>(displayItemType), borderRect);
     Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
     bool antialias = BoxPainter::shouldAntialiasLines(graphicsContext);
 
     // We never paint diagonals at the joins.  We simply let the border with the highest
     // precedence paint on top of borders with lower precedence.
-    if (shouldPaintTop) {
+    if (displayItemType & DisplayItem::TableCollapsedBorderTop) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.y(), borderRect.maxX(), borderRect.y() + topWidth, BSTop,
             topBorderValue.color().resolve(cellColor), collapsedBorderStyle(topBorderValue.style()), 0, 0, antialias);
     }
-    if (shouldPaintBottom) {
+    if (displayItemType & DisplayItem::TableCollapsedBorderBottom) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.maxY() - bottomWidth, borderRect.maxX(), borderRect.maxY(), BSBottom,
             bottomBorderValue.color().resolve(cellColor), collapsedBorderStyle(bottomBorderValue.style()), 0, 0, antialias);
     }
-    if (shouldPaintLeft) {
+    if (displayItemType & DisplayItem::TableCollapsedBorderLeft) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.x(), borderRect.y(), borderRect.x() + leftWidth, borderRect.maxY(), BSLeft,
             leftBorderValue.color().resolve(cellColor), collapsedBorderStyle(leftBorderValue.style()), 0, 0, antialias);
     }
-    if (shouldPaintRight) {
+    if (displayItemType & DisplayItem::TableCollapsedBorderRight) {
         ObjectPainter::drawLineForBoxSide(graphicsContext, borderRect.maxX() - rightWidth, borderRect.y(), borderRect.maxX(), borderRect.maxY(), BSRight,
             rightBorderValue.color().resolve(cellColor), collapsedBorderStyle(rightBorderValue.style()), 0, 0, antialias);
     }
