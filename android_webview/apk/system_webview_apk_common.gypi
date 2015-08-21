@@ -13,6 +13,7 @@
   ],
   'variables': {
     'native_lib_target': 'libwebviewchromium',
+    'native_lib_version_name': '<(version_full)',
     'never_lint': 1,
     'R_package': 'com.android.webview.chromium',
     'R_package_relpath': 'com/android/webview/chromium',
@@ -35,6 +36,7 @@
       '<@(snapshot_additional_input_paths)',
     ],
     'includes': [
+      '../../build/util/version.gypi',
       '../snapshot_copying.gypi',
     ],
     'conditions': [
