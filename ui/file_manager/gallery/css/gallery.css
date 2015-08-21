@@ -1345,6 +1345,10 @@ html[dir='rtl'] .thumbnail-view .thumbnail {
   float: right;
 }
 
+.thumbnail-view .thumbnail.selected:focus {
+  outline: none;
+}
+
 .thumbnail-view::-webkit-scrollbar {
   width: 0;
 }
