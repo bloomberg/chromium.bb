@@ -52,6 +52,9 @@ static struct fd_bo * lookup_bo(void *tbl, uint32_t key)
 	if (!drmHashLookup(tbl, key, (void **)&bo)) {
 		/* found, incr refcnt and return: */
 		bo = fd_bo_ref(bo);
+
+		/* don't break the bucket if this bo was found in one */
+		list_delinit(&bo->list);
 	}
 	return bo;
 }
