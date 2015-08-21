@@ -410,47 +410,6 @@ TEST_F('ManageProfileUITest', 'CreateConfirmationText', function() {
       name60Characters, name49Characters + '\u2026', escaped + '\u2026');
 });
 
-// The confirmation dialog should close if the new supervised user is deleted.
-TEST_F('ManageProfileUITest', 'CloseConfirmationOnDelete', function() {
-  // Configure the test profile and show the confirmation dialog.
-  var testProfile = this.testProfileInfo_(true);
-  CreateProfileOverlay.onSuccess(testProfile);
-  assertEquals('supervisedUserCreateConfirm',
-               PageManager.getTopmostVisiblePage().name);
-
-  SupervisedUserCreateConfirmOverlay.onDeletedProfile(testProfile.filePath);
-  assertEquals('settings', PageManager.getTopmostVisiblePage().name, name);
-});
-
-// The confirmation dialog should update if the new supervised user's name is
-// changed.
-TEST_F('ManageProfileUITest', 'UpdateConfirmationOnRename', function() {
-  // Configure the test profile and show the confirmation dialog.
-  var testProfile = this.testProfileInfo_(true);
-  CreateProfileOverlay.onSuccess(testProfile);
-  assertEquals('supervisedUserCreateConfirm',
-               PageManager.getTopmostVisiblePage().name);
-
-  var oldName = testProfile.name;
-  var newName = 'New Name';
-  SupervisedUserCreateConfirmOverlay.onUpdatedProfileName(testProfile.filePath,
-                                                          newName);
-  assertEquals('supervisedUserCreateConfirm',
-               PageManager.getTopmostVisiblePage().name);
-
-  var titleElement = $('supervised-user-created-title');
-  var switchElement = $('supervised-user-created-switch');
-  var messageElement = $('supervised-user-created-text');
-
-  assertEquals(-1, titleElement.textContent.indexOf(oldName));
-  assertEquals(-1, switchElement.textContent.indexOf(oldName));
-  assertEquals(-1, messageElement.textContent.indexOf(oldName));
-
-  assertNotEquals(-1, titleElement.textContent.indexOf(newName));
-  assertNotEquals(-1, switchElement.textContent.indexOf(newName));
-  assertNotEquals(-1, messageElement.textContent.indexOf(newName));
-});
-
 // An additional warning should be shown when deleting a supervised user.
 TEST_F('ManageProfileUITest', 'DeleteSupervisedUserWarning', function() {
   var addendum = $('delete-supervised-profile-addendum');

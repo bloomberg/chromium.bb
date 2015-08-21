@@ -6,14 +6,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -29,70 +26,7 @@
 
 namespace options {
 
-// ProfileUpdateObserver------------------------------------------------------
-
-class SupervisedUserCreateConfirmHandler::ProfileUpdateObserver
-    : public ProfileInfoCacheObserver {
- public:
-  ProfileUpdateObserver(ProfileInfoCache* profile_info_cache,
-                        SupervisedUserCreateConfirmHandler* handler)
-      : profile_info_cache_(profile_info_cache),
-        create_confirm_handler_(handler),
-        scoped_observer_(this) {
-    DCHECK(profile_info_cache_);
-    DCHECK(create_confirm_handler_);
-    scoped_observer_.Add(profile_info_cache_);
-  }
-
- private:
-  // ProfileInfoCacheObserver implementation:
-  // Forward possibly relevant changes to the dialog, which will check the
-  // affected profile and update or close as needed.
-  void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const base::string16& profile_name) override {
-    scoped_ptr<base::StringValue> profile_path_value(
-        base::CreateFilePathValue(profile_path));
-    create_confirm_handler_->web_ui()->CallJavascriptFunction(
-        "SupervisedUserCreateConfirmOverlay.onDeletedProfile",
-        *profile_path_value);
-  }
-
-  void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const base::string16& old_profile_name) override {
-    size_t profile_index =
-        profile_info_cache_->GetIndexOfProfileWithPath(profile_path);
-    if (profile_index == std::string::npos)
-      return;
-    base::string16 new_profile_name =
-        profile_info_cache_->GetNameOfProfileAtIndex(profile_index);
-    scoped_ptr<base::StringValue> profile_path_value(
-        base::CreateFilePathValue(profile_path));
-    create_confirm_handler_->web_ui()->CallJavascriptFunction(
-        "SupervisedUserCreateConfirmOverlay.onUpdatedProfileName",
-        *profile_path_value,
-        base::StringValue(new_profile_name));
-  }
-
-  // Weak.
-  ProfileInfoCache* profile_info_cache_;
-
-  // Weak; owns us.
-  SupervisedUserCreateConfirmHandler* create_confirm_handler_;
-
-  // Manages any sources we're observing, ensuring that they're all removed
-  // on destruction.
-  ScopedObserver<ProfileInfoCache, ProfileUpdateObserver> scoped_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileUpdateObserver);
-};
-
-
-// SupervisedUserCreateConfirmHandler-----------------------------------------
-
 SupervisedUserCreateConfirmHandler::SupervisedUserCreateConfirmHandler() {
-  profile_info_cache_observer_.reset(
-      new SupervisedUserCreateConfirmHandler::ProfileUpdateObserver(
-          &g_browser_process->profile_manager()->GetProfileInfoCache(), this));
 }
 
 SupervisedUserCreateConfirmHandler::~SupervisedUserCreateConfirmHandler() {

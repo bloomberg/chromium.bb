@@ -85,39 +85,10 @@ cr.define('options', function() {
     canShowPage: function() {
       return this.profileInfo_ != null;
     },
-
-    /**
-     * Updates the displayed profile name if it has changed. Called by the
-     * handler.
-     * @param {string} filePath The file path of the profile whose name
-     *     changed.
-     * @param {string} newName The changed profile's new name.
-     * @private
-     */
-    onUpdatedProfileName_: function(filePath, newName) {
-      if (filePath == this.profileInfo_.filePath) {
-        this.profileInfo_.name = newName;
-        this.setProfileInfo_(this.profileInfo_);
-      }
-    },
-
-    /**
-     * Closes this overlay if the new profile has been deleted. Called by the
-     * handler.
-     * @param {string} filePath The file path of the profile that was deleted.
-     * @private
-     */
-    onDeletedProfile_: function(filePath) {
-      if (filePath == this.profileInfo_.filePath) {
-        PageManager.closeOverlay();
-      }
-    },
   };
 
   // Forward public APIs to private implementations.
   cr.makePublic(SupervisedUserCreateConfirmOverlay, [
-    'onDeletedProfile',
-    'onUpdatedProfileName',
     'setProfileInfo',
   ]);
 
