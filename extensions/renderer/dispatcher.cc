@@ -81,10 +81,12 @@
 #include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
 #include "extensions/renderer/test_features_native_handler.h"
+#include "extensions/renderer/test_native_handler.h"
 #include "extensions/renderer/user_gestures_native_handler.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "extensions/renderer/v8_context_native_handler.h"
 #include "extensions/renderer/v8_helpers.h"
+#include "extensions/renderer/wake_event_page.h"
 #include "grit/extensions_renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -210,6 +212,7 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   user_script_set_manager_observer_.Add(user_script_set_manager_.get());
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
+  WakeEventPage::Get()->Init(content::RenderThread::Get());
 
   // chrome-extensions: and chrome-extensions-resource: schemes should be
   // treated as secure because communication with them is entirely in the
@@ -667,6 +670,9 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler(
       "test_features",
       scoped_ptr<NativeHandler>(new TestFeaturesNativeHandler(context)));
+  module_system->RegisterNativeHandler(
+      "test_native_handler",
+      scoped_ptr<NativeHandler>(new TestNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "user_gestures",
       scoped_ptr<NativeHandler>(new UserGesturesNativeHandler(context)));

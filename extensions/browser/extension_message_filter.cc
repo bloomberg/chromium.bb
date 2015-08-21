@@ -12,10 +12,13 @@
 #include "extensions/browser/blob_holder.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "ipc/ipc_message_macros.h"
 
 using content::BrowserThread;
@@ -52,8 +55,7 @@ ExtensionMessageFilter::ExtensionMessageFilter(int render_process_id,
                                                content::BrowserContext* context)
     : BrowserMessageFilter(ExtensionMsgStart),
       render_process_id_(render_process_id),
-      event_router_(EventRouter::Get(context)),
-      process_manager_(ProcessManager::Get(context)) {
+      browser_context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   shutdown_notifier_ =
       ShutdownNotifierFactory::GetInstance()->Get(context)->Subscribe(
@@ -69,9 +71,13 @@ ExtensionMessageFilter::~ExtensionMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
+EventRouter* ExtensionMessageFilter::GetEventRouter() {
+  DCHECK(browser_context_);
+  return EventRouter::Get(browser_context_);
+}
+
 void ExtensionMessageFilter::ShutdownOnUIThread() {
-  event_router_ = nullptr;
-  process_manager_ = nullptr;
+  browser_context_ = nullptr;
   shutdown_notifier_.reset();
 }
 
@@ -88,6 +94,7 @@ void ExtensionMessageFilter::OverrideThreadForMessage(
     case ExtensionHostMsg_ShouldSuspendAck::ID:
     case ExtensionHostMsg_SuspendAck::ID:
     case ExtensionHostMsg_TransferBlobsAck::ID:
+    case ExtensionHostMsg_WakeEventPage::ID:
       *thread = BrowserThread::UI;
       break;
     default:
@@ -101,7 +108,7 @@ void ExtensionMessageFilter::OnDestruct() const {
 
 bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
   // If we have been shut down already, return.
-  if (!event_router_)
+  if (!browser_context_)
     return true;
 
   bool handled = true;
@@ -124,6 +131,8 @@ bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionSuspendAck)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_TransferBlobsAck,
                         OnExtensionTransferBlobsAck)
+    IPC_MESSAGE_HANDLER(ExtensionHostMsg_WakeEventPage,
+                        OnExtensionWakeEventPage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -133,17 +142,18 @@ void ExtensionMessageFilter::OnExtensionAddListener(
     const std::string& extension_id,
     const GURL& listener_url,
     const std::string& event_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
 
-  if (!event_router_)
-    return;
-
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    event_router_->AddEventListener(event_name, process, extension_id);
+    GetEventRouter()->AddEventListener(event_name, process, extension_id);
   } else if (listener_url.is_valid()) {
-    event_router_->AddEventListenerForURL(event_name, process, listener_url);
+    GetEventRouter()->AddEventListenerForURL(event_name, process, listener_url);
   } else {
     NOTREACHED() << "Tried to add an event listener without a valid "
                  << "extension ID nor listener URL";
@@ -154,17 +164,19 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
     const std::string& extension_id,
     const GURL& listener_url,
     const std::string& event_name) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
 
-  if (!event_router_)
-    return;
-
   if (crx_file::id_util::IdIsValid(extension_id)) {
-    event_router_->RemoveEventListener(event_name, process, extension_id);
+    GetEventRouter()->RemoveEventListener(event_name, process, extension_id);
   } else if (listener_url.is_valid()) {
-    event_router_->RemoveEventListenerForURL(event_name, process, listener_url);
+    GetEventRouter()->RemoveEventListenerForURL(event_name, process,
+                                                listener_url);
   } else {
     NOTREACHED() << "Tried to remove an event listener without a valid "
                  << "extension ID nor listener URL";
@@ -173,18 +185,20 @@ void ExtensionMessageFilter::OnExtensionRemoveListener(
 
 void ExtensionMessageFilter::OnExtensionAddLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  if (!event_router_)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
     return;
 
-  event_router_->AddLazyEventListener(event_name, extension_id);
+  GetEventRouter()->AddLazyEventListener(event_name, extension_id);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveLazyListener(
     const std::string& extension_id, const std::string& event_name) {
-  if (!event_router_)
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
     return;
 
-  event_router_->RemoveLazyEventListener(event_name, extension_id);
+  GetEventRouter()->RemoveLazyEventListener(event_name, extension_id);
 }
 
 void ExtensionMessageFilter::OnExtensionAddFilteredListener(
@@ -192,15 +206,16 @@ void ExtensionMessageFilter::OnExtensionAddFilteredListener(
     const std::string& event_name,
     const base::DictionaryValue& filter,
     bool lazy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
 
-  if (!event_router_)
-    return;
-
-  event_router_->AddFilteredEventListener(event_name, process, extension_id,
-                                          filter, lazy);
+  GetEventRouter()->AddFilteredEventListener(event_name, process, extension_id,
+                                             filter, lazy);
 }
 
 void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
@@ -208,34 +223,98 @@ void ExtensionMessageFilter::OnExtensionRemoveFilteredListener(
     const std::string& event_name,
     const base::DictionaryValue& filter,
     bool lazy) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
 
-  if (!event_router_)
-    return;
-
-  event_router_->RemoveFilteredEventListener(event_name, process, extension_id,
-                                             filter, lazy);
+  GetEventRouter()->RemoveFilteredEventListener(event_name, process,
+                                                extension_id, filter, lazy);
 }
 
 void ExtensionMessageFilter::OnExtensionShouldSuspendAck(
      const std::string& extension_id, int sequence_id) {
-  process_manager_->OnShouldSuspendAck(extension_id, sequence_id);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
+  ProcessManager::Get(browser_context_)
+      ->OnShouldSuspendAck(extension_id, sequence_id);
 }
 
 void ExtensionMessageFilter::OnExtensionSuspendAck(
      const std::string& extension_id) {
-  process_manager_->OnSuspendAck(extension_id);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
+  ProcessManager::Get(browser_context_)->OnSuspendAck(extension_id);
 }
 
 void ExtensionMessageFilter::OnExtensionTransferBlobsAck(
     const std::vector<std::string>& blob_uuids) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
   if (!process)
     return;
 
   BlobHolder::FromRenderProcessHost(process)->DropBlobs(blob_uuids);
+}
+
+void ExtensionMessageFilter::OnExtensionWakeEventPage(
+    int request_id,
+    const std::string& extension_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!browser_context_)
+    return;
+
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
+  if (!extension) {
+    // Don't kill the renderer, it might just be some context which hasn't
+    // caught up to extension having been uninstalled.
+    return;
+  }
+
+  ProcessManager* process_manager = ProcessManager::Get(browser_context_);
+
+  if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
+    // Wake the event page if it's asleep, or immediately repond with success
+    // if it's already awake.
+    if (process_manager->IsEventPageSuspended(extension_id)) {
+      process_manager->WakeEventPage(
+          extension_id,
+          base::Bind(&ExtensionMessageFilter::SendWakeEventPageResponse, this,
+                     request_id));
+    } else {
+      SendWakeEventPageResponse(request_id, true);
+    }
+    return;
+  }
+
+  if (BackgroundInfo::HasPersistentBackgroundPage(extension)) {
+    // No point in trying to wake a persistent background page. If it's open,
+    // immediately return and call it a success. If it's closed, fail.
+    SendWakeEventPageResponse(request_id,
+                              process_manager->GetBackgroundHostForExtension(
+                                  extension_id) != nullptr);
+    return;
+  }
+
+  // The extension has no background page, so there is nothing to wake.
+  SendWakeEventPageResponse(request_id, false);
+}
+
+void ExtensionMessageFilter::SendWakeEventPageResponse(int request_id,
+                                                       bool success) {
+  Send(new ExtensionMsg_WakeEventPageResponse(request_id, success));
 }
 
 }  // namespace extensions

@@ -279,6 +279,7 @@
       'browser/extensions/startup_helper_browsertest.cc',
       'browser/extensions/stubs_apitest.cc',
       'browser/extensions/subscribe_page_action_browsertest.cc',
+      'browser/extensions/wake_event_page_apitest.cc',
       'browser/extensions/web_contents_browsertest.cc',
       'browser/extensions/webstore_inline_installer_browsertest.cc',
       'browser/extensions/webstore_installer_browsertest.cc',

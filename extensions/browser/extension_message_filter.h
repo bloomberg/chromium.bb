@@ -25,9 +25,7 @@ class Size;
 }
 
 namespace extensions {
-
 class EventRouter;
-class ProcessManager;
 
 // This class filters out incoming extension-specific IPC messages from the
 // renderer process. It is created and destroyed on the UI thread and handles
@@ -47,9 +45,11 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
 
   ~ExtensionMessageFilter() override;
 
+  EventRouter* GetEventRouter();
+
   void ShutdownOnUIThread();
 
-  // content::BrowserMessageFilter implementation.
+  // content::BrowserMessageFilter implementation:
   void OverrideThreadForMessage(const IPC::Message& message,
                                 content::BrowserThread::ID* thread) override;
   void OnDestruct() const override;
@@ -78,14 +78,18 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
                                    int sequence_id);
   void OnExtensionSuspendAck(const std::string& extension_id);
   void OnExtensionTransferBlobsAck(const std::vector<std::string>& blob_uuids);
+  void OnExtensionWakeEventPage(int request_id,
+                                const std::string& extension_id);
+
+  // Responds to the ExtensionHostMsg_WakeEventPage message.
+  void SendWakeEventPageResponse(int request_id, bool success);
 
   const int render_process_id_;
 
   scoped_ptr<KeyedServiceShutdownNotifier::Subscription> shutdown_notifier_;
 
-  // Owned by the browser context; should only be accessed on the UI thread.
-  EventRouter* event_router_;
-  ProcessManager* process_manager_;
+  // Only access from the UI thread.
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageFilter);
 };

@@ -506,6 +506,11 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,
 IPC_MESSAGE_CONTROL1(ExtensionMsg_UsingWebRequestAPI,
                      bool /* webrequest_used */)
 
+// The browser's response to the ExtensionMsg_WakeEventPage IPC.
+IPC_MESSAGE_CONTROL2(ExtensionMsg_WakeEventPageResponse,
+                     int /* request_id */,
+                     bool /* success */)
+
 // Ask the lazy background page if it is ready to be suspended. This is sent
 // when the page is considered idle. The renderer will reply with the same
 // sequence_id so that we can tell which message it is responding to.
@@ -768,6 +773,12 @@ IPC_MESSAGE_ROUTED1(ExtensionHostMsg_OnWatchedPageChange,
 // Sent by the renderer when it has received a Blob handle from the browser.
 IPC_MESSAGE_CONTROL1(ExtensionHostMsg_TransferBlobsAck,
                      std::vector<std::string> /* blob_uuids */)
+
+// Asks the browser to wake the event page of an extension.
+// The browser will reply with ExtensionHostMsg_WakeEventPageResponse.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_WakeEventPage,
+                     int /* request_id */,
+                     std::string /* extension_id */)
 
 // Tells listeners that a detailed message was reported to the console by
 // WebKit.

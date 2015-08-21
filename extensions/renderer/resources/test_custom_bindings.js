@@ -11,6 +11,7 @@ var environmentSpecificBindings = require('test_environment_specific_bindings');
 var GetExtensionAPIDefinitionsForTest =
     requireNative('apiDefinitions').GetExtensionAPIDefinitionsForTest;
 var GetAPIFeatures = requireNative('test_features').GetAPIFeatures;
+var natives = requireNative('test_native_handler');
 var uncaughtExceptionHandler = require('uncaught_exception_handler');
 var userGestures = requireNative('user_gestures');
 
@@ -351,6 +352,10 @@ binding.registerCustomHook(function(api) {
   apiFunctions.setHandleRequest('setExceptionHandler', function(callback) {
     chromeTest.assertEq(typeof(callback), 'function');
     uncaughtExceptionHandler.setHandler(callback);
+  });
+
+  apiFunctions.setHandleRequest('getWakeEventPage', function() {
+    return natives.GetWakeEventPage();
   });
 
   environmentSpecificBindings.registerHooks(api);
