@@ -79,6 +79,7 @@ colorRendering
 content
 counterIncrement
 counterReset
+cssFloat
 cssText
 cursor
 cx

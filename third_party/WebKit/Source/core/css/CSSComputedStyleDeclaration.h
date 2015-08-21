@@ -91,6 +91,8 @@ private:
     bool isPropertyImplicit(const String& propertyName) override;
     void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) override;
     String removeProperty(const String& propertyName, ExceptionState&) override;
+    String cssFloat() const;
+    void setCSSFloat(const String&, ExceptionState&);
     String cssText() const override;
     void setCSSText(const String&, ExceptionState&) override;
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) override;

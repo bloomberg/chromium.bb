@@ -56,6 +56,8 @@ private:
     bool isPropertyImplicit(const String& propertyName) final;
     void setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState&) final;
     String removeProperty(const String& propertyName, ExceptionState&) final;
+    String cssFloat() const;
+    void setCSSFloat(const String&, ExceptionState&);
     String cssText() const final;
     void setCSSText(const String&, ExceptionState&) final;
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValueInternal(CSSPropertyID) final;

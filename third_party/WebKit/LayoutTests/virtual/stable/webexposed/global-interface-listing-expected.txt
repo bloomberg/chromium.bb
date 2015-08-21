@@ -292,6 +292,7 @@ interface CSSRuleList
     method constructor
     method item
 interface CSSStyleDeclaration
+    getter cssFloat
     getter cssText
     getter length
     getter parentRule
@@ -301,6 +302,7 @@ interface CSSStyleDeclaration
     method item
     method removeProperty
     method setProperty
+    setter cssFloat
     setter cssText
 interface CSSStyleRule
     getter selectorText

@@ -36,7 +36,7 @@
     // void setPropertyPriority(DOMString property, [TreatNullAs=EmptyString] DOMString priority);
     [RaisesException] DOMString removeProperty(DOMString property);
     readonly attribute CSSRule? parentRule;
-    // [TreatNullAs=EmptyString] attribute DOMString cssFloat;
+    [RaisesException=Setter, TreatNullAs=EmptyString] attribute DOMString cssFloat;
 
     // The camel-cased and dashed attribute getters have custom bindings.
     // http://dev.w3.org/csswg/cssom/#dom-cssstyledeclaration-camel-cased-attribute

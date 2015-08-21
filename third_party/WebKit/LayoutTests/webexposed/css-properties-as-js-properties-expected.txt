@@ -80,6 +80,7 @@ columnFill
 content
 counterIncrement
 counterReset
+cssFloat
 cssText
 cursor
 cx

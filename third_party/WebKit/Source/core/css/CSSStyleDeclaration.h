@@ -47,6 +47,14 @@ public:
 #endif
 
     virtual CSSRule* parentRule() const = 0;
+    String cssFloat()
+    {
+        return getPropertyValueInternal(CSSPropertyFloat);
+    }
+    void setCSSFloat(const String& value, ExceptionState& exceptionState)
+    {
+        setPropertyInternal(CSSPropertyFloat, value, false, exceptionState);
+    }
     virtual String cssText() const = 0;
     virtual void setCSSText(const String&, ExceptionState&) = 0;
     virtual unsigned length() const = 0;
