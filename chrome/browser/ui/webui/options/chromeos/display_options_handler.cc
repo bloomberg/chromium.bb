@@ -176,10 +176,10 @@ void DisplayOptionsHandler::GetLocalizedValues(
       "selectedDisplayTitleOverscan", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OVERSCAN));
 
-  localized_strings->SetString("startMirroring", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_MIRRORING));
-  localized_strings->SetString("stopMirroring", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STOP_MIRRORING));
+  localized_strings->SetString("extendedMode", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_EXTENDED_MODE_LABEL));
+  localized_strings->SetString("mirroringMode", l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_MIRRORING_MODE_LABEL));
   localized_strings->SetString("mirroringDisplay", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_MIRRORING_DISPLAY_NAME));
   localized_strings->SetString("setPrimary", l10n_util::GetStringUTF16(

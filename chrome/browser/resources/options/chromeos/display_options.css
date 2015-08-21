@@ -93,10 +93,14 @@
   color: rgb(0, 138, 255);
 }
 
-#display-options-toggle-mirroring {
+#display-options-select-mirroring {
   margin-right: 5px;
 }
 
 .display-options-button {
-  width: 130px;
+  width: 140px;
+}
+
+.display-options-button2 {
+  width: 120px;
 }
