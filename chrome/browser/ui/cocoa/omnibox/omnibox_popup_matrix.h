@@ -37,7 +37,7 @@ class OmniboxPopupViewMac;
 @end
 
 @interface OmniboxPopupTableController (TestingAPI)
-- (instancetype)initWithArray:(NSArray*)array hovered:(NSInteger)hoveredIndex;
+- (instancetype)initWithArray:(NSArray*)array;
 @end
 
 @class OmniboxPopupMatrix;

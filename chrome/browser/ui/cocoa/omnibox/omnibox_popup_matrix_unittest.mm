@@ -36,7 +36,7 @@ class OmniboxPopupMatrixTest : public CocoaTest,
       [array addObject:[[[OmniboxPopupCellData alloc] init] autorelease]];
 
     matrixController_.reset(
-        [[OmniboxPopupTableController alloc] initWithArray:array hovered:-1]);
+        [[OmniboxPopupTableController alloc] initWithArray:array]);
     [matrix_ setController:matrixController_];
   };
 
@@ -69,9 +69,9 @@ TEST_VIEW(OmniboxPopupMatrixTest, matrix_);
 TEST_F(OmniboxPopupMatrixTest, HighlightedRow) {
   EXPECT_EQ(-1, [matrix_ highlightedRow]);
 
-  [matrix_ mouseEntered:MouseEventInRow(matrix_, NSMouseMoved, 0)];
+  [matrix_ mouseMoved:MouseEventInRow(matrix_, NSMouseMoved, 0)];
   EXPECT_EQ(0, [matrix_ highlightedRow]);
-  [matrix_ mouseEntered:MouseEventInRow(matrix_, NSMouseMoved, 2)];
+  [matrix_ mouseMoved:MouseEventInRow(matrix_, NSMouseMoved, 2)];
   EXPECT_EQ(2, [matrix_ highlightedRow]);
 
   [matrix_ mouseExited:cocoa_test_event_utils::MouseEventAtPoint(

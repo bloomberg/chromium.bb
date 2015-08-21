@@ -52,13 +52,12 @@ const NSInteger kMiddleButtonNumber = 2;
   }
 
   [tableView setMaxMatchContentsWidth:max_match_contents_width];
-  return [self initWithArray:array
-                     hovered:[[tableView controller] highlightedRow]];
+  return [self initWithArray:array];
 }
 
-- (instancetype)initWithArray:(NSArray*)array hovered:(NSInteger)hoveredIndex {
+- (instancetype)initWithArray:(NSArray*)array {
   if ((self = [super init])) {
-    hoveredIndex_ = hoveredIndex;
+    hoveredIndex_ = -1;
     array_.reset([array copy]);
   }
   return self;
@@ -163,10 +162,6 @@ const NSInteger kMiddleButtonNumber = 2;
 }
 
 // Callbacks from tracking area.
-- (void)mouseEntered:(NSEvent*)theEvent {
-  [self highlightRowUnder:theEvent];
-}
-
 - (void)mouseMoved:(NSEvent*)theEvent {
   [self highlightRowUnder:theEvent];
 }
