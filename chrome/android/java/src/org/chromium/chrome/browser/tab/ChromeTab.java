@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -1365,5 +1366,10 @@ public class ChromeTab extends Tab {
     @VisibleForTesting
     public OverrideUrlLoadingResult getLastOverrideUrlLoadingResultForTests() {
         return mLastOverrideUrlLoadingResult;
+    }
+
+    @Override
+    public SnackbarManager getSnackbarManager() {
+        return mActivity.getSnackbarManager();
     }
 }

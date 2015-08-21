@@ -1779,6 +1779,7 @@
       'android/java/src/org/chromium/chrome/browser/signin/AccountManagementScreenHelper.java',
       'android/java/src/org/chromium/chrome/browser/signin/OAuth2TokenService.java',
       'android/java/src/org/chromium/chrome/browser/signin/SigninManager.java',
+      'android/java/src/org/chromium/chrome/browser/snackbar/smartlockautosignin/AutoSigninSnackbarController.java',
       'android/java/src/org/chromium/chrome/browser/spellchecker/SpellCheckerSessionBridge.java',
       'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
       'android/java/src/org/chromium/chrome/browser/tab/Tab.java',

@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ssl.ConnectionSecurity;
 import org.chromium.chrome.browser.ssl.ConnectionSecurityLevel;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
@@ -2244,6 +2245,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     @CalledByNative
     protected void onNavEntryChanged() {
         mIsTabStateDirty = true;
+    }
+
+    /**
+     * Returns the SnackbarManager for the activity that owns this Tab, if any. May
+     * return null.
+     */
+    public SnackbarManager getSnackbarManager() {
+        return null;
     }
 
     /**
