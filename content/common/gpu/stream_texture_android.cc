@@ -184,7 +184,7 @@ void StreamTexture::OnEstablishPeer(int32 primary_id, int32 secondary_id) {
   if (!owner_stub_)
     return;
 
-  base::ProcessHandle process = owner_stub_->channel()->GetClientPID();
+  base::ProcessHandle process = owner_stub_->channel()->renderer_pid();
 
   SurfaceTexturePeer::GetInstance()->EstablishSurfaceTexturePeer(
       process, surface_texture_, primary_id, secondary_id);

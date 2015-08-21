@@ -69,7 +69,6 @@ class GpuCommandBufferStub
 
   GpuCommandBufferStub(
       GpuChannel* channel,
-      base::SingleThreadTaskRunner* task_runner,
       GpuCommandBufferStub* share_group,
       const gfx::GLSurfaceHandle& handle,
       gpu::gles2::MailboxManager* mailbox_manager,
@@ -157,10 +156,8 @@ class GpuCommandBufferStub
 
  private:
   GpuMemoryManager* GetMemoryManager() const;
-
-  void Destroy();
-
   bool MakeCurrent();
+  void Destroy();
 
   // Cleans up and sends reply if OnInitialize failed.
   void OnInitializeFailed(IPC::Message* reply_message);
@@ -243,21 +240,17 @@ class GpuCommandBufferStub
   // are destroyed. So a raw pointer is safe.
   GpuChannel* channel_;
 
-  // Task runner for main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
   // The group of contexts that share namespaces with this context.
   scoped_refptr<gpu::gles2::ContextGroup> context_group_;
 
-  bool initialized_;
   gfx::GLSurfaceHandle handle_;
   gfx::Size initial_size_;
   gpu::gles2::DisallowedFeatures disallowed_features_;
   std::vector<int32> requested_attribs_;
   gfx::GpuPreference gpu_preference_;
   bool use_virtualized_gl_context_;
-  const int32 route_id_;
-  const int32 surface_id_;
+  int32 route_id_;
+  int32 surface_id_;
   bool software_;
   uint32 last_flush_count_;
 
