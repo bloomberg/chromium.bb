@@ -5,7 +5,8 @@
   <link rel="import" type="css" href="cr_button.css">
   <template>
     <paper-button active="{{active}}" disabled="[[disabled]]"
-        raised="[[raised]]" toggles="[[toggles]]" noink$="[[toggles]]">
+        raised="[[raised]]" toggles="[[toggles]]"
+        noink$="[[computeNoInk_(toggles, noink)]]">
       <content></content>
     </paper-button>
   </template>

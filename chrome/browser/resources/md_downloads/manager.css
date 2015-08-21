@@ -12,7 +12,7 @@
 
 @media screen and (max-width: 1024px) {
   :host {
-    flex-basis: 670px;
+    flex-basis: 670px;  /* 622 card width + 24 left margin + 24 right margin. */
   }
 }
 

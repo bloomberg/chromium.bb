@@ -47,6 +47,11 @@ Polymer({
       value: false
     },
 
+    noink: {
+      type: Boolean,
+      value: false,
+    },
+
     /**
      * If true, the button is in the active state. Mostly useful when
      * |toggles| is true.
@@ -56,5 +61,10 @@ Polymer({
       value: false,
       notify: true
     }
+  },
+
+  /** @private */
+  computeNoInk_: function() {
+    return this.toggles || this.noink;
   },
 });

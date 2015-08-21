@@ -32,8 +32,12 @@
   width: var(--downloads-item-width);
 }
 
+#actions cr-button {
+  -webkit-margin-end: 8px;
+}
+
 #actions,
-#search {
+#search-term {
   color: rgb(192, 199, 205);
 }
 
@@ -58,12 +62,12 @@
     color: inherit;
     font-family: inherit;
     font-size: inherit;
-    font-weight: 500;
   };
   --paper-input-container-input-color: rgb(192, 199, 205);
   z-index: 0;
 }
 
+#search-term input[type='search']::-webkit-search-decoration,
 #search-term input[type='search']::-webkit-search-cancel-button,
 #search-term input[type='search']::-webkit-search-results-button {
   -webkit-appearance: none;
@@ -99,10 +103,11 @@ paper-icon-button {
   right: auto;
 }
 
-paper-menu-button {
+#more {
   --paper-menu-button: {
     padding: 0;
   };
+  -webkit-margin-start: 16px;
 }
 
 paper-item {

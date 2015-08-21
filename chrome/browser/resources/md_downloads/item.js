@@ -88,7 +88,7 @@ cr.define('downloads', function() {
         this.$.progress.value = data.percent;
       }
 
-      var disableRemove;
+      var hideRemove;
 
       if (this.isDangerous_) {
         this.isMalware_ =
@@ -96,7 +96,7 @@ cr.define('downloads', function() {
             data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
             data.danger_type == downloads.DangerType.DANGEROUS_URL ||
             data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED;
-        disableRemove = true;
+        hideRemove = true;
       } else {
         /** @const */ var completelyOnDisk =
             data.state == downloads.States.COMPLETE &&
@@ -121,7 +121,7 @@ cr.define('downloads', function() {
         /** @const */ var showCancel = isPaused || isInProgress;
         this.$.cancel.hidden = !showCancel;
 
-        disableRemove = showCancel ||
+        hideRemove = showCancel ||
             !loadTimeData.getBoolean('allowDeletingHistory');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
@@ -138,7 +138,7 @@ cr.define('downloads', function() {
         this.iconLoader_.loadScaledIcon(this.$['file-icon'], icon);
       }
 
-      this.$.remove.disabled = disableRemove;
+      this.$.remove.style.visibility = hideRemove ? 'hidden' : '';
     },
 
     /**
