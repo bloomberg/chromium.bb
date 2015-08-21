@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PermissionInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -25,8 +26,6 @@ import org.chromium.base.BuildInfo;
 import org.chromium.ui.UiUtils;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 /**
  * The class provides the WindowAndroid's implementation which requires
@@ -39,15 +38,12 @@ public class ActivityWindowAndroid
     // Constants used for intent request code bounding.
     private static final int REQUEST_CODE_PREFIX = 1000;
     private static final int REQUEST_CODE_RANGE_SIZE = 100;
-    private static final String TAG = "ActivityWindowAndroid";
 
     private static final String PERMISSION_QUERIED_KEY_PREFIX = "HasRequestedAndroidPermission::";
 
     private final WeakReference<Activity> mActivityRef;
     private final Handler mHandler;
     private final SparseArray<PermissionCallback> mOutstandingPermissionRequests;
-
-    private Method mRequestPermissionsMethod;
 
     private int mNextRequestCode = 0;
 
@@ -238,37 +234,14 @@ public class ActivityWindowAndroid
      * Issues the permission request and returns whether it was sent successfully.
      */
     private boolean requestPermissionsInternal(String[] permissions, PermissionCallback callback) {
-        // TODO(tedchoc): Remove the MNC check once the SDK version is bumped.
-        if (!BuildInfo.isMncOrLater()) return false;
-
-        // TODO(tedchoc): Remove the reflection aspect of this once a public M SDK is available.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
         Activity activity = mActivityRef.get();
         if (activity == null) return false;
 
-        if (mRequestPermissionsMethod == null) {
-            try {
-                mRequestPermissionsMethod = Activity.class.getMethod(
-                        "requestPermissions", String[].class, int.class);
-            } catch (NoSuchMethodException e) {
-                return false;
-            }
-        }
-
         int requestCode = generateNextRequestCode();
         mOutstandingPermissionRequests.put(requestCode, callback);
-
-        try {
-            mRequestPermissionsMethod.invoke(activity, permissions, requestCode);
-            return true;
-        } catch (IllegalAccessException e) {
-            mOutstandingPermissionRequests.delete(requestCode);
-        } catch (IllegalArgumentException e) {
-            mOutstandingPermissionRequests.delete(requestCode);
-        } catch (InvocationTargetException e) {
-            mOutstandingPermissionRequests.delete(requestCode);
-        }
-
-        return false;
+        activity.requestPermissions(permissions, requestCode);
+        return true;
     }
 
     /**
