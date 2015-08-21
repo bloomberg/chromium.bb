@@ -1856,3 +1856,7 @@ crbug.com/521124 [ XP Win7 ] fast/css/font-weight-1.html [ ImageOnlyFailure ]
 
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-context-and-not-stacking-context-children.html [ Failure ]
 crbug.com/502927 [ XP ] paint/frames/frameset-with-stacking-contexts.html [ Failure ]
+
+# Temporarily allow failure until chromium change is landed and the test
+# expectation is updated.
+crbug.com/523073 media/video-display-aspect-ratio.html [ Pass Failure ]
