@@ -73,13 +73,20 @@ bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
     return m_fetched && m_fetched->loadFailedOrCanceled();
 }
 
-static bool shouldSetCrossOriginAccessControl(const KURL& resource)
+static void setCrossOriginAccessControl(FetchRequest& request, SecurityOrigin* securityOrigin)
 {
     // Local fonts are accessible from file: URLs even when
     // allowFileAccessFromFileURLs is false.
-    if (resource.isLocalFile())
-        return false;
-    return true;
+    if (request.url().isLocalFile())
+        return;
+
+    StoredCredentials allowCredentials = DoNotAllowStoredCredentials;
+    bool sameOriginRequest = securityOrigin->canRequestNoSuborigin(request.url());
+    // Include credentials for same origin requests (and assume that
+    // redirects out of origin will be handled per Fetch spec.)
+    if (sameOriginRequest)
+        allowCredentials = AllowStoredCredentials;
+    request.setCrossOriginAccessControl(securityOrigin, allowCredentials, ClientDidNotRequestCredentials);
 }
 
 FontResource* CSSFontFaceSrcValue::fetch(Document* document)
@@ -88,8 +95,7 @@ FontResource* CSSFontFaceSrcValue::fetch(Document* document)
         FetchRequest request(ResourceRequest(document->completeURL(m_resource)), FetchInitiatorTypeNames::css);
         request.setContentSecurityCheck(m_shouldCheckContentSecurityPolicy);
         SecurityOrigin* securityOrigin = document->securityOrigin();
-        if (shouldSetCrossOriginAccessControl(request.url()))
-            request.setCrossOriginAccessControl(securityOrigin, DoNotAllowStoredCredentials);
+        setCrossOriginAccessControl(request, securityOrigin);
         request.mutableResourceRequest().setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrer.referrerPolicy, request.url(), m_referrer.referrer));
         m_fetched = FontResource::fetch(request, document->fetcher());
     } else {

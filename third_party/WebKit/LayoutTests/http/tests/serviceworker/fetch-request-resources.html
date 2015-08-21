@@ -164,7 +164,7 @@ async_test(function(t) {
         css_test(f, REMOTE_URL, 'anonymous', 'cors', 'omit');
         css_test(f, REMOTE_URL, 'use-credentials', 'cors', 'include');
 
-        font_face_test(f, LOCAL_URL, 'cors', 'omit');
+        font_face_test(f, LOCAL_URL, 'cors', 'include');
         font_face_test(f, REMOTE_URL, 'cors', 'omit');
 
         css_image_test(f, LOCAL_URL, 'backgroundImage',
