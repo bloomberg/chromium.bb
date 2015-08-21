@@ -169,21 +169,6 @@ span.bold {
 }
 
 .throbber {
-  -webkit-animation: throbber-animation 1s steps(36) infinite;
-  -webkit-margin-end: 4px;
-  background-image: url(chrome://theme/IDR_CROS_DEFAULT_THROBBER);
-  display: inline-block;
-  height: 16px;
-  margin-top: 2px;
-  width: 16px;
+  -webkit-margin-end: 0.5em;
+  margin-top: 1px;
 }
-
-@-webkit-keyframes throbber-animation {
-  from {
-    background-position: 0;
-  }
-  to {
-    background-position: -576px;
-  }
-}
-
