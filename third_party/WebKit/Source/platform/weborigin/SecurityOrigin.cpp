@@ -97,19 +97,24 @@ static bool shouldTreatAsUniqueOrigin(const KURL& url)
         return true;
 
     // FIXME: Do we need to unwrap the URL further?
-    KURL innerURL = SecurityOrigin::shouldUseInnerURL(url) ? SecurityOrigin::extractInnerURL(url) : url;
-
-    // FIXME: Check whether innerURL is valid.
+    KURL relevantURL;
+    if (SecurityOrigin::shouldUseInnerURL(url)) {
+        relevantURL = SecurityOrigin::extractInnerURL(url);
+        if (!relevantURL.isValid())
+            return true;
+    } else {
+        relevantURL = url;
+    }
 
     // For edge case URLs that were probably misparsed, make sure that the origin is unique.
     // FIXME: Do we really need to do this? This looks to be a hack around a
     // security bug in CFNetwork that might have been fixed.
-    if (schemeRequiresAuthority(innerURL) && innerURL.host().isEmpty())
+    if (schemeRequiresAuthority(relevantURL) && relevantURL.host().isEmpty())
         return true;
 
     // SchemeRegistry needs a lower case protocol because it uses HashMaps
     // that assume the scheme has already been canonicalized.
-    String protocol = innerURL.protocol().lower();
+    String protocol = relevantURL.protocol().lower();
 
     if (SchemeRegistry::shouldTreatURLSchemeAsNoAccess(protocol))
         return true;
