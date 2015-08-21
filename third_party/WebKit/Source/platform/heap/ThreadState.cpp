@@ -1468,18 +1468,18 @@ void ThreadState::takeSnapshot(SnapshotType type)
     size_t totalDeadCount = 0;
     size_t totalLiveSize = 0;
     size_t totalDeadSize = 0;
-    for (size_t i = 1; i <= GCInfoTable::gcInfoIndex(); ++i) {
-        String dumpName = classesDumpName + "/" + Heap::gcInfo(i)->className();
+    for (size_t gcInfoIndex = 1; gcInfoIndex <= GCInfoTable::gcInfoIndex(); ++gcInfoIndex) {
+        String dumpName = classesDumpName + String::format("/%zu_", gcInfoIndex) + Heap::gcInfo(gcInfoIndex)->className();
         WebMemoryAllocatorDump* classDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
-        classDump->AddScalar("live_count", "objects", info.liveCount[i]);
-        classDump->AddScalar("dead_count", "objects", info.deadCount[i]);
-        classDump->AddScalar("live_size", "bytes", info.liveSize[i]);
-        classDump->AddScalar("dead_size", "bytes", info.deadSize[i]);
+        classDump->AddScalar("live_count", "objects", info.liveCount[gcInfoIndex]);
+        classDump->AddScalar("dead_count", "objects", info.deadCount[gcInfoIndex]);
+        classDump->AddScalar("live_size", "bytes", info.liveSize[gcInfoIndex]);
+        classDump->AddScalar("dead_size", "bytes", info.deadSize[gcInfoIndex]);
 
-        totalLiveCount += info.liveCount[i];
-        totalDeadCount += info.deadCount[i];
-        totalLiveSize += info.liveSize[i];
-        totalDeadSize += info.deadSize[i];
+        totalLiveCount += info.liveCount[gcInfoIndex];
+        totalDeadCount += info.deadCount[gcInfoIndex];
+        totalLiveSize += info.liveSize[gcInfoIndex];
+        totalDeadSize += info.deadSize[gcInfoIndex];
     }
 
     WebMemoryAllocatorDump* threadDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(threadDumpName);
