@@ -407,7 +407,7 @@ void QuicChannelFactory::Core::OnBaseChannelReady(
 
   net::QuicP2PCryptoConfig quic_crypto_config(shared_secret_);
   quic_crypto_config.set_hkdf_input_suffix(
-      session_id_ + "\0" + kQuicChannelName +
+      session_id_ + '\0' + kQuicChannelName + '\0' +
       session_initiate_quic_config_message_ +
       session_accept_quic_config_message_);
 

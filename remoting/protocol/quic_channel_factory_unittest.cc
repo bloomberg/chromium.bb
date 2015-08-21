@@ -32,6 +32,7 @@ namespace {
 const int kMessageSize = 1024;
 const int kMessages = 100;
 
+const char kTestSessionId[] = "123123";
 const char kTestChannelName[] = "test";
 const char kTestChannelName2[] = "test2";
 
@@ -90,14 +91,17 @@ class QuicChannelFactoryTest : public testing::Test,
     host_base_channel_factory_.set_asynchronous_create(GetParam());
     client_base_channel_factory_.set_asynchronous_create(GetParam());
 
-    const char kTestSessionId[] = "123123";
     host_quic_.reset(new QuicChannelFactory(kTestSessionId, true));
     client_quic_.reset(new QuicChannelFactory(kTestSessionId, false));
 
-    std::string message = client_quic_->CreateSessionInitiateConfigMessage();
-    EXPECT_TRUE(host_quic_->ProcessSessionInitiateConfigMessage(message));
-    message = host_quic_->CreateSessionAcceptConfigMessage();
-    EXPECT_TRUE(client_quic_->ProcessSessionAcceptConfigMessage(message));
+    session_initiate_message_ =
+        client_quic_->CreateSessionInitiateConfigMessage();
+    EXPECT_TRUE(host_quic_->ProcessSessionInitiateConfigMessage(
+        session_initiate_message_));
+
+    session_accept_message_ = host_quic_->CreateSessionAcceptConfigMessage();
+    EXPECT_TRUE(client_quic_->ProcessSessionAcceptConfigMessage(
+        session_accept_message_));
 
     const char kTestSharedSecret[] = "Shared Secret";
     host_quic_->Start(&host_base_channel_factory_, kTestSharedSecret);
@@ -155,6 +159,9 @@ class QuicChannelFactoryTest : public testing::Test,
   scoped_ptr<P2PStreamSocket> client_channel1_;
   scoped_ptr<P2PStreamSocket> host_channel2_;
   scoped_ptr<P2PStreamSocket> client_channel2_;
+
+  std::string session_initiate_message_;
+  std::string session_accept_message_;
 };
 
 INSTANTIATE_TEST_CASE_P(SyncWrite,
@@ -347,6 +354,25 @@ TEST_P(QuicChannelFactoryTest, SendPartialName) {
                       name.substr(0, name.size() / 2));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, host_quic_->GetP2PSessionForTests()->GetNumOpenStreams());
+}
+
+// Verify that correct HKDF input suffix is used to generate encryption keys.
+TEST_P(QuicChannelFactoryTest, HkdfInputSuffix) {
+  Initialize();
+  base::RunLoop().RunUntilIdle();
+
+  net::QuicCryptoStream* crypto_stream =
+      reinterpret_cast<net::QuicCryptoStream*>(
+          host_quic_->GetP2PSessionForTests()->GetStream(net::kCryptoStreamId));
+  const std::string& suffix =
+      crypto_stream->crypto_negotiated_params().hkdf_input_suffix;
+  EXPECT_EQ(strlen(kTestSessionId) + 1 + strlen(kQuicChannelName) + 1 +
+                session_initiate_message_.size() +
+                session_accept_message_.size(),
+            suffix.size());
+  EXPECT_EQ(std::string(kTestSessionId) + '\0' + kQuicChannelName + '\0' +
+                session_initiate_message_ + session_accept_message_,
+            suffix);
 }
 
 }  // namespace protocol

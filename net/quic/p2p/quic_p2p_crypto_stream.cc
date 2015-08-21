@@ -19,13 +19,12 @@ QuicP2PCryptoStream::QuicP2PCryptoStream(QuicSession* session,
 QuicP2PCryptoStream::~QuicP2PCryptoStream() {}
 
 bool QuicP2PCryptoStream::Connect() {
-  QuicCryptoNegotiatedParameters crypto_params;
   if (!config_.GetNegotiatedParameters(session()->connection()->perspective(),
-                                       &crypto_params)) {
+                                       &crypto_negotiated_params_)) {
     return false;
   }
 
-  CrypterPair* crypters = &crypto_params.forward_secure_crypters;
+  CrypterPair* crypters = &crypto_negotiated_params_.forward_secure_crypters;
 
   session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                                         crypters->encrypter.release());
