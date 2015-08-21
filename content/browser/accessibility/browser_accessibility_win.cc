@@ -3526,16 +3526,6 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
       previous_scroll_y_ = sy;
     }
 
-    // Changing a static text node can affect the IAccessibleText hypertext
-    // of the parent node, so force an update on the parent.
-    BrowserAccessibilityWin* parent = GetParent()->ToBrowserAccessibilityWin();
-    if (parent && IsTextOnlyObject() &&
-        name() != old_win_attributes_->name) {
-      parent->UpdateStep1ComputeWinAttributes();
-      parent->UpdateStep2ComputeHypertext();
-      parent->UpdateStep3FireEvents(false);
-    }
-
     // Fire hypertext-related events.
     int start, old_len, new_len;
     ComputeHypertextRemovedAndInserted(&start, &old_len, &new_len);
@@ -3548,6 +3538,16 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
       // In-process screen readers may call IAccessibleText::get_newText
       // in reaction to this event to retrieve the text that was inserted.
       manager->MaybeCallNotifyWinEvent(IA2_EVENT_TEXT_INSERTED, this);
+    }
+
+    // Changing a static text node can affect the IAccessibleText hypertext
+    // of the parent node, so force an update on the parent.
+    BrowserAccessibilityWin* parent = GetParent()->ToBrowserAccessibilityWin();
+    if (parent && IsTextOnlyObject() &&
+        name() != old_win_attributes_->name) {
+      parent->UpdateStep1ComputeWinAttributes();
+      parent->UpdateStep2ComputeHypertext();
+      parent->UpdateStep3FireEvents(false);
     }
   }
 
