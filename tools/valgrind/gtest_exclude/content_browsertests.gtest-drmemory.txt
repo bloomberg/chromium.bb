@@ -52,8 +52,10 @@ NavigationControllerBrowserTest.DontIgnoreBackAfterNavEntryLimit
 WebRtcBrowserTest.CallInsideIframe
 
 # https://crbug.com/504187
-WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio1To1
-WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio16To9
-WebRtcGetUserMediaBrowserTest.TestGetUserMediaAspectRatio4To3
-WebRtcGetUserMediaBrowserTest.TwoGetUserMediaAndCheckCallbackAfterFailure
-WebRtcGetUserMediaBrowserTest.TwoGetUserMediaWithEqualConstraints
+# https://crbug.com/517977
+WebRtcGetUserMediaBrowserTest.*
+
+# https://crbug.com/517977
+WebRtcBrowserTest.AddTwoMediaStreamsToOnePC
+WebRtcBrowserTest.CanSetupCallAndSendDtmf
+WebRtcBrowserTest.NegotiateNonCryptoCall
