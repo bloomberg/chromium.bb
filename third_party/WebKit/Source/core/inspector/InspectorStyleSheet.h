@@ -96,6 +96,7 @@ public:
     virtual bool getText(String* result) = 0;
 
     PassRefPtr<TypeBuilder::CSS::CSSStyle> buildObjectForStyle(CSSStyleDeclaration*);
+    PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const SourceRange&);
     bool lineNumberAndColumnToOffset(unsigned lineNumber, unsigned columnNumber, unsigned* offset);
     virtual bool isInlineStyle() = 0;
 

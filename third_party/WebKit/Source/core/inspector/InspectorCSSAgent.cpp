@@ -1636,13 +1636,15 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
     String styleSheetText;
     inspectorStyleSheet->getText(&styleSheetText);
     String styleText = styleSheetText.substring(bodyRange.start, bodyRange.length());
-
+    SourceRange changeRange;
     if (foundIndex == -1) {
         bool isImportant = inlineStyle->getPropertyPriority(longhand) == "important";
         String newPropertyText = "\n" + longhand + ": " + value + (isImportant ? " !important" : "") + ";";
-        if (!styleText.stripWhiteSpace().endsWith(';'))
+        if (!styleText.isEmpty() && !styleText.stripWhiteSpace().endsWith(';'))
             newPropertyText = ";" + newPropertyText;
         styleText.append(newPropertyText);
+        changeRange.start = bodyRange.end;
+        changeRange.end = bodyRange.end + newPropertyText.length();
     } else {
         CSSPropertySourceData declaration = properties[foundIndex];
         String newValueText;
@@ -1653,8 +1655,14 @@ void InspectorCSSAgent::setCSSPropertyValue(ErrorString* errorString, Element* e
 
         String newPropertyText = declaration.name + ": " + newValueText + (declaration.important ? " !important" : "") + ";";
         styleText.replace(declaration.range.start - bodyRange.start, declaration.range.length(), newPropertyText);
+        changeRange.start = declaration.range.start;
+        changeRange.end = changeRange.start + newPropertyText.length();
     }
-    setStyleText(errorString, inspectorStyleSheet, bodyRange, styleText);
+    CSSStyleDeclaration* resultStyle = setStyleText(errorString, inspectorStyleSheet, bodyRange, styleText);
+    if (resultStyle) {
+        frontend()->layoutEditorChange(inspectorStyleSheet->id(), inspectorStyleSheet->buildSourceRangeObject(changeRange));
+        frontend()->flush();
+    }
 }
 
 void InspectorCSSAgent::setEffectivePropertyValueForNode(ErrorString* errorString, int nodeId, const String& propertyName, const String& value)
