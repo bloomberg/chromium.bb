@@ -40134,6 +40134,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Settings.ZoomLevelPreferencesMigrated" enum="BooleanMigrated">
+  <obsolete>
+    Deprecated 2015-08-18.
+  </obsolete>
   <owner>wjmaclean@chromium.org</owner>
   <summary>
     Tracks migration to per-partition zoom-level preferences during profile
