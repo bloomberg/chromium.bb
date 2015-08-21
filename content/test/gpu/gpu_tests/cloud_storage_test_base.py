@@ -26,27 +26,33 @@ error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio):
   for expectation in expectations:
     location = expectation["location"]
-    x = int(location[0] * device_pixel_ratio)
-    y = int(location[1] * device_pixel_ratio)
+    size = expectation["size"]
+    x0 = int(location[0] * device_pixel_ratio)
+    x1 = int((location[0] + size[0]) * device_pixel_ratio)
+    y0 = int(location[1] * device_pixel_ratio)
+    y1 = int((location[1] + size[1]) * device_pixel_ratio)
+    for x in range(x0, x1):
+      for y in range(y0, y1):
+        if (x < 0 or y < 0 or x >= image_util.Width(screenshot) or
+            y >= image_util.Height(screenshot)):
+          raise page_test.Failure(
+              ('Expected pixel location [%d, %d] is out of range on ' +
+               '[%d, %d] image') %
+              (x, y, image_util.Width(screenshot),
+               image_util.Height(screenshot)))
 
-    if (x < 0 or y < 0 or x > image_util.Width(screenshot) or
-        y > image_util.Height(screenshot)):
-      raise page_test.Failure(
-          'Expected pixel location [%d, %d] is out of range on [%d, %d] image' %
-          (x, y, image_util.Width(screenshot), image_util.Height(screenshot)))
-
-    actual_color = image_util.GetPixelColor(screenshot, x, y)
-    expected_color = rgba_color.RgbaColor(
-        expectation["color"][0],
-        expectation["color"][1],
-        expectation["color"][2])
-    if not actual_color.IsEqual(expected_color, expectation["tolerance"]):
-      raise page_test.Failure('Expected pixel at ' + str(location) +
-          ' to be ' +
-          str(expectation["color"]) + " but got [" +
-          str(actual_color.r) + ", " +
-          str(actual_color.g) + ", " +
-          str(actual_color.b) + "]")
+        actual_color = image_util.GetPixelColor(screenshot, x, y)
+        expected_color = rgba_color.RgbaColor(
+            expectation["color"][0],
+            expectation["color"][1],
+            expectation["color"][2])
+        if not actual_color.IsEqual(expected_color, expectation["tolerance"]):
+          raise page_test.Failure('Expected pixel at ' + str(location) +
+              ' to be ' +
+              str(expectation["color"]) + " but got [" +
+              str(actual_color.r) + ", " +
+              str(actual_color.g) + ", " +
+              str(actual_color.b) + "]")
 
 class ValidatorBase(gpu_test_base.ValidatorBase):
   def __init__(self):

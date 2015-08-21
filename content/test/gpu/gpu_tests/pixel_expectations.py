@@ -11,4 +11,7 @@ class PixelExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('Pixel.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
+    self.Fail('Pixel.Canvas2DRedBox', bug=521588)
+    self.Fail('Pixel.CSS3DBlueBox', bug=521588)
+    self.Fail('Pixel.WebGLGreenTriangle', bug=521588)
     pass
