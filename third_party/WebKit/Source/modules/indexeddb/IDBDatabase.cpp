@@ -67,7 +67,6 @@ const char IDBDatabase::transactionInactiveErrorMessage[] = "The transaction is 
 const char IDBDatabase::transactionFinishedErrorMessage[] = "The transaction has finished.";
 const char IDBDatabase::transactionReadOnlyErrorMessage[] = "The transaction is read-only.";
 const char IDBDatabase::databaseClosedErrorMessage[] = "The database connection is closed.";
-const char IDBDatabase::notValidMaxCountErrorMessage[] = "The maxCount provided must not be 0.";
 
 IDBDatabase* IDBDatabase::create(ExecutionContext* context, PassOwnPtr<WebIDBDatabase> database, IDBDatabaseCallbacks* callbacks)
 {

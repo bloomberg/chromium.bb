@@ -4,6 +4,9 @@
 <script src="../../resources/testharnessreport.js"></script>
 <script>
 
+var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+var ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
 function doSetup(dbName, dbVersion, onsuccess) {
   var delete_request = indexedDB.deleteDatabase(dbName);
   delete_request.onerror = function() {
@@ -17,7 +20,6 @@ function doSetup(dbName, dbVersion, onsuccess) {
     };
     req.onupgradeneeded = function(evt) {
       var connection = evt.target.result;
-      var alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
 
       var store = connection.createObjectStore('generated',
             {autoIncrement: true, keyPath: 'id'});
@@ -68,7 +70,7 @@ function createGetAllRequest(t, storeName, connection, range, maxCount) {
     var index = store.index('test_idx');
     // TODO(cmumford): Simplify once crbug.com/335871 is fixed.
     var req = maxCount !== undefined ? index.getAll(range, maxCount) :
-              range !== undefined ? index.getAll(range) :  index.getAll();
+              range !== undefined ? index.getAll(range) : index.getAll();
     req.onerror = t.unreached_func('getAll request should succeed');
     return req;
 }
@@ -80,8 +82,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 1);
-          assert_object_equals(data[0], {ch: 'c', upper: 'C'});
+          assert_array_equals(data.map(e => e.ch), ['c']);
+          assert_array_equals(data.map(e => e.upper), ['C']);
           t.done();
       });
     }, 'Single item get');
@@ -100,9 +102,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 26);
-          assert_object_equals(data[0], {ch: 'a', upper: 'A'});
-          assert_object_equals(data[25], {ch: 'z', upper: 'Z'});
+          assert_array_equals(data.map(e => e.ch), alphabet);
+          assert_array_equals(data.map(e => e.upper), ALPHABET);
           t.done();
       });
     }, 'Get all keys');
@@ -113,9 +114,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 10);
-          assert_object_equals(data[0], {ch: 'a', upper: 'A'});
-          assert_object_equals(data[9], {ch: 'j', upper: 'J'});
+          assert_array_equals(data.map(e => e.ch), 'abcdefghij'.split(''));
+          assert_array_equals(data.map(e => e.upper), 'ABCDEFGHIJ'.split(''));
           t.done();
       });
     }, 'maxCount=10');
@@ -125,9 +125,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
                                     IDBKeyRange.bound('G', 'M'));
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
-          assert_equals(data.length, 7);
-          assert_object_equals(data[0], {ch: 'g', upper: 'G'});
-          assert_object_equals(data[6], {ch: 'm', upper: 'M'});
+          assert_array_equals(data.map(e => e.ch), 'ghijklm'.split(''));
+          assert_array_equals(data.map(e => e.upper), 'GHIJKLM'.split(''));
           t.done();
       });
     }, 'Get bound range');
@@ -138,9 +137,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 3);
-          assert_object_equals(data[0], {ch: 'g', upper: 'G'});
-          assert_object_equals(data[2], {ch: 'i', upper: 'I'});
+          assert_array_equals(data.map(e => e.ch), 'ghi'.split(''));
+          assert_array_equals(data.map(e => e.upper), 'GHI'.split(''));
           t.done();
       });
     }, 'Get bound range with maxCount');
@@ -151,11 +149,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 4);
-          assert_object_equals(data[0], {ch: 'g', upper: 'G'});
-          assert_object_equals(data[1], {ch: 'h', upper: 'H'});
-          assert_object_equals(data[2], {ch: 'i', upper: 'I'});
-          assert_object_equals(data[3], {ch: 'j', upper: 'J'});
+          assert_array_equals(data.map(e => e.ch), 'ghij'.split(''));
+          assert_array_equals(data.map(e => e.upper), 'GHIJ'.split(''));
           t.done();
       });
     }, 'Get upper excluded');
@@ -166,11 +161,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 4);
-          assert_object_equals(data[0], {ch: 'h', upper: 'H'});
-          assert_object_equals(data[1], {ch: 'i', upper: 'I'});
-          assert_object_equals(data[2], {ch: 'j', upper: 'J'});
-          assert_object_equals(data[3], {ch: 'k', upper: 'K'});
+          assert_array_equals(data.map(e => e.ch), 'hijk'.split(''));
+          assert_array_equals(data.map(e => e.upper), 'HIJK'.split(''));
           t.done();
       });
     }, 'Get lower excluded');
@@ -198,13 +190,15 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
     }, 'Non existent key');
 
     async_test(function(t) {
-      var transaction = connection.transaction('out-of-line', 'readonly');
-      var store = transaction.objectStore('out-of-line');
-      var index = store.index('test_idx');
-      assert_throws(new TypeError(), function () {
-        index.getAll(undefined, 0);
-      }, 'getAll() with maxCount=0 should throw TypeError');
-      t.done();
+      var req = createGetAllRequest(t, 'out-of-line', connection,
+          undefined, 0);
+      req.onsuccess = t.step_func(function(evt) {
+          var data = evt.target.result;
+          assert_class_string(data, 'Array', 'result should be an array');
+          assert_array_equals(data.map(e => e.ch), alphabet);
+          assert_array_equals(data.map(e => e.upper), ALPHABET);
+          t.done();
+      });
     }, 'maxCount=0');
 
     async_test(function(t) {
@@ -213,9 +207,8 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 13);
-          assert_object_equals(data[0], {ch: 'a', half: 'first'});
-          assert_object_equals(data[12], {ch: 'm', half: 'first'});
+          assert_array_equals(data.map(e => e.ch), 'abcdefghijklm'.split(''));
+          assert_true(data.every(e => e.half === 'first'));
           t.done();
       });
     }, 'Retrieve multiEntry key');
@@ -226,12 +219,9 @@ doSetup(location.pathname + '-IDBIndex.getAll', 1, function(evt) {
       req.onsuccess = t.step_func(function(evt) {
           var data = evt.target.result;
           assert_class_string(data, 'Array', 'result should be an array');
-          assert_equals(data.length, 5);
-          assert_object_equals(data[0], {ch: 'a', attribs: ['vowel', 'first']});
-          assert_object_equals(data[1], {ch: 'e', attribs: ['vowel']});
-          assert_object_equals(data[2], {ch: 'i', attribs: ['vowel']});
-          assert_object_equals(data[3], {ch: 'o', attribs: ['vowel']});
-          assert_object_equals(data[4], {ch: 'u', attribs: ['vowel']});
+          assert_array_equals(data.map(e => e.ch), ['a', 'e', 'i', 'o', 'u']);
+          assert_array_equals(data[0].attribs, ['vowel', 'first']);
+          assert_true(data.every(e => e.attribs[0] === 'vowel'));
           t.done();
       });
     }, 'Retrieve one key multiple values');

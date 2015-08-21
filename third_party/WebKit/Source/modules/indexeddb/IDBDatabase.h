@@ -128,7 +128,6 @@ public:
     static const char transactionInactiveErrorMessage[];
     static const char transactionReadOnlyErrorMessage[];
     static const char databaseClosedErrorMessage[];
-    static const char notValidMaxCountErrorMessage[];
 
 protected:
     // EventTarget

@@ -235,10 +235,9 @@ IDBRequest* IDBIndex::getInternal(ScriptState* scriptState, const ScriptValue& k
 
 IDBRequest* IDBIndex::getAllInternal(ScriptState* scriptState, const ScriptValue& range, unsigned long maxCount, ExceptionState& exceptionState, bool keyOnly)
 {
-    if (!maxCount) {
-        exceptionState.throwTypeError(IDBDatabase::notValidMaxCountErrorMessage);
-        return nullptr;
-    }
+    if (!maxCount)
+        maxCount = std::numeric_limits<uint32_t>::max();
+
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
         return nullptr;

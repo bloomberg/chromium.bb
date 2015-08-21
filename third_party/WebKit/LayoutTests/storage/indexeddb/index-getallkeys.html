@@ -60,7 +60,8 @@ function createGetAllKeysRequest(t, storeName, connection, range, maxCount) {
     var index = store.index('test_idx');
     // TODO(cmumford): Simplify once crbug.com/335871 is fixed.
     var req = maxCount !== undefined ? index.getAllKeys(range, maxCount) :
-              range !== undefined ? index.getAllKeys(range) : index.getAllKeys();
+              range !== undefined ? index.getAllKeys(range) :
+              index.getAllKeys();
     req.onerror = t.unreached_func('getAllKeys request should succeed');
     return req;
 }
@@ -182,13 +183,13 @@ doSetup(location.pathname + '-IDBIndex.getAllKeys', 1, function(evt) {
     }, 'Non existent key');
 
     async_test(function(t) {
-      var transaction = connection.transaction('out-of-line', 'readonly');
-      var store = transaction.objectStore('out-of-line');
-      var index = store.index('test_idx');
-      assert_throws(new TypeError(), function () {
-        index.getAllKeys(undefined, 0);
-      }, 'getAllKeys() with maxCount=0 should throw TypeError');
-      t.done();
+      var req = createGetAllKeysRequest(t, 'out-of-line', connection,
+          undefined, 0);
+      req.onsuccess = t.step_func(function(evt) {
+          assert_array_equals(evt.target.result, alphabet,
+              'getAllKeys() should return a..z');
+          t.done();
+      });
     }, 'maxCount=0');
 
     async_test(function(t) {

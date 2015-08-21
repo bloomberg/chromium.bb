@@ -126,10 +126,9 @@ IDBRequest* IDBObjectStore::getAll(ScriptState* scriptState, const ScriptValue& 
 IDBRequest* IDBObjectStore::getAll(ScriptState* scriptState, const ScriptValue& keyRange, unsigned long maxCount, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::getAll");
-    if (!maxCount) {
-        exceptionState.throwTypeError(IDBDatabase::notValidMaxCountErrorMessage);
-        return nullptr;
-    }
+    if (!maxCount)
+        maxCount = std::numeric_limits<uint32_t>::max();
+
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
         return nullptr;
@@ -163,10 +162,9 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* scriptState, const ScriptVal
 IDBRequest* IDBObjectStore::getAllKeys(ScriptState* scriptState, const ScriptValue& keyRange, unsigned long maxCount, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBObjectStore::getAll");
-    if (!maxCount) {
-        exceptionState.throwTypeError(IDBDatabase::notValidMaxCountErrorMessage);
-        return 0;
-    }
+    if (!maxCount)
+        maxCount = std::numeric_limits<uint32_t>::max();
+
     if (isDeleted()) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::objectStoreDeletedErrorMessage);
         return 0;
