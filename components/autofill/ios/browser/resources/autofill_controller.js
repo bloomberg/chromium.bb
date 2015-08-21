@@ -1620,7 +1620,8 @@ __gCrWeb.autofill.webFormControlElementToFormField = function(
   }
 
   if (__gCrWeb.autofill.isAutofillableInputElement(element) ||
-          __gCrWeb.autofill.isTextAreaElement(element)) {
+          __gCrWeb.autofill.isTextAreaElement(element) ||
+          __gCrWeb.autofill.isSelectElement(element)) {
     field['is_autofilled'] = element.isAutofilled;
     field['should_autocomplete'] = __gCrWeb.common.autoComplete(element);
     field['is_focusable'] = !element.disabled && !element.readOnly &&

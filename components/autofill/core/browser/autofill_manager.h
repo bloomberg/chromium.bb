@@ -169,6 +169,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   void OnFormsSeen(const std::vector<FormData>& forms,
                    const base::TimeTicks& timestamp);
 
+  // IMPORTANT: On iOS, this method is called when the form is submitted,
+  // immediately before OnFormSubmitted() is called. Do not assume that
+  // OnWillSubmitForm() will run before the form submits.
+  // TODO(mathp): Revisit this and use a single method to track form submission.
+  //
   // Processes the about-to-be-submitted |form|, uploading the possible field
   // types for the submitted fields to the crowdsourcing server. Returns false
   // if this form is not relevant for Autofill.
