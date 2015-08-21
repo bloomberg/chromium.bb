@@ -41,8 +41,6 @@ public class DataReductionPreferences extends PreferenceFragment {
 
     private boolean mIsEnabled;
     private boolean mWasEnabledAtCreation;
-    // Whether the current activity is started from the Data Reduction Promo.
-    private boolean mFromPromo;
 
     public static void launchDataReductionSSLInfoBar(Context context, WebContents webContents) {
         // The infobar is displayed if the Chrome instance is part of the SSL experiment field
@@ -73,26 +71,11 @@ public class DataReductionPreferences extends PreferenceFragment {
         updatePreferences(isEnabled);
 
         setHasOptionsMenu(true);
-
-        Bundle extras = getActivity().getIntent().getExtras();
-        mFromPromo = (extras != null) && extras.getBoolean(DataReductionPromoScreen.FROM_PROMO);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        if (mFromPromo) {
-            // The promo isn't shown unless the proxy is disabled.
-            if (mIsEnabled) {
-                DataReductionProxyUma.dataReductionProxyUIAction(
-                        DataReductionProxyUma.ACTION_SETTINGS_LINK_ENABLED);
-                return;
-            }
-            DataReductionProxyUma.dataReductionProxyUIAction(
-                    DataReductionProxyUma.ACTION_SETTINGS_LINK_NOT_ENABLED);
-            return;
-        }
 
         int statusChange;
         if (mWasEnabledAtCreation) {

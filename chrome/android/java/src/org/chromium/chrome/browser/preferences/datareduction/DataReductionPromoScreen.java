@@ -8,24 +8,16 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.text.TextPaint;
-import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.ui.text.SpanApplier;
-import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -33,7 +25,6 @@ import org.chromium.ui.widget.Toast;
  */
 public class DataReductionPromoScreen extends Dialog implements View.OnClickListener,
         DialogInterface.OnDismissListener {
-    public static final String FROM_PROMO = "FromPromo";
     private static final String SHARED_PREF_DISPLAYED_PROMO = "displayed_data_reduction_promo";
 
     private int mState;
@@ -85,7 +76,6 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         getWindow().setLayout(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         addListenerOnButton();
-        addClickableSpan();
 
         mState = DataReductionProxyUma.ACTION_DISMISSED;
     }
@@ -93,8 +83,8 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
     private void addListenerOnButton() {
         int [] interactiveViewIds = new int[] {
             R.id.no_thanks_button,
-            R.id.enable_button_front,
-            R.id.close_button_front
+            R.id.enable_button,
+            R.id.close_button
         };
 
         for (int interactiveViewId : interactiveViewIds) {
@@ -102,35 +92,6 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         }
     }
 
-    private void addClickableSpan() {
-        TextView settings_link = (TextView) findViewById(R.id.data_reduction_title_2_link);
-        ClickableSpan clickableSettingsSpan = new ClickableSpan() {
-            @Override
-            public void onClick(View view) {
-                Context context = getContext();
-                if (context == null) return;
-                Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                        context, DataReductionPreferences.class.getName());
-                intent.putExtra(FROM_PROMO, true);
-                context.startActivity(intent);
-                // Don't report an action. One will be reported in the settings
-                // menu saying if the user proceeded to enable the proxy or not
-                // after viewing the promo.
-                mState = DataReductionProxyUma.ACTION_INDEX_BOUNDARY;
-                dismiss();
-            }
-
-            @Override
-            public void updateDrawState(TextPaint textPaint) {
-                textPaint.setColor(textPaint.linkColor);
-                textPaint.setUnderlineText(false);
-            }
-        };
-        settings_link.setMovementMethod(LinkMovementMethod.getInstance());
-        settings_link.setText(SpanApplier.applySpans(
-                getContext().getString(R.string.data_reduction_title_2),
-                new SpanInfo("<link>", "</link>", clickableSettingsSpan)));
-    }
 
     @Override
     public void onClick(View v) {
@@ -138,10 +99,10 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
 
         if (id == R.id.no_thanks_button) {
             handleCloseButtonPressed();
-        } else if (id == R.id.enable_button_front) {
+        } else if (id == R.id.enable_button) {
             mState = DataReductionProxyUma.ACTION_ENABLED;
             handleEnableButtonPressed();
-        } else if (id == R.id.close_button_front) {
+        } else if (id == R.id.close_button) {
             handleCloseButtonPressed();
         } else {
             assert false : "Unhandled onClick event";

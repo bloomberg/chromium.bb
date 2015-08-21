@@ -748,17 +748,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
 
       <!-- Data Saver Promo -->
-      <message name="IDS_DATA_REDUCTION_TITLE_1" desc="First part of the headline for the promo inviting users to enable Data Saver" >
+      <message name="IDS_DATA_REDUCTION_PROMO_TITLE" desc="The title for the promo inviting users to enable Data Saver" >
         Browse more for less
       </message>
-      <message name="IDS_DATA_REDUCTION_TITLE_2" desc="Second part of the headline for the promo inviting users to enable Data Saver" >
-        Spend less on data by using Google to <ph name="BEGIN_LINK">&lt;link&gt;</ph>optimize the pages you visit<ph name="END_LINK">&lt;/link&gt;</ph>.
-      </message>
-      <message name="IDS_DATA_REDUCTION_TITLE_3" desc="Third part of the headline for the promo inviting users to enable Data Saver" >
-        Pages accessed with HTTPS or Incognito will not be optimized or seen by Google.
+      <message name="IDS_DATA_REDUCTION_PROMO_SUMMARY" desc="Description for the promo inviting users to enable Data Saver" >
+        Spend less data by using Google to optimize the pages you visit. Pages accessed with HTTPS or Incognito will not be optimized or seen by Google.
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON" desc="Button the user presses if they want to enable Data Saver" >
-        Turn on Data Saver
+        Enable Data Saver
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLED_TOAST" desc="Toast message displayed after the user enables Data Saver from the promo" >
         Data Saver is on. Manage it in Settings.

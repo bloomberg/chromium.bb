@@ -10,12 +10,12 @@ import org.chromium.base.metrics.RecordHistogram;
  * Centralizes UMA data collection for the Data Reduction Proxy.
  */
 public class DataReductionProxyUma {
-    // Represent the possible user actions in the settings menu. This must remain in
-    // sync with DataReductionProxy.UIAction in tools/metrics/histograms/histograms.xml.
+    // Represent the possible user actions in the promo and  settings menu. This must
+    // remain in sync with DataReductionProxy.UIAction in
+    // tools/metrics/histograms/histograms.xml.
     public static final int ACTION_ENABLED = 0;
-    // The value of 1 is reserved for an iOS-specific action.
-    public static final int ACTION_SETTINGS_LINK_ENABLED = 2;
-    public static final int ACTION_SETTINGS_LINK_NOT_ENABLED = 3;
+    // The value of 1 is reserved for an iOS-specific action. Values 2 and 3 are
+    // deprecated promo actions.
     public static final int ACTION_DISMISSED = 4;
     public static final int ACTION_OFF_TO_OFF = 5;
     public static final int ACTION_OFF_TO_ON = 6;
