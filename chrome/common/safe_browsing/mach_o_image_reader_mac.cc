@@ -75,6 +75,13 @@ MachOImageReader::LoadCommand::LoadCommand() {}
 
 MachOImageReader::LoadCommand::~LoadCommand() {}
 
+// static
+bool MachOImageReader::IsMachOMagicValue(uint32_t magic) {
+  return magic == FAT_MAGIC   || magic == FAT_CIGAM    ||
+         magic == MH_MAGIC    || magic == MH_CIGAM     ||
+         magic == MH_MAGIC_64 || magic == MH_CIGAM_64;
+}
+
 MachOImageReader::MachOImageReader()
     : data_(),
       is_fat_(false),

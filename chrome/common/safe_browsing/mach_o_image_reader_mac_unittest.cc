@@ -6,6 +6,7 @@
 
 #include <arpa/inet.h>
 #include <libkern/OSByteOrder.h>
+#include <mach-o/fat.h>
 #include <mach-o/loader.h>
 #include <string.h>
 #include <uuid/uuid.h>
@@ -14,6 +15,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -421,6 +423,15 @@ TEST_F(MachOImageReaderTest, NotMachO) {
   ASSERT_NO_FATAL_FAILURE(OpenTestFile("src.c", &file));
   MachOImageReader reader;
   EXPECT_FALSE(reader.Initialize(file.data(), file.length()));
+}
+
+TEST_F(MachOImageReaderTest, IsMachOMagicValue) {
+  static const uint32_t kMagics[] = { MH_MAGIC, MH_MAGIC, FAT_MAGIC };
+  for (uint32_t magic : kMagics) {
+    SCOPED_TRACE(base::StringPrintf("0x%x", magic));
+    EXPECT_TRUE(MachOImageReader::IsMachOMagicValue(magic));
+    EXPECT_TRUE(MachOImageReader::IsMachOMagicValue(OSSwapInt32(magic)));
+  }
 }
 
 }  // namespace

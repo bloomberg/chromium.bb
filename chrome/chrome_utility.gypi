@@ -69,6 +69,8 @@
     ],
     'chrome_utility_safe_browsing_sources': [
       'utility/safe_browsing/mac/convert_big_endian.h',
+      'utility/safe_browsing/mac/dmg_analyzer.cc',
+      'utility/safe_browsing/mac/dmg_analyzer.h',
       'utility/safe_browsing/mac/dmg_iterator.cc',
       'utility/safe_browsing/mac/dmg_iterator.h',
       'utility/safe_browsing/mac/hfs.cc',

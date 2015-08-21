@@ -219,9 +219,11 @@ message ClientDownloadRequest {
     // True if the signature was trusted on the client.
     optional bool trusted = 2;
 
-    // PKCS#7 SignedData blobs extracted from a portable executable image's
-    // attribute certificate table. The presence of these does not imply that
-    // the signatures were deemed trusted by the client.
+    // On Windows, PKCS#7 SignedData blobs extracted from a portable executable
+    // image's attribute certificate table. The presence of these does not imply
+    // that the signatures were deemed trusted by the client.
+    // On Mac, this is the code signature blob referenced by the
+    // LC_CODE_SIGNATURE load command.
     repeated bytes signed_data = 3;
   }
 

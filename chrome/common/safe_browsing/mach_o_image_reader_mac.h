@@ -49,6 +49,12 @@ class MachOImageReader {
     std::vector<uint8_t> data;
   };
 
+  // Returns true if |magic| is any Mach-O magic number. This can be used on the
+  // first four bytes of a file (either in little- or big-endian) to quickly
+  // determine whether or not the file is potentially a Mach-O file. An instance
+  // of this class must be used for a true validity check.
+  static bool IsMachOMagicValue(uint32_t magic);
+
   MachOImageReader();
   ~MachOImageReader();
 
