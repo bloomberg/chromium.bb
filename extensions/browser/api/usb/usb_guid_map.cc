@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/strings/utf_string_conversions.h"
 #include "device/core/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
+#include "extensions/common/api/usb.h"
 
 namespace extensions {
 
@@ -47,6 +49,17 @@ bool UsbGuidMap::GetGuidFromId(int id, std::string* guid) {
     return false;
   *guid = iter->second;
   return true;
+}
+
+void UsbGuidMap::GetApiDevice(scoped_refptr<const device::UsbDevice> device_in,
+                              extensions::api::usb::Device* device_out) {
+  device_out->device = GetIdFromGuid(device_in->guid());
+  device_out->vendor_id = device_in->vendor_id();
+  device_out->product_id = device_in->product_id();
+  device_out->product_name = base::UTF16ToUTF8(device_in->product_string());
+  device_out->manufacturer_name =
+      base::UTF16ToUTF8(device_in->manufacturer_string());
+  device_out->serial_number = base::UTF16ToUTF8(device_in->serial_number());
 }
 
 UsbGuidMap::UsbGuidMap(content::BrowserContext* browser_context)

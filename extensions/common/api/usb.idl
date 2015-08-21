@@ -31,6 +31,12 @@ namespace usb {
     long vendorId;
     // The product ID.
     long productId;
+    // The iProduct string read from the device, if available.
+    DOMString productName;
+    // The iManufacturer string read from the device, if available.
+    DOMString manufacturerName;
+    // The iSerialNumber string read from the device, if available.
+    DOMString serialNumber;
   };
 
   dictionary ConnectionHandle {

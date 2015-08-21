@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #include "device/usb/usb_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/common/api/usb.h"
 
 namespace device {
 class UsbDevice;
@@ -37,6 +38,11 @@ class UsbGuidMap : public BrowserContextKeyedAPI,
   // unknown (e.g., the corresponding device was unplugged), this returns
   // |false|; otherwise it returns |true|.
   bool GetGuidFromId(int id, std::string* guid);
+
+  // Populates an instance of the chrome.usb.Device object from the given
+  // device.
+  void GetApiDevice(scoped_refptr<const device::UsbDevice> device_in,
+                    extensions::api::usb::Device* device_out);
 
  private:
   friend class BrowserContextKeyedAPIFactory<UsbGuidMap>;

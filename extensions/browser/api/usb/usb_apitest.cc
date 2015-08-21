@@ -83,7 +83,8 @@ class UsbApiTest : public ShellApiTest {
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
 
-    mock_device_ = new MockUsbDevice(0, 0);
+    mock_device_ =
+        new MockUsbDevice(0, 0, "Test Manufacturer", "Test Device", "ABC123");
     mock_device_handle_ = new MockUsbDeviceHandle(mock_device_.get());
     EXPECT_CALL(*mock_device_.get(), Open(_))
         .WillRepeatedly(InvokeCallback<0>(mock_device_handle_));

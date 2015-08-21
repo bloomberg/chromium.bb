@@ -9,7 +9,13 @@ function getDevices() {
       vendorId: 0,
       productId: 0
   }, function(devices) {
-    usb.openDevice(devices[0], function(handle) {
+    chrome.test.assertEq(1, devices.length);
+    var device = devices[0];
+    chrome.test.assertEq("Test Device", device.productName);
+    chrome.test.assertEq("Test Manufacturer", device.manufacturerName);
+    chrome.test.assertEq("ABC123", device.serialNumber);
+    usb.openDevice(device, function(handle) {
+      chrome.test.assertNoLastError();
       usb.closeDevice(handle);
       chrome.test.succeed();
     });

@@ -139,6 +139,8 @@ function testDeviceInfo() {
   getDevice(false, function (deviceInfo) {
     chrome.test.assertEq(0x18D1, deviceInfo.vendorId);
     chrome.test.assertEq(0x58F0, deviceInfo.productId);
+    chrome.test.assertEq("Test Device", deviceInfo.productName);
+    chrome.test.assertEq("A", deviceInfo.serialNumber);
     chrome.test.assertEq(1, deviceInfo.collections.length);
     chrome.test.assertEq(0xFF00, deviceInfo.collections[0].usagePage);
     chrome.test.assertEq(0, deviceInfo.collections[0].usage);

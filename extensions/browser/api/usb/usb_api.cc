@@ -254,14 +254,6 @@ base::Value* PopulateConnectionHandle(int handle,
   return result.ToValue().release();
 }
 
-base::Value* PopulateDevice(const UsbDevice* device, int id) {
-  Device result;
-  result.device = id;
-  result.vendor_id = device->vendor_id();
-  result.product_id = device->product_id();
-  return result.ToValue().release();
-}
-
 TransferType ConvertTransferTypeToApi(const UsbTransferType& input) {
   switch (input) {
     case device::USB_TRANSFER_CONTROL:
@@ -470,10 +462,10 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
                                    data->data(), length));
 
   if (status == device::USB_TRANSFER_COMPLETED) {
-    Respond(OneArgument(transfer_info.release()));
+    Respond(OneArgument(transfer_info.Pass()));
   } else {
     scoped_ptr<base::ListValue> error_args(new base::ListValue());
-    error_args->Append(transfer_info.release());
+    error_args->Append(transfer_info.Pass());
     // Returning arguments with an error is wrong but we're stuck with it.
     Respond(ErrorWithArguments(error_args.Pass(),
                                ConvertTransferStatusToApi(status)));
@@ -543,7 +535,7 @@ void UsbFindDevicesFunction::OnDeviceOpened(
 }
 
 void UsbFindDevicesFunction::OpenComplete() {
-  Respond(OneArgument(result_.release()));
+  Respond(OneArgument(result_.Pass()));
 }
 
 UsbGetDevicesFunction::UsbGetDevicesFunction() {
@@ -589,12 +581,13 @@ void UsbGetDevicesFunction::OnGetDevicesComplete(
   for (const scoped_refptr<UsbDevice>& device : devices) {
     if ((filters_.empty() || UsbDeviceFilter::MatchesAny(device, filters_)) &&
         HasDevicePermission(device)) {
-      result->Append(PopulateDevice(device.get(),
-                                    guid_map->GetIdFromGuid(device->guid())));
+      Device api_device;
+      guid_map->GetApiDevice(device, &api_device);
+      result->Append(api_device.ToValue());
     }
   }
 
-  Respond(OneArgument(result.release()));
+  Respond(OneArgument(result.Pass()));
 }
 
 UsbGetUserSelectedDevicesFunction::UsbGetUserSelectedDevicesFunction() {
@@ -643,11 +636,12 @@ void UsbGetUserSelectedDevicesFunction::OnDevicesChosen(
   scoped_ptr<base::ListValue> result(new base::ListValue());
   UsbGuidMap* guid_map = UsbGuidMap::Get(browser_context());
   for (const auto& device : devices) {
-    result->Append(
-        PopulateDevice(device.get(), guid_map->GetIdFromGuid(device->guid())));
+    Device api_device;
+    guid_map->GetApiDevice(device, &api_device);
+    result->Append(api_device.ToValue());
   }
 
-  Respond(OneArgument(result.release()));
+  Respond(OneArgument(result.Pass()));
 }
 
 UsbRequestAccessFunction::UsbRequestAccessFunction() {
@@ -770,7 +764,7 @@ ExtensionFunction::ResponseAction UsbGetConfigurationFunction::Run() {
   if (config_descriptor) {
     ConfigDescriptor config;
     ConvertConfigDescriptor(*config_descriptor, &config);
-    return RespondNow(OneArgument(config.ToValue().release()));
+    return RespondNow(OneArgument(config.ToValue()));
   } else {
     return RespondNow(Error(kErrorNotConfigured));
   }
@@ -801,10 +795,10 @@ ExtensionFunction::ResponseAction UsbListInterfacesFunction::Run() {
 
     scoped_ptr<base::ListValue> result(new base::ListValue);
     for (size_t i = 0; i < config.interfaces.size(); ++i) {
-      result->Append(config.interfaces[i]->ToValue().release());
+      result->Append(config.interfaces[i]->ToValue());
     }
 
-    return RespondNow(OneArgument(result.release()));
+    return RespondNow(OneArgument(result.Pass()));
   } else {
     return RespondNow(Error(kErrorNotConfigured));
   }

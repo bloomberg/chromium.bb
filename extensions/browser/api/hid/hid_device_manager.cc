@@ -27,9 +27,11 @@ namespace extensions {
 namespace {
 
 void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
-                           scoped_refptr<HidDeviceInfo> input) {
+                           scoped_refptr<const HidDeviceInfo> input) {
   output->vendor_id = input->vendor_id();
   output->product_id = input->product_id();
+  output->product_name = input->product_name();
+  output->serial_number = input->serial_number();
   output->max_input_report_size = input->max_input_report_size();
   output->max_output_report_size = input->max_output_report_size();
   output->max_feature_report_size = input->max_feature_report_size();
@@ -294,7 +296,7 @@ scoped_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
 
     // Expose devices with which user can communicate.
     if (api_device_info.collections.size() > 0) {
-      api_devices->Append(api_device_info.ToValue().release());
+      api_devices->Append(api_device_info.ToValue());
     }
   }
 

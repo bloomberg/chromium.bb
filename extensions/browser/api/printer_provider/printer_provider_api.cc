@@ -642,17 +642,14 @@ void PrinterProviderAPIImpl::DispatchGetUsbPrinterInfoRequested(
 
   int request_id =
       pending_usb_printer_info_requests_[extension_id].Add(callback);
-  api::usb::Device usb_device;
-  usb_device.device =
-      UsbGuidMap::Get(browser_context_)->GetIdFromGuid(device->guid());
-  usb_device.vendor_id = device->vendor_id();
-  usb_device.product_id = device->product_id();
+  api::usb::Device api_device;
+  UsbGuidMap::Get(browser_context_)->GetApiDevice(device, &api_device);
 
-  scoped_ptr<base::ListValue> internal_args(new base::ListValue);
+  scoped_ptr<base::ListValue> internal_args(new base::ListValue());
   // Request id is not part of the public API and it will be massaged out in
   // custom bindings.
   internal_args->AppendInteger(request_id);
-  internal_args->Append(usb_device.ToValue().release());
+  internal_args->Append(api_device.ToValue());
   scoped_ptr<Event> event(
       new Event(events::PRINTER_PROVIDER_ON_GET_USB_PRINTER_INFO_REQUESTED,
                 api::printer_provider::OnGetUsbPrinterInfoRequested::kEventName,

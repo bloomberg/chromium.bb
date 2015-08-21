@@ -26,6 +26,10 @@ namespace hid {
     long vendorId;
     // Product ID.
     long productId;
+    // The product name read from the device, if available.
+    DOMString productName;
+    // The serial number read from the device, if available.
+    DOMString serialNumber;
     // Top-level collections from this device's report descriptors.
     HidCollectionInfo[] collections;
     // Top-level collection's maximum input report size.
