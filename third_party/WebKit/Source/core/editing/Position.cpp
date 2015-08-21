@@ -28,13 +28,9 @@
 
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/editing/PositionIterator.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/line/InlineTextBox.h"
+#include "core/layout/LayoutObject.h"
 #include "wtf/text/CString.h"
 #include <stdio.h>
 
@@ -456,45 +452,6 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
     return mostForwardCaretPosition(*this, rule);
-}
-
-template <typename Strategy>
-static bool inRenderedTextAlgorithm(const PositionAlgorithm<Strategy>& position)
-{
-    Node* const anchorNode = position.anchorNode();
-    if (!anchorNode || !anchorNode->isTextNode())
-        return false;
-
-    LayoutObject* layoutObject = anchorNode->layoutObject();
-    if (!layoutObject)
-        return false;
-
-    const int offsetInNode = position.computeEditingOffset();
-    LayoutText* textLayoutObject = toLayoutText(layoutObject);
-    for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
-        if (offsetInNode < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
-            // The offset we're looking for is before this node
-            // this means the offset must be in content that is
-            // not laid out. Return false.
-            return false;
-        }
-        if (box->containsCaretOffset(offsetInNode)) {
-            // Return false for offsets inside composed characters.
-            return offsetInNode == 0 || offsetInNode == textLayoutObject->nextOffset(textLayoutObject->previousOffset(offsetInNode));
-        }
-    }
-
-    return false;
-}
-
-bool inRenderedText(const Position& position)
-{
-    return inRenderedTextAlgorithm<EditingStrategy>(position);
-}
-
-bool inRenderedText(const PositionInComposedTree& position)
-{
-    return inRenderedTextAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 template <typename Strategy>

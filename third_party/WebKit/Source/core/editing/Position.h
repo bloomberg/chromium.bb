@@ -407,11 +407,6 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
     return toPositionInComposedTree(position);
 }
 
-// TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
-// reduce dependency of |LayoutObject| in |Position| class.
-CORE_EXPORT bool inRenderedText(const Position&);
-CORE_EXPORT bool inRenderedText(const PositionInComposedTree&);
-
 CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
 CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
 

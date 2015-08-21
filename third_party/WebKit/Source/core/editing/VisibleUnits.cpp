@@ -1763,6 +1763,35 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
     return VisiblePosition();
 }
 
+template <typename Strategy>
+static bool inRenderedText(const PositionAlgorithm<Strategy>& position)
+{
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode || !anchorNode->isTextNode())
+        return false;
+
+    LayoutObject* layoutObject = anchorNode->layoutObject();
+    if (!layoutObject)
+        return false;
+
+    const int offsetInNode = position.computeEditingOffset();
+    LayoutText* textLayoutObject = toLayoutText(layoutObject);
+    for (InlineTextBox *box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+        if (offsetInNode < static_cast<int>(box->start()) && !textLayoutObject->containsReversedText()) {
+            // The offset we're looking for is before this node
+            // this means the offset must be in content that is
+            // not laid out. Return false.
+            return false;
+        }
+        if (box->containsCaretOffset(offsetInNode)) {
+            // Return false for offsets inside composed characters.
+            return offsetInNode == 0 || offsetInNode == textLayoutObject->nextOffset(textLayoutObject->previousOffset(offsetInNode));
+        }
+    }
+
+    return false;
+}
+
 static Node* nextRenderedEditable(Node* node)
 {
     for (node = nextAtomicLeafNode(*node); node; node = nextAtomicLeafNode(*node)) {
