@@ -219,7 +219,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       to_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
   io_surface_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                           gfx::Size(50, 50), resource7,
-                          IOSurfaceDrawQuad::FLIPPED);
+                          IOSurfaceDrawQuad::FLIPPED, false);
 
   if (child_pass.layer_id) {
     RenderPassDrawQuad* render_pass_quad =

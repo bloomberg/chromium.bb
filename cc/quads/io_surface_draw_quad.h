@@ -28,7 +28,8 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
               const gfx::Rect& visible_rect,
               const gfx::Size& io_surface_size,
               unsigned io_surface_resource_id,
-              Orientation orientation);
+              Orientation orientation,
+              bool allow_overlay);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -37,10 +38,12 @@ class CC_EXPORT IOSurfaceDrawQuad : public DrawQuad {
               bool needs_blending,
               const gfx::Size& io_surface_size,
               unsigned io_surface_resource_id,
-              Orientation orientation);
+              Orientation orientation,
+              bool allow_overlay);
 
   gfx::Size io_surface_size;
   Orientation orientation;
+  bool allow_overlay;
 
   ResourceId io_surface_resource_id() const {
     return resources.ids[kIOSurfaceResourceIdIndex];

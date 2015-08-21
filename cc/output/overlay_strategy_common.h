@@ -10,10 +10,11 @@
 #include "cc/output/overlay_processor.h"
 
 namespace cc {
+class IOSurfaceDrawQuad;
+class OverlayCandidate;
 class OverlayCandidateValidator;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
-class OverlayCandidate;
 
 class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
  public:
@@ -39,6 +40,8 @@ class CC_EXPORT OverlayStrategyCommon : public OverlayProcessor::Strategy {
                           OverlayCandidate* quad_info);
   bool GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
                         OverlayCandidate* quad_info);
+  bool GetIOSurfaceQuadInfo(const IOSurfaceDrawQuad& quad,
+                            OverlayCandidate* quad_info);
 
   virtual bool TryOverlay(OverlayCandidateValidator* capability_checker,
                           RenderPassList* render_passes_in_draw_order,

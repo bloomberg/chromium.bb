@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -50,6 +51,8 @@ bool OverlayStrategyCommon::IsOverlayQuad(const DrawQuad* draw_quad) {
       return TextureDrawQuad::MaterialCast(draw_quad)->allow_overlay();
     case DrawQuad::STREAM_VIDEO_CONTENT:
       return StreamVideoDrawQuad::MaterialCast(draw_quad)->allow_overlay();
+    case DrawQuad::IO_SURFACE_CONTENT:
+      return IOSurfaceDrawQuad::MaterialCast(draw_quad)->allow_overlay;
     default:
       return false;
   }
@@ -127,6 +130,20 @@ bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
   return true;
 }
 
+bool OverlayStrategyCommon::GetIOSurfaceQuadInfo(const IOSurfaceDrawQuad& quad,
+                                                 OverlayCandidate* quad_info) {
+  gfx::OverlayTransform overlay_transform =
+      OverlayCandidate::GetOverlayTransform(
+          quad.shared_quad_state->quad_to_target_transform, false);
+  if (overlay_transform != gfx::OVERLAY_TRANSFORM_NONE)
+    return false;
+  quad_info->resource_id = quad.io_surface_resource_id();
+  quad_info->resource_size_in_pixels = quad.io_surface_size;
+  quad_info->transform = overlay_transform;
+  quad_info->uv_rect = gfx::Rect(0, 0, 1, 1);
+  return true;
+}
+
 bool OverlayStrategyCommon::GetCandidateQuadInfo(const DrawQuad& draw_quad,
                                                  OverlayCandidate* quad_info) {
   // All quad checks.
@@ -134,14 +151,23 @@ bool OverlayStrategyCommon::GetCandidateQuadInfo(const DrawQuad& draw_quad,
       draw_quad.shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
     return false;
 
-  if (draw_quad.material == DrawQuad::TEXTURE_CONTENT) {
-    const TextureDrawQuad& quad = *TextureDrawQuad::MaterialCast(&draw_quad);
-    if (!GetTextureQuadInfo(quad, quad_info))
-      return false;
-  } else if (draw_quad.material == DrawQuad::STREAM_VIDEO_CONTENT) {
-    const StreamVideoDrawQuad& quad =
-        *StreamVideoDrawQuad::MaterialCast(&draw_quad);
-    if (!GetVideoQuadInfo(quad, quad_info))
+  switch (draw_quad.material) {
+    case DrawQuad::TEXTURE_CONTENT: {
+      auto* quad = TextureDrawQuad::MaterialCast(&draw_quad);
+      if (!GetTextureQuadInfo(*quad, quad_info))
+        return false;
+    } break;
+    case DrawQuad::STREAM_VIDEO_CONTENT: {
+      auto* quad = StreamVideoDrawQuad::MaterialCast(&draw_quad);
+      if (!GetVideoQuadInfo(*quad, quad_info))
+        return false;
+    } break;
+    case DrawQuad::IO_SURFACE_CONTENT: {
+      auto* quad = IOSurfaceDrawQuad::MaterialCast(&draw_quad);
+      if (!GetIOSurfaceQuadInfo(*quad, quad_info))
+        return false;
+    } break;
+    default:
       return false;
   }
 

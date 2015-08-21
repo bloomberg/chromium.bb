@@ -384,26 +384,34 @@ TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
   gfx::Size size(58, 95);
   ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
+  bool allow_overlay = true;
   CREATE_SHARED_STATE();
 
-  CREATE_QUAD_5_NEW(IOSurfaceDrawQuad,
+  CREATE_QUAD_6_NEW(IOSurfaceDrawQuad,
                     opaque_rect,
                     visible_rect,
                     size,
                     resource_id,
-                    orientation);
+                    orientation,
+                    allow_overlay);
   EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_EQ(size, copy_quad->io_surface_size);
   EXPECT_EQ(resource_id, copy_quad->io_surface_resource_id());
   EXPECT_EQ(orientation, copy_quad->orientation);
+  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay);
 
-  CREATE_QUAD_3_ALL(IOSurfaceDrawQuad, size, resource_id, orientation);
+  CREATE_QUAD_4_ALL(IOSurfaceDrawQuad,
+                    size,
+                    resource_id,
+                    orientation,
+                    allow_overlay);
   EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copy_quad->material);
   EXPECT_EQ(size, copy_quad->io_surface_size);
   EXPECT_EQ(resource_id, copy_quad->io_surface_resource_id());
   EXPECT_EQ(orientation, copy_quad->orientation);
+  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay);
 }
 
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
@@ -738,17 +746,20 @@ TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
   gfx::Size size(58, 95);
   ResourceId resource_id = 72;
   IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
+  bool allow_overlay = true;
 
   CREATE_SHARED_STATE();
-  CREATE_QUAD_5_NEW(IOSurfaceDrawQuad,
+  CREATE_QUAD_6_NEW(IOSurfaceDrawQuad,
                     opaque_rect,
                     visible_rect,
                     size,
                     resource_id,
-                    orientation);
+                    orientation,
+                    allow_overlay);
   EXPECT_EQ(resource_id, quad_new->io_surface_resource_id());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(resource_id + 1, quad_new->io_surface_resource_id());
+  EXPECT_EQ(allow_overlay, copy_quad->allow_overlay);
 }
 
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {

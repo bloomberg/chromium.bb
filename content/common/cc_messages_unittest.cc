@@ -131,6 +131,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->io_surface_size.ToString(), b->io_surface_size.ToString());
     EXPECT_EQ(a->io_surface_resource_id(), b->io_surface_resource_id());
     EXPECT_EQ(a->orientation, b->orientation);
+    EXPECT_EQ(a->allow_overlay, b->allow_overlay);
   }
 
   void Compare(const RenderPassDrawQuad* a, const RenderPassDrawQuad* b) {
@@ -268,6 +269,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   SkXfermode::Mode arbitrary_blend_mode3 = SkXfermode::kOverlay_Mode;
   IOSurfaceDrawQuad::Orientation arbitrary_orientation =
       IOSurfaceDrawQuad::UNFLIPPED;
+  bool arbitrary_allow_overlay = true;
   ResourceId arbitrary_resourceid1 = 55;
   ResourceId arbitrary_resourceid2 = 47;
   ResourceId arbitrary_resourceid3 = 23;
@@ -337,7 +339,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                        arbitrary_bool1,
                        arbitrary_size1,
                        arbitrary_resourceid3,
-                       arbitrary_orientation);
+                       arbitrary_orientation,
+                       arbitrary_allow_overlay);
   pass_cmp->CopyFromAndAppendDrawQuad(iosurface_in,
                                       iosurface_in->shared_quad_state);
 

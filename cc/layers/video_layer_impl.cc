@@ -327,7 +327,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       io_surface_quad->SetNew(shared_quad_state, quad_rect, opaque_rect,
                               visible_quad_rect, visible_rect.size(),
                               frame_resources_[0].id,
-                              IOSurfaceDrawQuad::UNFLIPPED);
+                              IOSurfaceDrawQuad::UNFLIPPED,
+                              frame_resources_[0].allow_overlay);
       ValidateQuadResources(io_surface_quad);
       break;
     }
