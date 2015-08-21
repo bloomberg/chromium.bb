@@ -116,6 +116,28 @@ bool isMutableUnitType(CSSPrimitiveValue::UnitType unitType)
     return unitType == CSSPrimitiveValue::UnitType::Pixels || unitType == CSSPrimitiveValue::UnitType::Ems || unitType == CSSPrimitiveValue::UnitType::Percentage || unitType == CSSPrimitiveValue::UnitType::Rems;
 }
 
+String truncateZeroes(const String& number)
+{
+    if (!number.contains('.'))
+        return number;
+
+    int removeCount = 0;
+    while (number[number.length() - removeCount - 1] == '0')
+        removeCount++;
+
+    if (number[number.length() - removeCount - 1] == '.')
+        removeCount++;
+
+    return number.left(number.length() - removeCount);
+}
+
+float toValidValue(CSSPropertyID propertyId, float newValue)
+{
+    if (CSSPropertyPaddingBottom <= propertyId && propertyId <= CSSPropertyPaddingTop)
+        return newValue >= 0 ? newValue : 0;
+
+    return newValue;
+}
 } // namespace
 
 LayoutEditor::LayoutEditor(InspectorCSSAgent* cssAgent)
@@ -239,7 +261,8 @@ void LayoutEditor::overlayPropertyChanged(float cssDelta)
 {
     if (m_changingProperty && m_factor) {
         String errorString;
-        m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_changingProperty, String::format("%.2f", cssDelta / m_factor + m_propertyInitialValue) + CSSPrimitiveValue::unitTypeToString(m_valueUnitType));
+        float newValue = toValidValue(m_changingProperty, cssDelta / m_factor + m_propertyInitialValue);
+        m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), m_changingProperty, truncateZeroes(String::format("%.2f", newValue)) + CSSPrimitiveValue::unitTypeToString(m_valueUnitType));
     }
 }
 
