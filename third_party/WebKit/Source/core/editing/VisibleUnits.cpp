@@ -44,6 +44,8 @@
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
@@ -2207,4 +2209,92 @@ PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree& p
     return mostBackwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
 }
 
+// Returns true if the visually equivalent positions around have different
+// editability. A position is considered at editing boundary if one of the
+// following is true:
+// 1. It is the first position in the node and the next visually equivalent
+//    position is non editable.
+// 2. It is the last position in the node and the previous visually equivalent
+//    position is non editable.
+// 3. It is an editable position and both the next and previous visually
+//    equivalent positions are both non editable.
+template <typename Strategy>
+static bool atEditingBoundary(const PositionAlgorithm<Strategy> positions)
+{
+    PositionAlgorithm<Strategy> nextPosition = positions.downstream(CanCrossEditingBoundary);
+    if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
+        return true;
+
+    PositionAlgorithm<Strategy> prevPosition = positions.upstream(CanCrossEditingBoundary);
+    if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
+        return true;
+
+    return nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle()
+        && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle();
 }
+
+template <typename Strategy>
+static bool isVisuallyEquivalentCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
+{
+    Node* const anchorNode = position.anchorNode();
+    if (!anchorNode)
+        return false;
+
+    LayoutObject* layoutObject = anchorNode->layoutObject();
+    if (!layoutObject)
+        return false;
+
+    if (layoutObject->style()->visibility() != VISIBLE)
+        return false;
+
+    if (layoutObject->isBR()) {
+        // TODO(leviw) The condition should be
+        // m_anchorType == PositionAnchorType::BeforeAnchor, but for now we
+        // still need to support legacy positions.
+        if (position.isAfterAnchor())
+            return false;
+        return !position.computeEditingOffset() && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
+    }
+
+    if (layoutObject->isText())
+        return !nodeIsUserSelectNone(anchorNode) && inRenderedText(position);
+
+    if (layoutObject->isSVG()) {
+        // We don't consider SVG elements are contenteditable except for
+        // associated |layoutObject| returns |isText()| true,
+        // e.g. |LayoutSVGInlineText|.
+        return false;
+    }
+
+    if (isRenderedHTMLTableElement(anchorNode) || Strategy::editingIgnoresContent(anchorNode))
+        return (position.atFirstEditingPositionForNode() || position.atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
+
+    if (isHTMLHtmlElement(*anchorNode))
+        return false;
+
+    if (layoutObject->isLayoutBlockFlow() || layoutObject->isFlexibleBox() || layoutObject->isLayoutGrid()) {
+        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*anchorNode)) {
+            if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
+                return position.atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode);
+            return anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
+        }
+    } else {
+        LocalFrame* frame = anchorNode->document().frame();
+        bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
+        return (caretBrowsing || anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
+    }
+
+    return false;
+}
+
+bool isVisuallyEquivalentCandidate(const Position& position)
+{
+    return isVisuallyEquivalentCandidateAlgorithm<EditingStrategy>(position);
+}
+
+bool isVisuallyEquivalentCandidate(const PositionInComposedTree& position)
+{
+    return isVisuallyEquivalentCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
+}
+
+} // namespace blink

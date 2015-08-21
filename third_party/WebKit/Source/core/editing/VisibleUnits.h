@@ -82,6 +82,9 @@ CORE_EXPORT PositionInComposedTree mostForwardCaretPosition(const PositionInComp
 CORE_EXPORT Position mostBackwardCaretPosition(const Position &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree &, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
+CORE_EXPORT bool isVisuallyEquivalentCandidate(const Position&);
+CORE_EXPORT bool isVisuallyEquivalentCandidate(const PositionInComposedTree&);
+
 // words
 CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePosition endOfWord(const VisiblePosition &, EWordSide = RightWordIfOnBoundary);

@@ -26,19 +26,11 @@
 #include "config.h"
 #include "core/editing/Position.h"
 
-#include "core/HTMLNames.h"
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/dom/Text.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/PositionIterator.h"
 #include "core/editing/TextAffinity.h"
-#include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/html/HTMLTableElement.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutText.h"
@@ -47,8 +39,6 @@
 #include <stdio.h>
 
 namespace blink {
-
-using namespace HTMLNames;
 
 #if ENABLE(ASSERT)
 static bool canBeAnchorNode(Node* node)
@@ -438,30 +428,6 @@ bool PositionAlgorithm<Strategy>::atLastEditingPositionForNode() const
     return isAfterAnchorOrAfterChildren() || m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
-// Returns true if the visually equivalent positions around have different
-// editability. A position is considered at editing boundary if one of the
-// following is true:
-// 1. It is the first position in the node and the next visually equivalent
-//    position is non editable.
-// 2. It is the last position in the node and the previous visually equivalent
-//    position is non editable.
-// 3. It is an editable position and both the next and previous visually
-//    equivalent positions are both non editable.
-template <typename Strategy>
-static bool atEditingBoundary(const PositionAlgorithm<Strategy> positions)
-{
-    PositionAlgorithm<Strategy> nextPosition = positions.downstream(CanCrossEditingBoundary);
-    if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
-        return true;
-
-    PositionAlgorithm<Strategy> prevPosition = positions.upstream(CanCrossEditingBoundary);
-    if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
-        return true;
-
-    return nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle()
-        && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle();
-}
-
 template <typename Strategy>
 bool PositionAlgorithm<Strategy>::atStartOfTree() const
 {
@@ -490,74 +456,6 @@ template <typename Strategy>
 PositionAlgorithm<Strategy> PositionAlgorithm<Strategy>::downstream(EditingBoundaryCrossingRule rule) const
 {
     return mostBackwardCaretPosition(*this, rule);
-}
-
-// TODO(yosin) We should move |isVisuallyEquivalentCandidate()| to
-// "VisibleUnits.cpp" to reduce |LayoutObject| dependency in "Position.cpp".
-template <typename Strategy>
-static bool isVisuallyEquivalentCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
-{
-    Node* const anchorNode = position.anchorNode();
-    if (!anchorNode)
-        return false;
-
-    LayoutObject* layoutObject = anchorNode->layoutObject();
-    if (!layoutObject)
-        return false;
-
-    if (layoutObject->style()->visibility() != VISIBLE)
-        return false;
-
-    if (layoutObject->isBR()) {
-        // TODO(leviw) The condition should be
-        // m_anchorType == PositionAnchorType::BeforeAnchor, but for now we
-        // still need to support legacy positions.
-        if (position.isAfterAnchor())
-            return false;
-        return !position.computeEditingOffset() && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
-    }
-
-    if (layoutObject->isText())
-        return !nodeIsUserSelectNone(anchorNode) && inRenderedText(position);
-
-    if (layoutObject->isSVG()) {
-        // We don't consider SVG elements are contenteditable except for
-        // associated |layoutObject| returns |isText()| true,
-        // e.g. |LayoutSVGInlineText|.
-        return false;
-    }
-
-    if (isRenderedHTMLTableElement(anchorNode) || Strategy::editingIgnoresContent(anchorNode))
-        return (position.atFirstEditingPositionForNode() || position.atLastEditingPositionForNode()) && !nodeIsUserSelectNone(Strategy::parent(*anchorNode));
-
-    if (isHTMLHtmlElement(*anchorNode))
-        return false;
-
-    if (layoutObject->isLayoutBlockFlow() || layoutObject->isFlexibleBox() || layoutObject->isLayoutGrid()) {
-        if (toLayoutBlock(layoutObject)->logicalHeight() || isHTMLBodyElement(*anchorNode)) {
-            if (!hasRenderedNonAnonymousDescendantsWithHeight(layoutObject))
-                return position.atFirstEditingPositionForNode() && !nodeIsUserSelectNone(anchorNode);
-            return anchorNode->hasEditableStyle() && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
-        }
-    } else {
-        LocalFrame* frame = anchorNode->document().frame();
-        bool caretBrowsing = frame->settings() && frame->settings()->caretBrowsingEnabled();
-        return (caretBrowsing || anchorNode->hasEditableStyle()) && !nodeIsUserSelectNone(anchorNode) && atEditingBoundary(position);
-    }
-
-    return false;
-}
-
-// TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
-// reduce dependency of |LayoutObject| in |Position| class.
-bool isVisuallyEquivalentCandidate(const Position& position)
-{
-    return isVisuallyEquivalentCandidateAlgorithm<EditingStrategy>(position);
-}
-
-bool isVisuallyEquivalentCandidate(const PositionInComposedTree& position)
-{
-    return isVisuallyEquivalentCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
 }
 
 template <typename Strategy>
