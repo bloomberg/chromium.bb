@@ -41,31 +41,6 @@
             '<@(shared_memory_support_sources)',
           ],
         },  # end of target 'shared_memory_support_nacl'
-        {
-          'target_name': 'media_yuv_nacl',
-          'type': 'none',
-          'variables': {
-            'nlib_target': 'libmedia_yuv_nacl.a',
-            'build_glibc': 0,
-            'build_newlib': 0,
-            'build_pnacl_newlib': 1,
-          },
-          'sources': [
-            'base/media.cc',
-            'base/media.h',
-            'base/simd/convert_rgb_to_yuv.h',
-            'base/simd/convert_rgb_to_yuv_c.cc',
-            'base/simd/convert_yuv_to_rgb.h',
-            'base/simd/convert_yuv_to_rgb_c.cc',
-            'base/simd/filter_yuv.h',
-            'base/simd/filter_yuv_c.cc',
-            'base/yuv_convert.cc',
-            'base/yuv_convert.h',
-          ],
-          'defines': [
-            'MEDIA_DISABLE_FFMPEG',
-          ],
-        },  # end of target 'media_yuv_nacl'
       ],
     }],
   ],

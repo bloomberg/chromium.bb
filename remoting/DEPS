@@ -1,7 +1,6 @@
 include_rules = [
   "+crypto",
   "+google_apis",
-  "+media/base",
 
   # Note: Only for net::EnableSSLServerSockets(), which must be called by
   # unit tests at process start.

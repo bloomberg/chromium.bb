@@ -26,7 +26,6 @@
 #include "base/values.h"
 #include "crypto/random.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "media/base/yuv_convert.h"
 #include "net/socket/ssl_server_socket.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -127,7 +126,6 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       new base::ThreadTaskRunnerHandle(plugin_task_runner_));
   thread_wrapper_ =
       jingle_glue::JingleThreadWrapper::WrapTaskRunner(plugin_task_runner_);
-  media::InitializeCPUSpecificYUVConversions();
 
   // Register a global log handler.
   ChromotingInstance::RegisterLogMessageHandler();

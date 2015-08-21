@@ -23,7 +23,6 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
-#include "media/base/media.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
@@ -1625,9 +1624,6 @@ int HostProcessMain() {
   // Enable support for SSL server sockets, which must be done while still
   // single-threaded.
   net::EnableSSLServerSockets();
-
-  // Ensures that media library and specific CPU features are initialized.
-  media::InitializeMediaLibrary();
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;

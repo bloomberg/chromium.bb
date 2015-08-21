@@ -149,7 +149,7 @@ TEST(VideoEncoderVpxTest, Vp9SizeChangeNoCrash) {
 }
 
 // Test that the DPI information is correctly propagated from the
-// media::ScreenCaptureData to the VideoPacket.
+// webrtc::DesktopFrame to the VideoPacket.
 TEST(VideoEncoderVpxTest, DpiPropagation) {
   webrtc::DesktopSize frame_size(32, 32);
 

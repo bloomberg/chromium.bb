@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
-#include "media/base/video_frame.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/video_encoder_verbatim.h"
 #include "remoting/codec/video_encoder_vpx.h"

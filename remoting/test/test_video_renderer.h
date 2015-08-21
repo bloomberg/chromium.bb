@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/base/video_frame.h"
 #include "remoting/client/video_renderer.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_stub.h"

@@ -16,7 +16,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "google_apis/google_api_keys.h"
 #include "jni/JniInterface_jni.h"
-#include "media/base/yuv_convert.h"
 #include "remoting/base/url_request_context_getter.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -198,9 +197,6 @@ ChromotingJniRuntime::ChromotingJniRuntime() {
 
   url_requester_ =
       new URLRequestContextGetter(network_task_runner_, network_task_runner_);
-
-  // Allows later decoding of video frames.
-  media::InitializeCPUSpecificYUVConversions();
 }
 
 ChromotingJniRuntime::~ChromotingJniRuntime() {

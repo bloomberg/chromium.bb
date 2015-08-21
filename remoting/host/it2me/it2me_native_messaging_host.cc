@@ -16,7 +16,6 @@
 #include "base/strings/stringize_macros.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "media/base/media.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/service_urls.h"
@@ -49,9 +48,6 @@ It2MeNativeMessagingHost::It2MeNativeMessagingHost(
       factory_(factory.Pass()),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
-
-  // Ensures that media library and specific CPU features are initialized.
-  media::InitializeMediaLibrary();
 
   const ServiceUrls* service_urls = ServiceUrls::GetInstance();
   const bool xmpp_server_valid =

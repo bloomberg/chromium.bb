@@ -157,7 +157,6 @@
           '>(tc_lib_dir_pnacl_newlib)/libicuuc_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libjingle_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libjingle_p2p_constants_nacl.a',
-          '>(tc_lib_dir_pnacl_newlib)/libmedia_yuv_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libmodp_b64_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libboringssl_nacl.a',
           '>(tc_lib_dir_pnacl_newlib)/libopus_nacl.a',
@@ -179,7 +178,6 @@
         '../base/base_nacl.gyp:base_nacl',
         '../crypto/crypto_nacl.gyp:crypto_nacl',
         '../jingle/jingle_nacl.gyp:jingle_glue_nacl',
-        '../media/media_nacl.gyp:media_yuv_nacl',
         '../native_client_sdk/native_client_sdk_untrusted.gyp:nacl_io_untrusted',
         '../net/net_nacl.gyp:net_nacl',
         '../ppapi/native_client/native_client.gyp:ppapi_lib',
@@ -206,7 +204,6 @@
 
         # Chromium libraries.
         '-ljingle_glue_nacl',
-        '-lmedia_yuv_nacl',
         '-lnet_nacl',
         '-lcrypto_nacl',
         '-lbase_i18n_nacl',

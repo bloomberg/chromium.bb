@@ -1,5 +1,6 @@
 include_rules = [
   "+remoting/protocol",
+  "+media/base",
 
   "+google/protobuf",
   "+third_party/opus",

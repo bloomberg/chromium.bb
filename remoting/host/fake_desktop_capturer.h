@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/base/media_export.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capture_frame_queue.h"

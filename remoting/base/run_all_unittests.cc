@@ -4,7 +4,6 @@
 
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "media/base/media.h"
 #include "net/socket/ssl_server_socket.h"
 
 int main(int argc, char** argv) {
@@ -13,9 +12,6 @@ int main(int argc, char** argv) {
   // Enable support for SSL server sockets, which must be done while
   // single-threaded.
   net::EnableSSLServerSockets();
-
-  // Ensures that media library and specific CPU features are initialized.
-  media::InitializeMediaLibrary();
 
   return base::LaunchUnitTests(
       argc, argv, base::Bind(&base::TestSuite::Run,
