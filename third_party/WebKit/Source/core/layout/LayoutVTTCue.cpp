@@ -78,16 +78,16 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
 {
     ASSERT(std::isfinite(m_cueBox.snapToLinesPosition()));
 
-    // 6. Let line position be the text track cue computed line position.
-    // 7. Round line position to an integer by adding 0.5 and then flooring it.
+    // 6. Let line be cue's computed line.
+    // 7. Round line to an integer by adding 0.5 and then flooring it.
     LayoutUnit linePosition = floorf(m_cueBox.snapToLinesPosition() + 0.5f);
 
     WritingMode writingMode = m_cueBox.style()->writingMode();
-    // 8. Vertical Growing Left: Add one to line position then negate it.
+    // 8. Vertical Growing Left: Add one to line then negate it.
     if (writingMode == RightToLeftWritingMode)
         linePosition = -(linePosition + 1);
 
-    // 9. Let position be the result of multiplying step and line position.
+    // 9. Let position be the result of multiplying step and line offset.
     LayoutUnit position = step * linePosition;
 
     // 10. Vertical Growing Left: Decrease position by the width of the
@@ -97,12 +97,11 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
         position += step;
     }
 
-    // 11. If line position is less than zero...
+    // 11. If line is less than zero...
     if (linePosition < 0) {
         LayoutBlock* parentBlock = m_cueBox.containingBlock();
 
-        // Horizontal / Vertical: ... then increase position by the
-        // height / width of the video's rendering area ...
+        // ... then increase position by max dimension ...
         position += blink::isHorizontalWritingMode(writingMode) ? parentBlock->size().height() : parentBlock->size().width();
 
         // ... and negate step.
@@ -134,7 +133,7 @@ bool SnapToLinesLayouter::isOverlapping() const
 
 bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step) const
 {
-    // 21. Horizontal: If step is negative and the top of the first line box in
+    // 17. Horizontal: If step is negative and the top of the first line box in
     // boxes is now above the top of the title area, or if step is positive and
     // the bottom of the first line box in boxes is now below the bottom of the
     // title area, jump to the step labeled switch direction.
@@ -181,31 +180,20 @@ void SnapToLinesLayouter::layout()
     // position.
     m_specifiedPosition = m_cueBox.location();
 
-    // 14. Let best position be null. It will hold a position for boxes, much
-    // like specified position in the previous step.
-    // 15. Let best position score be null.
-
-    // 16. Let switched be false.
+    // XX. Let switched be false.
     bool switched = false;
 
-    // Step 17 skipped. (margin == 0; title area == video area)
+    // Step 14 skipped. (margin == 0; title area == video area)
 
-    // 18. Step loop: If none of the boxes in boxes would overlap any of the
+    // 15. Step loop: If none of the boxes in boxes would overlap any of the
     // boxes in output, and all of the boxes in output are entirely within the
     // title area box, then jump to the step labeled done positioning below.
     while (isOutside() || isOverlapping()) {
-        // 19. Let current position score be the percentage of the area of the
+        // 16. Let current position score be the percentage of the area of the
         // bounding box of the boxes in boxes that is outside the title area
         // box.
-        // 20. If best position is null (i.e. this is the first run through
-        // this loop, switched is still false, the boxes in boxes are at their
-        // specified position, and best position score is still null), or if
-        // current position score is a lower percentage than that in best
-        // position score, then remember the position of all the boxes in boxes
-        // as their best position, and set best position score to current
-        // position score.
         if (!shouldSwitchDirection(firstLineBox, step)) {
-            // 22. Horizontal: Move all the boxes in boxes down by the distance
+            // 18. Horizontal: Move all the boxes in boxes down by the distance
             // given by step. (If step is negative, then this will actually
             // result in an upwards movement of the boxes in absolute terms.)
             // Vertical: Move all the boxes in boxes right by the distance
@@ -213,30 +201,31 @@ void SnapToLinesLayouter::layout()
             // result in a leftwards movement of the boxes in absolute terms.)
             moveBoxesBy(step);
 
-            // 23. Jump back to the step labeled step loop.
+            // 19. Jump back to the step labeled step loop.
             continue;
         }
 
-        // 24. Switch direction: If switched is true, then move all the boxes in
-        // boxes back to their best position, and jump to the step labeled done
-        // positioning below.
+        // 20. Switch direction: If switched is true, then remove all the boxes
+        // in boxes, and jump to the step labeled done positioning below.
+        if (switched) {
+            // This does not "remove" the boxes, but rather just pushes them
+            // out of the viewport. Otherwise we'd need to mutate the layout
+            // tree during layout.
+            m_cueBox.setLogicalTop(m_cueBox.containingBlock()->logicalHeight() + 1);
+            break;
+        }
 
-        // 25. Otherwise, move all the boxes in boxes back to their specified
+        // 21. Otherwise, move all the boxes in boxes back to their specified
         // position as determined in the earlier step.
         m_cueBox.setLocation(m_specifiedPosition);
 
-        // XX. If switched is true, jump to the step labeled done
-        // positioning below.
-        if (switched)
-            break;
-
-        // 26. Negate step.
+        // 22. Negate step.
         step = -step;
 
-        // 27. Set switched to true.
+        // 23. Set switched to true.
         switched = true;
 
-        // 28. Jump back to the step labeled step loop.
+        // 24. Jump back to the step labeled step loop.
     }
 }
 
