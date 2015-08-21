@@ -612,15 +612,14 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
       output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION;
     } else {
       output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
-      needs_redraw_ = true;
     }
   }
 
-  // Update state if we have a new active tree to draw, or if the active tree
-  // was unchanged but we need to do a forced draw.
-  if (!has_pending_tree_ &&
-      (!commit_has_no_updates ||
-       forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)) {
+  // Update state if there's no updates heading for the active tree, but we need
+  // to do a forced draw.
+  if (commit_has_no_updates &&
+      forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW) {
+    DCHECK(!has_pending_tree_);
     needs_redraw_ = true;
     active_tree_needs_first_draw_ = true;
   }

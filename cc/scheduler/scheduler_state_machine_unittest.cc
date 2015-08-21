@@ -1282,14 +1282,9 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
   // NeedsCommit should now be false because the commit was actually handled.
   EXPECT_FALSE(state.NeedsCommit());
 
-  // Even though the commit was aborted, we still expect to draw the new frame.
-  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ANIMATE);
+  // Since the commit was aborted, we don't need to try and draw.
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
-  state.DidSwapBuffers();
-  state.DidSwapBuffersComplete();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Verify another commit doesn't start on another frame either.
