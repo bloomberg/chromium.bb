@@ -60,14 +60,18 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   virtual void RemoveObserver(NetworkPolicyObserver* observer) = 0;
 
   // Provides the properties of the network with |service_path| to |callback|.
+  // |userhash| is used to set the "Source" property. If not provided then
+  // user polcies will be ignored.
   virtual void GetProperties(
+      const std::string& userhash,
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 
   // Provides the managed properties of the network with |service_path| to
-  // |callback|. |userhash| is only used to ensure that the user's policy is
-  // already applied.
+  // |callback|. |userhash| is used to ensure that the user's policy is
+  // already applied, and to set the "Source" property (see note for
+  // GetProperties).
   virtual void GetManagedProperties(
       const std::string& userhash,
       const std::string& service_path,

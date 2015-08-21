@@ -42,6 +42,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   void RemoveObserver(NetworkPolicyObserver* observer) override;
 
   void GetProperties(
+      const std::string& userhash,
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
       const network_handler::ErrorCallback& error_callback) override;
@@ -140,11 +141,11 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       scoped_ptr<base::DictionaryValue> shill_properties);
 
   // Sends the response to the caller of GetProperties.
-  void SendProperties(
-      const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback,
-      const std::string& service_path,
-      scoped_ptr<base::DictionaryValue> shill_properties);
+  void SendProperties(const std::string& userhash,
+                      const network_handler::DictionaryResultCallback& callback,
+                      const network_handler::ErrorCallback& error_callback,
+                      const std::string& service_path,
+                      scoped_ptr<base::DictionaryValue> shill_properties);
 
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;

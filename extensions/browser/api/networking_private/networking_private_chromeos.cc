@@ -182,8 +182,14 @@ void NetworkingPrivateChromeOS::GetProperties(
     return;
   }
 
+  std::string user_id_hash;
+  if (!GetUserIdHash(browser_context_, &user_id_hash, &error)) {
+    failure_callback.Run(error);
+    return;
+  }
+
   GetManagedConfigurationHandler()->GetProperties(
-      service_path,
+      user_id_hash, service_path,
       base::Bind(&NetworkHandlerDictionaryCallback, success_callback),
       base::Bind(&NetworkHandlerFailureCallback, failure_callback));
 }

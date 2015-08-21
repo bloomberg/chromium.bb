@@ -217,10 +217,13 @@ void NetworkingConfigService::DispatchPortalDetectedEvent(
     return;
   const std::string service_path = network->path();
 
+  // We do not provide |userhash| here because we only care about properties
+  // that are not affected by policy, i.e BSSID.
   network_handler->managed_network_configuration_handler()->GetProperties(
-      service_path, base::Bind(&NetworkingConfigService::OnGotProperties,
-                               weak_factory_.GetWeakPtr(), extension_id, guid,
-                               authentication_callback),
+      "" /* empty userhash */, service_path,
+      base::Bind(&NetworkingConfigService::OnGotProperties,
+                 weak_factory_.GetWeakPtr(), extension_id, guid,
+                 authentication_callback),
       base::Bind(&NetworkingConfigService::OnGetPropertiesFailed,
                  weak_factory_.GetWeakPtr(), extension_id, guid));
 }

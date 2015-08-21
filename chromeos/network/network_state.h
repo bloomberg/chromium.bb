@@ -158,6 +158,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string connection_state_;
   std::string profile_path_;
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
+  int priority_;
 
   // Reflects the current Shill Service.Error property. This might get cleared
   // by Shill shortly after a failure.

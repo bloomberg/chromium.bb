@@ -39,6 +39,7 @@ class FakeManagedNetworkConfigurationHandler
     NOTIMPLEMENTED();
   }
   void GetProperties(
+      const std::string& userhash,
       const std::string& service_path,
       const DictionaryResultCallback& callback,
       const ErrorCallback& error_callback) override {

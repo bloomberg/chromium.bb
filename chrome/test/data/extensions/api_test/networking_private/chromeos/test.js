@@ -221,8 +221,9 @@ var availableTests = [
           ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
           Name: 'wifi1',
-          Type: NetworkType.WI_FI,
+          Priority: 0,
           Source: 'User',
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WEP-PSK',
             SignalStrength: 40
@@ -230,8 +231,9 @@ var availableTests = [
         }, {
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
-          Type: NetworkType.WI_FI,
+          Priority: 0,
           Source: 'User',
+          Type: NetworkType.WI_FI,
           WiFi: {
             Security: 'WPA-PSK',
           }
@@ -247,6 +249,7 @@ var availableTests = [
               ConnectionState: ConnectionStateType.CONNECTED,
               GUID: 'stub_wifi1_guid',
               Name: 'wifi1',
+              Priority: 0,
               Source: 'User',
               Type: NetworkType.WI_FI,
               WiFi: {
@@ -270,6 +273,7 @@ var availableTests = [
                   },
                   GUID: 'stub_ethernet_guid',
                   Name: 'eth0',
+                  Priority: 0,
                   Source: 'Device',
                   Type: NetworkType.ETHERNET
                 }], result);
@@ -288,6 +292,7 @@ var availableTests = [
           },
           GUID: 'stub_ethernet_guid',
           Name: 'eth0',
+          Priority: 0,
           Source: 'Device',
           Type: NetworkType.ETHERNET
         }, {
@@ -295,6 +300,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
           Name: 'wifi1',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
@@ -306,6 +312,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wimax_guid',
           Name: 'wimax',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.WI_MAX,
           WiMAX: {
@@ -315,6 +322,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_vpn1_guid',
           Name: 'vpn1',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.VPN,
           VPN: {
@@ -324,6 +332,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_vpn2_guid',
           Name: 'vpn2',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.VPN,
           VPN: {
@@ -337,6 +346,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
@@ -355,6 +365,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.CONNECTED,
           GUID: 'stub_wifi1_guid',
           Name: 'wifi1',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
@@ -366,6 +377,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
@@ -442,6 +454,7 @@ var availableTests = [
           }],
           MacAddress: '00:11:22:AA:BB:CC',
           Name: 'wifi1',
+          Source: 'User',
           StaticIPConfig: {
             IPAddress: '1.2.3.4',
             Type: 'IPv4'
@@ -480,6 +493,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: kCellularGuid,
           Name: 'cellular1',
+          Source: 'User',
           Type: NetworkType.CELLULAR,
         }, result);
       }));
@@ -639,6 +653,7 @@ var availableTests = [
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: 'stub_wifi2_guid',
           Name: 'wifi2_PSK',
+          Priority: 0,
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
