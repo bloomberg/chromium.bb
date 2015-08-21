@@ -155,9 +155,8 @@ void PushProvider::OnSubscribeFromWorkerSuccess(
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebPushSubscription> subscription(
-      new blink::WebPushSubscription(endpoint, curve25519dh));
-  callbacks->onSuccess(subscription.release());
+  callbacks->onSuccess(blink::adoptWebPtr(
+      new blink::WebPushSubscription(endpoint, curve25519dh)));
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -169,10 +168,9 @@ void PushProvider::OnSubscribeFromWorkerError(int request_id,
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
+  callbacks->onError(blink::WebPushError(
       blink::WebPushError::ErrorTypeAbort,
       blink::WebString::fromUTF8(PushRegistrationStatusToString(status))));
-  callbacks->onError(error.release());
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -212,9 +210,8 @@ void PushProvider::OnGetRegistrationSuccess(
   if (!callbacks)
     return;
 
-  scoped_ptr<blink::WebPushSubscription> subscription(
-      new blink::WebPushSubscription(endpoint, curve25519dh));
-  callbacks->onSuccess(subscription.release());
+  callbacks->onSuccess(blink::adoptWebPtr(
+      new blink::WebPushSubscription(endpoint, curve25519dh)));
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -241,7 +238,7 @@ void PushProvider::OnGetPermissionStatusSuccess(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(&status);
+  callbacks->onSuccess(status);
 
   permission_status_callbacks_.Remove(request_id);
 }
@@ -261,10 +258,8 @@ void PushProvider::OnGetPermissionStatusError(
         "supported.";
   }
 
-  scoped_ptr<blink::WebPushError> web_error(new blink::WebPushError(
+  callbacks->onError(blink::WebPushError(
       error, blink::WebString::fromUTF8(error_message)));
-
-  callbacks->onError(web_error.release());
 
   permission_status_callbacks_.Remove(request_id);
 }

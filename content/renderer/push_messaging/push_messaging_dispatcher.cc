@@ -90,9 +90,8 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentSuccess(
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
-  scoped_ptr<blink::WebPushSubscription> subscription(
-      new blink::WebPushSubscription(endpoint, curve25519dh));
-  callbacks->onSuccess(subscription.release());
+  callbacks->onSuccess(blink::adoptWebPtr(
+      new blink::WebPushSubscription(endpoint, curve25519dh)));
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -104,10 +103,9 @@ void PushMessagingDispatcher::OnSubscribeFromDocumentError(
       subscription_callbacks_.Lookup(request_id);
   DCHECK(callbacks);
 
-  scoped_ptr<blink::WebPushError> error(new blink::WebPushError(
+  callbacks->onError(blink::WebPushError(
       blink::WebPushError::ErrorTypeAbort,
       blink::WebString::fromUTF8(PushRegistrationStatusToString(status))));
-  callbacks->onError(error.release());
 
   subscription_callbacks_.Remove(request_id);
 }
