@@ -11,11 +11,17 @@
 
 namespace media {
 
+// It's not a full featured JPEG parser implememtation. It only parses JPEG
+// baseline sequential process. For explanations of each struct and its
+// members, see JPEG specification at
+// http://www.w3.org/Graphics/JPEG/itu-t81.pdf.
+
 enum JpegMarker {
   JPEG_SOF0 = 0xC0,   // start of frame (baseline)
   JPEG_SOF1 = 0xC1,   // start of frame (extended sequential)
   JPEG_SOF2 = 0xC2,   // start of frame (progressive)
   JPEG_SOF3 = 0xC3,   // start of frame (lossless))
+  JPEG_DHT = 0xC4,    // define huffman table
   JPEG_SOF5 = 0xC5,   // start of frame (differential, sequential)
   JPEG_SOF6 = 0xC6,   // start of frame (differential, progressive)
   JPEG_SOF7 = 0xC7,   // start of frame (differential, lossless)
@@ -25,8 +31,16 @@ enum JpegMarker {
   JPEG_SOF13 = 0xCD,  // start of frame (differential, arithmetic, sequential)
   JPEG_SOF14 = 0xCE,  // start of frame (differential, arithmetic, progressive)
   JPEG_SOF15 = 0xCF,  // start of frame (differential, arithmetic, lossless)
-  JPEG_DHT = 0xC4,    // define huffman table
+  JPEG_RST0 = 0xD0,   // restart
+  JPEG_RST1 = 0xD1,   // restart
+  JPEG_RST2 = 0xD2,   // restart
+  JPEG_RST3 = 0xD3,   // restart
+  JPEG_RST4 = 0xD4,   // restart
+  JPEG_RST5 = 0xD5,   // restart
+  JPEG_RST6 = 0xD6,   // restart
+  JPEG_RST7 = 0xD7,   // restart
   JPEG_SOI = 0xD8,    // start of image
+  JPEG_EOI = 0xD9,    // end of image
   JPEG_SOS = 0xDA,    // start of scan
   JPEG_DQT = 0xDB,    // define quantization table
   JPEG_DRI = 0xDD,    // define restart internal
@@ -86,19 +100,25 @@ struct JpegParseResult {
   uint16_t restart_interval;
   JpegScanHeader scan;
   const char* data;
+  // The size of compressed data of the first image.
   size_t data_size;
+  // The size of the first entire image including header.
+  size_t image_size;
 };
 
 // Parses JPEG picture in |buffer| with |length|.  Returns true iff header is
 // valid and JPEG baseline sequential process is present. If parsed
 // successfully, |result| is the parsed result.
-// It's not a full featured JPEG parser implememtation. It only parses JPEG
-// baseline sequential process. For explanations of each struct and its
-// members, see JPEG specification at
-// http://www.w3.org/Graphics/JPEG/itu-t81.pdf.
 MEDIA_EXPORT bool ParseJpegPicture(const uint8_t* buffer,
                                    size_t length,
                                    JpegParseResult* result);
+
+// Parses the first image of JPEG stream in |buffer| with |length|.  Returns
+// true iff header is valid and JPEG baseline sequential process is present.
+// If parsed successfully, |result| is the parsed result.
+MEDIA_EXPORT bool ParseJpegStream(const uint8_t* buffer,
+                                  size_t length,
+                                  JpegParseResult* result);
 
 }  // namespace media
 

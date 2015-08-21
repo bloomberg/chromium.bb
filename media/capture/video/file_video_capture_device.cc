@@ -8,11 +8,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "media/base/video_capture_types.h"
+#include "media/filters/jpeg_parser.h"
 
 namespace media {
+
 static const int kY4MHeaderMaxSize = 200;
 static const char kY4MSimpleFrameDelimiter[] = "FRAME";
 static const int kY4MSimpleFrameDelimiterSize = 6;
+static const float kMJpegFrameRate = 30.0f;
 
 int ParseY4MInt(const base::StringPiece& token) {
   int temp_int;
@@ -23,8 +26,7 @@ int ParseY4MInt(const base::StringPiece& token) {
 // Extract numerator and denominator out of a token that must have the aspect
 // numerator:denominator, both integer numbers.
 void ParseY4MRational(const base::StringPiece& token,
-                      int* numerator,
-                      int* denominator) {
+                      int* numerator, int* denominator) {
   size_t index_divider = token.find(':');
   CHECK_NE(index_divider, token.npos);
   *numerator = ParseY4MInt(token.substr(0, index_divider));
@@ -45,9 +47,8 @@ void ParseY4MRational(const base::StringPiece& token,
 // This code was inspired by third_party/libvpx/.../y4minput.* .
 void ParseY4MTags(const std::string& file_header,
                   media::VideoCaptureFormat* video_format) {
-  video_format->pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
-  video_format->frame_size.set_width(0);
-  video_format->frame_size.set_height(0);
+  media::VideoCaptureFormat format;
+  format.pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_I420;
   size_t index = 0;
   size_t blank_position = 0;
   base::StringPiece token;
@@ -60,10 +61,10 @@ void ParseY4MTags(const std::string& file_header,
     CHECK(!token.empty());
     switch (file_header[index]) {
       case 'W':
-        video_format->frame_size.set_width(ParseY4MInt(token));
+        format.frame_size.set_width(ParseY4MInt(token));
         break;
       case 'H':
-        video_format->frame_size.set_height(ParseY4MInt(token));
+        format.frame_size.set_height(ParseY4MInt(token));
         break;
       case 'F': {
         // If the token is "FRAME", it means we have finished with the header.
@@ -71,7 +72,7 @@ void ParseY4MTags(const std::string& file_header,
           break;
         int fps_numerator, fps_denominator;
         ParseY4MRational(token, &fps_numerator, &fps_denominator);
-        video_format->frame_rate = fps_numerator / fps_denominator;
+        format.frame_rate = fps_numerator / fps_denominator;
         break;
       }
       case 'I':
@@ -94,46 +95,203 @@ void ParseY4MTags(const std::string& file_header,
     index = blank_position + 1;
   }
   // Last video format semantic correctness check before sending it back.
-  CHECK(video_format->IsValid());
+  CHECK(format.IsValid());
+  *video_format = format;
 }
 
-// Reads and parses the header of a Y4M |file|, returning the collected pixel
-// format in |video_format|. Returns the index of the first byte of the first
-// video frame.
-// Restrictions: Only trivial per-frame headers are supported.
-// static
-int64 FileVideoCaptureDevice::ParseFileAndExtractVideoFormat(
-    base::File* file,
-    media::VideoCaptureFormat* video_format) {
-  std::string header(kY4MHeaderMaxSize, 0);
-  file->Read(0, &header[0], kY4MHeaderMaxSize - 1);
+class VideoFileParser {
+ public:
+  explicit VideoFileParser(const base::FilePath& file_path);
+  virtual ~VideoFileParser();
 
-  size_t header_end = header.find(kY4MSimpleFrameDelimiter);
+  // Parses file header and collects format information in |capture_format|.
+  virtual bool Initialize(media::VideoCaptureFormat* capture_format) = 0;
+
+  // Gets the start pointer of next frame and stores current frame size in
+  // |frame_size|.
+  virtual const uint8_t* GetNextFrame(int* frame_size) = 0;
+
+ protected:
+  const base::FilePath file_path_;
+  int frame_size_;
+  size_t current_byte_index_;
+  size_t first_frame_byte_index_;
+};
+
+class Y4mFileParser final : public VideoFileParser {
+ public:
+  explicit Y4mFileParser(const base::FilePath& file_path);
+
+  // VideoFileParser implementation, class methods.
+  ~Y4mFileParser() override;
+  bool Initialize(media::VideoCaptureFormat* capture_format) override;
+  const uint8_t* GetNextFrame(int* frame_size) override;
+
+ private:
+  scoped_ptr<base::File> file_;
+  scoped_ptr<uint8_t[]> video_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(Y4mFileParser);
+};
+
+class MjpegFileParser final : public VideoFileParser {
+ public:
+  explicit MjpegFileParser(const base::FilePath& file_path);
+
+  // VideoFileParser implementation, class methods.
+  ~MjpegFileParser() override;
+  bool Initialize(media::VideoCaptureFormat* capture_format) override;
+  const uint8_t* GetNextFrame(int* frame_size) override;
+
+ private:
+  scoped_ptr<base::MemoryMappedFile> mapped_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(MjpegFileParser);
+};
+
+VideoFileParser::VideoFileParser(const base::FilePath& file_path)
+    : file_path_(file_path),
+      frame_size_(0),
+      current_byte_index_(0),
+      first_frame_byte_index_(0) {}
+
+VideoFileParser::~VideoFileParser() {}
+
+Y4mFileParser::Y4mFileParser(const base::FilePath& file_path)
+    : VideoFileParser(file_path) {}
+
+Y4mFileParser::~Y4mFileParser() {}
+
+bool Y4mFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
+  file_.reset(new base::File(file_path_,
+                             base::File::FLAG_OPEN | base::File::FLAG_READ));
+  if (!file_->IsValid()) {
+    DLOG(ERROR) << file_path_.value() << ", error: "
+                << base::File::ErrorToString(file_->error_details());
+    return false;
+  }
+
+  std::string header(kY4MHeaderMaxSize, '\0');
+  file_->Read(0, &header[0], header.size());
+  const size_t header_end = header.find(kY4MSimpleFrameDelimiter);
   CHECK_NE(header_end, header.npos);
 
-  ParseY4MTags(header, video_format);
-  return header_end + kY4MSimpleFrameDelimiterSize;
+  ParseY4MTags(header, capture_format);
+  first_frame_byte_index_ = header_end + kY4MSimpleFrameDelimiterSize;
+  current_byte_index_ = first_frame_byte_index_;
+  frame_size_ = capture_format->ImageAllocationSize();
+  return true;
 }
 
-// Opens a given file for reading, and returns the file to the caller, who is
-// responsible for closing it.
+const uint8_t* Y4mFileParser::GetNextFrame(int* frame_size) {
+  if (!video_frame_)
+    video_frame_.reset(new uint8_t[frame_size_]);
+  int result =
+      file_->Read(current_byte_index_,
+                  reinterpret_cast<char*>(video_frame_.get()), frame_size_);
+
+  // If we passed EOF to base::File, it will return 0 read characters. In that
+  // case, reset the pointer and read again.
+  if (result != frame_size_) {
+    CHECK_EQ(result, 0);
+    current_byte_index_ = first_frame_byte_index_;
+    CHECK_EQ(
+        file_->Read(current_byte_index_,
+                    reinterpret_cast<char*>(video_frame_.get()), frame_size_),
+        frame_size_);
+  } else {
+    current_byte_index_ += frame_size_ + kY4MSimpleFrameDelimiterSize;
+  }
+  *frame_size = frame_size_;
+  return video_frame_.get();
+}
+
+MjpegFileParser::MjpegFileParser(const base::FilePath& file_path)
+    : VideoFileParser(file_path) {}
+
+MjpegFileParser::~MjpegFileParser() {}
+
+bool MjpegFileParser::Initialize(media::VideoCaptureFormat* capture_format) {
+  mapped_file_.reset(new base::MemoryMappedFile());
+
+  if (!mapped_file_->Initialize(file_path_) || !mapped_file_->IsValid()) {
+    LOG(ERROR) << "File memory map error: " << file_path_.value();
+    return false;
+  }
+
+  JpegParseResult result;
+  if (!ParseJpegStream(mapped_file_->data(), mapped_file_->length(), &result))
+    return false;
+
+  frame_size_ = result.image_size;
+  if (frame_size_ > static_cast<int>(mapped_file_->length())) {
+    LOG(ERROR) << "File is incomplete";
+    return false;
+  }
+
+  VideoCaptureFormat format;
+  format.pixel_format = media::VIDEO_CAPTURE_PIXEL_FORMAT_MJPEG;
+  format.frame_size.set_width(result.frame_header.visible_width);
+  format.frame_size.set_height(result.frame_header.visible_height);
+  format.frame_rate = kMJpegFrameRate;
+  if (!format.IsValid())
+    return false;
+  *capture_format = format;
+  return true;
+}
+
+const uint8_t* MjpegFileParser::GetNextFrame(int* frame_size) {
+  const uint8_t* buf_ptr = mapped_file_->data() + current_byte_index_;
+
+  JpegParseResult result;
+  if (!ParseJpegStream(buf_ptr, mapped_file_->length() - current_byte_index_,
+                       &result)) {
+    return nullptr;
+  }
+  *frame_size = frame_size_ = result.image_size;
+  current_byte_index_ += frame_size_;
+  // Reset the pointer to play repeatedly.
+  if (current_byte_index_ >= mapped_file_->length())
+    current_byte_index_ = first_frame_byte_index_;
+  return buf_ptr;
+}
+
 // static
-base::File FileVideoCaptureDevice::OpenFileForRead(
-    const base::FilePath& file_path) {
-  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  DLOG_IF(ERROR, file.IsValid())
-      << file_path.value()
-      << ", error: " << base::File::ErrorToString(file.error_details());
-  return file.Pass();
+bool FileVideoCaptureDevice::GetVideoCaptureFormat(
+    const base::FilePath& file_path,
+    media::VideoCaptureFormat* video_format) {
+  scoped_ptr<VideoFileParser> file_parser =
+      GetVideoFileParser(file_path, video_format);
+  return file_parser != nullptr;
+}
+
+// static
+scoped_ptr<VideoFileParser>
+FileVideoCaptureDevice::GetVideoFileParser(
+    const base::FilePath& file_path,
+    media::VideoCaptureFormat* video_format) {
+  scoped_ptr<VideoFileParser> file_parser;
+  std::string file_name(file_path.value().begin(), file_path.value().end());
+
+  if (base::EndsWith(file_name, "y4m",
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    file_parser.reset(new Y4mFileParser(file_path));
+  } else if (base::EndsWith(file_name, "mjpeg",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    file_parser.reset(new MjpegFileParser(file_path));
+  } else {
+    LOG(ERROR) << "Unsupported file format.";
+    return file_parser.Pass();
+  }
+
+  if (!file_parser->Initialize(video_format)) {
+    file_parser.reset();
+  }
+  return file_parser.Pass();
 }
 
 FileVideoCaptureDevice::FileVideoCaptureDevice(const base::FilePath& file_path)
-    : capture_thread_("CaptureThread"),
-      file_path_(file_path),
-      frame_size_(0),
-      current_byte_index_(0),
-      first_frame_byte_index_(0) {
-}
+    : capture_thread_("CaptureThread"), file_path_(file_path) {}
 
 FileVideoCaptureDevice::~FileVideoCaptureDevice() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -165,12 +323,6 @@ void FileVideoCaptureDevice::StopAndDeAllocate() {
   capture_thread_.Stop();
 }
 
-int FileVideoCaptureDevice::CalculateFrameSize() const {
-  DCHECK_EQ(capture_format_.pixel_format, VIDEO_CAPTURE_PIXEL_FORMAT_I420);
-  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
-  return capture_format_.ImageAllocationSize();
-}
-
 void FileVideoCaptureDevice::OnAllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
@@ -178,21 +330,15 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
 
   client_ = client.Pass();
 
-  // Open the file and parse the header. Get frame size and format.
-  DCHECK(!file_.IsValid());
-  file_ = OpenFileForRead(file_path_);
-  if (!file_.IsValid()) {
+  DCHECK(!file_parser_);
+  file_parser_ = GetVideoFileParser(file_path_, &capture_format_);
+  if (!file_parser_) {
     client_->OnError("Could not open Video file");
     return;
   }
-  first_frame_byte_index_ =
-      ParseFileAndExtractVideoFormat(&file_, &capture_format_);
-  current_byte_index_ = first_frame_byte_index_;
+
   DVLOG(1) << "Opened video file " << capture_format_.frame_size.ToString()
            << ", fps: " << capture_format_.frame_rate;
-
-  frame_size_ = CalculateFrameSize();
-  video_frame_.reset(new uint8[frame_size_]);
 
   capture_thread_.message_loop()->PostTask(
       FROM_HERE, base::Bind(&FileVideoCaptureDevice::OnCaptureTask,
@@ -201,40 +347,24 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
 
 void FileVideoCaptureDevice::OnStopAndDeAllocate() {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
-  file_.Close();
+  file_parser_.reset();
   client_.reset();
-  current_byte_index_ = 0;
-  first_frame_byte_index_ = 0;
-  frame_size_ = 0;
   next_frame_time_ = base::TimeTicks();
-  video_frame_.reset();
 }
 
 void FileVideoCaptureDevice::OnCaptureTask() {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   if (!client_)
     return;
-  int result =
-      file_.Read(current_byte_index_,
-                 reinterpret_cast<char*>(video_frame_.get()), frame_size_);
-
-  // If we passed EOF to base::File, it will return 0 read characters. In that
-  // case, reset the pointer and read again.
-  if (result != frame_size_) {
-    CHECK_EQ(result, 0);
-    current_byte_index_ = first_frame_byte_index_;
-    CHECK_EQ(
-        file_.Read(current_byte_index_,
-                   reinterpret_cast<char*>(video_frame_.get()), frame_size_),
-        frame_size_);
-  } else {
-    current_byte_index_ += frame_size_ + kY4MSimpleFrameDelimiterSize;
-  }
 
   // Give the captured frame to the client.
+  int frame_size = 0;
+  const uint8_t* frame_ptr = file_parser_->GetNextFrame(&frame_size);
+  DCHECK(frame_size);
+  CHECK(frame_ptr);
   const base::TimeTicks current_time = base::TimeTicks::Now();
-  client_->OnIncomingCapturedData(video_frame_.get(), frame_size_,
-                                  capture_format_, 0, current_time);
+  client_->OnIncomingCapturedData(frame_ptr, frame_size, capture_format_, 0,
+                                  current_time);
   // Reschedule next CaptureTask.
   const base::TimeDelta frame_interval =
       base::TimeDelta::FromMicroseconds(1E6 / capture_format_.frame_rate);

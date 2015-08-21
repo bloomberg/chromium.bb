@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
@@ -15,23 +16,30 @@
 
 namespace media {
 
+class VideoFileParser;
+
 // Implementation of a VideoCaptureDevice class that reads from a file. Used for
 // testing the video capture pipeline when no real hardware is available. The
-// only supported file format is YUV4MPEG2 (a.k.a. Y4M), a minimal container
-// with a series of uncompressed video only frames, see the link
-// http://wiki.multimedia.cx/index.php?title=YUV4MPEG2 for more information
-// on the file format. Several restrictions and notes apply, see the
+// supported file formats are YUV4MPEG2 (a.k.a. Y4M) and MJPEG/JPEG. YUV4MPEG2
+// is a minimal container with a series of uncompressed video only frames, see
+// the link http://wiki.multimedia.cx/index.php?title=YUV4MPEG2 for more
+// information on the file format. Several restrictions and notes apply, see the
 // implementation file.
-// Example videos can be found in http://media.xiph.org/video/derf.
+// Example Y4M videos can be found in http://media.xiph.org/video/derf.
+// Example MJPEG videos can be found in media/data/test/bear.mjpeg.
+// Restrictions: Y4M videos should have .y4m file extension and MJPEG videos
+// should have .mjpeg file extension.
 class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
  public:
-  static int64 ParseFileAndExtractVideoFormat(
-      base::File* file,
-      media::VideoCaptureFormat* video_format);
-  static base::File OpenFileForRead(const base::FilePath& file_path);
+  // Reads and parses the header of a |file_path|, returning the collected
+  // pixel format in |video_format|. Returns true on file parsed successfully,
+  // or false.
+  // Restrictions: Only trivial Y4M per-frame headers and MJPEG are supported.
+  static bool GetVideoCaptureFormat(const base::FilePath& file_path,
+                                    media::VideoCaptureFormat* video_format);
 
   // Constructor of the class, with a fully qualified file path as input, which
-  // represents the Y4M video file to stream repeatedly.
+  // represents the Y4M or MJPEG file to stream repeatedly.
   explicit FileVideoCaptureDevice(const base::FilePath& file_path);
 
   // VideoCaptureDevice implementation, class methods.
@@ -41,14 +49,18 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   void StopAndDeAllocate() override;
 
  private:
-  // Returns size in bytes of an I420 frame, not including possible paddings,
-  // defined by |capture_format_|.
-  int CalculateFrameSize() const;
+  // Opens a given file |file_path| for reading, and stores collected format
+  // information in |video_format|. Returns the parsed file to the
+  // caller, who is responsible for closing it.
+  static scoped_ptr<VideoFileParser> GetVideoFileParser(
+      const base::FilePath& file_path,
+      media::VideoCaptureFormat* video_format);
 
   // Called on the |capture_thread_|.
   void OnAllocateAndStart(const VideoCaptureParams& params,
                           scoped_ptr<Client> client);
   void OnStopAndDeAllocate();
+  const uint8_t* GetNextFrame();
   void OnCaptureTask();
 
   // |thread_checker_| is used to check that destructor, AllocateAndStart() and
@@ -61,12 +73,8 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   // The following members belong to |capture_thread_|.
   scoped_ptr<VideoCaptureDevice::Client> client_;
   const base::FilePath file_path_;
-  base::File file_;
-  scoped_ptr<uint8[]> video_frame_;
+  scoped_ptr<VideoFileParser> file_parser_;
   VideoCaptureFormat capture_format_;
-  int frame_size_;
-  int64 current_byte_index_;
-  int64 first_frame_byte_index_;
   // Target time for the next frame.
   base::TimeTicks next_frame_time_;
 

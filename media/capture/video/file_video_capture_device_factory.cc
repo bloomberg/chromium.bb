@@ -63,13 +63,13 @@ void FileVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
     const VideoCaptureDevice::Name& device,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::File file =
-      FileVideoCaptureDevice::OpenFileForRead(GetFilePathFromCommandLine());
-  if (!file.IsValid())
-    return;
+
   VideoCaptureFormat capture_format;
-  FileVideoCaptureDevice::ParseFileAndExtractVideoFormat(&file,
-                                                         &capture_format);
+  if (!FileVideoCaptureDevice::GetVideoCaptureFormat(
+        GetFilePathFromCommandLine(), &capture_format)) {
+    return;
+  }
+
   supported_formats->push_back(capture_format);
 }
 

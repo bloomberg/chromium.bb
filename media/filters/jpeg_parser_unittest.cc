@@ -76,6 +76,7 @@ TEST(JpegParserTest, Parsing) {
   EXPECT_EQ(1, result.scan.components[2].dc_selector);
   EXPECT_EQ(1, result.scan.components[2].ac_selector);
   EXPECT_EQ(121150u, result.data_size);
+  EXPECT_EQ(121358u, result.image_size);
 }
 
 TEST(JpegParserTest, CodedSizeNotEqualVisibleSize) {
