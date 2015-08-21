@@ -524,8 +524,6 @@
       'browser/ui/android/infobars/generated_password_saved_infobar.h',
       'browser/ui/android/snackbars/auto_signin_snackbar_controller.cc',
       'browser/ui/android/snackbars/auto_signin_snackbar_controller.h',
-      'browser/ui/auto_login_infobar_delegate.cc',
-      'browser/ui/auto_login_infobar_delegate.h',
       'browser/ui/screen_capture_notification_ui_stub.cc',
     ],
     # Cross-platform ash sources.

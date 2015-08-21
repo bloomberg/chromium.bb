@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "ui/base/window_open_disposition.h"
 
-class AutoLoginInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class InsecureContentInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
@@ -111,7 +110,6 @@ class InfoBarDelegate {
   virtual void InfoBarDismissed();
 
   // Type-checking downcast routines:
-  virtual AutoLoginInfoBarDelegate* AsAutoLoginInfoBarDelegate();
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate();

@@ -15,8 +15,6 @@ DEFINE_RESOURCE_ID(0, 0)
 
 // InfoBar resources.
 DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOFILL_CC, R.drawable.infobar_autofill_cc)
-DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOLOGIN,\
-                   R.drawable.infobar_savepassword_autologin)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_DESKTOP_NOTIFICATIONS,\
                    R.drawable.infobar_desktop_notifications)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_GEOLOCATION, R.drawable.infobar_geolocation)
@@ -28,7 +26,7 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_MULTIPLE_DOWNLOADS,\
 DEFINE_RESOURCE_ID(IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER,
                    R.drawable.infobar_protected_media_identifier)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_SAVE_PASSWORD,\
-                   R.drawable.infobar_savepassword_autologin)
+                   R.drawable.infobar_savepassword)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_WARNING, R.drawable.infobar_warning)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
 DEFINE_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)

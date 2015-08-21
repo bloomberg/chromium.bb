@@ -54,10 +54,6 @@ bool InfoBarDelegate::ShouldExpire(const NavigationDetails& details) const {
 void InfoBarDelegate::InfoBarDismissed() {
 }
 
-AutoLoginInfoBarDelegate* InfoBarDelegate::AsAutoLoginInfoBarDelegate() {
-  return nullptr;
-}
-
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return nullptr;
 }

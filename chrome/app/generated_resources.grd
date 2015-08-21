@@ -11220,21 +11220,6 @@ I don't think this site should be blocked!
         <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login. [length: 10em]">
           Sign in
         </message>
-      </if>
-      <if expr="not is_ios">
-        <message name="IDS_AUTOLOGIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that they can press one button to auto-login instead of entering their user name and password.">
-          Sign in to this site as: <ph name="EMAIL_ADDRESS">$1</ph>
-        </message>
-        <message name="IDS_AUTOLOGIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to perform the auto-login.">
-          Sign in
-        </message>
-      </if>
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
-          Never offer to sign me in
-        </message>
-      </if>
-      <if expr="is_android or is_ios">
         <message name="IDS_AUTOLOGIN_INFOBAR_CANCEL_BUTTON" desc="Mobile: The string used in the autologin infobar button that the user presses to close the infobar without logging in.">
           Cancel
         </message>
