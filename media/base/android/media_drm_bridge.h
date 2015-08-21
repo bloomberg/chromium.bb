@@ -139,9 +139,12 @@ class MEDIA_EXPORT MediaDrmBridge : public BrowserCdm {
   // Session event callbacks.
   // Note: Session expiration update is not supported by MediaDrm.
 
+  // TODO(xhwang): Remove |j_legacy_destination_url| when prefixed EME support
+  // is removed.
   void OnSessionMessage(JNIEnv* env,
                         jobject j_media_drm,
                         jbyteArray j_session_id,
+                        jint j_message_type,
                         jbyteArray j_message,
                         jstring j_legacy_destination_url);
   void OnSessionClosed(JNIEnv* env,

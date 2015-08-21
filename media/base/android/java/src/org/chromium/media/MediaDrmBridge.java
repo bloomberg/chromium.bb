@@ -821,12 +821,26 @@ public class MediaDrmBridge {
 
     private void onSessionMessage(final byte[] sessionId, final MediaDrm.KeyRequest request) {
         mHandler.post(new Runnable() {
+            @TargetApi(Build.VERSION_CODES.M)
             @Override
             public void run() {
-                if (isNativeMediaDrmBridgeValid()) {
-                    nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, request.getData(),
-                            request.getDefaultUrl());
+                if (!isNativeMediaDrmBridgeValid()) {
+                    return;
                 }
+
+                int requestType = MediaDrm.KeyRequest.REQUEST_TYPE_INITIAL;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    requestType = request.getRequestType();
+                } else {
+                    // Prior to M, getRequestType() is not supported. Do our best guess here: Assume
+                    // requests with a URL are renewals and all others are initial requests.
+                    requestType = request.getDefaultUrl().isEmpty()
+                            ? MediaDrm.KeyRequest.REQUEST_TYPE_INITIAL
+                            : MediaDrm.KeyRequest.REQUEST_TYPE_RENEWAL;
+                }
+
+                nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, requestType,
+                        request.getData(), request.getDefaultUrl());
             }
         });
     }
@@ -1011,8 +1025,8 @@ public class MediaDrmBridge {
     private native void nativeOnPromiseRejected(
             long nativeMediaDrmBridge, long promiseId, String errorMessage);
 
-    private native void nativeOnSessionMessage(
-            long nativeMediaDrmBridge, byte[] sessionId, byte[] message, String destinationUrl);
+    private native void nativeOnSessionMessage(long nativeMediaDrmBridge, byte[] sessionId,
+            int requestType, byte[] message, String destinationUrl);
     private native void nativeOnSessionClosed(long nativeMediaDrmBridge, byte[] sessionId);
     private native void nativeOnSessionKeysChange(long nativeMediaDrmBridge, byte[] sessionId,
             boolean hasAdditionalUsableKey, int keyStatus);

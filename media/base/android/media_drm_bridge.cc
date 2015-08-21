@@ -37,6 +37,14 @@ namespace media {
 
 namespace {
 
+// These must be in sync with Android MediaDrm REQUEST_TYPE_XXX constants!
+// https://developer.android.com/reference/android/media/MediaDrm.KeyRequest.html
+enum class RequestType {
+  REQUEST_TYPE_INITIAL = 0,
+  REQUEST_TYPE_RENEWAL = 1,
+  REQUEST_TYPE_RELEASE = 2,
+};
+
 // DrmBridge supports session expiration event but doesn't provide detailed
 // status for each key ID, which is required by the EME spec. Use a dummy key ID
 // here to report session expiration info.
@@ -70,6 +78,20 @@ std::string ConvertInitDataType(media::EmeInitDataType init_data_type) {
       NOTREACHED();
       return "unknown";
   }
+}
+
+MediaKeys::MessageType GetMessageType(RequestType request_type) {
+  switch (request_type) {
+    case RequestType::REQUEST_TYPE_INITIAL:
+      return MediaKeys::LICENSE_REQUEST;
+    case RequestType::REQUEST_TYPE_RENEWAL:
+      return MediaKeys::LICENSE_RENEWAL;
+    case RequestType::REQUEST_TYPE_RELEASE:
+      return MediaKeys::LICENSE_RELEASE;
+  }
+
+  NOTREACHED();
+  return MediaKeys::LICENSE_REQUEST;
 }
 
 class KeySystemManager {
@@ -470,16 +492,15 @@ void MediaDrmBridge::OnPromiseRejected(JNIEnv* env,
 void MediaDrmBridge::OnSessionMessage(JNIEnv* env,
                                       jobject j_media_drm,
                                       jbyteArray j_session_id,
+                                      jint j_message_type,
                                       jbyteArray j_message,
                                       jstring j_legacy_destination_url) {
   std::vector<uint8> message;
   JavaByteArrayToByteVector(env, j_message, &message);
   GURL legacy_destination_url =
       GURL(ConvertJavaStringToUTF8(env, j_legacy_destination_url));
-  // Note: Message type is not supported in MediaDrm. Do our best guess here.
-  media::MediaKeys::MessageType message_type =
-      legacy_destination_url.is_empty() ? media::MediaKeys::LICENSE_REQUEST
-                                        : media::MediaKeys::LICENSE_RENEWAL;
+  MediaKeys::MessageType message_type =
+      GetMessageType(static_cast<RequestType>(j_message_type));
 
   session_message_cb_.Run(GetSessionId(env, j_session_id), message_type,
                           message, legacy_destination_url);
