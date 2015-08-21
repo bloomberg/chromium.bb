@@ -536,6 +536,12 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
   void NotifyReadyToDrawOnThread(LayerTreeHostImpl* impl) override {
     ready_to_draw_ = true;
+    if (frame_ == 0) {
+      // The ready to draw can race with a draw in which everything is
+      // actually ready.  Therefore, just issue one more extra draw
+      // here to force notify->draw ordering.
+      impl->SetNeedsRedraw();
+    }
   }
 
   void AfterTest() override {}
