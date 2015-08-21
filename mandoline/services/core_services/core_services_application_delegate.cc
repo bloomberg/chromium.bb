@@ -11,7 +11,6 @@
 #include "components/filesystem/file_system_app.h"
 #include "mandoline/services/core_services/application_delegate_factory.h"
 #include "mandoline/tab/web_view_application_delegate.h"
-#include "mandoline/ui/browser/browser_manager.h"
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_runner.h"
@@ -115,9 +114,7 @@ void CoreServicesApplicationDelegate::StartApplication(
   const std::string url = response->url;
 
   scoped_ptr<mojo::ApplicationDelegate> delegate;
-  if (url == "mojo://browser/") {
-    delegate.reset(new mandoline::BrowserManager);
-  } else if (url == "mojo://clipboard/") {
+  if (url == "mojo://clipboard/") {
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
   } else if (url == "mojo://filesystem/") {
     delegate.reset(new filesystem::FileSystemApp);

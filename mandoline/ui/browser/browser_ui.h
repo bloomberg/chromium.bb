@@ -23,29 +23,8 @@ class BrowserUI {
   static BrowserUI* Create(mojo::ApplicationImpl* application_impl,
                            BrowserManager* manager);
 
-  // Called when the Browser UI is embedded within the specified view.
-  // BrowserUI is destroyed prior to |root| being destroyed. That is, the
-  // BrowserUI implementations can assume |root| is never deleted out from under
-  // them.
-  virtual void Init(mojo::View* root) = 0;
-
   // Loads the specified URL in the active tab.
   virtual void LoadURL(const GURL& url) = 0;
-
-  // TODO(beng): remove this method once BrowserManager is the
-  //             ViewManagerDelegate.
-  virtual void ViewManagerDisconnected() = 0;
-
-  // Embeds the Omnibox UI. The connection object passed is an existing
-  // connection to the Omnibox application from which a ViewManagerClient can be
-  // obtained.
-  virtual void EmbedOmnibox(mojo::ApplicationConnection* connection) = 0;
-
-  virtual void OnURLChanged() = 0;
-
-  virtual void LoadingStateChanged(bool loading) = 0;
-
-  virtual void ProgressChanged(double progress) = 0;
 };
 
 }  // namespace mandoline

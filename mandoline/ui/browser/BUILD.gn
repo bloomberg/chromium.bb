@@ -22,8 +22,6 @@ mojo_native_application("browser") {
 
 source_set("lib") {
   sources = [
-    "browser.cc",
-    "browser.h",
     "browser_manager.cc",
     "browser_manager.h",
   ]
@@ -54,12 +52,6 @@ source_set("lib") {
       "//mandoline/ui/aura",
       "//ui/gfx",
       "//ui/views",
-    ]
-  } else {
-    assert(is_android)
-    sources += [
-      "android/android_ui.cc",
-      "android/android_ui.h",
     ]
   }
 }

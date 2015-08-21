@@ -59,84 +59,124 @@ class ProgressView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopUI, public:
 
-DesktopUI::DesktopUI(mojo::ApplicationImpl* application_impl,
-                     BrowserManager* manager)
-    : application_impl_(application_impl),
-      browser_(application_impl, this),
+DesktopUI::DesktopUI(mojo::ApplicationImpl* app, BrowserManager* manager)
+    : app_(app),
+      view_manager_init_(app, this, this),
       manager_(manager),
       omnibox_launcher_(nullptr),
       progress_bar_(nullptr),
       root_(nullptr),
       content_(nullptr),
-      omnibox_(nullptr) {}
+      omnibox_view_(nullptr),
+      web_view_(this) {}
 
 DesktopUI::~DesktopUI() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopUI, BrowserUI implementation:
 
-void DesktopUI::Init(mojo::View* root) {
-  DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
-  if (!aura_init_)
-    aura_init_.reset(new AuraInit(root, application_impl_->shell()));
+void DesktopUI::LoadURL(const GURL& url) {
+  // Haven't been embedded yet, can't embed.
+  // TODO(beng): remove this.
+  if (!root_) {
+    default_url_ = url;
+    return;
+  }
+
+  mojo::URLRequestPtr request(mojo::URLRequest::New());
+  request->url = url.spec();
+  Embed(request.Pass());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopUI, mojo::ViewManagerDelegate implementation:
+
+void DesktopUI::OnEmbed(mojo::View* root) {
+  // DesktopUI does not support being embedded more than once.
+  CHECK(!root_);
+
+  // Make it so we get OnWillEmbed() for any Embed()s done by other apps we
+  // Embed().
+  root->view_manager()->SetEmbedRoot();
 
   root_ = root;
-  omnibox_ = root_->view_manager()->CreateView();
-  root_->AddChild(omnibox_);
 
-  views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
-  widget_delegate->GetContentsView()->set_background(
-    views::Background::CreateSolidBackground(0xFFDDDDDD));
-  omnibox_launcher_ =
-      new views::LabelButton(this, base::ASCIIToUTF16("Open Omnibox"));
-  progress_bar_ = new ProgressView;
+  content_ = root_->view_manager()->CreateView();
+  Init(root_);
 
-  widget_delegate->GetContentsView()->AddChildView(omnibox_launcher_);
-  widget_delegate->GetContentsView()->AddChildView(progress_bar_);
-  widget_delegate->GetContentsView()->SetLayoutManager(this);
+  view_manager_init_.view_manager_root()->SetViewportSize(
+      mojo::Size::From(gfx::Size(1280, 800)));
 
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.native_widget =
-      new NativeWidgetViewManager(widget, application_impl_->shell(), root_);
-  params.delegate = widget_delegate;
-  params.bounds = root_->bounds().To<gfx::Rect>();
-  widget->Init(params);
-  widget->Show();
-  root_->SetFocus();
+  root_->AddChild(content_);
+  content_->SetVisible(true);
+
+  web_view_.Init(app_, content_);
+
+  view_manager_init_.view_manager_root()->AddAccelerator(
+      mojo::KEYBOARD_CODE_BROWSER_BACK, mojo::EVENT_FLAGS_NONE);
+
+  // Now that we're ready, load the default url.
+  if (default_url_.is_valid()) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From(default_url_.spec());
+    Embed(request.Pass());
+  }
 }
 
-void DesktopUI::LoadURL(const GURL& url) {
-  browser_.LoadURL(url);
-}
-
-void DesktopUI::ViewManagerDisconnected() {
+void DesktopUI::OnViewManagerDestroyed(mojo::ViewManager* view_manager) {
+  root_ = nullptr;
   manager_->BrowserUIClosed(this);
 }
 
-void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
-  mojo::ViewManagerClientPtr view_manager_client;
-  connection->ConnectToService(&view_manager_client);
-  omnibox_->Embed(view_manager_client.Pass());
+////////////////////////////////////////////////////////////////////////////////
+// DesktopUI, mojo::ViewManagerRootClient implementation:
 
-  // TODO(beng): This should be handled sufficiently by
-  //             OmniboxImpl::ShowWindow() but unfortunately view manager policy
-  //             currently prevents the embedded app from changing window z for
-  //             its own window.
-  omnibox_->MoveToFront();
+void DesktopUI::OnAccelerator(mojo::EventPtr event) {
+  DCHECK_EQ(mojo::KEYBOARD_CODE_BROWSER_BACK,
+            event->key_data->windows_key_code);
+  NOTIMPLEMENTED();
 }
 
-void DesktopUI::OnURLChanged() {
-  omnibox_launcher_->SetText(base::UTF8ToUTF16(browser_.current_url().spec()));
+////////////////////////////////////////////////////////////////////////////////
+// DesktopUI, web_view::mojom::WebViewClient implementation:
+
+void DesktopUI::TopLevelNavigate(mojo::URLRequestPtr request) {
+  Embed(request.Pass());
 }
 
-void DesktopUI::LoadingStateChanged(bool loading) {
-  progress_bar_->SetIsLoading(loading);
+void DesktopUI::LoadingStateChanged(bool is_loading) {
+  progress_bar_->SetIsLoading(is_loading);
 }
 
 void DesktopUI::ProgressChanged(double progress) {
   progress_bar_->SetProgress(progress);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopUI, ViewEmbedder implementation:
+
+void DesktopUI::Embed(mojo::URLRequestPtr request) {
+  const std::string string_url = request->url.To<std::string>();
+  if (string_url == "mojo:omnibox") {
+    EmbedOmnibox(omnibox_connection_.get());
+    return;
+  }
+
+  GURL gurl(string_url);
+  bool changed = current_url_ != gurl;
+  current_url_ = gurl;
+  if (changed)
+    omnibox_launcher_->SetText(base::UTF8ToUTF16(current_url_.spec()));
+
+  web_view_.web_view()->LoadRequest(request.Pass());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopUI, mojo::InterfaceFactory<ViewEmbedder> implementation:
+
+void DesktopUI::Create(mojo::ApplicationConnection* connection,
+                       mojo::InterfaceRequest<ViewEmbedder> request) {
+  view_embedder_bindings_.AddBinding(this, request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -163,8 +203,8 @@ void DesktopUI::Layout(views::View* host) {
   content_bounds_mojo.width = progress_bar_bounds.width();
   content_bounds_mojo.height =
       host->bounds().height() - content_bounds_mojo.y - 10;
-  browser_.content()->SetBounds(content_bounds_mojo);
-  omnibox_->SetBounds(
+  content_->SetBounds(content_bounds_mojo);
+  omnibox_view_->SetBounds(
       mojo::TypeConverter<mojo::Rect, gfx::Rect>::Convert(host->bounds()));
 }
 
@@ -173,7 +213,71 @@ void DesktopUI::Layout(views::View* host) {
 
 void DesktopUI::ButtonPressed(views::Button* sender, const ui::Event& event) {
   DCHECK_EQ(sender, omnibox_launcher_);
-  browser_.ShowOmnibox();
+  ShowOmnibox();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DesktopUI, private:
+
+void DesktopUI::Init(mojo::View* root) {
+  DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
+  if (!aura_init_)
+    aura_init_.reset(new AuraInit(root, app_->shell()));
+
+  root_ = root;
+  omnibox_view_ = root_->view_manager()->CreateView();
+  root_->AddChild(omnibox_view_);
+
+  views::WidgetDelegateView* widget_delegate = new views::WidgetDelegateView;
+  widget_delegate->GetContentsView()->set_background(
+    views::Background::CreateSolidBackground(0xFFDDDDDD));
+  omnibox_launcher_ =
+      new views::LabelButton(this, base::ASCIIToUTF16("Open Omnibox"));
+  progress_bar_ = new ProgressView;
+
+  widget_delegate->GetContentsView()->AddChildView(omnibox_launcher_);
+  widget_delegate->GetContentsView()->AddChildView(progress_bar_);
+  widget_delegate->GetContentsView()->SetLayoutManager(this);
+
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  params.native_widget =
+      new NativeWidgetViewManager(widget, app_->shell(), root_);
+  params.delegate = widget_delegate;
+  params.bounds = root_->bounds().To<gfx::Rect>();
+  widget->Init(params);
+  widget->Show();
+  root_->SetFocus();
+}
+
+void DesktopUI::ShowOmnibox() {
+  if (!omnibox_.get()) {
+    mojo::URLRequestPtr request(mojo::URLRequest::New());
+    request->url = mojo::String::From("mojo:omnibox");
+    omnibox_connection_ = app_->ConnectToApplication(request.Pass());
+    omnibox_connection_->AddService<ViewEmbedder>(this);
+    omnibox_connection_->ConnectToService(&omnibox_);
+    omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
+      [this]() {
+        // This will cause the connection to be re-established the next time
+        // we come through this codepath.
+        omnibox_.reset();
+    });
+  }
+  omnibox_->ShowForURL(mojo::String::From(current_url_.spec()));
+}
+
+void DesktopUI::EmbedOmnibox(mojo::ApplicationConnection* connection) {
+  mojo::ViewManagerClientPtr view_manager_client;
+  connection->ConnectToService(&view_manager_client);
+  omnibox_view_->Embed(view_manager_client.Pass());
+
+  // TODO(beng): This should be handled sufficiently by
+  //             OmniboxImpl::ShowWindow() but unfortunately view manager policy
+  //             currently prevents the embedded app from changing window z for
+  //             its own window.
+  omnibox_view_->MoveToFront();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -5,12 +5,21 @@
 #ifndef MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
 #define MANDOLINE_UI_BROWSER_DESKTOP_DESKTOP_UI_H_
 
+#include "components/view_manager/public/cpp/view_manager.h"
+#include "components/view_manager/public/cpp/view_manager_delegate.h"
+#include "components/view_manager/public/cpp/view_manager_init.h"
+#include "components/view_manager/public/interfaces/view_manager_root.mojom.h"
+#include "mandoline/tab/public/cpp/web_view.h"
+#include "mandoline/tab/public/interfaces/web_view.mojom.h"
 #include "mandoline/ui/aura/aura_init.h"
-#include "mandoline/ui/browser/browser.h"
 #include "mandoline/ui/browser/browser_ui.h"
 #include "mandoline/ui/browser/public/interfaces/omnibox.mojom.h"
+#include "mandoline/ui/browser/public/interfaces/view_embedder.mojom.h"
+#include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/common/weak_binding_set.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/layout_manager.h"
+#include "url/gurl.h"
 
 namespace mojo {
 class ApplicationConnection;
@@ -24,25 +33,43 @@ class LabelButton;
 
 namespace mandoline {
 
-class Browser;
 class ProgressView;
 
 class DesktopUI : public BrowserUI,
+                  public mojo::ViewManagerDelegate,
+                  public mojo::ViewManagerRootClient,
+                  public web_view::mojom::WebViewClient,
+                  public ViewEmbedder,
+                  public mojo::InterfaceFactory<ViewEmbedder>,
                   public views::LayoutManager,
                   public views::ButtonListener {
  public:
-  DesktopUI(mojo::ApplicationImpl* application_impl, BrowserManager* manager);
+  DesktopUI(mojo::ApplicationImpl* app, BrowserManager* manager);
   ~DesktopUI() override;
 
  private:
-  // Overridden from BrowserUI
-  void Init(mojo::View* root) override;
+  // Overridden from BrowserUI:
   void LoadURL(const GURL& url) override;
-  void ViewManagerDisconnected() override;
-  void EmbedOmnibox(mojo::ApplicationConnection* connection) override;
-  void OnURLChanged() override;
-  void LoadingStateChanged(bool loading) override;
+
+  // Overridden from mojo::ViewManagerDelegate:
+  void OnEmbed(mojo::View* root) override;
+  void OnViewManagerDestroyed(mojo::ViewManager* view_manager) override;
+
+  // Overridden from ViewManagerRootClient:
+  void OnAccelerator(mojo::EventPtr event) override;
+
+  // Overridden from web_view::mojom::WebViewClient:
+  void TopLevelNavigate(mojo::URLRequestPtr request) override;
+  void LoadingStateChanged(bool is_loading) override;
   void ProgressChanged(double progress) override;
+
+  // Overridden from ViewEmbedder:
+  void Embed(mojo::URLRequestPtr request) override;
+
+  // Overridden from mojo::InterfaceFactory<ViewEmbedder>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<ViewEmbedder> request) override;
+
 
   // Overridden from views::LayoutManager:
   gfx::Size GetPreferredSize(const views::View* view) const override;
@@ -51,17 +78,29 @@ class DesktopUI : public BrowserUI,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  void Init(mojo::View* root);
   void ShowOmnibox();
+  void EmbedOmnibox(mojo::ApplicationConnection* connection);
 
-  mojo::ApplicationImpl* application_impl_;
-  Browser browser_;
-  BrowserManager* manager_;
+  mojo::ApplicationImpl* app_;
   scoped_ptr<AuraInit> aura_init_;
+  mojo::ViewManagerInit view_manager_init_;
+  BrowserManager* manager_;
   views::LabelButton* omnibox_launcher_;
   ProgressView* progress_bar_;
   mojo::View* root_;
   mojo::View* content_;
-  mojo::View* omnibox_;
+  mojo::View* omnibox_view_;
+
+  mojo::WeakBindingSet<ViewEmbedder> view_embedder_bindings_;
+
+  GURL default_url_;
+  GURL current_url_;
+
+  web_view::WebView web_view_;
+
+  OmniboxPtr omnibox_;
+  scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopUI);
 };

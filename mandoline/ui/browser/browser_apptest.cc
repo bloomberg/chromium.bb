@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// These tests are disabled pending refactoring of mandoline:browser
+#if 0
 #include "mandoline/ui/browser/browser.h"
 
 #include "base/run_loop.h"
@@ -11,8 +13,6 @@
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/application_test_base.h"
 
-// These tests are disabled pending refactoring of mandoline:browser
-#if 0
 namespace mandoline {
 
 class TestBrowser : public Browser {

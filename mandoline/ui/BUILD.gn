@@ -6,10 +6,12 @@ import("//build/config/ui.gni")
 
 group("ui") {
   deps = [
-    "browser",
     "phone_ui",
   ]
   if (use_aura) {
-    deps += [ "omnibox" ]
+    deps += [
+      "browser",
+      "omnibox",
+    ]
   }
 }
