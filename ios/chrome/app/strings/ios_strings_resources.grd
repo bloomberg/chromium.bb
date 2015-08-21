@@ -176,6 +176,15 @@ all other OS specific variables will be false.
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <message name="IDS_AUTOFILL_ACCNAME_HIDE_KEYBOARD" desc="The accessible name for the hide keyboard button in the keyboard accessory shown when filling out forms. [Length: unlimited] [iOS only]">
+        Hide keyboard
+      </message>
+      <message name="IDS_AUTOFILL_ACCNAME_NEXT_FIELD" desc="The accessible name for the next field button in the keyboard accessory shown when filling out forms. [Length: unlimited] [iOS only]">
+        Next field
+      </message>
+      <message name="IDS_AUTOFILL_ACCNAME_PREVIOUS_FIELD" desc="The accessible name for the previous field button in the keyboard accessory shown when filling out forms. [Length: unlimited] [iOS only]">
+        Previous field
+      </message>
       <message name="IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chrome instance. Title case. [Length: 20em] [iOS only]">
         Copied to Chrome
       </message>
