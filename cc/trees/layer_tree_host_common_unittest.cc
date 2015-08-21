@@ -1189,6 +1189,42 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   EXPECT_EQ(gfx::Rect(), parent->drawable_content_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest,
+       RenderSurfaceListForTransparentChildWithBackgroundFilter) {
+  LayerImpl* parent = root_layer();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child = AddChild<LayerImpl>(render_surface1);
+  child->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(render_surface1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  render_surface1->SetOpacity(0.f);
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(1.5f));
+  render_surface1->SetBackgroundFilters(filters);
+
+  LayerImplList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      parent, parent->bounds(), &render_surface_layer_list);
+  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  // The layer is fully transparent, but has a background filter, so it
+  // shouldn't be skipped.
+  ASSERT_TRUE(parent->render_surface());
+  EXPECT_EQ(1U, parent->render_surface()->layer_list().size());
+  EXPECT_EQ(2U, render_surface_layer_list.size());
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), parent->drawable_content_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   LayerImpl* parent = root_layer();
   LayerImpl* child = AddChild<LayerImpl>(parent);

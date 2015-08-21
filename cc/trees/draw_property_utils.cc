@@ -270,6 +270,11 @@ static inline bool SubtreeShouldBeSkipped(LayerImpl* layer,
       layer->HasPotentiallyRunningOpacityAnimation())
     return false;
 
+  // If layer has a background filter, don't skip the layer, even it the
+  // opacity is 0.
+  if (!layer->background_filters().IsEmpty())
+    return false;
+
   // The opacity of a layer always applies to its children (either implicitly
   // via a render surface or explicitly if the parent preserves 3D), so the
   // entire subtree can be skipped if this layer is fully transparent.
@@ -297,6 +302,11 @@ static inline bool SubtreeShouldBeSkipped(Layer* layer,
       !layer->HasPotentiallyRunningTransformAnimation() &&
       IsSurfaceBackFaceVisible(layer, tree))
     return true;
+
+  // If layer has a background filter, don't skip the layer, even it the
+  // opacity is 0.
+  if (!layer->background_filters().IsEmpty())
+    return false;
 
   // If the opacity is being animated then the opacity on the main thread is
   // unreliable (since the impl thread may be using a different opacity), so it
