@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/options/autofill_options_handler.h"
 #include "chrome/browser/ui/webui/options/automatic_settings_reset_handler.h"
@@ -47,6 +48,7 @@
 #include "chrome/browser/ui/webui/options/startup_pages_handler.h"
 #include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -58,6 +60,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "grit/options_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/escape.h"
@@ -379,6 +382,12 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
   pointer_device_observer_->AddObserver(browser_options_handler);
   pointer_device_observer_->AddObserver(pointer_handler);
 #endif
+
+  if (switches::AboutInSettingsEnabled()) {
+    content::WebUIDataSource* help_source = HelpUI::CreateAboutPageHTMLSource();
+    content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
+                                  help_source);
+  }
 }
 
 OptionsUI::~OptionsUI() {

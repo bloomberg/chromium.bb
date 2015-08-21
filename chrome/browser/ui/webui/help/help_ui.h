@@ -7,10 +7,16 @@
 
 #include "content/public/browser/web_ui_controller.h"
 
+namespace content {
+class WebUIDataSource;
+}
+
 class HelpUI : public content::WebUIController {
  public:
   explicit HelpUI(content::WebUI* web_ui);
   ~HelpUI() override;
+
+  static content::WebUIDataSource* CreateAboutPageHTMLSource();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HelpUI);

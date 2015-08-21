@@ -15,9 +15,23 @@
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
 
-namespace {
+HelpUI::HelpUI(content::WebUI* web_ui)
+    : WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource* source = CreateAboutPageHTMLSource();
 
-content::WebUIDataSource* CreateAboutPageHTMLSource() {
+  HelpHandler* handler = new HelpHandler();
+  base::DictionaryValue localized_strings;
+  HelpHandler::GetLocalizedValues(&localized_strings);
+  source->AddLocalizedStrings(localized_strings);
+  content::WebUIDataSource::Add(profile, source);
+  web_ui->AddMessageHandler(handler);
+}
+
+HelpUI::~HelpUI() {
+}
+
+content::WebUIDataSource* HelpUI::CreateAboutPageHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHelpFrameHost);
 
@@ -57,22 +71,4 @@ content::WebUIDataSource* CreateAboutPageHTMLSource() {
 
   source->AddResourcePath("current-channel-logo", product_logo);
   return source;
-}
-
-}  // namespace
-
-HelpUI::HelpUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource* source = CreateAboutPageHTMLSource();
-
-  HelpHandler* handler = new HelpHandler();
-  base::DictionaryValue localized_strings;
-  HelpHandler::GetLocalizedValues(&localized_strings);
-  source->AddLocalizedStrings(localized_strings);
-  content::WebUIDataSource::Add(profile, source);
-  web_ui->AddMessageHandler(handler);
-}
-
-HelpUI::~HelpUI() {
 }
