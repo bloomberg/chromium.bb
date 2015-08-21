@@ -11,27 +11,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/webstore_startup_installer.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
-#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
-#include "ipc/ipc_message.h"
-
-#if defined(OS_WIN)
-#include "extensions/browser/app_window/app_window.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_util.h"
-#endif
 
 using content::BrowserThread;
 
@@ -41,37 +27,6 @@ namespace {
 
 void PrintPackExtensionMessage(const std::string& message) {
   VLOG(1) << message;
-}
-
-// On Windows, the jumplist action for installing an ephemeral app has to use
-// the --install-ephemeral-app-from-webstore command line arg to initiate an
-// install.
-scoped_refptr<WebstoreStandaloneInstaller> CreateEphemeralAppInstaller(
-    Profile* profile,
-    const std::string& app_id,
-    WebstoreStandaloneInstaller::Callback callback) {
-  scoped_refptr<WebstoreStandaloneInstaller> installer;
-
-#if defined(OS_WIN)
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  DCHECK(registry);
-  if (!registry->GetExtensionById(app_id, ExtensionRegistry::EVERYTHING) ||
-      !util::IsEphemeralApp(app_id, profile)) {
-    return installer;
-  }
-
-  AppWindowRegistry* app_window_registry = AppWindowRegistry::Get(profile);
-  DCHECK(app_window_registry);
-  AppWindow* app_window =
-      app_window_registry->GetCurrentAppWindowForApp(app_id);
-  if (!app_window)
-    return installer;
-
-  installer = new WebstoreInstallWithPrompt(
-      app_id, profile, app_window->GetNativeWindow(), callback);
-#endif
-
-  return installer;
 }
 
 }  // namespace
@@ -237,96 +192,6 @@ bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
   if (!success)
     *error = base::UTF16ToUTF8(helper->error());
   return success;
-}
-
-namespace {
-
-class AppInstallHelper {
- public:
-  // A callback for when the install process is done.
-  typedef base::Callback<void()> DoneCallback;
-
-  AppInstallHelper();
-  virtual ~AppInstallHelper();
-  bool success() { return success_; }
-  const std::string& error() { return error_; }
-  void BeginInstall(Profile* profile,
-                    const std::string& id,
-                    bool show_prompt,
-                    DoneCallback callback);
-
- private:
-  WebstoreStandaloneInstaller::Callback Callback();
-  void OnAppInstallComplete(bool success,
-                            const std::string& error,
-                            webstore_install::Result result);
-
-  DoneCallback done_callback_;
-
-  // These hold on to the result of the app install when it is complete.
-  bool success_;
-  std::string error_;
-
-  scoped_refptr<WebstoreStandaloneInstaller> installer_;
-};
-
-AppInstallHelper::AppInstallHelper() : success_(false) {}
-
-AppInstallHelper::~AppInstallHelper() {}
-
-WebstoreStandaloneInstaller::Callback AppInstallHelper::Callback() {
-  return base::Bind(&AppInstallHelper::OnAppInstallComplete,
-                    base::Unretained(this));
-}
-
-void AppInstallHelper::BeginInstall(
-    Profile* profile,
-    const std::string& id,
-    bool show_prompt,
-    DoneCallback done_callback) {
-  done_callback_ = done_callback;
-
-  WebstoreStandaloneInstaller::Callback callback =
-      base::Bind(&AppInstallHelper::OnAppInstallComplete,
-                 base::Unretained(this));
-
-  installer_ = CreateEphemeralAppInstaller(profile, id, callback);
-  if (installer_.get()) {
-    installer_->BeginInstall();
-  } else {
-    error_ = "Not a supported ephemeral app installation.";
-    done_callback_.Run();
-  }
-}
-
-void AppInstallHelper::OnAppInstallComplete(bool success,
-                                            const std::string& error,
-                                            webstore_install::Result result) {
-  success_ = success;
-  error_ = error;
-  done_callback_.Run();
-}
-
-}  // namespace
-
-bool StartupHelper::InstallEphemeralApp(const base::CommandLine& cmd_line,
-                                        Profile* profile) {
-  std::string id =
-      cmd_line.GetSwitchValueASCII(switches::kInstallEphemeralAppFromWebstore);
-  if (!crx_file::id_util::IdIsValid(id)) {
-    LOG(ERROR) << "Invalid id for "
-        << switches::kInstallEphemeralAppFromWebstore << " : '" << id << "'";
-    return false;
-  }
-
-  AppInstallHelper helper;
-  base::RunLoop run_loop;
-  helper.BeginInstall(profile, id, true, run_loop.QuitClosure());
-  run_loop.Run();
-
-  if (!helper.success())
-    LOG(ERROR) << "InstallFromWebstore failed with error: " << helper.error();
-  return helper.success();
 }
 
 StartupHelper::~StartupHelper() {

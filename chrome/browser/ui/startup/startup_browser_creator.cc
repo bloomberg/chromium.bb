@@ -537,14 +537,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     net::SetExplicitlyAllowedPorts(allowed_ports);
   }
 
-  if (command_line.HasSwitch(switches::kInstallEphemeralAppFromWebstore)) {
-    extensions::StartupHelper helper;
-    helper.InstallEphemeralApp(command_line, last_used_profile);
-    // Nothing more needs to be done, so return false to stop launching and
-    // quit.
-    return false;
-  }
-
   if (command_line.HasSwitch(switches::kValidateCrx)) {
     if (!process_startup) {
       LOG(ERROR) << "chrome is already running; you must close all running "

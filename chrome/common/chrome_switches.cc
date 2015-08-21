@@ -665,12 +665,6 @@ const char kIncognito[]                     = "incognito";
 // Causes Chrome to initiate an installation flow for the given app.
 const char kInstallChromeApp[]              = "install-chrome-app";
 
-// Causes Chrome to attempt to get metadata from the webstore for the
-// app/extension ID given, and then prompt the user to download and install it.
-// This is allowed *only* for ephemeral apps. All other ids will be ignored.
-const char kInstallEphemeralAppFromWebstore[] =
-    "install-ephemeral-app-from-webstore";
-
 // A list of whitelists to install for a supervised user, for testing.
 // The list is of the following form: <id>[:<name>],[<id>[:<name>],...]
 const char kInstallSupervisedUserWhitelists[] =

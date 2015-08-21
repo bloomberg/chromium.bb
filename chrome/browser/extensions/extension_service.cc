@@ -409,28 +409,19 @@ void ExtensionService::Init() {
   DCHECK(!is_ready());  // Can't redo init.
   DCHECK_EQ(registry_->enabled_extensions().size(), 0u);
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kInstallEphemeralAppFromWebstore)) {
-    // The sole purpose of this launch is to install a new extension from CWS
-    // and immediately terminate: loading already installed extensions is
-    // unnecessary and may interfere with the inline install dialog (e.g. if an
-    // extension listens to onStartup and opens a window).
-    SetReadyAndNotifyListeners();
-  } else {
-    // LoadAllExtensions() calls OnLoadedInstalledExtensions().
-    component_loader_->LoadAll();
-    extensions::InstalledLoader(this).LoadAllExtensions();
+  // LoadAllExtensions() calls OnLoadedInstalledExtensions().
+  component_loader_->LoadAll();
+  extensions::InstalledLoader(this).LoadAllExtensions();
 
-    EnabledReloadableExtensions();
-    MaybeFinishShutdownDelayed();
-    SetReadyAndNotifyListeners();
+  EnabledReloadableExtensions();
+  MaybeFinishShutdownDelayed();
+  SetReadyAndNotifyListeners();
 
-    // TODO(erikkay): this should probably be deferred to a future point
-    // rather than running immediately at startup.
-    CheckForExternalUpdates();
+  // TODO(erikkay): this should probably be deferred to a future point
+  // rather than running immediately at startup.
+  CheckForExternalUpdates();
 
-    LoadGreylistFromPrefs();
-  }
+  LoadGreylistFromPrefs();
 }
 
 void ExtensionService::EnabledReloadableExtensions() {

@@ -77,6 +77,8 @@ enum ResultCode {
 
   // Failed to install an item from the webstore when the
   // kInstallEphemeralAppFromWebstore command line flag was present.
+  // As this flag is no longer supported, this return code should never be
+  // returned.
   RESULT_CODE_INSTALL_FROM_WEBSTORE_ERROR_2,
 
   // A dummy value we should not use. See crbug.com/152285.
