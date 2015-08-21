@@ -20,6 +20,10 @@ class LayerTreeHost;
 
 namespace {
 
+static const int kInvalidPropertyTreeNodeId = -1;
+static const int kRootPropertyTreeNodeId = 0;
+static const int kUnclippedRootClipTreeNodeId = 0;
+
 template <typename LayerType>
 struct DataForRecursion {
   TransformTree* transform_tree;
@@ -116,7 +120,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     data_for_children->ancestor_clips_subtree = true;
 
   if (has_unclipped_surface)
-    parent_id = 0;
+    parent_id = kUnclippedRootClipTreeNodeId;
 
   if (!RequiresClipNode(layer, data_from_ancestor, parent->data.transform_id,
                         ancestor_clips_subtree)) {
@@ -152,8 +156,9 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
         data_for_children->clip_tree->Insert(node, parent_id);
   }
 
-  layer->SetClipTreeIndex(
-      has_unclipped_surface ? 0 : data_for_children->clip_tree_parent);
+  layer->SetClipTreeIndex(has_unclipped_surface
+                              ? kUnclippedRootClipTreeNodeId
+                              : data_for_children->clip_tree_parent);
 
   layer->set_is_clipped(data_for_children->ancestor_clips_subtree);
 
@@ -194,7 +199,7 @@ bool AddTransformNodeIfNeeded(
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
   DCHECK_IMPLIES(!is_root, transform_parent);
 
-  int parent_index = 0;
+  int parent_index = kRootPropertyTreeNodeId;
   if (transform_parent)
     parent_index = transform_parent->transform_tree_index();
 
@@ -269,7 +274,7 @@ bool AddTransformNodeIfNeeded(
       data_from_ancestor.render_target->transform_tree_index();
   node->data.content_target_id =
       data_for_children->render_target->transform_tree_index();
-  DCHECK_NE(node->data.target_id, -1);
+  DCHECK_NE(node->data.target_id, kInvalidPropertyTreeNodeId);
   node->data.is_animated = has_potentially_animated_transform;
 
   float post_local_scale_factor = 1.0f;
@@ -456,8 +461,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.transform_tree_parent = nullptr;
   data_for_recursion.transform_fixed_parent = nullptr;
   data_for_recursion.render_target = root_layer;
-  data_for_recursion.clip_tree_parent = 0;
-  data_for_recursion.effect_tree_parent = -1;
+  data_for_recursion.clip_tree_parent = kUnclippedRootClipTreeNodeId;
+  data_for_recursion.effect_tree_parent = kInvalidPropertyTreeNodeId;
   data_for_recursion.page_scale_layer = page_scale_layer;
   data_for_recursion.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
   data_for_recursion.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
@@ -477,9 +482,9 @@ void BuildPropertyTreesTopLevelInternal(
 
   ClipNode root_clip;
   root_clip.data.clip = viewport;
-  root_clip.data.transform_id = 0;
-  data_for_recursion.clip_tree_parent =
-      data_for_recursion.clip_tree->Insert(root_clip, 0);
+  root_clip.data.transform_id = kRootPropertyTreeNodeId;
+  data_for_recursion.clip_tree_parent = data_for_recursion.clip_tree->Insert(
+      root_clip, kUnclippedRootClipTreeNodeId);
   BuildPropertyTreesInternal(root_layer, data_for_recursion);
   property_trees->needs_rebuild = false;
 
