@@ -16,16 +16,16 @@ function BuildInfo(json) {
   var state;
   if (statusText.indexOf('exception') != -1) {
     state = 'exception';
-  } else if (statusText.indexOf('running') != -1) {
-    state = 'running';
-  } else if (statusText.indexOf('successful') != -1) {
+  } else if (statusText.indexOf('build successful') == 0) {
     state = 'success';
-  } else if (statusText.indexOf('failed') != -1) {
+  } else if (statusText.indexOf('failed') == 0) {
     state = 'failed';
   } else if (statusText.indexOf('offline') != -1) {
     state = 'offline';
   } else if (statusText.indexOf('warnings') != -1) {
     state = 'warnings';
+  } else if (statusText.indexOf('running') != -1) {
+    state = 'running';
   } else {
     state = 'unknown';
   }
