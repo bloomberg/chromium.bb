@@ -171,6 +171,8 @@ const char kInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kUserCancelledError[] = "User cancelled install";
+const char kIncognitoError[] =
+    "Apps cannot be installed in guest/incognito mode";
 
 WebstoreInstaller::Delegate* test_webstore_installer_delegate = nullptr;
 
@@ -414,6 +416,11 @@ WebstorePrivateCompleteInstallFunction::Run() {
   scoped_ptr<CompleteInstall::Params> params(
       CompleteInstall::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
+  if (chrome_details_.GetProfile()->IsGuestSession() ||
+      chrome_details_.GetProfile()->IsOffTheRecord()) {
+    return RespondNow(Error(kIncognitoError));
+  }
+
   if (!crx_file::id_util::IdIsValid(params->expected_id))
     return RespondNow(Error(kInvalidIdError));
 

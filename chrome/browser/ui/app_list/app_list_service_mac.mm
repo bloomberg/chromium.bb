@@ -347,12 +347,6 @@ void AppListServiceMac::Init(Profile* initial_profile) {
 void AppListServiceMac::InitWithProfilePath(
     Profile* initial_profile,
     const base::FilePath& profile_path) {
-  // App list profiles should not be off-the-record. It is currently possible to
-  // get here in an off-the-record profile via the Web Store
-  // (http://crbug.com/416380).
-  // TODO(mgiuca): DCHECK that requested_profile->IsOffTheRecord() and
-  // requested_profile->IsGuestSession() are false, once that is resolved.
-
   // On Mac, Init() is called multiple times for a process: any time there is no
   // browser window open and a new window is opened, and during process startup
   // to handle the silent launch case (e.g. for app shims). In the startup case,

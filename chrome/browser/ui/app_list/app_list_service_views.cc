@@ -30,11 +30,9 @@ void AppListServiceViews::Init(Profile* initial_profile) {
 }
 
 void AppListServiceViews::ShowForProfile(Profile* requested_profile) {
-  // App list profiles should not be off-the-record. It is currently possible to
-  // get here in an off-the-record profile via the Web Store
-  // (http://crbug.com/416380).
-  // TODO(mgiuca): DCHECK that requested_profile->IsOffTheRecord() and
-  // requested_profile->IsGuestSession() are false, once that is resolved.
+  // App list profiles should not be off-the-record.
+  DCHECK(!requested_profile->IsOffTheRecord());
+  DCHECK(!requested_profile->IsGuestSession());
 
   ShowForProfileInternal(requested_profile,
                          app_list::AppListModel::INVALID_STATE);
