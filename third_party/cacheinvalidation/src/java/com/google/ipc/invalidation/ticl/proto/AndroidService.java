@@ -1688,6 +1688,77 @@ public interface AndroidService {
     }
   }
 
+  public static final class ScheduledTask extends ProtoWrapper {
+    public static ScheduledTask create(String eventName,
+        long executeTimeMs) {
+      return new ScheduledTask(eventName, executeTimeMs);
+    }
+
+    private final String eventName;
+    private final long executeTimeMs;
+
+    private ScheduledTask(String eventName,
+        Long executeTimeMs) throws ValidationArgumentException {
+      required("event_name", eventName);
+      this.eventName = eventName;
+      required("execute_time_ms", executeTimeMs);
+      this.executeTimeMs = executeTimeMs;
+    }
+
+    public String getEventName() { return eventName; }
+
+    public long getExecuteTimeMs() { return executeTimeMs; }
+
+    @Override public final boolean equals(Object obj) {
+      if (this == obj) { return true; }
+      if (!(obj instanceof ScheduledTask)) { return false; }
+      ScheduledTask other = (ScheduledTask) obj;
+      return equals(eventName, other.eventName)
+          && executeTimeMs == other.executeTimeMs;
+    }
+
+    @Override protected int computeHashCode() {
+      int result = 1;
+      result = result * 31 + eventName.hashCode();
+      result = result * 31 + hash(executeTimeMs);
+      return result;
+    }
+
+    @Override public void toCompactString(TextBuilder builder) {
+      builder.append("<ScheduledTask:");
+      builder.append(" event_name=").append(eventName);
+      builder.append(" execute_time_ms=").append(executeTimeMs);
+      builder.append('>');
+    }
+
+    public static ScheduledTask parseFrom(byte[] data) throws ValidationException {
+      try {
+        return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoAndroidService.ScheduledTask(), data));
+      } catch (InvalidProtocolBufferNanoException exception) {
+        throw new ValidationException(exception);
+      } catch (ValidationArgumentException exception) {
+        throw new ValidationException(exception.getMessage());
+      }
+    }
+
+    static ScheduledTask fromMessageNano(com.google.protos.ipc.invalidation.NanoAndroidService.ScheduledTask message) {
+      if (message == null) { return null; }
+      return new ScheduledTask(message.eventName,
+          message.executeTimeMs);
+    }
+
+    public byte[] toByteArray() {
+      return MessageNano.toByteArray(toMessageNano());
+    }
+
+    com.google.protos.ipc.invalidation.NanoAndroidService.ScheduledTask toMessageNano() {
+      com.google.protos.ipc.invalidation.NanoAndroidService.ScheduledTask msg = new com.google.protos.ipc.invalidation.NanoAndroidService.ScheduledTask();
+      msg.eventName = eventName;
+      msg.executeTimeMs = executeTimeMs;
+      return msg;
+    }
+  }
+
   public static final class AndroidNetworkSendRequest extends ProtoWrapper {
     public static AndroidNetworkSendRequest create(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version version,
         Bytes message) {
@@ -1856,23 +1927,27 @@ public interface AndroidService {
     }
     public static AndroidTiclState create(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version version,
         com.google.ipc.invalidation.ticl.proto.JavaClient.InvalidationClientState ticlState,
-        com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata metadata) {
-      return new AndroidTiclState(version, ticlState, metadata);
+        com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata metadata,
+        Collection<com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask> scheduledTask) {
+      return new AndroidTiclState(version, ticlState, metadata, scheduledTask);
     }
 
     private final com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version version;
     private final com.google.ipc.invalidation.ticl.proto.JavaClient.InvalidationClientState ticlState;
     private final com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata metadata;
+    private final List<com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask> scheduledTask;
 
     private AndroidTiclState(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version version,
         com.google.ipc.invalidation.ticl.proto.JavaClient.InvalidationClientState ticlState,
-        com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata metadata) throws ValidationArgumentException {
+        com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata metadata,
+        Collection<com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask> scheduledTask) throws ValidationArgumentException {
       required("version", version);
       this.version = version;
       required("ticl_state", ticlState);
       this.ticlState = ticlState;
       required("metadata", metadata);
       this.metadata = metadata;
+      this.scheduledTask = optional("scheduled_task", scheduledTask);
     }
 
     public com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version getVersion() { return version; }
@@ -1881,13 +1956,16 @@ public interface AndroidService {
 
     public com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata getMetadata() { return metadata; }
 
+    public List<com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask> getScheduledTask() { return scheduledTask; }
+
     @Override public final boolean equals(Object obj) {
       if (this == obj) { return true; }
       if (!(obj instanceof AndroidTiclState)) { return false; }
       AndroidTiclState other = (AndroidTiclState) obj;
       return equals(version, other.version)
           && equals(ticlState, other.ticlState)
-          && equals(metadata, other.metadata);
+          && equals(metadata, other.metadata)
+          && equals(scheduledTask, other.scheduledTask);
     }
 
     @Override protected int computeHashCode() {
@@ -1895,6 +1973,7 @@ public interface AndroidService {
       result = result * 31 + version.hashCode();
       result = result * 31 + ticlState.hashCode();
       result = result * 31 + metadata.hashCode();
+      result = result * 31 + scheduledTask.hashCode();
       return result;
     }
 
@@ -1903,6 +1982,7 @@ public interface AndroidService {
       builder.append(" version=").append(version);
       builder.append(" ticl_state=").append(ticlState);
       builder.append(" metadata=").append(metadata);
+      builder.append(" scheduled_task=[").append(scheduledTask).append(']');
       builder.append('>');
     }
 
@@ -1918,9 +1998,14 @@ public interface AndroidService {
 
     static AndroidTiclState fromMessageNano(com.google.protos.ipc.invalidation.NanoAndroidService.AndroidTiclState message) {
       if (message == null) { return null; }
+      List<com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask> scheduledTask = new ArrayList<com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask>(message.scheduledTask.length);
+      for (int i = 0; i < message.scheduledTask.length; i++) {
+        scheduledTask.add(com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask.fromMessageNano(message.scheduledTask[i]));
+      }
       return new AndroidTiclState(com.google.ipc.invalidation.ticl.proto.ClientProtocol.Version.fromMessageNano(message.version),
           com.google.ipc.invalidation.ticl.proto.JavaClient.InvalidationClientState.fromMessageNano(message.ticlState),
-          com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata.fromMessageNano(message.metadata));
+          com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata.fromMessageNano(message.metadata),
+          scheduledTask);
     }
 
     public byte[] toByteArray() {
@@ -1932,6 +2017,10 @@ public interface AndroidService {
       msg.version = version.toMessageNano();
       msg.ticlState = ticlState.toMessageNano();
       msg.metadata = metadata.toMessageNano();
+      msg.scheduledTask = new com.google.protos.ipc.invalidation.NanoAndroidService.ScheduledTask[scheduledTask.size()];
+      for (int i = 0; i < msg.scheduledTask.length; i++) {
+        msg.scheduledTask[i] = scheduledTask.get(i).toMessageNano();
+      }
       return msg;
     }
   }

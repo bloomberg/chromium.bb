@@ -109,7 +109,8 @@ public abstract class AndroidListener extends IntentService {
     public void onReceive(Context context, Intent intent) {
       Preconditions.checkNotNull(context);
       Preconditions.checkNotNull(intent);
-      if (intent.hasExtra(AndroidListenerIntents.EXTRA_REGISTRATION)) {
+      if (intent.hasExtra(AndroidListenerIntents.EXTRA_REGISTRATION)
+          || intent.hasExtra(AndroidListenerIntents.EXTRA_SCHEDULED_TASK)) {
         AndroidListenerIntents.issueAndroidListenerIntent(context, intent);
       }
     }
@@ -448,16 +449,32 @@ public abstract class AndroidListener extends IntentService {
       initializeState();
     }
 
-    // Handle any intents specific to the AndroidListener. For other intents, defer to the
-    // intentMapper, which handles listener upcalls corresponding to the InvalidationListener
+    // Flush any scheduled registration retries. We do this whenever the intent service handles an
+    // intent since we may not be able to reliably schedule alarms due to limits in the
+    // AlarmManager.
+    for (RegistrationCommand scheduledCommand : state.takeRegistrationRetriesUpTo(clock.nowMs())) {
+      handleRegistrationCommand(scheduledCommand);
+    }
+
+    // Handle any intents specific to the AndroidListener. If an intent is not recognized, defer to
+    // the intentMapper, which handles listener upcalls corresponding to the InvalidationListener
     // methods.
-    if (!tryHandleAuthTokenRequestIntent(intent) &&
-        !tryHandleRegistrationIntent(intent) &&
-        !tryHandleStartIntent(intent) &&
-        !tryHandleStopIntent(intent) &&
-        !tryHandleAckIntent(intent) &&
-        !tryHandleBackgroundInvalidationsIntent(intent)) {
+    if (!AndroidListenerIntents.isScheduledTaskIntent(intent)
+        && !tryHandleAuthTokenRequestIntent(intent)
+        && !tryHandleRegistrationIntent(intent)
+        && !tryHandleStartIntent(intent)
+        && !tryHandleStopIntent(intent)
+        && !tryHandleAckIntent(intent)
+        && !tryHandleBackgroundInvalidationsIntent(intent)) {
       intentMapper.handleIntent(intent);
+    }
+
+    // If there are any registration retries pending, schedule an alarm.
+    Long executeMs = state.getNextExecuteMs();
+    if (executeMs != null) {
+      logger.fine("scheduling alarm at %s", executeMs);
+      AndroidListenerIntents.issueScheduledTaskIntent(
+          getApplicationContext(), executeMs.longValue());
     }
 
     // Always check to see if we need to persist state changes after handling an intent.
@@ -551,12 +568,18 @@ public abstract class AndroidListener extends IntentService {
     if ((command == null) || !AndroidListenerProtos.isValidRegistrationCommand(command)) {
       return false;
     }
+    handleRegistrationCommand(command);
+    return true;
+  }
+
+  /** Handles a registration command for this client. */
+  private void handleRegistrationCommand(RegistrationCommand command) {
     // Make sure the registration is intended for this client. If not, we ignore it (suggests
     // there is a new client now).
     if (!command.getClientId().equals(state.getClientId())) {
       logger.warning("Ignoring registration request for old client. Old ID = %s, New ID = %s",
           command.getClientId(), state.getClientId());
-      return true;
+      return;
     }
     boolean isRegister = command.getIsRegister();
     for (ObjectIdP objectIdP : command.getObjectId()) {
@@ -569,11 +592,12 @@ public abstract class AndroidListener extends IntentService {
       if (delayMs == 0) {
         issueRegistration(objectId, isRegister);
       } else {
-        AndroidListenerIntents.issueDelayedRegistrationIntent(getApplicationContext(), clock,
-            state.getClientId(), objectId, isRegister, delayMs, state.getNextRequestCode());
+        // Add a scheduled registration retry to listener state. An alarm will be triggered at the
+        // end of the onHandleIntent method if needed.
+        long executeMs = clock.nowMs() + delayMs;
+        state.addScheduledRegistrationRetry(objectId, isRegister, executeMs);
       }
     }
-    return true;
   }
 
   /**

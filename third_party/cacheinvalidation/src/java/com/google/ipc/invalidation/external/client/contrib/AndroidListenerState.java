@@ -20,6 +20,8 @@ import com.google.ipc.invalidation.ticl.ProtoWrapperConverter;
 import com.google.ipc.invalidation.ticl.TiclExponentialBackoffDelayGenerator;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.RetryRegistrationState;
+import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry;
+import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand;
 import com.google.ipc.invalidation.ticl.proto.Client.ExponentialBackoffState;
 import com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP;
 import com.google.ipc.invalidation.util.Bytes;
@@ -27,13 +29,16 @@ import com.google.ipc.invalidation.util.Marshallable;
 import com.google.ipc.invalidation.util.TypedUtil;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
 
 
@@ -68,6 +73,9 @@ final class AndroidListenerState
 
   /** The set of registrations for which the client wants to be registered. */
   private final Set<ObjectId> desiredRegistrations;
+  
+  /** Pending registration retries, by execution time in milliseconds. */
+  private final TreeMap<Long, RegistrationCommand> registrationRetries = new TreeMap<>();
 
   /** Random generator used for all delay generators. */
   private final Random random = new Random();
@@ -120,6 +128,9 @@ final class AndroidListenerState
       ObjectId objectId = ProtoWrapperConverter.convertFromObjectIdProto(objectIdP);
       delayGenerators.put(objectId, new TiclExponentialBackoffDelayGenerator(random,
           initialMaxDelayMs, maxDelayFactor, retryState.getExponentialBackoffState()));
+    }
+    for (ScheduledRegistrationRetry registrationRetry : state.getRegistrationRetry()) {
+      registrationRetries.put(registrationRetry.getExecuteTimeMs(), registrationRetry.getCommand());
     }
     clientId = state.getClientId();
     requestCodeSeqNum = state.getRequestCodeSeqNum();
@@ -211,8 +222,13 @@ final class AndroidListenerState
 
   @Override
   public AndroidListenerProtocol.AndroidListenerState marshal() {
-    return AndroidListenerProtos.newAndroidListenerState(clientId, requestCodeSeqNum,
-        delayGenerators, desiredRegistrations);
+    List<ScheduledRegistrationRetry> registrationRetries =
+        new ArrayList<>(this.registrationRetries.size());
+    for (Entry<Long, RegistrationCommand> entry : this.registrationRetries.entrySet()) {
+      registrationRetries.add(ScheduledRegistrationRetry.create(entry.getValue(), entry.getKey()));
+    }
+    return AndroidListenerProtos.newAndroidListenerState(
+        clientId, requestCodeSeqNum, delayGenerators, desiredRegistrations, registrationRetries);
   }
 
   /**
@@ -226,6 +242,45 @@ final class AndroidListenerState
   /** Returns {@code true} iff registration is desired for the given object. */
   boolean containsDesiredRegistration(ObjectId objectId) {
     return TypedUtil.contains(desiredRegistrations, objectId);
+  }
+  
+
+  /**
+   * Returns (and removes) all scheduled registration retries scheduled before or at time {@code
+   * nowMs}.
+   */
+  List<RegistrationCommand> takeRegistrationRetriesUpTo(long nowMs) {
+    ArrayList<RegistrationCommand> commands = new ArrayList<>();
+    while (!registrationRetries.isEmpty() && registrationRetries.firstKey() <= nowMs) {
+      commands.add(registrationRetries.pollFirstEntry().getValue());
+      isDirty = true;
+    }
+    return commands;
+  }
+  
+
+  /**
+   * If there are scheduled registration retries, returns the execute time in milliseconds for the
+   * next retry. Otherwise, returns null.
+   */
+  
+  Long getNextExecuteMs() {
+    return registrationRetries.isEmpty() ? null : registrationRetries.firstEntry().getKey();
+  }
+
+  /** Adds a scheduled registration retry to listener state. */
+  void addScheduledRegistrationRetry(ObjectId objectId, boolean isRegister, long executeMs) {
+    RegistrationCommand command =
+        isRegister
+            ? AndroidListenerProtos.newDelayedRegisterCommand(clientId, objectId)
+            : AndroidListenerProtos.newDelayedUnregisterCommand(clientId, objectId);
+    
+    // Avoid collisions on execute time.
+    while (registrationRetries.containsKey(executeMs)) {
+      executeMs++;
+    }
+    registrationRetries.put(executeMs, command);    
+    isDirty = true;
   }
 
   /**
@@ -263,7 +318,8 @@ final class AndroidListenerState
         && (this.desiredRegistrations.size() == that.desiredRegistrations.size())
         && (this.desiredRegistrations.containsAll(that.desiredRegistrations))
         && TypedUtil.<Bytes>equals(this.clientId, that.clientId)
-        && equals(this.delayGenerators, that.delayGenerators);
+        && equals(this.delayGenerators, that.delayGenerators)
+        && equals(this.registrationRetries, that.registrationRetries);
   }
 
   /** Compares the contents of two {@link #delayGenerators} maps. */
@@ -280,6 +336,22 @@ final class AndroidListenerState
       }
     }
     return true;
+  }
+  
+  /** Compares the contents of two {@link #registrationRetries} maps. */
+  private static boolean equals(
+      TreeMap<Long, RegistrationCommand> x, TreeMap<Long, RegistrationCommand> y) {
+    if (x.size() != y.size()) {
+      return false;
+    }
+    for (Entry<Long, RegistrationCommand> xEntry : x.entrySet()) {
+      RegistrationCommand yGenerator = y.get(xEntry.getKey());
+      if ((yGenerator == null)
+          || Bytes.compare(xEntry.getValue().toByteArray(), yGenerator.toByteArray()) != 0) {
+        return false;
+      }
+    }
+    return true;    
   }
 
   @Override

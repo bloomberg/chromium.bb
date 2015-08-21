@@ -47,6 +47,15 @@ message AndroidListenerState {
     optional ExponentialBackoffState exponential_backoff_state = 2;
   }
 
+  // A scheduled registration retry.
+  message ScheduledRegistrationRetry {
+    // The registration command to execute.
+    optional RegistrationCommand command = 1;
+
+    // The time at which the retry should be attempted.
+    optional int64 execute_time_ms = 2;
+  }
+
   // Set of object ids tracking the application's desired registrations.
   repeated ObjectIdP registration = 1;
 
@@ -65,6 +74,9 @@ message AndroidListenerState {
   // assigned serially for each distinct client_id. This value indicates
   // the request code used for the last request.
   optional int32 request_code_seq_num = 4;
+
+  // Registration retries currently pending execution.
+  repeated ScheduledRegistrationRetry registration_retry = 5;
 }
 
 // Represents a command that registers or unregisters a set of objects. The

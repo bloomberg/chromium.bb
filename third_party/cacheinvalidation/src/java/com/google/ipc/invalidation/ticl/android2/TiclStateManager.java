@@ -22,6 +22,7 @@ import com.google.ipc.invalidation.external.client.SystemResources.Logger;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclState.Metadata;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidTiclStateWithDigest;
+import com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask;
 import com.google.ipc.invalidation.ticl.proto.ClientProtocol.ApplicationClientIdP;
 import com.google.ipc.invalidation.ticl.proto.ClientProtocol.ClientConfigP;
 import com.google.ipc.invalidation.util.Bytes;
@@ -37,6 +38,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
@@ -71,11 +74,11 @@ class TiclStateManager {
     }
     AndroidInvalidationClientImpl ticl = new AndroidInvalidationClientImpl(context, resources,
         random, state);
-    setSchedulerId(resources, ticl);
+    initScheduler(resources, ticl, state.getScheduledTask());
     return ticl;
   }
 
-  /** Creates a new Ticl. Persistent stroage must not exist. */
+  /** Creates a new Ticl. Persistent storage must not exist. */
   static void createTicl(Context context, SystemResources resources, int clientType,
       byte[] clientName, ClientConfigP config, boolean skipStartForTest) {
     Preconditions.checkState(!doesStateFileExist(context), "Ticl already exists");
@@ -85,20 +88,21 @@ class TiclStateManager {
       // Ticls are started when created unless this should be skipped for tests; we allow tests
       // to skip starting Ticls because many integration tests assume that Ticls will not be
       // started when created.
-      setSchedulerId(resources, ticl);
+      initScheduler(resources, ticl, new ArrayList<ScheduledTask>(0));
       ticl.start();
     }
     saveTicl(context, resources.getLogger(), ticl);
   }
 
   /**
-   * Sets the scheduling id on the scheduler in {@code resources} to {@code ticl.getSchedulingId()}.
+   * Sets the scheduling id on the scheduler in {@code resources} to {@code ticl.getSchedulingId()}
+   * and seeds the scheduler with scheduled tasks that had been persisted.
    */
-  private static void setSchedulerId(SystemResources resources,
-      AndroidInvalidationClientImpl ticl) {
+  private static void initScheduler(SystemResources resources,
+      AndroidInvalidationClientImpl ticl, List<ScheduledTask> scheduledTasks) {
     AndroidInternalScheduler scheduler =
         (AndroidInternalScheduler) resources.getInternalScheduler();
-    scheduler.setTiclId(ticl.getSchedulingId());
+    scheduler.init(ticl.getSchedulingId(), scheduledTasks);
   }
 
   /**
@@ -190,7 +194,8 @@ class TiclStateManager {
     Metadata metadata = Metadata.create(ticlAppId.getClientType(), ticlAppId.getClientName(),
         ticl.getSchedulingId(), ticl.getConfig());
     AndroidTiclState state = AndroidTiclState.create(ProtocolIntents.ANDROID_PROTOCOL_VERSION_VALUE,
-        ticl.marshal(), metadata);
+        ticl.marshal(), metadata,
+        ((AndroidInternalScheduler) ticl.getResources().getInternalScheduler()).marshal());
     digester.update(state.toByteArray());
     AndroidTiclStateWithDigest verifiedState =
         AndroidTiclStateWithDigest.create(state, new Bytes(digester.getDigest()));

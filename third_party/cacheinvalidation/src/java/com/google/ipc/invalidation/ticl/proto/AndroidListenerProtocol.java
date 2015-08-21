@@ -119,25 +119,122 @@ public interface AndroidListenerProtocol {
         return msg;
       }
     }
+    public static final class ScheduledRegistrationRetry extends ProtoWrapper {
+      public static ScheduledRegistrationRetry create(com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand command,
+          Long executeTimeMs) {
+        return new ScheduledRegistrationRetry(command, executeTimeMs);
+      }
+
+      public static final ScheduledRegistrationRetry DEFAULT_INSTANCE = new ScheduledRegistrationRetry(null, null);
+
+      private final long __hazzerBits;
+      private final com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand command;
+      private final long executeTimeMs;
+
+      private ScheduledRegistrationRetry(com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand command,
+          Long executeTimeMs) {
+        int hazzerBits = 0;
+        if (command != null) {
+          hazzerBits |= 0x1;
+          this.command = command;
+        } else {
+          this.command = com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand.DEFAULT_INSTANCE;
+        }
+        if (executeTimeMs != null) {
+          hazzerBits |= 0x2;
+          this.executeTimeMs = executeTimeMs;
+        } else {
+          this.executeTimeMs = 0;
+        }
+        this.__hazzerBits = hazzerBits;
+      }
+
+      public com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand getCommand() { return command; }
+      public boolean hasCommand() { return (0x1 & __hazzerBits) != 0; }
+
+      public long getExecuteTimeMs() { return executeTimeMs; }
+      public boolean hasExecuteTimeMs() { return (0x2 & __hazzerBits) != 0; }
+
+      @Override public final boolean equals(Object obj) {
+        if (this == obj) { return true; }
+        if (!(obj instanceof ScheduledRegistrationRetry)) { return false; }
+        ScheduledRegistrationRetry other = (ScheduledRegistrationRetry) obj;
+        return __hazzerBits == other.__hazzerBits
+            && (!hasCommand() || equals(command, other.command))
+            && (!hasExecuteTimeMs() || executeTimeMs == other.executeTimeMs);
+      }
+
+      @Override protected int computeHashCode() {
+        int result = hash(__hazzerBits);
+        if (hasCommand()) {
+          result = result * 31 + command.hashCode();
+        }
+        if (hasExecuteTimeMs()) {
+          result = result * 31 + hash(executeTimeMs);
+        }
+        return result;
+      }
+
+      @Override public void toCompactString(TextBuilder builder) {
+        builder.append("<ScheduledRegistrationRetry:");
+        if (hasCommand()) {
+          builder.append(" command=").append(command);
+        }
+        if (hasExecuteTimeMs()) {
+          builder.append(" execute_time_ms=").append(executeTimeMs);
+        }
+        builder.append('>');
+      }
+
+      public static ScheduledRegistrationRetry parseFrom(byte[] data) throws ValidationException {
+        try {
+          return fromMessageNano(MessageNano.mergeFrom(new com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry(), data));
+        } catch (InvalidProtocolBufferNanoException exception) {
+          throw new ValidationException(exception);
+        } catch (ValidationArgumentException exception) {
+          throw new ValidationException(exception.getMessage());
+        }
+      }
+
+      static ScheduledRegistrationRetry fromMessageNano(com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry message) {
+        if (message == null) { return null; }
+        return new ScheduledRegistrationRetry(com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand.fromMessageNano(message.command),
+            message.executeTimeMs);
+      }
+
+      public byte[] toByteArray() {
+        return MessageNano.toByteArray(toMessageNano());
+      }
+
+      com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry toMessageNano() {
+        com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry msg = new com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry();
+        msg.command = hasCommand() ? command.toMessageNano() : null;
+        msg.executeTimeMs = hasExecuteTimeMs() ? executeTimeMs : null;
+        return msg;
+      }
+    }
     public static AndroidListenerState create(Collection<com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP> registration,
         Collection<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.RetryRegistrationState> retryRegistrationState,
         Bytes clientId,
-        Integer requestCodeSeqNum) {
-      return new AndroidListenerState(registration, retryRegistrationState, clientId, requestCodeSeqNum);
+        Integer requestCodeSeqNum,
+        Collection<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry> registrationRetry) {
+      return new AndroidListenerState(registration, retryRegistrationState, clientId, requestCodeSeqNum, registrationRetry);
     }
 
-    public static final AndroidListenerState DEFAULT_INSTANCE = new AndroidListenerState(null, null, null, null);
+    public static final AndroidListenerState DEFAULT_INSTANCE = new AndroidListenerState(null, null, null, null, null);
 
     private final long __hazzerBits;
     private final List<com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP> registration;
     private final List<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.RetryRegistrationState> retryRegistrationState;
     private final Bytes clientId;
     private final int requestCodeSeqNum;
+    private final List<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry> registrationRetry;
 
     private AndroidListenerState(Collection<com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP> registration,
         Collection<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.RetryRegistrationState> retryRegistrationState,
         Bytes clientId,
-        Integer requestCodeSeqNum) {
+        Integer requestCodeSeqNum,
+        Collection<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry> registrationRetry) {
       int hazzerBits = 0;
       this.registration = optional("registration", registration);
       this.retryRegistrationState = optional("retry_registration_state", retryRegistrationState);
@@ -153,6 +250,7 @@ public interface AndroidListenerProtocol {
       } else {
         this.requestCodeSeqNum = 0;
       }
+      this.registrationRetry = optional("registration_retry", registrationRetry);
       this.__hazzerBits = hazzerBits;
     }
 
@@ -166,6 +264,8 @@ public interface AndroidListenerProtocol {
     public int getRequestCodeSeqNum() { return requestCodeSeqNum; }
     public boolean hasRequestCodeSeqNum() { return (0x2 & __hazzerBits) != 0; }
 
+    public List<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry> getRegistrationRetry() { return registrationRetry; }
+
     @Override public final boolean equals(Object obj) {
       if (this == obj) { return true; }
       if (!(obj instanceof AndroidListenerState)) { return false; }
@@ -174,7 +274,8 @@ public interface AndroidListenerProtocol {
           && equals(registration, other.registration)
           && equals(retryRegistrationState, other.retryRegistrationState)
           && (!hasClientId() || equals(clientId, other.clientId))
-          && (!hasRequestCodeSeqNum() || requestCodeSeqNum == other.requestCodeSeqNum);
+          && (!hasRequestCodeSeqNum() || requestCodeSeqNum == other.requestCodeSeqNum)
+          && equals(registrationRetry, other.registrationRetry);
     }
 
     @Override protected int computeHashCode() {
@@ -187,6 +288,7 @@ public interface AndroidListenerProtocol {
       if (hasRequestCodeSeqNum()) {
         result = result * 31 + hash(requestCodeSeqNum);
       }
+      result = result * 31 + registrationRetry.hashCode();
       return result;
     }
 
@@ -200,6 +302,7 @@ public interface AndroidListenerProtocol {
       if (hasRequestCodeSeqNum()) {
         builder.append(" request_code_seq_num=").append(requestCodeSeqNum);
       }
+      builder.append(" registration_retry=[").append(registrationRetry).append(']');
       builder.append('>');
     }
 
@@ -223,10 +326,15 @@ public interface AndroidListenerProtocol {
       for (int i = 0; i < message.retryRegistrationState.length; i++) {
         retryRegistrationState.add(com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.RetryRegistrationState.fromMessageNano(message.retryRegistrationState[i]));
       }
+      List<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry> registrationRetry = new ArrayList<com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry>(message.registrationRetry.length);
+      for (int i = 0; i < message.registrationRetry.length; i++) {
+        registrationRetry.add(com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry.fromMessageNano(message.registrationRetry[i]));
+      }
       return new AndroidListenerState(registration,
           retryRegistrationState,
           Bytes.fromByteArray(message.clientId),
-          message.requestCodeSeqNum);
+          message.requestCodeSeqNum,
+          registrationRetry);
     }
 
     public byte[] toByteArray() {
@@ -245,6 +353,10 @@ public interface AndroidListenerProtocol {
       }
       msg.clientId = hasClientId() ? clientId.getByteArray() : null;
       msg.requestCodeSeqNum = hasRequestCodeSeqNum() ? requestCodeSeqNum : null;
+      msg.registrationRetry = new com.google.protos.ipc.invalidation.NanoAndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry[registrationRetry.size()];
+      for (int i = 0; i < msg.registrationRetry.length; i++) {
+        msg.registrationRetry[i] = registrationRetry.get(i).toMessageNano();
+      }
       return msg;
     }
   }

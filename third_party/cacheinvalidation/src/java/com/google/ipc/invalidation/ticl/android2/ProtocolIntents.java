@@ -67,6 +67,9 @@ public class ProtocolIntents {
   /** Key of Intent byte[] extra holding a schedule event protocol buffer. */
   public static final String SCHEDULER_KEY = "ipcinv-scheduler";
 
+  /** Key of Intent byte[] extra holding a schedule event protocol buffer. */
+  public static final String IMPLICIT_SCHEDULER_KEY = "ipcinv-implicit-scheduler";
+
   /** Key of Intent byte[] extra holding an outbound message protocol buffer. */
   public static final String OUTBOUND_MESSAGE_KEY = "ipcinv-outbound-message";
 
@@ -241,6 +244,11 @@ public class ProtocolIntents {
     byte[] eventBytes = AndroidSchedulerEvent.create(ANDROID_PROTOCOL_VERSION_VALUE, eventName,
         ticlId).toByteArray();
     return new Intent().putExtra(SCHEDULER_KEY, eventBytes);
+  }
+
+  /** Returns a new intent encoding a request to execute the scheduled action {@code eventName}. */
+  public static Intent newImplicitSchedulerIntent() {
+    return new Intent().putExtra(IMPLICIT_SCHEDULER_KEY, true);
   }
 
   /** Returns a new intent encoding a message to send to the data center. */

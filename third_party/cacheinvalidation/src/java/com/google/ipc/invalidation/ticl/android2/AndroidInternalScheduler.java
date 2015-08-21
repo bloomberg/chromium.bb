@@ -21,6 +21,7 @@ import com.google.ipc.invalidation.external.client.SystemResources.Logger;
 import com.google.ipc.invalidation.external.client.SystemResources.Scheduler;
 import com.google.ipc.invalidation.ticl.RecurringTask;
 import com.google.ipc.invalidation.ticl.proto.AndroidService.AndroidSchedulerEvent;
+import com.google.ipc.invalidation.ticl.proto.AndroidService.ScheduledTask;
 import com.google.ipc.invalidation.util.NamedRunnable;
 import com.google.ipc.invalidation.util.Preconditions;
 import com.google.ipc.invalidation.util.TypedUtil;
@@ -31,8 +32,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
@@ -82,7 +86,10 @@ public final class AndroidInternalScheduler implements Scheduler {
   /**
    * {@link RecurringTask}-created runnables that can be executed by this instance, by their names.
    */
-  private final Map<String, Runnable> registeredTasks = new HashMap<String, Runnable>();
+  private final Map<String, Runnable> registeredTasks = new HashMap<>();
+
+  /** Scheduled tasks (also stored as persistent state). */
+  private final TreeMap<Long, String> scheduledTasks = new TreeMap<>();
 
   /** Android system context. */
   private final Context context;
@@ -115,28 +122,40 @@ public final class AndroidInternalScheduler implements Scheduler {
     // that our AlarmReceiver will not be able to receive events from any other broadcaster (which
     // it would be if we used action-based targeting).
     String taskName = ((NamedRunnable) runnable).getName();
-    Intent eventIntent = ProtocolIntents.newSchedulerIntent(taskName, ticlId);
+    long executeMs = clock.nowMs() + delayMs;
+    while (scheduledTasks.containsKey(executeMs)) {
+      ++executeMs;
+    }
+    scheduledTasks.put(executeMs, taskName);
+    ensureIntentScheduledForSoonestTask();
+  }
+
+  /**
+   * Schedules an intent (or updates an existing one) to ensure that we'll wake up and run once the
+   * next pending task is due.
+   */
+  private void ensureIntentScheduledForSoonestTask() {
+    Preconditions.checkState(!scheduledTasks.isEmpty());
+    Map.Entry<Long, String> soonestTask = scheduledTasks.firstEntry();
+    Intent eventIntent = ProtocolIntents.newImplicitSchedulerIntent();
     eventIntent.setClass(context, AlarmReceiver.class);
 
     // Create a pending intent that will cause the AlarmManager to fire the above intent.
-    PendingIntent sender = PendingIntent.getBroadcast(context,
-        (int) (Integer.MAX_VALUE * Math.random()), eventIntent, PendingIntent.FLAG_ONE_SHOT);
+    PendingIntent sender = PendingIntent.getBroadcast(context, 0, eventIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT);
 
     // Schedule the pending intent after the appropriate delay.
     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    long executeMs = clock.nowMs() + delayMs;
     try {
-      alarmManager.set(AlarmManager.RTC, executeMs, sender);
+      alarmManager.set(AlarmManager.RTC, soonestTask.getKey(), sender);
     } catch (SecurityException exception) {
       logger.warning("Unable to schedule delayed registration: %s", exception);
     }
   }
 
   /**
-   * Handles an event intent created in {@link #schedule} by running the corresponding recurring
-   * task.
-   * <p>
-   * REQUIRES: a recurring task with the name in the intent be present in {@link #registeredTasks}.
+   * Handles an event intent created in {@link #schedule} by running that event, along with any
+   * other events whose time has come.
    */
   void handleSchedulerEvent(AndroidSchedulerEvent event) {
     Runnable recurringTaskRunnable = TypedUtil.mapGet(registeredTasks, event.getEventName());
@@ -148,6 +167,26 @@ public final class AndroidInternalScheduler implements Scheduler {
       return;
     }
     recurringTaskRunnable.run();
+    handleImplicitSchedulerEvent();
+  }
+
+  /** Runs all tasks that are ready to run. */
+  void handleImplicitSchedulerEvent() {
+    try {
+      while (!scheduledTasks.isEmpty() && (scheduledTasks.firstKey() <= clock.nowMs())) {
+        Map.Entry<Long, String> scheduledTask = scheduledTasks.pollFirstEntry();
+        Runnable runnable = TypedUtil.mapGet(registeredTasks, scheduledTask.getValue());
+        if (runnable == null) {
+          logger.severe("No task registered for %s", scheduledTask.getValue());
+          continue;
+        }
+        runnable.run();
+      }
+    } finally {
+      if (!scheduledTasks.isEmpty()) {
+        ensureIntentScheduledForSoonestTask();
+      }
+    }
   }
 
   /**
@@ -199,14 +238,35 @@ public final class AndroidInternalScheduler implements Scheduler {
   void reset() {
     logger.fine("Clearing registered tasks on %s", this);
     registeredTasks.clear();
+    scheduledTasks.clear();
+    ticlId = -1;
   }
 
   /**
-   * Sets the id of the ticl for which this scheduler will process events. We do not know the
-   * Ticl id until done constructing the Ticl, and we need the scheduler to construct a Ticl. This
-   * method breaks what would otherwise be a dependency cycle on getting the Ticl id.
+   * Sets the id of the Ticl for which this scheduler will process events and populates the
+   * in-memory pending task queue with whatever was written to storage. We do not know the Ticl id
+   * until done constructing the Ticl, and we need the scheduler to construct a Ticl. This method
+   * breaks what would otherwise be a dependency cycle on getting the Ticl id.
    */
-  void setTiclId(long ticlId) {
+  void init(long ticlId, Collection<ScheduledTask> tasks) {
     this.ticlId = ticlId;
+
+    // Clear out any scheduled tasks from the old ticl id (for tests only?).
+    scheduledTasks.clear();
+
+    // Add tasks from persistent storage.
+    for (ScheduledTask task : tasks) {
+      long executeTimeMs = task.getExecuteTimeMs();
+      scheduledTasks.put(executeTimeMs, task.getEventName());
+    }
+  }
+
+  /** Marshals the state of the scheduler, which consists of all tasks that are still pending. */
+  Collection<ScheduledTask> marshal() {
+    ArrayList<ScheduledTask> taskList = new ArrayList<>(scheduledTasks.size());
+    for (Map.Entry<Long, String> entry : scheduledTasks.entrySet()) {
+      taskList.add(ScheduledTask.create(entry.getValue(),  entry.getKey()));
+    }
+    return taskList;
   }
 }

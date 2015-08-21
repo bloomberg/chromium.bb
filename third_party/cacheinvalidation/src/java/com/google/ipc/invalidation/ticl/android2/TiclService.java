@@ -83,6 +83,9 @@ public class TiclService extends IntentService {
 
   @Override
   protected void onHandleIntent(Intent intent) {
+    // Note that the Ticl's persistent state is unmarshaled in each of the handle* methods below,
+    // and marshaled/written back to storage at the end of the handler.
+
     // TODO: We may want to use wakelocks to prevent the phone from sleeping
     // before we have finished handling the Intent.
 
@@ -103,6 +106,8 @@ public class TiclService extends IntentService {
         handleInternalDowncall(intent.getByteArrayExtra(ProtocolIntents.INTERNAL_DOWNCALL_KEY));
       } else if (intent.hasExtra(ProtocolIntents.SCHEDULER_KEY)) {
         handleSchedulerEvent(intent.getByteArrayExtra(ProtocolIntents.SCHEDULER_KEY));
+      } else if (intent.hasExtra(ProtocolIntents.IMPLICIT_SCHEDULER_KEY)) {
+        handleImplicitSchedulerEvent();
       } else {
         resources.getLogger().warning("Received Intent without any recognized extras: %s", intent);
       }
@@ -356,6 +361,28 @@ public class TiclService extends IntentService {
     AndroidInternalScheduler ticlScheduler =
         (AndroidInternalScheduler) resources.getInternalScheduler();
     ticlScheduler.handleSchedulerEvent(event);
+
+    // Save the Ticl state to persistent storage.
+    TiclStateManager.saveTicl(this, resources.getLogger(), ticl);
+  }
+
+  /** Handles a request to call a particular recurring task on the Ticl. */
+  private void handleImplicitSchedulerEvent() {
+    resources.getLogger().fine("Handle implicit scheduler event");
+
+    // Restore the appropriate Ticl.
+    AndroidInvalidationClientImpl ticl = TiclStateManager.restoreTicl(this, resources);
+
+    // If the Ticl didn't exist, drop the event.
+    if (ticl == null) {
+      resources.getLogger().fine("Dropping implicit scheduling event; Ticl state does not exist");
+      return;
+    }
+
+    // Invoke the appropriate event.
+    AndroidInternalScheduler ticlScheduler =
+        (AndroidInternalScheduler) resources.getInternalScheduler();
+    ticlScheduler.handleImplicitSchedulerEvent();
 
     // Save the Ticl state to persistent storage.
     TiclStateManager.saveTicl(this, resources.getLogger(), ticl);

@@ -20,6 +20,7 @@ import com.google.ipc.invalidation.ticl.ProtoWrapperConverter;
 import com.google.ipc.invalidation.ticl.TiclExponentialBackoffDelayGenerator;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.RetryRegistrationState;
+import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.AndroidListenerState.ScheduledRegistrationRetry;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.StartCommand;
 import com.google.ipc.invalidation.ticl.proto.ClientProtocol.ObjectIdP;
@@ -52,7 +53,8 @@ class AndroidListenerProtos {
   /** Creates proto for {@link AndroidListener} state. */
   static AndroidListenerState newAndroidListenerState(Bytes clientId, int requestCodeSeqNum,
       Map<ObjectId, TiclExponentialBackoffDelayGenerator> delayGenerators,
-      Collection<ObjectId> desiredRegistrations) {
+      Collection<ObjectId> desiredRegistrations,
+      Collection<ScheduledRegistrationRetry> registrationRetries) {
     ArrayList<RetryRegistrationState> retryRegistrationState =
         new ArrayList<RetryRegistrationState>(delayGenerators.size());
     for (Entry<ObjectId, TiclExponentialBackoffDelayGenerator> entry : delayGenerators.entrySet()) {
@@ -61,7 +63,7 @@ class AndroidListenerProtos {
     }
     return AndroidListenerState.create(
         ProtoWrapperConverter.convertToObjectIdProtoCollection(desiredRegistrations),
-        retryRegistrationState, clientId, requestCodeSeqNum);
+        retryRegistrationState, clientId, requestCodeSeqNum, registrationRetries);
   }
 
   /** Creates proto for retry registration state. */

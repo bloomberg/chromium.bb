@@ -19,7 +19,6 @@ import com.google.ipc.invalidation.external.client.SystemResources.Logger;
 import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener.AlarmReceiver;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
-import com.google.ipc.invalidation.ticl.android2.AndroidClock;
 import com.google.ipc.invalidation.ticl.android2.AndroidTiclManifest;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidChannelConstants.AuthTokenConstants;
 import com.google.ipc.invalidation.ticl.proto.AndroidListenerProtocol.RegistrationCommand;
@@ -47,6 +46,10 @@ class AndroidListenerIntents {
   /** Key of Intent byte[] holding a {@link RegistrationCommand} protocol buffer. */
   static final String EXTRA_REGISTRATION =
       "com.google.ipc.invalidation.android_listener.REGISTRATION";
+  
+  /** Key of Intent boolean indicating whether scheduled tasks should be flushed. */
+  static final String EXTRA_SCHEDULED_TASK =
+      "com.google.ipc.invalidation.android_listener.SCHEDULED_TASK";
 
   /** Key of Intent byte[] holding a {@link StartCommand} protocol buffer. */
   static final String EXTRA_START =
@@ -103,7 +106,7 @@ class AndroidListenerIntents {
       return null;
     }
   }
-
+  
   /**
    * Returns {@link StartCommand} extra from the given intent or null if no valid start command
    * exists.
@@ -128,28 +131,30 @@ class AndroidListenerIntents {
   static boolean isStopIntent(Intent intent) {
     return intent.hasExtra(EXTRA_STOP);
   }
-
-  /** Issues a registration retry with delay. */
-  static void issueDelayedRegistrationIntent(Context context, AndroidClock clock,
-      Bytes clientId, ObjectId objectId, boolean isRegister, int delayMs, int requestCode) {
-    RegistrationCommand command = isRegister ?
-        AndroidListenerProtos.newDelayedRegisterCommand(clientId, objectId) :
-            AndroidListenerProtos.newDelayedUnregisterCommand(clientId, objectId);
-    Intent intent = new Intent()
-        .putExtra(EXTRA_REGISTRATION, command.toByteArray())
-        .setClass(context, AlarmReceiver.class);
-
+  
+  /** Returns {@code true} if the intent has the 'scheduled-task' extra. */
+  static boolean isScheduledTaskIntent(Intent intent) {
+    return intent.hasExtra(EXTRA_SCHEDULED_TASK);
+  }
+  
+  /**
+   * Uses {@link AlarmManager} to schedule an intent that will cause scheduled tasks to be executed.
+   * Replaces any existing scheduled-task intent, so the provided execute time should be for the
+   * next/earliest scheduled task.
+   */
+  static void issueScheduledTaskIntent(Context context, long executeMs) {
+    Intent intent = createScheduledTaskintent(context);
+    
     // Create a pending intent that will cause the AlarmManager to fire the above intent.
-    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, requestCode, intent,
-        PendingIntent.FLAG_ONE_SHOT);
-
+    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent,
+        PendingIntent.FLAG_UPDATE_CURRENT);
+    
     // Schedule the pending intent after the appropriate delay.
     AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    long executeMs = clock.nowMs() + delayMs;
     try {
       alarmManager.set(AlarmManager.RTC, executeMs, pendingIntent);
     } catch (SecurityException exception) {
-      logger.warning("Unable to schedule delayed registration: %s", exception);
+      logger.warning("Unable to schedule task: %s", exception);
     }
   }
 
@@ -189,6 +194,13 @@ class AndroidListenerIntents {
         AndroidListenerProtos.newRegistrationCommand(clientId, objectIds, isRegister);
     intent.putExtra(EXTRA_REGISTRATION, command.toByteArray());
     return setAndroidListenerClass(context, intent);
+  }
+  
+  /** Constructs an intent indicating that scheduled tasks should run. */
+  static Intent createScheduledTaskintent(Context context) {
+    return new Intent()
+        .putExtra(EXTRA_SCHEDULED_TASK, true)
+        .setClass(context, AlarmReceiver.class);
   }
 
   /** Sets the appropriate class for {@link AndroidListener} service intents. */

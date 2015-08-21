@@ -153,6 +153,15 @@ message AndroidSchedulerEvent {
   optional int64 ticl_id = 3;
 }
 
+// Represents a task scheduled to run at a particular time.
+message ScheduledTask {
+  // The task to be run.
+  optional string event_name = 1;
+
+  // When the task should run, in milliseconds on the device's clock.
+  optional int64 execute_time_ms = 2;
+}
+
 // Internal proto used by the Android network to represent a message to send
 // to the data center from the client.
 message AndroidNetworkSendRequest {
@@ -172,6 +181,7 @@ message AndroidTiclState {
   optional Version version = 1;
   optional InvalidationClientState ticl_state = 2;  // Marshalled Ticl.
   optional Metadata metadata = 3;  // Extra state needed to construct a Ticl.
+  repeated ScheduledTask scheduled_task = 4;  // Scheduled tasks.
 }
 
 // An AndroidTiclState state plus a digest; this is the protocol buffer actually
