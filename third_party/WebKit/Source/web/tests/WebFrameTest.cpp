@@ -6513,19 +6513,24 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     webViewImpl->didEnterFullScreen();
     webViewImpl->layout();
 
-    // Verify that the main frame is nonscrollable.
+    // Verify that the viewports are nonscrollable.
     ASSERT_TRUE(Fullscreen::isFullScreen(*document));
-    WebLayer* webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
-    ASSERT_FALSE(webScrollLayer->userScrollableHorizontal());
-    ASSERT_FALSE(webScrollLayer->userScrollableVertical());
+    FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    WebLayer* layoutViewportScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
+    WebLayer* visualViewportScrollLayer = frameView->page()->frameHost().visualViewport().scrollLayer()->platformLayer();
+    ASSERT_FALSE(layoutViewportScrollLayer->userScrollableHorizontal());
+    ASSERT_FALSE(layoutViewportScrollLayer->userScrollableVertical());
+    ASSERT_FALSE(visualViewportScrollLayer->userScrollableHorizontal());
+    ASSERT_FALSE(visualViewportScrollLayer->userScrollableVertical());
 
-    // Verify that the main frame is scrollable upon exiting fullscreen.
+    // Verify that the viewports are scrollable upon exiting fullscreen.
     webViewImpl->didExitFullScreen();
     webViewImpl->layout();
     ASSERT_FALSE(Fullscreen::isFullScreen(*document));
-    webScrollLayer = webViewImpl->compositor()->scrollLayer()->platformLayer();
-    ASSERT_TRUE(webScrollLayer->userScrollableHorizontal());
-    ASSERT_TRUE(webScrollLayer->userScrollableVertical());
+    ASSERT_TRUE(layoutViewportScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(layoutViewportScrollLayer->userScrollableVertical());
+    ASSERT_TRUE(visualViewportScrollLayer->userScrollableHorizontal());
+    ASSERT_TRUE(visualViewportScrollLayer->userScrollableVertical());
 }
 
 TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame)
