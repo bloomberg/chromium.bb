@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/crash_keys/crash_keys.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
@@ -33,16 +34,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_util.h"
-
-namespace {
-
-// Used to help investigate bug 464926.  NOTE: This value is defined multiple
-// places in the codebase due to layering issues. DO NOT change the value here
-// without changing it in all other places that it is defined in the codebase
-// (search for |kBug464926CrashKey|).
-const char kBug464926CrashKey[] = "bug-464926-info";
-
-}  // namespace
 
 bool HistoryQuickProvider::disabled_ = false;
 
@@ -244,8 +235,12 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   if (history_match.can_inline) {
+    // TODO(mpearson): remove this and all dependency of //components/omnibox
+    // on //components/crash_keys once http://crbug.com/464926 is fixed (i.e.
+    // remove #include, exception in components/omnibox/DEPS, and dependency
+    // in components/omnibox.gypi and components/omnibox/browser/BUILD.gn).
     base::debug::ScopedCrashKey crash_info(
-        kBug464926CrashKey,
+        crash_keys::kBug464926CrashKey,
         info.url().spec().substr(0, 30) + " " +
             base::UTF16ToUTF8(autocomplete_input_.text()).substr(0, 20) + " " +
             base::SizeTToString(history_match.url_matches.size()) + " " +

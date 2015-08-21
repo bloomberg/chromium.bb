@@ -25,6 +25,8 @@ const char kChannel[] = "channel";
 const char kNumVariations[] = "num-experiments";
 const char kVariations[] = "variations";
 
+const char kBug464926CrashKey[] = "bug-464926-info";
+
 #if defined(OS_MACOSX)
 namespace mac {
 

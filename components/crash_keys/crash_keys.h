@@ -58,6 +58,9 @@ extern const char kNumVariations[];
 // typically set by SetExperimentList.
 extern const char kVariations[];
 
+// Used to help investigate bug 464926.
+extern const char kBug464926CrashKey[];
+
 #if defined(OS_MACOSX)
 namespace mac {
 

@@ -107,6 +107,7 @@ source_set("browser") {
     "//base:i18n",
     "//base:prefs",
     "//components/bookmarks/browser",
+    "//components/crash_keys",  # TODO(mpearson): remove once 464926 is fixed.
     "//components/keyed_service/core",
     "//components/metrics",
     "//components/omnibox/common",
