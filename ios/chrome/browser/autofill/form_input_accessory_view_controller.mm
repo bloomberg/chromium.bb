@@ -290,16 +290,24 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     // so we attach the custom view directly to the keyboard view instead.
     [_customAccessoryView removeFromSuperview];
 
-    // If the keyboard isn't visible or no suggestions have been triggered yet,
-    // don't show the custom view.
-    int numSuggestions =
-        [[static_cast<FormSuggestionView*>(view) suggestions] count];
+    // If the keyboard isn't visible don't show the custom view.
     if (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
                 .size.height == 0 ||
-        CGRectEqualToRect(_keyboardFrame, CGRectZero) ||
-        (!_suggestionsHaveBeenShown && numSuggestions == 0)) {
+        CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
       _customAccessoryView.reset();
       return;
+    }
+
+    // If this is a form suggestion view and no suggestions have been triggered
+    // yet, don't show the custom view.
+    FormSuggestionView* formSuggestionView =
+        base::mac::ObjCCastStrict<FormSuggestionView>(view);
+    if (formSuggestionView) {
+      int numSuggestions = [[formSuggestionView suggestions] count];
+      if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
+        _customAccessoryView.reset();
+        return;
+      }
     }
     _suggestionsHaveBeenShown = YES;
 
