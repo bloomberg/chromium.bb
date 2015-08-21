@@ -254,6 +254,26 @@ bool PermissionIDSet::ContainsAllIDs(
                        });
 }
 
+bool PermissionIDSet::ContainsAnyID(
+    const std::set<APIPermission::ID>& permission_ids) const {
+  for (APIPermission::ID id : permission_ids) {
+    if (ContainsID(id))
+      return true;
+  }
+  return false;
+}
+
+PermissionIDSet PermissionIDSet::GetAllPermissionsWithID(
+    APIPermission::ID permission_id) const {
+  PermissionIDSet subset;
+  auto it = permissions_.lower_bound(PermissionID(permission_id));
+  while (it != permissions_.end() && it->id() == permission_id) {
+    subset.permissions_.insert(*it);
+    ++it;
+  }
+  return subset;
+}
+
 PermissionIDSet PermissionIDSet::GetAllPermissionsWithIDs(
     const std::set<APIPermission::ID>& permission_ids) const {
   PermissionIDSet subset;

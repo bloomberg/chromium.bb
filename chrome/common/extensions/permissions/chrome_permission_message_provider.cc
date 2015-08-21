@@ -67,8 +67,15 @@ ChromePermissionMessageProvider::GetPermissionMessages(
   PermissionIDSet remaining_permissions = permissions;
   CoalescedPermissionMessages messages;
   for (const auto& rule : rules) {
-    // Only apply the rule if we have all the required permission IDs.
-    if (remaining_permissions.ContainsAllIDs(rule.required_permissions())) {
+    // Only apply the rule if we have all the required permission IDs. If the
+    // rule has no required IDs, then apply it only if any of the optional ones
+    // are there.
+    bool has_required_permissions = !rule.required_permissions().empty();
+    bool use_rule =
+        has_required_permissions
+            ? remaining_permissions.ContainsAllIDs(rule.required_permissions())
+            : remaining_permissions.ContainsAnyID(rule.optional_permissions());
+    if (use_rule) {
       // We can apply the rule. Add all the required permissions, and as many
       // optional permissions as we can, to the new message.
       PermissionIDSet used_permissions =

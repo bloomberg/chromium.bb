@@ -323,11 +323,8 @@ TEST_F(USBDevicePermissionMessagesTest, MultipleDevice) {
   const char kMessage[] = "Access any of these USB devices";
   const char* kDetails[] = {
       "PVR Mass Storage from HUMAX Co., Ltd.",
-      // TODO(treib): The following two should be the other way around -
-      // "unknown devices from Vendor" first, then the catch-all "devices from
-      // unknown vendor". crbug.com/522842
-      "devices from an unknown vendor",
-      "unknown devices from HUMAX Co., Ltd."
+      "unknown devices from HUMAX Co., Ltd.",
+      "devices from an unknown vendor"
   };
 
   // Prepare data set

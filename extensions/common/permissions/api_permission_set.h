@@ -136,6 +136,13 @@ class PermissionIDSet {
   // Check if the set contains permissions with all the given IDs.
   bool ContainsAllIDs(const std::set<APIPermission::ID>& permission_ids) const;
 
+  // Check if the set contains any permission with one of the given IDs.
+  bool ContainsAnyID(const std::set<APIPermission::ID>& permission_ids) const;
+
+  // Returns all the permissions in this set with the given ID.
+  PermissionIDSet GetAllPermissionsWithID(
+      APIPermission::ID permission_id) const;
+
   // Returns all the permissions in this set with one of the given IDs.
   PermissionIDSet GetAllPermissionsWithIDs(
       const std::set<APIPermission::ID>& permission_ids) const;

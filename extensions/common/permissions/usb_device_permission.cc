@@ -19,19 +19,19 @@
 
 namespace extensions {
 
-namespace {
+UsbDevicePermission::UsbDevicePermission(const APIPermissionInfo* info)
+    : SetDisjunctionPermission<UsbDevicePermissionData, UsbDevicePermission>(
+          info) {}
 
-// Adds the permissions from the |data_set| to |ids|.
-void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
-                           PermissionIDSet* ids) {
-  // TODO(sashab): Once GetMessages() is deprecated, move this logic back into
-  // GetPermissions().
-  // TODO(sashab, reillyg): Once GetMessages() is deprecated, rework the
-  // permission message logic for USB devices to generate more meaningful
-  // messages and better fit the current rules system.
-  if (data_set.size() == 1) {
-    const UsbDevicePermissionData& data = *data_set.begin();
+UsbDevicePermission::~UsbDevicePermission() {}
 
+PermissionIDSet UsbDevicePermission::GetPermissions() const {
+  PermissionIDSet ids;
+
+  std::set<uint16> unknown_product_vendors;
+  bool found_unknown_vendor = false;
+
+  for (const UsbDevicePermissionData& data : data_set_) {
     const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
     if (vendor) {
       const char* product =
@@ -40,73 +40,25 @@ void AddPermissionsToLists(const std::set<UsbDevicePermissionData>& data_set,
         base::string16 product_name_and_vendor = l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
             base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor));
-
-        ids->insert(APIPermission::kUsbDevice, product_name_and_vendor);
+        ids.insert(APIPermission::kUsbDevice, product_name_and_vendor);
       } else {
-        ids->insert(APIPermission::kUsbDeviceUnknownProduct,
-                    base::UTF8ToUTF16(vendor));
+        unknown_product_vendors.insert(data.vendor_id());
       }
     } else {
-      ids->insert(APIPermission::kUsbDeviceUnknownVendor);
+      found_unknown_vendor = true;
     }
-  } else if (data_set.size() > 1) {
-    std::vector<base::string16> details;
-    std::set<uint16> unknown_product_vendors;
-    bool found_unknown_vendor = false;
-
-    for (const UsbDevicePermissionData& data : data_set) {
-      const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
-      if (vendor) {
-        const char* product =
-            device::UsbIds::GetProductName(data.vendor_id(), data.product_id());
-        if (product) {
-          base::string16 product_name_and_vendor = l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_PRODUCT_NAME_AND_VENDOR,
-              base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor));
-          details.push_back(l10n_util::GetStringFUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM,
-              product_name_and_vendor));
-        } else {
-          unknown_product_vendors.insert(data.vendor_id());
-        }
-      } else {
-        found_unknown_vendor = true;
-      }
-    }
-
-    // List generic "devices from this vendor" entries after specific devices.
-    for (const uint16& vendor_id : unknown_product_vendors) {
-      const char* vendor = device::UsbIds::GetVendorName(vendor_id);
-      DCHECK(vendor);
-      details.push_back(l10n_util::GetStringFUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_PRODUCT,
-          base::UTF8ToUTF16(vendor)));
-    }
-
-    // Display the catch all "device from an unknown vendor" last.
-    if (found_unknown_vendor) {
-      details.push_back(l10n_util::GetStringUTF16(
-          IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR));
-    }
-
-    for (const auto& detail : details)
-      ids->insert(APIPermission::kUsbDeviceList, detail);
   }
-}
 
-}  // namespace
+  for (uint16 vendor_id : unknown_product_vendors) {
+    const char* vendor = device::UsbIds::GetVendorName(vendor_id);
+    DCHECK(vendor);
+    ids.insert(APIPermission::kUsbDeviceUnknownProduct,
+               base::UTF8ToUTF16(vendor));
+  }
 
-UsbDevicePermission::UsbDevicePermission(const APIPermissionInfo* info)
-    : SetDisjunctionPermission<UsbDevicePermissionData, UsbDevicePermission>(
-          info) {
-}
+  if (found_unknown_vendor)
+    ids.insert(APIPermission::kUsbDeviceUnknownVendor);
 
-UsbDevicePermission::~UsbDevicePermission() {
-}
-
-PermissionIDSet UsbDevicePermission::GetPermissions() const {
-  PermissionIDSet ids;
-  AddPermissionsToLists(data_set_, &ids);
   return ids;
 }
 

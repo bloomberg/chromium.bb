@@ -58464,12 +58464,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="187" label="kSocketAnyHost"/>
   <int value="188" label="kSocketDomainHosts"/>
   <int value="189" label="kSocketSpecificHosts"/>
-  <int value="190" label="kUsbDeviceList"/>
+  <int value="190" label="kDeleted_UsbDeviceList"/>
   <int value="191" label="kUsbDeviceUnknownProduct"/>
   <int value="192" label="kUsbDeviceUnknownVendor"/>
   <int value="193" label="kUsersPrivate"/>
   <int value="194" label="kPasswordsPrivate"/>
   <int value="195" label="kLanguageSettingsPrivate"/>
+  <int value="196" label="kEnterpriseDeviceAttributes"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">

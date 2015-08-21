@@ -234,7 +234,7 @@ class APIPermission {
     kSocketAnyHost,
     kSocketDomainHosts,
     kSocketSpecificHosts,
-    kUsbDeviceList,
+    kDeleted_UsbDeviceList,
     kUsbDeviceUnknownProduct,
     kUsbDeviceUnknownVendor,
     kUsersPrivate,
