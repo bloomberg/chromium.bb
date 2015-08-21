@@ -35,14 +35,3 @@ component("core") {
     "//components/user_prefs",
   ]
 }
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "dependency_graph_unittest.cc",
-  ]
-  deps = [
-    ":core",
-    "//testing/gtest",
-  ]
-}

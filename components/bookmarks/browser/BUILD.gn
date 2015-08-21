@@ -74,10 +74,6 @@ source_set("unit_tests") {
     "bookmark_utils_unittest.cc",
   ]
 
-  if (toolkit_views) {
-    sources += [ "bookmark_node_data_unittest.cc" ]
-  }
-
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("search") {
+static_library("search") {
   sources = [
     "search.cc",
     "search.h",
@@ -15,17 +15,5 @@ source_set("search") {
     "//components/google/core/browser",
     "//components/search_engines",
     "//url",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "search_android_unittest.cc",
-    "search_unittest.cc",
-  ]
-  deps = [
-    ":search",
-    "//testing/gtest",
   ]
 }

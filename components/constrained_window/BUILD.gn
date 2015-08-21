@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("constrained_window") {
+static_library("constrained_window") {
   sources = [
     "constrained_window_views.cc",
     "constrained_window_views.h",
@@ -25,7 +25,6 @@ source_set("unit_tests") {
 
   deps = [
     ":constrained_window",
-    "//components/web_modal:test_support",
     "//ui/views:test_support",
   ]
 }

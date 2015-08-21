@@ -107,7 +107,7 @@ group("all_components") {
     "//components/translate/content/renderer",
     "//components/translate/core/browser",
     "//components/translate/core/common",
-    "//components/ui/zoom",
+    "//components/ui/zoom:ui_zoom",
     "//components/undo",
     "//components/update_client",
     "//components/upload_list",
@@ -311,9 +311,6 @@ test("components_unittests") {
     "//components/devtools_http_handler:unit_tests",
     "//components/dom_distiller/core:unit_tests",
     "//components/domain_reliability:unit_tests",
-    "//components/enhanced_bookmarks:unit_tests",
-    "//components/favicon/content:unit_tests",
-    "//components/favicon/core:unit_tests",
     "//components/favicon_base:unit_tests",
     "//components/gcm_driver/crypto:unit_tests",
     "//components/gcm_driver/instance_id:unit_tests",
@@ -322,9 +319,7 @@ test("components_unittests") {
     "//components/history/content/browser:unit_tests",
     "//components/history/core/browser:unit_tests",
     "//components/history/core/common:unit_tests",
-    "//components/invalidation/impl:unit_tests",
-    "//components/keyed_service/content:unit_tests",
-    "//components/keyed_service/core:unit_tests",
+    "//components/invalidation/impl:unittests",
     "//components/login:unit_tests",
     "//components/metrics:unit_tests",
     "//components/mime_util:unit_tests",
@@ -336,11 +331,7 @@ test("components_unittests") {
     "//components/password_manager/core/browser:unit_tests",
     "//components/password_manager/core/common:unit_tests",
     "//components/password_manager/sync/browser:unit_tests",
-    "//components/rappor:unit_tests",
-    "//components/search:unit_tests",
-    "//components/search_engines:unit_tests",
     "//components/signin/core/browser:unit_tests",
-    "//components/suggestions:unit_tests",
     "//components/sync_driver:unit_tests",
     "//components/undo:unit_tests",
     "//components/url_formatter:unit_tests",
@@ -388,11 +379,8 @@ test("components_unittests") {
 
   if (!is_android && !is_ios) {
     deps += [
-      "//components/audio_modem:unit_tests",
       "//components/copresence:unit_tests",
-      "//components/feedback:unit_tests",
       "//components/proximity_auth:unit_tests",
-      "//components/sessions:unit_tests",
     ]
   }
 
@@ -414,8 +402,7 @@ test("components_unittests") {
   }
 
   if (toolkit_views) {
-    # TODO bug 522654 Enable this when the undefined symbol is fixed in
-    # web_modal such that this links.
+    # TODO(GYP) enable this as above.
     #deps += [ "//components/constrained_window:unit_tests" ]
   }
   if (is_win) {
@@ -427,7 +414,6 @@ test("components_unittests") {
   }
   if (!is_ios) {
     deps += [
-      "//components/navigation_interception:unit_tests",
       "//components/safe_json:unit_tests",
       "//components/scheduler:unit_tests",
     ]

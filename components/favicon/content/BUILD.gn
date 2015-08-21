@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("content") {
+static_library("content") {
   sources = [
     "content_favicon_driver.cc",
     "content_favicon_driver.h",
@@ -10,26 +10,12 @@ source_set("content") {
     "favicon_url_util.h",
   ]
 
-  public_deps = [
-    "//ui/gfx",
-  ]
   deps = [
     "//base",
     "//components/favicon/core",
     "//components/favicon_base",
     "//content/public/browser",
     "//content/public/common",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "content_favicon_driver_unittest.cc",
-  ]
-  deps = [
-    ":content",
-    "//content/public/browser",
-    "//testing/gtest",
+    "//ui/gfx",
   ]
 }

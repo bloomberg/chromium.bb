@@ -86,27 +86,8 @@ source_set("test_support") {
     "testing_search_terms_data.h",
   ]
 
-  public_deps = [
-    ":search_engines",
-    "//testing/gtest",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "default_search_manager_unittest.cc",
-    "default_search_policy_handler_unittest.cc",
-    "default_search_pref_migration_unittest.cc",
-    "keyword_table_unittest.cc",
-    "search_host_to_urls_map_unittest.cc",
-    "template_url_prepopulate_data_unittest.cc",
-    "template_url_service_util_unittest.cc",
-    "template_url_unittest.cc",
-  ]
   deps = [
-    ":test_support",
-    "//testing/gmock",
+    ":search_engines",
     "//testing/gtest",
   ]
 }

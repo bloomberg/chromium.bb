@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("sync_driver") {
+static_library("sync_driver") {
   sources = [
     "backend_data_type_configurer.cc",
     "backend_data_type_configurer.h",
@@ -98,7 +98,6 @@ source_set("sync_driver") {
     "//components/history/core/browser",
     "//components/invalidation/public",
     "//components/os_crypt",
-    "//components/sessions",
     "//components/signin/core/browser",
     "//net",
     "//sync",
@@ -110,14 +109,41 @@ source_set("sync_driver") {
       "sync_policy_handler.cc",
       "sync_policy_handler.h",
     ]
-    deps += [
-      "//components/policy",
-      "//components/policy:policy_component",
-    ]
   }
 }
 
-source_set("test_support") {
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "data_type_manager_impl_unittest.cc",
+    "device_info_data_type_controller_unittest.cc",
+    "device_info_sync_service_unittest.cc",
+    "generic_change_processor_unittest.cc",
+    "model_association_manager_unittest.cc",
+    "non_blocking_data_type_controller_unittest.cc",
+    "non_ui_data_type_controller_unittest.cc",
+    "shared_change_processor_unittest.cc",
+    "sync_policy_handler_unittest.cc",
+    "sync_prefs_unittest.cc",
+    "sync_stopped_reporter_unittest.cc",
+    "system_encryptor_unittest.cc",
+    "tab_node_pool_unittest.cc",
+    "ui_data_type_controller_unittest.cc",
+  ]
+
+  deps = [
+    ":sync_driver",
+    ":test_support",
+    "//base",
+    "//components/os_crypt",
+    "//components/pref_registry",
+    "//sync",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
+static_library("test_support") {
   testonly = true
   sources = [
     "change_processor_mock.cc",
@@ -140,39 +166,12 @@ source_set("test_support") {
     "non_ui_data_type_controller_mock.h",
   ]
 
-  public_deps = [
-    ":sync_driver",
-    "//sync",
-  ]
-
   deps = [
+    ":sync_driver",
     "//base",
     "//components/sessions",
+    "//sync",
     "//sync:test_support_sync_internal_api",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "data_type_manager_impl_unittest.cc",
-    "device_info_data_type_controller_unittest.cc",
-    "device_info_sync_service_unittest.cc",
-    "generic_change_processor_unittest.cc",
-    "model_association_manager_unittest.cc",
-    "non_blocking_data_type_controller_unittest.cc",
-    "non_ui_data_type_controller_unittest.cc",
-    "shared_change_processor_unittest.cc",
-    "sync_policy_handler_unittest.cc",
-    "sync_prefs_unittest.cc",
-    "system_encryptor_unittest.cc",
-    "tab_node_pool_unittest.cc",
-    "ui_data_type_controller_unittest.cc",
-  ]
-  deps = [
-    ":test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -124,17 +124,11 @@ if (!is_ios && !is_android) {
   source_set("unit_tests") {
     testonly = true
     sources = [
-      "content/content_serialized_navigation_builder_unittest.cc",
-      "content/content_serialized_navigation_driver_unittest.cc",
-      "ios/ios_serialized_navigation_builder_unittest.cc",
-      "ios/ios_serialized_navigation_driver_unittest.cc",
-      "serialized_navigation_entry_unittest.cc",
       "session_backend_unittest.cc",
       "session_types_unittest.cc",
     ]
     deps = [
       ":sessions",
-      ":test_support",
       "//base/test:test_support",
       "//testing/gtest",
       "//third_party/protobuf:protobuf_lite",

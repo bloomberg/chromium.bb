@@ -6,7 +6,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("navigation_interception") {
+static_library("navigation_interception") {
   sources = [
     "intercept_navigation_resource_throttle.cc",
     "intercept_navigation_resource_throttle.h",
@@ -44,17 +44,4 @@ if (is_android) {
     ]
     jni_package = "navigation_interception"
   }
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "intercept_navigation_resource_throttle_unittest.cc",
-  ]
-  deps = [
-    ":navigation_interception",
-    "//content/public/browser",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
 }
