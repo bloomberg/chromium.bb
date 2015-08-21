@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "components/drive/resource_metadata.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -12,10 +12,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
-#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_cache.h"
+#include "components/drive/file_system_core_util.h"
+#include "components/drive/resource_metadata_storage.h"
 
 namespace drive {
 namespace internal {

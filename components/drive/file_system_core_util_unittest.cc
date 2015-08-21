@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
+#include "components/drive/file_system_core_util.h"
 
 #include <vector>
 
@@ -12,16 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_file_system_options.h"
 #include "google_apis/drive/test_util.h"
-#include "storage/browser/fileapi/external_mount_points.h"
-#include "storage/browser/fileapi/file_system_backend.h"
-#include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_url.h"
-#include "storage/browser/fileapi/isolated_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -30,45 +22,6 @@ namespace util {
 class FileSystemUtilTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
-
-TEST_F(FileSystemUtilTest, IsUnderDriveMountPoint) {
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
-  EXPECT_FALSE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("special/drive/foo.txt")));
-
-  EXPECT_TRUE(
-      IsUnderDriveMountPoint(base::FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
-  EXPECT_TRUE(IsUnderDriveMountPoint(
-      base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
-}
-
-TEST_F(FileSystemUtilTest, ExtractDrivePath) {
-  EXPECT_EQ(
-      base::FilePath(),
-      ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
-  EXPECT_EQ(
-      base::FilePath(),
-      ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
-
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"),
-            ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/special/drive")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
-            ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
-                "/special/drive/subdir/foo.txt")));
-  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
-            ExtractDrivePath(
-                base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
-}
 
 TEST_F(FileSystemUtilTest, EscapeUnescapeCacheFileName) {
   const std::string kUnescapedFileName(

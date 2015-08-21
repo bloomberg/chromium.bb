@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "components/drive/resource_metadata.h"
 
 #include <algorithm>
 #include <string>
@@ -12,11 +12,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_test_util.h"
+#include "components/drive/fake_free_disk_space_getter.h"
+#include "components/drive/file_cache.h"
+#include "components/drive/file_system_core_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

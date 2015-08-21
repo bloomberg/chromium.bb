@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 
 #include "base/logging.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_cache.h"
+#include "components/drive/resource_metadata.h"
 
 namespace drive {
 namespace internal {

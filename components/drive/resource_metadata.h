@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
+#ifndef COMPONENTS_DRIVE_RESOURCE_METADATA_H_
+#define COMPONENTS_DRIVE_RESOURCE_METADATA_H_
 
 #include <set>
 #include <string>
@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "components/drive/file_errors.h"
+#include "components/drive/resource_metadata_storage.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -143,4 +143,4 @@ class ResourceMetadata {
 }  // namespace internal
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_H_
+#endif  // COMPONENTS_DRIVE_RESOURCE_METADATA_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
+#ifndef COMPONENTS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
+#define COMPONENTS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
 
 #include <list>
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
+#include "components/drive/file_cache.h"
 
 namespace drive {
 
@@ -41,4 +41,4 @@ class FakeFreeDiskSpaceGetter : public internal::FreeDiskSpaceGetterInterface {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_
+#endif  // COMPONENTS_DRIVE_FAKE_FREE_DISK_SPACE_GETTER_H_

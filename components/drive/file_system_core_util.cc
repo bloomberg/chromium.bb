@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
+#include "components/drive/file_system_core_util.h"
 
 #include <string>
 #include <vector>
@@ -22,12 +22,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/file_system_interface.h"
-#include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/job_list.h"
-#include "net/base/escape.h"
 
 namespace drive {
 namespace util {
@@ -78,41 +75,6 @@ const base::FilePath& GetDriveMyDriveRootPath() {
       base::FilePath, drive_root_path,
       (GetDriveGrandRootPath().AppendASCII(kDriveMyDriveRootDirName)));
   return drive_root_path;
-}
-
-base::FilePath GetDriveMountPointPathForUserIdHash(
-    const std::string user_id_hash) {
-  static const base::FilePath::CharType kSpecialMountPointRoot[] =
-      FILE_PATH_LITERAL("/special");
-  static const char kDriveMountPointNameBase[] = "drive";
-  return base::FilePath(kSpecialMountPointRoot)
-      .AppendASCII(net::EscapeQueryParamValue(
-          kDriveMountPointNameBase +
-              (user_id_hash.empty() ? "" : "-" + user_id_hash),
-          false));
-}
-
-bool IsUnderDriveMountPoint(const base::FilePath& path) {
-  return !ExtractDrivePath(path).empty();
-}
-
-base::FilePath ExtractDrivePath(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-  if (components.size() < 3)
-    return base::FilePath();
-  if (components[0] != FILE_PATH_LITERAL("/"))
-    return base::FilePath();
-  if (components[1] != FILE_PATH_LITERAL("special"))
-    return base::FilePath();
-  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
-  if (components[2].compare(0, arraysize(kPrefix) - 1, kPrefix) != 0)
-    return base::FilePath();
-
-  base::FilePath drive_path = GetDriveGrandRootPath();
-  for (size_t i = 3; i < components.size(); ++i)
-    drive_path = drive_path.Append(components[i]);
-  return drive_path;
 }
 
 std::string EscapeCacheFileName(const std::string& filename) {

@@ -12,10 +12,10 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_cache.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/job_scheduler.h"
 

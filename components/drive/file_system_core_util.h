@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_CORE_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_CORE_UTIL_H_
+#ifndef COMPONENTS_DRIVE_FILE_SYSTEM_CORE_UTIL_H_
+#define COMPONENTS_DRIVE_FILE_SYSTEM_CORE_UTIL_H_
 
 #include <string>
 
@@ -41,18 +41,6 @@ const base::FilePath& GetDriveGrandRootPath();
 
 // Returns the path of the directory representing "My Drive".
 const base::FilePath& GetDriveMyDriveRootPath();
-
-// Returns the Drive mount point path, which looks like
-// "/special/drive-<username_hash>", when provided with the |user_id_hash|.
-base::FilePath GetDriveMountPointPathForUserIdHash(std::string user_id_hash);
-
-// Returns true if the given path is under the Drive mount point.
-bool IsUnderDriveMountPoint(const base::FilePath& path);
-
-// Extracts the Drive path from the given path located under the Drive mount
-// point. Returns an empty path if |path| is not under the Drive mount point.
-// Examples: ExtractDrivePath("/special/drive-xxx/foo.txt") => "drive/foo.txt"
-base::FilePath ExtractDrivePath(const base::FilePath& path);
 
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)
@@ -99,4 +87,4 @@ std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path);
 }  // namespace util
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_CORE_UTIL_H_
+#endif  // COMPONENTS_DRIVE_FILE_SYSTEM_CORE_UTIL_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/file_cache.h"
+#include "components/drive/file_cache.h"
 
 #include <vector>
 
@@ -17,16 +17,17 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
-#include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
-#include "chromeos/chromeos_constants.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/file_system_core_util.h"
+#include "components/drive/resource_metadata_storage.h"
 #include "google_apis/drive/task_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
+#if defined(OS_CHROMEOS)
 #include "third_party/cros_system_api/constants/cryptohome.h"
+#endif
 
 namespace drive {
 namespace internal {
@@ -243,8 +244,10 @@ FileError FileCache::MarkAsMounted(const std::string& id,
   if (mounted_files_.count(id))
     return FILE_ERROR_INVALID_OPERATION;
 
-  // Ensure the file is readable to cros_disks. See crbug.com/236994.
   base::FilePath path = GetCacheFilePath(id);
+
+#if defined(OS_CHROMEOS)
+  // Ensure the file is readable to cros_disks. See crbug.com/236994.
   if (!base::SetPosixFilePermissions(
           path,
           base::FILE_PERMISSION_READ_BY_USER |
@@ -252,6 +255,7 @@ FileError FileCache::MarkAsMounted(const std::string& id,
           base::FILE_PERMISSION_READ_BY_GROUP |
           base::FILE_PERMISSION_READ_BY_OTHERS))
     return FILE_ERROR_FAILED;
+#endif
 
   mounted_files_.insert(id);
 
@@ -559,7 +563,12 @@ bool FileCache::HasEnoughSpaceFor(int64 num_bytes,
     free_space = base::SysInfo::AmountOfFreeDiskSpace(path);
 
   // Subtract this as if this portion does not exist.
-  free_space -= cryptohome::kMinFreeSpaceInBytes;
+#if defined(OS_CHROMEOS)
+  const int64 kMinFreeBytes = cryptohome::kMinFreeSpaceInBytes;
+#else
+  const int64 kMinFreeBytes = 512ull * 1024ull * 1024ull;  // 512MB
+#endif
+  free_space -= kMinFreeBytes;
   return (free_space >= num_bytes);
 }
 

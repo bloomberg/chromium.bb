@@ -4,6 +4,7 @@ include_rules = [
   "+google_apis",
   "+google/cacheinvalidation/types.pb.h",
   "+net",
+  "+third_party/leveldatabase",
   "+third_party/re2",
 ]
 
@@ -24,14 +25,20 @@ specific_include_rules = {
 
   # The following test dependencies should be removed to fully componentize this
   # directory. crbug.com/498951
-  r"(job_scheduler_unittest.cc"
+  r"(file_cache_unittest.cc"
+  r"|file_system_core_util_unittest.cc"
+  r"|job_scheduler_unittest.cc"
+  r"|resource_metadata_storage_unittest.cc"
+  r"|resource_metadata_unittest.cc"
   r")": [
     "+content/public/test/test_browser_thread_bundle.h",
   ],
 
   # The dependency below is ok and can stay here for the long-term, because it
   # is guarded by #if defined(OS_CHROMEOS) in the source code.
-  "drive_test_util\.h": [
+  r"(drive_test_util.h"
+  r"|file_cache.cc"
+  r")": [
     "+third_party/cros_system_api/constants/cryptohome.h",
   ],
 }

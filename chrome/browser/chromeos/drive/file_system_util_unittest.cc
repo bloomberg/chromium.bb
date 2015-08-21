@@ -60,6 +60,45 @@ TEST_F(ProfileRelatedFileSystemUtilTest, GetDriveMountPointPath) {
             GetDriveMountPointPath(profile));
 }
 
+TEST_F(ProfileRelatedFileSystemUtilTest, IsUnderDriveMountPoint) {
+  EXPECT_FALSE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
+  EXPECT_FALSE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
+  EXPECT_FALSE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("special/drive/foo.txt")));
+
+  EXPECT_TRUE(
+      IsUnderDriveMountPoint(base::FilePath::FromUTF8Unsafe("/special/drive")));
+  EXPECT_TRUE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+  EXPECT_TRUE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/special/drive/subdir/foo.txt")));
+  EXPECT_TRUE(IsUnderDriveMountPoint(
+      base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
+}
+
+TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePath) {
+  EXPECT_EQ(
+      base::FilePath(),
+      ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/wherever/foo.txt")));
+  EXPECT_EQ(
+      base::FilePath(),
+      ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/special/foo.txt")));
+
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive"),
+            ExtractDrivePath(base::FilePath::FromUTF8Unsafe("/special/drive")));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
+            ExtractDrivePath(
+                base::FilePath::FromUTF8Unsafe("/special/drive/foo.txt")));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/subdir/foo.txt"),
+            ExtractDrivePath(base::FilePath::FromUTF8Unsafe(
+                "/special/drive/subdir/foo.txt")));
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/foo.txt"),
+            ExtractDrivePath(
+                base::FilePath::FromUTF8Unsafe("/special/drive-xxx/foo.txt")));
+}
+
 TEST_F(ProfileRelatedFileSystemUtilTest, ExtractProfileFromPath) {
   Profile* profile1 = testing_profile_manager().CreateTestingProfile("user1");
   Profile* profile2 = testing_profile_manager().CreateTestingProfile("user2");

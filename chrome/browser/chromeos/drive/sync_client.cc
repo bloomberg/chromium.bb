@@ -8,12 +8,12 @@
 
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/download_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_cache.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
 #include "google_apis/drive/task_util.h"
 

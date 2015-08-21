@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
+#include "components/drive/resource_entry_conversion.h"
 
 #include <string>
 
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/file_system_core_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

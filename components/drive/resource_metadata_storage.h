@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_
+#ifndef COMPONENTS_DRIVE_RESOURCE_METADATA_STORAGE_H_
+#define COMPONENTS_DRIVE_RESOURCE_METADATA_STORAGE_H_
 
 #include <string>
 #include <vector>
@@ -169,4 +169,4 @@ class ResourceMetadataStorage {
 }  // namespace internal
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_RESOURCE_METADATA_STORAGE_H_
+#endif  // COMPONENTS_DRIVE_RESOURCE_METADATA_STORAGE_H_

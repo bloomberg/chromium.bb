@@ -24,7 +24,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/write_on_cache_file.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -36,9 +35,11 @@
 #include "chromeos/chromeos_constants.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/drive/job_list.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
@@ -76,6 +77,41 @@ base::FilePath GetDriveMountPointPath(Profile* profile) {
       id = user->username_hash();
   }
   return GetDriveMountPointPathForUserIdHash(id);
+}
+
+base::FilePath GetDriveMountPointPathForUserIdHash(
+    const std::string user_id_hash) {
+  static const base::FilePath::CharType kSpecialMountPointRoot[] =
+      FILE_PATH_LITERAL("/special");
+  static const char kDriveMountPointNameBase[] = "drive";
+  return base::FilePath(kSpecialMountPointRoot)
+      .AppendASCII(net::EscapeQueryParamValue(
+          kDriveMountPointNameBase +
+              (user_id_hash.empty() ? "" : "-" + user_id_hash),
+          false));
+}
+
+bool IsUnderDriveMountPoint(const base::FilePath& path) {
+  return !ExtractDrivePath(path).empty();
+}
+
+base::FilePath ExtractDrivePath(const base::FilePath& path) {
+  std::vector<base::FilePath::StringType> components;
+  path.GetComponents(&components);
+  if (components.size() < 3)
+    return base::FilePath();
+  if (components[0] != FILE_PATH_LITERAL("/"))
+    return base::FilePath();
+  if (components[1] != FILE_PATH_LITERAL("special"))
+    return base::FilePath();
+  static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
+  if (components[2].compare(0, arraysize(kPrefix) - 1, kPrefix) != 0)
+    return base::FilePath();
+
+  base::FilePath drive_path = GetDriveGrandRootPath();
+  for (size_t i = 3; i < components.size(); ++i)
+    drive_path = drive_path.Append(components[i]);
+  return drive_path;
 }
 
 FileSystemInterface* GetFileSystemByProfile(Profile* profile) {

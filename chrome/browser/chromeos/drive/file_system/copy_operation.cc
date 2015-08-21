@@ -7,16 +7,16 @@
 #include <string>
 
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/create_file_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
-#include "chrome/browser/chromeos/drive/file_system_core_util.h"
-#include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/file_cache.h"
 #include "components/drive/file_change.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
+#include "components/drive/resource_entry_conversion.h"
+#include "components/drive/resource_metadata.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

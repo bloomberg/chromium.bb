@@ -7,9 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_errors.h"
+#include "components/drive/resource_metadata.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
