@@ -22,7 +22,7 @@ size_t SubsamplingFactor(gfx::BufferFormat format, int plane) {
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
       return 1;
     case gfx::BufferFormat::YUV_420: {
@@ -58,7 +58,7 @@ size_t StrideInBytes(size_t width, gfx::BufferFormat format, int plane) {
       DCHECK_EQ(plane, 0);
       return width * 2;
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
       DCHECK_EQ(plane, 0);
       return width * 4;

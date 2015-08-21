@@ -128,7 +128,7 @@ GetSupportedGpuMemoryBufferConfigurations(gfx::GpuMemoryBufferType type) {
 #if defined(USE_OZONE) || defined(OS_MACOSX)
   const GpuMemoryBufferFactory::Configuration kScanoutConfigurations[] = {
       {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-      {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT},
+      {gfx::BufferFormat::BGRX_8888, gfx::BufferUsage::SCANOUT},
       {gfx::BufferFormat::YUV_420_BIPLANAR, gfx::BufferUsage::SCANOUT},
   };
   for (auto& configuration : kScanoutConfigurations) {

@@ -22,7 +22,7 @@ gfx::BufferFormat ImageFactory::ImageFormatToGpuMemoryBufferFormat(
     case GL_R8:
       return gfx::BufferFormat::R_8;
     case GL_RGB:
-      return gfx::BufferFormat::RGBX_8888;
+      return gfx::BufferFormat::BGRX_8888;
     case GL_RGBA:
       return gfx::BufferFormat::RGBA_8888;
     case GL_BGRA_EXT:
@@ -67,12 +67,12 @@ bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::YUV_420:
       return ImageFormatToGpuMemoryBufferFormat(internalformat) == format;
     case gfx::BufferFormat::RGBA_4444:
@@ -105,7 +105,7 @@ bool ImageFactory::IsGpuMemoryBufferFormatSupported(
       return capabilities.texture_rg;
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YUV_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return true;
@@ -132,7 +132,7 @@ bool ImageFactory::IsImageSizeValidForGpuMemoryBufferFormat(
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRA_8888:
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
       return true;
     case gfx::BufferFormat::YUV_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:

@@ -23,7 +23,7 @@ int GetGbmFormatFromBufferFormat(gfx::BufferFormat fmt) {
   switch (fmt) {
     case gfx::BufferFormat::BGRA_8888:
       return GBM_BO_FORMAT_ARGB8888;
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
       return GBM_BO_FORMAT_XRGB8888;
     default:
       NOTREACHED();

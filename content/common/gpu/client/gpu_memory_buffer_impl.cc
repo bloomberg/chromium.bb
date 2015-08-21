@@ -90,7 +90,7 @@ size_t GpuMemoryBufferImpl::SubsamplingFactor(gfx::BufferFormat format,
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
       return 1;
     case gfx::BufferFormat::YUV_420: {
@@ -138,7 +138,7 @@ bool GpuMemoryBufferImpl::RowSizeInBytes(size_t width,
       if (!checked_size.IsValid())
         return false;
       *size_in_bytes = checked_size.ValueOrDie();
-    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::BGRA_8888:
       checked_size *= 4;

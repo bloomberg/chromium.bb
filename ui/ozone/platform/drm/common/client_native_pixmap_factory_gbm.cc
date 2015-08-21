@@ -20,7 +20,7 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
   std::vector<Configuration> GetSupportedConfigurations() const override {
     const Configuration kConfiguratioins[] = {
         {gfx::BufferFormat::BGRA_8888, gfx::BufferUsage::SCANOUT},
-        {gfx::BufferFormat::RGBX_8888, gfx::BufferUsage::SCANOUT}};
+        {gfx::BufferFormat::BGRX_8888, gfx::BufferUsage::SCANOUT}};
     std::vector<Configuration> configurations(
         kConfiguratioins, kConfiguratioins + arraysize(kConfiguratioins));
     return configurations;

@@ -18,7 +18,7 @@ size_t NumberOfPlanesForBufferFormat(BufferFormat format) {
     case BufferFormat::R_8:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::BGRA_8888:
       return 1;
     case BufferFormat::YUV_420_BIPLANAR:

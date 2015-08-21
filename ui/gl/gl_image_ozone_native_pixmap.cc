@@ -27,7 +27,7 @@ bool ValidInternalFormat(unsigned internalformat) {
 bool ValidFormat(gfx::BufferFormat format) {
   switch (format) {
     case BufferFormat::BGRA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
       return true;
     case BufferFormat::ATC:
     case BufferFormat::ATCIA:
@@ -50,7 +50,7 @@ EGLint FourCC(gfx::BufferFormat format) {
   switch (format) {
     case BufferFormat::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
     case BufferFormat::ATC:
     case BufferFormat::ATCIA:

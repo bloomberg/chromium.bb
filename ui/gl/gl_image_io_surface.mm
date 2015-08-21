@@ -43,7 +43,7 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       return false;
@@ -66,7 +66,7 @@ GLenum TextureFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       NOTREACHED();
@@ -90,7 +90,7 @@ GLenum DataFormat(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       NOTREACHED();
@@ -114,7 +114,7 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::ETC1:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       NOTREACHED();

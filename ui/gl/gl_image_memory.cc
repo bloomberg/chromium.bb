@@ -45,7 +45,7 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
       return true;
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       return false;
@@ -67,7 +67,7 @@ bool IsCompressedFormat(BufferFormat format) {
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       return false;
@@ -96,7 +96,7 @@ GLenum TextureFormat(BufferFormat format) {
       return GL_RGBA;
     case BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       NOTREACHED();
@@ -124,7 +124,7 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       NOTREACHED();
@@ -205,7 +205,7 @@ bool GLImageMemory::StrideInBytes(size_t width,
         return false;
       *stride_in_bytes = checked_stride.ValueOrDie();
       return true;
-    case BufferFormat::RGBX_8888:
+    case BufferFormat::BGRX_8888:
     case BufferFormat::YUV_420:
     case BufferFormat::YUV_420_BIPLANAR:
       NOTREACHED();
