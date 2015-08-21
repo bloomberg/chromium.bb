@@ -4414,6 +4414,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.BetweenAccessIntervalMinutes" units="minutes">
+  <obsolete>
+    Deprecated 2015-08-17 as part of cookie histogram cleanup
+    (https://crbug.com/521135).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Intervals between access time updates for each cookie.</summary>
 </histogram>
@@ -4450,13 +4454,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.DeletionCause" enum="CookieDeletionCause">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>ellyjones@chromium.org</owner>
   <summary>
     For each cookie removed from the store, the reason it was removed.
   </summary>
 </histogram>
 
 <histogram name="Cookie.DomainCount">
+  <obsolete>
+    Deprecated 2015-08-17 as part of cookie histogram cleanup
+    (https://crbug.com/521135).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     For each domain, number of cookies in that domain (recorded every 10 minutes
@@ -4465,6 +4474,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.DomainPerEtldp1Count">
+  <obsolete>
+    Deprecated 2015-08-17 as part of cookie histogram cleanup
+    (https://crbug.com/521135).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     For every top level domain, number of subdomains in that top level domain
@@ -4473,6 +4486,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.Etldp1Count">
+  <obsolete>
+    Deprecated 2015-08-17 as part of cookie histogram cleanup
+    (https://crbug.com/521135).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     For every top level domain, number of cookies in that domain (recorded every
@@ -4481,7 +4498,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Cookie.EvictedLastAccessMinutes" units="minutes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rdsmith@chromium.org</owner>
+  <owner>ellyjones@chromium.org</owner>
   <summary>
     For each evicted (not expired) cookie, the amount of time since it was last
     used
@@ -22174,6 +22192,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.NumDuplicateCookiesInDb">
+  <obsolete>
+    Deprecated 2015-08-17 as part of cookie histogram cleanup
+    (https://crbug.com/521135).
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of duplicate cookies that were present in the cookie store during

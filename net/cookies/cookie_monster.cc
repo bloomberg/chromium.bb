@@ -146,7 +146,6 @@ struct OrderByCreationTimeDesc {
 
 // Constants for use in VLOG
 const int kVlogPerCookieMonster = 1;
-const int kVlogPeriodic = 3;
 const int kVlogGarbageCollection = 5;
 const int kVlogSetCookies = 7;
 const int kVlogGetCookies = 9;
@@ -1616,8 +1615,6 @@ void CookieMonster::InvokeQueue() {
 void CookieMonster::EnsureCookiesMapIsValid() {
   lock_.AssertAcquired();
 
-  int num_duplicates_trimmed = 0;
-
   // Iterate through all the of the cookies, grouped by host.
   CookieMap::iterator prev_range_end = cookies_.begin();
   while (prev_range_end != cookies_.end()) {
@@ -1627,18 +1624,13 @@ void CookieMonster::EnsureCookiesMapIsValid() {
     prev_range_end = cur_range_end;
 
     // Ensure no equivalent cookies for this host.
-    num_duplicates_trimmed +=
-        TrimDuplicateCookiesForKey(key, cur_range_begin, cur_range_end);
+    TrimDuplicateCookiesForKey(key, cur_range_begin, cur_range_end);
   }
-
-  // Record how many duplicates were found in the database.
-  // See InitializeHistograms() for details.
-  histogram_number_duplicate_db_cookies_->Add(num_duplicates_trimmed);
 }
 
-int CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
-                                              CookieMap::iterator begin,
-                                              CookieMap::iterator end) {
+void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
+                                               CookieMap::iterator begin,
+                                               CookieMap::iterator end) {
   lock_.AssertAcquired();
 
   // Set of cookies ordered by creation time.
@@ -1673,7 +1665,7 @@ int CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
 
   // If there were no duplicates, we are done!
   if (num_duplicates == 0)
-    return 0;
+    return;
 
   // Make sure we find everything below that we did above.
   int num_duplicates_found = 0;
@@ -1709,8 +1701,6 @@ int CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     }
   }
   DCHECK_EQ(num_duplicates, num_duplicates_found);
-
-  return num_duplicates;
 }
 
 // Note: file must be the last scheme.
@@ -1938,10 +1928,6 @@ void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
   // backend will hit its batch thresholds and be forced to update.
   if ((current - cc->LastAccessDate()) < last_access_threshold_)
     return;
-
-  // See InitializeHistograms() for details.
-  histogram_between_access_interval_minutes_->Add(
-      (current - cc->LastAccessDate()).InMinutes());
 
   cc->SetLastAccessDate(current);
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get())
@@ -2209,36 +2195,6 @@ void CookieMonster::RecordPeriodicStats(const base::Time& current_time) {
   histogram_count_->Add(cookies_.size());
 
   // More detailed statistics on cookie counts at different granularities.
-  TimeTicks beginning_of_time(TimeTicks::Now());
-
-  for (CookieMap::const_iterator it_key = cookies_.begin();
-       it_key != cookies_.end();) {
-    const std::string& key(it_key->first);
-
-    int key_count = 0;
-    typedef std::map<std::string, unsigned int> DomainMap;
-    DomainMap domain_map;
-    CookieMapItPair its_cookies = cookies_.equal_range(key);
-    while (its_cookies.first != its_cookies.second) {
-      key_count++;
-      const std::string& cookie_domain(its_cookies.first->second->Domain());
-      domain_map[cookie_domain]++;
-
-      its_cookies.first++;
-    }
-    histogram_etldp1_count_->Add(key_count);
-    histogram_domain_per_etldp1_count_->Add(domain_map.size());
-    for (DomainMap::const_iterator domain_map_it = domain_map.begin();
-         domain_map_it != domain_map.end(); domain_map_it++)
-      histogram_domain_count_->Add(domain_map_it->second);
-
-    it_key = its_cookies.second;
-  }
-
-  VLOG(kVlogPeriodic) << "Time for recording cookie stats (us): "
-                      << (TimeTicks::Now() - beginning_of_time)
-                             .InMicroseconds();
-
   last_statistic_record_time_ = current_time;
 }
 
@@ -2270,28 +2226,11 @@ void CookieMonster::InitializeHistograms() {
   histogram_expiration_duration_minutes_ = base::Histogram::FactoryGet(
       "Cookie.ExpirationDurationMinutes", 1, kMinutesInTenYears, 50,
       base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_between_access_interval_minutes_ = base::Histogram::FactoryGet(
-      "Cookie.BetweenAccessIntervalMinutes", 1, kMinutesInTenYears, 50,
-      base::Histogram::kUmaTargetedHistogramFlag);
   histogram_evicted_last_access_minutes_ = base::Histogram::FactoryGet(
       "Cookie.EvictedLastAccessMinutes", 1, kMinutesInTenYears, 50,
       base::Histogram::kUmaTargetedHistogramFlag);
   histogram_count_ = base::Histogram::FactoryGet(
       "Cookie.Count", 1, 4000, 50, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_domain_count_ =
-      base::Histogram::FactoryGet("Cookie.DomainCount", 1, 4000, 50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_etldp1_count_ =
-      base::Histogram::FactoryGet("Cookie.Etldp1Count", 1, 4000, 50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-  histogram_domain_per_etldp1_count_ =
-      base::Histogram::FactoryGet("Cookie.DomainPerEtldp1Count", 1, 4000, 50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
-
-  // From UMA_HISTOGRAM_COUNTS_10000 & UMA_HISTOGRAM_CUSTOM_COUNTS
-  histogram_number_duplicate_db_cookies_ =
-      base::Histogram::FactoryGet("Net.NumDuplicateCookiesInDb", 1, 10000, 50,
-                                  base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_ENUMERATION
   histogram_cookie_deletion_cause_ = base::LinearHistogram::FactoryGet(

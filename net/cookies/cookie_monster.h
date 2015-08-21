@@ -521,10 +521,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Checks for any duplicate cookies for CookieMap key |key| which lie between
   // |begin| and |end|. If any are found, all but the most recent are deleted.
-  // Returns the number of duplicate cookies that were deleted.
-  int TrimDuplicateCookiesForKey(const std::string& key,
-                                 CookieMap::iterator begin,
-                                 CookieMap::iterator end);
+  void TrimDuplicateCookiesForKey(const std::string& key,
+                                  CookieMap::iterator begin,
+                                  CookieMap::iterator end);
 
   void SetDefaultCookieableSchemes();
 
@@ -655,16 +654,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Histogram variables; see CookieMonster::InitializeHistograms() in
   // cookie_monster.cc for details.
   base::HistogramBase* histogram_expiration_duration_minutes_;
-  base::HistogramBase* histogram_between_access_interval_minutes_;
   base::HistogramBase* histogram_evicted_last_access_minutes_;
   base::HistogramBase* histogram_count_;
-  base::HistogramBase* histogram_domain_count_;
-  base::HistogramBase* histogram_etldp1_count_;
-  base::HistogramBase* histogram_domain_per_etldp1_count_;
-  base::HistogramBase* histogram_number_duplicate_db_cookies_;
   base::HistogramBase* histogram_cookie_deletion_cause_;
   base::HistogramBase* histogram_cookie_type_;
-  base::HistogramBase* histogram_time_mac_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;
