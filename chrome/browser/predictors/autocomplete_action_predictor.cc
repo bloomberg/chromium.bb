@@ -219,7 +219,8 @@ bool AutocompleteActionPredictor::IsPrerenderAbandonedForTesting() {
 }
 
 void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
-  DCHECK(initialized_);
+  if (!initialized_)
+    return;
 
   // TODO(dominich): The body of this method doesn't need to be run
   // synchronously. Investigate posting it as a task to be run later.
