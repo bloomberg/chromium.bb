@@ -101,6 +101,7 @@ public:
     void openIfInEndedState();
     bool isOpen() const;
     void setSourceBufferActive(SourceBuffer*);
+    HTMLMediaElement* mediaElement() const;
 
     // Used by MediaSourceRegistry.
     void addedToRegistry();

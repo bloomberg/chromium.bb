@@ -53,6 +53,14 @@ public:
     virtual bool setMode(AppendMode) = 0;
     virtual WebTimeRanges buffered() = 0;
 
+    // Run coded frame eviction/garbage collection algorithm.
+    // |currentPlaybackTime| is HTMLMediaElement::currentTime. The algorithm
+    // will try to preserve data around current playback position.
+    // |newDataSize| is size of new data about to be appended to SourceBuffer.
+    // Could be zero for appendStream if stream size is unknown in advance.
+    // Returns false if buffer is still full after eviction.
+    virtual bool evictCodedFrames(double currentPlaybackTime, size_t newDataSize) = 0;
+
     // Appends data and runs the segment parser loop algorithm.
     // The algorithm may update |*timestampOffset| if |timestampOffset| is not null.
     virtual void append(const unsigned char* data, unsigned length, double* timestampOffset) = 0;

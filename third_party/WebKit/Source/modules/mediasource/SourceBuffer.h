@@ -114,8 +114,11 @@ private:
     bool isRemoved() const;
     void scheduleEvent(const AtomicString& eventName);
 
+    bool prepareAppend(size_t newDataSize, ExceptionState&);
+    bool evictCodedFrames(size_t newDataSize);
     void appendBufferInternal(const unsigned char*, unsigned, ExceptionState&);
     void appendBufferAsyncPart();
+    void appendError(bool decodeError);
 
     void removeAsyncPart();
 

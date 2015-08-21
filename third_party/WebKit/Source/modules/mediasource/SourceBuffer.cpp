@@ -40,6 +40,8 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/fileapi/FileReaderLoader.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/MediaError.h"
 #include "core/html/TimeRanges.h"
 #include "core/streams/Stream.h"
 #include "modules/mediasource/MediaSource.h"
@@ -268,6 +270,7 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& exceptionState
 
 void SourceBuffer::appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::appendBuffer %p size=%u", this, data->byteLength());
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->data()), data->byteLength(), exceptionState);
@@ -275,6 +278,7 @@ void SourceBuffer::appendBuffer(PassRefPtr<DOMArrayBuffer> data, ExceptionState&
 
 void SourceBuffer::appendBuffer(PassRefPtr<DOMArrayBufferView> data, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::appendBuffer %p size=%u", this, data->byteLength());
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
     appendBufferInternal(static_cast<const unsigned char*>(data->baseAddress()), data->byteLength(), exceptionState);
@@ -288,6 +292,7 @@ void SourceBuffer::appendStream(Stream* stream, ExceptionState& exceptionState)
 
 void SourceBuffer::appendStream(Stream* stream, unsigned long long maxSize, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::appendStream %p maxSize=%llu", this, maxSize);
     m_streamMaxSizeValid = maxSize > 0;
     if (m_streamMaxSizeValid)
         m_streamMaxSize = maxSize;
@@ -326,6 +331,8 @@ void SourceBuffer::abort(ExceptionState& exceptionState)
 
 void SourceBuffer::remove(double start, double end, ExceptionState& exceptionState)
 {
+    WTF_LOG(Media, "SourceBuffer::remove %p start=%f end=%f", this, start, end);
+
     // Section 3.2 remove() method steps.
     // 1. If duration equals NaN, then throw an InvalidAccessError exception and abort these steps.
     // 2. If start is negative or greater than duration, then throw an InvalidAccessError exception and abort these steps.
@@ -513,24 +520,65 @@ void SourceBuffer::scheduleEvent(const AtomicString& eventName)
     m_asyncEventQueue->enqueueEvent(event.release());
 }
 
+bool SourceBuffer::prepareAppend(size_t newDataSize, ExceptionState& exceptionState)
+{
+    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::prepareAppend", this);
+    // http://w3c.github.io/media-source/#sourcebuffer-prepare-append
+    // 3.5.4 Prepare Append Algorithm
+    // 1. If the SourceBuffer has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
+    // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState)) {
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
+        return false;
+    }
+
+    // 3. If the HTMLMediaElement.error attribute is not null, then throw an InvalidStateError exception and abort these steps.
+    ASSERT(m_source);
+    ASSERT(m_source->mediaElement());
+    if (m_source->mediaElement()->error()) {
+        exceptionState.throwDOMException(InvalidStateError, "The HTMLMediaElement.error attribute is not null.");
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
+        return false;
+    }
+
+    // 4. If the readyState attribute of the parent media source is in the "ended" state then run the following steps:
+    //    1. Set the readyState attribute of the parent media source to "open"
+    //    2. Queue a task to fire a simple event named sourceopen at the parent media source.
+    m_source->openIfInEndedState();
+
+    // 5. Run the coded frame eviction algorithm.
+    if (!evictCodedFrames(newDataSize)) {
+        // 6. If the buffer full flag equals true, then throw a QUOTA_EXCEEDED_ERR exception and abort these steps.
+        WTF_LOG(Media, "SourceBuffer::prepareAppend %p -> throw QuotaExceededError", this);
+        exceptionState.throwDOMException(QuotaExceededError, "The SourceBuffer is full, and cannot free space to append additional buffers.");
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
+        return false;
+    }
+
+    TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::prepareAppend", this);
+    return true;
+}
+
+bool SourceBuffer::evictCodedFrames(size_t newDataSize)
+{
+    ASSERT(m_source);
+    ASSERT(m_source->mediaElement());
+    double currentTime = m_source->mediaElement()->currentTime();
+    return m_webSourceBuffer->evictCodedFrames(currentTime, newDataSize);
+}
+
 void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size, ExceptionState& exceptionState)
 {
+    TRACE_EVENT_ASYNC_BEGIN1("media", "SourceBuffer::appendBuffer", this, "size", size);
     // Section 3.2 appendBuffer()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendBuffer-void-ArrayBufferView-data
 
     // 1. Run the prepare append algorithm.
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-prepare-append
-    //  1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
-    //  2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
+    if (!prepareAppend(size, exceptionState)) {
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendBuffer", this);
         return;
-
-    TRACE_EVENT_ASYNC_BEGIN1("media", "SourceBuffer::appendBuffer", this, "size", size);
-
-    //  3. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
-    m_source->openIfInEndedState();
-
-    //  Steps 4-5 - end "prepare append" algorithm.
+    }
+    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "prepareAppend");
 
     // 2. Add data to the end of the input buffer.
     ASSERT(data || size == 0);
@@ -630,28 +678,23 @@ void SourceBuffer::removeAsyncPart()
 
 void SourceBuffer::appendStreamInternal(Stream* stream, ExceptionState& exceptionState)
 {
+    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendStream", this);
+
     // Section 3.2 appendStream()
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-appendStream-void-Stream-stream-unsigned-long-long-maxSize
+    // http://w3c.github.io/media-source/#widl-SourceBuffer-appendStream-void-ReadableStream-stream-unsigned-long-long-maxSize
     // (0. If the stream has been neutered, then throw an InvalidAccessError exception and abort these steps.)
     if (stream->isNeutered()) {
         exceptionState.throwDOMException(InvalidAccessError, "The stream provided has been neutered.");
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
     }
 
     // 1. Run the prepare append algorithm.
-    //  Section 3.5.4 Prepare Append Algorithm.
-    //  https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-prepare-append
-    //  1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an InvalidStateError exception and abort these steps.
-    //  2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
-    if (throwExceptionIfRemovedOrUpdating(isRemoved(), m_updating, exceptionState))
+    size_t newDataSize = m_streamMaxSizeValid ? m_streamMaxSize : 0;
+    if (!prepareAppend(newDataSize, exceptionState)) {
+        TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
-
-    TRACE_EVENT_ASYNC_BEGIN0("media", "SourceBuffer::appendStream", this);
-
-    //  3. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
-    m_source->openIfInEndedState();
-
-    // Steps 4-5 of the prepare append algorithm are handled by m_webSourceBuffer.
+    }
 
     // 2. Set the updating attribute to true.
     m_updating = true;
@@ -660,7 +703,6 @@ void SourceBuffer::appendStreamInternal(Stream* stream, ExceptionState& exceptio
     scheduleEvent(EventTypeNames::updatestart);
 
     // 4. Asynchronously run the stream append loop algorithm with stream and maxSize.
-
     stream->neuter();
     m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
     m_stream = stream;
@@ -672,9 +714,10 @@ void SourceBuffer::appendStreamAsyncPart()
     ASSERT(m_updating);
     ASSERT(m_loader);
     ASSERT(m_stream);
+    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendStream", this, "appendStreamAsyncPart");
 
     // Section 3.5.6 Stream Append Loop
-    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-stream-append-loop
+    // http://w3c.github.io/media-source/#sourcebuffer-stream-append-loop
 
     // 1. If maxSize is set, then let bytesLeft equal maxSize.
     // 2. Loop Top: If maxSize is set and bytesLeft equals 0, then jump to the loop done step below.
@@ -697,24 +740,14 @@ void SourceBuffer::appendStreamDone(bool success)
     clearAppendStreamState();
 
     if (!success) {
-        // Section 3.5.3 Append Error Algorithm
-        // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
-        //
-        // 1. Run the reset parser state algorithm. (Handled by caller)
-        // 2. Set the updating attribute to false.
-        m_updating = false;
-
-        // 3. Queue a task to fire a simple event named error at this SourceBuffer object.
-        scheduleEvent(EventTypeNames::error);
-
-        // 4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
-        scheduleEvent(EventTypeNames::updateend);
+        appendError(false);
         TRACE_EVENT_ASYNC_END0("media", "SourceBuffer::appendStream", this);
         return;
     }
 
     // Section 3.5.6 Stream Append Loop
     // Steps 1-11 are handled by appendStreamAsyncPart(), |m_loader|, and |m_webSourceBuffer|.
+
     // 12. Loop Done: Set the updating attribute to false.
     m_updating = false;
 
@@ -734,6 +767,29 @@ void SourceBuffer::clearAppendStreamState()
     m_stream = nullptr;
 }
 
+void SourceBuffer::appendError(bool decodeError)
+{
+    // Section 3.5.3 Append Error Algorithm
+    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
+
+    // 1. Run the reset parser state algorithm.
+    m_webSourceBuffer->abort();
+
+    // 2. Set the updating attribute to false.
+    m_updating = false;
+
+    // 3. Queue a task to fire a simple event named error at this SourceBuffer object.
+    scheduleEvent(EventTypeNames::error);
+
+    // 4. Queue a task to fire a simple event named updateend at this SourceBuffer object.
+    scheduleEvent(EventTypeNames::updateend);
+
+    // 5. If decode error is true, then run the end of stream algorithm with the
+    // error parameter set to "decode".
+    if (decodeError)
+        m_source->endOfStream("decode", ASSERT_NO_EXCEPTION);
+}
+
 void SourceBuffer::didStartLoading()
 {
     WTF_LOG(Media, "SourceBuffer::didStartLoading() %p", this);
@@ -744,19 +800,35 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
     WTF_LOG(Media, "SourceBuffer::didReceiveDataForClient(%d) %p", dataLength, this);
     ASSERT(m_updating);
     ASSERT(m_loader);
+
+    // Section 3.5.6 Stream Append Loop
+    // http://w3c.github.io/media-source/#sourcebuffer-stream-append-loop
+
+    // 10. Run the coded frame eviction algorithm.
+    if (!evictCodedFrames(dataLength)) {
+        // 11. (in appendStreamDone) If the buffer full flag equals true, then run the append error algorithm with the decode error parameter set to false and abort this algorithm.
+        appendStreamDone(false);
+        return;
+    }
+
     m_webSourceBuffer->append(reinterpret_cast<const unsigned char*>(data), dataLength, &m_timestampOffset);
 }
 
 void SourceBuffer::didFinishLoading()
 {
     WTF_LOG(Media, "SourceBuffer::didFinishLoading() %p", this);
+    ASSERT(m_loader);
     appendStreamDone(true);
 }
 
 void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
     WTF_LOG(Media, "SourceBuffer::didFail(%d) %p", errorCode, this);
-    appendStreamDone(false);
+    // m_loader might be already released, in case appendStream has failed due
+    // to evictCodedFrames failing in didReceiveDataForClient. In that case
+    // appendStreamDone will be invoked from there, no need to repeat it here.
+    if (m_loader)
+        appendStreamDone(false);
 }
 
 DEFINE_TRACE(SourceBuffer)

@@ -156,6 +156,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     m_sourceBuffers->add(buffer);
 
     // 7. Return the new object to the caller.
+    WTF_LOG(Media, "MediaSource::addSourceBuffer(%s) %p -> %p", type.ascii().data(), this, buffer);
     return buffer;
 }
 
@@ -513,6 +514,11 @@ void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer)
     }
 
     m_activeSourceBuffers->insert(insertPosition, sourceBuffer);
+}
+
+HTMLMediaElement* MediaSource::mediaElement() const
+{
+    return m_attachedElement.get();
 }
 
 bool MediaSource::isClosed() const
