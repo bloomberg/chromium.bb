@@ -594,11 +594,13 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc1Variants) {
 
   //
   // Baseline Profile (66 == 0x42).
-  //  The first two digits must be 42. The second two must be valid hex, but
-  //  constraint_set_flags are ignored. The last two digits must be any valid
-  //  level.
+  //  The first two digits must be 42. The third digit (constraint_set_flags)
+  //  must be valid hex but it otherwise is ignored. The fourth digit (reserved)
+  //  must be 0. The last two digits must be any valid level.
   //
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42001E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42401E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42801E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.42E00A\"'"));
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.42G01E\"'"));
 
@@ -607,32 +609,33 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc1Variants) {
 
   //
   // Main Profile (77 == 0x4D).
-  //  The first four digits must be 4D40.
-  //  The last two digits must be any valid level.
+  //  The first two digits must be 4D. The third digit (constraint_set_flags)
+  //  must be valid hex but it otherwise is ignored. The fourth digit (reserved)
+  //  must be 0. The last two digits must be any valid level.
   //
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.4D001E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.4D400A\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.4D401E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.4D800A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.4DE00A\"'"));
+  EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.4DG01E\"'"));
 
-  // Other values are not allowed for the third and fourth digits.
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.4D301E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.4D501E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.4D411E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.4D4F1E\"'"));
+  // The fourth digit must be 0.
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.4DE11E\"'"));
 
   //
   // High Profile (100 == 0x64).
-  //  The first four digits must be 6400.
-  //  The last two digits must be any valid level.
+  //  The first two digits must be 64. The third digit (constraint_set_flags)
+  //  must be valid hex but it otherwise is ignored. The fourth digit (reserved)
+  //  must be 0. The last two digits must be any valid level.
   //
-  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.64000A\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.64001E\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.64001F\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.64400A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.64800A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc1.64E00A\"'"));
+  EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc1.64G01E\"'"));
 
-  // Other values are not allowed for the third and fourth digits.
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.64101E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.64f01E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.64011E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.640F1E\"'"));
+  // The fourth digit must be 0.
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc1.64E11E\"'"));
 
   //
   //  Other profiles are not known to be supported.
@@ -666,11 +669,13 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc3Variants) {
 
   //
   // Baseline Profile (66 == 0x42).
-  //  The first two digits must be 42. The second two must be valid hex, but
-  //  constraint_set_flags are ignored. The last two digits must be any valid
-  //  level.
+  //  The first two digits must be 42. The third digit (constraint_set_flags)
+  //  must be valid hex but it otherwise is ignored. The fourth digit (reserved)
+  //  must be 0. The last two digits must be any valid level.
   //
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42001E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42400A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42800A\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.42E00A\"'"));
   EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc3.42G01E\"'"));
 
@@ -679,32 +684,33 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_Avc3Variants) {
 
   //
   // Main Profile (77 == 0x4D).
-  //  The first four digits must be 4D40.
-  //  The last two digits must be any valid level.
+  //  The first two digits must be 4D. The third digit (constraint_set_flags)
+  //  must be valid hex but it otherwise is ignored. The fourth digit (reserved)
+  //  must be 0. The last two digits must be any valid level.
   //
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.4D001E\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.4D400A\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.4D401E\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.4D800A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.4DE00A\"'"));
+  EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc3.4DG01E\"'"));
 
-  // Other values are not allowed for the third and fourth digits.
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.4D301E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.4D501E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.4D411E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.4D4F1E\"'"));
+  // The fourth digit must be 0.
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.4DE11E\"'"));
 
   //
   // High Profile (100 == 0x64).
-  //  The first four digits must be 6400.
-  //  The last two digits must be any valid level.
+  //  The first two digits must be 64. The third digit (constraint_set_flags)
+  //  must be valid hex but it otherwise is ignored. The fourth digit (reserved)
+  //  must be 0. The last two digits must be any valid level.
   //
-  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.64000A\"'"));
   EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.64001E\"'"));
-  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.64001F\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.64400A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.64800A\"'"));
+  EXPECT_EQ(kPropProbably, CanPlay("'video/mp4; codecs=\"avc3.64E00A\"'"));
+  EXPECT_EQ(kPropMaybe,    CanPlay("'video/mp4; codecs=\"avc3.64G01E\"'"));
 
-  // Other values are not allowed for the third and fourth digits.
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.64101E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.64f01E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.64011E\"'"));
-  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.640F1E\"'"));
+  // The fourth digit must be 0.
+  EXPECT_EQ(kPropMaybe, CanPlay("'video/mp4; codecs=\"avc3.64E11E\"'"));
 
   //
   //  Other profiles are not known to be supported.

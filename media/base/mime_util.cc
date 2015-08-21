@@ -480,28 +480,6 @@ void MimeUtil::RemoveProprietaryMediaTypesAndCodecsForTests() {
   allow_proprietary_codecs_ = false;
 }
 
-// Returns true iff |profile_str| conforms to hex string "42y0".
-//
-// |profile_str| is the first four characters of the H.264 suffix string. From
-// ISO-14496-10 7.3.2.1, it consists of:
-//   8 bits: profile_idc; required to be 0x42 here.
-//   1 bit: constraint_set0_flag; ignored here.
-//   1 bit: constraint_set1_flag; ignored here.
-//   1 bit: constraint_set2_flag; ignored here.
-//   1 bit: constraint_set3_flag; ignored here.
-//   4 bits: reserved; required to be 0 here.
-//
-// The spec indicates other ways, not implemented here, that a |profile_str|
-// can indicate a baseline conforming decoder is sufficient for decode in Annex
-// A.2.1: "[profile_idc not necessarily 0x42] with constraint_set0_flag set and
-// in which level_idc and constraint_set3_flag represent a level less than or
-// equal to the specified level."
-static bool IsValidH264BaselineProfile(const std::string& profile_str) {
-  return (profile_str.size() == 4 && profile_str[0] == '4' &&
-          profile_str[1] == '2' && base::IsHexDigit(profile_str[2]) &&
-          profile_str[3] == '0');
-}
-
 static bool IsValidH264Level(const std::string& level_str) {
   uint32 level;
   if (level_str.size() != 2 || !base::HexStringToUInt(level_str, &level))
@@ -517,9 +495,9 @@ static bool IsValidH264Level(const std::string& level_str) {
 }
 
 // Handle parsing H.264 codec IDs as outlined in RFC 6381 and ISO-14496-10.
-//   avc1.42y0xx, y >= 8 - H.264 Baseline
-//   avc1.4D40xx         - H.264 Main
-//   avc1.6400xx         - H.264 High
+//   avc1.42x0yy - H.264 Baseline
+//   avc1.4Dx0yy - H.264 Main
+//   avc1.64x0yy - H.264 High
 //
 //   avc1.xxxxxx & avc3.xxxxxx are considered ambiguous forms that are trying to
 //   signal H.264 Baseline. For example, the idc_level, profile_idc and
@@ -536,12 +514,20 @@ static bool ParseH264CodecID(const std::string& codec_id,
     return false;
   }
 
-  std::string profile = base::ToUpperASCII(codec_id.substr(5, 4));
-  if (IsValidH264BaselineProfile(profile)) {
+  // Validate constraint flags and reserved bits.
+  if (!base::IsHexDigit(codec_id[7]) || codec_id[8] != '0') {
     *codec = MimeUtil::H264_BASELINE;
-  } else if (profile == "4D40") {
+    *is_ambiguous = true;
+    return true;
+  }
+
+  // Extract the profile.
+  std::string profile = base::ToUpperASCII(codec_id.substr(5, 2));
+  if (profile == "42") {
+    *codec = MimeUtil::H264_BASELINE;
+  } else if (profile == "4D") {
     *codec = MimeUtil::H264_MAIN;
-  } else if (profile == "6400") {
+  } else if (profile == "64") {
     *codec = MimeUtil::H264_HIGH;
   } else {
     *codec = MimeUtil::H264_BASELINE;
@@ -549,6 +535,7 @@ static bool ParseH264CodecID(const std::string& codec_id,
     return true;
   }
 
+  // Validate level.
   *is_ambiguous = !IsValidH264Level(base::ToUpperASCII(codec_id.substr(9)));
   return true;
 }
