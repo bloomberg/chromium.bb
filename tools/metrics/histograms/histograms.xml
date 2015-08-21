@@ -14402,9 +14402,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>timvolodine@chromium.org</owner>
   <summary>
     Provides a histogram of the base sensors (if any) that are used at the start
-    of the Device Orientation API. Currently Sensor.TYPE_ROTATION_VECTOR is the
-    default sensor for orientation, if it's not available fall-back option is
-    provided by using Sensor.TYPE_ACCELEROMETER and Sensor.TYPE_MAGNETIC_FIELD.
+    of the Device Orientation API. Currently Sensor.TYPE_GAME_ROTATION_VECTOR is
+    the default sensor for orientation, if it's not available fall-back options
+    are provided by using either Sensor.TYPE_ROTATION_VECTOR or a combination of
+    Sensor.TYPE_ACCELEROMETER and Sensor.TYPE_MAGNETIC_FIELD.
   </summary>
 </histogram>
 
@@ -54776,6 +54777,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Not Available"/>
   <int value="1" label="ROTATION_VECTOR"/>
   <int value="2" label="ACCELEROMETER + MAGNETIC_FIELD"/>
+  <int value="3" label="GAME_ROTATION_VECTOR"/>
 </enum>
 
 <enum name="DevicePermissionActions" type="int">

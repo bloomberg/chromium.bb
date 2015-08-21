@@ -57,33 +57,79 @@ public class DeviceSensorsTest extends AndroidTestCase {
         assertTrue(start);
         assertTrue("should contain all orientation sensors",
                 mDeviceSensors.mActiveSensors.containsAll(
-                        DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS));
+                        DeviceSensors.DEVICE_ORIENTATION_SENSORS_A));
         assertFalse(mDeviceSensors.mDeviceMotionIsActive);
         assertFalse(mDeviceSensors.mDeviceLightIsActive);
         assertTrue(mDeviceSensors.mDeviceOrientationIsActive);
-        assertFalse(mDeviceSensors.isUsingBackupSensorsForOrientation());
+        assertFalse(mDeviceSensors.mDeviceOrientationIsActiveWithBackupSensors);
+        assertEquals(mDeviceSensors.ORIENTATION_GAME_ROTATION_VECTOR,
+                mDeviceSensors.getOrientationSensorTypeUsed());
 
-        assertEquals(DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS.size(),
+        assertEquals(DeviceSensors.DEVICE_ORIENTATION_SENSORS_A.size(),
                 mMockSensorManager.mNumRegistered);
         assertEquals(0, mMockSensorManager.mNumUnRegistered);
     }
 
     @SmallTest
-    public void testRegisterSensorsDeviceOrientationRotationVectorNotAvailable() {
+    public void testRegisterSensorsDeviceOrientationGameRotationVectorNotAvailable() {
         MockSensorManager mockSensorManager = new MockSensorManager();
+        mockSensorManager.setGameRotationVectorAvailable(false);
+        mDeviceSensors.setSensorManagerProxy(mockSensorManager);
+        boolean startOrientation = mDeviceSensors.start(0, DeviceSensors.DEVICE_ORIENTATION, 100);
+
+        assertTrue(startOrientation);
+        assertTrue(mDeviceSensors.mDeviceOrientationIsActive);
+        assertFalse(mDeviceSensors.mDeviceOrientationIsActiveWithBackupSensors);
+        assertTrue("should contain option B orientation sensors",
+                mDeviceSensors.mActiveSensors.containsAll(
+                        DeviceSensors.DEVICE_ORIENTATION_SENSORS_B));
+        assertEquals(mDeviceSensors.ORIENTATION_ROTATION_VECTOR,
+                mDeviceSensors.getOrientationSensorTypeUsed());
+
+        assertEquals(DeviceSensors.DEVICE_ORIENTATION_SENSORS_B.size(),
+                mockSensorManager.mNumRegistered);
+        assertEquals(0, mockSensorManager.mNumUnRegistered);
+    }
+
+    @SmallTest
+    public void testRegisterSensorsDeviceOrientationBothRotationVectorsNotAvailable() {
+        MockSensorManager mockSensorManager = new MockSensorManager();
+        mockSensorManager.setGameRotationVectorAvailable(false);
         mockSensorManager.setRotationVectorAvailable(false);
         mDeviceSensors.setSensorManagerProxy(mockSensorManager);
         boolean startOrientation = mDeviceSensors.start(0, DeviceSensors.DEVICE_ORIENTATION, 100);
 
         assertTrue(startOrientation);
         assertTrue(mDeviceSensors.mDeviceOrientationIsActive);
-        assertTrue("should contain all backup orientation sensors",
+        assertTrue(mDeviceSensors.mDeviceOrientationIsActiveWithBackupSensors);
+        assertTrue("should contain option C orientation sensors",
                 mDeviceSensors.mActiveSensors.containsAll(
-                        DeviceSensors.DEVICE_ORIENTATION_BACKUP_SENSORS));
-        assertTrue(mDeviceSensors.isUsingBackupSensorsForOrientation());
+                        DeviceSensors.DEVICE_ORIENTATION_SENSORS_C));
+        assertEquals(mDeviceSensors.ORIENTATION_ACCELEROMETER_MAGNETIC,
+                mDeviceSensors.getOrientationSensorTypeUsed());
 
-        assertEquals(DeviceSensors.DEVICE_ORIENTATION_BACKUP_SENSORS.size(),
+        assertEquals(DeviceSensors.DEVICE_ORIENTATION_SENSORS_C.size(),
                 mockSensorManager.mNumRegistered);
+        assertEquals(0, mockSensorManager.mNumUnRegistered);
+    }
+
+    @SmallTest
+    public void testRegisterSensorsDeviceOrientationNoSensorsAvailable() {
+        MockSensorManager mockSensorManager = new MockSensorManager();
+        mockSensorManager.setGameRotationVectorAvailable(false);
+        mockSensorManager.setRotationVectorAvailable(false);
+        mockSensorManager.setAccelerometerAvailable(false);
+        mDeviceSensors.setSensorManagerProxy(mockSensorManager);
+        boolean startOrientation = mDeviceSensors.start(0, DeviceSensors.DEVICE_ORIENTATION, 100);
+
+        assertFalse(startOrientation);
+        assertFalse(mDeviceSensors.mDeviceOrientationIsActive);
+        assertFalse(mDeviceSensors.mDeviceOrientationIsActiveWithBackupSensors);
+        assertTrue(mDeviceSensors.mActiveSensors.isEmpty());
+        assertEquals(mDeviceSensors.ORIENTATION_NOT_AVAILABLE,
+                mDeviceSensors.getOrientationSensorTypeUsed());
+
+        assertEquals(0, mockSensorManager.mNumRegistered);
         assertEquals(0, mockSensorManager.mNumUnRegistered);
     }
 
@@ -99,9 +145,9 @@ public class DeviceSensorsTest extends AndroidTestCase {
                         DeviceSensors.DEVICE_MOTION_SENSORS));
         assertTrue("should contain all orientation sensors",
                 mDeviceSensors.mActiveSensors.containsAll(
-                        DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS));
+                        DeviceSensors.DEVICE_ORIENTATION_SENSORS_A));
 
-        Set<Integer> union = new HashSet<Integer>(DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS);
+        Set<Integer> union = new HashSet<Integer>(DeviceSensors.DEVICE_ORIENTATION_SENSORS_A);
         union.addAll(DeviceSensors.DEVICE_MOTION_SENSORS);
 
         assertEquals(union.size(), mDeviceSensors.mActiveSensors.size());
@@ -152,30 +198,31 @@ public class DeviceSensorsTest extends AndroidTestCase {
                 mDeviceSensors.mActiveSensors.isEmpty());
         assertFalse(mDeviceSensors.mDeviceMotionIsActive);
         assertFalse(mDeviceSensors.mDeviceOrientationIsActive);
+        assertFalse(mDeviceSensors.mDeviceOrientationIsActiveWithBackupSensors);
         assertFalse(mDeviceSensors.mDeviceLightIsActive);
-        assertEquals(DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS.size(),
+        assertEquals(DeviceSensors.DEVICE_ORIENTATION_SENSORS_A.size(),
                 mMockSensorManager.mNumUnRegistered);
     }
 
     @SmallTest
-    public void testUnRegisterSensorsDeviceMotionAndOrientation() {
+    public void testUnregisterSensorsDeviceMotionAndOrientation() {
         mDeviceSensors.start(0, DeviceSensors.DEVICE_ORIENTATION, 100);
         mDeviceSensors.start(0, DeviceSensors.DEVICE_MOTION, 100);
         mDeviceSensors.stop(DeviceSensors.DEVICE_MOTION);
 
         assertTrue("should contain all orientation sensors",
                 mDeviceSensors.mActiveSensors.containsAll(
-                        DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS));
+                        DeviceSensors.DEVICE_ORIENTATION_SENSORS_A));
 
         Set<Integer> diff = new HashSet<Integer>(DeviceSensors.DEVICE_MOTION_SENSORS);
-        diff.removeAll(DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS);
+        diff.removeAll(DeviceSensors.DEVICE_ORIENTATION_SENSORS_A);
 
         assertEquals(diff.size(), mMockSensorManager.mNumUnRegistered);
 
         mDeviceSensors.stop(DeviceSensors.DEVICE_ORIENTATION);
 
         assertTrue("should contain no sensors", mDeviceSensors.mActiveSensors.isEmpty());
-        assertEquals(diff.size() + DeviceSensors.DEVICE_ORIENTATION_DEFAULT_SENSORS.size(),
+        assertEquals(diff.size() + DeviceSensors.DEVICE_ORIENTATION_SENSORS_A.size(),
                 mMockSensorManager.mNumUnRegistered);
         assertEquals(0, mDeviceSensors.getNumberActiveDeviceMotionSensors());
     }
@@ -192,7 +239,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testSensorChangedgotLight() {
+    public void testSensorChangedGotLight() {
         boolean startLight = mDeviceSensors.start(0, DeviceSensors.DEVICE_LIGHT, 100);
 
         assertTrue(startLight);
@@ -204,8 +251,10 @@ public class DeviceSensorsTest extends AndroidTestCase {
         mDeviceSensors.verifyValue(200);
     }
 
-    @SmallTest
-    public void testSensorChangedgotOrientation() {
+    /**
+     * Helper method to trigger an orientation change using the given sensorType.
+     */
+    private void changeOrientation(int sensorType) {
         boolean startOrientation = mDeviceSensors.start(0, DeviceSensors.DEVICE_ORIENTATION, 100);
 
         assertTrue(startOrientation);
@@ -213,13 +262,23 @@ public class DeviceSensorsTest extends AndroidTestCase {
 
         float alpha = (float) Math.PI / 4;
         float[] values = {0, 0, (float) Math.sin(alpha / 2), (float) Math.cos(alpha / 2), -1};
-        mDeviceSensors.sensorChanged(Sensor.TYPE_ROTATION_VECTOR, values);
+        mDeviceSensors.sensorChanged(sensorType, values);
         mDeviceSensors.verifyCalls("gotOrientation");
         mDeviceSensors.verifyValuesEpsilon(Math.toDegrees(alpha), 0, 0);
     }
 
     @SmallTest
-    public void testSensorChangedgotAccelerationIncludingGravity() {
+    public void testSensorChangedGotOrientationViaRotationVector() {
+        changeOrientation(Sensor.TYPE_ROTATION_VECTOR);
+    }
+
+    @SmallTest
+    public void testSensorChangedGotOrientationViaGameRotationVector() {
+        changeOrientation(Sensor.TYPE_GAME_ROTATION_VECTOR);
+    }
+
+    @SmallTest
+    public void testSensorChangedGotAccelerationIncludingGravity() {
         mDeviceSensors.start(0, DeviceSensors.DEVICE_MOTION, 100);
 
         float[] values = {1, 2, 3};
@@ -229,7 +288,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testSensorChangedgotAcceleration() {
+    public void testSensorChangedGotAcceleration() {
         mDeviceSensors.start(0, DeviceSensors.DEVICE_MOTION, 100);
 
         float[] values = {1, 2, 3};
@@ -239,7 +298,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testSensorChangedgotRotationRate() {
+    public void testSensorChangedGotRotationRate() {
         mDeviceSensors.start(0, DeviceSensors.DEVICE_MOTION, 100);
 
         float[] values = {1, 2, 3};
@@ -249,7 +308,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
     }
 
     @SmallTest
-    public void testSensorChangedgotOrientationAndAcceleration() {
+    public void testSensorChangedGotOrientationAndAcceleration() {
         boolean startOrientation = mDeviceSensors.start(0, DeviceSensors.DEVICE_ORIENTATION, 100);
         boolean startMotion = mDeviceSensors.start(0, DeviceSensors.DEVICE_MOTION, 100);
 
@@ -374,7 +433,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
         private String mCalls = "";
 
         private DeviceSensorsForTests(Context context) {
-            super(context);
+            super(context, true);
         }
 
         static DeviceSensorsForTests getInstance(Context context) {
@@ -440,28 +499,46 @@ public class DeviceSensorsTest extends AndroidTestCase {
         }
     }
 
-    private static class MockSensorManager implements
-            DeviceSensors.SensorManagerProxy {
+    private static class MockSensorManager implements DeviceSensors.SensorManagerProxy {
 
         private int mNumRegistered = 0;
         private int mNumUnRegistered = 0;
         private boolean mRotationVectorAvailable = true;
+        private boolean mGameRotationVectorAvailable = true;
+        private boolean mAccelerometerAvailable = true;
 
         private MockSensorManager() {
+        }
+
+        public void setGameRotationVectorAvailable(boolean available) {
+            mGameRotationVectorAvailable = available;
         }
 
         public void setRotationVectorAvailable(boolean available) {
             mRotationVectorAvailable = available;
         }
 
+        public void setAccelerometerAvailable(boolean available) {
+            mAccelerometerAvailable = available;
+        }
+
+        private boolean isSensorTypeAvailable(int sensorType) {
+            switch (sensorType) {
+                case Sensor.TYPE_ROTATION_VECTOR : return mRotationVectorAvailable;
+                case Sensor.TYPE_GAME_ROTATION_VECTOR : return mGameRotationVectorAvailable;
+                case Sensor.TYPE_ACCELEROMETER : return mAccelerometerAvailable;
+            }
+            return true;
+        }
+
         @Override
         public boolean registerListener(SensorEventListener listener, int sensorType, int rate,
                 Handler handler) {
-            if (!mRotationVectorAvailable && sensorType == Sensor.TYPE_ROTATION_VECTOR) {
-                return false;
+            if (isSensorTypeAvailable(sensorType)) {
+                mNumRegistered++;
+                return true;
             }
-            mNumRegistered++;
-            return true;
+            return false;
         }
 
         @Override

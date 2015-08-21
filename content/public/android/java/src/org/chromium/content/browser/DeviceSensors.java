@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -30,6 +31,10 @@ import java.util.Set;
 class DeviceSensors implements SensorEventListener {
 
     private static final String TAG = "cr.DeviceSensors";
+
+    // Matches kEnableExperimentalWebPlatformFeatures.
+    private static final String EXPERIMENTAL_WEB_PLAFTORM_FEATURES =
+            "enable-experimental-web-platform-features";
 
     // These fields are lazily initialized by getHandler().
     private Thread mThread;
@@ -75,10 +80,17 @@ class DeviceSensors implements SensorEventListener {
     static final int DEVICE_MOTION = 1;
     static final int DEVICE_LIGHT = 2;
 
-    static final Set<Integer> DEVICE_ORIENTATION_DEFAULT_SENSORS = CollectionUtil.newHashSet(
+    static final int ORIENTATION_NOT_AVAILABLE = 0;
+    static final int ORIENTATION_ROTATION_VECTOR = 1;
+    static final int ORIENTATION_ACCELEROMETER_MAGNETIC = 2;
+    static final int ORIENTATION_GAME_ROTATION_VECTOR = 3;
+
+    static final Set<Integer> DEVICE_ORIENTATION_SENSORS_A = CollectionUtil.newHashSet(
+            Sensor.TYPE_GAME_ROTATION_VECTOR);
+    static final Set<Integer> DEVICE_ORIENTATION_SENSORS_B = CollectionUtil.newHashSet(
             Sensor.TYPE_ROTATION_VECTOR);
-    // Backup sensors are used when Sensor.TYPE_ROTATION_VECTOR is not available.
-    static final Set<Integer> DEVICE_ORIENTATION_BACKUP_SENSORS = CollectionUtil.newHashSet(
+    // Option C backup sensors are used when options A and B are not available.
+    static final Set<Integer> DEVICE_ORIENTATION_SENSORS_C = CollectionUtil.newHashSet(
             Sensor.TYPE_ACCELEROMETER,
             Sensor.TYPE_MAGNETIC_FIELD);
     static final Set<Integer> DEVICE_MOTION_SENSORS = CollectionUtil.newHashSet(
@@ -90,14 +102,59 @@ class DeviceSensors implements SensorEventListener {
 
     @VisibleForTesting
     final Set<Integer> mActiveSensors = new HashSet<Integer>();
-    Set<Integer> mDeviceOrientationSensors = DEVICE_ORIENTATION_DEFAULT_SENSORS;
+    final List<Set<Integer>> mOrientationSensorSets;
+    Set<Integer> mDeviceOrientationSensors;
     boolean mDeviceLightIsActive = false;
     boolean mDeviceMotionIsActive = false;
     boolean mDeviceOrientationIsActive = false;
-    boolean mUseBackupOrientationSensors = false;
+    boolean mDeviceOrientationIsActiveWithBackupSensors = false;
+    boolean mOrientationNotAvailable = false;
 
-    protected DeviceSensors(Context context) {
+    protected DeviceSensors(Context context, boolean relativeByDefault) {
         mAppContext = context.getApplicationContext();
+
+        // TODO(timvolodine): make the first option the default once support for absolute device
+        // orientation events is implemented see crbug.com/520546.
+        if (relativeByDefault) {
+            mOrientationSensorSets = CollectionUtil.newArrayList(DEVICE_ORIENTATION_SENSORS_A,
+                                                                 DEVICE_ORIENTATION_SENSORS_B,
+                                                                 DEVICE_ORIENTATION_SENSORS_C);
+        } else {
+            mOrientationSensorSets = CollectionUtil.newArrayList(DEVICE_ORIENTATION_SENSORS_B,
+                                                                 DEVICE_ORIENTATION_SENSORS_C);
+        }
+    }
+
+    // For orientation we use a 3-way fallback approach where up to 3 different sets of sensors
+    // are attempted if necessary. The sensors to be used for orientation are determined in the
+    // following order:
+    //   A: GAME_ROTATION_VECTOR (relative)
+    //   B: ROTATION_VECTOR (absolute)
+    //   C: combination of ACCELEROMETER and MAGNETIC_FIELD (absolute)
+    // Some of the sensors may not be available depending on the device and Android version, so
+    // the 3-way fallback ensures selection of the best possible option.
+    // Examples:
+    //   * Nexus 9, Android 5.0.2 --> option A
+    //   * Nexus 10, Android 5.1 --> option B
+    //   * Moto G, Android 4.4.4  --> option C
+    @VisibleForTesting
+    protected boolean registerOrientationSensorsWithFallback(int rateInMicroseconds) {
+        if (mOrientationNotAvailable) return false;
+        if (mDeviceOrientationSensors != null) {
+            return registerSensors(mDeviceOrientationSensors, rateInMicroseconds, true);
+        }
+        ensureRotationStructuresAllocated();
+
+        for (Set<Integer> sensors : mOrientationSensorSets) {
+            mDeviceOrientationSensors = sensors;
+            if (registerSensors(mDeviceOrientationSensors, rateInMicroseconds, true)) return true;
+        }
+
+        mOrientationNotAvailable = true;
+        mDeviceOrientationSensors = null;
+        mDeviceRotationMatrix = null;
+        mRotationAngles = null;
+        return false;
     }
 
     /**
@@ -117,15 +174,7 @@ class DeviceSensors implements SensorEventListener {
         synchronized (mNativePtrLock) {
             switch (eventType) {
                 case DEVICE_ORIENTATION:
-                    success = registerSensors(mDeviceOrientationSensors, rateInMicroseconds,
-                            true);
-                    if (!success) {
-                        mDeviceOrientationSensors = DEVICE_ORIENTATION_BACKUP_SENSORS;
-                        success = registerSensors(mDeviceOrientationSensors, rateInMicroseconds,
-                                true);
-                        mUseBackupOrientationSensors = success;
-                    }
-                    ensureRotationStructuresAllocated();
+                    success = registerOrientationSensorsWithFallback(rateInMicroseconds);
                     break;
                 case DEVICE_MOTION:
                     // note: device motion spec does not require all sensors to be available
@@ -154,8 +203,22 @@ class DeviceSensors implements SensorEventListener {
     }
 
     @CalledByNative
-    public boolean isUsingBackupSensorsForOrientation() {
-        return mUseBackupOrientationSensors;
+    public int getOrientationSensorTypeUsed() {
+        if (mOrientationNotAvailable) {
+            return ORIENTATION_NOT_AVAILABLE;
+        }
+        if (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_A) {
+            return ORIENTATION_GAME_ROTATION_VECTOR;
+        }
+        if (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_B) {
+            return ORIENTATION_ROTATION_VECTOR;
+        }
+        if (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_C) {
+            return ORIENTATION_ACCELEROMETER_MAGNETIC;
+        }
+
+        assert false;  // should never happen
+        return ORIENTATION_NOT_AVAILABLE;
     }
 
     /**
@@ -228,7 +291,7 @@ class DeviceSensors implements SensorEventListener {
                 if (mDeviceMotionIsActive) {
                     gotAccelerationIncludingGravity(values[0], values[1], values[2]);
                 }
-                if (mDeviceOrientationIsActive && mUseBackupOrientationSensors) {
+                if (mDeviceOrientationIsActiveWithBackupSensors) {
                     getOrientationFromGeomagneticVectors(values, mMagneticFieldVector);
                 }
                 break;
@@ -243,6 +306,7 @@ class DeviceSensors implements SensorEventListener {
                 }
                 break;
             case Sensor.TYPE_ROTATION_VECTOR:
+            case Sensor.TYPE_GAME_ROTATION_VECTOR:
                 if (mDeviceOrientationIsActive) {
                     if (values.length > 4) {
                         // On some Samsung devices SensorManager.getRotationMatrixFromVector
@@ -260,7 +324,7 @@ class DeviceSensors implements SensorEventListener {
                 }
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                if (mDeviceOrientationIsActive && mUseBackupOrientationSensors) {
+                if (mDeviceOrientationIsActiveWithBackupSensors) {
                     if (mMagneticFieldVector == null) {
                         mMagneticFieldVector = new float[3];
                     }
@@ -406,16 +470,18 @@ class DeviceSensors implements SensorEventListener {
         mSensorManagerProxy = sensorManagerProxy;
     }
 
-    private void setEventTypeActive(int eventType, boolean value) {
+    private void setEventTypeActive(int eventType, boolean active) {
         switch (eventType) {
             case DEVICE_ORIENTATION:
-                mDeviceOrientationIsActive = value;
+                mDeviceOrientationIsActive = active;
+                mDeviceOrientationIsActiveWithBackupSensors = active
+                        && (mDeviceOrientationSensors == DEVICE_ORIENTATION_SENSORS_C);
                 return;
             case DEVICE_MOTION:
-                mDeviceMotionIsActive = value;
+                mDeviceMotionIsActive = active;
                 return;
             case DEVICE_LIGHT:
-                mDeviceLightIsActive = value;
+                mDeviceLightIsActive = active;
                 return;
         }
     }
@@ -532,7 +598,11 @@ class DeviceSensors implements SensorEventListener {
     static DeviceSensors getInstance(Context appContext) {
         synchronized (sSingletonLock) {
             if (sSingleton == null) {
-                sSingleton = new DeviceSensors(appContext);
+                // If experimental features are enabled use 'relative' sensor first,
+                // see crbug.com/520546.
+                boolean relativeByDefault =
+                        CommandLine.getInstance().hasSwitch(EXPERIMENTAL_WEB_PLAFTORM_FEATURES);
+                sSingleton = new DeviceSensors(appContext, relativeByDefault);
             }
             return sSingleton;
         }

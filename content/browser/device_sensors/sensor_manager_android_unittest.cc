@@ -20,6 +20,10 @@ class FakeSensorManagerAndroid : public SensorManagerAndroid {
   FakeSensorManagerAndroid() {}
   ~FakeSensorManagerAndroid() override {}
 
+  int GetOrientationSensorTypeUsed() override {
+    return 1; // ROTATION_VECTOR
+  }
+
   int GetNumberActiveDeviceMotionSensors() override {
     return number_active_sensors_;
   }

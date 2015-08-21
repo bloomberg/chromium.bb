@@ -69,6 +69,7 @@ class CONTENT_EXPORT SensorManagerAndroid {
 
   virtual bool Start(EventType event_type);
   virtual void Stop(EventType event_type);
+  virtual int GetOrientationSensorTypeUsed();
   virtual int GetNumberActiveDeviceMotionSensors();
 
   void StartFetchingLightDataOnUI(DeviceLightHardwareBuffer* buffer);
@@ -97,8 +98,7 @@ class CONTENT_EXPORT SensorManagerAndroid {
   void SetMotionBufferReadyStatus(bool ready);
   void ClearInternalMotionBuffers();
 
-  void SetOrientationBufferReadyStatus(bool ready);
-  bool isUsingBackupSensorsForOrientation();
+  void SetOrientationBufferStatus(bool ready, bool absolute);
 
   // The Java provider of sensors info.
   base::android::ScopedJavaGlobalRef<jobject> device_sensors_;
@@ -107,15 +107,14 @@ class CONTENT_EXPORT SensorManagerAndroid {
   DeviceLightHardwareBuffer* device_light_buffer_;
   DeviceMotionHardwareBuffer* device_motion_buffer_;
   DeviceOrientationHardwareBuffer* device_orientation_buffer_;
-  bool is_light_buffer_ready_;
-  bool is_motion_buffer_ready_;
-  bool is_orientation_buffer_ready_;
+
+  bool motion_buffer_initialized_;
+  bool orientation_buffer_initialized_;
 
   base::Lock light_buffer_lock_;
   base::Lock motion_buffer_lock_;
   base::Lock orientation_buffer_lock_;
 
-  bool is_using_backup_sensors_for_orientation_;
   bool is_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorManagerAndroid);
