@@ -17,6 +17,10 @@
 #pragma warning(disable : 4996)
 #endif
 
+namespace {
+const long long kMaxEbmlSigned64Bit = (1LL << 56) - 2;
+}
+
 mkvparser::IMkvReader::~IMkvReader() {}
 
 void mkvparser::GetVersion(int& major, int& minor, int& build, int& revision) {
@@ -220,24 +224,20 @@ long mkvparser::UnserializeFloat(IMkvReader* pReader, long long pos,
 }
 
 long mkvparser::UnserializeInt(IMkvReader* pReader, long long pos,
-                               long long size, long long& result) {
+                               long long size, long long& result_ref) {
   assert(pReader);
   assert(pos >= 0);
   assert(size > 0);
   assert(size <= 8);
 
-  {
-    signed char b;
+  char first_byte = 0;
+  const long status = pReader->Read(pos, 1, (unsigned char*)&first_byte);
 
-    const long status = pReader->Read(pos, 1, (unsigned char*)&b);
+  if (status < 0)
+    return status;
 
-    if (status < 0)
-      return status;
-
-    result = b;
-
-    ++pos;
-  }
+  unsigned long long result = first_byte;
+  ++pos;
 
   for (long i = 1; i < size; ++i) {
     unsigned char b;
@@ -253,7 +253,11 @@ long mkvparser::UnserializeInt(IMkvReader* pReader, long long pos,
     ++pos;
   }
 
-  return 0;  // success
+  if (result > kMaxEbmlSigned64Bit)
+    return E_FILE_FORMAT_INVALID;
+
+  result_ref = static_cast<long long>(result);
+  return 0;
 }
 
 long mkvparser::UnserializeString(IMkvReader* pReader, long long pos,
