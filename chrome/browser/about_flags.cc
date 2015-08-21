@@ -1512,7 +1512,8 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_NAME,
      IDS_FLAGS_ENABLE_TRANSLATE_NEW_UX_DESCRIPTION,
      kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableTranslateNewUX)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTranslateNewUX,
+                               switches::kDisableTranslateNewUX)},
 #endif
 #if defined(TOOLKIT_VIEWS)
     {"disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA

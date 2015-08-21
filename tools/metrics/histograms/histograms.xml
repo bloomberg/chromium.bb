@@ -63191,6 +63191,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="458410433" label="disable-views-rect-based-targeting"/>
   <int value="474743272" label="material-design-ink-drop"/>
   <int value="494733611" label="disable-drop-sync-credential"/>
+  <int value="503245473" label="disable-translate-new-ux"/>
   <int value="535976218" label="enable-plugin-power-saver"/>
   <int value="546710806" label="disable-easy-signin"/>
   <int value="550378029" label="reset-app-list-install-state"/>

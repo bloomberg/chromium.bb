@@ -1256,6 +1256,9 @@ const char kDisableHostedAppsInWindows[] = "disable-hosted-apps-in-windows";
 const char kDisableMacViewsNativeAppWindows[] =
     "disable-mac-views-native-app-windows";
 
+// Disables Translate experimental new UX which replaces the infobar.
+const char kDisableTranslateNewUX[] = "disable-translate-new-ux";
+
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
@@ -1275,7 +1278,7 @@ const char kEnableMacViewsNativeAppWindows[] =
 const char kEnableMacViewsDialogs[] = "enable-mac-views-dialogs";
 
 // Enables Translate experimental new UX which replaces the infobar.
-const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
+const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 
 // This is how the metrics client ID is passed from the browser process to its
 // children. With Crashpad, the metrics client ID is distinct from the crash
