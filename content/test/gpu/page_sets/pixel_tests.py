@@ -7,14 +7,11 @@ from gpu_tests import gpu_test_base
 
 class PixelTestsPage(gpu_test_base.PageBase):
 
-  def __init__(self, url, name, test_rect, revision, story_set, expectations,
-               expected_colors=None):
+  def __init__(self, url, name, test_rect, revision, story_set, expectations):
     super(PixelTestsPage, self).__init__(url=url, page_set=story_set, name=name,
                                          expectations=expectations)
     self.test_rect = test_rect
     self.revision = revision
-    if expected_colors:
-      self.expected_colors = expected_colors
 
   def RunNavigateStepsInner(self, action_runner):
     action_runner.WaitForJavaScriptCondition(
@@ -31,7 +28,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_canvas2d.html',
       name=base_name + '.Canvas2DRedBox',
       test_rect=[0, 0, 300, 300],
-      revision=7,
+      revision=6,
       story_set=self,
       expectations=expectations))
 
@@ -39,7 +36,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_css3d.html',
       name=base_name + '.CSS3DBlueBox',
       test_rect=[0, 0, 300, 300],
-      revision=15,
+      revision=14,
       story_set=self,
       expectations=expectations))
 
@@ -47,15 +44,6 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_webgl.html',
       name=base_name + '.WebGLGreenTriangle',
       test_rect=[0, 0, 300, 300],
-      revision=12,
+      revision=11,
       story_set=self,
       expectations=expectations))
-
-    self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_scissor.html',
-      name=base_name + '.ScissorTestWithPreserveDrawingBuffer',
-      test_rect=[0, 0, 300, 300],
-      revision=0, # This is not used.
-      story_set=self,
-      expectations=expectations,
-      expected_colors='../../data/gpu/pixel_scissor_expectations.json'))

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 from datetime import datetime
 import glob
-import json
 import optparse
 import os
 import re
@@ -65,21 +64,10 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
     if screenshot is None:
       raise page_test.Failure('Could not capture screenshot')
 
-    dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
-
     if hasattr(page, 'test_rect'):
       screenshot = image_util.Crop(
-          screenshot, page.test_rect[0] * dpr, page.test_rect[1] * dpr,
-          page.test_rect[2] * dpr, page.test_rect[3] * dpr)
-
-    if hasattr(page, 'expected_colors'):
-      # Use expected pixels instead of ref images for validation.
-      expected_colors_file = os.path.abspath(os.path.join(
-          os.path.dirname(__file__), page.expected_colors))
-      expected_colors = self._ReadPixelExpectations(expected_colors_file)
-      self._ValidateScreenshotSamples(
-          page.display_name, screenshot, expected_colors, dpr)
-      return
+          screenshot, page.test_rect[0], page.test_rect[1],
+          page.test_rect[2], page.test_rect[3])
 
     image_name = self._UrlToImageName(page.display_name)
 
@@ -156,11 +144,6 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
 
     self._WriteImage(image_path, screenshot)
     return screenshot
-
-  def _ReadPixelExpectations(self, json_file_path):
-    with open(json_file_path, 'r') as f:
-      json_contents = json.load(f)
-    return json_contents
 
 class Pixel(cloud_storage_test_base.TestBase):
   test = PixelValidator
