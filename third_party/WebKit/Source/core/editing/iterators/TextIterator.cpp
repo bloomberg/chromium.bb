@@ -368,6 +368,11 @@ void TextIteratorAlgorithm<Strategy>::advance()
                 if (!next && !parentNode && m_shadowDepth > 0) {
                     // 4. Reached the top of a shadow root. If it's created by author, then try to visit the next
                     // sibling shadow root, if any.
+                    if (!m_node->isShadowRoot()) {
+                        ASSERT_NOT_REACHED();
+                        m_shouldStop = true;
+                        return;
+                    }
                     ShadowRoot* shadowRoot = toShadowRoot(m_node);
                     if (shadowRoot->type() == ShadowRootType::OpenByDefault || shadowRoot->type() == ShadowRootType::Open) {
                         ShadowRoot* nextShadowRoot = shadowRoot->olderShadowRoot();
