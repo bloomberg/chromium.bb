@@ -19,8 +19,12 @@ class TestBrowserState : public BrowserState {
   base::FilePath GetStatePath() const override;
   net::URLRequestContextGetter* GetRequestContext() override;
 
+  // Makes |IsOffTheRecord| return the given flag value.
+  void SetOffTheRecord(bool flag);
+
  private:
   scoped_refptr<net::URLRequestContextGetter> request_context_;
+  bool is_off_the_record_;
 };
 }  // namespace web
 

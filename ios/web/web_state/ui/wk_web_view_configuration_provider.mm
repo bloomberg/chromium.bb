@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
+#include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #import "base/logging.h"
 #import "ios/web/alloc_with_zone_interceptor.h"
@@ -67,15 +68,18 @@ WKWebViewConfigurationProvider::FromBrowserState(BrowserState* browser_state) {
   DCHECK([NSThread isMainThread]);
   DCHECK(browser_state);
   if (!browser_state->GetUserData(kWKWebViewConfigProviderKeyName)) {
-    browser_state->SetUserData(kWKWebViewConfigProviderKeyName,
-                               new WKWebViewConfigurationProvider());
+    bool is_off_the_record = browser_state->IsOffTheRecord();
+    browser_state->SetUserData(
+        kWKWebViewConfigProviderKeyName,
+        new WKWebViewConfigurationProvider(is_off_the_record));
   }
   return *(static_cast<WKWebViewConfigurationProvider*>(
       browser_state->GetUserData(kWKWebViewConfigProviderKeyName)));
 }
 
-WKWebViewConfigurationProvider::WKWebViewConfigurationProvider() {
-}
+WKWebViewConfigurationProvider::WKWebViewConfigurationProvider(
+    bool is_off_the_record)
+    : is_off_the_record_(is_off_the_record) {}
 
 WKWebViewConfigurationProvider::~WKWebViewConfigurationProvider() {
 }
@@ -85,6 +89,16 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
   DCHECK([NSThread isMainThread]);
   if (!configuration_) {
     configuration_.reset([[WKWebViewConfiguration alloc] init]);
+// TODO(eugenebut): Cleanup this macro, once all bots switched to iOS9 SDK
+// (crbug.com/523365).
+#if defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+    if (is_off_the_record_ && base::ios::IsRunningOnIOS9OrLater()) {
+      // WKWebsiteDataStore is iOS9 only.
+      [configuration_
+          setWebsiteDataStore:[WKWebsiteDataStore nonPersistentDataStore]];
+    }
+#endif  // defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >=
+        // __IPHONE_9_0
     // setJavaScriptCanOpenWindowsAutomatically is required to support popups.
     [[configuration_ preferences] setJavaScriptCanOpenWindowsAutomatically:YES];
     [[configuration_ userContentController] addUserScript:GetEarlyPageScript()];

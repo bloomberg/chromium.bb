@@ -34,14 +34,13 @@ class TestContextURLRequestContextGetter : public net::URLRequestContextGetter {
 }  // namespace
 
 namespace web {
-TestBrowserState::TestBrowserState() {
-}
+TestBrowserState::TestBrowserState() : is_off_the_record_(false) {}
 
 TestBrowserState::~TestBrowserState() {
 }
 
 bool TestBrowserState::IsOffTheRecord() const {
-  return false;
+  return is_off_the_record_;
 }
 
 base::FilePath TestBrowserState::GetStatePath() const {
@@ -52,6 +51,10 @@ net::URLRequestContextGetter* TestBrowserState::GetRequestContext() {
   if (!request_context_)
     request_context_ = new TestContextURLRequestContextGetter();
   return request_context_.get();
+}
+
+void TestBrowserState::SetOffTheRecord(bool flag) {
+  is_off_the_record_ = flag;
 }
 
 }  // namespace web
