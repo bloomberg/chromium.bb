@@ -255,6 +255,11 @@
                   '<(SHARED_INTERMEDIATE_DIR)/chromecast/cast_webui_resources.pak',
                 ],
               }],
+              ['chromecast_branding!="public"', {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/chromecast/sound_resources.pak',
+                ],
+              }],
             ],
             'pak_output': '<(PRODUCT_DIR)/assets/cast_shell.pak',
           },
@@ -266,6 +271,11 @@
           'dependencies': [
             'internal/chromecast_resources.gyp:chromecast_app_resources',
             'internal/chromecast_resources.gyp:chromecast_webui_resources',
+          ],
+        }],
+        ['chromecast_branding!="public"', {
+          'dependencies': [
+            'internal/chromecast_resources.gyp:chromecast_sound_resources',
           ],
         }],
       ],
