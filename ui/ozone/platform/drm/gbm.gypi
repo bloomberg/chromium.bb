@@ -11,6 +11,10 @@
       'gbm',
     ],
     'use_mesa_platform_null%': 0,
+
+    # TODO(dshwang): remove this flag when all gbm hardware supports vgem map.
+    # crbug.com/519587
+    'use_vgem_map%': 0,
   },
   'targets': [
     {
@@ -53,6 +57,13 @@
       'conditions': [
         ['use_mesa_platform_null==1', {
           'defines': ['USE_MESA_PLATFORM_NULL'],
+        }],
+        ['use_vgem_map==1', {
+          'defines': ['USE_VGEM_MAP'],
+          'sources': [
+            'gpu/client_native_pixmap_vgem.cc',
+            'gpu/client_native_pixmap_vgem.h',
+          ],
         }],
       ],
     },

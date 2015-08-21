@@ -16,7 +16,7 @@ class OZONE_EXPORT ClientNativePixmap {
  public:
   virtual ~ClientNativePixmap() {}
 
-  virtual bool Map(void** data) = 0;
+  virtual void* Map() = 0;
   virtual void Unmap() = 0;
   virtual void GetStride(int* stride) const = 0;
 };

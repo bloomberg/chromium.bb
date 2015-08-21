@@ -22,7 +22,6 @@ class StubClientNativePixmapFactory : public ClientNativePixmapFactory {
   scoped_ptr<ClientNativePixmap> ImportFromHandle(
       const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
-      gfx::BufferFormat format,
       gfx::BufferUsage usage) override {
     NOTREACHED();
     return nullptr;

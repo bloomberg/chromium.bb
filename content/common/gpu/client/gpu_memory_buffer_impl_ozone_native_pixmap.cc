@@ -29,19 +29,21 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     const DestructionCallback& callback) {
   scoped_ptr<ui::ClientNativePixmap> native_pixmap =
       ui::ClientNativePixmapFactory::GetInstance()->ImportFromHandle(
-          handle.native_pixmap_handle, size, format, usage);
+          handle.native_pixmap_handle, size, usage);
   DCHECK(native_pixmap);
-  return make_scoped_ptr(
-      new GpuMemoryBufferImplOzoneNativePixmap(handle.id, size, format,
-                                               callback, native_pixmap.Pass()));
+  return make_scoped_ptr(new GpuMemoryBufferImplOzoneNativePixmap(
+      handle.id, size, format, callback, native_pixmap.Pass()));
 }
 
 bool GpuMemoryBufferImplOzoneNativePixmap::Map(void** data) {
-  return pixmap_->Map(data);
+  *data = pixmap_->Map();
+  mapped_ = true;
+  return mapped_;
 }
 
 void GpuMemoryBufferImplOzoneNativePixmap::Unmap() {
   pixmap_->Unmap();
+  mapped_ = false;
 }
 
 void GpuMemoryBufferImplOzoneNativePixmap::GetStride(int* stride) const {
