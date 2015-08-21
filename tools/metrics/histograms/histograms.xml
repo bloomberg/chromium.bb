@@ -54555,7 +54555,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1"
       label="Lo-Fi was not used because the network quality was always good"/>
   <int value="2"
-      label="Lo-Fi was not used because the user implicitly opted out"/>
+      label="Lo-Fi was not used because the user implicitly permanently opted
+             out"/>
+  <int value="3"
+      label="Lo-Fi was not used because the user implicitly temporarily opted
+             out"/>
 </enum>
 
 <enum name="DataReductionProxyLoFiUIAction" type="int">

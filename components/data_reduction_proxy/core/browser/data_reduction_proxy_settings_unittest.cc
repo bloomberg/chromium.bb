@@ -346,6 +346,7 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
   for (int i = 1; i <= settings_->lo_fi_user_requests_for_images_per_session_;
        ++i) {
     settings_->IncrementLoFiSnackbarShown();
+    settings_->SetLoFiModeActiveOnMainFrame(true);
     settings_->IncrementLoFiUserRequestsForImages();
     EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
                      prefs::kLoFiLoadImagesPerSession));
@@ -392,6 +393,7 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutClicksPerSession) {
   for (int i = 1;
        i <= settings_->lo_fi_user_requests_for_images_per_session_ - 1; ++i) {
     settings_->IncrementLoFiSnackbarShown();
+    settings_->SetLoFiModeActiveOnMainFrame(true);
     settings_->IncrementLoFiUserRequestsForImages();
     EXPECT_EQ(i, test_context_->pref_service()->GetInteger(
                      prefs::kLoFiLoadImagesPerSession));
@@ -443,6 +445,7 @@ TEST_F(DataReductionProxySettingsTest,
     // for each session.
     for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
          ++j) {
+      settings_->SetLoFiModeActiveOnMainFrame(true);
       settings_->IncrementLoFiUserRequestsForImages();
       settings_->IncrementLoFiSnackbarShown();
       EXPECT_EQ(j, test_context_->pref_service()->GetInteger(
@@ -497,6 +500,7 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiImplicitOptOutHistograms) {
     // each session.
     for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
          ++j) {
+      settings_->SetLoFiModeActiveOnMainFrame(true);
       settings_->IncrementLoFiUserRequestsForImages();
     }
 
@@ -535,7 +539,8 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
     settings_->SetLoFiModeActiveOnMainFrame(true);
 
     // Click "Show images" |lo_fi_show_images_clicks_per_session_| times for
-    // each session.
+    // each session. This would put user in either the temporarary opt out
+    // state or permanent opt out.
     for (int j = 1; j <= settings_->lo_fi_user_requests_for_images_per_session_;
          ++j) {
       settings_->IncrementLoFiUserRequestsForImages();
@@ -547,8 +552,32 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
     test_context_->RunUntilIdle();
     histogram_tester.ExpectBucketCount(
         kUMALoFiSessionState,
-        DataReductionProxyService::LO_FI_SESSION_STATE_USED, i);
+        DataReductionProxyService::LO_FI_SESSION_STATE_USED, 0);
+
+    histogram_tester.ExpectBucketCount(
+        kUMALoFiSessionState,
+        DataReductionProxyService::LO_FI_SESSION_STATE_NOT_USED, 1);
+
+    if (i < settings_->lo_fi_consecutive_session_disables_) {
+      histogram_tester.ExpectBucketCount(
+          kUMALoFiSessionState,
+          DataReductionProxyService::LO_FI_SESSION_STATE_TEMPORARILY_OPTED_OUT,
+          i);
+      // Still permanently not opted out.
+      histogram_tester.ExpectBucketCount(
+          kUMALoFiSessionState,
+          DataReductionProxyService::LO_FI_SESSION_STATE_OPTED_OUT, 0);
+    } else {
+      // Permanently opted out.
+      histogram_tester.ExpectBucketCount(
+          kUMALoFiSessionState,
+          DataReductionProxyService::LO_FI_SESSION_STATE_OPTED_OUT, 1);
+    }
   }
+
+  // Total count should be equal to the number of sessions.
+  histogram_tester.ExpectTotalCount(
+      kUMALoFiSessionState, settings_->lo_fi_consecutive_session_disables_ + 1);
 
   // Set the implicit opt out epoch to -1 so that the default value of zero
   // will be an increase and implicit opt out will be reset. This session
@@ -560,7 +589,7 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
   test_context_->RunUntilIdle();
   histogram_tester.ExpectBucketCount(
       kUMALoFiSessionState,
-      DataReductionProxyService::LO_FI_SESSION_STATE_OPTED_OUT, 1);
+      DataReductionProxyService::LO_FI_SESSION_STATE_OPTED_OUT, 2);
 
   // The implicit opt out epoch should cause the state to no longer be opt out.
   test_context_->config()->ResetLoFiStatusForTest();
@@ -569,6 +598,10 @@ TEST_F(DataReductionProxySettingsTest, TestLoFiSessionStateHistograms) {
   histogram_tester.ExpectBucketCount(
       kUMALoFiSessionState,
       DataReductionProxyService::LO_FI_SESSION_STATE_NOT_USED, 2);
+
+  // Total count should be equal to the number of sessions.
+  histogram_tester.ExpectTotalCount(
+      kUMALoFiSessionState, settings_->lo_fi_consecutive_session_disables_ + 3);
 }
 
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {

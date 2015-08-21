@@ -183,12 +183,20 @@ void DataReductionProxyService::InitializeLoFiPrefs() {
         params::IsLoFiCellularOnlyViaFlags() ||
         params::IsLoFiDisabledViaFlags()) {
       // Don't record the session state.
-    } else if (prefs_->GetBoolean(prefs::kLoFiWasUsedThisSession)) {
-      RecordLoFiSessionState(LO_FI_SESSION_STATE_USED);
     } else if (prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables) >=
                lo_fi_consecutive_session_disables) {
       RecordLoFiSessionState(LO_FI_SESSION_STATE_OPTED_OUT);
+    } else if (prefs_->GetInteger(prefs::kLoFiLoadImagesPerSession) >=
+               lo_fi_user_requests_for_images_per_session) {
+      DCHECK(prefs_->GetBoolean(prefs::kLoFiWasUsedThisSession));
+      DCHECK_GT(prefs_->GetInteger(prefs::kLoFiConsecutiveSessionDisables), 0);
+      // Consider the session as temporary opt out only if the number of
+      // requests for images were more than the threshold.
+      RecordLoFiSessionState(LO_FI_SESSION_STATE_TEMPORARILY_OPTED_OUT);
+    } else if (prefs_->GetBoolean(prefs::kLoFiWasUsedThisSession)) {
+      RecordLoFiSessionState(LO_FI_SESSION_STATE_USED);
     } else {
+      DCHECK(!prefs_->GetBoolean(prefs::kLoFiWasUsedThisSession));
       RecordLoFiSessionState(LO_FI_SESSION_STATE_NOT_USED);
     }
 
