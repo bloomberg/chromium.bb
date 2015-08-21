@@ -49,6 +49,8 @@ remoting.ChromotingEvent = function(type) {
   this.cpu;
   /** @type {remoting.ChromotingEvent.SessionState} */
   this.session_state;
+  /** @type {remoting.ChromotingEvent.SessionState} */
+  this.previous_session_state;
   /** @type {remoting.ChromotingEvent.ConnectionType} */
   this.connection_type;
   /** @private {string} */
@@ -81,6 +83,8 @@ remoting.ChromotingEvent = function(type) {
   this.signal_strategy_progress;
   /** @type {?remoting.ChromotingEvent.XmppError} */
   this.xmpp_error;
+  /** @type {remoting.ChromotingEvent.SessionEntryPoint} */
+  this.session_entry_point;
 
   this.init_();
 };
@@ -174,20 +178,31 @@ remoting.ChromotingEvent.Os = {
 
 /** @enum {number} */
 remoting.ChromotingEvent.SessionState = {
-  UNKNOWN: 1,
-  CREATED: 2,
-  BAD_PLUGIN_VERSION: 3,
-  UNKNOWN_PLUGIN_ERROR: 4,
+  UNKNOWN: 1, // deprecated.
+  CREATED: 2, // deprecated.
+  BAD_PLUGIN_VERSION: 3, // deprecated.
+  UNKNOWN_PLUGIN_ERROR: 4, // deprecated.
   CONNECTING: 5,
-  INITIALIZING: 6,
+  INITIALIZING: 6, // deprecated.
   CONNECTED: 7,
   CLOSED: 8,
   CONNECTION_FAILED: 9,
   UNDEFINED: 10,
-  PLUGIN_DISABLED: 11,
+  PLUGIN_DISABLED: 11, // deprecated.
   CONNECTION_DROPPED: 12,
   CONNECTION_CANCELED: 13,
-  AUTHENTICATED: 14
+  AUTHENTICATED: 14,
+  STARTED: 15,
+  SIGNALING: 16,
+  CREATING_PLUGIN: 17,
+};
+
+/** @enum {number} */
+remoting.ChromotingEvent.SessionEntryPoint = {
+  CONNECT_BUTTON: 1,
+  RECONNECT_BUTTON: 2,
+  AUTO_RECONNECT_ON_CONNECTION_DROPPED: 3,
+  AUTO_RECONNECT_ON_HOST_OFFLINE: 4
 };
 
 /** @enum {number} */

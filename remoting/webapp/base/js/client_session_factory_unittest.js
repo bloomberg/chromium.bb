@@ -12,6 +12,8 @@ var mockConnection;
 var factory;
 /** @type {remoting.ClientSession.EventHandler} */
 var listener;
+/** @type {remoting.SessionLogger} */
+var logger;
 
 /**
  * @constructor
@@ -29,6 +31,8 @@ QUnit.module('ClientSessionFactory', {
 
     mockConnection = new remoting.MockConnection();
     listener = new SessionListener();
+    logger = new remoting.SessionLogger(remoting.ChromotingEvent.Role.CLIENT,
+                                        base.doNothing);
     factory = new remoting.ClientSessionFactory(
         document.createElement('div'),
         [remoting.ClientSession.Capability.VIDEO_RECORDER]);
@@ -40,7 +44,7 @@ QUnit.module('ClientSessionFactory', {
 
 QUnit.test('createSession() should return a remoting.ClientSession',
     function(assert) {
-  return factory.createSession(listener).then(
+  return factory.createSession(listener, logger).then(
     function(/** remoting.ClientSession */ session){
       assert.ok(session instanceof remoting.ClientSession);
       assert.ok(
@@ -62,7 +66,7 @@ QUnit.test('createSession() should reject on signal strategy failure',
 
   var signalStrategyDispose = sinon.stub(mockSignalStrategy, 'dispose');
 
-  return factory.createSession(listener).then(
+  return factory.createSession(listener, logger).then(
     assert.ok.bind(assert, false, 'Expect createSession() to fail.')
   ).catch(function(/** remoting.Error */ error) {
     assert.ok(
@@ -80,7 +84,7 @@ QUnit.test('createSession() should reject on plugin initialization failure',
 
   var signalStrategyDispose = sinon.stub(mockSignalStrategy, 'dispose');
 
-  return factory.createSession(listener).then(function() {
+  return factory.createSession(listener, logger).then(function() {
     assert.ok(false, 'Expect createSession() to fail.');
   }).catch(function(/** remoting.Error */ error) {
     assert.ok(

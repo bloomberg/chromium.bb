@@ -37,12 +37,13 @@ remoting.ClientSessionFactory = function(container, capabilities) {
  * Creates a session.
  *
  * @param {remoting.ClientSession.EventHandler} listener
+ * @param {remoting.SessionLogger} logger
  * @param {boolean=} opt_useApiaryForLogging
  * @return {Promise<!remoting.ClientSession>} Resolves with the client session
  *     if succeeded or rejects with remoting.Error on failure.
  */
 remoting.ClientSessionFactory.prototype.createSession =
-    function(listener, opt_useApiaryForLogging) {
+    function(listener, logger, opt_useApiaryForLogging) {
   var that = this;
   /** @type {string} */
   var token;
@@ -50,9 +51,11 @@ remoting.ClientSessionFactory.prototype.createSession =
   var signalStrategy;
   /** @type {remoting.ClientPlugin} */
   var clientPlugin;
-  var useApiaryForLogging = Boolean(opt_useApiaryForLogging);
 
-  function OnError(/** remoting.Error */ error) {
+  function OnError(/** !remoting.Error */ error) {
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
+        remoting.ChromotingEvent.ConnectionError.UNEXPECTED);
     base.dispose(signalStrategy);
     base.dispose(clientPlugin);
     throw error;
@@ -63,14 +66,25 @@ remoting.ClientSessionFactory.prototype.createSession =
     token = authToken;
     return remoting.identity.getUserInfo();
   }).then(function(/** {email: string, name: string} */ userInfo) {
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.SIGNALING,
+        remoting.ChromotingEvent.ConnectionError.NONE);
     return connectSignaling(userInfo.email, token);
   }).then(function(/** remoting.SignalStrategy */ strategy) {
     signalStrategy = strategy;
+    logger.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CREATING_PLUGIN,
+        remoting.ChromotingEvent.ConnectionError.NONE);
     return createPlugin(that.container_, that.requiredCapabilities_);
   }).then(function(/** remoting.ClientPlugin */ plugin) {
     clientPlugin = plugin;
+    // TODO(kelvinp): Remove |opt_useApiaryForLogging| once we have migrated
+    // away from XMPP based logging (crbug.com/523423).
+    var sessionLogger = Boolean(opt_useApiaryForLogging) ?
+                            logger :
+                            new remoting.LogToServer(signalStrategy);
     return new remoting.ClientSession(
-        plugin, signalStrategy, useApiaryForLogging, listener);
+        plugin, signalStrategy, sessionLogger, listener);
   }).catch(
     remoting.Error.handler(OnError)
   );

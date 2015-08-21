@@ -24,7 +24,7 @@ var remoting = remoting || {};
 /**
  * @param {remoting.ClientPlugin} plugin
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
- * @param {boolean} useApiaryForLogging
+ * @param {remoting.Logger} logger
  * @param {remoting.ClientSession.EventHandler} listener
  *
  * @constructor
@@ -33,7 +33,7 @@ var remoting = remoting || {};
  * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
 remoting.ClientSession = function(
-    plugin, signalStrategy, useApiaryForLogging, listener) {
+    plugin, signalStrategy, logger, listener) {
   base.inherits(this, base.EventSourceImpl);
 
   /** @private */
@@ -58,7 +58,7 @@ remoting.ClientSession = function(
   this.hasReceivedFrame_ = false;
 
   /** @private {remoting.Logger} */
-  this.logger_ = this.createLogger_(useApiaryForLogging, signalStrategy);
+  this.logger_ = logger;
 
   /** @private */
   this.signalStrategy_ = signalStrategy;
@@ -75,13 +75,6 @@ remoting.ClientSession = function(
   /** @private {remoting.XmppErrorCache} */
   this.xmppErrorCache_ = new remoting.XmppErrorCache();
 
-  /**
-   * Allow host-offline error reporting to be suppressed in situations where it
-   * would not be useful, for example, when using a cached host JID.
-   *
-   * @type {boolean} @private
-   */
-  this.logHostOfflineErrors_ = true;
 
   /** @private {remoting.ClientPlugin} */
   this.plugin_ = plugin;
@@ -139,6 +132,9 @@ remoting.ClientSession.EventHandler.prototype.onDisconnected =
 // the names given here.
 // The negative values represent state transitions that occur within the
 // web-app that have no corresponding plugin state transition.
+//
+// TODO(kelvinp): Merge this enum with remoting.ChromotingEvent.SessionState
+// once we have migrated away from XMPP-based logging (crbug.com/523423).
 /** @enum {number} */
 remoting.ClientSession.State = {
   CONNECTION_CANCELED: -3,  // Connection closed (gracefully) before connecting.
@@ -376,26 +372,6 @@ remoting.ClientSession.prototype.onFirstFrameReceived = function() {
  */
 remoting.ClientSession.prototype.hasReceivedFrame = function() {
   return this.hasReceivedFrame_;
-};
-
-/**
- * @param {boolean} useApiary
- * @param {remoting.SignalStrategy} signalStrategy
- * @return {remoting.Logger}
- *
- * @private
- */
-remoting.ClientSession.prototype.createLogger_ = function(
-    useApiary, signalStrategy) {
-  if (useApiary) {
-    var logger = new remoting.SessionLogger(
-      remoting.ChromotingEvent.Role.CLIENT,
-      remoting.TelemetryEventWriter.Client.write
-    );
-    return logger;
-  } else {
-    return new remoting.LogToServer(signalStrategy);
-  }
 };
 
 /**
@@ -637,13 +613,6 @@ remoting.ClientSession.prototype.translateState_ = function(previous, current) {
   if (previous == State.CONNECTING || previous == State.AUTHENTICATED) {
     if (current == State.CLOSED) {
       return remoting.ClientSession.State.CONNECTION_CANCELED;
-    } else if (current == State.FAILED &&
-        this.error_.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
-        !this.logHostOfflineErrors_) {
-      // The application requested host-offline errors to be suppressed, for
-      // example, because this connection attempt is using a cached host JID.
-      console.log('Suppressing host-offline error.');
-      return State.CONNECTION_CANCELED;
     }
   } else if (previous == State.CONNECTED && current == State.FAILED) {
     return State.CONNECTION_DROPPED;
@@ -654,16 +623,4 @@ remoting.ClientSession.prototype.translateState_ = function(previous, current) {
 /** @private */
 remoting.ClientSession.prototype.reportStatistics = function() {
   this.logger_.logStatistics(this.plugin_.getPerfStats());
-};
-
-/**
- * Enable or disable logging of connection errors due to a host being offline.
- * For example, if attempting a connection using a cached JID, host-offline
- * errors should not be logged because the JID will be refreshed and the
- * connection retried.
- *
- * @param {boolean} enable True to log host-offline errors; false to suppress.
- */
-remoting.ClientSession.prototype.logHostOfflineErrors = function(enable) {
-  this.logHostOfflineErrors_ = enable;
 };

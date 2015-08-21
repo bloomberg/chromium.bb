@@ -42,19 +42,21 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
  *
  * @param {remoting.Host} host the Host to connect to.
  * @param {remoting.CredentialsProvider} credentialsProvider
- * @param {boolean=} opt_suppressOfflineError
+ * @param {remoting.SessionLogger} logger
  * @return {void} Nothing.
  */
 remoting.DesktopRemotingActivity.prototype.start =
-    function(host, credentialsProvider, opt_suppressOfflineError) {
+    function(host, credentialsProvider, logger) {
   var that = this;
   var useApiaryForLogging = host.loggingChannel === 'APIARY';
-  this.sessionFactory_.createSession(this, useApiaryForLogging).then(
+  this.sessionFactory_.createSession(this, logger, useApiaryForLogging).then(
     function(/** remoting.ClientSession */ session) {
       that.session_ = session;
-      session.logHostOfflineErrors(!opt_suppressOfflineError);
-      session.getLogger().setHostVersion(host.hostVersion);
 
+      // Update the host version and the Mode for the legacy XMPP logger.
+      // TODO(kelvinp): Remove this block of code when we have migrated away
+      // from XMPP-based logging (crbug.com/523423).
+      session.getLogger().setHostVersion(host.hostVersion);
       var Mode = remoting.ChromotingEvent.Mode;
       if (that.parentActivity_ instanceof remoting.It2MeActivity) {
         session.getLogger().setLogEntryMode(Mode.IT2ME);

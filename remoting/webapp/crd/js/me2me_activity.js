@@ -34,6 +34,9 @@ remoting.Me2MeActivity = function(host, hostList) {
   /** @private {remoting.SmartReconnector} */
   this.reconnector_ = null;
 
+  /** @private {remoting.SessionLogger} */
+  this.logger_ = null;
+
   /** @private {remoting.DesktopRemotingActivity} */
   this.desktopActivity_ = null;
 };
@@ -47,10 +50,15 @@ remoting.Me2MeActivity.prototype.start = function() {
   var webappVersion = chrome.runtime.getManifest().version;
   var that = this;
 
+  var Event = remoting.ChromotingEvent;
+  this.logger_ = this.createLogger_(Event.SessionEntryPoint.CONNECT_BUTTON);
+  this.logger_.logSessionStateChange(Event.SessionState.STARTED,
+                                     Event.ConnectionError.NONE);
+
   this.hostUpdateDialog_.showIfNecessary(webappVersion).then(function() {
     return that.host_.options.load();
   }).then(function() {
-    that.connect_(true);
+    that.connect_();
   }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
     if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
@@ -70,15 +78,40 @@ remoting.Me2MeActivity.prototype.getDesktopActivity = function() {
 };
 
 /**
- * @param {boolean} suppressHostOfflineError
+ * @param {remoting.ChromotingEvent.SessionEntryPoint} entryPoint
+ * @return {!remoting.SessionLogger}
  * @private
  */
-remoting.Me2MeActivity.prototype.connect_ = function(suppressHostOfflineError) {
+remoting.Me2MeActivity.prototype.createLogger_ = function(entryPoint) {
+  var Mode = remoting.ChromotingEvent.Mode;
+  var logger = remoting.SessionLogger.createForClient();
+  logger.setEntryPoint(entryPoint);
+  logger.setHostVersion(this.host_.hostVersion);
+  logger.setLogEntryMode(Mode.ME2ME);
+  return logger;
+};
+
+/**
+ * @param {remoting.ChromotingEvent.SessionEntryPoint} entryPoint
+ * @private
+ */
+remoting.Me2MeActivity.prototype.reconnect_ = function(entryPoint) {
+  this.logger_ = this.createLogger_(entryPoint);
+  var Event = remoting.ChromotingEvent;
+  this.logger_.logSessionStateChange(Event.SessionState.STARTED,
+                                     Event.ConnectionError.NONE);
+  this.connect_();
+};
+
+/**
+ * @private
+ */
+remoting.Me2MeActivity.prototype.connect_ = function() {
   base.dispose(this.desktopActivity_);
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
   this.desktopActivity_.getConnectingDialog().show();
   this.desktopActivity_.start(this.host_, this.createCredentialsProvider_(),
-                              suppressHostOfflineError);
+                              this.logger_);
 };
 
 /**
@@ -114,8 +147,7 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
     that.pinDialog_.show(supportsPairing).then(function(/** string */ pin) {
       remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
       // Done obtaining PIN information. Log time taken for PIN entry.
-      var logToServer = that.desktopActivity_.getSession().getLogger();
-      logToServer.setAuthTotalTime(new Date().getTime() - authStartTime);
+      that.logger_.setAuthTotalTime(new Date().getTime() - authStartTime);
       onPinFetched(pin);
     }).catch(remoting.Error.handler(function(/** remoting.Error */ error) {
       console.assert(error.hasTag(remoting.Error.Tag.CANCELLED),
@@ -135,24 +167,37 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
 
 /**
  * @param {!remoting.Error} error
+ * @private
+ */
+remoting.Me2MeActivity.prototype.reconnectOnHostOffline_ = function(error) {
+  var that = this;
+  var onHostListRefresh = function(/** boolean */ success) {
+    if (success) {
+      var host = that.hostList_.getHostForId(that.host_.hostId);
+      var SessionEntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
+
+      // Reconnect if the host's JID changes.
+      if (Boolean(host) && host.jabberId != that.host_.jabberId) {
+        that.host_ = host;
+        that.reconnect_(SessionEntryPoint.AUTO_RECONNECT_ON_HOST_OFFLINE);
+        return;
+      }
+    }
+    that.showErrorMessage_(error);
+  };
+
+  this.retryOnHostOffline_ = false;
+  // The plugin will be re-created when the host list has been refreshed.
+  this.hostList_.refresh(onHostListRefresh);
+};
+
+/**
+ * @param {!remoting.Error} error
  */
 remoting.Me2MeActivity.prototype.onConnectionFailed = function(error) {
   if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
       this.retryOnHostOffline_) {
-    var that = this;
-    var onHostListRefresh = function(/** boolean */ success) {
-      if (success) {
-        // Get the host from the hostList for the refreshed JID.
-        that.host_ = that.hostList_.getHostForId(that.host_.hostId);
-        that.connect_(false);
-        return;
-      }
-      that.showErrorMessage_(error);
-    };
-    this.retryOnHostOffline_ = false;
-
-    // The plugin will be re-created when the host finished refreshing
-    this.hostList_.refresh(onHostListRefresh);
+    this.reconnectOnHostOffline_(error);
   } else if (!error.isNone()) {
     this.showErrorMessage_(error);
   }
@@ -175,12 +220,14 @@ remoting.Me2MeActivity.prototype.onConnected = function(connectionInfo) {
   plugin.extensions().register(new remoting.GnubbyAuthHandler());
   this.pinDialog_.requestPairingIfNecessary(connectionInfo.plugin());
 
+  var SessionEntryPoint = remoting.ChromotingEvent.SessionEntryPoint;
+
   base.dispose(this.reconnector_);
   this.reconnector_ = new remoting.SmartReconnector(
       this.desktopActivity_.getConnectingDialog(),
-      this.connect_.bind(this, false),
-      this.stop.bind(this),
-      connectionInfo.session());
+      this.reconnect_.bind(
+          this, SessionEntryPoint.AUTO_RECONNECT_ON_CONNECTION_DROPPED),
+      this.stop.bind(this), connectionInfo.session());
 };
 
 remoting.Me2MeActivity.prototype.onDisconnected = function(error) {
@@ -223,7 +270,8 @@ remoting.Me2MeActivity.prototype.showFinishDialog_ = function(mode) {
     if (result === Result.PRIMARY) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
-      that.connect_(true);
+      that.reconnect_(
+          remoting.ChromotingEvent.SessionEntryPoint.RECONNECT_BUTTON);
     }
   });
 };

@@ -12,6 +12,8 @@ var mockConnection;
 var session;
 /** @type {remoting.ClientSession.EventHandler} */
 var listener;
+/** @type {remoting.SessionLogger} */
+var logger;
 /** @type {sinon.TestStub} */
 var logToServerStub;
 
@@ -64,14 +66,16 @@ QUnit.module('ClientSession', {
 
     mockConnection = new remoting.MockConnection();
     listener = new SessionListener();
+    logger = new remoting.SessionLogger(remoting.ChromotingEvent.Role.CLIENT,
+                                        base.doNothing);
+    logToServerStub = sinon.stub(logger, 'logClientSessionStateChange');
+
 
     var sessionFactory = new remoting.ClientSessionFactory(
       document.createElement('div'), ['fake_capability']);
-
-    return sessionFactory.createSession(listener).then(function(clientSession) {
-      session = clientSession;
-      logToServerStub =
-          sinon.stub(session.getLogger(), 'logClientSessionStateChange');
+    return sessionFactory.createSession(listener, logger, true).then(
+        function(clientSession) {
+       session = clientSession;
     });
   },
   afterEach: function() {
@@ -105,25 +109,6 @@ QUnit.test('should foward Iq from signalStrategy to plugin', function(assert) {
   });
 });
 
-QUnit.test('logHostOfflineErrors(false) should suppress offline errors',
-  function(assert) {
-
-  session.logHostOfflineErrors(false);
-
-  var PluginError = remoting.ClientSession.ConnectionError;
-  var State = remoting.ClientSession.State;
-
-  return connect(PluginError.HOST_IS_OFFLINE).then(function() {
-    assert.ok(false, 'Expect connection to fail');
-  }).catch(function(/** remoting.Error */ error) {
-    assert.ok(error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE));
-    assert.equal(logToServerStub.args[1][0], State.CONNECTION_CANCELED);
-    var errorLogged = /** @type {remoting.Error} */(logToServerStub.args[1][1]);
-    assert.equal(errorLogged.getTag(), remoting.Error.Tag.HOST_IS_OFFLINE);
-
-  });
-});
-
 QUnit.test('disconnect() should raise the CLOSED event', function(assert) {
   return connect().then(function() {
     var onDisconnected = sinon.stub(listener, 'onDisconnected');
@@ -149,8 +134,6 @@ QUnit.test(
 QUnit.test(
   'Connection error before CONNECTED should raise the CONNECTION_FAILED event',
   function(assert) {
-
-  session.logHostOfflineErrors(true);
 
   var PluginError = remoting.ClientSession.ConnectionError;
   var State = remoting.ClientSession.State;

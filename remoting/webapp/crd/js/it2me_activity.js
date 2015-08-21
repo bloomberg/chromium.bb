@@ -34,6 +34,9 @@ remoting.It2MeActivity = function() {
 
   /** @private {remoting.DesktopRemotingActivity} */
   this.desktopActivity_ = null;
+  /** @private {remoting.SessionLogger} */
+  this.logger_ = null;
+
 };
 
 remoting.It2MeActivity.prototype.dispose = function() {
@@ -43,6 +46,11 @@ remoting.It2MeActivity.prototype.dispose = function() {
 
 remoting.It2MeActivity.prototype.start = function() {
   var that = this;
+
+  this.logger_ = this.createLogger_();
+  this.logger_.logSessionStateChange(
+      remoting.ChromotingEvent.SessionState.STARTED,
+      remoting.ChromotingEvent.ConnectionError.NONE);
 
   this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
 
@@ -60,6 +68,19 @@ remoting.It2MeActivity.prototype.start = function() {
       that.showErrorMessage_(error);
     }
   }));
+};
+
+
+/**
+ * @return {!remoting.SessionLogger}
+ * @private
+ */
+remoting.It2MeActivity.prototype.createLogger_ = function() {
+  var Event = remoting.ChromotingEvent;
+  var logger = remoting.SessionLogger.createForClient();
+  logger.setEntryPoint(Event.SessionEntryPoint.CONNECT_BUTTON);
+  logger.setLogEntryMode(Event.Mode.IT2ME);
+  return logger;
 };
 
 remoting.It2MeActivity.prototype.stop = function() {
@@ -147,7 +168,8 @@ remoting.It2MeActivity.prototype.verifyAccessCode_ = function(accessCode) {
  */
 remoting.It2MeActivity.prototype.connect_ = function(host) {
   this.desktopActivity_.start(
-      host, new remoting.CredentialsProvider({ accessCode: this.passCode_ }));
+      host, new remoting.CredentialsProvider({accessCode: this.passCode_}),
+      this.logger_);
 };
 
 })();

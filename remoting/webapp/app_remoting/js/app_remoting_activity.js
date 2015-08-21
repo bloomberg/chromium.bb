@@ -151,13 +151,12 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
       var credentialsProvider = new remoting.CredentialsProvider(
               {fetchThirdPartyToken: fetchThirdPartyToken});
       var that = this;
+      var logger = remoting.SessionLogger.createForClient();
 
-      this.sessionFactory_.createSession(this).then(
+      this.sessionFactory_.createSession(this, logger).then(
         function(/** remoting.ClientSession */ session) {
           that.session_ = session;
-          session.logHostOfflineErrors(true);
-          session.getLogger().setLogEntryMode(
-              remoting.ChromotingEvent.Mode.LGAPP);
+          logger.setLogEntryMode(remoting.ChromotingEvent.Mode.LGAPP);
           session.connect(host, credentialsProvider);
       });
     } else if (response && response.status == 'pending') {
