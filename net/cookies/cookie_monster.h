@@ -360,6 +360,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // For ComputeCookieDiff.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, ComputeCookieDiff);
 
+  // For CookieSource histogram enum.
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, CookieSourceHistogram);
+
   // Internal reasons for deletion, used to populate informative histograms
   // and to provide a public cause for onCookieChange notifications.
   //
@@ -408,6 +411,26 @@ class NET_EXPORT CookieMonster : public CookieStore {
     COOKIE_TYPE_HTTPONLY,
     COOKIE_TYPE_SECURE,
     COOKIE_TYPE_LAST_ENTRY
+  };
+
+  // Used to populate a histogram containing information about the
+  // sources of Secure and non-Secure cookies: that is, whether such
+  // cookies are set by origins with cryptographic or non-cryptographic
+  // schemes. Please do not reorder the list when adding new
+  // entries. New items MUST be added at the end of the list, just
+  // before COOKIE_SOURCE_LAST_ENTRY.
+  //
+  // COOKIE_SOURCE_(NON)SECURE_COOKIE_(NON)CRYPTOGRAPHIC_SCHEME means
+  // that a cookie was set or overwritten from a URL with the given type
+  // of scheme. This enum should not be used when cookies are *cleared*,
+  // because its purpose is to understand if Chrome can deprecate the
+  // ability of HTTP urls to set/overwrite Secure cookies.
+  enum CookieSource {
+    COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME = 0,
+    COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME,
+    COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME,
+    COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME,
+    COOKIE_SOURCE_LAST_ENTRY
   };
 
   // The strategy for fetching cookies. Controlled by Finch experiment.
@@ -658,6 +681,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::HistogramBase* histogram_count_;
   base::HistogramBase* histogram_cookie_deletion_cause_;
   base::HistogramBase* histogram_cookie_type_;
+  base::HistogramBase* histogram_cookie_source_scheme_;
   base::HistogramBase* histogram_time_blocked_on_load_;
 
   CookieMap cookies_;

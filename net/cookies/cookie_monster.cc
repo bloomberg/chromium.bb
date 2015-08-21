@@ -1826,10 +1826,31 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   }
 
   // See InitializeHistograms() for details.
-  int32_t sample = cc->IsFirstPartyOnly() ? 1 << COOKIE_TYPE_FIRSTPARTYONLY : 0;
-  sample |= cc->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
-  sample |= cc->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
-  histogram_cookie_type_->Add(sample);
+  int32_t cookie_type_sample =
+      cc->IsFirstPartyOnly() ? 1 << COOKIE_TYPE_FIRSTPARTYONLY : 0;
+  cookie_type_sample |= cc->IsHttpOnly() ? 1 << COOKIE_TYPE_HTTPONLY : 0;
+  cookie_type_sample |= cc->IsSecure() ? 1 << COOKIE_TYPE_SECURE : 0;
+  histogram_cookie_type_->Add(cookie_type_sample);
+
+  // Histogram the type of scheme used on URLs that set cookies. This
+  // intentionally includes cookies that are set or overwritten by
+  // http:// URLs, but not cookies that are cleared by http:// URLs, to
+  // understand if the former behavior can be deprecated for Secure
+  // cookies.
+  if (!cc->Source().is_empty()) {
+    CookieSource cookie_source_sample;
+    if (cc->Source().SchemeIsCryptographic()) {
+      cookie_source_sample =
+          cc->IsSecure() ? COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME
+                         : COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME;
+    } else {
+      cookie_source_sample =
+          cc->IsSecure()
+              ? COOKIE_SOURCE_SECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME
+              : COOKIE_SOURCE_NONSECURE_COOKIE_NONCRYPTOGRAPHIC_SCHEME;
+    }
+    histogram_cookie_source_scheme_->Add(cookie_source_sample);
+  }
 
   RunCallbacks(*cc, false);
 
@@ -2239,6 +2260,9 @@ void CookieMonster::InitializeHistograms() {
   histogram_cookie_type_ = base::LinearHistogram::FactoryGet(
       "Cookie.Type", 1, (1 << COOKIE_TYPE_LAST_ENTRY) - 1,
       1 << COOKIE_TYPE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
+  histogram_cookie_source_scheme_ = base::LinearHistogram::FactoryGet(
+      "Cookie.CookieSourceScheme", 1, COOKIE_SOURCE_LAST_ENTRY - 1,
+      COOKIE_SOURCE_LAST_ENTRY, base::Histogram::kUmaTargetedHistogramFlag);
 
   // From UMA_HISTOGRAM_{CUSTOM_,}TIMES
   histogram_time_blocked_on_load_ = base::Histogram::FactoryTimeGet(
