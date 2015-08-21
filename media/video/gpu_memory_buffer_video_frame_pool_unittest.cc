@@ -216,4 +216,26 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
   EXPECT_EQ(6u, gles2_->gen_textures);
 }
 
+TEST_F(GpuMemoryBufferVideoFramePoolTest, CreateOneHardwareUYUVFrame) {
+  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
+  scoped_refptr<MockGpuVideoAcceleratorFactories> mock_gpu_factories(
+      new MockGpuVideoAcceleratorFactories);
+  mock_gpu_factories->SetVideoFrameOutputFormat(PIXEL_FORMAT_UYVY);
+  scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_ =
+      make_scoped_ptr(new GpuMemoryBufferVideoFramePool(
+          media_task_runner_, copy_task_runner_.get(), mock_gpu_factories));
+
+  EXPECT_CALL(*mock_gpu_factories.get(), GetGLES2Interface())
+      .WillRepeatedly(testing::Return(gles2_.get()));
+
+  scoped_refptr<VideoFrame> frame;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
+
+  RunUntilIdle();
+
+  EXPECT_NE(software_frame.get(), frame.get());
+  EXPECT_EQ(1u, gles2_->gen_textures);
+}
+
 }  // namespace media

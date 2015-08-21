@@ -1365,10 +1365,15 @@ RenderThreadImpl::GetGpuFactories() {
                                  "gpu_channel_. See crbug.com/495185.";
     CHECK(gpu_channel_host.get()) << "Have gpu_va_context_provider but lost "
                                      "gpu_channel_. See crbug.com/495185.";
+    media::VideoPixelFormat video_pixel_format = media::PIXEL_FORMAT_I420;
+#if defined(OS_MACOSX)
+    // TODO(dcastagna): Check that the extension is available.
+    video_pixel_format = media::PIXEL_FORMAT_UYVY;
+#endif
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
         gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_,
         enable_gpu_memory_buffer_video_frames, image_texture_target,
-        enable_video_accelerator);
+        video_pixel_format, enable_video_accelerator);
   }
   return gpu_factories;
 }

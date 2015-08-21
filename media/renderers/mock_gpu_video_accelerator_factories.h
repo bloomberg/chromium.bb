@@ -52,6 +52,15 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget() override;
+  VideoPixelFormat VideoFrameOutputFormat() override {
+    return video_frame_output_format_;
+  };
+
+  void SetVideoFrameOutputFormat(
+      const VideoPixelFormat video_frame_output_format) {
+    video_frame_output_format_ = video_frame_output_format;
+  };
+
   MOCK_METHOD0(IsTextureRGSupported, bool());
   MOCK_METHOD0(GetGLES2Interface, gpu::gles2::GLES2Interface*());
 
@@ -65,6 +74,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   ~MockGpuVideoAcceleratorFactories() override;
 
   DISALLOW_COPY_AND_ASSIGN(MockGpuVideoAcceleratorFactories);
+
+  VideoPixelFormat video_frame_output_format_ = PIXEL_FORMAT_I420;
 };
 
 }  // namespace media
