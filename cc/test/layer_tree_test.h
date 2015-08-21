@@ -105,6 +105,7 @@ class TestHooks : public AnimationDelegate {
   virtual void DidSetVisibleOnImplTree(LayerTreeHostImpl* host_impl,
                                        bool visible) {}
   virtual void ScheduleComposite() {}
+  virtual void DidSetNeedsUpdateLayers() {}
 
   // Hooks for SchedulerClient.
   virtual void ScheduledActionWillSendBeginMainFrame() {}

@@ -6135,5 +6135,71 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestPageScaleFlags);
 
+class LayerTreeHostScrollingAndScalingUpdatesLayers : public LayerTreeHostTest {
+ public:
+  LayerTreeHostScrollingAndScalingUpdatesLayers()
+      : requested_update_layers_(false), commit_count_(0) {}
+
+  void SetupTree() override {
+    LayerTreeHostTest::SetupTree();
+    Layer* root_layer = layer_tree_host()->root_layer();
+    scoped_refptr<Layer> scroll_layer = Layer::Create(layer_settings());
+    CreateVirtualViewportLayers(root_layer, scroll_layer, root_layer->bounds(),
+                                root_layer->bounds(), layer_tree_host(),
+                                layer_settings());
+  }
+
+  void BeginTest() override {
+    LayerTreeHostCommon::ScrollUpdateInfo scroll;
+    scroll.layer_id = layer_tree_host()->root_layer()->id();
+    scroll.scroll_delta = gfx::Vector2d(0, 33);
+    scroll_info_.scrolls.push_back(scroll);
+
+    scale_info_.page_scale_delta = 2.71f;
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    switch (commit_count_) {
+      case 0:
+        requested_update_layers_ = false;
+        layer_tree_host()->ApplyScrollAndScale(&no_op_info_);
+        EXPECT_FALSE(requested_update_layers_);
+        break;
+      case 1:
+        requested_update_layers_ = false;
+        layer_tree_host()->ApplyScrollAndScale(&scale_info_);
+        EXPECT_TRUE(requested_update_layers_);
+        break;
+      case 2:
+        requested_update_layers_ = false;
+        layer_tree_host()->ApplyScrollAndScale(&scroll_info_);
+        EXPECT_TRUE(requested_update_layers_);
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void DidSetNeedsUpdateLayers() override { requested_update_layers_ = true; }
+
+  void DidCommit() override {
+    if (++commit_count_ < 3)
+      PostSetNeedsCommitToMainThread();
+  }
+
+  void AfterTest() override {}
+
+  ScrollAndScaleSet scroll_info_;
+  ScrollAndScaleSet scale_info_;
+  ScrollAndScaleSet no_op_info_;
+  bool requested_update_layers_;
+  int commit_count_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostScrollingAndScalingUpdatesLayers);
+
 }  // namespace
 }  // namespace cc

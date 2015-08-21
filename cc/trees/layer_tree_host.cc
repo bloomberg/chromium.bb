@@ -843,6 +843,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
             gfx::ScrollOffsetWithDelta(layer->scroll_offset(),
                                        info->scrolls[i].scroll_delta));
       }
+      SetNeedsUpdateLayers();
     }
   }
 
@@ -874,6 +875,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
         inner_viewport_scroll_delta, outer_viewport_scroll_delta,
         info->elastic_overscroll_delta, info->page_scale_delta,
         info->top_controls_delta);
+    SetNeedsUpdateLayers();
   }
 }
 

@@ -134,6 +134,11 @@ class ThreadProxyForTest : public ThreadProxy {
  private:
   TestHooks* test_hooks_;
 
+  void SetNeedsUpdateLayers() override {
+    ThreadProxy::SetNeedsUpdateLayers();
+    test_hooks_->DidSetNeedsUpdateLayers();
+  }
+
   void ScheduledActionSendBeginMainFrame() override {
     test_hooks_->ScheduledActionWillSendBeginMainFrame();
     ThreadProxy::ScheduledActionSendBeginMainFrame();
