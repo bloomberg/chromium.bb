@@ -65,10 +65,13 @@ class MEDIA_EXPORT AudioDecoderConfig {
   ~AudioDecoderConfig();
 
   // Resets the internal state of this object.  |codec_delay| is in frames.
-  void Initialize(AudioCodec codec, SampleFormat sample_format,
-                  ChannelLayout channel_layout, int samples_per_second,
-                  const uint8* extra_data, size_t extra_data_size,
-                  bool is_encrypted, bool record_stats,
+  void Initialize(AudioCodec codec,
+                  SampleFormat sample_format,
+                  ChannelLayout channel_layout,
+                  int samples_per_second,
+                  const uint8* extra_data,
+                  size_t extra_data_size,
+                  bool is_encrypted,
                   base::TimeDelta seek_preroll,
                   int codec_delay);
 

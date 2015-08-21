@@ -5,7 +5,6 @@
 #include "media/base/video_decoder_config.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "media/base/video_frame.h"
 
 namespace media {
@@ -54,32 +53,10 @@ VideoDecoderConfig::VideoDecoderConfig(VideoCodec codec,
                                        size_t extra_data_size,
                                        bool is_encrypted) {
   Initialize(codec, profile, format, color_space, coded_size, visible_rect,
-             natural_size, extra_data, extra_data_size, is_encrypted, true);
+             natural_size, extra_data, extra_data_size, is_encrypted);
 }
 
 VideoDecoderConfig::~VideoDecoderConfig() {}
-
-// Some videos just want to watch the world burn, with a height of 0; cap the
-// "infinite" aspect ratio resulting.
-static const int kInfiniteRatio = 99999;
-
-// Common aspect ratios (multiplied by 100 and truncated) used for histogramming
-// video sizes.  These were taken on 20111103 from
-// http://wikipedia.org/wiki/Aspect_ratio_(image)#Previous_and_currently_used_aspect_ratios
-static const int kCommonAspectRatios100[] = {
-  100, 115, 133, 137, 143, 150, 155, 160, 166, 175, 177, 185, 200, 210, 220,
-  221, 235, 237, 240, 255, 259, 266, 276, 293, 400, 1200, kInfiniteRatio,
-};
-
-template<class T>  // T has int width() & height() methods.
-static void UmaHistogramAspectRatio(const char* name, const T& size) {
-  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-      name,
-      // Intentionally use integer division to truncate the result.
-      size.height() ? (size.width() * 100) / size.height() : kInfiniteRatio,
-      base::CustomHistogram::ArrayToCustomRanges(
-          kCommonAspectRatios100, arraysize(kCommonAspectRatios100)));
-}
 
 void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     VideoCodecProfile profile,
@@ -90,26 +67,8 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     const gfx::Size& natural_size,
                                     const uint8* extra_data,
                                     size_t extra_data_size,
-                                    bool is_encrypted,
-                                    bool record_stats) {
+                                    bool is_encrypted) {
   CHECK((extra_data_size != 0) == (extra_data != NULL));
-
-  if (record_stats) {
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoCodec", codec, kVideoCodecMax + 1);
-    // Drop UNKNOWN because U_H_E() uses one bucket for all values less than 1.
-    if (profile >= 0) {
-      UMA_HISTOGRAM_ENUMERATION("Media.VideoCodecProfile", profile,
-                                VIDEO_CODEC_PROFILE_MAX + 1);
-    }
-    UMA_HISTOGRAM_COUNTS_10000("Media.VideoCodedWidth", coded_size.width());
-    UmaHistogramAspectRatio("Media.VideoCodedAspectRatio", coded_size);
-    UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth", visible_rect.width());
-    UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio", visible_rect);
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoFramePixelFormat", format,
-                              PIXEL_FORMAT_MAX + 1);
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace", color_space,
-                              COLOR_SPACE_MAX + 1);
-  }
 
   codec_ = codec;
   profile_ = profile;

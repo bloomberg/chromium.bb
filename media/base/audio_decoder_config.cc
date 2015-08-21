@@ -5,8 +5,6 @@
 #include "media/base/audio_decoder_config.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
-#include "media/audio/sample_rates.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -30,8 +28,7 @@ AudioDecoderConfig::AudioDecoderConfig(AudioCodec codec,
                                        size_t extra_data_size,
                                        bool is_encrypted) {
   Initialize(codec, sample_format, channel_layout, samples_per_second,
-             extra_data, extra_data_size, is_encrypted, true,
-             base::TimeDelta(), 0);
+             extra_data, extra_data_size, is_encrypted, base::TimeDelta(), 0);
 }
 
 void AudioDecoderConfig::Initialize(AudioCodec codec,
@@ -41,26 +38,9 @@ void AudioDecoderConfig::Initialize(AudioCodec codec,
                                     const uint8* extra_data,
                                     size_t extra_data_size,
                                     bool is_encrypted,
-                                    bool record_stats,
                                     base::TimeDelta seek_preroll,
                                     int codec_delay) {
   CHECK((extra_data_size != 0) == (extra_data != NULL));
-
-  if (record_stats) {
-    UMA_HISTOGRAM_ENUMERATION("Media.AudioCodec", codec, kAudioCodecMax + 1);
-    UMA_HISTOGRAM_ENUMERATION("Media.AudioSampleFormat", sample_format,
-                              kSampleFormatMax + 1);
-    UMA_HISTOGRAM_ENUMERATION("Media.AudioChannelLayout", channel_layout,
-                              CHANNEL_LAYOUT_MAX + 1);
-    AudioSampleRate asr;
-    if (ToAudioSampleRate(samples_per_second, &asr)) {
-      UMA_HISTOGRAM_ENUMERATION("Media.AudioSamplesPerSecond", asr,
-                                kAudioSampleRateMax + 1);
-    } else {
-      UMA_HISTOGRAM_COUNTS(
-          "Media.AudioSamplesPerSecondUnexpected", samples_per_second);
-    }
-  }
 
   codec_ = codec;
   channel_layout_ = channel_layout;

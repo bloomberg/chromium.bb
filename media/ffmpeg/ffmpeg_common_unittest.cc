@@ -405,7 +405,7 @@ TEST_F(FFmpegCommonTest, OpusAudioDecoderConfig) {
   context.sample_rate = 44100;
 
   AudioDecoderConfig decoder_config;
-  AVCodecContextToAudioDecoderConfig(&context, false, &decoder_config, false);
+  AVCodecContextToAudioDecoderConfig(&context, false, &decoder_config);
   EXPECT_EQ(48000, decoder_config.samples_per_second());
 }
 

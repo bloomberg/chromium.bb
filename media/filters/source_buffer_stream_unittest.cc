@@ -108,7 +108,6 @@ class SourceBufferStreamTest : public testing::Test {
                              NULL,
                              0,
                              false,
-                             false,
                              base::TimeDelta(),
                              0);
     stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
@@ -4089,7 +4088,7 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoMillisecondSplices) {
 
   video_config_ = TestVideoConfig::Invalid();
   audio_config_.Initialize(kCodecVorbis, kSampleFormatPlanarF32,
-                           CHANNEL_LAYOUT_STEREO, 4000, NULL, 0, false, false,
+                           CHANNEL_LAYOUT_STEREO, 4000, NULL, 0, false,
                            base::TimeDelta(), 0);
   stream_.reset(new SourceBufferStream(audio_config_, media_log_, true));
   // Equivalent to 0.5ms per frame.

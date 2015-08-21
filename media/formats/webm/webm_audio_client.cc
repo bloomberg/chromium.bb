@@ -90,7 +90,6 @@ bool WebMAudioClient::InitializeConfig(
       extra_data,
       extra_data_size,
       is_encrypted,
-      true,
       base::TimeDelta::FromMicroseconds(
           (seek_preroll != -1 ? seek_preroll : 0) / 1000),
       codec_delay_in_frames);

@@ -209,7 +209,6 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
                        NULL,
                        0,
                        false,
-                       false,
                        base::TimeDelta(),
                        codec_delay_);
 

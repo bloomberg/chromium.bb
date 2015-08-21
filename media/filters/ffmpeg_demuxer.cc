@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,6 +20,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "media/audio/sample_rates.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/limits.h"
@@ -80,6 +82,79 @@ static base::TimeDelta ExtractStartTime(AVStream* stream,
   return start_time;
 }
 
+// Some videos just want to watch the world burn, with a height of 0; cap the
+// "infinite" aspect ratio resulting.
+const int kInfiniteRatio = 99999;
+
+// Common aspect ratios (multiplied by 100 and truncated) used for histogramming
+// video sizes.  These were taken on 20111103 from
+// http://wikipedia.org/wiki/Aspect_ratio_(image)#Previous_and_currently_used_aspect_ratios
+const int kCommonAspectRatios100[] = {
+    100, 115, 133, 137, 143, 150, 155, 160,  166,
+    175, 177, 185, 200, 210, 220, 221, 235,  237,
+    240, 255, 259, 266, 276, 293, 400, 1200, kInfiniteRatio,
+};
+
+template <class T>  // T has int width() & height() methods.
+static void UmaHistogramAspectRatio(const char* name, const T& size) {
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION(
+      name,
+      // Intentionally use integer division to truncate the result.
+      size.height() ? (size.width() * 100) / size.height() : kInfiniteRatio,
+      base::CustomHistogram::ArrayToCustomRanges(
+          kCommonAspectRatios100, arraysize(kCommonAspectRatios100)));
+}
+
+// Record audio decoder config UMA stats corresponding to a src= playback.
+static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioCodec", audio_config.codec(),
+                            kAudioCodecMax + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioSampleFormat",
+                            audio_config.sample_format(), kSampleFormatMax + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioChannelLayout",
+                            audio_config.channel_layout(),
+                            CHANNEL_LAYOUT_MAX + 1);
+  AudioSampleRate asr;
+  if (ToAudioSampleRate(audio_config.samples_per_second(), &asr)) {
+    UMA_HISTOGRAM_ENUMERATION("Media.AudioSamplesPerSecond", asr,
+                              kAudioSampleRateMax + 1);
+  } else {
+    UMA_HISTOGRAM_COUNTS("Media.AudioSamplesPerSecondUnexpected",
+                         audio_config.samples_per_second());
+  }
+}
+
+// Record video decoder config UMA stats corresponding to a src= playback.
+static void RecordVideoCodecStats(const VideoDecoderConfig& video_config,
+                                  AVColorRange color_range) {
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCodec", video_config.codec(),
+                            kVideoCodecMax + 1);
+
+  // Drop UNKNOWN because U_H_E() uses one bucket for all values less than 1.
+  if (video_config.profile() >= 0) {
+    UMA_HISTOGRAM_ENUMERATION("Media.VideoCodecProfile", video_config.profile(),
+                              VIDEO_CODEC_PROFILE_MAX + 1);
+  }
+  UMA_HISTOGRAM_COUNTS_10000("Media.VideoCodedWidth",
+                             video_config.coded_size().width());
+  UmaHistogramAspectRatio("Media.VideoCodedAspectRatio",
+                          video_config.coded_size());
+  UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth",
+                             video_config.visible_rect().width());
+  UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio",
+                          video_config.visible_rect());
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoFramePixelFormat",
+                            video_config.format(), PIXEL_FORMAT_MAX + 1);
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoFrameColorSpace",
+                            video_config.color_space(), COLOR_SPACE_MAX + 1);
+
+  // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
+  // check for uma enum max usage, since we're abusing
+  // UMA_HISTOGRAM_ENUMERATION to report a discrete value.
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange", color_range,
+                            AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
+}
+
 //
 // FFmpegDemuxerStream
 //
@@ -105,12 +180,12 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
   switch (stream->codec->codec_type) {
     case AVMEDIA_TYPE_AUDIO:
       type_ = AUDIO;
-      AVStreamToAudioDecoderConfig(stream, &audio_config_, true);
+      AVStreamToAudioDecoderConfig(stream, &audio_config_);
       is_encrypted = audio_config_.is_encrypted();
       break;
     case AVMEDIA_TYPE_VIDEO:
       type_ = VIDEO;
-      AVStreamToVideoDecoderConfig(stream, &video_config_, true);
+      AVStreamToVideoDecoderConfig(stream, &video_config_);
       is_encrypted = video_config_.is_encrypted();
 
       rotation_entry = av_dict_get(stream->metadata, "rotate", NULL, 0);
@@ -912,7 +987,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                   codec_context->codec_id);
       // Ensure the codec is supported. IsValidConfig() also checks that the
       // channel layout and sample format are valid.
-      AVStreamToAudioDecoderConfig(stream, &audio_config, false);
+      AVStreamToAudioDecoderConfig(stream, &audio_config);
       if (!audio_config.IsValidConfig())
         continue;
       audio_stream = stream;
@@ -925,7 +1000,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
                                   codec_context->codec_id);
       // Ensure the codec is supported. IsValidConfig() also checks that the
       // frame size and visible size are valid.
-      AVStreamToVideoDecoderConfig(stream, &video_config, false);
+      AVStreamToVideoDecoderConfig(stream, &video_config);
 
       if (!video_config.IsValidConfig())
         continue;
@@ -939,6 +1014,16 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
 
     streams_[i] = new FFmpegDemuxerStream(this, stream);
+
+    // Record audio or video src= playback UMA stats for the stream's decoder
+    // config.
+    if (codec_type == AVMEDIA_TYPE_AUDIO) {
+      RecordAudioCodecStats(streams_[i]->audio_decoder_config());
+    } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      RecordVideoCodecStats(streams_[i]->video_decoder_config(),
+                            stream->codec->color_range);
+    }
+
     max_duration = std::max(max_duration, streams_[i]->duration());
 
     const base::TimeDelta start_time =

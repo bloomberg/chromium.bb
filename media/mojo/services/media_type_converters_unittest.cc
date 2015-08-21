@@ -126,7 +126,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
                     reinterpret_cast<const uint8*>(&kExtraData), kExtraDataSize,
-                    false, false, base::TimeDelta(), 0);
+                    false, base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
@@ -136,7 +136,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Normal) {
 TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_NullExtraData) {
   AudioDecoderConfig config;
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
-                    NULL, 0, false, false, base::TimeDelta(), 0);
+                    NULL, 0, false, base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());
@@ -148,7 +148,7 @@ TEST(MediaTypeConvertersTest, ConvertAudioDecoderConfig_Encrypted) {
   config.Initialize(kCodecAAC, kSampleFormatU8, CHANNEL_LAYOUT_SURROUND, 48000,
                     NULL, 0,
                     true,  // Is encrypted.
-                    false, base::TimeDelta(), 0);
+                    base::TimeDelta(), 0);
   interfaces::AudioDecoderConfigPtr ptr(
       interfaces::AudioDecoderConfig::From(config));
   AudioDecoderConfig result(ptr.To<AudioDecoderConfig>());

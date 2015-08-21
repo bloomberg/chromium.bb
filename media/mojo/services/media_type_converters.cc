@@ -437,7 +437,6 @@ TypeConverter<media::AudioDecoderConfig,
       input->extra_data.size() ? &input->extra_data.front() : NULL,
       input->extra_data.size(),
       input->is_encrypted,
-      false,
       base::TimeDelta::FromMicroseconds(input->seek_preroll_usec),
       input->codec_delay);
   return config;
@@ -482,7 +481,7 @@ TypeConverter<media::VideoDecoderConfig,
       input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
       input->natural_size.To<gfx::Size>(),
       input->extra_data.size() ? &input->extra_data.front() : NULL,
-      input->extra_data.size(), input->is_encrypted, false);
+      input->extra_data.size(), input->is_encrypted);
   return config;
 }
 

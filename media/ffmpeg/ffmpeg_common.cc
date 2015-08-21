@@ -276,11 +276,9 @@ static AVSampleFormat SampleFormatToAVSampleFormat(SampleFormat sample_format) {
   return AV_SAMPLE_FMT_NONE;
 }
 
-void AVCodecContextToAudioDecoderConfig(
-    const AVCodecContext* codec_context,
-    bool is_encrypted,
-    AudioDecoderConfig* config,
-    bool record_stats) {
+void AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
+                                        bool is_encrypted,
+                                        AudioDecoderConfig* config) {
   DCHECK_EQ(codec_context->codec_type, AVMEDIA_TYPE_AUDIO);
 
   AudioCodec codec = CodecIDToAudioCodec(codec_context->codec_id);
@@ -319,25 +317,22 @@ void AVCodecContextToAudioDecoderConfig(
                      codec_context->extradata,
                      codec_context->extradata_size,
                      is_encrypted,
-                     record_stats,
                      seek_preroll,
                      codec_context->delay);
+
   if (codec != kCodecOpus) {
     DCHECK_EQ(av_get_bytes_per_sample(codec_context->sample_fmt) * 8,
               config->bits_per_channel());
   }
 }
 
-void AVStreamToAudioDecoderConfig(
-    const AVStream* stream,
-    AudioDecoderConfig* config,
-    bool record_stats) {
+void AVStreamToAudioDecoderConfig(const AVStream* stream,
+                                  AudioDecoderConfig* config) {
   bool is_encrypted = false;
   AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL, 0);
   if (key)
     is_encrypted = true;
-  return AVCodecContextToAudioDecoderConfig(
-      stream->codec, is_encrypted, config, record_stats);
+  AVCodecContextToAudioDecoderConfig(stream->codec, is_encrypted, config);
 }
 
 void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
@@ -368,10 +363,8 @@ void AudioDecoderConfigToAVCodecContext(const AudioDecoderConfig& config,
   }
 }
 
-void AVStreamToVideoDecoderConfig(
-    const AVStream* stream,
-    VideoDecoderConfig* config,
-    bool record_stats) {
+void AVStreamToVideoDecoderConfig(const AVStream* stream,
+                                  VideoDecoderConfig* config) {
   gfx::Size coded_size(stream->codec->coded_width, stream->codec->coded_height);
 
   // TODO(vrk): This assumes decoded frame data starts at (0, 0), which is true
@@ -405,15 +398,6 @@ void AVStreamToVideoDecoderConfig(
 
   gfx::Size natural_size = GetNaturalSize(
       visible_rect.size(), aspect_ratio.num, aspect_ratio.den);
-
-  if (record_stats) {
-    // Note the PRESUBMIT_IGNORE_UMA_MAX below, this silences the PRESUBMIT.py
-    // check for uma enum max usage, since we're abusing
-    // UMA_HISTOGRAM_ENUMERATION to report a discrete value.
-    UMA_HISTOGRAM_ENUMERATION("Media.VideoColorRange",
-                              stream->codec->color_range,
-                              AVCOL_RANGE_NB);  // PRESUBMIT_IGNORE_UMA_MAX
-  }
 
   VideoPixelFormat format =
       AVPixelFormatToVideoPixelFormat(stream->codec->pix_fmt);
@@ -462,7 +446,7 @@ void AVStreamToVideoDecoderConfig(
 
   config->Initialize(codec, profile, format, color_space, coded_size,
                      visible_rect, natural_size, stream->codec->extradata,
-                     stream->codec->extradata_size, is_encrypted, record_stats);
+                     stream->codec->extradata_size, is_encrypted);
 }
 
 void VideoDecoderConfigToAVCodecContext(

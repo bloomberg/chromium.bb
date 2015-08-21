@@ -150,8 +150,8 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     ASSERT_TRUE(reader_->SeekForTesting(start_timestamp_));
 
     AudioDecoderConfig config;
-    AVCodecContextToAudioDecoderConfig(
-        reader_->codec_context_for_testing(), false, &config, false);
+    AVCodecContextToAudioDecoderConfig(reader_->codec_context_for_testing(),
+                                       false, &config);
 
     EXPECT_EQ(GetParam().codec, config.codec());
     EXPECT_EQ(GetParam().samples_per_second, config.samples_per_second());
@@ -381,7 +381,6 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithNoCodecDelay) {
                             kOpusExtraData,
                             arraysize(kOpusExtraData),
                             false,
-                            false,
                             base::TimeDelta::FromMilliseconds(80),
                             0);
   InitializeDecoder(decoder_config);
@@ -397,7 +396,6 @@ TEST_P(OpusAudioDecoderBehavioralTest, InitializeWithBadCodecDelay) {
       48000,
       kOpusExtraData,
       arraysize(kOpusExtraData),
-      false,
       false,
       base::TimeDelta::FromMilliseconds(80),
       // Use a different codec delay than in the extradata.

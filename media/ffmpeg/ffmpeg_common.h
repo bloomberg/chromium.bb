@@ -85,18 +85,14 @@ MEDIA_EXPORT base::TimeDelta ConvertFromTimeBase(const AVRational& time_base,
 MEDIA_EXPORT int64 ConvertToTimeBase(const AVRational& time_base,
                                      const base::TimeDelta& timestamp);
 
-void AVStreamToAudioDecoderConfig(
-    const AVStream* stream,
-    AudioDecoderConfig* config,
-    bool record_stats);
+void AVStreamToAudioDecoderConfig(const AVStream* stream,
+                                  AudioDecoderConfig* config);
 void AudioDecoderConfigToAVCodecContext(
     const AudioDecoderConfig& config,
     AVCodecContext* codec_context);
 
-void AVStreamToVideoDecoderConfig(
-    const AVStream* stream,
-    VideoDecoderConfig* config,
-    bool record_stats);
+void AVStreamToVideoDecoderConfig(const AVStream* stream,
+                                  VideoDecoderConfig* config);
 void VideoDecoderConfigToAVCodecContext(
     const VideoDecoderConfig& config,
     AVCodecContext* codec_context);
@@ -104,8 +100,7 @@ void VideoDecoderConfigToAVCodecContext(
 MEDIA_EXPORT void AVCodecContextToAudioDecoderConfig(
     const AVCodecContext* codec_context,
     bool is_encrypted,
-    AudioDecoderConfig* config,
-    bool record_stats);
+    AudioDecoderConfig* config);
 
 // Converts FFmpeg's channel layout to chrome's ChannelLayout.  |channels| can
 // be used when FFmpeg's channel layout is not informative in order to make a
