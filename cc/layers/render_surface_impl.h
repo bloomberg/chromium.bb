@@ -164,8 +164,6 @@ class CC_EXPORT RenderSurfaceImpl {
   // Is used to calculate the content rect from property trees.
   gfx::Rect accumulated_content_rect_;
   bool surface_property_changed_ : 1;
-  bool target_surface_transforms_are_animating_ : 1;
-  bool screen_space_transforms_are_animating_ : 1;
 
   bool is_clipped_ : 1;
   bool contributes_to_drawn_surface_ : 1;
