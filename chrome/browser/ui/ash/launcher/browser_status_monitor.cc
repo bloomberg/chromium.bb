@@ -45,21 +45,25 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override {
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     ChromeLauncherController::AppState state =
         ChromeLauncherController::APP_STATE_INACTIVE;
-    if (browser->window()->IsActive() &&
-        browser->tab_strip_model()->GetActiveWebContents() == web_contents())
-      state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
-    else if (browser->window()->IsActive())
-      state = ChromeLauncherController::APP_STATE_ACTIVE;
-
+    Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    // Don't assume that |browser| still exists.
+    if (browser) {
+      if (browser->window()->IsActive() &&
+          browser->tab_strip_model()->GetActiveWebContents() == web_contents())
+        state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
+      else if (browser->window()->IsActive())
+        state = ChromeLauncherController::APP_STATE_ACTIVE;
+    }
     monitor_->UpdateAppItemState(web_contents(), state);
     monitor_->UpdateBrowserItemState();
 
     // Navigating may change the ShelfID associated with the WebContents.
-    if (browser->tab_strip_model()->GetActiveWebContents() == web_contents())
+    if (browser &&
+        browser->tab_strip_model()->GetActiveWebContents() == web_contents()) {
       monitor_->SetShelfIDForBrowserWindowContents(browser, web_contents());
+    }
   }
 
   void WebContentsDestroyed() override {
