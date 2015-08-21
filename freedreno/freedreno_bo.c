@@ -230,6 +230,7 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 			.fd = fd,
 	};
 	int ret, size;
+	struct fd_bo *bo;
 
 	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &req);
 	if (ret) {
@@ -239,7 +240,10 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	/* hmm, would be nice if we had a way to figure out the size.. */
 	size = 0;
 
-	return fd_bo_from_handle(dev, req.handle, size);
+	bo = fd_bo_from_handle(dev, req.handle, size);
+	bo->fd = fd;
+
+	return bo;
 }
 
 struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
