@@ -69,33 +69,14 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
     return result.compare("ok-stopped") == 0;
   }
 
-  void useNonSecureOriginForTestPage() {
-    use_secure_origin_for_test_page_ = false;
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
  private:
-  // The default test server is localhost, which is considered secure:
-  // http://www.w3.org/TR/powerful-features/#is-origin-trustworthy
-  bool use_secure_origin_for_test_page_ = true;
-
   content::WebContents* LoadTestPageInBrowser(Browser* browser) {
     EXPECT_TRUE(test_server()->Start());
 
-    GURL url;
+    // Uses the default server.
+    GURL url = test_page_url();
 
-    if (use_secure_origin_for_test_page_) {
-      // Uses the default server.
-      url = test_page_url();
-    } else {
-      static const char kFoo[] = "not-secure.example.com";
-      GURL::Replacements replacements;
-      replacements.SetSchemeStr(url::kHttpScheme);
-      replacements.SetHostStr(kFoo);
-      url = test_page_url().ReplaceComponents(replacements);
-    }
-
-    EXPECT_EQ(use_secure_origin_for_test_page_, content::IsOriginSecure(url));
+    EXPECT_TRUE(content::IsOriginSecure(url));
 
     ui_test_utils::NavigateToURL(browser, url);
     return browser->tab_strip_model()->GetActiveWebContents();
@@ -133,51 +114,12 @@ IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
-                       TestNonSecureOriginAcceptThenDenyIsSticky) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
-  useNonSecureOriginForTestPage();
-  content::WebContents* tab_contents = LoadTestPageInTab();
-  EXPECT_FALSE(content::IsOriginSecure(tab_contents->GetLastCommittedURL()));
-
-  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
-  GetUserMediaAndDeny(tab_contents);
-
-  GetUserMediaAndExpectAutoDenyWithoutPrompt(tab_contents);
-}
-
-IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
-                       TestNonSecureOriginDenyIsSticky) {
-  useNonSecureOriginForTestPage();
-  content::WebContents* tab_contents = LoadTestPageInTab();
-  EXPECT_FALSE(content::IsOriginSecure(tab_contents->GetLastCommittedURL()));
-
-  GetUserMediaAndDeny(tab_contents);
-  GetUserMediaAndExpectAutoDenyWithoutPrompt(tab_contents);
-}
-
-IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
                        TestSecureOriginDenyIsSticky) {
   content::WebContents* tab_contents = LoadTestPageInTab();
   EXPECT_TRUE(content::IsOriginSecure(tab_contents->GetLastCommittedURL()));
 
   GetUserMediaAndDeny(tab_contents);
   GetUserMediaAndExpectAutoDenyWithoutPrompt(tab_contents);
-}
-
-IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
-                       TestNonSecureOriginAcceptIsNotSticky) {
-  useNonSecureOriginForTestPage();
-  content::WebContents* tab_contents = LoadTestPageInTab();
-  EXPECT_FALSE(content::IsOriginSecure(tab_contents->GetLastCommittedURL()));
-
-  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
-  EXPECT_TRUE(GetUserMediaAndAccept(tab_contents));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,

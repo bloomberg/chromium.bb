@@ -210,6 +210,30 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   user_script_set_manager_observer_.Add(user_script_set_manager_.get());
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
+
+  // chrome-extensions: and chrome-extensions-resource: schemes should be
+  // treated as secure because communication with them is entirely in the
+  // browser, so there is no danger of manipulation or eavesdropping on
+  // communication with them by third parties.
+  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
+  blink::WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
+
+  WebString extension_resource_scheme(base::ASCIIToUTF16(
+      kExtensionResourceScheme));
+  blink::WebSecurityPolicy::registerURLSchemeAsSecure(
+      extension_resource_scheme);
+
+  // chrome-extension: and chrome-extension-resource: resources should be
+  // allowed to receive CORS requests.
+  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
+  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_resource_scheme);
+
+  // chrome-extension: resources should bypass Content Security Policy checks
+  // when included in protected resources.
+  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
+      extension_scheme);
+  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
+      extension_resource_scheme);
 }
 
 Dispatcher::~Dispatcher() {

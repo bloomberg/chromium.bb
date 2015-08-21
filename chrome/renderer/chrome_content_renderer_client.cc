@@ -497,28 +497,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
       chrome_search_scheme);
 
-  // chrome-search:, chrome-extension:, and chrome-extension-resource:
-  // resources shouldn't trigger insecure content warnings.
+  // chrome-search: resources shouldn't trigger insecure content warnings. Note
+  // that chrome-extension: and chrome-extension-resource: schemes are taken
+  // care of in extensions::Dispatcher.
   WebSecurityPolicy::registerURLSchemeAsSecure(chrome_search_scheme);
-
-  WebString extension_scheme(ASCIIToUTF16(extensions::kExtensionScheme));
-  WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
-
-  WebString extension_resource_scheme(
-      ASCIIToUTF16(extensions::kExtensionResourceScheme));
-  WebSecurityPolicy::registerURLSchemeAsSecure(extension_resource_scheme);
-
-  // chrome:, chrome-extension:, chrome-extension-resource: resources should be
-  // allowed to receive CORS requests.
-  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
-  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_resource_scheme);
-
-  // chrome-extension: resources should bypass Content Security Policy checks
-  // when included in protected resources.
-  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-      extension_scheme);
-  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
-      extension_resource_scheme);
 
 #if defined(ENABLE_PRINT_PREVIEW)
   pdf_print_client_.reset(new ChromePDFPrintClient());

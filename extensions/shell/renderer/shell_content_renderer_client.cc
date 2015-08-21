@@ -59,9 +59,6 @@ void ShellContentRendererClient::RenderThreadStarted() {
   guest_view_container_dispatcher_.reset(
       new ExtensionsGuestViewContainerDispatcher());
   thread->AddObserver(guest_view_container_dispatcher_.get());
-
-  // TODO(jamescook): Init WebSecurityPolicy for chrome-extension: schemes.
-  // See ChromeContentRendererClient for details.
 }
 
 void ShellContentRendererClient::RenderFrameCreated(
