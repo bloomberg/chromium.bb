@@ -41,6 +41,7 @@
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReader.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/VoidCallback.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorState.h"
@@ -58,6 +59,7 @@
 #include "modules/filesystem/LocalFileSystem.h"
 #include "modules/filesystem/Metadata.h"
 #include "modules/filesystem/MetadataCallback.h"
+#include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -295,6 +297,9 @@ bool DirectoryContentRequest::didReadDirectoryEntries(const EntryHeapVector& ent
             ResourceType::Enum resourceType;
             if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType)) {
                 resourceType = ResourceType::Image;
+                entryForFrontend->setIsTextFile(false);
+            } else if (HTMLMediaElement::supportsType(ContentType(mimeType)) != WebMimeRegistry::IsNotSupported) {
+                resourceType = ResourceType::Media;
                 entryForFrontend->setIsTextFile(false);
             } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType)) {
                 resourceType = ResourceType::Script;
