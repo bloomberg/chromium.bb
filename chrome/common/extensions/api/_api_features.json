@@ -172,6 +172,10 @@
     "dependencies": ["permission:cast"],
     "contexts": ["blessed_extension"]
   },
+  "cast.devicesPrivate": {
+    "dependencies": ["permission:cast"],
+    "contexts": ["blessed_extension"]
+  },
   "cast.streaming.rtpStream": {
     "dependencies": ["permission:cast.streaming"],
     "contexts": ["blessed_extension"]

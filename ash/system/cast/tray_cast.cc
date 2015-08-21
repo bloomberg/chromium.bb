@@ -36,6 +36,13 @@ namespace ash {
 
 namespace {
 const int kStopButtonRightPadding = 18;
+
+// Returns the active CastConfigDelegate instance.
+ash::CastConfigDelegate* GetCastConfigDelegate() {
+  return ash::Shell::GetInstance()
+      ->system_tray_delegate()
+      ->GetCastConfigDelegate();
+}
 }  // namespace
 
 namespace tray {
@@ -47,83 +54,44 @@ namespace tray {
 class CastSelectDefaultView : public TrayItemMore {
  public:
   CastSelectDefaultView(SystemTrayItem* owner,
-                        CastConfigDelegate* cast_config_delegate,
                         bool show_more);
   ~CastSelectDefaultView() override;
 
-  // Updates the label based on the current set of receivers (if there are or
-  // are not any available receivers).
-  void UpdateLabel();
-
  private:
-  void UpdateLabelCallback(
-      const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
-
-  CastConfigDelegate* cast_config_delegate_;
-  base::WeakPtrFactory<CastSelectDefaultView> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastSelectDefaultView);
 };
 
-CastSelectDefaultView::CastSelectDefaultView(
-    SystemTrayItem* owner,
-    CastConfigDelegate* cast_config_delegate,
-    bool show_more)
-    : TrayItemMore(owner, show_more),
-      cast_config_delegate_(cast_config_delegate),
-      weak_ptr_factory_(this) {
+CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner,
+                                             bool show_more)
+    : TrayItemMore(owner, show_more) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  // Update the image and label.
   SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_CAST).ToImageSkia());
-
-  // We first set a default label before we actually know what the label will
-  // be, because it could take awhile before UpdateLabel() actually applies
-  // the correct label.
-  SetLabel(rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_NO_DEVICE));
-  UpdateLabel();
-}
-
-CastSelectDefaultView::~CastSelectDefaultView() {
-}
-
-void CastSelectDefaultView::UpdateLabelCallback(
-    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
-  // The label needs to reflect if there are no cast receivers
-  const base::string16 label =
-      ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-          receivers_activities.empty() ? IDS_ASH_STATUS_TRAY_CAST_NO_DEVICE
-                                       : IDS_ASH_STATUS_TRAY_CAST_DESKTOP);
+  base::string16 label =
+      rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_DESKTOP);
   SetLabel(label);
   SetAccessibleName(label);
-  SetVisible(true);
 }
 
-void CastSelectDefaultView::UpdateLabel() {
-  if (cast_config_delegate_ == nullptr ||
-      cast_config_delegate_->HasCastExtension() == false)
-    return;
-
-  cast_config_delegate_->GetReceiversAndActivities(
-      base::Bind(&CastSelectDefaultView::UpdateLabelCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
+CastSelectDefaultView::~CastSelectDefaultView() {}
 
 // This view is displayed when the screen is actively being casted; it allows
 // the user to easily stop casting. It fully replaces the
 // |CastSelectDefaultView| view inside of the |CastDuplexView|.
 class CastCastView : public views::View, public views::ButtonListener {
  public:
-  explicit CastCastView(CastConfigDelegate* cast_config_delegate);
+  CastCastView();
   ~CastCastView() override;
 
   void StopCasting();
 
   // Updates the label for the stop view to include information about the
   // current device that is being casted.
-  void UpdateLabel();
-
- private:
-  void UpdateLabelCallback(
+  void UpdateLabel(
       const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
 
+ private:
   // Overridden from views::View.
   int GetHeightForWidth(int width) const override;
   void Layout() override;
@@ -131,7 +99,6 @@ class CastCastView : public views::View, public views::ButtonListener {
   // Overridden from views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  CastConfigDelegate* cast_config_delegate_;
   views::ImageView* icon_;
   views::Label* label_;
   TrayPopupLabelButton* stop_button_;
@@ -140,8 +107,7 @@ class CastCastView : public views::View, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(CastCastView);
 };
 
-CastCastView::CastCastView(CastConfigDelegate* cast_config_delegate)
-    : cast_config_delegate_(cast_config_delegate), weak_ptr_factory_(this) {
+CastCastView::CastCastView() : weak_ptr_factory_(this) {
   // We will initialize the primary tray view which shows a stop button here.
 
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -170,8 +136,6 @@ CastCastView::CastCastView(CastConfigDelegate* cast_config_delegate)
           IDS_ASH_STATUS_TRAY_CAST_STOP);
   stop_button_ = new TrayPopupLabelButton(this, stop_button_text);
   AddChildView(stop_button_);
-
-  UpdateLabel();
 }
 
 CastCastView::~CastCastView() {
@@ -209,25 +173,16 @@ void CastCastView::Layout() {
 }
 
 void CastCastView::StopCasting() {
-  cast_config_delegate_->StopCasting();
+  GetCastConfigDelegate()->StopCasting();
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       ash::UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
-void CastCastView::UpdateLabel() {
-  if (cast_config_delegate_ == nullptr ||
-      cast_config_delegate_->HasCastExtension() == false)
-    return;
-
-  cast_config_delegate_->GetReceiversAndActivities(base::Bind(
-      &CastCastView::UpdateLabelCallback, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CastCastView::UpdateLabelCallback(
+void CastCastView::UpdateLabel(
     const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
   for (auto& i : receivers_activities) {
-    const CastConfigDelegate::Receiver receiver = i.second.receiver;
-    const CastConfigDelegate::Activity activity = i.second.activity;
+    const CastConfigDelegate::Receiver& receiver = i.receiver;
+    const CastConfigDelegate::Activity& activity = i.activity;
     if (!activity.id.empty()) {
       // We want to display different labels inside of the title depending on
       // what we are actually casting - either the desktop, a tab, or a fallback
@@ -261,9 +216,10 @@ void CastCastView::ButtonPressed(views::Button* sender,
 // is active.
 class CastDuplexView : public views::View {
  public:
-  CastDuplexView(SystemTrayItem* owner,
-                 CastConfigDelegate* config_delegate,
-                 bool show_more);
+  CastDuplexView(
+      SystemTrayItem* owner,
+      bool show_more,
+      const CastConfigDelegate::ReceiversAndActivites& receivers_activities);
   ~CastDuplexView() override;
 
   // Activate either the casting or select view.
@@ -288,11 +244,13 @@ class CastDuplexView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(CastDuplexView);
 };
 
-CastDuplexView::CastDuplexView(SystemTrayItem* owner,
-                               CastConfigDelegate* config_delegate,
-                               bool show_more) {
-  select_view_ = new CastSelectDefaultView(owner, config_delegate, show_more);
-  cast_view_ = new CastCastView(config_delegate);
+CastDuplexView::CastDuplexView(
+    SystemTrayItem* owner,
+    bool show_more,
+    const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
+  select_view_ = new CastSelectDefaultView(owner, show_more);
+  cast_view_ = new CastCastView();
+  cast_view_->UpdateLabel(receivers_activities);
   SetLayoutManager(new views::FillLayout());
 
   ActivateSelectView();
@@ -390,21 +348,22 @@ void CastTrayView::UpdateAlignment(ShelfAlignment alignment) {
 class CastDetailedView : public TrayDetailsView, public ViewClickListener {
  public:
   CastDetailedView(SystemTrayItem* owner,
-                   CastConfigDelegate* cast_config_delegate,
-                   user::LoginStatus login);
+                   user::LoginStatus login,
+                   const CastConfigDelegate::ReceiversAndActivites&
+                       receivers_and_activities);
   ~CastDetailedView() override;
 
   // Makes the detail view think the view associated with the given receiver_id
   // was clicked. This will start a cast.
   void SimulateViewClickedForTest(const std::string& receiver_id);
 
+  // Updates the list of available receivers.
+  void UpdateReceiverList(const CastConfigDelegate::ReceiversAndActivites&
+                              new_receivers_and_activities);
+
  private:
   void CreateItems();
 
-  void UpdateReceiverList();
-  void UpdateReceiverListCallback(
-      const CastConfigDelegate::ReceiversAndActivites&
-          new_receivers_and_activities);
   void UpdateReceiverListFromCachedData();
   views::View* AddToReceiverList(
       const CastConfigDelegate::ReceiverAndActivity& receiverActivity);
@@ -415,26 +374,25 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
   // Overridden from ViewClickListener.
   void OnViewClicked(views::View* sender) override;
 
-  CastConfigDelegate* cast_config_delegate_;
   user::LoginStatus login_;
   views::View* options_ = nullptr;
-  CastConfigDelegate::ReceiversAndActivites receivers_and_activities_;
-  // A mapping from the view pointer to the associated activity id
+  // A mapping from the receiver id to the receiver/activity data.
+  std::map<std::string, CastConfigDelegate::ReceiverAndActivity>
+      receivers_and_activities_;
+  // A mapping from the view pointer to the associated activity id.
   std::map<views::View*, std::string> receiver_activity_map_;
   base::WeakPtrFactory<CastDetailedView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDetailedView);
 };
 
-CastDetailedView::CastDetailedView(SystemTrayItem* owner,
-                                   CastConfigDelegate* cast_config_delegate,
-                                   user::LoginStatus login)
-    : TrayDetailsView(owner),
-      cast_config_delegate_(cast_config_delegate),
-      login_(login),
-      weak_ptr_factory_(this) {
+CastDetailedView::CastDetailedView(
+    SystemTrayItem* owner,
+    user::LoginStatus login,
+    const CastConfigDelegate::ReceiversAndActivites& receivers_and_activities)
+    : TrayDetailsView(owner), login_(login), weak_ptr_factory_(this) {
   CreateItems();
-  UpdateReceiverList();
+  UpdateReceiverList(receivers_and_activities);
 }
 
 CastDetailedView::~CastDetailedView() {
@@ -456,25 +414,29 @@ void CastDetailedView::CreateItems() {
   AppendHeaderEntry();
 }
 
-void CastDetailedView::UpdateReceiverList() {
-  cast_config_delegate_->GetReceiversAndActivities(
-      base::Bind(&CastDetailedView::UpdateReceiverListCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void CastDetailedView::UpdateReceiverListCallback(
+void CastDetailedView::UpdateReceiverList(
     const CastConfigDelegate::ReceiversAndActivites&
         new_receivers_and_activities) {
   // Add/update existing.
   for (auto i = new_receivers_and_activities.begin();
        i != new_receivers_and_activities.end(); ++i) {
-    receivers_and_activities_[i->first] = i->second;
+    receivers_and_activities_[i->receiver.id] = *i;
   }
-  // Remove non-existent.
-  for (auto i = receivers_and_activities_.begin();
-       i != receivers_and_activities_.end(); ++i) {
-    if (new_receivers_and_activities.count(i->first) == 0)
-      receivers_and_activities_.erase(i->first);
+
+  // Remove non-existent receivers. Removing an element invalidates all existing
+  // iterators.
+  auto i = receivers_and_activities_.begin();
+  while (i != receivers_and_activities_.end()) {
+    bool has_receiver = false;
+    for (auto receiver : new_receivers_and_activities) {
+      if (i->first == receiver.receiver.id)
+        has_receiver = true;
+    }
+
+    if (has_receiver)
+      ++i;
+    else
+      i = receivers_and_activities_.erase(i);
   }
 
   // Update UI.
@@ -538,15 +500,17 @@ void CastDetailedView::AppendHeaderEntry() {
 }
 
 void CastDetailedView::OnViewClicked(views::View* sender) {
+  ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+
   if (sender == footer()->content()) {
     TransitionToDefaultView();
   } else if (sender == options_) {
-    cast_config_delegate_->LaunchCastOptions();
+    cast_config_delegate->LaunchCastOptions();
   } else {
     // Find the receiver we are going to cast to
     auto it = receiver_activity_map_.find(sender);
     if (it != receiver_activity_map_.end()) {
-      cast_config_delegate_->CastToReceiver(it->second);
+      cast_config_delegate->CastToReceiver(it->second);
       Shell::GetInstance()->metrics()->RecordUserMetricsAction(
           ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
     }
@@ -557,9 +521,6 @@ void CastDetailedView::OnViewClicked(views::View* sender) {
 
 TrayCast::TrayCast(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
-      cast_config_delegate_(ash::Shell::GetInstance()
-                                ->system_tray_delegate()
-                                ->GetCastConfigDelegate()),
       weak_ptr_factory_(this) {
   Shell::GetInstance()->AddShellObserver(this);
 }
@@ -591,8 +552,28 @@ views::View* TrayCast::CreateTrayView(user::LoginStatus status) {
 views::View* TrayCast::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == nullptr);
 
-  default_ = new tray::CastDuplexView(this, cast_config_delegate_,
-                                      status != user::LOGGED_IN_LOCKED);
+  if (HasCastExtension()) {
+    ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+
+    // We add the cast listener here instead of in the ctor for two reasons:
+    // - The ctor gets called too early in the initialization cycle (at least
+    //   for the tests); the correct profile hasn't been setup yet.
+    // - The listener is only added if there is a cast extension. If the call
+    //   below were in the ctor, then the cast tray item would not appear if the
+    //   user installed the extension in an existing session.
+    if (!device_update_subscription_) {
+      device_update_subscription_ =
+          cast_config_delegate->RegisterDeviceUpdateObserver(base::Bind(
+              &TrayCast::OnReceiversUpdated, weak_ptr_factory_.GetWeakPtr()));
+    }
+
+    // The extension updates its view model whenever the popup is opened, so we
+    // probably should as well.
+    cast_config_delegate->RequestDeviceRefresh();
+  }
+
+  default_ = new tray::CastDuplexView(this, status != user::LOGGED_IN_LOCKED,
+                                      receivers_and_activities_);
   default_->set_id(TRAY_VIEW);
   default_->select_view()->set_id(SELECT_VIEW);
   default_->cast_view()->set_id(CAST_VIEW);
@@ -605,7 +586,8 @@ views::View* TrayCast::CreateDetailedView(user::LoginStatus status) {
   Shell::GetInstance()->metrics()->RecordUserMetricsAction(
       ash::UMA_STATUS_AREA_DETAILED_CAST_VIEW);
   CHECK(detailed_ == nullptr);
-  detailed_ = new tray::CastDetailedView(this, cast_config_delegate_, status);
+  detailed_ =
+      new tray::CastDetailedView(this, status, receivers_and_activities_);
   return detailed_;
 }
 
@@ -622,34 +604,31 @@ void TrayCast::DestroyDetailedView() {
 }
 
 bool TrayCast::HasCastExtension() {
-  return cast_config_delegate_ != nullptr &&
-         cast_config_delegate_->HasCastExtension();
+  ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+  return cast_config_delegate != nullptr &&
+         cast_config_delegate->HasCastExtension();
 }
 
-void TrayCast::UpdateCachedReceiverState(
+void TrayCast::OnReceiversUpdated(
     const CastConfigDelegate::ReceiversAndActivites& receivers_activities) {
-  has_cast_receivers_ = !receivers_activities.empty();
-  if (default_)
-    default_->SetVisible(has_cast_receivers_);
+  receivers_and_activities_ = receivers_activities;
+
+  if (default_) {
+    bool has_receivers = !receivers_and_activities_.empty();
+    default_->SetVisible(has_receivers);
+    default_->cast_view()->UpdateLabel(receivers_and_activities_);
+  }
+  if (detailed_)
+    detailed_->UpdateReceiverList(receivers_and_activities_);
 }
 
 void TrayCast::UpdatePrimaryView() {
   if (HasCastExtension()) {
     if (default_) {
-      if (is_casting_) {
+      if (is_casting_)
         default_->ActivateCastView();
-      } else {
+      else
         default_->ActivateSelectView();
-
-        // We only want to show the select view if we have a receiver we can
-        // cast to. To prevent showing the tray item and then hiding it some
-        // short time after, we cache if we have any receivers. We set our
-        // default visibility to true if we do have a receiver, false otherwise.
-        default_->SetVisible(has_cast_receivers_);
-        cast_config_delegate_->GetReceiversAndActivities(
-            base::Bind(&TrayCast::UpdateCachedReceiverState,
-                       weak_ptr_factory_.GetWeakPtr()));
-      }
     }
 
     if (tray_)

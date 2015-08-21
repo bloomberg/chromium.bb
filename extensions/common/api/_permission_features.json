@@ -159,6 +159,7 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "whitelist": [
+      "9448CAB302F268FB4917D06F70703893DCDA26C4",  // Cast Test Extension
       "63ED55E43214C211F82122ED56407FF1A807F2A3",  // Dev
       "FA01E0B81978950F2BC5A50512FD769725F57510",  // Beta
       "B11A93E7E5B541F8010245EBDE2C74647D6C14B9",  // Canary

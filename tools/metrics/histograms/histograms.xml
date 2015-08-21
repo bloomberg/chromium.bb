@@ -56921,6 +56921,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="LANGUAGE_SETTINGS_PRIVATE_ON_SPELLCHECK_DICTIONARIES_CHANGED"/>
   <int value="380"
       label="LANGUAGE_SETTINGS_PRIVATE_ON_CUSTOM_DICTIONARY_CHANGED"/>
+  <int value="381" label="CAST_DEVICES_PRIVATE_ON_UPDATE_DEVICES_REQUESTED"/>
+  <int value="382" label="CAST_DEVICES_PRIVATE_ON_START_CAST"/>
+  <int value="383" label="CAST_DEVICES_PRIVATE_ON_STOP_CAST"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -58039,6 +58042,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1072" label="NETWORKINGPRIVATE_UNLOCKCELLULARSIM"/>
   <int value="1073" label="NETWORKINGPRIVATE_SETCELLULARSIMSTATE"/>
   <int value="1074" label="ENTERPRISE_DEVICEATTRIBUTES_GETDIRECTORYDEVICEID"/>
+  <int value="1075" label="CASTDEVICESPRIVATE_UPDATEDEVICES"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

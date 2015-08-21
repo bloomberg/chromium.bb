@@ -5,11 +5,12 @@
 #ifndef ASH_CAST_CONFIG_DELEGATE_H_
 #define ASH_CAST_CONFIG_DELEGATE_H_
 
-#include <map>
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -37,7 +38,11 @@ class CastConfigDelegate {
       EXTENSION = -1,
       DESKTOP = -2,
       DISCOVERED_ACTIVITY = -3,
-      EXTERNAL_EXTENSION_CLIENT = -4
+      EXTERNAL_EXTENSION_CLIENT = -4,
+
+      // Not in the extension. Used when the extension does not give us a tabId
+      // (ie, the cast is running from another device).
+      UNKNOWN = -5
     };
 
     Activity();
@@ -45,8 +50,6 @@ class CastConfigDelegate {
 
     std::string id;
     base::string16 title;
-    std::string activity_type;
-    bool allow_stop = false;
 
     // The id for the tab we are casting. Could be one of the TabId values,
     // or a value >= 0 that represents that tab index of the tab we are
@@ -64,26 +67,30 @@ class CastConfigDelegate {
   };
 
   // The key is the receiver id.
-  using ReceiversAndActivites = std::map<std::string, ReceiverAndActivity>;
+  using ReceiversAndActivites = std::vector<ReceiverAndActivity>;
   using ReceiversAndActivitesCallback =
       base::Callback<void(const ReceiversAndActivites&)>;
+  using DeviceUpdateSubscription = scoped_ptr<
+      base::CallbackList<void(const ReceiversAndActivites&)>::Subscription>;
 
   virtual ~CastConfigDelegate() {}
 
   // Returns true if cast extension is installed.
   virtual bool HasCastExtension() const = 0;
 
-  // Fetches the current set of receivers and their possible activities. This
-  // method will lookup the current chromecast extension and query its current
-  // state. The |callback| will be invoked when the receiver/activity data is
-  // available.
-  virtual void GetReceiversAndActivities(
+  // Adds a listener that will get invoked whenever the receivers or their
+  // associated activites have changed.
+  virtual DeviceUpdateSubscription RegisterDeviceUpdateObserver(
       const ReceiversAndActivitesCallback& callback) = 0;
+
+  // Request fresh data from the backend. When the data is available, all
+  // registered observers will get called.
+  virtual void RequestDeviceRefresh() = 0;
 
   // Cast to a receiver specified by |receiver_id|.
   virtual void CastToReceiver(const std::string& receiver_id) = 0;
 
-  // Stop an ongoing cast.
+  // Stop an ongoing cast (this should be a user initiated stop).
   virtual void StopCasting() = 0;
 
   // Opens Options page for cast.
