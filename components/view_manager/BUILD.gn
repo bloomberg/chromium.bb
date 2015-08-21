@@ -19,6 +19,7 @@ if (is_android) {
     deps = [
       ":lib",
       "public/interfaces",
+      "//mojo/application/public/cpp:sources",
       "//mojo/services/tracing/public/interfaces",
       "//mojo/shell",
       "//third_party/mojo/src/mojo/public/cpp/bindings",
