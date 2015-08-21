@@ -24,6 +24,8 @@ function Ribbon(
 
   this.__proto__ = Ribbon.prototype;
   this.className = 'ribbon';
+  this.setAttribute('role', 'listbox');
+  this.tabIndex = 0;
 
   /**
    * @private {!Window}
@@ -90,6 +92,11 @@ function Ribbon(
    * @private
    */
   this.removeTimeout_ = null;
+
+  /**
+   * @private {number}
+   */
+  this.thumbnailElementId_ = 0;
 
   this.targetWindow_.addEventListener(
       'resize', this.onWindowResize_.bind(this));
@@ -365,7 +372,8 @@ Ribbon.prototype.onSelection_ = function() {
       this.renderCache_[this.dataModel_.item(selectedIndex).getEntry().toURL()];
   if (newSelected) {
     newSelected.setAttribute('selected', true);
-    newSelected.focus();
+    this.setAttribute('aria-activedescendant', newSelected.id);
+    this.focus();
   }
 };
 
@@ -420,8 +428,9 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
 
   var thumbnail = assertInstanceof(this.ownerDocument.createElement('div'),
       HTMLDivElement);
+  thumbnail.id = `thumbnail-${this.thumbnailElementId_++}`;
   thumbnail.className = 'ribbon-image';
-  thumbnail.tabIndex = 1;
+  thumbnail.setAttribute('role', 'listitem');
   thumbnail.addEventListener('click', function() {
     var index = this.dataModel_.indexOf(item);
     this.selectionModel_.unselectAll();

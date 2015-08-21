@@ -367,7 +367,7 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
 /* Thumbnails */
 
 .gallery .ribbon-spacer {
-  height: 55px;
+  height: 48px;
   position: relative;
 }
 
@@ -375,14 +375,18 @@ paper-slider::shadow .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
   display: flex;
   height: 100%;
   justify-content: center;
-  margin: 0 auto;
   overflow: hidden;
+  padding: 4px 0;
   position: absolute;
-  top: 4px;
+  top: 0;
   transition: opacity 180ms linear, visibility 0ms linear;
   white-space: nowrap;
   width: 100%;
   z-index: 0;
+}
+
+.gallery .toolbar .ribbon:focus {
+  outline: none;
 }
 
 .gallery[editing] .toolbar .ribbon {
