@@ -399,7 +399,7 @@
       'target_name': 'system_webview_apk',
       'variables': {
         'apk_name': 'SystemWebView',
-        'android_sdk_jar': '../third_party/android_platform/webview/frameworks_5.1.0_r1.jar',
+        'android_sdk_jar': '../third_party/android_platform/webview/frameworks_6.0.jar',
         'java_in_dir': 'glue/java',
         'resource_dir': 'apk/java/res',
       },

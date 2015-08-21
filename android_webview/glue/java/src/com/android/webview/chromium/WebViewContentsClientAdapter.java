@@ -31,6 +31,7 @@ import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.CustomViewCallback;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -275,6 +276,22 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    private static class WebResourceErrorImpl extends WebResourceError {
+        private final AwWebResourceError mError;
+
+        public WebResourceErrorImpl(AwWebResourceError error) {
+            mError = error;
+        }
+
+        public int getErrorCode() {
+            return mError.errorCode;
+        }
+
+        public CharSequence getDescription() {
+            return mError.description;
+        }
+    }
+
     /**
      * @see AwContentsClient#shouldInterceptRequest(java.lang.String)
      */
@@ -392,13 +409,28 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.startActionMode");
             if (TRACE) Log.d(TAG, "startActionMode");
-            if (floating) return null;
-            ActionMode.Callback callback = new WebActionModeCallback(mContext, actionHandler);
-            ActionMode actionMode = view.startActionMode(callback);
-            return actionMode != null ? new WebActionMode(actionMode) : null;
+            if (floating && !supportsFloatingActionMode()) return null;
+            if (floating) {
+                return startFloatingActionMode(view, actionHandler);
+            } else {
+                return startDefaultActionMode(view, actionHandler);
+            }
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.startActionMode");
         }
+    }
+
+    private WebActionMode startDefaultActionMode(View view, ActionHandler actionHandler) {
+        ActionMode.Callback callback =
+                new WebActionModeCallback(view.getContext(), actionHandler);
+        return new WebActionMode(view.startActionMode(callback));
+    }
+
+    private WebActionMode startFloatingActionMode(View view, ActionHandler actionHandler) {
+        ActionMode.Callback2 callback =
+                new FloatingWebActionModeCallback(view.getContext(), actionHandler);
+        ActionMode actionMode = view.startActionMode(callback, ActionMode.TYPE_FLOATING);
+        return actionMode != null ? new FloatingWebActionMode(actionMode) : null;
     }
 
     /**
@@ -406,7 +438,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      */
     @Override
     public boolean supportsFloatingActionMode() {
-        return false;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
     @Override
@@ -553,10 +585,19 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    /**
+     * @see ContentViewClient#onPageCommitVisible(String)
+     */
     @Override
     public void onPageCommitVisible(String url) {
-        // TODO: implement once required framework changes land
-        // Please note that this needs an SDK build check. See crbug/461303 for details.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        try {
+            TraceEvent.begin("WebViewContentsClientAdapter.onPageCommitVisible");
+            if (TRACE) Log.d(TAG, "onPageCommitVisible=" + url);
+            mWebViewClient.onPageCommitVisible(mWebView, url);
+        } finally {
+            TraceEvent.end("WebViewContentsClientAdapter.onPageCommitVisible");
+        }
     }
 
     /**
@@ -564,10 +605,7 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
      */
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
-        // TODO(mnaganov): In the next version of glue, this will look as follows:
-        // if (<next-level-api>) return;
-        // Currently, we should just run this code always.
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.CUR_DEVELOPMENT + 1) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return;
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedError");
             if (description == null || description.isEmpty()) {
@@ -585,16 +623,11 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     /**
-     * @see ContentViewClient#onReceivedError(
-     * AwContentsClient.AwWebResourceRequest,AwContentsClient.AwWebResourceError)
+     * @see ContentViewClient#onReceivedError(AwWebResourceRequest,AwWebResourceError)
      */
     @Override
-    public void onReceivedError2(AwContentsClient.AwWebResourceRequest request,
-            AwContentsClient.AwWebResourceError error) {
-        // TODO(mnaganov): In the next version of glue, this will look as follows:
-        // if (!<next-level-api>) return;
-        // Currently, we should never run this code.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.CUR_DEVELOPMENT + 1) return;
+    public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedError");
             if (error.description == null || error.description.isEmpty()) {
@@ -604,8 +637,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                 error.description = mWebViewDelegate.getErrorString(mContext, error.errorCode);
             }
             if (TRACE) Log.d(TAG, "onReceivedError=" + request.url);
-            // TODO(mnaganov): When the new API becomes available, uncomment the following:
-            //   mWebViewClient.onReceivedError(request, error);
+            mWebViewClient.onReceivedError(mWebView, new WebResourceRequestImpl(request),
+                    new WebResourceErrorImpl(error));
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onReceivedError");
         }
@@ -613,10 +646,14 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
 
     @Override
     public void onReceivedHttpError(AwWebResourceRequest request, AwWebResourceResponse response) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedHttpError");
             if (TRACE) Log.d(TAG, "onReceivedHttpError=" + request.url);
-            // TODO(mnaganov): Call mWebViewClient.onReceivedHttpError(mWebView, request, response);
+            mWebViewClient.onReceivedHttpError(mWebView, new WebResourceRequestImpl(request),
+                    new WebResourceResponse(true, response.getMimeType(), response.getCharset(),
+                            response.getStatusCode(), response.getReasonPhrase(),
+                            response.getResponseHeaders(), response.getData()));
         } finally {
             TraceEvent.end("WebViewContentsClientAdapter.onReceivedHttpError");
         }

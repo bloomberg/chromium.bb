@@ -4,6 +4,7 @@
 
 package com.android.webview.chromium;
 
+import android.app.assist.AssistStructure.ViewNode;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -12,6 +13,7 @@ import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.net.http.SslCertificate;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
@@ -35,8 +38,11 @@ import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebChromeClient.CustomViewCallback;
+import android.webkit.WebMessage;
+import android.webkit.WebMessagePort;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebView.VisualStateCallback;
 import android.webkit.WebViewClient;
 import android.webkit.WebViewProvider;
 import android.widget.TextView;
@@ -48,10 +54,13 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.browser.SmartClipProvider;
+import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
+import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.NavigationHistory;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -772,6 +781,27 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     @Override
+    public void insertVisualStateCallback(
+            final long requestId, final VisualStateCallback callback) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    insertVisualStateCallback(requestId, callback);
+                }
+            });
+            return;
+        }
+        mAwContents.insertVisualStateCallback(
+                requestId, new AwContents.VisualStateCallback() {
+                        @Override
+                        public void onComplete(long requestId) {
+                            callback.onComplete(requestId);
+                        }
+                });
+    }
+
+    @Override
     public void clearView() {
         if (checkNeedsPost()) {
             mRunQueue.addTask(new Runnable() {
@@ -1325,6 +1355,36 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     @Override
+    public WebMessagePort[] createWebMessageChannel() {
+        mFactory.startYourEngines(true);
+        if (checkNeedsPost()) {
+            WebMessagePort[] ret = runOnUiThreadBlocking(new Callable<WebMessagePort[]>() {
+                @Override
+                public WebMessagePort[] call() {
+                    return createWebMessageChannel();
+                }
+            });
+            return ret;
+        }
+        return WebMessagePortAdapter.fromAwMessagePorts(mAwContents.createMessageChannel());
+    }
+
+    @Override
+    public void postMessageToMainFrame(final WebMessage message, final Uri targetOrigin) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    postMessageToMainFrame(message, targetOrigin);
+                }
+            });
+            return;
+        }
+        mAwContents.postMessageToFrame(null, message.getData(), targetOrigin.toString(),
+                WebMessagePortAdapter.toAwMessagePorts(message.getPorts()));
+    }
+
+    @Override
     public WebSettings getSettings() {
         return mWebSettings;
     }
@@ -1476,6 +1536,58 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return ret;
         }
         return mAwContents.getAccessibilityNodeProvider();
+    }
+
+    @Override
+    public void onProvideVirtualStructure(final ViewStructure structure) {
+        mFactory.startYourEngines(false);
+        if (checkNeedsPost()) {
+            runVoidTaskOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    onProvideVirtualStructure(structure);
+                }
+            });
+            return;
+        }
+        structure.setChildCount(1);
+        final ViewStructure viewRoot = structure.asyncNewChild(0);
+        mAwContents.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
+            @Override
+            public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
+                viewRoot.setHint(AwContentsStatics.getProductVersion());
+                if (root == null) {
+                    viewRoot.setClassName("android.webkit.WebView");
+                    viewRoot.asyncCommit();
+                    return;
+                }
+                createAssistStructure(viewRoot, root, 0, 0);
+            }
+        });
+    }
+
+    // When creating the Assist structure, the left and top are relative to the parent node, and
+    // scroll offsets are not needed.
+    private void createAssistStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
+            int parentX, int parentY) {
+        viewNode.setClassName(node.className);
+        viewNode.setText(node.text);
+        // Do not pass scroll information.
+        viewNode.setDimens(node.x - parentX, node.y - parentY, 0, 0, node.width, node.height);
+        viewNode.setChildCount(node.children.size());
+        if (node.hasStyle) {
+            int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
+                    | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
+                    | (node.underline ? ViewNode.TEXT_STYLE_UNDERLINE : 0)
+                    | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
+            viewNode.setTextStyle(node.textSize, node.color, node.bgcolor, style);
+        }
+        final Iterator<AccessibilitySnapshotNode> children = node.children.listIterator();
+        int i = 0;
+        while (children.hasNext()) {
+            createAssistStructure(viewNode.asyncNewChild(i++), children.next(), node.x, node.y);
+        }
+        viewNode.asyncCommit();
     }
 
     @Override
