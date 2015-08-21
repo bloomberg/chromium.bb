@@ -339,6 +339,7 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     if (queue->GetShouldNotifyObservers()) {
       FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
                         WillProcessTask(pending_task));
+      queue->NotifyWillProcessTask(pending_task);
     }
     TRACE_EVENT1(disabled_by_default_tracing_category_,
                  "Run Task From Queue", "queue", queue->GetName());
@@ -352,6 +353,7 @@ bool TaskQueueManager::ProcessTaskFromWorkQueue(
     if (queue->GetShouldNotifyObservers()) {
       FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
                         DidProcessTask(pending_task));
+      queue->NotifyDidProcessTask(pending_task);
     }
 
     pending_task.task.Reset();

@@ -138,6 +138,7 @@ void AnticipationTestTask(RendererSchedulerImpl* scheduler,
   }
   *is_anticipated_after = scheduler->IsHighPriorityWorkAnticipated();
 }
+
 };  // namespace
 
 class RendererSchedulerImplForTest : public RendererSchedulerImpl {
@@ -618,33 +619,35 @@ TEST_F(RendererSchedulerImplTest, TestCompositorPolicy_DidAnimateForInput) {
                                    std::string("I1")));
 }
 
-TEST_F(RendererSchedulerImplTest,
-       TestCompositorPolicy_TimersOnlyRunWhenIdle_MainThreadOnCriticalPath) {
+TEST_F(
+    RendererSchedulerImplTest,
+    TestCompositorPolicy_ExpensiveTimersDontRunWhenMainThreadOnCriticalPath) {
   std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "C1 T1");
 
-  scheduler_->DidAnimateForInputOnCompositorThread();
-  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
-      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
-  scheduler_->DidCommitFrameToCompositor();  // Starts Idle Period
+  // Simulate a bunch of expensive timer tasks
+  for (int i = 0; i < 10; i++) {
+    timer_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&base::SimpleTestTickClock::Advance,
+                              base::Unretained(clock_.get()),
+                              base::TimeDelta::FromMilliseconds(500)));
+  }
   RunUntilIdle();
 
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("C1"), std::string("T1")));
+  // Timers should now be disabled during main thread user userinteractions.
+  PostTestTasks(&run_order, "C1 T1");
 
-  // End the idle period.
-  clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   scheduler_->DidAnimateForInputOnCompositorThread();
   scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
       base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL));
-
-  run_order.clear();
-  PostTestTasks(&run_order, "C1 T1");
   RunUntilIdle();
 
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("C1")));
+  clock_->Advance(priority_escalation_after_input_duration() * 2);
+
+  run_order.clear();
+  RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("T1")));
 }
 
 TEST_F(RendererSchedulerImplTest,

@@ -78,6 +78,9 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   void SetQueuePriority(QueuePriority priority) override;
   void PumpQueue() override;
   void SetPumpPolicy(PumpPolicy pump_policy) override;
+  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) override;
 
   bool NextPendingDelayedTaskRunTime(
       base::TimeTicks* next_pending_delayed_task);
@@ -109,6 +112,9 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
+
+  void NotifyWillProcessTask(const base::PendingTask& pending_task);
+  void NotifyDidProcessTask(const base::PendingTask& pending_task);
 
   // Delayed task posted to the underlying run loop, which locks |lock_| and
   // calls MoveReadyDelayedTasksToIncomingQueueLocked to process dealyed tasks
@@ -191,6 +197,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   base::ThreadChecker main_thread_checker_;
   std::queue<Task> work_queue_;
+  base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
   WakeupPolicy wakeup_policy_;
   size_t set_index_;
   bool should_monitor_quiescence_;

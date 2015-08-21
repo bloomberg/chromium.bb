@@ -812,6 +812,56 @@ TEST_F(TaskQueueManagerTest, TaskObserverRemovingInsideTask) {
   message_loop_->RunUntilIdle();
 }
 
+TEST_F(TaskQueueManagerTest, QueueTaskObserverAdding) {
+  InitializeWithRealMessageLoop(2u);
+  MockTaskObserver observer;
+
+  manager_->SetWorkBatchSize(2);
+  runners_[0]->AddTaskObserver(&observer);
+
+  std::vector<int> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
+  message_loop_->RunUntilIdle();
+}
+
+TEST_F(TaskQueueManagerTest, QueueTaskObserverRemoving) {
+  InitializeWithRealMessageLoop(1u);
+  MockTaskObserver observer;
+  manager_->SetWorkBatchSize(2);
+  runners_[0]->AddTaskObserver(&observer);
+  runners_[0]->RemoveTaskObserver(&observer);
+
+  std::vector<int> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
+
+  message_loop_->RunUntilIdle();
+}
+
+void RemoveQueueObserverTask(scoped_refptr<TaskQueue> queue,
+                             base::MessageLoop::TaskObserver* observer) {
+  queue->RemoveTaskObserver(observer);
+}
+
+TEST_F(TaskQueueManagerTest, QueueTaskObserverRemovingInsideTask) {
+  InitializeWithRealMessageLoop(1u);
+  MockTaskObserver observer;
+  runners_[0]->AddTaskObserver(&observer);
+
+  runners_[0]->PostTask(
+      FROM_HERE, base::Bind(&RemoveQueueObserverTask, runners_[0], &observer));
+
+  EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
+  EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
+  message_loop_->RunUntilIdle();
+}
+
 TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
   Initialize(1u);
   EXPECT_TRUE(runners_[0]->RunsTasksOnCurrentThread());

@@ -14,6 +14,12 @@
 #include "components/scheduler/child/task_queue_selector.h"
 
 namespace scheduler {
+namespace {
+const int kTimerTaskEstimationSampleCount = 4 * 60;
+const double kTimerTaskEstimationPercentile = 80;
+const int kShortIdlePeriodDurationSampleCount = 10;
+const double kShortIdlePeriodDurationPercentile = 20;
+}
 
 RendererSchedulerImpl::RendererSchedulerImpl(
     scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner)
@@ -48,6 +54,9 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
       &RendererSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
+  timer_task_runner_->AddTaskObserver(
+      &MainThreadOnly().timer_task_cost_estimator_);
+
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
@@ -57,6 +66,8 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
+  timer_task_runner_->RemoveTaskObserver(
+      &MainThreadOnly().timer_task_cost_estimator_);
   // Ensure the renderer scheduler was shut down explicitly, because otherwise
   // we could end up having stale pointers to the Blink heap which has been
   // terminated by this point.
@@ -64,18 +75,22 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 }
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly()
-    : current_policy_(Policy::NORMAL),
+    : timer_task_cost_estimator_(kTimerTaskEstimationSampleCount,
+                                 kTimerTaskEstimationPercentile),
+      short_idle_period_duration_(kShortIdlePeriodDurationSampleCount),
+      current_policy_(Policy::NORMAL),
       timer_queue_suspend_count_(0),
       renderer_hidden_(false),
-      was_shutdown_(false) {
-}
+      was_shutdown_(false) {}
+
+RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
 RendererSchedulerImpl::AnyThread::AnyThread()
     : pending_main_thread_input_event_count_(0),
       awaiting_touch_start_response_(false),
       in_idle_period_(false),
-      begin_main_frame_on_critical_path_(false) {
-}
+      begin_main_frame_on_critical_path_(false),
+      timer_tasks_seem_expensive_(false) {}
 
 RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
     : last_input_type_(blink::WebInputEvent::Undefined) {
@@ -159,6 +174,11 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
     idle_helper_.StartIdlePeriod(
         IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, now,
         MainThreadOnly().estimated_next_frame_begin_);
+    MainThreadOnly().short_idle_period_duration_.InsertSample(
+        MainThreadOnly().estimated_next_frame_begin_ - now);
+    MainThreadOnly().expected_short_idle_period_duration_ =
+        MainThreadOnly().short_idle_period_duration_.Percentile(
+            kShortIdlePeriodDurationPercentile);
   }
 }
 
@@ -415,6 +435,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   base::TimeTicks now = helper_.Now();
   policy_may_need_update_.SetWhileLocked(false);
 
+  AnyThread().timer_tasks_seem_expensive_ =
+      MainThreadOnly().expected_short_idle_period_duration_ >
+          base::TimeDelta() &&
+      MainThreadOnly().timer_task_cost_estimator_.expected_task_duration() >
+          MainThreadOnly().expected_short_idle_period_duration_;
+
   base::TimeDelta new_policy_duration;
   Policy new_policy = ComputeNewPolicy(now, &new_policy_duration);
   if (new_policy_duration > base::TimeDelta()) {
@@ -481,6 +507,9 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       this, AsValueLocked(now));
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "RendererScheduler.policy", MainThreadOnly().current_policy_);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.timer_tasks_seem_expensive",
+                 AnyThread().timer_tasks_seem_expensive_);
 }
 
 bool RendererSchedulerImpl::InputSignalsSuggestCompositorPriority(
@@ -508,17 +537,12 @@ RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
     if (AnyThread().awaiting_touch_start_response_)
       return Policy::TOUCHSTART_PRIORITY;
     // If BeginMainFrame is on the critical path, we want to try and prevent
-    // timers and loading tasks from running shortly before BeginMainFrame is
-    // due to be posted from the compositor, because they can delay
-    // BeginMainFrame's execution. We do this by limiting execution of timers to
-    // idle periods, provided there has been at least one idle period recently.
-    //
-    // TODO(alexclarke): It's a shame in_idle_period_,
-    // begin_main_frame_on_critical_path_ and last_idle_period_end_time_ are in
-    // the AnyThread struct.  Find a way to migrate them to MainThreadOnly.
-    if (!AnyThread().in_idle_period_ &&
-        AnyThread().begin_main_frame_on_critical_path_ &&
-        HadAnIdlePeriodRecently(now)) {
+    // timers and loading tasks from running if we think they might be
+    // expensive.
+    // TODO(skyostil): Consider removing in_idle_period_ and
+    // HadAnIdlePeriodRecently() unless we need them here.
+    if (AnyThread().timer_tasks_seem_expensive_ &&
+        AnyThread().begin_main_frame_on_critical_path_) {
       return Policy::COMPOSITOR_CRITICAL_PATH_PRIORITY;
     }
     return Policy::COMPOSITOR_PRIORITY;
@@ -640,6 +664,16 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                     AnyThread().awaiting_touch_start_response_);
   state->SetBoolean("begin_main_frame_on_critical_path",
                     AnyThread().begin_main_frame_on_critical_path_);
+  state->SetDouble("expected_timer_task_duration",
+                   MainThreadOnly()
+                       .timer_task_cost_estimator_.expected_task_duration()
+                       .InMillisecondsF());
+  // TODO(skyostil): Can we somehow trace how accurate these estimates were?
+  state->SetDouble(
+      "expected_short_idle_period_duration",
+      MainThreadOnly().expected_short_idle_period_duration_.InMillisecondsF());
+  state->SetBoolean("timer_tasks_seem_expensive",
+                    AnyThread().timer_tasks_seem_expensive_);
   state->SetDouble("estimated_next_frame_begin",
                    (MainThreadOnly().estimated_next_frame_begin_ -
                     base::TimeTicks()).InMillisecondsF());

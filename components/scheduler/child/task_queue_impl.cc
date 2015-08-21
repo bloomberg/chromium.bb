@@ -437,6 +437,34 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndDictionary();
 }
 
+void TaskQueueImpl::AddTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_observers_.AddObserver(task_observer);
+}
+
+void TaskQueueImpl::RemoveTaskObserver(
+    base::MessageLoop::TaskObserver* task_observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  task_observers_.RemoveObserver(task_observer);
+}
+
+void TaskQueueImpl::NotifyWillProcessTask(
+    const base::PendingTask& pending_task) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(should_notify_observers_);
+  FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                    WillProcessTask(pending_task));
+}
+
+void TaskQueueImpl::NotifyDidProcessTask(
+    const base::PendingTask& pending_task) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(should_notify_observers_);
+  FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,
+                    DidProcessTask(pending_task));
+}
+
 // static
 void TaskQueueImpl::QueueAsValueInto(const std::queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {

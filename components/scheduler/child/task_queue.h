@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_H_
 #define COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_H_
 
+#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/scheduler/scheduler_export.h"
 
@@ -164,6 +165,13 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // By default automatic pumping is enabled for all queues. NOTE this must be
   // called on the thread this TaskQueue was created by.
   virtual void PumpQueue() = 0;
+
+  // These functions can only be called on the same thread that the task queue
+  // manager executes its tasks on.
+  virtual void AddTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
+  virtual void RemoveTaskObserver(
+      base::MessageLoop::TaskObserver* task_observer) = 0;
 
  protected:
   ~TaskQueue() override {}

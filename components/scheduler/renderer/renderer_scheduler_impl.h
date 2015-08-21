@@ -12,6 +12,7 @@
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/task_cost_estimator.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
@@ -198,10 +199,14 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
 
   struct MainThreadOnly {
     MainThreadOnly();
+    ~MainThreadOnly();
 
+    TaskCostEstimator timer_task_cost_estimator_;
+    cc::RollingTimeDeltaHistory short_idle_period_duration_;
     Policy current_policy_;
     base::TimeTicks current_policy_expiration_time_;
     base::TimeTicks estimated_next_frame_begin_;
+    base::TimeDelta expected_short_idle_period_duration_;
     int timer_queue_suspend_count_;  // TIMER_TASK_QUEUE suspended if non-zero.
     bool renderer_hidden_;
     bool was_shutdown_;
@@ -217,6 +222,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
     bool awaiting_touch_start_response_;
     bool in_idle_period_;
     bool begin_main_frame_on_critical_path_;
+    bool timer_tasks_seem_expensive_;
   };
 
   struct CompositorThreadOnly {

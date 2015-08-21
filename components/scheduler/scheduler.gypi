@@ -50,6 +50,8 @@
       'renderer/renderer_scheduler_impl.h',
       'renderer/renderer_web_scheduler_impl.cc',
       'renderer/renderer_web_scheduler_impl.h',
+      'renderer/task_cost_estimator.cc',
+      'renderer/task_cost_estimator.h',
       'renderer/webthread_impl_for_renderer_scheduler.cc',
       'renderer/webthread_impl_for_renderer_scheduler.h',
       'scheduler_export.h',
