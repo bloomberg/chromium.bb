@@ -443,7 +443,7 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       channel_->gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
-          gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(internalformat),
+          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
           gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
   if (!buffer)
     return -1;

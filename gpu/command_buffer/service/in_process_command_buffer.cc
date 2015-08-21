@@ -714,7 +714,7 @@ int32 InProcessCommandBuffer::CreateGpuMemoryBufferImage(
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBuffer(
           gfx::Size(width, height),
-          gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(internalformat),
+          gpu::ImageFactory::DefaultBufferFormatForImageFormat(internalformat),
           gpu::ImageFactory::ImageUsageToGpuMemoryBufferUsage(usage)));
   if (!buffer)
     return -1;

@@ -211,7 +211,7 @@ BufferQueue::AllocatedSurface BufferQueue::GetNextSurface() {
 
   scoped_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->AllocateGpuMemoryBufferForScanout(
-          size_, gpu::ImageFactory::ImageFormatToGpuMemoryBufferFormat(
+          size_, gpu::ImageFactory::DefaultBufferFormatForImageFormat(
                      internal_format_),
           surface_id_));
   if (!buffer) {
