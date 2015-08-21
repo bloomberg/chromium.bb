@@ -1307,6 +1307,19 @@ TEST_F(GCMClientImplStartAndStopTest, ImmediateStartAndThenDelayStart) {
   EXPECT_EQ(GCMClientImpl::LOADED, gcm_client_state());
 }
 
+TEST_F(GCMClientImplStartAndStopTest, DelayedStartRace) {
+  // GCMClientImpl should be in INITIALIZED state at first.
+  EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());
+
+  // Delay start the GCM, then start it immediately while it's still loading.
+  gcm_client()->Start(GCMClient::DELAYED_START);
+  gcm_client()->Start(GCMClient::IMMEDIATE_START);
+  PumpLoopUntilIdle();
+  EXPECT_EQ(GCMClientImpl::INITIAL_DEVICE_CHECKIN, gcm_client_state());
+  DefaultCompleteCheckin();
+  EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
+}
+
 TEST_F(GCMClientImplStartAndStopTest, DelayedStart) {
   // GCMClientImpl should be in INITIALIZED state at first.
   EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());

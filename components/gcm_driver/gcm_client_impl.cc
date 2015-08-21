@@ -381,10 +381,18 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
 
   if (!result->success) {
     if (result->store_does_not_exist) {
-      // In the case that the store does not exist, set |state| back to
-      // INITIALIZED such that store loading could be triggered again when
-      // Start() is called with IMMEDIATE_START.
-      state_ = INITIALIZED;
+      if (start_mode_ == IMMEDIATE_START) {
+        // An immediate start was requested during the delayed start that just
+        // completed. Perform it now.
+        gcm_store_->Load(GCMStore::CREATE_IF_MISSING,
+                         base::Bind(&GCMClientImpl::OnLoadCompleted,
+                                    weak_ptr_factory_.GetWeakPtr()));
+      } else {
+        // In the case that the store does not exist, set |state_| back to
+        // INITIALIZED such that store loading could be triggered again when
+        // Start() is called with IMMEDIATE_START.
+        state_ = INITIALIZED;
+      }
     } else {
       // Otherwise, destroy the store to try again.
       ResetStore();
