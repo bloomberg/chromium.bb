@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.22",
+  "version": "8.23",
   "entries": [
     {
       "id": 1,
@@ -317,12 +317,12 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 24,
       "cr_bugs": [231082],
-      "description": "Mali-400 drivers throw an error when a buffer object's size is set to 0",
+      "description": "Mali-4xx drivers throw an error when a buffer object's size is set to 0",
       "os": {
         "type": "android"
       },
       "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-400.*",
+      "gl_renderer": ".*Mali-4.*",
       "features": [
         "use_non_zero_size_for_client_side_stream_buffers"
       ]
@@ -857,7 +857,7 @@ LONG_STRING_CONST(
     },
     {
       "id": 75,
-      "description": "Mali-400 support of EXT_multisampled_render_to_texture is buggy on Android < 4.3",
+      "description": "Mali-4xx support of EXT_multisampled_render_to_texture is buggy on Android < 4.3",
       "cr_bugs": [362435],
       "os": {
         "type": "android",
@@ -867,7 +867,7 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-400.*",
+      "gl_renderer": ".*Mali-4.*",
       "features": [
         "disable_multisampled_render_to_texture"
       ]
@@ -1261,9 +1261,9 @@ LONG_STRING_CONST(
     {
       "id": 108,
       "cr_bugs": [449150],
-      "description": "Mali-400 does not support GL_RGB format",
+      "description": "Mali-4xx does not support GL_RGB format",
       "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-400.*",
+      "gl_renderer": ".*Mali-4.*",
       "features": [
         "disable_gl_rgb_format"
       ]
@@ -1297,13 +1297,13 @@ LONG_STRING_CONST(
     },
     {
       "id": 111,
-      "description": "Discard Framebuffer breaks WebGL on Mali-400 Linux",
+      "description": "Discard Framebuffer breaks WebGL on Mali-4xx Linux",
       "cr_bugs": [485814],
       "os": {
         "type": "linux"
       },
       "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-400.*",
+      "gl_renderer": ".*Mali-4.*",
       "features": [
         "disable_discard_framebuffer"
       ]
