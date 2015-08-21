@@ -46,7 +46,7 @@ public class AwMessagePortService {
     // A thread safe storage for Message Ports.
     private static class MessagePortStorage {
         private SparseArray<AwMessagePort> mMessagePorts = new SparseArray<AwMessagePort>();
-        private Object mLock = new Object();
+        private final Object mLock = new Object();
 
         public void remove(int portId) {
             synchronized (mLock) {

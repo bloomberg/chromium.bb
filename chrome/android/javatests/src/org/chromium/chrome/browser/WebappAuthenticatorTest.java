@@ -17,7 +17,7 @@ public class WebappAuthenticatorTest extends InstrumentationTestCase {
         assertNotNull(mac);
         assertTrue(WebappAuthenticator.isUrlValid(context, url, mac));
         assertFalse(WebappAuthenticator.isUrlValid(context, url + "?goats=true", mac));
-        mac[4] += 1;
+        mac[4] += (byte) 1;
         assertFalse(WebappAuthenticator.isUrlValid(context, url, mac));
     }
 }

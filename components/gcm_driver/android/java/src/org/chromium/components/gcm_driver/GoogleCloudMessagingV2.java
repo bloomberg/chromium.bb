@@ -44,7 +44,7 @@ public class GoogleCloudMessagingV2 {
 
     private Context mContext;
     private PendingIntent mAppPendingIntent = null;
-    private Object mAppPendingIntentLock = new Object();
+    private final Object mAppPendingIntentLock = new Object();
 
     public GoogleCloudMessagingV2(Context context) {
         mContext = context;

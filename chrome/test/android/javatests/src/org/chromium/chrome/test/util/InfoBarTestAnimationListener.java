@@ -19,7 +19,7 @@ public class InfoBarTestAnimationListener implements InfoBarContainer.InfoBarAni
 
     private static class ConditionalWait {
         private volatile Boolean mCondition;
-        private Object mLock;
+        private final Object mLock;
 
         ConditionalWait() {
             mCondition = false;

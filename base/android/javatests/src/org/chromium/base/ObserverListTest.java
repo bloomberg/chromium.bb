@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -70,7 +71,9 @@ public class ObserverListTest extends InstrumentationTestCase {
         }
     }
 
+    @SuppressWarnings("ElementsCountedInLoop")
     private static <T> int getSizeOfIterable(Iterable<T> iterable) {
+        if (iterable instanceof Collection<?>) return ((Collection<?>) iterable).size();
         int num = 0;
         for (T el : iterable) num++;
         return num;

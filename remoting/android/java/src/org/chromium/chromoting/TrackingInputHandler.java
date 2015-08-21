@@ -28,7 +28,7 @@ public class TrackingInputHandler implements TouchInputHandler {
     private static final float MAX_ZOOM_FACTOR = 100.0f;
 
     private DesktopViewInterface mViewer;
-    private RenderData mRenderData;
+    private final RenderData mRenderData;
 
     private GestureDetector mScroller;
     private ScaleGestureDetector mZoomer;

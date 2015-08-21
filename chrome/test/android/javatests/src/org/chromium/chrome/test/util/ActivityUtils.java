@@ -93,7 +93,7 @@ public class ActivityUtils {
      * @param activity The activity that owns the fragment.
      * @param fragmentTag The tag of the fragment to be loaded.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
     public static <T> T waitForFragment(Activity activity, String fragmentTag)
             throws InterruptedException {
         Assert.assertTrue(String.format("Could not locate the fragment with tag '%s'", fragmentTag),

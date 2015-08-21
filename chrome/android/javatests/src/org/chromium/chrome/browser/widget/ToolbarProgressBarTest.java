@@ -12,19 +12,21 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Tests related to the ToolbarProgressBar.
  */
 public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    static final int TEST_WAIT_TIME_MS = 60000;
 
     public ToolbarProgressBarTest() {
         super(ChromeActivity.class);
@@ -43,10 +45,10 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeAct
     @Feature({"Android-Toolbar"})
     @MediumTest
     @Restriction(RESTRICTION_TYPE_PHONE)
-    @SuppressFBWarnings({"WA_NOT_IN_LOOP", "UW_UNCOND_WAIT"})
     public void testProgressBarDisappearsAfterFastShowHide() throws InterruptedException {
         // onAnimationEnd will be signaled on progress bar showing/hiding animation end.
         final Object onAnimationEnd = new Object();
+        final AtomicBoolean animationEnded = new AtomicBoolean(false);
         final AtomicReference<ToolbarProgressBar> progressBar =
                 new AtomicReference<ToolbarProgressBar>();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -67,6 +69,7 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeAct
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         synchronized (onAnimationEnd) {
+                            animationEnded.set(true);
                             onAnimationEnd.notify();
                         }
                     }
@@ -82,6 +85,7 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeAct
         assertNotSame(View.VISIBLE, progressBar.get().getVisibility());
 
         // Make some progress and check that the progress bar is fully visible.
+        animationEnded.set(false);
         synchronized (onAnimationEnd) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
@@ -91,12 +95,16 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeAct
                 }
             });
 
-            onAnimationEnd.wait();
+            long deadline = System.currentTimeMillis() + TEST_WAIT_TIME_MS;
+            while (!animationEnded.get() && System.currentTimeMillis() < deadline) {
+                onAnimationEnd.wait(deadline - System.currentTimeMillis());
+            }
             assertEquals(1.0f, progressBar.get().getAlpha());
             assertEquals(View.VISIBLE, progressBar.get().getVisibility());
         }
 
         // Clear progress and check that the progress bar is hidden.
+        animationEnded.set(false);
         synchronized (onAnimationEnd) {
             ThreadUtils.runOnUiThread(new Runnable() {
                 @Override
@@ -105,7 +113,10 @@ public class ToolbarProgressBarTest extends ChromeActivityTestCaseBase<ChromeAct
                 }
             });
 
-            onAnimationEnd.wait();
+            long deadline = System.currentTimeMillis() + TEST_WAIT_TIME_MS;
+            while (!animationEnded.get() && System.currentTimeMillis() < deadline) {
+                onAnimationEnd.wait(deadline - System.currentTimeMillis());
+            }
             assertEquals(0.0f, progressBar.get().getAlpha());
             assertNotSame(View.VISIBLE, progressBar.get().getVisibility());
         }

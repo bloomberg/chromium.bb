@@ -170,8 +170,7 @@ public class ChromeBrowserProviderClient {
         return methodArgs;
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T extends Object> T chromeBrowserProviderCall(Class returnType, String name,
+    private static <T> T chromeBrowserProviderCall(Class<T> returnType, String name,
             Context context, Bundle args) {
         android.util.Log.i(TAG, "before executing " + name + " call");
         Bundle result = context.getContentResolver().call(getPrivateProviderUri(context),
@@ -179,9 +178,10 @@ public class ChromeBrowserProviderClient {
         android.util.Log.i(TAG, "after executing " + name + " call");
         if (result == null) return null;
         if (Parcelable.class.isAssignableFrom(returnType)) {
-            return (T) result.getParcelable(ChromeBrowserProvider.CLIENT_API_RESULT_KEY);
+            return returnType.cast(
+                    result.getParcelable(ChromeBrowserProvider.CLIENT_API_RESULT_KEY));
         } else {
-            return (T) result.get(ChromeBrowserProvider.CLIENT_API_RESULT_KEY);
+            return returnType.cast(result.get(ChromeBrowserProvider.CLIENT_API_RESULT_KEY));
         }
     }
 }

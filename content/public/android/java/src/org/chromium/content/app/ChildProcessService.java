@@ -45,6 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * for X in 0...N-1 (where N is {@link ChildProcessLauncher#MAX_REGISTERED_SERVICES})
  */
 @JNINamespace("content")
+@SuppressWarnings("SynchronizeOnNonFinalField")
 public class ChildProcessService extends Service {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "cr.ChildProcessService";

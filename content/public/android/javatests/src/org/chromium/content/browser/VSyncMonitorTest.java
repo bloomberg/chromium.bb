@@ -29,7 +29,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
 
         private boolean mDone;
         private long mPreviousVSyncTimeMicros;
-        private Object mSyncRoot = new Object();
+        private final Object mSyncRoot = new Object();
 
         VSyncDataCollector(int frames) {
             mFramePeriods = new long[frames - 1];

@@ -18,9 +18,10 @@ import java.util.concurrent.ExecutionException;
  */
 public class AutofillTestHelper {
 
-    private Object mObserverNotified;
+    private final Object mObserverNotified;
 
     public AutofillTestHelper() {
+        mObserverNotified = new Object();
         registerDataObserver();
     }
 
@@ -113,7 +114,6 @@ public class AutofillTestHelper {
     }
 
     private void registerDataObserver() {
-        mObserverNotified = new Object();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

@@ -127,7 +127,7 @@ public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegat
     private boolean mReleasedMessages;
     private PostMessageSender mPostMessageSender;
     private MessageHandler mHandler;
-    private Object mLock = new Object();
+    private final Object mLock = new Object();
 
     public AwMessagePort(AwMessagePortService messagePortService) {
         mMessagePortService = messagePortService;
