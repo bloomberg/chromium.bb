@@ -15,6 +15,7 @@
 #include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/Frame.h"
+#include "core/frame/SubresourceIntegrity.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -24,7 +25,9 @@
 #include "core/page/Page.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/CompositeDataConsumerHandle.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
+#include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
@@ -34,6 +37,8 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/HashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -66,6 +71,83 @@ public:
     void start();
     void dispose();
 
+    class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>, public WebDataConsumerHandle::Client {
+    public:
+        // SRIVerifier takes ownership of |handle| and |response|.
+        // |updater| must be garbage collected. The other arguments
+        // all must have the lifetime of the give loader.
+        SRIVerifier(PassOwnPtr<WebDataConsumerHandle> handle, CompositeDataConsumerHandle::Updater* updater, Response* response, FetchManager::Loader* loader, String integrityMetadata, const KURL& url)
+            : m_handle(handle)
+            , m_updater(updater)
+            , m_response(response)
+            , m_loader(loader)
+            , m_integrityMetadata(integrityMetadata)
+            , m_url(url)
+            , m_finished(false)
+        {
+            m_reader = m_handle->obtainReader(this);
+        }
+
+        void didGetReadable() override
+        {
+            ASSERT(m_reader);
+            ASSERT(m_loader);
+            ASSERT(m_response);
+
+            WebDataConsumerHandle::Result r = WebDataConsumerHandle::Ok;
+            while (r == WebDataConsumerHandle::Ok) {
+                const void* buffer;
+                size_t size;
+                r = m_reader->beginRead(&buffer, WebDataConsumerHandle::FlagNone, &size);
+                if (r == WebDataConsumerHandle::Ok) {
+                    m_buffer.append(static_cast<const char*>(buffer), size);
+                    m_reader->endRead(size);
+                }
+            }
+            if (r == WebDataConsumerHandle::ShouldWait)
+                return;
+            String errorMessage = "Unknown error occurred while trying to verify integrity.";
+            m_finished = true;
+            if (r == WebDataConsumerHandle::Done) {
+                if (SubresourceIntegrity::CheckSubresourceIntegrity(m_integrityMetadata, String(m_buffer.data(), m_buffer.size()), m_url, *m_loader->document(), errorMessage)) {
+                    m_updater->update(FetchFormDataConsumerHandle::create(m_buffer.data(), m_buffer.size()));
+                    m_loader->m_resolver->resolve(m_response);
+                    m_loader->m_resolver.clear();
+                    // FetchManager::Loader::didFinishLoading() can
+                    // be called before didGetReadable() is called
+                    // when the data is ready. In that case,
+                    // didFinishLoading() doesn't clean up and call
+                    // notifyFinished(), so it is necessary to
+                    // explicitly finish the loader here.
+                    if (m_loader->m_didFinishLoading)
+                        m_loader->loadSucceeded();
+                    return;
+                }
+            }
+            m_updater->update(createUnexpectedErrorDataConsumerHandle());
+            m_loader->performNetworkError(errorMessage);
+        }
+
+        bool isFinished() const { return m_finished; }
+
+        DEFINE_INLINE_TRACE()
+        {
+            visitor->trace(m_updater);
+            visitor->trace(m_response);
+            visitor->trace(m_loader);
+        }
+    private:
+        OwnPtr<WebDataConsumerHandle> m_handle;
+        Member<CompositeDataConsumerHandle::Updater> m_updater;
+        Member<Response> m_response;
+        RawPtrWillBeMember<FetchManager::Loader> m_loader;
+        String m_integrityMetadata;
+        KURL m_url;
+        OwnPtr<WebDataConsumerHandle::Reader> m_reader;
+        Vector<char> m_buffer;
+        bool m_finished;
+    };
+
 private:
     Loader(ExecutionContext*, FetchManager*, ScriptPromiseResolver*, FetchRequestData*);
 
@@ -75,6 +157,7 @@ private:
     void failed(const String& message);
     void notifyFinished();
     Document* document() const;
+    void loadSucceeded();
 
     RawPtrWillBeMember<FetchManager> m_fetchManager;
     PersistentWillBeMember<ScriptPromiseResolver> m_resolver;
@@ -83,6 +166,8 @@ private:
     bool m_failed;
     bool m_finished;
     int m_responseHttpStatusCode;
+    PersistentWillBeMember<SRIVerifier> m_integrityVerifier;
+    bool m_didFinishLoading;
 };
 
 FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* fetchManager, ScriptPromiseResolver* resolver, FetchRequestData* request)
@@ -93,6 +178,8 @@ FetchManager::Loader::Loader(ExecutionContext* executionContext, FetchManager* f
     , m_failed(false)
     , m_finished(false)
     , m_responseHttpStatusCode(0)
+    , m_integrityVerifier(nullptr)
+    , m_didFinishLoading(false)
 {
 }
 
@@ -106,6 +193,7 @@ DEFINE_TRACE(FetchManager::Loader)
     visitor->trace(m_fetchManager);
     visitor->trace(m_resolver);
     visitor->trace(m_request);
+    visitor->trace(m_integrityVerifier);
     ContextLifecycleObserver::trace(visitor);
 }
 
@@ -131,7 +219,13 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             break;
         }
     }
-    FetchResponseData* responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle)));
+
+    FetchResponseData* responseData = nullptr;
+    CompositeDataConsumerHandle::Updater* updater = nullptr;
+    if (m_request->integrity().isEmpty())
+        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle)));
+    else
+        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle(), &updater))));
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
@@ -173,23 +267,29 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             break;
         }
     }
+
     Response* r = Response::create(m_resolver->executionContext(), taintedResponse);
     r->headers()->setGuard(Headers::ImmutableGuard);
-    m_resolver->resolve(r);
-    m_resolver.clear();
+
+    if (m_request->integrity().isEmpty()) {
+        m_resolver->resolve(r);
+        m_resolver.clear();
+    } else {
+        ASSERT(!m_integrityVerifier);
+        m_integrityVerifier = new SRIVerifier(handle, updater, r, this, m_request->integrity(), response.url());
+    }
 }
 
 void FetchManager::Loader::didFinishLoading(unsigned long, double)
 {
-    ASSERT(!m_failed);
-    m_finished = true;
+    m_didFinishLoading = true;
+    // If there is an integrity verifier, and it has not already finished, it
+    // will take care of finishing the load or performing a network error when
+    // verification is complete.
+    if (m_integrityVerifier && !m_integrityVerifier->isFinished())
+        return;
 
-    if (document() && document()->frame() && document()->frame()->page()
-        && m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
-        document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
-    }
-    InspectorInstrumentation::didFinishFetch(executionContext(), this, m_request->method(), m_request->url().string());
-    notifyFinished();
+    loadSucceeded();
 }
 
 void FetchManager::Loader::didFail(const ResourceError& error)
@@ -219,6 +319,20 @@ Document* FetchManager::Loader::document() const
         return toDocument(executionContext());
     }
     return nullptr;
+}
+
+void FetchManager::Loader::loadSucceeded()
+{
+    ASSERT(!m_failed);
+
+    m_finished = true;
+
+    if (document() && document()->frame() && document()->frame()->page()
+        && m_responseHttpStatusCode >= 200 && m_responseHttpStatusCode < 300) {
+        document()->frame()->page()->chromeClient().ajaxSucceeded(document()->frame());
+    }
+    InspectorInstrumentation::didFinishFetch(executionContext(), this, m_request->method(), m_request->url().string());
+    notifyFinished();
 }
 
 void FetchManager::Loader::start()

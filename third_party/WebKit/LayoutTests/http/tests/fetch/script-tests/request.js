@@ -249,6 +249,29 @@ test(function() {
   }, 'Request redirect test');
 
 test(function() {
+    var request1 = {};
+    var request2 = {};
+    var init = {};
+    request1 = new Request(URL, init);
+    assert_equals(request1.integrity, '',
+                  'Request.integrity should be empty on init');
+    init['integrity'] = 'sha256-deadbeef';
+    request1 = new Request(URL, init);
+    assert_equals(request1.integrity, 'sha256-deadbeef',
+                  'Request.integrity match the integrity of init');
+    request2 = new Request(request1);
+    assert_equals(request2.integrity, 'sha256-deadbeef',
+                  'Request.integrity should match');
+    init['mode'] = 'no-cors';
+    assert_throws(
+        {name: 'TypeError'},
+        function() {
+            var request = new Request(URL, init);
+        },
+        'new Request with a non-empty integrity and mode of \'no-cors\' should throw');
+}, 'Request integrity test');
+
+test(function() {
     ['same-origin', 'cors', 'no-cors'].forEach(function(mode) {
         FORBIDDEN_METHODS.forEach(function(method) {
             assert_throws(

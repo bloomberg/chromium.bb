@@ -92,6 +92,8 @@ public:
     void setBuffer(BodyStreamBuffer* buffer) { m_buffer = buffer; }
     String mimeType() const { return m_mimeType; }
     void setMIMEType(const String& type) { m_mimeType = type; }
+    String integrity() const { return m_integrity; }
+    void setIntegrity(const String& integrity) { m_integrity = integrity; }
 
     DECLARE_TRACE();
 
@@ -120,6 +122,7 @@ private:
     Tainting m_responseTainting;
     Member<BodyStreamBuffer> m_buffer;
     String m_mimeType;
+    String m_integrity;
 };
 
 } // namespace blink

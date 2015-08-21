@@ -378,6 +378,24 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
         }
     }
 
+    // The following SRI checks need to be here because, unfortunately, fetches
+    // are not done purely according to the Fetch spec. In particular,
+    // different requests for the same resource do not have different
+    // responses; the memory cache can (and will) return the exact same
+    // Resource object.  For different requests, the same Resource object will
+    // be returned and will not be associated with the particular request.
+    // Therefore, when the body of the response comes in, there's no way to
+    // validate the integrity of the Resource object against a particular
+    // request (since there may be several pending requests all tied to the
+    // identical object, and the actual requests are not stored).
+    //
+    // In order to simulate the correct behavior, Blink explicitly does the SRI
+    // checks at execution here (similar to the AccessControlStatus check done
+    // above), while having proper Fetch checks in the fetch module for use in
+    // the fetch JavaScript API. In a future world where the ResourceFetcher
+    // uses the Fetch algorithm, this should be fixed by having separate
+    // Response objects (perhaps attached to identical Resource objects) per
+    // request.  See https://crbug.com/500701 for more information.
     if (m_isExternalScript) {
         const KURL resourceUrl = sourceCode.resource()->resourceRequest().url();
         if (!SubresourceIntegrity::CheckSubresourceIntegrity(*m_element, sourceCode.source(), sourceCode.resource()->url(), *sourceCode.resource())) {

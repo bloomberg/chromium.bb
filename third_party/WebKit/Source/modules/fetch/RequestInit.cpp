@@ -34,6 +34,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
     DictionaryHelper::get(options, "mode", mode);
     DictionaryHelper::get(options, "credentials", credentials);
     DictionaryHelper::get(options, "redirect", redirect);
+    DictionaryHelper::get(options, "integrity", integrity);
 
     v8::Local<v8::Value> v8Body;
     if (!DictionaryHelper::get(options, "body", v8Body) || v8Body->IsUndefined() || v8Body->IsNull())

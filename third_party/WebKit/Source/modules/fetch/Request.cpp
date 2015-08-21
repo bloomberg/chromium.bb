@@ -42,6 +42,7 @@ FetchRequestData* createCopyOfFetchRequestDataForFetch(ScriptState* scriptState,
     request->setMode(original->mode());
     request->setCredentials(original->credentials());
     request->setRedirect(original->redirect());
+    request->setIntegrity(original->integrity());
     // FIXME: Set cache mode.
     // TODO(yhirano): Set redirect mode.
     return request;
@@ -166,8 +167,10 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         request->setRedirect(WebURLRequest::FetchRedirectModeManual);
     }
 
-    // TODO(jww): "23. If |init|'s integrity member is present, set |request|'s
+    // "If |init|'s integrity member is present, set |request|'s
     // integrity metadata to it."
+    if (!init.integrity.isNull())
+        request->setIntegrity(init.integrity);
 
     // "24. If |init|'s method member is present, let |method| be it and run
     // these substeps:"
@@ -208,7 +211,13 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
             exceptionState.throwTypeError("'" + r->request()->method() + "' is unsupported in no-cors mode.");
             return nullptr;
         }
-        // "Set |r|'s Headers object's guard to |request-no-CORS|.
+        // "2. If |request|'s integrity metadata is not the empty string, throw
+        // a TypeError."
+        if (!request->integrity().isEmpty()) {
+            exceptionState.throwTypeError("The integrity attribute is unsupported in no-cors mode.");
+            return nullptr;
+        }
+        // "3. Set |r|'s Headers object's guard to |request-no-CORS|.
         r->headers()->setGuard(Headers::RequestNoCORSGuard);
     }
     // "30. Fill |r|'s Headers object with |headers|. Rethrow any exceptions."
@@ -484,6 +493,11 @@ String Request::redirect() const
     }
     ASSERT_NOT_REACHED();
     return "";
+}
+
+String Request::integrity() const
+{
+    return m_request->integrity();
 }
 
 Request* Request::clone(ExceptionState& exceptionState)

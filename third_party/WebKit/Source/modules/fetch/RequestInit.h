@@ -31,6 +31,7 @@ public:
     String mode;
     String credentials;
     String redirect;
+    String integrity;
 };
 
 }

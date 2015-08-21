@@ -57,6 +57,7 @@ FetchRequestData* FetchRequestData::cloneExceptBody()
     request->m_redirect = m_redirect;
     request->m_responseTainting = m_responseTainting;
     request->m_mimeType = m_mimeType;
+    request->m_integrity = m_integrity;
     return request;
 }
 

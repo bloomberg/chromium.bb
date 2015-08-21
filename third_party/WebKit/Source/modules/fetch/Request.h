@@ -50,6 +50,7 @@ public:
     String mode() const;
     String credentials() const;
     String redirect() const;
+    String integrity() const;
 
     // From Request.idl:
     Request* clone(ExceptionState&);

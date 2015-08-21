@@ -114,8 +114,17 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         return false;
     }
 
+    String errorMessage;
+    bool result = CheckSubresourceIntegrity(attribute, source, resourceUrl, document, errorMessage);
+    if (!result)
+        logErrorToConsole(errorMessage, document);
+    return result;
+}
+
+bool SubresourceIntegrity::CheckSubresourceIntegrity(const String& integrityMetadata, const WTF::String& source, const KURL& resourceUrl, Document& document, String& errorMessage)
+{
     WTF::Vector<IntegrityMetadata> metadataList;
-    IntegrityParseResult integrityParseResult = parseIntegrityAttribute(attribute, metadataList, document);
+    IntegrityParseResult integrityParseResult = parseIntegrityAttribute(integrityMetadata, metadataList, document);
     // On failed parsing, there's no need to log an error here, as
     // parseIntegrityAttribute() will output an appropriate console message.
     if (integrityParseResult != IntegrityParseValidResult)
@@ -158,9 +167,9 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
         // need to be very careful not to expose this in exceptions or
         // JavaScript, otherwise it risks exposing information about the
         // resource cross-origin.
-        logErrorToConsole("Failed to find a valid digest in the 'integrity' attribute for resource '" + resourceUrl.elidedString() + "' with computed SHA-256 integrity '" + digestToString(digest) + "'. The resource has been blocked.", document);
+        errorMessage = "Failed to find a valid digest in the 'integrity' attribute for resource '" + resourceUrl.elidedString() + "' with computed SHA-256 integrity '" + digestToString(digest) + "'. The resource has been blocked.";
     } else {
-        logErrorToConsole("There was an error computing an integrity value for resource '" + resourceUrl.elidedString() + "'. The resource has been blocked.", document);
+        errorMessage = "There was an error computing an integrity value for resource '" + resourceUrl.elidedString() + "'. The resource has been blocked.";
     }
     UseCounter::count(document, UseCounter::SRIElementWithNonMatchingIntegrityAttribute);
     return false;
