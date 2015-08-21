@@ -47,9 +47,9 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                             int error_code,
                             const base::string16& error_description,
                             bool was_ignored_by_handler) override;
-  void DidNavigate(RenderFrameHostImpl* render_frame_host,
-                   const FrameHostMsg_DidCommitProvisionalLoad_Params&
-                       input_params) override;
+  void DidNavigate(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) override;
   bool NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
                               const FrameNavigationEntry& frame_entry,
                               NavigationController::ReloadType reload_type,

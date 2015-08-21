@@ -386,8 +386,7 @@ bool NavigatorImpl::NavigateToPendingEntry(
 
 void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params) {
-  FrameHostMsg_DidCommitProvisionalLoad_Params params(input_params);
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   FrameTree* frame_tree = render_frame_host->frame_tree_node()->frame_tree();
   bool oopifs_possible = SiteIsolationPolicy::AreCrossProcessFramesPossible();
 
