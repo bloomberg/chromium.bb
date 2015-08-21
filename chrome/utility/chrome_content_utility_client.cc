@@ -59,6 +59,10 @@
 #include "chrome/utility/local_discovery/service_discovery_message_handler.h"
 #endif
 
+#if defined(OS_MACOSX) && defined(FULL_SAFE_BROWSING)
+#include "chrome/utility/safe_browsing/mac/dmg_analyzer.h"
+#endif
+
 namespace {
 
 bool Send(IPC::Message* message) {
@@ -192,6 +196,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
 #if defined(FULL_SAFE_BROWSING)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                         OnAnalyzeZipFileForDownloadProtection)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeDmgFileForDownloadProtection,
+                        OnAnalyzeDmgFileForDownloadProtection)
+#endif
 #endif
 #if defined(ENABLE_EXTENSIONS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParseMediaMetadata,
@@ -396,6 +404,19 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
       results));
   ReleaseProcessIfNeeded();
 }
+
+#if defined(OS_MACOSX)
+void ChromeContentUtilityClient::OnAnalyzeDmgFileForDownloadProtection(
+    const IPC::PlatformFileForTransit& dmg_file) {
+  safe_browsing::zip_analyzer::Results results;
+  safe_browsing::dmg::AnalyzeDMGFile(
+      IPC::PlatformFileForTransitToFile(dmg_file), &results);
+  Send(new ChromeUtilityHostMsg_AnalyzeDmgFileForDownloadProtection_Finished(
+      results));
+  ReleaseProcessIfNeeded();
+}
+#endif
+
 #endif
 
 #if defined(ENABLE_EXTENSIONS)

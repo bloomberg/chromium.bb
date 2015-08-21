@@ -54,6 +54,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/safe_browsing/sandboxed_dmg_analyzer_mac.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -266,7 +270,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
         referrer_url_(item->GetReferrerUrl()),
         tab_url_(item->GetTabUrl()),
         tab_referrer_url_(item->GetTabReferrerUrl()),
-        zipped_executable_(false),
+        archived_executable_(false),
         callback_(callback),
         service_(service),
         binary_feature_extractor_(binary_feature_extractor),
@@ -315,6 +319,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (item_->GetTargetFilePath().MatchesExtension(
         FILE_PATH_LITERAL(".zip"))) {
       StartExtractZipFeatures();
+#if defined(OS_MACOSX)
+    } else if (item_->GetTargetFilePath().MatchesExtension(
+                  FILE_PATH_LITERAL(".dmg"))) {
+      StartExtractDmgFeatures();
+#endif
     } else {
       DCHECK(!download_protection_util::IsArchiveFile(
           item_->GetTargetFilePath()));
@@ -551,7 +560,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (!service_)
       return;
     if (results.success) {
-      zipped_executable_ = results.has_executable;
+      archived_executable_ = results.has_executable;
       archived_binary_.CopyFrom(results.archived_binary);
       DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
                << ", has_executable=" << results.has_executable
@@ -560,23 +569,66 @@ class DownloadProtectionService::CheckClientDownloadRequest
       DVLOG(1) << "Zip analysis failed for " << item_->GetFullPath().value();
     }
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
-                          zipped_executable_);
+                          archived_executable_);
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasArchiveButNoExecutable",
-                          results.has_archive && !zipped_executable_);
+                          results.has_archive && !archived_executable_);
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractZipFeaturesTime",
                         base::TimeTicks::Now() - zip_analysis_start_time_);
     for (const auto& file_extension : results.archived_archive_filetypes)
       RecordArchivedArchiveFileExtensionType(file_extension);
 
-    if (!zipped_executable_ && !results.has_archive) {
+    if (!archived_executable_ && !results.has_archive) {
       PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
       return;
     }
 
-    if (!zipped_executable_ && results.has_archive)
+    if (!archived_executable_ && results.has_archive)
       type_ = ClientDownloadRequest::ZIPPED_ARCHIVE;
     OnFileFeatureExtractionDone();
   }
+
+#if defined(OS_MACOSX)
+  void StartExtractDmgFeatures() {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(item_);
+    dmg_analyzer_ = new SandboxedDMGAnalyzer(
+        item_->GetFullPath(),
+        base::Bind(&CheckClientDownloadRequest::OnDmgAnalysisFinished,
+                   weakptr_factory_.GetWeakPtr()));
+    dmg_analyzer_->Start();
+    dmg_analysis_start_time_ = base::TimeTicks::Now();
+  }
+
+  void OnDmgAnalysisFinished(const zip_analyzer::Results& results) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK_EQ(ClientDownloadRequest::MAC_EXECUTABLE, type_);
+    if (!service_)
+      return;
+
+    if (results.success) {
+      archived_executable_ = results.has_executable;
+      archived_binary_.CopyFrom(results.archived_binary);
+      DVLOG(1) << "DMG analysis has finished for "
+               << item_->GetFullPath().value() << ", has_executable="
+               << results.has_executable;
+    } else {
+      DVLOG(1) << "DMG analysis failed for "<< item_->GetFullPath().value();
+    }
+
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgFileSuccess", results.success);
+    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgFileHasExecutable",
+                          archived_executable_);
+    UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractDmgFeaturesTime",
+                        base::TimeTicks::Now() - dmg_analysis_start_time_);
+
+    if (!archived_executable_) {
+      PostFinishTask(UNKNOWN, REASON_ARCHIVE_WITHOUT_BINARIES);
+      return;
+    }
+
+    OnFileFeatureExtractionDone();
+  }
+#endif  // defined(OS_MACOSX)
 
   static void RecordCountOfSignedOrWhitelistedDownload() {
     UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
@@ -748,7 +800,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     request.mutable_signature()->CopyFrom(signature_info_);
     if (image_headers_)
       request.set_allocated_image_headers(image_headers_.release());
-    if (zipped_executable_)
+    if (archived_executable_)
       request.mutable_archived_binary()->Swap(&archived_binary_);
     if (!request.SerializeToString(&client_download_request_data_)) {
       FinishRequest(UNKNOWN, REASON_INVALID_REQUEST_PROTO);
@@ -758,6 +810,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     DVLOG(2) << "Sending a request for URL: "
              << item_->GetUrlChain().back();
+    DVLOG(2) << "Detected " << request.archived_binary().size() << " archived "
+             << "binaries";
     fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
                                        GetDownloadRequestUrl(),
                                        net::URLFetcher::POST, this);
@@ -878,7 +932,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   GURL tab_url_;
   GURL tab_referrer_url_;
 
-  bool zipped_executable_;
+  bool archived_executable_;
   ClientDownloadRequest_SignatureInfo signature_info_;
   scoped_ptr<ClientDownloadRequest_ImageHeaders> image_headers_;
   google::protobuf::RepeatedPtrField<ClientDownloadRequest_ArchivedBinary>
@@ -892,6 +946,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
   scoped_ptr<net::URLFetcher> fetcher_;
   scoped_refptr<SandboxedZipAnalyzer> analyzer_;
   base::TimeTicks zip_analysis_start_time_;
+#if defined(OS_MACOSX)
+  scoped_refptr<SandboxedDMGAnalyzer> dmg_analyzer_;
+  base::TimeTicks dmg_analysis_start_time_;
+#endif
   bool finished_;
   ClientDownloadRequest::DownloadType type_;
   std::string client_download_request_data_;

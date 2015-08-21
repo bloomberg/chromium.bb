@@ -69,6 +69,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnAnalyzeZipFileForDownloadProtection(
       const IPC::PlatformFileForTransit& zip_file,
       const IPC::PlatformFileForTransit& temp_file);
+#if defined(OS_MACOSX)
+  void OnAnalyzeDmgFileForDownloadProtection(
+      const IPC::PlatformFileForTransit& dmg_file);
+#endif
 #endif
 #if defined(ENABLE_EXTENSIONS)
   void OnParseMediaMetadata(const std::string& mime_type,

@@ -50,6 +50,24 @@ generate_test_data() {
   done
 
   rm -rf "${DMG_SOURCE}"
+
+  # DMG With Mach-O ############################################################
+
+  mkdir "${DMG_SOURCE}"
+
+  FAKE_APP="${DMG_SOURCE}/Foo.app/Contents/MacOS/"
+  mkdir -p "${FAKE_APP}"
+  cp "${THIS_DIR}/../mach_o/executablefat" "${FAKE_APP}"
+  touch "${FAKE_APP}/../Info.plist"
+
+  mkdir "${DMG_SOURCE}/.hidden"
+  cp "${THIS_DIR}/../mach_o/lib64.dylib" "${DMG_SOURCE}/.hidden/"
+
+  hdiutil create -srcfolder "${DMG_SOURCE}" \
+    -format UDZO -layout SPUD -volname "Mach-O in DMG" -ov \
+    "${OUT_DIR}/mach_o_in_dmg"
+
+  rm -rf "${DMG_SOURCE}"
 }
 
 # Silence any log output.

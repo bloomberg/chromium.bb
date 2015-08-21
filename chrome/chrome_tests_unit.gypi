@@ -1011,6 +1011,7 @@
       'browser/safe_browsing/safe_browsing_store_file_unittest.cc',
       'browser/safe_browsing/safe_browsing_store_unittest.cc',
       'browser/safe_browsing/safe_browsing_util_unittest.cc',
+      'browser/safe_browsing/sandboxed_dmg_analyzer_mac_unittest.cc',
       'browser/safe_browsing/sandboxed_zip_analyzer_unittest.cc',
       'browser/safe_browsing/test_database_manager.cc',
       'browser/safe_browsing/test_database_manager.h',
@@ -2729,6 +2730,8 @@
               'inputs': [
                 '<(generate_test_data)',
                 'test/data/safe_browsing/dmg/make_hfs.sh',
+                'test/data/safe_browsing/mach_o/executablefat',
+                'test/data/safe_browsing/mach_o/lib64.dylib',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/dmg_UDBZ_GPTSPUD.dmg',
@@ -2757,6 +2760,7 @@
                 '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/dmg_UFBI_SPUD.dmg',
                 '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/hfs_plus.img',
                 '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/hfsx_case_sensitive.img',
+                '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg/mach_o_in_dmg.dmg',
               ],
               'action': [ '<(generate_test_data)', '<(PRODUCT_DIR)/test_data/chrome/safe_browsing_dmg' ],
             },

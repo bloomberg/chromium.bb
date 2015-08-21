@@ -37704,6 +37704,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DmgFileHasExecutable" enum="Boolean">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    For each DMG file analyzed by the SafeBrowsing download service, records if
+    the DMG contained an executable file.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DmgFileSuccess" enum="BooleanSuccess">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    For each DMG file analyzed by the SafeBrowsing download service, records
+    true if the analysis was successful, or false if there was an error
+    analyzing the file.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DownloadExtensions"
     enum="SBClientDownloadExtensions">
   <owner>mattm@chromium.org</owner>
@@ -37783,6 +37800,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     For SafeBrowsing binary download checks which reached the
     CheckClientDownloadRequest::StartTimeout() call, records the final result
     (once the check finishes or is cancelled).
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.ExtractDmgFeaturesTime" units="milliseconds">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    Records the time it takes for the SafeBrowsing download service to extract
+    info from a downloaded DMG file.
   </summary>
 </histogram>
 

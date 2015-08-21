@@ -411,7 +411,7 @@ bool HFSForkReadStream::Read(uint8_t* buffer,
 off_t HFSForkReadStream::Seek(off_t offset, int whence) {
   DCHECK_EQ(SEEK_SET, whence);
   DCHECK_GE(offset, 0);
-  DCHECK_LT(static_cast<uint64_t>(offset), fork_.logicalSize);
+  DCHECK(offset == 0 || static_cast<uint64_t>(offset) < fork_.logicalSize);
   size_t target_block = offset / hfs_->block_size();
   size_t block_count = 0;
   for (size_t i = 0; i < arraysize(fork_.extents); ++i) {

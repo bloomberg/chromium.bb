@@ -2530,6 +2530,8 @@
       'browser/safe_browsing/safe_browsing_store.h',
       'browser/safe_browsing/safe_browsing_store_file.cc',
       'browser/safe_browsing/safe_browsing_store_file.h',
+      'browser/safe_browsing/sandboxed_dmg_analyzer_mac.cc',
+      'browser/safe_browsing/sandboxed_dmg_analyzer_mac.h',
       'browser/safe_browsing/sandboxed_zip_analyzer.cc',
       'browser/safe_browsing/sandboxed_zip_analyzer.h',
       'browser/safe_browsing/two_phase_uploader.cc',
