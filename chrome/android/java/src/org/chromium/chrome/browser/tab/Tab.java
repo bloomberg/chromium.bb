@@ -1386,9 +1386,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         NativePage previousNativePage = mNativePage;
         mNativePage = nativePage;
         pushNativePageStateToNavigationEntry();
+        // Notifying of theme color change before content change because some of
+        // the observers depend on the theme information being correct in
+        // onContentChanged().
+        for (TabObserver observer : mObservers) {
+            observer.onDidChangeThemeColor(this, mDefaultThemeColor);
+        }
         for (TabObserver observer : mObservers) {
             observer.onContentChanged(this);
-            observer.onDidChangeThemeColor(this, mDefaultThemeColor);
         }
         destroyNativePageInternal(previousNativePage);
     }
