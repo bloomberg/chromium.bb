@@ -547,8 +547,8 @@ if (false) {
   }
 }
 
-# GYP: //chrome/chrome_tests.gypi:chrome_shell_uiautomator_tests_java
-android_library("uiautomator_tests_java") {
+# GYP: //chrome/chrome_tests.gypi:chrome_uiautomator_tests_java
+android_library("chrome_uiautomator_tests_java") {
   testonly = true
   DEPRECATED_java_in_dir = "uiautomator_tests/src"
   deps = [
@@ -557,11 +557,11 @@ android_library("uiautomator_tests_java") {
   ]
 }
 
-# GYP: //chrome/chrome_tests.gypi:chrome_shell_uiautomator_tests
-uiautomator_test("uiautomator_tests") {
+# GYP: //chrome/chrome_tests.gypi:chrome_uiautomator_tests
+uiautomator_test("chrome_uiautomator_tests") {
   testonly = true
   deps = [
-    ":uiautomator_tests_java",
+    ":chrome_uiautomator_tests_java",
   ]
 }
 

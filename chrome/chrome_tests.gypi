@@ -3070,7 +3070,7 @@
         },
         {
           # GN: //chrome/android:uiautomator_tests_java
-          'target_name': 'chrome_shell_uiautomator_tests_java',
+          'target_name': 'chrome_uiautomator_tests_java',
           'type': 'none',
           'variables': {
             'java_in_dir': 'android/uiautomator_tests',
@@ -3083,10 +3083,10 @@
         },
         {
           # GN: //chrome/android:uiautomator_tests
-          'target_name': 'chrome_shell_uiautomator_tests',
+          'target_name': 'chrome_uiautomator_tests',
           'type': 'none',
           'dependencies': [
-            'chrome_shell_uiautomator_tests_java',
+            'chrome_uiautomator_tests_java',
           ],
           'includes': [ '../build/uiautomator_test.gypi' ],
         },
