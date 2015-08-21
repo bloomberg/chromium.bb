@@ -47,6 +47,9 @@ class Feature {
 
     // A page within webui.
     WEBUI_CONTEXT,
+
+    // A context belonging to a service worker.
+    SERVICE_WORKER_CONTEXT,
   };
 
   // The platforms the feature is supported in.

@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/debug/alias.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
@@ -15,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/grit/content_resources.h"
@@ -80,6 +83,7 @@
 #include "extensions/renderer/script_injection_manager.h"
 #include "extensions/renderer/send_request_natives.h"
 #include "extensions/renderer/set_icon_natives.h"
+#include "extensions/renderer/static_v8_external_one_byte_string_resource.h"
 #include "extensions/renderer/test_features_native_handler.h"
 #include "extensions/renderer/test_native_handler.h"
 #include "extensions/renderer/user_gestures_native_handler.h"
@@ -123,6 +127,10 @@ static const int64 kMaxExtensionIdleHandlerDelayMs = 5 * 60 * 1000;
 static const char kEventDispatchFunction[] = "dispatchEvent";
 static const char kOnSuspendEvent[] = "runtime.onSuspend";
 static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
+
+void CrashOnException(const v8::TryCatch& trycatch) {
+  NOTREACHED();
+};
 
 // Returns the global value for "chrome" from |context|. If one doesn't exist
 // creates a new object for it.
@@ -183,6 +191,35 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
     args.GetReturnValue().Set(GetOrCreateChrome(context()));
   }
 };
+
+class ServiceWorkerScriptContextSet {
+ public:
+  ServiceWorkerScriptContextSet() {}
+  ~ServiceWorkerScriptContextSet() {}
+
+  void Insert(const GURL& url, scoped_ptr<ScriptContext> context) {
+    base::AutoLock lock(lock_);
+    CHECK(script_contexts_.find(url) == script_contexts_.end());
+    script_contexts_.set(url, context.Pass());
+  }
+
+  void Remove(const GURL& url) {
+    base::AutoLock lock(lock_);
+    scoped_ptr<ScriptContext> context = script_contexts_.take_and_erase(url);
+    CHECK(context);
+    context->Invalidate();
+  }
+
+ private:
+  base::ScopedPtrMap<GURL, scoped_ptr<ScriptContext>> script_contexts_;
+
+  mutable base::Lock lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptContextSet);
+};
+
+base::LazyInstance<ServiceWorkerScriptContextSet>
+    g_service_worker_script_context_set = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -328,6 +365,10 @@ void Dispatcher::DidCreateScriptContext(
     case Feature::WEBUI_CONTEXT:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebUI", elapsed);
       break;
+    case Feature::SERVICE_WORKER_CONTEXT:
+      // Handled in DidInitializeServiceWorkerContextOnWorkerThread().
+      NOTREACHED();
+      break;
   }
 
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
@@ -335,12 +376,47 @@ void Dispatcher::DidCreateScriptContext(
 
 // static
 void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
-    v8::Local<v8::Context> context,
+    v8::Local<v8::Context> v8_context,
     const GURL& url) {
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
-    v8_helpers::SetProperty(context, context->Global(), "chrome",
-                            v8::Object::New(context->GetIsolate()));
-  }
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(url);
+
+  if (!extension)
+    return;
+
+  ScriptContext* context = new ScriptContext(
+      v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
+      extension, Feature::SERVICE_WORKER_CONTEXT);
+
+  g_service_worker_script_context_set.Get().Insert(url,
+                                                   make_scoped_ptr(context));
+
+  v8::Isolate* isolate = context->isolate();
+
+  // Fetch the source code for service_worker_bindings.js.
+  base::StringPiece script_resource =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_SERVICE_WORKER_BINDINGS_JS);
+  v8::Local<v8::String> script = v8::String::NewExternal(
+      isolate, new StaticV8ExternalOneByteStringResource(script_resource));
+
+  // Run the script to get the main function, then run the main function to
+  // inject service worker bindings.
+  v8::Local<v8::Value> result = context->RunScript(
+      v8_helpers::ToV8StringUnsafe(isolate, "service_worker"), script,
+      base::Bind(&CrashOnException));
+  CHECK(result->IsFunction());
+  v8::Local<v8::Value> args[] = {
+      v8_helpers::ToV8StringUnsafe(
+          isolate, BackgroundInfo::GetBackgroundURL(extension).spec()),
+  };
+  context->CallFunction(result.As<v8::Function>(), arraysize(args), args);
+
+  const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+  UMA_HISTOGRAM_TIMES(
+      "Extensions.DidInitializeServiceWorkerContextOnWorkerThread", elapsed);
 }
 
 void Dispatcher::WillReleaseScriptContext(
@@ -358,6 +434,12 @@ void Dispatcher::WillReleaseScriptContext(
 
   script_context_set_->Remove(context);
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
+}
+
+// static
+void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
+    const GURL& url) {
+  g_service_worker_script_context_set.Get().Remove(url);
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
@@ -1242,6 +1324,10 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
       }
       break;
     }
+    case Feature::SERVICE_WORKER_CONTEXT:
+      // Handled in DidInitializeServiceWorkerContextOnWorkerThread().
+      NOTREACHED();
+      break;
   }
 }
 

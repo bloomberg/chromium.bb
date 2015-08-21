@@ -182,6 +182,8 @@ std::string GetDisplayName(Feature::Context context) {
       return "hosted app";
     case Feature::WEBUI_CONTEXT:
       return "webui";
+    case Feature::SERVICE_WORKER_CONTEXT:
+      return "service worker";
   }
   NOTREACHED();
   return "";

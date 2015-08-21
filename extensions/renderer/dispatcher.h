@@ -94,12 +94,15 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // Runs on a different thread and should not use any member variables.
   static void DidInitializeServiceWorkerContextOnWorkerThread(
-      v8::Local<v8::Context> context,
+      v8::Local<v8::Context> v8_context,
       const GURL& url);
 
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 const v8::Local<v8::Context>& context,
                                 int world_id);
+
+  // Runs on a different thread and should not use any member variables.
+  static void WillDestroyServiceWorkerContextOnWorkerThread(const GURL& url);
 
   void DidCreateDocumentElement(blink::WebLocalFrame* frame);
 

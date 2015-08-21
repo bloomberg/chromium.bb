@@ -1191,6 +1191,7 @@ bool ChromeContentRendererClient::AllowPopup() {
     case extensions::Feature::WEB_PAGE_CONTEXT:
     case extensions::Feature::UNBLESSED_EXTENSION_CONTEXT:
     case extensions::Feature::WEBUI_CONTEXT:
+    case extensions::Feature::SERVICE_WORKER_CONTEXT:
       return false;
     case extensions::Feature::BLESSED_EXTENSION_CONTEXT:
     case extensions::Feature::CONTENT_SCRIPT_CONTEXT:
@@ -1649,5 +1650,12 @@ ChromeContentRendererClient::DidInitializeServiceWorkerContextOnWorkerThread(
 #if defined(ENABLE_EXTENSIONS)
   extensions::Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
       context, url);
+#endif
+}
+
+void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
+    const GURL& url) {
+#if defined(ENABLE_EXTENSIONS)
+  extensions::Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(url);
 #endif
 }

@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, ServiceWorkerFetchEvent) {
 }
 
 // Binding that was created on the v8::Context of the worker for testing
-// purposes should bind an empty object to chrome.
+// purposes should bind an object to chrome.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, ServiceWorkerChromeBinding) {
   ASSERT_TRUE(RunExtensionTest("service_worker/bindings")) << message_;
   content::WebContents* contents =
@@ -87,6 +87,40 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, ServiceWorkerChromeBinding) {
       contents, "window.domAutomationController.send(document.body.innerText);",
       &output));
   EXPECT_EQ("object", output);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, GetBackgroundClient) {
+  ASSERT_TRUE(RunExtensionTest("service_worker/background_client")) << message_;
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(contents);
+
+  std::string output;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("No Fetch Event yet.", output);
+
+  // Page must reload in order for the service worker to take control.
+  contents->GetController().Reload(true);
+  content::WaitForLoadStop(contents);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, "window.domAutomationController.send(document.body.innerText);",
+      &output));
+  EXPECT_EQ("chrome-extension://" + GetSingleLoadedExtension()->id() +
+                "/"
+                "_generated_background_page.html",
+            output);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, PostMessageToBackgroundClient) {
+  ASSERT_TRUE(RunExtensionTest("service_worker/post_messaging")) << message_;
+
+  EXPECT_EQ("Hello from the SW!",
+            ExecuteScriptInBackgroundPage(
+                GetSingleLoadedExtension()->id(),
+                "window.domAutomationController.send(message);"));
 }
 
 }  // namespace extensions

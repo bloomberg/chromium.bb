@@ -10552,6 +10552,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DidInitializeServiceWorkerContextOnWorkerThread"
+    units="milliseconds">
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    Records the time taken to install Extension JavaScript bindings per service
+    worker context.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DidSuppressJavaScriptException"
     enum="ChromeChannelForHistogram">
   <owner>kalman@chromium.org</owner>

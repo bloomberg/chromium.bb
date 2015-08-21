@@ -1,0 +1,10 @@
+{
+  "name": "Service Worker Background Client",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Test for getting the background client from the service worker",
+  "permissions": ["tabs"],
+  "background": {
+    "scripts": ["test.js"]
+  }
+}

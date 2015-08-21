@@ -305,6 +305,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       const GURL& url) {}
+
+  // Notifies that a service worker context will be destroyed. This function
+  // is called from the worker thread.
+  virtual void WillDestroyServiceWorkerContextOnWorkerThread(const GURL& url) {}
 };
 
 }  // namespace content

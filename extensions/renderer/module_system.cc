@@ -491,38 +491,9 @@ void ModuleSystem::SetNativeLazyField(v8::Local<v8::Object> object,
 
 v8::Local<v8::Value> ModuleSystem::RunString(v8::Local<v8::String> code,
                                              v8::Local<v8::String> name) {
-  v8::EscapableHandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Context> v8_context = context()->v8_context();
-  v8::Context::Scope context_scope(v8_context);
-
-  // Prepend extensions:: to |name| so that internal code can be differentiated
-  // from external code in stack traces. This has no effect on behaviour.
-  std::string internal_name =
-      base::StringPrintf("extensions::%s", *v8::String::Utf8Value(name));
-
-  if (internal_name.size() >= v8::String::kMaxLength) {
-    NOTREACHED() << "internal_name is too long.";
-    return v8::Undefined(GetIsolate());
-  }
-
-  blink::WebScopedMicrotaskSuppression suppression;
-  v8::TryCatch try_catch(GetIsolate());
-  try_catch.SetCaptureMessage(true);
-  v8::ScriptOrigin origin(
-      ToV8StringUnsafe(GetIsolate(), internal_name.c_str()));
-  v8::Local<v8::Script> script;
-  if (!v8::Script::Compile(v8_context, code, &origin).ToLocal(&script)) {
-    HandleException(try_catch);
-    return v8::Undefined(GetIsolate());
-  }
-
-  v8::Local<v8::Value> result;
-  if (!script->Run(v8_context).ToLocal(&result)) {
-    HandleException(try_catch);
-    return v8::Undefined(GetIsolate());
-  }
-
-  return handle_scope.Escape(result);
+  return context_->RunScript(
+      name, code, base::Bind(&ExceptionHandler::HandleUncaughtException,
+                             base::Unretained(exception_handler_.get())));
 }
 
 v8::Local<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {

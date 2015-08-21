@@ -389,9 +389,12 @@ void ServiceWorkerContextClient::didEvaluateWorkerScript(bool success) {
 void ServiceWorkerContextClient::didInitializeWorkerContext(
     v8::Local<v8::Context> context,
     const blink::WebURL& url) {
+  // TODO(annekao): Remove WebURL parameter from Blink (since url and script_url
+  // are equal). Also remove m_documentURL from ServiceWorkerGlobalScopeProxy.
+  DCHECK_EQ(script_url_, GURL(url));
   GetContentClient()
       ->renderer()
-      ->DidInitializeServiceWorkerContextOnWorkerThread(context, GURL(url));
+      ->DidInitializeServiceWorkerContextOnWorkerThread(context, script_url_);
 }
 
 void ServiceWorkerContextClient::willDestroyWorkerContext() {
@@ -407,6 +410,9 @@ void ServiceWorkerContextClient::willDestroyWorkerContext() {
   // This also lets the message filter stop dispatching messages to
   // this client.
   g_worker_client_tls.Pointer()->Set(NULL);
+
+  GetContentClient()->renderer()->WillDestroyServiceWorkerContextOnWorkerThread(
+      script_url_);
 }
 
 void ServiceWorkerContextClient::workerContextDestroyed() {
