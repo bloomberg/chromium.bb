@@ -195,12 +195,8 @@ void BrowserTestBase::SetUp() {
   // GPU blacklisting decisions were made.
   command_line->AppendSwitch(switches::kLogGpuControlListDecisions);
 
-  if (use_software_compositing_) {
+  if (use_software_compositing_)
     command_line->AppendSwitch(switches::kDisableGpu);
-#if defined(USE_AURA)
-    command_line->AppendSwitch(switches::kUIDisableThreadedCompositing);
-#endif
-  }
 
 #if defined(USE_AURA)
   // Most tests do not need pixel output, so we don't produce any. The command

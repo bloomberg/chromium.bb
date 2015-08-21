@@ -15,8 +15,6 @@ const char kEnableHardwareOverlays[] = "enable-hardware-overlays";
 // Forces tests to produce pixel output when they normally wouldn't.
 const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
-const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
-
 const char kUIEnableCompositorAnimationTimelines[] =
     "ui-enable-compositor-animation-timelines";
 
