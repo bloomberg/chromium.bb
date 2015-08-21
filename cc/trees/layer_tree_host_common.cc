@@ -2328,6 +2328,14 @@ void VerifyPropertyTreeValuesForSurface(RenderSurfaceImpl* render_surface,
                                                   property_trees->clip_tree)
              .ToString();
 
+  const bool render_surface_content_rects_match =
+      ApproximatelyEqual(render_surface->content_rect(),
+                         render_surface->content_rect_from_property_trees());
+  CHECK(render_surface_content_rects_match)
+      << "expected: " << render_surface->content_rect().ToString()
+      << " actual: "
+      << render_surface->content_rect_from_property_trees().ToString();
+
   CHECK_EQ(render_surface->draw_opacity(),
            DrawOpacityOfRenderSurfaceFromPropertyTrees(
                render_surface, property_trees->effect_tree));
@@ -2460,11 +2468,13 @@ void CalculateRenderTargetInternal(LayerImpl* layer,
 
 void CalculateRenderSurfaceLayerListInternal(
     LayerImpl* layer,
+    PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
     LayerImplList* descendants,
     bool subtree_visible_from_ancestor,
     const bool can_render_to_separate_surface,
-    const int current_render_surface_layer_list_id) {
+    const int current_render_surface_layer_list_id,
+    const bool verify_property_trees) {
   // This calculates top level Render Surface Layer List, and Layer List for all
   // Render Surfaces.
 
@@ -2519,16 +2529,51 @@ void CalculateRenderSurfaceLayerListInternal(
 
   size_t descendants_size = descendants->size();
 
-  if (!LayerShouldBeSkipped(layer, layer_is_drawn)) {
+  bool layer_should_be_skipped = LayerShouldBeSkipped(layer, layer_is_drawn);
+  if (!layer_should_be_skipped) {
     MarkLayerWithRenderSurfaceLayerListId(layer,
                                           current_render_surface_layer_list_id);
     descendants->push_back(layer);
   }
 
+  // The render surface's content rect is the union of drawable content rects
+  // of the layers that draw into the surface. If the render surface is clipped,
+  // it is also intersected with the render's surface clip rect.
+  if (verify_property_trees) {
+    if (render_to_separate_surface) {
+      if (IsRootLayer(layer)) {
+        // The root layer's surface content rect is always the entire viewport.
+        gfx::Rect viewport =
+            ViewportRectFromPropertyTrees(property_trees->clip_tree);
+        layer->render_surface()->SetAccumulatedContentRect(viewport);
+      } else {
+        // If the owning layer of a render surface draws content, the content
+        // rect of the render surface is initialized to the drawable content
+        // rect of the layer.
+        gfx::Rect content_rect =
+            layer->DrawsContent() ? DrawableContentRectFromPropertyTrees(
+                                        layer, property_trees->transform_tree)
+                                  : gfx::Rect();
+        layer->render_surface()->SetAccumulatedContentRect(content_rect);
+      }
+    } else if (!layer_should_be_skipped &&
+               !IsRootLayer(layer->render_target())) {
+      // In this case, the layer's drawable content rect can expand the
+      // content rect of the render surface it is drawing into.
+      gfx::Rect surface_content_rect =
+          layer->render_target()->render_surface()->accumulated_content_rect();
+      surface_content_rect.Union(DrawableContentRectFromPropertyTrees(
+          layer, property_trees->transform_tree));
+      layer->render_target()->render_surface()->SetAccumulatedContentRect(
+          surface_content_rect);
+    }
+  }
+
   for (auto& child_layer : layer->children()) {
     CalculateRenderSurfaceLayerListInternal(
-        child_layer, render_surface_layer_list, descendants, layer_is_drawn,
-        can_render_to_separate_surface, current_render_surface_layer_list_id);
+        child_layer, property_trees, render_surface_layer_list, descendants,
+        layer_is_drawn, can_render_to_separate_surface,
+        current_render_surface_layer_list_id, verify_property_trees);
 
     // If the child is its own render target, then it has a render surface.
     if (child_layer->render_target() == child_layer &&
@@ -2553,6 +2598,52 @@ void CalculateRenderSurfaceLayerListInternal(
     RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
     return;
   }
+
+  if (verify_property_trees && render_to_separate_surface &&
+      !IsRootLayer(layer)) {
+    if (!layer->replica_layer() &&
+        RenderSurfaceIsClippedFromPropertyTrees(layer->render_surface(),
+                                                property_trees->clip_tree)) {
+      // Here, we clip the render surface's content rect with its clip rect.
+      // As the clip rect of render surface is in the surface's target space,
+      // we first map the content rect into the target space, intersect it with
+      // clip rect and project back the result to the surface space.
+      gfx::Rect surface_content_rect =
+          layer->render_surface()->accumulated_content_rect();
+
+      if (!surface_content_rect.IsEmpty()) {
+        gfx::Rect surface_clip_rect = LayerTreeHostCommon::CalculateVisibleRect(
+            ClipRectOfRenderSurfaceFromPropertyTrees(layer->render_surface(),
+                                                     property_trees->clip_tree),
+            surface_content_rect,
+            DrawTransformOfRenderSurfaceFromPropertyTrees(
+                layer->render_surface(), property_trees->transform_tree));
+        surface_content_rect.Intersect(surface_clip_rect);
+        layer->render_surface()->SetAccumulatedContentRect(
+            surface_content_rect);
+      }
+    }
+    layer->render_surface()->SetContentRectFromPropertyTrees(
+        layer->render_surface()->accumulated_content_rect());
+    if (!IsRootLayer(layer->parent()->render_target())) {
+      // The surface's drawable content rect may expand the content rect
+      // of its target's surface(surface's target's surface).
+      gfx::Rect surface_target_rect = layer->parent()
+                                          ->render_target()
+                                          ->render_surface()
+                                          ->accumulated_content_rect();
+      surface_target_rect.Union(DrawableContentRectOfSurfaceFromPropertyTrees(
+          layer->render_surface(), property_trees->transform_tree));
+      layer->parent()
+          ->render_target()
+          ->render_surface()
+          ->SetAccumulatedContentRect(surface_target_rect);
+    }
+  }
+
+  if (verify_property_trees && IsRootLayer(layer))
+    layer->render_surface()->SetContentRectFromPropertyTrees(
+        layer->render_surface()->accumulated_content_rect());
 
   if (render_to_separate_surface && !IsRootLayer(layer) &&
       layer->render_surface()->content_rect().IsEmpty()) {
@@ -2583,9 +2674,11 @@ void CalculateRenderSurfaceLayerList(
     LayerTreeHostCommon::CalcDrawPropsImplInputs* inputs) {
   const bool subtree_visible_from_ancestor = true;
   CalculateRenderSurfaceLayerListInternal(
-      inputs->root_layer, inputs->render_surface_layer_list, nullptr,
-      subtree_visible_from_ancestor, inputs->can_render_to_separate_surface,
-      inputs->current_render_surface_layer_list_id);
+      inputs->root_layer, inputs->property_trees,
+      inputs->render_surface_layer_list, nullptr, subtree_visible_from_ancestor,
+      inputs->can_render_to_separate_surface,
+      inputs->current_render_surface_layer_list_id,
+      inputs->verify_property_trees);
 }
 
 void CalculateDrawPropertiesAndVerify(

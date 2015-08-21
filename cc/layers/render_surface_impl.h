@@ -107,6 +107,16 @@ class CC_EXPORT RenderSurfaceImpl {
   void SetContentRect(const gfx::Rect& content_rect);
   gfx::Rect content_rect() const { return content_rect_; }
 
+  void SetContentRectFromPropertyTrees(const gfx::Rect& content_rect);
+  gfx::Rect content_rect_from_property_trees() const {
+    return content_rect_from_property_trees_;
+  }
+
+  void SetAccumulatedContentRect(const gfx::Rect& content_rect);
+  gfx::Rect accumulated_content_rect() const {
+    return accumulated_content_rect_;
+  }
+
   const Occlusion& occlusion_in_content_space() const {
     return occlusion_in_content_space_;
   }
@@ -119,6 +129,8 @@ class CC_EXPORT RenderSurfaceImpl {
   void ClearLayerLists();
 
   int OwningLayerId() const;
+  bool HasReplica() const;
+  gfx::Transform ReplicaDrawTransform() const;
 
   void ResetPropertyChangedFlag() { surface_property_changed_ = false; }
   bool SurfacePropertyChanged() const;
@@ -148,6 +160,9 @@ class CC_EXPORT RenderSurfaceImpl {
 
   // Uses this surface's space.
   gfx::Rect content_rect_;
+  gfx::Rect content_rect_from_property_trees_;
+  // Is used to calculate the content rect from property trees.
+  gfx::Rect accumulated_content_rect_;
   bool surface_property_changed_ : 1;
   bool target_surface_transforms_are_animating_ : 1;
   bool screen_space_transforms_are_animating_ : 1;

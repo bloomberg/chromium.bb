@@ -71,6 +71,14 @@ int RenderSurfaceImpl::OwningLayerId() const {
   return owning_layer_ ? owning_layer_->id() : 0;
 }
 
+bool RenderSurfaceImpl::HasReplica() const {
+  return owning_layer_->has_replica();
+}
+
+gfx::Transform RenderSurfaceImpl::ReplicaDrawTransform() const {
+  return replica_draw_transform_;
+}
+
 int RenderSurfaceImpl::TransformTreeIndex() const {
   return owning_layer_->transform_tree_index();
 }
@@ -103,6 +111,20 @@ void RenderSurfaceImpl::SetContentRect(const gfx::Rect& content_rect) {
 
   surface_property_changed_ = true;
   content_rect_ = content_rect;
+}
+
+void RenderSurfaceImpl::SetContentRectFromPropertyTrees(
+    const gfx::Rect& content_rect) {
+  if (content_rect_from_property_trees_ == content_rect)
+    return;
+
+  surface_property_changed_ = true;
+  content_rect_from_property_trees_ = content_rect;
+}
+
+void RenderSurfaceImpl::SetAccumulatedContentRect(
+    const gfx::Rect& content_rect) {
+  accumulated_content_rect_ = content_rect;
 }
 
 bool RenderSurfaceImpl::SurfacePropertyChanged() const {

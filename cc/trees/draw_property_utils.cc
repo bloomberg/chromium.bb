@@ -826,6 +826,22 @@ bool CanUseLcdTextFromPropertyTrees(const LayerImpl* layer,
   return true;
 }
 
+gfx::Rect DrawableContentRectOfSurfaceFromPropertyTrees(
+    const RenderSurfaceImpl* render_surface,
+    const TransformTree& transform_tree) {
+  gfx::Rect drawable_content_rect =
+      gfx::ToEnclosingRect(MathUtil::MapClippedRect(
+          DrawTransformOfRenderSurfaceFromPropertyTrees(render_surface,
+                                                        transform_tree),
+          render_surface->content_rect_from_property_trees()));
+  if (render_surface->HasReplica()) {
+    drawable_content_rect.Union(gfx::ToEnclosingRect(MathUtil::MapClippedRect(
+        render_surface->ReplicaDrawTransform(),
+        render_surface->content_rect_from_property_trees())));
+  }
+  return drawable_content_rect;
+}
+
 gfx::Rect DrawableContentRectFromPropertyTrees(
     const LayerImpl* layer,
     const TransformTree& transform_tree) {
@@ -846,6 +862,10 @@ gfx::Rect ClipRectFromPropertyTrees(const LayerImpl* layer,
   return MathUtil::MapEnclosingClippedRect(
       DrawTransformFromPropertyTrees(layer, transform_tree),
       gfx::Rect(layer->bounds()));
+}
+
+gfx::Rect ViewportRectFromPropertyTrees(const ClipTree& tree) {
+  return gfx::ToEnclosingRect(tree.Node(1)->data.clip);
 }
 
 }  // namespace cc
