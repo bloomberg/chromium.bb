@@ -256,8 +256,8 @@ static const int kMaxValidatedURLsSize = 10000;
 
 void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type, bool isStaticData)
 {
-    if (type == ResourceLoadingFromCache)
-        notifyLoadedFromMemoryCache(resource);
+    if (type == ResourceLoadingFromCache && resource->status() == Resource::Cached && !m_validatedURLs.contains(resource->url()))
+        context().dispatchDidLoadResourceFromMemoryCache(resource);
 
     if (isStaticData)
         return;
@@ -788,19 +788,6 @@ void ResourceFetcher::garbageCollectDocumentResources()
     }
 
     m_documentResources.removeAll(resourcesToDelete);
-}
-
-void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
-{
-    if (resource->status() != Resource::Cached || m_validatedURLs.contains(resource->url()))
-        return;
-
-    ResourceRequest request(resource->url());
-    unsigned long identifier = createUniqueIdentifier();
-    context().dispatchDidLoadResourceFromMemoryCache(request, resource->response());
-    // FIXME: If willSendRequest changes the request, we don't respect it.
-    willSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
-    context().sendRemainingDelegateMessages(identifier, resource->response(), resource->encodedSize());
 }
 
 int ResourceFetcher::requestCount() const

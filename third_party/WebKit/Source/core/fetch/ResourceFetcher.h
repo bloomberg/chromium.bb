@@ -165,8 +165,6 @@ private:
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
 
-    void notifyLoadedFromMemoryCache(Resource*);
-
     void garbageCollectDocumentResourcesTimerFired(Timer<ResourceFetcher>*);
 
     void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);

@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ClientHintsPreferences.h"
+#include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -221,11 +222,6 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
     InspectorInstrumentation::willSendRequest(frame(), identifier, ensureLoaderForNotifications(), request, redirectResponse, initiatorInfo);
 }
 
-void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)
-{
-    frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, response);
-}
-
 void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, ResourceLoader* resourceLoader)
 {
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
@@ -280,14 +276,20 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier, const Resource
         frame()->console().didFailLoading(identifier, error);
 }
 
-void FrameFetchContext::sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse& response, int dataLength)
-{
-    InspectorInstrumentation::markResourceAsCached(frame(), identifier);
-    if (!response.isNull())
-        dispatchDidReceiveResponse(identifier, response);
 
-    if (dataLength > 0)
-        dispatchDidReceiveData(identifier, 0, dataLength, 0);
+void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(const Resource* resource)
+{
+    ResourceRequest request(resource->url());
+    unsigned long identifier = createUniqueIdentifier();
+    frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(request, resource->response());
+    dispatchWillSendRequest(identifier, request, ResourceResponse(), resource->options().initiatorInfo);
+
+    InspectorInstrumentation::markResourceAsCached(frame(), identifier);
+    if (!resource->response().isNull())
+        dispatchDidReceiveResponse(identifier, resource->response());
+
+    if (resource->encodedSize() > 0)
+        dispatchDidReceiveData(identifier, 0, resource->encodedSize(), 0);
 
     dispatchDidFinishLoading(identifier, 0, 0);
 }

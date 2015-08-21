@@ -66,7 +66,7 @@ void FetchContext::dispatchWillSendRequest(unsigned long, ResourceRequest&, cons
 {
 }
 
-void FetchContext::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&)
+void FetchContext::dispatchDidLoadResourceFromMemoryCache(const Resource*)
 {
 }
 
@@ -87,10 +87,6 @@ void FetchContext::dispatchDidFinishLoading(unsigned long, double, int64_t)
 }
 
 void FetchContext::dispatchDidFail(unsigned long, const ResourceError&, bool)
-{
-}
-
-void FetchContext::sendRemainingDelegateMessages(unsigned long, const ResourceResponse&, int)
 {
 }
 
