@@ -2992,10 +2992,10 @@ PositionWithAffinity LayoutObject::createPositionWithAffinity(int offset, TextAf
         if (!node->hasEditableStyle()) {
             // If it can be found, we prefer a visually equivalent position that is editable.
             const Position position = Position(node, offset);
-            Position candidate = mostBackwardCaretPosition(position, CanCrossEditingBoundary);
+            Position candidate = position.downstream(CanCrossEditingBoundary);
             if (candidate.anchorNode()->hasEditableStyle())
                 return PositionWithAffinity(candidate, affinity);
-            candidate = mostForwardCaretPosition(position, CanCrossEditingBoundary);
+            candidate = position.upstream(CanCrossEditingBoundary);
             if (candidate.anchorNode()->hasEditableStyle())
                 return PositionWithAffinity(candidate, affinity);
         }

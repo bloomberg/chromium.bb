@@ -803,11 +803,11 @@ void LayoutView::commitPendingSelectionAlgorithm()
     // as the start of the selection, the selection painting code will think that content on the line containing 'foo' is selected
     // and will fill the gap before 'bar'.
     PositionType startPos = Strategy::selectionStart(selection);
-    PositionType candidate = mostBackwardCaretPosition(startPos);
+    PositionType candidate = startPos.downstream();
     if (isVisuallyEquivalentCandidate(candidate))
         startPos = candidate;
     PositionType endPos = Strategy::selectionEnd(selection);
-    candidate = mostForwardCaretPosition(endPos);
+    candidate = endPos.upstream();
     if (isVisuallyEquivalentCandidate(candidate))
         endPos = candidate;
 
