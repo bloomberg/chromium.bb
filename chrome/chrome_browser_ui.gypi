@@ -1451,8 +1451,6 @@
       'browser/ui/cocoa/ui_localizer.mm',
       'browser/ui/cocoa/web_contents_modal_dialog_host_cocoa.h',
       'browser/ui/cocoa/web_contents_modal_dialog_host_cocoa.mm',
-      'browser/ui/cocoa/window_restore_utils.h',
-      'browser/ui/cocoa/window_restore_utils.mm',
       'browser/ui/startup/autolaunch_prompt.cc',
       'browser/ui/web_contents_sizer.mm',
     ],

@@ -11,15 +11,10 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/url_formatter/url_fixer.h"
-
-#if defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/window_restore_utils.h"
-#endif
 
 namespace {
 
@@ -127,7 +122,6 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
   DCHECK(prefs);
 
   MigrateIfNecessary(prefs);
-  MigrateMacDefaultPrefIfNecessary(prefs);
 
   SessionStartupPref pref(
       PrefValueToType(prefs->GetInteger(prefs::kRestoreOnStartup)));
@@ -235,25 +229,6 @@ void SessionStartupPref::MigrateIfNecessary(PrefService* prefs) {
 
     prefs->SetBoolean(prefs::kRestoreOnStartupMigrated, true);
   }
-}
-
-// static
-void SessionStartupPref::MigrateMacDefaultPrefIfNecessary(PrefService* prefs) {
-#if defined(OS_MACOSX)
-  DCHECK(prefs);
-  if (!restore_utils::IsWindowRestoreEnabled())
-    return;
-  // The default startup pref used to be LAST, now it is DEFAULT. Don't change
-  // the setting for existing profiles (even if the user has never changed it),
-  // but make new profiles default to DEFAULT.
-  bool old_profile_version =
-      !prefs->FindPreference(
-          prefs::kProfileCreatedByVersion)->IsDefaultValue() &&
-      Version(prefs->GetString(prefs::kProfileCreatedByVersion)).IsOlderThan(
-          "21.0.1180.0");
-  if (old_profile_version && TypeIsDefault(prefs))
-    prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueLast);
-#endif
 }
 
 // static
