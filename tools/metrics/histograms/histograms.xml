@@ -50843,6 +50843,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.RtcpMux" enum="PeerConnectionRtcpMux">
+  <owner>pthatcher@chromium.org</owner>
+  <summary>
+    Whether RTCP-mux is used for the PeerConnection (both the local and remote
+    description enable RTCP-mux).  Recorded after SetLocalDescription and
+    SetRemoteDescription are called, once per PeerConnection.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.TimeToConnect" units="milliseconds">
   <owner>mallinath@chromium.org</owner>
   <summary>Time to setup a peer to peer call with PeerConnection.</summary>
@@ -66642,6 +66651,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="PeerConnection enabled with Ipv6."/>
   <int value="2" label="IPv4 BestConnection."/>
   <int value="3" label="IPv6 BestConnection."/>
+</enum>
+
+<enum name="PeerConnectionRtcpMux" type="int">
+  <int value="0" label="Disabled"/>
+  <int value="1" label="Enabled"/>
+  <int value="2" label="No media"/>
 </enum>
 
 <enum name="PepperInterface" type="int">

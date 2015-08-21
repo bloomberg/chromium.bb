@@ -40,6 +40,7 @@
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCVoidRequest.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/libjingle/source/talk/session/media/mediasession.h"
 
 using webrtc::DataChannelInterface;
 using webrtc::IceCandidateInterface;
@@ -51,6 +52,15 @@ using webrtc::StatsReports;
 
 namespace content {
 namespace {
+
+// Used to back histogram value of "WebRTC.PeerConnection.RtcpMux",
+// so treat as append-only.
+enum RtcpMux {
+  RTCP_MUX_DISABLED,
+  RTCP_MUX_ENABLED,
+  RTCP_MUX_NO_MEDIA,
+  RTCP_MUX_MAX
+};
 
 // Converter functions from libjingle types to WebKit types.
 blink::WebRTCPeerConnectionHandlerClient::ICEGatheringState
@@ -910,6 +920,11 @@ void RTCPeerConnectionHandler::createAnswer(
     peer_connection_tracker_->TrackCreateAnswer(this, constraints);
 }
 
+bool IsOfferOrAnswer(const webrtc::SessionDescriptionInterface* native_desc) {
+  DCHECK(native_desc);
+  return native_desc->type() == "offer" || native_desc->type() == "answer";
+}
+
 void RTCPeerConnectionHandler::setLocalDescription(
     const blink::WebRTCVoidRequest& request,
     const blink::WebRTCSessionDescription& description) {
@@ -938,6 +953,15 @@ void RTCPeerConnectionHandler::setLocalDescription(
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
         this, sdp, type, PeerConnectionTracker::SOURCE_LOCAL);
+  }
+
+  if (!first_local_description_ && IsOfferOrAnswer(native_desc)) {
+    first_local_description_.reset(new FirstSessionDescription(native_desc));
+    if (first_remote_description_) {
+      ReportFirstSessionDescriptions(
+          *first_local_description_,
+          *first_remote_description_);
+    }
   }
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
@@ -981,6 +1005,15 @@ void RTCPeerConnectionHandler::setRemoteDescription(
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackSetSessionDescription(
         this, sdp, type, PeerConnectionTracker::SOURCE_REMOTE);
+  }
+
+  if (!first_remote_description_ && IsOfferOrAnswer(native_desc)) {
+    first_remote_description_.reset(new FirstSessionDescription(native_desc));
+    if (first_local_description_) {
+      ReportFirstSessionDescriptions(
+          *first_local_description_,
+          *first_remote_description_);
+    }
   }
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
@@ -1509,6 +1542,38 @@ RTCPeerConnectionHandler::CreateNativeSessionDescription(
                               << " Type: " << type << " SDP: " << sdp;
 
   return native_desc;
+}
+
+RTCPeerConnectionHandler::FirstSessionDescription::FirstSessionDescription(
+    const webrtc::SessionDescriptionInterface* sdesc) {
+  DCHECK(sdesc);
+
+  for (const auto& content : sdesc->description()->contents()) {
+    if (content.type == cricket::NS_JINGLE_RTP) {
+      const auto* mdesc =
+          static_cast<cricket::MediaContentDescription*>(content.description);
+      audio = audio || (mdesc->type() == cricket::MEDIA_TYPE_AUDIO);
+      video = video || (mdesc->type() == cricket::MEDIA_TYPE_VIDEO);
+      rtcp_mux = rtcp_mux || mdesc->rtcp_mux();
+    }
+  }
+}
+
+void RTCPeerConnectionHandler::ReportFirstSessionDescriptions(
+    const FirstSessionDescription& local,
+    const FirstSessionDescription& remote) {
+  RtcpMux rtcp_mux = RTCP_MUX_ENABLED;
+  if ((!local.audio && !local.video) || (!remote.audio && !remote.video)) {
+    rtcp_mux = RTCP_MUX_NO_MEDIA;
+  } else if (!local.rtcp_mux || !remote.rtcp_mux) {
+    rtcp_mux = RTCP_MUX_DISABLED;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebRTC.PeerConnection.RtcpMux", rtcp_mux, RTCP_MUX_MAX);
+
+  // TODO(pthatcher): Reports stats about whether we have audio and
+  // video or not.
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

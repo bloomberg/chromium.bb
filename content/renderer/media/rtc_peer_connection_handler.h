@@ -200,6 +200,18 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       int sdp_mline_index, int component, int address_family);
 
  private:
+  // Record info about the first SessionDescription from the local and
+  // remote side to record UMA stats once both are set.
+  struct FirstSessionDescription {
+    FirstSessionDescription(const webrtc::SessionDescriptionInterface* desc);
+
+    bool audio = false;
+    bool video = false;
+    // If audio or video will use RTCP-mux (if there is no audio or
+    // video, then false).
+    bool rtcp_mux = false;
+  };
+
   webrtc::SessionDescriptionInterface* CreateNativeSessionDescription(
       const std::string& sdp, const std::string& type,
       webrtc::SdpParseError* error);
@@ -212,6 +224,10 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Reset UMA related members to the initial state. This is invoked at the
   // constructor as well as after Ice Restart.
   void ResetUMAStats();
+
+  void ReportFirstSessionDescriptions(
+      const FirstSessionDescription& local,
+      const FirstSessionDescription& remote);
 
   // Virtual to allow mocks to override.
   virtual scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const;
@@ -249,6 +265,13 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // |native_peer_connection_| is the libjingle native PeerConnection object.
   scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
+
+  // Record info about the first SessionDescription from the local and
+  // remote side to record UMA stats once both are set.  We only check
+  // for the first offer or answer.  "pranswer"s and "unknown"s (from
+  // unit tests) are ignored.
+  scoped_ptr<FirstSessionDescription> first_local_description_;
+  scoped_ptr<FirstSessionDescription> first_remote_description_;
 
   typedef std::map<webrtc::MediaStreamInterface*,
       content::RemoteMediaStreamImpl*> RemoteStreamMap;
