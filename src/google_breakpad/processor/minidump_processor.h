@@ -125,6 +125,8 @@ class MinidumpProcessor {
   // does not exist or cannot be determined.
   static string GetAssertion(Minidump* dump);
 
+  void set_enable_objdump(bool enabled) { enable_objdump_ = enabled; }
+
  private:
   StackFrameSymbolizer* frame_symbolizer_;
   // Indicate whether resolver_helper_ is owned by this instance.
@@ -134,6 +136,10 @@ class MinidumpProcessor {
   // guess how likely it is that the crash represents an exploitable
   // memory corruption issue.
   bool enable_exploitability_;
+
+  // This flag permits the exploitability scanner to shell out to objdump
+  // for purposes of disassembly.
+  bool enable_objdump_;
 };
 
 }  // namespace google_breakpad
