@@ -67,12 +67,14 @@ ScriptedIdleTaskController::ScriptedIdleTaskController(ExecutionContext* context
     suspendIfNeeded();
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedIdleTaskController);
+ScriptedIdleTaskController::~ScriptedIdleTaskController()
+{
+}
 
 DEFINE_TRACE(ScriptedIdleTaskController)
 {
-    ActiveDOMObject::trace(visitor);
     visitor->trace(m_callbacks);
+    ActiveDOMObject::trace(visitor);
 }
 
 ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallback(IdleRequestCallback* callback, double timeoutMillis)

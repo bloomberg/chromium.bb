@@ -19,13 +19,15 @@ class ExecutionContext;
 class IdleRequestCallback;
 class DocumentLoadTiming;
 
-class ScriptedIdleTaskController : public RefCountedWillBeGarbageCollected<ScriptedIdleTaskController>, public ActiveDOMObject {
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedIdleTaskController);
+class ScriptedIdleTaskController : public RefCountedWillBeGarbageCollectedFinalized<ScriptedIdleTaskController>, public ActiveDOMObject {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 public:
     static PassRefPtrWillBeRawPtr<ScriptedIdleTaskController> create(ExecutionContext* context, const DocumentLoadTiming& timing)
     {
         return adoptRefWillBeNoop(new ScriptedIdleTaskController(context, timing));
     }
+    ~ScriptedIdleTaskController();
+
     DECLARE_TRACE();
 
     using CallbackId = int;
