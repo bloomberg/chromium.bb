@@ -416,7 +416,6 @@ html[dir='rtl'] #extension-settings .trash {
 
 .profile-is-supervised-banner .page-banner-text {
   background-image: url(../../../../ui/webui/resources/images/warning.svg);
-  background-size: 18px;
 }
 
 /* Sideload Wipeout */

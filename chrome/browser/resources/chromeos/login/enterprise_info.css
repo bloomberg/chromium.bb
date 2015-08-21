@@ -26,8 +26,10 @@
 
 #enterprise-info img {
   -webkit-margin-end: 4px;
+  height: 18px;
   position: relative;
-  top: 3px;
+  top: 4px;
+  width: 18px;
 }
 
 @media (max-height:480px) and (max-width:400px) {

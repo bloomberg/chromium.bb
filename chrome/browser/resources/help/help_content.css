@@ -121,8 +121,8 @@
 #channel-change-disallowed-icon,
 .channel-change-error-icon {
   -webkit-margin-start: 4px;
-  background-image: url(chrome://theme/IDR_CONTROLLED_SETTING_MANDATORY);
-  background-size: 16px;
+  background-image: url(../../../../ui/webui/resources/images/business.svg);
+  background-size: 18px;
 }
 
 .channel-change-error-bubble {
