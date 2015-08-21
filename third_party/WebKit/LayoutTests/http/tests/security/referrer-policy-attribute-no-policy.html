@@ -9,9 +9,15 @@
         var anch = document.createElement("a");
         anch.href = "http://localhost:8000/security/resources/referrer-attr-anchor-target.html#no-policy";
         document.body.appendChild(anch);
+
+        var img = document.createElement("img");
+        img.src = "http://localhost:8000/security/resources/compass.jpg";
+        document.body.appendChild(img);
+
         test(function () {
             assert_equals(anch.referrerpolicy, "");
-        }, "Dynamically created anchor has empty referrerpolicy");
+            assert_equals(img.referrerpolicy, "");
+        }, "Dynamically created elements have empty referrerpolicy");
         anch.click();
     </script>
 </body>

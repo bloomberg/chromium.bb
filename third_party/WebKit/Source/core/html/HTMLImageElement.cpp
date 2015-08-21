@@ -51,6 +51,7 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -91,6 +92,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_intrinsicSizingViewportDependant(false)
     , m_useFallbackContent(false)
     , m_isFallbackImage(false)
+    , m_referrerPolicy(ReferrerPolicyDefault)
 {
     setHasCustomStyleCallbacks();
     if (form && form->inDocument()) {
@@ -268,6 +270,10 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         selectSourceURL(ImageLoader::UpdateIgnorePreviousError);
     } else if (name == usemapAttr) {
         setIsLink(!value.isNull());
+    } else if (name == referrerpolicyAttr) {
+        m_referrerPolicy = ReferrerPolicyDefault;
+        if (!value.isNull())
+            SecurityPolicy::referrerPolicyFromString(value, &m_referrerPolicy);
     } else {
         HTMLElement::parseAttribute(name, value);
     }
@@ -389,7 +395,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
     // If we have been inserted from a layoutObject-less document,
     // our loader may have not fetched the image, so do it now.
     if ((insertionPoint->inDocument() && !imageLoader().image()) || imageWasModified)
-        imageLoader().updateFromElement(ImageLoader::UpdateNormal);
+        imageLoader().updateFromElement(ImageLoader::UpdateNormal, m_referrerPolicy);
 
     return HTMLElement::insertedInto(insertionPoint);
 }
@@ -660,7 +666,7 @@ float HTMLImageElement::sourceSize(Element& element)
 
 void HTMLImageElement::forceReload() const
 {
-    imageLoader().updateFromElement(ImageLoader::UpdateForcedReload);
+    imageLoader().updateFromElement(ImageLoader::UpdateForcedReload, m_referrerPolicy);
 }
 
 void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior behavior)
@@ -683,7 +689,7 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
         m_listener = ViewportChangeListener::create(this);
         document().mediaQueryMatcher().addViewportListener(m_listener);
     }
-    imageLoader().updateFromElement(behavior);
+    imageLoader().updateFromElement(behavior, m_referrerPolicy);
 
     if (imageLoader().image() || (imageLoader().hasPendingActivity() && !imageSourceURL().isEmpty()))
         ensurePrimaryContent();

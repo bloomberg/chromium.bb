@@ -123,6 +123,8 @@ public:
         , m_defer(FetchRequest::NoDefer)
         , m_allowCredentials(DoNotAllowStoredCredentials)
         , m_mediaValues(mediaValues)
+        , m_referrerPolicySet(false)
+        , m_referrerPolicy(ReferrerPolicyDefault)
     {
         ASSERT(m_mediaValues->isCached());
         if (match(m_tagImpl, imgTag)
@@ -174,7 +176,7 @@ public:
         }
     }
 
-    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences, const PictureData& pictureData, const ReferrerPolicy referrerPolicy)
+    PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences, const PictureData& pictureData, const ReferrerPolicy documentReferrerPolicy)
     {
         PreloadRequest::RequestType requestType = PreloadRequest::RequestTypePreload;
         if (shouldPreconnect())
@@ -195,6 +197,8 @@ public:
             resourceWidth.isSet = true;
         }
 
+        // The element's 'referrerpolicy' attribute (if present) takes precedence over the document's referrer policy.
+        ReferrerPolicy referrerPolicy = m_referrerPolicy != ReferrerPolicyDefault ? m_referrerPolicy : documentReferrerPolicy;
         OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), referrerPolicy, resourceWidth, clientHintsPreferences, requestType);
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
@@ -237,6 +241,9 @@ private:
                 m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), m_sourceSize, m_srcsetAttributeValue);
                 setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_sourceSize, m_imgSrcUrl, m_srcsetImageCandidate), AllowURLReplacement);
             }
+        } else if (!m_referrerPolicySet && match(attributeName, referrerpolicyAttr) && !attributeValue.isNull()) {
+            m_referrerPolicySet = true;
+            SecurityPolicy::referrerPolicyFromString(attributeValue, &m_referrerPolicy);
         }
     }
 
@@ -411,6 +418,8 @@ private:
     FetchRequest::DeferOption m_defer;
     StoredCredentials m_allowCredentials;
     RefPtrWillBeMember<MediaValues> m_mediaValues;
+    bool m_referrerPolicySet;
+    ReferrerPolicy m_referrerPolicy;
 };
 
 TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)

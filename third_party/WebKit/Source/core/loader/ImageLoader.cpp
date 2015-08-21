@@ -46,6 +46,7 @@
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -78,16 +79,17 @@ static ImageLoader::BypassMainWorldBehavior shouldBypassMainWorldCSP(ImageLoader
 
 class ImageLoader::Task : public WebThread::Task {
 public:
-    static PassOwnPtr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior)
+    static PassOwnPtr<Task> create(ImageLoader* loader, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
     {
-        return adoptPtr(new Task(loader, updateBehavior));
+        return adoptPtr(new Task(loader, updateBehavior, referrerPolicy));
     }
 
-    Task(ImageLoader* loader, UpdateFromElementBehavior updateBehavior)
+    Task(ImageLoader* loader, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
         : m_loader(loader)
         , m_shouldBypassMainWorldCSP(shouldBypassMainWorldCSP(loader))
         , m_updateBehavior(updateBehavior)
         , m_weakFactory(this)
+        , m_referrerPolicy(referrerPolicy)
     {
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         v8::HandleScope scope(isolate);
@@ -109,9 +111,9 @@ public:
             return;
         if (m_scriptState->contextIsValid()) {
             ScriptState::Scope scope(m_scriptState.get());
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
         } else {
-            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior);
+            m_loader->doUpdateFromElement(m_shouldBypassMainWorldCSP, m_updateBehavior, m_referrerPolicy);
         }
     }
 
@@ -132,6 +134,7 @@ private:
     UpdateFromElementBehavior m_updateBehavior;
     RefPtr<ScriptState> m_scriptState;
     WeakPtrFactory<Task> m_weakFactory;
+    ReferrerPolicy m_referrerPolicy;
 };
 
 ImageLoader::ImageLoader(Element* element)
@@ -273,15 +276,15 @@ inline void ImageLoader::clearFailedLoadURL()
     m_failedLoadURL = AtomicString();
 }
 
-inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior updateBehavior)
+inline void ImageLoader::enqueueImageLoadingMicroTask(UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
 {
-    OwnPtr<Task> task = Task::create(this, updateBehavior);
+    OwnPtr<Task> task = Task::create(this, updateBehavior, referrerPolicy);
     m_pendingTask = task->createWeakPtr();
     Microtask::enqueueMicrotask(task.release());
     m_loadDelayCounter = IncrementLoadEventDelayCount::create(m_element->document());
 }
 
-void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, UpdateFromElementBehavior updateBehavior)
+void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
 {
     // FIXME: According to
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
@@ -314,6 +317,10 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
             // ImageLoader defers the load of images when in an ImageDocument. Don't defer this load on a forced reload.
             m_loadingImageDocument = false;
         }
+
+        if (referrerPolicy != ReferrerPolicyDefault)
+            resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(referrerPolicy, url, document.outgoingReferrer()));
+
         if (isHTMLPictureElement(element()->parentNode()) || !element()->fastGetAttribute(HTMLNames::srcsetAttr).isNull())
             resourceRequest.setRequestContext(WebURLRequest::RequestContextImageSet);
         FetchRequest request(resourceRequest, element()->localName(), resourceLoaderOptions);
@@ -389,7 +396,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
     updatedHasPendingEvent();
 }
 
-void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
+void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, ReferrerPolicy referrerPolicy)
 {
     AtomicString imageSourceURL = m_element->imageSourceURL();
     m_suppressErrorEvents = (updateBehavior == UpdateSizeChanged);
@@ -409,7 +416,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
 
     KURL url = imageSourceToKURL(imageSourceURL);
     if (shouldLoadImmediately(url)) {
-        doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior);
+        doUpdateFromElement(DoNotBypassMainWorldCSP, updateBehavior, referrerPolicy);
         return;
     }
     // Allow the idiom "img.src=''; img.src='.." to clear down the image before
@@ -425,7 +432,7 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior)
     // raw HTML parsing case by loading images we don't intend to display.
     Document& document = m_element->document();
     if (document.isActive())
-        enqueueImageLoadingMicroTask(updateBehavior);
+        enqueueImageLoadingMicroTask(updateBehavior, referrerPolicy);
 }
 
 KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const

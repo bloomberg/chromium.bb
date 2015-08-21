@@ -170,6 +170,8 @@ private:
     unsigned m_intrinsicSizingViewportDependant : 1;
     unsigned m_useFallbackContent : 1;
     unsigned m_isFallbackImage : 1;
+
+    ReferrerPolicy m_referrerPolicy;
 };
 
 } // namespace blink

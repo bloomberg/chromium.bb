@@ -572,6 +572,7 @@ html element img
     property name
     property naturalHeight
     property naturalWidth
+    property referrerpolicy
     property sizes
     property src
     property srcset

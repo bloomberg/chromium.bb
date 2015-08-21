@@ -47,6 +47,7 @@ public:
     bool isCORS() const { return m_isCORSEnabled; }
     bool isAllowCredentials() const { return m_allowCredentials == AllowStoredCredentials; }
     const ClientHintsPreferences& preferences() const { return m_clientHintsPreferences; }
+    ReferrerPolicy referrerPolicy() const { return m_referrerPolicy; }
 
 private:
     PreloadRequest(const String& initiatorName,

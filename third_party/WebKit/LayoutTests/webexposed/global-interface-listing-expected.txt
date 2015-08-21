@@ -2108,6 +2108,7 @@ interface HTMLImageElement
     getter name
     getter naturalHeight
     getter naturalWidth
+    getter referrerpolicy
     getter sizes
     getter src
     getter srcset
@@ -2127,6 +2128,7 @@ interface HTMLImageElement
     setter longDesc
     setter lowsrc
     setter name
+    setter referrerpolicy
     setter sizes
     setter src
     setter srcset

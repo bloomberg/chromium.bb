@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/get-host-info.js"></script>
+</head>
+<body>
+    <script>
+       if (window.testRunner)
+           testRunner.waitUntilDone();
+
+        if (window.location.origin != get_host_info().HTTPS_ORIGIN) {
+            window.location = get_host_info().HTTPS_ORIGIN + window.location.pathname;
+        } else {
+            var img = document.createElement("img");
+            img.src = "http://127.0.0.1:8000/security/resources/green-if-no-referrer.php";
+            img.referrerpolicy = "no-referrer-when-downgrade";
+            document.body.appendChild(img);
+            testRunner.notifyDone();
+        }
+    </script>
+</body>
+</html

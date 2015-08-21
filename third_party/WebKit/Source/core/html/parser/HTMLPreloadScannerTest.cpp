@@ -34,6 +34,16 @@ struct PreconnectTestCase {
     CrossOriginAttributeValue crossOrigin;
 };
 
+struct ReferrerPolicyTestCase {
+    const char* baseURL;
+    const char* inputHTML;
+    const char* preloadedURL; // Or nullptr if no preload is expected.
+    const char* outputBaseURL;
+    Resource::Type type;
+    int resourceWidth;
+    ReferrerPolicy referrerPolicy;
+};
+
 class MockHTMLResourcePreloader : public ResourcePreloader {
 public:
     void preloadRequestVerification(Resource::Type type, const char* url, const char* baseURL, int width, const ClientHintsPreferences& preferences)
@@ -50,6 +60,12 @@ public:
         EXPECT_EQ(preferences.shouldSendDPR(), m_preloadRequest->preferences().shouldSendDPR());
         EXPECT_EQ(preferences.shouldSendResourceWidth(), m_preloadRequest->preferences().shouldSendResourceWidth());
         EXPECT_EQ(preferences.shouldSendViewportWidth(), m_preloadRequest->preferences().shouldSendViewportWidth());
+    }
+
+    void preloadRequestVerification(Resource::Type type, const char* url, const char* baseURL, int width, ReferrerPolicy referrerPolicy)
+    {
+        preloadRequestVerification(type, url, baseURL, width, ClientHintsPreferences());
+        EXPECT_EQ(referrerPolicy, m_preloadRequest->referrerPolicy());
     }
 
     void preconnectRequestVerification(const String& host, CrossOriginAttributeValue crossOrigin)
@@ -140,6 +156,16 @@ protected:
         m_scanner->appendToEnd(String(testCase.inputHTML));
         m_scanner->scan(&preloader, baseURL);
         preloader.preconnectRequestVerification(testCase.preconnectedHost, testCase.crossOrigin);
+    }
+
+    void test(ReferrerPolicyTestCase testCase)
+    {
+        MockHTMLResourcePreloader preloader;
+        KURL baseURL(ParsedURLString, testCase.baseURL);
+        m_scanner->appendToEnd(String(testCase.inputHTML));
+        m_scanner->scan(&preloader, baseURL);
+
+        preloader.preloadRequestVerification(testCase.type, testCase.preloadedURL, testCase.outputBaseURL, testCase.resourceWidth, testCase.referrerPolicy);
     }
 
 private:
@@ -291,6 +317,24 @@ TEST_F(HTMLPreloadScannerTest, testPicture)
         {"http://example.test", "<picture><source sizes='50vw' srcset='srcset_bla.gif'><img sizes='50w' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
         {"http://example.test", "<picture><source srcset='srcset_bla.gif' sizes='50vw'><img sizes='50w' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
         {"http://example.test", "<picture><source srcset='srcset_bla.gif'><img sizes='50w' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 0},
+    };
+
+    for (const auto& testCase : testCases)
+        test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testReferrerPolicy)
+{
+    ReferrerPolicyTestCase testCases[] = {
+        { "http://example.test", "<img src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyDefault },
+        { "http://example.test", "<img referrerpolicy='origin' src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyOrigin },
+        { "http://example.test", "<meta name='referrer' content='not-a-valid-policy'><img src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyDefault },
+        { "http://example.test", "<img referrerpolicy='origin' referrerpolicy='origin-when-crossorigin' src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyOrigin },
+        { "http://example.test", "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyDefault },
+        { "http://example.test", "<meta name='referrer' content='no-referrer'><img referrerpolicy='origin' src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyOrigin },
+        // The scanner's state is not reset between test cases, so all subsequent test cases have a document referrer policy of no-referrer.
+        { "http://example.test", "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyNever },
+        { "http://example.test", "<img src='bla.gif'/>", "bla.gif", "http://example.test/", Resource::Image, 0, ReferrerPolicyNever }
     };
 
     for (const auto& testCase : testCases)

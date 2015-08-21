@@ -38,6 +38,7 @@
     readonly attribute long naturalHeight;
     readonly attribute boolean complete;
     readonly attribute DOMString currentSrc;
+    [RuntimeEnabled=ReferrerPolicyAttribute, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerpolicy;
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLImageElement-partial

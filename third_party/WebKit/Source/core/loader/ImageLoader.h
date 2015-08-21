@@ -85,7 +85,7 @@ public:
         DoNotBypassMainWorldCSP
     };
 
-    void updateFromElement(UpdateFromElementBehavior = UpdateNormal);
+    void updateFromElement(UpdateFromElementBehavior = UpdateNormal, ReferrerPolicy = ReferrerPolicyDefault);
 
     void elementDidMoveToNewDocument();
 
@@ -121,7 +121,7 @@ private:
     class Task;
 
     // Called from the task or from updateFromElement to initiate the load.
-    void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior);
+    void doUpdateFromElement(BypassMainWorldBehavior, UpdateFromElementBehavior, ReferrerPolicy = ReferrerPolicyDefault);
 
     virtual void dispatchLoadEvent() = 0;
     virtual void noImageResourceToLoad() { }
@@ -139,7 +139,7 @@ private:
     void clearFailedLoadURL();
     void dispatchErrorEvent();
     void crossSiteOrCSPViolationOccurred(AtomicString);
-    void enqueueImageLoadingMicroTask(UpdateFromElementBehavior);
+    void enqueueImageLoadingMicroTask(UpdateFromElementBehavior, ReferrerPolicy);
 
     void timerFired(Timer<ImageLoader>*);
 
