@@ -106,8 +106,10 @@ public class WebsitePermissionsFetcher {
         } else if (category.showStorageSites()) {
             // Local storage info is per-origin.
             queue.add(new LocalStorageInfoFetcher());
+            // Website storage is per-host.
+            queue.add(new WebStorageInfoFetcher());
         } else if (category.showFullscreenSites()) {
-            // Local storage info is per-origin.
+            // Full screen is per-origin.
             queue.add(new FullscreenInfoFetcher());
         } else if (category.showCameraSites()) {
             // Camera capture permission is per-origin and per-embedder.
