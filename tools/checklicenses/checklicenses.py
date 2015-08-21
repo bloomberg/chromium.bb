@@ -523,9 +523,17 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/symsrc/pefile.py': [
         'UNKNOWN',
     ],
+    # Not shipped, MIT license but the header files contain no licensing info.
+    'tools/telemetry/third_party/altgraph': [
+        'UNKNOWN',
+    ],
     # Not shipped, downloaded on trybots sometimes.
     'tools/telemetry/third_party/gsutil': [
         'BSD MIT/X11 (BSD like)',
+        'UNKNOWN',
+    ],
+    # Not shipped, MIT license but the header files contain no licensing info.
+    'tools/telemetry/third_party/modulegraph': [
         'UNKNOWN',
     ],
     'tools/telemetry/third_party/pyserial': [
