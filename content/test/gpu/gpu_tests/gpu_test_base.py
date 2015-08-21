@@ -12,20 +12,14 @@ from telemetry.page import shared_page_state
 from telemetry.value import skip
 
 import exception_formatter
-import test_expectations
+import gpu_test_expectations
 
 """Base classes for all GPU tests in this directory. Implements
 support for per-page test expectations."""
 
 # TODO(kbr): add unit tests for these classes, specifically:
-#   - one matching testHandlingOfCrashedTabWithExpectedFailure from
-#     telemetry/page/page_run_end_to_end_unittest.py
-#     (https://crbug.com/444240), which was removed during the test
-#     expectations refactoring
-#   - verify behavior of expected failures
-#   - verify behavior of skipping tests
-#   - after GpuTestExpectations is folded into TestExpectations,
-#     verify handling of flaky tests
+#   - after flaky test support is moved from webgl_conformance to this
+#     base class, verify handling of flaky tests
 # See http://crbug.com/495870.
 
 def _PageOperationWrapper(page, tab, expectations,
@@ -73,10 +67,10 @@ class TestBase(benchmark_module.Benchmark):
     return self._cached_expectations
 
   def _CreateExpectations(self):
-    # By default, creates an empty TestExpectations object. Override
+    # By default, creates an empty GpuTestExpectations object. Override
     # this in subclasses to set up test-specific expectations. Don't
     # call this directly. Call GetExpectations where necessary.
-    return test_expectations.TestExpectations()
+    return gpu_test_expectations.GpuTestExpectations()
 
 
 class ValidatorBase(page_test.PageTest):

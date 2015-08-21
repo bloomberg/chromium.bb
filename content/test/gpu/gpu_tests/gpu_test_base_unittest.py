@@ -6,6 +6,7 @@ import unittest
 
 from telemetry import benchmark
 from telemetry.core import discover
+from telemetry.core import exceptions
 from telemetry.core import util
 from telemetry.story import story_set as story_set_module
 from telemetry.testing import fakes
@@ -128,6 +129,13 @@ class FailingPage(FakePage):
     self.RunNavigateStepsInner.side_effect = Exception('Deliberate exception')
 
 
+class CrashingPage(FakePage):
+  def __init__(self, benchmark, name):
+    super(CrashingPage, self).__init__(benchmark, name)
+    self.RunNavigateStepsInner.side_effect = (
+      exceptions.DevtoolsTargetCrashException(None))
+
+
 class PageExecutionTest(unittest.TestCase):
   def setupTest(self):
     finder_options = fakes.CreateBrowserFinderOptions()
@@ -248,3 +256,13 @@ class PageExecutionTest(unittest.TestCase):
                 mock.call.validator.ValidateAndMeasurePageInner(
                   page2, mock.ANY, mock.ANY)]
     self.assertTrue(manager.mock_calls == expected)
+
+  def testExpectedDevtoolsTargetCrash(self):
+    test, finder_options = self.setupTest()
+    page = CrashingPage(test, 'page1')
+    test.AddFakePage(page)
+    test.GetExpectations().Fail('page1')
+    self.assertEqual(test.Run(finder_options), 0,
+                     'Test should run with no errors')
+    self.assertFalse(page.RunPageInteractionsInner.called)
+    self.assertFalse(test.validator.ValidateAndMeasurePageInner.called)

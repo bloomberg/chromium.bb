@@ -4,72 +4,63 @@
 
 import test_expectations
 
-# Valid expectation conditions are:
-#
-# Operating systems:
-#     win, xp, vista, win7, mac, leopard, snowleopard, lion, mountainlion,
-#     mavericks, yosemite, linux, chromeos, android
-#
-# GPU vendors:
-#     amd, arm, broadcom, hisilicon, intel, imagination, nvidia, qualcomm,
-#     vivante
-#
-# Browser types:
-#     android-webview-shell, android-content-shell, debug
-#
-# ANGLE renderer:
-#     d3d9, d3d11, opengl
-#
-# Specific GPUs can be listed as a tuple with vendor name and device ID.
-# Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
-# Device IDs must be paired with a GPU vendor.
-#
-# Sample usage in SetExpectations in subclasses:
-#   self.Fail('gl-enable-vertex-attrib.html',
-#       ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
+ANGLE_CONDITIONS = ['d3d9', 'd3d11', 'opengl']
 
-ANGLE_MODIFIERS = ['d3d9', 'd3d11', 'opengl']
+GPU_CONDITIONS = ['amd', 'arm', 'broadcom', 'hisilicon', 'intel', 'imagination',
+                  'nvidia', 'qualcomm', 'vivante']
 
-BROWSER_TYPE_MODIFIERS = [
-    'android-webview-shell', 'android-content-shell', 'debug' ]
-
-class FlakyExpectation(test_expectations.Expectation):
+class GpuExpectation(test_expectations.Expectation):
   def __init__(self, expectation, pattern, conditions=None, bug=None,
                max_num_retries=0):
-    self.max_num_retries = max_num_retries
+    self.gpu_conditions = []
+    self.device_id_conditions = []
     self.angle_conditions = []
-    self.browser_conditions = []
-    super(FlakyExpectation, self).__init__(
+    self.max_num_retries = max_num_retries
+    super(GpuExpectation, self).__init__(
       expectation, pattern, conditions=conditions, bug=bug)
 
   def ParseCondition(self, condition):
-    """Adds support for ANGLE and browser type conditions.
+    """Adds support for GPU, device ID, and ANGLE conditions.
 
-    Browser types:
-      android-webview-shell, android-content-shell, debug
+    GPU vendors:
+      amd, arm, broadcom, hisilicon, intel, imagination, nvidia,
+      qualcomm, vivante
 
     ANGLE renderer:
       d3d9, d3d11, opengl
+
+    Specific GPUs can be listed as a tuple with vendor name and device ID.
+    Examples: ('nvidia', 0x1234), ('arm', 'Mali-T604')
+    Device IDs must be paired with a GPU vendor.
+
+    Sample usage in SetExpectations in subclasses:
+      self.Fail('gl-enable-vertex-attrib.html',
+          ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
     """
-    # Add support for d3d9, d3d11 and opengl-specific expectations.
-    if condition in ANGLE_MODIFIERS:
-      self.angle_conditions.append(condition)
-      return
-    # Add support for browser-type-specific expectations.
-    if condition in BROWSER_TYPE_MODIFIERS:
-      self.browser_conditions.append(condition)
-      return
-    # Delegate to superclass.
-    super(FlakyExpectation, self).ParseCondition(condition)
+    if isinstance(condition, tuple):
+      c0 = condition[0].lower()
+      if c0 in GPU_CONDITIONS:
+        self.device_id_conditions.append((c0, condition[1]))
+      else:
+        raise ValueError('Unknown expectation condition: "%s"' % c0)
+    else:
+      cl = condition.lower()
+      if cl in GPU_CONDITIONS:
+        self.gpu_conditions.append(cl)
+      elif cl in ANGLE_CONDITIONS:
+        self.angle_conditions.append(cl)
+      else:
+        # Delegate to superclass.
+        super(GpuExpectation, self).ParseCondition(condition)
 
 
 class GpuTestExpectations(test_expectations.TestExpectations):
   def CreateExpectation(self, expectation, url_pattern, conditions=None,
                         bug=None):
-    return FlakyExpectation(expectation, url_pattern, conditions, bug)
+    return GpuExpectation(expectation, url_pattern, conditions, bug)
 
   def Flaky(self, url_pattern, conditions=None, bug=None, max_num_retries=2):
-    self.expectations.append(FlakyExpectation(
+    self.expectations.append(GpuExpectation(
       'pass', url_pattern, conditions=conditions, bug=bug,
       max_num_retries=max_num_retries))
 
@@ -84,28 +75,56 @@ class GpuTestExpectations(test_expectations.TestExpectations):
         expectation, browser, page):
       return False
 
-    # We'll only get here if the OS and GPU matched the expectation.
-
-    # Check for presence of Android WebView.
-    browser_matches = (
-      (not expectation.browser_conditions) or
-      browser.browser_type in expectation.browser_conditions)
-    if not browser_matches:
-      return False
+    # We'll only get here if the OS and browser type matched the expectation.
+    gpu_matches = True
     angle_renderer = ''
-    gpu_info = None
+
     if browser.supports_system_info:
       gpu_info = browser.GetSystemInfo().gpu
+      gpu_vendor = self._GetGpuVendorString(gpu_info)
+      gpu_device_id = self._GetGpuDeviceId(gpu_info)
+      gpu_matches = ((not expectation.gpu_conditions and
+          not expectation.device_id_conditions) or
+          gpu_vendor in expectation.gpu_conditions or
+          (gpu_vendor, gpu_device_id) in expectation.device_id_conditions)
+      angle_renderer = self._GetANGLERenderer(gpu_info)
+      angle_matches = (
+        (not expectation.angle_conditions) or
+        angle_renderer in expectation.angle_conditions)
+
+    return gpu_matches and angle_matches
+
+  def _GetGpuVendorString(self, gpu_info):
+    if gpu_info:
+      primary_gpu = gpu_info.devices[0]
+      if primary_gpu:
+        vendor_string = primary_gpu.vendor_string.lower()
+        vendor_id = primary_gpu.vendor_id
+        if vendor_string:
+          return vendor_string.split(' ')[0]
+        elif vendor_id == 0x10DE:
+          return 'nvidia'
+        elif vendor_id == 0x1002:
+          return 'amd'
+        elif vendor_id == 0x8086:
+          return 'intel'
+    return 'unknown_gpu'
+
+  def _GetGpuDeviceId(self, gpu_info):
+    if gpu_info:
+      primary_gpu = gpu_info.devices[0]
+      if primary_gpu:
+        return primary_gpu.device_id or primary_gpu.device_string
+    return 0
+
+  def _GetANGLERenderer(self, gpu_info):
     if gpu_info and gpu_info.aux_attributes:
       gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
       if gl_renderer:
         if 'Direct3D11' in gl_renderer:
-          angle_renderer = 'd3d11'
+          return 'd3d11'
         elif 'Direct3D9' in gl_renderer:
-          angle_renderer = 'd3d9'
+          return 'd3d9'
         elif 'OpenGL' in gl_renderer:
-          angle_renderer = 'opengl'
-    angle_matches = (
-      (not expectation.angle_conditions) or
-      angle_renderer in expectation.angle_conditions)
-    return angle_matches
+          return 'opengl'
+    return ''
