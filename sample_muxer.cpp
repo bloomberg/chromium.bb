@@ -264,6 +264,10 @@ int main(int argc, char* argv[]) {
   }
 
   const mkvparser::SegmentInfo* const segment_info = parser_segment->GetInfo();
+  if (segment_info == NULL) {
+    printf("\n Segment::GetInfo() failed.");
+    return EXIT_FAILURE;
+  }
   const long long timeCodeScale = segment_info->GetTimeCodeScale();
 
   // Set muxer header info

@@ -110,6 +110,10 @@ int main(int argc, char* argv[]) {
   }
 
   const SegmentInfo* const pSegmentInfo = pSegment->GetInfo();
+  if (pSegmentInfo == NULL) {
+    printf("\n Segment::GetInfo() failed.");
+    return -1;
+  }
 
   const long long timeCodeScale = pSegmentInfo->GetTimeCodeScale();
   const long long duration_ns = pSegmentInfo->GetDuration();
