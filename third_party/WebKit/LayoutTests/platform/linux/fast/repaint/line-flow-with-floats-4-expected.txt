@@ -8,15 +8,9 @@
       "repaintRects": [
         [372, 447, 48, 16],
         [368, 440, 53, 59],
-        [8, 340, 418, 259]
+        [8, 380, 418, 219]
       ],
       "paintInvalidationClients": [
-        "InlineTextBox 'other parts of\n'",
-        "InlineTextBox 'the ground, Alice soon came to the conclusion that it'",
-        "RootInlineBox",
-        "InlineTextBox 'was a very\n'",
-        "InlineTextBox 'difficult game indeed.\n'",
-        "RootInlineBox",
         "InlineTextBox 'The players all played at once without waiting\n'",
         "InlineTextBox 'for'",
         "RootInlineBox",

@@ -1549,7 +1549,7 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
                     layoutState.floats().append(FloatWithRect(box));
                     if (box->needsLayout()) {
                         box->layout();
-                        dirtyLinesFromChangedChild(o);
+                        markLinesDirtyInBlockRange(toLayoutBox(o)->logicalTop(), toLayoutBox(o)->logicalBottom());
                     }
                 } else if (isFullLayout || o->needsLayout()) {
                     // Replaced element.

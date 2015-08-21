@@ -8,9 +8,25 @@
       "repaintRects": [
         [420, 240, 1, 139],
         [372, 243, 48, 48],
-        [8, 200, 418, 399]
+        [8, 80, 418, 519]
       ],
       "paintInvalidationClients": [
+        "InlineTextBox 'The chief difficulty Alice found at first was in managing her'",
+        "RootInlineBox",
+        "InlineTextBox 'flamingo: she succeeded in getting its body tucked away,'",
+        "RootInlineBox",
+        "InlineTextBox 'comfortably enough, under her arm, with its legs hanging'",
+        "RootInlineBox",
+        "InlineTextBox 'down,\n'",
+        "InlineTextBox 'but generally, just as she had got its neck nicely'",
+        "RootInlineBox",
+        "InlineTextBox 'straightened\n'",
+        "InlineTextBox 'out, and was going to give the hedgehog a'",
+        "RootInlineBox",
+        "InlineTextBox 'blow with its head, it\n'",
+        "InlineTextBox 'would'",
+        "InlineTextBox ' twist itself round and look up in her'",
+        "RootInlineBox",
         "InlineTextBox 'face, with\n'",
         "InlineTextBox 'such a puzzled expression that she could not help'",
         "RootInlineBox",
