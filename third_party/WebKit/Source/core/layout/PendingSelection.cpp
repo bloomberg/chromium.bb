@@ -87,7 +87,9 @@ VisibleSelection PendingSelection::calcVisibleSelectionAlgorithm() const
     bool paintBlockCursor = m_shouldShowBlockCursor && selectionType == SelectionType::CaretSelection && !isLogicalEndOfLine(VisiblePosition(end, affinity));
     VisibleSelection selection;
     if (enclosingTextFormControl(start.computeContainerNode())) {
-        PositionType endPosition = paintBlockCursor ? Strategy::selectionExtent(m_selection).next() : end;
+        // TODO(yosin) We should use |PositionMoveType::Character| to avoid
+        // ending paint at middle of character.
+        PositionType endPosition = paintBlockCursor ? nextPositionOf(Strategy::selectionExtent(m_selection), PositionMoveType::CodePoint) : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }

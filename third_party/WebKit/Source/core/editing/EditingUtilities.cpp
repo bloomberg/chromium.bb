@@ -1155,7 +1155,10 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
 
     Position currentPos = position;
     while (!currentPos.atStartOfTree()) {
-        currentPos = currentPos.previous();
+        // TODO(yosin) When we use |previousCharacterPosition()| other than
+        // finding leading whitespace, we should use |Character| instead of
+        // |CodePoint|.
+        currentPos = previousPositionOf(currentPos, PositionMoveType::CodePoint);
 
         if (currentPos.anchorNode()->rootEditableElement() != fromRootEditableElement)
             return position;

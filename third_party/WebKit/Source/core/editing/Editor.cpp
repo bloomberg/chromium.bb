@@ -1202,10 +1202,15 @@ static PassRefPtrWillBeRawPtr<Range> findStringBetweenPositions(const String& ta
         // return such section as a Range, we skip this match and seek for the
         // next occurrence.
         // TODO(yosin) Handle this case.
-        if (forward)
-            searchRange = EphemeralRangeTemplate<Strategy>(resultRange.startPosition().next(), searchRange.endPosition());
-        else
-            searchRange = EphemeralRangeTemplate<Strategy>(searchRange.startPosition(), resultRange.endPosition().previous());
+        if (forward) {
+            // TODO(yosin) We should use |PositionMoveType::Character|
+            // for |nextPositionOf()|.
+            searchRange = EphemeralRangeTemplate<Strategy>(nextPositionOf(resultRange.startPosition(), PositionMoveType::CodePoint), searchRange.endPosition());
+        } else {
+            // TODO(yosin) We should use |PositionMoveType::Character|
+            // for |previousPositionOf()|.
+            searchRange = EphemeralRangeTemplate<Strategy>(searchRange.startPosition(), previousPositionOf(resultRange.endPosition(), PositionMoveType::CodePoint));
+        }
     }
 
     ASSERT_NOT_REACHED();

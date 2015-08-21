@@ -475,7 +475,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing)
         if (granularity == CharacterGranularity && selectionToDelete.end().computeContainerNode() == selectionToDelete.start().computeContainerNode()
             && selectionToDelete.end().computeOffsetInContainerNode() - selectionToDelete.start().computeOffsetInContainerNode() > 1) {
             // If there are multiple Unicode code points to be deleted, adjust the range to match platform conventions.
-            selectionToDelete.setWithoutValidation(selectionToDelete.end(), selectionToDelete.end().previous(BackwardDeletion));
+            selectionToDelete.setWithoutValidation(selectionToDelete.end(), previousPositionOf(selectionToDelete.end(), PositionMoveType::BackwardDeletion));
         }
 
         if (!startingSelection().isRange() || selectionToDelete.base() != startingSelection().start()) {

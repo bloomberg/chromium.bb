@@ -26,6 +26,7 @@ TEST_F(PositionTest, downstreamAfterAnchor)
     EXPECT_EQ(PositionInComposedTree::lastPositionInNode(host.get()), PositionInComposedTree::afterNode(host.get()).downstream());
 }
 
+// TODO(yoisn) We should move |NextNodeIndex| to "EditingUtilitiesTest.cpp".
 TEST_F(PositionTest, NextNodeIndex)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
@@ -35,8 +36,8 @@ TEST_F(PositionTest, NextNodeIndex)
     Node* host = document().getElementById("host");
     Node* two = document().getElementById("two");
 
-    EXPECT_EQ(Position(host, 3), Position(two, 2).next());
-    EXPECT_EQ(PositionInComposedTree(host, 1), PositionInComposedTree(two, 2).next());
+    EXPECT_EQ(Position(host, 3), nextPositionOf(Position(two, 2), PositionMoveType::CodePoint));
+    EXPECT_EQ(PositionInComposedTree(host, 1), nextPositionOf(PositionInComposedTree(two, 2), PositionMoveType::CodePoint));
 }
 
 TEST_F(PositionTest, NodeAsRangeLastNodeNull)

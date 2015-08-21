@@ -193,8 +193,10 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         bool isStartAndEndOfLastParagraphOnSameNode = computedStyleOfEnclosingTextNode(m_endOfLastParagraph) && start.computeContainerNode() == m_endOfLastParagraph.computeContainerNode();
 
         // Avoid obtanining the start of next paragraph for start
-        if (startStyle->preserveNewline() && isNewLineAtPosition(start) && !isNewLineAtPosition(start.previous()) && start.offsetInContainerNode() > 0)
-            start = startOfParagraph(VisiblePosition(end.previous())).deepEquivalent();
+        // TODO(yosin) We should use |PositionMoveType::Character| for
+        // |previousPositionOf()|.
+        if (startStyle->preserveNewline() && isNewLineAtPosition(start) && !isNewLineAtPosition(previousPositionOf(start, PositionMoveType::CodePoint)) && start.offsetInContainerNode() > 0)
+            start = startOfParagraph(VisiblePosition(previousPositionOf(end, PositionMoveType::CodePoint))).deepEquivalent();
 
         // If start is in the middle of a text node, split.
         if (!startStyle->collapseWhiteSpace() && start.offsetInContainerNode() > 0) {
@@ -220,7 +222,9 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         // Include \n at the end of line if we're at an empty paragraph
         if (endStyle->preserveNewline() && start == end && end.offsetInContainerNode() < end.computeContainerNode()->maxCharacterOffset()) {
             int endOffset = end.offsetInContainerNode();
-            if (!isNewLineAtPosition(end.previous()) && isNewLineAtPosition(end))
+            // TODO(yosin) We should use |PositionMoveType::Character| for
+            // |previousPositionOf()|.
+            if (!isNewLineAtPosition(previousPositionOf(end, PositionMoveType::CodePoint)) && isNewLineAtPosition(end))
                 end = Position(end.computeContainerNode(), endOffset + 1);
             if (isEndAndEndOfLastParagraphOnSameNode && end.offsetInContainerNode() >= m_endOfLastParagraph.offsetInContainerNode())
                 m_endOfLastParagraph = end;

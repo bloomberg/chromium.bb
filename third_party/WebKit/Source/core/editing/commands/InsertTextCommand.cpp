@@ -186,7 +186,9 @@ void InsertTextCommand::doApply()
 
     if (m_text == "\t") {
         endPosition = insertTab(startPosition);
-        startPosition = endPosition.previous();
+        // TODO(yosin) We should use |PositionMoveType::Character| for
+        // |previousPositionOf()|.
+        startPosition = previousPositionOf(endPosition, PositionMoveType::Character);
         if (placeholder.isNotNull())
             removePlaceholderAt(placeholder);
     } else {
