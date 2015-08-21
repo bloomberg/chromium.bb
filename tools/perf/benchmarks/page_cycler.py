@@ -221,6 +221,7 @@ class PageCyclerTypical25(_PageCycler):
   def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True)
 
+
 @benchmark.Disabled('reference', 'android')
 class PageCyclerBasicOopifIsolated(_PageCycler):
   """ A benchmark measuring performance of out-of-process iframes. """
@@ -233,6 +234,8 @@ class PageCyclerBasicOopifIsolated(_PageCycler):
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--site-per-process'])
 
+
+@benchmark.Disabled('reference')  # crbug.com/523346
 class PageCyclerBasicOopif(_PageCycler):
   """ A benchmark measuring performance of the out-of-process iframes page
   set, without running in out-of-process iframes mode.. """
@@ -242,7 +245,8 @@ class PageCyclerBasicOopif(_PageCycler):
   def Name(cls):
     return 'page_cycler.basic_oopif'
 
-@benchmark.Disabled # crbug.com/443730
+
+@benchmark.Disabled  # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
   page_set = page_sets.BigJsPageSet
   @classmethod
