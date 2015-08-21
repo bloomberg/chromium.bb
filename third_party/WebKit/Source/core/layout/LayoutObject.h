@@ -1018,19 +1018,11 @@ public:
 
     virtual void clearPaintInvalidationState(const PaintInvalidationState&);
 
-    // Indicates whether this layout object was re-laid-out since the last frame.
-    // The flag will be cleared during invalidateTreeIfNeeded.
-    bool layoutDidGetCalledSinceLastFrame() const { return m_bitfields.layoutDidGetCalledSinceLastFrame(); }
-
     bool mayNeedPaintInvalidation() const { return m_bitfields.mayNeedPaintInvalidation(); }
     void setMayNeedPaintInvalidation();
 
     bool shouldInvalidateSelection() const { return m_bitfields.shouldInvalidateSelection(); }
     void setShouldInvalidateSelection();
-    void clearShouldInvalidateSelection() { m_bitfields.setShouldInvalidateSelection(false); }
-
-    bool neededLayoutBecauseOfChildren() const { return m_bitfields.neededLayoutBecauseOfChildren(); }
-    void setNeededLayoutBecauseOfChildren(bool b) { m_bitfields.setNeededLayoutBecauseOfChildren(b); }
 
     bool shouldCheckForPaintInvalidation(const PaintInvalidationState& paintInvalidationState) const
     {
@@ -1042,7 +1034,7 @@ public:
 
     bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() const
     {
-        return layoutDidGetCalledSinceLastFrame() || mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection();
+        return mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection() || m_bitfields.childShouldCheckForPaintInvalidation();
     }
 
     virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
@@ -1144,8 +1136,6 @@ protected:
     virtual void updateAnonymousChildStyle(const LayoutObject& child, ComputedStyle& style) const { }
 
 protected:
-    void setSelfMayNeedPaintInvalidation();
-
     virtual void willBeDestroyed();
 
     virtual void insertedIntoTree();
@@ -1178,7 +1168,7 @@ protected:
 #if ENABLE(ASSERT)
     virtual bool paintInvalidationStateIsDirty() const
     {
-        return neededLayoutBecauseOfChildren() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+        return m_bitfields.neededLayoutBecauseOfChildren() || shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
     }
 #endif
 
@@ -1223,11 +1213,6 @@ private:
     inline void invalidateSelectionIfNeeded(const LayoutBoxModelObject&, PaintInvalidationReason);
 
     inline void invalidateContainerPreferredLogicalWidths();
-
-    void clearMayNeedPaintInvalidation();
-
-    void setLayoutDidGetCalledSinceLastFrame();
-    void clearLayoutDidGetCalledSinceLastFrame() { m_bitfields.setLayoutDidGetCalledSinceLastFrame(false); }
 
     void invalidatePaintIncludingNonCompositingDescendantsInternal(const LayoutBoxModelObject& repaintContainer);
 
@@ -1291,8 +1276,7 @@ private:
         LayoutObjectBitfields(Node* node)
             : m_selfNeedsLayout(false)
             , m_shouldInvalidateOverflowForPaint(false)
-            // FIXME: We should remove mayNeedPaintInvalidation once we are able to
-            // use the other layout flags to detect the same cases. crbug.com/370118
+            , m_childShouldCheckForPaintInvalidation(false)
             , m_mayNeedPaintInvalidation(false)
             , m_shouldInvalidateSelection(false)
             , m_neededLayoutBecauseOfChildren(false)
@@ -1318,7 +1302,6 @@ private:
             , m_hasCounterNodeMap(false)
             , m_everHadLayout(false)
             , m_ancestorLineBoxDirty(false)
-            , m_layoutDidGetCalledSinceLastFrame(false)
             , m_hasPendingResourceUpdate(false)
             , m_isInsideFlowThread(false)
             , m_subtreeChangeListenerRegistered(false)
@@ -1337,10 +1320,11 @@ private:
 
         // 32 bits have been used in the first word, and 16 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
-        ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint);
+        ADD_BOOLEAN_BITFIELD(shouldInvalidateOverflowForPaint, ShouldInvalidateOverflowForPaint); // TODO(wangxianzhu): Remove for slimming paint v2.
+        ADD_BOOLEAN_BITFIELD(childShouldCheckForPaintInvalidation, ChildShouldCheckForPaintInvalidation);
         ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
-        ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
-        ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren);
+        ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection); // TODO(wangxianzhu): Remove for slimming paint v2.
+        ADD_BOOLEAN_BITFIELD(neededLayoutBecauseOfChildren, NeededLayoutBecauseOfChildren); // TODO(wangxianzhu): Remove for slimming paint v2.
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
@@ -1366,8 +1350,6 @@ private:
         ADD_BOOLEAN_BITFIELD(hasCounterNodeMap, HasCounterNodeMap);
         ADD_BOOLEAN_BITFIELD(everHadLayout, EverHadLayout);
         ADD_BOOLEAN_BITFIELD(ancestorLineBoxDirty, AncestorLineBoxDirty);
-
-        ADD_BOOLEAN_BITFIELD(layoutDidGetCalledSinceLastFrame, LayoutDidGetCalledSinceLastFrame);
 
         ADD_BOOLEAN_BITFIELD(hasPendingResourceUpdate, HasPendingResourceUpdate);
 
@@ -1529,15 +1511,19 @@ inline void LayoutObject::setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidat
 
 inline void LayoutObject::clearNeedsLayout()
 {
-    setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
-    setLayoutDidGetCalledSinceLastFrame();
-    setSelfNeedsLayout(false);
+    // Set flags for later stages/cycles.
     setEverHadLayout(true);
+    setMayNeedPaintInvalidation();
+    m_bitfields.setNeededLayoutBecauseOfChildren(needsLayoutBecauseOfChildren());
+
+    // Clear needsLayout flags.
+    setSelfNeedsLayout(false);
     setPosChildNeedsLayout(false);
     setNeedsSimplifiedNormalFlowLayout(false);
     setNormalChildNeedsLayout(false);
     setNeedsPositionedMovementLayout(false);
     setAncestorLineBoxDirty(false);
+
 #if ENABLE(ASSERT)
     checkBlockPositionedObjectsNeedLayout();
 #endif

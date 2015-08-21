@@ -675,7 +675,7 @@ LayoutFlowThread* LayoutObject::locateFlowThreadContainingBlock() const
 
 bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
 {
-    if (!neededLayoutBecauseOfChildren())
+    if (!m_bitfields.neededLayoutBecauseOfChildren())
         return false;
 
     // SVG layoutObjects need to be invalidated when their children are laid out.
@@ -1281,6 +1281,7 @@ void LayoutObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect
         selectionPaintInvalidationMap->set(this, selectionRect);
 }
 
+// TODO(wangxianzhu): Remove this for slimming paint v2 because we won't care about paint invalidation rects.
 inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason)
 {
     // Update selection rect when we are doing full invalidation (in case that the object is moved, composite status changed, etc.)
@@ -3133,16 +3134,7 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(con
 inline void LayoutObject::markContainerChainForPaintInvalidation()
 {
     for (LayoutObject* container = this->containerCrossingFrameBoundaries(); container && !container->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState(); container = container->containerCrossingFrameBoundaries())
-        container->setSelfMayNeedPaintInvalidation();
-}
-
-void LayoutObject::setLayoutDidGetCalledSinceLastFrame()
-{
-    m_bitfields.setLayoutDidGetCalledSinceLastFrame(true);
-
-    // Make sure our parent is marked as needing invalidation.
-    // This would be unneeded if we allowed sub-tree invalidation (akin to sub-tree layouts).
-    markContainerChainForPaintInvalidation();
+        container->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
 
 void LayoutObject::setShouldInvalidateSelection()
@@ -3179,19 +3171,8 @@ void LayoutObject::setMayNeedPaintInvalidation()
     if (mayNeedPaintInvalidation())
         return;
     m_bitfields.setMayNeedPaintInvalidation(true);
-    // Make sure our parent is marked as needing invalidation.
     markContainerChainForPaintInvalidation();
     frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
-}
-
-void LayoutObject::clearMayNeedPaintInvalidation()
-{
-    m_bitfields.setMayNeedPaintInvalidation(false);
-}
-
-void LayoutObject::setSelfMayNeedPaintInvalidation()
-{
-    m_bitfields.setMayNeedPaintInvalidation(true);
 }
 
 void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& paintInvalidationState)
@@ -3200,11 +3181,11 @@ void LayoutObject::clearPaintInvalidationState(const PaintInvalidationState& pai
     // booleans that are cleared below.
     ASSERT(paintInvalidationState.ancestorHadPaintInvalidationForLocationChange() || paintInvalidationStateIsDirty());
     clearShouldDoFullPaintInvalidation();
-    setNeededLayoutBecauseOfChildren(false);
-    setShouldInvalidateOverflowForPaint(false);
-    clearLayoutDidGetCalledSinceLastFrame();
-    clearMayNeedPaintInvalidation();
-    clearShouldInvalidateSelection();
+    m_bitfields.setChildShouldCheckForPaintInvalidation(false);
+    m_bitfields.setNeededLayoutBecauseOfChildren(false);
+    m_bitfields.setShouldInvalidateOverflowForPaint(false);
+    m_bitfields.setMayNeedPaintInvalidation(false);
+    m_bitfields.setShouldInvalidateSelection(false);
 }
 
 bool LayoutObject::isAllowedToModifyLayoutTreeStructure(Document& document)
