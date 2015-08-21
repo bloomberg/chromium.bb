@@ -29,15 +29,16 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class CORE_EXPORT TextMetrics final : public RefCountedWillBeGarbageCollected<TextMetrics>, public ScriptWrappable {
+class CORE_EXPORT TextMetrics final : public GarbageCollected<TextMetrics>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<TextMetrics> create() { return adoptRefWillBeNoop(new TextMetrics); }
+    static TextMetrics* create()
+    {
+        return new TextMetrics;
+    }
 
     float width() const { return m_width; }
     void setWidth(float w) { m_width = w; }

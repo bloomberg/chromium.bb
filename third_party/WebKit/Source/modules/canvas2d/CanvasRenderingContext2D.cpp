@@ -1893,13 +1893,13 @@ void CanvasRenderingContext2D::strokeText(const String& text, float x, float y, 
     drawTextInternal(text, x, y, CanvasRenderingContext2DState::StrokePaintType, &maxWidth);
 }
 
-PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const String& text)
+TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
 {
-    RefPtrWillBeRawPtr<TextMetrics> metrics = TextMetrics::create();
+    TextMetrics* metrics = TextMetrics::create();
 
     // The style resolution required for rendering text is not available in frame-less documents.
     if (!canvas()->document().frame())
-        return metrics.release();
+        return metrics;
 
     canvas()->document().updateLayoutTreeForNodeIfNeeded(canvas());
     const Font& font = accessFont();
@@ -1937,7 +1937,7 @@ PassRefPtrWillBeRawPtr<TextMetrics> CanvasRenderingContext2D::measureText(const 
     metrics->setHangingBaseline(-0.8f * ascent + baselineY);
     metrics->setAlphabeticBaseline(baselineY);
     metrics->setIdeographicBaseline(descent + baselineY);
-    return metrics.release();
+    return metrics;
 }
 
 void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, float y, CanvasRenderingContext2DState::PaintType paintType, float* maxWidth)

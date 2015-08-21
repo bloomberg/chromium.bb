@@ -28,7 +28,7 @@
 // TODO(philipj): All float types in this interface should be double.
 [
     // TODO(philipj): Exposed=(Window,Worker)
-    WillBeGarbageCollected,
+    GarbageCollected,
 ] interface TextMetrics {
     // x-direction
     readonly attribute float width; // advance width

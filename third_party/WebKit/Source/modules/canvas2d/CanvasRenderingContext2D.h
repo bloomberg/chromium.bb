@@ -197,7 +197,7 @@ public:
     void fillText(const String& text, float x, float y, float maxWidth);
     void strokeText(const String& text, float x, float y);
     void strokeText(const String& text, float x, float y, float maxWidth);
-    PassRefPtrWillBeRawPtr<TextMetrics> measureText(const String& text);
+    TextMetrics* measureText(const String& text);
 
     bool imageSmoothingEnabled() const;
     void setImageSmoothingEnabled(bool);
