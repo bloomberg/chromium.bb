@@ -188,6 +188,8 @@ void ManagePasswordsState::ProcessLoginsChanged(
 
   for (const password_manager::PasswordStoreChange& change : changes) {
     const autofill::PasswordForm& changed_form = change.form();
+    if (changed_form.blacklisted_by_user)
+      continue;
     if (change.type() == password_manager::PasswordStoreChange::REMOVE) {
       DeleteForm(changed_form);
     } else {

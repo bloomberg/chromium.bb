@@ -189,8 +189,7 @@ void ManagePasswordsStateTest::TestBlacklistedUpdates() {
   list.push_back(password_manager::PasswordStoreChange(
       password_manager::PasswordStoreChange::ADD, blacklisted));
   passwords_data().ProcessLoginsChanged(list);
-  EXPECT_THAT(passwords_data().GetCurrentForms(),
-              Contains(Pointee(blacklisted)));
+  EXPECT_EQ(forms, passwords_data().GetCurrentForms());
   EXPECT_EQ(federated_forms, passwords_data().federated_credentials_forms());
   EXPECT_EQ(state, passwords_data().state());
   EXPECT_EQ(origin, passwords_data().origin());
