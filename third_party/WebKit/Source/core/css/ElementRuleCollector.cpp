@@ -129,7 +129,7 @@ static bool rulesApplicableInCurrentTreeScope(const Element* element, const Cont
 }
 
 template<typename RuleDataListType>
-void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* rules, CascadeOrder cascadeOrder, const MatchRequest& matchRequest)
+void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* rules, const MatchRequest& matchRequest)
 {
     if (!rules)
         return;
@@ -177,7 +177,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
         }
 
         matched++;
-        didMatchRule(ruleData, result, cascadeOrder, matchRequest);
+        didMatchRule(ruleData, result, matchRequest);
     }
 
     if (StyleResolver* resolver = m_context.element()->document().styleResolver()) {
@@ -187,7 +187,7 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
     }
 }
 
-void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, CascadeOrder cascadeOrder, bool matchingTreeBoundaryRules)
+void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, bool matchingTreeBoundaryRules)
 {
     ASSERT(matchRequest.ruleSet);
     ASSERT(m_context.element());
@@ -196,11 +196,11 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     const AtomicString& pseudoId = element.shadowPseudoId();
     if (!pseudoId.isEmpty()) {
         ASSERT(element.isStyledElement());
-        collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId), cascadeOrder, matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId), matchRequest);
     }
 
     if (element.isVTTElement())
-        collectMatchingRulesForList(matchRequest.ruleSet->cuePseudoRules(), cascadeOrder, matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet->cuePseudoRules(), matchRequest);
     // Check whether other types of rules are applicable in the current tree scope. Criteria for this:
     // a) it's a UA rule
     // b) the rules comes from a scoped style sheet within the same tree scope
@@ -213,23 +213,23 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     // We need to collect the rules for id, class, tag, and everything else into a buffer and
     // then sort the buffer.
     if (element.hasID())
-        collectMatchingRulesForList(matchRequest.ruleSet->idRules(element.idForStyleResolution()), cascadeOrder, matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet->idRules(element.idForStyleResolution()), matchRequest);
     if (element.isStyledElement() && element.hasClass()) {
         for (size_t i = 0; i < element.classNames().size(); ++i)
-            collectMatchingRulesForList(matchRequest.ruleSet->classRules(element.classNames()[i]), cascadeOrder, matchRequest);
+            collectMatchingRulesForList(matchRequest.ruleSet->classRules(element.classNames()[i]), matchRequest);
     }
 
     if (element.isLink())
-        collectMatchingRulesForList(matchRequest.ruleSet->linkPseudoClassRules(), cascadeOrder, matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet->linkPseudoClassRules(), matchRequest);
     if (SelectorChecker::matchesFocusPseudoClass(element))
-        collectMatchingRulesForList(matchRequest.ruleSet->focusPseudoClassRules(), cascadeOrder, matchRequest);
-    collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localNameForSelectorMatching()), cascadeOrder, matchRequest);
-    collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), cascadeOrder, matchRequest);
+        collectMatchingRulesForList(matchRequest.ruleSet->focusPseudoClassRules(), matchRequest);
+    collectMatchingRulesForList(matchRequest.ruleSet->tagRules(element.localNameForSelectorMatching()), matchRequest);
+    collectMatchingRulesForList(matchRequest.ruleSet->universalRules(), matchRequest);
 }
 
-void ElementRuleCollector::collectMatchingShadowHostRules(const MatchRequest& matchRequest, CascadeOrder cascadeOrder, bool matchingTreeBoundaryRules)
+void ElementRuleCollector::collectMatchingShadowHostRules(const MatchRequest& matchRequest, bool matchingTreeBoundaryRules)
 {
-    collectMatchingRulesForList(matchRequest.ruleSet->shadowHostRules(), cascadeOrder, matchRequest);
+    collectMatchingRulesForList(matchRequest.ruleSet->shadowHostRules(), matchRequest);
 }
 
 template<class CSSRuleCollection>
@@ -295,7 +295,7 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
     }
 }
 
-void ElementRuleCollector::didMatchRule(const RuleData& ruleData, const SelectorChecker::MatchResult& result, CascadeOrder cascadeOrder, const MatchRequest& matchRequest)
+void ElementRuleCollector::didMatchRule(const RuleData& ruleData, const SelectorChecker::MatchResult& result, const MatchRequest& matchRequest)
 {
     PseudoId dynamicPseudo = result.dynamicPseudo;
     // If we're matching normal rules, set a pseudo bit if
@@ -313,7 +313,7 @@ void ElementRuleCollector::didMatchRule(const RuleData& ruleData, const Selector
         if (m_style && ruleData.containsUncommonAttributeSelector())
             m_style->setUnique();
 
-        m_matchedRules.append(MatchedRule(&ruleData, result.specificity, cascadeOrder, matchRequest.styleSheetIndex, matchRequest.styleSheet));
+        m_matchedRules.append(MatchedRule(&ruleData, result.specificity, matchRequest.styleSheetIndex, matchRequest.styleSheet));
     }
 }
 
