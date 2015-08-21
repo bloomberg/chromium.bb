@@ -17,4 +17,4 @@ else:
   raise Exception('Unsupported architecture')
 env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c',
                                              'directory.c',
-                                             'irt_exception_handling.c'])
+                                             'irt_signal_handling.c'])

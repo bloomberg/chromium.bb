@@ -7,13 +7,11 @@
 #ifndef NATIVE_CLIENT_SRC_PUBLIC_NONSFI_IRT_EXCEPTION_HANDLING_H_
 #define NATIVE_CLIENT_SRC_PUBLIC_NONSFI_IRT_EXCEPTION_HANDLING_H_ 1
 
-#include "native_client/src/include/nacl_base.h"
-
-EXTERN_C_BEGIN
-
-/* Initialize signal handler at startup before entering sandbox. */
-void nonsfi_initialize_signal_handler(void);
-
-EXTERN_C_END
+/*
+ * Staging for trivial DEPS roll.
+ * TODO(lhchavez): Remove after NaCl DEPS roll in Chrome.
+ */
+#include "native_client/src/public/nonsfi/irt_signal_handling.h"
 
 #endif
+

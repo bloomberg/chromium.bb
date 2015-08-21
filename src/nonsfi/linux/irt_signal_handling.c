@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2015 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14,10 +14,12 @@
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/nonsfi/linux/irt_signal_handling.h"
 #include "native_client/src/nonsfi/linux/linux_sys_private.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
-#include "native_client/src/public/nonsfi/irt_exception_handling.h"
+#include "native_client/src/public/linux_syscalls/sys/syscall.h"
+#include "native_client/src/public/nonsfi/irt_signal_handling.h"
 #include "native_client/src/untrusted/irt/irt.h"
 
 typedef struct compat_sigaltstack {
@@ -30,28 +32,28 @@ typedef struct compat_sigaltstack {
 
 /* From linux/arch/x86/include/uapi/asm/sigcontext32.h */
 struct sigcontext_ia32 {
-  unsigned short gs, __gsh;
-  unsigned short fs, __fsh;
-  unsigned short es, __esh;
-  unsigned short ds, __dsh;
-  unsigned int di;
-  unsigned int si;
-  unsigned int bp;
-  unsigned int sp;
-  unsigned int bx;
-  unsigned int dx;
-  unsigned int cx;
-  unsigned int ax;
-  unsigned int trapno;
-  unsigned int err;
-  unsigned int ip;
-  unsigned short cs, __csh;
-  unsigned int flags;
-  unsigned int sp_at_signal;
-  unsigned short ss, __ssh;
-  unsigned int fpstate;
-  unsigned int oldmask;
-  unsigned int cr2;
+  uint16_t gs, __gsh;
+  uint16_t fs, __fsh;
+  uint16_t es, __esh;
+  uint16_t ds, __dsh;
+  uint32_t di;
+  uint32_t si;
+  uint32_t bp;
+  uint32_t sp;
+  uint32_t bx;
+  uint32_t dx;
+  uint32_t cx;
+  uint32_t ax;
+  uint32_t trapno;
+  uint32_t err;
+  uint32_t ip;
+  uint16_t cs, __csh;
+  uint32_t flags;
+  uint32_t sp_at_signal;
+  uint16_t ss, __ssh;
+  uint32_t fpstate;
+  uint32_t oldmask;
+  uint32_t cr2;
 };
 
 typedef struct sigcontext_ia32 linux_mcontext_t;
@@ -113,7 +115,10 @@ static const int kSignals[] = {
 
 static pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 static NaClExceptionHandler g_signal_handler_function_pointer = NULL;
+static NaClExceptionHandler g_exception_handler_function_pointer = NULL;
 static int g_signal_handler_initialized = 0;
+static int g_tgid = 0;
+static int g_main_tid;
 
 struct NonSfiExceptionFrame {
   struct NaClExceptionContext context;
@@ -160,7 +165,7 @@ static void machine_context_to_register(const linux_mcontext_t *mctx,
 #endif
 }
 
-static void exception_frame_from_signal_context(
+static void nonsfi_exception_frame_from_signal_context(
     struct NonSfiExceptionFrame *frame,
     const void *raw_ctx) {
   const struct linux_ucontext_t *uctx = (struct linux_ucontext_t *) raw_ctx;
@@ -189,22 +194,180 @@ static void exception_frame_from_signal_context(
 #endif
 }
 
-/* Signal handler, responsible for calling the registered handler. */
-static void signal_catch(int sig, linux_siginfo_t *info, void *uc) {
-  if (g_signal_handler_function_pointer) {
+/* A replacement of sigreturn. It does not restore the signal mask. */
+static void __attribute__((noreturn))
+nonsfi_restore_context(const linux_mcontext_t *mctx) {
+
+#if defined(__i386__)
+
+#define OFFSET(name) \
+  [name] "i" (offsetof(linux_mcontext_t, name))
+#define RESTORE_SEGMENT(name) \
+  "mov %c[" #name "](%%eax), %%" #name "\n"
+#define RESTORE(name) \
+  "movl %c[" #name "](%%eax), %%e" #name "\n"
+
+  __asm__ __volatile__(
+      /* TODO(lhchavez): Restore floating-point environment */
+
+      /* Restore all segment registers */
+      RESTORE_SEGMENT(gs)
+      RESTORE_SEGMENT(fs)
+      RESTORE_SEGMENT(es)
+      RESTORE_SEGMENT(ds)
+
+      /*
+       * Restore most of the other registers.
+       */
+      RESTORE(di)
+      RESTORE(si)
+      RESTORE(bp)
+      RESTORE(bx)
+
+      /*
+       * Prepare the last registers. eip *must* be one slot above the original
+       * stack, since that is the only way eip and esp can be simultaneously
+       * restored. Here, we are using ecx as the pseudo stack pointer, and edx
+       * as a scratch register. Once the stack is laid out the way we want it to
+       * be, restore edx and eax last.
+       */
+      "mov %c[sp](%%eax), %%ecx\n"
+      "mov %c[ip](%%eax), %%edx\n"
+      "mov %%edx, -4(%%ecx)\n"
+      "mov %c[flags](%%eax), %%edx\n"
+      "mov %%edx, -8(%%ecx)\n"
+      "mov %c[cx](%%eax), %%edx\n"
+      "mov %%edx, -12(%%ecx)\n"
+      RESTORE(dx)
+      RESTORE(ax)
+      "lea -12(%%ecx), %%esp\n"
+
+      /*
+       * Finally pop ecx off the stack, restore the processor flags, and return
+       * to simultaneously restore esp and eip.
+       */
+      "pop %%ecx\n"
+      "popf\n"
+      "ret\n"
+      :
+      : "a" (mctx),
+        OFFSET(gs),
+        OFFSET(fs),
+        OFFSET(es),
+        OFFSET(ds),
+        OFFSET(di),
+        OFFSET(si),
+        OFFSET(bp),
+        OFFSET(sp),
+        OFFSET(bx),
+        OFFSET(dx),
+        OFFSET(cx),
+        OFFSET(ax),
+        OFFSET(ip),
+        OFFSET(flags),
+        OFFSET(fpstate)
+  );
+
+#undef OFFSET
+#undef RESTORE
+#undef RESTORE_SEGMENT
+
+#elif defined(__arm__)
+
+#define OFFSET(name) \
+  [name] "I" (offsetof(linux_mcontext_t, arm_ ## name) - \
+              offsetof(linux_mcontext_t, arm_r0))
+
+  register uint32_t a14 __asm__("r14") = (uint32_t) &mctx->arm_r0;
+
+  __asm__ __volatile__(
+      /* Restore flags */
+      "ldr r0, [r14, %[cpsr]]\n"
+      "msr APSR_nzcvqg, r0\n"
+
+      /* TODO(lhchavez): Restore floating-point environment */
+
+      /*
+       * Restore general-purpose registers.
+       * This code does not use the simpler 'ldmia r14, {r0-pc}' since using
+       * ldmia with either sp or with both lr and pc is deprecated.
+       */
+      "ldmia r14, {r0-r10}\n"
+
+      /*
+       * Copy r11, r12, lr, and pc just before the original sp.
+       * r12 will work as a temporary sp. r11 will be the scratch register, and
+       * will be restored just before moving sp.
+       */
+      "ldr r12, [r14, %[sp]]\n"
+
+      "ldr r11, [r14, %[pc]]\n"
+      "stmdb r12!, {r11}\n"
+      "ldr r11, [r14, %[lr]]\n"
+      "stmdb r12!, {r11}\n"
+      "ldr r11, [r14, %[r12]]\n"
+      "stmdb r12!, {r11}\n"
+      "ldr r11, [r14, %[r11]]\n"
+      "mov sp, r12\n"
+
+      /*
+       * Restore r12, lr, and pc. sp will point to the correct location once
+       * we're done.
+       */
+      "pop {r12, lr}\n"
+      "pop {pc}\n"
+      :
+      : "r" (a14),
+        OFFSET(cpsr),
+        OFFSET(r11),
+        OFFSET(r12),
+        OFFSET(sp),
+        OFFSET(lr),
+        OFFSET(pc)
+  );
+
+#undef OFFSET
+
+#else
+# error Unsupported architecture
+#endif
+
+  /* Should never reach this. */
+  __builtin_trap();
+}
+
+static __attribute__((noreturn))
+void restore_context(void *raw_ctx) {
+  const struct linux_ucontext_t *uctx = (struct linux_ucontext_t *) raw_ctx;
+  const linux_mcontext_t *mctx = &uctx->uc_mcontext;
+  nonsfi_restore_context(mctx);
+}
+
+/* Signal handlers, responsible for calling the registered handlers. */
+static void exception_catch(int sig, linux_siginfo_t *info, void *uc) {
+  if (g_exception_handler_function_pointer) {
     struct NonSfiExceptionFrame exception_frame;
-    exception_frame_from_signal_context(&exception_frame, uc);
-    g_signal_handler_function_pointer(&exception_frame.context);
+    nonsfi_exception_frame_from_signal_context(&exception_frame, uc);
+    g_exception_handler_function_pointer(&exception_frame.context);
   }
   _exit(-sig);
 }
 
-static void nonsfi_initialize_signal_handler_locked() {
+static void signal_catch(int sig, linux_siginfo_t *info, void *uc) {
+  if (g_signal_handler_function_pointer) {
+    struct NonSfiExceptionFrame exception_frame;
+    nonsfi_exception_frame_from_signal_context(&exception_frame, uc);
+    g_signal_handler_function_pointer(&exception_frame.context);
+  }
+  restore_context(uc);
+}
+
+static void nonsfi_install_exception_handler_locked() {
   struct linux_sigaction sa;
   unsigned int a;
 
   memset(&sa, 0, sizeof(sa));
-  sa.sa_sigaction = signal_catch;
+  sa.sa_sigaction = exception_catch;
   sa.sa_flags = LINUX_SA_SIGINFO | LINUX_SA_ONSTACK;
 
   /*
@@ -226,28 +389,63 @@ static void nonsfi_initialize_signal_handler_locked() {
   }
 }
 
+static void nonsfi_install_signal_handler_locked() {
+  struct linux_sigaction sa;
+
+  memset(&sa, 0, sizeof(sa));
+  sa.sa_sigaction = signal_catch;
+
+  /*
+   * User signal handler can be recursively interrupted to avoid having
+   * to allow sigreturn/sigprocmask.
+   */
+  sa.sa_flags = LINUX_SA_SIGINFO | LINUX_SA_NODEFER | LINUX_SA_RESTART;
+  sigset_t *mask = (sigset_t*)&sa.sa_mask;
+  sigemptyset(mask);
+
+  /*
+   * Install a single handler.  Multiple signals can be multiplexed in
+   * userspace.
+   */
+  if (linux_sigaction(LINUX_SIGUSR1, &sa, NULL) != 0)
+    abort();
+}
+
+static void nonsfi_initialize_signal_handler_locked() {
+  if (g_signal_handler_initialized)
+    return;
+  pid_t tgid = getpid();
+  if (tgid == -1)
+    abort();
+  pid_t main_tid = syscall(__NR_gettid);
+  if (main_tid == -1)
+    abort();
+  nonsfi_install_exception_handler_locked();
+  nonsfi_install_signal_handler_locked();
+  g_tgid = tgid;
+  g_main_tid = main_tid;
+  g_signal_handler_initialized = 1;
+}
+
 /*
  * Initialize signal handlers before entering sandbox.
  */
 void nonsfi_initialize_signal_handler() {
   if (pthread_mutex_lock(&g_mutex) != 0)
     abort();
-  if (!g_signal_handler_initialized) {
-    nonsfi_initialize_signal_handler_locked();
-    g_signal_handler_initialized = 1;
-  }
+  nonsfi_initialize_signal_handler_locked();
   if (pthread_mutex_unlock(&g_mutex) != 0)
     abort();
 }
 
 int nacl_exception_get_and_set_handler(NaClExceptionHandler handler,
                                        NaClExceptionHandler *old_handler) {
-  nonsfi_initialize_signal_handler();
   if (pthread_mutex_lock(&g_mutex) != 0)
     abort();
+  nonsfi_initialize_signal_handler_locked();
   if (old_handler)
-    *old_handler = g_signal_handler_function_pointer;
-  g_signal_handler_function_pointer = handler;
+    *old_handler = g_exception_handler_function_pointer;
+  g_exception_handler_function_pointer = handler;
   if (pthread_mutex_unlock(&g_mutex) != 0)
     abort();
   return 0;
@@ -292,4 +490,24 @@ int nacl_exception_clear_flag(void) {
 int nacl_exception_set_stack(void *p, size_t s) {
   /* Not implemented yet. */
   return ENOSYS;
+}
+
+int nacl_async_signal_set_handler(NaClIrtAsyncSignalHandler handler) {
+  if (pthread_mutex_lock(&g_mutex) != 0)
+    abort();
+  nonsfi_initialize_signal_handler_locked();
+  g_signal_handler_function_pointer = handler;
+  if (pthread_mutex_unlock(&g_mutex) != 0)
+    abort();
+  return 0;
+}
+
+int nacl_async_signal_send_async_signal(nacl_irt_tid_t tid) {
+  if (!g_signal_handler_initialized)
+    return ESRCH;
+  if (tid == 0)
+    tid = g_main_tid;
+  if (linux_tgkill(g_tgid, tid, LINUX_SIGUSR1) == -1)
+    return errno;
+  return 0;
 }

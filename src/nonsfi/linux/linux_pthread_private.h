@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/untrusted/irt/irt.h"
 
 EXTERN_C_BEGIN
 
@@ -19,7 +20,7 @@ EXTERN_C_BEGIN
  * its parameter.
  */
 int nacl_user_thread_create(void *(*start_func)(void *), void *stack,
-                            void *thread_ptr);
+                            void *thread_ptr, nacl_irt_tid_t *child_tid);
 
 /*
  * Exits a thread started by |nacl_user_thread_create|. Threads started with

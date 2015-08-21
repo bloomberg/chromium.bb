@@ -21,6 +21,15 @@ is_broken = (not env.Bit('build_arm') or env.Bit('pnacl_generate_pexe') or
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_icache_test',
                        is_broken=is_broken)
 
+# Tests sending and receiving userspace signals. This test only works with the
+# newlib nonsfi loader.
+if env.Bit('tests_use_irt') and env.Bit('use_newlib_nonsfi_loader'):
+  nexe = env.ComponentProgram('user_async_signal_test',
+                              'user_async_signal_test.cc',
+                              EXTRA_LIBS=['${NONIRT_LIBS}'])
+  node = env.CommandSelLdrTestNacl('user_async_signal_test.out', nexe)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_user_async_signal_test')
+
 # The subsequent tests are for syscall wrappers required by newlib
 # based non-SFI nacl_helper. The rest of NaCl does not need them.
 if env.Bit('tests_use_irt'):
