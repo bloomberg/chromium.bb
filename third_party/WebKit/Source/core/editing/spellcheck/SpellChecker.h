@@ -44,6 +44,7 @@ class TextCheckingParagraph;
 struct TextCheckingResult;
 
 class CORE_EXPORT SpellChecker final : public NoBaseWillBeGarbageCollectedFinalized<SpellChecker> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(SpellChecker);
     WTF_MAKE_NONCOPYABLE(SpellChecker);
 public:
     static PassOwnPtrWillBeRawPtr<SpellChecker> create(LocalFrame&);

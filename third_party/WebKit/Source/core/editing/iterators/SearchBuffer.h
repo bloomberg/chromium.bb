@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/EphemeralRange.h"
 #include "core/editing/FindOptions.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -41,6 +42,7 @@ namespace blink {
 // inside a word are permitted if TreatMedialCapitalAsWordStart is specified as
 // well.
 class SearchBuffer {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(SearchBuffer);
 public:
     SearchBuffer(const String& target, FindOptions);

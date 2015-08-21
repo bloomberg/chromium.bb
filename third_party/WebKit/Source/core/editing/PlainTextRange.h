@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/EphemeralRange.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassRefPtr.h"
 
@@ -38,6 +39,7 @@ class ContainerNode;
 class Range;
 
 class CORE_EXPORT PlainTextRange {
+    STACK_ALLOCATED();
 public:
     PlainTextRange();
     PlainTextRange(const PlainTextRange&);

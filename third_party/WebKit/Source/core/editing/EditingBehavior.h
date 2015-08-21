@@ -23,12 +23,13 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/EditingBehaviorTypes.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 class KeyboardEvent;
 
 class CORE_EXPORT EditingBehavior {
-
+    STACK_ALLOCATED();
 public:
     explicit EditingBehavior(EditingBehaviorType type)
         : m_type(type)

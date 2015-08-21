@@ -60,6 +60,7 @@ enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
 
 class CORE_EXPORT Editor final : public NoBaseWillBeGarbageCollectedFinalized<Editor> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(Editor);
     WTF_MAKE_NONCOPYABLE(Editor);
 public:
     static PassOwnPtrWillBeRawPtr<Editor> create(LocalFrame&);

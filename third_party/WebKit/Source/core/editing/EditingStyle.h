@@ -169,6 +169,7 @@ private:
 };
 
 class StyleChange {
+    DISALLOW_ALLOCATION();
 public:
     StyleChange()
         : m_applyBold(false)

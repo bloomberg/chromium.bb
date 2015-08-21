@@ -15,6 +15,7 @@ namespace blink {
 class DummyPageHolder;
 
 class EditingTestBase : public ::testing::Test {
+    WTF_MAKE_FAST_ALLOCATED(EditingTestBase);
 protected:
     EditingTestBase();
     ~EditingTestBase() override;

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/editing/CompositionUnderline.h"
+#include "wtf/Allocator.h"
 #include "wtf/NotFound.h"
 #include "wtf/Vector.h"
 
@@ -16,9 +17,11 @@ namespace blink {
 // underlines, visiting only elements that intersect with specified *inclusive*
 // range [indexLo, indexHi].
 class CORE_EXPORT CompositionUnderlineRangeFilter {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(CompositionUnderlineRangeFilter);
 public:
     class ConstIterator {
+        DISALLOW_ALLOCATION();
     public:
         ConstIterator(): m_filter(nullptr), m_index(0) { }
         const CompositionUnderline& operator*()

@@ -27,10 +27,12 @@
 #define CompositionUnderline_h
 
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 struct CompositionUnderline {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     CompositionUnderline()
         : startOffset(0)
         , endOffset(0)

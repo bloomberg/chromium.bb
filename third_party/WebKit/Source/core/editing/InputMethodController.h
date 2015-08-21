@@ -41,6 +41,7 @@ class Range;
 class Text;
 
 class CORE_EXPORT InputMethodController final : public NoBaseWillBeGarbageCollectedFinalized<InputMethodController> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(InputMethodController);
     WTF_MAKE_NONCOPYABLE(InputMethodController);
 public:
     enum ConfirmCompositionBehavior {

@@ -34,6 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/editing/Position.h"
 #include "core/layout/line/InlineBox.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -43,6 +44,7 @@ class VisiblePosition;
 struct CompositedSelectionBound;
 
 class RenderedPosition {
+    STACK_ALLOCATED();
 public:
     RenderedPosition();
     explicit RenderedPosition(const VisiblePosition&);

@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeTraversal.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -20,6 +21,7 @@ class PositionIteratorAlgorithm;
 // Editing algorithm defined on node traversal.
 template <typename Traversal>
 class CORE_TEMPLATE_CLASS_EXPORT EditingAlgorithm : public Traversal {
+    STATIC_ONLY(EditingAlgorithm);
 public:
     static int caretMaxOffset(const Node&);
     // TODO(yosin) We should make following functions to take |Node&| instead

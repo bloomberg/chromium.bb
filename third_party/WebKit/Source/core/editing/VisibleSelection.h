@@ -34,6 +34,7 @@
 #include "core/editing/TextGranularity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -48,6 +49,7 @@ class CORE_EXPORT VisibleSelection {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(VisibleSelection);
 public:
     class InDOMTree {
+        STATIC_ONLY(InDOMTree);
     public:
         using PositionType = Position;
         using Strategy = EditingStrategy;
@@ -65,6 +67,7 @@ public:
     };
 
     class InComposedTree {
+        STATIC_ONLY(InComposedTree);
     public:
         using PositionType = PositionInComposedTree;
         using Strategy = EditingInComposedTreeStrategy;

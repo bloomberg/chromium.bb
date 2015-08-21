@@ -7,11 +7,13 @@
 
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/iterators/BitStack.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 template<typename Strategy>
-class FullyClippedStateStackAlgorithm : public BitStack {
+class FullyClippedStateStackAlgorithm final : public BitStack {
+    STACK_ALLOCATED();
 public:
     FullyClippedStateStackAlgorithm();
     ~FullyClippedStateStackAlgorithm();
