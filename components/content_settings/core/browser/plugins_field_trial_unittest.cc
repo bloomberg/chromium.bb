@@ -78,7 +78,13 @@ TEST_F(PluginsFieldTrialTest, SwitchOverridesFieldTrial2) {
   EXPECT_FALSE(PluginsFieldTrial::IsPluginPowerSaverEnabled());
 }
 
-TEST_F(PluginsFieldTrialTest, NoPrefLeftBehind) {
+// Disabled on iOS due to flakiness. https://crbug.com/523462
+#if defined(OS_IOS)
+#define MAYBE_NoPrefLeftBehind DISABLED_NoPrefLeftBehind
+#else
+#define MAYBE_NoPrefLeftBehind NoPrefLeftBehind
+#endif
+TEST_F(PluginsFieldTrialTest, MAYBE_NoPrefLeftBehind) {
   ASSERT_TRUE(FieldTrialList::CreateFieldTrial(kEnableFieldTrial, "Enabled"));
   user_prefs::TestingPrefServiceSyncable prefs;
   {
