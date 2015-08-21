@@ -102,8 +102,6 @@ public:
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
 
-    virtual void dispatchWillRequestResource(FetchRequest*) { }
-
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
     virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;
 

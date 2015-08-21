@@ -355,8 +355,6 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
     if (!context().canRequest(factory.type(), request.resourceRequest(), url, request.options(), request.forPreload(), request.originRestriction()))
         return nullptr;
 
-    context().dispatchWillRequestResource(&request);
-
     if (!request.forPreload()) {
         V8DOMActivityLogger* activityLogger = nullptr;
         if (request.options().initiatorInfo.name == FetchInitiatorTypeNames::xmlhttprequest)

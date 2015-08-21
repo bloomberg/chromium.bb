@@ -1702,7 +1702,6 @@ crbug.com/521764 [ Win10 ] fast/forms/search/search-appearance-basic.html [ Fail
 crbug.com/521764 [ Win10 ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Crash ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] fast/html/imports/rel-style-to-import.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] fast/inline/justify-emphasis-inline-box.html [ ImageOnlyFailure Timeout ]
-crbug.com/521764 [ Win10 ] fast/loader/resource-request-callbacks.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/loader/scroll-restore-overrides-fragment.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/loader/scroll-restore-target-pseudo.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/preloader/input.html [ Failure Pass ]

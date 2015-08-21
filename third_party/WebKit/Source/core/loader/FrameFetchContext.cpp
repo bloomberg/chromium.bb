@@ -301,11 +301,6 @@ bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const
     return m_documentLoader == frame()->loader().documentLoader();
 }
 
-void FrameFetchContext::dispatchWillRequestResource(FetchRequest* request)
-{
-    frame()->loader().client()->dispatchWillRequestResource(request);
-}
-
 void FrameFetchContext::willStartLoadingResource(ResourceRequest& request)
 {
     if (m_documentLoader)

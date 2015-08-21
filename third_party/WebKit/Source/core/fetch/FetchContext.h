@@ -83,7 +83,6 @@ public:
     virtual void sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse&, int dataLength);
 
     virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
-    virtual void dispatchWillRequestResource(FetchRequest*);
     virtual void willStartLoadingResource(ResourceRequest&);
     virtual void didLoadResource();
 

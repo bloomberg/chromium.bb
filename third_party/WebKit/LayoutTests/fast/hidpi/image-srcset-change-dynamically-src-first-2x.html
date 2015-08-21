@@ -14,7 +14,6 @@
 
     addEventListener("DOMContentLoaded", function() {
         if (window.testRunner && sessionStorage.pageReloaded) {
-            testRunner.dumpResourceRequestCallbacks();
             // Have to make sure to only load the src after the reload.
             // Otherwise, we'd request and cache the 1x URL while the
             // scale factor is 1, and after we reload we find the URL
