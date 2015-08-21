@@ -947,7 +947,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                    '<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
@@ -991,7 +991,7 @@
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
-                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/nacl_arm_newlib/nacl_arm_newlib.json',
+                   '<(DEPTH)/native_client/toolchain/<(TOOLCHAIN_OS)_x86/pnacl_newlib/pnacl_newlib.json',
                 ],
                 'outputs': ['>(out_newlib_arm)'],
                 'action': [
