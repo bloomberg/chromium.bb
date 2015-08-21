@@ -18,7 +18,7 @@ class WorkerGlobalScopeProxy;
 class CompositorWorker final : public InProcessWorkerBase {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<CompositorWorker> create(ExecutionContext*, const String& url, ExceptionState&);
+    static CompositorWorker* create(ExecutionContext*, const String& url, ExceptionState&);
     ~CompositorWorker() override;
 
     const AtomicString& interfaceName() const override;

@@ -20,7 +20,7 @@ inline CompositorWorker::CompositorWorker(ExecutionContext* context)
 {
 }
 
-PassRefPtrWillBeRawPtr<CompositorWorker> CompositorWorker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
+CompositorWorker* CompositorWorker::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
@@ -28,9 +28,9 @@ PassRefPtrWillBeRawPtr<CompositorWorker> CompositorWorker::create(ExecutionConte
         exceptionState.throwDOMException(InvalidAccessError, "The context provided is invalid.");
         return nullptr;
     }
-    RefPtrWillBeRawPtr<CompositorWorker> worker = adoptRefWillBeNoop(new CompositorWorker(context));
+    CompositorWorker* worker = new CompositorWorker(context);
     if (worker->initialize(context, url, exceptionState))
-        return worker.release();
+        return worker;
     return nullptr;
 }
 
