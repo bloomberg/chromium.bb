@@ -16,9 +16,10 @@ from pylib import constants
 
 sys.path.append(os.path.join(constants.DIR_SOURCE_ROOT,
                              'third_party',
-                             'catapult'))
+                             'catapult',
+                             'tracing'))
 # pylint: disable=F0401
-from tracing.build import trace2html
+from tracing_build import trace2html
 
 
 def _PackageTracesAsHtml(trace_files, html_file):
