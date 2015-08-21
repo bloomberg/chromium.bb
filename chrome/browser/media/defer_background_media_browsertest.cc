@@ -2,26 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
 
-class MediaBrowserTest : public InProcessBrowserTest {
- public:
-#if defined(OS_ANDROID)
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        switches::kDisableGestureRequirementForMediaPlayback);
-  }
-#endif
-};
+// TODO(dalecurtis): Android does not correctly defer media today, fix and
+// enable this test (needs disable of user gesture).  http://crbug.com/522157
+#if !defined(OS_ANDROID)
+typedef InProcessBrowserTest MediaBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(MediaBrowserTest, BackgroundMediaIsDeferred) {
   // Navigate to a video file, which would autoplay in the foreground, but won't
@@ -64,3 +57,4 @@ IN_PROC_BROWSER_TEST_F(MediaBrowserTest, BackgroundMediaIsDeferred) {
   watcher.AlsoWaitForTitle(ended_str);
   EXPECT_EQ(playing_str, watcher.WaitAndGetTitle());
 }
+#endif  // !defined(OS_ANDROID)

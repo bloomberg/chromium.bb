@@ -113,6 +113,7 @@
 #include "media/base/media_log.h"
 #include "media/blink/webencryptedmediaclient_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
+#include "media/blink/webmediaplayer_params.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
@@ -2024,31 +2025,24 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   if (!web_stream.isNull())
     return CreateWebMediaPlayerForMediaStream(client);
 
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-
 #if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-  scoped_refptr<media::AudioRendererSink> audio_renderer_sink;
-  media::WebMediaPlayerParams::Context3DCB context_3d_cb;
+  return CreateAndroidWebMediaPlayer(client, encrypted_client,
+                                     GetMediaPermission(), initial_cdm);
 #else
-  scoped_refptr<media::AudioRendererSink> audio_renderer_sink =
-      render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_);
-  media::WebMediaPlayerParams::Context3DCB context_3d_cb =
-      base::Bind(&GetSharedMainThreadContext3D);
-#endif  // defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-
   scoped_refptr<media::MediaLog> media_log(new RenderMediaLog());
+
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
   media::WebMediaPlayerParams params(
       base::Bind(&ContentRendererClient::DeferMediaLoad,
                  base::Unretained(GetContentClient()->renderer()),
                  static_cast<RenderFrame*>(this), has_played_media_),
-      audio_renderer_sink, media_log, render_thread->GetMediaThreadTaskRunner(),
+      render_thread->GetAudioRendererMixerManager()->CreateInput(routing_id_),
+      media_log, render_thread->GetMediaThreadTaskRunner(),
       render_thread->GetWorkerTaskRunner(),
-      render_thread->compositor_task_runner(), context_3d_cb,
-      GetMediaPermission(), initial_cdm);
+      render_thread->compositor_task_runner(),
+      base::Bind(&GetSharedMainThreadContext3D), GetMediaPermission(),
+      initial_cdm);
 
-#if defined(OS_ANDROID) && !defined(ENABLE_MEDIA_PIPELINE_ON_ANDROID)
-  return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
-#else
 #if defined(ENABLE_MOJO_MEDIA)
   scoped_ptr<media::RendererFactory> media_renderer_factory(
       new media::MojoRendererFactory(GetMediaServiceFactory()));
@@ -4952,10 +4946,12 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
 }
 
 #if defined(OS_ANDROID)
+
 WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
-    const media::WebMediaPlayerParams& params) {
+    media::MediaPermission* media_permission,
+    WebContentDecryptionModule* initial_cdm) {
   scoped_refptr<StreamTextureFactory> stream_texture_factory;
   if (SynchronousCompositorFactory* factory =
           SynchronousCompositorFactory::GetInstance()) {
@@ -4984,7 +4980,10 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
 
   return new WebMediaPlayerAndroid(
       frame_, client, encrypted_client, weak_factory_.GetWeakPtr(),
-      GetMediaPlayerManager(), GetCdmFactory(), stream_texture_factory, params);
+      GetMediaPlayerManager(), GetCdmFactory(), media_permission, initial_cdm,
+      stream_texture_factory,
+      RenderThreadImpl::current()->GetMediaThreadTaskRunner(),
+      new RenderMediaLog());
 }
 
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
@@ -4992,6 +4991,7 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
     media_player_manager_ = new RendererMediaPlayerManager(this);
   return media_player_manager_;
 }
+
 #endif  // defined(OS_ANDROID)
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
