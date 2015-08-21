@@ -1882,4 +1882,5 @@ crbug.com/523073 media/video-display-aspect-ratio.html [ Pass Failure ]
 
 crbug.com/523403 [ Win Linux ] fast/text/atsui-rtl-override-selection.html [ NeedsRebaseline ]
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ ImageOnlyFailure Pass ]
+crbug.com/523500 http/tests/inspector-protocol/request-mixed-content-status.html [ Failure Pass ]
 
