@@ -1151,6 +1151,24 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html#x'))
 
+  def setCookie(self, request):
+    return {'Set-Cookie': 'x=y; HttpOnly'}, "<!DOCTYPE html><html></html>"
+
+  def testGetHttpOnlyCookie(self):
+    self._http_server.SetCallbackForPath('/setCookie', self.setCookie)
+    self._driver.Load(self.GetHttpUrlForFile('/setCookie'))
+    self._driver.AddCookie({'name': 'a', 'value': 'b'})
+    cookies = self._driver.GetCookies()
+    self.assertEquals(2, len(cookies))
+    for cookie in cookies:
+      self.assertIn('name', cookie)
+      if cookie['name'] == 'a':
+        self.assertFalse(cookie['httpOnly'])
+      elif cookie['name'] == 'x':
+        self.assertTrue(cookie['httpOnly'])
+      else:
+        self.fail('unexpected cookie: %s' % json.dumps(cookie))
+
 
 class ChromeDriverAndroidTest(ChromeDriverBaseTest):
   """End to end tests for Android-specific tests."""
@@ -1341,13 +1359,13 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
   @staticmethod
   def GlobalSetUp():
     def respondWithUserAgentString(request):
-      return """
+      return {}, """
         <html>
         <body>%s</body>
         </html>""" % request.GetHeader('User-Agent')
 
     def respondWithUserAgentStringUseDeviceWidth(request):
-      return """
+      return {}, """
         <html>
         <head>
         <meta name="viewport" content="width=device-width,minimum-scale=1.0">

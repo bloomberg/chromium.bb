@@ -13,19 +13,21 @@ class Responder(object):
   def __init__(self, handler):
     self._handler = handler
 
-  def SendResponse(self, body):
+  def SendResponse(self, headers, body):
     """Sends OK response with body."""
-    self.SendHeaders(len(body))
+    self.SendHeaders(headers, len(body))
     self.SendBody(body)
 
   def SendResponseFromFile(self, path):
     """Sends OK response with the given file as the body."""
     with open(path, 'r') as f:
-      self.SendResponse(f.read())
+      self.SendResponse({}, f.read())
 
-  def SendHeaders(self, content_length=None):
+  def SendHeaders(self, headers={}, content_length=None):
     """Sends headers for OK response."""
     self._handler.send_response(200)
+    for field, value in headers.iteritems():
+      self._handler.send_header(field, value)
     if content_length:
       self._handler.send_header('Content-Length', content_length)
     self._handler.end_headers()
@@ -133,15 +135,15 @@ class WebServer(object):
     self._path_maps_lock.acquire()
     try:
       if path in self._path_callback_map:
-        body = self._path_callback_map[path](request)
+        headers, body = self._path_callback_map[path](request)
         if body:
-          responder.SendResponse(body)
+          responder.SendResponse(headers, body)
         else:
           responder.SendError(503)
         return
 
       if path in self._path_data_map:
-        responder.SendResponse(self._path_data_map[path])
+        responder.SendResponse({}, self._path_data_map[path])
         return
     finally:
       self._path_maps_lock.release()
@@ -218,7 +220,7 @@ class SyncWebServer(object):
   def RespondWithContent(self, content):
     """Blocks until request comes in, then handles it with the given content."""
     def SendContent(responder):
-      responder.SendResponse(content)
+      responder.SendResponse({}, content)
     self.Respond(SendContent)
 
   def GetUrl(self):
