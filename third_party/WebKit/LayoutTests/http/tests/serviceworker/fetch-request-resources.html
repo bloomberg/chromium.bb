@@ -9,12 +9,12 @@ var url_count = 0;
 var expected_results = {};
 
 function image_test(frame, url, cross_origin, expected_context,
-                    expexted_mode, expected_credentials) {
+                    expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       cross_origin: cross_origin,
       context: expected_context,
-      mode: expexted_mode,
+      mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
       message: 'Image load (url:' +
@@ -24,12 +24,12 @@ function image_test(frame, url, cross_origin, expected_context,
 }
 
 function script_test(frame, url, cross_origin, expected_context,
-                     expexted_mode, expected_credentials) {
+                     expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       cross_origin: cross_origin,
       context: expected_context,
-      mode: expexted_mode,
+      mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
       message: 'Script load (url:' +
@@ -39,12 +39,12 @@ function script_test(frame, url, cross_origin, expected_context,
 }
 
 function css_test(frame, url, cross_origin, expected_context,
-                  expexted_mode, expected_credentials) {
+                  expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       cross_origin: cross_origin,
       context: expected_context,
-      mode: expexted_mode,
+      mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
       message: 'CSS load (url:' +
@@ -53,13 +53,13 @@ function css_test(frame, url, cross_origin, expected_context,
   return frame.contentWindow.load_css(actual_url, cross_origin);
 }
 
-function font_face_test(frame, url, expected_context, expexted_mode,
+function font_face_test(frame, url, expected_context, expected_mode,
                         expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       url: actual_url,
       context: expected_context,
-      mode: expexted_mode,
+      mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
       message: 'FontFace load (url:' + actual_url + ')'
@@ -68,12 +68,12 @@ function font_face_test(frame, url, expected_context, expexted_mode,
 }
 
 function css_image_test(frame, url, type, expected_context,
-                        expexted_mode, expected_credentials) {
+                        expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       url: actual_url,
       context: expected_context,
-      mode: expexted_mode,
+      mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
       message: 'CSSImage load (url:' + actual_url + ' type:' + type + ')'
@@ -82,12 +82,12 @@ function css_image_test(frame, url, type, expected_context,
 }
 
 function css_image_set_test(frame, url, type, expected_context,
-                            expexted_mode, expected_credentials) {
+                            expected_mode, expected_credentials) {
   var actual_url = url + (++url_count);
   expected_results[actual_url] = {
       url: actual_url,
       context: expected_context,
-      mode: expexted_mode,
+      mode: expected_mode,
       credentials: expected_credentials,
       redirect: 'follow',
       message: 'CSSImageSet load (url:' + actual_url + ' type:' + type + ')'
@@ -129,7 +129,7 @@ async_test(function(t) {
                     expected.context + '.');
                 assert_equals(
                     result.context_clone, expected.context,
-                    'context of clone() of' + expected.message +
+                    'context of clone() of ' + expected.message +
                     ' must be ' + expected.context + '.');
                 assert_equals(
                     result.context_new, '',
