@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "extensions/browser/api/messaging/native_messaging_channel.h"
+#include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/setup/daemon_controller.h"
 #include "remoting/host/setup/oauth_client.h"
 
@@ -173,6 +174,9 @@ class Me2MeNativeMessagingHost
   // Native messaging channel used to communicate with the native message
   // client.
   scoped_ptr<extensions::NativeMessagingChannel> channel_;
+
+  LogMessageHandler log_message_handler_;
+
   scoped_refptr<DaemonController> daemon_controller_;
 
   // Used to load and update the paired clients for this host.

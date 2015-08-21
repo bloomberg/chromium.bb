@@ -83,6 +83,9 @@ Me2MeNativeMessagingHost::Me2MeNativeMessagingHost(
       parent_window_handle_(parent_window_handle),
 #endif
       channel_(channel.Pass()),
+      log_message_handler_(
+          base::Bind(&extensions::NativeMessagingChannel::SendMessage,
+                     base::Unretained(channel_.get()))),
       daemon_controller_(daemon_controller),
       pairing_registry_(pairing_registry),
       oauth_client_(oauth_client.Pass()),

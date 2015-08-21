@@ -17,6 +17,7 @@
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/chromoting_host_context.h"
+#include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/native_messaging/native_messaging_pipe.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/policy_watcher.h"
@@ -261,31 +262,39 @@ void It2MeNativeMessagingHostTest::TearDown() {
 
 scoped_ptr<base::DictionaryValue>
 It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
-  uint32 length;
-  int read_result = output_read_file_.ReadAtCurrentPos(
-      reinterpret_cast<char*>(&length), sizeof(length));
-  if (read_result != sizeof(length)) {
-    // The output pipe has been closed, return an empty message.
-    return nullptr;
-  }
+  while (true) {
+    uint32 length;
+    int read_result = output_read_file_.ReadAtCurrentPos(
+        reinterpret_cast<char*>(&length), sizeof(length));
+    if (read_result != sizeof(length)) {
+      // The output pipe has been closed, return an empty message.
+      return nullptr;
+    }
 
-  std::string message_json(length, '\0');
-  read_result = output_read_file_.ReadAtCurrentPos(
-      string_as_array(&message_json), length);
-  if (read_result != static_cast<int>(length)) {
-    LOG(ERROR) << "Message size (" << read_result
-               << ") doesn't match the header (" << length << ").";
-    return nullptr;
-  }
+    std::string message_json(length, '\0');
+    read_result = output_read_file_.ReadAtCurrentPos(
+        string_as_array(&message_json), length);
+    if (read_result != static_cast<int>(length)) {
+      LOG(ERROR) << "Message size (" << read_result
+                 << ") doesn't match the header (" << length << ").";
+      return nullptr;
+    }
 
-  scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
-  if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
-    LOG(ERROR) << "Malformed message:" << message_json;
-    return nullptr;
-  }
+    scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
+      LOG(ERROR) << "Malformed message:" << message_json;
+      return nullptr;
+    }
 
-  return make_scoped_ptr(
-      static_cast<base::DictionaryValue*>(message.release()));
+    scoped_ptr<base::DictionaryValue> result = make_scoped_ptr(
+        static_cast<base::DictionaryValue*>(message.release()));
+    std::string type;
+    // If this is a debug message log, ignore it, otherwise return it.
+    if (!result->GetString("type", &type) ||
+        type != LogMessageHandler::kDebugMessageTypeName) {
+      return result;
+    }
+  }
 }
 
 void It2MeNativeMessagingHostTest::WriteMessageToInputPipe(

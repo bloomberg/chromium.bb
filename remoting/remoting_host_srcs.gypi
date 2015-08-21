@@ -298,6 +298,8 @@
       'host/setup/win/auth_code_getter.h',
     ],
     'remoting_host_native_messaging_sources': [
+      'host/native_messaging/log_message_handler.cc',
+      'host/native_messaging/log_message_handler.h',
       'host/native_messaging/native_messaging_pipe.cc',
       'host/native_messaging/native_messaging_pipe.h',
       'host/native_messaging/native_messaging_reader.cc',

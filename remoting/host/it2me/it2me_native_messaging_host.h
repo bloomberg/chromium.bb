@@ -13,6 +13,10 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_host.h"
 
+#if !defined(OS_CHROMEOS)
+#include "remoting/host/native_messaging/log_message_handler.h"
+#endif
+
 namespace base {
 class DictionaryValue;
 class Value;
@@ -58,12 +62,18 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
                          scoped_ptr<base::DictionaryValue> response);
   void SendErrorAndExit(scoped_ptr<base::DictionaryValue> response,
                         const std::string& description) const;
-  void SendMessageToClient(scoped_ptr<base::DictionaryValue> message) const;
+  void SendMessageToClient(scoped_ptr<base::Value> message) const;
 
   Client* client_;
   scoped_ptr<ChromotingHostContext> host_context_;
   scoped_ptr<It2MeHostFactory> factory_;
   scoped_refptr<It2MeHost> it2me_host_;
+
+#if !defined(OS_CHROMEOS)
+  // Don't install a log message handler on ChromeOS because we run in the
+  // browser process and don't want to intercept all its log messages.
+  scoped_ptr<LogMessageHandler> log_message_handler_;
+#endif
 
   // Cached, read-only copies of |it2me_host_| session state.
   It2MeHostState state_;

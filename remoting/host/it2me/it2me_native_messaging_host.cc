@@ -115,10 +115,16 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
 void It2MeNativeMessagingHost::Start(Client* client) {
   DCHECK(task_runner()->BelongsToCurrentThread());
   client_ = client;
+#if !defined(OS_CHROMEOS)
+  log_message_handler_.reset(
+      new LogMessageHandler(
+          base::Bind(&It2MeNativeMessagingHost::SendMessageToClient,
+                     base::Unretained(this))));
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void It2MeNativeMessagingHost::SendMessageToClient(
-    scoped_ptr<base::DictionaryValue> message) const {
+    scoped_ptr<base::Value> message) const {
   DCHECK(task_runner()->BelongsToCurrentThread());
   std::string message_json;
   base::JSONWriter::Write(*message, &message_json);

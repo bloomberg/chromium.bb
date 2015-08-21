@@ -281,6 +281,7 @@
       'webapp/crd/js/host_install_dialog.js',
       'webapp/crd/js/host_installer.js',
       'webapp/crd/js/it2me_host_facade.js',
+      'webapp/crd/js/native_message_host_log_message_handler.js',
       'webapp/crd/js/paired_client_manager.js',
     ],
     # Files for displaying (in the client) info about available hosts.

@@ -282,6 +282,7 @@ remoting_webapp_js_host_control_files = [
   "crd/js/host_install_dialog.js",
   "crd/js/host_installer.js",
   "crd/js/it2me_host_facade.js",
+  "crd/js/native_message_host_log_message_handler.js",
   "crd/js/paired_client_manager.js",
 ]
 

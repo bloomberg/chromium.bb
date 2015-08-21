@@ -17,6 +17,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/host/native_messaging/log_message_handler.h"
 #include "remoting/host/native_messaging/pipe_messaging_channel.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/setup/mock_oauth_client.h"
@@ -383,27 +384,35 @@ void Me2MeNativeMessagingHostTest::TearDown() {
 
 scoped_ptr<base::DictionaryValue>
 Me2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
-  uint32 length;
-  int read_result = output_read_file_.ReadAtCurrentPos(
-      reinterpret_cast<char*>(&length), sizeof(length));
-  if (read_result != sizeof(length)) {
-    return nullptr;
-  }
+  while (true) {
+    uint32 length;
+    int read_result = output_read_file_.ReadAtCurrentPos(
+        reinterpret_cast<char*>(&length), sizeof(length));
+    if (read_result != sizeof(length)) {
+      return nullptr;
+    }
 
-  std::string message_json(length, '\0');
-  read_result = output_read_file_.ReadAtCurrentPos(
-      string_as_array(&message_json), length);
-  if (read_result != static_cast<int>(length)) {
-    return nullptr;
-  }
+    std::string message_json(length, '\0');
+    read_result = output_read_file_.ReadAtCurrentPos(
+        string_as_array(&message_json), length);
+    if (read_result != static_cast<int>(length)) {
+      return nullptr;
+    }
 
-  scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
-  if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
-    return nullptr;
-  }
+    scoped_ptr<base::Value> message = base::JSONReader::Read(message_json);
+    if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
+      return nullptr;
+    }
 
-  return make_scoped_ptr(
-      static_cast<base::DictionaryValue*>(message.release()));
+    scoped_ptr<base::DictionaryValue> result = make_scoped_ptr(
+        static_cast<base::DictionaryValue*>(message.release()));
+    std::string type;
+    // If this is a debug message log, ignore it, otherwise return it.
+    if (!result->GetString("type", &type) ||
+        type != LogMessageHandler::kDebugMessageTypeName) {
+      return result;
+    }
+  }
 }
 
 void Me2MeNativeMessagingHostTest::WriteMessageToInputPipe(
