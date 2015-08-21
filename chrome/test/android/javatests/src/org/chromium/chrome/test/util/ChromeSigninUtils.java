@@ -10,9 +10,9 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.os.Bundle;
-import android.test.InstrumentationTestCase;
 import android.text.TextUtils;
 
 import org.chromium.sync.signin.ChromeSigninController;
@@ -41,11 +41,12 @@ public class ChromeSigninUtils {
     /**
      * The constructor for SigninUtils for a given test case.
      *
-     * @param testCase the test case to perform signin operations with.
+     * @param instrumentation the {@link android.app.Instrumentation} to perform signin operations
+     * with.
      */
-    public ChromeSigninUtils(InstrumentationTestCase testCase) {
-        mContext = testCase.getInstrumentation().getContext();
-        mTargetContext = testCase.getInstrumentation().getTargetContext();
+    public ChromeSigninUtils(Instrumentation instrumentation) {
+        mContext = instrumentation.getContext();
+        mTargetContext = instrumentation.getTargetContext();
         mAccountManager = AccountManager.get(mContext);
         mMockAccountManager = new MockAccountManager(mContext, mTargetContext);
     }

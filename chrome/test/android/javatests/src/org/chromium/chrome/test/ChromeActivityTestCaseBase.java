@@ -25,6 +25,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.PerfTest;
+import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -59,6 +60,9 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.parameters.AddFakeAccountToAppParameter;
+import org.chromium.chrome.test.util.parameters.AddFakeAccountToOsParameter;
+import org.chromium.chrome.test.util.parameters.AddGoogleAccountToOsParameter;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -73,6 +77,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -831,6 +836,18 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
         String perfTagAnalysisString = setupPotentialPerfTest();
         super.runTest();
         endPerfTest(perfTagAnalysisString);
+    }
+
+    @Override
+    protected Map<String, BaseParameter> createAvailableParameters() {
+        Map<String, BaseParameter> availableParameters = super.createAvailableParameters();
+        availableParameters.put(AddFakeAccountToAppParameter.PARAMETER_TAG,
+                new AddFakeAccountToAppParameter(getParameterReader(), getInstrumentation()));
+        availableParameters.put(AddFakeAccountToOsParameter.PARAMETER_TAG,
+                new AddFakeAccountToOsParameter(getParameterReader(), getInstrumentation()));
+        availableParameters.put(AddGoogleAccountToOsParameter.PARAMETER_TAG,
+                new AddGoogleAccountToOsParameter(getParameterReader(), getInstrumentation()));
+        return availableParameters;
     }
 
     /**

@@ -20,6 +20,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelSelector;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.tabmodel.document.MockStorageDelegate;
+import org.chromium.chrome.test.util.parameters.AddFakeAccountToAppParameter;
+import org.chromium.chrome.test.util.parameters.AddFakeAccountToOsParameter;
+import org.chromium.chrome.test.util.parameters.AddGoogleAccountToOsParameter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -40,6 +43,7 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     protected static final String URL_4 = createTestUrl(4);
 
     private Parameter.Reader mParameterReader;
+    private Map<String, BaseParameter> mAvailableParameters;
 
     /** Defines one gigantic link spanning the whole page that creates a new window with URL_4. */
     protected static final String HREF_LINK = UrlUtils.encodeHtmlDataUri(
@@ -169,14 +173,41 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
     }
 
     /**
-     * Creates the list of available parameters that inherited classes can use.
+     * Creates the {@link Map} of available parameters for the test to use.
      *
-     * @return a list of {@link BaseParameter} objects to set as the available parameters.
+     * @return a {@link Map} of {@link BaseParameter} objects.
+     */
+    protected Map<String, BaseParameter> createAvailableParameters() {
+        Map<String, BaseParameter> availableParameters = new HashMap<>();
+        availableParameters
+                .put(MethodParameter.PARAMETER_TAG, new MethodParameter(getParameterReader()));
+        availableParameters.put(AddFakeAccountToAppParameter.PARAMETER_TAG,
+                new AddFakeAccountToAppParameter(getParameterReader(), getInstrumentation()));
+        availableParameters.put(AddFakeAccountToOsParameter.PARAMETER_TAG,
+                new AddFakeAccountToOsParameter(getParameterReader(), getInstrumentation()));
+        availableParameters.put(AddGoogleAccountToOsParameter.PARAMETER_TAG,
+                new AddGoogleAccountToOsParameter(getParameterReader(), getInstrumentation()));
+        return availableParameters;
+    }
+
+    /**
+     * Gets the {@link Map} of available parameters that inherited classes can use.
+     *
+     * @return a {@link Map} of {@link BaseParameter} objects to set as the available parameters.
      */
     public Map<String, BaseParameter> getAvailableParameters() {
-        Map<String, BaseParameter> parameters = new HashMap<>();
-        parameters.put(MethodParameter.PARAMETER_TAG, new MethodParameter(getParameterReader()));
-        return parameters;
+        return mAvailableParameters;
+    }
+
+    /**
+     * Gets a specific parameter from the current test.
+     *
+     * @param parameterTag a string with the name of the {@link BaseParameter} we want.
+     * @return a parameter that extends {@link BaseParameter} that has the matching parameterTag.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends BaseParameter> T getAvailableParameter(String parameterTag) {
+        return (T) mAvailableParameters.get(parameterTag);
     }
 
     /**
@@ -186,13 +217,15 @@ public abstract class MultiActivityTestBase extends InstrumentationTestCase
      */
     public void setParameterReader(Parameter.Reader parameterReader) {
         mParameterReader = parameterReader;
+        mAvailableParameters = createAvailableParameters();
     }
 
     /**
      * Getter method for {@link Parameter.Reader} object to be used by test cases reading the
      * parameter.
      *
-     * @return the {@link Parameter.Reader} for the current {@link ParameterizedTest} being run.
+     * @return the {@link Parameter.Reader} for the current {@link
+     * org.chromium.base.test.util.parameter.ParameterizedTest} being run.
      */
     protected Parameter.Reader getParameterReader() {
         return mParameterReader;

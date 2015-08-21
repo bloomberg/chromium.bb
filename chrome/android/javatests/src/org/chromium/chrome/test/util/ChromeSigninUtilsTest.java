@@ -8,6 +8,7 @@ import android.test.FlakyTest;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -27,7 +28,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mSigninUtil = new ChromeSigninUtils(this);
+        mSigninUtil = new ChromeSigninUtils(getInstrumentation());
         mSigninController = ChromeSigninController.get(getInstrumentation().getTargetContext());
         mSigninController.clearSignedInUser();
         mSigninUtil.removeAllFakeAccountsFromOs();
@@ -80,6 +81,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
 
     // https://crbug.com/517849
     @FlakyTest
+    @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnGoogleOS() {
         mSigninUtil.addGoogleAccountToOs(GOOGLE_ACCOUNT_USERNAME, GOOGLE_ACCOUNT_PASSWORD,
@@ -110,6 +112,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
 
     // https://crbug.com/517849
     @FlakyTest
+    @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnAppAndGoogleOS() {
         mSigninUtil.addAccountToApp(FAKE_ACCOUNT_USERNAME);
@@ -125,6 +128,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
 
     // https://crbug.com/517849
     @FlakyTest
+    @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnFakeOSandGoogleOS() {
         mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME, FAKE_ACCOUNT_PASSWORD);
@@ -140,6 +144,7 @@ public class ChromeSigninUtilsTest extends InstrumentationTestCase {
 
     // https://crbug.com/517849
     @FlakyTest
+    @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnAppAndFakeOSandGoogleOS() {
         mSigninUtil.addAccountToApp(FAKE_ACCOUNT_USERNAME);

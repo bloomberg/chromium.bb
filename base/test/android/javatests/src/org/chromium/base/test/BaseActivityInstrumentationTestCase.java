@@ -18,13 +18,12 @@ import java.util.Map;
 /**
  * Base class for all Activity-based Instrumentation tests.
  *
- * This class currently does nothing.
- *
  * @param <T> The Activity type.
  */
 public class BaseActivityInstrumentationTestCase<T extends Activity>
         extends ActivityInstrumentationTestCase2<T> implements Parameterizable {
     private Parameter.Reader mParameterReader;
+    private Map<String, BaseParameter> mAvailableParameters;
 
     /**
      * Creates a instance for running tests against an Activity of the given class.
@@ -36,14 +35,35 @@ public class BaseActivityInstrumentationTestCase<T extends Activity>
     }
 
     /**
-     * Creates the list of available parameters that inherited classes can use.
+     * Creates the {@link Map} of available parameters for the test to use.
      *
-     * @return a list of {@link BaseParameter} objects to set as the available parameters.
+     * @return a {@link Map} of {@link BaseParameter} objects.
+     */
+    protected Map<String, BaseParameter> createAvailableParameters() {
+        Map<String, BaseParameter> availableParameters = new HashMap<>();
+        availableParameters
+                .put(MethodParameter.PARAMETER_TAG, new MethodParameter(getParameterReader()));
+        return availableParameters;
+    }
+
+    /**
+     * Gets the {@link Map} of available parameters that inherited classes can use.
+     *
+     * @return a {@link Map} of {@link BaseParameter} objects to set as the available parameters.
      */
     public Map<String, BaseParameter> getAvailableParameters() {
-        Map<String, BaseParameter> parameters = new HashMap<>();
-        parameters.put(MethodParameter.PARAMETER_TAG, new MethodParameter(getParameterReader()));
-        return parameters;
+        return mAvailableParameters;
+    }
+
+    /**
+     * Gets a specific parameter from the current test.
+     *
+     * @param parameterTag a string with the name of the {@link BaseParameter} we want.
+     * @return a parameter that extends {@link BaseParameter} that has the matching parameterTag.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends BaseParameter> T getAvailableParameter(String parameterTag) {
+        return (T) mAvailableParameters.get(parameterTag);
     }
 
     /**
@@ -53,6 +73,7 @@ public class BaseActivityInstrumentationTestCase<T extends Activity>
      */
     public void setParameterReader(Parameter.Reader parameterReader) {
         mParameterReader = parameterReader;
+        mAvailableParameters = createAvailableParameters();
     }
 
     /**

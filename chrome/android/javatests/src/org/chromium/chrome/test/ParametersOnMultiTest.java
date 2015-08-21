@@ -4,12 +4,18 @@
 
 package org.chromium.chrome.test;
 
+import android.test.FlakyTest;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.EnormousTest;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.base.test.util.parameter.parameters.MethodParameter;
+import org.chromium.chrome.test.util.parameters.AddFakeAccountToAppParameter;
+import org.chromium.chrome.test.util.parameters.AddFakeAccountToOsParameter;
+import org.chromium.chrome.test.util.parameters.AddGoogleAccountToOsParameter;
 
 /**
  * Tester class for the {@link ParameterizedTest} annotation and the {@link ParameterizedTest.Set}
@@ -19,6 +25,24 @@ import org.chromium.base.test.util.parameter.parameters.MethodParameter;
  * parameter that runs tests on different test base activites exists.
  */
 public class ParametersOnMultiTest extends MultiActivityTestBase {
+    private static final String GOOGLE_ACCOUNT_USERNAME = "chromiumforandroid01@gmail.com";
+    private static final String GOOGLE_ACCOUNT_PASSWORD = "chromeforandroid";
+
+    private AddFakeAccountToAppParameter mAddFakeAccountToAppParameter;
+    private AddFakeAccountToOsParameter mAddFakeAccountToOsParameter;
+    private AddGoogleAccountToOsParameter mAddGoogleAccountToOsParameter;
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        mAddFakeAccountToAppParameter =
+                getAvailableParameter(AddFakeAccountToAppParameter.PARAMETER_TAG);
+        mAddFakeAccountToOsParameter =
+                getAvailableParameter(AddFakeAccountToOsParameter.PARAMETER_TAG);
+        mAddGoogleAccountToOsParameter =
+                getAvailableParameter(AddGoogleAccountToOsParameter.PARAMETER_TAG);
+    }
+
     @SmallTest
     public void testNoParameterizedTestAnnotation() {
         assertFalse("This is a parameterized test when it should not be.", getParameterReader()
@@ -360,6 +384,150 @@ public class ParametersOnMultiTest extends MultiActivityTestBase {
             temp[i] = temp[i - 1] + temp[i - 2];
         }
         return temp[input - 1];
+    }
+
+    /**
+     * These are from {@link org.chromium.chrome.test.util.parameters.SigninParametersTest.
+     *
+     * TODO (crbug.com/522503): Merge tests together when this is fixed.
+     */
+    @SmallTest
+    public void testActivityIsNotSignedInOnAppOrFakeOSorGoogleOS() {
+        assertFalse("Should not be signed into app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertFalse("Should not be signed into OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertFalse("Should not be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @SmallTest
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG)})
+    public void testIsSignedInOnApp() {
+        assertTrue("Should not be signed into app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertFalse("Should not be signed into OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertFalse("Should not be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @SmallTest
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG)})
+    public void testIsSignedInOnFakeOS() {
+        assertFalse("Should not be signed in on app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertTrue("Should be signed in on OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertFalse("Should not be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @FlakyTest
+    @EnormousTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    @ParameterizedTest(parameters = {
+            @Parameter(
+                    tag = AddGoogleAccountToOsParameter.PARAMETER_TAG,
+                    arguments = {
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.USERNAME,
+                                    stringVar = GOOGLE_ACCOUNT_USERNAME),
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
+                                    stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
+    public void testIsSignedInOnGoogleOS() {
+        assertFalse("Should not be signed into app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertFalse("Should not be signed into OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertTrue("Should be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @SmallTest
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG),
+            @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG)})
+    public void testIsSignedInOnFakeOSandApp() {
+        assertTrue("Should be signed in on app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertTrue("Should be signed in on OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertFalse("Should not be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @FlakyTest
+    @EnormousTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG),
+            @Parameter(
+                    tag = AddGoogleAccountToOsParameter.PARAMETER_TAG,
+                    arguments = {
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.USERNAME,
+                                    stringVar = GOOGLE_ACCOUNT_USERNAME),
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
+                                    stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
+    public void testIsSignedInOnAppAndGoogleOS() {
+        assertTrue("Should be signed into app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertFalse("Should not be signed into OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertTrue("Should be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @FlakyTest
+    @EnormousTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG),
+            @Parameter(
+                    tag = AddGoogleAccountToOsParameter.PARAMETER_TAG,
+                    arguments = {
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.USERNAME,
+                                    stringVar = GOOGLE_ACCOUNT_USERNAME),
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
+                                    stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
+    public void testIsSignedInOnFakeOSandGoogleOS() {
+        assertFalse("Should not be signed into app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertTrue("Should be signed into OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertTrue("Should be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
+    }
+
+    @FlakyTest
+    @EnormousTest
+    @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
+    @ParameterizedTest(parameters = {
+            @Parameter(tag = AddFakeAccountToAppParameter.PARAMETER_TAG),
+            @Parameter(tag = AddFakeAccountToOsParameter.PARAMETER_TAG),
+            @Parameter(
+                    tag = AddGoogleAccountToOsParameter.PARAMETER_TAG,
+                    arguments = {
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.USERNAME,
+                                    stringVar = GOOGLE_ACCOUNT_USERNAME),
+                            @Parameter.Argument(
+                                    name = AddGoogleAccountToOsParameter.ARGUMENT.PASSWORD,
+                                    stringVar = GOOGLE_ACCOUNT_PASSWORD)})})
+    public void testIsSignedInOnAppAndFakeOSandGoogleOS() {
+        assertTrue("Should be signed into app.",
+                mAddFakeAccountToAppParameter.isSignedIn());
+        assertTrue("Should be signed into OS with fake account.",
+                mAddFakeAccountToOsParameter.isSignedIn());
+        assertTrue("Should be signed in on OS with Google account.",
+                mAddGoogleAccountToOsParameter.isSignedIn(GOOGLE_ACCOUNT_USERNAME));
     }
 
     private Parameter.Argument getArgument(String name) {
