@@ -289,6 +289,7 @@ imported/web-platform-tests/html/semantics/embedded-content/the-video-element/vi
 imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_dynamic_poster_relative.htm [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/the-input-element/image01.html [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-template-element [ Skip ]
 imported/web-platform-tests/html/semantics/text-level-semantics/the-a-element/a-stringifier.html [ Skip ]
 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
 

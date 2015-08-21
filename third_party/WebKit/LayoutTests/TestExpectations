@@ -361,13 +361,6 @@ crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processin
 crbug.com/490511 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Failure Pass Slow ]
 crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Failure Pass Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/definitions/template-contents-owner-document-type.html [ Failure Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/definitions/template-contents-owner-test-002.html [ Failure Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-as-a-descendant.html [ Failure Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-content.html [ Failure Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-descendant-body.html [ Failure Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-descendant-frameset.html [ Failure Slow ]
-crbug.com/508725 imported/web-platform-tests/html/semantics/scripting-1/the-template-element/template-element/template-descendant-head.html [ Failure Slow ]
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/events/event-dispatch/test-003.html [ Failure ]

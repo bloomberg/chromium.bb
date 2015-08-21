@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Template contents should be serialized instead of template element if serializing template element newXHTMLDocument is not defined
-FAIL Template contents should be serialized instead of template element if serializing template element. Test nested template newXHTMLDocument is not defined
-FAIL Template contents should be serialized instead of template element if serializing template element. Test serializing whole document newXHTMLDocument is not defined
-Harness: the test ran to completion.
-
