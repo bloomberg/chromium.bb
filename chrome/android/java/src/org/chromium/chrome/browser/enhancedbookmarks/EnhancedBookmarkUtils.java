@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarksModel.AddBookmarkCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.offline_pages.OfflinePageBridge;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -100,12 +101,23 @@ public class EnhancedBookmarkUtils {
                     }
                 };
 
-                int messageId = bookmarkModel.getOfflinePageBridge() == null
-                        ? R.string.enhanced_bookmark_page_saved
-                        : R.string.enhanced_bookmark_page_saved_offline_pages;
+                int messageId;
+                int buttonId;
+                OfflinePageBridge offlinePageBridge = bookmarkModel.getOfflinePageBridge();
+                if (offlinePageBridge == null) {
+                    messageId = R.string.enhanced_bookmark_page_saved;
+                    buttonId = R.string.enhanced_bookmark_item_edit;
+                } else {
+                    boolean almostFull = offlinePageBridge.isStorageAlmostFull();
+                    messageId = almostFull
+                            ? R.string.enhanced_bookmark_page_saved_offline_pages_storage_near_full
+                            : R.string.enhanced_bookmark_page_saved_offline_pages;
+                    // TODO(fgorski): show "FREE UP SPACE" button.
+                    buttonId = R.string.enhanced_bookmark_item_edit;
+                }
                 snackbarManager.showSnackbar(Snackbar.make(
                         activity.getString(messageId), snackbarController)
-                        .setAction(activity.getString(R.string.enhanced_bookmark_item_edit), pair));
+                        .setAction(activity.getString(buttonId), pair));
             }
         };
 

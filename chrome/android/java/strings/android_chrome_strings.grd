@@ -1786,6 +1786,9 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED_OFFLINE_PAGES" desc="Message shown after user adds a new offline page. [CHAR-LIMIT=32]">
         Page saved offline
       </message>
+      <message name="IDS_ENHANCED_BOOKMARK_PAGE_SAVED_OFFLINE_PAGES_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full. [CHAR-LIMIT=32]">
+        Page saved offline. Storage almost full.
+      </message>
       <message name="IDS_ENHANCED_BOOKMARK_DRAWER_ALL_ITEMS" desc="Menu item for showing all bookmark items in the enhanced bookmarks UI [CHAR-LIMIT=24]">
         All bookmarks
       </message>

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.offline_pages;
 
+import android.os.Environment;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -22,6 +24,8 @@ import java.util.List;
  */
 @JNINamespace("offline_pages::android")
 public final class OfflinePageBridge {
+
+    private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20);  // 10M
 
     private long mNativeOfflinePageBridge;
     private boolean mIsNativeOfflinePageModelLoaded;
@@ -91,6 +95,15 @@ public final class OfflinePageBridge {
                     && BookmarksBridge.isEnhancedBookmarksEnabled();
         }
         return sIsEnabled;
+    }
+
+    /**
+     * Returns true if the stoarge is almost full which indicates that the user probably needs to
+     * free up some space.
+     */
+    public static boolean isStorageAlmostFull() {
+        return Environment.getExternalStorageDirectory().getUsableSpace()
+                < STORAGE_ALMOST_FULL_THRESHOLD_BYTES;
     }
 
     /**
