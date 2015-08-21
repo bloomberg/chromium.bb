@@ -4,11 +4,11 @@
 
 /**
  * @fileoverview
- * 'cr-settings-menu' shows a menu with the given pages.
+ * 'cr-settings-menu' shows a menu with a hardcoded set of pages and subpages.
  *
  * Example:
  *
- *     <cr-settings-menu pages="[[pages]]" selected-id="{{selectedId}}">
+ *     <cr-settings-menu selected-page-id="{{selectedPageId}}">
  *     </cr-settings-menu>
  *
  * @group Chrome Settings Elements
@@ -19,20 +19,27 @@ Polymer({
 
   properties: {
     /**
-     * Pages to show menu items for.
-     * @type {!Array<!HTMLElement>}
-     */
-    pages: {
-      type: Array,
-      value: function() { return []; },
-    },
-
-    /**
      * ID of the currently selected page.
      */
     selectedPageId: {
       type: String,
       notify: true,
+      observer: 'selectedPageIdChanged_',
     },
+  },
+
+  ready: function() {
+    this.addEventListener('paper-submenu-open', function(event) {
+      this.selectedPageId = event.path[0].dataset.page;
+    });
+  },
+
+  /** @private */
+  selectedPageIdChanged_: function() {
+    var submenus = this.shadowRoot.querySelectorAll('paper-submenu');
+    for (var i = 0; i < submenus.length; ++i) {
+      var node = submenus[i];
+      node.opened = node.dataset.page == this.selectedPageId;
+    }
   },
 });

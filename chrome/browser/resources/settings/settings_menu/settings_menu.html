@@ -1,19 +1,77 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
+
+<if expr="chromeos">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+</if>
 
 <dom-module id="cr-settings-menu">
   <link rel="import" type="css" href="settings_menu.css">
   <template>
-    <paper-menu selected="{{selectedPageId}}" attr-for-selected="data-id">
-      <template is="dom-repeat" items="[[pages]]">
-        <paper-icon-item data-id$="[[item.PAGE_ID]]" icon-width="34px">
-          <iron-icon icon="[[item.icon]]" item-icon></iron-icon>
-          <span>[[item.pageTitle]]</span>
+    <paper-menu name="root-menu">
+      <paper-submenu data-page="basic">
+        <paper-icon-item class="menu-trigger">
+          <iron-icon icon="expand-more" item-icon></iron-icon>
+          <span i18n-content="basicPageTitle"></span>
         </paper-icon-item>
-      </template>
+        <paper-menu class="menu-content">
+<if expr="chromeos">
+          <paper-icon-item>
+            <iron-icon icon="settings-ethernet" item-icon></iron-icon>
+            <span i18n-content="internetPageTitle"></span>
+          </paper-icon-item>
+</if>
+          <paper-icon-item>
+            <iron-icon icon="home" item-icon></iron-icon>
+            <span i18n-content="appearancePageTitle"></span>
+          </paper-icon-item>
+          <paper-icon-item>
+            <iron-icon icon="search" item-icon></iron-icon>
+            <span i18n-content="searchPageTitle"></span>
+          </paper-icon-item>
+<if expr="chromeos">
+          <paper-icon-item>
+            <iron-icon icon="person" item-icon></iron-icon>
+            <span i18n-content="usersPageTitle"></span>
+          </paper-icon-item>
+</if>
+        </paper-menu>
+      </paper-submenu>
+      <paper-submenu data-page="advanced">
+        <paper-icon-item class="menu-trigger">
+          <iron-icon icon="expand-more" item-icon></iron-icon>
+          <span i18n-content="advancedPageTitle"></span>
+        </paper-icon-item>
+        <paper-menu class="menu-content">
+<if expr="chromeos">
+          <paper-icon-item>
+            <iron-icon icon="device:access-time" item-icon></iron-icon>
+            <span i18n-content="dateTimePageTitle"></span>
+          </paper-icon-item>
+</if>
+          <paper-icon-item>
+            <iron-icon icon="lock" item-icon></iron-icon>
+            <span i18n-content="privacyPageTitle"></span>
+          </paper-icon-item>
+          <paper-icon-item>
+            <iron-icon icon="file-download" item-icon></iron-icon>
+            <span i18n-content="downloadsPageTitle"></span>
+          </paper-icon-item>
+          <paper-icon-item>
+            <iron-icon icon="accessibility" item-icon></iron-icon>
+            <span i18n-content="a11yPageTitle"></span>
+          </paper-icon-item>
+          <paper-icon-item>
+            <iron-icon icon="notification:sync" item-icon></iron-icon>
+            <span i18n-content="syncPageTitle"></span>
+          </paper-icon-item>
+        </paper-menu>
+      </paper-submenu>
     </paper-menu>
   </template>
   <script src="settings_menu.js"></script>
