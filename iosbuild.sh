@@ -175,14 +175,14 @@ for PLATFORM in ${PLATFORMS}; do
             -miphoneos-version-min=6.0"
 
   # Build using the legacy makefile (instead of generating via cmake).
-  eval make -f makefile.unix libwebm.a CXXFLAGS=\"${CXXFLAGS}\" ${devnull}
+  eval make -f Makefile.unix libwebm.a CXXFLAGS=\"${CXXFLAGS}\" ${devnull}
 
   # copy lib and add it to LIBLIST.
   eval cp libwebm.a "${LIBFILE}" ${devnull}
   LIBLIST="${LIBLIST} ${LIBFILE}"
 
   # clean build so we can go again.
-  eval make -f makefile.unix clean ${devnull}
+  eval make -f Makefile.unix clean ${devnull}
 done
 
 for include_file in ${INCLUDES}; do
