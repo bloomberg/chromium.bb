@@ -820,8 +820,12 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     return ui::POST_DISPATCH_PERFORM_DEFAULT;
   }
 
-  bool should_quit = character ? SelectByChar(character) : !OnKeyDown(key_code);
-  if (should_quit || exit_type() != MenuController::EXIT_NONE)
+  if (character)
+    SelectByChar(character);
+  else
+    OnKeyDown(key_code);
+
+  if (exit_type() != MenuController::EXIT_NONE)
     TerminateNestedMessageLoop();
 
   return ui::POST_DISPATCH_NONE;
@@ -1023,7 +1027,7 @@ void MenuController::StartDrag(SubmenuView* source,
   did_initiate_drag_ = false;
 }
 
-bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
+void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   DCHECK(blocking_run_);
 
   switch (key_code) {
@@ -1054,8 +1058,7 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
 // On Mac, treat space the same as return.
 #if !defined(OS_MACOSX)
     case ui::VKEY_SPACE:
-      if (SendAcceleratorToHotTrackedView() == ACCELERATOR_PROCESSED_EXIT)
-        return false;
+      SendAcceleratorToHotTrackedView();
       break;
 #endif
 
@@ -1071,17 +1074,13 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
         if (pending_state_.item->HasSubmenu()) {
           if (key_code == ui::VKEY_F4 &&
               pending_state_.item->GetSubmenu()->IsShowing())
-            return false;
+            Cancel(EXIT_ALL);
           else
             OpenSubmenuChangeSelectionIfCan();
         } else {
-          SendAcceleratorResultType result = SendAcceleratorToHotTrackedView();
-          if (result == ACCELERATOR_NOT_PROCESSED &&
+          if (!SendAcceleratorToHotTrackedView() &&
               pending_state_.item->enabled()) {
             Accept(pending_state_.item, 0);
-            return false;
-          } else if (result == ACCELERATOR_PROCESSED_EXIT) {
-            return false;
           }
         }
       }
@@ -1094,7 +1093,7 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
             !state_.item->GetSubmenu()->IsShowing()))) {
         // User pressed escape and only one menu is shown, cancel it.
         Cancel(EXIT_OUTERMOST);
-        return false;
+        break;
       }
       CloseSubmenu();
       break;
@@ -1122,7 +1121,6 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
     default:
       break;
   }
-  return true;
 }
 
 MenuController::MenuController(ui::NativeTheme* theme,
@@ -1169,18 +1167,16 @@ void MenuController::RunMessageLoop(bool nested_menu) {
   message_loop_->Run(this, owner_, nested_menu);
 }
 
-MenuController::SendAcceleratorResultType
-    MenuController::SendAcceleratorToHotTrackedView() {
+bool MenuController::SendAcceleratorToHotTrackedView() {
   CustomButton* hot_view = GetFirstHotTrackedView(pending_state_.item);
   if (!hot_view)
-    return ACCELERATOR_NOT_PROCESSED;
+    return false;
 
   ui::Accelerator accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   hot_view->AcceleratorPressed(accelerator);
   CustomButton* button = static_cast<CustomButton*>(hot_view);
   button->SetHotTracked(true);
-  return (exit_type_ == EXIT_NONE) ?
-      ACCELERATOR_PROCESSED : ACCELERATOR_PROCESSED_EXIT;
+  return true;
 }
 
 void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
@@ -2048,7 +2044,7 @@ MenuController::SelectByCharDetails MenuController::FindChildForMnemonic(
   return details;
 }
 
-bool MenuController::AcceptOrSelect(MenuItemView* parent,
+void MenuController::AcceptOrSelect(MenuItemView* parent,
                                     const SelectByCharDetails& details) {
   // This should only be invoked if there is a match.
   DCHECK(details.first_match != -1);
@@ -2062,7 +2058,6 @@ bool MenuController::AcceptOrSelect(MenuItemView* parent,
                    SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
     } else {
       Accept(submenu->GetMenuItemAt(details.first_match), 0);
-      return true;
     }
   } else if (details.index_of_item == -1 || details.next_match == -1) {
     SetSelection(submenu->GetMenuItemAt(details.first_match),
@@ -2071,10 +2066,9 @@ bool MenuController::AcceptOrSelect(MenuItemView* parent,
     SetSelection(submenu->GetMenuItemAt(details.next_match),
                  SELECTION_DEFAULT);
   }
-  return false;
 }
 
-bool MenuController::SelectByChar(base::char16 character) {
+void MenuController::SelectByChar(base::char16 character) {
   base::char16 char_array[] = { character, 0 };
   base::char16 key = base::i18n::ToLower(char_array)[0];
   MenuItemView* item = pending_state_.item;
@@ -2084,13 +2078,15 @@ bool MenuController::SelectByChar(base::char16 character) {
   DCHECK(item->HasSubmenu());
   DCHECK(item->GetSubmenu());
   if (item->GetSubmenu()->GetMenuItemCount() == 0)
-    return false;
+    return;
 
   // Look for matches based on mnemonic first.
   SelectByCharDetails details =
       FindChildForMnemonic(item, key, &MatchesMnemonic);
-  if (details.first_match != -1)
-    return AcceptOrSelect(item, details);
+  if (details.first_match != -1) {
+    AcceptOrSelect(item, details);
+    return;
+  }
 
   if (is_combobox_) {
     item->GetSubmenu()->GetPrefixSelector()->InsertChar(character, 0);
@@ -2098,10 +2094,8 @@ bool MenuController::SelectByChar(base::char16 character) {
     // If no mnemonics found, look at first character of titles.
     details = FindChildForMnemonic(item, key, &TitleMatchesMnemonic);
     if (details.first_match != -1)
-      return AcceptOrSelect(item, details);
+      AcceptOrSelect(item, details);
   }
-
-  return false;
 }
 
 void MenuController::RepostEvent(SubmenuView* source,

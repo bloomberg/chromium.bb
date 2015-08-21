@@ -212,18 +212,6 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
     SELECTION_EXIT                  = 1 << 2,
   };
 
-  // Result type for SendAcceleratorToHotTrackedView
-  enum SendAcceleratorResultType {
-    // Accelerator is not sent because of no hot tracked views.
-    ACCELERATOR_NOT_PROCESSED,
-
-    // Accelerator is sent to the hot tracked views.
-    ACCELERATOR_PROCESSED,
-
-    // Same as above and the accelerator causes the exit of the menu.
-    ACCELERATOR_PROCESSED_EXIT
-  };
-
   // Direction for IncrementSelection and FindInitialSelectableMenuItem.
   enum SelectionIncrementDirectionType {
     // Navigate the menu up.
@@ -307,10 +295,8 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
                                  const ui::LocatedEvent& event);
   void StartDrag(SubmenuView* source, const gfx::Point& location);
 
-  // Key processing. The return value of this is returned from Dispatch.
-  // In other words, if this returns false (which happens if escape was
-  // pressed, or a matching mnemonic was found) the message loop returns.
-  bool OnKeyDown(ui::KeyboardCode key_code);
+  // Key processing.
+  void OnKeyDown(ui::KeyboardCode key_code);
 
   // Creates a MenuController. If |blocking| is true a nested message loop is
   // started in |Run|.
@@ -325,8 +311,9 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // menu).
   void RunMessageLoop(bool nested_menu);
 
-  // AcceleratorPressed is invoked on the hot tracked view if it exists.
-  SendAcceleratorResultType SendAcceleratorToHotTrackedView();
+  // Invokes AcceleratorPressed() on the hot tracked view if there is one.
+  // Returns true if AcceleratorPressed() was invoked.
+  bool SendAcceleratorToHotTrackedView();
 
   void UpdateInitialLocation(const gfx::Rect& bounds,
                              MenuAnchorPosition position,
@@ -477,14 +464,12 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
       base::char16 key,
       bool (*match_function)(MenuItemView* menu, base::char16 mnemonic));
 
-  // Selects or accepts the appropriate menu item based on |details|. Returns
-  // true if |Accept| was invoked (which happens if there aren't multiple item
-  // with the same mnemonic and the item to select does not have a submenu).
-  bool AcceptOrSelect(MenuItemView* parent, const SelectByCharDetails& details);
+  // Selects or accepts the appropriate menu item based on |details|.
+  void AcceptOrSelect(MenuItemView* parent, const SelectByCharDetails& details);
 
   // Selects by mnemonic, and if that doesn't work tries the first character of
-  // the title. Returns true if a match was selected and the menu should exit.
-  bool SelectByChar(base::char16 key);
+  // the title.
+  void SelectByChar(base::char16 key);
 
   // For Windows and Aura we repost an event for some events that dismiss
   // the context menu. The event is then reprocessed to cause its result

@@ -42,7 +42,6 @@ uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
           item->GetDelegate()->ShowContextMenu(
               item, item->GetCommand(), screen_loc, source_type);
         }
-        should_quit = false;
         should_perform_default = false;
         break;
       }
@@ -50,16 +49,13 @@ uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
       // NOTE: focus wasn't changed when the menu was shown. As such, don't
       // dispatch key events otherwise the focused window will get the events.
       case WM_KEYDOWN: {
-        bool result =
-            menu_controller_->OnKeyDown(ui::KeyboardCodeFromNative(msg));
+        menu_controller_->OnKeyDown(ui::KeyboardCodeFromNative(msg));
         TranslateMessage(&msg);
         should_perform_default = false;
-        should_quit = !result;
         break;
       }
       case WM_CHAR: {
-        should_quit = menu_controller_->SelectByChar(
-            static_cast<base::char16>(msg.wParam));
+        menu_controller_->SelectByChar(static_cast<base::char16>(msg.wParam));
         should_perform_default = false;
         break;
       }
@@ -68,7 +64,6 @@ uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
         // We may have been shown on a system key, as such don't do anything
         // here. If another system key is pushed we'll get a WM_SYSKEYDOWN and
         // close the menu.
-        should_quit = false;
         should_perform_default = false;
         break;
 
