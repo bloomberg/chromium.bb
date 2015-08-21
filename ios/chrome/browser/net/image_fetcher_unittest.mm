@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/ios_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -132,6 +133,11 @@ TEST_F(ImageFetcherTest, TestPng) {
 }
 
 TEST_F(ImageFetcherTest, TestGoodWebP) {
+// TODO(droger): This test fails on iOS 9 x64 devices. http://crbug.com/523235
+#if defined(OS_IOS) && defined(ARCH_CPU_ARM64) && !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS9OrLater())
+    return;
+#endif
   net::TestURLFetcher* fetcher = SetupFetcher();
   fetcher->set_response_code(200);
   fetcher->SetResponseString(

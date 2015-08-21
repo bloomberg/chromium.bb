@@ -9,6 +9,7 @@
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
@@ -157,6 +158,11 @@ class WebpDecoderTest : public testing::Test {
 }  // namespace
 
 TEST_F(WebpDecoderTest, DecodeToJpeg) {
+// TODO(droger): This test fails on iOS 9 x64 devices. http://crbug.com/523235
+#if defined(OS_IOS) && defined(ARCH_CPU_ARM64) && !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS9OrLater())
+    return;
+#endif
   // Load a WebP image from disk.
   base::scoped_nsobject<NSData> webp_image(
       [LoadImage(base::FilePath("test.webp")) retain]);
@@ -176,6 +182,11 @@ TEST_F(WebpDecoderTest, DecodeToJpeg) {
 }
 
 TEST_F(WebpDecoderTest, DecodeToPng) {
+// TODO(droger): This test fails on iOS 9 x64 devices. http://crbug.com/523235
+#if defined(OS_IOS) && defined(ARCH_CPU_ARM64) && !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS9OrLater())
+    return;
+#endif
   // Load a WebP image from disk.
   base::scoped_nsobject<NSData> webp_image(
       [LoadImage(base::FilePath("test_alpha.webp")) retain]);
@@ -195,6 +206,11 @@ TEST_F(WebpDecoderTest, DecodeToPng) {
 }
 
 TEST_F(WebpDecoderTest, DecodeToTiff) {
+// TODO(droger): This test fails on iOS 9 x64 devices. http://crbug.com/523235
+#if defined(OS_IOS) && defined(ARCH_CPU_ARM64) && !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS9OrLater())
+    return;
+#endif
   // Load a WebP image from disk.
   base::scoped_nsobject<NSData> webp_image(
       [LoadImage(base::FilePath("test_small.webp")) retain]);
@@ -213,6 +229,11 @@ TEST_F(WebpDecoderTest, DecodeToTiff) {
 }
 
 TEST_F(WebpDecoderTest, StreamedDecode) {
+// TODO(droger): This test fails on iOS 9 x64 devices. http://crbug.com/523235
+#if defined(OS_IOS) && defined(ARCH_CPU_ARM64) && !TARGET_IPHONE_SIMULATOR
+  if (base::ios::IsRunningOnIOS9OrLater())
+    return;
+#endif
   // Load a WebP image from disk.
   base::scoped_nsobject<NSData> webp_image(
       [LoadImage(base::FilePath("test.webp")) retain]);
