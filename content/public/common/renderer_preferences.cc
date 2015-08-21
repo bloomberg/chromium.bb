@@ -50,6 +50,7 @@ RendererPreferences::RendererPreferences()
       arrow_bitmap_height_vertical_scroll_bar_in_dips(0),
       arrow_bitmap_width_horizontal_scroll_bar_in_dips(0)
 #endif
+      , default_font_size(0)
 {}
 
 RendererPreferences::~RendererPreferences() { }

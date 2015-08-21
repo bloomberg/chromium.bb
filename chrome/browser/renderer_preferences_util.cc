@@ -15,6 +15,7 @@
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include "ui/gfx/font_render_params.h"
+#include "ui/gfx/platform_font.h"
 #endif
 
 #if !defined(OS_ANDROID)
@@ -110,6 +111,12 @@ void UpdateFromSystemSettings(content::RendererPreferences* prefs,
   prefs->use_autohinter = params.autohinter;
   prefs->use_bitmaps = params.use_bitmaps;
   prefs->subpixel_rendering = params.subpixel_rendering;
+
+#if defined(OS_LINUX)
+  scoped_refptr<gfx::PlatformFont> default_font(
+      gfx::PlatformFont::CreateDefault());
+  prefs->default_font_size = default_font->GetFontSize();
+#endif  // OS_LINUX
 #endif
 
 #if !defined(OS_MACOSX)
