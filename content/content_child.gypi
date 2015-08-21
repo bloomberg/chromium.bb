@@ -34,6 +34,7 @@
       'public/child/request_peer.h',
       'public/child/resource_dispatcher_delegate.h',
       'public/child/v8_value_converter.h',
+      'public/child/worker_thread.h',
     ],
     'private_child_sources': [
       'child/appcache/appcache_backend_proxy.cc',
@@ -281,6 +282,7 @@
       'child/weburlresponse_extradata_impl.h',
       'child/worker_task_runner.cc',
       'child/worker_task_runner.h',
+      'child/worker_thread_impl.cc',
       'child/worker_thread_message_filter.cc',
       'child/worker_thread_message_filter.h',
     ],
