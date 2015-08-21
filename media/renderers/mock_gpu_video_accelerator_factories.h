@@ -50,6 +50,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
 
+  bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
   unsigned ImageTextureTarget() override;
   MOCK_METHOD0(IsTextureRGSupported, bool());
   MOCK_METHOD0(GetGLES2Interface, gpu::gles2::GLES2Interface*());

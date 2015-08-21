@@ -360,6 +360,10 @@ const char kEnableWebBluetooth[] = "enable-web-bluetooth";
 // Enables TRACE for GL calls in the renderer.
 const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 
+// Enable GpuMemoryBuffer backed VideoFrames.
+const char kEnableGpuMemoryBufferVideoFrames[] =
+    "enable-gpu-memory-buffer-video-frames";
+
 // Allow heuristics to determine when a layer tile should be drawn with the
 // Skia GPU backend. Only valid with GPU accelerated compositing +
 // impl-side painting.

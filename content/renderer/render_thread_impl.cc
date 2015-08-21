@@ -1351,12 +1351,14 @@ RenderThreadImpl::GetGpuFactories() {
         GPU_VIDEO_ACCELERATOR_CONTEXT);
   }
   if (gpu_va_context_provider_.get()) {
-    bool enable_video_accelerator =
+    const bool enable_video_accelerator =
         !cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode);
+    const bool enable_gpu_memory_buffer_video_frames =
+        cmd_line->HasSwitch(switches::kEnableGpuMemoryBufferVideoFrames);
     std::string image_texture_target_string =
         cmd_line->GetSwitchValueASCII(switches::kVideoImageTextureTarget);
     unsigned image_texture_target = 0;
-    bool parsed_image_texture_target =
+    const bool parsed_image_texture_target =
         base::StringToUint(image_texture_target_string, &image_texture_target);
     DCHECK(parsed_image_texture_target);
     CHECK(gpu_channel_.get()) << "Have gpu_va_context_provider but no "
@@ -1365,7 +1367,8 @@ RenderThreadImpl::GetGpuFactories() {
                                      "gpu_channel_. See crbug.com/495185.";
     gpu_factories = RendererGpuVideoAcceleratorFactories::Create(
         gpu_channel_host.get(), media_task_runner, gpu_va_context_provider_,
-        image_texture_target, enable_video_accelerator);
+        enable_gpu_memory_buffer_video_frames, image_texture_target,
+        enable_video_accelerator);
   }
   return gpu_factories;
 }

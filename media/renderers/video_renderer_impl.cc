@@ -57,10 +57,7 @@ VideoRendererImpl::VideoRendererImpl(
       sink_started_(false),
       video_frame_stream_(
           new VideoFrameStream(media_task_runner, decoders.Pass(), media_log)),
-      gpu_memory_buffer_pool_(
-          new GpuMemoryBufferVideoFramePool(media_task_runner,
-                                            worker_task_runner,
-                                            gpu_factories)),
+      gpu_memory_buffer_pool_(nullptr),
       media_log_(media_log),
       low_delay_(false),
       received_end_of_stream_(false),
@@ -79,7 +76,19 @@ VideoRendererImpl::VideoRendererImpl(
       time_progressing_(false),
       render_first_frame_and_stop_(false),
       posted_maybe_stop_after_first_paint_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  if (gpu_factories &&
+      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+    gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
+        media_task_runner, worker_task_runner, gpu_factories));
+    frame_ready_cb_ =
+        base::Bind(&VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers,
+                   weak_factory_.GetWeakPtr());
+  } else {
+    frame_ready_cb_ =
+        base::Bind(&VideoRendererImpl::FrameReady, weak_factory_.GetWeakPtr());
+  }
+}
 
 VideoRendererImpl::~VideoRendererImpl() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -701,10 +710,7 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPlaying:
       pending_read_ = true;
-
-      video_frame_stream_->Read(
-          base::Bind(&VideoRendererImpl::FrameReady,
-                     weak_factory_.GetWeakPtr()));
+      video_frame_stream_->Read(frame_ready_cb_);
       return;
 
     case kUninitialized:

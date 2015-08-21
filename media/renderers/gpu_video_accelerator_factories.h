@@ -68,6 +68,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
       gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;
 
+  virtual bool ShouldUseGpuMemoryBuffersForVideoFrames() const = 0;
   virtual unsigned ImageTextureTarget() = 0;
   virtual bool IsTextureRGSupported() = 0;
 

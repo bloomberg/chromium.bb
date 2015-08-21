@@ -29,13 +29,14 @@ RendererGpuVideoAcceleratorFactories::Create(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    bool enable_gpu_memory_buffer_video_frames,
     unsigned image_texture_target,
     bool enable_video_accelerator) {
   scoped_refptr<RendererGpuVideoAcceleratorFactories> factories =
-      new RendererGpuVideoAcceleratorFactories(gpu_channel_host, task_runner,
-                                               context_provider,
-                                               image_texture_target,
-                                               enable_video_accelerator);
+      new RendererGpuVideoAcceleratorFactories(
+          gpu_channel_host, task_runner, context_provider,
+          enable_gpu_memory_buffer_video_frames, image_texture_target,
+          enable_video_accelerator);
   // Post task from outside constructor, since AddRef()/Release() is unsafe from
   // within.
   task_runner->PostTask(
@@ -49,15 +50,18 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     GpuChannelHost* gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    bool enable_gpu_memory_buffer_video_frames,
     unsigned image_texture_target,
     bool enable_video_accelerator)
     : task_runner_(task_runner),
       gpu_channel_host_(gpu_channel_host),
       context_provider_(context_provider),
+      enable_gpu_memory_buffer_video_frames_(
+          enable_gpu_memory_buffer_video_frames),
       image_texture_target_(image_texture_target),
       video_accelerator_enabled_(enable_video_accelerator),
-      gpu_memory_buffer_manager_(
-          ChildThreadImpl::current()->gpu_memory_buffer_manager()),
+      gpu_memory_buffer_manager_(ChildThreadImpl::current()
+                                     ->gpu_memory_buffer_manager()),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {
   DCHECK(gpu_channel_host_.get());
 }
@@ -220,6 +224,11 @@ bool RendererGpuVideoAcceleratorFactories::IsTextureRGSupported() {
   if (!context)
     return false;
   return context->GetImplementation()->capabilities().texture_rg;
+}
+
+bool RendererGpuVideoAcceleratorFactories::
+    ShouldUseGpuMemoryBuffersForVideoFrames() const {
+  return enable_gpu_memory_buffer_video_frames_;
 }
 
 unsigned RendererGpuVideoAcceleratorFactories::ImageTextureTarget() {

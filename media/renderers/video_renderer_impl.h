@@ -189,6 +189,10 @@ class MEDIA_EXPORT VideoRendererImpl
   // Provides video frames to VideoRendererImpl.
   scoped_ptr<VideoFrameStream> video_frame_stream_;
 
+  // Callback called when a new frame is available from |video_frame_stream_|.
+  base::Callback<void(VideoFrameStream::Status status,
+                      const scoped_refptr<VideoFrame>&)> frame_ready_cb_;
+
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
 

@@ -81,6 +81,11 @@ MockGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return scoped_ptr<VideoEncodeAccelerator>(DoCreateVideoEncodeAccelerator());
 }
 
+bool MockGpuVideoAcceleratorFactories::ShouldUseGpuMemoryBuffersForVideoFrames()
+    const {
+  return false;
+}
+
 unsigned MockGpuVideoAcceleratorFactories::ImageTextureTarget() {
   return GL_TEXTURE_2D;
 }
