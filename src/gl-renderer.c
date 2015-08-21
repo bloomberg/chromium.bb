@@ -2649,7 +2649,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	if (egl_choose_config(gr, attribs, visual_id,
 			      n_ids, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
-		goto fail;
+		goto fail_terminate;
 	}
 
 	ec->renderer = &gr->base;
@@ -2672,6 +2672,8 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 
 fail_with_error:
 	gl_renderer_print_egl_error_state();
+fail_terminate:
+	eglTerminate(gr->egl_display);
 fail:
 	free(gr);
 	return -1;
