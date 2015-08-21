@@ -117,7 +117,10 @@ class NET_EXPORT ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   base::TimeDelta max_duration_;
 
   // The time that the fetch started.
-  base::Time fetch_start_time_;
+  base::TimeTicks fetch_start_time_;
+
+  // The time that the first byte was received.
+  base::TimeTicks fetch_time_to_first_byte_;
 
   // Factory for creating the time-out task. This takes care of revoking
   // outstanding tasks when |this| is deleted.

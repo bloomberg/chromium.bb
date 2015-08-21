@@ -135,7 +135,7 @@ int ProxyScriptFetcherImpl::Fetch(
   }
 
   DCHECK(fetch_start_time_.is_null());
-  fetch_start_time_ = base::Time::Now();
+  fetch_start_time_ = base::TimeTicks::Now();
 
   cur_request_ =
       url_request_context_->CreateRequest(url, DEFAULT_PRIORITY, this);
@@ -280,6 +280,11 @@ bool ProxyScriptFetcherImpl::ConsumeBytesRead(URLRequest* request,
     return false;
   }
 
+  if (bytes_read_so_far_.empty()) {
+    DCHECK(fetch_time_to_first_byte_.is_null());
+    fetch_time_to_first_byte_ = base::TimeTicks::Now();
+  }
+
   bytes_read_so_far_.append(buf_->data(), num_bytes);
   return true;
 }
@@ -288,8 +293,11 @@ void ProxyScriptFetcherImpl::FetchCompleted() {
   if (result_code_ == OK) {
     // Calculate duration of time for proxy script fetch to complete.
     DCHECK(!fetch_start_time_.is_null());
-    UMA_HISTOGRAM_TIMES("Net.ProxyScriptFetcher.SuccessDuration",
-                        base::Time::Now() - fetch_start_time_);
+    DCHECK(!fetch_time_to_first_byte_.is_null());
+    UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyScriptFetcher.SuccessDuration",
+                               base::TimeTicks::Now() - fetch_start_time_);
+    UMA_HISTOGRAM_MEDIUM_TIMES("Net.ProxyScriptFetcher.FirstByteDuration",
+                               fetch_time_to_first_byte_ - fetch_start_time_);
 
     // The caller expects the response to be encoded as UTF16.
     std::string charset;
@@ -314,7 +322,8 @@ void ProxyScriptFetcherImpl::ResetCurRequestState() {
   callback_.Reset();
   result_code_ = OK;
   result_text_ = NULL;
-  fetch_start_time_ = base::Time();
+  fetch_start_time_ = base::TimeTicks();
+  fetch_time_to_first_byte_ = base::TimeTicks();
 }
 
 void ProxyScriptFetcherImpl::OnTimeout(int id) {

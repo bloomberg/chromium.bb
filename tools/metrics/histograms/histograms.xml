@@ -22743,11 +22743,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The length of the URL that was passed into the PAC script.</summary>
 </histogram>
 
+<histogram name="Net.ProxyScriptFetcher.FirstByteDuration" units="milliseconds">
+  <owner>cbentzel@chromium.org</owner>
+  <summary>
+    The time taken from requesting a PAC script to receiving the first byte, on
+    successful fetches. This does not include time spent doing proxy
+    auto-discovery, or failed attempts at retrieving PAC  scripts.
+  </summary>
+</histogram>
+
 <histogram name="Net.ProxyScriptFetcher.SuccessDuration" units="milliseconds">
   <owner>cbentzel@chromium.org</owner>
   <summary>
     The time taken to successfully fetch a PAC script. This does not include
-    time spent doing proxy auto-discovery, or failed attempts at retrieiving PAC
+    time spent doing proxy auto-discovery, or failed attempts at retrieving PAC
     scripts.
   </summary>
 </histogram>
