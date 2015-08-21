@@ -26,6 +26,7 @@
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "media/blink/webmediaplayer_delegate.h"
+#include "media/blink/webmediaplayer_params.h"
 #include "third_party/WebKit/public/platform/modules/app_banner/WebAppBannerClient.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -809,8 +810,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebMediaPlayer* CreateAndroidWebMediaPlayer(
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      media::MediaPermission* media_permission,
-      blink::WebContentDecryptionModule* initial_cdm);
+      const media::WebMediaPlayerParams& params);
 
   RendererMediaPlayerManager* GetMediaPlayerManager();
 #endif
