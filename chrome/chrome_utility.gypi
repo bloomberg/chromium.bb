@@ -212,6 +212,15 @@
         }],
         ['safe_browsing==1', {
           'sources': [ '<@(chrome_utility_safe_browsing_sources)' ],
+          'conditions': [
+            ['OS=="mac"', {
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/usr/lib/libbz2.dylib',
+                ],
+              },
+            }],
+          ],
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

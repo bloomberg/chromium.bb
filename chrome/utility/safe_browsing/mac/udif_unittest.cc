@@ -201,15 +201,9 @@ TEST_P(UDIFParserTest, ReadAll_100000) {
 }
 
 const UDIFTestCase cases[] = {
-  {"dmg_UDBZ_GPTSPUD.dmg", kGPTExpectedPartitions,
-    // BZ2 compression not supported.
-    UDIFTestCase::UDIF_PARSE | UDIFTestCase::GET_HFS_STREAM},
-  {"dmg_UDBZ_NONE.dmg", kNoPartitionMap,
-    // BZ2 compression not supported.
-    UDIFTestCase::UDIF_PARSE | UDIFTestCase::GET_HFS_STREAM},
-  {"dmg_UDBZ_SPUD.dmg", kAPMExpectedPartitions,
-    // BZ2 compression not supported.
-    UDIFTestCase::UDIF_PARSE | UDIFTestCase::GET_HFS_STREAM},
+  {"dmg_UDBZ_GPTSPUD.dmg", kGPTExpectedPartitions, UDIFTestCase::ALL_PASS},
+  {"dmg_UDBZ_NONE.dmg", kNoPartitionMap, UDIFTestCase::ALL_PASS},
+  {"dmg_UDBZ_SPUD.dmg", kAPMExpectedPartitions, UDIFTestCase::ALL_PASS},
   {"dmg_UDCO_GPTSPUD.dmg", kGPTExpectedPartitions,
     // ADC compression not supported.
     UDIFTestCase::UDIF_PARSE | UDIFTestCase::GET_HFS_STREAM},

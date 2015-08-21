@@ -4,6 +4,7 @@
 
 #include "chrome/utility/safe_browsing/mac/udif.h"
 
+#include <bzlib.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <libkern/OSByteOrder.h>
 #include <uuid/uuid.h>
@@ -264,16 +265,16 @@ class UDIFBlockChunkReadStream : public ReadStream {
   bool HandleZLib(uint8_t* buffer, size_t buffer_size, size_t* bytes_read);
   bool HandleBZ2(uint8_t* buffer, size_t buffer_size, size_t* bytes_read);
 
+  // Reads from |stream_| |chunk_->compressed_length| bytes, starting at
+  // |chunk_->compressed_offset| into |out_data|.
+  bool ReadCompressedData(std::vector<uint8_t>* out_data);
+
   ReadStream* const stream_;  // The UDIF stream.
   const UDIFBlockChunk* const chunk_;  // The chunk to be read.
   size_t length_in_bytes_;  // The decompressed length in bytes.
   size_t offset_;  // The offset into the decompressed buffer.
   std::vector<uint8_t> decompress_buffer_;  // Decompressed data buffer.
   bool did_decompress_;  // Whether or not the chunk has been decompressed.
-  union {
-    z_stream zlib;
-  } decompressor_;  // Union for any decompressor state.
-                    // Tagged by |chunk_->type|.
 
   DISALLOW_COPY_AND_ASSIGN(UDIFBlockChunkReadStream);
 };
@@ -617,8 +618,7 @@ UDIFBlockChunkReadStream::UDIFBlockChunkReadStream(ReadStream* stream,
       length_in_bytes_(chunk->sector_count * block_size),
       offset_(0),
       decompress_buffer_(),
-      did_decompress_(false),
-      decompressor_() {
+      did_decompress_(false) {
   // Make sure the multiplication above did not overflow.
   CHECK(length_in_bytes_ == 0 || length_in_bytes_ >= block_size);
 }
@@ -709,33 +709,27 @@ bool UDIFBlockChunkReadStream::HandleZLib(uint8_t* buffer,
                                           size_t buffer_size,
                                           size_t* bytes_read) {
   if (!did_decompress_) {
-    if (stream_->Seek(chunk_->compressed_offset, SEEK_SET) == -1) {
-      return false;
-    }
-
     std::vector<uint8_t> compressed_data(chunk_->compressed_length, 0);
-    if (!stream_->ReadExact(&compressed_data[0], compressed_data.size())) {
-      DLOG(ERROR) << "Failed to read chunk compressed data at "
-                  << chunk_->compressed_offset;
+    if (!ReadCompressedData(&compressed_data))
       return false;
-    }
 
-    if (inflateInit(&decompressor_.zlib) != Z_OK) {
+    z_stream zlib = {};
+    if (inflateInit(&zlib) != Z_OK) {
       DLOG(ERROR) << "Failed to initialize zlib";
       return false;
     }
 
     decompress_buffer_.resize(length_in_bytes_);
-    decompressor_.zlib.next_in = &compressed_data[0];
-    decompressor_.zlib.avail_in = compressed_data.size();
-    decompressor_.zlib.next_out = &decompress_buffer_[0];
-    decompressor_.zlib.avail_out = decompress_buffer_.size();
+    zlib.next_in = &compressed_data[0];
+    zlib.avail_in = compressed_data.size();
+    zlib.next_out = &decompress_buffer_[0];
+    zlib.avail_out = decompress_buffer_.size();
 
-    int rv = inflate(&decompressor_.zlib, Z_FINISH);
-    inflateEnd(&decompressor_.zlib);
+    int rv = inflate(&zlib, Z_FINISH);
+    inflateEnd(&zlib);
 
     if (rv != Z_STREAM_END) {
-      DLOG(ERROR) << "Failed to inflate data, error = " << rv;
+      DLOG(ERROR) << "Failed to decompress zlib data, error = " << rv;
       return false;
     }
 
@@ -748,9 +742,50 @@ bool UDIFBlockChunkReadStream::HandleZLib(uint8_t* buffer,
 bool UDIFBlockChunkReadStream::HandleBZ2(uint8_t* buffer,
                                           size_t buffer_size,
                                           size_t* bytes_read) {
-  // TODO(rsesek): Implement bz2 handling.
-  NOTIMPLEMENTED();
-  return false;
+  if (!did_decompress_) {
+    std::vector<uint8_t> compressed_data(chunk_->compressed_length, 0);
+    if (!ReadCompressedData(&compressed_data))
+      return false;
+
+    bz_stream bz = {};
+    if (BZ2_bzDecompressInit(&bz, 0, 0) != BZ_OK) {
+      DLOG(ERROR) << "Failed to initialize bzlib";
+      return false;
+    }
+
+    decompress_buffer_.resize(length_in_bytes_);
+    bz.next_in = reinterpret_cast<char*>(&compressed_data[0]);
+    bz.avail_in = compressed_data.size();
+    bz.next_out = reinterpret_cast<char*>(&decompress_buffer_[0]);
+    bz.avail_out = decompress_buffer_.size();
+
+    int rv = BZ2_bzDecompress(&bz);
+    BZ2_bzDecompressEnd(&bz);
+
+    if (rv != BZ_STREAM_END) {
+      DLOG(ERROR) << "Failed to decompress BZ2 data, error = " << rv;
+      return false;
+    }
+
+    did_decompress_ = true;
+  }
+
+  return CopyOutDecompressed(buffer, buffer_size, bytes_read);
+}
+
+bool UDIFBlockChunkReadStream::ReadCompressedData(
+    std::vector<uint8_t>* out_data) {
+  DCHECK_EQ(chunk_->compressed_length, out_data->size());
+
+  if (stream_->Seek(chunk_->compressed_offset, SEEK_SET) == -1)
+    return false;
+
+  if (!stream_->ReadExact(&(*out_data)[0], out_data->size())) {
+    DLOG(ERROR) << "Failed to read chunk compressed data at "
+                << chunk_->compressed_offset;
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
