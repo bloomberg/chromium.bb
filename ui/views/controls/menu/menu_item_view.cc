@@ -551,7 +551,7 @@ void MenuItemView::Layout() {
       gfx::Size size = icon_view_->GetPreferredSize();
       int x = config.item_left_margin + left_icon_margin_ +
               (icon_area_width_ - size.width()) / 2;
-      if (type_ == CHECKBOX || type_ == RADIO)
+      if (config.icons_in_label || type_ == CHECKBOX || type_ == RADIO)
         x = label_start_;
       int y =
           (height() + GetTopMargin() - GetBottomMargin() - size.height()) / 2;
@@ -624,7 +624,7 @@ void MenuItemView::UpdateMenuPartSizes() {
   int padding = 0;
   if (config.always_use_icon_to_label_padding) {
     padding = config.icon_to_label_padding;
-  } else {
+  } else if (!config.icons_in_label) {
     padding = (has_icons_ || HasChecksOrRadioButtons()) ?
         config.icon_to_label_padding : 0;
   }
@@ -1009,11 +1009,12 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 }
 
 int MenuItemView::GetLabelStartForThisItem() const {
+  const MenuConfig& config = GetMenuConfig();
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
-  if ((type_ == CHECKBOX || type_ == RADIO) && icon_view_) {
-    label_start += icon_view_->size().width() +
-        GetMenuConfig().icon_to_label_padding;
-  }
+  if ((config.icons_in_label || type_ == CHECKBOX || type_ == RADIO) &&
+      icon_view_)
+    label_start += icon_view_->size().width() + config.icon_to_label_padding;
+
   return label_start;
 }
 
@@ -1056,7 +1057,7 @@ int MenuItemView::GetMaxIconViewWidth() const {
       continue;
     } else if (menu_item->HasSubmenu()) {
       temp_width = menu_item->GetMaxIconViewWidth();
-    } else if (menu_item->icon_view()) {
+    } else if (menu_item->icon_view() && !GetMenuConfig().icons_in_label) {
       temp_width = menu_item->icon_view()->GetPreferredSize().width();
     }
     width = std::max(width, temp_width);

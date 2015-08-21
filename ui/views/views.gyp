@@ -97,7 +97,7 @@
       'controls/menu/display_change_listener_mac.cc',
       'controls/menu/menu_config.cc',
       'controls/menu/menu_config.h',
-      'controls/menu/menu_config_mac.cc',
+      'controls/menu/menu_config_mac.mm',
       'controls/menu/menu_config_win.cc',
       'controls/menu/menu_controller.cc',
       'controls/menu/menu_controller.h',

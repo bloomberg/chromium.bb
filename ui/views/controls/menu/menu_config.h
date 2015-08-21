@@ -60,9 +60,6 @@ struct VIEWS_EXPORT MenuConfig {
   // Padding between the icon and label.
   int icon_to_label_padding;
 
-  // Padding between the gutter and label.
-  int gutter_to_label;
-
   // Size of the check.
   int check_width;
   int check_height;
@@ -109,6 +106,12 @@ struct VIEWS_EXPORT MenuConfig {
 
   // True if the context menu's should be offset from the cursor position.
   bool offset_context_menus;
+
+  // True if the scroll container should add a border stroke around the menu.
+  bool use_outer_border;
+
+  // True if the icon is part of the label rather than in its own column.
+  bool icons_in_label;
 
   const ui::NativeTheme* native_theme;
 

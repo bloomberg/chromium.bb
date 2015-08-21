@@ -331,7 +331,12 @@ void NativeThemeMac::PaintMenuPopupBackground(
     SkCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
-  canvas->drawColor(kMenuPopupBackgroundColor, SkXfermode::kSrc_Mode);
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(kMenuPopupBackgroundColor);
+  const SkScalar radius = SkIntToScalar(menu_background.corner_radius);
+  SkRect rect = gfx::RectToSkRect(gfx::Rect(size));
+  canvas->drawRoundRect(rect, radius, radius, paint);
 }
 
 void NativeThemeMac::PaintMenuItemBackground(

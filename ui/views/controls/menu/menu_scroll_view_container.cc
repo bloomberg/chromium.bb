@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
-#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -277,25 +276,16 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
   const MenuConfig& menu_config =
       content_view_->GetMenuItem()->GetMenuConfig();
 
-  bool use_border = true;
-  int padding = menu_config.corner_radius > 0 ?
-        kBorderPaddingDueToRoundedCorners : 0;
-
-#if defined(USE_AURA) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
-  if (menu_config.native_theme == ui::NativeThemeAura::instance()) {
-    // In case of NativeThemeAura the border gets drawn with the shadow.
-    // Furthermore no additional padding is wanted.
-    use_border = false;
-    padding = 0;
-  }
-#endif
+  int padding = menu_config.use_outer_border && menu_config.corner_radius > 0
+                    ? kBorderPaddingDueToRoundedCorners
+                    : 0;
 
   int top = menu_config.menu_vertical_border_size + padding;
   int left = menu_config.menu_horizontal_border_size + padding;
   int bottom = menu_config.menu_vertical_border_size + padding;
   int right = menu_config.menu_horizontal_border_size + padding;
 
-  if (use_border) {
+  if (menu_config.use_outer_border) {
     SetBorder(views::Border::CreateBorderPainter(
         new views::RoundRectPainter(
             menu_config.native_theme->GetSystemColor(
