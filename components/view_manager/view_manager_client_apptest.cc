@@ -743,31 +743,6 @@ TEST_F(ViewManagerTest, OnWillEmbedFails) {
   EXPECT_EQ(1u, on_will_embed_count());
 }
 
-// Verify an Embed() from an ancestor is not allowed.
-TEST_F(ViewManagerTest, ReembedFails) {
-  window_manager()->SetEmbedRoot();
-
-  View* view1 = window_manager()->CreateView();
-  window_manager()->GetRoot()->AddChild(view1);
-
-  ViewManager* view_manager = Embed(view1);
-  ASSERT_TRUE(view_manager);
-  View* view2 = view_manager->CreateView();
-  view_manager->GetRoot()->AddChild(view2);
-  Embed(view2);
-
-  // Try to embed in view2 from the window_manager. This should fail as the
-  // Embed() didn't grab reembed.
-  View* view2_in_wm = window_manager()->GetViewById(view2->id());
-  ConnectToApplicationAndEmbed(view2_in_wm);
-
-  // The Embed() call above returns immediately. To ensure the server has
-  // processed it nudge the bounds and wait for it to be processed.
-  EXPECT_TRUE(IncrementWidthAndWaitForChange(view1, view_manager));
-
-  EXPECT_EQ(nullptr, most_recent_view_manager());
-}
-
 // Verify an Embed() from an ancestor is allowed if the ancestor is an embed
 // root and Embed was done by way of EmbedAllowingReembed().
 TEST_F(ViewManagerTest, ReembedSucceeds) {
