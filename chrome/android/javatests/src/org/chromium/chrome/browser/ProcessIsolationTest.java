@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser;
 
-import android.test.suitebuilder.annotation.MediumTest;
+import android.test.FlakyTest;
 import android.text.TextUtils;
 
 import org.chromium.base.BuildInfo;
@@ -34,8 +34,9 @@ public class ProcessIsolationTest extends ChromeActivityTestCaseBase<ChromeActiv
      * renderer processes use different user IDs.
      * @throws InterruptedException
      * BUG: 471122
+     * @MediumTest
      */
-    @MediumTest
+    @FlakyTest
     @Feature({"Browser", "Security"})
     public void testProcessIsolationForRenderers() throws InterruptedException {
         int tabsCount = getActivity().getCurrentTabModel().getCount();

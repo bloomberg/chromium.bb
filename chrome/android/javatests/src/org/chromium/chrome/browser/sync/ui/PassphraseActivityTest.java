@@ -8,7 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.FlakyTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -40,8 +40,10 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
 
     /**
      * This is a regression test for http://crbug.com/469890.
+     * @SmallTest
+     * Constantly fails on M, fine on other platforms: http://crbug.com/517590
      */
-    @SmallTest
+    @FlakyTest
     @Feature({"Sync"})
     public void testCallbackAfterBackgrounded() throws Exception {
         final Context context = getInstrumentation().getTargetContext();
