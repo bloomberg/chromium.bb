@@ -49,6 +49,9 @@ def _CheckIdenticalFiles(input_api, output_api):
     ], [
         'resources/WebIDLParser.js',
         'http/tests/w3c/resources/WebIDLParser.js',
+    ], [
+        'resources/testharness-helpers.js',
+        'http/tests/resources/testharness-helpers.js',
     ]]
 
     def _absolute_path(s):

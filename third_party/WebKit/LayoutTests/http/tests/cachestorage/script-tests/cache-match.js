@@ -15,7 +15,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request.url)
       .then(function(result) {
-          assert_object_equals_fixed(result, entries.a.response,
+          assert_response_equals(result, entries.a.response,
                                      'Cache.match should match by URL.');
         });
   }, 'Cache.match with URL');
@@ -23,7 +23,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request)
       .then(function(result) {
-          assert_object_equals_fixed(result, entries.a.response,
+          assert_response_equals(result, entries.a.response,
                                      'Cache.match should match by Request.');
         });
   }, 'Cache.match with Request');
@@ -31,7 +31,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(new Request(entries.a.request.url))
       .then(function(result) {
-          assert_object_equals_fixed(result, entries.a.response,
+          assert_response_equals(result, entries.a.response,
                                      'Cache.match should match by Request.');
         });
   }, 'Cache.match with new Request');
@@ -40,7 +40,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a.request,
                        {ignoreSearch: true})
       .then(function(result) {
-          assert_object_in_array(
+          assert_response_in_array(
             result,
             [
               entries.a.response,
@@ -57,7 +57,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.a_with_query.request,
                        {ignoreSearch: true})
       .then(function(result) {
-          assert_object_in_array(
+          assert_response_in_array(
             result,
             [
               entries.a.response,
@@ -72,7 +72,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.cat.request.url + '#mouse')
       .then(function(result) {
-          assert_object_equals_fixed(result, entries.cat.response,
+          assert_response_equals(result, entries.cat.response,
                                      'Cache.match should ignore URL fragment.');
         });
   }, 'Cache.match with URL containing fragment');
@@ -90,7 +90,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(entries.secret_cat.request.url)
       .then(function(result) {
-          assert_object_equals_fixed(
+          assert_response_equals(
             result, entries.secret_cat.response,
             'Cache.match should not ignore embedded credentials');
         });
@@ -99,7 +99,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
 prepopulated_cache_test(vary_entries, function(cache, entries) {
     return cache.match('http://example.com/c')
       .then(function(result) {
-          assert_object_in_array(
+          assert_response_in_array(
             result,
             [
               entries.vary_wildcard.response,
@@ -126,7 +126,7 @@ cache_test(function(cache) {
           return cache.match(request.url);
         })
       .then(function(result) {
-          assert_object_equals_fixed(
+          assert_response_equals(
             result, response,
             'Cache.match should return a Response object that has the same ' +
             'properties as the stored response.');
@@ -182,7 +182,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     var response = entries.non_2xx_response.response;
     return cache.match(entries.non_2xx_response.request.url)
       .then(function(result) {
-          assert_object_equals_fixed(
+          assert_response_equals(
               result, entries.non_2xx_response.response,
               'Cache.match should return a Response object that has the ' +
                   'same properties as a stored non-2xx response.');
@@ -193,7 +193,7 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
     var response = entries.error_response.response;
     return cache.match(entries.error_response.request.url)
       .then(function(result) {
-          assert_object_equals_fixed(
+          assert_response_equals(
               result, entries.error_response.response,
               'Cache.match should return a Response object that has the ' +
                   'same properties as a stored network error response.');
