@@ -82,6 +82,9 @@ const char kRegulatoryLabelsDirectory[] = "regulatory_labels";
 const char kRegulatoryLabelImageFilename[] = "label.png";
 const char kRegulatoryLabelTextFilename[] = "label.txt";
 
+// Default region code to use if there's no label for the VPD region code.
+const char kDefaultRegionCode[] = "us";
+
 struct RegulatoryLabel {
   const std::string label_text;
   const std::string image_url;
@@ -140,26 +143,45 @@ bool CanChangeChannel(Profile* profile) {
   return false;
 }
 
+// Returns the path of the regulatory labels directory for a given region, if
+// found. Must be called from the blocking pool.
+base::FilePath GetRegulatoryLabelDirForRegion(const std::string& region) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  // Generate the path under the asset dir or URL host to the regulatory files
+  // for the region, e.g., "regulatory_labels/us/".
+  const base::FilePath region_path =
+      base::FilePath(kRegulatoryLabelsDirectory).AppendASCII(region);
+
+  // Check for file existence starting in /usr/share/chromeos-assets/, e.g.,
+  // "/usr/share/chromeos-assets/regulatory_labels/us/label.png".
+  const base::FilePath asset_dir(chrome::kChromeOSAssetPath);
+  if (base::PathExists(asset_dir.Append(region_path)
+                           .AppendASCII(kRegulatoryLabelImageFilename))) {
+    return region_path;
+  }
+
+  return base::FilePath();
+}
+
 // Finds the directory for the regulatory label, using the VPD region code.
-// Must be called from the blocking pool.
+// Also tries "us" as a fallback region. Must be called from the blocking pool.
 base::FilePath FindRegulatoryLabelDir() {
   DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
 
   std::string region;
+  base::FilePath region_path;
+  // Use the VPD region code to find the label dir.
   if (chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-          "region", &region)) {
-    base::FilePath region_path =
-        base::FilePath(kRegulatoryLabelsDirectory).AppendASCII(region);
-
-    const base::FilePath asset_dir(
-        FILE_PATH_LITERAL(chrome::kChromeOSAssetPath));
-    if (base::PathExists(asset_dir.Append(region_path)
-                             .AppendASCII(kRegulatoryLabelImageFilename))) {
-      return region_path;
-    }
+          "region", &region) && !region.empty()) {
+    region_path = GetRegulatoryLabelDirForRegion(region);
   }
 
-  return base::FilePath();
+  // Try the fallback region code if no directory was found.
+  if (region_path.empty() && region != kDefaultRegionCode)
+    region_path = GetRegulatoryLabelDirForRegion(kDefaultRegionCode);
+
+  return region_path;
 }
 
 // Reads the file containing the regulatory label text, if found, relative to
