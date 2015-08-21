@@ -872,9 +872,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that long-press selects text, and a subsequent tap will unselect text.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      */
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -1019,9 +1016,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that a long-press gesture followed by scrolling does not clear the selection.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      */
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -1038,9 +1032,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that a long-press gesture followed by a tap does not select.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
      */
     @SmallTest
     @Feature({"ContextualSearch"})
@@ -1223,15 +1214,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be resolve-limited for decided users.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * crbug.com/487759
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
             ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_DECIDED + "=2")
-    @FlakyTest
     public void testTapResolveLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerSearchTermResolution();
         assertSearchTermRequested();
@@ -1251,15 +1239,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be resolve-limited for undecided users.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * crbug.com/487759
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
             ContextualSearchFieldTrial.TAP_RESOLVE_LIMIT_FOR_UNDECIDED + "=2"})
-    @FlakyTest
     public void testTapResolveLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1281,15 +1266,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be preload-limited for decided users.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * crbug.com/487759
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
             ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_DECIDED + "=2")
-    @FlakyTest
     public void testTapPrefetchLimitForDecided() throws InterruptedException, TimeoutException {
         clickToTriggerPrefetch();
         assertLoadedLowPriorityUrl();
@@ -1309,15 +1291,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests that taps can be preload-limited for undecided users.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * crbug.com/487759
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(
             ContextualSearchFieldTrial.TAP_PREFETCH_LIMIT_FOR_UNDECIDED + "=2")
-    @FlakyTest
     public void testTapPrefetchLimitForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
@@ -1339,16 +1318,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests the tap triggered promo limit for opt-out.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     * crbug.com/487759
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add({
             ContextualSearchFieldTrial.PROMO_ON_LIMITED_TAPS + "=true",
             ContextualSearchFieldTrial.TAP_TRIGGERED_PROMO_LIMIT + "=2"})
-    @FlakyTest
     public void testTapTriggeredPromoLimitForOptOut()
             throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
@@ -1638,11 +1614,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Tests the promo open counter.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @FlakyTest
     public void testPromoOpenCountForUndecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(false);
 
