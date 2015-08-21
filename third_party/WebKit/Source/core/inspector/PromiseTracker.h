@@ -59,7 +59,9 @@ private:
     v8::Isolate* m_isolate;
     v8::Persistent<v8::NativeWeakMap> m_promiseToId;
 
+#if !ENABLE(OILPAN)
     WeakPtrFactory<PromiseTracker> m_weakPtrFactory;
+#endif
 
     class PromiseWeakCallbackData;
     class IdToPromiseMapTraits : public V8GlobalValueMapTraits<int, v8::Object, v8::kWeakWithParameter> {
