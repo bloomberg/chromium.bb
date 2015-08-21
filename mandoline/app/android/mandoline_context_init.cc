@@ -17,7 +17,7 @@ void InitContext(Context* context) {
       FROM_HERE,
       base::Bind(&Context::Run,
                  base::Unretained(context),
-                 GURL("mojo:browser")));
+                 GURL("mojo:phone_ui")));
 }
 
 }  // namespace runner

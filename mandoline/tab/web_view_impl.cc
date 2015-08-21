@@ -63,6 +63,8 @@ void WebViewImpl::OnEmbed(mojo::View* root) {
   root->view_manager()->SetEmbedRoot();
   root->AddObserver(this);
   content_ = root->view_manager()->CreateView();
+  content_->SetBounds(*mojo::Rect::From(gfx::Rect(0, 0, root->bounds().width,
+                                                  root->bounds().height)));
   root->AddChild(content_);
   content_->SetVisible(true);
   content_->AddObserver(this);

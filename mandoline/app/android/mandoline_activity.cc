@@ -13,7 +13,7 @@ namespace mandoline {
 static void LaunchURL(JNIEnv* env, jclass clazz, jstring jurl) {
   LaunchHandlerPtr launch_handler;
   mojo::runner::GetContext()->application_manager()->ConnectToService(
-      GURL("mojo:browser"), &launch_handler);
+      GURL("mojo:phone_ui"), &launch_handler);
   launch_handler->LaunchURL(
       base::android::ConvertJavaStringToUTF8(env, jurl));
 }
