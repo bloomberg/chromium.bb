@@ -35,12 +35,14 @@
 
 #include "core/dom/Attr.h"
 #include "core/dom/Attribute.h"
+#include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 template <typename Container, typename ContainerMemberType = Container>
 class AttributeCollectionGeneric {
+    STACK_ALLOCATED();
 public:
     using ValueType = typename Container::ValueType;
     using iterator = ValueType*;
@@ -75,6 +77,7 @@ protected:
 };
 
 class AttributeArray {
+    DISALLOW_ALLOCATION();
 public:
     using ValueType = const Attribute;
 

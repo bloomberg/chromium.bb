@@ -32,12 +32,14 @@
 #define DocumentLifecycle_h
 
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
 class CORE_EXPORT DocumentLifecycle {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(DocumentLifecycle);
 public:
     enum State {
@@ -79,6 +81,7 @@ public:
     };
 
     class Scope {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(Scope);
     public:
         Scope(DocumentLifecycle&, State finalState);
@@ -90,6 +93,7 @@ public:
     };
 
     class DeprecatedTransition {
+        DISALLOW_ALLOCATION();
         WTF_MAKE_NONCOPYABLE(DeprecatedTransition);
     public:
         DeprecatedTransition(State from, State to);
@@ -105,6 +109,7 @@ public:
     };
 
     class DetachScope {
+        STACK_ALLOCATED();
         WTF_MAKE_NONCOPYABLE(DetachScope);
     public:
         explicit DetachScope(DocumentLifecycle& documentLifecycle)

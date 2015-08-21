@@ -6,6 +6,7 @@
 #define WeakIdentifierMap_h
 
 #include "platform/heap/Handle.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
@@ -14,6 +15,7 @@ namespace blink {
 template<typename T> struct IdentifierGenerator;
 
 template<> struct IdentifierGenerator<int> {
+    STATIC_ONLY(IdentifierGenerator);
     using IdentifierType = int;
     static IdentifierType next()
     {
@@ -23,6 +25,7 @@ template<> struct IdentifierGenerator<int> {
 };
 
 template<typename T> struct WeakIdentifierMapTraits {
+    STATIC_ONLY(WeakIdentifierMapTraits);
     static void removedFromIdentifierMap(T*) { }
     static void addedToIdentifierMap(T*) { }
 };
@@ -33,6 +36,7 @@ template<typename T,
     bool isGarbageCollected = IsGarbageCollectedType<T>::value> class WeakIdentifierMap;
 
 template<typename T, typename Generator, typename Traits> class WeakIdentifierMap<T, Generator, Traits, false> {
+    WTF_MAKE_FAST_ALLOCATED(WeakIdentifierMap);
 public:
     using IdentifierType = typename Generator::IdentifierType;
     using ReferenceType = RawPtr<WeakIdentifierMap<T, Generator, Traits, false>>;

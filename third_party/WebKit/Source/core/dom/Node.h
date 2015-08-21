@@ -520,6 +520,7 @@ public:
     LayoutBoxModelObject* layoutBoxModelObject() const;
 
     struct AttachContext {
+        STACK_ALLOCATED();
         ComputedStyle* resolvedStyle;
         bool performingReattach;
 

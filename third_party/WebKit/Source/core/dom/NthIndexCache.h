@@ -17,6 +17,7 @@ namespace blink {
 class Document;
 
 class CORE_EXPORT NthIndexData final : public NoBaseWillBeGarbageCollected<NthIndexData> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(NthIndexData);
     WTF_MAKE_NONCOPYABLE(NthIndexData);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(NthIndexData);
 public:

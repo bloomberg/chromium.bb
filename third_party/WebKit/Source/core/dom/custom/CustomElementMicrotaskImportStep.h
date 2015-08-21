@@ -50,8 +50,7 @@ class HTMLImportChild;
 //
 // This step blocks further Custom Element microtask processing if its
 // import isn't "ready" (finished parsing and running script.)
-class CustomElementMicrotaskImportStep : public CustomElementMicrotaskStep {
-    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskImportStep);
+class CustomElementMicrotaskImportStep final : public CustomElementMicrotaskStep {
 public:
     static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskImportStep> create(HTMLImportChild*);
     ~CustomElementMicrotaskImportStep() override;

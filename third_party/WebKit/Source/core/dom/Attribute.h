@@ -26,6 +26,7 @@
 #define Attribute_h
 
 #include "core/dom/QualifiedName.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -33,6 +34,7 @@ namespace blink {
 // value. It is distinct from the web-exposed Attr, which also knows of the
 // element to which it attached, if any.
 class Attribute {
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     Attribute(const QualifiedName& name, const AtomicString& value)
         : m_name(name)

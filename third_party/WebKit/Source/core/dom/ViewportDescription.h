@@ -32,12 +32,14 @@
 #include "core/frame/PageScaleConstraints.h"
 #include "platform/Length.h"
 #include "platform/geometry/FloatSize.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class LocalFrame;
 
 struct CORE_EXPORT ViewportDescription {
+    DISALLOW_ALLOCATION();
 
     enum Type {
         // These are ordered in increasing importance.

@@ -23,6 +23,7 @@ class ArrayBufferOrArrayBufferView;
 // IMPORTANT: The data contained by ArrayPiece is NOT OWNED, so caution must be
 //            taken to ensure it is kept alive.
 class CORE_EXPORT DOMArrayPiece : public WTF::ArrayPiece {
+    DISALLOW_ALLOCATION();
 public:
     enum InitWithUnionOption {
         // Initialize this object as "null" when initialized with an union which

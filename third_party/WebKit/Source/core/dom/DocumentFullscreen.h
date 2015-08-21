@@ -27,6 +27,7 @@
 #define DocumentFullscreen_h
 
 #include "core/events/EventTarget.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -34,6 +35,7 @@ class Document;
 class Element;
 
 class DocumentFullscreen {
+    STATIC_ONLY(DocumentFullscreen);
 public:
     static bool fullscreenEnabled(Document&);
     static Element* fullscreenElement(Document&);

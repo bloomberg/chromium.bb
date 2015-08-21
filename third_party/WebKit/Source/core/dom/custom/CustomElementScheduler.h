@@ -48,6 +48,7 @@ class CustomElementRegistrationContext;
 class HTMLImportChild;
 
 class CustomElementScheduler final : public NoBaseWillBeGarbageCollected<CustomElementScheduler> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CustomElementScheduler);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementScheduler);
 public:
 

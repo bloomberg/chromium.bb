@@ -41,6 +41,7 @@ class Attribute;
 class ShareableElementData;
 
 class ElementDataCache final : public NoBaseWillBeGarbageCollected<ElementDataCache>  {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ElementDataCache);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ElementDataCache)
 public:
     static PassOwnPtrWillBeRawPtr<ElementDataCache> create() { return adoptPtrWillBeNoop(new ElementDataCache); }

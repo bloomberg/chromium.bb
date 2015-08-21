@@ -32,12 +32,14 @@
 #define DocumentEncodingData_h
 
 #include "platform/CrossThreadCopier.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/TextEncoding.h"
 
 namespace blink {
 class TextResourceDecoder;
 
 class DocumentEncodingData {
+    DISALLOW_ALLOCATION();
 public:
     DocumentEncodingData();
     explicit DocumentEncodingData(const TextResourceDecoder&);

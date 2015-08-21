@@ -32,6 +32,7 @@
 #define CustomElementDescriptorHash_h
 
 #include "core/dom/custom/CustomElementDescriptor.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTraits.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -39,6 +40,7 @@
 namespace blink {
 
 struct CustomElementDescriptorHash {
+    STATIC_ONLY(CustomElementDescriptorHash);
     static unsigned hash(const CustomElementDescriptor& descriptor)
     {
         return WTF::pairIntHash(AtomicStringHash::hash(descriptor.type()), WTF::pairIntHash(AtomicStringHash::hash(descriptor.namespaceURI()), AtomicStringHash::hash(descriptor.localName())));
@@ -58,6 +60,7 @@ namespace WTF {
 
 template<>
 struct HashTraits<blink::CustomElementDescriptor> : SimpleClassHashTraits<blink::CustomElementDescriptor> {
+    STATIC_ONLY(HashTraits);
     static const bool emptyValueIsZero = HashTraits<AtomicString>::emptyValueIsZero;
 };
 

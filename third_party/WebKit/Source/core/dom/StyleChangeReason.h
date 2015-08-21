@@ -68,6 +68,7 @@ void init();
 // |StyleChangeReasonForTracing| is strictly only for the tracing purpose as
 // described above. Blink logic must not depend on this value.
 class StyleChangeReasonForTracing {
+    DISALLOW_ALLOCATION();
 public:
     static StyleChangeReasonForTracing create(StyleChangeReasonString reasonString)
     {

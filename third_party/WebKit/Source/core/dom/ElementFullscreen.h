@@ -6,12 +6,14 @@
 #define ElementFullscreen_h
 
 #include "core/events/EventTarget.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class Element;
 
 class ElementFullscreen {
+    STATIC_ONLY(ElementFullscreen);
 public:
     static void requestFullscreen(Element&);
 

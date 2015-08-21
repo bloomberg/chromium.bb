@@ -60,6 +60,7 @@ class CORE_EXPORT StyleEngine final : public NoBaseWillBeGarbageCollectedFinaliz
 public:
 
     class IgnoringPendingStylesheet : public TemporaryChange<bool> {
+        DISALLOW_ALLOCATION();
     public:
         IgnoringPendingStylesheet(StyleEngine& engine)
             : TemporaryChange<bool>(engine.m_ignorePendingStylesheets, true)

@@ -42,6 +42,7 @@ namespace blink {
 class QualifiedName;
 
 class MutationObserverRegistration final : public NoBaseWillBeGarbageCollectedFinalized<MutationObserverRegistration> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(MutationObserverRegistration);
 public:
     static PassOwnPtrWillBeRawPtr<MutationObserverRegistration> create(MutationObserver&, Node*, MutationObserverOptions, const HashSet<AtomicString>& attributeFilter);
     ~MutationObserverRegistration();

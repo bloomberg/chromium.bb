@@ -31,6 +31,7 @@
 #ifndef CustomElementException_h
 #define CustomElementException_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -39,6 +40,7 @@ namespace blink {
 class ExceptionState;
 
 class CustomElementException {
+    STATIC_ONLY(CustomElementException);
 public:
     enum Reason {
         CannotRegisterFromExtension,
@@ -56,8 +58,6 @@ public:
     static void throwException(Reason, const AtomicString& type, ExceptionState&);
 
 private:
-    CustomElementException();
-
     static String preamble(const AtomicString& type);
 };
 

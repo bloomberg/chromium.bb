@@ -80,6 +80,7 @@ public:
 #endif
 
     struct NodeListAtomicCacheMapEntryHash {
+        STATIC_ONLY(NodeListAtomicCacheMapEntryHash);
         static unsigned hash(const std::pair<unsigned char, StringImpl*>& entry)
         {
             return DefaultHash<StringImpl*>::Hash::hash(entry.second) + entry.first;

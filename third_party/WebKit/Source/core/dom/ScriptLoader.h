@@ -38,6 +38,7 @@ class ScriptSourceCode;
 
 
 class CORE_EXPORT ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(ScriptLoader);
 public:
     static PassOwnPtrWillBeRawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
     {

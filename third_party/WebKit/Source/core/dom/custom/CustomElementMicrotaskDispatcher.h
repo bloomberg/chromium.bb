@@ -15,6 +15,7 @@ namespace blink {
 class CustomElementCallbackQueue;
 
 class CustomElementMicrotaskDispatcher final : public NoBaseWillBeGarbageCollected<CustomElementMicrotaskDispatcher> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CustomElementMicrotaskDispatcher);
     WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskDispatcher);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CustomElementMicrotaskDispatcher);
 public:

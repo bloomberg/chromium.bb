@@ -45,6 +45,7 @@ namespace blink {
 
 class CORE_EXPORT CSSSelectorWatch final : public NoBaseWillBeGarbageCollectedFinalized<CSSSelectorWatch>, public WillBeHeapSupplement<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CSSSelectorWatch);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CSSSelectorWatch);
 public:
     virtual ~CSSSelectorWatch() { }
 

@@ -5,9 +5,12 @@
 #ifndef SuspendableTask_h
 #define SuspendableTask_h
 
+#include "wtf/Allocator.h"
+
 namespace blink {
 
 class SuspendableTask {
+    WTF_MAKE_FAST_ALLOCATED(SuspendableTask);
 public:
     SuspendableTask() { }
     virtual void run() = 0;

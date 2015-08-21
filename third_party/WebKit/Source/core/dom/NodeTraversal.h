@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -39,6 +40,7 @@ template <class TraversalNext> class TraversalInclusiveDescendantIterator;
 template <class TraversalNext> class TraversalNextIterator;
 
 class NodeTraversal {
+    STATIC_ONLY(NodeTraversal);
 public:
     using TraversalNodeType = Node;
 

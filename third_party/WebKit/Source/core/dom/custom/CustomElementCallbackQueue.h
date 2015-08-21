@@ -46,6 +46,7 @@ namespace blink {
 // well as callbacks.
 class CustomElementCallbackQueue : public NoBaseWillBeGarbageCollectedFinalized<CustomElementCallbackQueue> {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(CustomElementCallbackQueue);
 public:
     static PassOwnPtrWillBeRawPtr<CustomElementCallbackQueue> create(PassRefPtrWillBeRawPtr<Element>);
 

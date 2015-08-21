@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDefinition.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -47,6 +48,7 @@ class Document;
 class HTMLImportChild;
 
 class CORE_EXPORT CustomElement {
+    STATIC_ONLY(CustomElement);
 public:
     enum NameSet {
         EmbedderNames = 1 << 0,
@@ -71,8 +73,6 @@ public:
     static void wasDestroyed(Element*);
 
 private:
-    CustomElement();
-
     static Vector<AtomicString>& embedderCustomElementNames();
 };
 

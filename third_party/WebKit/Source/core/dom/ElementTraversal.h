@@ -28,10 +28,12 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
 class HasTagName {
+    STACK_ALLOCATED();
 public:
     explicit HasTagName(const QualifiedName& tagName) : m_tagName(tagName) { }
     bool operator() (const Element& element) const { return element.hasTagName(m_tagName); }
@@ -41,6 +43,7 @@ private:
 
 template <class ElementType>
 class Traversal {
+    STATIC_ONLY(Traversal);
 public:
     using TraversalNodeType = ElementType;
     // First or last ElementType child of the node.

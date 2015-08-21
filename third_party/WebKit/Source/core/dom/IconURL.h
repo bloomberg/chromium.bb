@@ -33,6 +33,7 @@
 
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
@@ -44,6 +45,7 @@ enum IconType {
 };
 
 struct IconURL {
+    ALLOW_ONLY_INLINE_ALLOCATION();
     IconType m_iconType;
     Vector<IntSize> m_sizes;
     String m_mimeType;

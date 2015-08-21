@@ -43,8 +43,7 @@ namespace blink {
 class CustomElementRegistrationContext;
 class Element;
 
-class CustomElementMicrotaskResolutionStep : public CustomElementMicrotaskStep {
-    WTF_MAKE_NONCOPYABLE(CustomElementMicrotaskResolutionStep);
+class CustomElementMicrotaskResolutionStep final : public CustomElementMicrotaskStep {
 public:
     static PassOwnPtrWillBeRawPtr<CustomElementMicrotaskResolutionStep> create(PassRefPtrWillBeRawPtr<CustomElementRegistrationContext>, PassRefPtrWillBeRawPtr<Element>, const CustomElementDescriptor&);
 

@@ -29,6 +29,7 @@
 #define TextLinkColors_h
 
 #include "platform/graphics/Color.h"
+#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -36,7 +37,8 @@ namespace blink {
 class CSSPrimitiveValue;
 
 class TextLinkColors {
-WTF_MAKE_NONCOPYABLE(TextLinkColors);
+    DISALLOW_ALLOCATION();
+    WTF_MAKE_NONCOPYABLE(TextLinkColors);
 public:
     TextLinkColors();
 
