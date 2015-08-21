@@ -559,9 +559,10 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
 
 // Tells the browser process whether the web page wants the banner to be shown.
 // This is a reply from ChromeViewMsg_AppBannerPromptRequest.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_AppBannerPromptReply,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_AppBannerPromptReply,
                     int /* request_id */,
-                    blink::WebAppBannerPromptReply /* reply */)
+                    blink::WebAppBannerPromptReply /* reply */,
+                    std::string /* referrer */)
 
 // Tells the browser to restart the app banner display pipeline.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestShowAppBanner,

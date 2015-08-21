@@ -96,6 +96,7 @@ void AppBannerDataFetcher::Start(const GURL& validated_url,
   page_requested_prompt_ = false;
   transition_type_ = transition_type;
   validated_url_ = validated_url;
+  referrer_.erase();
   web_contents->GetManifest(
       base::Bind(&AppBannerDataFetcher::OnDidGetManifest, this));
 }
@@ -108,6 +109,7 @@ void AppBannerDataFetcher::Cancel() {
     is_active_ = false;
     was_canceled_by_page_ = false;
     page_requested_prompt_ = false;
+    referrer_.erase();
   }
 }
 
@@ -155,7 +157,8 @@ bool AppBannerDataFetcher::OnMessageReceived(
 void AppBannerDataFetcher::OnBannerPromptReply(
     content::RenderFrameHost* render_frame_host,
     int request_id,
-    blink::WebAppBannerPromptReply reply) {
+    blink::WebAppBannerPromptReply reply,
+    std::string referrer) {
   content::WebContents* web_contents = GetWebContents();
   if (!CheckFetcherIsStillAlive(web_contents) ||
       request_id != event_request_id_) {
@@ -172,9 +175,12 @@ void AppBannerDataFetcher::OnBannerPromptReply(
   // *after* if it is made before the beforeinstallprompt event handler
   // concludes (e.g. in the event handler itself), so allow the pipeline
   // to continue in this case.
+  //
+  // Stash the referrer for the case where the banner is redisplayed.
   if (reply == blink::WebAppBannerPromptReply::Cancel &&
       !page_requested_prompt_) {
     was_canceled_by_page_ = true;
+    referrer_ = referrer;
     OutputDeveloperNotShownMessage(web_contents, kRendererRequestCancel);
     return;
   }
@@ -183,7 +189,7 @@ void AppBannerDataFetcher::OnBannerPromptReply(
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnDecidedWhetherToShow(this, true));
 
-  ShowBanner(app_icon_.get(), app_title_);
+  ShowBanner(app_icon_.get(), app_title_, referrer);
   is_active_ = false;
 }
 
@@ -194,7 +200,7 @@ void AppBannerDataFetcher::OnRequestShowAppBanner(
     // Simulate an "OK" from the website to restart the banner display pipeline.
     was_canceled_by_page_ = false;
     OnBannerPromptReply(render_frame_host, request_id,
-                        blink::WebAppBannerPromptReply::None);
+                        blink::WebAppBannerPromptReply::None, referrer_);
   } else {
     // Log that the prompt request was made for when we get the prompt reply.
     page_requested_prompt_ = true;

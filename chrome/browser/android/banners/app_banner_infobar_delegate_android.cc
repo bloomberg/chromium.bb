@@ -55,12 +55,14 @@ AppBannerInfoBarDelegateAndroid::AppBannerInfoBarDelegateAndroid(
     const base::string16& app_title,
     SkBitmap* app_icon,
     const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
-    const std::string& native_app_package)
+    const std::string& native_app_package,
+    const std::string& referrer)
     : app_title_(app_title),
       app_icon_(app_icon),
       event_request_id_(event_request_id),
       native_app_data_(native_app_data),
       native_app_package_(native_app_package),
+      referrer_(referrer),
       has_user_interaction_(false) {
   DCHECK(!native_app_data_.is_null());
   CreateJavaDelegate();
@@ -211,12 +213,15 @@ bool AppBannerInfoBarDelegateAndroid::Accept() {
       TrackDismissEvent(DISMISS_EVENT_ERROR);
       return true;
     }
+    ScopedJavaLocalRef<jstring> jreferrer(
+        ConvertUTF8ToJavaString(env, referrer_));
 
     bool was_opened = Java_AppBannerInfoBarDelegateAndroid_installOrOpenNativeApp(
         env,
         java_delegate_.obj(),
         tab->GetJavaObject().obj(),
-        native_app_data_.obj());
+        native_app_data_.obj(),
+        jreferrer.obj());
 
     if (was_opened) {
       TrackDismissEvent(DISMISS_EVENT_APP_OPEN);

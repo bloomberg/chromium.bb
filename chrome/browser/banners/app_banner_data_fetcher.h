@@ -111,7 +111,8 @@ class AppBannerDataFetcher
   // opportunity to cancel.
   void OnBannerPromptReply(content::RenderFrameHost* render_frame_host,
                            int request_id,
-                           blink::WebAppBannerPromptReply reply);
+                           blink::WebAppBannerPromptReply reply,
+                           std::string referrer);
 
   // Called when the client has prevented a banner from being shown, and is
   // now requesting that it be shown later.
@@ -153,7 +154,8 @@ class AppBannerDataFetcher
 
   // Creates a banner for the app using the given |icon|.
   virtual void ShowBanner(const SkBitmap* icon,
-                          const base::string16& title) = 0;
+                          const base::string16& title,
+                          const std::string& referrer) = 0;
 
   // Returns whether the banner should be shown.
   bool CheckIfShouldShowBanner();
@@ -176,6 +178,7 @@ class AppBannerDataFetcher
   ui::PageTransition transition_type_;
   int event_request_id_;
   scoped_ptr<SkBitmap> app_icon_;
+  std::string referrer_;
 
   GURL validated_url_;
   base::string16 app_title_;

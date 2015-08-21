@@ -35,7 +35,9 @@ class AppBannerDataFetcherDesktop : public AppBannerDataFetcher {
                          const GURL& start_url) override;
 
   // AppBannerDataFetcher override.
-  void ShowBanner(const SkBitmap* icon, const base::string16& title) override;
+  void ShowBanner(const SkBitmap* icon,
+                  const base::string16& title,
+                  const std::string& referrer) override;
 
   scoped_ptr<extensions::BookmarkAppHelper> bookmark_app_helper_;
 

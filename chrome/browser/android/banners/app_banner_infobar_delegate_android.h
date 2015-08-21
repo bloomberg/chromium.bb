@@ -40,7 +40,8 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
       const base::string16& app_title,
       SkBitmap* app_icon,
       const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
-      const std::string& native_app_package);
+      const std::string& native_app_package,
+      const std::string& referrer);
 
   ~AppBannerInfoBarDelegateAndroid() override;
 
@@ -81,6 +82,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   base::android::ScopedJavaGlobalRef<jobject> native_app_data_;
   std::string native_app_package_;
+  std::string referrer_;
   bool has_user_interaction_;
 
   DISALLOW_COPY_AND_ASSIGN(AppBannerInfoBarDelegateAndroid);

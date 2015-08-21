@@ -71,7 +71,7 @@ public class AppBannerInfoBarDelegateAndroid {
     }
 
     @CalledByNative
-    private boolean installOrOpenNativeApp(Tab tab, AppData appData) {
+    private boolean installOrOpenNativeApp(Tab tab, AppData appData, String referrer) {
         Context context = ApplicationStatus.getApplicationContext();
         String packageName = appData.packageName();
         PackageManager packageManager = getPackageManager(context);
@@ -85,8 +85,13 @@ public class AppBannerInfoBarDelegateAndroid {
         } else {
             // Try installing the app.  If the installation was kicked off, return false to prevent
             // the infobar from disappearing.
+            // The supplied referrer is the URL of the page requesting the native app banner. It
+            // may be empty depending on that page's referrer policy. If it is non-empty, attach it
+            // to the installation intent as Intent.EXTRA_REFERRER.
+            Intent installIntent = appData.installIntent();
+            if (referrer.length() > 0) installIntent.putExtra(Intent.EXTRA_REFERRER, referrer);
             return !tab.getWindowAndroid().showIntent(
-                    appData.installIntent(), createIntentCallback(appData), null);
+                    installIntent, createIntentCallback(appData), null);
         }
     }
 

@@ -37,7 +37,8 @@ bool AppBannerDataFetcherDesktop::IsWebAppInstalled(
 }
 
 void AppBannerDataFetcherDesktop::ShowBanner(const SkBitmap* icon,
-                                             const base::string16& title) {
+                                             const base::string16& title,
+                                             const std::string& referrer) {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents && !web_app_data().IsEmpty());
 
