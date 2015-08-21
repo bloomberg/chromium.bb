@@ -84,8 +84,6 @@ class ChromeBrowserProvider {
   // Returns an instance of a string provider.
   virtual StringProvider* GetStringProvider();
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
-  // Displays the Translate settings screen.
-  virtual void ShowTranslateSettings();
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
   // Returns the chrome UI scheme.

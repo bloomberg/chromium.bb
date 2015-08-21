@@ -71,9 +71,6 @@ ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
   return nullptr;
 }
 
-void ChromeBrowserProvider::ShowTranslateSettings() {
-}
-
 std::string ChromeBrowserProvider::GetDistributionBrandCode() {
   return std::string();
 }

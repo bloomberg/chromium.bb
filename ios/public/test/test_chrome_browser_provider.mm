@@ -9,7 +9,7 @@
 #include "ios/public/test/fake_string_provider.h"
 
 namespace {
-const char kUIScheme[] = "uischeme";
+const char kUIScheme[] = "chrome";
 }
 
 namespace ios {
