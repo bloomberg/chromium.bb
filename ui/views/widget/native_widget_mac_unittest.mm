@@ -962,6 +962,27 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   widget->CloseNow();
 }
 
+// Test the expected result of GetWorkAreaBoundsInScreen().
+TEST_F(NativeWidgetMacTest, GetWorkAreaBoundsInScreen) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+
+  // This is relative to the top-left of the primary screen, so unless the bot's
+  // display is smaller than 400x300, the window will be wholly contained there.
+  params.bounds = gfx::Rect(100, 100, 300, 200);
+  widget.Init(params);
+  widget.Show();
+  NSRect expected = [[[NSScreen screens] objectAtIndex:0] visibleFrame];
+  NSRect actual = gfx::ScreenRectToNSRect(widget.GetWorkAreaBoundsInScreen());
+  EXPECT_FALSE(NSIsEmptyRect(actual));
+  EXPECT_NSEQ(expected, actual);
+
+  [widget.GetNativeWindow() close];
+  actual = gfx::ScreenRectToNSRect(widget.GetWorkAreaBoundsInScreen());
+  EXPECT_TRUE(NSIsEmptyRect(actual));
+}
+
 }  // namespace test
 }  // namespace views
 

@@ -515,8 +515,7 @@ void NativeWidgetMac::ClearNativeFocus() {
 }
 
 gfx::Rect NativeWidgetMac::GetWorkAreaBoundsInScreen() const {
-  NOTIMPLEMENTED();
-  return gfx::Rect();
+  return gfx::ScreenRectFromNSRect([[GetNativeWindow() screen] visibleFrame]);
 }
 
 Widget::MoveLoopResult NativeWidgetMac::RunMoveLoop(
