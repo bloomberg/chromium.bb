@@ -979,16 +979,15 @@
       'caption': '''Enable reporting of usage and crash-related data''',
       'desc': '''Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
 
-      If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
-
-      If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If this policy is left not set the setting will be what the user chose upon installation / first run.
+      If this setting is enabled, anonymous reporting of usage and crash-related
+      data is sent to Google.  If it is disabled, this information is not sent
+      to Google.  In both cases, users cannot change or override the setting.
+      If this policy is left not set, the setting will be what the user chose
+      upon installation / first run.
 
       This policy is not available on Windows instances that are not joined to
-      an Active Directory domain.''',
+      an Active Directory domain.  (For Chrome OS, see
+      DeviceMetricsReportingEnabled.)''',
     },
     {
       'name': 'PasswordManager',
