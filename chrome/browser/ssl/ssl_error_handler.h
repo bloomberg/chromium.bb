@@ -104,6 +104,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                                GURL* suggested_url) const;
   virtual void CheckSuggestedUrl(const GURL& suggested_url);
   virtual void NavigateToSuggestedURL(const GURL& suggested_url);
+  virtual bool IsErrorOverridable() const;
 
   // content::NotificationObserver:
   void Observe(

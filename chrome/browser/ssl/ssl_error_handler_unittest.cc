@@ -42,7 +42,8 @@ class TestSSLErrorHandler : public SSLErrorHandler {
         suggested_url_checked_(false),
         ssl_interstitial_shown_(false),
         captive_portal_interstitial_shown_(false),
-        common_name_mismatch_redirect_(false) {}
+        common_name_mismatch_redirect_(false),
+        is_overridable_error_(true) {}
 
   ~TestSSLErrorHandler() override {
   }
@@ -100,6 +101,8 @@ class TestSSLErrorHandler : public SSLErrorHandler {
     return common_name_mismatch_redirect_;
   }
 
+  void set_non_overridable_error() { is_overridable_error_ = false; }
+
   void Reset() {
     captive_portal_checked_ = false;
     suggested_url_exists_ = false;
@@ -128,6 +131,8 @@ class TestSSLErrorHandler : public SSLErrorHandler {
     common_name_mismatch_redirect_ = true;
   }
 
+  bool IsErrorOverridable() const override { return is_overridable_error_; }
+
   Profile* profile_;
   bool captive_portal_checked_;
   bool suggested_url_exists_;
@@ -135,6 +140,7 @@ class TestSSLErrorHandler : public SSLErrorHandler {
   bool ssl_interstitial_shown_;
   bool captive_portal_interstitial_shown_;
   bool common_name_mismatch_redirect_;
+  bool is_overridable_error_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSSLErrorHandler);
 };
@@ -262,6 +268,20 @@ TEST_F(SSLErrorHandlerTest, ShouldNotCheckCaptivePortalIfSuggestedUrlExists) {
   EXPECT_TRUE(error_handler()->IsTimerRunning());
   EXPECT_TRUE(error_handler()->suggested_url_checked());
   EXPECT_FALSE(error_handler()->captive_portal_checked());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(error_handler()->IsTimerRunning());
+  EXPECT_TRUE(error_handler()->ssl_interstitial_shown());
+}
+
+TEST_F(SSLErrorHandlerTest, ShouldNotHandleNameMismatchOnNonOverridableError) {
+  error_handler()->set_non_overridable_error();
+  error_handler()->SetSuggestedUrlExists(true);
+  error_handler()->StartHandlingError();
+
+  EXPECT_FALSE(error_handler()->suggested_url_checked());
+  EXPECT_TRUE(error_handler()->captive_portal_checked());
+  EXPECT_TRUE(error_handler()->IsTimerRunning());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunning());

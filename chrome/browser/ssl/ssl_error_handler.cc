@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/net_errors.h"
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_service.h"
@@ -156,8 +157,8 @@ void SSLErrorHandler::StartHandlingError() {
   DCHECK(!dns_names.empty());
   GURL suggested_url;
   if (IsSSLCommonNameMismatchHandlingEnabled() &&
-      ssl_info_.cert_status == net::CERT_STATUS_COMMON_NAME_INVALID &&
-      GetSuggestedUrl(dns_names, &suggested_url)) {
+      cert_error_ == net::ERR_CERT_COMMON_NAME_INVALID &&
+      IsErrorOverridable() && GetSuggestedUrl(dns_names, &suggested_url)) {
     RecordUMA(WWW_MISMATCH_FOUND);
     net::CertStatus extra_cert_errors =
         ssl_info_.cert_status ^ net::CERT_STATUS_COMMON_NAME_INVALID;
@@ -235,6 +236,10 @@ void SSLErrorHandler::NavigateToSuggestedURL(const GURL& suggested_url) {
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
+bool SSLErrorHandler::IsErrorOverridable() const {
+  return SSLBlockingPage::IsOverridable(options_mask_, profile_);
+}
+
 void SSLErrorHandler::CheckForCaptivePortal() {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService* captive_portal_service =
@@ -248,7 +253,7 @@ void SSLErrorHandler::CheckForCaptivePortal() {
 void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   // Show captive portal blocking page. The interstitial owns the blocking page.
-  RecordUMA(SSLBlockingPage::IsOverridable(options_mask_, profile_)
+  RecordUMA(IsErrorOverridable()
                 ? SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE
                 : SHOW_CAPTIVE_PORTAL_INTERSTITIAL_NONOVERRIDABLE);
   (new CaptivePortalBlockingPage(web_contents_, request_url_, landing_url,
@@ -264,9 +269,8 @@ void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 
 void SSLErrorHandler::ShowSSLInterstitial() {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  RecordUMA(SSLBlockingPage::IsOverridable(options_mask_, profile_)
-                ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
-                : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
+  RecordUMA(IsErrorOverridable() ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
+                                 : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
 
   (new SSLBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
                        options_mask_, base::Time::NowFromSystemTime(),
