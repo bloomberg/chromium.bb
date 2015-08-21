@@ -583,6 +583,8 @@
       'browser/mac/relauncher.h',
       'browser/mac/security_wrappers.cc',
       'browser/mac/security_wrappers.h',
+      'browser/manifest/manifest_icon_downloader.cc',
+      'browser/manifest/manifest_icon_downloader.h',
       'browser/manifest/manifest_icon_selector.cc',
       'browser/manifest/manifest_icon_selector.h',
       'browser/media/android/remote/record_cast_action.cc',

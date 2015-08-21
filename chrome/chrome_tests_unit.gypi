@@ -126,6 +126,7 @@
       'browser/io_thread_unittest.cc',
       'browser/logging_chrome_unittest.cc',
       'browser/mac/keystone_glue_unittest.mm',
+      'browser/manifest/manifest_icon_downloader_unittest.cc',
       'browser/manifest/manifest_icon_selector_unittest.cc',
       'browser/media/midi_permission_context_unittest.cc',
       'browser/media/native_desktop_media_list_unittest.cc',

@@ -11,8 +11,8 @@
 #include "chrome/browser/banners/app_banner_debug_log.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -220,27 +220,6 @@ std::string AppBannerDataFetcher::GetAppIdentifier() {
   return web_app_data_.start_url.spec();
 }
 
-bool AppBannerDataFetcher::FetchIcon(const GURL& image_url) {
-  content::WebContents* web_contents = GetWebContents();
-  DCHECK(web_contents);
-
-  // Begin asynchronously fetching the app icon.  AddRef() is done before the
-  // fetch to ensure that the AppBannerDataFetcher isn't deleted before the
-  // BitmapFetcher has called OnFetchComplete() (where the references are
-  // decremented).
-  AddRef();
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  bitmap_fetcher_.reset(new chrome::BitmapFetcher(image_url, this));
-  bitmap_fetcher_->Init(
-      profile->GetRequestContext(),
-      std::string(),
-      net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      net::LOAD_NORMAL);
-  bitmap_fetcher_->Start();
-  return true;
-}
-
 void AppBannerDataFetcher::RecordDidShowBanner(const std::string& event_name) {
   content::WebContents* web_contents = GetWebContents();
   DCHECK(web_contents);
@@ -319,47 +298,49 @@ void AppBannerDataFetcher::OnDidCheckHasServiceWorker(
     return;
   }
 
-  if (has_service_worker) {
-    // Create an infobar to promote the manifest's app.
-    GURL icon_url =
-        ManifestIconSelector::FindBestMatchingIcon(
-            web_app_data_.icons,
-            ideal_icon_size_,
-            gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
-    if (!icon_url.is_empty()) {
-      FetchIcon(icon_url);
-      return;
-    }
-    OutputDeveloperNotShownMessage(web_contents, kCannotDetermineBestIcon);
-  } else {
+  if (!has_service_worker) {
     TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
     OutputDeveloperNotShownMessage(web_contents, kNoMatchingServiceWorker);
+    Cancel();
+    return;
   }
 
-  Cancel();
+  OnHasServiceWorker(web_contents);
 }
 
-void AppBannerDataFetcher::OnFetchComplete(const GURL& url,
-                                           const SkBitmap* icon) {
-  if (is_active_)
-    RequestShowBanner(icon);
+void AppBannerDataFetcher::OnHasServiceWorker(
+    content::WebContents* web_contents) {
+  GURL icon_url =
+    ManifestIconSelector::FindBestMatchingIcon(
+        web_app_data_.icons,
+        ideal_icon_size_,
+        gfx::Screen::GetScreenFor(web_contents->GetNativeView()));
 
-  Release();
+  if (!FetchAppIcon(web_contents, icon_url)) {
+    OutputDeveloperNotShownMessage(web_contents, kCannotDetermineBestIcon);
+    Cancel();
+  }
 }
 
-bool AppBannerDataFetcher::IsWebAppInstalled(
-    content::BrowserContext* browser_context,
-    const GURL& start_url) {
-  return false;
+bool AppBannerDataFetcher::FetchAppIcon(content::WebContents* web_contents,
+                                        const GURL& icon_url) {
+  return ManifestIconDownloader::Download(
+      web_contents,
+      icon_url,
+      ideal_icon_size_,
+      base::Bind(&AppBannerDataFetcher::OnAppIconFetched,
+                 this));
 }
 
-void AppBannerDataFetcher::RequestShowBanner(const SkBitmap* icon) {
+void AppBannerDataFetcher::OnAppIconFetched(const SkBitmap& bitmap) {
+  if (!is_active_) return;
+
   content::WebContents* web_contents = GetWebContents();
   if (!CheckFetcherIsStillAlive(web_contents)) {
     Cancel();
     return;
   }
-  if (!icon) {
+  if (bitmap.drawsNothing()) {
     OutputDeveloperNotShownMessage(web_contents, kNoIconAvailable);
     Cancel();
     return;
@@ -374,13 +355,19 @@ void AppBannerDataFetcher::RequestShowBanner(const SkBitmap* icon) {
     return;
   }
 
-  app_icon_.reset(new SkBitmap(*icon));
+  app_icon_.reset(new SkBitmap(bitmap));
   event_request_id_ = ++gCurrentRequestID;
   web_contents->GetMainFrame()->Send(
       new ChromeViewMsg_AppBannerPromptRequest(
-          web_contents->GetMainFrame()->GetRoutingID(),
-          event_request_id_,
-          GetBannerType()));
+        web_contents->GetMainFrame()->GetRoutingID(),
+        event_request_id_,
+        GetBannerType()));
+}
+
+bool AppBannerDataFetcher::IsWebAppInstalled(
+    content::BrowserContext* browser_context,
+    const GURL& start_url) {
+  return false;
 }
 
 void AppBannerDataFetcher::RecordCouldShowBanner() {

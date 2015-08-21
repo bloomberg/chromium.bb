@@ -35,7 +35,7 @@ bool AppBannerDataFetcherAndroid::ContinueFetching(
   set_app_title(app_title);
   native_app_package_ = app_package;
   native_app_data_.Reset(app_data);
-  return FetchIcon(image_url);
+  return FetchAppIcon(GetWebContents(), image_url);
 }
 
 std::string AppBannerDataFetcherAndroid::GetAppIdentifier() {

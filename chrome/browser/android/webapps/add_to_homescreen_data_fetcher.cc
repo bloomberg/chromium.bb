@@ -9,6 +9,7 @@
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
+#include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -111,17 +112,15 @@ void AddToHomescreenDataFetcher::OnDidGetManifest(
       manifest.icons,
       kPreferredIconSizeInDp,
       gfx::Screen::GetScreenFor(web_contents()->GetNativeView()));
-  if (icon_src.is_valid()) {
-    // Grab the best icon from the manifest.
-    web_contents()->DownloadImage(
+
+  // If fetching the Manifest icon fails, fallback to the best favicon
+  // for the page.
+  if (!ManifestIconDownloader::Download(
+        web_contents(),
         icon_src,
-        false,
-        preferred_icon_size_in_px_,
-        false,
+        kPreferredIconSizeInDp,
         base::Bind(&AddToHomescreenDataFetcher::OnManifestIconFetched,
-                   this));
-  } else {
-    // Grab the best favicon for the page.
+                   this))) {
     FetchFavicon();
   }
 
@@ -186,9 +185,8 @@ void AddToHomescreenDataFetcher::FetchFavicon() {
 
 void AddToHomescreenDataFetcher::OnFaviconFetched(
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  if (!web_contents() || !weak_observer_ || is_icon_saved_) {
+  if (!web_contents() || !weak_observer_ || is_icon_saved_)
     return;
-  }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
@@ -223,32 +221,12 @@ void AddToHomescreenDataFetcher::CreateLauncherIcon(
                  icon_bitmap));
 }
 
-void AddToHomescreenDataFetcher::OnManifestIconFetched(
-    int id,
-    int http_status_code,
-    const GURL& url,
-    const std::vector<SkBitmap>& bitmaps,
-    const std::vector<gfx::Size>& sizes) {
-  if (!web_contents() || !weak_observer_) return;
-
-  // If getting the candidate manifest icon failed, the ShortcutHelper should
-  // fallback to the favicon.
-  // Otherwise, it sets the state as if there was no manifest icon pending.
-  if (bitmaps.empty()) {
+void AddToHomescreenDataFetcher::OnManifestIconFetched(const SkBitmap& icon) {
+  if (icon.drawsNothing()) {
     FetchFavicon();
     return;
   }
-
-  // There might be multiple bitmaps returned. The one to pick is bigger or
-  // equal to the preferred size. |bitmaps| is ordered from bigger to smaller.
-  int preferred_bitmap_index = 0;
-  for (size_t i = 0; i < bitmaps.size(); ++i) {
-    if (bitmaps[i].height() < preferred_icon_size_in_px_)
-      break;
-    preferred_bitmap_index = i;
-  }
-
-  NotifyObserver(bitmaps[preferred_bitmap_index]);
+  NotifyObserver(icon);
 }
 
 void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& bitmap) {

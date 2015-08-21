@@ -82,13 +82,9 @@ class AddToHomescreenDataFetcher
   void CreateLauncherIcon(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
-  // Callback run after an attempt to download manifest icon has been made.  May
-  // kick off the download of a favicon if it failed.
-  void OnManifestIconFetched(int id,
-                             int http_status_code,
-                             const GURL& url,
-                             const std::vector<SkBitmap>& bitmaps,
-                             const std::vector<gfx::Size>& sizes);
+  // Callback run after an attempt to download manifest icon has been made. May
+  // kick off the download of a favicon if it failed (i.e. the bitmap is empty).
+  void OnManifestIconFetched(const SkBitmap& icon);
 
   // Notifies the observer that the shortcut data is all available.
   void NotifyObserver(const SkBitmap& icon);
