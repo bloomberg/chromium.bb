@@ -94,6 +94,7 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     // FIXME: We're ignoring flex-basis here and we shouldn't. We can't start honoring it though until
     // the flex shorthand stops setting it to 0.
     // See https://bugs.webkit.org/show_bug.cgi?id=116117 and http://crbug.com/240765.
+    float previousMaxContentFlexFraction = -1;
     for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         if (child->isOutOfFlowPositioned())
             continue;
@@ -125,6 +126,8 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
             minLogicalWidth = std::max(minPreferredLogicalWidth, minLogicalWidth);
             maxLogicalWidth = std::max(maxPreferredLogicalWidth, maxLogicalWidth);
         }
+
+        previousMaxContentFlexFraction = countIntrinsicSizeForAlgorithmChange(maxPreferredLogicalWidth, child, previousMaxContentFlexFraction);
     }
 
     maxLogicalWidth = std::max(minLogicalWidth, maxLogicalWidth);
@@ -132,6 +135,27 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     LayoutUnit scrollbarWidth = intrinsicScrollbarLogicalWidth();
     maxLogicalWidth += scrollbarWidth;
     minLogicalWidth += scrollbarWidth;
+}
+
+float LayoutFlexibleBox::countIntrinsicSizeForAlgorithmChange(LayoutUnit maxPreferredLogicalWidth, LayoutBox* child, float previousMaxContentFlexFraction) const
+{
+    // Determine whether the new version of the intrinsic size algorithm of the flexbox
+    // spec would produce a different result than our above algorithm.
+    // The algorithm produces a different result iff the max-content flex fraction
+    // (as defined in the new algorithm) is not identical for each flex item.
+    if (isColumnFlow())
+        return previousMaxContentFlexFraction;
+    Length flexBasis = child->styleRef().flexBasis();
+    float flexGrow = child->styleRef().flexGrow();
+    // A flex-basis of auto will lead to a max-content flex fraction of zero, so just like
+    // an inflexible item it would compute to a size of max-content, so we ignore it here.
+    if (flexBasis.isAuto() || flexGrow == 0)
+        return previousMaxContentFlexFraction;
+    flexGrow = std::max(1.0f, flexGrow);
+    float maxContentFlexFraction = maxPreferredLogicalWidth.toFloat() / flexGrow;
+    if (previousMaxContentFlexFraction != -1 && maxContentFlexFraction != previousMaxContentFlexFraction)
+        UseCounter::count(document(), UseCounter::FlexboxIntrinsicSizeAlgorithmIsDifferent);
+    return maxContentFlexFraction;
 }
 
 static int synthesizedBaselineFromContentBox(const LayoutBox& box, LineDirectionMode direction)

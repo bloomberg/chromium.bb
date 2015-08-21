@@ -167,6 +167,8 @@ private:
     void flipForRightToLeftColumn();
     void flipForWrapReverse(const Vector<LineContext>&, LayoutUnit crossAxisStartEdge);
 
+    float countIntrinsicSizeForAlgorithmChange(LayoutUnit maxPreferredWidth, LayoutBox* child, float previousMaxContentFlexFraction) const;
+
     // This is used to cache the preferred size for orthogonal flow children so we don't have to relayout to get it
     HashMap<const LayoutObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
 
