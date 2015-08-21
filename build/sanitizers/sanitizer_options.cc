@@ -143,6 +143,21 @@ SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_suppressions() {
 
 #endif  // THREAD_SANITIZER && OS_LINUX
 
+#if defined(MEMORY_SANITIZER)
+// Default options for MemorySanitizer:
+//   intercept_memcmp=0 - do not detect uninitialized memory in memcmp() calls.
+//     Pending cleanup, see http://crbug.com/523428
+//   strip_path_prefix=Release/../../ - prefixes up to and including this
+//     substring will be stripped from source file paths in symbolized reports.
+const char kMsanDefaultOptions[] =
+    "intercept_memcmp=0 strip_path_prefix=Release/../../ ";
+
+SANITIZER_HOOK_ATTRIBUTE const char *__msan_default_options() {
+  return kMsanDefaultOptions;
+}
+
+#endif  // MEMORY_SANITIZER
+
 #if defined(LEAK_SANITIZER)
 // Default options for LeakSanitizer:
 //   print_suppressions=1 - print the list of matched suppressions.
