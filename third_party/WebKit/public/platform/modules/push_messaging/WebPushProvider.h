@@ -7,43 +7,17 @@
 
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebPassOwnPtr.h"
-#include "public/platform/modules/push_messaging/WebPushError.h"
 #include "public/platform/modules/push_messaging/WebPushPermissionStatus.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
 
 namespace blink {
 
 class WebServiceWorkerRegistration;
+struct WebPushError;
 struct WebPushSubscriptionOptions;
 
-class WebPushSubscriptionCallbacks : public WebCallbacks<WebPassOwnPtr<WebPushSubscription>, const WebPushError&> {
-public:
-    void onSuccess(WebPushSubscription* r)
-    {
-        onSuccess(adoptWebPtr(r));
-    }
-    void onError(WebPushError* e)
-    {
-        onError(*e);
-        delete e;
-    }
-    void onSuccess(WebPassOwnPtr<WebPushSubscription>) override {}
-    void onError(const WebPushError&) override {}
-};
-class WebPushPermissionStatusCallbacks : public WebCallbacks<WebPushPermissionStatus, const WebPushError&> {
-public:
-    void onSuccess(WebPushPermissionStatus* r)
-    {
-        onSuccess(*r);
-    }
-    void onError(WebPushError* e)
-    {
-        onError(*e);
-        delete e;
-    }
-    void onSuccess(WebPushPermissionStatus) override {}
-    void onError(const WebPushError&) override {}
-};
+using WebPushSubscriptionCallbacks = WebCallbacks<WebPassOwnPtr<WebPushSubscription>, const WebPushError&>;
+using WebPushPermissionStatusCallbacks = WebCallbacks<WebPushPermissionStatus, const WebPushError&>;
 using WebPushUnsubscribeCallbacks = WebCallbacks<bool, const WebPushError&>;
 
 class WebPushProvider {
