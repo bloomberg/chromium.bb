@@ -381,8 +381,6 @@ private:
     void executeDeferredLoad();
     void deferredLoadTimerFired(Timer<HTMLMediaElement>*);
 
-    HTMLTrackElement* showingTrackWithSameKind(HTMLTrackElement*) const;
-
     void markCaptionAndSubtitleTracksAsUnconfigured();
 
     // This does not check user gesture restrictions.
