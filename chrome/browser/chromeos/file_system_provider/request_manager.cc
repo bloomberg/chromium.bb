@@ -227,7 +227,11 @@ bool RequestManager::IsInteractingWithUser() const {
   const extensions::WindowControllerList::ControllerList& windows =
       extensions::WindowControllerList::GetInstance()->windows();
   for (const auto& window : windows) {
-    const TabStripModel* const tabs = window->GetBrowser()->tab_strip_model();
+    const Browser* const browser = window->GetBrowser();
+    if (!browser)
+      continue;
+    const TabStripModel* const tabs = browser->tab_strip_model();
+    DCHECK(tabs);
     for (int i = 0; i < tabs->count(); ++i) {
       const content::WebContents* const web_contents =
           tabs->GetWebContentsAt(i);
