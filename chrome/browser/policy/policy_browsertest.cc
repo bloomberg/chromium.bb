@@ -3421,12 +3421,6 @@ class MediaStreamDevicesControllerBrowserTest
                   NULL);
 
     if (whitelist_policy) {
-      // TODO(tommi): Remove the kiosk mode flag when the whitelist is visible
-      // in the media exceptions UI.
-      // See discussion here: https://codereview.chromium.org/15738004/
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kKioskMode);
-
       // Add an entry to the whitelist that allows the specified URL regardless
       // of the setting of kAudioCapturedAllowed.
       base::ListValue* list = new base::ListValue();

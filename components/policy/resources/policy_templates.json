@@ -5127,7 +5127,7 @@
       origin of the requesting URL.  If a match is found, access to audio
       capture devices will be granted without prompt.
 
-      NOTE: This policy is currently only supported when running in Kiosk mode.''',
+      NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
     },
     {
       'name': 'VideoCaptureAllowed',
@@ -5171,7 +5171,7 @@
       origin of the requesting URL.  If a match is found, access to audio
       capture devices will be granted without prompt.
 
-      NOTE: This policy is currently only supported when running in Kiosk mode.''',
+      NOTE: Until version 45, this policy was only supported in Kiosk mode.''',
     },
     {
       'name': 'DisableScreenshots',
