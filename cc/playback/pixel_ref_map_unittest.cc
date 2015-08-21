@@ -39,8 +39,7 @@ TEST(PixelRefMapTest, PixelRefMapIterator) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
-        CreateBitmap(gfx::Size(500, 500), "discardable",
-                     &discardable_bitmap[y][x]);
+        CreateDiscardableBitmap(gfx::Size(500, 500), &discardable_bitmap[y][x]);
         SkPaint paint;
         content_layer_client.add_draw_bitmap(
             discardable_bitmap[y][x], gfx::Point(x * 512 + 6, y * 512 + 6),
@@ -161,8 +160,7 @@ TEST(PixelRefMapTest, PixelRefMapIteratorNonZeroLayer) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
-        CreateBitmap(gfx::Size(500, 500), "discardable",
-                     &discardable_bitmap[y][x]);
+        CreateDiscardableBitmap(gfx::Size(500, 500), &discardable_bitmap[y][x]);
         SkPaint paint;
         content_layer_client.add_draw_bitmap(
             discardable_bitmap[y][x],
@@ -304,8 +302,7 @@ TEST(PixelRefMapTest, PixelRefMapIteratorOnePixelQuery) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       if ((x + y) & 1) {
-        CreateBitmap(gfx::Size(500, 500), "discardable",
-                     &discardable_bitmap[y][x]);
+        CreateDiscardableBitmap(gfx::Size(500, 500), &discardable_bitmap[y][x]);
         SkPaint paint;
         content_layer_client.add_draw_bitmap(
             discardable_bitmap[y][x], gfx::Point(x * 512 + 6, y * 512 + 6),

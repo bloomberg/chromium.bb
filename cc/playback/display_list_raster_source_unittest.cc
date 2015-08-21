@@ -176,9 +176,9 @@ TEST(DisplayListRasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
       FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
   SkBitmap discardable_bitmap[2][2];
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[0][0]);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[0][1]);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[1][1]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][0]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][1]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][1]);
 
   // Discardable pixel refs are found in the following cells:
   // |---|---|

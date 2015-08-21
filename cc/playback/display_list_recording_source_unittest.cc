@@ -29,17 +29,17 @@ TEST_F(DisplayListRecordingSourceTest, DiscardablePixelRefsWithTransform) {
   recording_source->SetGridCellSize(grid_cell_size);
   SkBitmap discardable_bitmap[2][2];
   gfx::Transform identity_transform;
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[0][0]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][0]);
   // Translate transform is equivalent to moving using point.
   gfx::Transform translate_transform;
   translate_transform.Translate(0, 130);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[1][0]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][0]);
   // This moves the bitmap to center of viewport and rotate, this would make
   // this bitmap in all four tile grids.
   gfx::Transform rotate_transform;
   rotate_transform.Translate(112, 112);
   rotate_transform.Rotate(45);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[1][1]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][1]);
 
   gfx::RectF rect(0, 0, 32, 32);
   gfx::RectF translate_rect = rect;

@@ -8,10 +8,21 @@
 #include "cc/playback/picture.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImageGenerator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+
+namespace {
+
+class TestImageGenerator : public SkImageGenerator {
+ public:
+  explicit TestImageGenerator(const SkImageInfo& info)
+      : SkImageGenerator(info) {}
+};
+
+}  // anonymous namespace
 
 void DrawPicture(unsigned char* buffer,
                  const gfx::Rect& layer_rect,
@@ -39,12 +50,10 @@ void DrawDisplayList(unsigned char* buffer,
   list->Raster(&canvas, NULL, gfx::Rect(), 1.0f);
 }
 
-void CreateBitmap(const gfx::Size& size, const char* uri, SkBitmap* bitmap) {
-  SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
-
-  bitmap->allocPixels(info);
-  bitmap->pixelRef()->setImmutable();
-  bitmap->pixelRef()->setURI(uri);
+void CreateDiscardableBitmap(const gfx::Size& size, SkBitmap* bitmap) {
+  const SkImageInfo info =
+      SkImageInfo::MakeN32Premul(size.width(), size.height());
+  SkInstallDiscardablePixelRef(new TestImageGenerator(info), bitmap);
 }
 
 }  // namespace cc

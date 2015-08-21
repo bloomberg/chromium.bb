@@ -28,7 +28,7 @@ void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,
                      scoped_refptr<DisplayItemList> list);
 
-void CreateBitmap(const gfx::Size& size, const char* uri, SkBitmap* bitmap);
+void CreateDiscardableBitmap(const gfx::Size& size, SkBitmap* bitmap);
 
 }  // namespace cc
 

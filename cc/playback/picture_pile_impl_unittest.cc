@@ -167,9 +167,9 @@ TEST(PicturePileImplTest, PixelRefIteratorDiscardableRefsOneTile) {
       FakePicturePile::CreateFilledPile(tile_size, layer_bounds);
 
   SkBitmap discardable_bitmap[2][2];
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[0][0]);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[0][1]);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[1][1]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][0]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][1]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][1]);
 
   // Discardable pixel refs are found in the following cells:
   // |---|---|
@@ -530,7 +530,7 @@ TEST(PicturePileImplTest, PixelRefIteratorBorders) {
   SkBitmap discardable_bitmap[arraysize(bitmap_rects)];
 
   for (size_t i = 0; i < arraysize(bitmap_rects); ++i) {
-    CreateBitmap(bitmap_rects[i].size(), "discardable", &discardable_bitmap[i]);
+    CreateDiscardableBitmap(bitmap_rects[i].size(), &discardable_bitmap[i]);
     recording_source->add_draw_bitmap(discardable_bitmap[i],
                                       bitmap_rects[i].origin());
   }

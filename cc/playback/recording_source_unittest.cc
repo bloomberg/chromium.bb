@@ -161,7 +161,8 @@ TYPED_TEST(RecordingSourceTest, NoDiscardablePixelRefs) {
   simple_paint.setColor(SkColorSetARGB(255, 12, 23, 34));
 
   SkBitmap non_discardable_bitmap;
-  CreateBitmap(gfx::Size(128, 128), "notdiscardable", &non_discardable_bitmap);
+  non_discardable_bitmap.allocN32Pixels(128, 128);
+  non_discardable_bitmap.setImmutable();
 
   recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 256, 256),
                                              simple_paint);
@@ -241,9 +242,9 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefs) {
       CreateRecordingSource<TypeParam>(recorded_viewport, grid_cell_size);
 
   SkBitmap discardable_bitmap[2][2];
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[0][0]);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[1][0]);
-  CreateBitmap(gfx::Size(32, 32), "discardable", &discardable_bitmap[1][1]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[0][0]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][0]);
+  CreateDiscardableBitmap(gfx::Size(32, 32), &discardable_bitmap[1][1]);
 
   // Discardable pixel refs are found in the following cells:
   // |---|---|
@@ -377,12 +378,13 @@ TYPED_TEST(RecordingSourceTest, DiscardablePixelRefsBaseNonDiscardable) {
       CreateRecordingSource<TypeParam>(recorded_viewport, grid_cell_size);
 
   SkBitmap non_discardable_bitmap;
-  CreateBitmap(gfx::Size(512, 512), "notdiscardable", &non_discardable_bitmap);
+  non_discardable_bitmap.allocN32Pixels(512, 512);
+  non_discardable_bitmap.setImmutable();
 
   SkBitmap discardable_bitmap[2][2];
-  CreateBitmap(gfx::Size(128, 128), "discardable", &discardable_bitmap[0][0]);
-  CreateBitmap(gfx::Size(128, 128), "discardable", &discardable_bitmap[0][1]);
-  CreateBitmap(gfx::Size(128, 128), "discardable", &discardable_bitmap[1][1]);
+  CreateDiscardableBitmap(gfx::Size(128, 128), &discardable_bitmap[0][0]);
+  CreateDiscardableBitmap(gfx::Size(128, 128), &discardable_bitmap[0][1]);
+  CreateDiscardableBitmap(gfx::Size(128, 128), &discardable_bitmap[1][1]);
 
   // One large non-discardable bitmap covers the whole grid.
   // Discardable pixel refs are found in the following cells:

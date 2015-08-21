@@ -23,9 +23,6 @@ namespace skia {
 
 namespace {
 
-// URI label for a discardable SkPixelRef.
-const char kLabelDiscardable[] = "discardable";
-
 class DiscardablePixelRefSet {
  public:
   DiscardablePixelRefSet(
@@ -36,16 +33,16 @@ class DiscardablePixelRefSet {
            const SkRect& rect,
            const SkMatrix& matrix,
            SkFilterQuality filter_quality) {
-    // Only save discardable pixel refs.
-    if (pixel_ref->getURI() &&
-        !strcmp(pixel_ref->getURI(), kLabelDiscardable)) {
-      PixelRefUtils::PositionPixelRef position_pixel_ref;
-      position_pixel_ref.pixel_ref = pixel_ref;
-      position_pixel_ref.pixel_ref_rect = rect;
-      position_pixel_ref.matrix = matrix;
-      position_pixel_ref.filter_quality = filter_quality;
-      pixel_refs_->push_back(position_pixel_ref);
-    }
+    // We should only be saving discardable pixel refs.
+    SkASSERT(pixel_ref);
+    SkASSERT(pixel_ref->isLazyGenerated());
+
+    PixelRefUtils::PositionPixelRef position_pixel_ref;
+    position_pixel_ref.pixel_ref = pixel_ref;
+    position_pixel_ref.pixel_ref_rect = rect;
+    position_pixel_ref.matrix = matrix;
+    position_pixel_ref.filter_quality = filter_quality;
+    pixel_refs_->push_back(position_pixel_ref);
   }
 
  private:
@@ -182,6 +179,27 @@ class GatherPixelRefDevice : public SkBitmapDevice {
     SkBitmap paint_bitmap;
     if (GetBitmapFromPaint(paint, &paint_bitmap))
       AddBitmap(paint_bitmap, mapped_rect, identity, paint.getFilterQuality());
+  }
+  void drawImage(const SkDraw& draw,
+                 const SkImage* image,
+                 SkScalar x,
+                 SkScalar y,
+                 const SkPaint& paint) override {
+    const SkMatrix image_matrix = SkMatrix::MakeTrans(x, y);
+    DrawImageInternal(draw, image, image_matrix, paint);
+  }
+  void drawImageRect(const SkDraw& draw,
+                     const SkImage* image,
+                     const SkRect* src_or_null,
+                     const SkRect& dst,
+                     const SkPaint& paint,
+                     SkCanvas::SrcRectConstraint) override {
+    const SkRect src = src_or_null
+        ? *src_or_null
+        : SkRect::MakeIWH(image->width(), image->height());
+    const SkMatrix image_matrix =
+        SkMatrix::MakeRectToRect(src, dst, SkMatrix::kFill_ScaleToFit);
+    DrawImageInternal(draw, image, image_matrix, paint);
   }
   void drawText(const SkDraw& draw,
                 const void* text,
@@ -354,9 +372,22 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                  const SkRect& rect,
                  const SkMatrix& matrix,
                  SkFilterQuality filter_quality) {
-    SkRect canvas_rect = SkRect::MakeWH(width(), height());
-    if (rect.intersects(canvas_rect)) {
+    const SkRect canvas_rect = SkRect::Make(imageInfo().bounds());
+    if (rect.intersects(canvas_rect) && bm.pixelRef()->isLazyGenerated()) {
       pixel_ref_set_->Add(bm.pixelRef(), rect, matrix, filter_quality);
+    }
+  }
+
+  void AddImage(const SkImage* image,
+                const SkRect& rect,
+                const SkMatrix& matrix,
+                SkFilterQuality filter_quality) {
+    const SkRect canvas_rect = SkRect::Make(imageInfo().bounds());
+    if (rect.intersects(canvas_rect) && image->isLazyGenerated()) {
+      SkBitmap bm;
+      if (image->asLegacyBitmap(&bm, SkImage::kRO_LegacyBitmapMode) && bm.pixelRef()) {
+        pixel_ref_set_->Add(bm.pixelRef(), rect, matrix, filter_quality);
+      }
     }
   }
 
@@ -369,6 +400,23 @@ class GatherPixelRefDevice : public SkBitmapDevice {
         return shader->asABitmap(bm, NULL, NULL);
     }
     return false;
+  }
+
+  void DrawImageInternal(const SkDraw& draw,
+                         const SkImage* image,
+                         const SkMatrix& matrix,
+                         const SkPaint& paint) {
+      const SkMatrix total_matrix = SkMatrix::Concat(*draw.fMatrix, matrix);
+      const SkRect image_rect = SkRect::MakeIWH(image->width(), image->height());
+      SkRect mapped_rect;
+      total_matrix.mapRect(&mapped_rect, image_rect);
+      AddImage(image, mapped_rect, total_matrix, paint.getFilterQuality());
+
+      SkBitmap paint_bitmap;
+      if (GetBitmapFromPaint(paint, &paint_bitmap)) {
+        AddBitmap(paint_bitmap, mapped_rect, total_matrix,
+                  paint.getFilterQuality());
+      }
   }
 };
 
