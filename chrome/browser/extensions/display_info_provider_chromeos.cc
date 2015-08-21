@@ -385,6 +385,11 @@ gfx::Screen* DisplayInfoProviderChromeOS::GetActiveScreen() {
   return ash::Shell::GetScreen();
 }
 
+void DisplayInfoProviderChromeOS::EnableUnifiedDesktop(bool enable) {
+  ash::Shell::GetInstance()->display_manager()->SetUnifiedDesktopEnabled(
+      enable);
+}
+
 // static
 DisplayInfoProvider* DisplayInfoProvider::Create() {
   return new DisplayInfoProviderChromeOS();

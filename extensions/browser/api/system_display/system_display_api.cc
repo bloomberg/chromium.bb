@@ -51,4 +51,16 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
 #endif
 }
 
+bool SystemDisplayEnableUnifiedDesktopFunction::RunSync() {
+#if !defined(OS_CHROMEOS)
+  SetError("Function available only on ChromeOS.");
+  return false;
+#else
+  scoped_ptr<api::system_display::EnableUnifiedDesktop::Params> params(
+      api::system_display::EnableUnifiedDesktop::Params::Create(*args_));
+  DisplayInfoProvider::Get()->EnableUnifiedDesktop(params->enabled);
+  return true;
+#endif
+}
+
 }  // namespace extensions

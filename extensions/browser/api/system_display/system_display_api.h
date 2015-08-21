@@ -30,6 +30,16 @@ class SystemDisplaySetDisplayPropertiesFunction : public SyncExtensionFunction {
   bool RunSync() override;
 };
 
+class SystemDisplayEnableUnifiedDesktopFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.enableUnifiedDesktop",
+                             SYSTEM_DISPLAY_ENABLEUNIFIEDDESKTOP);
+
+ protected:
+  ~SystemDisplayEnableUnifiedDesktopFunction() override {}
+  bool RunSync() override;
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_

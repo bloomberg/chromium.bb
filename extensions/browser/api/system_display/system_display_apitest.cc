@@ -84,11 +84,17 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 
   gfx::Screen* GetActiveScreen() override { return NULL; }
 
+  void EnableUnifiedDesktop(bool enable) override {
+    unified_desktop_enabled_ = enable;
+  }
+
   scoped_ptr<base::DictionaryValue> GetSetInfoValue() {
     return set_info_value_.Pass();
   }
 
   std::string GetSetInfoDisplayId() const { return set_info_display_id_; }
+
+  bool unified_desktop_enabled() const { return unified_desktop_enabled_; }
 
  private:
   // Update the content of the |unit| obtained for |display| using
@@ -116,6 +122,7 @@ class MockDisplayInfoProvider : public DisplayInfoProvider {
 
   scoped_ptr<base::DictionaryValue> set_info_value_;
   std::string set_info_display_id_;
+  bool unified_desktop_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockDisplayInfoProvider);
 };
@@ -246,6 +253,47 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayKioskEnabled) {
 
   EXPECT_EQ("display_id", provider_->GetSetInfoDisplayId());
 }
+
+IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
+  scoped_ptr<base::DictionaryValue> test_extension_value(
+      api_test_utils::ParseDictionary("{\n"
+                                      "  \"name\": \"Test\",\n"
+                                      "  \"version\": \"1.0\",\n"
+                                      "  \"app\": {\n"
+                                      "    \"background\": {\n"
+                                      "      \"scripts\": [\"background.js\"]\n"
+                                      "    }\n"
+                                      "  }\n"
+                                      "}"));
+  scoped_refptr<Extension> test_extension(
+      api_test_utils::CreateExtension(test_extension_value.get()));
+  {
+    scoped_refptr<SystemDisplayEnableUnifiedDesktopFunction>
+        enable_unified_function(
+            new SystemDisplayEnableUnifiedDesktopFunction());
+
+    enable_unified_function->set_has_callback(true);
+    enable_unified_function->set_extension(test_extension.get());
+
+    EXPECT_FALSE(provider_->unified_desktop_enabled());
+
+    ASSERT_TRUE(api_test_utils::RunFunction(enable_unified_function.get(),
+                                            "[true]", browser_context()));
+    EXPECT_TRUE(provider_->unified_desktop_enabled());
+  }
+  {
+    scoped_refptr<SystemDisplayEnableUnifiedDesktopFunction>
+        enable_unified_function(
+            new SystemDisplayEnableUnifiedDesktopFunction());
+
+    enable_unified_function->set_has_callback(true);
+    enable_unified_function->set_extension(test_extension.get());
+    ASSERT_TRUE(api_test_utils::RunFunction(enable_unified_function.get(),
+                                            "[false]", browser_context()));
+    EXPECT_FALSE(provider_->unified_desktop_enabled());
+  }
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace extensions

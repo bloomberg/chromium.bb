@@ -141,6 +141,11 @@ namespace system.display {
         DOMString id,
         DisplayProperties info,
         optional SetDisplayUnitInfoCallback callback);
+
+    // Enables/disables the unified desktop feature. Note that this simply
+    // enables the feature, but will not change the actual desktop mode.
+    // (That is, if the desktop is in mirror mode, it will stay in mirror mode)
+    static void enableUnifiedDesktop(boolean enabled);
   };
 
   interface Events {

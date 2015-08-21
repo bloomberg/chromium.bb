@@ -74,6 +74,8 @@ void DisplayInfoProvider::InitializeForTesting(
   g_display_info_provider = display_info_provider;
 }
 
+void DisplayInfoProvider::EnableUnifiedDesktop(bool enable) {}
+
 DisplayInfo DisplayInfoProvider::GetAllDisplaysInfo() {
   // TODO(scottmg): Native is wrong http://crbug.com/133312
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();

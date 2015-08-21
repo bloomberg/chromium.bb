@@ -51,6 +51,9 @@ class DisplayInfoProvider {
   // display changes events.
   virtual gfx::Screen* GetActiveScreen() = 0;
 
+  // Enable the unified desktop feature.
+  virtual void EnableUnifiedDesktop(bool enable);
+
   DisplayInfo GetAllDisplaysInfo();
 
  protected:
