@@ -33,6 +33,7 @@
 
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 

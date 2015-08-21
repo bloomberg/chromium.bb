@@ -39,9 +39,25 @@ class LayoutObject;
 class Node;
 class VisiblePosition;
 class IntPoint;
+class InlineBox;
 class LocalFrame;
 
 enum EWordSide { RightWordIfOnBoundary = false, LeftWordIfOnBoundary = true };
+
+struct InlineBoxPosition {
+    InlineBox* inlineBox;
+    int offsetInBox;
+
+    InlineBoxPosition()
+        : inlineBox(nullptr), offsetInBox(0)
+    {
+    }
+
+    InlineBoxPosition(InlineBox* inlineBox, int offsetInBox)
+        : inlineBox(inlineBox), offsetInBox(offsetInBox)
+    {
+    }
+};
 
 // Position
 // mostForward/BackwardCaretPosition are used for moving back and forth between
@@ -125,6 +141,12 @@ bool isEndOfDocument(const VisiblePosition &);
 VisiblePosition startOfEditableContent(const VisiblePosition&);
 VisiblePosition endOfEditableContent(const VisiblePosition&);
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition&);
+
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity, TextDirection primaryDirection);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity, TextDirection primaryDirection);
+CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const VisiblePosition&);
 
 // Rect is local to the returned layoutObject
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity&, LayoutObject*&);

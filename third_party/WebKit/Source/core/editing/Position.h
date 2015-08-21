@@ -39,27 +39,11 @@
 namespace blink {
 
 class Element;
-class InlineBox;
 class Node;
 class LayoutObject;
 class Text;
 enum class TextAffinity;
 class TreeScope;
-
-struct InlineBoxPosition {
-    InlineBox* inlineBox;
-    int offsetInBox;
-
-    InlineBoxPosition()
-        : inlineBox(nullptr), offsetInBox(0)
-    {
-    }
-
-    InlineBoxPosition(InlineBox* inlineBox, int offsetInBox)
-        : inlineBox(inlineBox), offsetInBox(offsetInBox)
-    {
-    }
-};
 
 enum PositionMoveType {
     CodePoint, // Move by a single code point.
@@ -422,17 +406,6 @@ inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrateg
 {
     return toPositionInComposedTree(position);
 }
-
-// TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
-// |VisiblePosition::characterAfter()| and |VisiblePosition::characterBefore()|.
-// TODO(yosin) We should move |isRenderedCharacter()| to "VisibleUnits.cpp",
-// since it is used only in "editing/commands/"
-CORE_EXPORT bool isRenderedCharacter(const Position&);
-// TODO(yosin) We should move |computeInlineBoxPosition()| to "VisibleUnits.cpp"
-CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity);
-CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const Position&, TextAffinity, TextDirection primaryDirection);
-CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity);
-CORE_EXPORT InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree&, TextAffinity, TextDirection primaryDirection);
 
 // TODO(yosin) We should move |inRenderedText()| to "VisibleUnits.h" for
 // reduce dependency of |LayoutObject| in |Position| class.

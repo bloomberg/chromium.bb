@@ -138,13 +138,6 @@ private:
     TextAffinity m_affinity;
 };
 
-// TODO(yosin) We should move |computeInlineBoxPosition()| to "VisibleUnits.h"
-// with |Position| version.
-inline InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
-{
-    return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
-}
-
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 
 CORE_EXPORT Position canonicalPositionOf(const Position&);

@@ -1456,6 +1456,261 @@ VisiblePosition rightBoundaryOfLine(const VisiblePosition& c, TextDirection dire
     return direction == LTR ? logicalEndOfLine(c) : logicalStartOfLine(c);
 }
 
+static bool isNonTextLeafChild(LayoutObject* object)
+{
+    if (object->slowFirstChild())
+        return false;
+    if (object->isText())
+        return false;
+    return true;
+}
+
+static InlineTextBox* searchAheadForBetterMatch(LayoutObject* layoutObject)
+{
+    LayoutBlock* container = layoutObject->containingBlock();
+    for (LayoutObject* next = layoutObject->nextInPreOrder(container); next; next = next->nextInPreOrder(container)) {
+        if (next->isLayoutBlock())
+            return 0;
+        if (next->isBR())
+            return 0;
+        if (isNonTextLeafChild(next))
+            return 0;
+        if (next->isText()) {
+            InlineTextBox* match = 0;
+            int minOffset = INT_MAX;
+            for (InlineTextBox* box = toLayoutText(next)->firstTextBox(); box; box = box->nextTextBox()) {
+                int caretMinOffset = box->caretMinOffset();
+                if (caretMinOffset < minOffset) {
+                    match = box;
+                    minOffset = caretMinOffset;
+                }
+            }
+            if (match)
+                return match;
+        }
+    }
+    return 0;
+}
+
+template <typename Strategy>
+PositionAlgorithm<Strategy> downstreamIgnoringEditingBoundaries(PositionAlgorithm<Strategy> position)
+{
+    PositionAlgorithm<Strategy> lastPosition;
+    while (position != lastPosition) {
+        lastPosition = position;
+        position = position.downstream(CanCrossEditingBoundary);
+    }
+    return position;
+}
+
+template <typename Strategy>
+PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<Strategy> position)
+{
+    PositionAlgorithm<Strategy> lastPosition;
+    while (position != lastPosition) {
+        lastPosition = position;
+        position = position.upstream(CanCrossEditingBoundary);
+    }
+    return position;
+}
+
+template <typename Strategy>
+static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity, TextDirection primaryDirection)
+{
+    InlineBox* inlineBox = nullptr;
+    int caretOffset = position.computeEditingOffset();
+    Node* const anchorNode = position.anchorNode();
+    LayoutObject* layoutObject = anchorNode->isShadowRoot() ? toShadowRoot(anchorNode)->host()->layoutObject() : anchorNode->layoutObject();
+
+    if (!layoutObject->isText()) {
+        inlineBox = 0;
+        if (canHaveChildrenForEditing(anchorNode) && layoutObject->isLayoutBlockFlow() && hasRenderedNonAnonymousDescendantsWithHeight(layoutObject)) {
+            // Try a visually equivalent position with possibly opposite
+            // editability. This helps in case |this| is in an editable block
+            // but surrounded by non-editable positions. It acts to negate the
+            // logic at the beginning of LayoutObject::createVisiblePosition().
+            PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(position);
+            if (equivalent == position) {
+                equivalent = upstreamIgnoringEditingBoundaries(position);
+                if (equivalent == position || downstreamIgnoringEditingBoundaries(equivalent) == position)
+                    return InlineBoxPosition(inlineBox, caretOffset);
+            }
+
+            return computeInlineBoxPosition(equivalent, TextAffinity::Upstream, primaryDirection);
+        }
+        if (layoutObject->isBox()) {
+            inlineBox = toLayoutBox(layoutObject)->inlineBoxWrapper();
+            if (!inlineBox || (caretOffset > inlineBox->caretMinOffset() && caretOffset < inlineBox->caretMaxOffset()))
+                return InlineBoxPosition(inlineBox, caretOffset);
+        }
+    } else {
+        LayoutText* textLayoutObject = toLayoutText(layoutObject);
+
+        InlineTextBox* box;
+        InlineTextBox* candidate = 0;
+
+        for (box = textLayoutObject->firstTextBox(); box; box = box->nextTextBox()) {
+            int caretMinOffset = box->caretMinOffset();
+            int caretMaxOffset = box->caretMaxOffset();
+
+            if (caretOffset < caretMinOffset || caretOffset > caretMaxOffset || (caretOffset == caretMaxOffset && box->isLineBreak()))
+                continue;
+
+            if (caretOffset > caretMinOffset && caretOffset < caretMaxOffset)
+                return InlineBoxPosition(box, caretOffset);
+
+            if (((caretOffset == caretMaxOffset) ^ (affinity == TextAffinity::Downstream))
+                || ((caretOffset == caretMinOffset) ^ (affinity == TextAffinity::Upstream))
+                || (caretOffset == caretMaxOffset && box->nextLeafChild() && box->nextLeafChild()->isLineBreak()))
+                break;
+
+            candidate = box;
+        }
+        if (candidate && candidate == textLayoutObject->lastTextBox() && affinity == TextAffinity::Downstream) {
+            box = searchAheadForBetterMatch(textLayoutObject);
+            if (box)
+                caretOffset = box->caretMinOffset();
+        }
+        inlineBox = box ? box : candidate;
+    }
+
+    if (!inlineBox)
+        return InlineBoxPosition(inlineBox, caretOffset);
+
+    unsigned char level = inlineBox->bidiLevel();
+
+    if (inlineBox->direction() == primaryDirection) {
+        if (caretOffset == inlineBox->caretRightmostOffset()) {
+            InlineBox* nextBox = inlineBox->nextLeafChild();
+            if (!nextBox || nextBox->bidiLevel() >= level)
+                return InlineBoxPosition(inlineBox, caretOffset);
+
+            level = nextBox->bidiLevel();
+            InlineBox* prevBox = inlineBox;
+            do {
+                prevBox = prevBox->prevLeafChild();
+            } while (prevBox && prevBox->bidiLevel() > level);
+
+            // For example, abc FED 123 ^ CBA
+            if (prevBox && prevBox->bidiLevel() == level)
+                return InlineBoxPosition(inlineBox, caretOffset);
+
+            // For example, abc 123 ^ CBA
+            while (InlineBox* nextBox = inlineBox->nextLeafChild()) {
+                if (nextBox->bidiLevel() < level)
+                    break;
+                inlineBox = nextBox;
+            }
+            return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+        }
+
+        InlineBox* prevBox = inlineBox->prevLeafChild();
+        if (!prevBox || prevBox->bidiLevel() >= level)
+            return InlineBoxPosition(inlineBox, caretOffset);
+
+        level = prevBox->bidiLevel();
+        InlineBox* nextBox = inlineBox;
+        do {
+            nextBox = nextBox->nextLeafChild();
+        } while (nextBox && nextBox->bidiLevel() > level);
+
+        if (nextBox && nextBox->bidiLevel() == level)
+            return InlineBoxPosition(inlineBox, caretOffset);
+
+        while (InlineBox* prevBox = inlineBox->prevLeafChild()) {
+            if (prevBox->bidiLevel() < level)
+                break;
+            inlineBox = prevBox;
+        }
+        return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
+    }
+
+    if (caretOffset == inlineBox->caretLeftmostOffset()) {
+        InlineBox* prevBox = inlineBox->prevLeafChildIgnoringLineBreak();
+        if (!prevBox || prevBox->bidiLevel() < level) {
+            // Left edge of a secondary run. Set to the right edge of the entire
+            // run.
+            while (InlineBox* nextBox = inlineBox->nextLeafChildIgnoringLineBreak()) {
+                if (nextBox->bidiLevel() < level)
+                    break;
+                inlineBox = nextBox;
+            }
+            return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+        }
+
+        if (prevBox->bidiLevel() > level) {
+            // Right edge of a "tertiary" run. Set to the left edge of that run.
+            while (InlineBox* tertiaryBox = inlineBox->prevLeafChildIgnoringLineBreak()) {
+                if (tertiaryBox->bidiLevel() <= level)
+                    break;
+                inlineBox = tertiaryBox;
+            }
+            return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
+        }
+        return InlineBoxPosition(inlineBox, caretOffset);
+    }
+
+    if (layoutObject && layoutObject->style()->unicodeBidi() == Plaintext) {
+        if (inlineBox->bidiLevel() < level)
+            return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
+        return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+    }
+
+    InlineBox* nextBox = inlineBox->nextLeafChildIgnoringLineBreak();
+    if (!nextBox || nextBox->bidiLevel() < level) {
+        // Right edge of a secondary run. Set to the left edge of the entire
+        // run.
+        while (InlineBox* prevBox = inlineBox->prevLeafChildIgnoringLineBreak()) {
+            if (prevBox->bidiLevel() < level)
+                break;
+            inlineBox = prevBox;
+        }
+        return InlineBoxPosition(inlineBox, inlineBox->caretLeftmostOffset());
+    }
+
+    if (nextBox->bidiLevel() <= level)
+        return InlineBoxPosition(inlineBox, caretOffset);
+
+    // Left edge of a "tertiary" run. Set to the right edge of that run.
+    while (InlineBox* tertiaryBox = inlineBox->nextLeafChildIgnoringLineBreak()) {
+        if (tertiaryBox->bidiLevel() <= level)
+            break;
+        inlineBox = tertiaryBox;
+    }
+    return InlineBoxPosition(inlineBox, inlineBox->caretRightmostOffset());
+}
+
+template <typename Strategy>
+static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
+{
+    return computeInlineBoxPositionAlgorithm<Strategy>(position, affinity, primaryDirectionOf(*position.anchorNode()));
+}
+
+InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity)
+{
+    return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity);
+}
+
+InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity)
+{
+    return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
+}
+
+InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
+{
+    return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
+}
+
+InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity, TextDirection primaryDirection)
+{
+    return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity, primaryDirection);
+}
+
+InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity, TextDirection primaryDirection)
+{
+    return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity, primaryDirection);
+}
+
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, LayoutObject*& layoutObject)
 {
     if (position.position().isNull()) {
